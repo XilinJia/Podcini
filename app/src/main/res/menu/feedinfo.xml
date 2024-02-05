@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:custom="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/visit_website_item"
+        android:icon="@drawable/ic_web"
+        custom:showAsAction="ifRoom|collapseActionView"
+        android:title="@string/visit_website_label"
+        android:visible="true"/>
+    <item
+        android:id="@+id/share_item"
+        custom:showAsAction="ifRoom"
+        android:title="@string/share_label"
+        android:icon="@drawable/ic_share"
+        android:visible="true" />
+    <item
+        android:id="@+id/reconnect_local_folder"
+        custom:showAsAction="collapseActionView"
+        android:title="@string/reconnect_local_folder"
+        android:visible="false" />
+    <item
+        android:id="@+id/edit_feed_url_item"
+        android:title="@string/edit_url_menu" />
+</menu>

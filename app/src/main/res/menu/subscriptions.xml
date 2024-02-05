@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:custom="http://schemas.android.com/apk/res-auto">
+    <item
+            android:id="@+id/action_search"
+            android:icon="@drawable/ic_search"
+            custom:showAsAction="always"
+            android:title="@string/search_label"/>
+    <item
+            android:id="@+id/action_statistics"
+            android:icon="@drawable/ic_chart_box"
+            android:title="@string/statistics_label"
+            custom:showAsAction="always" />
+    <item
+            android:id="@+id/refresh_item"
+            android:title="@string/refresh_label"
+            android:menuCategory="container"
+            custom:showAsAction="never" />
+    <item
+            android:id="@+id/subscriptions_filter"
+            android:title="@string/filter"
+            custom:showAsAction="never" />
+    <item
+            android:id="@+id/subscriptions_sort"
+            android:title="@string/sort"
+            custom:showAsAction="never" />
+    <item
+            android:id="@+id/subscription_num_columns"
+            android:title="@string/subscription_num_columns"
+            custom:showAsAction="never">
+        <menu>
+            <group
+                    android:checkableBehavior="single">
+                <item
+                        android:id="@+id/subscription_num_columns_2"
+                        android:title="2"/>
+                <item
+                        android:id="@+id/subscription_num_columns_3"
+                        android:title="3"/>
+                <item
+                        android:id="@+id/subscription_num_columns_4"
+                        android:title="4"/>
+                <item
+                        android:id="@+id/subscription_num_columns_5"
+                        android:title="5"/>
+            </group>
+        </menu>
+    </item>
+</menu>

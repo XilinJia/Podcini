@@ -1,0 +1,19 @@
+plugins {
+    id("com.android.library")
+}
+apply from: "../../common.gradle"
+
+android {
+    namespace "de.danoeh.antennapod.parser.media"
+}
+
+dependencies {
+    implementation project(':model')
+
+    annotationProcessor "androidx.annotation:annotation:$annotationVersion"
+
+    implementation "commons-io:commons-io:$commonsioVersion"
+
+    testImplementation "junit:junit:$junitVersion"
+    testImplementation "org.robolectric:robolectric:$robolectricVersion"
+}

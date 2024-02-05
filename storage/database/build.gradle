@@ -1,0 +1,19 @@
+plugins {
+    id("com.android.library")
+}
+apply from: "../../common.gradle"
+
+android {
+    namespace "de.danoeh.antennapod.storage.database"
+
+    lint {
+        disable "StaticFieldLeak", "StringFormatCount", "StringFormatMatches", "StringFormatInvalid", "PluralsCandidate", "StringFormatTrivial"
+    }
+}
+
+dependencies {
+    implementation project(':model')
+
+    annotationProcessor "androidx.annotation:annotation:$annotationVersion"
+    implementation "commons-io:commons-io:$commonsioVersion"
+}

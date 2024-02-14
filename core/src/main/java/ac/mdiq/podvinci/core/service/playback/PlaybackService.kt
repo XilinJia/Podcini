@@ -82,7 +82,7 @@ import ac.mdiq.podvinci.playback.base.PlaybackServiceMediaPlayer
 import ac.mdiq.podvinci.playback.base.PlaybackServiceMediaPlayer.PSMPCallback
 import ac.mdiq.podvinci.playback.base.PlaybackServiceMediaPlayer.PSMPInfo
 import ac.mdiq.podvinci.playback.base.PlayerStatus
-import ac.mdiq.podvinci.playback.cast.CastPsmp.getInstanceIfConnected
+import ac.mdiq.podvinci.playback.cast.CastPsmp
 import ac.mdiq.podvinci.playback.cast.CastStateListener
 import ac.mdiq.podvinci.storage.preferences.UserPreferences.allEpisodesSortOrder
 import ac.mdiq.podvinci.storage.preferences.UserPreferences.downloadsSortedOrder
@@ -221,7 +221,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
             mediaPlayer!!.pause(true, false)
             mediaPlayer!!.shutdown()
         }
-        mediaPlayer = getInstanceIfConnected(this, mediaPlayerCallback)
+        mediaPlayer = CastPsmp.getInstanceIfConnected(this, mediaPlayerCallback)
         if (mediaPlayer == null) {
             mediaPlayer = LocalPSMP(this, mediaPlayerCallback) // Cast not supported or not connected
         }
@@ -1204,7 +1204,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
             )
         }
 
-        WearMediaSession.mediaSessionSetExtraForWear(mediaSession)
+        WearMediaSession.mediaSessionSetExtraForWear(mediaSession!!)
 
         mediaSession!!.setPlaybackState(sessionState.build())
     }

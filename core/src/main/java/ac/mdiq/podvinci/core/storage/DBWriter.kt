@@ -116,7 +116,7 @@ import java.util.concurrent.TimeUnit
             localDelete = true
         } else if (media.getFile_url() != null) {
             // delete downloaded media file
-            val mediaFile = File(media.getFile_url())
+            val mediaFile = File(media.getFile_url()!!)
             if (mediaFile.exists() && !mediaFile.delete()) {
                 val evt = MessageEvent(context.getString(R.string.delete_failed))
                 EventBus.getDefault().post(evt)
@@ -167,10 +167,10 @@ import java.util.concurrent.TimeUnit
         return runOnDbThread {
             val feed = getFeed(feedId) ?: return@runOnDbThread
             // delete stored media files and mark them as read
-            if (feed.items == null) {
+            if (feed.items.isEmpty()) {
                 getFeedItemList(feed)
             }
-            deleteFeedItemsSynchronous(context, feed.items!!)
+            deleteFeedItemsSynchronous(context, feed.items)
 
             // delete feed
             val adapter = getInstance()
@@ -333,18 +333,16 @@ import java.util.concurrent.TimeUnit
             val queue = getQueue(adapter).toMutableList()
             val item: FeedItem?
 
-            if (queue != null) {
-                if (!itemListContains(queue, itemId)) {
-                    item = getFeedItem(itemId)
-                    if (item != null) {
-                        queue.add(index, item)
-                        adapter?.setQueue(queue)
-                        item.addTag(FeedItem.TAG_QUEUE)
-                        EventBus.getDefault().post(added(item, index))
-                        EventBus.getDefault().post(updated(item))
-                        if (item.isNew) {
-                            markItemPlayed(FeedItem.UNPLAYED, item.id)
-                        }
+            if (!itemListContains(queue, itemId)) {
+                item = getFeedItem(itemId)
+                if (item != null) {
+                    queue.add(index, item)
+                    adapter?.setQueue(queue)
+                    item.addTag(FeedItem.TAG_QUEUE)
+                    EventBus.getDefault().post(added(item, index))
+                    EventBus.getDefault().post(updated(item))
+                    if (item.isNew) {
+                        markItemPlayed(FeedItem.UNPLAYED, item.id)
                     }
                 }
             }
@@ -523,39 +521,35 @@ import java.util.concurrent.TimeUnit
         adapter?.open()
         val queue = getQueue(adapter).toMutableList()
 
-        if (queue != null) {
-            var queueModified = false
-            val events: MutableList<QueueEvent> = ArrayList()
-            val updatedItems: MutableList<FeedItem> = ArrayList()
-            for (itemId in itemIds) {
-                val position = indexInItemList(queue, itemId)
-                if (position >= 0) {
-                    val item = getFeedItem(itemId)
-                    if (item == null) {
-                        Log.e(TAG, "removeQueueItem - item in queue but somehow cannot be loaded." +
-                                " Item ignored. It should never happen. id:" + itemId)
-                        continue
-                    }
-                    queue.removeAt(position)
-                    item.removeTag(FeedItem.TAG_QUEUE)
-                    events.add(removed(item))
-                    updatedItems.add(item)
-                    queueModified = true
-                } else {
-                    Log.v(TAG, "removeQueueItem - item  not in queue:$itemId")
+        var queueModified = false
+        val events: MutableList<QueueEvent> = ArrayList()
+        val updatedItems: MutableList<FeedItem> = ArrayList()
+        for (itemId in itemIds) {
+            val position = indexInItemList(queue, itemId)
+            if (position >= 0) {
+                val item = getFeedItem(itemId)
+                if (item == null) {
+                    Log.e(TAG, "removeQueueItem - item in queue but somehow cannot be loaded." +
+                            " Item ignored. It should never happen. id:" + itemId)
+                    continue
                 }
-            }
-            if (queueModified) {
-                adapter?.setQueue(queue)
-                for (event in events) {
-                    EventBus.getDefault().post(event)
-                }
-                EventBus.getDefault().post(updated(updatedItems))
+                queue.removeAt(position)
+                item.removeTag(FeedItem.TAG_QUEUE)
+                events.add(removed(item))
+                updatedItems.add(item)
+                queueModified = true
             } else {
-                Log.w(TAG, "Queue was not modified by call to removeQueueItem")
+                Log.v(TAG, "removeQueueItem - item  not in queue:$itemId")
             }
+        }
+        if (queueModified) {
+            adapter?.setQueue(queue)
+            for (event in events) {
+                EventBus.getDefault().post(event)
+            }
+            EventBus.getDefault().post(updated(updatedItems))
         } else {
-            Log.e(TAG, "removeQueueItem: Could not load queue")
+            Log.w(TAG, "Queue was not modified by call to removeQueueItem")
         }
         adapter?.close()
         if (performAutoDownload) {
@@ -954,14 +948,10 @@ import java.util.concurrent.TimeUnit
             adapter!!.open()
             val queue = getQueue(adapter).toMutableList()
 
-            if (queue != null) {
-                permutor.reorder(queue)
-                adapter.setQueue(queue)
-                if (broadcastUpdate) {
-                    EventBus.getDefault().post(QueueEvent.sorted(queue))
-                }
-            } else {
-                Log.e(TAG, "reorderQueue: Could not load queue")
+            permutor.reorder(queue)
+            adapter.setQueue(queue)
+            if (broadcastUpdate) {
+                EventBus.getDefault().post(QueueEvent.sorted(queue))
             }
             adapter.close()
         }

@@ -14,7 +14,7 @@ object URIUtil {
     private const val TAG = "URIUtil"
 
     @JvmStatic
-    fun getURIFromRequestUrl(source: String?): URI {
+    fun getURIFromRequestUrl(source: String): URI {
         // try without encoding the URI
         try {
             return URI(source)
@@ -25,8 +25,10 @@ object URIUtil {
             val url = URL(source)
             return URI(url.protocol, url.userInfo, url.host, url.port, url.path, url.query, url.ref)
         } catch (e: MalformedURLException) {
+            Log.d(TAG, "source: $source")
             throw IllegalArgumentException(e)
         } catch (e: URISyntaxException) {
+            Log.d(TAG, "source: $source")
             throw IllegalArgumentException(e)
         }
     }

@@ -25,9 +25,11 @@ import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.*
 
-class HttpDownloader(request: DownloadRequest?) : Downloader(request!!) {
+class HttpDownloader(request: DownloadRequest) : Downloader(request) {
     override fun download() {
-        val destination = File(downloadRequest.destination)
+        if (downloadRequest.source == null || downloadRequest.destination == null) return
+
+        val destination = File(downloadRequest.destination!!)
         val fileExists = destination.exists()
 
         var out: RandomAccessFile? = null
@@ -35,7 +37,7 @@ class HttpDownloader(request: DownloadRequest?) : Downloader(request!!) {
         var responseBody: ResponseBody? = null
 
         try {
-            val uri = getURIFromRequestUrl(downloadRequest.source)
+            val uri = getURIFromRequestUrl(downloadRequest.source!!)
             val httpReq: Request.Builder = Request.Builder().url(uri.toURL())
             httpReq.tag(downloadRequest)
             httpReq.cacheControl(CacheControl.Builder().noStore().build())
@@ -52,7 +54,7 @@ class HttpDownloader(request: DownloadRequest?) : Downloader(request!!) {
                 httpReq.addHeader("Upgrade-Insecure-Requests", "1")
             }
 
-            if (!TextUtils.isEmpty(downloadRequest.lastModified)) {
+            if (!downloadRequest.lastModified.isNullOrEmpty()) {
                 val lastModified = downloadRequest.lastModified
                 val lastModifiedDate = parse(lastModified)
                 if (lastModifiedDate != null) {

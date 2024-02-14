@@ -11,11 +11,13 @@ import ac.mdiq.podvinci.core.storage.DBWriter
 import ac.mdiq.podvinci.core.util.download.FeedUpdateManager.runOnce
 import ac.mdiq.podvinci.databinding.EditTextDialogBinding
 import ac.mdiq.podvinci.model.feed.Feed
+import androidx.media3.common.util.UnstableApi
 import java.lang.ref.WeakReference
 import java.util.*
 import java.util.concurrent.ExecutionException
 
-abstract class EditUrlSettingsDialog(activity: Activity, private val feed: Feed) {
+ @UnstableApi
+ abstract class EditUrlSettingsDialog(activity: Activity, private val feed: Feed) {
     private val activityRef = WeakReference(activity)
 
     fun show() {
@@ -33,7 +35,7 @@ abstract class EditUrlSettingsDialog(activity: Activity, private val feed: Feed)
             .show()
     }
 
-    private fun onConfirmed(original: String, updated: String) {
+    @UnstableApi private fun onConfirmed(original: String, updated: String) {
         try {
             DBWriter.updateFeedDownloadURL(original, updated).get()
             feed.download_url = updated
@@ -45,7 +47,7 @@ abstract class EditUrlSettingsDialog(activity: Activity, private val feed: Feed)
         }
     }
 
-    private fun showConfirmAlertDialog(url: String) {
+    @UnstableApi private fun showConfirmAlertDialog(url: String) {
         val activity = activityRef.get()
 
         val alertDialog = MaterialAlertDialogBuilder(activity!!)

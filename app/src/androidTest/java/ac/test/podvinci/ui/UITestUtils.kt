@@ -64,7 +64,7 @@ class UITestUtils(private val context: Context) {
 
     @Throws(IOException::class)
     fun hostFeed(feed: Feed): String {
-        val feedFile = File(hostedFeedDir, feed.title)
+        val feedFile = File(hostedFeedDir, feed.title?:"")
         val out = FileOutputStream(feedFile)
         val generator = Rss2Generator()
         generator.writeFeed(feed, out, "UTF-8", 0)
@@ -171,7 +171,7 @@ class UITestUtils(private val context: Context) {
         for (feed in hostedFeeds) {
             feed.setDownloaded(true)
             if (downloadEpisodes) {
-                for (item in feed.items!!) {
+                for (item in feed.items) {
                     if (item.hasMedia()) {
                         val media = item.media
                         val fileId = StringUtils.substringAfter(media!!.download_url, "files/").toInt()
@@ -181,9 +181,9 @@ class UITestUtils(private val context: Context) {
                 }
             }
 
-            queue.add(feed.items!![0])
-            if (feed.items!![1].hasMedia()) {
-                feed.items!![1].media!!.setPlaybackCompletionDate(Date())
+            queue.add(feed.items[0])
+            if (feed.items[1].hasMedia()) {
+                feed.items[1].media!!.setPlaybackCompletionDate(Date())
             }
         }
         localFeedDataAdded = true

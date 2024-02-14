@@ -43,7 +43,7 @@ object LocalFeedUpdater {
     fun updateFeed(feed: Feed, context: Context,
                    updaterProgressListener: UpdaterProgressListener?
     ) {
-        if (feed.download_url == null) return
+        if (feed.download_url.isNullOrEmpty()) return
         try {
             val uriString = feed.download_url!!.replace(Feed.PREFIX_LOCAL_FOLDER, "")
             val documentFolder = DocumentFile.fromTreeUri(context, Uri.parse(uriString))
@@ -71,9 +71,6 @@ object LocalFeedUpdater {
                       updaterProgressListener: UpdaterProgressListener?
     ) {
         var feed = feed
-        if (feed.items == null) {
-            feed.items = mutableListOf()
-        }
         //make sure it is the latest 'version' of this feed from the db (all items etc)
         feed = DBTasks.updateFeed(context, feed, false)?: feed
 

@@ -31,27 +31,29 @@ class BasicAuthorizationInterceptor : Interceptor {
             newRequest.url(response.request.url)
 
             val authorizationHeaders = request.headers.values(HEADER_AUTHORIZATION)
-            if (!authorizationHeaders.isEmpty() && !TextUtils.isEmpty(authorizationHeaders[0])) {
+            if (authorizationHeaders.isNotEmpty() && !TextUtils.isEmpty(authorizationHeaders[0])) {
                 // Call already had authorization headers. Try again with the same credentials.
                 newRequest.header(HEADER_AUTHORIZATION, authorizationHeaders[0])
                 return chain.proceed(newRequest.build())
             }
         }
 
-        var userInfo: String
+        var userInfo = ""
         if (request.tag() is DownloadRequest) {
-            val downloadRequest = request.tag() as DownloadRequest?
-            userInfo = URIUtil.getURIFromRequestUrl(downloadRequest!!.source).userInfo
-            if (TextUtils.isEmpty(userInfo)
-                    && (!TextUtils.isEmpty(downloadRequest.username)
-                            || !TextUtils.isEmpty(downloadRequest.password))) {
-                userInfo = downloadRequest.username + ":" + downloadRequest.password
+            val downloadRequest = request.tag() as? DownloadRequest
+            if (downloadRequest?.source != null) {
+                userInfo = URIUtil.getURIFromRequestUrl(downloadRequest.source!!).userInfo
+                if (TextUtils.isEmpty(userInfo)
+                        && (!TextUtils.isEmpty(downloadRequest.username)
+                                || !TextUtils.isEmpty(downloadRequest.password))) {
+                    userInfo = downloadRequest.username + ":" + downloadRequest.password
+                }
             }
         } else {
             userInfo = DBReader.getImageAuthentication(request.url.toString())
         }
 
-        if (TextUtils.isEmpty(userInfo)) {
+        if (userInfo.isEmpty()) {
             Log.d(TAG, "no credentials for '" + request.url + "'")
             return response
         }

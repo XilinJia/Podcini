@@ -1,6 +1,19 @@
 package ac.mdiq.podvinci.fragment
 
+import ac.mdiq.podvinci.R
 import ac.mdiq.podvinci.activity.MainActivity
+import ac.mdiq.podvinci.core.storage.DBReader
+import ac.mdiq.podvinci.core.storage.DBTasks
+import ac.mdiq.podvinci.core.util.IntentUtils
+import ac.mdiq.podvinci.core.util.ShareUtils
+import ac.mdiq.podvinci.core.util.syndication.HtmlToPlainText
+import ac.mdiq.podvinci.dialog.EditUrlSettingsDialog
+import ac.mdiq.podvinci.model.feed.Feed
+import ac.mdiq.podvinci.model.feed.FeedFunding
+import ac.mdiq.podvinci.ui.glide.FastBlurTransformation
+import ac.mdiq.podvinci.ui.statistics.StatisticsFragment
+import ac.mdiq.podvinci.ui.statistics.feed.FeedStatisticsFragment
+import ac.mdiq.podvinci.view.ToolbarIconTintManager
 import android.R.string
 import android.app.Activity
 import android.content.*
@@ -31,23 +44,9 @@ import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import ac.mdiq.podvinci.R
-import ac.mdiq.podvinci.core.storage.DBReader
-import ac.mdiq.podvinci.core.storage.DBTasks
-import ac.mdiq.podvinci.core.util.IntentUtils
-import ac.mdiq.podvinci.core.util.ShareUtils
-import ac.mdiq.podvinci.core.util.syndication.HtmlToPlainText
-import ac.mdiq.podvinci.dialog.EditUrlSettingsDialog
-import ac.mdiq.podvinci.model.feed.Feed
-import ac.mdiq.podvinci.model.feed.FeedFunding
-import ac.mdiq.podvinci.ui.glide.FastBlurTransformation
-import ac.mdiq.podvinci.ui.statistics.StatisticsFragment
-import ac.mdiq.podvinci.ui.statistics.feed.FeedStatisticsFragment
-import ac.mdiq.podvinci.view.ToolbarIconTintManager
 import io.reactivex.Completable
 import io.reactivex.Maybe
 import io.reactivex.MaybeEmitter
-import io.reactivex.MaybeOnSubscribe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
@@ -148,14 +147,14 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val feedId = requireArguments().getLong(EXTRA_FEED_ID)
-        disposable = Maybe.create<Feed>(MaybeOnSubscribe<Feed> { emitter: MaybeEmitter<Feed?> ->
+        disposable = Maybe.create { emitter: MaybeEmitter<Feed?> ->
             val feed: Feed? = DBReader.getFeed(feedId)
             if (feed != null) {
                 emitter.onSuccess(feed)
             } else {
                 emitter.onComplete()
             }
-        } as MaybeOnSubscribe<Feed?>?)
+        }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ result: Feed? ->
@@ -211,12 +210,12 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         txtvUrl?.text = feed!!.download_url
         txtvUrl?.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_paperclip, 0)
 
-        if (feed!!.paymentLinks == null || feed!!.paymentLinks!!.size == 0) {
+        if (feed!!.paymentLinks.isEmpty()) {
             lblSupport?.visibility = View.GONE
             txtvFundingUrl?.visibility = View.GONE
         } else {
             lblSupport?.visibility = View.VISIBLE
-            val fundingList: ArrayList<FeedFunding> = feed!!.paymentLinks!!
+            val fundingList: ArrayList<FeedFunding> = feed!!.paymentLinks
 
             // Filter for duplicates, but keep items in the order that they have in the feed.
             val i: MutableIterator<FeedFunding> = fundingList.iterator()
@@ -311,8 +310,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         Completable.fromAction {
             requireActivity().contentResolver
                 .takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            val documentFile = DocumentFile.fromTreeUri(
-                requireContext(), uri)
+            val documentFile = DocumentFile.fromTreeUri(requireContext(), uri)
             requireNotNull(documentFile) { "Unable to retrieve document tree" }
             feed?.download_url = Feed.PREFIX_LOCAL_FOLDER + uri.toString()
             DBTasks.updateFeed(requireContext(), feed!!, true)

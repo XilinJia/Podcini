@@ -232,11 +232,11 @@ class Feed : FeedFile {
          * try to return the title. If the title is not given, it will use the link
          * of the feed.
          */
-        get() = if (feedIdentifier != null && feedIdentifier!!.isNotEmpty()) {
+        get() = if (!feedIdentifier.isNullOrEmpty()) {
             feedIdentifier
-        } else if (download_url != null && download_url!!.isNotEmpty()) {
+        } else if (!download_url.isNullOrEmpty()) {
             download_url
-        } else if (feedTitle != null && feedTitle!!.isNotEmpty()) {
+        } else if (!feedTitle.isNullOrEmpty()) {
             feedTitle
         } else {
             link

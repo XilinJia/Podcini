@@ -36,11 +36,10 @@ object DownloadRequestCreator {
 
     @JvmStatic
     fun create(media: FeedMedia): DownloadRequest.Builder {
-        val partiallyDownloadedFileExists =
-            media.file_url != null && File(media.file_url).exists()
+        val partiallyDownloadedFileExists = media.file_url != null && File(media.file_url!!).exists()
         var dest: File
         dest = if (partiallyDownloadedFileExists) {
-            File(media.file_url)
+            File(media.file_url!!)
         } else {
             File(getMediafilePath(media), getMediafilename(media))
         }
@@ -60,8 +59,7 @@ object DownloadRequestCreator {
         // find different name
         var newDest: File? = null
         for (i in 1 until Int.MAX_VALUE) {
-            val newName = (FilenameUtils.getBaseName(dest
-                .name)
+            val newName = (FilenameUtils.getBaseName(dest.name)
                     + "-"
                     + i
                     + FilenameUtils.EXTENSION_SEPARATOR

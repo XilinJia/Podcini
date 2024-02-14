@@ -99,17 +99,17 @@ class MainPreferencesFragment : PreferenceFragmentCompat() {
             }
         findPreference<Preference>(PREF_DOCUMENTATION)!!.onPreferenceClickListener =
             Preference.OnPreferenceClickListener { preference: Preference? ->
-                openInBrowser(requireContext(), "$localizedWebsiteLink/documentation/")
+                openInBrowser(requireContext(), "https://github.com/XilinJia/PodVinci")
                 true
             }
         findPreference<Preference>(PREF_VIEW_FORUM)!!.onPreferenceClickListener =
             Preference.OnPreferenceClickListener { preference: Preference? ->
-                openInBrowser(requireContext(), "https://forum.podvinci.org/")
+                openInBrowser(requireContext(), "https://github.com/XilinJia/PodVinci/discussions")
                 true
             }
         findPreference<Preference>(PREF_CONTRIBUTE)!!.onPreferenceClickListener =
             Preference.OnPreferenceClickListener { preference: Preference? ->
-                openInBrowser(requireContext(), "$localizedWebsiteLink/contribute/")
+                openInBrowser(requireContext(), "https://github.com/XilinJia/PodVinci")
                 true
             }
         findPreference<Preference>(PREF_SEND_BUG_REPORT)!!.onPreferenceClickListener =

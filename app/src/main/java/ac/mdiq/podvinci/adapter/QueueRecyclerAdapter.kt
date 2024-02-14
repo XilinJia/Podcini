@@ -67,7 +67,7 @@ open class QueueRecyclerAdapter(mainActivity: MainActivity, swipeActions: SwipeA
         holder.isInQueue.setVisibility(View.GONE)
     }
 
-    @UnstableApi override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo) {
+    @UnstableApi override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
         val inflater: MenuInflater = activity!!.getMenuInflater()
         inflater.inflate(R.menu.queue_context, menu)
         super.onCreateContextMenu(menu, v, menuInfo)

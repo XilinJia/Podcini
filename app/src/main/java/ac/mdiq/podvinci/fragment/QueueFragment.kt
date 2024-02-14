@@ -221,14 +221,11 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
 
     override fun onDestroyView() {
         super.onDestroyView()
-        if (recyclerAdapter != null) {
-            recyclerAdapter?.endSelectMode()
-        }
+        recyclerAdapter?.endSelectMode()
         recyclerAdapter = null
-        if (toolbar != null) {
-            toolbar?.setOnMenuItemClickListener(null)
-            toolbar?.setOnLongClickListener(null)
-        }
+
+        toolbar?.setOnMenuItemClickListener(null)
+        toolbar?.setOnLongClickListener(null)
     }
 
     private fun refreshToolbarState() {
@@ -395,7 +392,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
         swipeActions?.attachTo(recyclerView)
 
         recyclerAdapter = object : QueueRecyclerAdapter(activity as MainActivity, swipeActions!!) {
-            override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo) {
+            override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
                 super.onCreateContextMenu(menu, v, menuInfo)
                 MenuItemUtils.setOnClickListeners(menu
                 ) { item: MenuItem -> this@QueueFragment.onContextItemSelected(item) }

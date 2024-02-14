@@ -169,7 +169,7 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
         }
 
         listAdapter = object : EpisodeItemListAdapter(activity as MainActivity) {
-            override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo) {
+            override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
                 super.onCreateContextMenu(menu, v, menuInfo)
                 if (!inActionMode()) {
                     menu.findItem(R.id.multi_select).setVisible(true)

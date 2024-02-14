@@ -87,8 +87,8 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         if (args != null) feedID = args.getLong(ARGUMENT_FEED_ID)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?
+    @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
+                                           savedInstanceState: Bundle?
     ): View {
         viewBinding = FeedItemListFragmentBinding.inflate(inflater)
         speedDialBinding = MultiSelectSpeedDialBinding.bind(viewBinding!!.root)
@@ -216,7 +216,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
             horizontalSpacing, viewBinding!!.header.headerContainer.paddingBottom)
     }
 
-    override fun onMenuItemClick(item: MenuItem): Boolean {
+    @UnstableApi override fun onMenuItemClick(item: MenuItem): Boolean {
         if (feed == null) {
             (activity as MainActivity).showSnackbarAbovePlayer(
                 R.string.please_wait_for_data, Toast.LENGTH_LONG)
@@ -281,7 +281,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         return FeedItemMenuHandler.onMenuItemClicked(this, item.itemId, selectedItem)
     }
 
-    override fun onItemClick(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
+    @UnstableApi override fun onItemClick(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
         val activity: MainActivity = activity as MainActivity
         if (feed != null) {
             val ids: LongArray = FeedItemUtil.getIds(feed!!.items)
@@ -289,7 +289,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEvent(event: FeedEvent) {
         Log.d(TAG, "onEvent() called with: event = [$event]")
         if (event.feedId == feedID) {
@@ -300,14 +300,14 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: FeedItemEvent) {
         Log.d(TAG, "onEventMainThread() called with: event = [$event]")
-        if (feed == null || feed!!.items == null) {
+        if (feed == null || feed!!.items.isEmpty()) {
             return
         }
         var i = 0
         val size: Int = event.items.size
         while (i < size) {
             val item: FeedItem = event.items[i]
-            val pos: Int = FeedItemUtil.indexOfItemWithId(feed!!.items!!, item.id)
+            val pos: Int = FeedItemUtil.indexOfItemWithId(feed!!.items, item.id)
             if (pos >= 0) {
                 feed?.items?.removeAt(pos)
                 feed?.items?.add(pos, item)
@@ -319,11 +319,11 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: EpisodeDownloadEvent) {
-        if (feed == null || feed!!.items == null) {
+        if (feed == null || feed!!.items.isEmpty()) {
             return
         }
         for (downloadUrl in event.urls) {
-            val pos: Int = FeedItemUtil.indexOfItemWithDownloadUrl(feed!!.items!!, downloadUrl)
+            val pos: Int = FeedItemUtil.indexOfItemWithDownloadUrl(feed!!.items, downloadUrl)
             if (pos >= 0) {
                 adapter?.notifyItemChangedCompat(pos)
             }
@@ -342,13 +342,15 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun favoritesChanged(event: FavoritesEvent?) {
+        Log.d(TAG, "favoritesChanged called")
         updateUi()
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onQueueChanged(event: QueueEvent?) {
+        Log.d(TAG, "onQueueChanged called")
         updateUi()
     }
 
@@ -368,23 +370,26 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         swipeActions?.attachTo(viewBinding!!.recyclerView)
     }
 
-    private fun updateUi() {
+    @UnstableApi private fun updateUi() {
         loadItems()
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onPlayerStatusChanged(event: PlayerStatusEvent?) {
+        Log.d(TAG, "onPlayerStatusChanged called")
         updateUi()
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onUnreadItemsChanged(event: UnreadItemsUpdateEvent?) {
+        Log.d(TAG, "onUnreadItemsChanged called")
         updateUi()
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onFeedListChanged(event: FeedListUpdateEvent) {
         if (feed != null && event.contains(feed!!)) {
+            Log.d(TAG, "onFeedListChanged called")
             updateUi()
         }
     }
@@ -398,7 +403,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         viewBinding!!.swipeRefresh.isRefreshing = event.isFeedUpdateRunning
     }
 
-    private fun refreshHeaderView() {
+    @UnstableApi private fun refreshHeaderView() {
         setupHeaderView()
         if (viewBinding == null || feed == null) {
             Log.e(TAG, "Unable to refresh header view")
@@ -439,7 +444,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         }
     }
 
-    private fun setupHeaderView() {
+    @UnstableApi private fun setupHeaderView() {
         if (feed == null || headerCreated) {
             return
         }
@@ -465,7 +470,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         Maybe.fromCallable<DownloadResult>(
             Callable {
                 val feedDownloadLog: List<DownloadResult> = DBReader.getFeedDownloadLog(feedID)
-                if (feedDownloadLog.size == 0 || feedDownloadLog[0].isSuccessful) {
+                if (feedDownloadLog.isEmpty() || feedDownloadLog[0].isSuccessful) {
                     return@Callable null
                 }
                 feedDownloadLog[0]
@@ -481,7 +486,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
                 { DownloadLogFragment().show(childFragmentManager, null) })
     }
 
-    private fun showFeedInfo() {
+    @UnstableApi private fun showFeedInfo() {
         if (feed != null) {
             val fragment = FeedInfoFragment.newInstance(feed!!)
             (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
@@ -509,7 +514,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
             .into(viewBinding!!.header.imgvCover)
     }
 
-    private fun loadItems() {
+    @UnstableApi private fun loadItems() {
         disposable?.dispose()
 
         disposable = Observable.fromCallable<Feed?> { this.loadData() }
@@ -522,7 +527,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
                     refreshHeaderView()
                     viewBinding!!.progressBar.visibility = View.GONE
                     adapter?.setDummyViews(0)
-                    if (feed != null && feed!!.items != null) adapter?.updateItems(feed!!.items!!)
+                    if (feed != null && feed!!.items.isNotEmpty()) adapter?.updateItems(feed!!.items)
                     updateToolbar()
                 }, { error: Throwable? ->
                     feed = null
@@ -536,10 +541,10 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 
     private fun loadData(): Feed? {
         val feed: Feed = DBReader.getFeed(feedID, true) ?: return null
-        if (feed.items != null) {
-            DBReader.loadAdditionalFeedItemListData(feed.items!!)
+        if (feed.items.isNotEmpty()) {
+            DBReader.loadAdditionalFeedItemListData(feed.items)
             if (feed.sortOrder != null) {
-                val feedItems: MutableList<FeedItem> = feed.items!!
+                val feedItems: MutableList<FeedItem> = feed.items
                 FeedItemPermutors.getPermutor(feed.sortOrder!!).reorder(feedItems.toMutableList())
                 feed.items = feedItems
             }
@@ -564,7 +569,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
             holder.coverHolder.visibility = View.GONE
         }
 
-        @UnstableApi override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo) {
+        @UnstableApi override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
             super.onCreateContextMenu(menu, v, menuInfo)
             if (!inActionMode()) {
                 menu.findItem(R.id.multi_select).setVisible(true)
@@ -593,7 +598,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
             }
         }
 
-        override fun onSelectionChanged() {
+        @UnstableApi override fun onSelectionChanged() {
             super.onSelectionChanged()
             DBWriter.setFeedItemSortOrder(requireArguments().getLong(ARG_FEED_ID), sortOrder)
         }

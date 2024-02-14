@@ -106,7 +106,7 @@ open class HorizontalItemListAdapter(mainActivity: MainActivity) : RecyclerView.
         notifyItemChanged(position, "foo")
     }
 
-    @UnstableApi override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo) {
+    @UnstableApi override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
         val inflater: MenuInflater = mainActivityRef.get()!!.menuInflater
         if (longPressedItem == null) {
             return

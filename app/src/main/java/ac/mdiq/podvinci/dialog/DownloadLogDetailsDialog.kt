@@ -43,8 +43,7 @@ class DownloadLogDetailsDialog(context: Context, status: DownloadResult) : Mater
         setMessage(messageFull)
         setPositiveButton("OK", null)
         setNeutralButton(R.string.copy_to_clipboard) { dialog, which ->
-            val clipboard = getContext()
-                .getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clipboard = getContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clip = ClipData.newPlainText(context.getString(R.string.download_error_details), messageFull)
             clipboard.setPrimaryClip(clip)
             if (Build.VERSION.SDK_INT < 32) {
@@ -55,7 +54,7 @@ class DownloadLogDetailsDialog(context: Context, status: DownloadResult) : Mater
 
     override fun show(): AlertDialog {
         val dialog = super.show()
-        (dialog.findViewById<View>(R.id.message) as TextView?)!!.setTextIsSelectable(true)
+        (dialog.findViewById<View>(R.id.message) as? TextView)?.setTextIsSelectable(true)
         return dialog
     }
 }

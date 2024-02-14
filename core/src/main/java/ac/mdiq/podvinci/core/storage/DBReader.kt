@@ -522,6 +522,7 @@ object DBReader {
     }
 
     fun getPausedQueue(limit: Int): List<FeedItem> {
+        Log.d(TAG, "getFeedItemsWithUrl() called ")
         val adapter = getInstance()
         adapter!!.open()
         try {
@@ -702,6 +703,7 @@ object DBReader {
     }
 
     fun getFeedItemsWithUrl(urls: List<String?>?): List<FeedItem> {
+        Log.d(TAG, "getFeedItemsWithUrl() called ")
         val adapter = getInstance()
         adapter!!.open()
         try {

@@ -176,10 +176,7 @@ class FeedMedia : FeedFile, Playable {
     }
 
     override fun getDescription(): String? {
-        if (item != null) {
-            return item!!.description
-        }
-        return null
+        return item?.description
     }
 
     /**
@@ -212,7 +209,7 @@ class FeedMedia : FeedFile, Playable {
 
     fun getPlaybackCompletionDate(): Date? {
         return if (playbackCompletionDate == null) null
-        else playbackCompletionDate!!.clone() as Date
+        else playbackCompletionDate?.clone() as Date
     }
 
     fun setPlaybackCompletionDate(playbackCompletionDate: Date?) {

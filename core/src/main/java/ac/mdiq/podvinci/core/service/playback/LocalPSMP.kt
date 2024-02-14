@@ -175,7 +175,7 @@ class LocalPSMP(context: Context,
                         mediaPlayer!!.setDataSource(media!!.getStreamUrl()!!)
                     }
                 }
-            } else if (media!!.getLocalMediaUrl() != null && File(media!!.getLocalMediaUrl()).canRead()) {
+            } else if (media!!.getLocalMediaUrl() != null && File(media!!.getLocalMediaUrl()!!).canRead()) {
                 mediaPlayer!!.setDataSource(media!!.getLocalMediaUrl()!!)
             } else {
                 throw IOException("Unable to read local file " + media!!.getLocalMediaUrl())
@@ -193,11 +193,11 @@ class LocalPSMP(context: Context,
         } catch (e: IOException) {
             e.printStackTrace()
             setPlayerStatus(PlayerStatus.ERROR, null)
-            EventBus.getDefault().postSticky(PlayerErrorEvent(e.localizedMessage))
+            EventBus.getDefault().postSticky(PlayerErrorEvent(e.localizedMessage?:""))
         } catch (e: IllegalStateException) {
             e.printStackTrace()
             setPlayerStatus(PlayerStatus.ERROR, null)
-            EventBus.getDefault().postSticky(PlayerErrorEvent(e.localizedMessage))
+            EventBus.getDefault().postSticky(PlayerErrorEvent(e.localizedMessage?:""))
         }
     }
 
@@ -347,7 +347,7 @@ class LocalPSMP(context: Context,
             t = 0
         }
 
-        if (t >= getPosition()) {
+        if (t >= getDuration()) {
             Log.d(TAG, "Seek reached end of file, skipping to next episode")
             endPlayback(true, true, true, true)
             return
@@ -503,9 +503,7 @@ class LocalPSMP(context: Context,
     }
 
     override fun setVideoSurface(surface: SurfaceHolder?) {
-        if (mediaPlayer != null) {
-            mediaPlayer!!.setDisplay(surface)
-        }
+        mediaPlayer?.setDisplay(surface)
     }
 
     override fun resetVideoSurface() {

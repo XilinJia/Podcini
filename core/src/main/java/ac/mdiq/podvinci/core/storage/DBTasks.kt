@@ -235,8 +235,8 @@ import java.util.concurrent.*
             }
 
             // Look for new or updated Items
-            for (idx in newFeed.items!!.indices) {
-                val item = newFeed.items!![idx]
+            for (idx in newFeed.items.indices) {
+                val item = newFeed.items[idx]
 
                 val possibleDuplicate = searchFeedItemGuessDuplicate(newFeed.items, item)
                 if (!newFeed.isLocalFeed && possibleDuplicate != null && item !== possibleDuplicate) {
@@ -291,10 +291,10 @@ import java.util.concurrent.*
                     Log.d(TAG, "Found new item: " + item.title)
                     item.feed = savedFeed
 
-                    if (idx >= savedFeed.items!!.size) {
-                        savedFeed.items?.add(item)
+                    if (idx >= savedFeed.items.size) {
+                        savedFeed.items.add(item)
                     } else {
-                        savedFeed.items?.add(idx, item)
+                        savedFeed.items.add(idx, item)
                     }
 
                     var action = savedFeed.preferences!!.newEpisodesAction
@@ -313,7 +313,7 @@ import java.util.concurrent.*
 
             // identify items to be removed
             if (removeUnlistedItems) {
-                val it = savedFeed.items!!.toMutableList().iterator()
+                val it = savedFeed.items.toMutableList().iterator()
                 while (it.hasNext()) {
                     val feedItem = it.next()
                     if (searchFeedItemByIdentifyingValue(newFeed.items, feedItem) == null) {
@@ -340,7 +340,7 @@ import java.util.concurrent.*
                 DBWriter.setCompleteFeed(savedFeed).get()
             }
             if (removeUnlistedItems) {
-                DBWriter.deleteFeedItems(context!!, unlistedItems).get()
+                DBWriter.deleteFeedItems(context, unlistedItems).get()
             }
         } catch (e: InterruptedException) {
             e.printStackTrace()
@@ -379,10 +379,10 @@ import java.util.concurrent.*
      * and returns the search result as a List of FeedItems.
      */
     @JvmStatic
-    fun searchFeedItems(feedID: Long, query: String?): FutureTask<List<FeedItem>> {
+    fun searchFeedItems(feedID: Long, query: String): FutureTask<List<FeedItem>> {
         return FutureTask(object : QueryTask<List<FeedItem>>() {
             override fun execute(adapter: PodDBAdapter?) {
-                val searchResult = adapter!!.searchItems(feedID, query!!)
+                val searchResult = adapter!!.searchItems(feedID, query)
                 val items = extractItemlistFromCursor(searchResult)
                 loadAdditionalFeedItemListData(items)
                 setResult(items)
@@ -392,10 +392,10 @@ import java.util.concurrent.*
     }
 
     @JvmStatic
-    fun searchFeeds(query: String?): FutureTask<List<Feed>> {
+    fun searchFeeds(query: String): FutureTask<List<Feed>> {
         return FutureTask(object : QueryTask<List<Feed>>() {
             override fun execute(adapter: PodDBAdapter?) {
-                val cursor = adapter!!.searchFeeds(query!!)
+                val cursor = adapter!!.searchFeeds(query)
                 val items: MutableList<Feed> = ArrayList()
                 if (cursor.moveToFirst()) {
                     do {

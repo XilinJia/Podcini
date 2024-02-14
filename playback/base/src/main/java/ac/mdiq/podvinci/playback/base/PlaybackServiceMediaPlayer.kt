@@ -335,7 +335,7 @@ abstract class PlaybackServiceMediaPlayer protected constructor(protected val co
 
         this.oldPlayerStatus = playerStatus
         this.playerStatus = newStatus
-        setPlayable(newMedia);
+        setPlayable(newMedia)
 
         if (newMedia != null && newStatus != PlayerStatus.INDETERMINATE) {
             if (oldPlayerStatus == PlayerStatus.PLAYING && newStatus != PlayerStatus.PLAYING) {

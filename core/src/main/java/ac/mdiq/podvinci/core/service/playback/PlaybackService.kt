@@ -404,7 +404,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
         }
         var count = 0
         for (feedItem in feedItems) {
-            if (feedItem!!.media != null && feedItem.media!!.mediaItem != null) {
+            if (feedItem?.media != null) {
                 mediaItems.add(feedItem.media!!.mediaItem)
                 if (++count >= MAX_ANDROID_AUTO_EPISODES_PER_FEED) {
                     break
@@ -758,10 +758,10 @@ class PlaybackService : MediaBrowserServiceCompat() {
 
     private val mediaPlayerCallback: PSMPCallback = object : PSMPCallback {
         override fun statusChanged(newInfo: PSMPInfo?) {
-            if (mediaPlayer != null) {
-                currentMediaType = mediaPlayer!!.getCurrentMediaType()
+            currentMediaType = if (mediaPlayer != null) {
+                mediaPlayer!!.getCurrentMediaType()
             } else {
-                currentMediaType = MediaType.UNKNOWN
+                MediaType.UNKNOWN
             }
 
             updateMediaSession(newInfo!!.playerStatus)
@@ -941,11 +941,10 @@ class PlaybackService : MediaBrowserServiceCompat() {
             return null
         }
         Log.d(TAG, "getNextInQueue()")
-        val media = currentMedia
-        if (media.getItem() == null) {
-            media.setItem(DBReader.getFeedItem(media.itemId))
+        if (currentMedia.getItem() == null) {
+            currentMedia.setItem(DBReader.getFeedItem(currentMedia.itemId))
         }
-        val item = media.getItem()
+        val item = currentMedia.getItem()
         if (item == null) {
             Log.w(TAG, "getNextInQueue() with FeedMedia object whose FeedItem is null")
             writeNoMediaPlaying()
@@ -1335,9 +1334,9 @@ class PlaybackService : MediaBrowserServiceCompat() {
         if (fromMediaPlayer) {
             position = currentPosition
             duration = this.duration
-            playable = mediaPlayer!!.getPlayable()
+            playable = mediaPlayer?.getPlayable()
         } else {
-            duration = playable!!.getDuration()
+            duration = playable?.getDuration() ?: Playable.INVALID_TIME
         }
         if (position != Playable.INVALID_TIME && duration != Playable.INVALID_TIME && playable != null) {
             Log.d(TAG, "Saving current position to $position")
@@ -1743,7 +1742,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
 
         fun onNextChapter() {
             val chapters = mediaPlayer!!.getPlayable()!!.getChapters()
-            if (chapters == null) {
+            if (chapters.isEmpty()) {
                 // No chapters, just fallback to next episode
                 mediaPlayer!!.skip()
                 return
@@ -1791,31 +1790,29 @@ class PlaybackService : MediaBrowserServiceCompat() {
 
         override fun onMediaButtonEvent(mediaButton: Intent): Boolean {
             Log.d(TAG, "onMediaButtonEvent($mediaButton)")
-            if (mediaButton != null) {
-                val keyEvent = mediaButton.getParcelableExtra<KeyEvent>(Intent.EXTRA_KEY_EVENT)
-                if (keyEvent != null && keyEvent.action == KeyEvent.ACTION_DOWN && keyEvent.repeatCount == 0) {
-                    val keyCode = keyEvent.keyCode
-                    if (keyCode == KeyEvent.KEYCODE_HEADSETHOOK || keyCode == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE) {
-                        clickCount++
-                        clickHandler.removeCallbacksAndMessages(null)
-                        clickHandler.postDelayed({
-                            when (clickCount) {
-                                1 -> {
-                                    handleKeycode(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, false)
-                                }
-                                2 -> {
-                                    onFastForward()
-                                }
-                                3 -> {
-                                    onRewind()
-                                }
+            val keyEvent = mediaButton.getParcelableExtra<KeyEvent>(Intent.EXTRA_KEY_EVENT)
+            if (keyEvent != null && keyEvent.action == KeyEvent.ACTION_DOWN && keyEvent.repeatCount == 0) {
+                val keyCode = keyEvent.keyCode
+                if (keyCode == KeyEvent.KEYCODE_HEADSETHOOK || keyCode == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE) {
+                    clickCount++
+                    clickHandler.removeCallbacksAndMessages(null)
+                    clickHandler.postDelayed({
+                        when (clickCount) {
+                            1 -> {
+                                handleKeycode(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, false)
                             }
-                            clickCount = 0
-                        }, ViewConfiguration.getDoubleTapTimeout().toLong())
-                        return true
-                    } else {
-                        return handleKeycode(keyCode, false)
-                    }
+                            2 -> {
+                                onFastForward()
+                            }
+                            3 -> {
+                                onRewind()
+                            }
+                        }
+                        clickCount = 0
+                    }, ViewConfiguration.getDoubleTapTimeout().toLong())
+                    return true
+                } else {
+                    return handleKeycode(keyCode, false)
                 }
             }
             return false

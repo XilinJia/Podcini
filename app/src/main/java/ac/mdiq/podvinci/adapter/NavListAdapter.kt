@@ -352,7 +352,7 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
 
         fun onItemLongClick(position: Int): Boolean
 
-        override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo)
+        override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo?)
     }
 
     companion object {

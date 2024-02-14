@@ -45,7 +45,7 @@ class InboxSection : HomeSection() {
         viewBinding?.recyclerView?.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
         viewBinding?.recyclerView?.setRecycledViewPool((requireActivity() as MainActivity).recycledViewPool)
         adapter = object : EpisodeItemListAdapter(requireActivity() as MainActivity) {
-            override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo) {
+            override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
                 super.onCreateContextMenu(menu, v, menuInfo)
                 MenuItemUtils.setOnClickListeners(menu
                 ) { item: MenuItem -> this@InboxSection.onContextItemSelected(item) }

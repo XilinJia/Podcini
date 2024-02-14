@@ -39,7 +39,7 @@ class QueueSection : HomeSection() {
     ): View {
         val view: View = super.onCreateView(inflater, container, savedInstanceState)
         listAdapter = object : HorizontalItemListAdapter(activity as MainActivity) {
-            override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo) {
+            override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
                 super.onCreateContextMenu(menu, v, menuInfo)
                 MenuItemUtils.setOnClickListeners(menu
                 ) { item: MenuItem -> this@QueueSection.onContextItemSelected(item) }

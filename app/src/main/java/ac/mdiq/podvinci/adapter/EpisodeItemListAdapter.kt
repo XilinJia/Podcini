@@ -69,7 +69,7 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) : SelectableAdapte
         val item: FeedItem = episodes[pos]
         holder.bind(item)
 
-        holder.itemView.setOnClickListener(View.OnClickListener { v: View? ->
+        holder.itemView.setOnClickListener { v: View? ->
             val activity: MainActivity? = mainActivityRef.get()
             if (activity != null && !inActionMode()) {
                 val ids: LongArray = FeedItemUtil.getIds(episodes)
@@ -78,13 +78,13 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) : SelectableAdapte
             } else {
                 toggleSelection(holder.bindingAdapterPosition)
             }
-        })
+        }
         holder.itemView.setOnCreateContextMenuListener(this)
-        holder.itemView.setOnLongClickListener(View.OnLongClickListener { v: View? ->
+        holder.itemView.setOnLongClickListener { v: View? ->
             longPressedItem = item
             longPressedPosition = holder.bindingAdapterPosition
             false
-        })
+        }
         holder.itemView.setOnTouchListener(View.OnTouchListener { v: View?, e: MotionEvent ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if (e.isFromSource(InputDevice.SOURCE_MOUSE)
@@ -163,7 +163,7 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) : SelectableAdapte
     protected val activity: Activity?
         get() = mainActivityRef.get()
 
-    @UnstableApi override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo) {
+    @UnstableApi override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
         val inflater: MenuInflater = mainActivityRef.get()!!.menuInflater
         if (inActionMode()) {
             inflater.inflate(R.menu.multi_select_context_popup, menu)
@@ -194,7 +194,7 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) : SelectableAdapte
 
     val selectedItems: List<Any>
         get() {
-            val items: MutableList<FeedItem> = ArrayList<FeedItem>()
+            val items: MutableList<FeedItem> = ArrayList()
             for (i in 0 until itemCount) {
                 if (isSelected(i)) {
                     items.add(getItem(i))

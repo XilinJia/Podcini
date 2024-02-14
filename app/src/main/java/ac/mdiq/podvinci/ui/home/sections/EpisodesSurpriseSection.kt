@@ -44,7 +44,7 @@ class EpisodesSurpriseSection : HomeSection() {
             loadItems()
         }
         listAdapter = object : HorizontalItemListAdapter(activity as MainActivity) {
-            override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo) {
+            override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
                 super.onCreateContextMenu(menu, v, menuInfo)
                 MenuItemUtils.setOnClickListeners(menu
                 ) { item: MenuItem ->

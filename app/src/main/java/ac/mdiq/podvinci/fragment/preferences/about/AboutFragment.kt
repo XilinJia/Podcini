@@ -42,7 +42,7 @@ class AboutFragment : PreferenceFragmentCompat() {
             }
         findPreference<Preference>("about_privacy_policy")!!.onPreferenceClickListener =
             Preference.OnPreferenceClickListener { preference: Preference? ->
-                openInBrowser(requireContext(), "https://github.com/XilinJia/PodVinci/PrivacyPolicy.md")
+                openInBrowser(requireContext(), "https://github.com/XilinJia/PodVinci/blob/main/PrivacyPolicy.md")
                 true
             }
         findPreference<Preference>("about_licenses")!!.onPreferenceClickListener =

@@ -2,8 +2,14 @@
 <libraries>
     <library
         name="PodVinci"
-        author="The PodVinci team"
-        website="https://github.com/PodVinci/PodVinci"
+        author="Xilin Jia"
+        website="https://github.com/XilinJia/PodVinci"
+        license="GPL-3.0"
+        licenseText="LICENSE.txt" />
+    <library
+        name="AntennaPod"
+        author="The AntennaPod team"
+        website="https://github.com/AntennaPod/AntennaPod"
         license="GPL-3.0"
         licenseText="LICENSE.txt" />
     <library

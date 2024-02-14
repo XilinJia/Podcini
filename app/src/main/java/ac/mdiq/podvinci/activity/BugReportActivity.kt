@@ -57,7 +57,7 @@ class BugReportActivity : AppCompatActivity() {
 
         findViewById<View>(R.id.btn_open_bug_tracker).setOnClickListener { v: View? ->
             openInBrowser(
-                this@BugReportActivity, "https://github.com/PodVinci/PodVinci/issues")
+                this@BugReportActivity, "https://github.com/XilinJia/PodVinci/issues")
         }
 
         findViewById<View>(R.id.btn_copy_log).setOnClickListener { v: View? ->

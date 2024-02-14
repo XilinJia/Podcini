@@ -32,9 +32,8 @@ class MainPreferencesFragment : PreferenceFragmentCompat() {
         // This means that your application needs to be open-source under the GPL, too.
         // It must also include a prominent copyright notice.
         val packageHash = requireContext().packageName.hashCode()
-        if (packageHash != 1790437538 && packageHash != -1190467065) {
-            findPreference<Preference>(PREF_CATEGORY_PROJECT)!!.isVisible =
-                false
+        if (packageHash != -78111265 && packageHash != -1765048956) {
+            findPreference<Preference>(PREF_CATEGORY_PROJECT)!!.isVisible = false
             val copyrightNotice = Preference(requireContext())
             copyrightNotice.setIcon(R.drawable.ic_info_white)
             copyrightNotice.icon!!.mutate().colorFilter = PorterDuffColorFilter(-0x340000, PorterDuff.Mode.MULTIPLY)
@@ -42,16 +41,14 @@ class MainPreferencesFragment : PreferenceFragmentCompat() {
                     + " The PodVinci team does NOT provide support for this unofficial version."
                     + " If you can read this message, the developers of this modification"
                     + " violate the GNU General Public License (GPL).")
-            findPreference<Preference>(PREF_CATEGORY_PROJECT)!!.parent!!
-                .addPreference(copyrightNotice)
-        } else if (packageHash == -1190467065) {
+            findPreference<Preference>(PREF_CATEGORY_PROJECT)!!.parent!!.addPreference(copyrightNotice)
+        } else if (packageHash == -1765048956) {
             val debugNotice = Preference(requireContext())
             debugNotice.setIcon(R.drawable.ic_info_white)
             debugNotice.icon!!.mutate().colorFilter = PorterDuffColorFilter(-0x340000, PorterDuff.Mode.MULTIPLY)
             debugNotice.order = -1
             debugNotice.summary = "This is a development version of PodVinci and not meant for daily use"
-            findPreference<Preference>(PREF_CATEGORY_PROJECT)!!.parent!!
-                .addPreference(debugNotice)
+            findPreference<Preference>(PREF_CATEGORY_PROJECT)!!.parent!!.addPreference(debugNotice)
         }
     }
 

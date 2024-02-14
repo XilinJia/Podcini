@@ -50,9 +50,9 @@
   <string name="home_continue_title">Jarraitu entzuten</string>
   <string name="home_new_title">Ikusi berriak</string>
   <string name="home_downloads_title">Kudeatu deskargak</string>
-  <string name="home_welcome_title">Ongi etorri AntennaPod-era!</string>
+  <string name="home_welcome_title">Ongi etorri PodVinci-era!</string>
   <string name="home_welcome_text">Oraindik ez zara harpidetu podcast bakar batera ere. Ireki alboko menua podcast bat gehitzeko.</string>
-  <string name="notification_permission_text">AntennaPodek zure baimena behar du jakinarazpenak bistaratzeko. Modu lehenetsian AntennaPodek bi kasutan soilik erakusten ditu jakinarazpenak: zerbait deskargatu bitartean edo zerbait oker doanean.</string>
+  <string name="notification_permission_text">PodVinciek zure baimena behar du jakinarazpenak bistaratzeko. Modu lehenetsian PodVinciek bi kasutan soilik erakusten ditu jakinarazpenak: zerbait deskargatu bitartean edo zerbait oker doanean.</string>
   <string name="notification_permission_denied">Baimena ukatu duzu.</string>
   <string name="deny_label">Ukatu</string>
   <string name="open_settings">Ireki ezarpenak</string>
@@ -270,7 +270,7 @@
   <string name="download_type_feed">Jarioa</string>
   <string name="download_type_media">Multimedia fitxategia</string>
   <string name="null_value_podcast_error">Ez da erakutsi zitekeen podcast-ik eman.</string>
-  <string name="no_feed_url_podcast_found_by_search">Iradokitako podcastak ez zuen RSS estekarik, AntennaPodek bat etor zitekeen podcast bat aurkitu du</string>
+  <string name="no_feed_url_podcast_found_by_search">Iradokitako podcastak ez zuen RSS estekarik, PodVinciek bat etor zitekeen podcast bat aurkitu du</string>
   <string name="authentication_notification_title">Egiaztatzea beharrezkoa da</string>
   <string name="confirm_mobile_download_dialog_download_later">Deskargatu beranduago</string>
   <string name="confirm_mobile_download_dialog_allow_this_time">Deskargatu hala ere</string>
@@ -284,7 +284,7 @@
   <string name="playback_error_source">Ezinezkoa da fitxategia atzematea</string>
   <string name="playback_error_unknown">Errore ezezaguna</string>
   <string name="no_media_playing_label">Ez dago ezer erreproduzitzen</string>
-  <string name="unknown_media_key">AntennaPod - Media tekla ezezaguna: %1$d</string>
+  <string name="unknown_media_key">PodVinci - Media tekla ezezaguna: %1$d</string>
   <string name="error_file_not_found">Ez da fitxategirik aurkitu</string>
   <string name="no_media_label">Elementuak ez du multimedia fitxategirik</string>
   <!--Queue operations-->
@@ -456,7 +456,7 @@
   <string name="pref_contribute">Lagundu</string>
   <!--About screen-->
   <string name="about_pref">Honi buruz</string>
-  <string name="antennapod_version">AntennaPod bertsioa</string>
+  <string name="podvinci_version">PodVinci bertsioa</string>
   <string name="contributors">Laguntzaileak</string>
   <string name="contributors_summary">Denek lagun dezakete gure foroan kodea, itzulpenak edo erabiltzaileei laguntza emanez.</string>
   <string name="developers">Garatzaileak</string>
@@ -464,7 +464,7 @@
   <string name="special_thanks">Esker bereziak</string>
   <string name="privacy_policy">Pribatutasun politika</string>
   <string name="licenses">Baimenak</string>
-  <string name="licenses_summary">AntennaPod-ek beste software ezin hobeak erabiltzen ditu</string>
+  <string name="licenses_summary">PodVinci-ek beste software ezin hobeak erabiltzen ditu</string>
   <!--Search-->
   <string name="search_status_no_results">Ez da emaitzarik aurkitu</string>
   <string name="type_to_search">Idatzi kontsulta bilatzeko</string>
@@ -489,7 +489,7 @@
   <string name="opml_export_summary">Zure harpidetzak podcast-en beste aplikazio batera transferitu</string>
   <string name="opml_import_summary">Ekarri zure harpidetzak podcast-en beste aplikazio batetik</string>
   <string name="database_export_summary">Bidali beste gailu batera harpidetzak, ikusitako saioak eta irakur zerrenda</string>
-  <string name="database_import_summary">Ekarri AntennaPodera datu basea beste gailu batetik</string>
+  <string name="database_import_summary">Ekarri PodVinciera datu basea beste gailu batetik</string>
   <string name="opml_import_label">Inportatu OPMLtik</string>
   <string name="opml_add_podcast_label">Podcasten zerrenda inportatu (OPML)</string>
   <string name="opml_reader_error">Errorea OPML dokkumentua irakurtzean:</string>
@@ -506,8 +506,8 @@
   <string name="export_success_title">Esportatzea ongi burutu da</string>
   <string name="opml_import_ask_read_permission">Kanpo biltegiratzerako sarbidea behar duzu OPML fitxategia irakurtzeko</string>
   <string name="successful_import_label">Inportate arrakastatsua</string>
-  <string name="import_ok">Sakatu OK AntennaPod berrabiarazteko</string>
-  <string name="import_no_downgrade">Datu-basea AntennaPod-en bertsio berriago batekin esportatu zen. Uneko aplikazioak ez daki fitxategi hori nola inportatu.</string>
+  <string name="import_ok">Sakatu OK PodVinci berrabiarazteko</string>
+  <string name="import_no_downgrade">Datu-basea PodVinci-en bertsio berriago batekin esportatu zen. Uneko aplikazioak ez daki fitxategi hori nola inportatu.</string>
   <string name="favorites_export_label">Gogokoak esportatu</string>
   <string name="favorites_export_summary">Esportatu gordetako gogokoak fitxategian</string>
   <!--Sleep timer-->
@@ -539,20 +539,20 @@
   <string name="synchronization_choose_title">Aukeratu sinkronizazio-hornitzailea</string>
   <string name="synchronization_summary_unchoosen">Hainbat hornitzaileren artean hauta dezakezu zure harpidetzak sinkronizatzeko eta kapituluen jokoaren egoera</string>
   <string name="dialog_choose_sync_service_title">Aukeratu sinkronizazio-hornitzailea</string>
-  <string name="gpodnet_description">Gpodder.net kode irekiko podcastak sinkronizatzeko zerbitzu bat da, zure zerbitzarian bertan instala dezakezuna. Gpodder.net AntennaPod proiektutik independentea da.</string>
-  <string name="synchronization_summary_nextcloud">Gpoddersync kode irekiko Nextcloud aplikazio bat da, zure zerbitzarian erraz instala dezakezuna. Aplikazioa ez dator bat AntennaPod proiektuarekin.</string>
+  <string name="gpodnet_description">Gpodder.net kode irekiko podcastak sinkronizatzeko zerbitzu bat da, zure zerbitzarian bertan instala dezakezuna. Gpodder.net PodVinci proiektutik independentea da.</string>
+  <string name="synchronization_summary_nextcloud">Gpoddersync kode irekiko Nextcloud aplikazio bat da, zure zerbitzarian erraz instala dezakezuna. Aplikazioa ez dator bat PodVinci proiektuarekin.</string>
   <string name="synchronization_host_label">Zerbitzariaren helbidea</string>
-  <string name="synchronization_nextcloud_authenticate_browser">Eman sarbidea web nabigatzaile irekiaren bidez eta itzuli AntennaPodera.</string>
+  <string name="synchronization_nextcloud_authenticate_browser">Eman sarbidea web nabigatzaile irekiaren bidez eta itzuli PodVinciera.</string>
   <string name="gpodnetauth_login_butLabel">Hasi saioa</string>
   <string name="gpodnetauth_encryption_warning">Pasahitza eta datuak ez daude enkriptaturik!</string>
   <string name="username_label">Erabioltzailea</string>
   <string name="password_label">Pasahitza</string>
   <string name="synchronization_login_butLabel">Hasi saioa</string>
   <string name="gpodnetauth_device_name">Gailuaren izena</string>
-  <string name="gpodnetauth_device_name_default">AntennaPod aktibatuta %1$s</string>
+  <string name="gpodnetauth_device_name_default">PodVinci aktibatuta %1$s</string>
   <string name="gpodnetauth_existing_devices">Dauden gailuak</string>
   <string name="gpodnetauth_create_device">Sortu gailua</string>
-  <string name="gpodnetauth_finish_descr">Zorionak! Zure gpodder.net kontua zure gailuarekin lotuta dago orain. Hemendik aurrera, AntennaPodek automatikoki sinkronizatuko ditu zure gailuaren harpidetzak bzure gpodder.net kontuarekin.</string>
+  <string name="gpodnetauth_finish_descr">Zorionak! Zure gpodder.net kontua zure gailuarekin lotuta dago orain. Hemendik aurrera, PodVinciek automatikoki sinkronizatuko ditu zure gailuaren harpidetzak bzure gpodder.net kontuarekin.</string>
   <string name="gpodnetauth_finish_butsyncnow">Hasi sinkronizazioa orain</string>
   <string name="pref_gpodnet_setlogin_information_title">Aldatu saio hasieraren informazioa</string>
   <string name="pref_gpodnet_setlogin_information_sum">Aldatu saio hasierako datuak zure gpodder.net-en kontuan.</string>
@@ -570,7 +570,7 @@
   <string name="gpodnetsync_username_characters_error">Erabiltzaile-izenek letrak, digitu, erdiko gidoi eta gidoi baxuak baino ezin dituzte eduki.</string>
   <!--Directory chooser-->
   <string name="choose_data_directory">Aukeratu datu-karpeta</string>
-  <string name="choose_data_directory_message">Aukeratu datuen karpetaren erroa. AntennaPod-ek azpidirektorio egokiak sortuko ditu.</string>
+  <string name="choose_data_directory_message">Aukeratu datuen karpetaren erroa. PodVinci-ek azpidirektorio egokiak sortuko ditu.</string>
   <string name="choose_data_directory_available_space">%1$s  %2$s -tik libre</string>
   <string name="pref_pausePlaybackForFocusLoss_sum">Bolumena jaitsi beharrean erreprodukzioa geldiarazi beste aplikazio batek soinuak erreproduzitzen dituenean</string>
   <!--Online feed view-->
@@ -607,7 +607,7 @@
   <string name="episode_filters_description">Saio bat deskarga automatikotik kanpo utzi behar den edo ez erabakitzeko erabilitako terminoen zerrenda</string>
   <string name="keep_updated">Mantendu eguneratuta</string>
   <string name="keep_updated_summary">Eguneratu podcast hau ere podcast guztiak (auto-)eguneratzean</string>
-  <string name="auto_download_disabled_globally">Deskarga automatikoa desgaituta dago AntennaPod-en lehentasun orokorretan</string>
+  <string name="auto_download_disabled_globally">Deskarga automatikoa desgaituta dago PodVinci-en lehentasun orokorretan</string>
   <string name="statistics_time_played">Jokatutako denbora:</string>
   <string name="statistics_total_duration">Iraupena guztira (zenbatespena):</string>
   <string name="statistics_episodes_on_device">Gailuko saioak:</string>
@@ -615,7 +615,7 @@
   <string name="statistics_episodes_started_total">Hasitako kapituluak/guztira:</string>
   <string name="statistics_view_all">Podcast guztietarako ikusi »</string>
   <string name="edit_url_menu">Editatu jarioaren URLa</string>
-  <!--AntennaPodSP-->
+  <!--PodVinciSP-->
   <string name="sp_apps_importing_feeds_msg">Berariazko erabilerako aplikazioen harpidetzak inportatuz …</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">Bilatu podcasta</string>
@@ -638,7 +638,7 @@
   <string name="local_folder">Tokiko karpeta</string>
   <string name="reconnect_local_folder">Birkonektatu tokiko karpeta</string>
   <string name="reconnect_local_folder_warning">Baimenik izan ezean, hau erabil dezakezu karpeta berdina birkonektatzeko. Ez aukeratu beste karpetarik.</string>
-  <string name="local_feed_description">Podcast birtual hau AntennaPod-i karpeta bat gehituta sortu da</string>
+  <string name="local_feed_description">Podcast birtual hau PodVinci-i karpeta bat gehituta sortu da</string>
   <string name="unable_to_start_system_file_manager">Ezin da sistemaren fitxategi-kudeatzailea abiarazi</string>
   <string name="filter">Iragazia</string>
   <string name="hide_is_favorite_label">Gogokoa da</string>

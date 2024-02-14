@@ -51,9 +51,9 @@
   <string name="home_continue_title">Pokračovať v počúvaní</string>
   <string name="home_new_title">Zistiť čo je nové</string>
   <string name="home_downloads_title">Správa sťahovania</string>
-  <string name="home_welcome_title">Vitajte v AntennaPod!</string>
+  <string name="home_welcome_title">Vitajte v PodVinci!</string>
   <string name="home_welcome_text">Nie Ste ešte prihlásený na odber žiadneho podcastu. Otvorte bočné menu aby Ste pridali podcast.</string>
-  <string name="notification_permission_text">AntennaPod potrebuje vaše povolenie na zobrazovanie upozornení. V predvolenom nastavení AntennaPod zobrazuje upozornenia iba vtedy, keď sa niečo sťahuje alebo keď sa niečo nepodarí.</string>
+  <string name="notification_permission_text">PodVinci potrebuje vaše povolenie na zobrazovanie upozornení. V predvolenom nastavení PodVinci zobrazuje upozornenia iba vtedy, keď sa niečo sťahuje alebo keď sa niečo nepodarí.</string>
   <string name="notification_permission_denied">Odmietli ste povolenie.</string>
   <string name="notification_permission_deny_warning">Ak vypnete upozornenia a niečo sa nepodarí, možno nebudete môcť zistiť, prečo sa to nepodarilo.</string>
   <string name="deny_label">Odmietnuť</string>
@@ -274,7 +274,7 @@
   <string name="skip_episode_label">Preskočiť epizódu</string>
   <string name="reset_position">Obnoviť pozíciu prehrávania</string>
   <string name="no_items_selected">Nie sú vybrané žiadne položky</string>
-  <string name="delete_local_feed_warning_body">Mazanie odstráni epizódu z AntennaPod a zmaže mediálny súbor z úložiska vášho zariadenia. Nedá sa znova stiahnuť cez AntennaPod.</string>
+  <string name="delete_local_feed_warning_body">Mazanie odstráni epizódu z PodVinci a zmaže mediálny súbor z úložiska vášho zariadenia. Nedá sa znova stiahnuť cez PodVinci.</string>
   <!--Download messages and labels-->
   <string name="download_successful">dokončené</string>
   <string name="download_pending">Čakajúce sťahovania</string>
@@ -318,10 +318,10 @@
   <string name="download_type_feed">Zdroj</string>
   <string name="download_type_media">Mediálny súbor</string>
   <string name="null_value_podcast_error">Nebol poskytnutý žiadny podcast, ktorý by mohol byť zobrazený.</string>
-  <string name="no_feed_url_podcast_found_by_search">Navrhovaný podcast nemal RSS link, AntennaPod našiel podcast, ktorý by sa mohol zhodovať. </string>
+  <string name="no_feed_url_podcast_found_by_search">Navrhovaný podcast nemal RSS link, PodVinci našiel podcast, ktorý by sa mohol zhodovať. </string>
   <string name="authentication_notification_title">Vyžaduje sa overenie</string>
   <string name="confirm_mobile_download_dialog_title">Potvrďte sťahovanie cez mobilné dáta</string>
-  <string name="confirm_mobile_download_dialog_message">Sťahovanie cez mobilné dáta je zakázané v nastaveniach. AntennaPod môže  automaticky stiahnuť epizódu neskôr, keď bude k dispozícii Wi-Fi.</string>
+  <string name="confirm_mobile_download_dialog_message">Sťahovanie cez mobilné dáta je zakázané v nastaveniach. PodVinci môže  automaticky stiahnuť epizódu neskôr, keď bude k dispozícii Wi-Fi.</string>
   <string name="confirm_mobile_download_dialog_message_vpn">Vaša VPN aplikácia predstiera, že je mobilná sieť (merané pripojenie). Sťahovanie cez mobilné dátové pripojenie je v nastaveniach zakázané. Ak chcete, aby bol tento problém vyriešený, kontaktujte tvorcov vašej VPN aplikácie.</string>
   <string name="confirm_mobile_download_dialog_download_later">Stiahnuť neskôr</string>
   <string name="confirm_mobile_download_dialog_allow_this_time">Napriek tomu stiahnuť</string>
@@ -337,7 +337,7 @@
   <string name="playback_error_source">Nie je prístup k mediálnemu súboru</string>
   <string name="playback_error_unknown">Neznáma chyba</string>
   <string name="no_media_playing_label">Neprebieha žiadne prehrávanie</string>
-  <string name="unknown_media_key">AntennaPod - Neznámy kľúč médií: %1$d</string>
+  <string name="unknown_media_key">PodVinci - Neznámy kľúč médií: %1$d</string>
   <string name="error_file_not_found">Súbor nenájdený</string>
   <string name="no_media_label">Položka neobsahuje mediálny súbor</string>
   <!--Queue operations-->
@@ -415,7 +415,7 @@
   <string name="pref_auto_delete_title">Automatické mazanie</string>
   <string name="pref_auto_local_delete_title">Automatické mazanie z lokálnych priečinkov</string>
   <string name="pref_auto_local_delete_sum">Zahrnúť lokálne priečinky do funkcie Automatického mazania</string>
-  <string name="pref_auto_local_delete_dialog_body">Vezmite na vedomie, že toto pre lokálne priečinky odstráni epizódy z AntennaPod a zmaže ich mediálne súbory z úložiska vášho zariadenia. Nedajú sa znova stiahnuť cez AntennaPod. Povoliť automatické mazanie?</string>
+  <string name="pref_auto_local_delete_dialog_body">Vezmite na vedomie, že toto pre lokálne priečinky odstráni epizódy z PodVinci a zmaže ich mediálne súbory z úložiska vášho zariadenia. Nedajú sa znova stiahnuť cez PodVinci. Povoliť automatické mazanie?</string>
   <string name="pref_smart_mark_as_played_sum">Označiť epizódy ako vypočuté aj pokiaľ ešte zostáva určitý počet sekúnd prehrávania do ich konca</string>
   <string name="pref_smart_mark_as_played_title">Inteligentné označovanie ako vypočuté</string>
   <string name="pref_skip_keeps_episodes_sum">Neodstraňovať epizódy pri ich preskočení</string>
@@ -427,7 +427,7 @@
   <string name="downloads_pref">Sťahovanie</string>
   <string name="downloads_pref_sum">Interval aktualizácie, Mobilné dáta, Automatické sťahovanie, Automatické mazanie</string>
   <string name="feed_refresh_title">Aktualizovať podcasty</string>
-  <string name="feed_refresh_sum">Zvoliť interval alebo čas v ktorom AntennaPod automaticky hľadá nové epizódy</string>
+  <string name="feed_refresh_sum">Zvoliť interval alebo čas v ktorom PodVinci automaticky hľadá nové epizódy</string>
   <string name="feed_refresh_never">Nikdy</string>
   <string name="feed_every_hour">Každú hodinu</string>
   <string name="feed_every_2_hours">Každé 2 hodiny</string>
@@ -520,7 +520,7 @@
   <string name="pref_skip_silence_title">Preskočiť ticho vo zvuku</string>
   <string name="behavior">Chovanie</string>
   <string name="pref_default_page">Predvolená strana</string>
-  <string name="pref_default_page_sum">Obrazovka, ktorá sa otvorí pri spúšťaní AntennaPod</string>
+  <string name="pref_default_page_sum">Obrazovka, ktorá sa otvorí pri spúšťaní PodVinci</string>
   <string name="pref_back_button_opens_drawer">Tlačidlo späť otvára navigačný panel</string>
   <string name="pref_back_button_opens_drawer_summary">Stlačením tlačidla späť na predvolenej stránke sa otvorí navigačný panel</string>
   <string name="remember_last_page">Pamätať poslednú stranu</string>
@@ -544,15 +544,15 @@
   <string name="pref_new_episodes_action_sum">Akcia, ktorú treba vykonať pre nové epizódy</string>
   <!--About screen-->
   <string name="about_pref">O aplikácii</string>
-  <string name="antennapod_version">Verzia AntennaPod</string>
+  <string name="podvinci_version">Verzia PodVinci</string>
   <string name="contributors">Prispievatelia</string>
-  <string name="contributors_summary">Každý môže pomôcť zlepšiť AntennaPod - programovaním, prekladmi alebo pomáhaním používateľom na našom fóre</string>
+  <string name="contributors_summary">Každý môže pomôcť zlepšiť PodVinci - programovaním, prekladmi alebo pomáhaním používateľom na našom fóre</string>
   <string name="developers">Vývojári</string>
   <string name="translators">Prekladatelia</string>
   <string name="special_thanks">Špeciálne poďakovanie</string>
   <string name="privacy_policy">Zásady ochrany osobných údajov</string>
   <string name="licenses">Licencie</string>
-  <string name="licenses_summary">AntennaPod používa ďalší skvelý softvér</string>
+  <string name="licenses_summary">PodVinci používa ďalší skvelý softvér</string>
   <!--Search-->
   <string name="search_status_no_results">Neboli nájdené žiadne výsledky</string>
   <string name="type_to_search">Zadajte dopyt, ktorý chcete vyhľadať</string>
@@ -576,8 +576,8 @@
   <string name="html_export_summary">Ukázať svoje odbery priateľovi</string>
   <string name="opml_export_summary">Preniesť svoje odbery do inej podcastovej aplikácie</string>
   <string name="opml_import_summary">Importovať svoje odbery z inej podcastovej aplikácie</string>
-  <string name="database_export_summary">Preniesť odbery, počúvané epizódy a poradie do AntennaPodu v inom zariadení</string>
-  <string name="database_import_summary">Importovať databázu AntennaPod z iného zariadenia</string>
+  <string name="database_export_summary">Preniesť odbery, počúvané epizódy a poradie do PodVinciu v inom zariadení</string>
+  <string name="database_import_summary">Importovať databázu PodVinci z iného zariadenia</string>
   <string name="opml_import_label">Import OPML</string>
   <string name="opml_add_podcast_label">Importovať zoznam podcastov (OPML)</string>
   <string name="opml_reader_error">Pri načítaní súboru OPML sa vyskytla chyba:</string>
@@ -594,8 +594,8 @@
   <string name="export_success_title">Export bol úspešný</string>
   <string name="opml_import_ask_read_permission">Na načítanie súboru OPML je potrebný prístup k externému úložisku</string>
   <string name="successful_import_label">Import úspešný</string>
-  <string name="import_ok">Reštartujte AntennaPod stlačením tlačidla OK</string>
-  <string name="import_no_downgrade">Táto databáza bola exportovaná s novšou verziou programu AntennaPod. Vaša aktuálna inštalácia zatiaľ nevie, ako s týmto súborom zaobchádzať.</string>
+  <string name="import_ok">Reštartujte PodVinci stlačením tlačidla OK</string>
+  <string name="import_no_downgrade">Táto databáza bola exportovaná s novšou verziou programu PodVinci. Vaša aktuálna inštalácia zatiaľ nevie, ako s týmto súborom zaobchádzať.</string>
   <string name="favorites_export_label">Export obľúbených položiek</string>
   <string name="favorites_export_summary">Exportovať uložené obľúbené položky do súboru</string>
   <!--Sleep timer-->
@@ -642,12 +642,12 @@
   <string name="synchronization_choose_title">Vyberte si poskytovateľa synchronizácie</string>
   <string name="synchronization_summary_unchoosen">Môžete si vybrať viacerých poskytovateľov na synchronizáciu vašich odberov a stavu prehratia epizódy</string>
   <string name="dialog_choose_sync_service_title">Vyberte si poskytovateľa synchronizácie</string>
-  <string name="gpodnet_description">Gpodder.net je open-source služba na synchronizáciu podcastov, ktorú si môžete nainštalovať na váš vlastný server. Gpodder.net je samostatný projekt a nezávisí na projekte AntennaPod.</string>
-  <string name="synchronization_summary_nextcloud">Gpoddersync je open-source Nexcloud-ová aplikácia, ktorú si viete ľahko nainštalovať na Váš vlastný server. Aplikácia je nezávislá od projektu AntennaPod.</string>
+  <string name="gpodnet_description">Gpodder.net je open-source služba na synchronizáciu podcastov, ktorú si môžete nainštalovať na váš vlastný server. Gpodder.net je samostatný projekt a nezávisí na projekte PodVinci.</string>
+  <string name="synchronization_summary_nextcloud">Gpoddersync je open-source Nexcloud-ová aplikácia, ktorú si viete ľahko nainštalovať na Váš vlastný server. Aplikácia je nezávislá od projektu PodVinci.</string>
   <string name="synchronization_host_explanation">Môžete si vybrať svoj vlastný server na synchronizáciu. Keď budete mať identifikovaný preferovaný server na synchronizáciu, tak prosím napíšte jeho adresu sem.</string>
   <string name="synchronization_host_label">Adresa servera</string>
   <string name="proceed_to_login_butLabel">Pokračujte na prihlásenie</string>
-  <string name="synchronization_nextcloud_authenticate_browser">Udeľte prístup použitím otvoreného webového prehliadača a vráťte sa späť k AntennaPod.</string>
+  <string name="synchronization_nextcloud_authenticate_browser">Udeľte prístup použitím otvoreného webového prehliadača a vráťte sa späť k PodVinci.</string>
   <string name="gpodnetauth_login_butLabel">Prihlásiť sa</string>
   <string name="synchronization_credentials_explanation">Prosím, poskytnite poverenia Vášho účtu na synchronizačnom serveri.</string>
   <string name="gpodnetauth_encryption_warning">Heslo a údaje nie sú šifrované!</string>
@@ -656,10 +656,10 @@
   <string name="synchronization_login_butLabel">Prihlásiť sa</string>
   <string name="synchronization_selectDevice_explanation">Prosím, vyberte zariadenie, ktoré Ste vytvorili na synchronizačnom serveri alebo vytvorte nové.</string>
   <string name="gpodnetauth_device_name">Názov zariadenia</string>
-  <string name="gpodnetauth_device_name_default">AntennaPod na %1$s</string>
+  <string name="gpodnetauth_device_name_default">PodVinci na %1$s</string>
   <string name="gpodnetauth_existing_devices">Existujúce zariadenia</string>
   <string name="gpodnetauth_create_device">Vytvoriť zariadenie</string>
-  <string name="gpodnetauth_finish_descr">Gratulujeme! Váš gpodder.net účet je teraz prepojený s vašim zariadením. AntennaPod bude odteraz automaticky synchronizovať odbery vo vašom zariadení s vašim gpodder.net účtom.</string>
+  <string name="gpodnetauth_finish_descr">Gratulujeme! Váš gpodder.net účet je teraz prepojený s vašim zariadením. PodVinci bude odteraz automaticky synchronizovať odbery vo vašom zariadení s vašim gpodder.net účtom.</string>
   <string name="gpodnetauth_finish_butsyncnow">Spustiť synchronizáciu teraz</string>
   <string name="pref_gpodnet_setlogin_information_title">Zmena prihlasovacích údajov</string>
   <string name="pref_gpodnet_setlogin_information_sum">Zmení prihlasovacie údaje k vášmu gpodder.net účtu.</string>
@@ -677,7 +677,7 @@
   <string name="gpodnetsync_username_characters_error">Používateľské mená môžu obsahovať iba písmena, číslice, spojovníky a podčiarkovníky.</string>
   <!--Directory chooser-->
   <string name="choose_data_directory">Zvoľte priečinok s údajmi</string>
-  <string name="choose_data_directory_message">Zvoľte koreňový priečinok s údajmi. AntennaPod vytvorí príslušné podadresáre.</string>
+  <string name="choose_data_directory_message">Zvoľte koreňový priečinok s údajmi. PodVinci vytvorí príslušné podadresáre.</string>
   <string name="choose_data_directory_available_space">%1$s z %2$s voľných</string>
   <string name="pref_pausePlaybackForFocusLoss_sum">Keď chce iná aplikácia prehrávať zvuky, namiesto zníženia hlasitosti pozastavte prehrávanie</string>
   <string name="pref_pausePlaybackForFocusLoss_title">Pozastaviť kvôli prerušeniam</string>
@@ -723,7 +723,7 @@
   <string name="exclude_episodes_shorter_than">Vynechať epizódy kratšie ako</string>
   <string name="keep_updated">Priebežne aktualizovať</string>
   <string name="keep_updated_summary">Zahrnúť tento podcast pri (automatickej) obnove všetkých podcastov</string>
-  <string name="auto_download_disabled_globally">Automatické sťahovanie je zakázané v hlavných nastaveniach AntennaPodu</string>
+  <string name="auto_download_disabled_globally">Automatické sťahovanie je zakázané v hlavných nastaveniach PodVinciu</string>
   <string name="statistics_time_played">Doba prehrávania:</string>
   <string name="statistics_total_duration">Celková dĺžka trvania (odhad):</string>
   <string name="statistics_episodes_on_device">Epizód v zariadení:</string>
@@ -732,7 +732,7 @@
   <string name="statistics_view_all">Zobraziť všetky podcasty »</string>
   <string name="edit_url_menu">Upraviť URL adresu informačného kanála</string>
   <string name="edit_url_confirmation_msg">Zmena RSS adresy môže ľahko pokaziť štádium prehrávania a zoznam epizód podcastu. NEdoporučujeme ju meniť a ani NEbudeme poskytovať podporu v prípade, že sa niečo pokazí. Zmeny sa nedajú vrátiť. Pokazený odber sa NEDÁ opraviť jednoduchým prepísaním adresy späť. Doporučujeme vytvorenie zálohy pred pokračovaním.</string>
-  <!--AntennaPodSP-->
+  <!--PodVinciSP-->
   <string name="sp_apps_importing_feeds_msg">Imporovať odbery z jednoúčelových aplikácií…</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">Hľadať podcast…</string>
@@ -755,7 +755,7 @@
   <string name="local_folder">Lokálny priečinok</string>
   <string name="reconnect_local_folder">Znova pripojiť lokálny priečinok</string>
   <string name="reconnect_local_folder_warning">V prípade zamietnutia povolenia môžete toto použiť na opätovné pripojenie k presne rovnakému priečinku. Nevyberajte iný priečinok.</string>
-  <string name="local_feed_description">Tento virtuálny podcast bol vytvorený pridaním priečinka do programu AntennaPod.</string>
+  <string name="local_feed_description">Tento virtuálny podcast bol vytvorený pridaním priečinka do programu PodVinci.</string>
   <string name="unable_to_start_system_file_manager">Nie je možné spustiť systémového správcu súborov</string>
   <string name="filter">Filter</string>
   <string name="hide_is_favorite_label">Je v obľúbených</string>

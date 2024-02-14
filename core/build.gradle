@@ -7,7 +7,7 @@ apply from: "../common.gradle"
 apply from: "../playFlavor.gradle"
 
 android {
-    namespace "de.danoeh.antennapod.core"
+    namespace "ac.mdiq.podvinci.core"
 
     lint {
         disable "InvalidPeriodicWorkRequestInterval", "ObsoleteLintCustomCheck", "DefaultLocale", "UnusedAttribute",
@@ -18,7 +18,7 @@ android {
     defaultConfig {
         javaCompileOptions {
             annotationProcessorOptions {
-                arguments = [eventBusIndex: 'de.danoeh.antennapod.core.ApCoreEventBusIndex']
+                arguments = [eventBusIndex: 'ac.mdiq.podvinci.core.ApCoreEventBusIndex']
             }
         }
     }
@@ -107,6 +107,6 @@ dependencies {
 
 kapt {
     arguments {
-        arg('eventBusIndex', 'de.danoeh.antennapod.core.ApCoreEventBusIndex')
+        arg('eventBusIndex', 'ac.mdiq.podvinci.core.ApCoreEventBusIndex')
     }
 }

@@ -1,8 +1,8 @@
-Met AntennaPod speel en beheer je alle podcasts en krijg je directe toegang tot duizenden gratis en betaalde podcasts - van onafhankelijke makers tot grote merken zoals BBC, CNN en NPO. Via de iTunes-database, OPML-bestanden en simpele RSS-linkjes voeg je deze podcasts makkelijk toe.
+Met PodVinci speel en beheer je alle podcasts en krijg je directe toegang tot duizenden gratis en betaalde podcasts - van onafhankelijke makers tot grote merken zoals BBC, CNN en NPO. Via de iTunes-database, OPML-bestanden en simpele RSS-linkjes voeg je deze podcasts makkelijk toe.
 Download, stream of voeg afleveringen toe aan de wachtrij. Met instelbare afspeelsnelheden, hoofdstukondersteuning en een slaaptimer luister je podcasts op de manier die jij prettig vindt.
-Spaar moeite, je batterij en je databundel met slimme automatische controle op het downloaden van nieuwe afleveringen. En AntennaPod verwijdert ook je oude afleveringen, afhankelijk van je instellingen.
+Spaar moeite, je batterij en je databundel met slimme automatische controle op het downloaden van nieuwe afleveringen. En PodVinci verwijdert ook je oude afleveringen, afhankelijk van je instellingen.
 
-AntennaPod is gemaakt door podcast-enthousiastelingen. Het team van vrijwilligers bieden het gratis aan - vrij van advertenties en open source.
+PodVinci is gemaakt door podcast-enthousiastelingen. Het team van vrijwilligers bieden het gratis aan - vrij van advertenties en open source.
 
 <b>Importeren, organiseren en afspelen</b>
 • Beheer het afspelen op elke manier: met een homescreen widget, in je Android meldingen en via de knoppen op je koptelefoon en bluetooth-apparaat
@@ -21,11 +21,11 @@ AntennaPod is gemaakt door podcast-enthousiastelingen. Het team van vrijwilliger
 • Voel je een kameleon: kies voor een licht of donker uiterlijk
 • Back-up je abonnementen via gPodder.net en geëxporteerde OPML-bestanden
 
-<b>Doe mee met de AntennaPod-gemeenschap!</b>
-AntennaPod wordt regelmatig geüpdatet door vrijwilligers. En jij kan ook helpen, met code of commentaar!
+<b>Doe mee met de PodVinci-gemeenschap!</b>
+PodVinci wordt regelmatig geüpdatet door vrijwilligers. En jij kan ook helpen, met code of commentaar!
 
 De vriendelijke leden van ons forum helpen je graag met welke vraag dan ook. Deel gerust ook ideëen voor nieuwe functies of podcasts in het algemeen.
-https://forum.antennapod.org/
+https://forum.podvinci.org/
 
 Transifex is de beste plek om te helpen met vertalen:
-https://www.transifex.com/antennapod/antennapod
+https://www.transifex.com/podvinci/podvinci

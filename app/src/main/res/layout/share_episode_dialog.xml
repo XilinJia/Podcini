@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:text="@string/share_label"
         android:layout_marginBottom="8dp"
-        style="@style/AntennaPod.TextView.Heading" />
+        style="@style/PodVinci.TextView.Heading" />
 
     <RadioGroup
         android:id="@+id/share_dialog_radio_group"

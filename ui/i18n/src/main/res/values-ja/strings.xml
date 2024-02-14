@@ -38,7 +38,7 @@
   <string name="home_continue_title">続きを聴く</string>
   <string name="home_new_title">新着の確認</string>
   <string name="home_downloads_title">ダウンロードの管理</string>
-  <string name="home_welcome_title">ようこそ、AntennaPodへ！</string>
+  <string name="home_welcome_title">ようこそ、PodVinciへ！</string>
   <string name="home_welcome_text">現在、ポッドキャストを何も購読していません。サイドメニューを開いてポッドキャストを追加してください。</string>
   <string name="configure_home">ホーム画面の設定</string>
   <!--Download Statistics fragment-->
@@ -204,7 +204,7 @@
   <string name="download_type_feed">フィード</string>
   <string name="download_type_media">メディアファイル</string>
   <string name="null_value_podcast_error">表示できるポッドキャストがありません。</string>
-  <string name="no_feed_url_podcast_found_by_search">提案されたポッドキャストにはRSSリンクがありませんでしたが、AntennaPodは一致する可能性のあるポッドキャストを見つけました</string>
+  <string name="no_feed_url_podcast_found_by_search">提案されたポッドキャストにはRSSリンクがありませんでしたが、PodVinciは一致する可能性のあるポッドキャストを見つけました</string>
   <string name="authentication_notification_title">認証が必要です</string>
   <string name="confirm_mobile_streaming_notification_message">モバイルデータ接続でのストリーミングは設定で無効になっています。 タップするととにかくストリーミングします。</string>
   <string name="confirm_mobile_streaming_button_always">常に</string>
@@ -215,7 +215,7 @@
   <string name="playback_error_timeout">操作がタイムアウトしました</string>
   <string name="playback_error_source">メディアファイルにアクセスできません</string>
   <string name="no_media_playing_label">再生するメディアがありません</string>
-  <string name="unknown_media_key">AntennaPod - 不明なメディアキー: %1$d</string>
+  <string name="unknown_media_key">PodVinci - 不明なメディアキー: %1$d</string>
   <string name="error_file_not_found">ファイルが見つかりません</string>
   <string name="no_media_label">アイテムにメディアファイルが含まれていません</string>
   <!--Queue operations-->
@@ -345,16 +345,16 @@
   <string name="pref_feed_settings_dialog_msg">この設定は各ポッドキャストに固有のものです。ポッドキャストのページを開くと、変更することができます。</string>
   <string name="pref_contribute">貢献</string>
   <!--About screen-->
-  <string name="about_pref">AntennaPodについて</string>
-  <string name="antennapod_version">AntennaPod バージョン</string>
+  <string name="about_pref">PodVinciについて</string>
+  <string name="podvinci_version">PodVinci バージョン</string>
   <string name="contributors">貢献者</string>
-  <string name="contributors_summary">AntennaPodをより良いものにするために、誰もが、コードや翻訳、フォーラムでのユーザー支援などの協力を行えます。</string>
+  <string name="contributors_summary">PodVinciをより良いものにするために、誰もが、コードや翻訳、フォーラムでのユーザー支援などの協力を行えます。</string>
   <string name="developers">開発者</string>
   <string name="translators">翻訳者</string>
   <string name="special_thanks">スペシャルサンクス</string>
   <string name="privacy_policy">プライバシーポリシー</string>
   <string name="licenses">ライセンス</string>
-  <string name="licenses_summary">AntennaPodは他の優れたソフトウェアを使用しています</string>
+  <string name="licenses_summary">PodVinciは他の優れたソフトウェアを使用しています</string>
   <!--Search-->
   <string name="search_status_no_results">見つかりませんでした</string>
   <string name="type_to_search">検索ワードを入力してください</string>
@@ -377,8 +377,8 @@
   <string name="html_export_summary">あなたの購読を友だちに見せる</string>
   <string name="opml_export_summary">購読を別のポッドキャストアプリに転送する</string>
   <string name="opml_import_summary">別のポッドキャストアプリから購読をインポートする</string>
-  <string name="database_export_summary">購読、再生したエピソード、キューを別のデバイスのAntennaPodに転送する</string>
-  <string name="database_import_summary">AntennaPodデータベースを別のデバイスからインポートする</string>
+  <string name="database_export_summary">購読、再生したエピソード、キューを別のデバイスのPodVinciに転送する</string>
+  <string name="database_import_summary">PodVinciデータベースを別のデバイスからインポートする</string>
   <string name="opml_import_label">OPML インポート</string>
   <string name="opml_add_podcast_label">ポッドキャストリストのインポート (OPML)</string>
   <string name="opml_reader_error">OPMLドキュメントの読み込み中にエラーが発生しました:</string>
@@ -395,8 +395,8 @@
   <string name="export_success_title">エクスポートしました</string>
   <string name="opml_import_ask_read_permission">OPML ファイルを読み込むために、外部ストレージへのアクセスが必要です</string>
   <string name="successful_import_label">インポートしました</string>
-  <string name="import_ok">OKを押してAntennaPodを再起動してください</string>
-  <string name="import_no_downgrade">このデータベースは、AntennaPodの新しいバージョンでエクスポートされました。 現在インストールされたアプリでは、このファイルの処理方法がまだわかりません。</string>
+  <string name="import_ok">OKを押してPodVinciを再起動してください</string>
+  <string name="import_no_downgrade">このデータベースは、PodVinciの新しいバージョンでエクスポートされました。 現在インストールされたアプリでは、このファイルの処理方法がまだわかりません。</string>
   <string name="favorites_export_label">お気に入り エクスポート</string>
   <string name="favorites_export_summary">保存したお気に入りをファイルにエクスポートする</string>
   <!--Sleep timer-->
@@ -424,12 +424,12 @@
   <string name="synchronization_choose_title">同期プロバイダーを選択</string>
   <string name="synchronization_summary_unchoosen">複数のプロバイダーから選択して、購読とエピソードの再生状態を同期できます</string>
   <string name="dialog_choose_sync_service_title">同期プロバイダーの選択</string>
-  <string name="gpodnet_description">Gpodder.netは、自身のサーバーにインストールできるオープンソースのポッドキャスト同期サービスです。Gpodder.netは、AntennaPodプロジェクトから独立しています。</string>
-  <string name="synchronization_summary_nextcloud">Gpoddersyncは、自身のサーバーに簡単にインストールできるオープンソースのNextcloudアプリです。このアプリは、AntennaPodプロジェクトから独立しています。</string>
+  <string name="gpodnet_description">Gpodder.netは、自身のサーバーにインストールできるオープンソースのポッドキャスト同期サービスです。Gpodder.netは、PodVinciプロジェクトから独立しています。</string>
+  <string name="synchronization_summary_nextcloud">Gpoddersyncは、自身のサーバーに簡単にインストールできるオープンソースのNextcloudアプリです。このアプリは、PodVinciプロジェクトから独立しています。</string>
   <string name="synchronization_host_explanation">同期するサーバーを自分で選ぶことができます。同期したいサーバーが決まりましたら、そのアドレスをここに入力してください。</string>
   <string name="synchronization_host_label">サーバーアドレス</string>
   <string name="proceed_to_login_butLabel">ログインに進む</string>
-  <string name="synchronization_nextcloud_authenticate_browser">開いた Web ブラウザーを使用してアクセスを許可し、AntennaPod に戻ります。</string>
+  <string name="synchronization_nextcloud_authenticate_browser">開いた Web ブラウザーを使用してアクセスを許可し、PodVinci に戻ります。</string>
   <string name="gpodnetauth_login_butLabel">ログイン</string>
   <string name="synchronization_credentials_explanation">同期サーバー用のアカウント情報を提供してください。</string>
   <string name="gpodnetauth_encryption_warning">パスワードやデータは暗号化されません！</string>
@@ -438,10 +438,10 @@
   <string name="synchronization_login_butLabel">ログイン</string>
   <string name="synchronization_selectDevice_explanation">同期サーバーで作成したデバイスを選択するか、新しいデバイスを作成してください。</string>
   <string name="gpodnetauth_device_name">デバイス名</string>
-  <string name="gpodnetauth_device_name_default">%1$s の AntennaPod</string>
+  <string name="gpodnetauth_device_name_default">%1$s の PodVinci</string>
   <string name="gpodnetauth_existing_devices">既存のデバイス</string>
   <string name="gpodnetauth_create_device">デバイスの作成</string>
-  <string name="gpodnetauth_finish_descr">おめでとうございます！gpodder.netアカウントが今お使いのデバイスとリンクされました。 AntennaPodは今から自動的にgpodder.netアカウントを使用してデバイスの購読を同期します。</string>
+  <string name="gpodnetauth_finish_descr">おめでとうございます！gpodder.netアカウントが今お使いのデバイスとリンクされました。 PodVinciは今から自動的にgpodder.netアカウントを使用してデバイスの購読を同期します。</string>
   <string name="gpodnetauth_finish_butsyncnow">今すぐ同期を開始</string>
   <string name="pref_gpodnet_setlogin_information_title">ログイン情報を変更</string>
   <string name="pref_gpodnet_setlogin_information_sum">gpodder.netアカウントのログイン情報を変更します。</string>
@@ -458,7 +458,7 @@
   <string name="gpodnetsync_pref_report_failed">失敗しました</string>
   <string name="gpodnetsync_username_characters_error">ユーザー名には文字、数字、ハイフン、下線のみ含めることができます。</string>
   <!--Directory chooser-->
-  <string name="choose_data_directory_message">基本となるデータフォルダーを選択してください。AntennaPodは、適切なサブディレクトリを作成します。</string>
+  <string name="choose_data_directory_message">基本となるデータフォルダーを選択してください。PodVinciは、適切なサブディレクトリを作成します。</string>
   <string name="choose_data_directory_available_space">%1$s / %2$s 空き</string>
   <string name="pref_pausePlaybackForFocusLoss_sum">他のアプリがサウンドを再生したい時に、音量を下げる代わりに再生を一時停止します</string>
   <!--Online feed view-->
@@ -491,7 +491,7 @@
   <string name="include_terms">以下の用語のいずれかを含むエピソードのみを含める</string>
   <string name="exclude_episodes_shorter_than">指定時間より短いエピソードを除外する</string>
   <string name="keep_updated_summary">すべてのポッドキャストを (自動) 更新する時にこのポッドキャストを含めます</string>
-  <string name="auto_download_disabled_globally">メインの AntennaPod 設定で自動ダウンロードが無効になっています</string>
+  <string name="auto_download_disabled_globally">メインの PodVinci 設定で自動ダウンロードが無効になっています</string>
   <string name="statistics_time_played">再生時間:</string>
   <string name="statistics_total_duration">合計再生時間 (推定):</string>
   <string name="statistics_episodes_on_device">デバイス上のエピソード:</string>
@@ -500,7 +500,7 @@
   <string name="statistics_view_all">すべてのポッドキャストを表示 »</string>
   <string name="edit_url_menu">フィードのURLを編集</string>
   <string name="edit_url_confirmation_msg">RSSのアドレスを変更すると、ポッドキャストの再生状態とエピソードのリストが壊れてしまう可能性があります。RSSのアドレスを変更することはおすすめしません。何か問題が起きたとしてもサポートは提供されません。この変更は元に戻せません。アドレスを元に戻すだけでは壊れた購読を修復することはできません。続行する前にバックアップを作成することをおすすめします。</string>
-  <!--AntennaPodSP-->
+  <!--PodVinciSP-->
   <string name="sp_apps_importing_feeds_msg">単一目的のアプリから購読をインポート中…</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">ポッドキャストの検索…</string>
@@ -520,7 +520,7 @@
   <string name="local_folder">ローカルフォルダー</string>
   <string name="reconnect_local_folder">ローカルフォルダーの再接続</string>
   <string name="reconnect_local_folder_warning">権限が拒否された場合、これを使用して同じフォルダーに再接続できます。別のフォルダーを選択しないでください。</string>
-  <string name="local_feed_description">この仮想ポッドキャストは、AntennaPodにフォルダーを追加することによって作成されました。</string>
+  <string name="local_feed_description">この仮想ポッドキャストは、PodVinciにフォルダーを追加することによって作成されました。</string>
   <string name="unable_to_start_system_file_manager">システムのファイルマネージャーを起動できません</string>
   <string name="filter">フィルター</string>
   <string name="hide_is_favorite_label">お気に入り</string>

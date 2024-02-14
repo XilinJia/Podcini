@@ -1,8 +1,8 @@
-AntennaPod è un riproduttore e gestore di podcast che permette l'accesso immediato a milioni di podcast gratuiti e a pagamento, dai podcaster indipendenti alle grandi emittenti come BBC, NPR e CNN. Aggiungi, importa ed esporta i feed in modo semplice tramite il database di iTunes, i file OPML o i semplici indirizzi RSS.
+PodVinci è un riproduttore e gestore di podcast che permette l'accesso immediato a milioni di podcast gratuiti e a pagamento, dai podcaster indipendenti alle grandi emittenti come BBC, NPR e CNN. Aggiungi, importa ed esporta i feed in modo semplice tramite il database di iTunes, i file OPML o i semplici indirizzi RSS.
 Scarica, accoda o ascolta in streaming gli episodi e goditeli come preferisci grazie alla velocità di riproduzione modificabile, al supporto ai capitoli e al timer di spegnimento.
 Risparmia fatica, carica della batteria e dati grazie ai potenti controlli automatizzati per il download degli episodi (orari specifici, intervalli di tempo e reti WiFi specifiche) e l'eliminazione degli episodi (gestione dei preferiti e tempi di cancellazione).
 
-Creato da appassionati di podcast, AntennaPod è libero in tutti i sensi: open source, gratuito e senza pubblicità.
+Creato da appassionati di podcast, PodVinci è libero in tutti i sensi: open source, gratuito e senza pubblicità.
 
 <b>Importa, organizza e riproduci</b>
 • Gestisci la riproduzione ovunque: widget nella schermata home, tendina delle notifiche, cuffie e controlli Bluetooth.
@@ -21,11 +21,11 @@ Creato da appassionati di podcast, AntennaPod è libero in tutti i sensi: open s
 • Adattalo alle tue preferenze grazie ai temi chiaro o scuro.
 • Effettua il backup delle sottoscrizioni grazie all'integrazione con gPodder.net e all'esportazione in OPML.
 
-<b>Partecipa alla community di AntennaPod!</b>
-AntennaPod è sviluppato da volontari. Anche tu puoi contribuire, con il codice o con dei commenti!
+<b>Partecipa alla community di PodVinci!</b>
+PodVinci è sviluppato da volontari. Anche tu puoi contribuire, con il codice o con dei commenti!
 
 I simpatici membri del nostro forum sono felici di rispondere a qualsiasi domanda tu possa avere. Ti invitiamo anche a discutere di funzionalità e podcasting.
-https://forum.antennapod.org/
+https://forum.podvinci.org/
 
 Transifex è dove puoi contribuire alla traduzione:
-https://www.transifex.com/antennapod/antennapod
+https://www.transifex.com/podvinci/podvinci

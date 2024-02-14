@@ -23,7 +23,7 @@
         android:layout_marginBottom="16dp"
         android:ellipsize="end"
         android:lineHeight="20dp"
-        style="@style/AntennaPod.TextView.ListItemBody"
+        style="@style/PodVinci.TextView.ListItemBody"
         tools:text="@string/design_time_lorem_ipsum" />
 
     <TextView

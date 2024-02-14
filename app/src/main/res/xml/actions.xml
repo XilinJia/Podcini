@@ -1,7 +1,7 @@
 <?xml version ="1.0" encoding ="utf-8"?>
 <actions>
     <action intentName="actions.intent.OPEN_APP_FEATURE">
-        <fulfillment urlTemplate="https://antennapod.org/deeplink/main{?page}">
+        <fulfillment urlTemplate="https://podvinci.org/deeplink/main{?page}">
             <parameter-mapping intentParameter="feature" urlParameter="page" />
         </fulfillment>
         <parameter name="feature">
@@ -10,7 +10,7 @@
     </action>
 
     <action intentName="actions.intent.GET_THING">
-        <fulfillment urlTemplate="https://antennapod.org/deeplink/search{?query}">
+        <fulfillment urlTemplate="https://podvinci.org/deeplink/search{?query}">
             <parameter-mapping intentParameter="thing.name" urlParameter="query"/>
         </fulfillment>
     </action>

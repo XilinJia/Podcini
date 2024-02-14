@@ -203,7 +203,7 @@
   <string name="download_type_feed">Vir</string>
   <string name="download_type_media">Predstavnostna datoteka</string>
   <string name="null_value_podcast_error">Na voljo ni bil noben podcast, ki bi ga bilo mogoče prikazati.</string>
-  <string name="no_feed_url_podcast_found_by_search">Predlagani podkast nima RSS povezave. AntennaPod je našel podkast, ki modra ustreza.</string>
+  <string name="no_feed_url_podcast_found_by_search">Predlagani podkast nima RSS povezave. PodVinci je našel podkast, ki modra ustreza.</string>
   <string name="authentication_notification_title">Potrebna je avtentikacija</string>
   <string name="confirm_mobile_streaming_notification_message">Pretakanje preko mobilne podatkovne povezave je onemogočeno v nastavitvah. Tapnite za pretakanje kljub temu.</string>
   <string name="confirm_mobile_streaming_button_always">Vendo</string>
@@ -214,7 +214,7 @@
   <string name="playback_error_timeout">Časovna omejitev delovanja je potekla </string>
   <string name="playback_error_source">Dostop do predstavnostne datoteke ni mogoč</string>
   <string name="no_media_playing_label">Ni medijske vsebine za predvajati</string>
-  <string name="unknown_media_key">AntennaPod - Neznan medijski ključ: %1$d</string>
+  <string name="unknown_media_key">PodVinci - Neznan medijski ključ: %1$d</string>
   <string name="error_file_not_found">Datoteka ni najdena</string>
   <string name="no_media_label">Element ne vsebuje predstavnostne datoteke</string>
   <!--Queue operations-->
@@ -341,15 +341,15 @@
   <string name="pref_contribute">Prispevajte</string>
   <!--About screen-->
   <string name="about_pref">O</string>
-  <string name="antennapod_version">AntennaPod različica </string>
+  <string name="podvinci_version">PodVinci različica </string>
   <string name="contributors">Sodelujoči</string>
-  <string name="contributors_summary">Vsakdo lahko pomaga izboljšati AntennaPod: s kodo, prevodi ali z nudenjem pomoči uporabnikom na našem forumu</string>
+  <string name="contributors_summary">Vsakdo lahko pomaga izboljšati PodVinci: s kodo, prevodi ali z nudenjem pomoči uporabnikom na našem forumu</string>
   <string name="developers">Razvijalci</string>
   <string name="translators">Prevajalci</string>
   <string name="special_thanks">Posebna zahvala</string>
   <string name="privacy_policy">Politika zasebnosti</string>
   <string name="licenses">Licence</string>
-  <string name="licenses_summary">AntennaPod uporablja drugo odlično programsko opremo</string>
+  <string name="licenses_summary">PodVinci uporablja drugo odlično programsko opremo</string>
   <!--Search-->
   <string name="search_status_no_results">Ni rezultatov</string>
   <string name="type_to_search">Vnesite poizvedbo za iskanje</string>
@@ -372,8 +372,8 @@
   <string name="html_export_summary">Pokažite svoje naročnine prijatelju</string>
   <string name="opml_export_summary">Prenesite svoje naročnine v drugo aplikacijo za podcaste</string>
   <string name="opml_import_summary">Uvozite svoje naročnine iz druge aplikacije za podcaste</string>
-  <string name="database_export_summary">Prenesite naročnine, poslušane epizode in čakalno vrsto na AntennaPod, na drugo napravo</string>
-  <string name="database_import_summary">Uvozite bazo podatkov AntennaPod iz druge naprave</string>
+  <string name="database_export_summary">Prenesite naročnine, poslušane epizode in čakalno vrsto na PodVinci, na drugo napravo</string>
+  <string name="database_import_summary">Uvozite bazo podatkov PodVinci iz druge naprave</string>
   <string name="opml_add_podcast_label">Uvozite podcast seznam (OPML)</string>
   <string name="opml_reader_error">Pri branju dokumenta OPML je prišlo do napake:</string>
   <string name="opml_import_error_no_file">Izbrana ni nobena datoteka!</string>
@@ -389,8 +389,8 @@
   <string name="export_success_title">Izvoz uspešen</string>
   <string name="opml_import_ask_read_permission">Za branje datoteke OPML je potreben dostop do zunanjega pomnilnika</string>
   <string name="successful_import_label">Uvoz uspešen</string>
-  <string name="import_ok">Pritisnite OK, da znova zaženete AntennaPod</string>
-  <string name="import_no_downgrade">Ta zbirka podatkov je bila izvožena z novejšo različico AntennaPod. Vaša trenutna namestitev še ne ve, kako ravnati s to datoteko.</string>
+  <string name="import_ok">Pritisnite OK, da znova zaženete PodVinci</string>
+  <string name="import_no_downgrade">Ta zbirka podatkov je bila izvožena z novejšo različico PodVinci. Vaša trenutna namestitev še ne ve, kako ravnati s to datoteko.</string>
   <string name="favorites_export_label">Priljubljeni izvozi</string>
   <string name="favorites_export_summary">Izvozi shranjene priljubljene v datoteko</string>
   <!--Sleep timer-->
@@ -427,16 +427,16 @@
   <string name="synchronization_choose_title">Izberite ponudnika preko katerga želite oprviti sinhronizacijo</string>
   <string name="synchronization_summary_unchoosen">Izbirate lahko med večimi ponudniki, da sinhronzirate vaše naročnine in epizode</string>
   <string name="dialog_choose_sync_service_title">Izberite ponudnika preko katerga želite oprviti sinhronizacijo</string>
-  <string name="synchronization_summary_nextcloud">Gpoddersync je odportokodna Nextcloud aplikacija, katero lahko enostavno namestite na vaše lastni stsrežnik. Ta aplikacija je neodvisna od projekta AntennaPod.</string>
+  <string name="synchronization_summary_nextcloud">Gpoddersync je odportokodna Nextcloud aplikacija, katero lahko enostavno namestite na vaše lastni stsrežnik. Ta aplikacija je neodvisna od projekta PodVinci.</string>
   <string name="gpodnetauth_login_butLabel">Prijava</string>
   <string name="gpodnetauth_encryption_warning">Geslo in podatki niso šifrirani!</string>
   <string name="username_label">Uporabniško ime</string>
   <string name="password_label">Geslo</string>
   <string name="gpodnetauth_device_name">Ime naprave</string>
-  <string name="gpodnetauth_device_name_default">AntennaPod je na %1$s</string>
+  <string name="gpodnetauth_device_name_default">PodVinci je na %1$s</string>
   <string name="gpodnetauth_existing_devices">Obstoječe naprave</string>
   <string name="gpodnetauth_create_device">Ustvari napravo</string>
-  <string name="gpodnetauth_finish_descr">Čestitam! Vaš račun gpodder.net je zdaj povezan z vašo napravo. AntennaPod bo od zdaj naprej samodejno sinhroniziral naročnine na vaši napravi z vašim računom gpodder.net.</string>
+  <string name="gpodnetauth_finish_descr">Čestitam! Vaš račun gpodder.net je zdaj povezan z vašo napravo. PodVinci bo od zdaj naprej samodejno sinhroniziral naročnine na vaši napravi z vašim računom gpodder.net.</string>
   <string name="gpodnetauth_finish_butsyncnow">Začnite sedaj sinhronizirati </string>
   <string name="pref_gpodnet_setlogin_information_title">Spremenite podatke za prijavo</string>
   <string name="pref_gpodnet_setlogin_information_sum">Spremenite podatke za prijavo za svoj račun gpodder.net.</string>
@@ -451,7 +451,7 @@
   <string name="gpodnetsync_pref_report_failed">Ne uspešno</string>
   <string name="gpodnetsync_username_characters_error">Uporabniška imena lahko vsebujejo samo črke, številke, vezaje in podčrtaje.</string>
   <!--Directory chooser-->
-  <string name="choose_data_directory_message">Izberite osnovo vaše podatkovne mape. AntennaPod bo ustvaril ustrezne podimenike.</string>
+  <string name="choose_data_directory_message">Izberite osnovo vaše podatkovne mape. PodVinci bo ustvaril ustrezne podimenike.</string>
   <string name="choose_data_directory_available_space">%1$s od %2$s prostega</string>
   <string name="pref_pausePlaybackForFocusLoss_sum">Začasno ustavite predvajanje, namesto da zmanjšate glasnost, ko želi druga aplikacija predvajati zvoke</string>
   <!--Online feed view-->
@@ -479,14 +479,14 @@
   <string name="feed_tags_label">Oznake</string>
   <string name="episode_filters_description">Seznam izrazov, ki se uporabljajo za odločitev, ali je treba epizodo vključiti ali izključiti pri samodejnem prenosu</string>
   <string name="keep_updated_summary">Vključite osveževanje tega podcasta pri (samodejnem) osveževanju vseh podcastov</string>
-  <string name="auto_download_disabled_globally">Samodejni prenos je onemogočen v glavnih nastavitvah AntennaPod</string>
+  <string name="auto_download_disabled_globally">Samodejni prenos je onemogočen v glavnih nastavitvah PodVinci</string>
   <string name="statistics_time_played">Predvajani čas:</string>
   <string name="statistics_total_duration">Ocenjen čas predvajanja:</string>
   <string name="statistics_episodes_on_device">Epizod na napravi:</string>
   <string name="statistics_space_used">Porabljen prostor:</string>
   <string name="statistics_episodes_started_total">Epizode začete/vse:</string>
   <string name="statistics_view_all">Poglej za vse podcaste »</string>
-  <!--AntennaPodSP-->
+  <!--PodVinciSP-->
   <string name="sp_apps_importing_feeds_msg">Uvažanje naročnin iz enonamenskih aplikacij …</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">Išči podcast...</string>
@@ -504,7 +504,7 @@
   <string name="local_folder">Lokalna mapa</string>
   <string name="reconnect_local_folder">Ponovno povežite lokalno mapo</string>
   <string name="reconnect_local_folder_warning">V primeru zavrnitve dovoljenj lahko to uporabite za ponovno povezavo s popolnoma isto mapo. Ne izberite druge mape.</string>
-  <string name="local_feed_description">Ta virtualni podcast je bil ustvarjen z dodajanjem mape v AntennaPod.</string>
+  <string name="local_feed_description">Ta virtualni podcast je bil ustvarjen z dodajanjem mape v PodVinci.</string>
   <string name="unable_to_start_system_file_manager">Sistemskega upravitelja datotek ni mogoče zagnati</string>
   <string name="filter">Filter</string>
   <string name="hide_is_favorite_label">Je med priljubljenimi</string>

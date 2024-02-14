@@ -11,7 +11,7 @@ android {
         vectorDrawables.useSupportLibrary false
         vectorDrawables.generatedDensities = []
 
-        testApplicationId "de.danoeh.antennapod.core.tests"
+        testApplicationId "ac.mdiq.podvinci.core.tests"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 

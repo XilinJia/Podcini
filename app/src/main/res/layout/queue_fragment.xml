@@ -41,7 +41,7 @@
         android:layout_height="match_parent"
         android:layout_below="@id/appbar">
 
-        <de.danoeh.antennapod.view.EpisodeItemListRecyclerView
+        <ac.mdiq.podvinci.view.EpisodeItemListRecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

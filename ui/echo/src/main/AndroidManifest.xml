@@ -7,10 +7,10 @@
         android:icon="@mipmap/ic_launcher"
         android:supportsRtl="true">
         <activity
-            android:label="@string/antennapod_echo"
+            android:label="@string/podvinci_echo"
             android:name=".EchoActivity"
             android:exported="false"
-            android:theme="@style/Theme.AntennaPod.Dark.NoTitle">
+            android:theme="@style/Theme.PodVinci.Dark.NoTitle">
             <intent-filter>
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>

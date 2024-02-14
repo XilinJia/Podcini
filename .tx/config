@@ -1,7 +1,7 @@
 [main]
 host = https://www.transifex.com
 
-[o:antennapod:p:antennapod:r:core-values]
+[o:podvinci:p:podvinci:r:core-values]
 file_filter  = ui/i18n/src/main/res/values-<lang>/strings.xml
 source_file  = ui/i18n/src/main/res/values/strings.xml
 source_lang  = en
@@ -43,7 +43,7 @@ trans.zh_CN  = ui/i18n/src/main/res/values-zh-rCN/strings.xml
 trans.zh_HK  = ui/i18n/src/main/res/values-zh-rHK/strings.xml
 trans.zh_TW  = ui/i18n/src/main/res/values-zh-rTW/strings.xml
 
-[o:antennapod:p:antennapod:r:description]
+[o:podvinci:p:podvinci:r:description]
 file_filter = app/src/main/play/listings/<lang>/full-description.txt
 source_file = app/src/main/play/listings/en-US/full-description.txt
 source_lang = en
@@ -85,7 +85,7 @@ trans.vi    = app/src/main/play/listings/vi/full-description.txt
 trans.zh_CN = app/src/main/play/listings/zh-CN/full-description.txt
 trans.zh_TW = app/src/main/play/listings/zh-TW/full-description.txt
 
-[o:antennapod:p:antennapod:r:shortdescription]
+[o:podvinci:p:podvinci:r:shortdescription]
 file_filter = app/src/main/play/listings/<lang>/short-description.txt
 source_file = app/src/main/play/listings/en-US/short-description.txt
 source_lang = en

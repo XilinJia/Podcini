@@ -2,7 +2,7 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:squareImageView="http://schemas.android.com/apk/de.danoeh.antennapod"
+    xmlns:squareImageView="http://schemas.android.com/apk/ac.mdiq.podvinci"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -40,7 +40,7 @@
                         android:layout_height="128dp"
                         android:background="@color/image_readability_tint">
 
-                        <de.danoeh.antennapod.ui.common.SquareImageView
+                        <ac.mdiq.podvinci.ui.common.SquareImageView
                             android:id="@+id/cover"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
@@ -56,7 +56,7 @@
                             android:padding="3dp"
                             app:srcCompat="@drawable/bg_circle" />
 
-                        <de.danoeh.antennapod.ui.common.CircularProgressBar
+                        <ac.mdiq.podvinci.ui.common.CircularProgressBar
                             android:id="@+id/circularProgressBar"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
@@ -121,7 +121,7 @@
                 android:textAlignment="textStart"
                 android:textSize="14sp"
                 tools:text="@sample/episodes.json/data/published_at"
-                style="@style/AntennaPod.TextView.ListItemSecondaryTitle" />
+                style="@style/PodVinci.TextView.ListItemSecondaryTitle" />
 
         </LinearLayout>
 

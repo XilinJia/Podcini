@@ -57,7 +57,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:textColor="#fff"
-                android:text="@string/antennapod_echo_year"
+                android:text="@string/podvinci_echo_year"
                 android:textFontWeight="500"
                 style="@style/TextAppearance.Material3.TitleLarge" />
 

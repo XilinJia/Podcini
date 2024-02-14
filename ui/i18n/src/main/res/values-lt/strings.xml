@@ -215,7 +215,7 @@
   <string name="download_type_feed">Sklaidos kanalas</string>
   <string name="download_type_media">Medijos failas</string>
   <string name="null_value_podcast_error">Nėra pateiktų tinklalaidžių, kurios galėtų būti rodomos.</string>
-  <string name="no_feed_url_podcast_found_by_search">Pasiūlyta tinklalaidė neturi RSS nuorodos, „AntennaPod“ rado galimą tinklalaidės atitikmenį</string>
+  <string name="no_feed_url_podcast_found_by_search">Pasiūlyta tinklalaidė neturi RSS nuorodos, „PodVinci“ rado galimą tinklalaidės atitikmenį</string>
   <string name="authentication_notification_title">Reikalingas tapatumo nustatymas</string>
   <string name="confirm_mobile_streaming_notification_message">Tiesioginis klausymasis mobiliuoju internetu išjungtas nustatymuose. Palieskite, jei vis tiek norite klausytis tiesiogiai.</string>
   <string name="confirm_mobile_streaming_button_always">Visada</string>
@@ -226,7 +226,7 @@
   <string name="playback_error_timeout">Baigėsi operacijai skirtas laikas</string>
   <string name="playback_error_source">Prieiga prie medijos failo negalima</string>
   <string name="no_media_playing_label">Atkūrimas nevyksta</string>
-  <string name="unknown_media_key">„AntennaPod“ – nežinomas medijos klavišas: %1$d</string>
+  <string name="unknown_media_key">„PodVinci“ – nežinomas medijos klavišas: %1$d</string>
   <string name="error_file_not_found">Failas nerastas</string>
   <string name="no_media_label">Elementas neturi medijos failo</string>
   <!--Queue operations-->
@@ -353,15 +353,15 @@
   <string name="pref_contribute">Prisidėti</string>
   <!--About screen-->
   <string name="about_pref">Apie</string>
-  <string name="antennapod_version">„AntennaPod“ versija</string>
+  <string name="podvinci_version">„PodVinci“ versija</string>
   <string name="contributors">Autoriai</string>
-  <string name="contributors_summary">Visi gali padėti padaryti „AntennaPod“ geresnę - programiniu kodu, vertimais ar pagalba naudotojams mūsų forume</string>
+  <string name="contributors_summary">Visi gali padėti padaryti „PodVinci“ geresnę - programiniu kodu, vertimais ar pagalba naudotojams mūsų forume</string>
   <string name="developers">Kūrėjai</string>
   <string name="translators">Vertėjai</string>
   <string name="special_thanks">Ypatinga padėka</string>
   <string name="privacy_policy">Privatumo politika</string>
   <string name="licenses">Licencijos</string>
-  <string name="licenses_summary">„AntennaPod“ naudojama kita puiki programinė įranga</string>
+  <string name="licenses_summary">„PodVinci“ naudojama kita puiki programinė įranga</string>
   <!--Search-->
   <string name="search_status_no_results">Nieko nerasta</string>
   <string name="type_to_search">Įveskite užklausą paieškai pradėti</string>
@@ -384,8 +384,8 @@
   <string name="html_export_summary">Parodyti prenumeratas draugui</string>
   <string name="opml_export_summary">Perkelti prenumeratas į kitą tinklalaidžių programėlę</string>
   <string name="opml_import_summary">Importuoti prenumeratas iš kitos tinklalaidžių programėlės</string>
-  <string name="database_export_summary">Perkelti prenumeratas, perklausytus epizodus ir eilę į „AntennaPod“ kitame įrenginyje</string>
-  <string name="database_import_summary">Importuoti „AntennaPod“ duomenų bazę iš kito įrenginio</string>
+  <string name="database_export_summary">Perkelti prenumeratas, perklausytus epizodus ir eilę į „PodVinci“ kitame įrenginyje</string>
+  <string name="database_import_summary">Importuoti „PodVinci“ duomenų bazę iš kito įrenginio</string>
   <string name="opml_import_label">OPML importas</string>
   <string name="opml_add_podcast_label">Importuoti tinklalaidžių sąrašą (OPML)</string>
   <string name="opml_reader_error">Skaitant OPML failą įvyko klaida:</string>
@@ -402,8 +402,8 @@
   <string name="export_success_title">Sėkmingai eksportuota</string>
   <string name="opml_import_ask_read_permission">Norint nuskaityti OPML failą reikalinga prieiga prie išorinės laikmenos</string>
   <string name="successful_import_label">Sėkmingai importuota</string>
-  <string name="import_ok">Spauskite „OK“, kad paleisti „AntennaPod“ iš naujo</string>
-  <string name="import_no_downgrade">Ši duomenų bazė buvo eksportuota naudojant naujesnę „AntennaPod“ versija. Dabartinė įdiegtis nežino, kaip apdorotį šį failą.</string>
+  <string name="import_ok">Spauskite „OK“, kad paleisti „PodVinci“ iš naujo</string>
+  <string name="import_no_downgrade">Ši duomenų bazė buvo eksportuota naudojant naujesnę „PodVinci“ versija. Dabartinė įdiegtis nežino, kaip apdorotį šį failą.</string>
   <string name="favorites_export_label">Mėgstamųjų eksportas</string>
   <string name="favorites_export_summary">Mėgstamieji išsaugoti faile</string>
   <!--Sleep timer-->
@@ -440,17 +440,17 @@
   <string name="synchronization_choose_title">Pasirinkite sinchronizavimo teikėją</string>
   <string name="synchronization_summary_unchoosen">Galite pasirinkti iš keleto teikėjų prenumeratų ir epizodų atkūrimo būsenai sinchronizuoti</string>
   <string name="dialog_choose_sync_service_title">Pasirinkite sinchronizavimo teikėją</string>
-  <string name="synchronization_summary_nextcloud">„Gpoddersync“ ir atvirojo kodo „Nextcloud“ programėlė, kurią nesunkiai galite įsidiegti savo serveryje. Ši programėlė yra nepriklausoma nuo „AntennaPod“ projekto.</string>
-  <string name="synchronization_nextcloud_authenticate_browser">Suteikite prieigą atsivėrusioje interneto naršyklėje ir sugrįžkite į „AntennaPod“.</string>
+  <string name="synchronization_summary_nextcloud">„Gpoddersync“ ir atvirojo kodo „Nextcloud“ programėlė, kurią nesunkiai galite įsidiegti savo serveryje. Ši programėlė yra nepriklausoma nuo „PodVinci“ projekto.</string>
+  <string name="synchronization_nextcloud_authenticate_browser">Suteikite prieigą atsivėrusioje interneto naršyklėje ir sugrįžkite į „PodVinci“.</string>
   <string name="gpodnetauth_login_butLabel">Prisijungti</string>
   <string name="gpodnetauth_encryption_warning">Slaptažodis ir duomenys nėra užšifruojami!</string>
   <string name="username_label">Vartotojo vardas</string>
   <string name="password_label">Slaptažodis</string>
   <string name="gpodnetauth_device_name">Įrenginio pavadinimas</string>
-  <string name="gpodnetauth_device_name_default">„AntennaPod“ %1$s įrenginyje</string>
+  <string name="gpodnetauth_device_name_default">„PodVinci“ %1$s įrenginyje</string>
   <string name="gpodnetauth_existing_devices">Esami įrenginiai</string>
   <string name="gpodnetauth_create_device">Sukurti įrenginį</string>
-  <string name="gpodnetauth_finish_descr">Sveikiname! Jūsų „gpodder.net“ paskyra susieta su šiuo įrenginiu. Nuo šiol „AntennaPod“ automatiškai sinchronizuos prenumeratas šiame įrenginyje su Jūsų „gpodder.net“ paskyra.</string>
+  <string name="gpodnetauth_finish_descr">Sveikiname! Jūsų „gpodder.net“ paskyra susieta su šiuo įrenginiu. Nuo šiol „PodVinci“ automatiškai sinchronizuos prenumeratas šiame įrenginyje su Jūsų „gpodder.net“ paskyra.</string>
   <string name="gpodnetauth_finish_butsyncnow">Pradėti sinchronizavimą dabar</string>
   <string name="pref_gpodnet_setlogin_information_title">Keisti prisijungimo duomenis</string>
   <string name="pref_gpodnet_setlogin_information_sum">Keisti prisijungimo prie „gpodder.net“ paskyros duomenis.</string>
@@ -467,7 +467,7 @@
   <string name="gpodnetsync_pref_report_failed">Nepavyko</string>
   <string name="gpodnetsync_username_characters_error">Naudotojo vardą sudaryti gali tik raidės, skaitmenys, brūkšniai ir pabraukimo brūkšniai.</string>
   <!--Directory chooser-->
-  <string name="choose_data_directory_message">Prašome pasirinkti pamatinį duomenų aplanką. „AntennaPod“ sukurs reikiamus poaplankius.</string>
+  <string name="choose_data_directory_message">Prašome pasirinkti pamatinį duomenų aplanką. „PodVinci“ sukurs reikiamus poaplankius.</string>
   <string name="choose_data_directory_available_space">%1$s iš %2$s laisva</string>
   <string name="pref_pausePlaybackForFocusLoss_sum">Kai kita programėlė nori atkurti garsus, pristabdyti atkūrimą vietoje garsio sumažinimo</string>
   <!--Online feed view-->
@@ -497,14 +497,14 @@
   <string name="multi_feed_common_tags_info">{fa-info-circle} Rodomos tik žymės, bendros visoms pažymėtoms prenumeratoms. Kitos žymės liks nepaveiktos.</string>
   <string name="episode_filters_description">Žodžių ar frazių sąrašas, kuriuo remiantis sprendžiama, ar epizodas turėtų būti įtrauktas ar išbrauktas iš automatiškai atsiunčiamų epizodų</string>
   <string name="keep_updated_summary">Įtraukti šią tinklalaidę į (automatinį) visų tinklalaidžių atnaujinimą</string>
-  <string name="auto_download_disabled_globally">Automatinis atsiuntimas išjungtas pagrindiniuose „AntennaPod“ nustatymuose</string>
+  <string name="auto_download_disabled_globally">Automatinis atsiuntimas išjungtas pagrindiniuose „PodVinci“ nustatymuose</string>
   <string name="statistics_time_played">Atkūrimo trukmė:</string>
   <string name="statistics_total_duration">Bendra trukmė (apytikslė):</string>
   <string name="statistics_episodes_on_device">Epizodai įrenginyje:</string>
   <string name="statistics_space_used">Naudojama disko vieta:</string>
   <string name="statistics_episodes_started_total">Pradėti epizodai/iš viso:</string>
   <string name="statistics_view_all">Žiūrėti visoms tinklalaidėms »</string>
-  <!--AntennaPodSP-->
+  <!--PodVinciSP-->
   <string name="sp_apps_importing_feeds_msg">Įkeliamos prenumeratos iš specializuotų programėlių...</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">Ieškoti tinklalaidės...</string>
@@ -522,7 +522,7 @@
   <string name="local_folder">Vietinis aplankas</string>
   <string name="reconnect_local_folder">Prijungti vietinį aplanką iš naujo</string>
   <string name="reconnect_local_folder_warning">Atmetus leidimą, galite naudoti tai prijungti tam pačiam aplankui. Nenustatykite kito aplanko.</string>
-  <string name="local_feed_description">Ši virtuali tinklalaidė sukurta į „AntennaPod“ pridėjus aplanką.</string>
+  <string name="local_feed_description">Ši virtuali tinklalaidė sukurta į „PodVinci“ pridėjus aplanką.</string>
   <string name="unable_to_start_system_file_manager">Nepavyko paleisti sistemos failų tvarkytuvės</string>
   <string name="filter">Filtruoti</string>
   <string name="hide_is_favorite_label">Mėgstami</string>

@@ -16,14 +16,14 @@ page = 1
 hasMore = True
 first = True
 while hasMore:
-    nextPage = ('https://api.github.com/repos/AntennaPod/AntennaPod/contributors'
+    nextPage = ('https://api.github.com/repos/PodVinci/PodVinci/contributors'
         + '?q=contributions&order=desc&per_page=100&page=' + str(page))
     print("Loading " + nextPage)
     json = requests.get(nextPage).json()
     for contributor in json:
         role = 'Contributor'
         if contributor['login'] == 'danieloeh':
-            role = 'Original creator of AntennaPod (retired)'
+            role = 'Original creator of PodVinci (retired)'
         elif contributor['login'] in MAINTAINERS:
             role = 'Maintainer'
         elif contributor['login'] in FORMER_MAINTAINERS:
@@ -47,7 +47,7 @@ else:
 
 languages = dict()
 
-nextPage = 'https://rest.api.transifex.com/team_memberships?filter[organization]=o:antennapod'
+nextPage = 'https://rest.api.transifex.com/team_memberships?filter[organization]=o:podvinci'
 while nextPage is not None:
     print("Loading " + nextPage)
     r = requests.get(nextPage,

@@ -25,7 +25,7 @@
         android:layout_marginVertical="12dp"
         android:ellipsize="end"
         android:maxLines="2"
-        style="@style/AntennaPod.TextView.ListItemPrimaryTitle"
+        style="@style/PodVinci.TextView.ListItemPrimaryTitle"
         tools:text="Feed item title"
         tools:background="@android:color/holo_green_dark" />
 
@@ -35,7 +35,7 @@
         android:layout_height="wrap_content"
         android:ellipsize="end"
         android:maxLines="2"
-        style="@style/AntennaPod.TextView.ListItemBody"
+        style="@style/PodVinci.TextView.ListItemBody"
         tools:text="Feed item description"
         tools:background="@android:color/holo_green_dark" />
 

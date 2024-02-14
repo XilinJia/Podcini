@@ -241,15 +241,15 @@
   <string name="pref_contribute">Collaborar</string>
   <!--About screen-->
   <string name="about_pref">Tocante a</string>
-  <string name="antennapod_version">Versión d\'AntennaPod</string>
+  <string name="podvinci_version">Versión d\'PodVinci</string>
   <string name="contributors">Collaboradores</string>
-  <string name="contributors_summary">Tol mundu pue ayudar a ameyorar AntennaPod con códigu, traducciones o echando un gabitu a los usuarios nel nuesu foru</string>
+  <string name="contributors_summary">Tol mundu pue ayudar a ameyorar PodVinci con códigu, traducciones o echando un gabitu a los usuarios nel nuesu foru</string>
   <string name="developers">Desendolcadores</string>
   <string name="translators">Traductores</string>
   <string name="special_thanks">Agradecimientu especial</string>
   <string name="privacy_policy">Política de privacidá</string>
   <string name="licenses">Llicencies</string>
-  <string name="licenses_summary">AntennaPod usa otros programes maraviyosos</string>
+  <string name="licenses_summary">PodVinci usa otros programes maraviyosos</string>
   <!--Search-->
   <string name="search_status_no_results">Nun s\'atoparon resultaos</string>
   <string name="search_label">Buscar</string>
@@ -266,8 +266,8 @@
   <string name="html_export_summary">Enseña les soscripciones a los collacios</string>
   <string name="opml_export_summary">Tresfier les soscripciones a otra aplicación de podcasts</string>
   <string name="opml_import_summary">Importa les soscripciones d\'otra aplicación de podcasts</string>
-  <string name="database_export_summary">Tresfier les soscripciones, los episodios sentíos y la cola al AntennaPod d\'otru preséu</string>
-  <string name="database_import_summary">Importa la base de datos del AntennaPod d\'otru preséu</string>
+  <string name="database_export_summary">Tresfier les soscripciones, los episodios sentíos y la cola al PodVinci d\'otru preséu</string>
+  <string name="database_import_summary">Importa la base de datos del PodVinci d\'otru preséu</string>
   <string name="opml_add_podcast_label">Importar una llista de podcasts (OPML)</string>
   <string name="select_all_label">Esbillar too</string>
   <string name="deselect_all_label">Deseleicionar too</string>
@@ -277,8 +277,8 @@
   <string name="please_wait">Espera…</string>
   <string name="export_success_title">La esportación fízose correutamente</string>
   <string name="successful_import_label">La importación fízose correutamente</string>
-  <string name="import_ok">Primi «D\'acuerdu» pa reaniciar AntennaPod</string>
-  <string name="import_no_downgrade">Esta base de datos esportóse con una versión nueva d\'AntennaPod. La instalación actual entá nun sabe cómo remanar esti ficheru.</string>
+  <string name="import_ok">Primi «D\'acuerdu» pa reaniciar PodVinci</string>
+  <string name="import_no_downgrade">Esta base de datos esportóse con una versión nueva d\'PodVinci. La instalación actual entá nun sabe cómo remanar esti ficheru.</string>
   <string name="favorites_export_label">Esportación de los favoritos</string>
   <string name="favorites_export_summary">Esporta los favoritos a un ficheru</string>
   <!--Sleep timer-->
@@ -306,10 +306,10 @@
   <string name="username_label">Nome d\'usuariu</string>
   <string name="password_label">Contraseña</string>
   <string name="gpodnetauth_device_name">Nome del preséu</string>
-  <string name="gpodnetauth_device_name_default">AntennaPod en «%1$s»</string>
+  <string name="gpodnetauth_device_name_default">PodVinci en «%1$s»</string>
   <string name="gpodnetauth_existing_devices">Preseos esistentes</string>
   <string name="gpodnetauth_create_device">Crear el preséu</string>
-  <string name="gpodnetauth_finish_descr">¡Norabona! La to cuenta de gpodder.net ta enllaciada col preséu. Dende agora, AntennaPod va sincronizar automáticamente les soscripciones del preséu con esta cuenta.</string>
+  <string name="gpodnetauth_finish_descr">¡Norabona! La to cuenta de gpodder.net ta enllaciada col preséu. Dende agora, PodVinci va sincronizar automáticamente les soscripciones del preséu con esta cuenta.</string>
   <string name="gpodnetauth_finish_butsyncnow">Sincronizar agora</string>
   <string name="pref_gpodnet_setlogin_information_title">Camudar la información del aniciu de sesión</string>
   <string name="pref_gpodnet_setlogin_information_sum">Camuda la información d\'aniciu de sesión de la to cuenta de gpodder.net .</string>
@@ -318,7 +318,7 @@
   <string name="gpodnetsync_pref_report_failed">Sincronización fallida</string>
   <string name="gpodnetsync_username_characters_error">Los nomes d\'usuariu namás puen contener lletres, díxitos, guiones y guiones baxos.</string>
   <!--Directory chooser-->
-  <string name="choose_data_directory_message">Escueyi la carpeta de datos. AntennaPod va crear los sodireutorios afayadizos.</string>
+  <string name="choose_data_directory_message">Escueyi la carpeta de datos. PodVinci va crear los sodireutorios afayadizos.</string>
   <string name="pref_pausePlaybackForFocusLoss_sum">Posa la reproducción en cuentes de baxar el volume cuando otra aplicación quier reproducir soníos</string>
   <!--Online feed view-->
   <string name="subscribe_label">Soscribise</string>
@@ -340,11 +340,11 @@
   <string name="authentication_label">Autenticación</string>
   <string name="episode_filters_description">La llista de términos que s\'usa pa decidir si un episodiu habría incluyise o escluyise de la descarga automática</string>
   <string name="keep_updated_summary">Inclúi esti podcast al refrescar (automáticamente) tolos podcasts</string>
-  <string name="auto_download_disabled_globally">La descarga automática ta desactivada nos axustes principales d\'AntennaPod</string>
+  <string name="auto_download_disabled_globally">La descarga automática ta desactivada nos axustes principales d\'PodVinci</string>
   <string name="statistics_episodes_on_device">Episodios nel preséu:</string>
   <string name="statistics_space_used">Espaciu n\'usu:</string>
   <string name="statistics_view_all">Ver lo de tolos podcasts »</string>
-  <!--AntennaPodSP-->
+  <!--PodVinciSP-->
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">Buscar podcasts…</string>
   <string name="search_fyyd_label">Buscar en fyyd</string>
@@ -359,7 +359,7 @@
   <!--Local feeds-->
   <string name="add_local_folder">Amestar una carpeta llocal</string>
   <string name="local_folder">Carpeta llocal</string>
-  <string name="local_feed_description">Esti podcast virtual creóse por amestar una carpeta a AntennaPod.</string>
+  <string name="local_feed_description">Esti podcast virtual creóse por amestar una carpeta a PodVinci.</string>
   <string name="unable_to_start_system_file_manager">Nun ye posible aniciar el xestor de ficheros del sistema</string>
   <string name="filter">Peñera</string>
   <string name="hide_is_favorite_label">Ta en Favoritos</string>

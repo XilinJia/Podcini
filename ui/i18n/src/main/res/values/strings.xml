@@ -4,7 +4,7 @@
     tools:ignore="MissingTranslation">
 
     <!-- Activity and fragment titles -->
-    <string name="provider_authority" translatable="false">de.danoeh.antennapod.provider</string>
+    <string name="provider_authority" translatable="false">ac.mdiq.podvinci.provider</string>
     <string name="feed_update_receiver_name">Update subscriptions</string>
     <string name="feeds_label">Podcasts</string>
     <string name="statistics_label">Statistics</string>
@@ -27,8 +27,8 @@
     <string name="years_statistics_label">Years</string>
     <string name="notification_pref_fragment">Notifications</string>
     <string name="current_playing_episode">Current</string>
-    <string name="antennapod_echo" translatable="false">AntennaPod Echo</string>
-    <string name="antennapod_echo_year" translatable="false">AntennaPod Echo %d</string>
+    <string name="podvinci_echo" translatable="false">PodVinci Echo</string>
+    <string name="podvinci_echo_year" translatable="false">PodVinci Echo %d</string>
 
     <!-- Google Assistant -->
     <string name="app_action_not_found">\"%1$s\" not found</string>
@@ -61,9 +61,9 @@
     <string name="home_continue_title">Continue listening</string>
     <string name="home_new_title">See what\'s new</string>
     <string name="home_downloads_title">Manage downloads</string>
-    <string name="home_welcome_title">Welcome to AntennaPod!</string>
+    <string name="home_welcome_title">Welcome to PodVinci!</string>
     <string name="home_welcome_text">You are not subscribed to any podcasts yet. Open the side menu to add a podcast.</string>
-    <string name="notification_permission_text">AntennaPod needs your permission to show notifications. By default, AntennaPod only shows notifications while something is being downloaded or when something goes wrong.</string>
+    <string name="notification_permission_text">PodVinci needs your permission to show notifications. By default, PodVinci only shows notifications while something is being downloaded or when something goes wrong.</string>
     <string name="notification_permission_denied">You denied the permission.</string>
     <string name="notification_permission_deny_warning">If you disable notifications and something goes wrong, you might be unable to find out why it went wrong.</string>
     <string name="deny_label">Deny</string>
@@ -263,7 +263,7 @@
     <string name="skip_episode_label">Skip episode</string>
     <string name="reset_position">Reset playback position</string>
     <string name="no_items_selected">No items selected</string>
-    <string name="delete_local_feed_warning_body">Deleting removes the episode from AntennaPod and deletes the media file from your device storage. It cannot be downloaded again through AntennaPod.</string>
+    <string name="delete_local_feed_warning_body">Deleting removes the episode from PodVinci and deletes the media file from your device storage. It cannot be downloaded again through PodVinci.</string>
 
     <!-- Download messages and labels -->
     <string name="download_successful">successful</string>
@@ -306,10 +306,10 @@
     <string name="download_type_feed">Feed</string>
     <string name="download_type_media">Media file</string>
     <string name="null_value_podcast_error">No podcast was provided that could be shown.</string>
-    <string name="no_feed_url_podcast_found_by_search">The suggested podcast did not have an RSS link, AntennaPod found a podcast that could match</string>
+    <string name="no_feed_url_podcast_found_by_search">The suggested podcast did not have an RSS link, PodVinci found a podcast that could match</string>
     <string name="authentication_notification_title">Authentication required</string>
     <string name="confirm_mobile_download_dialog_title">Confirm mobile download</string>
-    <string name="confirm_mobile_download_dialog_message">Downloading over mobile data connection is disabled in the settings. AntennaPod can download the episode later automatically when Wi-Fi is available.</string>
+    <string name="confirm_mobile_download_dialog_message">Downloading over mobile data connection is disabled in the settings. PodVinci can download the episode later automatically when Wi-Fi is available.</string>
     <string name="confirm_mobile_download_dialog_message_vpn">Your VPN app pretends to be a mobile network (metered connection). Downloading over mobile data connection is disabled in the settings. If you want this problem to be fixed, contact the creators of your VPN app.</string>
     <string name="confirm_mobile_download_dialog_download_later">Download later</string>
     <string name="confirm_mobile_download_dialog_allow_this_time">Download anyway</string>
@@ -327,7 +327,7 @@
     <string name="playback_error_unknown">Unknown error</string>
     <string name="no_media_playing_label">No media playing</string>
     <string name="position_default_label" translatable="false">00:00:00</string>
-    <string name="unknown_media_key">AntennaPod - Unknown media key: %1$d</string>
+    <string name="unknown_media_key">PodVinci - Unknown media key: %1$d</string>
     <string name="error_file_not_found">File not found</string>
     <string name="no_media_label">Item does not contain a media file</string>
 
@@ -409,7 +409,7 @@
     <string name="pref_auto_delete_title">Auto delete</string>
     <string name="pref_auto_local_delete_title">Auto delete from local folders</string>
     <string name="pref_auto_local_delete_sum">Include local folders in Auto delete functionality</string>
-    <string name="pref_auto_local_delete_dialog_body">Note that for local folders this will remove episodes from AntennaPod and delete their media files from your device storage. They cannot be downloaded again through AntennaPod. Enable auto delete?</string>
+    <string name="pref_auto_local_delete_dialog_body">Note that for local folders this will remove episodes from PodVinci and delete their media files from your device storage. They cannot be downloaded again through PodVinci. Enable auto delete?</string>
     <string name="pref_smart_mark_as_played_sum">Mark episodes as played even if less than a certain amount of seconds of playing time is still left</string>
     <string name="pref_smart_mark_as_played_title">Smart mark as played</string>
     <string name="pref_skip_keeps_episodes_sum">Keep episodes when they are skipped</string>
@@ -421,7 +421,7 @@
     <string name="downloads_pref">Downloads</string>
     <string name="downloads_pref_sum">Update interval, Mobile data, Automatic download, Automatic deletion</string>
     <string name="feed_refresh_title">Refresh podcasts</string>
-    <string name="feed_refresh_sum">Specify an interval at which AntennaPod looks for new episodes automatically</string>
+    <string name="feed_refresh_sum">Specify an interval at which PodVinci looks for new episodes automatically</string>
     <string name="feed_refresh_never">Never</string>
     <string name="feed_every_hour">Every hour</string>
     <string name="feed_every_2_hours">Every 2 hours</string>
@@ -513,7 +513,7 @@
     <string name="pref_skip_silence_title">Skip silence in audio</string>
     <string name="behavior">Behavior</string>
     <string name="pref_default_page">Default page</string>
-    <string name="pref_default_page_sum">Screen that is opened when starting AntennaPod</string>
+    <string name="pref_default_page_sum">Screen that is opened when starting PodVinci</string>
     <string name="pref_back_button_opens_drawer">Back button opens drawer</string>
     <string name="pref_back_button_opens_drawer_summary">Pressing the back button on the default page opens the navigation drawer</string>
     <string name="remember_last_page">Remember last page</string>
@@ -538,15 +538,15 @@
 
     <!-- About screen -->
     <string name="about_pref">About</string>
-    <string name="antennapod_version">AntennaPod version</string>
+    <string name="podvinci_version">PodVinci version</string>
     <string name="contributors">Contributors</string>
-    <string name="contributors_summary">Everyone can help to make AntennaPod better - with code, translations or by helping users in our forum</string>
+    <string name="contributors_summary">Everyone can help to make PodVinci better - with code, translations or by helping users in our forum</string>
     <string name="developers">Developers</string>
     <string name="translators">Translators</string>
     <string name="special_thanks">Special thanks</string>
     <string name="privacy_policy">Privacy policy</string>
     <string name="licenses">Licenses</string>
-    <string name="licenses_summary">AntennaPod uses other great software</string>
+    <string name="licenses_summary">PodVinci uses other great software</string>
 
     <!-- Search -->
     <string name="search_status_no_results">No results were found</string>
@@ -573,8 +573,8 @@
     <string name="html_export_summary">Show your subscriptions to a friend</string>
     <string name="opml_export_summary">Transfer your subscriptions to another podcast app</string>
     <string name="opml_import_summary">Import your subscriptions from another podcast app</string>
-    <string name="database_export_summary">Transfer subscriptions, listened episodes and queue to AntennaPod on another device</string>
-    <string name="database_import_summary">Import AntennaPod database from another device</string>
+    <string name="database_export_summary">Transfer subscriptions, listened episodes and queue to PodVinci on another device</string>
+    <string name="database_import_summary">Import PodVinci database from another device</string>
     <string name="opml_import_label">OPML import</string>
     <string name="opml_add_podcast_label">Import podcast list (OPML)</string>
     <string name="opml_reader_error">An error has occurred while reading the file. Make sure that you have actually selected an OPML file and that the file is valid.</string>
@@ -591,8 +591,8 @@
     <string name="export_success_title">Export successful</string>
     <string name="opml_import_ask_read_permission">Access to external storage is required to read the OPML file</string>
     <string name="successful_import_label">Import successful</string>
-    <string name="import_ok">Please press OK to restart AntennaPod</string>
-    <string name="import_no_downgrade">This database was exported with a newer version of AntennaPod. Your current installation does not yet know how to handle this file.</string>
+    <string name="import_ok">Please press OK to restart PodVinci</string>
+    <string name="import_no_downgrade">This database was exported with a newer version of PodVinci. Your current installation does not yet know how to handle this file.</string>
     <string name="favorites_export_label">Favorites export</string>
     <string name="favorites_export_summary">Export saved favorites to file</string>
 
@@ -633,12 +633,12 @@
     <string name="synchronization_choose_title">Choose synchronization provider</string>
     <string name="synchronization_summary_unchoosen">You can choose from multiple providers to synchronize your subscriptions and episode play state with</string>
     <string name="dialog_choose_sync_service_title">Choose synchronization provider</string>
-    <string name="gpodnet_description">Gpodder.net is an open-source podcast synchronization service that you can install on your own server. Gpodder.net is independent of the AntennaPod project.</string>
-    <string name="synchronization_summary_nextcloud">Gpoddersync is an open-source Nextcloud app that you can easily install on your own server. The app is independent of the AntennaPod project.</string>
+    <string name="gpodnet_description">Gpodder.net is an open-source podcast synchronization service that you can install on your own server. Gpodder.net is independent of the PodVinci project.</string>
+    <string name="synchronization_summary_nextcloud">Gpoddersync is an open-source Nextcloud app that you can easily install on your own server. The app is independent of the PodVinci project.</string>
     <string name="synchronization_host_explanation">You can pick your own server to synchronize with. When you have identified your preferred synchronization server, please enter its address here.</string>
     <string name="synchronization_host_label">Server address</string>
     <string name="proceed_to_login_butLabel">Proceed to login</string>
-    <string name="synchronization_nextcloud_authenticate_browser">Grant access using the opened web browser and come back to AntennaPod.</string>
+    <string name="synchronization_nextcloud_authenticate_browser">Grant access using the opened web browser and come back to PodVinci.</string>
     <string name="gpodnetauth_login_butLabel">Login</string>
     <string name="synchronization_credentials_explanation">Please provide the credentials of your account on the synchronization server.</string>
     <string name="gpodnetauth_encryption_warning">Password and data are not encrypted!</string>
@@ -647,10 +647,10 @@
     <string name="synchronization_login_butLabel">Log in</string>
     <string name="synchronization_selectDevice_explanation">Please select the device that you created on the synchronization server or create a new one.</string>
     <string name="gpodnetauth_device_name">Device name</string>
-    <string name="gpodnetauth_device_name_default">AntennaPod on %1$s</string>
+    <string name="gpodnetauth_device_name_default">PodVinci on %1$s</string>
     <string name="gpodnetauth_existing_devices">Existing devices</string>
     <string name="gpodnetauth_create_device">Create device</string>
-    <string name="gpodnetauth_finish_descr">Congratulations! Your gpodder.net account is now linked with your device. AntennaPod will from now on automatically sync subscriptions on your device with your gpodder.net account.</string>
+    <string name="gpodnetauth_finish_descr">Congratulations! Your gpodder.net account is now linked with your device. PodVinci will from now on automatically sync subscriptions on your device with your gpodder.net account.</string>
     <string name="gpodnetauth_finish_butsyncnow">Start sync now</string>
     <string name="pref_gpodnet_setlogin_information_title">Change login information</string>
     <string name="pref_gpodnet_setlogin_information_sum">Change the login information for your gpodder.net account.</string>
@@ -669,7 +669,7 @@
 
     <!-- Directory chooser -->
     <string name="choose_data_directory">Choose data folder</string>
-    <string name="choose_data_directory_message">Please choose the base of your data folder. AntennaPod will create the appropriate sub-directories.</string>
+    <string name="choose_data_directory_message">Please choose the base of your data folder. PodVinci will create the appropriate sub-directories.</string>
     <string name="choose_data_directory_available_space">%1$s of %2$s free</string>
     <string name="pref_pausePlaybackForFocusLoss_sum">Pause playback instead of lowering volume when another app wants to play sounds</string>
     <string name="pref_pausePlaybackForFocusLoss_title">Pause for interruptions</string>
@@ -718,7 +718,7 @@
     <string name="exclude_episodes_shorter_than">Exclude episodes shorter than</string>
     <string name="keep_updated">Keep updated</string>
     <string name="keep_updated_summary">Include this podcast when (auto-)refreshing all podcasts</string>
-    <string name="auto_download_disabled_globally">Auto download is disabled in the main AntennaPod settings</string>
+    <string name="auto_download_disabled_globally">Auto download is disabled in the main PodVinci settings</string>
     <string name="statistics_time_played">Time played:</string>
     <string name="statistics_total_duration">Total duration (estimate):</string>
     <string name="statistics_episodes_on_device">Episodes on the device:</string>
@@ -729,7 +729,7 @@
     <string name="edit_url_menu">Edit feed URL</string>
     <string name="edit_url_confirmation_msg">Changing the RSS address can easily break the playback state and episode listings of the podcast. We do NOT recommend changing it and will NOT provide support if anything goes wrong. This cannot be undone. The broken subscription CANNOT be repaired by simply changing the address back. We suggest creating a backup before continuing.</string>
 
-    <!-- AntennaPodSP -->
+    <!-- PodVinciSP -->
     <string name="sp_apps_importing_feeds_msg">Importing subscriptions from single-purpose apps&#8230;</string>
 
     <!-- Add podcast fragment -->
@@ -755,7 +755,7 @@
     <string name="local_folder">Local folder</string>
     <string name="reconnect_local_folder">Re-connect local folder</string>
     <string name="reconnect_local_folder_warning">In case of permission denials, you can use this to re-connect to the exact same folder. Do not select another folder.</string>
-    <string name="local_feed_description">This virtual podcast was created by adding a folder to AntennaPod.</string>
+    <string name="local_feed_description">This virtual podcast was created by adding a folder to PodVinci.</string>
     <string name="unable_to_start_system_file_manager">Unable to start system file manager</string>
 
     <string name="filter">Filter</string>

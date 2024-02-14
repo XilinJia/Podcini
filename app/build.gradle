@@ -8,7 +8,7 @@ apply from: "../common.gradle"
 apply from: "../playFlavor.gradle"
 
 android {
-    namespace "de.danoeh.antennapod"
+    namespace "ac.mdiq.podvinci"
     lint {
         disable 'ObsoleteLintCustomCheck', 'CheckResult', 'UnusedAttribute', 'BatteryLife', 'InflateParams',
                 'RestrictedApi', 'TrustAllX509TrustManager', 'ExportedReceiver', 'AllowBackup', 'VectorDrawableCompat',
@@ -39,7 +39,7 @@ android {
 
         javaCompileOptions {
             annotationProcessorOptions {
-                arguments = [eventBusIndex: 'de.danoeh.antennapod.ApEventBusIndex']
+                arguments = [eventBusIndex: 'ac.mdiq.podvinci.ApEventBusIndex']
             }
         }
     }
@@ -56,10 +56,10 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix ".debug"
-            resValue "string", "provider_authority", "de.danoeh.antennapod.debug.provider"
+            resValue "string", "provider_authority", "ac.mdiq.podvinci.debug.provider"
         }
         release {
-            resValue "string", "provider_authority", "de.danoeh.antennapod.provider"
+            resValue "string", "provider_authority", "ac.mdiq.podvinci.provider"
             minifyEnabled true
             shrinkResources true
             signingConfig signingConfigs.releaseConfig
@@ -70,7 +70,6 @@ android {
     androidResources {
         additionalParameters "--no-version-vectors"
     }
-//    buildToolsVersion '34.0.0'
 }
 
 dependencies {
@@ -157,11 +156,11 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
 }
 
-if (project.hasProperty("antennaPodPlayPublisherCredentials")) {
+if (project.hasProperty("podvinciPlayPublisherCredentials")) {
     apply plugin: 'com.github.triplet.play'
     play {
         track.set('alpha')
-        serviceAccountCredentials.set(file(antennaPodPlayPublisherCredentials))
+        serviceAccountCredentials.set(file(podvinciPlayPublisherCredentials))
     }
 }
 

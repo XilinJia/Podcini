@@ -47,5 +47,5 @@
     <string name="echo_thanks_now_favorite">Now, let\'s take a look at your favorite podcasts…</string>
 
     <string name="echo_share_heading">My favorite podcasts</string>
-    <string name="echo_share">My year %d in podcasts. #AntennaPodEcho</string>
+    <string name="echo_share">My year %d in podcasts. #PodVinciEcho</string>
 </resources>

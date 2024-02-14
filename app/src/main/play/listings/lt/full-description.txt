@@ -1,8 +1,8 @@
-„AntennaPod“ yra tinklalaidžių tvarkytuvė ir leistuvė, įgalinanti prieigą prie milijonų nemokamų ir mokamų tinklalaidžių, nuo nepriklausomų kūrėjų iki didžiųjų leidyklų, tokių kaip „BBC“, „NPR“ ir „CNN“. Be vargo pridėkite, importuokite ir eksportuokite sklaidos kanalus naudodamiesi „iTunes“ tinklalaidžių duomenų baze, OPML failais ar RSS kanalais.
+„PodVinci“ yra tinklalaidžių tvarkytuvė ir leistuvė, įgalinanti prieigą prie milijonų nemokamų ir mokamų tinklalaidžių, nuo nepriklausomų kūrėjų iki didžiųjų leidyklų, tokių kaip „BBC“, „NPR“ ir „CNN“. Be vargo pridėkite, importuokite ir eksportuokite sklaidos kanalus naudodamiesi „iTunes“ tinklalaidžių duomenų baze, OPML failais ar RSS kanalais.
 Atsisiųskite, klausykitės iš karto ar dėkite epizodus į eilę ir mėgaukitės jais pasirinkę atkūrimo spartą, naudodamiesi skyrių palaikymu bei miego laikmačiu.
 Sutaupykite pastangų, baterijos energijos ir suvartotų mobiliųjų duomenų naudodamiesi galingais automatizacijos valdikliais epizodų atsiuntimui (nurodykite laiką, intervalą ir „WiFi“ tinklus) ir epizodų trynimui (remiantis Jūsų mėgstamaisiais ir atidėjimo nustatymais). 
 
-Sukurtas tinklalaidžių entuziastų, „AntennaPod“ yra laisvas visomis prasmėmis: atvirojo kodo, be mokesčių, be reklamų.
+Sukurtas tinklalaidžių entuziastų, „PodVinci“ yra laisvas visomis prasmėmis: atvirojo kodo, be mokesčių, be reklamų.
 
 <b>Importuokite, tvarkykite ir atkurkite</b>
 • Valdykite atkūrimą bet kur: pradžios ekrane, programų pranešimuose, ausinių ar „Bluetooth“ valdikliu
@@ -21,11 +21,11 @@ Sukurtas tinklalaidžių entuziastų, „AntennaPod“ yra laisvas visomis prasm
 • Pritaikykite savo aplinkai pasirinkę šviesią ar tamsią temą
 • Kurkite prenumeratų atsargines kopijas „gPodder.net“ ar OPML failais
 
-<b>Prisijunkite prie AntennaPod bendruomenės!</b>
-„AntennaPod“ vysto savanoriai. Ir Jūs galite prisidėti, nuo atsiliepimų iki programinio kodo!
+<b>Prisijunkite prie PodVinci bendruomenės!</b>
+„PodVinci“ vysto savanoriai. Ir Jūs galite prisidėti, nuo atsiliepimų iki programinio kodo!
 
 Draugiški mūsų forumo nariai pasiruošę padėti visais turimais klausimais. Kviečiame diskutuoti apie programėlės funkcijas bei bendrai apie tinklalaides.
-https://forum.antennapod.org/
+https://forum.podvinci.org/
 
 Prie vertimų galite prisidėti „Transifex“:
-https://www.transifex.com/antennapod/antennapod
+https://www.transifex.com/podvinci/podvinci

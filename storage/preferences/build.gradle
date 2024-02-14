@@ -6,7 +6,7 @@ plugins {
 apply from: "../../common.gradle"
 
 android {
-    namespace "de.danoeh.antennapod.storage.preferences"
+    namespace "ac.mdiq.podvinci.storage.preferences"
 
     lint {
         disable "StaticFieldLeak"

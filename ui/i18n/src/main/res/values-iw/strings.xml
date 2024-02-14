@@ -318,7 +318,7 @@
   <string name="download_type_feed">הזנה</string>
   <string name="download_type_media">קובץ מדיה</string>
   <string name="null_value_podcast_error">לא סופקו פרקים שניתן להציג.</string>
-  <string name="no_feed_url_podcast_found_by_search">לפודקאסט המוצע לא היה קישור RSS,‏ AntennaPod מצאה פודקאסט שכנראה יתאים</string>
+  <string name="no_feed_url_podcast_found_by_search">לפודקאסט המוצע לא היה קישור RSS,‏ PodVinci מצאה פודקאסט שכנראה יתאים</string>
   <string name="authentication_notification_title">נדרש אימות</string>
   <string name="confirm_mobile_download_dialog_title">אישור הורדה דרך רשת סלולרית</string>
   <string name="confirm_mobile_download_dialog_message">הורדה דרך חיבור סלולרי מושבתת בהגדרות. לאנטנה־פּוֹד יש אפשרות להוריד את הפרק הזה מאוחר יותר כשרשת אלחוטית תהיה זמינה.</string>
@@ -544,9 +544,9 @@
   <string name="pref_new_episodes_action_sum">פעולה שיש לנקוט מול פרקים חדשים</string>
   <!--About screen-->
   <string name="about_pref">על אודות</string>
-  <string name="antennapod_version">גרסת אנטנה־פּוֹד</string>
+  <string name="podvinci_version">גרסת אנטנה־פּוֹד</string>
   <string name="contributors">מתנדבים</string>
-  <string name="contributors_summary">כל אחד ואחת יכולים לסייע בשיפור AntennaPod באמצעות תרומת קוד, תרגום או באמצעות סיוע למשתמשים שלנו בפורום</string>
+  <string name="contributors_summary">כל אחד ואחת יכולים לסייע בשיפור PodVinci באמצעות תרומת קוד, תרגום או באמצעות סיוע למשתמשים שלנו בפורום</string>
   <string name="developers">מפתחים</string>
   <string name="translators">מתרגמים</string>
   <string name="special_thanks">תודות מיוחדות</string>
@@ -637,11 +637,11 @@
   <string name="synchronization_summary_unchoosen">אפשר לבחור בין מגוון ספקית לסנכרון המינויים ומצב נגינ הפרקים שלך עם</string>
   <string name="dialog_choose_sync_service_title">בחירת ספק סנכרון</string>
   <string name="gpodnet_description">Gpodder.net הוא שירות סנכרון פודקאסטים בקוד פתוח שניתן להתקין על שרת משלך. ל־Gpodder.net אין לו קשר למיזם אנטנה־פּוֹד.</string>
-  <string name="synchronization_summary_nextcloud">Gpoddersync הוא יישומון Nextcloud בקוד פתוח שניתן להתקין בקלות בשרת שלך. היישומון אינו תלוי במיזם AntennaPod.</string>
+  <string name="synchronization_summary_nextcloud">Gpoddersync הוא יישומון Nextcloud בקוד פתוח שניתן להתקין בקלות בשרת שלך. היישומון אינו תלוי במיזם PodVinci.</string>
   <string name="synchronization_host_explanation">אפשר לבחור שרת משלך להסתנכרן מולו. כשזיהית את שרת הסנכרון המועדף עליך, נא למלא את הכתובת שלו כאן.</string>
   <string name="synchronization_host_label">כתובת שרת</string>
   <string name="proceed_to_login_butLabel">המשך לכניסה</string>
-  <string name="synchronization_nextcloud_authenticate_browser">יש להעניק גישה באמצעות הדפדפן שנפתח ולחזור ל־AntennaPod.</string>
+  <string name="synchronization_nextcloud_authenticate_browser">יש להעניק גישה באמצעות הדפדפן שנפתח ולחזור ל־PodVinci.</string>
   <string name="gpodnetauth_login_butLabel">כניסה</string>
   <string name="synchronization_credentials_explanation">נא לספק את פרטי הגישה לחשבון שלך בשרת הסנכרון.</string>
   <string name="gpodnetauth_encryption_warning">הססמה והנתונים אינם מוצפנים!</string>
@@ -726,7 +726,7 @@
   <string name="statistics_view_all">להציג לכל הפודקאסטים »</string>
   <string name="edit_url_menu">עריכת כתובת ערוץ</string>
   <string name="edit_url_confirmation_msg">החלפת כתובת ה־RSS יכולה בקלות לפגוע במצב הנגינה והצגת הפרקים של הפודקאסט. אנו לא ממליצים להחליף אותה ולא נספק תמיכה אם משהו ישתבש. זאת פעולה בלתי הפיעה. לא ניתן לשקם מינויים פגומים על ידי החזרת הכתובת הקודמת. אנו מציעים לגבות באופן יסודי בטרם בחירה להמשיך בתהליך.</string>
-  <!--AntennaPodSP-->
+  <!--PodVinciSP-->
   <string name="sp_apps_importing_feeds_msg">מתבצע ייבוא מינויים מיישומונים ממוקדי מטרה…</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">חיפוש פודקאסט…</string>

@@ -5,7 +5,7 @@ plugins {
 apply from: "../../common.gradle"
 
 android {
-    namespace "de.danoeh.antennapod.ui.i18n"
+    namespace "ac.mdiq.podvinci.ui.i18n"
 
     lint {
         disable "Typos", "ExtraTranslation", "ImpliedQuantity",

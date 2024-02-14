@@ -1,8 +1,8 @@
-AntennaPod on podcastien hallintaan ja toistoon luotu sovellus, joka mahdollistaa pääsyn miljooniin ilmaisiin ja maksullisiin podcasteihin itsenäisistä podcast-tuottajista suuriin julkaisijoihin, kuten BBC, NPR ja CNN. Lisää, tuo ja vie syötteitä vaivattomasti iTunesin podcast-tietokantaa, OPML-tiedostoja tai yksinkertaisia RSS-osoitteita käyttäen.
+PodVinci on podcastien hallintaan ja toistoon luotu sovellus, joka mahdollistaa pääsyn miljooniin ilmaisiin ja maksullisiin podcasteihin itsenäisistä podcast-tuottajista suuriin julkaisijoihin, kuten BBC, NPR ja CNN. Lisää, tuo ja vie syötteitä vaivattomasti iTunesin podcast-tietokantaa, OPML-tiedostoja tai yksinkertaisia RSS-osoitteita käyttäen.
 Lataa, suoratoista tai lisää jonoonjaksoja ja nauti niitä säädettävällä toistonopeudella, kappaletuella ja uniajastimella.
 Säästä vaivaa, akkua ja mobiilidataa tehokkailla automatisoiduilla jaksojen lataustoiminnoilla (aseta ajat, aikavälit, WiFi-verkot) ja poistotoiminnoilla (perustuen suosikkeihin ja viiveasetuksiin).
 
-Podcasteihin uppoutuneihin luoma sovellus, AntennaPod on vapaa ja ilmainen kaikissa sanan merkityksissä: vapaa lähdekoodi, ei maksuja, ei mainoksia.
+Podcasteihin uppoutuneihin luoma sovellus, PodVinci on vapaa ja ilmainen kaikissa sanan merkityksissä: vapaa lähdekoodi, ei maksuja, ei mainoksia.
 
 <b>Tuo, organisoi, toista</b>
 • Hallitse toistoa mistä vain: kotinäytön pienoissovellluksesta, järjestelmän ilmoituksista, kuulokkeiden tai bluetoothin ohjaimista
@@ -21,11 +21,11 @@ Podcasteihin uppoutuneihin luoma sovellus, AntennaPod on vapaa ja ilmainen kaiki
 • Mukauta ympäristöösi käyttäen vaaleaa ja tummaa teemaa
 • Varmuuskopioi tilauksesi gPodder.net-integraatiolla ja OPML-viennillä
 
-<b>Liity AntennaPod-yhteisöön!</b>
-AntennaPod on vapaaehtoisten aktiivisessa kehityksessä. Sinä voit auttaa koodilla tai kommentilla!
+<b>Liity PodVinci-yhteisöön!</b>
+PodVinci on vapaaehtoisten aktiivisessa kehityksessä. Sinä voit auttaa koodilla tai kommentilla!
 
 Ystävälliset foorumin jäsenet vastaavat mielellään jokaiseen kysymykseesi. Kutsumme sinut keskustelemaan myös ominaisuuksista ja podcasteista yleisesti.
-https://forum.antennapod.org/
+https://forum.podvinci.org/
 
 Transifex on kielikäännöksien kirjoitusalusta:
-https://www.transifex.com/antennapod/antennapod
+https://www.transifex.com/podvinci/podvinci

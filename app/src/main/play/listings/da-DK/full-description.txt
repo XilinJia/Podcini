@@ -1,8 +1,8 @@
-AntennaPod er en podcast-app der giver dig øjeblikkelig adgang til millioner af gratis og betalte podcasts, fra selvstændige udgivere til store medievirksomheder som BBC, NPR og CNN. Tilføj, importér og eksportér deres feeds uden bøvl ved brug af iTunes-podcastdatabasen, OPML-filer eller simple RSS-adresser.
+PodVinci er en podcast-app der giver dig øjeblikkelig adgang til millioner af gratis og betalte podcasts, fra selvstændige udgivere til store medievirksomheder som BBC, NPR og CNN. Tilføj, importér og eksportér deres feeds uden bøvl ved brug af iTunes-podcastdatabasen, OPML-filer eller simple RSS-adresser.
 Hent, stream eller sæt afsnit i kø og nyd dem, som du vil med justerbar afspilningshastighed, kapitelunderstøttelse og automatisk slukkefunktion.
 Spar kræfter, batteristrøm og mobildataforbrug med effektive automatiseringsfunktioner til download af afsnit (angiv tidspunkter og WiFi-netværker) og sletning af afsnit (baseret på dine favoritter og indstillinger for forsinkelse).
 
-AntennaPod er lavet af podcast-entusiaster og er fri og gratis i alle betydninger: åben kildekode, gratis, ingen reklamer.
+PodVinci er lavet af podcast-entusiaster og er fri og gratis i alle betydninger: åben kildekode, gratis, ingen reklamer.
 
 <b>Importér, organiser og afspil</b>
 • Håndter afspilning fra hvor som helst: widget på startsskærmen, systemnotifikation, samt hovedtelefon og bluetooth-styring
@@ -21,11 +21,11 @@ Håndter hukommelse ved at indstille antallet af afsnit der gemmes, smart sletni
 Tilpas app'en til dit miljø med det lyse eller mørke tema
 Backup dine abonnementer med gpodder.net integreationen og OPML-eksport
 
-<b>Kom med i AntennaPod-fællesskabet!</b>
-AntennaPod er under aktiv udvikling af frivillige. Du kan også bidrage, enten med kode eller kommentarer!
+<b>Kom med i PodVinci-fællesskabet!</b>
+PodVinci er under aktiv udvikling af frivillige. Du kan også bidrage, enten med kode eller kommentarer!
 
 Vores venlige forummedlemmer vil gerne hjælpe med ethvert spørgsmål du skulle have. Du er også velkommen til at diskutere funktionalitet og podcasts generelt.
-https://forum.antennapod.org/
+https://forum.podvinci.org/
 
 Transifex er stedet hvor du kan hjælpe med at oversætte:
-https://www.transifex.com/antennapod/antennapod
+https://www.transifex.com/podvinci/podvinci

@@ -51,9 +51,9 @@
   <string name="home_continue_title">Continuă ascultarea</string>
   <string name="home_new_title">Vezi ce este nou</string>
   <string name="home_downloads_title">Gestionați descărcările</string>
-  <string name="home_welcome_title">Bine ați venit la AntennaPod!</string>
+  <string name="home_welcome_title">Bine ați venit la PodVinci!</string>
   <string name="home_welcome_text">Nu ești abonat la nici-un podcast. Deschide meniul din laterală pentru a adăuga un podcast.</string>
-  <string name="notification_permission_text">AntennaPod necesită permisiunea ta pentru a afișa notificări. În mod implicit AntennaPod afișează notificări doar în momentul în care un podcast este descărcat sau în momentul în care apare o eroare.</string>
+  <string name="notification_permission_text">PodVinci necesită permisiunea ta pentru a afișa notificări. În mod implicit PodVinci afișează notificări doar în momentul în care un podcast este descărcat sau în momentul în care apare o eroare.</string>
   <string name="notification_permission_denied">Ați refuzat permisiunea.</string>
   <string name="notification_permission_deny_warning">Dacă dezactivezi notificările și ceva nu funcționează corect, există posibilitatea de a nu putea să afli ce a mers greșit.</string>
   <string name="deny_label">Refuză</string>
@@ -260,7 +260,7 @@
   <string name="skip_episode_label">Sari peste episod</string>
   <string name="reset_position">Resetează poziția de redare</string>
   <string name="no_items_selected">Niciun articol selectat</string>
-  <string name="delete_local_feed_warning_body">Ștergerea episoadelor înseamnă înlăturarea acestora din AntennaPod și eliminarea fișierelor media din memoria dispozitivului dumneavoastră. Aceste episoade nu vor putea fi descărcate din nou folosind AntennaPod.</string>
+  <string name="delete_local_feed_warning_body">Ștergerea episoadelor înseamnă înlăturarea acestora din PodVinci și eliminarea fișierelor media din memoria dispozitivului dumneavoastră. Aceste episoade nu vor putea fi descărcate din nou folosind PodVinci.</string>
   <!--Download messages and labels-->
   <string name="download_successful">de succes</string>
   <string name="download_pending">Descărcare în așteptare</string>
@@ -303,10 +303,10 @@
   <string name="download_type_feed">Feed</string>
   <string name="download_type_media">Fișier media</string>
   <string name="null_value_podcast_error">Nu a fost furnizat niciun podcast ce ar putea fi arătat.</string>
-  <string name="no_feed_url_podcast_found_by_search">Podcastul sugerat nu are un link RSS, AntennaPod a găsit un podcast care s-ar putea potrivi</string>
+  <string name="no_feed_url_podcast_found_by_search">Podcastul sugerat nu are un link RSS, PodVinci a găsit un podcast care s-ar putea potrivi</string>
   <string name="authentication_notification_title">Autentificare necesară</string>
   <string name="confirm_mobile_download_dialog_title">Confirmă descărcarea folosind datele mobile</string>
-  <string name="confirm_mobile_download_dialog_message">Descărcarea folosind conexiunea de date mobile este oprită. AntennaPod poate descărca acest episod mai târziu automat în momentul în care este disponibilă o conexiune Wi-Fi.</string>
+  <string name="confirm_mobile_download_dialog_message">Descărcarea folosind conexiunea de date mobile este oprită. PodVinci poate descărca acest episod mai târziu automat în momentul în care este disponibilă o conexiune Wi-Fi.</string>
   <string name="confirm_mobile_download_dialog_message_vpn">Aplicația ta VPN pretinde a fi o rețea de date mobilă(rețea contorizată). Reîmprospătarea podcasturilor folosind o conexiune de date mobile este dezactivată în setări. Dacă dorești să rezolvi această problemă re rugăm să contactezi dezvoltatorii aplicației tale VPN.</string>
   <string name="confirm_mobile_download_dialog_download_later">Descarcă mai târziu</string>
   <string name="confirm_mobile_download_dialog_allow_this_time">Descarcă oricum</string>
@@ -322,7 +322,7 @@
   <string name="playback_error_source">Nu se pot accesa fișierele media</string>
   <string name="playback_error_unknown">Eroare necuonscută</string>
   <string name="no_media_playing_label">Nu se ascultă nimic</string>
-  <string name="unknown_media_key">AntennaPod - tastă media necunoscută: %1$d</string>
+  <string name="unknown_media_key">PodVinci - tastă media necunoscută: %1$d</string>
   <string name="error_file_not_found">Fișierul nu a fost găsit</string>
   <string name="no_media_label">Obiectul nu conține un fișier media</string>
   <!--Queue operations-->
@@ -400,7 +400,7 @@
   <string name="pref_auto_delete_title">Șterge automat</string>
   <string name="pref_auto_local_delete_title">Ștergere automată din dosarul local</string>
   <string name="pref_auto_local_delete_sum">Include dosare locale în funcționalitatea de ștergere automată</string>
-  <string name="pref_auto_local_delete_dialog_body">Reține faptul ca pentru dosare locale această funcție va elimina episoade din AntennaPod și va șterge fișiere media din memoria dispozitivului folosit. Aceste fișiere nu vor mai putea fi descărcate din nou folosind AntennaPod. Dorești activarea duncției de ștergere automată?</string>
+  <string name="pref_auto_local_delete_dialog_body">Reține faptul ca pentru dosare locale această funcție va elimina episoade din PodVinci și va șterge fișiere media din memoria dispozitivului folosit. Aceste fișiere nu vor mai putea fi descărcate din nou folosind PodVinci. Dorești activarea duncției de ștergere automată?</string>
   <string name="pref_smart_mark_as_played_sum">Marchează episoadele ca redate chiar dacă un anumit număr de secunde din episod au rămas</string>
   <string name="pref_smart_mark_as_played_title">Marchează inteligent ca fiind redate</string>
   <string name="pref_skip_keeps_episodes_sum">Păstrează episoade când acestea sunt sărite</string>
@@ -412,7 +412,7 @@
   <string name="downloads_pref">Descărcări</string>
   <string name="downloads_pref_sum">Interval actualizare, Date mobile, Descărcări automate, Ștergeri automate</string>
   <string name="feed_refresh_title">Reîmprospătează podcasturile</string>
-  <string name="feed_refresh_sum">Specifică un anumit interval în care AntennaPod caută episoade noi automat</string>
+  <string name="feed_refresh_sum">Specifică un anumit interval în care PodVinci caută episoade noi automat</string>
   <string name="feed_refresh_never">Nicio data</string>
   <string name="feed_every_hour">La fiecare oră</string>
   <string name="feed_every_2_hours">La fiecare 2 ore</string>
@@ -529,15 +529,15 @@
   <string name="pref_new_episodes_action_sum">Acțiunea executată pentru episoade noi</string>
   <!--About screen-->
   <string name="about_pref">Despre</string>
-  <string name="antennapod_version">Versiune AntennaPod</string>
+  <string name="podvinci_version">Versiune PodVinci</string>
   <string name="contributors">Cobtributori</string>
-  <string name="contributors_summary">Toată lumea poate ajuta să facă AntennaPod mai bun; prin cod, traduceri sau prin ajutarea utilizatorilor de pe forumurile noastre</string>
+  <string name="contributors_summary">Toată lumea poate ajuta să facă PodVinci mai bun; prin cod, traduceri sau prin ajutarea utilizatorilor de pe forumurile noastre</string>
   <string name="developers">Dezvoltatori</string>
   <string name="translators">Traducători</string>
   <string name="special_thanks">Mulțumiri speciale</string>
   <string name="privacy_policy">Politică de confidențialitate</string>
   <string name="licenses">Licențe</string>
-  <string name="licenses_summary">AntennaPod folosește alte softwareuri excelente</string>
+  <string name="licenses_summary">PodVinci folosește alte softwareuri excelente</string>
   <!--Search-->
   <string name="search_status_no_results">Nu s-a găsit nici un rezultat</string>
   <string name="type_to_search">Introdu o întrebare pentru a începe căutarea </string>
@@ -561,8 +561,8 @@
   <string name="html_export_summary">Arată abonamentele tale la un prieten</string>
   <string name="opml_export_summary">Transferă abonamentele tale către o alta aplicație</string>
   <string name="opml_import_summary">Importă abonamentele tale din altă aplicație de podcasturi</string>
-  <string name="database_export_summary">Transferă abonamentele, episoadele redate și coada de redare către AntennaPod de pe alt dispozitiv</string>
-  <string name="database_import_summary">Importă baza de date AntennaPod din alt dispozitiv</string>
+  <string name="database_export_summary">Transferă abonamentele, episoadele redate și coada de redare către PodVinci de pe alt dispozitiv</string>
+  <string name="database_import_summary">Importă baza de date PodVinci din alt dispozitiv</string>
   <string name="opml_import_label">Importul fișierelor OPML</string>
   <string name="opml_add_podcast_label">Importă lista de podcasturi (OPML)</string>
   <string name="opml_reader_error">A apărut o eroare în timpul citirii fișierului OPML:</string>
@@ -579,8 +579,8 @@
   <string name="export_success_title">Exportarea a reușit</string>
   <string name="opml_import_ask_read_permission">Accesarea memoriei externe este necesară pentru a citi fișierul OPML</string>
   <string name="successful_import_label">Importul a reușit</string>
-  <string name="import_ok">Vă rugăm să apăsa|ți OK pentru a reporni AntennaPod</string>
-  <string name="import_no_downgrade">Această bază de date a fost exportată cu o versiune mai nouă de AntennaPod, Versiunea curentă a aplicației tale nu poate să folosească acest fișier.</string>
+  <string name="import_ok">Vă rugăm să apăsa|ți OK pentru a reporni PodVinci</string>
+  <string name="import_no_downgrade">Această bază de date a fost exportată cu o versiune mai nouă de PodVinci, Versiunea curentă a aplicației tale nu poate să folosească acest fișier.</string>
   <string name="favorites_export_label">Exportă favorite</string>
   <string name="favorites_export_summary">Exportă favoritele salvate într-un fișier</string>
   <!--Sleep timer-->
@@ -618,12 +618,12 @@
   <string name="synchronization_choose_title">Alege furnizorul de sincronizare</string>
   <string name="synchronization_summary_unchoosen">Puteți alege dintre furnizori multipli pentru a vă sincroniza abonamentele dumneavoastră și starea episoadelor</string>
   <string name="dialog_choose_sync_service_title">Alege furnizorul de sincronizare</string>
-  <string name="gpodnet_description">Gpodder.net este un serviciu de sincronizare cu sursă deschisă, ce poate fi instalat pe propriul server. Gpodder.net este independent de proiectul AntennaPod.</string>
-  <string name="synchronization_summary_nextcloud">Gpoddersync este o aplicație Nextcould cu sursă deschisă ce poate fii instalată cu ușurință pe serverul dumneavoastră. Aceasta aplicație este independenta de proiectul AntennaPod.</string>
+  <string name="gpodnet_description">Gpodder.net este un serviciu de sincronizare cu sursă deschisă, ce poate fi instalat pe propriul server. Gpodder.net este independent de proiectul PodVinci.</string>
+  <string name="synchronization_summary_nextcloud">Gpoddersync este o aplicație Nextcould cu sursă deschisă ce poate fii instalată cu ușurință pe serverul dumneavoastră. Aceasta aplicație este independenta de proiectul PodVinci.</string>
   <string name="synchronization_host_explanation">Poți să îți alegi propriul tău server pentru a sincroniza datele. Când ai găsit un server de sincronizare poți introduce adresa aici.</string>
   <string name="synchronization_host_label">Adresă server</string>
   <string name="proceed_to_login_butLabel">Continuă spre autentificare</string>
-  <string name="synchronization_nextcloud_authenticate_browser">Oferă acces folosint web browserul deschis și întorcețivă la AntennaPod.</string>
+  <string name="synchronization_nextcloud_authenticate_browser">Oferă acces folosint web browserul deschis și întorcețivă la PodVinci.</string>
   <string name="gpodnetauth_login_butLabel">Conectare</string>
   <string name="synchronization_credentials_explanation">Te rugăm să introduci datele de autentificare pentru serverul de sincronizare.</string>
   <string name="gpodnetauth_encryption_warning">Parola și datele nu sunt criptate!</string>
@@ -632,10 +632,10 @@
   <string name="synchronization_login_butLabel">Autentificare</string>
   <string name="synchronization_selectDevice_explanation">Te rugăm să selectezi dispozitivul creat pe server sau să creezi un dispozitiv nou.</string>
   <string name="gpodnetauth_device_name">Numele dispozitivului</string>
-  <string name="gpodnetauth_device_name_default">AntennaPod pe %1$s</string>
+  <string name="gpodnetauth_device_name_default">PodVinci pe %1$s</string>
   <string name="gpodnetauth_existing_devices">Dispozitive existente</string>
   <string name="gpodnetauth_create_device">Creează un dispozitiv</string>
-  <string name="gpodnetauth_finish_descr">Felicitări! contul tău gpodder.net este acum conectat cu dispozitivul tău. AntennaPod va sincroniza automat toate abonamentele de pe dispozitivul dumneavoastra cu contul gpodder.net</string>
+  <string name="gpodnetauth_finish_descr">Felicitări! contul tău gpodder.net este acum conectat cu dispozitivul tău. PodVinci va sincroniza automat toate abonamentele de pe dispozitivul dumneavoastra cu contul gpodder.net</string>
   <string name="gpodnetauth_finish_butsyncnow">Începe sincronizarea acum</string>
   <string name="pref_gpodnet_setlogin_information_title">Schimbă informațiile de autentificare</string>
   <string name="pref_gpodnet_setlogin_information_sum">Schimbă informațiile de autentificare pentru contul tău gpodder.net.</string>
@@ -653,7 +653,7 @@
   <string name="gpodnetsync_username_characters_error">Numele contului poate conține numai litere, numere, cratime și bară jos.</string>
   <!--Directory chooser-->
   <string name="choose_data_directory">Alege fișier date</string>
-  <string name="choose_data_directory_message">Vă rugăm alegeți directorul principal pentru date. AntennaPod va creea toate sub-directoarele necesare.</string>
+  <string name="choose_data_directory_message">Vă rugăm alegeți directorul principal pentru date. PodVinci va creea toate sub-directoarele necesare.</string>
   <string name="choose_data_directory_available_space">%1$s din %2$s libere</string>
   <string name="pref_pausePlaybackForFocusLoss_sum">Oprește redarea în locul micșorării volumului când o altă aplicație dorește sa redea sunete</string>
   <string name="pref_pausePlaybackForFocusLoss_title">Pauză pentru întreruperi</string>
@@ -699,7 +699,7 @@
   <string name="exclude_episodes_shorter_than">Exclude episoadele mai scurte de</string>
   <string name="keep_updated">Menține actualizat</string>
   <string name="keep_updated_summary">Include acest podcast când reîmprospătarea automată a podcasturilor este pornită</string>
-  <string name="auto_download_disabled_globally">Descărcarea automată este oprită în setările generale ale AntennaPod</string>
+  <string name="auto_download_disabled_globally">Descărcarea automată este oprită în setările generale ale PodVinci</string>
   <string name="statistics_time_played">Timpul redat:</string>
   <string name="statistics_total_duration">Durata totală (estimată):</string>
   <string name="statistics_episodes_on_device">Episoade pe acest dispozitiv:</string>
@@ -708,7 +708,7 @@
   <string name="statistics_view_all">Vizualizare a tuturor podcasturilor »</string>
   <string name="edit_url_menu">Editează fluxurile URL</string>
   <string name="edit_url_confirmation_msg">Schimbarea adresei RSS poate distruge cu ușurință starea de redare și listele de episoade ale podcastului. NU recomandăm schimbarea acestuia și NU vă vom oferi asistență dacă ceva nu merge bine. Acest lucru nu poate fi anulat. Abonamentul defect NU POATE fi reparat prin simpla schimbare a adresei înapoi. Vă sugerăm să creați o copie de rezervă înainte de a continua.</string>
-  <!--AntennaPodSP-->
+  <!--PodVinciSP-->
   <string name="sp_apps_importing_feeds_msg">Importare abonamente din aplicații cu un singur scop...</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">Caută podcast...</string>
@@ -731,7 +731,7 @@
   <string name="local_folder">Director local</string>
   <string name="reconnect_local_folder">Reconectează directorul local</string>
   <string name="reconnect_local_folder_warning">În cazul în care permisiunile sunt refuzate, poți sa folosești această opțiune pentru a te reconecta la exact același director. Nu selecta alt director.</string>
-  <string name="local_feed_description">Acest podcast virtual a fost creat prin adăugarea unui director la AntennaPod.</string>
+  <string name="local_feed_description">Acest podcast virtual a fost creat prin adăugarea unui director la PodVinci.</string>
   <string name="unable_to_start_system_file_manager">Incapabil de a porni sistemul de management al fișierelor</string>
   <string name="filter">Filtrează</string>
   <string name="hide_is_favorite_label">Este favorit</string>

@@ -50,7 +50,7 @@
   <string name="home_continue_title">Luister verder</string>
   <string name="home_new_title">Bekijk wat er nieuw is</string>
   <string name="home_downloads_title">Downloads beheren</string>
-  <string name="home_welcome_title">Welkom bij AntennaPod!</string>
+  <string name="home_welcome_title">Welkom bij PodVinci!</string>
   <string name="home_welcome_text">Je bent nog niet geabonneerd op een podcast. Open het zijpaneel om er een toe te voegen.</string>
   <string name="notification_permission_denied">Toestemming geweigerd</string>
   <string name="open_settings">Instellingen openen</string>
@@ -268,7 +268,7 @@
   <string name="download_type_feed">Feed</string>
   <string name="download_type_media">Mediabestand</string>
   <string name="null_value_podcast_error">Er is geen podcast verstrekt die kon worden getoond.</string>
-  <string name="no_feed_url_podcast_found_by_search">De voorgestelde podcast bevat geen RSS link, Antennapod vond mogelijk een alternatief</string>
+  <string name="no_feed_url_podcast_found_by_search">De voorgestelde podcast bevat geen RSS link, PodVinci vond mogelijk een alternatief</string>
   <string name="authentication_notification_title">Authenticatie vereist</string>
   <string name="confirm_mobile_download_dialog_title">Bevestig downloaden via mobiel internet</string>
   <string name="confirm_mobile_streaming_notification_title">Bevestig streamen via mobiel internet</string>
@@ -282,7 +282,7 @@
   <string name="playback_error_source">Geen toegang tot mediabestand</string>
   <string name="playback_error_unknown">Onbekende fout</string>
   <string name="no_media_playing_label">Er wordt geen media afgespeeld</string>
-  <string name="unknown_media_key">AntennaPod - onbekende mediasleutel: %1$d</string>
+  <string name="unknown_media_key">PodVinci - onbekende mediasleutel: %1$d</string>
   <string name="error_file_not_found">Bestand niet aangetroffen</string>
   <string name="no_media_label">Het item bevat geen mediabestand</string>
   <!--Queue operations-->
@@ -441,16 +441,16 @@
   <string name="pref_feed_settings_dialog_msg">Deze instelling wordt per podcast in- of uitgeschakeld. Pas aan door de podcastpagina te openen</string>
   <string name="pref_contribute">Bijdragen</string>
   <!--About screen-->
-  <string name="about_pref">Over AntennaPod</string>
-  <string name="antennapod_version">AntennaPod-versie</string>
+  <string name="about_pref">Over PodVinci</string>
+  <string name="podvinci_version">PodVinci-versie</string>
   <string name="contributors">Bijdragers</string>
-  <string name="contributors_summary">Iedereen kan helpen AntennaPod te verbeteren middels programmeren, vertalen of het helpen van gebruikers op het forum</string>
+  <string name="contributors_summary">Iedereen kan helpen PodVinci te verbeteren middels programmeren, vertalen of het helpen van gebruikers op het forum</string>
   <string name="developers">Ontwikkelaars</string>
   <string name="translators">Vertalers</string>
   <string name="special_thanks">Met dank aan</string>
   <string name="privacy_policy">Privacybeleid</string>
   <string name="licenses">Licenties</string>
-  <string name="licenses_summary">AntennaPod maakt gebruik van andere geweldige software</string>
+  <string name="licenses_summary">PodVinci maakt gebruik van andere geweldige software</string>
   <!--Search-->
   <string name="search_status_no_results">Er zijn geen resultaten gevonden</string>
   <string name="type_to_search">Typ een zoekopdracht</string>
@@ -473,8 +473,8 @@
   <string name="html_export_summary">Abonnementen delen met een ander</string>
   <string name="opml_export_summary">Abonnementen overzetten naar een andere podcast-app</string>
   <string name="opml_import_summary">Abonnementen importeren uit andere podcast-app</string>
-  <string name="database_export_summary">Abonnementen, beluisterde afleveringen en wachtrij overzetten naar AntennaPod op een ander toestel</string>
-  <string name="database_import_summary">AntennaPod database van een ander toestel importeren</string>
+  <string name="database_export_summary">Abonnementen, beluisterde afleveringen en wachtrij overzetten naar PodVinci op een ander toestel</string>
+  <string name="database_import_summary">PodVinci database van een ander toestel importeren</string>
   <string name="opml_import_label">OPML importeren</string>
   <string name="opml_add_podcast_label">Podcastlijst (opml) importeren</string>
   <string name="opml_reader_error">Er is iets misgegaan tijdens het lezen van het OPML-bestand:</string>
@@ -491,8 +491,8 @@
   <string name="export_success_title">Geëxporteerd</string>
   <string name="opml_import_ask_read_permission">Toegang tot externe locaties is nodig om het OPML-bestand te kunnen lezen</string>
   <string name="successful_import_label">Importeren voltooid</string>
-  <string name="import_ok">Druk op \'OK\' om AntennaPod opnieuw te starten.</string>
-  <string name="import_no_downgrade">Deze database is geëxporteerd door een nieuwere versie van Antennapod. De huidige versie weet nog niet hoe daar mee om te gaan.</string>
+  <string name="import_ok">Druk op \'OK\' om PodVinci opnieuw te starten.</string>
+  <string name="import_no_downgrade">Deze database is geëxporteerd door een nieuwere versie van PodVinci. De huidige versie weet nog niet hoe daar mee om te gaan.</string>
   <string name="favorites_export_label">Favorieten exporteren</string>
   <string name="favorites_export_summary">Exporteer opgeslagen favorieten naar een bestand</string>
   <!--Sleep timer-->
@@ -523,12 +523,12 @@
   <string name="synchronization_choose_title">Kies een synchronisatiedienst</string>
   <string name="synchronization_summary_unchoosen">Er is keuze uit meerdere aanbieders om de abonnementen en aflevering-stand mee te synchroniseren</string>
   <string name="dialog_choose_sync_service_title">Kies een synchronisatiedienst</string>
-  <string name="gpodnet_description">Gpodder.net is een opensource-podcastsynchronisatiedienst die je op je eigen server kunt installeren. Let op: Gpodder.net is niet verbonden aan het AntennaPod-project.</string>
-  <string name="synchronization_summary_nextcloud">Gpoddersync kan als open source Nextcloud-app op een eigen server geïnstalleerd worden. De app is niet betrokken bij het AntennaPod-project.</string>
+  <string name="gpodnet_description">Gpodder.net is een opensource-podcastsynchronisatiedienst die je op je eigen server kunt installeren. Let op: Gpodder.net is niet verbonden aan het PodVinci-project.</string>
+  <string name="synchronization_summary_nextcloud">Gpoddersync kan als open source Nextcloud-app op een eigen server geïnstalleerd worden. De app is niet betrokken bij het PodVinci-project.</string>
   <string name="synchronization_host_explanation">Je kunt je eigen synchronisatieserver kiezen. Als je voorkeur voor een bepaalde server hebt, voer dan hier het adres ervan in.</string>
   <string name="synchronization_host_label">Serveradres</string>
   <string name="proceed_to_login_butLabel">Doorgaan met inloggen</string>
-  <string name="synchronization_nextcloud_authenticate_browser">Verleen toegang in de geopende webbrowser en keer terug naar AntennaPod.</string>
+  <string name="synchronization_nextcloud_authenticate_browser">Verleen toegang in de geopende webbrowser en keer terug naar PodVinci.</string>
   <string name="gpodnetauth_login_butLabel">Inloggen</string>
   <string name="synchronization_credentials_explanation">Voer de inloggegevens van je serveraccount in.</string>
   <string name="gpodnetauth_encryption_warning">Het wachtwoord en de gegevens zijn onversleuteld!</string>
@@ -537,10 +537,10 @@
   <string name="synchronization_login_butLabel">Inloggen</string>
   <string name="synchronization_selectDevice_explanation">Kies het op de server toegevoegde apparaat of voeg een nieuw apparaat toe.</string>
   <string name="gpodnetauth_device_name">Toestelnaam</string>
-  <string name="gpodnetauth_device_name_default">AntennaPod op %1$s</string>
+  <string name="gpodnetauth_device_name_default">PodVinci op %1$s</string>
   <string name="gpodnetauth_existing_devices">Bestaande toestellen</string>
   <string name="gpodnetauth_create_device">Toestel toevoegen</string>
-  <string name="gpodnetauth_finish_descr">Gefeliciteerd! het gpodder.net-account is nu gekoppeld. AntennaPod synchroniseert voortaan de abonnementen op het toestel automatisch met het gpodder.net-account</string>
+  <string name="gpodnetauth_finish_descr">Gefeliciteerd! het gpodder.net-account is nu gekoppeld. PodVinci synchroniseert voortaan de abonnementen op het toestel automatisch met het gpodder.net-account</string>
   <string name="gpodnetauth_finish_butsyncnow">Nu synchroniseren</string>
   <string name="pref_gpodnet_setlogin_information_title">Inloggegevens wijzigen</string>
   <string name="pref_gpodnet_setlogin_information_sum">Wijzig de inloggegevens van je gpodder.net-account.</string>
@@ -557,7 +557,7 @@
   <string name="gpodnetsync_pref_report_failed">Mislukt</string>
   <string name="gpodnetsync_username_characters_error">Gebruikersnamen mogen alleen letters, cijfers en (onderliggende) streepjes bevatten.</string>
   <!--Directory chooser-->
-  <string name="choose_data_directory_message">Kies de hoofdmap voor gegevens. AntennaPod zal de benodigde submappen aanmaken.</string>
+  <string name="choose_data_directory_message">Kies de hoofdmap voor gegevens. PodVinci zal de benodigde submappen aanmaken.</string>
   <string name="choose_data_directory_available_space">%1$s van %2$s beschikbaar</string>
   <string name="pref_pausePlaybackForFocusLoss_sum">Onderbreek het afspelen in plaats van het volume te verlagen wanneer een andere app geluiden wil afspelen</string>
   <!--Online feed view-->
@@ -590,7 +590,7 @@
   <string name="include_terms">Afleveringen die onderstaande termen bevatten opnemen</string>
   <string name="exclude_episodes_shorter_than">Afleveringen uitsluiten die korter zijn dan</string>
   <string name="keep_updated_summary">Deze podcast meenemen bij het (automatisch) vernieuwen van alle podcasts</string>
-  <string name="auto_download_disabled_globally">Automatisch downloaden is uitgeschakeld in de AntennaPod-instellingen</string>
+  <string name="auto_download_disabled_globally">Automatisch downloaden is uitgeschakeld in de PodVinci-instellingen</string>
   <string name="statistics_time_played">Afgespeeld:</string>
   <string name="statistics_total_duration">Totale duur (geschat):</string>
   <string name="statistics_episodes_on_device">Afleveringen op het toestel:</string>
@@ -599,7 +599,7 @@
   <string name="statistics_view_all">Alle podcasts tonen »</string>
   <string name="edit_url_menu">Feed-url bewerken</string>
   <string name="edit_url_confirmation_msg">Let op: door het aanpassen van het rss-adres kan de afspeelstatus en afleveringenlijst worden vergeten. We raden NIET aan om dit te doen en bieden GEEN ondersteuning als er iets misgaat. Deze actie is tevens onomkeerbaar, dus het oorspronkelijke adres kan niet worden hersteld. Maak van tevoren een reservekopie.</string>
-  <!--AntennaPodSP-->
+  <!--PodVinciSP-->
   <string name="sp_apps_importing_feeds_msg">Bezig met importeren van abonnementen uit eenmalige apps...</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">Podcast zoeken...</string>
@@ -619,7 +619,7 @@
   <string name="local_folder">Lokale map</string>
   <string name="reconnect_local_folder">Lokale map opnieuw koppelen</string>
   <string name="reconnect_local_folder_warning">Als je geen rechten hebt, gebruik dan dit om de map opnieuw te koppelen. Kies geen andere map.</string>
-  <string name="local_feed_description">De virtuele podcast is aangemaakt door een aan AntennaPod toegevoegde map.</string>
+  <string name="local_feed_description">De virtuele podcast is aangemaakt door een aan PodVinci toegevoegde map.</string>
   <string name="unable_to_start_system_file_manager">Kan systeembestandsbeheer niet openen</string>
   <string name="filter">Filter</string>
   <string name="hide_is_favorite_label">Gemarkeerd als favoriet</string>

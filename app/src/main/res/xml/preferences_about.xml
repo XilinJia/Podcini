@@ -6,7 +6,7 @@
             android:layout="@layout/about_teaser"/>
     <Preference
             android:key="about_version"
-            android:title="@string/antennapod_version"
+            android:title="@string/podvinci_version"
             android:icon="@drawable/ic_star"
             android:summary="1.7.2 (asd8qs)"/>
     <Preference
@@ -17,7 +17,7 @@
     <Preference
             android:key="about_privacy_policy"
             android:icon="@drawable/ic_questionmark"
-            android:summary="www.antennapod.org/privacy"
+            android:summary="www.podvinci.org/privacy"
             android:title="@string/privacy_policy"/>
     <Preference
             android:key="about_licenses"

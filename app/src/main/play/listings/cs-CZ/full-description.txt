@@ -1,8 +1,8 @@
-AntennaPod je správce a přehrávač podcastů, co vám umožňuje okamžitý přístup k milionům podcastů (placené i zdarma) od nezávislých autorů, přes velké zahraniční korporace jako BBC, NPR a CNN, až po české DVTV nebo Český rozhlas. Své podcasty můžete jednoduše přidávat, importovat i exportovat pomocí iTunes, OPML souborů nebo RSS.
+PodVinci je správce a přehrávač podcastů, co vám umožňuje okamžitý přístup k milionům podcastů (placené i zdarma) od nezávislých autorů, přes velké zahraniční korporace jako BBC, NPR a CNN, až po české DVTV nebo Český rozhlas. Své podcasty můžete jednoduše přidávat, importovat i exportovat pomocí iTunes, OPML souborů nebo RSS.
 Stahujte, streamujte nebo si vytvořte frontu epizod a užijte si poslech tak, jak ho máte rádi s nastavitelnou rychlostí přehrávání, podporou kapitol a s časovačem vypnutí.
 Ušetři si námahu, baterku i mobilní data s pomocí robustní automatické kontroly nad stahováním epizod (urči časy, intervaly a WIFI sítě) a mazáním epizod (na základě oblíbenosti a nastavení zpoždění).
 
-Vytvořeno nadšenci do podcastů, AntennaPod je software s otevřeným zdrojovým kódem, zdarma a bez reklam.
+Vytvořeno nadšenci do podcastů, PodVinci je software s otevřeným zdrojovým kódem, zdarma a bez reklam.
 
 <b>Importujte, organizujte a přehrávejte</b>
 • Ovládejte přehrávání odkudkoli: z widgetu na domovské obrazovce, z oznámení nebo pomocí tlačítek na sluchátkách včetně Bluetooth
@@ -21,11 +21,11 @@ Vytvořeno nadšenci do podcastů, AntennaPod je software s otevřeným zdrojov�
 • Přizpůsobte si aplikaci svému prostředí pomocí světlého nebo tmavého motivu
 • Zálohujte své sbírky pomocí služby gPodder.net nebo exportem OPML souborů
 
-<b>Přidejte se ke komunitě AntennaPod!</b>
-AntennaPod je aktivně vyvíjen dobrovolníky. Můžete přispět také svým kódem nebo komentáři!
+<b>Přidejte se ke komunitě PodVinci!</b>
+PodVinci je aktivně vyvíjen dobrovolníky. Můžete přispět také svým kódem nebo komentáři!
 
-Naše přátelská členská základna vám ráda zodpoví jakékoli dotazy. Zveme vás k diskuzi o AntennaPodu nebo i podcastech obecně.
-https://forum.antennapod.org/
+Naše přátelská členská základna vám ráda zodpoví jakékoli dotazy. Zveme vás k diskuzi o PodVinciu nebo i podcastech obecně.
+https://forum.podvinci.org/
 
 Na Transifexu můžete pomoct s překladem:
-https://www.transifex.com/antennapod/antennapod
+https://www.transifex.com/podvinci/podvinci

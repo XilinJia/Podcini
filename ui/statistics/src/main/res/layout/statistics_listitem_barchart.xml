@@ -6,7 +6,7 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <de.danoeh.antennapod.ui.statistics.years.BarChartView
+    <ac.mdiq.podvinci.ui.statistics.years.BarChartView
         android:id="@+id/barChart"
         android:layout_width="match_parent"
         android:layout_height="200dp" />

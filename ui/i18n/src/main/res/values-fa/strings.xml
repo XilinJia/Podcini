@@ -273,7 +273,7 @@
   <string name="download_type_feed">خوراک</string>
   <string name="download_type_media">پروندهٔ رسانه</string>
   <string name="null_value_podcast_error">پادکستی که بتواند نمایش داده شود فراهم نشده است.</string>
-  <string name="no_feed_url_podcast_found_by_search">پادکست پیشنهادی پیوند RSS نداشت، AntennaPod پادکستی پیدا کرد که می تواند مطابقت داشته باشد</string>
+  <string name="no_feed_url_podcast_found_by_search">پادکست پیشنهادی پیوند RSS نداشت، PodVinci پادکستی پیدا کرد که می تواند مطابقت داشته باشد</string>
   <string name="authentication_notification_title">هویت‌سنجی مورد نیاز است</string>
   <string name="confirm_mobile_download_dialog_title">تأیید بارگیری همراه</string>
   <string name="confirm_mobile_download_dialog_message">بارگیری روی دادهٔ همراه در تنظیمات از کار افتاده. آنتناپاد می‌تواند قسمت را بعداً که وای‌فای موجود بود به صورت خودکار بار بگیرد.</string>
@@ -486,7 +486,7 @@
   <string name="pref_new_episodes_action_sum">کنشی که برای قسمت‌های جدید انجام می‌شود</string>
   <!--About screen-->
   <string name="about_pref">درباره</string>
-  <string name="antennapod_version">نسخه AntennaPod</string>
+  <string name="podvinci_version">نسخه PodVinci</string>
   <string name="contributors">همکاران</string>
   <string name="contributors_summary">هر کس می تواند به بهتر شدن آنتن پاد کمک کند - با کد ، ترجمه یا با کمک به کاربران در انجمن ما</string>
   <string name="developers">توسعه‌دهندگان</string>
@@ -570,12 +570,12 @@
   <string name="synchronization_choose_title">گزینش فراهمگر همگام سازی</string>
   <string name="synchronization_summary_unchoosen">می‌توانید فراهمگری را برای همگام سازی اشتراک‌ها و وضعیت پخش قسمت‌هایتان برگزینید</string>
   <string name="dialog_choose_sync_service_title">گزینش فراهمگر همگام سازی</string>
-  <string name="gpodnet_description">Gpodder.net یک سرویس همگام سازی پادکست منبع باز است که می توانید آن را روی سرور خود نصب کنید. Gpodder.net مستقل از پروژه AntennaPod است.</string>
-  <string name="synchronization_summary_nextcloud">Gpoddersync یک اپ متن باز مرتبط با  Nextcloud است که می توانید به راحتی آن را روی سرور خود نصب کنید. این  اپ مستقل از پروژه AntennaPod است.</string>
+  <string name="gpodnet_description">Gpodder.net یک سرویس همگام سازی پادکست منبع باز است که می توانید آن را روی سرور خود نصب کنید. Gpodder.net مستقل از پروژه PodVinci است.</string>
+  <string name="synchronization_summary_nextcloud">Gpoddersync یک اپ متن باز مرتبط با  Nextcloud است که می توانید به راحتی آن را روی سرور خود نصب کنید. این  اپ مستقل از پروژه PodVinci است.</string>
   <string name="synchronization_host_explanation">شما می توانید سرور خود را برای همگام سازی با آن انتخاب کنید. هنگامی که سرور همگام سازی ترجیحی خود را شناسایی کردید، لطفاً آدرس آن را در اینجا وارد کنید.</string>
   <string name="synchronization_host_label">نشانی کارساز</string>
   <string name="proceed_to_login_butLabel">برای ورود به سیستم اقدام کنید</string>
-  <string name="synchronization_nextcloud_authenticate_browser">با استفاده از مرورگر وب باز شده اجازه دسترسی بدهید و به AntennaPod بازگردید.</string>
+  <string name="synchronization_nextcloud_authenticate_browser">با استفاده از مرورگر وب باز شده اجازه دسترسی بدهید و به PodVinci بازگردید.</string>
   <string name="gpodnetauth_login_butLabel">ورود</string>
   <string name="synchronization_credentials_explanation">لطفا شناسه ورودی حساب خود را در سرور همگام سازی ارائه دهید.</string>
   <string name="gpodnetauth_encryption_warning">رمز عبور و داده ها رمزگذاری نمی شوند!</string>
@@ -584,7 +584,7 @@
   <string name="synchronization_login_butLabel">وارد شدن</string>
   <string name="synchronization_selectDevice_explanation">لطفاً دستگاهی را که در سرور همگام سازی ایجاد کرده اید انتخاب کنید یا یک دستگاه جدید ایجاد کنید.</string>
   <string name="gpodnetauth_device_name">نام دستگاه</string>
-  <string name="gpodnetauth_device_name_default">AntennaPod برروی %1$s</string>
+  <string name="gpodnetauth_device_name_default">PodVinci برروی %1$s</string>
   <string name="gpodnetauth_existing_devices">دستگاههای موجود</string>
   <string name="gpodnetauth_create_device">ایجاد دستگاه</string>
   <string name="gpodnetauth_finish_descr">تبریک می گویم! حساب gpodder.net شما اکنون با دستگاه شما پیوند داده شده است. آنتن پاد از این پس اشتراک های دستگاه شما را با حساب gpodder.net خود به طور خودکار همگام سازی می کند.</string>
@@ -653,7 +653,7 @@
   <string name="statistics_view_all">مشاهده همه پادکست ها »</string>
   <string name="edit_url_menu">URL فید را ویرایش کنید</string>
   <string name="edit_url_confirmation_msg">تغییر نشانی RSS می تواند به سادگی  وضعیت پخش و سیاهه کردن قسمت‌های پادکست را خراب کند. تغییرش را توصیه نکرده و در صورت بروز مشکل، پشتیبانی فراهم نمی‌کنیم. این عمل بازگشت‌پذیر نیست. اشتراک خراب را نمی توان به سادگی با بازگرداندن نشانی درست کرد. پیشنهاد می‌کنیم پیش از ادامه، پشتیبان بگیرید.</string>
-  <!--AntennaPodSP-->
+  <!--PodVinciSP-->
   <string name="sp_apps_importing_feeds_msg">وارد کردن اشتراک از برنامه های تک منظوره</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">جستجوی پادکست ...</string>

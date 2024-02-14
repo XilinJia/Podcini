@@ -11,9 +11,9 @@ body:
     attributes:
       label: Checklist
       options:
-        - label: I have used the search function for [**OPEN**](https://github.com/AntennaPod/AntennaPod/issues) issues to see if someone else has already submitted the same bug report.
+        - label: I have used the search function for [**OPEN**](https://github.com/XilinJia/PodVinci/issues) issues to see if someone else has already submitted the same bug report.
           required: true
-        - label: I have **also** used the search function for [**CLOSED**](https://github.com/AntennaPod/AntennaPod/issues?q=is%3Aissue+is%3Aclosed) issues to see if the problem is already solved and just waiting to be released.
+        - label: I have **also** used the search function for [**CLOSED**](https://github.com/XilinJia/PodVinci/issues?q=is%3Aissue+is%3Aclosed) issues to see if the problem is already solved and just waiting to be released.
           required: true
         - label: I will describe the problem with as much detail as possible.
           required: true
@@ -67,14 +67,14 @@ body:
     id: expected
     attributes:
       label: Expected behaviour
-      description: After following the steps, what did you think AntennaPod would do?
+      description: After following the steps, what did you think PodVinci would do?
   - type: textarea
     id: current
     attributes:
       label: Current behaviour
-      description: What did AntennaPod do instead? Screenshots might help. Usually, you can take a screenshot of your smartphone by pressing *Power* + *Volume down* for a few seconds.
+      description: What did PodVinci do instead? Screenshots might help. Usually, you can take a screenshot of your smartphone by pressing *Power* + *Volume down* for a few seconds.
   - type: textarea
     id: logs
     attributes:
       label: Logs
-      description: If you are experiencing a crash, including the stacktrace will likely get it fixed sooner. AntennaPod has an `export logs` feature for this.
+      description: If you are experiencing a crash, including the stacktrace will likely get it fixed sooner. PodVinci has an `export logs` feature for this.

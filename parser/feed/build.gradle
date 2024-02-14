@@ -5,7 +5,7 @@ plugins {
 apply from: "../../common.gradle"
 
 android {
-    namespace "de.danoeh.antennapod.parser.feed"
+    namespace "ac.mdiq.podvinci.parser.feed"
 }
 
 dependencies {

@@ -5,7 +5,7 @@ plugins {
 apply from: "../../common.gradle"
 
 android {
-    namespace "de.danoeh.antennapod.playback.base"
+    namespace "ac.mdiq.podvinci.playback.base"
 }
 
 dependencies {

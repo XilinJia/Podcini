@@ -6,7 +6,7 @@ plugins {
 apply from: "../../../common.gradle"
 
 android {
-    namespace "de.danoeh.antennapod.net.download.serviceinterface"
+    namespace "ac.mdiq.podvinci.net.download.serviceinterface"
 
     lint {
         disable 'ParcelClassLoader'

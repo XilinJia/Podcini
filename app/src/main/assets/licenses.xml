@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <libraries>
     <library
-        name="AntennaPod"
-        author="The AntennaPod team"
-        website="https://github.com/AntennaPod/AntennaPod"
+        name="PodVinci"
+        author="The PodVinci team"
+        website="https://github.com/PodVinci/PodVinci"
         license="GPL-3.0"
         licenseText="LICENSE.txt" />
     <library

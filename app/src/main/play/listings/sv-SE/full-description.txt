@@ -1,8 +1,8 @@
-Antennapod är en podcasthanterare och spelare som ger dig omedelbar tillgång till millioner av gratis och betalda podcasts, allt ifrån oberoende podcasters till publiceringsjättar som BBC, NPR och CNN. Lägg till, importera och exportera enkelt deras flöden med hjälp av Itunes-podcastdatabas, OPML filer eller enkla RSS URL:er.
+PodVinci är en podcasthanterare och spelare som ger dig omedelbar tillgång till millioner av gratis och betalda podcasts, allt ifrån oberoende podcasters till publiceringsjättar som BBC, NPR och CNN. Lägg till, importera och exportera enkelt deras flöden med hjälp av Itunes-podcastdatabas, OPML filer eller enkla RSS URL:er.
 Ladda ner, strömma eller köa episoder och avnjut dem på det sätt du gillar med justerbar uppspelningshastighet, kapitelstöd och insomningstimer.
 Spara tid, batteri och mobildata med kraftfulla automatiseringskontroller för nedladdning av episoder (specifera tider, intervall och Wi-Fi nätverk) och borttagning av episoder (baserat på dina favoriseringar och fördröjningsinställningar).
 
-Gjord av podcastentusiaster, AntennaPod är fri i ordets alla bemärkelser: öppen källkod, inga kostnader, ingen reklam.
+Gjord av podcastentusiaster, PodVinci är fri i ordets alla bemärkelser: öppen källkod, inga kostnader, ingen reklam.
 
 <b>Importera, organisera och spela</b>
 •  Hantera uppspelningen från vartsomhelst: hemskärmswidget, aviseringsfältet och hörlurs/bluetoth-kontroller
@@ -21,11 +21,11 @@ Gjord av podcastentusiaster, AntennaPod är fri i ordets alla bemärkelser: öpp
 • Anpassa till din omgivning med det ljusa och mörka temat
 • Säkerhetskopiera dina prenumerationer genom att integrera gPodder.net och OPML exportering
 
-<b>Gå med i AntennaPods gemenskap!</b>
-AntennaPod utvecklas av frivilliga eldsjälar. Även du kan bidra via utvecklingsinsatser eller kommentarer!
+<b>Gå med i PodVincis gemenskap!</b>
+PodVinci utvecklas av frivilliga eldsjälar. Även du kan bidra via utvecklingsinsatser eller kommentarer!
 
 Våra vänliga forummedlemmar hjälper glatt till med alla frågor du har. Du inbjuds också att diskutera funktioner och podcasting generellt.
-https://forum.antennapod.org/
+https://forum.podvinci.org/
 
 Transifex är platsen att gå till för att hjälpa till med översättningen:
-https://www.transifex.com/antennapod/antennapod
+https://www.transifex.com/podvinci/podvinci

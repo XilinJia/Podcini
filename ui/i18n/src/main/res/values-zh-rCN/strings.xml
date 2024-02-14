@@ -51,9 +51,9 @@
   <string name="home_continue_title">继续收听</string>
   <string name="home_new_title">最近更新</string>
   <string name="home_downloads_title">管理下载</string>
-  <string name="home_welcome_title">欢迎来到 AntennaPod！</string>
+  <string name="home_welcome_title">欢迎来到 PodVinci！</string>
   <string name="home_welcome_text">你尚未订阅任何播客。 打开侧栏菜单添加一个。</string>
-  <string name="notification_permission_text">AntennaPod 需要你的许可方能显示通知。默认情况下，AntennaPod 只显示和进行中的下载或错误相关的通知</string>
+  <string name="notification_permission_text">PodVinci 需要你的许可方能显示通知。默认情况下，PodVinci 只显示和进行中的下载或错误相关的通知</string>
   <string name="notification_permission_denied">你拒绝授予该权限</string>
   <string name="notification_permission_deny_warning">如果你禁用了通知，且出现了错误，你可能无法找出出错的原因</string>
   <string name="deny_label">拒绝</string>
@@ -232,7 +232,7 @@
   <string name="skip_episode_label">跳过曲目</string>
   <string name="reset_position">重置播放位置</string>
   <string name="no_items_selected">未选中项目</string>
-  <string name="delete_local_feed_warning_body">删除操作会从 AntennaPod 删除播客并从设备存储删除媒体文件。无法再通过 AntennaPod 重新下载它。</string>
+  <string name="delete_local_feed_warning_body">删除操作会从 PodVinci 删除播客并从设备存储删除媒体文件。无法再通过 PodVinci 重新下载它。</string>
   <!--Download messages and labels-->
   <string name="download_successful">成功</string>
   <string name="download_pending">下载等待</string>
@@ -273,10 +273,10 @@
   <string name="download_type_feed">订阅</string>
   <string name="download_type_media">媒体文件</string>
   <string name="null_value_podcast_error">没有可供显示的播客。</string>
-  <string name="no_feed_url_podcast_found_by_search">推荐的播客没有 RSS 链接，AntennaPod 找到了一个可以匹配的播客</string>
+  <string name="no_feed_url_podcast_found_by_search">推荐的播客没有 RSS 链接，PodVinci 找到了一个可以匹配的播客</string>
   <string name="authentication_notification_title">需要认证</string>
   <string name="confirm_mobile_download_dialog_title">确认使用移动数据下载</string>
-  <string name="confirm_mobile_download_dialog_message">设置中禁用了使用移动数据进行下载。当 Wi-Fi 可用时，AntennaPod 可以稍后自动下载节目。</string>
+  <string name="confirm_mobile_download_dialog_message">设置中禁用了使用移动数据进行下载。当 Wi-Fi 可用时，PodVinci 可以稍后自动下载节目。</string>
   <string name="confirm_mobile_download_dialog_message_vpn">您的 VPN 应用自称是移动网络 (按流量计费连接)。在设置中禁用了通过移动数据连接下载。如果你想修复此问题，请联系 VPN 应用的创建者。</string>
   <string name="confirm_mobile_download_dialog_download_later">稍后下载</string>
   <string name="confirm_mobile_download_dialog_allow_this_time">仍要下载</string>
@@ -292,7 +292,7 @@
   <string name="playback_error_source">无法访问媒体文件</string>
   <string name="playback_error_unknown">未知错误</string>
   <string name="no_media_playing_label">没有可播放的媒体</string>
-  <string name="unknown_media_key">AntennaPod - 未知媒体密钥: %1$d</string>
+  <string name="unknown_media_key">PodVinci - 未知媒体密钥: %1$d</string>
   <string name="error_file_not_found">文件未找到</string>
   <string name="no_media_label">条目不包含一个媒体文件</string>
   <!--Queue operations-->
@@ -370,7 +370,7 @@
   <string name="pref_auto_delete_title">自动删除</string>
   <string name="pref_auto_local_delete_title">自动从本地文件夹删除</string>
   <string name="pref_auto_local_delete_sum">在自动删除功能中包括本地文件夹</string>
-  <string name="pref_auto_local_delete_dialog_body">请注意，对于本地文件夹，此操作会从 AntennaPod 删除播客并从设备存储删除媒体文件。无法再通过 AntennaPod 下载它们。要开启自动删除吗？</string>
+  <string name="pref_auto_local_delete_dialog_body">请注意，对于本地文件夹，此操作会从 PodVinci 删除播客并从设备存储删除媒体文件。无法再通过 PodVinci 下载它们。要开启自动删除吗？</string>
   <string name="pref_smart_mark_as_played_sum">当曲目的剩余未播放时间小于一个确定值时将其表为已播放</string>
   <string name="pref_smart_mark_as_played_title">智能标记为已播放</string>
   <string name="pref_skip_keeps_episodes_sum">当剧集被跳过时保留它们</string>
@@ -382,7 +382,7 @@
   <string name="downloads_pref">下载</string>
   <string name="downloads_pref_sum">更新间隔、移动数据、自动下载、自动删除</string>
   <string name="feed_refresh_title">刷新播客</string>
-  <string name="feed_refresh_sum">指定 AntennaPod 自动查找新节目的间隔</string>
+  <string name="feed_refresh_sum">指定 PodVinci 自动查找新节目的间隔</string>
   <string name="feed_refresh_never">永不</string>
   <string name="feed_every_hour">每 1 小时</string>
   <string name="feed_every_2_hours">每 2 小时</string>
@@ -476,7 +476,7 @@
   <string name="pref_skip_silence_title">跳过静音部分</string>
   <string name="behavior">行为</string>
   <string name="pref_default_page">默认页</string>
-  <string name="pref_default_page_sum">启动 AntennaPod 时要打的屏幕</string>
+  <string name="pref_default_page_sum">启动 PodVinci 时要打的屏幕</string>
   <string name="pref_back_button_opens_drawer">返回按钮打开抽屉</string>
   <string name="pref_back_button_opens_drawer_summary">在默认页面上按下返回按钮打开导航抽屉</string>
   <string name="remember_last_page">记住最后的页面</string>
@@ -500,15 +500,15 @@
   <string name="pref_new_episodes_action_sum">对新节目采取的操作</string>
   <!--About screen-->
   <string name="about_pref">关于</string>
-  <string name="antennapod_version">AntennaPod版本</string>
+  <string name="podvinci_version">PodVinci版本</string>
   <string name="contributors">贡献者</string>
-  <string name="contributors_summary">每个人都可以通过代码，翻译或通过帮助我们论坛中的用户来让AntennaPod变得更好</string>
+  <string name="contributors_summary">每个人都可以通过代码，翻译或通过帮助我们论坛中的用户来让PodVinci变得更好</string>
   <string name="developers">开发者</string>
   <string name="translators">译者</string>
   <string name="special_thanks">特别感谢</string>
   <string name="privacy_policy">隐私政策</string>
   <string name="licenses">许可证</string>
-  <string name="licenses_summary">AntennaPod使用其他伟大的软件</string>
+  <string name="licenses_summary">PodVinci使用其他伟大的软件</string>
   <!--Search-->
   <string name="search_status_no_results">没有找到任何结果</string>
   <string name="type_to_search">输入要搜索的查询</string>
@@ -532,8 +532,8 @@
   <string name="html_export_summary">向一位朋友展示您的订阅</string>
   <string name="opml_export_summary">将您的订阅转移到另一个播客应用 </string>
   <string name="opml_import_summary">从另一个播客应用导入您的订阅</string>
-  <string name="database_export_summary">将订阅，听过的节目和队列转移到另一台设备上的AntennaPod</string>
-  <string name="database_import_summary">从另一台设备导入AntennaPod数据库 </string>
+  <string name="database_export_summary">将订阅，听过的节目和队列转移到另一台设备上的PodVinci</string>
+  <string name="database_import_summary">从另一台设备导入PodVinci数据库 </string>
   <string name="opml_import_label">OPML 导入</string>
   <string name="opml_add_podcast_label">导入播客列表 (OPML)</string>
   <string name="opml_reader_error">读取 OPML 文档时发生错误</string>
@@ -550,8 +550,8 @@
   <string name="export_success_title">成功导出</string>
   <string name="opml_import_ask_read_permission">读取 OPML 文件需要访问外部存储的权限</string>
   <string name="successful_import_label">导入成功</string>
-  <string name="import_ok">请按\"确定\"重新启动AntennaPod</string>
-  <string name="import_no_downgrade">该数据库是使用较新版本的AntennaPod导出的。您当前安装的版本尚不知如何处理该文件。</string>
+  <string name="import_ok">请按\"确定\"重新启动PodVinci</string>
+  <string name="import_no_downgrade">该数据库是使用较新版本的PodVinci导出的。您当前安装的版本尚不知如何处理该文件。</string>
   <string name="favorites_export_label">收藏导出</string>
   <string name="favorites_export_summary">将保存的收藏夹导出到文件</string>
   <!--Sleep timer-->
@@ -586,12 +586,12 @@
   <string name="synchronization_choose_title">选择同步供应商</string>
   <string name="synchronization_summary_unchoosen">您可以从多个提供商中选择一个用来同步您的订阅和节目播放状态</string>
   <string name="dialog_choose_sync_service_title">选择同步提供商</string>
-  <string name="gpodnet_description">Gpodder.net 是一个开源的播客同步服务，你可以将其安装在自己的服务器上。Gpodder.net 独立于 AntennaPod 项目。</string>
-  <string name="synchronization_summary_nextcloud">Gpoddersync 是一个开源的 Nextcloud 应用程序，你可以很容易地安装在自己的服务器上。该应用程序独立于 AntennaPod 项目。</string>
+  <string name="gpodnet_description">Gpodder.net 是一个开源的播客同步服务，你可以将其安装在自己的服务器上。Gpodder.net 独立于 PodVinci 项目。</string>
+  <string name="synchronization_summary_nextcloud">Gpoddersync 是一个开源的 Nextcloud 应用程序，你可以很容易地安装在自己的服务器上。该应用程序独立于 PodVinci 项目。</string>
   <string name="synchronization_host_explanation">你可以选择用自己的服务器进行同步。当你确定了偏好的同步服务器，请在此处输入其地址</string>
   <string name="synchronization_host_label">服务器地址</string>
   <string name="proceed_to_login_butLabel">继续登录</string>
-  <string name="synchronization_nextcloud_authenticate_browser">使用打开的网页浏览器授予访问权限，然后返回到 AntennaPod。</string>
+  <string name="synchronization_nextcloud_authenticate_browser">使用打开的网页浏览器授予访问权限，然后返回到 PodVinci。</string>
   <string name="gpodnetauth_login_butLabel">登录</string>
   <string name="synchronization_credentials_explanation">请提供该同步服务器上你账户的凭据</string>
   <string name="gpodnetauth_encryption_warning">密码和数据没有加密！</string>
@@ -600,10 +600,10 @@
   <string name="synchronization_login_butLabel">登录</string>
   <string name="synchronization_selectDevice_explanation">请选择你在同步服务器上创建的设备或新建一个</string>
   <string name="gpodnetauth_device_name">设备名</string>
-  <string name="gpodnetauth_device_name_default">AntennaPod 于 %1$s</string>
+  <string name="gpodnetauth_device_name_default">PodVinci 于 %1$s</string>
   <string name="gpodnetauth_existing_devices">现有设备</string>
   <string name="gpodnetauth_create_device">创建设备</string>
-  <string name="gpodnetauth_finish_descr">恭喜! 你的 gpodder.net 帐户与设备已连结完成.  现在开始 AntennaPod 将自动同步你 gpodder.net 帐户内的订阅信息到设备上.</string>
+  <string name="gpodnetauth_finish_descr">恭喜! 你的 gpodder.net 帐户与设备已连结完成.  现在开始 PodVinci 将自动同步你 gpodder.net 帐户内的订阅信息到设备上.</string>
   <string name="gpodnetauth_finish_butsyncnow">开始同步</string>
   <string name="pref_gpodnet_setlogin_information_title">改变登录信息</string>
   <string name="pref_gpodnet_setlogin_information_sum">改变 gpodder.net 账户登录信息.</string>
@@ -621,7 +621,7 @@
   <string name="gpodnetsync_username_characters_error">用户名只能包含字母、数字、连字符和下划线</string>
   <!--Directory chooser-->
   <string name="choose_data_directory">选择数据文件夹</string>
-  <string name="choose_data_directory_message">请选择用于 AntennaPod 的数据根目录， AntennaPod 将会创建合适的子目录。</string>
+  <string name="choose_data_directory_message">请选择用于 PodVinci 的数据根目录， PodVinci 将会创建合适的子目录。</string>
   <string name="choose_data_directory_available_space">%2$s中%1$s可用</string>
   <string name="pref_pausePlaybackForFocusLoss_sum">当另一个应用程序要播放声音时暂停播放, 而不是降低音量</string>
   <string name="pref_pausePlaybackForFocusLoss_title">中断暂停</string>
@@ -667,7 +667,7 @@
   <string name="exclude_episodes_shorter_than">排除持续了不到指定时间的节目</string>
   <string name="keep_updated">保持更新</string>
   <string name="keep_updated_summary">（自动）刷新所有播客时包括此播客 </string>
-  <string name="auto_download_disabled_globally">AntennaPod主设置中已禁用自动下载</string>
+  <string name="auto_download_disabled_globally">PodVinci主设置中已禁用自动下载</string>
   <string name="statistics_time_played">已播放时长：</string>
   <string name="statistics_total_duration">总持续时间（预估）：</string>
   <string name="statistics_episodes_on_device">设备上的节目:</string>
@@ -676,7 +676,7 @@
   <string name="statistics_view_all">所有播客视图 »</string>
   <string name="edit_url_menu">编辑订阅源 URL</string>
   <string name="edit_url_confirmation_msg">更改 RSS 地址很容易破坏播客的播放状态和节目列表。我们不建议更改它，如果出现任何错误我们不会提供支持。这是无法挽回的。无法通过简单地将地址更改回来修复损坏的订阅。我们建议在继续之前创建备份。</string>
-  <!--AntennaPodSP-->
+  <!--PodVinciSP-->
   <string name="sp_apps_importing_feeds_msg">正在从选定的应用中导入订阅...</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">搜索播客……</string>
@@ -699,7 +699,7 @@
   <string name="local_folder">本地文件夹</string>
   <string name="reconnect_local_folder">重新连接本地文件夹</string>
   <string name="reconnect_local_folder_warning">在权限遭拒的情况下，您可以使用它重新连接到完全相同的文件夹。不要选择其他文件夹。</string>
-  <string name="local_feed_description">这个虚拟播客是通过向AntennaPod添加一个文件夹创建的</string>
+  <string name="local_feed_description">这个虚拟播客是通过向PodVinci添加一个文件夹创建的</string>
   <string name="unable_to_start_system_file_manager">无法启动系统文件管理器</string>
   <string name="filter">过滤器</string>
   <string name="hide_is_favorite_label">收藏的</string>

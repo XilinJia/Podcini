@@ -7,8 +7,8 @@
         android:shortcutShortLabel="@string/queue_label">
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetClass="de.danoeh.antennapod.activity.MainActivity"
-            android:targetPackage="de.danoeh.antennapod">
+            android:targetClass="ac.mdiq.podvinci.activity.MainActivity"
+            android:targetPackage="ac.mdiq.podvinci">
             <extra
                 android:name="fragment_tag"
                 android:value="QueueFragment" />
@@ -22,8 +22,8 @@
         android:shortcutShortLabel="@string/episodes_label">
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetClass="de.danoeh.antennapod.activity.MainActivity"
-            android:targetPackage="de.danoeh.antennapod">
+            android:targetClass="ac.mdiq.podvinci.activity.MainActivity"
+            android:targetPackage="ac.mdiq.podvinci">
             <extra
                 android:name="fragment_tag"
                 android:value="EpisodesFragment" />
@@ -37,8 +37,8 @@
         android:shortcutShortLabel="@string/subscriptions_label">
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetClass="de.danoeh.antennapod.activity.MainActivity"
-            android:targetPackage="de.danoeh.antennapod">
+            android:targetClass="ac.mdiq.podvinci.activity.MainActivity"
+            android:targetPackage="ac.mdiq.podvinci">
             <extra
                 android:name="fragment_tag"
                 android:value="SubscriptionFragment" />
@@ -52,8 +52,8 @@
         android:shortcutShortLabel="@string/refresh_label">
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetClass="de.danoeh.antennapod.activity.MainActivity"
-            android:targetPackage="de.danoeh.antennapod">
+            android:targetClass="ac.mdiq.podvinci.activity.MainActivity"
+            android:targetPackage="ac.mdiq.podvinci">
             <extra
                 android:name="refresh_on_start"
                 android:value="true" />

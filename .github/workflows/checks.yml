@@ -92,7 +92,7 @@ jobs:
             ~/.gradle/wrapper
           key: gradle-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
       - name: Create temporary release keystore
-        run: keytool -noprompt -genkey -v -keystore "app/keystore" -alias alias -storepass password -keypass password -keyalg RSA -validity 10 -dname "CN=antennapod.org, OU=dummy, O=dummy, L=dummy, S=dummy, C=US"
+        run: keytool -noprompt -genkey -v -keystore "app/keystore" -alias alias -storepass password -keypass password -keyalg RSA -validity 10 -dname "CN=podvinci.org, OU=dummy, O=dummy, L=dummy, S=dummy, C=US"
       - name: Build
         run: ./gradlew assemble${{ matrix.variant }}
       - name: Test

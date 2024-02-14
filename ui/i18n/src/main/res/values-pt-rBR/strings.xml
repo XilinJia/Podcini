@@ -51,7 +51,7 @@
   <string name="home_continue_title">Continuar ouvindo</string>
   <string name="home_new_title">Veja o que há de novo</string>
   <string name="home_downloads_title">Gerenciar downloads</string>
-  <string name="home_welcome_title">Bem-vindo(a) ao AntennaPod!</string>
+  <string name="home_welcome_title">Bem-vindo(a) ao PodVinci!</string>
   <string name="home_welcome_text">Você ainda não está inscrito em nenhum podcast. Abra o menu ao lado para adicionar algum.</string>
   <string name="notification_permission_denied">Você negou a permissão.</string>
   <string name="open_settings">Abrir as configurações</string>
@@ -288,10 +288,10 @@
   <string name="download_type_feed">Feed</string>
   <string name="download_type_media">Arquivo de mídia</string>
   <string name="null_value_podcast_error">Nenhum podcast foi fornecido para ser exibido.</string>
-  <string name="no_feed_url_podcast_found_by_search">O podcast sugerido não tem um link RSS mas AntennaPod achou um podcast que pode corresponder</string>
+  <string name="no_feed_url_podcast_found_by_search">O podcast sugerido não tem um link RSS mas PodVinci achou um podcast que pode corresponder</string>
   <string name="authentication_notification_title">Autenticação requerida</string>
   <string name="confirm_mobile_download_dialog_title">Confirmar o download utilizando dados móveis</string>
-  <string name="confirm_mobile_download_dialog_message">A utilização de dados móveis para o download está desabilitada nas configurações. AntennaPod baixará automaticamente o episódio mais tarde quando o Wi-Fi estiver disponível.</string>
+  <string name="confirm_mobile_download_dialog_message">A utilização de dados móveis para o download está desabilitada nas configurações. PodVinci baixará automaticamente o episódio mais tarde quando o Wi-Fi estiver disponível.</string>
   <string name="confirm_mobile_download_dialog_download_later">Baixar mais tarde</string>
   <string name="confirm_mobile_download_dialog_allow_this_time">Baixar assim mesmo</string>
   <string name="confirm_mobile_streaming_notification_title">Confirme a transmissão via dados móveis</string>
@@ -306,7 +306,7 @@
   <string name="playback_error_source">Não foi possível acessar o arquivo de mídia</string>
   <string name="playback_error_unknown">Erro desconhecido</string>
   <string name="no_media_playing_label">Nenhuma mídia em reprodução</string>
-  <string name="unknown_media_key">AntennaPod - Chave de mídia desconhecida: %1$d</string>
+  <string name="unknown_media_key">PodVinci - Chave de mídia desconhecida: %1$d</string>
   <string name="error_file_not_found">Arquivo não encontrado</string>
   <string name="no_media_label">O item não contém um arquivo de mídia</string>
   <!--Queue operations-->
@@ -392,7 +392,7 @@
   <string name="downloads_pref">Downloads</string>
   <string name="downloads_pref_sum">Intervalo de atualização, Dados móveis, Download automático, Exclusão automática</string>
   <string name="feed_refresh_title">Atualizar podcasts</string>
-  <string name="feed_refresh_sum">Especifique um intervalo em que o AntennaPod procura novos episódios automaticamente</string>
+  <string name="feed_refresh_sum">Especifique um intervalo em que o PodVinci procura novos episódios automaticamente</string>
   <string name="feed_refresh_never">Nunca</string>
   <string name="feed_every_hour">A cada hora</string>
   <string name="feed_every_2_hours">A cada 2 horas</string>
@@ -486,15 +486,15 @@
   <string name="pref_new_episodes_action_sum">Ação que deve ser executada para novos episódios</string>
   <!--About screen-->
   <string name="about_pref">Sobre</string>
-  <string name="antennapod_version">Versão do AntennaPod</string>
+  <string name="podvinci_version">Versão do PodVinci</string>
   <string name="contributors">Contribuidores</string>
-  <string name="contributors_summary">Todos podem ajudar a tornar o AntennaPod melhor - com código, traduções ou ajudando os usuários em nosso fórum</string>
+  <string name="contributors_summary">Todos podem ajudar a tornar o PodVinci melhor - com código, traduções ou ajudando os usuários em nosso fórum</string>
   <string name="developers">Desenvolvedores</string>
   <string name="translators">Tradutores</string>
   <string name="special_thanks">Agradecimentos especiais</string>
   <string name="privacy_policy">Política de privacidade</string>
   <string name="licenses">Licenças</string>
-  <string name="licenses_summary">O AntennaPod usa outros ótimos softwares</string>
+  <string name="licenses_summary">O PodVinci usa outros ótimos softwares</string>
   <!--Search-->
   <string name="search_status_no_results">Nenhum resultado encontrado</string>
   <string name="type_to_search">Digite a consulta a ser pesquisada</string>
@@ -517,8 +517,8 @@
   <string name="html_export_summary">Exibe suas assinaturas para um amigo</string>
   <string name="opml_export_summary">Transfere suas assinaturas para outro aplicativo de podcast</string>
   <string name="opml_import_summary">Importa suas assinaturas de outro aplicativo de podcast</string>
-  <string name="database_export_summary">Transfere as assinaturas, os episódios ouvidos e a fila para o AntennaPod em outro dispositivo</string>
-  <string name="database_import_summary">Importa o banco de dados AntennaPod de outro dispositivo</string>
+  <string name="database_export_summary">Transfere as assinaturas, os episódios ouvidos e a fila para o PodVinci em outro dispositivo</string>
+  <string name="database_import_summary">Importa o banco de dados PodVinci de outro dispositivo</string>
   <string name="opml_import_label">Importação de OPML</string>
   <string name="opml_add_podcast_label">Importar lista de podcasts (OPML)</string>
   <string name="opml_reader_error">Ocorreu um erro ao ler o documento OPML:</string>
@@ -535,8 +535,8 @@
   <string name="export_success_title">Exportado com sucesso</string>
   <string name="opml_import_ask_read_permission">É necessário acesso ao armazenamento externo para ler o arquivo OPML</string>
   <string name="successful_import_label">Importação bem sucedida</string>
-  <string name="import_ok">Por favor, pressione OK para reiniciar o AntennaPod</string>
-  <string name="import_no_downgrade">Este banco de dados foi exportado com uma versão mais recente do AntennaPod. Sua instalação atual ainda não sabe como lidar com este arquivo.</string>
+  <string name="import_ok">Por favor, pressione OK para reiniciar o PodVinci</string>
+  <string name="import_no_downgrade">Este banco de dados foi exportado com uma versão mais recente do PodVinci. Sua instalação atual ainda não sabe como lidar com este arquivo.</string>
   <string name="favorites_export_label">Exportar favoritos</string>
   <string name="favorites_export_summary">Exportar favoritos salvos para arquivo</string>
   <!--Sleep timer-->
@@ -571,12 +571,12 @@
   <string name="synchronization_choose_title">Escolha o serviço de sincronização</string>
   <string name="synchronization_summary_unchoosen">Você pode escolher de vários serviços para sincronizar suas assinaturas e o estado de reprodução dos episódios com</string>
   <string name="dialog_choose_sync_service_title">Escolha o serviço de sincronização</string>
-  <string name="gpodnet_description">Gpodder.net é um serviço de código aberto para sincronização de podcasts que você pode instalar em seu próprio servidor. Gpodder.net é um serviço independente do projeto AntennaPod.</string>
-  <string name="synchronization_summary_nextcloud">Gpoddersync é um aplicativo Nextcloud de código aberto que você pode facilmente instalar em seu próprio servidor. O aplicativo é independente do projeto AntennaPod.</string>
+  <string name="gpodnet_description">Gpodder.net é um serviço de código aberto para sincronização de podcasts que você pode instalar em seu próprio servidor. Gpodder.net é um serviço independente do projeto PodVinci.</string>
+  <string name="synchronization_summary_nextcloud">Gpoddersync é um aplicativo Nextcloud de código aberto que você pode facilmente instalar em seu próprio servidor. O aplicativo é independente do projeto PodVinci.</string>
   <string name="synchronization_host_explanation">Você pode escolher seu próprio servidor de sincronização. Assim que identificar o servidor preferido, introduza aqui o endereço.</string>
   <string name="synchronization_host_label">Endereço do servidor</string>
   <string name="proceed_to_login_butLabel">Ir para o login</string>
-  <string name="synchronization_nextcloud_authenticate_browser">Conceda o acesso necessário através do navegador web e retorne a AntennaPod.</string>
+  <string name="synchronization_nextcloud_authenticate_browser">Conceda o acesso necessário através do navegador web e retorne a PodVinci.</string>
   <string name="gpodnetauth_login_butLabel">Login</string>
   <string name="synchronization_credentials_explanation">Por favor forneça as credenciais da sua conta no servidor de sincronização.</string>
   <string name="gpodnetauth_encryption_warning">A senha e os dados não são criptografados!</string>
@@ -585,10 +585,10 @@
   <string name="synchronization_login_butLabel">Log in</string>
   <string name="synchronization_selectDevice_explanation">Por favor selecione o dispositivo criado no servidor de sincronização ou crie um novo.</string>
   <string name="gpodnetauth_device_name">Nome do dispositivo</string>
-  <string name="gpodnetauth_device_name_default">AntennaPod em %1$s</string>
+  <string name="gpodnetauth_device_name_default">PodVinci em %1$s</string>
   <string name="gpodnetauth_existing_devices">Dispositivos existentes</string>
   <string name="gpodnetauth_create_device">Criar dispositivo</string>
-  <string name="gpodnetauth_finish_descr">Parabéns! Sua conta gpodder.net agora está conectada ao seu dispositivo. O AntennaPod irá, daqui em diante, sincronizar automaticamente assinaturas do seu dispositivo com sua conta gpodder.net.</string>
+  <string name="gpodnetauth_finish_descr">Parabéns! Sua conta gpodder.net agora está conectada ao seu dispositivo. O PodVinci irá, daqui em diante, sincronizar automaticamente assinaturas do seu dispositivo com sua conta gpodder.net.</string>
   <string name="gpodnetauth_finish_butsyncnow">Iniciar sincronização agora</string>
   <string name="pref_gpodnet_setlogin_information_title">Alterar informações de login</string>
   <string name="pref_gpodnet_setlogin_information_sum">Alterar informações de login da sua conta gpodder.net</string>
@@ -606,7 +606,7 @@
   <string name="gpodnetsync_username_characters_error">Os nomes de usuário podem conter apenas letras, dígitos, hifens e sublinhados.</string>
   <!--Directory chooser-->
   <string name="choose_data_directory">Escolha a pasta de dados</string>
-  <string name="choose_data_directory_message">Por favor escolha a raiz da sua pasta de dados. O AntennaPod criará os subdiretórios apropriados.</string>
+  <string name="choose_data_directory_message">Por favor escolha a raiz da sua pasta de dados. O PodVinci criará os subdiretórios apropriados.</string>
   <string name="choose_data_directory_available_space">%1$s de %2$s livre(s)</string>
   <string name="pref_pausePlaybackForFocusLoss_sum">Pause a reprodução em vez de abaixar o volume quando outro aplicativo reproduzir sons</string>
   <string name="pref_pausePlaybackForFocusLoss_title">Pausa nas interrupções</string>
@@ -642,7 +642,7 @@
   <string name="exclude_episodes_shorter_than">Excluir episódios mais curtos que</string>
   <string name="keep_updated">Manter atualizado</string>
   <string name="keep_updated_summary">Incluir este podcast ao atualizar (automaticamente) todos os podcasts</string>
-  <string name="auto_download_disabled_globally">O download automático está desativado nas configurações principais do AntennaPod</string>
+  <string name="auto_download_disabled_globally">O download automático está desativado nas configurações principais do PodVinci</string>
   <string name="statistics_time_played">Tempo reproduzido:</string>
   <string name="statistics_total_duration">Duração total (estimada):</string>
   <string name="statistics_episodes_on_device">Episódios no dispositivo:</string>
@@ -651,7 +651,7 @@
   <string name="statistics_view_all">Visualização para todos os podcasts »</string>
   <string name="edit_url_menu">Editar URL da fonte</string>
   <string name="edit_url_confirmation_msg">Alterar o endereço RSS pode facilmente desfazer a lista e o estado atual de reprodução do podcast. Nós NÃO recomendamos a mudança e NÃO forneceremos suporte caso algo dê errado. Este processo não pode ser desfeito. A inscrição danificada NÃO pode ser reparada com a alteração para o endereço anterior. É recomendável fazer um backup antes de prosseguir.</string>
-  <!--AntennaPodSP-->
+  <!--PodVinciSP-->
   <string name="sp_apps_importing_feeds_msg">Importando assinaturas de aplicativos de finalidade única...</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">Procurar podcast...</string>
@@ -672,7 +672,7 @@
   <string name="local_folder">Pasta local</string>
   <string name="reconnect_local_folder">Reconectar pasta local</string>
   <string name="reconnect_local_folder_warning">Em caso de negação de permissão, você pode usar isso para se reconectar exatamente à mesma pasta. Não selecione outra pasta.</string>
-  <string name="local_feed_description">Este podcast virtual foi criado adicionando uma pasta ao AntennaPod.</string>
+  <string name="local_feed_description">Este podcast virtual foi criado adicionando uma pasta ao PodVinci.</string>
   <string name="unable_to_start_system_file_manager">Incapaz de iniciar o gerenciador de arquivos do sistema</string>
   <string name="filter">Filtrar</string>
   <string name="hide_is_favorite_label">É favorito</string>

@@ -5,7 +5,7 @@ plugins {
 apply from: "../../common.gradle"
 
 android {
-    namespace "de.danoeh.antennapod.ui.appstartintent"
+    namespace "ac.mdiq.podvinci.ui.appstartintent"
 }
 
 dependencies {

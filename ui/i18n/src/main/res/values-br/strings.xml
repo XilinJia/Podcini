@@ -49,7 +49,7 @@
   <string name="home_continue_title">Kenderc\'hel da selaou</string>
   <string name="home_new_title">Sellit ouzh an nevezinti</string>
   <string name="home_downloads_title">Merañ ar pellgargadurioù</string>
-  <string name="home_welcome_title">Donemat war AntennaPod !</string>
+  <string name="home_welcome_title">Donemat war PodVinci !</string>
   <string name="home_welcome_text">N\'oc\'h ket koumanantet c\'hoazh d\'ur podskignad.
 Digorit al lañser evit ouzhpennañ unan.</string>
   <string name="notification_permission_denied">Nac’het ho peus an aotre.</string>
@@ -285,7 +285,7 @@ Digorit al lañser evit ouzhpennañ unan.</string>
   <string name="download_type_feed">Gwazh</string>
   <string name="download_type_media">Restr media</string>
   <string name="null_value_podcast_error">N\'eus podskignad ebet a glot.</string>
-  <string name="no_feed_url_podcast_found_by_search">Ar podskignad erbedet n\'en deus ket un ere RSS. AntennaPod en deus kavet unan a c\'hellfe klotañ.</string>
+  <string name="no_feed_url_podcast_found_by_search">Ar podskignad erbedet n\'en deus ket un ere RSS. PodVinci en deus kavet unan a c\'hellfe klotañ.</string>
   <string name="authentication_notification_title">Dilesa rekiz</string>
   <string name="confirm_mobile_streaming_notification_message">Diweredekaet eo ar streaming war ar c\'hennask hezoug en arventennoù. Stokit da lenn e streaming memestra.</string>
   <string name="confirm_mobile_streaming_button_always">Atav</string>
@@ -297,7 +297,7 @@ Digorit al lañser evit ouzhpennañ unan.</string>
   <string name="playback_error_source">N\'haller ket haeziñ ar restr</string>
   <string name="playback_error_unknown">Fazi dianav</string>
   <string name="no_media_playing_label">N\'eus netra o vezañ lennet</string>
-  <string name="unknown_media_key">AntennaPod - stokell vedia dianav: %1$d</string>
+  <string name="unknown_media_key">PodVinci - stokell vedia dianav: %1$d</string>
   <string name="error_file_not_found">N\'eo ket bet kavet ar restr</string>
   <string name="no_media_label">N\'eus restr media ebet gant an elfenn</string>
   <!--Queue operations-->
@@ -430,15 +430,15 @@ Digorit al lañser evit ouzhpennañ unan.</string>
   <string name="pref_contribute">Kemer perzh</string>
   <!--About screen-->
   <string name="about_pref">A-zivout</string>
-  <string name="antennapod_version">Handelv AntennaPod</string>
+  <string name="podvinci_version">Handelv PodVinci</string>
   <string name="contributors">Kendaolerien</string>
-  <string name="contributors_summary">An holl a c\'hall skoazellañ da wellaat AntennaPod - en ur c\'houleviñ, en ur dreiñ pe en ur sikour an implijerien en hor forom</string>
+  <string name="contributors_summary">An holl a c\'hall skoazellañ da wellaat PodVinci - en ur c\'houleviñ, en ur dreiñ pe en ur sikour an implijerien en hor forom</string>
   <string name="developers">Diorroerien</string>
   <string name="translators">Troerien</string>
   <string name="special_thanks">Trugarekadennoù ispisial</string>
   <string name="privacy_policy">Reolenn a-fet buhez prevez</string>
   <string name="licenses">Lañvazioù</string>
-  <string name="licenses_summary">AntennaPod a ra gant meziantoù all</string>
+  <string name="licenses_summary">PodVinci a ra gant meziantoù all</string>
   <!--Search-->
   <string name="search_status_no_results">N\'eus bet kavet disoc\'h ebet</string>
   <string name="type_to_search">Ouzhpennan ur reked evit klask</string>
@@ -461,8 +461,8 @@ Digorit al lañser evit ouzhpennañ unan.</string>
   <string name="html_export_summary">Diskouez ho koumanantoù d\'ur v⋅mignon⋅ez</string>
   <string name="opml_export_summary">Treuzkas ho koumanantoù d\'un arload podskignad all</string>
   <string name="opml_import_summary">Enporzhiañ ho koumanantoù adalek un arload podskignad all</string>
-  <string name="database_export_summary">Treuzkas ar c\'houmanantoù, ar rannoù lennet hag el lost da AntennaPod war ur benveg all</string>
-  <string name="database_import_summary">Enporzhiañ stlennvon AntennaPod adalek ur benveg all</string>
+  <string name="database_export_summary">Treuzkas ar c\'houmanantoù, ar rannoù lennet hag el lost da PodVinci war ur benveg all</string>
+  <string name="database_import_summary">Enporzhiañ stlennvon PodVinci adalek ur benveg all</string>
   <string name="opml_import_label">Enporzhiañ ur restr OPML</string>
   <string name="opml_add_podcast_label">Enporzhiañ ul listenn podskignadoù (OPML)</string>
   <string name="opml_reader_error">Degouezhet ez eus bet ur fazi en ul lenn ar restr OPML</string>
@@ -479,7 +479,7 @@ Digorit al lañser evit ouzhpennañ unan.</string>
   <string name="export_success_title">Ezporzhiet gant berzh</string>
   <string name="opml_import_ask_read_permission">Ret eo aotren haeziñ ar c\'hadaviñ diavaez evit lenn ar restr OPML</string>
   <string name="successful_import_label">Enporzhiet gant berzh</string>
-  <string name="import_ok">Pouezit war OK evit adloc\'hañ AntennaPod</string>
+  <string name="import_ok">Pouezit war OK evit adloc\'hañ PodVinci</string>
   <string name="import_no_downgrade">Enporzhiet eo bet ar stlennvon gant un handelv nevesoc\'h eus AntennPod. Ho staliadur bremanel na oar ket c\'hoazh penaos merañ ar restr-mañ.</string>
   <string name="favorites_export_label">Ezporzhiañ ar sinedoù</string>
   <string name="favorites_export_summary">Ezporzhiañ ar sinedoù en ur restr</string>
@@ -520,18 +520,18 @@ Digorit al lañser evit ouzhpennañ unan.</string>
   <string name="synchronization_choose_title">Dibab ur pourchaser goubredañ</string>
   <string name="synchronization_summary_unchoosen">Gallout a rit dibab etre meur a bourvezer evit sikronaat ho koumanantoù ha stad lenn ho rannoù</string>
   <string name="dialog_choose_sync_service_title">Dibab ur pourchaser goubredañ</string>
-  <string name="gpodnet_description">Gpodder.net a zo ur servij mammenn digor evit sinkronaat podskignadoù a c\'hell bezañ staliet war ho servijer deoc\'h. Gpodder.net a zo dizalc\'h eus ar raktres AntennaPod.</string>
-  <string name="synchronization_summary_nextcloud">Gpoddersync a zo un arload mammenn digor evit Nextcloud a c\'hell bezañ staliet war ho servijer en un doare aes. An arload-mañ a zo distag eus ar raktres AntennaPod.</string>
+  <string name="gpodnet_description">Gpodder.net a zo ur servij mammenn digor evit sinkronaat podskignadoù a c\'hell bezañ staliet war ho servijer deoc\'h. Gpodder.net a zo dizalc\'h eus ar raktres PodVinci.</string>
+  <string name="synchronization_summary_nextcloud">Gpoddersync a zo un arload mammenn digor evit Nextcloud a c\'hell bezañ staliet war ho servijer en un doare aes. An arload-mañ a zo distag eus ar raktres PodVinci.</string>
   <string name="synchronization_host_label">Chomlec\'h ar servijer</string>
   <string name="proceed_to_login_butLabel">Kenderc\'hel gant ar c\'hevreañ</string>
-  <string name="synchronization_nextcloud_authenticate_browser">Roit aotre ar moned war ar merdeer web digoret ha deuit en-dro da AntennaPod.</string>
+  <string name="synchronization_nextcloud_authenticate_browser">Roit aotre ar moned war ar merdeer web digoret ha deuit en-dro da PodVinci.</string>
   <string name="gpodnetauth_login_butLabel">Kennaskañ</string>
   <string name="gpodnetauth_encryption_warning">Ar ger-tremen hag ar roadennoù n\'int ket sifret!</string>
   <string name="username_label">Anv implijer</string>
   <string name="password_label">Ger-tremen</string>
   <string name="synchronization_login_butLabel">Kevreañ</string>
   <string name="gpodnetauth_device_name">Anv ar benveg</string>
-  <string name="gpodnetauth_device_name_default">AntennaPod war %1$s</string>
+  <string name="gpodnetauth_device_name_default">PodVinci war %1$s</string>
   <string name="gpodnetauth_existing_devices">Binviji a zo anezho</string>
   <string name="gpodnetauth_create_device">Krouiñ ur benveg</string>
   <string name="gpodnetauth_finish_descr">Gourc\'hemennoù! Liammet eo ho kont gpodder.net gant ho penveg. Goubredet e vo ent emgefreek ar c\'houmanantoù war ho penveg gant ho kont gpodder.net.</string>
@@ -551,7 +551,7 @@ Digorit al lañser evit ouzhpennañ unan.</string>
   <string name="gpodnetsync_pref_report_failed">C\'hwitet</string>
   <string name="gpodnetsync_username_characters_error">Gallout a rit lakaat lizherennoù, niveroù pe tiredoù en anv arveriad hepken.</string>
   <!--Directory chooser-->
-  <string name="choose_data_directory_message">Dibabit an teuliad lec\'h ma vo enrollet ar roadennoù. Krouet e vo an is-teuliadoù rekiz gant AntennaPod.</string>
+  <string name="choose_data_directory_message">Dibabit an teuliad lec\'h ma vo enrollet ar roadennoù. Krouet e vo an is-teuliadoù rekiz gant PodVinci.</string>
   <string name="choose_data_directory_available_space">%1$s war %2$s dieub</string>
   <string name="pref_pausePlaybackForFocusLoss_sum">Ehaniñ al lenn kentoc\'h eget izelaat ar son pa fell d\'un arload all ober sonioù</string>
   <!--Online feed view-->
@@ -583,7 +583,7 @@ Digorit al lañser evit ouzhpennañ unan.</string>
   <string name="include_terms">Enklozañ ar rannoù gant unan eus an termenoù amañ dindan hepken</string>
   <string name="exclude_episodes_shorter_than">Skarzhañ kuit ar rannoù berroc\'h eget</string>
   <string name="keep_updated_summary">Ebarzhiñ ar podskignad pa vez hizivaet an holl bodskignadoù</string>
-  <string name="auto_download_disabled_globally">N\'eo ket gweredekaet al lenn emgefreek e arventennoù pennañ AntennaPod</string>
+  <string name="auto_download_disabled_globally">N\'eo ket gweredekaet al lenn emgefreek e arventennoù pennañ PodVinci</string>
   <string name="statistics_time_played">Padelezh lennet :</string>
   <string name="statistics_total_duration">Padelezh a-bezh (priziet) :</string>
   <string name="statistics_episodes_on_device">Rannoù war ar benveg:</string>
@@ -591,7 +591,7 @@ Digorit al lañser evit ouzhpennañ unan.</string>
   <string name="statistics_episodes_started_total">Rannoù kroget/en holl :</string>
   <string name="statistics_view_all">Diskouez an holl bodskignadoù »</string>
   <string name="edit_url_menu">Kemm URL ar wazh</string>
-  <!--AntennaPodSP-->
+  <!--PodVinciSP-->
   <string name="sp_apps_importing_feeds_msg">Oc\'h enporzhiañ ar c\'houmanantoù diwar arloadoù gant un arver unel...</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">Klask ur podskignad...</string>
@@ -611,7 +611,7 @@ Digorit al lañser evit ouzhpennañ unan.</string>
   <string name="local_folder">Teuliad lec\'hel</string>
   <string name="reconnect_local_folder">Adkennaskañ un teuliad lec\'hel</string>
   <string name="reconnect_local_folder_warning">Gallout a rit implijout an dra-se evit adkennaskañ ar memes teuliad pa vez nac\'het an aotre. Arabat dibab un teuliad all.</string>
-  <string name="local_feed_description">Krouet eo bet ar podskignad galloudel-mañ en ur ouzhpennañ un teuliad da AntennaPod.</string>
+  <string name="local_feed_description">Krouet eo bet ar podskignad galloudel-mañ en ur ouzhpennañ un teuliad da PodVinci.</string>
   <string name="unable_to_start_system_file_manager">N\'haller ket loc\'hañ merour restroù ar reizhiad</string>
   <string name="filter">Sil</string>
   <string name="hide_is_favorite_label">Ur sined eo</string>

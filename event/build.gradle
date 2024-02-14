@@ -5,7 +5,7 @@ plugins {
 apply from: "../common.gradle"
 
 android {
-    namespace "de.danoeh.antennapod.event"
+    namespace "ac.mdiq.podvinci.event"
 }
 
 dependencies {

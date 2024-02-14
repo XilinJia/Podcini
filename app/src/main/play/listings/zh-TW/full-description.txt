@@ -1,8 +1,8 @@
-AntennaPod 是 Podcast 訂閱管理工具。從百家爭鳴的獨立 Postcasters 到各立山頭的大廠如 BBC、CNN、NPR 等，讓數百萬免費或付費的 Podcast 唾手可得。您可以使用 iTunes 的 Podcast 資料庫、OPML 檔或RSS 網址等方式，輕鬆新增、匯入或匯出資料來源。
+PodVinci 是 Podcast 訂閱管理工具。從百家爭鳴的獨立 Postcasters 到各立山頭的大廠如 BBC、CNN、NPR 等，讓數百萬免費或付費的 Podcast 唾手可得。您可以使用 iTunes 的 Podcast 資料庫、OPML 檔或RSS 網址等方式，輕鬆新增、匯入或匯出資料來源。
 將各 Podcast 劇集下載、串流播放或放入隊列，然後可以調整播放速度、跳躍章節、設定睡眠時間等等，用您喜愛的方式聆聽享受。
 用強大的自動下載設定指定時間、頻率、WiFi 下載，並且可以依據最愛劇集與延遲設定等方式刪除已經聽過的劇集。省力、省電、省數據。
 
-AntennaPod 由 Podcast 愛好者鼎力製作，免費、無廣告、開放原始碼，給您最全面的自由。
+PodVinci 由 Podcast 愛好者鼎力製作，免費、無廣告、開放原始碼，給您最全面的自由。
 
 <b>匯入、管理、播放</b>
 • 從主畫面小工具、系統通知、耳機或藍牙控制器隨處播放
@@ -21,11 +21,11 @@ AntennaPod 由 Podcast 愛好者鼎力製作，免費、無廣告、開放原始
 • 根據系統環境採用明亮或暗夜佈景
 • 以整合的 gPodder.net 服務或匯出 OPML 來備份訂閱清單
 
-<b>加入 AntennaPod 社群！</b>
-AntennaPod 由志工熱情製作，您也可以加入 -- 幫忙寫程式或給意見都非常歡迎！
+<b>加入 PodVinci 社群！</b>
+PodVinci 由志工熱情製作，您也可以加入 -- 幫忙寫程式或給意見都非常歡迎！
 
 若您遇上使用問題，論壇上的社群成員都樂意提供協助。您也可以加入討論未來功能、其他 Podcast 相關的事情。
-https://forum.antennapod.org/
+https://forum.podvinci.org/
 
 協助翻譯請至 Transifex：
-https://www.transifex.com/antennapod/antennapod
+https://www.transifex.com/podvinci/podvinci

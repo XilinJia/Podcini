@@ -471,7 +471,7 @@
   <string name="pref_new_episodes_action_sum">새 에피소드에 대해 할 동작</string>
   <!--About screen-->
   <string name="about_pref">정보</string>
-  <string name="antennapod_version">안테나팟 버전</string>
+  <string name="podvinci_version">안테나팟 버전</string>
   <string name="contributors">기여한 분들</string>
   <string name="contributors_summary">코드, 번역, 포럼에서 사용자를 돕는 일 등, 안테나팟을 더 좋게 만드는데 누구나 도움을 주실 수 있습니다. </string>
   <string name="developers">개발자</string>
@@ -635,7 +635,7 @@
   <string name="statistics_view_all">모든 팟캐스트에 대한 뷰 »</string>
   <string name="edit_url_menu">피드 URL 편집</string>
   <string name="edit_url_confirmation_msg">RSS 주소를 바꾸면 재생 상태와 팟캐스트 에피소드 목록을 쉽게 망가뜨립니다. RSS 주소를 바꾸지 않기를 권하고, 잘못된 경우 어떤 지원도 하지 않을 것입니다. RSS 주소를 한번 바꾸면 되돌릴 수 없습니다. 구독이 한번 망가지면 주소를 되돌린다고 해도 바로잡을 수 없습니다. 계속 하기 전에 백업을 만드시길 권장합니다.</string>
-  <!--AntennaPodSP-->
+  <!--PodVinciSP-->
   <string name="sp_apps_importing_feeds_msg">단일 용도 앱에서 구독 정보를 가져옵니다...</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">팟캐스트 검색…</string>

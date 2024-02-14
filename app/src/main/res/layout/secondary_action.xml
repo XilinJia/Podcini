@@ -20,7 +20,7 @@
             tools:ignore="ContentDescription"
             tools:src="@sample/secondaryaction"/>
 
-    <de.danoeh.antennapod.ui.common.CircularProgressBar
+    <ac.mdiq.podvinci.ui.common.CircularProgressBar
             android:id="@+id/secondaryActionProgress"
             android:layout_width="40dp"
             android:layout_gravity="center"

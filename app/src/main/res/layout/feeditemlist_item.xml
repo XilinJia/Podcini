@@ -142,7 +142,7 @@
                     android:layout_marginEnd="4dp"
                     android:text="·"
                     android:importantForAccessibility="no"
-                    style="@style/AntennaPod.TextView.ListItemSecondaryTitle"
+                    style="@style/PodVinci.TextView.ListItemSecondaryTitle"
                     tools:background="@android:color/holo_blue_light" />
 
                 <TextView
@@ -151,7 +151,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginRight="4dp"
                     android:layout_marginEnd="4dp"
-                    style="@style/AntennaPod.TextView.ListItemSecondaryTitle"
+                    style="@style/PodVinci.TextView.ListItemSecondaryTitle"
                     tools:text="@sample/episodes.json/data/published_at" />
 
                 <TextView
@@ -161,7 +161,7 @@
                     android:layout_marginEnd="4dp"
                     android:text="·"
                     android:importantForAccessibility="no"
-                    style="@style/AntennaPod.TextView.ListItemSecondaryTitle"
+                    style="@style/PodVinci.TextView.ListItemSecondaryTitle"
                     tools:background="@android:color/holo_blue_light" />
 
                 <TextView
@@ -170,7 +170,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginRight="4dp"
                     android:layout_marginEnd="4dp"
-                    style="@style/AntennaPod.TextView.ListItemSecondaryTitle"
+                    style="@style/PodVinci.TextView.ListItemSecondaryTitle"
                     tools:text="10 MB" />
 
             </LinearLayout>
@@ -186,7 +186,7 @@
                 android:layout_height="wrap_content"
                 android:importantForAccessibility="no"
                 android:ellipsize="end"
-                style="@style/AntennaPod.TextView.ListItemPrimaryTitle"
+                style="@style/PodVinci.TextView.ListItemPrimaryTitle"
                 tools:text="@sample/episodes.json/data/title"
                 tools:background="@android:color/holo_blue_light" />
 
@@ -202,7 +202,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="0dp"
-                    style="@style/AntennaPod.TextView.ListItemSecondaryTitle"
+                    style="@style/PodVinci.TextView.ListItemSecondaryTitle"
                     tools:text="00:42:23"
                     tools:background="@android:color/holo_blue_light" />
 
@@ -221,7 +221,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="0dp"
-                    style="@style/AntennaPod.TextView.ListItemSecondaryTitle"
+                    style="@style/PodVinci.TextView.ListItemSecondaryTitle"
                     tools:text="@sample/episodes.json/data/duration"
                     tools:background="@android:color/holo_blue_light" />
 

@@ -39,7 +39,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="@string/gpodnetauth_existing_devices"
-        style="@style/AntennaPod.TextView.Heading" />
+        style="@style/PodVinci.TextView.Heading" />
 
     <TextView
         android:id="@+id/deviceSelectError"

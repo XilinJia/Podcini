@@ -43,7 +43,7 @@
                 android:layout_height="wrap_content"
                 android:maxLines="1"
                 android:ellipsize="end"
-                style="@style/AntennaPod.TextView.ListItemPrimaryTitle"
+                style="@style/PodVinci.TextView.ListItemPrimaryTitle"
                 tools:text="@sample/episodes.json/data/title"
                 tools:background="@android:color/holo_blue_light" />
 
@@ -53,7 +53,7 @@
             android:id="@+id/status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/AntennaPod.TextView.ListItemSecondaryTitle"
+            style="@style/PodVinci.TextView.ListItemSecondaryTitle"
             tools:text="Media file - 01/01/1970" />
 
         <TextView

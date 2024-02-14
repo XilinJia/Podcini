@@ -51,7 +51,7 @@
   <string name="home_continue_title">Слушать дальше</string>
   <string name="home_new_title">Что нового</string>
   <string name="home_downloads_title">Загрузки</string>
-  <string name="home_welcome_title">Привет, это AntennaPod!</string>
+  <string name="home_welcome_title">Привет, это PodVinci!</string>
   <string name="home_welcome_text">Вы ещё не подписаны ни на один подкаст. Откройте боковое меню, чтобы добавить подкаст.</string>
   <string name="notification_permission_denied">Вы не дали разрешения.</string>
   <string name="open_settings">Открыть настройки</string>
@@ -303,10 +303,10 @@
   <string name="download_type_feed">Канал</string>
   <string name="download_type_media">Медиафайл</string>
   <string name="null_value_podcast_error">Не указан подкаст, который следовало бы показать.</string>
-  <string name="no_feed_url_podcast_found_by_search">У предложенного подкаста отсутствует RSS-ссылка, AntennaPod нашел подкаст, который возможно ему соответствует</string>
+  <string name="no_feed_url_podcast_found_by_search">У предложенного подкаста отсутствует RSS-ссылка, PodVinci нашел подкаст, который возможно ему соответствует</string>
   <string name="authentication_notification_title">Необходима авторизация</string>
   <string name="confirm_mobile_download_dialog_title">Подтвердите загрузку через мобильное соединение</string>
-  <string name="confirm_mobile_download_dialog_message">Загрузка через мобильное соединение отключена в настройках. AntennaPod может загрузить выпуск позже, когда появится соединение через Wi-Fi.</string>
+  <string name="confirm_mobile_download_dialog_message">Загрузка через мобильное соединение отключена в настройках. PodVinci может загрузить выпуск позже, когда появится соединение через Wi-Fi.</string>
   <string name="confirm_mobile_download_dialog_download_later">Загрузить позже</string>
   <string name="confirm_mobile_download_dialog_allow_this_time">Всё равно загрузить</string>
   <string name="confirm_mobile_streaming_notification_title">Подтвердите трансляцию через мобильное соединение</string>
@@ -321,7 +321,7 @@
   <string name="playback_error_source">Не удалось получить доступ к медиафайлу</string>
   <string name="playback_error_unknown">Неизвестная ошибка</string>
   <string name="no_media_playing_label">Ничего не воспроизводится</string>
-  <string name="unknown_media_key">AntennaPod - неизвестный ключ носителя: %1$d</string>
+  <string name="unknown_media_key">PodVinci - неизвестный ключ носителя: %1$d</string>
   <string name="error_file_not_found">Файл не найден</string>
   <string name="no_media_label">Элемент не содержит медиафайл</string>
   <!--Queue operations-->
@@ -407,7 +407,7 @@
   <string name="downloads_pref">Загрузки</string>
   <string name="downloads_pref_sum">Интервал обновления, мобильная сеть, автоматизация</string>
   <string name="feed_refresh_title">Обновить подкасты</string>
-  <string name="feed_refresh_sum">Укажите интервал с которым AntennaPod будет автоматически искать обновления выпусков</string>
+  <string name="feed_refresh_sum">Укажите интервал с которым PodVinci будет автоматически искать обновления выпусков</string>
   <string name="feed_refresh_never">Никогда</string>
   <string name="feed_every_hour">Каждый час</string>
   <string name="feed_every_2_hours">Каждые 2 часа</string>
@@ -516,15 +516,15 @@
   <string name="pref_new_episodes_action_sum">Действие для новых выпусков</string>
   <!--About screen-->
   <string name="about_pref">О программе</string>
-  <string name="antennapod_version">Версия AntennaPod</string>
+  <string name="podvinci_version">Версия PodVinci</string>
   <string name="contributors">Участники</string>
-  <string name="contributors_summary">Любой может сделать AntennaPod лучше — своим кодом, переводом или помогая пользователям на форуме</string>
+  <string name="contributors_summary">Любой может сделать PodVinci лучше — своим кодом, переводом или помогая пользователям на форуме</string>
   <string name="developers">Разработчики</string>
   <string name="translators">Переводчики</string>
   <string name="special_thanks">Особая благодарность</string>
   <string name="privacy_policy">Политика конфиденциальности</string>
   <string name="licenses">Лицензии</string>
-  <string name="licenses_summary">В AntennaPod используется другое отличное ПО</string>
+  <string name="licenses_summary">В PodVinci используется другое отличное ПО</string>
   <!--Search-->
   <string name="search_status_no_results">Ничего не найдено</string>
   <string name="type_to_search">Введите поисковый запрос</string>
@@ -547,8 +547,8 @@
   <string name="html_export_summary">Показать подписки другу</string>
   <string name="opml_export_summary">Передать подписки в другое приложение</string>
   <string name="opml_import_summary">Импортировать подписки из другого приложения</string>
-  <string name="database_export_summary">Передать подписки, список прослушанных и очередь в AntennaPod на другом устройстве</string>
-  <string name="database_import_summary">Импортировать базу данных AntennaPod с другого устройства</string>
+  <string name="database_export_summary">Передать подписки, список прослушанных и очередь в PodVinci на другом устройстве</string>
+  <string name="database_import_summary">Импортировать базу данных PodVinci с другого устройства</string>
   <string name="opml_import_label">Импорт OPML</string>
   <string name="opml_add_podcast_label">Импортировать список подкастов (OPML)</string>
   <string name="opml_reader_error">При чтении OPML произошла ошибка:</string>
@@ -565,8 +565,8 @@
   <string name="export_success_title">Экспорт выполнен</string>
   <string name="opml_import_ask_read_permission">Для чтения файла OPML необходим доступ к внешнему хранилищу</string>
   <string name="successful_import_label">Импорт успешен</string>
-  <string name="import_ok">Нажмите OK, чтобы перезапустить AntennaPod</string>
-  <string name="import_no_downgrade">Выбранная база данных экспортирована из более поздней версии AntennaPod. Установленная версия не сможет воспользоваться этой базой.</string>
+  <string name="import_ok">Нажмите OK, чтобы перезапустить PodVinci</string>
+  <string name="import_no_downgrade">Выбранная база данных экспортирована из более поздней версии PodVinci. Установленная версия не сможет воспользоваться этой базой.</string>
   <string name="favorites_export_label">Экспорт избранного</string>
   <string name="favorites_export_summary">Экспортировать сохраненное избранное в файл</string>
   <!--Sleep timer-->
@@ -606,12 +606,12 @@
   <string name="synchronization_choose_title">Выберите провайдера синхронизации</string>
   <string name="synchronization_summary_unchoosen">Вы можете выбрать из нескольких провайдеров для синхронизации подписок и состояния воспроизведения выпусков</string>
   <string name="dialog_choose_sync_service_title">Выберите провайдера синхронизации</string>
-  <string name="gpodnet_description">Gpodder.net — сервис синхронизации подкастов с открытым исходным кодом, которое вы можете установить на свой сервер. Gpodder.net не связан с проектом AntennaPod.</string>
-  <string name="synchronization_summary_nextcloud">Gpoddersync — приложение с открытым исходным кодом для Nextcloud, которое вы можете установить на свой сервер. Это приложение не связано с проектом AntennaPod.</string>
+  <string name="gpodnet_description">Gpodder.net — сервис синхронизации подкастов с открытым исходным кодом, которое вы можете установить на свой сервер. Gpodder.net не связан с проектом PodVinci.</string>
+  <string name="synchronization_summary_nextcloud">Gpoddersync — приложение с открытым исходным кодом для Nextcloud, которое вы можете установить на свой сервер. Это приложение не связано с проектом PodVinci.</string>
   <string name="synchronization_host_explanation">Можно выбрать свой сервер для синхронизации. Опредилившись с предпочтительным сервером синхронизации, введите его адрес здесь.</string>
   <string name="synchronization_host_label">Адрес сервера</string>
   <string name="proceed_to_login_butLabel">Авторизоваться</string>
-  <string name="synchronization_nextcloud_authenticate_browser">Предоставить доступ, открыв веб-браузер, и вернуться в AntennaPod.</string>
+  <string name="synchronization_nextcloud_authenticate_browser">Предоставить доступ, открыв веб-браузер, и вернуться в PodVinci.</string>
   <string name="gpodnetauth_login_butLabel">Войти</string>
   <string name="synchronization_credentials_explanation">Пожалуйста, укажите данные своей учётной записи на сервере синхронизации.</string>
   <string name="gpodnetauth_encryption_warning">Пароль и данные не зашифрованы!</string>
@@ -620,10 +620,10 @@
   <string name="synchronization_login_butLabel">Войти</string>
   <string name="synchronization_selectDevice_explanation">Пожалуйста, выберите устройство с сервера синхронизации, либо создайте новое.</string>
   <string name="gpodnetauth_device_name">Название устройства</string>
-  <string name="gpodnetauth_device_name_default">AntennaPod на %1$s</string>
+  <string name="gpodnetauth_device_name_default">PodVinci на %1$s</string>
   <string name="gpodnetauth_existing_devices">Существующие устройства</string>
   <string name="gpodnetauth_create_device">Создать устройство</string>
-  <string name="gpodnetauth_finish_descr">Поздравляем! Ваша учётная запись gpodder.net связана с устройством. AntennaPod будет автоматически синхронизировать Ваши подписки с учётной записью gpodder.net.</string>
+  <string name="gpodnetauth_finish_descr">Поздравляем! Ваша учётная запись gpodder.net связана с устройством. PodVinci будет автоматически синхронизировать Ваши подписки с учётной записью gpodder.net.</string>
   <string name="gpodnetauth_finish_butsyncnow">Начать синхронизацию</string>
   <string name="pref_gpodnet_setlogin_information_title">Изменить информацию авторизации</string>
   <string name="pref_gpodnet_setlogin_information_sum">Изменить информацию авторизации для аккаунта gpodder.net</string>
@@ -641,7 +641,7 @@
   <string name="gpodnetsync_username_characters_error">Имя пользователя может содержать только буквы, цифры, дефисы и символы подчеркивания.</string>
   <!--Directory chooser-->
   <string name="choose_data_directory">Выбрать папку для хранения данных</string>
-  <string name="choose_data_directory_message">Укажите основную папку для хранения данных. AntennaPod создаст необходимые подкаталоги.</string>
+  <string name="choose_data_directory_message">Укажите основную папку для хранения данных. PodVinci создаст необходимые подкаталоги.</string>
   <string name="choose_data_directory_available_space">свободно: %1$s из %2$s</string>
   <string name="pref_pausePlaybackForFocusLoss_sum">Пауза вместо уменьшения громкости, когда другое приложение проигрывает звуки</string>
   <string name="pref_pausePlaybackForFocusLoss_title">Пауза при прерывании</string>
@@ -680,7 +680,7 @@
   <string name="exclude_episodes_shorter_than">Исключить выпуски короче чем</string>
   <string name="keep_updated">Постоянно обновлять</string>
   <string name="keep_updated_summary">Обновлять подкаст при (авто)обновлении всех подкастов</string>
-  <string name="auto_download_disabled_globally">Автоматическая загрузка отключена в основных настройках AntennaPod</string>
+  <string name="auto_download_disabled_globally">Автоматическая загрузка отключена в основных настройках PodVinci</string>
   <string name="statistics_time_played">Времени прослушивания:</string>
   <string name="statistics_total_duration">Общая длительность (примерно):</string>
   <string name="statistics_episodes_on_device">Выпусков на устройстве:</string>
@@ -689,7 +689,7 @@
   <string name="statistics_view_all">Просмотреть все подкасты »</string>
   <string name="edit_url_menu">Исправить ссылку на канал</string>
   <string name="edit_url_confirmation_msg">Изменение адреса ссылки может запросто испортить состояние воспроизведения и список выпусков подкаста. Мы крайне НЕ рекомендуем его менять и НЕ сможем Вам помочь, если что-то пойдёт не так. Действие необратимо. Простым возвратом старого адреса поломку HE исправить. Советуем сперва создать резервную копию. </string>
-  <!--AntennaPodSP-->
+  <!--PodVinciSP-->
   <string name="sp_apps_importing_feeds_msg">Импорт подписок из моноприложений…</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">Найти подкаст…</string>
@@ -712,7 +712,7 @@
   <string name="local_folder">Локальная папка</string>
   <string name="reconnect_local_folder">Переподключить локальную папку</string>
   <string name="reconnect_local_folder_warning">В случае отказа в разрешении вы можете использовать это для переподключения к той же самой папке. Не выбирайте другую папку.</string>
-  <string name="local_feed_description">Этот виртуальный подкаст был создан путем добавления папки в AntennaPod.</string>
+  <string name="local_feed_description">Этот виртуальный подкаст был создан путем добавления папки в PodVinci.</string>
   <string name="unable_to_start_system_file_manager">Невозможно запустить системный файловый менеджер</string>
   <string name="filter">Фильтровать</string>
   <string name="hide_is_favorite_label">В избранном</string>

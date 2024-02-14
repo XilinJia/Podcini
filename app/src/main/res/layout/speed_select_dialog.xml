@@ -15,7 +15,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/playback_speed"
-            style="@style/AntennaPod.TextView.ListItemPrimaryTitle" />
+            style="@style/PodVinci.TextView.ListItemPrimaryTitle" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/add_current_speed_chip"
@@ -24,7 +24,7 @@
 
     </LinearLayout>
 
-    <de.danoeh.antennapod.view.PlaybackSpeedSeekBar
+    <ac.mdiq.podvinci.view.PlaybackSpeedSeekBar
         android:id="@+id/speed_seek_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -35,7 +35,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:text="@string/speed_presets"
-        style="@style/AntennaPod.TextView.ListItemPrimaryTitle" />
+        style="@style/PodVinci.TextView.ListItemPrimaryTitle" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/selected_speeds_grid"

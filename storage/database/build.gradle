@@ -5,7 +5,7 @@ plugins {
 apply from: "../../common.gradle"
 
 android {
-    namespace "de.danoeh.antennapod.storage.database"
+    namespace "ac.mdiq.podvinci.storage.database"
 
     lint {
         disable "StaticFieldLeak", "StringFormatCount", "StringFormatMatches", "StringFormatInvalid", "PluralsCandidate", "StringFormatTrivial"

@@ -4,10 +4,12 @@ buildscript {
         mavenCentral()
         gradlePluginPortal()
     }
+    ext.kotlin_version = '1.9.22'
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.2.0'
-        classpath "gradle.plugin.com.github.spotbugs.snom:spotbugs-gradle-plugin:4.7.0"
-        classpath 'org.codehaus.groovy:groovy-xml:3.0.13'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.android.tools.build:gradle:8.2.2'
+        classpath "gradle.plugin.com.github.spotbugs.snom:spotbugs-gradle-plugin:4.7.1"
+        classpath 'org.codehaus.groovy:groovy-xml:3.0.19'
     }
 }
 
@@ -34,28 +36,29 @@ project.ext {
     googleMaterialVersion = "1.11.0"
 
     // Third-party
-    commonslangVersion = "3.6"
-    commonsioVersion = "2.5"
-    jsoupVersion = "1.15.1"
-    glideVersion = "4.13.2"
-    okhttpVersion = "3.12.10"
-    okioVersion = "1.17.5"
+    commonslangVersion = "3.14.0"
+    commonsioVersion = "2.15.1"
+    jsoupVersion = "1.17.2"
+    glideVersion = "4.16.0"
+    okhttpVersion = "4.12.0"
+    okioVersion = "3.7.0"
     eventbusVersion = "3.3.1"
     rxAndroidVersion = "2.1.1"
-    rxJavaVersion = "2.2.2"
+    rxJavaVersion = "2.2.21"
     iconifyVersion = "2.2.2"
     annimonStreamVersion = "1.2.2"
-    exoPlayerVersion = "2.19.1"
+    media3Version = "1.2.1"
 
     // Google Play build
     wearableSupportVersion = "2.6.0"
 
     //Tests
-    awaitilityVersion = "3.1.6"
-    junitVersion = "4.13"
-    robolectricVersion = "4.9"
+    awaitilityVersion = "4.2.0"
+    junitVersion = "4.13.2"
+    junit5Version = "5.10.1"
+    robolectricVersion = "4.11.1"
     espressoVersion = "3.5.0"
-    runnerVersion = "1.5.0"
+    runnerVersion = "1.5.2"
     rulesVersion = "1.5.0"
     testCoreVersion = "1.5.0"
 }
@@ -65,7 +68,7 @@ checkstyle {
     toolVersion '10.3.1'
 }
 
-task checkstyle(type: Checkstyle) {
+tasks.register('checkstyle', Checkstyle) {
     classpath = files()
     source "${project.rootDir}"
     exclude("**/gen/**")

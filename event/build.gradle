@@ -1,5 +1,6 @@
 plugins {
     id("com.android.library")
+    id 'org.jetbrains.kotlin.android'
 }
 apply from: "../common.gradle"
 
@@ -10,6 +11,7 @@ android {
 dependencies {
     implementation project(':model')
     implementation "androidx.core:core:$coreVersion"
+    implementation "androidx.core:core-ktx:$coreVersion"
 
     annotationProcessor "androidx.annotation:annotation:$annotationVersion"
 }

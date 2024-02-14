@@ -1,5 +1,6 @@
 plugins {
     id("com.android.library")
+    id 'org.jetbrains.kotlin.android'
 }
 apply from: "../../common.gradle"
 apply from: "../../playFlavor.gradle"
@@ -23,6 +24,7 @@ dependencies {
     implementation project(':model')
     implementation project(':net:sync:gpoddernet')
     implementation project(':net:sync:model')
+    implementation "androidx.core:core-ktx:$coreVersion"
 
     annotationProcessor "androidx.annotation:annotation:$annotationVersion"
 

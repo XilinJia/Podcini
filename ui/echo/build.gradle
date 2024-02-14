@@ -1,5 +1,6 @@
 plugins {
     id("com.android.library")
+    id 'org.jetbrains.kotlin.android'
 }
 apply from: "../../common.gradle"
 apply from: "../../playFlavor.gradle"
@@ -17,6 +18,7 @@ dependencies {
     implementation project(":model")
     implementation project(":storage:preferences")
     implementation project(':ui:glide')
+    implementation "androidx.core:core-ktx:$coreVersion"
 
     annotationProcessor "androidx.annotation:annotation:$annotationVersion"
     implementation "androidx.appcompat:appcompat:$appcompatVersion"

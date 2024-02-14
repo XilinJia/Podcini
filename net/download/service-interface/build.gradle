@@ -1,6 +1,7 @@
 plugins {
     id("com.android.library")
     id("java-test-fixtures")
+    id 'org.jetbrains.kotlin.android'
 }
 apply from: "../../../common.gradle"
 
@@ -15,9 +16,12 @@ android {
 dependencies {
     implementation project(':model')
     implementation project(':net:common')
+    implementation "androidx.core:core-ktx:$coreVersion"
 
     annotationProcessor "androidx.annotation:annotation:$annotationVersion"
 
     testImplementation "junit:junit:$junitVersion"
+//    testImplementation "org.junit.jupiter:junit-jupiter-api:$junit5Version"
+//    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit5Version"
     testImplementation "org.robolectric:robolectric:$robolectricVersion"
 }

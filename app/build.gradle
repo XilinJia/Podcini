@@ -1,5 +1,7 @@
 plugins {
     id('com.android.application')
+    id 'kotlin-android'
+    id 'kotlin-kapt'
     id('com.github.triplet.play') version '3.8.3' apply false
 }
 apply from: "../common.gradle"
@@ -68,9 +70,22 @@ android {
     androidResources {
         additionalParameters "--no-version-vectors"
     }
+//    buildToolsVersion '34.0.0'
 }
 
 dependencies {
+    implementation "androidx.core:core-ktx:$coreVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    constraints {
+        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version") {
+            because("kotlin-stdlib-jdk7 is now a part of kotlin-stdlib")
+        }
+        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version") {
+            because("kotlin-stdlib-jdk8 is now a part of kotlin-stdlib")
+        }
+    }
+
     implementation project(":core")
     implementation project(":event")
     implementation project(':model')
@@ -91,15 +106,17 @@ dependencies {
     implementation project(':ui:i18n')
     implementation project(':ui:statistics')
 
-    annotationProcessor "androidx.annotation:annotation:1.7.1"
+    kapt "androidx.annotation:annotation:1.7.1"
+
     implementation "androidx.appcompat:appcompat:1.6.1"
     implementation 'androidx.coordinatorlayout:coordinatorlayout:1.2.0'
-    implementation "androidx.core:core:$coreVersion"
-    implementation "androidx.fragment:fragment:$fragmentVersion"
+    implementation "androidx.core:core-ktx:$coreVersion"
+    implementation "androidx.fragment:fragment-ktx:$fragmentVersion"
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
     implementation "androidx.media:media:$mediaVersion"
-    implementation "androidx.palette:palette:$paletteVersion"
-    implementation "androidx.preference:preference:$preferenceVersion"
+    implementation "androidx.media3:media3-common:$media3Version"
+    implementation "androidx.palette:palette-ktx:$paletteVersion"
+    implementation "androidx.preference:preference-ktx:$preferenceVersion"
     implementation "androidx.recyclerview:recyclerview:$recyclerViewVersion"
     implementation "androidx.viewpager2:viewpager2:$viewPager2Version"
     implementation "androidx.work:work-runtime:$workManagerVersion"
@@ -114,6 +131,7 @@ dependencies {
     implementation "com.squareup.okio:okio:$okioVersion"
     implementation "org.greenrobot:eventbus:$eventbusVersion"
     annotationProcessor "org.greenrobot:eventbus-annotation-processor:$eventbusVersion"
+    kapt "org.greenrobot:eventbus-annotation-processor:$eventbusVersion"
     implementation "io.reactivex.rxjava2:rxandroid:$rxAndroidVersion"
     implementation "io.reactivex.rxjava2:rxjava:$rxJavaVersion"
 
@@ -126,7 +144,7 @@ dependencies {
     implementation "com.annimon:stream:$annimonStreamVersion"
 
     // Non-free dependencies:
-    playImplementation 'com.google.android.play:core:1.8.0'
+    playImplementation 'com.google.android.play:core-ktx:1.8.0'
     compileOnly "com.google.android.wearable:wearable:$wearableSupportVersion"
 
     androidTestImplementation "org.awaitility:awaitility:$awaitilityVersion"
@@ -136,7 +154,7 @@ dependencies {
     androidTestImplementation "androidx.test.espresso:espresso-intents:$espressoVersion"
     androidTestImplementation "androidx.test:runner:$runnerVersion"
     androidTestImplementation "androidx.test:rules:$rulesVersion"
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
 }
 
 if (project.hasProperty("antennaPodPlayPublisherCredentials")) {
@@ -147,7 +165,7 @@ if (project.hasProperty("antennaPodPlayPublisherCredentials")) {
     }
 }
 
-task copyLicense(type: Copy) {
+tasks.register('copyLicense', Copy) {
     from "../LICENSE"
     into "src/main/assets/"
     rename { String fileName ->

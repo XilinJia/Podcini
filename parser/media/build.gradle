@@ -1,5 +1,6 @@
 plugins {
     id("com.android.library")
+    id 'org.jetbrains.kotlin.android'
 }
 apply from: "../../common.gradle"
 
@@ -9,11 +10,14 @@ android {
 
 dependencies {
     implementation project(':model')
+    implementation "androidx.core:core-ktx:$coreVersion"
 
     annotationProcessor "androidx.annotation:annotation:$annotationVersion"
 
     implementation "commons-io:commons-io:$commonsioVersion"
 
     testImplementation "junit:junit:$junitVersion"
+//    testImplementation "org.junit.jupiter:junit-jupiter-api:$junit5Version"
+//    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit5Version"
     testImplementation "org.robolectric:robolectric:$robolectricVersion"
 }

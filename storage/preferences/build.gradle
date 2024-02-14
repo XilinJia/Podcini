@@ -1,5 +1,7 @@
 plugins {
     id("com.android.library")
+    id 'kotlin-android'
+
 }
 apply from: "../../common.gradle"
 
@@ -12,9 +14,21 @@ android {
 }
 
 dependencies {
+    implementation "androidx.core:core-ktx:$coreVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    constraints {
+        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version") {
+            because("kotlin-stdlib-jdk7 is now a part of kotlin-stdlib")
+        }
+        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version") {
+            because("kotlin-stdlib-jdk8 is now a part of kotlin-stdlib")
+        }
+    }
+
     implementation project(':model')
 
     annotationProcessor "androidx.annotation:annotation:$annotationVersion"
-    implementation "androidx.fragment:fragment:$fragmentVersion"
-    implementation "androidx.preference:preference:$preferenceVersion"
+    implementation "androidx.fragment:fragment-ktx:$fragmentVersion"
+    implementation "androidx.preference:preference-ktx:$preferenceVersion"
 }

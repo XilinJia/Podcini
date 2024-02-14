@@ -1,5 +1,6 @@
 plugins {
     id("com.android.library")
+    id 'org.jetbrains.kotlin.android'
 }
 apply from: "../../common.gradle"
 apply from: "../../playFlavor.gradle"
@@ -14,6 +15,8 @@ dependencies {
     implementation project(":model")
     implementation project(":ui:app-start-intent")
     implementation project(":ui:common")
+    implementation "androidx.core:core-ktx:$coreVersion"
+    implementation 'androidx.media3:media3-common:1.2.1'
 
     annotationProcessor "androidx.annotation:annotation:$annotationVersion"
     implementation "androidx.appcompat:appcompat:$appcompatVersion"

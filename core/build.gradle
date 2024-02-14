@@ -1,5 +1,7 @@
 plugins {
     id("com.android.library")
+    id 'kotlin-android'
+    id 'kotlin-kapt'
 }
 apply from: "../common.gradle"
 apply from: "../playFlavor.gradle"
@@ -23,6 +25,18 @@ android {
 }
 
 dependencies {
+    implementation "androidx.core:core-ktx:$coreVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    constraints {
+        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version") {
+            because("kotlin-stdlib-jdk7 is now a part of kotlin-stdlib")
+        }
+        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version") {
+            because("kotlin-stdlib-jdk8 is now a part of kotlin-stdlib")
+        }
+    }
+
     implementation project(':event')
     implementation project(':model')
     implementation project(':net:common')
@@ -41,10 +55,11 @@ dependencies {
     implementation project(':ui:i18n')
     implementation project(':ui:png-icons')
 
-    annotationProcessor "androidx.annotation:annotation:$annotationVersion"
+    kapt "androidx.annotation:annotation:$annotationVersion"
+
     implementation "androidx.appcompat:appcompat:$appcompatVersion"
     implementation "androidx.core:core:$coreVersion"
-    implementation "androidx.core:core-splashscreen:1.0.0"
+    implementation "androidx.core:core-splashscreen:1.0.1"
     implementation 'androidx.documentfile:documentfile:1.0.1'
     implementation "androidx.fragment:fragment:$fragmentVersion"
     implementation "androidx.media:media:$mediaVersion"
@@ -61,15 +76,17 @@ dependencies {
     implementation "com.squareup.okhttp3:okhttp-urlconnection:$okhttpVersion"
     implementation "com.squareup.okio:okio:$okioVersion"
     implementation "org.greenrobot:eventbus:$eventbusVersion"
-    annotationProcessor "org.greenrobot:eventbus-annotation-processor:$eventbusVersion"
+//    annotationProcessor "org.greenrobot:eventbus-annotation-processor:$eventbusVersion"
+    kapt "org.greenrobot:eventbus-annotation-processor:$eventbusVersion"
+
     implementation "io.reactivex.rxjava2:rxandroid:$rxAndroidVersion"
     implementation "io.reactivex.rxjava2:rxjava:$rxJavaVersion"
     implementation "com.annimon:stream:$annimonStreamVersion"
 
-    implementation "androidx.media3:media3-exoplayer:1.2.1"
-    implementation "androidx.media3:media3-ui:1.2.1"
-    implementation "androidx.media3:media3-datasource-okhttp:1.2.1"
-    implementation "androidx.media3:media3-common:1.2.1"
+    implementation "androidx.media3:media3-exoplayer:$media3Version"
+    implementation "androidx.media3:media3-ui:$media3Version"
+    implementation "androidx.media3:media3-datasource-okhttp:$media3Version"
+    implementation "androidx.media3:media3-common:$media3Version"
 
     // Non-free dependencies:
     playApi "com.google.android.support:wearable:$wearableSupportVersion"
@@ -78,10 +95,18 @@ dependencies {
     testImplementation "androidx.test:core:$testCoreVersion"
     testImplementation "org.awaitility:awaitility:$awaitilityVersion"
     testImplementation "junit:junit:$junitVersion"
-    testImplementation 'org.mockito:mockito-inline:3.5.13'
+//    testImplementation "org.junit.jupiter:junit-jupiter-api:$junit5Version"
+//    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit5Version"
+    testImplementation 'org.mockito:mockito-inline:5.2.0'
     testImplementation "org.robolectric:robolectric:$robolectricVersion"
     testImplementation 'javax.inject:javax.inject:1'
     androidTestImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
     androidTestImplementation "androidx.test:runner:$runnerVersion"
     androidTestImplementation "androidx.test:rules:$rulesVersion"
+}
+
+kapt {
+    arguments {
+        arg('eventBusIndex', 'de.danoeh.antennapod.core.ApCoreEventBusIndex')
+    }
 }

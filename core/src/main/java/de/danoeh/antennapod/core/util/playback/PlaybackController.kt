@@ -1,0 +1,426 @@
+package de.danoeh.antennapod.core.util.playback
+
+import android.content.*
+import android.os.IBinder
+import android.util.Log
+import android.util.Pair
+import android.view.SurfaceHolder
+import androidx.fragment.app.FragmentActivity
+import androidx.media3.common.util.UnstableApi
+import de.danoeh.antennapod.core.feed.util.PlaybackSpeedUtils.getCurrentPlaybackSpeed
+import de.danoeh.antennapod.core.preferences.PlaybackPreferences
+import de.danoeh.antennapod.core.service.playback.PlaybackService
+import de.danoeh.antennapod.core.service.playback.PlaybackService.LocalBinder
+import de.danoeh.antennapod.core.service.playback.PlaybackServiceInterface
+import de.danoeh.antennapod.core.storage.DBWriter
+import de.danoeh.antennapod.event.playback.PlaybackPositionEvent
+import de.danoeh.antennapod.event.playback.PlaybackServiceEvent
+import de.danoeh.antennapod.event.playback.SpeedChangedEvent
+import de.danoeh.antennapod.model.feed.FeedMedia
+import de.danoeh.antennapod.model.playback.MediaType
+import de.danoeh.antennapod.model.playback.Playable
+import de.danoeh.antennapod.playback.base.PlayerStatus
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
+
+/**
+ * Communicates with the playback service. GUI classes should use this class to
+ * control playback instead of communicating with the PlaybackService directly.
+ */
+@UnstableApi
+abstract class PlaybackController(private val activity: FragmentActivity?) {
+    private var playbackService: PlaybackService? = null
+    private var media: Playable? = null
+    var status: PlayerStatus = PlayerStatus.STOPPED
+        private set
+
+    private var mediaInfoLoaded = false
+    private var released = false
+    private var initialized = false
+    private var eventsRegistered = false
+    private var loadedFeedMedia: Long = -1
+
+    /**
+     * Creates a new connection to the playbackService.
+     */
+    @Synchronized
+    fun init() {
+        if (!eventsRegistered) {
+            EventBus.getDefault().register(this)
+            eventsRegistered = true
+        }
+        if (PlaybackService.isRunning) {
+            initServiceRunning()
+        } else {
+            updatePlayButtonShowsPlay(true)
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onEventMainThread(event: PlaybackServiceEvent) {
+        if (event.action == PlaybackServiceEvent.Action.SERVICE_STARTED) {
+            init()
+        }
+    }
+
+    @Synchronized
+    private fun initServiceRunning() {
+        if (initialized) {
+            return
+        }
+        initialized = true
+
+        activity?.registerReceiver(statusUpdate, IntentFilter(
+            PlaybackService.ACTION_PLAYER_STATUS_CHANGED))
+        activity?.registerReceiver(notificationReceiver, IntentFilter(
+            PlaybackServiceInterface.ACTION_PLAYER_NOTIFICATION))
+
+        if (!released) {
+            bindToService()
+        } else {
+            throw IllegalStateException("Can't call init() after release() has been called")
+        }
+        checkMediaInfoLoaded()
+    }
+
+    /**
+     * Should be called if the PlaybackController is no longer needed, for
+     * example in the activity's onStop() method.
+     */
+    fun release() {
+        Log.d(TAG, "Releasing PlaybackController")
+
+        try {
+            activity?.unregisterReceiver(statusUpdate)
+        } catch (e: IllegalArgumentException) {
+            // ignore
+        }
+
+        try {
+            activity?.unregisterReceiver(notificationReceiver)
+        } catch (e: IllegalArgumentException) {
+            // ignore
+        }
+        unbind()
+        media = null
+        released = true
+
+        if (eventsRegistered) {
+            EventBus.getDefault().unregister(this)
+            eventsRegistered = false
+        }
+    }
+
+    private fun unbind() {
+        try {
+            activity?.unbindService(mConnection)
+        } catch (e: IllegalArgumentException) {
+            // ignore
+        }
+        initialized = false
+    }
+
+    /**
+     * Should be called in the activity's onPause() method.
+     */
+    fun pause() {
+        mediaInfoLoaded = false
+    }
+
+    /**
+     * Tries to establish a connection to the PlaybackService. If it isn't
+     * running, the PlaybackService will be started with the last played media
+     * as the arguments of the launch intent.
+     */
+    private fun bindToService() {
+        Log.d(TAG, "Trying to connect to service")
+        check(PlaybackService.isRunning) { "Trying to bind but service is not running" }
+        val bound = activity?.bindService(Intent(activity, PlaybackService::class.java), mConnection, 0)
+        Log.d(TAG, "Result for service binding: $bound")
+    }
+
+    private val mConnection: ServiceConnection = object : ServiceConnection {
+        override fun onServiceConnected(className: ComponentName, service: IBinder) {
+            if (service is LocalBinder) {
+                playbackService = service.service
+                if (!released) {
+                    queryService()
+                    Log.d(TAG, "Connection to Service established")
+                } else {
+                    Log.i(TAG, "Connection to playback service has been established, " +
+                            "but controller has already been released")
+                }
+            }
+        }
+
+        override fun onServiceDisconnected(name: ComponentName) {
+            playbackService = null
+            initialized = false
+            Log.d(TAG, "Disconnected from Service")
+        }
+    }
+
+    private val statusUpdate: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            Log.d(TAG, "Received statusUpdate Intent.")
+            if (playbackService != null) {
+                val info = playbackService!!.pSMPInfo
+                status = info.playerStatus
+                media = info.playable
+                handleStatus()
+            } else {
+                Log.w(TAG, "Couldn't receive status update: playbackService was null")
+                if (PlaybackService.isRunning) {
+                    bindToService()
+                } else {
+                    status = PlayerStatus.STOPPED
+                    handleStatus()
+                }
+            }
+        }
+    }
+
+    private val notificationReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val type = intent.getIntExtra(PlaybackServiceInterface.EXTRA_NOTIFICATION_TYPE, -1)
+            val code = intent.getIntExtra(PlaybackServiceInterface.EXTRA_NOTIFICATION_CODE, -1)
+            if (code == -1 || type == -1) {
+                Log.d(TAG, "Bad arguments. Won't handle intent")
+                return
+            }
+            when (type) {
+                PlaybackServiceInterface.NOTIFICATION_TYPE_RELOAD -> {
+                    if (playbackService == null && PlaybackService.isRunning) {
+                        bindToService()
+                        return
+                    }
+                    mediaInfoLoaded = false
+                    queryService()
+                }
+                PlaybackServiceInterface.NOTIFICATION_TYPE_PLAYBACK_END -> onPlaybackEnd()
+            }
+        }
+    }
+
+    open fun onPlaybackEnd() {}
+
+    /**
+     * Is called whenever the PlaybackService changes its status. This method
+     * should be used to update the GUI or start/cancel background threads.
+     */
+    private fun handleStatus() {
+        Log.d(TAG, "status: $status")
+        checkMediaInfoLoaded()
+        when (status) {
+            PlayerStatus.PLAYING -> updatePlayButtonShowsPlay(false)
+            PlayerStatus.PREPARING -> if (playbackService != null) {
+                updatePlayButtonShowsPlay(!playbackService!!.isStartWhenPrepared)
+            }
+            PlayerStatus.PAUSED, PlayerStatus.PREPARED, PlayerStatus.STOPPED, PlayerStatus.INITIALIZED -> updatePlayButtonShowsPlay(
+                true)
+            else -> {}
+        }
+    }
+
+    private fun checkMediaInfoLoaded() {
+        if (!mediaInfoLoaded || loadedFeedMedia != PlaybackPreferences.currentlyPlayingFeedMediaId) {
+            loadedFeedMedia = PlaybackPreferences.currentlyPlayingFeedMediaId
+            loadMediaInfo()
+        }
+        mediaInfoLoaded = true
+    }
+
+    protected open fun updatePlayButtonShowsPlay(showPlay: Boolean) {
+    }
+
+    abstract fun loadMediaInfo()
+
+    /**
+     * Called when connection to playback service has been established or
+     * information has to be refreshed
+     */
+    private fun queryService() {
+        Log.d(TAG, "Querying service info")
+        if (playbackService != null) {
+            val info = playbackService!!.pSMPInfo
+            status = info.playerStatus
+            media = info.playable
+
+            // make sure that new media is loaded if it's available
+            mediaInfoLoaded = false
+            handleStatus()
+        } else {
+            Log.e(TAG,
+                "queryService() was called without an existing connection to playbackservice")
+        }
+    }
+
+    fun playPause() {
+        if (media == null) return
+        if (playbackService == null) {
+            if (activity != null) PlaybackServiceStarter(activity, media!!).start()
+            Log.w(TAG, "Play/Pause button was pressed, but playbackservice was null!")
+            return
+        }
+        when (status) {
+            PlayerStatus.PLAYING -> playbackService!!.pause(true, false)
+            PlayerStatus.PAUSED, PlayerStatus.PREPARED -> playbackService!!.resume()
+            PlayerStatus.PREPARING -> playbackService!!.isStartWhenPrepared = !playbackService!!.isStartWhenPrepared
+            PlayerStatus.INITIALIZED -> {
+                playbackService!!.isStartWhenPrepared = true
+                playbackService!!.prepare()
+            }
+            else -> {
+                if (activity != null) PlaybackServiceStarter(activity, media!!)
+                    .callEvenIfRunning(true)
+                    .start()
+                Log.w(TAG, "Play/Pause button was pressed and PlaybackService state was unknown")
+            }
+        }
+    }
+
+    val position: Int
+        get() = if (playbackService != null) {
+            playbackService!!.currentPosition
+        } else if (getMedia() != null) {
+            getMedia()!!.getPosition()
+        } else {
+            Playable.INVALID_TIME
+        }
+
+    val duration: Int
+        get() = if (playbackService != null) {
+            playbackService!!.duration
+        } else if (getMedia() != null) {
+            getMedia()!!.getDuration()
+        } else {
+            Playable.INVALID_TIME
+        }
+
+    fun getMedia(): Playable? {
+        if (media == null && activity != null) {
+            media = PlaybackPreferences.createInstanceFromPreferences(activity)
+        }
+        return media
+    }
+
+    fun sleepTimerActive(): Boolean {
+        return playbackService != null && playbackService!!.sleepTimerActive()
+    }
+
+    fun disableSleepTimer() {
+        if (playbackService != null) {
+            playbackService!!.disableSleepTimer()
+        }
+    }
+
+    val sleepTimerTimeLeft: Long
+        get() = if (playbackService != null) {
+            playbackService!!.sleepTimerTimeLeft
+        } else {
+            Playable.INVALID_TIME.toLong()
+        }
+
+    fun extendSleepTimer(extendTime: Long) {
+        val timeLeft = sleepTimerTimeLeft
+        if (playbackService != null && timeLeft != Playable.INVALID_TIME.toLong()) {
+            setSleepTimer(timeLeft + extendTime)
+        }
+    }
+
+    fun setSleepTimer(time: Long) {
+        if (playbackService != null) {
+            playbackService!!.setSleepTimer(time)
+        }
+    }
+
+    fun seekTo(time: Int) {
+        if (playbackService != null) {
+            playbackService!!.seekTo(time)
+        } else if (getMedia() is FeedMedia) {
+            val media = getMedia() as FeedMedia?
+            media!!.setPosition(time)
+            DBWriter.setFeedItem(media.getItem())
+            EventBus.getDefault().post(PlaybackPositionEvent(time, getMedia()!!.getDuration()))
+        }
+    }
+
+    fun setVideoSurface(holder: SurfaceHolder?) {
+        if (playbackService != null) {
+            playbackService!!.setVideoSurface(holder)
+        }
+    }
+
+    fun setPlaybackSpeed(speed: Float) {
+        if (playbackService != null) {
+            playbackService!!.setSpeed(speed)
+        } else {
+            EventBus.getDefault().post(SpeedChangedEvent(speed))
+        }
+    }
+
+    fun setSkipSilence(skipSilence: Boolean) {
+        if (playbackService != null) {
+            playbackService!!.skipSilence(skipSilence)
+        }
+    }
+
+    val currentPlaybackSpeedMultiplier: Float
+        get() = if (playbackService != null) {
+            playbackService!!.currentPlaybackSpeed
+        } else {
+            getCurrentPlaybackSpeed(getMedia())
+        }
+
+    val audioTracks: List<String>
+        get() {
+            if (playbackService == null || playbackService!!.audioTracks.isNullOrEmpty()) {
+                return emptyList()
+            }
+            return playbackService!!.audioTracks!!.filterNotNull().map { it }
+        }
+
+    val selectedAudioTrack: Int
+        get() {
+            if (playbackService == null) {
+                return -1
+            }
+            return playbackService!!.selectedAudioTrack
+        }
+
+    fun setAudioTrack(track: Int) {
+        if (playbackService != null) {
+            playbackService!!.setAudioTrack(track)
+        }
+    }
+
+    val isPlayingVideoLocally: Boolean
+        get() = if (PlaybackService.isCasting) {
+            false
+        } else if (playbackService != null) {
+            PlaybackService.currentMediaType == MediaType.VIDEO
+        } else {
+            getMedia() != null && getMedia()!!.getMediaType() == MediaType.VIDEO
+        }
+
+    val videoSize: Pair<Int, Int>?
+        get() = if (playbackService != null) {
+            playbackService!!.videoSize
+        } else {
+            null
+        }
+
+    fun notifyVideoSurfaceAbandoned() {
+        if (playbackService != null) {
+            playbackService!!.notifyVideoSurfaceAbandoned()
+        }
+    }
+
+    val isStreaming: Boolean
+        get() = playbackService != null && playbackService!!.isStreaming
+
+    companion object {
+        private const val TAG = "PlaybackController"
+    }
+}

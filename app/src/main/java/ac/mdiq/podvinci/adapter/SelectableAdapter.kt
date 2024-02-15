@@ -12,6 +12,7 @@ import ac.mdiq.podvinci.R
  */
 abstract class SelectableAdapter<T : RecyclerView.ViewHolder?>(private val activity: Activity) :
     RecyclerView.Adapter<T>() {
+
     private var actionMode: ActionMode? = null
     private val selectedIds = HashSet<Long>()
     private var onSelectModeListener: OnSelectModeListener? = null

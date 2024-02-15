@@ -1,12 +1,5 @@
 package ac.mdiq.podvinci.core.util.playback
 
-import android.content.*
-import android.os.IBinder
-import android.util.Log
-import android.util.Pair
-import android.view.SurfaceHolder
-import androidx.fragment.app.FragmentActivity
-import androidx.media3.common.util.UnstableApi
 import ac.mdiq.podvinci.core.feed.util.PlaybackSpeedUtils.getCurrentPlaybackSpeed
 import ac.mdiq.podvinci.core.preferences.PlaybackPreferences
 import ac.mdiq.podvinci.core.service.playback.PlaybackService
@@ -20,6 +13,15 @@ import ac.mdiq.podvinci.model.feed.FeedMedia
 import ac.mdiq.podvinci.model.playback.MediaType
 import ac.mdiq.podvinci.model.playback.Playable
 import ac.mdiq.podvinci.playback.base.PlayerStatus
+import android.content.*
+import android.os.Build
+import android.os.IBinder
+import android.util.Log
+import android.util.Pair
+import android.view.SurfaceHolder
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
+import androidx.media3.common.util.UnstableApi
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -71,10 +73,20 @@ abstract class PlaybackController(private val activity: FragmentActivity?) {
         }
         initialized = true
 
-        activity?.registerReceiver(statusUpdate, IntentFilter(
-            PlaybackService.ACTION_PLAYER_STATUS_CHANGED))
-        activity?.registerReceiver(notificationReceiver, IntentFilter(
-            PlaybackServiceInterface.ACTION_PLAYER_NOTIFICATION))
+//        TODO: this shit doesn't work
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+//            activity?.registerReceiver(statusUpdate, IntentFilter(
+//                PlaybackService.ACTION_PLAYER_STATUS_CHANGED), Context.RECEIVER_NOT_EXPORTED)
+//            activity?.registerReceiver(notificationReceiver, IntentFilter(
+//                PlaybackServiceInterface.ACTION_PLAYER_NOTIFICATION), Context.RECEIVER_NOT_EXPORTED)
+//        } else {
+//            ContextCompat.registerReceiver(activity!!, statusUpdate, IntentFilter(
+//                PlaybackService.ACTION_PLAYER_STATUS_CHANGED), ContextCompat.RECEIVER_EXPORTED)
+//            ContextCompat.registerReceiver(activity, notificationReceiver, IntentFilter(
+//                PlaybackServiceInterface.ACTION_PLAYER_NOTIFICATION), ContextCompat.RECEIVER_EXPORTED)
+//        }
+        activity?.registerReceiver(statusUpdate, IntentFilter(PlaybackService.ACTION_PLAYER_STATUS_CHANGED))
+        activity?.registerReceiver(notificationReceiver, IntentFilter(PlaybackServiceInterface.ACTION_PLAYER_NOTIFICATION))
 
         if (!released) {
             bindToService()

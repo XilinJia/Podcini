@@ -523,7 +523,8 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
             .subscribe(
                 { result: Feed? ->
                     feed = result
-                    if (feed != null) swipeActions?.setFilter(feed!!.itemFilter)
+                    Log.d(TAG, "loadItems subscribe called ${feed?.title}")
+                    swipeActions?.setFilter(feed?.itemFilter)
                     refreshHeaderView()
                     viewBinding!!.progressBar.visibility = View.GONE
                     adapter?.setDummyViews(0)
@@ -541,11 +542,12 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 
     private fun loadData(): Feed? {
         val feed: Feed = DBReader.getFeed(feedID, true) ?: return null
+        Log.d(TAG, "loadData got feed ${feed.title} with items: ${feed.items.size} ${feed.items[0].getPubDate()}")
         if (feed.items.isNotEmpty()) {
             DBReader.loadAdditionalFeedItemListData(feed.items)
             if (feed.sortOrder != null) {
                 val feedItems: MutableList<FeedItem> = feed.items
-                FeedItemPermutors.getPermutor(feed.sortOrder!!).reorder(feedItems.toMutableList())
+                FeedItemPermutors.getPermutor(feed.sortOrder!!).reorder(feedItems)
                 feed.items = feedItems
             }
         }

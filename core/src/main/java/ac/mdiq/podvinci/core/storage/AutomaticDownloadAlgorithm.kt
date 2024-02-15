@@ -37,12 +37,10 @@ open class AutomaticDownloadAlgorithm {
     @UnstableApi open fun autoDownloadUndownloadedItems(context: Context?): Runnable? {
         return Runnable {
             // true if we should auto download based on network status
-            val networkShouldAutoDl = (isAutoDownloadAllowed
-                    && isEnableAutodownload)
+            val networkShouldAutoDl = (isAutoDownloadAllowed && isEnableAutodownload)
 
             // true if we should auto download based on power status
-            val powerShouldAutoDl = (deviceCharging(context!!)
-                    || isEnableAutodownloadOnBattery)
+            val powerShouldAutoDl = (deviceCharging(context!!) || isEnableAutodownloadOnBattery)
 
             // we should only auto download if both network AND power are happy
             if (networkShouldAutoDl && powerShouldAutoDl) {
@@ -56,9 +54,7 @@ open class AutomaticDownloadAlgorithm {
                 candidates.addAll(queue)
                 for (newItem in newItems) {
                     val feedPrefs = newItem.feed!!.preferences
-                    if (feedPrefs!!.autoDownload
-                            && !candidates.contains(newItem)
-                            && feedPrefs.filter.shouldAutoDownload(newItem)) {
+                    if (feedPrefs!!.autoDownload && !candidates.contains(newItem) && feedPrefs.filter.shouldAutoDownload(newItem)) {
                         candidates.add(newItem)
                     }
                 }
@@ -78,10 +74,8 @@ open class AutomaticDownloadAlgorithm {
 
                 val autoDownloadableEpisodes = candidates.size
                 val downloadedEpisodes = getTotalEpisodeCount(FeedItemFilter(FeedItemFilter.DOWNLOADED))
-                val deletedEpisodes = build()
-                    .makeRoomForEpisodes(context, autoDownloadableEpisodes)
-                val cacheIsUnlimited =
-                    episodeCacheSize == UserPreferences.EPISODE_CACHE_SIZE_UNLIMITED
+                val deletedEpisodes = build().makeRoomForEpisodes(context, autoDownloadableEpisodes)
+                val cacheIsUnlimited = episodeCacheSize == UserPreferences.EPISODE_CACHE_SIZE_UNLIMITED
                 val episodeCacheSize = episodeCacheSize
                 val episodeSpaceLeft =
                     if (cacheIsUnlimited || episodeCacheSize >= downloadedEpisodes + autoDownloadableEpisodes) {
@@ -98,6 +92,9 @@ open class AutomaticDownloadAlgorithm {
                         DownloadServiceInterface.get()?.download(context, episode)
                     }
                 }
+            }
+            else {
+                Log.d(TAG, "not auto downloaded networkShouldAutoDl: $networkShouldAutoDl powerShouldAutoDl $powerShouldAutoDl")
             }
         }
     }

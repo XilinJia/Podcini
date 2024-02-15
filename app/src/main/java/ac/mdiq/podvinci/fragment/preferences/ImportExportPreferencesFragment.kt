@@ -11,7 +11,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.activity.result.ActivityResult
-import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
@@ -33,12 +32,10 @@ import ac.mdiq.podvinci.core.export.ExportWriter
 import ac.mdiq.podvinci.core.export.favorites.FavoritesWriter
 import ac.mdiq.podvinci.core.export.html.HtmlWriter
 import ac.mdiq.podvinci.core.export.opml.OpmlWriter
-import ac.mdiq.podvinci.core.storage.DatabaseExporter
+import ac.mdiq.podvinci.core.storage.DatabaseTransporter
 import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import io.reactivex.functions.Action
-import io.reactivex.functions.Consumer
 import io.reactivex.schedulers.Schedulers
 import java.io.File
 import java.text.SimpleDateFormat
@@ -237,7 +234,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         }
         val uri = result.data!!.data
         progressDialog!!.show()
-        disposable = Completable.fromAction { DatabaseExporter.importBackup(uri, requireContext()) }
+        disposable = Completable.fromAction { DatabaseTransporter.importBackup(uri, requireContext()) }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
@@ -251,7 +248,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
             return
         }
         progressDialog!!.show()
-        disposable = Completable.fromAction { DatabaseExporter.exportToDocument(uri, requireContext()) }
+        disposable = Completable.fromAction { DatabaseTransporter.exportToDocument(uri, requireContext()) }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({

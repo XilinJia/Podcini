@@ -434,17 +434,17 @@ object DBReader {
      */
     fun getFeed(feedId: Long, filtered: Boolean): Feed? {
         Log.d(TAG, "getFeed() called with: feedId = [$feedId]")
-        val adapter = getInstance()
-        adapter!!.open()
-        var feed: Feed? = null
+        val adapter = getInstance() ?: return null
+        adapter.open()
         try {
             adapter.getFeedCursor(feedId).use { cursor ->
+                var feed: Feed? = null
                 if (cursor.moveToNext()) {
                     feed = extractFeedFromCursorRow(cursor)
                     if (filtered) {
-                        feed!!.items = getFeedItemList(feed, feed!!.itemFilter).toMutableList()
+                        feed.items = getFeedItemList(feed, feed.itemFilter).toMutableList()
                     } else {
-                        feed!!.items = getFeedItemList(feed).toMutableList()
+                        feed.items = getFeedItemList(feed).toMutableList()
                     }
                 } else {
                     Log.e(TAG, "getFeed could not find feed with id $feedId")

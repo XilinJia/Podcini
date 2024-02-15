@@ -22,6 +22,7 @@ import java.lang.ref.WeakReference
  */
 open class EpisodeItemListAdapter(mainActivity: MainActivity) : SelectableAdapter<EpisodeItemViewHolder?>(mainActivity),
     View.OnCreateContextMenuListener {
+
     private val mainActivityRef: WeakReference<MainActivity> = WeakReference<MainActivity>(mainActivity)
     private var episodes: List<FeedItem> = ArrayList()
     var longPressedItem: FeedItem? = null
@@ -178,18 +179,22 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) : SelectableAdapte
     }
 
     fun onContextItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.multi_select) {
-            startSelectMode(longPressedPosition)
-            return true
-        } else if (item.itemId == R.id.select_all_above) {
-            setSelected(0, longPressedPosition, true)
-            return true
-        } else if (item.itemId == R.id.select_all_below) {
-            shouldSelectLazyLoadedItems = true
-            setSelected(longPressedPosition + 1, itemCount, true)
-            return true
+        when (item.itemId) {
+            R.id.multi_select -> {
+                startSelectMode(longPressedPosition)
+                return true
+            }
+            R.id.select_all_above -> {
+                setSelected(0, longPressedPosition, true)
+                return true
+            }
+            R.id.select_all_below -> {
+                shouldSelectLazyLoadedItems = true
+                setSelected(longPressedPosition + 1, itemCount, true)
+                return true
+            }
+            else -> return false
         }
-        return false
     }
 
     val selectedItems: List<Any>

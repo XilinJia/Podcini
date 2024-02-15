@@ -15,25 +15,21 @@ object FeedItemPermutors {
      */
     @JvmStatic
     fun getPermutor(sortOrder: SortOrder): Permutor<FeedItem> {
-        var comparator: Comparator<FeedItem?>? = null
+        var comparator: Comparator<FeedItem>? = null
         var permutor: Permutor<FeedItem>? = null
 
         when (sortOrder) {
             SortOrder.EPISODE_TITLE_A_Z -> comparator = Comparator { f1: FeedItem?, f2: FeedItem? ->
-                itemTitle(f1).compareTo(
-                    itemTitle(f2))
+                itemTitle(f1).compareTo(itemTitle(f2))
             }
             SortOrder.EPISODE_TITLE_Z_A -> comparator = Comparator { f1: FeedItem?, f2: FeedItem? ->
-                itemTitle(f2).compareTo(
-                    itemTitle(f1))
+                itemTitle(f2).compareTo(itemTitle(f1))
             }
             SortOrder.DATE_OLD_NEW -> comparator = Comparator { f1: FeedItem?, f2: FeedItem? ->
-                pubDate(f1).compareTo(
-                    pubDate(f2))
+                pubDate(f1).compareTo(pubDate(f2))
             }
             SortOrder.DATE_NEW_OLD -> comparator = Comparator { f1: FeedItem?, f2: FeedItem? ->
-                pubDate(f2).compareTo(
-                    pubDate(f1))
+                pubDate(f2).compareTo(pubDate(f1))
             }
             SortOrder.DURATION_SHORT_LONG -> comparator = Comparator { f1: FeedItem?, f2: FeedItem? ->
                 duration(f1).compareTo(duration(f2))
@@ -42,20 +38,16 @@ object FeedItemPermutors {
                 duration(f2).compareTo(duration(f1))
             }
             SortOrder.EPISODE_FILENAME_A_Z -> comparator = Comparator { f1: FeedItem?, f2: FeedItem? ->
-                itemLink(f1).compareTo(
-                    itemLink(f2))
+                itemLink(f1).compareTo(itemLink(f2))
             }
             SortOrder.EPISODE_FILENAME_Z_A -> comparator = Comparator { f1: FeedItem?, f2: FeedItem? ->
-                itemLink(f2).compareTo(
-                    itemLink(f1))
+                itemLink(f2).compareTo(itemLink(f1))
             }
             SortOrder.FEED_TITLE_A_Z -> comparator = Comparator { f1: FeedItem?, f2: FeedItem? ->
-                feedTitle(f1).compareTo(
-                    feedTitle(f2))
+                feedTitle(f1).compareTo(feedTitle(f2))
             }
             SortOrder.FEED_TITLE_Z_A -> comparator = Comparator { f1: FeedItem?, f2: FeedItem? ->
-                feedTitle(f2).compareTo(
-                    feedTitle(f1))
+                feedTitle(f2).compareTo(feedTitle(f1))
             }
             SortOrder.RANDOM -> permutor = object : Permutor<FeedItem> {
                 override fun reorder(queue: MutableList<FeedItem>?) {if (!queue.isNullOrEmpty()) queue.shuffle()}
@@ -74,9 +66,9 @@ object FeedItemPermutors {
             }
         }
         if (comparator != null) {
-            val comparator2: Comparator<FeedItem?> = comparator
+            val comparator2: Comparator<FeedItem> = comparator
             permutor = object : Permutor<FeedItem> {
-                override fun reorder(queue: MutableList<FeedItem>?) {if (!queue.isNullOrEmpty()) queue.sortedWith(comparator2)}
+                override fun reorder(queue: MutableList<FeedItem>?) {if (!queue.isNullOrEmpty()) queue.sortWith(comparator2)}
             }
         }
         return permutor!!
@@ -84,32 +76,27 @@ object FeedItemPermutors {
 
     // Null-safe accessors
     private fun pubDate(item: FeedItem?): Date {
-        return if ((item != null && item.pubDate != null)) item.pubDate!!
-        else Date(0)
+        return if (item?.pubDate != null) item.pubDate!! else Date(0)
     }
 
     private fun itemTitle(item: FeedItem?): String {
-        return if ((item != null && item.title != null)) item.title!!.lowercase(Locale.getDefault())
-        else ""
+        return if (item?.title != null) item.title!!.lowercase(Locale.getDefault()) else ""
     }
 
     private fun duration(item: FeedItem?): Int {
-        return if ((item != null && item.media != null)) item.media!!.getDuration()
-        else 0
+        return if (item?.media != null) item.media!!.getDuration() else 0
     }
 
     private fun size(item: FeedItem?): Long {
-        return if ((item != null && item.media != null)) item.media!!.size else 0
+        return if (item?.media != null) item.media!!.size else 0
     }
 
     private fun itemLink(item: FeedItem?): String {
-        return if ((item != null && item.link != null)
-        ) item.link!!.lowercase(Locale.getDefault()) else ""
+        return if (item?.link != null) item.link!!.lowercase(Locale.getDefault()) else ""
     }
 
     private fun feedTitle(item: FeedItem?): String {
-        return if ((item != null && item.feed != null && item.feed!!.title != null)
-        ) item.feed!!.title!!.lowercase(Locale.getDefault()) else ""
+        return if (item?.feed != null && item.feed!!.title != null) item.feed!!.title!!.lowercase(Locale.getDefault()) else ""
     }
 
     /**
@@ -147,8 +134,8 @@ object FeedItemPermutors {
 
         // Sort each individual list by PubDate (ascending/descending)
         val itemComparator: Comparator<FeedItem> = if (ascending)
-            Comparator { f1: FeedItem, f2: FeedItem -> f1.pubDate?.compareTo(f2!!.pubDate)?:-1 }
-        else Comparator { f1: FeedItem, f2: FeedItem -> f2.pubDate?.compareTo(f1!!.pubDate)?:-1 }
+            Comparator { f1: FeedItem, f2: FeedItem -> f1.pubDate?.compareTo(f2.pubDate)?:-1 }
+        else Comparator { f1: FeedItem, f2: FeedItem -> f2.pubDate?.compareTo(f1.pubDate)?:-1 }
 
         val feeds: MutableList<List<FeedItem>> = ArrayList()
         for ((_, value) in map) {

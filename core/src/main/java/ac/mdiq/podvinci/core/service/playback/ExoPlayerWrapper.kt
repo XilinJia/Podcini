@@ -1,5 +1,12 @@
 package ac.mdiq.podvinci.core.service.playback
 
+import ac.mdiq.podvinci.core.ClientConfig
+import ac.mdiq.podvinci.core.R
+import ac.mdiq.podvinci.core.service.download.HttpCredentialEncoder
+import ac.mdiq.podvinci.core.service.download.PodVinciHttpClient
+import ac.mdiq.podvinci.core.util.NetworkUtils.wasDownloadBlocked
+import ac.mdiq.podvinci.model.playback.Playable
+import ac.mdiq.podvinci.storage.preferences.UserPreferences
 import android.content.Context
 import android.media.audiofx.LoudnessEnhancer
 import android.net.Uri
@@ -13,11 +20,9 @@ import androidx.media3.common.TrackSelectionParameters.AudioOffloadPreferences
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DefaultDataSourceFactory
+import androidx.media3.datasource.HttpDataSource.HttpDataSourceException
 import androidx.media3.datasource.okhttp.OkHttpDataSource
-import androidx.media3.exoplayer.DefaultLoadControl
-import androidx.media3.exoplayer.DefaultRenderersFactory
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.SeekParameters
+import androidx.media3.exoplayer.*
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
@@ -27,39 +32,37 @@ import androidx.media3.extractor.DefaultExtractorsFactory
 import androidx.media3.extractor.mp3.Mp3Extractor
 import androidx.media3.ui.DefaultTrackNameProvider
 import androidx.media3.ui.TrackNameProvider
-import ac.mdiq.podvinci.core.ClientConfig
-import ac.mdiq.podvinci.core.service.download.PodVinciHttpClient
-import ac.mdiq.podvinci.core.service.download.HttpCredentialEncoder
-import ac.mdiq.podvinci.model.playback.Playable
-import ac.mdiq.podvinci.storage.preferences.UserPreferences
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import java.util.concurrent.TimeUnit
 
+
 @UnstableApi
 class ExoPlayerWrapper internal constructor(private val context: Context) {
+    //    TODO: need to experiment this, 5 seconds for now
+    private val bufferUpdateInterval = 5L
+
     private val bufferingUpdateDisposable: Disposable
-    private var exoPlayer: ExoPlayer? = null
+    private lateinit var exoPlayer: ExoPlayer
+    private lateinit var trackSelector: DefaultTrackSelector
+    private var loudnessEnhancer: LoudnessEnhancer? = null
+
     private var mediaSource: MediaSource? = null
     private var audioSeekCompleteListener: Runnable? = null
     private var audioCompletionListener: Runnable? = null
     private var audioErrorListener: Consumer<String>? = null
     private var bufferingUpdateListener: Consumer<Int>? = null
-    private var playbackParameters: PlaybackParameters
-    private var trackSelector: DefaultTrackSelector? = null
 
-    private var loudnessEnhancer: LoudnessEnhancer? = null
+    private var playbackParameters: PlaybackParameters
 
     init {
         createPlayer()
-        playbackParameters = exoPlayer!!.playbackParameters
-        bufferingUpdateDisposable = Observable.interval(2, TimeUnit.SECONDS)
+        playbackParameters = exoPlayer.playbackParameters
+        bufferingUpdateDisposable = Observable.interval(bufferUpdateInterval, TimeUnit.SECONDS)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { tickNumber: Long? ->
-                if (bufferingUpdateListener != null) {
-                    bufferingUpdateListener!!.accept(exoPlayer!!.bufferedPercentage)
-                }
+                bufferingUpdateListener?.accept(exoPlayer.bufferedPercentage)
             }
     }
 
@@ -70,56 +73,53 @@ class ExoPlayerWrapper internal constructor(private val context: Context) {
             DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS)
         loadControl.setBackBuffer(UserPreferences.rewindSecs * 1000 + 500, true)
         trackSelector = DefaultTrackSelector(context)
-        val audioOffloadPreferences =
-            AudioOffloadPreferences.Builder()
-                .setAudioOffloadMode(AudioOffloadPreferences.AUDIO_OFFLOAD_MODE_ENABLED) // Add additional options as needed
-                .setIsGaplessSupportRequired(true)
-                .build()
+        val audioOffloadPreferences = AudioOffloadPreferences.Builder()
+            .setAudioOffloadMode(AudioOffloadPreferences.AUDIO_OFFLOAD_MODE_ENABLED) // Add additional options as needed
+            .setIsGaplessSupportRequired(true)
+            .build()
         exoPlayer = ExoPlayer.Builder(context, DefaultRenderersFactory(context))
-            .setTrackSelector(trackSelector!!)
+            .setTrackSelector(trackSelector)
             .setLoadControl(loadControl.build())
             .build()
-        exoPlayer!!.setSeekParameters(SeekParameters.EXACT)
-        exoPlayer!!.trackSelectionParameters = exoPlayer!!.trackSelectionParameters
+        exoPlayer.setSeekParameters(SeekParameters.EXACT)
+        exoPlayer.trackSelectionParameters = exoPlayer.trackSelectionParameters
             .buildUpon()
             .setAudioOffloadPreferences(audioOffloadPreferences)
             .build()
-        exoPlayer!!.addListener(object : Player.Listener {
+        exoPlayer.addListener(object : Player.Listener {
             override fun onPlaybackStateChanged(playbackState: @Player.State Int) {
                 if (audioCompletionListener != null && playbackState == Player.STATE_ENDED) {
-                    audioCompletionListener!!.run()
-                } else if (bufferingUpdateListener != null && playbackState == Player.STATE_BUFFERING) {
-                    bufferingUpdateListener!!.accept(BUFFERING_STARTED)
-                } else if (bufferingUpdateListener != null) {
-                    bufferingUpdateListener!!.accept(BUFFERING_ENDED)
+                    audioCompletionListener?.run()
+                } else if (playbackState == Player.STATE_BUFFERING) {
+                    bufferingUpdateListener?.accept(BUFFERING_STARTED)
+                } else {
+                    bufferingUpdateListener?.accept(BUFFERING_ENDED)
                 }
             }
 
-            //            @Override
-            //            public void onPlayerError(@NonNull ExoPlaybackException error) {
-            //                if (audioErrorListener != null) {
-            //                    if (NetworkUtils.wasDownloadBlocked(error)) {
-            //                        audioErrorListener.accept(context.getString(R.string.download_error_blocked));
-            //                    } else {
-            //                        Throwable cause = error.getCause();
-            //                        if (cause instanceof HttpDataSource.HttpDataSourceException) {
-            //                            if (cause.getCause() != null) {
-            //                                cause = cause.getCause();
-            //                            }
-            //                        }
-            //                        if (cause != null && "Source error".equals(cause.getMessage())) {
-            //                            cause = cause.getCause();
-            //                        }
-            //                        audioErrorListener.accept(cause != null ? cause.getMessage() : error.getMessage());
-            //                    }
-            //                }
-            //            }
+            override fun onPlayerError(error: PlaybackException) {
+                if (wasDownloadBlocked(error)) {
+                    audioErrorListener?.accept(context.getString(R.string.download_error_blocked))
+                } else {
+                    var cause = error.cause
+                    if (cause is HttpDataSourceException) {
+                        if (cause.cause != null) {
+                            cause = cause.cause
+                        }
+                    }
+                    if (cause != null && "Source error" == cause.message) {
+                        cause = cause.cause
+                    }
+                    audioErrorListener?.accept(if (cause != null) cause.message else error.message)
+                }
+            }
+
             override fun onPositionDiscontinuity(oldPosition: PositionInfo,
                                                  newPosition: PositionInfo,
                                                  reason: @DiscontinuityReason Int
             ) {
-                if (audioSeekCompleteListener != null && reason == Player.DISCONTINUITY_REASON_SEEK) {
-                    audioSeekCompleteListener!!.run()
+                if (reason == Player.DISCONTINUITY_REASON_SEEK) {
+                    audioSeekCompleteListener?.run()
                 }
             }
 
@@ -128,41 +128,40 @@ class ExoPlayerWrapper internal constructor(private val context: Context) {
             }
         })
 
-        initLoudnessEnhancer(exoPlayer!!.audioSessionId)
+        initLoudnessEnhancer(exoPlayer.audioSessionId)
     }
 
     val currentPosition: Int
-        get() = exoPlayer!!.currentPosition.toInt()
+        get() = exoPlayer.currentPosition.toInt()
 
     val currentSpeedMultiplier: Float
         get() = playbackParameters.speed
 
     val duration: Int
         get() {
-            if (exoPlayer!!.duration == C.TIME_UNSET) {
+            if (exoPlayer.duration == C.TIME_UNSET) {
                 return Playable.INVALID_TIME
             }
-            return exoPlayer!!.duration.toInt()
+            return exoPlayer.duration.toInt()
         }
 
     val isPlaying: Boolean
-        get() = exoPlayer!!.playWhenReady
+        get() = exoPlayer.playWhenReady
 
     fun pause() {
-        exoPlayer!!.pause()
+        exoPlayer.pause()
     }
 
     @Throws(IllegalStateException::class)
     fun prepare() {
-        exoPlayer!!.setMediaSource(mediaSource!!, false)
-        exoPlayer!!.prepare()
+        exoPlayer.setMediaSource(mediaSource!!, false)
+        exoPlayer.prepare()
     }
 
     fun release() {
         bufferingUpdateDisposable.dispose()
-        if (exoPlayer != null) {
-            exoPlayer!!.release()
-        }
+        exoPlayer.release()
+
         audioSeekCompleteListener = null
         audioCompletionListener = null
         audioErrorListener = null
@@ -170,25 +169,23 @@ class ExoPlayerWrapper internal constructor(private val context: Context) {
     }
 
     fun reset() {
-        exoPlayer!!.release()
+        exoPlayer.release()
         createPlayer()
     }
 
     @Throws(IllegalStateException::class)
     fun seekTo(i: Int) {
-        exoPlayer!!.seekTo(i.toLong())
-        if (audioSeekCompleteListener != null) {
-            audioSeekCompleteListener!!.run()
-        }
+        exoPlayer.seekTo(i.toLong())
+        audioSeekCompleteListener?.run()
     }
 
     fun setAudioStreamType(i: Int) {
-        val a = exoPlayer!!.audioAttributes
+        val a = exoPlayer.audioAttributes
         val b = AudioAttributes.Builder()
         b.setContentType(i)
         b.setFlags(a.flags)
         b.setUsage(a.usage)
-        exoPlayer!!.setAudioAttributes(b.build(), false)
+        exoPlayer.setAudioAttributes(b.build(), false)
     }
 
     @Throws(IllegalArgumentException::class, IllegalStateException::class)
@@ -222,34 +219,34 @@ class ExoPlayerWrapper internal constructor(private val context: Context) {
     }
 
     fun setDisplay(sh: SurfaceHolder?) {
-        exoPlayer!!.setVideoSurfaceHolder(sh)
+        exoPlayer.setVideoSurfaceHolder(sh)
     }
 
     fun setPlaybackParams(speed: Float, skipSilence: Boolean) {
         playbackParameters = PlaybackParameters(speed, playbackParameters.pitch)
-        exoPlayer!!.skipSilenceEnabled = skipSilence
-        exoPlayer!!.playbackParameters = playbackParameters
+        exoPlayer.skipSilenceEnabled = skipSilence
+        exoPlayer.playbackParameters = playbackParameters
     }
 
     fun setVolume(v: Float, v1: Float) {
         if (v > 1) {
-            exoPlayer!!.volume = 1f
-            loudnessEnhancer!!.setEnabled(true)
-            loudnessEnhancer!!.setTargetGain((1000 * (v - 1)).toInt())
+            exoPlayer.volume = 1f
+            loudnessEnhancer?.setEnabled(true)
+            loudnessEnhancer?.setTargetGain((1000 * (v - 1)).toInt())
         } else {
-            exoPlayer!!.volume = v
-            loudnessEnhancer!!.setEnabled(false)
+            exoPlayer.volume = v
+            loudnessEnhancer?.setEnabled(false)
         }
     }
 
     fun start() {
-        exoPlayer!!.play()
+        exoPlayer.play()
         // Can't set params when paused - so always set it on start in case they changed
-        exoPlayer!!.playbackParameters = playbackParameters
+        exoPlayer.playbackParameters = playbackParameters
     }
 
     fun stop() {
-        exoPlayer!!.stop()
+        exoPlayer.stop()
     }
 
     val audioTracks: List<String>
@@ -264,8 +261,8 @@ class ExoPlayerWrapper internal constructor(private val context: Context) {
 
     private val formats: List<Format>
         get() {
-            val formats: MutableList<Format> = ArrayList()
-            val trackInfo = trackSelector!!.currentMappedTrackInfo
+            val formats: MutableList<Format> = arrayListOf()
+            val trackInfo = trackSelector.currentMappedTrackInfo
                 ?: return emptyList()
             val trackGroups = trackInfo.getTrackGroups(audioRendererIndex)
             for (i in 0 until trackGroups.length) {
@@ -275,19 +272,19 @@ class ExoPlayerWrapper internal constructor(private val context: Context) {
         }
 
     fun setAudioTrack(track: Int) {
-        val trackInfo = trackSelector!!.currentMappedTrackInfo ?: return
+        val trackInfo = trackSelector.currentMappedTrackInfo ?: return
         val trackGroups = trackInfo.getTrackGroups(audioRendererIndex)
         val override = SelectionOverride(track, 0)
         val rendererIndex = audioRendererIndex
-        val params = trackSelector!!.buildUponParameters()
+        val params = trackSelector.buildUponParameters()
             .setSelectionOverride(rendererIndex, trackGroups, override)
-        trackSelector!!.setParameters(params)
+        trackSelector.setParameters(params)
     }
 
     private val audioRendererIndex: Int
         get() {
-            for (i in 0 until exoPlayer!!.rendererCount) {
-                if (exoPlayer!!.getRendererType(i) == C.TRACK_TYPE_AUDIO) {
+            for (i in 0 until exoPlayer.rendererCount) {
+                if (exoPlayer.getRendererType(i) == C.TRACK_TYPE_AUDIO) {
                     return i
                 }
             }
@@ -296,7 +293,7 @@ class ExoPlayerWrapper internal constructor(private val context: Context) {
 
     val selectedAudioTrack: Int
         get() {
-            val trackSelections = exoPlayer!!.currentTrackSelections
+            val trackSelections = exoPlayer.currentTrackSelections
             val availableFormats = formats
             for (i in 0 until trackSelections.length) {
                 val track = trackSelections[i] as ExoTrackSelection? ?: continue
@@ -321,18 +318,18 @@ class ExoPlayerWrapper internal constructor(private val context: Context) {
 
     val videoWidth: Int
         get() {
-            if (exoPlayer!!.videoFormat == null) {
+            if (exoPlayer.videoFormat == null) {
                 return 0
             }
-            return exoPlayer!!.videoFormat!!.width
+            return exoPlayer.videoFormat!!.width
         }
 
     val videoHeight: Int
         get() {
-            if (exoPlayer!!.videoFormat == null) {
+            if (exoPlayer.videoFormat == null) {
                 return 0
             }
-            return exoPlayer!!.videoFormat!!.height
+            return exoPlayer.videoFormat!!.height
         }
 
     fun setOnBufferingUpdateListener(bufferingUpdateListener: Consumer<Int>?) {

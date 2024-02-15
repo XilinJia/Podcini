@@ -1,7 +1,5 @@
 package ac.mdiq.podvinci.parser.feed.namespace
 
-import android.text.TextUtils
-import android.util.Log
 import ac.mdiq.podvinci.model.feed.FeedMedia
 import ac.mdiq.podvinci.parser.feed.HandlerState
 import ac.mdiq.podvinci.parser.feed.element.AtomText
@@ -9,13 +7,13 @@ import ac.mdiq.podvinci.parser.feed.element.SyndElement
 import ac.mdiq.podvinci.parser.feed.util.MimeTypeUtils.getMimeType
 import ac.mdiq.podvinci.parser.feed.util.MimeTypeUtils.isImageFile
 import ac.mdiq.podvinci.parser.feed.util.MimeTypeUtils.isMediaFile
+import android.util.Log
 import org.xml.sax.Attributes
 import java.util.concurrent.TimeUnit
 
 /** Processes tags from the http://search.yahoo.com/mrss/ namespace.  */
 class Media : Namespace() {
-    override fun handleElementStart(localName: String, state: HandlerState,
-                                    attributes: Attributes): SyndElement {
+    override fun handleElementStart(localName: String, state: HandlerState, attributes: Attributes): SyndElement {
         if (CONTENT == localName) {
             val url = attributes.getValue(DOWNLOAD_URL)
             val defaultStr = attributes.getValue(DEFAULT)
@@ -47,15 +45,16 @@ class Media : Namespace() {
             if (state.currentItem != null && (state.currentItem!!.media == null || isDefault) && url != null && validTypeMedia) {
                 var size: Long = 0
                 val sizeStr = attributes.getValue(SIZE)
-                try {
-                    size = sizeStr.toLong()
-                } catch (e: NumberFormatException) {
-                    Log.e(TAG, "Size \"$sizeStr\" could not be parsed.")
+                if (!sizeStr.isNullOrEmpty()) {
+                    try {
+                        size = sizeStr.toLong()
+                    } catch (e: NumberFormatException) {
+                        Log.e(TAG, "Size \"$sizeStr\" could not be parsed.")
+                    }
                 }
-
                 var durationMs = 0
                 val durationStr = attributes.getValue(DURATION)
-                if (!TextUtils.isEmpty(durationStr)) {
+                if (!durationStr.isNullOrEmpty()) {
                     try {
                         val duration = durationStr.toLong()
                         durationMs = TimeUnit.MILLISECONDS.convert(duration, TimeUnit.SECONDS).toInt()

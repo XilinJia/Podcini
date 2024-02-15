@@ -17,7 +17,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.nio.channels.FileChannel
 
-object DatabaseExporter {
+object DatabaseTransporter {
     private const val TAG = "DatabaseExporter"
     private const val TEMP_DB_NAME = PodDBAdapter.DATABASE_NAME + "_tmp"
 

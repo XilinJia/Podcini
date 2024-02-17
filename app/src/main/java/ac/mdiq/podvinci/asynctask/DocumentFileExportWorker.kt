@@ -20,17 +20,15 @@ class DocumentFileExportWorker(private val exportWriter: ExportWriter,
                                private val outputFileUri: Uri
 ) {
     fun exportObservable(): Observable<DocumentFile?> {
-        val output = DocumentFile.fromSingleUri(
-            context, outputFileUri)
+        val output = DocumentFile.fromSingleUri(context, outputFileUri)
         return Observable.create { subscriber: ObservableEmitter<DocumentFile?> ->
             var outputStream: OutputStream? = null
             var writer: OutputStreamWriter? = null
             try {
-                val uri = output!!.uri
+                if (output == null) throw IOException()
+                val uri = output.uri
                 outputStream = context.contentResolver.openOutputStream(uri, "wt")
-                if (outputStream == null) {
-                    throw IOException()
-                }
+                if (outputStream == null) throw IOException()
                 writer = OutputStreamWriter(outputStream, Charset.forName("UTF-8"))
                 exportWriter.writeDocument(DBReader.getFeedList(), writer, context)
                 subscriber.onNext(output)

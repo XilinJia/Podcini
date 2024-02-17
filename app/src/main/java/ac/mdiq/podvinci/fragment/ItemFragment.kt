@@ -46,6 +46,7 @@ import ac.mdiq.podvinci.storage.preferences.UserPreferences
 import ac.mdiq.podvinci.ui.common.CircularProgressBar
 import ac.mdiq.podvinci.ui.common.ThemeUtils
 import ac.mdiq.podvinci.view.ShownotesWebView
+import androidx.annotation.OptIn
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -65,24 +66,25 @@ class ItemFragment : Fragment() {
     private var item: FeedItem? = null
     private var webviewData: String? = null
 
-    private var root: ViewGroup? = null
-    private var webvDescription: ShownotesWebView? = null
-    private var txtvPodcast: TextView? = null
-    private var txtvTitle: TextView? = null
-    private var txtvDuration: TextView? = null
-    private var txtvPublished: TextView? = null
-    private var imgvCover: ImageView? = null
-    private var progbarDownload: CircularProgressBar? = null
-    private var progbarLoading: ProgressBar? = null
-    private var butAction1Text: TextView? = null
-    private var butAction2Text: TextView? = null
-    private var butAction1Icon: ImageView? = null
-    private var butAction2Icon: ImageView? = null
-    private var butAction1: View? = null
-    private var butAction2: View? = null
+    private lateinit var root: ViewGroup
+    private lateinit var webvDescription: ShownotesWebView
+    private lateinit var txtvPodcast: TextView
+    private lateinit var txtvTitle: TextView
+    private lateinit var txtvDuration: TextView
+    private lateinit var txtvPublished: TextView
+    private lateinit var imgvCover: ImageView
+    private lateinit var progbarDownload: CircularProgressBar
+    private lateinit var progbarLoading: ProgressBar
+    private lateinit var butAction1Text: TextView
+    private lateinit var butAction2Text: TextView
+    private lateinit var butAction1Icon: ImageView
+    private lateinit var butAction2Icon: ImageView
+    private lateinit var butAction1: View
+    private lateinit var butAction2: View
+    private lateinit var noMediaLabel: View
+
     private var actionButton1: ItemActionButton? = null
     private var actionButton2: ItemActionButton? = null
-    private var noMediaLabel: View? = null
 
     private var disposable: Disposable? = null
     private var controller: PlaybackController? = null
@@ -100,16 +102,16 @@ class ItemFragment : Fragment() {
         root = layout.findViewById(R.id.content_root)
 
         txtvPodcast = layout.findViewById(R.id.txtvPodcast)
-        txtvPodcast?.setOnClickListener { v: View? -> openPodcast() }
+        txtvPodcast.setOnClickListener { v: View? -> openPodcast() }
         txtvTitle = layout.findViewById(R.id.txtvTitle)
         if (Build.VERSION.SDK_INT >= 23) {
-            txtvTitle?.setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_FULL)
+            txtvTitle.setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_FULL)
         }
         txtvDuration = layout.findViewById(R.id.txtvDuration)
         txtvPublished = layout.findViewById(R.id.txtvPublished)
-        txtvTitle?.ellipsize = TextUtils.TruncateAt.END
+        txtvTitle.ellipsize = TextUtils.TruncateAt.END
         webvDescription = layout.findViewById(R.id.webvDescription)
-        webvDescription?.setTimecodeSelectedListener { time: Int? ->
+        webvDescription.setTimecodeSelectedListener { time: Int? ->
             if (controller != null && item != null && item!!.media != null && controller!!.getMedia() != null &&
                     item!!.media!!.getIdentifier() == controller!!.getMedia()!!.getIdentifier()) {
                 controller!!.seekTo(time ?: 0)
@@ -118,10 +120,10 @@ class ItemFragment : Fragment() {
                     Snackbar.LENGTH_LONG)
             }
         }
-        if (webvDescription != null) registerForContextMenu(webvDescription!!)
+        registerForContextMenu(webvDescription)
 
         imgvCover = layout.findViewById(R.id.imgvCover)
-        imgvCover?.setOnClickListener { v: View? -> openPodcast() }
+        imgvCover.setOnClickListener { v: View? -> openPodcast() }
         progbarDownload = layout.findViewById(R.id.circularProgressBar)
         progbarLoading = layout.findViewById(R.id.progbarLoading)
         butAction1 = layout.findViewById(R.id.butAction1)
@@ -132,7 +134,7 @@ class ItemFragment : Fragment() {
         butAction2Text = layout.findViewById(R.id.butAction2Text)
         noMediaLabel = layout.findViewById(R.id.noMediaLabel)
 
-        butAction1?.setOnClickListener(View.OnClickListener { v: View? ->
+        butAction1.setOnClickListener(View.OnClickListener { v: View? ->
             if (actionButton1 is StreamActionButton && !UserPreferences.isStreamOverDownload
                     && UsageStatistics.hasSignificantBiasTo(UsageStatistics.ACTION_STREAM)) {
                 showOnDemandConfigBalloon(true)
@@ -142,7 +144,7 @@ class ItemFragment : Fragment() {
             }
             actionButton1?.onClick(requireContext())
         })
-        butAction2?.setOnClickListener(View.OnClickListener { v: View? ->
+        butAction2.setOnClickListener(View.OnClickListener { v: View? ->
             if (actionButton2 is DownloadActionButton && UserPreferences.isStreamOverDownload
                     && UsageStatistics.hasSignificantBiasTo(UsageStatistics.ACTION_DOWNLOAD)) {
                 showOnDemandConfigBalloon(false)
@@ -155,7 +157,7 @@ class ItemFragment : Fragment() {
         return layout
     }
 
-    private fun showOnDemandConfigBalloon(offerStreaming: Boolean) {
+    @OptIn(UnstableApi::class) private fun showOnDemandConfigBalloon(offerStreaming: Boolean) {
         val isLocaleRtl = (TextUtils.getLayoutDirectionFromLocale(Locale.getDefault()) == View.LAYOUT_DIRECTION_RTL)
         val balloon: Balloon = Balloon.Builder(requireContext())
             .setArrowOrientation(ArrowOrientation.TOP)
@@ -186,7 +188,7 @@ class ItemFragment : Fragment() {
             UsageStatistics.doNotAskAgain(UsageStatistics.ACTION_STREAM) // Type does not matter. Both are silenced.
             balloon.dismiss()
         }
-        balloon.showAlignBottom(butAction1!!, 0, (-12 * resources.displayMetrics.density).toInt())
+        balloon.showAlignBottom(butAction1, 0, (-12 * resources.displayMetrics.density).toInt())
     }
 
     @UnstableApi override fun onStart() {
@@ -204,7 +206,7 @@ class ItemFragment : Fragment() {
     @UnstableApi override fun onResume() {
         super.onResume()
         if (itemsLoaded) {
-            progbarLoading?.visibility = View.GONE
+            progbarLoading.visibility = View.GONE
             updateAppearance()
         }
     }
@@ -218,16 +220,13 @@ class ItemFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         disposable?.dispose()
-
-        if (webvDescription != null && root != null) {
-            root!!.removeView(webvDescription)
-            webvDescription!!.destroy()
-        }
+        root.removeView(webvDescription)
+        webvDescription.destroy()
     }
 
     @UnstableApi private fun onFragmentLoaded() {
         if (webviewData != null && !itemsLoaded) {
-            webvDescription?.loadDataWithBaseURL("https://127.0.0.1", webviewData!!, "text/html", "utf-8", "about:blank")
+            webvDescription.loadDataWithBaseURL("https://127.0.0.1", webviewData!!, "text/html", "utf-8", "about:blank")
         }
         updateAppearance()
     }
@@ -237,13 +236,13 @@ class ItemFragment : Fragment() {
             Log.d(TAG, "updateAppearance item is null")
             return
         }
-        if (item!!.feed != null) txtvPodcast?.text = item!!.feed!!.title
-        txtvTitle?.text = item!!.title
+        if (item!!.feed != null) txtvPodcast.text = item!!.feed!!.title
+        txtvTitle.text = item!!.title
 
         if (item?.pubDate != null) {
             val pubDateStr = DateFormatter.formatAbbrev(activity, item!!.pubDate)
-            txtvPublished?.text = pubDateStr
-            txtvPublished?.setContentDescription(DateFormatter.formatForAccessibility(item!!.pubDate))
+            txtvPublished.text = pubDateStr
+            txtvPublished.setContentDescription(DateFormatter.formatForAccessibility(item!!.pubDate))
         }
 
         val options: RequestOptions = RequestOptions()
@@ -252,25 +251,25 @@ class ItemFragment : Fragment() {
                 RoundedCorners((8 * resources.displayMetrics.density).toInt()))
             .dontAnimate()
 
-        if (imgvCover != null) Glide.with(this)
+        Glide.with(this)
             .load(item!!.imageLocation)
             .error(Glide.with(this)
                 .load(ImageResourceUtils.getFallbackImageLocation(item!!))
                 .apply(options))
             .apply(options)
-            .into(imgvCover!!)
+            .into(imgvCover)
         updateButtons()
     }
 
     @UnstableApi private fun updateButtons() {
-        progbarDownload?.visibility = View.GONE
+        progbarDownload.visibility = View.GONE
         val dls = DownloadServiceInterface.get()
         if (item != null && item!!.hasMedia() && item!!.media!!.download_url != null) {
             val url = item!!.media!!.download_url!!
             if (dls != null && dls.isDownloadingEpisode(url)) {
-                progbarDownload?.visibility = View.VISIBLE
-                progbarDownload?.setPercentage(0.01f * max(1.0, dls.getProgress(url).toDouble()).toFloat(), item)
-                progbarDownload?.setIndeterminate(dls.isEpisodeQueued(url))
+                progbarDownload.visibility = View.VISIBLE
+                progbarDownload.setPercentage(0.01f * max(1.0, dls.getProgress(url).toDouble()).toFloat(), item)
+                progbarDownload.setIndeterminate(dls.isEpisodeQueued(url))
             }
         }
 
@@ -280,12 +279,12 @@ class ItemFragment : Fragment() {
                 actionButton1 = MarkAsPlayedActionButton(item!!)
                 actionButton2 = VisitWebsiteActionButton(item!!)
             }
-            noMediaLabel!!.visibility = View.VISIBLE
+            noMediaLabel.visibility = View.VISIBLE
         } else {
-            noMediaLabel!!.visibility = View.GONE
+            noMediaLabel.visibility = View.GONE
             if (media.getDuration() > 0) {
-                txtvDuration?.text = Converter.getDurationStringLong(media.getDuration())
-                txtvDuration?.setContentDescription(
+                txtvDuration.text = Converter.getDurationStringLong(media.getDuration())
+                txtvDuration.setContentDescription(
                     Converter.getDurationStringLocalized(requireContext(), media.getDuration().toLong()))
             }
             if (item != null) {
@@ -309,25 +308,25 @@ class ItemFragment : Fragment() {
         }
 
         if (actionButton1 != null) {
-            butAction1Text?.setText(actionButton1!!.getLabel())
-            butAction1Icon?.setImageResource(actionButton1!!.getDrawable())
+            butAction1Text.setText(actionButton1!!.getLabel())
+            butAction1Icon.setImageResource(actionButton1!!.getDrawable())
         }
-        butAction1Text?.transformationMethod = null
-        if (actionButton1 != null) butAction1!!.visibility = actionButton1!!.visibility
+        butAction1Text.transformationMethod = null
+        if (actionButton1 != null) butAction1.visibility = actionButton1!!.visibility
 
         if (actionButton2 != null) {
-            butAction2Text?.setText(actionButton2!!.getLabel())
-            butAction2Icon?.setImageResource(actionButton2!!.getDrawable())
+            butAction2Text.setText(actionButton2!!.getLabel())
+            butAction2Icon.setImageResource(actionButton2!!.getDrawable())
         }
-        butAction2Text?.transformationMethod = null
-        if (actionButton2 != null) butAction2!!.visibility = actionButton2!!.visibility
+        butAction2Text.transformationMethod = null
+        if (actionButton2 != null) butAction2.visibility = actionButton2!!.visibility
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
-        return webvDescription?.onContextItemSelected(item)?: false
+        return webvDescription.onContextItemSelected(item)
     }
 
-    private fun openPodcast() {
+    @OptIn(UnstableApi::class) private fun openPodcast() {
         if (item == null) {
             return
         }
@@ -374,13 +373,13 @@ class ItemFragment : Fragment() {
         disposable?.dispose()
 
         if (!itemsLoaded) {
-            progbarLoading?.visibility = View.VISIBLE
+            progbarLoading.visibility = View.VISIBLE
         }
         disposable = Observable.fromCallable<FeedItem?> { this.loadInBackground() }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ result: FeedItem? ->
-                progbarLoading?.visibility = View.GONE
+                progbarLoading.visibility = View.GONE
                 item = result
                 onFragmentLoaded()
                 itemsLoaded = true

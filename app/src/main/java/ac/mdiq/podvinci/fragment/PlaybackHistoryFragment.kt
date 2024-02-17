@@ -14,6 +14,7 @@ import ac.mdiq.podvinci.core.storage.DBWriter
 import ac.mdiq.podvinci.event.playback.PlaybackHistoryEvent
 import ac.mdiq.podvinci.model.feed.FeedItem
 import ac.mdiq.podvinci.model.feed.FeedItemFilter
+import androidx.annotation.OptIn
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
@@ -27,19 +28,19 @@ class PlaybackHistoryFragment : EpisodesListFragment() {
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val root = super.onCreateView(inflater, container, savedInstanceState)
-        toolbar!!.inflateMenu(R.menu.playback_history)
-        toolbar!!.setTitle(R.string.playback_history_label)
+        toolbar.inflateMenu(R.menu.playback_history)
+        toolbar.setTitle(R.string.playback_history_label)
         updateToolbar()
-        emptyView!!.setIcon(R.drawable.ic_history)
-        emptyView!!.setTitle(R.string.no_history_head_label)
-        emptyView!!.setMessage(R.string.no_history_label)
+        emptyView.setIcon(R.drawable.ic_history)
+        emptyView.setTitle(R.string.no_history_head_label)
+        emptyView.setMessage(R.string.no_history_label)
         return root
     }
 
     override fun getFilter(): FeedItemFilter {
         return FeedItemFilter.unfiltered()
     }
-    override fun onMenuItemClick(item: MenuItem): Boolean {
+    @OptIn(UnstableApi::class) override fun onMenuItemClick(item: MenuItem): Boolean {
         if (super.onOptionsItemSelected(item)) {
             return true
         }
@@ -62,7 +63,7 @@ class PlaybackHistoryFragment : EpisodesListFragment() {
 
     override fun updateToolbar() {
         // Not calling super, as we do not have a refresh button that could be updated
-        toolbar!!.menu.findItem(R.id.clear_history_item).setVisible(episodes.isNotEmpty())
+        toolbar.menu.findItem(R.id.clear_history_item).setVisible(episodes.isNotEmpty())
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

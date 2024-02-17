@@ -646,7 +646,11 @@ object DBReader {
     @JvmStatic
     fun loadChaptersOfFeedItem(item: FeedItem): List<Chapter>? {
         Log.d(TAG, "loadChaptersOfFeedItem() called with: item = [$item]")
-
+//        TODO: need to find out who are often calling this
+//        val stackTraceElements = Thread.currentThread().stackTrace
+//        stackTraceElements.forEach { element ->
+//            println(element)
+//        }
         val adapter = getInstance()
         adapter!!.open()
         try {

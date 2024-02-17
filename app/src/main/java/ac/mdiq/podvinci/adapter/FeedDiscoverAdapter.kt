@@ -17,9 +17,9 @@ class FeedDiscoverAdapter(mainActivity: MainActivity) : BaseAdapter() {
     private val mainActivityRef: WeakReference<MainActivity> = WeakReference<MainActivity>(mainActivity)
     private val data: MutableList<PodcastSearchResult> = ArrayList()
 
-    fun updateData(newData: List<PodcastSearchResult>?) {
+    fun updateData(newData: List<PodcastSearchResult>) {
         data.clear()
-        data.addAll(newData!!)
+        data.addAll(newData)
         notifyDataSetChanged()
     }
 
@@ -27,8 +27,8 @@ class FeedDiscoverAdapter(mainActivity: MainActivity) : BaseAdapter() {
         return data.size
     }
 
-    override fun getItem(position: Int): PodcastSearchResult {
-        return data[position]
+    override fun getItem(position: Int): PodcastSearchResult? {
+        return if (position in data.indices) data[position] else null
     }
 
     override fun getItemId(position: Int): Long {
@@ -48,12 +48,11 @@ class FeedDiscoverAdapter(mainActivity: MainActivity) : BaseAdapter() {
             holder = convertView.tag as Holder
         }
 
-
-        val podcast: PodcastSearchResult = getItem(position)
-        holder.imageView!!.contentDescription = podcast.title
+        val podcast: PodcastSearchResult? = getItem(position)
+        holder.imageView!!.contentDescription = podcast?.title
 
         Glide.with(mainActivityRef.get()!!)
-            .load(podcast.imageUrl)
+            .load(podcast?.imageUrl)
             .apply(RequestOptions()
                 .placeholder(R.color.light_gray)
                 .transform(FitCenter(), RoundedCorners((8 * mainActivityRef.get()!!.resources.displayMetrics.density).toInt()))

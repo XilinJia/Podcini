@@ -19,6 +19,7 @@ import ac.mdiq.podvinci.model.feed.Feed
 import ac.mdiq.podvinci.model.feed.FeedMedia
 import ac.mdiq.podvinci.ui.common.ThemeUtils
 import ac.mdiq.podvinci.view.viewholder.DownloadLogItemViewHolder
+import androidx.media3.common.util.UnstableApi
 
 /**
  * Displays a list of DownloadStatus entries.
@@ -31,7 +32,7 @@ class DownloadLogAdapter(private val context: Activity) : BaseAdapter() {
         notifyDataSetChanged()
     }
 
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+    @UnstableApi override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val holder: DownloadLogItemViewHolder
         if (convertView == null) {
             holder = DownloadLogItemViewHolder(context, parent)
@@ -44,7 +45,7 @@ class DownloadLogAdapter(private val context: Activity) : BaseAdapter() {
         return holder.itemView
     }
 
-    private fun bind(holder: DownloadLogItemViewHolder, status: DownloadResult, position: Int) {
+    @UnstableApi private fun bind(holder: DownloadLogItemViewHolder, status: DownloadResult, position: Int) {
         var statusText: String? = ""
         if (status.feedfileType == Feed.FEEDFILETYPE_FEED) {
             statusText += context.getString(R.string.download_type_feed)
@@ -56,7 +57,7 @@ class DownloadLogAdapter(private val context: Activity) : BaseAdapter() {
             System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS, 0)
         holder.status.text = statusText
 
-        if (status.title != null) {
+        if (status.title.isNotEmpty()) {
             holder.title.text = status.title
         } else {
             holder.title.setText(R.string.download_log_title_unknown)
@@ -132,7 +133,7 @@ class DownloadLogAdapter(private val context: Activity) : BaseAdapter() {
     }
 
     override fun getItem(position: Int): DownloadResult? {
-        if (position < downloadLog.size) {
+        if (position in downloadLog.indices) {
             return downloadLog[position]
         }
         return null

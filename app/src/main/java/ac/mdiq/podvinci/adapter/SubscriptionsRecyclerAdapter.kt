@@ -28,6 +28,7 @@ import java.text.NumberFormat
 open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
     SelectableAdapter<SubscriptionsRecyclerAdapter.SubscriptionViewHolder?>(mainActivity),
     View.OnCreateContextMenuListener {
+
     private val mainActivityRef: WeakReference<MainActivity> = WeakReference<MainActivity>(mainActivity)
     private var listItems: List<NavDrawerData.DrawerItem>
     private var selectedItem: NavDrawerData.DrawerItem? = null
@@ -54,8 +55,7 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SubscriptionViewHolder {
         val itemView: View =
             LayoutInflater.from(mainActivityRef.get()).inflate(R.layout.subscription_item, parent, false)
-        itemView.findViewById<View>(R.id.titleLabel).visibility =
-            if (viewType == COVER_WITH_TITLE) View.VISIBLE else View.GONE
+        itemView.findViewById<View>(R.id.titleLabel).visibility = if (viewType == COVER_WITH_TITLE) View.VISIBLE else View.GONE
         return SubscriptionViewHolder(itemView)
     }
 

@@ -22,14 +22,13 @@ class LiftOnScrollListener(appBar: View) : RecyclerView.OnScrollListener(), Nest
     }
 
     private fun isScrolled(recyclerView: RecyclerView): Boolean {
-        val firstItem =
-            (recyclerView.layoutManager as LinearLayoutManager?)!!.findFirstVisibleItemPosition()
+        val firstItem = (recyclerView.layoutManager as? LinearLayoutManager)?.findFirstVisibleItemPosition()?:-1
         if (firstItem < 0) {
             return false
         } else if (firstItem > 0) {
             return true
         }
-        val firstItemView = recyclerView.layoutManager!!.findViewByPosition(firstItem)
+        val firstItemView = recyclerView.layoutManager?.findViewByPosition(firstItem)
         return if (firstItemView == null) {
             false
         } else {

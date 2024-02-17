@@ -30,7 +30,7 @@ import org.greenrobot.eventbus.ThreadMode
  * PreferenceController.
  */
 class PreferenceActivity : AppCompatActivity(), SearchPreferenceResultListener {
-    private var binding: SettingsActivityBinding? = null
+    private lateinit var binding: SettingsActivityBinding
 
     @SuppressLint("CommitTransaction")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,11 +41,11 @@ class PreferenceActivity : AppCompatActivity(), SearchPreferenceResultListener {
         ab?.setDisplayHomeAsUpEnabled(true)
 
         binding = SettingsActivityBinding.inflate(layoutInflater)
-        setContentView(binding!!.root)
+        setContentView(binding.root)
 
         if (supportFragmentManager.findFragmentByTag(FRAGMENT_TAG) == null) {
             supportFragmentManager.beginTransaction()
-                .replace(binding!!.settingsContainer.id, MainPreferencesFragment(), FRAGMENT_TAG)
+                .replace(binding.settingsContainer.id, MainPreferencesFragment(), FRAGMENT_TAG)
                 .commit()
         }
         val intent = intent
@@ -96,7 +96,7 @@ class PreferenceActivity : AppCompatActivity(), SearchPreferenceResultListener {
             startActivity(intent)
         } else {
             supportFragmentManager.beginTransaction()
-                .replace(binding!!.settingsContainer.id, fragment!!)
+                .replace(binding.settingsContainer.id, fragment!!)
                 .addToBackStack(getString(getTitleOfPage(screen)))
                 .commit()
         }
@@ -156,7 +156,7 @@ class PreferenceActivity : AppCompatActivity(), SearchPreferenceResultListener {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: MessageEvent) {
         Log.d(FRAGMENT_TAG, "onEvent($event)")
-        val s = Snackbar.make(binding!!.root, event.message, Snackbar.LENGTH_LONG)
+        val s = Snackbar.make(binding.root, event.message, Snackbar.LENGTH_LONG)
         if (event.action != null) {
             s.setAction(event.actionText) { v: View? -> event.action!!.accept(this) }
         }

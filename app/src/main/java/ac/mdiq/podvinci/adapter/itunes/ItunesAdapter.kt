@@ -14,6 +14,7 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
 import ac.mdiq.podvinci.R
 import ac.mdiq.podvinci.net.discovery.PodcastSearchResult
+import androidx.media3.common.util.UnstableApi
 
 class ItunesAdapter(
         /**
@@ -26,7 +27,7 @@ class ItunesAdapter(
      */
     private val data: List<PodcastSearchResult> = objects
 
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+    @UnstableApi override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         //Current podcast
         val podcast: PodcastSearchResult = data[position]
 
@@ -38,8 +39,7 @@ class ItunesAdapter(
 
         //Handle view holder stuff
         if (convertView == null) {
-            view = (context as MainActivity).layoutInflater
-                .inflate(R.layout.itunes_podcast_listitem, parent, false)
+            view = (context as MainActivity).layoutInflater.inflate(R.layout.itunes_podcast_listitem, parent, false)
             viewHolder = PodcastViewHolder(view)
             view.tag = viewHolder
         } else {
@@ -86,7 +86,7 @@ class ItunesAdapter(
         /**
          * TextView holding the Podcast title
          */
-        val titleView = view.findViewById<TextView>(R.id.txtvTitle)
+        val titleView: TextView = view.findViewById(R.id.txtvTitle)
 
         val authorView: TextView = view.findViewById(R.id.txtvAuthor)
     }

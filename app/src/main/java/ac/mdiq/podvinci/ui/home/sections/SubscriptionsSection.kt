@@ -34,7 +34,7 @@ class SubscriptionsSection : HomeSection() {
                                            container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         val view: View = super.onCreateView(inflater, container, savedInstanceState)
-        viewBinding?.recyclerView?.layoutManager = LinearLayoutManager(activity, RecyclerView.HORIZONTAL, false)
+        viewBinding.recyclerView.layoutManager = LinearLayoutManager(activity, RecyclerView.HORIZONTAL, false)
         listAdapter = object : HorizontalFeedListAdapter(activity as MainActivity) {
             override fun onCreateContextMenu(contextMenu: ContextMenu, view: View, contextMenuInfo: ContextMenu.ContextMenuInfo?
             ) {
@@ -46,9 +46,9 @@ class SubscriptionsSection : HomeSection() {
             }
         }
         listAdapter?.setDummyViews(NUM_FEEDS)
-        viewBinding?.recyclerView?.adapter = listAdapter
+        viewBinding.recyclerView.adapter = listAdapter
         val paddingHorizontal: Int = (12 * resources.displayMetrics.density).toInt()
-        viewBinding?.recyclerView?.setPadding(paddingHorizontal, 0, paddingHorizontal, 0)
+        viewBinding.recyclerView.setPadding(paddingHorizontal, 0, paddingHorizontal, 0)
         return view
     }
 
@@ -78,11 +78,8 @@ class SubscriptionsSection : HomeSection() {
         val prefs: SharedPreferences =
             requireContext().getSharedPreferences(StatisticsFragment.PREF_NAME, Context.MODE_PRIVATE)
         val includeMarkedAsPlayed: Boolean = prefs.getBoolean(StatisticsFragment.PREF_INCLUDE_MARKED_PLAYED, false)
-        disposable = Observable.fromCallable<List<StatisticsItem>> {
-            DBReader.getStatistics(includeMarkedAsPlayed,
-                0,
-                Long.MAX_VALUE).feedTime
-        }
+        disposable = Observable.fromCallable<List<StatisticsItem>>
+        { DBReader.getStatistics(includeMarkedAsPlayed, 0, Long.MAX_VALUE).feedTime }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ statisticsData: List<StatisticsItem> ->

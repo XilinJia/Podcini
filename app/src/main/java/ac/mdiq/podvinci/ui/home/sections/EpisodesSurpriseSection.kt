@@ -37,10 +37,10 @@ class EpisodesSurpriseSection : HomeSection() {
                                            container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         val view: View = super.onCreateView(inflater, container, savedInstanceState)
-        viewBinding?.shuffleButton?.setVisibility(View.VISIBLE)
-        viewBinding?.shuffleButton?.setOnClickListener { v: View? ->
+        viewBinding.shuffleButton.setVisibility(View.VISIBLE)
+        viewBinding.shuffleButton.setOnClickListener { v: View? ->
             seed = Random().nextInt()
-            viewBinding?.recyclerView?.scrollToPosition(0)
+            viewBinding.recyclerView.scrollToPosition(0)
             loadItems()
         }
         listAdapter = object : HorizontalItemListAdapter(activity as MainActivity) {
@@ -53,13 +53,12 @@ class EpisodesSurpriseSection : HomeSection() {
             }
         }
         listAdapter?.setDummyViews(NUM_EPISODES)
-        viewBinding?.recyclerView?.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
-        viewBinding?.recyclerView?.adapter = listAdapter
+        viewBinding.recyclerView.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+        viewBinding.recyclerView.adapter = listAdapter
         val paddingHorizontal: Int = (12 * resources.displayMetrics.density).toInt()
-        viewBinding?.recyclerView?.setPadding(paddingHorizontal, 0, paddingHorizontal, 0)
-        if (seed == 0) {
-            seed = Random().nextInt()
-        }
+        viewBinding.recyclerView.setPadding(paddingHorizontal, 0, paddingHorizontal, 0)
+        if (seed == 0) seed = Random().nextInt()
+
         return view
     }
 
@@ -68,7 +67,7 @@ class EpisodesSurpriseSection : HomeSection() {
         loadItems()
     }
 
-    override fun handleMoreClick() {
+    @UnstableApi override fun handleMoreClick() {
         (requireActivity() as MainActivity).loadChildFragment(AllEpisodesFragment())
     }
 
@@ -105,9 +104,8 @@ class EpisodesSurpriseSection : HomeSection() {
     fun onEventMainThread(event: EpisodeDownloadEvent) {
         for (downloadUrl in event.urls) {
             val pos: Int = FeedItemUtil.indexOfItemWithDownloadUrl(episodes, downloadUrl)
-            if (pos >= 0) {
-                listAdapter?.notifyItemChangedCompat(pos)
-            }
+            if (pos >= 0) listAdapter?.notifyItemChangedCompat(pos)
+
         }
     }
 
@@ -117,7 +115,7 @@ class EpisodesSurpriseSection : HomeSection() {
             return
         }
         for (i in 0 until listAdapter!!.itemCount) {
-            val holder: HorizontalItemViewHolder? = viewBinding?.recyclerView?.findViewHolderForAdapterPosition(i) as? HorizontalItemViewHolder
+            val holder: HorizontalItemViewHolder? = viewBinding.recyclerView.findViewHolderForAdapterPosition(i) as? HorizontalItemViewHolder
             if (holder != null && holder.isCurrentlyPlayingItem) {
                 holder.notifyPlaybackPositionUpdated(event)
                 break
@@ -128,10 +126,7 @@ class EpisodesSurpriseSection : HomeSection() {
     private fun loadItems() {
         disposable?.dispose()
 
-        disposable = Observable.fromCallable {
-            DBReader.getRandomEpisodes(
-                NUM_EPISODES, seed)
-        }
+        disposable = Observable.fromCallable { DBReader.getRandomEpisodes(NUM_EPISODES, seed) }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ episodes: List<FeedItem> ->

@@ -28,10 +28,11 @@ import org.greenrobot.eventbus.Subscribe
  * Shows the download log
  */
 class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, Toolbar.OnMenuItemClickListener {
+    private lateinit var viewBinding: DownloadLogFragmentBinding
+    private lateinit var adapter: DownloadLogAdapter
+
     private var downloadLog: List<DownloadResult> = ArrayList()
-    private var adapter: DownloadLogAdapter? = null
     private var disposable: Disposable? = null
-    private var viewBinding: DownloadLogFragmentBinding? = null
 
     override fun onStart() {
         super.onStart()
@@ -40,30 +41,28 @@ class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, To
 
     override fun onStop() {
         super.onStop()
-        if (disposable != null) {
-            disposable!!.dispose()
-        }
+        disposable?.dispose()
     }
 
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         viewBinding = DownloadLogFragmentBinding.inflate(inflater)
-        viewBinding!!.toolbar.inflateMenu(R.menu.download_log)
-        viewBinding!!.toolbar.setOnMenuItemClickListener(this)
+        viewBinding.toolbar.inflateMenu(R.menu.download_log)
+        viewBinding.toolbar.setOnMenuItemClickListener(this)
 
         val emptyView = EmptyViewHandler(activity)
         emptyView.setIcon(R.drawable.ic_download)
         emptyView.setTitle(R.string.no_log_downloads_head_label)
         emptyView.setMessage(R.string.no_log_downloads_label)
-        emptyView.attachToListView(viewBinding!!.list)
+        emptyView.attachToListView(viewBinding.list)
 
         adapter = DownloadLogAdapter(requireActivity())
-        viewBinding!!.list.adapter = adapter
-        viewBinding!!.list.onItemClickListener = this
-        viewBinding!!.list.isNestedScrollingEnabled = true
+        viewBinding.list.adapter = adapter
+        viewBinding.list.onItemClickListener = this
+        viewBinding.list.isNestedScrollingEnabled = true
         EventBus.getDefault().register(this)
-        return viewBinding!!.root
+        return viewBinding.root
     }
 
     override fun onDestroyView() {
@@ -72,7 +71,7 @@ class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, To
     }
 
     override fun onItemClick(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
-        val item = adapter!!.getItem(position)
+        val item = adapter.getItem(position)
         if (item is DownloadResult) {
             DownloadLogDetailsDialog(requireContext(), item).show()
         }
@@ -98,16 +97,15 @@ class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, To
     }
 
     private fun loadDownloadLog() {
-        if (disposable != null) {
-            disposable!!.dispose()
-        }
+        disposable?.dispose()
+
         disposable = Observable.fromCallable { DBReader.getDownloadLog() }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ result: List<DownloadResult>? ->
                 if (result != null) {
                     downloadLog = result
-                    adapter!!.setDownloadLog(downloadLog)
+                    adapter.setDownloadLog(downloadLog)
                 }
             }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
     }

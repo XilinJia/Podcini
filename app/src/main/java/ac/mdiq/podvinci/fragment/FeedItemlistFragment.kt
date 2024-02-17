@@ -69,16 +69,18 @@ import java.util.concurrent.ExecutionException
  */
 class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolbar.OnMenuItemClickListener,
     SelectableAdapter.OnSelectModeListener {
-    private var adapter: FeedItemListAdapter? = null
-    private var swipeActions: SwipeActions? = null
-    private var nextPageLoader: MoreContentListFooterUtil? = null
+
+    private lateinit var adapter: FeedItemListAdapter
+    private lateinit var swipeActions: SwipeActions
+    private lateinit var viewBinding: FeedItemListFragmentBinding
+    private lateinit var speedDialBinding: MultiSelectSpeedDialBinding
+    private lateinit var nextPageLoader: MoreContentListFooterUtil
+    
     private var displayUpArrow = false
     private var feedID: Long = 0
     private var feed: Feed? = null
     private var headerCreated = false
     private var disposable: Disposable? = null
-    private var viewBinding: FeedItemListFragmentBinding? = null
-    private var speedDialBinding: MultiSelectSpeedDialBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,65 +93,65 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
                                            savedInstanceState: Bundle?
     ): View {
         viewBinding = FeedItemListFragmentBinding.inflate(inflater)
-        speedDialBinding = MultiSelectSpeedDialBinding.bind(viewBinding!!.root)
-        viewBinding!!.toolbar.inflateMenu(R.menu.feedlist)
-        viewBinding!!.toolbar.setOnMenuItemClickListener(this)
-        viewBinding!!.toolbar.setOnLongClickListener { v: View? ->
-            viewBinding!!.recyclerView.scrollToPosition(5)
-            viewBinding!!.recyclerView.post { viewBinding!!.recyclerView.smoothScrollToPosition(0) }
-            viewBinding!!.appBar.setExpanded(true)
+        speedDialBinding = MultiSelectSpeedDialBinding.bind(viewBinding.root)
+        viewBinding.toolbar.inflateMenu(R.menu.feedlist)
+        viewBinding.toolbar.setOnMenuItemClickListener(this)
+        viewBinding.toolbar.setOnLongClickListener { v: View? ->
+            viewBinding.recyclerView.scrollToPosition(5)
+            viewBinding.recyclerView.post { viewBinding.recyclerView.smoothScrollToPosition(0) }
+            viewBinding.appBar.setExpanded(true)
             false
         }
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) {
             displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
         }
-        (activity as MainActivity).setupToolbarToggle(viewBinding!!.toolbar, displayUpArrow)
+        (activity as MainActivity).setupToolbarToggle(viewBinding.toolbar, displayUpArrow)
         updateToolbar()
 
-        viewBinding!!.recyclerView.setRecycledViewPool((activity as MainActivity).recycledViewPool)
+        viewBinding.recyclerView.setRecycledViewPool((activity as MainActivity).recycledViewPool)
         adapter = FeedItemListAdapter(activity as MainActivity)
-        adapter?.setOnSelectModeListener(this)
-        viewBinding!!.recyclerView.adapter = adapter
-        swipeActions = SwipeActions(this, TAG).attachTo(viewBinding!!.recyclerView)
-        viewBinding!!.progressBar.visibility = View.VISIBLE
+        adapter.setOnSelectModeListener(this)
+        viewBinding.recyclerView.adapter = adapter
+        swipeActions = SwipeActions(this, TAG).attachTo(viewBinding.recyclerView)
+        viewBinding.progressBar.visibility = View.VISIBLE
 
         val iconTintManager: ToolbarIconTintManager = object : ToolbarIconTintManager(
-            requireContext(), viewBinding!!.toolbar, viewBinding!!.collapsingToolbar) {
+            requireContext(), viewBinding.toolbar, viewBinding.collapsingToolbar) {
             override fun doTint(themedContext: Context?) {
-                viewBinding!!.toolbar.menu.findItem(R.id.refresh_item)
+                viewBinding.toolbar.menu.findItem(R.id.refresh_item)
                     .setIcon(AppCompatResources.getDrawable(themedContext!!, R.drawable.ic_refresh))
-                viewBinding!!.toolbar.menu.findItem(R.id.action_search)
+                viewBinding.toolbar.menu.findItem(R.id.action_search)
                     .setIcon(AppCompatResources.getDrawable(themedContext, R.drawable.ic_search))
             }
         }
         iconTintManager.updateTint()
-        viewBinding!!.appBar.addOnOffsetChangedListener(iconTintManager)
+        viewBinding.appBar.addOnOffsetChangedListener(iconTintManager)
 
-        nextPageLoader = MoreContentListFooterUtil(viewBinding!!.moreContent.moreContentListFooter)
-        nextPageLoader?.setClickListener(object : MoreContentListFooterUtil.Listener {
+        nextPageLoader = MoreContentListFooterUtil(viewBinding.moreContent.moreContentListFooter)
+        nextPageLoader.setClickListener(object : MoreContentListFooterUtil.Listener {
             override fun onClick() {
                 if (feed != null) {
                     FeedUpdateManager.runOnce(context, feed, true)
                 }
             }
         })
-        viewBinding!!.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        viewBinding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(view: RecyclerView, deltaX: Int, deltaY: Int) {
                 super.onScrolled(view, deltaX, deltaY)
                 val hasMorePages = feed != null && feed!!.isPaged && feed!!.nextPageLink != null
-                val pageLoaderVisible = viewBinding!!.recyclerView.isScrolledToBottom && hasMorePages
-                nextPageLoader?.root?.visibility = if (pageLoaderVisible) View.VISIBLE else View.GONE
-                viewBinding!!.recyclerView.setPadding(
-                    viewBinding!!.recyclerView.paddingLeft, 0, viewBinding!!.recyclerView.paddingRight,
-                    if (pageLoaderVisible && nextPageLoader != null) nextPageLoader!!.root.measuredHeight else 0)
+                val pageLoaderVisible = viewBinding.recyclerView.isScrolledToBottom && hasMorePages
+                nextPageLoader.root.visibility = if (pageLoaderVisible) View.VISIBLE else View.GONE
+                viewBinding.recyclerView.setPadding(
+                    viewBinding.recyclerView.paddingLeft, 0, viewBinding.recyclerView.paddingRight,
+                    if (pageLoaderVisible) nextPageLoader.root.measuredHeight else 0)
             }
         })
 
         EventBus.getDefault().register(this)
 
-        viewBinding!!.swipeRefresh.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
-        viewBinding!!.swipeRefresh.setOnRefreshListener {
+        viewBinding.swipeRefresh.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
+        viewBinding.swipeRefresh.setOnRefreshListener {
             FeedUpdateManager.runOnceOrAsk(requireContext(),
                 feed)
         }
@@ -157,28 +159,28 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         loadItems()
 
         // Init action UI (via a FAB Speed Dial)
-        speedDialBinding!!.fabSD.overlayLayout = speedDialBinding!!.fabSDOverlay
-        speedDialBinding!!.fabSD.inflate(R.menu.episodes_apply_action_speeddial)
-        speedDialBinding!!.fabSD.setOnChangeListener(object : SpeedDialView.OnChangeListener {
+        speedDialBinding.fabSD.overlayLayout = speedDialBinding.fabSDOverlay
+        speedDialBinding.fabSD.inflate(R.menu.episodes_apply_action_speeddial)
+        speedDialBinding.fabSD.setOnChangeListener(object : SpeedDialView.OnChangeListener {
             override fun onMainActionSelected(): Boolean {
                 return false
             }
 
             override fun onToggleChanged(open: Boolean) {
-                if (open && adapter!!.selectedCount == 0) {
+                if (open && adapter.selectedCount == 0) {
                     (activity as MainActivity).showSnackbarAbovePlayer(R.string.no_items_selected,
                         Snackbar.LENGTH_SHORT)
-                    speedDialBinding!!.fabSD.close()
+                    speedDialBinding.fabSD.close()
                 }
             }
         })
-        speedDialBinding!!.fabSD.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
+        speedDialBinding.fabSD.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
             EpisodeMultiSelectActionHandler((activity as MainActivity), actionItem.id)
-                .handleAction(adapter!!.selectedItems.filterIsInstance<FeedItem>())
-            adapter?.endSelectMode()
+                .handleAction(adapter.selectedItems.filterIsInstance<FeedItem>())
+            adapter.endSelectMode()
             true
         }
-        return viewBinding!!.root
+        return viewBinding.root
     }
 
     override fun onDestroyView() {
@@ -186,7 +188,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 
         EventBus.getDefault().unregister(this)
         disposable?.dispose()
-        adapter?.endSelectMode()
+        adapter.endSelectMode()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -198,22 +200,22 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         if (feed == null) {
             return
         }
-        viewBinding!!.toolbar.menu.findItem(R.id.visit_website_item).setVisible(feed!!.link != null)
-        viewBinding!!.toolbar.menu.findItem(R.id.refresh_complete_item).setVisible(feed!!.isPaged)
+        viewBinding.toolbar.menu.findItem(R.id.visit_website_item).setVisible(feed!!.link != null)
+        viewBinding.toolbar.menu.findItem(R.id.refresh_complete_item).setVisible(feed!!.isPaged)
         if (StringUtils.isBlank(feed!!.link)) {
-            viewBinding!!.toolbar.menu.findItem(R.id.visit_website_item).setVisible(false)
+            viewBinding.toolbar.menu.findItem(R.id.visit_website_item).setVisible(false)
         }
         if (feed!!.isLocalFeed) {
-            viewBinding!!.toolbar.menu.findItem(R.id.share_item).setVisible(false)
+            viewBinding.toolbar.menu.findItem(R.id.share_item).setVisible(false)
         }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         val horizontalSpacing = resources.getDimension(R.dimen.additional_horizontal_spacing).toInt()
-        viewBinding!!.header.headerContainer.setPadding(
-            horizontalSpacing, viewBinding!!.header.headerContainer.paddingTop,
-            horizontalSpacing, viewBinding!!.header.headerContainer.paddingBottom)
+        viewBinding.header.headerContainer.setPadding(
+            horizontalSpacing, viewBinding.header.headerContainer.paddingTop,
+            horizontalSpacing, viewBinding.header.headerContainer.paddingBottom)
     }
 
     @UnstableApi override fun onMenuItemClick(item: MenuItem): Boolean {
@@ -270,12 +272,12 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
-        val selectedItem: FeedItem? = adapter!!.longPressedItem
+        val selectedItem: FeedItem? = adapter.longPressedItem
         if (selectedItem == null) {
             Log.i(TAG, "Selected item at current position was null, ignoring selection")
             return super.onContextItemSelected(item)
         }
-        if (adapter!!.onContextItemSelected(item)) {
+        if (adapter.onContextItemSelected(item)) {
             return true
         }
         return FeedItemMenuHandler.onMenuItemClicked(this, item.itemId, selectedItem)
@@ -311,7 +313,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
             if (pos >= 0) {
                 feed?.items?.removeAt(pos)
                 feed?.items?.add(pos, item)
-                adapter?.notifyItemChangedCompat(pos)
+                adapter.notifyItemChangedCompat(pos)
             }
             i++
         }
@@ -325,16 +327,16 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         for (downloadUrl in event.urls) {
             val pos: Int = FeedItemUtil.indexOfItemWithDownloadUrl(feed!!.items, downloadUrl)
             if (pos >= 0) {
-                adapter?.notifyItemChangedCompat(pos)
+                adapter.notifyItemChangedCompat(pos)
             }
         }
     }
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: PlaybackPositionEvent) {
-        for (i in 0 until adapter!!.itemCount) {
+        for (i in 0 until adapter.itemCount) {
             val holder: EpisodeItemViewHolder? =
-                viewBinding!!.recyclerView.findViewHolderForAdapterPosition(i) as EpisodeItemViewHolder?
+                viewBinding.recyclerView.findViewHolderForAdapterPosition(i) as EpisodeItemViewHolder?
             if (holder != null && holder.isCurrentlyPlayingItem) {
                 holder.notifyPlaybackPositionUpdated(event)
                 break
@@ -355,19 +357,19 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
     }
 
     override fun onStartSelectMode() {
-        swipeActions?.detach()
+        swipeActions.detach()
         if (feed != null && feed!!.isLocalFeed) {
-            speedDialBinding!!.fabSD.removeActionItemById(R.id.download_batch)
+            speedDialBinding.fabSD.removeActionItemById(R.id.download_batch)
         }
-        speedDialBinding!!.fabSD.removeActionItemById(R.id.remove_all_inbox_item)
-        speedDialBinding!!.fabSD.visibility = View.VISIBLE
+        speedDialBinding.fabSD.removeActionItemById(R.id.remove_all_inbox_item)
+        speedDialBinding.fabSD.visibility = View.VISIBLE
         updateToolbar()
     }
 
     override fun onEndSelectMode() {
-        speedDialBinding!!.fabSD.close()
-        speedDialBinding!!.fabSD.visibility = View.GONE
-        swipeActions?.attachTo(viewBinding!!.recyclerView)
+        speedDialBinding.fabSD.close()
+        speedDialBinding.fabSD.visibility = View.GONE
+        swipeActions.attachTo(viewBinding.recyclerView)
     }
 
     @UnstableApi private fun updateUi() {
@@ -396,51 +398,51 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: FeedUpdateRunningEvent) {
-        nextPageLoader?.setLoadingState(event.isFeedUpdateRunning)
+        nextPageLoader.setLoadingState(event.isFeedUpdateRunning)
         if (!event.isFeedUpdateRunning) {
-            nextPageLoader?.root?.visibility = View.GONE
+            nextPageLoader.root.visibility = View.GONE
         }
-        viewBinding!!.swipeRefresh.isRefreshing = event.isFeedUpdateRunning
+        viewBinding.swipeRefresh.isRefreshing = event.isFeedUpdateRunning
     }
 
     @UnstableApi private fun refreshHeaderView() {
         setupHeaderView()
-        if (viewBinding == null || feed == null) {
+        if (feed == null) {
             Log.e(TAG, "Unable to refresh header view")
             return
         }
         loadFeedImage()
-        if (feed != null && feed!!.hasLastUpdateFailed()) {
-            viewBinding!!.header.txtvFailure.visibility = View.VISIBLE
+        if (feed!!.hasLastUpdateFailed()) {
+            viewBinding.header.txtvFailure.visibility = View.VISIBLE
         } else {
-            viewBinding!!.header.txtvFailure.visibility = View.GONE
+            viewBinding.header.txtvFailure.visibility = View.GONE
         }
-        if (feed != null && feed!!.preferences != null && !feed!!.preferences!!.keepUpdated) {
-            viewBinding!!.header.txtvUpdatesDisabled.text = ("{md-pause-circle-outline} "
+        if (feed!!.preferences != null && !feed!!.preferences!!.keepUpdated) {
+            viewBinding.header.txtvUpdatesDisabled.text = ("{md-pause-circle-outline} "
                     + this.getString(R.string.updates_disabled_label))
-            Iconify.addIcons(viewBinding!!.header.txtvUpdatesDisabled)
-            viewBinding!!.header.txtvUpdatesDisabled.visibility = View.VISIBLE
+            Iconify.addIcons(viewBinding.header.txtvUpdatesDisabled)
+            viewBinding.header.txtvUpdatesDisabled.visibility = View.VISIBLE
         } else {
-            viewBinding!!.header.txtvUpdatesDisabled.visibility = View.GONE
+            viewBinding.header.txtvUpdatesDisabled.visibility = View.GONE
         }
-        viewBinding!!.header.txtvTitle.text = feed!!.title
-        viewBinding!!.header.txtvAuthor.text = feed!!.author
+        viewBinding.header.txtvTitle.text = feed!!.title
+        viewBinding.header.txtvAuthor.text = feed!!.author
         if (feed != null && feed!!.itemFilter != null) {
             val filter: FeedItemFilter? = feed!!.itemFilter
             if (filter != null && filter.values.isNotEmpty()) {
-                viewBinding!!.header.txtvInformation.text = ("{md-info-outline} "
+                viewBinding.header.txtvInformation.text = ("{md-info-outline} "
                         + this.getString(R.string.filtered_label))
-                Iconify.addIcons(viewBinding!!.header.txtvInformation)
-                viewBinding!!.header.txtvInformation.setOnClickListener { l: View? ->
+                Iconify.addIcons(viewBinding.header.txtvInformation)
+                viewBinding.header.txtvInformation.setOnClickListener { l: View? ->
                     FeedItemFilterDialog.newInstance(feed!!).show(
                         childFragmentManager, null)
                 }
-                viewBinding!!.header.txtvInformation.visibility = View.VISIBLE
+                viewBinding.header.txtvInformation.visibility = View.VISIBLE
             } else {
-                viewBinding!!.header.txtvInformation.visibility = View.GONE
+                viewBinding.header.txtvInformation.visibility = View.GONE
             }
         } else {
-            viewBinding!!.header.txtvInformation.visibility = View.GONE
+            viewBinding.header.txtvInformation.visibility = View.GONE
         }
     }
 
@@ -450,19 +452,19 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         }
 
         // https://github.com/bumptech/glide/issues/529
-        viewBinding!!.imgvBackground.colorFilter = LightingColorFilter(-0x99999a, 0x000000)
-        viewBinding!!.header.butShowInfo.setOnClickListener { v: View? -> showFeedInfo() }
-        viewBinding!!.header.imgvCover.setOnClickListener { v: View? -> showFeedInfo() }
-        viewBinding!!.header.butShowSettings.setOnClickListener { v: View? ->
+        viewBinding.imgvBackground.colorFilter = LightingColorFilter(-0x99999a, 0x000000)
+        viewBinding.header.butShowInfo.setOnClickListener { v: View? -> showFeedInfo() }
+        viewBinding.header.imgvCover.setOnClickListener { v: View? -> showFeedInfo() }
+        viewBinding.header.butShowSettings.setOnClickListener { v: View? ->
             if (feed != null) {
                 val fragment = FeedSettingsFragment.newInstance(feed!!)
                 (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
             }
         }
-        viewBinding!!.header.butFilter.setOnClickListener { v: View? ->
+        viewBinding.header.butFilter.setOnClickListener { v: View? ->
             if (feed != null) FeedItemFilterDialog.newInstance(feed!!).show(childFragmentManager, null)
         }
-        viewBinding!!.header.txtvFailure.setOnClickListener { v: View? -> showErrorDetails() }
+        viewBinding.header.txtvFailure.setOnClickListener { v: View? -> showErrorDetails() }
         headerCreated = true
     }
 
@@ -502,7 +504,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
                 .error(R.color.image_readability_tint)
                 .transform(FastBlurTransformation())
                 .dontAnimate())
-            .into(viewBinding!!.imgvBackground)
+            .into(viewBinding.imgvBackground)
 
         Glide.with(this)
             .load(feed!!.imageUrl)
@@ -511,7 +513,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
                 .error(R.color.light_gray)
                 .fitCenter()
                 .dontAnimate())
-            .into(viewBinding!!.header.imgvCover)
+            .into(viewBinding.header.imgvCover)
     }
 
     @UnstableApi private fun loadItems() {
@@ -524,17 +526,17 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
                 { result: Feed? ->
                     feed = result
                     Log.d(TAG, "loadItems subscribe called ${feed?.title}")
-                    swipeActions?.setFilter(feed?.itemFilter)
+                    swipeActions.setFilter(feed?.itemFilter)
                     refreshHeaderView()
-                    viewBinding!!.progressBar.visibility = View.GONE
-                    adapter?.setDummyViews(0)
-                    if (feed != null && feed!!.items.isNotEmpty()) adapter?.updateItems(feed!!.items)
+                    viewBinding.progressBar.visibility = View.GONE
+                    adapter.setDummyViews(0)
+                    if (feed != null && feed!!.items.isNotEmpty()) adapter.updateItems(feed!!.items)
                     updateToolbar()
                 }, { error: Throwable? ->
                     feed = null
                     refreshHeaderView()
-                    adapter?.setDummyViews(0)
-                    adapter?.updateItems(emptyList())
+                    adapter.setDummyViews(0)
+                    adapter.updateItems(emptyList())
                     updateToolbar()
                     Log.e(TAG, Log.getStackTraceString(error))
                 })
@@ -560,8 +562,8 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
             return
         }
         when (event.keyCode) {
-            KeyEvent.KEYCODE_T -> viewBinding!!.recyclerView.smoothScrollToPosition(0)
-            KeyEvent.KEYCODE_B -> viewBinding!!.recyclerView.smoothScrollToPosition(adapter!!.itemCount - 1)
+            KeyEvent.KEYCODE_T -> viewBinding.recyclerView.smoothScrollToPosition(0)
+            KeyEvent.KEYCODE_B -> viewBinding.recyclerView.smoothScrollToPosition(adapter.itemCount - 1)
             else -> {}
         }
     }
@@ -576,8 +578,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
             if (!inActionMode()) {
                 menu.findItem(R.id.multi_select).setVisible(true)
             }
-            MenuItemUtils.setOnClickListeners(menu
-            ) { item: MenuItem ->
+            MenuItemUtils.setOnClickListeners(menu) { item: MenuItem ->
                 this@FeedItemlistFragment.onContextItemSelected(item)
             }
         }

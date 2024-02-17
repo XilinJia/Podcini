@@ -22,8 +22,7 @@ object HomeSectionsSettingsDialog {
 
         val builder = MaterialAlertDialogBuilder(context)
         builder.setTitle(R.string.configure_home)
-        builder.setMultiChoiceItems(sectionLabels,
-            checked) { dialog: DialogInterface?, which: Int, isChecked: Boolean ->
+        builder.setMultiChoiceItems(sectionLabels, checked) { dialog: DialogInterface?, which: Int, isChecked: Boolean ->
             if (isChecked) {
                 hiddenSections.remove(sectionTags[which])
             } else {

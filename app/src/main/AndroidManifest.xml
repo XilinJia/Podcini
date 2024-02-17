@@ -8,7 +8,6 @@
         tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
     <supports-screens
@@ -42,6 +41,13 @@
         android:resizeableActivity="true"
         android:allowAudioPlaybackCapture="true"
         android:networkSecurityConfig="@xml/network_security_config">
+
+<!--        <service-->
+<!--                android:name=".core.service.playback.PlaybackService"-->
+<!--                android:foregroundServiceType="mediaPlayback"-->
+<!--                android:exported="false"-->
+<!--                tools:replace="android:exported">-->
+<!--        </service>-->
 
         <activity
             android:name=".activity.PlaybackSpeedDialogActivity"

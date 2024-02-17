@@ -30,22 +30,22 @@ import kotlin.math.max
  * Displays information about a list of FeedItems.
  */
 class ItemPagerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
-    private var pager: ViewPager2? = null
+    private lateinit var pager: ViewPager2
+    private lateinit var toolbar: MaterialToolbar
 
     private var feedItems: LongArray? = null
     private var item: FeedItem? = null
     private var disposable: Disposable? = null
-    private var toolbar: MaterialToolbar? = null
-
+    
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         super.onCreateView(inflater, container, savedInstanceState)
         val layout: View = inflater.inflate(R.layout.feeditem_pager_fragment, container, false)
         toolbar = layout.findViewById(R.id.toolbar)
-        toolbar?.title = ""
-        toolbar?.inflateMenu(R.menu.feeditem_options)
-        toolbar?.setNavigationOnClickListener { v: View? -> parentFragmentManager.popBackStack() }
-        toolbar?.setOnMenuItemClickListener(this)
+        toolbar.title = ""
+        toolbar.inflateMenu(R.menu.feeditem_options)
+        toolbar.setNavigationOnClickListener { v: View? -> parentFragmentManager.popBackStack() }
+        toolbar.setOnMenuItemClickListener(this)
 
         feedItems = requireArguments().getLongArray(ARG_FEEDITEMS)
         val feedItemPos = max(0.0, requireArguments().getInt(ARG_FEEDITEM_POS).toDouble())
@@ -61,16 +61,18 @@ class ItemPagerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             // Restore state by using the same ID as before. ID collisions are prevented in MainActivity.
             newId = savedInstanceState.getInt(KEY_PAGER_ID, 0)
         }
-        pager?.setId(newId)
-        pager?.adapter = ItemPagerAdapter(this)
-        pager?.setCurrentItem(feedItemPos, false)
-        pager?.offscreenPageLimit = 1
-        loadItem(feedItems!![feedItemPos])
-        pager?.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                loadItem(feedItems!![position])
-            }
-        })
+        pager.setId(newId)
+        pager.adapter = ItemPagerAdapter(this)
+        pager.setCurrentItem(feedItemPos, false)
+        pager.offscreenPageLimit = 1
+        if (feedItems != null && feedItems!!.isNotEmpty()) {
+            loadItem(feedItems!![feedItemPos])
+            pager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+                override fun onPageSelected(position: Int) {
+                    loadItem(feedItems!![position])
+                }
+            })
+        }
 
         EventBus.getDefault().register(this)
         return layout
@@ -78,7 +80,7 @@ class ItemPagerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        if (pager != null) outState.putInt(KEY_PAGER_ID, pager!!.id)
+        outState.putInt(KEY_PAGER_ID, pager.id)
     }
 
     override fun onDestroyView() {
@@ -100,19 +102,19 @@ class ItemPagerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     @UnstableApi fun refreshToolbarState() {
-        if (item == null || toolbar == null) {
+        if (item == null) {
             return
         }
         if (item!!.hasMedia()) {
-            FeedItemMenuHandler.onPrepareMenu(toolbar!!.menu, item)
+            FeedItemMenuHandler.onPrepareMenu(toolbar.menu, item)
         } else {
             // these are already available via button1 and button2
-            FeedItemMenuHandler.onPrepareMenu(toolbar!!.menu, item,
+            FeedItemMenuHandler.onPrepareMenu(toolbar.menu, item,
                 R.id.mark_read_item, R.id.visit_website_item)
         }
     }
 
-    override fun onMenuItemClick(menuItem: MenuItem): Boolean {
+    @UnstableApi override fun onMenuItemClick(menuItem: MenuItem): Boolean {
         if (menuItem.itemId == R.id.open_podcast) {
             openPodcast()
             return true
@@ -132,7 +134,7 @@ class ItemPagerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
     }
 
-    private fun openPodcast() {
+    @UnstableApi private fun openPodcast() {
         if (item == null) {
             return
         }
@@ -142,11 +144,11 @@ class ItemPagerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private inner class ItemPagerAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) {
         override fun createFragment(position: Int): Fragment {
-            return ItemFragment.newInstance(feedItems!![position])
+            return ItemFragment.newInstance(if (feedItems!= null) feedItems!![position] else 0L)
         }
 
         override fun getItemCount(): Int {
-            return feedItems!!.size
+            return feedItems?.size?:0
         }
     }
 
@@ -165,7 +167,7 @@ class ItemPagerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         fun newInstance(feeditems: LongArray?, feedItemPos: Int): ItemPagerFragment {
             val fragment = ItemPagerFragment()
             val args = Bundle()
-            args.putLongArray(ARG_FEEDITEMS, feeditems)
+            if (feeditems != null) args.putLongArray(ARG_FEEDITEMS, feeditems)
             args.putInt(ARG_FEEDITEM_POS, max(0.0, feedItemPos.toDouble()).toInt())
             fragment.arguments = args
             return fragment

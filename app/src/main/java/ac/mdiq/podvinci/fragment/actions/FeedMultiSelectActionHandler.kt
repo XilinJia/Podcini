@@ -17,8 +17,10 @@ import ac.mdiq.podvinci.fragment.preferences.dialog.PreferenceListDialog
 import ac.mdiq.podvinci.fragment.preferences.dialog.PreferenceSwitchDialog
 import ac.mdiq.podvinci.model.feed.Feed
 import ac.mdiq.podvinci.model.feed.FeedPreferences
+import androidx.media3.common.util.UnstableApi
 import java.util.*
 
+@UnstableApi
 class FeedMultiSelectActionHandler(private val activity: MainActivity, private val selectedItems: List<Feed>) {
 
     fun handleAction(id: Int) {
@@ -56,7 +58,7 @@ class FeedMultiSelectActionHandler(private val activity: MainActivity, private v
             activity.getString(R.string.episode_notification_summary))
 
         preferenceSwitchDialog.setOnPreferenceChangedListener(object: PreferenceSwitchDialog.OnPreferenceChangedListener {
-            override fun preferenceChanged(enabled: Boolean) {
+            @UnstableApi override fun preferenceChanged(enabled: Boolean) {
                 saveFeedPreferences { feedPreferences: FeedPreferences ->
                     feedPreferences.showEpisodeNotification = enabled
                 }
@@ -69,7 +71,7 @@ class FeedMultiSelectActionHandler(private val activity: MainActivity, private v
         val preferenceSwitchDialog = PreferenceSwitchDialog(activity,
             activity.getString(R.string.auto_download_settings_label),
             activity.getString(R.string.auto_download_label))
-        preferenceSwitchDialog.setOnPreferenceChangedListener(object: PreferenceSwitchDialog.OnPreferenceChangedListener {
+        preferenceSwitchDialog.setOnPreferenceChangedListener(@UnstableApi object: PreferenceSwitchDialog.OnPreferenceChangedListener {
             override fun preferenceChanged(enabled: Boolean) {
                 saveFeedPreferences { feedPreferences: FeedPreferences -> feedPreferences.autoDownload = enabled }
             }
@@ -77,7 +79,7 @@ class FeedMultiSelectActionHandler(private val activity: MainActivity, private v
         preferenceSwitchDialog.openDialog()
     }
 
-    private fun playbackSpeedPrefHandler() {
+    @UnstableApi private fun playbackSpeedPrefHandler() {
         val viewBinding =
             PlaybackSpeedFeedSettingDialogBinding.inflate(activity.layoutInflater)
         viewBinding.seekBar.setProgressChangedListener { speed: Float? ->
@@ -110,7 +112,7 @@ class FeedMultiSelectActionHandler(private val activity: MainActivity, private v
         val items: Array<String> = activity.resources.getStringArray(R.array.spnAutoDeleteItems)
         preferenceListDialog.openDialog(items)
         preferenceListDialog.setOnPreferenceChangedListener(object: PreferenceListDialog.OnPreferenceChangedListener {
-            override fun preferenceChanged(which: Int) {
+            @UnstableApi override fun preferenceChanged(which: Int) {
                 val autoDeleteAction: FeedPreferences.AutoDeleteAction = FeedPreferences.AutoDeleteAction.fromCode(which)
                 saveFeedPreferences { feedPreferences: FeedPreferences ->
                     feedPreferences.currentAutoDelete = autoDeleteAction
@@ -124,7 +126,7 @@ class FeedMultiSelectActionHandler(private val activity: MainActivity, private v
             activity.getString(R.string.kept_updated),
             activity.getString(R.string.keep_updated_summary))
         preferenceSwitchDialog.setOnPreferenceChangedListener(object: PreferenceSwitchDialog.OnPreferenceChangedListener {
-            override fun preferenceChanged(keepUpdated: Boolean) {
+            @UnstableApi override fun preferenceChanged(keepUpdated: Boolean) {
                 saveFeedPreferences { feedPreferences: FeedPreferences ->
                     feedPreferences.keepUpdated = keepUpdated
                 }
@@ -133,12 +135,12 @@ class FeedMultiSelectActionHandler(private val activity: MainActivity, private v
         preferenceSwitchDialog.openDialog()
     }
 
-    private fun showMessage(@PluralsRes msgId: Int, numItems: Int) {
+    @UnstableApi private fun showMessage(@PluralsRes msgId: Int, numItems: Int) {
         activity.showSnackbarAbovePlayer(activity.resources
             .getQuantityString(msgId, numItems, numItems), Snackbar.LENGTH_LONG)
     }
 
-    private fun saveFeedPreferences(preferencesConsumer: Consumer<FeedPreferences>) {
+    @UnstableApi private fun saveFeedPreferences(preferencesConsumer: Consumer<FeedPreferences>) {
         for (feed in selectedItems) {
             if (feed.preferences == null) continue
             preferencesConsumer.accept(feed.preferences)

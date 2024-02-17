@@ -40,10 +40,10 @@ class InboxSection : HomeSection() {
                                            container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         val view: View = super.onCreateView(inflater, container, savedInstanceState)
-        viewBinding?.recyclerView?.setPadding(0, 0, 0, 0)
-        viewBinding?.recyclerView?.setOverScrollMode(RecyclerView.OVER_SCROLL_NEVER)
-        viewBinding?.recyclerView?.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-        viewBinding?.recyclerView?.setRecycledViewPool((requireActivity() as MainActivity).recycledViewPool)
+        viewBinding.recyclerView.setPadding(0, 0, 0, 0)
+        viewBinding.recyclerView.setOverScrollMode(RecyclerView.OVER_SCROLL_NEVER)
+        viewBinding.recyclerView.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
+        viewBinding.recyclerView.setRecycledViewPool((requireActivity() as MainActivity).recycledViewPool)
         adapter = object : EpisodeItemListAdapter(requireActivity() as MainActivity) {
             override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
                 super.onCreateContextMenu(menu, v, menuInfo)
@@ -52,10 +52,10 @@ class InboxSection : HomeSection() {
             }
         }
         adapter?.setDummyViews(NUM_EPISODES)
-        if (adapter != null) viewBinding?.recyclerView?.adapter = adapter
+        viewBinding.recyclerView.adapter = adapter
 
         val swipeActions = SwipeActions(this, InboxFragment.TAG)
-        if (viewBinding != null) swipeActions.attachTo(viewBinding!!.recyclerView)
+        swipeActions.attachTo(viewBinding.recyclerView)
         swipeActions.setFilter(FeedItemFilter(FeedItemFilter.NEW))
         return view
     }
@@ -65,7 +65,7 @@ class InboxSection : HomeSection() {
         loadItems()
     }
 
-    override fun handleMoreClick() {
+    @UnstableApi override fun handleMoreClick() {
         (requireActivity() as MainActivity).loadChildFragment(InboxFragment())
     }
 
@@ -114,11 +114,11 @@ class InboxSection : HomeSection() {
                 items = data.first
                 adapter?.setDummyViews(0)
                 adapter?.updateItems(items)
-                viewBinding?.numNewItemsLabel?.visibility = View.VISIBLE
+                viewBinding.numNewItemsLabel.visibility = View.VISIBLE
                 if (data.second >= 100) {
-                    viewBinding?.numNewItemsLabel?.text = String.format(Locale.getDefault(), "%d+", 99)
+                    viewBinding.numNewItemsLabel.text = String.format(Locale.getDefault(), "%d+", 99)
                 } else {
-                    viewBinding?.numNewItemsLabel?.text = String.format(Locale.getDefault(), "%d", data.second)
+                    viewBinding.numNewItemsLabel.text = String.format(Locale.getDefault(), "%d", data.second)
                 }
             }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
     }

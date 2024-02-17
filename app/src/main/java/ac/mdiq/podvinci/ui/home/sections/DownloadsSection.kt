@@ -32,17 +32,15 @@ import org.greenrobot.eventbus.ThreadMode
 
 class DownloadsSection : HomeSection() {
     private var adapter: EpisodeItemListAdapter? = null
-    private var items: List<FeedItem>? = null
     private var disposable: Disposable? = null
 
-    @UnstableApi override fun onCreateView(inflater: LayoutInflater,
-                                           container: ViewGroup?, savedInstanceState: Bundle?
+    @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         val view: View = super.onCreateView(inflater, container, savedInstanceState)
-        viewBinding?.recyclerView?.setPadding(0, 0, 0, 0)
-        viewBinding?.recyclerView?.setOverScrollMode(RecyclerView.OVER_SCROLL_NEVER)
-        viewBinding?.recyclerView?.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-        viewBinding?.recyclerView?.setRecycledViewPool((requireActivity() as MainActivity).recycledViewPool)
+        viewBinding.recyclerView.setPadding(0, 0, 0, 0)
+        viewBinding.recyclerView.setOverScrollMode(RecyclerView.OVER_SCROLL_NEVER)
+        viewBinding.recyclerView.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
+        viewBinding.recyclerView.setRecycledViewPool((requireActivity() as MainActivity).recycledViewPool)
         adapter = object : EpisodeItemListAdapter(requireActivity() as MainActivity) {
             override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
                 super.onCreateContextMenu(menu, v, menuInfo)
@@ -53,10 +51,10 @@ class DownloadsSection : HomeSection() {
             }
         }
         adapter?.setDummyViews(NUM_EPISODES)
-        if (adapter != null) viewBinding?.recyclerView?.adapter = adapter
+        viewBinding.recyclerView.adapter = adapter
 
         val swipeActions = SwipeActions(this, CompletedDownloadsFragment.TAG)
-        if (viewBinding != null) swipeActions.attachTo(viewBinding!!.recyclerView)
+        swipeActions.attachTo(viewBinding.recyclerView)
         swipeActions.setFilter(FeedItemFilter(FeedItemFilter.DOWNLOADED))
         return view
     }
@@ -66,7 +64,7 @@ class DownloadsSection : HomeSection() {
         loadItems()
     }
 
-    override fun handleMoreClick() {
+    @UnstableApi override fun handleMoreClick() {
         (requireActivity() as MainActivity).loadChildFragment(CompletedDownloadsFragment())
     }
 
@@ -77,11 +75,11 @@ class DownloadsSection : HomeSection() {
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: PlaybackPositionEvent) {
-        if (viewBinding == null || adapter == null) {
+        if (adapter == null) {
             return
         }
         for (i in 0 until adapter!!.itemCount) {
-            val holder: EpisodeItemViewHolder? = viewBinding!!.recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
+            val holder: EpisodeItemViewHolder? = viewBinding.recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
             if (holder != null && holder.isCurrentlyPlayingItem) {
                 holder.notifyPlaybackPositionUpdated(event)
                 break
@@ -119,9 +117,8 @@ class DownloadsSection : HomeSection() {
                 if (downloads.size > NUM_EPISODES) {
                     downloads = downloads.subList(0, NUM_EPISODES)
                 }
-                items = downloads
                 adapter?.setDummyViews(0)
-                if (items != null) adapter?.updateItems(items!!)
+                adapter?.updateItems(downloads)
             }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
     }
 

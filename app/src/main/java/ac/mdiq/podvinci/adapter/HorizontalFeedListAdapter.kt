@@ -21,7 +21,7 @@ import java.lang.ref.WeakReference
 open class HorizontalFeedListAdapter(mainActivity: MainActivity) :
     RecyclerView.Adapter<HorizontalFeedListAdapter.Holder>(), View.OnCreateContextMenuListener {
 
-        private val mainActivityRef: WeakReference<MainActivity> = WeakReference<MainActivity>(mainActivity)
+    private val mainActivityRef: WeakReference<MainActivity> = WeakReference<MainActivity>(mainActivity)
     private val data: MutableList<Feed> = ArrayList()
     private var dummyViews = 0
     var longPressedItem: Feed? = null

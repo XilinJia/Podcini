@@ -16,8 +16,8 @@ import ac.mdiq.podvinci.core.util.StorageUtils.getTotalSpaceAvailable
 import ac.mdiq.podvinci.storage.preferences.UserPreferences.getDataFolder
 import java.io.File
 
-class DataFolderAdapter(context: Context, selectionHandler: Consumer<String>) :
-    RecyclerView.Adapter<DataFolderAdapter.ViewHolder?>() {
+class DataFolderAdapter(context: Context, selectionHandler: Consumer<String>) : RecyclerView.Adapter<DataFolderAdapter.ViewHolder?>() {
+
     private val selectionHandler: Consumer<String>
     private val currentPath: String?
     private val entries: List<StoragePath>
@@ -63,10 +63,7 @@ class DataFolderAdapter(context: Context, selectionHandler: Consumer<String>) :
 
     private fun getCurrentPath(): String? {
         val dataFolder = getDataFolder(null)
-        if (dataFolder != null) {
-            return dataFolder.absolutePath
-        }
-        return null
+        return dataFolder?.absolutePath
     }
 
     private fun getStorageEntries(context: Context): List<StoragePath> {

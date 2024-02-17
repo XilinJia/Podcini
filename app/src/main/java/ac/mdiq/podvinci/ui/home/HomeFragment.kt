@@ -29,6 +29,7 @@ import ac.mdiq.podvinci.storage.preferences.UserPreferences
 import ac.mdiq.podvinci.ui.echo.EchoActivity
 import ac.mdiq.podvinci.ui.home.sections.*
 import ac.mdiq.podvinci.view.LiftOnScrollListener
+import androidx.media3.common.util.UnstableApi
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -43,33 +44,32 @@ import java.util.*
  */
 class HomeFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var displayUpArrow = false
-    private var viewBinding: HomeFragmentBinding? = null
     private var disposable: Disposable? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    private lateinit var viewBinding: HomeFragmentBinding
+
+    @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         viewBinding = HomeFragmentBinding.inflate(inflater)
-        viewBinding!!.toolbar.inflateMenu(R.menu.home)
-        viewBinding!!.toolbar.setOnMenuItemClickListener(this)
-        if (savedInstanceState != null) {
-            displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
-        }
-        viewBinding!!.homeScrollView.setOnScrollChangeListener(LiftOnScrollListener(
-            viewBinding!!.appbar))
-        (requireActivity() as MainActivity).setupToolbarToggle(viewBinding!!.toolbar, displayUpArrow)
+        viewBinding.toolbar.inflateMenu(R.menu.home)
+        viewBinding.toolbar.setOnMenuItemClickListener(this)
+        displayUpArrow = savedInstanceState?.getBoolean(KEY_UP_ARROW)?:false
+
+        viewBinding.homeScrollView.setOnScrollChangeListener(LiftOnScrollListener(viewBinding.appbar))
+        (requireActivity() as MainActivity).setupToolbarToggle(viewBinding.toolbar, displayUpArrow)
         populateSectionList()
         updateWelcomeScreenVisibility()
 
-        viewBinding!!.swipeRefresh.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
-        viewBinding!!.swipeRefresh.setOnRefreshListener {
+        viewBinding.swipeRefresh.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
+        viewBinding.swipeRefresh.setOnRefreshListener {
             FeedUpdateManager.runOnceOrAsk(requireContext())
         }
 
-        return viewBinding!!.root
+        return viewBinding.root
     }
 
     private fun populateSectionList() {
-        viewBinding!!.homeContainer.removeAllViews()
+        viewBinding.homeContainer.removeAllViews()
 
         val prefs: SharedPreferences = requireContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(requireContext(),
@@ -78,8 +78,10 @@ class HomeFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 addSection(AllowNotificationsSection())
             }
         }
-        if (Calendar.getInstance()[Calendar.YEAR] == EchoActivity.RELEASE_YEAR && Calendar.getInstance()[Calendar.MONTH] == Calendar.DECEMBER && Calendar.getInstance()[Calendar.DAY_OF_MONTH] >= 10 && prefs.getInt(
-                    PREF_HIDE_ECHO, 0) != EchoActivity.RELEASE_YEAR) {
+        if (Calendar.getInstance()[Calendar.YEAR] == EchoActivity.RELEASE_YEAR &&
+                Calendar.getInstance()[Calendar.MONTH] == Calendar.DECEMBER &&
+                Calendar.getInstance()[Calendar.DAY_OF_MONTH] >= 10 &&
+                prefs.getInt(PREF_HIDE_ECHO, 0) != EchoActivity.RELEASE_YEAR) {
             addSection(EchoSection())
         }
 
@@ -96,8 +98,8 @@ class HomeFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private fun addSection(section: Fragment?) {
         val containerView = FragmentContainerView(requireContext())
         containerView.id = View.generateViewId()
-        viewBinding!!.homeContainer.addView(containerView)
-        childFragmentManager.beginTransaction().add(containerView.id, section!!).commit()
+        viewBinding.homeContainer.addView(containerView)
+        if (section != null) childFragmentManager.beginTransaction().add(containerView.id, section).commit()
     }
 
     private fun getSection(tag: String): Fragment? {
@@ -113,10 +115,10 @@ class HomeFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: FeedUpdateRunningEvent) {
-        viewBinding!!.swipeRefresh.isRefreshing = event.isFeedUpdateRunning
+        viewBinding.swipeRefresh.isRefreshing = event.isFeedUpdateRunning
     }
 
-    override fun onMenuItemClick(item: MenuItem): Boolean {
+    @UnstableApi override fun onMenuItemClick(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.homesettings_items -> {
                 HomeSectionsSettingsDialog.open(requireContext()
@@ -128,7 +130,7 @@ class HomeFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 return true
             }
             R.id.action_search -> {
-                (activity as MainActivity?)?.loadChildFragment(SearchFragment.newInstance())
+                (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
@@ -156,16 +158,14 @@ class HomeFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     private fun updateWelcomeScreenVisibility() {
-        if (disposable != null) {
-            disposable?.dispose()
-        }
-        disposable =
-            Observable.fromCallable { DBReader.getNavDrawerData(UserPreferences.subscriptionsFilter).items.size }
+        disposable?.dispose()
+
+        disposable = Observable.fromCallable { DBReader.getNavDrawerData(UserPreferences.subscriptionsFilter).items.size }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ numSubscriptions: Int ->
-                    viewBinding!!.welcomeContainer.visibility = if (numSubscriptions == 0) View.VISIBLE else View.GONE
-                    viewBinding!!.homeContainer.visibility = if (numSubscriptions == 0) View.GONE else View.VISIBLE
+                    viewBinding.welcomeContainer.visibility = if (numSubscriptions == 0) View.VISIBLE else View.GONE
+                    viewBinding.homeContainer.visibility = if (numSubscriptions == 0) View.GONE else View.VISIBLE
                 }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
     }
 

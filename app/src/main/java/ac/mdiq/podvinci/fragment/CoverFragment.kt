@@ -1,6 +1,17 @@
 package ac.mdiq.podvinci.fragment
 
+import ac.mdiq.podvinci.R
 import ac.mdiq.podvinci.activity.MainActivity
+import ac.mdiq.podvinci.core.feed.util.ImageResourceUtils
+import ac.mdiq.podvinci.core.util.ChapterUtils
+import ac.mdiq.podvinci.core.util.DateFormatter
+import ac.mdiq.podvinci.core.util.playback.PlaybackController
+import ac.mdiq.podvinci.databinding.CoverFragmentBinding
+import ac.mdiq.podvinci.event.playback.PlaybackPositionEvent
+import ac.mdiq.podvinci.model.feed.Chapter
+import ac.mdiq.podvinci.model.feed.EmbeddedChapterImage
+import ac.mdiq.podvinci.model.feed.FeedMedia
+import ac.mdiq.podvinci.model.playback.Playable
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
@@ -13,7 +24,6 @@ import android.graphics.ColorFilter
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
-import android.text.TextUtils
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -30,17 +40,6 @@ import com.bumptech.glide.load.resource.bitmap.FitCenter
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.snackbar.Snackbar
-import ac.mdiq.podvinci.R
-import ac.mdiq.podvinci.core.feed.util.ImageResourceUtils
-import ac.mdiq.podvinci.core.util.ChapterUtils
-import ac.mdiq.podvinci.core.util.DateFormatter
-import ac.mdiq.podvinci.core.util.playback.PlaybackController
-import ac.mdiq.podvinci.databinding.CoverFragmentBinding
-import ac.mdiq.podvinci.event.playback.PlaybackPositionEvent
-import ac.mdiq.podvinci.model.feed.Chapter
-import ac.mdiq.podvinci.model.feed.EmbeddedChapterImage
-import ac.mdiq.podvinci.model.feed.FeedMedia
-import ac.mdiq.podvinci.model.playback.Playable
 import io.reactivex.Maybe
 import io.reactivex.MaybeEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -55,7 +54,7 @@ import org.greenrobot.eventbus.ThreadMode
  * Displays the cover and the title of a FeedItem.
  */
 class CoverFragment : Fragment() {
-    private var viewBinding: CoverFragmentBinding? = null
+    private lateinit var viewBinding: CoverFragmentBinding
     private var controller: PlaybackController? = null
     private var disposable: Disposable? = null
     private var displayedChapterIndex = -1
@@ -63,23 +62,23 @@ class CoverFragment : Fragment() {
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         viewBinding = CoverFragmentBinding.inflate(inflater)
-        viewBinding!!.imgvCover.setOnClickListener { v: View? -> onPlayPause() }
-        viewBinding!!.openDescription.setOnClickListener { view: View? ->
+        viewBinding.imgvCover.setOnClickListener { v: View? -> onPlayPause() }
+        viewBinding.openDescription.setOnClickListener { view: View? ->
             (requireParentFragment() as AudioPlayerFragment)
                 .scrollToPage(AudioPlayerFragment.POS_DESCRIPTION, true)
         }
         val colorFilter: ColorFilter? = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(
-            viewBinding!!.txtvPodcastTitle.currentTextColor, BlendModeCompat.SRC_IN)
-        viewBinding!!.butNextChapter.colorFilter = colorFilter
-        viewBinding!!.butPrevChapter.colorFilter = colorFilter
-        viewBinding!!.descriptionIcon.colorFilter = colorFilter
-        viewBinding!!.chapterButton.setOnClickListener { v: View? ->
+            viewBinding.txtvPodcastTitle.currentTextColor, BlendModeCompat.SRC_IN)
+        viewBinding.butNextChapter.colorFilter = colorFilter
+        viewBinding.butPrevChapter.colorFilter = colorFilter
+        viewBinding.descriptionIcon.colorFilter = colorFilter
+        viewBinding.chapterButton.setOnClickListener { v: View? ->
             ChaptersFragment().show(
                 childFragmentManager, ChaptersFragment.TAG)
         }
-        viewBinding!!.butPrevChapter.setOnClickListener { v: View? -> seekToPrevChapter() }
-        viewBinding!!.butNextChapter.setOnClickListener { v: View? -> seekToNextChapter() }
-        return viewBinding!!.root
+        viewBinding.butPrevChapter.setOnClickListener { v: View? -> seekToPrevChapter() }
+        viewBinding.butNextChapter.setOnClickListener { v: View? -> seekToNextChapter() }
+        return viewBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -87,9 +86,8 @@ class CoverFragment : Fragment() {
     }
 
     @UnstableApi private fun loadMediaInfo(includingChapters: Boolean) {
-        if (disposable != null) {
-            disposable!!.dispose()
-        }
+        disposable?.dispose()
+
         disposable = Maybe.create<Playable> { emitter: MaybeEmitter<Playable?> ->
             val media: Playable? = controller?.getMedia()
             if (media != null) {
@@ -111,9 +109,9 @@ class CoverFragment : Fragment() {
             }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
     }
 
-    private fun displayMediaInfo(media: Playable) {
+    @UnstableApi private fun displayMediaInfo(media: Playable) {
         val pubDateStr = DateFormatter.formatAbbrev(activity, media.getPubDate())
-        viewBinding!!.txtvPodcastTitle.text = (StringUtils.stripToEmpty(media.getFeedTitle())
+        viewBinding.txtvPodcastTitle.text = (StringUtils.stripToEmpty(media.getFeedTitle())
                 + "\u00A0"
                 + "・"
                 + "\u00A0"
@@ -122,36 +120,36 @@ class CoverFragment : Fragment() {
             if (media.getItem() != null) {
                 val openFeed: Intent =
                     MainActivity.getIntentToOpenFeed(requireContext(), media.getItem()!!.feedId)
-                viewBinding!!.txtvPodcastTitle.setOnClickListener { v: View? -> startActivity(openFeed) }
+                viewBinding.txtvPodcastTitle.setOnClickListener { v: View? -> startActivity(openFeed) }
             }
         } else {
-            viewBinding!!.txtvPodcastTitle.setOnClickListener(null)
+            viewBinding.txtvPodcastTitle.setOnClickListener(null)
         }
-        viewBinding!!.txtvPodcastTitle.setOnLongClickListener { v: View? -> copyText(media.getFeedTitle()) }
-        viewBinding!!.txtvEpisodeTitle.text = media.getEpisodeTitle()
-        viewBinding!!.txtvEpisodeTitle.setOnLongClickListener { v: View? -> copyText(media.getEpisodeTitle()) }
-        viewBinding!!.txtvEpisodeTitle.setOnClickListener { v: View? ->
-            val lines = viewBinding!!.txtvEpisodeTitle.lineCount
+        viewBinding.txtvPodcastTitle.setOnLongClickListener { v: View? -> copyText(media.getFeedTitle()) }
+        viewBinding.txtvEpisodeTitle.text = media.getEpisodeTitle()
+        viewBinding.txtvEpisodeTitle.setOnLongClickListener { v: View? -> copyText(media.getEpisodeTitle()) }
+        viewBinding.txtvEpisodeTitle.setOnClickListener { v: View? ->
+            val lines = viewBinding.txtvEpisodeTitle.lineCount
             val animUnit = 1500
-            if (lines > viewBinding!!.txtvEpisodeTitle.maxLines) {
-                val titleHeight = (viewBinding!!.txtvEpisodeTitle.height
-                        - viewBinding!!.txtvEpisodeTitle.paddingTop
-                        - viewBinding!!.txtvEpisodeTitle.paddingBottom)
+            if (lines > viewBinding.txtvEpisodeTitle.maxLines) {
+                val titleHeight = (viewBinding.txtvEpisodeTitle.height
+                        - viewBinding.txtvEpisodeTitle.paddingTop
+                        - viewBinding.txtvEpisodeTitle.paddingBottom)
                 val verticalMarquee: ObjectAnimator = ObjectAnimator.ofInt(
-                    viewBinding!!.txtvEpisodeTitle, "scrollY", 0,
-                    (lines - viewBinding!!.txtvEpisodeTitle.maxLines)
-                            * (titleHeight / viewBinding!!.txtvEpisodeTitle.maxLines))
+                    viewBinding.txtvEpisodeTitle, "scrollY", 0,
+                    (lines - viewBinding.txtvEpisodeTitle.maxLines)
+                            * (titleHeight / viewBinding.txtvEpisodeTitle.maxLines))
                     .setDuration((lines * animUnit).toLong())
                 val fadeOut: ObjectAnimator = ObjectAnimator.ofFloat(
-                    viewBinding!!.txtvEpisodeTitle, "alpha", 0f)
+                    viewBinding.txtvEpisodeTitle, "alpha", 0f)
                 fadeOut.setStartDelay(animUnit.toLong())
                 fadeOut.addListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
-                        viewBinding!!.txtvEpisodeTitle.scrollTo(0, 0)
+                        viewBinding.txtvEpisodeTitle.scrollTo(0, 0)
                     }
                 })
                 val fadeBackIn: ObjectAnimator = ObjectAnimator.ofFloat(
-                    viewBinding!!.txtvEpisodeTitle, "alpha", 1f)
+                    viewBinding.txtvEpisodeTitle, "alpha", 1f)
                 val set = AnimatorSet()
                 set.playSequentially(verticalMarquee, fadeOut, fadeBackIn)
                 set.start()
@@ -173,9 +171,9 @@ class CoverFragment : Fragment() {
             chapterControlVisible = fm?.getItem() != null && fm.getItem()!!.hasChapters()
         }
         val newVisibility = if (chapterControlVisible) View.VISIBLE else View.GONE
-        if (viewBinding!!.chapterButton.visibility != newVisibility) {
-            viewBinding!!.chapterButton.visibility = newVisibility
-            ObjectAnimator.ofFloat(viewBinding!!.chapterButton,
+        if (viewBinding.chapterButton.visibility != newVisibility) {
+            viewBinding.chapterButton.visibility = newVisibility
+            ObjectAnimator.ofFloat(viewBinding.chapterButton,
                 "alpha",
                 (if (chapterControlVisible) 0 else 1).toFloat(),
                 (if (chapterControlVisible) 1 else 0).toFloat())
@@ -187,10 +185,10 @@ class CoverFragment : Fragment() {
         if (media != null && chapterIndex > -1) {
             if (media!!.getPosition() > media!!.getDuration() || chapterIndex >= media!!.getChapters().size - 1) {
                 displayedChapterIndex = media!!.getChapters().size - 1
-                viewBinding!!.butNextChapter.visibility = View.INVISIBLE
+                viewBinding.butNextChapter.visibility = View.INVISIBLE
             } else {
                 displayedChapterIndex = chapterIndex
-                viewBinding!!.butNextChapter.visibility = View.VISIBLE
+                viewBinding.butNextChapter.visibility = View.VISIBLE
             }
         }
 
@@ -245,10 +243,7 @@ class CoverFragment : Fragment() {
 
     @UnstableApi override fun onStop() {
         super.onStop()
-
-        if (disposable != null) {
-            disposable!!.dispose()
-        }
+        disposable?.dispose()
         controller?.release()
         controller = null
         EventBus.getDefault().unregister(this)
@@ -277,14 +272,14 @@ class CoverFragment : Fragment() {
             .apply(options)
 
         if (displayedChapterIndex == -1 || media!!.getChapters().isEmpty() || media!!.getChapters()[displayedChapterIndex].imageUrl.isNullOrEmpty()) {
-            cover.into(viewBinding!!.imgvCover)
+            cover.into(viewBinding.imgvCover)
         } else {
             Glide.with(this)
                 .load(EmbeddedChapterImage.getModelFor(media!!, displayedChapterIndex))
                 .apply(options)
                 .thumbnail(cover)
                 .error(cover)
-                .into(viewBinding!!.imgvCover)
+                .into(viewBinding.imgvCover)
         }
     }
 
@@ -296,26 +291,26 @@ class CoverFragment : Fragment() {
     private fun configureForOrientation(newConfig: Configuration) {
         val isPortrait = newConfig.orientation == Configuration.ORIENTATION_PORTRAIT
 
-        viewBinding!!.coverFragment.orientation = if (isPortrait) LinearLayout.VERTICAL else LinearLayout.HORIZONTAL
+        viewBinding.coverFragment.orientation = if (isPortrait) LinearLayout.VERTICAL else LinearLayout.HORIZONTAL
 
         if (isPortrait) {
-            viewBinding!!.coverHolder.layoutParams =
+            viewBinding.coverHolder.layoutParams =
                 LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f)
-            viewBinding!!.coverFragmentTextContainer.layoutParams =
+            viewBinding.coverFragmentTextContainer.layoutParams =
                 LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT)
         } else {
-            viewBinding!!.coverHolder.layoutParams =
+            viewBinding.coverHolder.layoutParams =
                 LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
-            viewBinding!!.coverFragmentTextContainer.layoutParams =
+            viewBinding.coverFragmentTextContainer.layoutParams =
                 LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
         }
 
-        (viewBinding!!.episodeDetails.parent as ViewGroup).removeView(viewBinding!!.episodeDetails)
+        (viewBinding.episodeDetails.parent as ViewGroup).removeView(viewBinding.episodeDetails)
         if (isPortrait) {
-            viewBinding!!.coverFragment.addView(viewBinding!!.episodeDetails)
+            viewBinding.coverFragment.addView(viewBinding.episodeDetails)
         } else {
-            viewBinding!!.coverFragmentTextContainer.addView(viewBinding!!.episodeDetails)
+            viewBinding.coverFragmentTextContainer.addView(viewBinding.episodeDetails)
         }
     }
 
@@ -326,7 +321,7 @@ class CoverFragment : Fragment() {
         controller!!.playPause()
     }
 
-    private fun copyText(text: String): Boolean {
+    @UnstableApi private fun copyText(text: String): Boolean {
         val clipboardManager: ClipboardManager? = ContextCompat.getSystemService(requireContext(), ClipboardManager::class.java)
         clipboardManager?.setPrimaryClip(ClipData.newPlainText("PodVinci", text))
         if (Build.VERSION.SDK_INT <= 32) {

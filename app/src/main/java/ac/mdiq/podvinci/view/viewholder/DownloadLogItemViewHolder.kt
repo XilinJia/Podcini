@@ -15,6 +15,7 @@ import ac.mdiq.podvinci.ui.common.CircularProgressBar
 
 class DownloadLogItemViewHolder(context: Context?, parent: ViewGroup?) :
     RecyclerView.ViewHolder(LayoutInflater.from(context).inflate(R.layout.downloadlog_item, parent, false)) {
+
     @JvmField
     val secondaryActionButton: View = itemView.findViewById(R.id.secondaryActionButton)
     @JvmField

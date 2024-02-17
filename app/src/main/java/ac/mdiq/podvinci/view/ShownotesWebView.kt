@@ -27,6 +27,7 @@ import ac.mdiq.podvinci.core.util.IntentUtils
 import ac.mdiq.podvinci.core.util.NetworkUtils
 import ac.mdiq.podvinci.core.util.ShareUtils
 import ac.mdiq.podvinci.core.util.gui.ShownotesCleaner
+import androidx.media3.common.util.UnstableApi
 import kotlin.math.max
 
 class ShownotesWebView : WebView, View.OnLongClickListener {
@@ -80,27 +81,28 @@ class ShownotesWebView : WebView, View.OnLongClickListener {
         })
     }
 
-    override fun onLongClick(v: View): Boolean {
+    @UnstableApi override fun onLongClick(v: View): Boolean {
         val r: HitTestResult = getHitTestResult()
-        if (r.type == HitTestResult.SRC_ANCHOR_TYPE) {
-            Log.d(TAG, "Link of webview was long-pressed. Extra: " + r.extra)
-            selectedUrl = r.extra
-            showContextMenu()
-            return true
-        } else if (r.type == HitTestResult.EMAIL_TYPE) {
-            Log.d(TAG, "E-Mail of webview was long-pressed. Extra: " + r.extra)
-            ContextCompat.getSystemService(
-                context,
-                ClipboardManager::class.java)?.setPrimaryClip(ClipData.newPlainText("PodVinci", r.extra))
-            if (Build.VERSION.SDK_INT <= 32 && this.context is MainActivity) {
-                (this.context as MainActivity).showSnackbarAbovePlayer(
-                    resources.getString(R.string.copied_to_clipboard),
-                    Snackbar.LENGTH_SHORT)
+        when (r.type) {
+            HitTestResult.SRC_ANCHOR_TYPE -> {
+                Log.d(TAG, "Link of webview was long-pressed. Extra: " + r.extra)
+                selectedUrl = r.extra
+                showContextMenu()
+                return true
             }
-            return true
+            HitTestResult.EMAIL_TYPE -> {
+                Log.d(TAG, "E-Mail of webview was long-pressed. Extra: " + r.extra)
+                ContextCompat.getSystemService(context, ClipboardManager::class.java)?.setPrimaryClip(ClipData.newPlainText("PodVinci", r.extra))
+                if (Build.VERSION.SDK_INT <= 32 && this.context is MainActivity) {
+                    (this.context as MainActivity).showSnackbarAbovePlayer(resources.getString(R.string.copied_to_clipboard), Snackbar.LENGTH_SHORT)
+                }
+                return true
+            }
+            else -> {
+                selectedUrl = null
+                return false
+            }
         }
-        selectedUrl = null
-        return false
     }
 
     fun onContextItemSelected(item: MenuItem): Boolean {
@@ -109,29 +111,34 @@ class ShownotesWebView : WebView, View.OnLongClickListener {
         }
 
         val itemId = item.itemId
-        if (itemId == R.id.open_in_browser_item) {
-            if (selectedUrl != null) IntentUtils.openInBrowser(context, selectedUrl!!)
-        } else if (itemId == R.id.share_url_item) {
-            if (selectedUrl != null) ShareUtils.shareLink(context, selectedUrl!!)
-        } else if (itemId == R.id.copy_url_item) {
-            val clipData: ClipData = ClipData.newPlainText(selectedUrl, selectedUrl)
-            val cm = context
-                .getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            cm.setPrimaryClip(clipData)
-            if (Build.VERSION.SDK_INT < 32) {
-                val s: Snackbar = Snackbar.make(this, R.string.copied_to_clipboard, Snackbar.LENGTH_LONG)
-                s.view.elevation = 100f
-                s.show()
+        when (itemId) {
+            R.id.open_in_browser_item -> {
+                if (selectedUrl != null) IntentUtils.openInBrowser(context, selectedUrl!!)
             }
-        } else if (itemId == R.id.go_to_position_item) {
-            if (ShownotesCleaner.isTimecodeLink(selectedUrl) && timecodeSelectedListener != null) {
-                timecodeSelectedListener!!.accept(ShownotesCleaner.getTimecodeLinkTime(selectedUrl))
-            } else {
-                Log.e(TAG, "Selected go_to_position_item, but URL was no timecode link: $selectedUrl")
+            R.id.share_url_item -> {
+                if (selectedUrl != null) ShareUtils.shareLink(context, selectedUrl!!)
             }
-        } else {
-            selectedUrl = null
-            return false
+            R.id.copy_url_item -> {
+                val clipData: ClipData = ClipData.newPlainText(selectedUrl, selectedUrl)
+                val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                cm.setPrimaryClip(clipData)
+                if (Build.VERSION.SDK_INT < 32) {
+                    val s: Snackbar = Snackbar.make(this, R.string.copied_to_clipboard, Snackbar.LENGTH_LONG)
+                    s.view.elevation = 100f
+                    s.show()
+                }
+            }
+            R.id.go_to_position_item -> {
+                if (ShownotesCleaner.isTimecodeLink(selectedUrl) && timecodeSelectedListener != null) {
+                    timecodeSelectedListener!!.accept(ShownotesCleaner.getTimecodeLinkTime(selectedUrl))
+                } else {
+                    Log.e(TAG, "Selected go_to_position_item, but URL was no timecode link: $selectedUrl")
+                }
+            }
+            else -> {
+                selectedUrl = null
+                return false
+            }
         }
         selectedUrl = null
         return true

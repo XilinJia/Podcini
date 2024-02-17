@@ -26,8 +26,8 @@ import ac.mdiq.podvinci.ui.common.CircularProgressBar
 import kotlin.math.max
 import kotlin.math.min
 
-class ChaptersListAdapter(private val context: Context, private val callback: Callback?) :
-    RecyclerView.Adapter<ChapterHolder?>() {
+class ChaptersListAdapter(private val context: Context, private val callback: Callback?) : RecyclerView.Adapter<ChapterHolder>() {
+
     private var media: Playable? = null
     private var currentChapterIndex = -1
     private var currentChapterPosition: Long = -1
@@ -45,18 +45,13 @@ class ChaptersListAdapter(private val context: Context, private val callback: Ca
     }
 
     override fun onBindViewHolder(holder: ChapterHolder, position: Int) {
-        val sc = getItem(position)
-        if (sc == null) {
-            holder.title.text = "Error"
-            return
-        }
+        val sc = getItem(position)?: return
         holder.title.text = sc.title
-        holder.start.text = getDurationStringLong(sc
-            .start.toInt())
-        val duration = if (position + 1 < media!!.getChapters().size) {
+        holder.start.text = getDurationStringLong(sc.start.toInt())
+        val duration = if (position + 1 < itemCount) {
             media!!.getChapters()[position + 1].start - sc.start
         } else {
-            media!!.getDuration() - sc.start
+            (media?.getDuration()?:0) - sc.start
         }
         holder.duration.text = context.getString(R.string.chapter_duration,
             getDurationStringLocalized(context, duration.toInt().toLong()))
@@ -112,10 +107,7 @@ class ChaptersListAdapter(private val context: Context, private val callback: Ca
     }
 
     override fun getItemCount(): Int {
-        if (media == null) {
-            return 0
-        }
-        return media!!.getChapters().size
+        return media?.getChapters()?.size?:0
     }
 
     class ChapterHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -131,7 +123,7 @@ class ChaptersListAdapter(private val context: Context, private val callback: Ca
 
     fun notifyChapterChanged(newChapterIndex: Int) {
         currentChapterIndex = newChapterIndex
-        currentChapterPosition = getItem(newChapterIndex).start
+        currentChapterPosition = getItem(newChapterIndex)?.start?:0
         notifyDataSetChanged()
     }
 
@@ -142,8 +134,10 @@ class ChaptersListAdapter(private val context: Context, private val callback: Ca
         notifyItemChanged(currentChapterIndex, "foo")
     }
 
-    fun getItem(position: Int): Chapter {
-        return media!!.getChapters()[position]
+    fun getItem(position: Int): Chapter? {
+        val chapters = media?.getChapters()?: return null
+        if (position < 0 || position >= chapters.size) return null
+        return chapters[position]
     }
 
     interface Callback {

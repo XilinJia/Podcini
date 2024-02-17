@@ -31,6 +31,7 @@ import ac.mdiq.podvinci.storage.preferences.UserPreferences.hiddenDrawerItems
 import ac.mdiq.podvinci.storage.preferences.UserPreferences.isEnableAutodownload
 import ac.mdiq.podvinci.storage.preferences.UserPreferences.subscriptionsFilter
 import ac.mdiq.podvinci.ui.home.HomeFragment
+import androidx.media3.common.util.UnstableApi
 import org.apache.commons.lang3.ArrayUtils
 import java.lang.ref.WeakReference
 import java.text.NumberFormat
@@ -42,6 +43,7 @@ import kotlin.math.abs
  */
 class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
     RecyclerView.Adapter<NavListAdapter.Holder>(), OnSharedPreferenceChangeListener {
+
     private val fragmentTags: MutableList<String?> = ArrayList()
     private val titles: Array<String> = context.resources.getStringArray(R.array.nav_drawer_titles)
     private val activity = WeakReference(context)
@@ -87,7 +89,7 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
         return titles[index]
     }
 
-    @DrawableRes
+    @UnstableApi @DrawableRes
     private fun getDrawable(tag: String?): Int {
         return when (tag) {
             HomeFragment.TAG -> R.drawable.ic_home
@@ -157,7 +159,7 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
         }
     }
 
-    override fun onBindViewHolder(holder: Holder, position: Int) {
+    @UnstableApi override fun onBindViewHolder(holder: Holder, position: Int) {
         val viewType = getItemViewType(position)
 
         holder.itemView.setOnCreateContextMenuListener(null)
@@ -199,7 +201,7 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
         }
     }
 
-    private fun bindNavView(title: String, position: Int, holder: NavHolder) {
+    @UnstableApi private fun bindNavView(title: String, position: Int, holder: NavHolder) {
         val context = activity.get() ?: return
         holder.title.text = title
 
@@ -209,43 +211,48 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
         holder.count.isClickable = false
 
         val tag = fragmentTags[position]
-        if (tag == QueueFragment.TAG) {
-            val queueSize = itemAccess.queueSize
-            if (queueSize > 0) {
-                holder.count.text = NumberFormat.getInstance().format(queueSize.toLong())
-                holder.count.visibility = View.VISIBLE
+        when {
+            tag == QueueFragment.TAG -> {
+                val queueSize = itemAccess.queueSize
+                if (queueSize > 0) {
+                    holder.count.text = NumberFormat.getInstance().format(queueSize.toLong())
+                    holder.count.visibility = View.VISIBLE
+                }
             }
-        } else if (tag == InboxFragment.TAG) {
-            val unreadItems = itemAccess.numberOfNewItems
-            if (unreadItems > 0) {
-                holder.count.text = NumberFormat.getInstance().format(unreadItems.toLong())
-                holder.count.visibility = View.VISIBLE
+            tag == InboxFragment.TAG -> {
+                val unreadItems = itemAccess.numberOfNewItems
+                if (unreadItems > 0) {
+                    holder.count.text = NumberFormat.getInstance().format(unreadItems.toLong())
+                    holder.count.visibility = View.VISIBLE
+                }
             }
-        } else if (tag == SubscriptionFragment.TAG) {
-            val sum = itemAccess.feedCounterSum
-            if (sum > 0) {
-                holder.count.text = NumberFormat.getInstance().format(sum.toLong())
-                holder.count.visibility = View.VISIBLE
+            tag == SubscriptionFragment.TAG -> {
+                val sum = itemAccess.feedCounterSum
+                if (sum > 0) {
+                    holder.count.text = NumberFormat.getInstance().format(sum.toLong())
+                    holder.count.visibility = View.VISIBLE
+                }
             }
-        } else if (tag == CompletedDownloadsFragment.TAG && isEnableAutodownload) {
-            val epCacheSize = episodeCacheSize
-            // don't count episodes that can be reclaimed
-            val spaceUsed = (itemAccess.numberOfDownloadedItems
-                    - itemAccess.reclaimableItems)
-            if (epCacheSize in 1..spaceUsed) {
-                holder.count.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_disc_alert, 0)
-                holder.count.visibility = View.VISIBLE
-                holder.count.setOnClickListener { v: View? ->
-                    MaterialAlertDialogBuilder(context)
-                        .setTitle(R.string.episode_cache_full_title)
-                        .setMessage(R.string.episode_cache_full_message)
-                        .setPositiveButton(android.R.string.ok, null)
-                        .setNeutralButton(R.string.open_autodownload_settings) { dialog: DialogInterface?, which: Int ->
-                            val intent = Intent(context, PreferenceActivity::class.java)
-                            intent.putExtra(PreferenceActivity.OPEN_AUTO_DOWNLOAD_SETTINGS, true)
-                            context.startActivity(intent)
-                        }
-                        .show()
+            tag == CompletedDownloadsFragment.TAG && isEnableAutodownload -> {
+                val epCacheSize = episodeCacheSize
+                // don't count episodes that can be reclaimed
+                val spaceUsed = (itemAccess.numberOfDownloadedItems
+                        - itemAccess.reclaimableItems)
+                if (epCacheSize in 1..spaceUsed) {
+                    holder.count.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_disc_alert, 0)
+                    holder.count.visibility = View.VISIBLE
+                    holder.count.setOnClickListener { v: View? ->
+                        MaterialAlertDialogBuilder(context)
+                            .setTitle(R.string.episode_cache_full_title)
+                            .setMessage(R.string.episode_cache_full_message)
+                            .setPositiveButton(android.R.string.ok, null)
+                            .setNeutralButton(R.string.open_autodownload_settings) { dialog: DialogInterface?, which: Int ->
+                                val intent = Intent(context, PreferenceActivity::class.java)
+                                intent.putExtra(PreferenceActivity.OPEN_AUTO_DOWNLOAD_SETTINGS, true)
+                                context.startActivity(intent)
+                            }
+                            .show()
+                    }
                 }
             }
         }

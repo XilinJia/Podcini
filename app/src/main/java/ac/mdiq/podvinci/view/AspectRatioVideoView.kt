@@ -9,6 +9,7 @@ class AspectRatioVideoView @JvmOverloads constructor(context: Context?,
                                                      attrs: AttributeSet? = null,
                                                      defStyle: Int = 0
 ) : VideoView(context, attrs, defStyle) {
+
     private var mVideoWidth = 0
     private var mVideoHeight = 0
     private var mAvailableWidth = -1f

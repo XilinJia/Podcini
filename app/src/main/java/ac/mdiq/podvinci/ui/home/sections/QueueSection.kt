@@ -1,13 +1,7 @@
 package ac.mdiq.podvinci.ui.home.sections
 
-import ac.mdiq.podvinci.activity.MainActivity
-import android.os.Bundle
-import android.util.Log
-import android.view.*
-import androidx.media3.common.util.UnstableApi
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import ac.mdiq.podvinci.R
+import ac.mdiq.podvinci.activity.MainActivity
 import ac.mdiq.podvinci.adapter.HorizontalItemListAdapter
 import ac.mdiq.podvinci.core.menuhandler.MenuItemUtils
 import ac.mdiq.podvinci.core.storage.DBReader
@@ -21,13 +15,18 @@ import ac.mdiq.podvinci.fragment.QueueFragment
 import ac.mdiq.podvinci.model.feed.FeedItem
 import ac.mdiq.podvinci.ui.home.HomeSection
 import ac.mdiq.podvinci.view.viewholder.HorizontalItemViewHolder
+import android.os.Bundle
+import android.util.Log
+import android.view.*
+import androidx.media3.common.util.UnstableApi
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import java.util.concurrent.Callable
 
 class QueueSection : HomeSection() {
     private var listAdapter: HorizontalItemListAdapter? = null
@@ -46,10 +45,10 @@ class QueueSection : HomeSection() {
             }
         }
         listAdapter?.setDummyViews(NUM_EPISODES)
-        viewBinding?.recyclerView?.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
-        viewBinding?.recyclerView?.adapter = listAdapter
+        viewBinding.recyclerView.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+        viewBinding.recyclerView.adapter = listAdapter
         val paddingHorizontal: Int = (12 * resources.displayMetrics.density).toInt()
-        viewBinding?.recyclerView?.setPadding(paddingHorizontal, 0, paddingHorizontal, 0)
+        viewBinding.recyclerView.setPadding(paddingHorizontal, 0, paddingHorizontal, 0)
         return view
     }
 
@@ -58,7 +57,7 @@ class QueueSection : HomeSection() {
         loadItems()
     }
 
-    override fun handleMoreClick() {
+    @UnstableApi override fun handleMoreClick() {
         (requireActivity() as MainActivity).loadChildFragment(QueueFragment())
     }
 
@@ -112,7 +111,7 @@ class QueueSection : HomeSection() {
         var currentlyPlayingItemIsFirst = true
         for (i in 0 until listAdapter!!.itemCount) {
             val holder: HorizontalItemViewHolder =
-                viewBinding?.recyclerView?.findViewHolderForAdapterPosition(i) as? HorizontalItemViewHolder ?: continue
+                viewBinding.recyclerView.findViewHolderForAdapterPosition(i) as? HorizontalItemViewHolder ?: continue
             if (holder.isCurrentlyPlayingItem) {
                 holder.notifyPlaybackPositionUpdated(event)
                 foundCurrentlyPlayingItem = true

@@ -8,6 +8,8 @@ import ac.mdiq.podvinci.R
 import ac.mdiq.podvinci.core.dialog.ConfirmationDialog
 import ac.mdiq.podvinci.core.storage.DBWriter
 import ac.mdiq.podvinci.model.feed.Feed
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
 import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -28,7 +30,7 @@ object RemoveFeedDialog {
 
     private fun showDialog(context: Context, feeds: List<Feed>, message: String, callback: Runnable?) {
         val dialog: ConfirmationDialog = object : ConfirmationDialog(context, R.string.remove_feed_label, message) {
-            override fun onConfirmButtonPressed(clickedDialog: DialogInterface) {
+            @OptIn(UnstableApi::class) override fun onConfirmButtonPressed(clickedDialog: DialogInterface) {
                 callback?.run()
 
                 clickedDialog.dismiss()

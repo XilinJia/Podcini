@@ -36,7 +36,7 @@ import io.reactivex.schedulers.Schedulers
  */
 @UnstableApi
 class AddFeedFragment : Fragment() {
-    private var viewBinding: AddfeedBinding? = null
+    private lateinit var viewBinding: AddfeedBinding
     private var activity: MainActivity? = null
     private var displayUpArrow = false
 
@@ -51,60 +51,58 @@ class AddFeedFragment : Fragment() {
     ): View {
         super.onCreateView(inflater, container, savedInstanceState)
         viewBinding = AddfeedBinding.inflate(inflater)
-        activity = getActivity() as MainActivity?
+        activity = getActivity() as? MainActivity
 
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) {
             displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
         }
-        (getActivity() as MainActivity).setupToolbarToggle(viewBinding!!.toolbar, displayUpArrow)
+        (getActivity() as MainActivity).setupToolbarToggle(viewBinding.toolbar, displayUpArrow)
 
-        viewBinding!!.searchItunesButton.setOnClickListener { v: View? ->
+        viewBinding.searchItunesButton.setOnClickListener { v: View? ->
             activity?.loadChildFragment(OnlineSearchFragment.newInstance(
                 ItunesPodcastSearcher::class.java))
         }
-        viewBinding!!.searchFyydButton.setOnClickListener { v: View? ->
+        viewBinding.searchFyydButton.setOnClickListener { v: View? ->
             activity?.loadChildFragment(OnlineSearchFragment.newInstance(
                 FyydPodcastSearcher::class.java))
         }
-        viewBinding!!.searchGPodderButton.setOnClickListener { v: View? ->
+        viewBinding.searchGPodderButton.setOnClickListener { v: View? ->
             activity?.loadChildFragment(OnlineSearchFragment.newInstance(
                 GpodnetPodcastSearcher::class.java))
         }
-        viewBinding!!.searchPodcastIndexButton.setOnClickListener { v: View? ->
+        viewBinding.searchPodcastIndexButton.setOnClickListener { v: View? ->
             activity?.loadChildFragment(OnlineSearchFragment.newInstance(
                 PodcastIndexPodcastSearcher::class.java))
         }
 
-        viewBinding!!.combinedFeedSearchEditText.setOnEditorActionListener { v: TextView?, actionId: Int, event: KeyEvent? ->
+        viewBinding.combinedFeedSearchEditText.setOnEditorActionListener { v: TextView?, actionId: Int, event: KeyEvent? ->
             performSearch()
             true
         }
 
-        viewBinding!!.addViaUrlButton.setOnClickListener { v: View? -> showAddViaUrlDialog() }
+        viewBinding.addViaUrlButton.setOnClickListener { v: View? -> showAddViaUrlDialog() }
 
-        viewBinding!!.opmlImportButton.setOnClickListener { v: View? ->
+        viewBinding.opmlImportButton.setOnClickListener { v: View? ->
             try {
                 chooseOpmlImportPathLauncher.launch("*/*")
             } catch (e: ActivityNotFoundException) {
                 e.printStackTrace()
-                (getActivity() as MainActivity)
-                    .showSnackbarAbovePlayer(R.string.unable_to_start_system_file_manager, Snackbar.LENGTH_LONG)
+                activity?.showSnackbarAbovePlayer(R.string.unable_to_start_system_file_manager, Snackbar.LENGTH_LONG)
             }
         }
 
-        viewBinding!!.addLocalFolderButton.setOnClickListener { v: View? ->
+        viewBinding.addLocalFolderButton.setOnClickListener { v: View? ->
             try {
                 addLocalFolderLauncher.launch(null)
             } catch (e: ActivityNotFoundException) {
                 e.printStackTrace()
-                (getActivity() as MainActivity)
-                    .showSnackbarAbovePlayer(R.string.unable_to_start_system_file_manager, Snackbar.LENGTH_LONG)
+                activity?.showSnackbarAbovePlayer(R.string.unable_to_start_system_file_manager, Snackbar.LENGTH_LONG)
             }
         }
-        viewBinding!!.searchButton.setOnClickListener { view: View? -> performSearch() }
+        viewBinding.searchButton.setOnClickListener { view: View? -> performSearch() }
 
-        return viewBinding!!.root
+        return viewBinding.root
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -127,8 +125,7 @@ class AddFeedFragment : Fragment() {
             }
         }
         builder.setView(dialogBinding.root)
-        builder.setPositiveButton(R.string.confirm_label
-        ) { dialog: DialogInterface?, which: Int -> addUrl(dialogBinding.urlEditText.text.toString()) }
+        builder.setPositiveButton(R.string.confirm_label) { dialog: DialogInterface?, which: Int -> addUrl(dialogBinding.urlEditText.text.toString()) }
         builder.setNegativeButton(R.string.cancel_label, null)
         builder.show()
     }
@@ -141,16 +138,16 @@ class AddFeedFragment : Fragment() {
     }
 
     private fun performSearch() {
-        viewBinding!!.combinedFeedSearchEditText.clearFocus()
+        viewBinding.combinedFeedSearchEditText.clearFocus()
         val inVal = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        inVal.hideSoftInputFromWindow(viewBinding!!.combinedFeedSearchEditText.windowToken, 0)
-        val query = viewBinding!!.combinedFeedSearchEditText.text.toString()
+        inVal.hideSoftInputFromWindow(viewBinding.combinedFeedSearchEditText.windowToken, 0)
+        val query = viewBinding.combinedFeedSearchEditText.text.toString()
         if (query.matches("http[s]?://.*".toRegex())) {
             addUrl(query)
             return
         }
         activity?.loadChildFragment(OnlineSearchFragment.newInstance(CombinedSearcher::class.java, query))
-        viewBinding!!.combinedFeedSearchEditText.post { viewBinding!!.combinedFeedSearchEditText.setText("") }
+        viewBinding.combinedFeedSearchEditText.post { viewBinding.combinedFeedSearchEditText.setText("") }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -205,8 +202,7 @@ class AddFeedFragment : Fragment() {
 
     private class AddLocalFolder : ActivityResultContracts.OpenDocumentTree() {
         override fun createIntent(context: Context, input: Uri?): Intent {
-            return super.createIntent(context, input)
-                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            return super.createIntent(context, input).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
     }
 

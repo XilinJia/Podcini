@@ -22,6 +22,7 @@ import ac.mdiq.podvinci.model.feed.FeedItem
 import ac.mdiq.podvinci.model.feed.FeedItemFilter
 import ac.mdiq.podvinci.model.feed.SortOrder
 import ac.mdiq.podvinci.storage.preferences.UserPreferences
+import androidx.annotation.OptIn
 import org.greenrobot.eventbus.EventBus
 
 /**
@@ -39,16 +40,16 @@ class InboxFragment : EpisodesListFragment() {
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val root = super.onCreateView(inflater, container, savedInstanceState)
-        toolbar?.inflateMenu(R.menu.inbox)
-        toolbar?.setTitle(R.string.inbox_label)
+        toolbar.inflateMenu(R.menu.inbox)
+        toolbar.setTitle(R.string.inbox_label)
         prefs = requireActivity().getSharedPreferences(getPrefName(), Context.MODE_PRIVATE)
         updateToolbar()
-        emptyView?.setIcon(R.drawable.ic_inbox)
-        emptyView?.setTitle(R.string.no_inbox_head_label)
-        emptyView?.setMessage(R.string.no_inbox_label)
-        speedDialView?.removeActionItemById(R.id.mark_unread_batch)
-        speedDialView?.removeActionItemById(R.id.remove_from_queue_batch)
-        speedDialView?.removeActionItemById(R.id.delete_batch)
+        emptyView.setIcon(R.drawable.ic_inbox)
+        emptyView.setTitle(R.string.no_inbox_head_label)
+        emptyView.setMessage(R.string.no_inbox_label)
+        speedDialView.removeActionItemById(R.id.mark_unread_batch)
+        speedDialView.removeActionItemById(R.id.remove_from_queue_batch)
+        speedDialView.removeActionItemById(R.id.delete_batch)
         return root
     }
 
@@ -56,7 +57,7 @@ class InboxFragment : EpisodesListFragment() {
         return FeedItemFilter(FeedItemFilter.NEW)
     }
 
-    override fun onMenuItemClick(item: MenuItem): Boolean {
+    @OptIn(UnstableApi::class) override fun onMenuItemClick(item: MenuItem): Boolean {
         if (super.onOptionsItemSelected(item)) {
             return true
         }
@@ -88,7 +89,7 @@ class InboxFragment : EpisodesListFragment() {
         return DBReader.getTotalEpisodeCount(FeedItemFilter(FeedItemFilter.NEW))
     }
 
-    private fun removeAllFromInbox() {
+    @OptIn(UnstableApi::class) private fun removeAllFromInbox() {
         DBWriter.removeAllNewFlags()
         (activity as MainActivity).showSnackbarAbovePlayer(R.string.removed_all_inbox_msg, Toast.LENGTH_SHORT)
     }
@@ -102,8 +103,7 @@ class InboxFragment : EpisodesListFragment() {
         val checkNeverAskAgain: CheckBox = view.findViewById(R.id.checkbox_do_not_show_again)
         builder.setView(view)
 
-        builder.setPositiveButton(R.string.confirm_label
-        ) { dialog: DialogInterface, which: Int ->
+        builder.setPositiveButton(R.string.confirm_label) { dialog: DialogInterface, which: Int ->
             dialog.dismiss()
             removeAllFromInbox()
             prefs?.edit()?.putBoolean(PREF_DO_NOT_PROMPT_REMOVE_ALL_FROM_INBOX, checkNeverAskAgain.isChecked)

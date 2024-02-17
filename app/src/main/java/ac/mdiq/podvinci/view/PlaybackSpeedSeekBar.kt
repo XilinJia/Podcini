@@ -10,7 +10,7 @@ import androidx.core.util.Consumer
 import ac.mdiq.podvinci.R
 
 class PlaybackSpeedSeekBar : FrameLayout {
-    private var seekBar: SeekBar? = null
+    private lateinit var seekBar: SeekBar
     private var progressChangedListener: Consumer<Float>? = null
 
     constructor(context: Context) : super(context) {
@@ -28,10 +28,10 @@ class PlaybackSpeedSeekBar : FrameLayout {
     private fun setup() {
         inflate(context, R.layout.playback_speed_seek_bar, this)
         seekBar = findViewById(R.id.playback_speed)
-        findViewById<View>(R.id.butDecSpeed).setOnClickListener { v: View? -> seekBar?.progress = (seekBar?.progress ?: 0) - 2 }
-        findViewById<View>(R.id.butIncSpeed).setOnClickListener { v: View? -> seekBar?.progress = (seekBar?.progress ?: 0) + 2 }
+        findViewById<View>(R.id.butDecSpeed).setOnClickListener { v: View? -> seekBar.progress -= 2 }
+        findViewById<View>(R.id.butIncSpeed).setOnClickListener { v: View? -> seekBar.progress += 2 }
 
-        seekBar?.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
+        seekBar.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                 val playbackSpeed = (progress + 10) / 20.0f
                 if (progressChangedListener != null) {
@@ -48,7 +48,7 @@ class PlaybackSpeedSeekBar : FrameLayout {
     }
 
     fun updateSpeed(speedMultiplier: Float) {
-        seekBar!!.progress = Math.round((20 * speedMultiplier) - 10)
+        seekBar.progress = Math.round((20 * speedMultiplier) - 10)
     }
 
     fun setProgressChangedListener(progressChangedListener: Consumer<Float>?) {
@@ -56,11 +56,11 @@ class PlaybackSpeedSeekBar : FrameLayout {
     }
 
     val currentSpeed: Float
-        get() = (seekBar!!.progress + 10) / 20.0f
+        get() = (seekBar.progress + 10) / 20.0f
 
     override fun setEnabled(enabled: Boolean) {
         super.setEnabled(enabled)
-        seekBar!!.isEnabled = enabled
+        seekBar.isEnabled = enabled
         findViewById<View>(R.id.butDecSpeed).isEnabled = enabled
         findViewById<View>(R.id.butIncSpeed).isEnabled = enabled
     }

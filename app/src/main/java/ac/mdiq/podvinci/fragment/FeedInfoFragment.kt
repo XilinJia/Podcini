@@ -62,17 +62,18 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private var feed: Feed? = null
     private var disposable: Disposable? = null
-    private var imgvCover: ImageView? = null
-    private var txtvTitle: TextView? = null
-    private var txtvDescription: TextView? = null
-    private var txtvFundingUrl: TextView? = null
-    private var lblSupport: TextView? = null
-    private var txtvUrl: TextView? = null
-    private var txtvAuthorHeader: TextView? = null
-    private var imgvBackground: ImageView? = null
-    private var infoContainer: View? = null
-    private var header: View? = null
-    private var toolbar: MaterialToolbar? = null
+    
+    private lateinit var imgvCover: ImageView
+    private lateinit var txtvTitle: TextView
+    private lateinit var txtvDescription: TextView
+    private lateinit var txtvFundingUrl: TextView
+    private lateinit var lblSupport: TextView
+    private lateinit var txtvUrl: TextView
+    private lateinit var txtvAuthorHeader: TextView
+    private lateinit var imgvBackground: ImageView
+    private lateinit var infoContainer: View
+    private lateinit var header: View
+    private lateinit var toolbar: MaterialToolbar
 
     private val copyUrlToClipboard = View.OnClickListener {
         if (feed != null && feed!!.download_url != null) {
@@ -91,28 +92,26 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     ): View {
         val root: View = inflater.inflate(R.layout.feedinfo, null)
         toolbar = root.findViewById(R.id.toolbar)
-        toolbar?.title = ""
-        toolbar?.inflateMenu(R.menu.feedinfo)
-        toolbar?.setNavigationOnClickListener { v: View? -> parentFragmentManager.popBackStack() }
-        toolbar?.setOnMenuItemClickListener(this)
+        toolbar.title = ""
+        toolbar.inflateMenu(R.menu.feedinfo)
+        toolbar.setNavigationOnClickListener { v: View? -> parentFragmentManager.popBackStack() }
+        toolbar.setOnMenuItemClickListener(this)
         refreshToolbarState()
 
         val appBar: AppBarLayout = root.findViewById(R.id.appBar)
-        val collapsingToolbar: CollapsingToolbarLayout =
-            root.findViewById(R.id.collapsing_toolbar)
-        if (toolbar != null) {
-            val iconTintManager: ToolbarIconTintManager =
-                object : ToolbarIconTintManager(requireContext(), toolbar!!, collapsingToolbar) {
-                    override fun doTint(themedContext: Context?) {
-                        toolbar!!.menu.findItem(R.id.visit_website_item)
-                            .setIcon(AppCompatResources.getDrawable(themedContext!!, R.drawable.ic_web))
-                        toolbar!!.menu.findItem(R.id.share_item)
-                            .setIcon(AppCompatResources.getDrawable(themedContext, R.drawable.ic_share))
-                    }
+        val collapsingToolbar: CollapsingToolbarLayout = root.findViewById(R.id.collapsing_toolbar)
+        val iconTintManager: ToolbarIconTintManager =
+            object : ToolbarIconTintManager(requireContext(), toolbar, collapsingToolbar) {
+                override fun doTint(themedContext: Context?) {
+                    toolbar.menu.findItem(R.id.visit_website_item)
+                        .setIcon(AppCompatResources.getDrawable(themedContext!!, R.drawable.ic_web))
+                    toolbar.menu.findItem(R.id.share_item)
+                        .setIcon(AppCompatResources.getDrawable(themedContext, R.drawable.ic_share))
                 }
-            iconTintManager.updateTint()
-            appBar.addOnOffsetChangedListener(iconTintManager)
-        }
+            }
+        iconTintManager.updateTint()
+        appBar.addOnOffsetChangedListener(iconTintManager)
+
         imgvCover = root.findViewById(R.id.imgvCover)
         txtvTitle = root.findViewById(R.id.txtvTitle)
         txtvAuthorHeader = root.findViewById(R.id.txtvAuthor)
@@ -123,14 +122,14 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         root.findViewById<View>(R.id.butShowSettings).visibility = View.INVISIBLE
         root.findViewById<View>(R.id.butFilter).visibility = View.INVISIBLE
         // https://github.com/bumptech/glide/issues/529
-        imgvBackground?.colorFilter = LightingColorFilter(-0x7d7d7e, 0x000000)
+        imgvBackground.colorFilter = LightingColorFilter(-0x7d7d7e, 0x000000)
 
         txtvDescription = root.findViewById(R.id.txtvDescription)
         txtvUrl = root.findViewById(R.id.txtvUrl)
         lblSupport = root.findViewById(R.id.lblSupport)
         txtvFundingUrl = root.findViewById(R.id.txtvFundingUrl)
 
-        txtvUrl?.setOnClickListener(copyUrlToClipboard)
+        txtvUrl.setOnClickListener(copyUrlToClipboard)
 
         val feedId = requireArguments().getLong(EXTRA_FEED_ID)
         parentFragmentManager.beginTransaction().replace(R.id.statisticsFragmentContainer,
@@ -165,13 +164,10 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        if (header == null || infoContainer == null) {
-            return
-        }
         val horizontalSpacing = resources.getDimension(R.dimen.additional_horizontal_spacing).toInt()
-        header!!.setPadding(horizontalSpacing, header!!.paddingTop, horizontalSpacing, header!!.paddingBottom)
-        infoContainer!!.setPadding(horizontalSpacing, infoContainer!!.paddingTop,
-            horizontalSpacing, infoContainer!!.paddingBottom)
+        header.setPadding(horizontalSpacing, header.paddingTop, horizontalSpacing, header.paddingBottom)
+        infoContainer.setPadding(horizontalSpacing, infoContainer.paddingTop,
+            horizontalSpacing, infoContainer.paddingBottom)
     }
 
     private fun showFeed() {
@@ -179,42 +175,42 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         Log.d(TAG, "Language is " + feed!!.language)
         Log.d(TAG, "Author is " + feed!!.author)
         Log.d(TAG, "URL is " + feed!!.download_url)
-        if (imgvCover != null) Glide.with(this)
+        Glide.with(this)
             .load(feed!!.imageUrl)
             .apply(RequestOptions()
                 .placeholder(R.color.light_gray)
                 .error(R.color.light_gray)
                 .fitCenter()
                 .dontAnimate())
-            .into(imgvCover!!)
-        if (imgvBackground != null) Glide.with(this)
+            .into(imgvCover)
+        Glide.with(this)
             .load(feed!!.imageUrl)
             .apply(RequestOptions()
                 .placeholder(R.color.image_readability_tint)
                 .error(R.color.image_readability_tint)
                 .transform(FastBlurTransformation())
                 .dontAnimate())
-            .into(imgvBackground!!)
+            .into(imgvBackground)
 
-        txtvTitle?.text = feed!!.title
-        txtvTitle?.setMaxLines(6)
+        txtvTitle.text = feed!!.title
+        txtvTitle.setMaxLines(6)
 
         val description: String = HtmlToPlainText.getPlainText(feed!!.description)?:""
 
-        txtvDescription?.text = description
+        txtvDescription.text = description
 
-        if (!TextUtils.isEmpty(feed!!.author)) {
-            txtvAuthorHeader?.text = feed!!.author
+        if (!feed!!.author.isNullOrEmpty()) {
+            txtvAuthorHeader.text = feed!!.author
         }
 
-        txtvUrl?.text = feed!!.download_url
-        txtvUrl?.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_paperclip, 0)
+        txtvUrl.text = feed!!.download_url
+        txtvUrl.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_paperclip, 0)
 
         if (feed!!.paymentLinks.isEmpty()) {
-            lblSupport?.visibility = View.GONE
-            txtvFundingUrl?.visibility = View.GONE
+            lblSupport.visibility = View.GONE
+            txtvFundingUrl.visibility = View.GONE
         } else {
-            lblSupport?.visibility = View.VISIBLE
+            lblSupport.visibility = View.VISIBLE
             val fundingList: ArrayList<FeedFunding> = feed!!.paymentLinks
 
             // Filter for duplicates, but keep items in the order that they have in the feed.
@@ -238,7 +234,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 str.append("\n")
             }
             str = StringBuilder(StringUtils.trim(str.toString()))
-            txtvFundingUrl?.text = str.toString()
+            txtvFundingUrl.text = str.toString()
         }
 
         refreshToolbarState()
@@ -250,12 +246,12 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     private fun refreshToolbarState() {
-        toolbar?.menu?.findItem(R.id.reconnect_local_folder)?.setVisible(feed != null && feed!!.isLocalFeed)
-        toolbar?.menu?.findItem(R.id.share_item)?.setVisible(feed != null && !feed!!.isLocalFeed)
-        toolbar?.menu?.findItem(R.id.visit_website_item)
+        toolbar.menu?.findItem(R.id.reconnect_local_folder)?.setVisible(feed != null && feed!!.isLocalFeed)
+        toolbar.menu?.findItem(R.id.share_item)?.setVisible(feed != null && !feed!!.isLocalFeed)
+        toolbar.menu?.findItem(R.id.visit_website_item)
             ?.setVisible(feed != null && feed!!.link != null && IntentUtils.isCallable(requireContext(),
                 Intent(Intent.ACTION_VIEW, Uri.parse(feed!!.link))))
-        toolbar?.menu?.findItem(R.id.edit_feed_url_item)?.setVisible(feed != null && !feed!!.isLocalFeed)
+        toolbar.menu?.findItem(R.id.edit_feed_url_item)?.setVisible(feed != null && !feed!!.isLocalFeed)
     }
 
     override fun onMenuItemClick(item: MenuItem): Boolean {
@@ -264,33 +260,39 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 R.string.please_wait_for_data, Toast.LENGTH_LONG)
             return false
         }
-        if (item.itemId == R.id.visit_website_item) {
-            if (feed!!.link != null) IntentUtils.openInBrowser(requireContext(), feed!!.link!!)
-        } else if (item.itemId == R.id.share_item) {
-            ShareUtils.shareFeedLink(requireContext(), feed!!)
-        } else if (item.itemId == R.id.reconnect_local_folder) {
-            val alert = MaterialAlertDialogBuilder(requireContext())
-            alert.setMessage(R.string.reconnect_local_folder_warning)
-            alert.setPositiveButton(string.ok
-            ) { dialog: DialogInterface?, which: Int ->
-                try {
-                    addLocalFolderLauncher.launch(null)
-                } catch (e: ActivityNotFoundException) {
-                    Log.e(TAG, "No activity found. Should never happen...")
-                }
+        when (item.itemId) {
+            R.id.visit_website_item -> {
+                if (feed!!.link != null) IntentUtils.openInBrowser(requireContext(), feed!!.link!!)
             }
-            alert.setNegativeButton(string.cancel, null)
-            alert.show()
-        } else if (item.itemId == R.id.edit_feed_url_item) {
-            object : EditUrlSettingsDialog(activity as Activity, feed!!) {
-                override fun setUrl(url: String?) {
-                    feed!!.download_url = url
-                    txtvUrl?.text = feed!!.download_url
-                    txtvUrl?.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_paperclip, 0)
+            R.id.share_item -> {
+                ShareUtils.shareFeedLink(requireContext(), feed!!)
+            }
+            R.id.reconnect_local_folder -> {
+                val alert = MaterialAlertDialogBuilder(requireContext())
+                alert.setMessage(R.string.reconnect_local_folder_warning)
+                alert.setPositiveButton(string.ok
+                ) { dialog: DialogInterface?, which: Int ->
+                    try {
+                        addLocalFolderLauncher.launch(null)
+                    } catch (e: ActivityNotFoundException) {
+                        Log.e(TAG, "No activity found. Should never happen...")
+                    }
                 }
-            }.show()
-        } else {
-            return false
+                alert.setNegativeButton(string.cancel, null)
+                alert.show()
+            }
+            R.id.edit_feed_url_item -> {
+                object : EditUrlSettingsDialog(activity as Activity, feed!!) {
+                    override fun setUrl(url: String?) {
+                        feed!!.download_url = url
+                        txtvUrl.text = feed!!.download_url
+                        txtvUrl.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_paperclip, 0)
+                    }
+                }.show()
+            }
+            else -> {
+                return false
+            }
         }
         return true
     }

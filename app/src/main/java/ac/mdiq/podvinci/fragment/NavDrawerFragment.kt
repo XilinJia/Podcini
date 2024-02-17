@@ -42,6 +42,8 @@ import ac.mdiq.podvinci.storage.preferences.UserPreferences
 import ac.mdiq.podvinci.ui.appstartintent.MainActivityStarter
 import ac.mdiq.podvinci.ui.common.ThemeUtils
 import ac.mdiq.podvinci.ui.home.HomeFragment
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -56,9 +58,11 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
     private var navDrawerData: NavDrawerData? = null
     private var flatItemList: List<NavDrawerData.DrawerItem>? = null
     private var contextPressedItem: NavDrawerData.DrawerItem? = null
-    private var navAdapter: NavListAdapter? = null
     private var disposable: Disposable? = null
-    private var progressBar: ProgressBar? = null
+
+    private lateinit var navAdapter: NavListAdapter
+    private lateinit var progressBar: ProgressBar
+    
     private var openFolders: MutableSet<String> = HashSet()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -83,12 +87,13 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
         }
 
         val preferences: SharedPreferences = requireContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+//        TODO: what is this?
         openFolders = HashSet(preferences.getStringSet(PREF_OPEN_FOLDERS, HashSet<String>())) // Must not modify
 
         progressBar = root.findViewById(R.id.progressBar)
         val navList = root.findViewById<RecyclerView>(R.id.nav_list)
         navAdapter = NavListAdapter(itemAccess, requireActivity())
-        navAdapter?.setHasStableIds(true)
+        navAdapter.setHasStableIds(true)
         navList.adapter = navAdapter
         navList.layoutManager = LinearLayoutManager(context)
 
@@ -161,14 +166,14 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
         }
     }
 
-    private fun onFeedContextMenuClicked(feed: Feed, item: MenuItem): Boolean {
+    @OptIn(UnstableApi::class) private fun onFeedContextMenuClicked(feed: Feed, item: MenuItem): Boolean {
         val itemId = item.itemId
         when (itemId) {
             R.id.remove_all_inbox_item -> {
                 val removeAllNewFlagsConfirmationDialog: ConfirmationDialog = object : ConfirmationDialog(requireContext(),
                     R.string.remove_all_inbox_label,
                     R.string.remove_all_inbox_confirmation_msg) {
-                    override fun onConfirmButtonPressed(dialog: DialogInterface) {
+                    @OptIn(UnstableApi::class) override fun onConfirmButtonPressed(dialog: DialogInterface) {
                         dialog.dismiss()
                         DBWriter.removeFeedNewFlag(feed.id)
                     }
@@ -253,12 +258,12 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
 
         override fun isSelected(position: Int): Boolean {
             val lastNavFragment = getLastNavFragment(context)
-            if (position < navAdapter!!.subscriptionOffset) {
-                return navAdapter!!.getFragmentTags()[position] == lastNavFragment
+            if (position < navAdapter.subscriptionOffset) {
+                return navAdapter.getFragmentTags()[position] == lastNavFragment
             } else if (StringUtils.isNumeric(lastNavFragment)) { // last fragment was not a list, but a feed
                 val feedId = lastNavFragment.toLong()
                 if (navDrawerData != null) {
-                    val itemToCheck: NavDrawerData.DrawerItem = flatItemList!![position - navAdapter!!.subscriptionOffset]
+                    val itemToCheck: NavDrawerData.DrawerItem = flatItemList!![position - navAdapter.subscriptionOffset]
                     if (itemToCheck.type == NavDrawerData.DrawerItem.Type.FEED) {
                         // When the same feed is displayed multiple times, it should be highlighted multiple times.
                         return (itemToCheck as NavDrawerData.FeedDrawerItem).feed.id == feedId
@@ -292,15 +297,15 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
                 return sum
             }
 
-        override fun onItemClick(position: Int) {
-            val viewType: Int = navAdapter!!.getItemViewType(position)
+        @OptIn(UnstableApi::class) override fun onItemClick(position: Int) {
+            val viewType: Int = navAdapter.getItemViewType(position)
             if (viewType != NavListAdapter.VIEW_TYPE_SECTION_DIVIDER) {
-                if (position < navAdapter!!.subscriptionOffset) {
-                    val tag: String = navAdapter!!.getFragmentTags()[position] ?:""
+                if (position < navAdapter.subscriptionOffset) {
+                    val tag: String = navAdapter.getFragmentTags()[position] ?:""
                     (activity as MainActivity).loadFragment(tag, null)
                     (activity as MainActivity).bottomSheet?.setState(BottomSheetBehavior.STATE_COLLAPSED)
                 } else {
-                    val pos: Int = position - navAdapter!!.subscriptionOffset
+                    val pos: Int = position - navAdapter.subscriptionOffset
                     val clickedItem: NavDrawerData.DrawerItem = flatItemList!![pos]
 
                     if (clickedItem.type == NavDrawerData.DrawerItem.Type.FEED) {
@@ -327,20 +332,20 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
                                 .subscribe(
                                     { result: List<NavDrawerData.DrawerItem>? ->
                                         flatItemList = result
-                                        navAdapter?.notifyDataSetChanged()
+                                        navAdapter.notifyDataSetChanged()
                                     }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
                     }
                 }
             } else if (UserPreferences.subscriptionsFilter.isEnabled
-                    && navAdapter!!.showSubscriptionList) {
+                    && navAdapter.showSubscriptionList) {
                 SubscriptionsFilterDialog().show(childFragmentManager, "filter")
             }
         }
 
         override fun onItemLongClick(position: Int): Boolean {
-            if (position < navAdapter!!.getFragmentTags().size) {
+            if (position < navAdapter.getFragmentTags().size) {
                 DrawerPreferencesDialog.show(context!!) {
-                    navAdapter?.notifyDataSetChanged()
+                    navAdapter.notifyDataSetChanged()
                     if (UserPreferences.hiddenDrawerItems != null && UserPreferences.hiddenDrawerItems!!.contains(
                                 getLastNavFragment(context))) {
                         MainActivityStarter(context!!)
@@ -351,7 +356,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
                 }
                 return true
             } else {
-                contextPressedItem = flatItemList!![position - navAdapter!!.subscriptionOffset]
+                contextPressedItem = flatItemList!![position - navAdapter.subscriptionOffset]
                 return false
             }
         }
@@ -372,11 +377,11 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
                 { result: Pair<NavDrawerData, List<NavDrawerData.DrawerItem>> ->
                     navDrawerData = result.first
                     flatItemList = result.second
-                    navAdapter?.notifyDataSetChanged()
-                    progressBar?.visibility = View.GONE // Stays hidden once there is something in the list
+                    navAdapter.notifyDataSetChanged()
+                    progressBar.visibility = View.GONE // Stays hidden once there is something in the list
                 }, { error: Throwable? ->
                     Log.e(TAG, Log.getStackTraceString(error))
-                    progressBar?.visibility = View.GONE
+                    progressBar.visibility = View.GONE
                 })
     }
 
@@ -398,7 +403,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String?) {
         if (PREF_LAST_FRAGMENT_TAG == key) {
-            navAdapter?.notifyDataSetChanged() // Update selection
+            navAdapter.notifyDataSetChanged() // Update selection
         }
     }
 
@@ -414,6 +419,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
         const val TAG: String = "NavDrawerFragment"
 
         @JvmField
+        @UnstableApi
         val NAV_DRAWER_TAGS: Array<String> = arrayOf(HomeFragment.TAG,
             QueueFragment.TAG,
             InboxFragment.TAG,

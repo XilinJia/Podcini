@@ -13,28 +13,30 @@ import ac.mdiq.podvinci.core.storage.DBReader
 import ac.mdiq.podvinci.databinding.HomeSectionEchoBinding
 import ac.mdiq.podvinci.ui.echo.EchoActivity
 import ac.mdiq.podvinci.ui.home.HomeFragment
+import androidx.media3.common.util.UnstableApi
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import java.util.*
 
+@UnstableApi
 class EchoSection : Fragment() {
-    private var viewBinding: HomeSectionEchoBinding? = null
+    private lateinit var viewBinding: HomeSectionEchoBinding
     private var disposable: Disposable? = null
 
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         viewBinding = HomeSectionEchoBinding.inflate(inflater)
-        viewBinding!!.titleLabel.text = getString(R.string.podvinci_echo_year, EchoActivity.RELEASE_YEAR)
-        viewBinding!!.echoButton.setOnClickListener { v: View? ->
+        viewBinding.titleLabel.text = getString(R.string.podvinci_echo_year, EchoActivity.RELEASE_YEAR)
+        viewBinding.echoButton.setOnClickListener { v: View? ->
             startActivity(Intent(context,
                 EchoActivity::class.java))
         }
-        viewBinding!!.closeButton.setOnClickListener { v: View? -> hideThisYear() }
+        viewBinding.closeButton.setOnClickListener { v: View? -> hideThisYear() }
         updateVisibility()
-        return viewBinding!!.root
+        return viewBinding.root
     }
 
     private fun jan1(): Long {
@@ -64,10 +66,9 @@ class EchoSection : Fragment() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ totalTime: Long ->
                 val shouldShow = (totalTime >= 3600 * 10)
-                viewBinding!!.root.visibility = if (shouldShow) View.VISIBLE else View.GONE
-                if (!shouldShow) {
-                    hideThisYear()
-                }
+                viewBinding.root.visibility = if (shouldShow) View.VISIBLE else View.GONE
+                if (!shouldShow) hideThisYear()
+
             }, { obj: Throwable -> obj.printStackTrace() })
     }
 

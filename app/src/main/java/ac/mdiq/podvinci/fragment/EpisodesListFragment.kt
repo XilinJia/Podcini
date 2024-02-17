@@ -56,23 +56,20 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
     protected var hasMoreItems: Boolean = false
     private var displayUpArrow = false
 
-    var recyclerView: EpisodeItemListRecyclerView? = null
-    var listAdapter: EpisodeItemListAdapter? = null
-    @JvmField
-    var emptyView: EmptyViewHandler? = null
-    @JvmField
-    var speedDialView: SpeedDialView? = null
-    @JvmField
-    var toolbar: MaterialToolbar? = null
-    var swipeRefreshLayout: SwipeRefreshLayout? = null
-    var swipeActions: SwipeActions? = null
-    private var progressBar: ProgressBar? = null
+    lateinit var recyclerView: EpisodeItemListRecyclerView
+    lateinit var emptyView: EmptyViewHandler
+    lateinit var speedDialView: SpeedDialView
+    lateinit var toolbar: MaterialToolbar
+    lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    lateinit var swipeActions: SwipeActions
+    private lateinit var progressBar: ProgressBar
+    lateinit var listAdapter: EpisodeItemListAdapter
 
     @JvmField
     var episodes: MutableList<FeedItem> = ArrayList()
 
     protected var disposable: Disposable? = null
-    protected var txtvInformation: TextView? = null
+    protected lateinit var txtvInformation: TextView
 
     override fun onStart() {
         super.onStart()
@@ -82,24 +79,22 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
 
     override fun onResume() {
         super.onResume()
-        if (recyclerView != null) registerForContextMenu(recyclerView!!)
+        registerForContextMenu(recyclerView)
     }
 
     override fun onPause() {
         super.onPause()
-        if (getPrefName() != null) recyclerView?.saveScrollPosition(getPrefName())
-        if (recyclerView != null) unregisterForContextMenu(recyclerView!!)
+        recyclerView.saveScrollPosition(getPrefName())
+        unregisterForContextMenu(recyclerView)
     }
 
     override fun onStop() {
         super.onStop()
         EventBus.getDefault().unregister(this)
-        if (disposable != null) {
-            disposable?.dispose()
-        }
+        disposable?.dispose()
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    @UnstableApi override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (super.onOptionsItemSelected(item)) {
             return true
         }
@@ -116,17 +111,17 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
         Log.d(TAG, "onContextItemSelected() called with: item = [$item]")
-        if (listAdapter == null || !userVisibleHint || !isVisible || !isMenuVisible) {
+        if (!userVisibleHint || !isVisible || !isMenuVisible) {
             // The method is called on all fragments in a ViewPager, so this needs to be ignored in invisible ones.
             // Apparently, none of the visibility check method works reliably on its own, so we just use all.
             return false
-        } else if (listAdapter?.longPressedItem == null) {
+        } else if (listAdapter.longPressedItem == null) {
             Log.i(TAG, "Selected item or listAdapter was null, ignoring selection")
             return super.onContextItemSelected(item)
-        } else if (listAdapter != null && listAdapter!!.onContextItemSelected(item)) {
+        } else if (listAdapter.onContextItemSelected(item)) {
             return true
         }
-        val selectedItem: FeedItem = listAdapter!!.longPressedItem ?: return false
+        val selectedItem: FeedItem = listAdapter.longPressedItem ?: return false
         return FeedItemMenuHandler.onMenuItemClicked(this, item.itemId, selectedItem)
     }
 
@@ -135,36 +130,34 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
         val root: View = inflater.inflate(R.layout.episodes_list_fragment, container, false)
         txtvInformation = root.findViewById(R.id.txtvInformation)
         toolbar = root.findViewById(R.id.toolbar)
-        toolbar?.setOnMenuItemClickListener(this)
-        toolbar?.setOnLongClickListener { v: View? ->
-            recyclerView?.scrollToPosition(5)
-            recyclerView?.post { recyclerView?.smoothScrollToPosition(0) }
+        toolbar.setOnMenuItemClickListener(this)
+        toolbar.setOnLongClickListener { v: View? ->
+            recyclerView.scrollToPosition(5)
+            recyclerView.post { recyclerView.smoothScrollToPosition(0) }
             false
         }
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) {
             displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
         }
-        if (toolbar != null) (activity as MainActivity).setupToolbarToggle(toolbar!!, displayUpArrow)
+        (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
 
         recyclerView = root.findViewById(R.id.recyclerView)
-        recyclerView?.setRecycledViewPool((activity as MainActivity).recycledViewPool)
+        recyclerView.setRecycledViewPool((activity as MainActivity).recycledViewPool)
         setupLoadMoreScrollListener()
-        recyclerView?.addOnScrollListener(LiftOnScrollListener(root.findViewById(R.id.appbar)))
+        recyclerView.addOnScrollListener(LiftOnScrollListener(root.findViewById(R.id.appbar)))
 
         swipeActions = SwipeActions(this, getFragmentTag()).attachTo(recyclerView)
-        swipeActions?.setFilter(getFilter())
-
-        if (recyclerView != null) {
-            val animator: RecyclerView.ItemAnimator? = recyclerView!!.itemAnimator
-            if (animator is SimpleItemAnimator) {
-                animator.supportsChangeAnimations = false
-            }
+        swipeActions.setFilter(getFilter())
+        
+        val animator: RecyclerView.ItemAnimator? = recyclerView.itemAnimator
+        if (animator is SimpleItemAnimator) {
+            animator.supportsChangeAnimations = false
         }
 
         swipeRefreshLayout = root.findViewById(R.id.swipeRefresh)
-        swipeRefreshLayout?.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
-        swipeRefreshLayout?.setOnRefreshListener {
+        swipeRefreshLayout.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
+        swipeRefreshLayout.setOnRefreshListener {
             FeedUpdateManager.runOnceOrAsk(requireContext())
         }
 
@@ -180,38 +173,38 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
                 }
             }
         }
-        listAdapter?.setOnSelectModeListener(this)
-        recyclerView?.adapter = listAdapter
+        listAdapter.setOnSelectModeListener(this)
+        recyclerView.adapter = listAdapter
         progressBar = root.findViewById(R.id.progressBar)
-        progressBar?.visibility = View.VISIBLE
+        progressBar.visibility = View.VISIBLE
 
         emptyView = EmptyViewHandler(context)
-        if (recyclerView != null) emptyView?.attachToRecyclerView(recyclerView!!)
-        emptyView?.setIcon(R.drawable.ic_feed)
-        emptyView?.setTitle(R.string.no_all_episodes_head_label)
-        emptyView?.setMessage(R.string.no_all_episodes_label)
-        emptyView?.updateAdapter(listAdapter)
-        emptyView?.hide()
+        emptyView.attachToRecyclerView(recyclerView)
+        emptyView.setIcon(R.drawable.ic_feed)
+        emptyView.setTitle(R.string.no_all_episodes_head_label)
+        emptyView.setMessage(R.string.no_all_episodes_label)
+        emptyView.updateAdapter(listAdapter)
+        emptyView.hide()
 
         speedDialView = root.findViewById(R.id.fabSD)
-        speedDialView?.overlayLayout = root.findViewById(R.id.fabSDOverlay)
-        speedDialView?.inflate(R.menu.episodes_apply_action_speeddial)
-        speedDialView?.setOnChangeListener(object : SpeedDialView.OnChangeListener {
+        speedDialView.overlayLayout = root.findViewById(R.id.fabSDOverlay)
+        speedDialView.inflate(R.menu.episodes_apply_action_speeddial)
+        speedDialView.setOnChangeListener(object : SpeedDialView.OnChangeListener {
             override fun onMainActionSelected(): Boolean {
                 return false
             }
 
             override fun onToggleChanged(open: Boolean) {
-                if (open && listAdapter != null && listAdapter!!.selectedCount == 0) {
+                if (open && listAdapter.selectedCount == 0) {
                     (activity as MainActivity).showSnackbarAbovePlayer(R.string.no_items_selected,
                         Snackbar.LENGTH_SHORT)
-                    speedDialView?.close()
+                    speedDialView.close()
                 }
             }
         })
-        speedDialView?.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
+        speedDialView.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
             var confirmationString = 0
-            if (listAdapter != null && (listAdapter!!.selectedItems.size >= 25 || listAdapter!!.shouldSelectLazyLoadedItems())) {
+            if (listAdapter.selectedItems.size >= 25 || listAdapter.shouldSelectLazyLoadedItems()) {
                 // Should ask for confirmation
                 if (actionItem.id == R.id.mark_read_batch) {
                     confirmationString = R.string.multi_select_mark_played_confirmation
@@ -234,34 +227,32 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
         return root
     }
 
-    private fun performMultiSelectAction(actionItemId: Int) {
+    @UnstableApi private fun performMultiSelectAction(actionItemId: Int) {
         val handler =
             EpisodeMultiSelectActionHandler((activity as MainActivity), actionItemId)
         Completable.fromAction {
-            if (listAdapter != null) {
-                handler.handleAction(listAdapter!!.selectedItems.filterIsInstance<FeedItem>())
-                if (listAdapter!!.shouldSelectLazyLoadedItems()) {
-                    var applyPage = page + 1
-                    var nextPage: List<FeedItem>
-                    do {
-                        nextPage = loadMoreData(applyPage)
-                        handler.handleAction(nextPage)
-                        applyPage++
-                    } while (nextPage.size == EPISODES_PER_PAGE)
-                }
+            handler.handleAction(listAdapter.selectedItems.filterIsInstance<FeedItem>())
+            if (listAdapter.shouldSelectLazyLoadedItems()) {
+                var applyPage = page + 1
+                var nextPage: List<FeedItem>
+                do {
+                    nextPage = loadMoreData(applyPage)
+                    handler.handleAction(nextPage)
+                    applyPage++
+                } while (nextPage.size == EPISODES_PER_PAGE)
             }
         }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ listAdapter?.endSelectMode() },
+            .subscribe({ listAdapter.endSelectMode() },
                 { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
     }
 
     private fun setupLoadMoreScrollListener() {
-        recyclerView?.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(view: RecyclerView, deltaX: Int, deltaY: Int) {
                 super.onScrolled(view, deltaX, deltaY)
-                if (!isLoadingMore && hasMoreItems && recyclerView!!.isScrolledToBottom) {
+                if (!isLoadingMore && hasMoreItems && recyclerView.isScrolledToBottom) {
                     /* The end of the list has been reached. Load more data. */
                     page++
                     loadMoreItems()
@@ -272,12 +263,11 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
     }
 
     private fun loadMoreItems() {
-        if (disposable != null) {
-            disposable?.dispose()
-        }
+        disposable?.dispose()
+
         isLoadingMore = true
-        listAdapter?.setDummyViews(1)
-        listAdapter?.notifyItemInserted(listAdapter!!.itemCount - 1)
+        listAdapter.setDummyViews(1)
+        listAdapter.notifyItemInserted(listAdapter.itemCount - 1)
         disposable = Observable.fromCallable { loadMoreData(page) }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -287,33 +277,33 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
                         hasMoreItems = false
                     }
                     episodes.addAll(data)
-                    listAdapter?.setDummyViews(0)
-                    listAdapter?.updateItems(episodes)
-                    if (listAdapter != null && listAdapter!!.shouldSelectLazyLoadedItems()) {
-                        listAdapter!!.setSelected(episodes.size - data.size, episodes.size, true)
+                    listAdapter.setDummyViews(0)
+                    listAdapter.updateItems(episodes)
+                    if (listAdapter.shouldSelectLazyLoadedItems()) {
+                        listAdapter.setSelected(episodes.size - data.size, episodes.size, true)
                     }
                 }, { error: Throwable? ->
-                    listAdapter?.setDummyViews(0)
-                    listAdapter?.updateItems(emptyList())
+                    listAdapter.setDummyViews(0)
+                    listAdapter.updateItems(emptyList())
                     Log.e(TAG, Log.getStackTraceString(error))
                 }, {
                     // Make sure to not always load 2 pages at once
-                    recyclerView?.post { isLoadingMore = false }
+                    recyclerView.post { isLoadingMore = false }
                 })
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        listAdapter?.endSelectMode()
+        listAdapter.endSelectMode()
     }
 
     override fun onStartSelectMode() {
-        speedDialView?.visibility = View.VISIBLE
+        speedDialView.visibility = View.VISIBLE
     }
 
     override fun onEndSelectMode() {
-        speedDialView?.close()
-        speedDialView?.visibility = View.GONE
+        speedDialView.close()
+        speedDialView.visibility = View.GONE
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -325,9 +315,9 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
                 episodes.removeAt(pos)
                 if (getFilter().matches(item)) {
                     episodes.add(pos, item)
-                    listAdapter?.notifyItemChangedCompat(pos)
+                    listAdapter.notifyItemChangedCompat(pos)
                 } else {
-                    listAdapter?.notifyItemRemoved(pos)
+                    listAdapter.notifyItemRemoved(pos)
                 }
             }
         }
@@ -335,11 +325,9 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: PlaybackPositionEvent) {
-        if (listAdapter == null) return
-        for (i in 0 until listAdapter!!.itemCount) {
-            val holder: EpisodeItemViewHolder =
-                recyclerView?.findViewHolderForAdapterPosition(i) as EpisodeItemViewHolder
-            if (holder != null && holder.isCurrentlyPlayingItem) {
+        for (i in 0 until listAdapter.itemCount) {
+            val holder: EpisodeItemViewHolder = recyclerView.findViewHolderForAdapterPosition(i) as EpisodeItemViewHolder
+            if (holder.isCurrentlyPlayingItem) {
                 holder.notifyPlaybackPositionUpdated(event)
                 break
             }
@@ -352,8 +340,8 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
             return
         }
         when (event.keyCode) {
-            KeyEvent.KEYCODE_T -> recyclerView?.smoothScrollToPosition(0)
-            KeyEvent.KEYCODE_B -> recyclerView?.smoothScrollToPosition(listAdapter?.itemCount ?: (0 - 1))
+            KeyEvent.KEYCODE_T -> recyclerView.smoothScrollToPosition(0)
+            KeyEvent.KEYCODE_B -> recyclerView.smoothScrollToPosition(listAdapter.itemCount)
             else -> {}
         }
     }
@@ -363,7 +351,7 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
         for (downloadUrl in event.urls) {
             val pos: Int = FeedItemUtil.indexOfItemWithDownloadUrl(episodes, downloadUrl)
             if (pos >= 0) {
-                listAdapter?.notifyItemChangedCompat(pos)
+                listAdapter.notifyItemChangedCompat(pos)
             }
         }
     }
@@ -397,17 +385,17 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
                     val restoreScrollPosition = episodes.isEmpty()
                     episodes = data.first
                     hasMoreItems = !(page == 1 && episodes.size < EPISODES_PER_PAGE)
-                    progressBar?.visibility = View.GONE
-                    listAdapter?.setDummyViews(0)
-                    listAdapter?.updateItems(episodes)
-                    listAdapter?.setTotalNumberOfItems(data.second)
-                    if (restoreScrollPosition && getPrefName() != null) {
-                        recyclerView?.restoreScrollPosition(getPrefName())
+                    progressBar.visibility = View.GONE
+                    listAdapter.setDummyViews(0)
+                    listAdapter.updateItems(episodes)
+                    listAdapter.setTotalNumberOfItems(data.second)
+                    if (restoreScrollPosition) {
+                        recyclerView.restoreScrollPosition(getPrefName())
                     }
                     updateToolbar()
                 }, { error: Throwable? ->
-                    listAdapter?.setDummyViews(0)
-                    listAdapter?.updateItems(emptyList())
+                    listAdapter.setDummyViews(0)
+                    listAdapter.updateItems(emptyList())
                     Log.e(TAG, Log.getStackTraceString(error))
                 })
     }
@@ -429,7 +417,7 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: FeedUpdateRunningEvent) {
-        swipeRefreshLayout?.isRefreshing = event.isFeedUpdateRunning
+        swipeRefreshLayout.isRefreshing = event.isFeedUpdateRunning
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

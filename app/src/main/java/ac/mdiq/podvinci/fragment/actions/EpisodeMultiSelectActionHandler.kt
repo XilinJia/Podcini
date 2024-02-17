@@ -10,7 +10,9 @@ import ac.mdiq.podvinci.core.util.LongList
 import ac.mdiq.podvinci.model.feed.FeedItem
 import ac.mdiq.podvinci.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podvinci.view.LocalDeleteModal
+import androidx.media3.common.util.UnstableApi
 
+@UnstableApi
 class EpisodeMultiSelectActionHandler(private val activity: MainActivity, private val actionId: Int) {
     private var totalNumItems = 0
     private var snackbar: Snackbar? = null

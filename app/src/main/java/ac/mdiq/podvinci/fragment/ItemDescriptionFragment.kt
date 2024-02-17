@@ -27,7 +27,7 @@ import io.reactivex.schedulers.Schedulers
  */
 @UnstableApi
 class ItemDescriptionFragment : Fragment() {
-    private var webvDescription: ShownotesWebView? = null
+    private lateinit var webvDescription: ShownotesWebView
     private var webViewLoader: Disposable? = null
     private var controller: PlaybackController? = null
 
@@ -35,41 +35,39 @@ class ItemDescriptionFragment : Fragment() {
         Log.d(TAG, "Creating view")
         val root = inflater.inflate(R.layout.item_description_fragment, container, false)
         webvDescription = root.findViewById(R.id.webview)
-        webvDescription?.setTimecodeSelectedListener { time: Int? ->
+        webvDescription.setTimecodeSelectedListener { time: Int? ->
             if (controller != null) {
                 controller!!.seekTo(time!!)
             }
         }
-        webvDescription?.setPageFinishedListener {
+        webvDescription.setPageFinishedListener {
             // Restoring the scroll position might not always work
-            webvDescription!!.postDelayed({ this@ItemDescriptionFragment.restoreFromPreference() }, 50)
+            webvDescription.postDelayed({ this@ItemDescriptionFragment.restoreFromPreference() }, 50)
         }
 
         root.addOnLayoutChangeListener(object : OnLayoutChangeListener {
             override fun onLayoutChange(v: View, left: Int, top: Int, right: Int,
                                         bottom: Int, oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int
             ) {
-                if (root.measuredHeight != webvDescription?.minimumHeight) {
-                    webvDescription?.setMinimumHeight(root.measuredHeight)
+                if (root.measuredHeight != webvDescription.minimumHeight) {
+                    webvDescription.setMinimumHeight(root.measuredHeight)
                 }
                 root.removeOnLayoutChangeListener(this)
             }
         })
-        if (webvDescription != null) registerForContextMenu(webvDescription!!)
+        registerForContextMenu(webvDescription)
         return root
     }
 
     override fun onDestroy() {
         super.onDestroy()
         Log.d(TAG, "Fragment destroyed")
-        if (webvDescription != null) {
-            webvDescription!!.removeAllViews()
-            webvDescription!!.destroy()
-        }
+        webvDescription.removeAllViews()
+        webvDescription.destroy()
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
-        return webvDescription!!.onContextItemSelected(item)
+        return webvDescription.onContextItemSelected(item)
     }
 
     @UnstableApi private fun load() {
@@ -85,11 +83,10 @@ class ItemDescriptionFragment : Fragment() {
                 return@create
             }
             if (media is FeedMedia) {
-                val feedMedia = media
-                if (feedMedia.getItem() == null) {
-                    feedMedia.setItem(DBReader.getFeedItem(feedMedia.itemId))
+                if (media.getItem() == null) {
+                    media.setItem(DBReader.getFeedItem(media.itemId))
                 }
-                if (feedMedia.getItem() != null) DBReader.loadDescriptionOfFeedItem(feedMedia.getItem()!!)
+                if (media.getItem() != null) DBReader.loadDescriptionOfFeedItem(media.getItem()!!)
             }
             val shownotesCleaner = ShownotesCleaner(context, media.getDescription()?:"", media.getDuration())
             emitter.onSuccess(shownotesCleaner.processShownotes())
@@ -97,7 +94,7 @@ class ItemDescriptionFragment : Fragment() {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ data: String? ->
-                webvDescription!!.loadDataWithBaseURL("https://127.0.0.1", data!!, "text/html",
+                webvDescription.loadDataWithBaseURL("https://127.0.0.1", data!!, "text/html",
                     "utf-8", "about:blank")
                 Log.d(TAG, "Webview loaded")
             }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
@@ -112,9 +109,9 @@ class ItemDescriptionFragment : Fragment() {
         Log.d(TAG, "Saving preferences")
         val prefs = requireActivity().getSharedPreferences(PREF, Activity.MODE_PRIVATE)
         val editor = prefs.edit()
-        if (controller != null && controller!!.getMedia() != null && webvDescription != null) {
-            Log.d(TAG, "Saving scroll position: " + webvDescription!!.scrollY)
-            editor.putInt(PREF_SCROLL_Y, webvDescription!!.scrollY)
+        if (controller?.getMedia() != null) {
+            Log.d(TAG, "Saving scroll position: " + webvDescription.scrollY)
+            editor.putInt(PREF_SCROLL_Y, webvDescription.scrollY)
             editor.putString(PREF_PLAYABLE_ID, controller!!.getMedia()!!.getIdentifier()
                 .toString())
         } else {
@@ -132,9 +129,9 @@ class ItemDescriptionFragment : Fragment() {
             val prefs = activity.getSharedPreferences(PREF, Activity.MODE_PRIVATE)
             val id = prefs.getString(PREF_PLAYABLE_ID, "")
             val scrollY = prefs.getInt(PREF_SCROLL_Y, -1)
-            if (controller != null && scrollY != -1 && controller!!.getMedia() != null && id == controller!!.getMedia()!!.getIdentifier().toString() && webvDescription != null) {
+            if (controller != null && scrollY != -1 && controller!!.getMedia() != null && id == controller!!.getMedia()!!.getIdentifier().toString()) {
                 Log.d(TAG, "Restored scroll Position: $scrollY")
-                webvDescription!!.scrollTo(webvDescription!!.scrollX, scrollY)
+                webvDescription.scrollTo(webvDescription.scrollX, scrollY)
                 return true
             }
         }
@@ -142,7 +139,7 @@ class ItemDescriptionFragment : Fragment() {
     }
 
     fun scrollToTop() {
-        webvDescription!!.scrollTo(0, 0)
+        webvDescription.scrollTo(0, 0)
         savePreference()
     }
 

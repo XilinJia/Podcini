@@ -66,6 +66,9 @@ import org.greenrobot.eventbus.ThreadMode
  */
 @UnstableApi
 class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
+
+    private lateinit var viewBinding: VideoplayerActivityBinding
+
     /**
      * True if video controls are currently visible.
      */
@@ -74,7 +77,6 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
     private var destroyingDueToReload = false
     private var lastScreenTap: Long = 0
     private val videoControlsHider = Handler(Looper.getMainLooper())
-    private var viewBinding: VideoplayerActivityBinding? = null
     private var controller: PlaybackController? = null
     private var showTimeLeft = false
     private var isFavorite = false
@@ -94,10 +96,10 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
 
         window.setFormat(PixelFormat.TRANSPARENT)
         viewBinding = VideoplayerActivityBinding.inflate(LayoutInflater.from(this))
-        setContentView(viewBinding!!.root)
+        setContentView(viewBinding.root)
         setupView()
-        supportActionBar!!.setBackgroundDrawable(ColorDrawable(-0x80000000))
-        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setBackgroundDrawable(ColorDrawable(-0x80000000))
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 
     @UnstableApi
@@ -116,20 +118,17 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
 
     @UnstableApi
     override fun onStop() {
-        if (controller != null) {
-            controller!!.release()
-            controller = null // prevent leak
-        }
-        if (disposable != null) {
-            disposable!!.dispose()
-        }
+        controller?.release()
+        controller = null // prevent leak
+        disposable?.dispose()
+
         EventBus.getDefault().unregister(this)
         super.onStop()
         if (!PictureInPictureUtil.isInPictureInPictureMode(this)) {
             videoControlsHider.removeCallbacks(hideVideoControls)
         }
         // Controller released; we will not receive buffering updates
-        viewBinding!!.progressBar.visibility = View.GONE
+        viewBinding.progressBar.visibility = View.GONE
     }
 
     public override fun onUserLeaveHint() {
@@ -172,7 +171,7 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
     private fun newPlaybackController(): PlaybackController {
         return object : PlaybackController(this@VideoplayerActivity) {
             override fun updatePlayButtonShowsPlay(showPlay: Boolean) {
-                viewBinding!!.playButton.setIsShowPlay(showPlay)
+                viewBinding.playButton.setIsShowPlay(showPlay)
                 if (showPlay) {
                     window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 } else {
@@ -180,7 +179,7 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
                     setupVideoAspectRatio()
                     if (videoSurfaceCreated && controller != null) {
                         Log.d(TAG, "Videosurface already created, setting videosurface now")
-                        controller!!.setVideoSurface(viewBinding!!.videoView.holder)
+                        controller!!.setVideoSurface(viewBinding.videoView.holder)
                     }
                 }
             }
@@ -199,11 +198,11 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
     @Suppress("unused")
     fun bufferUpdate(event: BufferUpdateEvent) {
         if (event.hasStarted()) {
-            viewBinding!!.progressBar.visibility = View.VISIBLE
+            viewBinding.progressBar.visibility = View.VISIBLE
         } else if (event.hasEnded()) {
-            viewBinding!!.progressBar.visibility = View.INVISIBLE
+            viewBinding.progressBar.visibility = View.INVISIBLE
         } else {
-            viewBinding!!.sbPosition.secondaryProgress = (event.progress * viewBinding!!.sbPosition.max).toInt()
+            viewBinding.sbPosition.secondaryProgress = (event.progress * viewBinding.sbPosition.max).toInt()
         }
     }
 
@@ -216,9 +215,9 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
     }
 
     @UnstableApi
-    protected fun loadMediaInfo() {
+    private fun loadMediaInfo() {
         Log.d(TAG, "loadMediaInfo()")
-        if (controller == null || controller!!.getMedia() == null) {
+        if (controller?.getMedia() == null) {
             return
         }
         if (controller!!.status == PlayerStatus.PLAYING && !controller!!.isPlayingVideoLocally) {
@@ -239,12 +238,12 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
     }
 
     @UnstableApi
-    protected fun setupView() {
+    private fun setupView() {
         showTimeLeft = shouldShowRemainingTime()
         Log.d("timeleft", if (showTimeLeft) "true" else "false")
-        viewBinding!!.durationLabel.setOnClickListener { v: View? ->
+        viewBinding.durationLabel.setOnClickListener { v: View? ->
             showTimeLeft = !showTimeLeft
-            val media = controller!!.getMedia() ?: return@setOnClickListener
+            val media = controller?.getMedia() ?: return@setOnClickListener
 
             val converter = TimeSpeedConverter(controller!!.currentPlaybackSpeedMultiplier)
             val length: String
@@ -255,48 +254,48 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
                 val duration = converter.convert(media.getDuration())
                 length = getDurationStringLong(duration)
             }
-            viewBinding!!.durationLabel.text = length
+            viewBinding.durationLabel.text = length
 
             setShowRemainTimeSetting(showTimeLeft)
             Log.d("timeleft on click", if (showTimeLeft) "true" else "false")
         }
 
-        viewBinding!!.sbPosition.setOnSeekBarChangeListener(this)
-        viewBinding!!.rewindButton.setOnClickListener { v: View? -> onRewind() }
-        viewBinding!!.rewindButton.setOnLongClickListener { v: View? ->
+        viewBinding.sbPosition.setOnSeekBarChangeListener(this)
+        viewBinding.rewindButton.setOnClickListener { v: View? -> onRewind() }
+        viewBinding.rewindButton.setOnLongClickListener { v: View? ->
             SkipPreferenceDialog.showSkipPreference(this@VideoplayerActivity,
                 SkipPreferenceDialog.SkipDirection.SKIP_REWIND, null)
             true
         }
-        viewBinding!!.playButton.setIsVideoScreen(true)
-        viewBinding!!.playButton.setOnClickListener { v: View? -> onPlayPause() }
-        viewBinding!!.fastForwardButton.setOnClickListener { v: View? -> onFastForward() }
-        viewBinding!!.fastForwardButton.setOnLongClickListener { v: View? ->
+        viewBinding.playButton.setIsVideoScreen(true)
+        viewBinding.playButton.setOnClickListener { v: View? -> onPlayPause() }
+        viewBinding.fastForwardButton.setOnClickListener { v: View? -> onFastForward() }
+        viewBinding.fastForwardButton.setOnLongClickListener { v: View? ->
             SkipPreferenceDialog.showSkipPreference(this@VideoplayerActivity,
                 SkipPreferenceDialog.SkipDirection.SKIP_FORWARD, null)
             false
         }
         // To suppress touches directly below the slider
-        viewBinding!!.bottomControlsContainer.setOnTouchListener { view: View?, motionEvent: MotionEvent? -> true }
-        viewBinding!!.bottomControlsContainer.fitsSystemWindows = true
-        viewBinding!!.videoView.holder.addCallback(surfaceHolderCallback)
-        viewBinding!!.videoView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+        viewBinding.bottomControlsContainer.setOnTouchListener { view: View?, motionEvent: MotionEvent? -> true }
+        viewBinding.bottomControlsContainer.fitsSystemWindows = true
+        viewBinding.videoView.holder.addCallback(surfaceHolderCallback)
+        viewBinding.videoView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
 
         setupVideoControlsToggler()
         window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
             WindowManager.LayoutParams.FLAG_FULLSCREEN)
 
-        viewBinding!!.videoPlayerContainer.setOnTouchListener(onVideoviewTouched)
-        viewBinding!!.videoPlayerContainer.viewTreeObserver.addOnGlobalLayoutListener {
-            viewBinding!!.videoView.setAvailableSize(
-                viewBinding!!.videoPlayerContainer.width.toFloat(), viewBinding!!.videoPlayerContainer.height.toFloat())
+        viewBinding.videoPlayerContainer.setOnTouchListener(onVideoviewTouched)
+        viewBinding.videoPlayerContainer.viewTreeObserver.addOnGlobalLayoutListener {
+            viewBinding.videoView.setAvailableSize(
+                viewBinding.videoPlayerContainer.width.toFloat(), viewBinding.videoPlayerContainer.height.toFloat())
         }
     }
 
     private val hideVideoControls = Runnable {
         if (videoControlsShowing) {
             Log.d(TAG, "Hiding video controls")
-            supportActionBar!!.hide()
+            supportActionBar?.hide()
             hideVideoControls(true)
             videoControlsShowing = false
         }
@@ -320,7 +319,7 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
                 showSkipAnimation(false)
             }
             if (videoControlsShowing) {
-                supportActionBar!!.hide()
+                supportActionBar?.hide()
                 hideVideoControls(false)
                 videoControlsShowing = false
             }
@@ -344,24 +343,24 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
         skipAnimation.fillAfter = false
         skipAnimation.duration = 800
 
-        val params = viewBinding!!.skipAnimationImage.layoutParams as FrameLayout.LayoutParams
+        val params = viewBinding.skipAnimationImage.layoutParams as FrameLayout.LayoutParams
         if (isForward) {
-            viewBinding!!.skipAnimationImage.setImageResource(R.drawable.ic_fast_forward_video_white)
+            viewBinding.skipAnimationImage.setImageResource(R.drawable.ic_fast_forward_video_white)
             params.gravity = Gravity.RIGHT or Gravity.CENTER_VERTICAL
         } else {
-            viewBinding!!.skipAnimationImage.setImageResource(R.drawable.ic_fast_rewind_video_white)
+            viewBinding.skipAnimationImage.setImageResource(R.drawable.ic_fast_rewind_video_white)
             params.gravity = Gravity.LEFT or Gravity.CENTER_VERTICAL
         }
 
-        viewBinding!!.skipAnimationImage.visibility = View.VISIBLE
-        viewBinding!!.skipAnimationImage.layoutParams = params
-        viewBinding!!.skipAnimationImage.startAnimation(skipAnimation)
+        viewBinding.skipAnimationImage.visibility = View.VISIBLE
+        viewBinding.skipAnimationImage.layoutParams = params
+        viewBinding.skipAnimationImage.startAnimation(skipAnimation)
         skipAnimation.setAnimationListener(object : Animation.AnimationListener {
             override fun onAnimationStart(animation: Animation) {
             }
 
             override fun onAnimationEnd(animation: Animation) {
-                viewBinding!!.skipAnimationImage.visibility = View.GONE
+                viewBinding.skipAnimationImage.visibility = View.GONE
             }
 
             override fun onAnimationRepeat(animation: Animation) {
@@ -380,7 +379,7 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
             val videoSize = controller!!.videoSize
             if (videoSize != null && videoSize.first > 0 && videoSize.second > 0) {
                 Log.d(TAG, "Width,height of video: " + videoSize.first + ", " + videoSize.second)
-                viewBinding!!.videoView.setVideoSize(videoSize.first, videoSize.second)
+                viewBinding.videoView.setVideoSize(videoSize.first, videoSize.second)
             } else {
                 Log.e(TAG, "Could not determine video size")
             }
@@ -389,10 +388,10 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
 
     private fun toggleVideoControlsVisibility() {
         if (videoControlsShowing) {
-            supportActionBar!!.hide()
+            supportActionBar?.hide()
             hideVideoControls(true)
         } else {
-            supportActionBar!!.show()
+            supportActionBar?.show()
             showVideoControls()
         }
         videoControlsShowing = !videoControlsShowing
@@ -436,7 +435,7 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
         override fun surfaceCreated(holder: SurfaceHolder) {
             Log.d(TAG, "Videoview holder created")
             videoSurfaceCreated = true
-            if (controller != null && controller!!.status == PlayerStatus.PLAYING) {
+            if (controller?.status == PlayerStatus.PLAYING) {
                 controller!!.setVideoSurface(holder)
             }
             setupVideoAspectRatio()
@@ -452,31 +451,31 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
     }
 
     private fun showVideoControls() {
-        viewBinding!!.bottomControlsContainer.visibility = View.VISIBLE
-        viewBinding!!.controlsContainer.visibility = View.VISIBLE
+        viewBinding.bottomControlsContainer.visibility = View.VISIBLE
+        viewBinding.controlsContainer.visibility = View.VISIBLE
         val animation = AnimationUtils.loadAnimation(this, R.anim.fade_in)
         if (animation != null) {
-            viewBinding!!.bottomControlsContainer.startAnimation(animation)
-            viewBinding!!.controlsContainer.startAnimation(animation)
+            viewBinding.bottomControlsContainer.startAnimation(animation)
+            viewBinding.controlsContainer.startAnimation(animation)
         }
-        viewBinding!!.videoView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+        viewBinding.videoView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
     }
 
     private fun hideVideoControls(showAnimation: Boolean) {
         if (showAnimation) {
             val animation = AnimationUtils.loadAnimation(this, R.anim.fade_out)
             if (animation != null) {
-                viewBinding!!.bottomControlsContainer.startAnimation(animation)
-                viewBinding!!.controlsContainer.startAnimation(animation)
+                viewBinding.bottomControlsContainer.startAnimation(animation)
+                viewBinding.controlsContainer.startAnimation(animation)
             }
         }
         window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LOW_PROFILE
                 or View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION)
-        viewBinding!!.bottomControlsContainer.fitsSystemWindows = true
+        viewBinding.bottomControlsContainer.fitsSystemWindows = true
 
-        viewBinding!!.bottomControlsContainer.visibility = View.GONE
-        viewBinding!!.controlsContainer.visibility = View.GONE
+        viewBinding.bottomControlsContainer.visibility = View.GONE
+        viewBinding.controlsContainer.visibility = View.GONE
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -501,12 +500,10 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
         Log.d(TAG, "onEvent($event)")
         val errorDialog = MaterialAlertDialogBuilder(this)
         errorDialog.setMessage(event.message)
-        if (event.action != null) {
-            errorDialog.setPositiveButton(event.actionText) { dialog: DialogInterface?, which: Int ->
-                event.action!!.accept(
-                    this)
-            }
+        errorDialog.setPositiveButton(event.actionText) { dialog: DialogInterface?, which: Int ->
+            event.action?.accept(this)
         }
+
         errorDialog.show()
     }
 
@@ -533,7 +530,7 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
         menu.findItem(R.id.visit_website_item).setVisible(hasWebsiteLink)
 
         val isItemAndHasLink = isFeedMedia && hasLinkToShare((media as FeedMedia).getItem())
-        val isItemHasDownloadLink = isFeedMedia && (media as FeedMedia?)!!.download_url != null
+        val isItemHasDownloadLink = isFeedMedia && (media as FeedMedia?)?.download_url != null
         menu.findItem(R.id.share_item).setVisible(hasWebsiteLink || isItemAndHasLink || isItemHasDownloadLink)
 
         menu.findItem(R.id.add_to_favorites_item).setVisible(false)
@@ -555,56 +552,61 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.player_switch_to_audio_only) {
-            switchToAudioOnly = true
-            finish()
-            return true
-        } else if (item.itemId == android.R.id.home) {
-            val intent = Intent(this@VideoplayerActivity, MainActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-            startActivity(intent)
-            finish()
-            return true
-        } else if (item.itemId == R.id.player_show_chapters) {
-            ChaptersFragment().show(supportFragmentManager, ChaptersFragment.TAG)
-            return true
+        // some options option requires FeedItem
+        when {
+            item.itemId == R.id.player_switch_to_audio_only -> {
+                switchToAudioOnly = true
+                finish()
+                return true
+            }
+            item.itemId == android.R.id.home -> {
+                val intent = Intent(this@VideoplayerActivity, MainActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivity(intent)
+                finish()
+                return true
+            }
+            item.itemId == R.id.player_show_chapters -> {
+                ChaptersFragment().show(supportFragmentManager, ChaptersFragment.TAG)
+                return true
+            }
+            controller == null -> {
+                return false
+            }
+            else -> {
+                val media = controller?.getMedia() ?: return false
+                val feedItem = getFeedItem(media) // some options option requires FeedItem
+                if (item.itemId == R.id.add_to_favorites_item && feedItem != null) {
+                    DBWriter.addFavoriteItem(feedItem)
+                    isFavorite = true
+                    invalidateOptionsMenu()
+                } else if (item.itemId == R.id.remove_from_favorites_item && feedItem != null) {
+                    DBWriter.removeFavoriteItem(feedItem)
+                    isFavorite = false
+                    invalidateOptionsMenu()
+                } else if (item.itemId == R.id.disable_sleeptimer_item
+                        || item.itemId == R.id.set_sleeptimer_item) {
+                    SleepTimerDialog().show(supportFragmentManager, "SleepTimerDialog")
+                } else if (item.itemId == R.id.audio_controls) {
+                    val dialog = PlaybackControlsDialog.newInstance()
+                    dialog.show(supportFragmentManager, "playback_controls")
+                } else if (item.itemId == R.id.open_feed_item && feedItem != null) {
+                    val intent = MainActivity.getIntentToOpenFeed(this, feedItem.feedId)
+                    startActivity(intent)
+                } else if (item.itemId == R.id.visit_website_item) {
+                    val url = getWebsiteLinkWithFallback(media)
+                    if (url != null) openInBrowser(this@VideoplayerActivity, url)
+                } else if (item.itemId == R.id.share_item && feedItem != null) {
+                    val shareDialog = ShareDialog.newInstance(feedItem)
+                    shareDialog.show(supportFragmentManager, "ShareEpisodeDialog")
+                } else if (item.itemId == R.id.playback_speed) {
+                    VariableSpeedDialog().show(supportFragmentManager, null)
+                } else {
+                    return false
+                }
+                return true
+            }
         }
-
-        if (controller == null) {
-            return false
-        }
-
-        val media = controller!!.getMedia() ?: return false
-        val feedItem = getFeedItem(media) // some options option requires FeedItem
-        if (item.itemId == R.id.add_to_favorites_item && feedItem != null) {
-            DBWriter.addFavoriteItem(feedItem)
-            isFavorite = true
-            invalidateOptionsMenu()
-        } else if (item.itemId == R.id.remove_from_favorites_item && feedItem != null) {
-            DBWriter.removeFavoriteItem(feedItem)
-            isFavorite = false
-            invalidateOptionsMenu()
-        } else if (item.itemId == R.id.disable_sleeptimer_item
-                || item.itemId == R.id.set_sleeptimer_item) {
-            SleepTimerDialog().show(supportFragmentManager, "SleepTimerDialog")
-        } else if (item.itemId == R.id.audio_controls) {
-            val dialog = PlaybackControlsDialog.newInstance()
-            dialog.show(supportFragmentManager, "playback_controls")
-        } else if (item.itemId == R.id.open_feed_item && feedItem != null) {
-            val intent = MainActivity.getIntentToOpenFeed(this, feedItem.feedId)
-            startActivity(intent)
-        } else if (item.itemId == R.id.visit_website_item) {
-            val url = getWebsiteLinkWithFallback(media)
-            if (url != null) openInBrowser(this@VideoplayerActivity, url)
-        } else if (item.itemId == R.id.share_item && feedItem != null) {
-            val shareDialog = ShareDialog.newInstance(feedItem)
-            shareDialog.show(supportFragmentManager, "ShareEpisodeDialog")
-        } else if (item.itemId == R.id.playback_speed) {
-            VariableSpeedDialog().show(supportFragmentManager, null)
-        } else {
-            return false
-        }
-        return true
     }
 
     fun onPositionObserverUpdate() {
@@ -623,11 +625,11 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
             Log.w(TAG, "Could not react to position observer update because of invalid time")
             return
         }
-        viewBinding!!.positionLabel.text = getDurationStringLong(currentPosition)
+        viewBinding.positionLabel.text = getDurationStringLong(currentPosition)
         if (showTimeLeft) {
-            viewBinding!!.durationLabel.text = "-" + getDurationStringLong(remainingTime)
+            viewBinding.durationLabel.text = "-" + getDurationStringLong(remainingTime)
         } else {
-            viewBinding!!.durationLabel.text = getDurationStringLong(duration)
+            viewBinding.durationLabel.text = getDurationStringLong(duration)
         }
         updateProgressbarPosition(currentPosition, duration)
     }
@@ -635,7 +637,7 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
     private fun updateProgressbarPosition(position: Int, duration: Int) {
         Log.d(TAG, "updateProgressbarPosition($position, $duration)")
         val progress = (position.toFloat()) / duration
-        viewBinding!!.sbPosition.progress = (progress * viewBinding!!.sbPosition.max).toInt()
+        viewBinding.sbPosition.progress = (progress * viewBinding.sbPosition.max).toInt()
     }
 
     override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
@@ -646,14 +648,14 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
             prog = progress / (seekBar.max.toFloat())
             val converter = TimeSpeedConverter(controller!!.currentPlaybackSpeedMultiplier)
             val position = converter.convert((prog * controller!!.duration).toInt())
-            viewBinding!!.seekPositionLabel.text = getDurationStringLong(position)
+            viewBinding.seekPositionLabel.text = getDurationStringLong(position)
         }
     }
 
     override fun onStartTrackingTouch(seekBar: SeekBar) {
-        viewBinding!!.seekCardView.scaleX = .8f
-        viewBinding!!.seekCardView.scaleY = .8f
-        viewBinding!!.seekCardView.animate()
+        viewBinding.seekCardView.scaleX = .8f
+        viewBinding.seekCardView.scaleY = .8f
+        viewBinding.seekCardView.animate()
             .setInterpolator(FastOutSlowInInterpolator())
             .alpha(1f).scaleX(1f).scaleY(1f)
             .setDuration(200)
@@ -665,9 +667,9 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
         if (controller != null) {
             controller!!.seekTo((prog * controller!!.duration).toInt())
         }
-        viewBinding!!.seekCardView.scaleX = 1f
-        viewBinding!!.seekCardView.scaleY = 1f
-        viewBinding!!.seekCardView.animate()
+        viewBinding.seekCardView.scaleX = 1f
+        viewBinding.seekCardView.scaleY = 1f
+        viewBinding.seekCardView.animate()
             .setInterpolator(FastOutSlowInInterpolator())
             .alpha(0f).scaleX(.8f).scaleY(.8f)
             .setDuration(200)
@@ -676,26 +678,27 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
     }
 
     private fun checkFavorite() {
-        val feedItem = getFeedItem(controller!!.getMedia()) ?: return
-        if (disposable != null) {
-            disposable!!.dispose()
-        }
+        val feedItem = getFeedItem(controller?.getMedia()) ?: return
+        disposable?.dispose()
+
         disposable = Observable.fromCallable { DBReader.getFeedItem(feedItem.id) }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { item: FeedItem? ->
-                    val isFav = item!!.isTagged(FeedItem.TAG_FAVORITE)
-                    if (isFavorite != isFav) {
-                        isFavorite = isFav
-                        invalidateOptionsMenu()
+                    if (item != null) {
+                        val isFav = item.isTagged(FeedItem.TAG_FAVORITE)
+                        if (isFavorite != isFav) {
+                            isFavorite = isFav
+                            invalidateOptionsMenu()
+                        }
                     }
                 }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
     }
 
     private fun compatEnterPictureInPicture() {
         if (PictureInPictureUtil.supportsPictureInPicture(this) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            supportActionBar!!.hide()
+            supportActionBar?.hide()
             hideVideoControls(false)
             enterPictureInPictureMode()
         }
@@ -753,7 +756,7 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
         }
         //Go to x% of video:
         if (keyCode >= KeyEvent.KEYCODE_0 && keyCode <= KeyEvent.KEYCODE_9) {
-            controller!!.seekTo((0.1f * (keyCode - KeyEvent.KEYCODE_0) * controller!!.duration).toInt())
+            controller?.seekTo((0.1f * (keyCode - KeyEvent.KEYCODE_0) * controller!!.duration).toInt())
             return true
         }
         return super.onKeyUp(keyCode, event)

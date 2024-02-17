@@ -223,6 +223,7 @@ class ExoPlayerWrapper internal constructor(private val context: Context) {
     }
 
     fun setPlaybackParams(speed: Float, skipSilence: Boolean) {
+        Log.d(TAG, "setPlaybackParams speed=$speed pitch=${playbackParameters.pitch} skipSilence=$skipSilence")
         playbackParameters = PlaybackParameters(speed, playbackParameters.pitch)
         exoPlayer.skipSilenceEnabled = skipSilence
         exoPlayer.playbackParameters = playbackParameters

@@ -18,6 +18,7 @@ import java.lang.ref.WeakReference
 
 open class HorizontalItemListAdapter(mainActivity: MainActivity) : RecyclerView.Adapter<HorizontalItemViewHolder?>(),
     View.OnCreateContextMenuListener {
+
     private val mainActivityRef: WeakReference<MainActivity> = WeakReference<MainActivity>(mainActivity)
     private var data: List<FeedItem> = ArrayList()
     var longPressedItem: FeedItem? = null
@@ -70,10 +71,11 @@ open class HorizontalItemListAdapter(mainActivity: MainActivity) : RecyclerView.
     }
 
     override fun getItemId(position: Int): Long {
-        if (position >= data.size) {
-            return RecyclerView.NO_ID // Dummy views
+        if (position in data.indices) {
+            val item: FeedItem = data[position]
+            return item.id
         }
-        return data[position].id
+        return RecyclerView.NO_ID // Dummy views
     }
 
     override fun getItemCount(): Int {
@@ -108,9 +110,8 @@ open class HorizontalItemListAdapter(mainActivity: MainActivity) : RecyclerView.
 
     @UnstableApi override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
         val inflater: MenuInflater = mainActivityRef.get()!!.menuInflater
-        if (longPressedItem == null) {
-            return
-        }
+        if (longPressedItem == null) return
+
         menu.clear()
         inflater.inflate(R.menu.feeditemlist_context, menu)
         menu.setHeaderTitle(longPressedItem!!.title)

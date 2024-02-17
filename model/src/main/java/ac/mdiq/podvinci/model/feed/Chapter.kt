@@ -31,6 +31,6 @@ class Chapter : FeedComponent {
     }
 
     override fun toString(): String {
-        return "ID3Chapter [title=" + title + ", start=" + start + ", url=" + link + "]"
+        return "ID3Chapter [title=$title, start=$start, url=$link]"
     }
 }

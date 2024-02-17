@@ -40,9 +40,7 @@ abstract class ToolbarIconTintManager(private val context: Context,
     }
 
     private fun safeSetColorFilter(icon: Drawable?, filter: PorterDuffColorFilter?) {
-        if (icon != null) {
-            icon.colorFilter = filter
-        }
+        icon?.colorFilter = filter
     }
 
     /**

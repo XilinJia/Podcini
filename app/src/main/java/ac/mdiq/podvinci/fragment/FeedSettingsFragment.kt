@@ -43,6 +43,8 @@ import ac.mdiq.podvinci.model.feed.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podvinci.model.feed.FeedPreferences.NewEpisodesAction
 import ac.mdiq.podvinci.model.feed.VolumeAdaptionSetting
 import ac.mdiq.podvinci.storage.preferences.UserPreferences.isEnableAutodownload
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
 import io.reactivex.Maybe
 import io.reactivex.MaybeEmitter
 import io.reactivex.MaybeOnSubscribe
@@ -100,7 +102,7 @@ class FeedSettingsFragment : Fragment() {
 
         var notificationPermissionDenied: Boolean = false
         private val requestPermissionLauncher =
-            registerForActivityResult<String, Boolean>(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
                 if (isGranted) {
                     return@registerForActivityResult
                 }
@@ -123,7 +125,7 @@ class FeedSettingsFragment : Fragment() {
             return view
         }
 
-        override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        @OptIn(UnstableApi::class) override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             addPreferencesFromResource(R.xml.feed_settings)
             // To prevent displaying partially loaded data
             findPreference<Preference>(PREF_SCREEN)!!.isVisible = false
@@ -181,7 +183,7 @@ class FeedSettingsFragment : Fragment() {
                     object : FeedPreferenceSkipDialog(context,
                         feedPreferences!!.feedSkipIntro,
                         feedPreferences!!.feedSkipEnding) {
-                        override fun onConfirmed(skipIntro: Int, skipEnding: Int) {
+                        @UnstableApi override fun onConfirmed(skipIntro: Int, skipEnding: Int) {
                             feedPreferences!!.feedSkipIntro = skipIntro
                             feedPreferences!!.feedSkipEnding = skipEnding
                             DBWriter.setFeedPreferences(feedPreferences!!)
@@ -195,7 +197,7 @@ class FeedSettingsFragment : Fragment() {
                 }
         }
 
-        private fun setupPlaybackSpeedPreference() {
+        @UnstableApi private fun setupPlaybackSpeedPreference() {
             val feedPlaybackSpeedPreference = findPreference<Preference>(PREF_FEED_PLAYBACK_SPEED)
             feedPlaybackSpeedPreference!!.onPreferenceClickListener =
                 Preference.OnPreferenceClickListener { preference: Preference ->
@@ -237,7 +239,7 @@ class FeedSettingsFragment : Fragment() {
             findPreference<Preference>(PREF_EPISODE_FILTER)!!.onPreferenceClickListener =
                 Preference.OnPreferenceClickListener { preference: Preference ->
                     object : EpisodeFilterDialog(context, feedPreferences!!.filter) {
-                        override fun onConfirmed(filter: FeedFilter) {
+                        @UnstableApi override fun onConfirmed(filter: FeedFilter) {
                             feedPreferences!!.filter = filter
                             DBWriter.setFeedPreferences(feedPreferences!!)
                         }
@@ -253,7 +255,7 @@ class FeedSettingsFragment : Fragment() {
                     object : AuthenticationDialog(context,
                         R.string.authentication_label, true,
                         feedPreferences!!.username, feedPreferences!!.password) {
-                        override fun onConfirmed(username: String, password: String) {
+                        @UnstableApi override fun onConfirmed(username: String, password: String) {
                             feedPreferences!!.username = username
                             feedPreferences!!.password = password
                             val setPreferencesFuture = DBWriter.setFeedPreferences(feedPreferences!!)
@@ -274,7 +276,7 @@ class FeedSettingsFragment : Fragment() {
                 }
         }
 
-        private fun setupAutoDeletePreference() {
+        @UnstableApi private fun setupAutoDeletePreference() {
             if (feedPreferences == null) return
             findPreference<Preference>(PREF_AUTO_DELETE)!!.onPreferenceChangeListener =
                 Preference.OnPreferenceChangeListener { preference: Preference?, newValue: Any? ->
@@ -310,7 +312,7 @@ class FeedSettingsFragment : Fragment() {
             }
         }
 
-        private fun setupVolumeAdaptationPreferences() {
+        @UnstableApi private fun setupVolumeAdaptationPreferences() {
             if (feedPreferences == null) return
             val volumeAdaptationPreference = findPreference<ListPreference>("volumeReduction")
             volumeAdaptationPreference!!.onPreferenceChangeListener =
@@ -348,7 +350,7 @@ class FeedSettingsFragment : Fragment() {
             }
         }
 
-        private fun setupNewEpisodesAction() {
+        @OptIn(UnstableApi::class) private fun setupNewEpisodesAction() {
             if (feedPreferences == null) return
 
             findPreference<Preference>(PREF_NEW_EPISODES_ACTION)!!.onPreferenceChangeListener =
@@ -374,14 +376,14 @@ class FeedSettingsFragment : Fragment() {
             }
         }
 
-        private fun setupKeepUpdatedPreference() {
+        @OptIn(UnstableApi::class) private fun setupKeepUpdatedPreference() {
             if (feedPreferences == null) return
             val pref = findPreference<SwitchPreferenceCompat>("keepUpdated")
 
             pref!!.isChecked = feedPreferences!!.keepUpdated
             pref.onPreferenceChangeListener =
                 Preference.OnPreferenceChangeListener { preference: Preference?, newValue: Any ->
-                    val checked = newValue === java.lang.Boolean.TRUE
+                    val checked = newValue == true
                     feedPreferences!!.keepUpdated = checked
                     DBWriter.setFeedPreferences(feedPreferences!!)
                     pref.isChecked = checked
@@ -399,7 +401,7 @@ class FeedSettingsFragment : Fragment() {
             }
         }
 
-        private fun setupAutoDownloadPreference() {
+        @OptIn(UnstableApi::class) private fun setupAutoDownloadPreference() {
             if (feedPreferences == null) return
             val pref = findPreference<SwitchPreferenceCompat>("autoDownload")
 
@@ -413,7 +415,7 @@ class FeedSettingsFragment : Fragment() {
 
             pref.onPreferenceChangeListener =
                 Preference.OnPreferenceChangeListener { preference: Preference?, newValue: Any ->
-                    val checked = newValue === java.lang.Boolean.TRUE
+                    val checked = newValue == true
                     feedPreferences!!.autoDownload = checked
                     DBWriter.setFeedPreferences(feedPreferences!!)
                     updateAutoDownloadEnabled()
@@ -439,7 +441,7 @@ class FeedSettingsFragment : Fragment() {
                 }
         }
 
-        private fun setupEpisodeNotificationPreference() {
+        @OptIn(UnstableApi::class) private fun setupEpisodeNotificationPreference() {
             val pref = findPreference<SwitchPreferenceCompat>("episodeNotification")
 
             pref!!.isChecked = feedPreferences!!.showEpisodeNotification
@@ -451,7 +453,7 @@ class FeedSettingsFragment : Fragment() {
                         requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                         return@OnPreferenceChangeListener false
                     }
-                    val checked = newValue === java.lang.Boolean.TRUE
+                    val checked = newValue == true
                     feedPreferences!!.showEpisodeNotification = checked
                     if (feedPreferences != null) DBWriter.setFeedPreferences(feedPreferences!!)
                     pref.isChecked = checked

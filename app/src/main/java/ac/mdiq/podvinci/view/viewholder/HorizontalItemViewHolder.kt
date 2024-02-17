@@ -29,6 +29,7 @@ import kotlin.math.max
 
 class HorizontalItemViewHolder(private val activity: MainActivity, parent: ViewGroup?) :
     RecyclerView.ViewHolder(LayoutInflater.from(activity).inflate(R.layout.horizontal_itemlist_item, parent, false)) {
+
     @JvmField
     val card: CardView = itemView.findViewById(R.id.card)
 
@@ -110,7 +111,7 @@ class HorizontalItemViewHolder(private val activity: MainActivity, parent: ViewG
     }
 
     val isCurrentlyPlayingItem: Boolean
-        @UnstableApi get() = item != null && item!!.media != null && PlaybackStatus.isCurrentlyPlaying(item!!.media)
+        @UnstableApi get() = item?.media != null && PlaybackStatus.isCurrentlyPlaying(item!!.media)
 
     fun notifyPlaybackPositionUpdated(event: PlaybackPositionEvent) {
         setProgressBar(true, 100.0f * event.position / event.duration)

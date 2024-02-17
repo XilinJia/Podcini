@@ -18,5 +18,5 @@ class VisitWebsiteActionButton(item: FeedItem) : ItemActionButton(item) {
     }
 
     override val visibility: Int
-        get() = if ((item.link == null)) View.INVISIBLE else View.VISIBLE
+        get() = if (item.link == null) View.INVISIBLE else View.VISIBLE
 }

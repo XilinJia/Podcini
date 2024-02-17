@@ -166,16 +166,16 @@ class PlaybackService : MediaBrowserServiceCompat() {
         notificationBuilder = PlaybackServiceNotificationBuilder(this)
 
         //        TODO: this shit doesn't work
-//        if (Build.VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
-//            registerReceiver(autoStateUpdated, IntentFilter("com.google.android.gms.car.media.STATUS"), RECEIVER_EXPORTED)
-//            registerReceiver(shutdownReceiver, IntentFilter(PlaybackServiceInterface.ACTION_SHUTDOWN_PLAYBACK_SERVICE), RECEIVER_EXPORTED)
-//        } else {
-//            ContextCompat.registerReceiver(applicationContext, autoStateUpdated, IntentFilter("com.google.android.gms.car.media.STATUS"), ContextCompat.RECEIVER_EXPORTED)
-//            ContextCompat.registerReceiver(applicationContext, shutdownReceiver, IntentFilter(PlaybackServiceInterface.ACTION_SHUTDOWN_PLAYBACK_SERVICE), ContextCompat.RECEIVER_EXPORTED)
-//        }
+        if (Build.VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
+            registerReceiver(autoStateUpdated, IntentFilter("com.google.android.gms.car.media.STATUS"), RECEIVER_NOT_EXPORTED)
+            registerReceiver(shutdownReceiver, IntentFilter(PlaybackServiceInterface.ACTION_SHUTDOWN_PLAYBACK_SERVICE), RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(autoStateUpdated, IntentFilter("com.google.android.gms.car.media.STATUS"))
+            registerReceiver(shutdownReceiver, IntentFilter(PlaybackServiceInterface.ACTION_SHUTDOWN_PLAYBACK_SERVICE))
+        }
 
-        registerReceiver(autoStateUpdated, IntentFilter("com.google.android.gms.car.media.STATUS"))
-        registerReceiver(shutdownReceiver, IntentFilter(PlaybackServiceInterface.ACTION_SHUTDOWN_PLAYBACK_SERVICE))
+//        registerReceiver(autoStateUpdated, IntentFilter("com.google.android.gms.car.media.STATUS"))
+//        registerReceiver(shutdownReceiver, IntentFilter(PlaybackServiceInterface.ACTION_SHUTDOWN_PLAYBACK_SERVICE))
 
         registerReceiver(headsetDisconnected, IntentFilter(Intent.ACTION_HEADSET_PLUG))
         registerReceiver(bluetoothStateUpdated, IntentFilter(BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED))
@@ -272,13 +272,13 @@ class PlaybackService : MediaBrowserServiceCompat() {
         cancelPositionObserver()
         mediaSession?.release()
         mediaSession = null
+        mediaPlayer?.shutdown()
 
         unregisterReceiver(autoStateUpdated)
         unregisterReceiver(headsetDisconnected)
         unregisterReceiver(shutdownReceiver)
         unregisterReceiver(bluetoothStateUpdated)
         unregisterReceiver(audioBecomingNoisy)
-        mediaPlayer?.shutdown()
         taskManager.shutdown()
         EventBus.getDefault().unregister(this)
     }
@@ -699,7 +699,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
             }
             else -> {
                 Log.d(TAG, "Unhandled key code: $keycode")
-                if (info?.playable != null && info?.playerStatus == PlayerStatus.PLAYING) {   // only notify the user about an unknown key event if it is actually doing something
+                if (info?.playable != null && info.playerStatus == PlayerStatus.PLAYING) {   // only notify the user about an unknown key event if it is actually doing something
                     val message = String.format(resources.getString(R.string.unknown_media_key), keycode)
                     Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
                 }

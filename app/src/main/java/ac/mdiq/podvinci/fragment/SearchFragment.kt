@@ -55,18 +55,20 @@ import org.greenrobot.eventbus.ThreadMode
  * Performs a search operation on all feeds or one specific feed and displays the search result.
  */
 class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
-    private var adapter: EpisodeItemListAdapter? = null
-    private var adapterFeeds: HorizontalFeedListAdapter? = null
+    private lateinit var adapter: EpisodeItemListAdapter
+    private lateinit var adapterFeeds: HorizontalFeedListAdapter
+    private lateinit var progressBar: ProgressBar
+    private lateinit var emptyViewHandler: EmptyViewHandler
+    private lateinit var recyclerView: EpisodeItemListRecyclerView
+    private lateinit var searchView: SearchView
+    private lateinit var speedDialBinding: MultiSelectSpeedDialBinding
+    private lateinit var chip: Chip
+    private lateinit var automaticSearchDebouncer: Handler
+
+    private var results: MutableList<FeedItem> = mutableListOf()
+
     private var disposable: Disposable? = null
-    private var progressBar: ProgressBar? = null
-    private var emptyViewHandler: EmptyViewHandler? = null
-    private var recyclerView: EpisodeItemListRecyclerView? = null
-    private var results: MutableList<FeedItem>? = null
-    private var chip: Chip? = null
-    private var searchView: SearchView? = null
-    private var automaticSearchDebouncer: Handler? = null
     private var lastQueryChange: Long = 0
-    private var speedDialBinding: MultiSelectSpeedDialBinding? = null
     private var isOtherViewInFoucus = false
 
 
@@ -89,8 +91,8 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
         speedDialBinding = MultiSelectSpeedDialBinding.bind(layout)
         progressBar = layout.findViewById(R.id.progressBar)
         recyclerView = layout.findViewById(R.id.recyclerView)
-        recyclerView?.setRecycledViewPool((activity as MainActivity).recycledViewPool)
-        registerForContextMenu(recyclerView!!)
+        recyclerView.setRecycledViewPool((activity as MainActivity).recycledViewPool)
+        registerForContextMenu(recyclerView)
         adapter = object : EpisodeItemListAdapter(activity as MainActivity) {
             override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
                 super.onCreateContextMenu(menu, v, menuInfo)
@@ -101,9 +103,9 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
                 ) { item: MenuItem -> this@SearchFragment.onContextItemSelected(item) }
             }
         }
-        adapter?.setOnSelectModeListener(this)
-        recyclerView?.adapter = adapter
-        recyclerView?.addOnScrollListener(LiftOnScrollListener(layout.findViewById(R.id.appbar)))
+        adapter.setOnSelectModeListener(this)
+        recyclerView.adapter = adapter
+        recyclerView.addOnScrollListener(LiftOnScrollListener(layout.findViewById(R.id.appbar)))
 
         val recyclerViewFeeds = layout.findViewById<RecyclerView>(R.id.recyclerViewFeeds)
         val layoutManagerFeeds = LinearLayoutManager(activity)
@@ -121,28 +123,28 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
         recyclerViewFeeds.adapter = adapterFeeds
 
         emptyViewHandler = EmptyViewHandler(context)
-        emptyViewHandler?.attachToRecyclerView(recyclerView!!)
-        emptyViewHandler?.setIcon(R.drawable.ic_search)
-        emptyViewHandler?.setTitle(R.string.search_status_no_results)
-        emptyViewHandler?.setMessage(R.string.type_to_search)
+        emptyViewHandler.attachToRecyclerView(recyclerView)
+        emptyViewHandler.setIcon(R.drawable.ic_search)
+        emptyViewHandler.setTitle(R.string.search_status_no_results)
+        emptyViewHandler.setMessage(R.string.type_to_search)
         EventBus.getDefault().register(this)
 
         chip = layout.findViewById(R.id.feed_title_chip)
-        chip?.setOnCloseIconClickListener { v: View? ->
+        chip.setOnCloseIconClickListener { v: View? ->
             requireArguments().putLong(ARG_FEED, 0)
             searchWithProgressBar()
         }
-        chip?.visibility = if ((requireArguments().getLong(ARG_FEED, 0) == 0L)) View.GONE else View.VISIBLE
-        chip?.text = requireArguments().getString(ARG_FEED_NAME, "")
+        chip.visibility = if ((requireArguments().getLong(ARG_FEED, 0) == 0L)) View.GONE else View.VISIBLE
+        chip.text = requireArguments().getString(ARG_FEED_NAME, "")
         if (requireArguments().getString(ARG_QUERY, null) != null) {
             search()
         }
-        searchView!!.setOnQueryTextFocusChangeListener { view: View, hasFocus: Boolean ->
+        searchView.setOnQueryTextFocusChangeListener { view: View, hasFocus: Boolean ->
             if (hasFocus && !isOtherViewInFoucus) {
                 showInputMethod(view.findFocus())
             }
         }
-        recyclerView?.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
                 if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
@@ -151,24 +153,24 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
                 }
             }
         })
-        speedDialBinding!!.fabSD.overlayLayout = speedDialBinding!!.fabSDOverlay
-        speedDialBinding!!.fabSD.inflate(R.menu.episodes_apply_action_speeddial)
-        speedDialBinding!!.fabSD.setOnChangeListener(object : SpeedDialView.OnChangeListener {
+        speedDialBinding.fabSD.overlayLayout = speedDialBinding.fabSDOverlay
+        speedDialBinding.fabSD.inflate(R.menu.episodes_apply_action_speeddial)
+        speedDialBinding.fabSD.setOnChangeListener(object : SpeedDialView.OnChangeListener {
             override fun onMainActionSelected(): Boolean {
                 return false
             }
 
             override fun onToggleChanged(open: Boolean) {
-                if (open && adapter!!.selectedCount == 0) {
+                if (open && adapter.selectedCount == 0) {
                     (activity as MainActivity).showSnackbarAbovePlayer(R.string.no_items_selected, Snackbar.LENGTH_SHORT)
-                    speedDialBinding!!.fabSD.close()
+                    speedDialBinding.fabSD.close()
                 }
             }
         })
-        speedDialBinding!!.fabSD.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
+        speedDialBinding.fabSD.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
             EpisodeMultiSelectActionHandler(activity as MainActivity, actionItem.id)
-                .handleAction(adapter!!.selectedItems.filterIsInstance<FeedItem>())
-            adapter?.endSelectMode()
+                .handleAction(adapter.selectedItems.filterIsInstance<FeedItem>())
+            adapter.endSelectMode()
             true
         }
 
@@ -187,24 +189,24 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
 
         val item: MenuItem = toolbar.menu.findItem(R.id.action_search)
         item.expandActionView()
-        searchView = item.actionView as SearchView?
-        searchView!!.queryHint = getString(R.string.search_label)
-        searchView!!.setQuery(requireArguments().getString(ARG_QUERY), true)
-        searchView!!.requestFocus()
-        searchView!!.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+        searchView = item.actionView as SearchView
+        searchView.queryHint = getString(R.string.search_label)
+        searchView.setQuery(requireArguments().getString(ARG_QUERY), true)
+        searchView.requestFocus()
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             @UnstableApi override fun onQueryTextSubmit(s: String): Boolean {
-                searchView!!.clearFocus()
+                searchView.clearFocus()
                 searchWithProgressBar()
                 return true
             }
 
             @UnstableApi override fun onQueryTextChange(s: String): Boolean {
-                automaticSearchDebouncer!!.removeCallbacksAndMessages(null)
+                automaticSearchDebouncer.removeCallbacksAndMessages(null)
                 if (s.isEmpty() || s.endsWith(" ") || (lastQueryChange != 0L
                                 && System.currentTimeMillis() > lastQueryChange + SEARCH_DEBOUNCE_INTERVAL)) {
                     search()
                 } else {
-                    automaticSearchDebouncer!!.postDelayed({
+                    automaticSearchDebouncer.postDelayed({
                         search()
                         lastQueryChange = 0 // Don't search instantly with first symbol after some pause
                     }, (SEARCH_DEBOUNCE_INTERVAL / 2).toLong())
@@ -226,14 +228,14 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
-        val selectedFeedItem: Feed? = adapterFeeds?.longPressedItem
+        val selectedFeedItem: Feed? = adapterFeeds.longPressedItem
         if (selectedFeedItem != null
                 && FeedMenuHandler.onMenuItemClicked(this, item.itemId, selectedFeedItem) {}) {
             return true
         }
-        val selectedItem: FeedItem? = adapter?.longPressedItem
+        val selectedItem: FeedItem? = adapter.longPressedItem
         if (selectedItem != null) {
-            if (adapter!!.onContextItemSelected(item)) {
+            if (adapter.onContextItemSelected(item)) {
                 return true
             }
             if (FeedItemMenuHandler.onMenuItemClicked(this, item.itemId, selectedItem)) {
@@ -256,21 +258,16 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: FeedItemEvent) {
         Log.d(TAG, "onEventMainThread() called with: event = [$event]")
-        if (results == null) {
-            return
-        } else if (adapter == null) {
-            search()
-            return
-        }
+
         var i = 0
         val size: Int = event.items.size
         while (i < size) {
             val item: FeedItem = event.items[i]
-            val pos: Int = FeedItemUtil.indexOfItemWithId(results!!, item.id)
+            val pos: Int = FeedItemUtil.indexOfItemWithId(results, item.id)
             if (pos >= 0) {
-                results!!.removeAt(pos)
-                results!!.add(pos, item)
-                adapter!!.notifyItemChangedCompat(pos)
+                results.removeAt(pos)
+                results.add(pos, item)
+                adapter.notifyItemChangedCompat(pos)
             }
             i++
         }
@@ -278,27 +275,22 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: EpisodeDownloadEvent) {
-        if (results == null) {
-            return
-        }
         for (downloadUrl in event.urls) {
-            val pos: Int = FeedItemUtil.indexOfItemWithDownloadUrl(results!!, downloadUrl)
+            val pos: Int = FeedItemUtil.indexOfItemWithDownloadUrl(results, downloadUrl)
             if (pos >= 0) {
-                adapter?.notifyItemChangedCompat(pos)
+                adapter.notifyItemChangedCompat(pos)
             }
         }
     }
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: PlaybackPositionEvent) {
-        if (adapter != null) {
-            for (i in 0 until adapter!!.itemCount) {
-                val holder: EpisodeItemViewHolder =
-                    recyclerView!!.findViewHolderForAdapterPosition(i) as EpisodeItemViewHolder
-                if (holder.isCurrentlyPlayingItem) {
-                    holder.notifyPlaybackPositionUpdated(event)
-                    break
-                }
+        for (i in 0 until adapter.itemCount) {
+            val holder: EpisodeItemViewHolder =
+                recyclerView.findViewHolderForAdapterPosition(i) as EpisodeItemViewHolder
+            if (holder.isCurrentlyPlayingItem) {
+                holder.notifyPlaybackPositionUpdated(event)
+                break
             }
         }
     }
@@ -309,40 +301,40 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
     }
 
     @UnstableApi private fun searchWithProgressBar() {
-        progressBar?.visibility = View.VISIBLE
-        emptyViewHandler?.hide()
+        progressBar.visibility = View.VISIBLE
+        emptyViewHandler.hide()
         search()
     }
 
     @UnstableApi private fun search() {
         disposable?.dispose()
 
-        adapterFeeds?.setEndButton(R.string.search_online) { this.searchOnline() }
-        chip?.visibility = if ((requireArguments().getLong(ARG_FEED, 0) == 0L)) View.GONE else View.VISIBLE
+        adapterFeeds.setEndButton(R.string.search_online) { this.searchOnline() }
+        chip.visibility = if ((requireArguments().getLong(ARG_FEED, 0) == 0L)) View.GONE else View.VISIBLE
         disposable = Observable.fromCallable { this.performSearch() }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ results: Pair<List<FeedItem>?, List<Feed?>?> ->
-                progressBar?.visibility = View.GONE
+                progressBar.visibility = View.GONE
                 if (results.first != null) {
                     this.results = results.first!!.toMutableList()
-                    adapter?.updateItems(results.first!!)
+                    adapter.updateItems(results.first!!)
                 }
                 if (requireArguments().getLong(ARG_FEED, 0) == 0L) {
-                    if (results.second != null) adapterFeeds?.updateData(results.second!!.filterNotNull())
+                    if (results.second != null) adapterFeeds.updateData(results.second!!.filterNotNull())
                 } else {
-                    adapterFeeds?.updateData(emptyList())
+                    adapterFeeds.updateData(emptyList())
                 }
-                if (searchView!!.query.toString().isEmpty()) {
-                    emptyViewHandler?.setMessage(R.string.type_to_search)
+                if (searchView.query.toString().isEmpty()) {
+                    emptyViewHandler.setMessage(R.string.type_to_search)
                 } else {
-                    emptyViewHandler?.setMessage(getString(R.string.no_results_for_query) + searchView!!.query)
+                    emptyViewHandler.setMessage(getString(R.string.no_results_for_query) + searchView.query)
                 }
             }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
     }
 
     @UnstableApi private fun performSearch(): Pair<List<FeedItem>?, List<Feed?>?> {
-        val query = searchView!!.query.toString()
+        val query = searchView.query.toString()
         if (query.isEmpty()) {
             return Pair<List<FeedItem>?, List<Feed?>?>(emptyList(), emptyList<Feed>())
         }
@@ -358,10 +350,10 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
     }
 
     @UnstableApi private fun searchOnline() {
-        searchView!!.clearFocus()
+        searchView.clearFocus()
         val inVal = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        inVal.hideSoftInputFromWindow(searchView!!.windowToken, 0)
-        val query = searchView!!.query.toString()
+        inVal.hideSoftInputFromWindow(searchView.windowToken, 0)
+        val query = searchView.query.toString()
         if (query.matches("http[s]?://.*".toRegex())) {
             val intent = Intent(activity, OnlineFeedViewActivity::class.java)
             intent.putExtra(OnlineFeedViewActivity.ARG_FEEDURL, query)
@@ -374,26 +366,26 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
 
     override fun onStartSelectMode() {
         searchViewFocusOff()
-        speedDialBinding!!.fabSD.removeActionItemById(R.id.remove_from_inbox_batch)
-        speedDialBinding!!.fabSD.removeActionItemById(R.id.remove_from_queue_batch)
-        speedDialBinding!!.fabSD.removeActionItemById(R.id.delete_batch)
-        speedDialBinding!!.fabSD.visibility = View.VISIBLE
+        speedDialBinding.fabSD.removeActionItemById(R.id.remove_from_inbox_batch)
+        speedDialBinding.fabSD.removeActionItemById(R.id.remove_from_queue_batch)
+        speedDialBinding.fabSD.removeActionItemById(R.id.delete_batch)
+        speedDialBinding.fabSD.visibility = View.VISIBLE
     }
 
     override fun onEndSelectMode() {
-        speedDialBinding!!.fabSD.close()
-        speedDialBinding!!.fabSD.visibility = View.GONE
+        speedDialBinding.fabSD.close()
+        speedDialBinding.fabSD.visibility = View.GONE
         searchViewFocusOn()
     }
 
     private fun searchViewFocusOff() {
         isOtherViewInFoucus = true
-        searchView!!.clearFocus()
+        searchView.clearFocus()
     }
 
     private fun searchViewFocusOn() {
         isOtherViewInFoucus = false
-        searchView!!.requestFocus()
+        searchView.requestFocus()
     }
 
     companion object {

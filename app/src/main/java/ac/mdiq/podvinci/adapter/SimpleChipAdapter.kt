@@ -12,7 +12,7 @@ abstract class SimpleChipAdapter(private val context: Context) : RecyclerView.Ad
         setHasStableIds(true)
     }
 
-    protected abstract fun getChips(): List<String?>
+    protected abstract fun getChips(): List<String>
 
     protected abstract fun onRemoveClicked(position: Int)
 

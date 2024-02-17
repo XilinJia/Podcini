@@ -21,11 +21,13 @@ import ac.mdiq.podvinci.model.feed.FeedItem
 import ac.mdiq.podvinci.model.feed.FeedMedia
 import ac.mdiq.podvinci.net.sync.model.EpisodeAction
 import ac.mdiq.podvinci.view.LocalDeleteModal
+import androidx.annotation.OptIn
 import kotlin.math.ceil
 
 /**
  * Handles interactions with the FeedItemMenu.
  */
+@OptIn(UnstableApi::class)
 object FeedItemMenuHandler {
     private const val TAG = "FeedItemMenuHandler"
 
@@ -115,7 +117,7 @@ object FeedItemMenuHandler {
             return false
         }
         val rc = onPrepareMenu(menu, selectedItem)
-        if (rc && excludeIds != null) {
+        if (rc && excludeIds.isNotEmpty()) {
             for (id in excludeIds) {
                 setItemVisibility(menu, id, false)
             }

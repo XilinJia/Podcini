@@ -1,21 +1,22 @@
 package ac.mdiq.podvinci.adapter
 
-import ac.mdiq.podvinci.activity.MainActivity
-import android.R.color
-import android.app.Activity
-import android.os.Build
-import android.view.*
-import androidx.media3.common.util.UnstableApi
-import androidx.recyclerview.widget.RecyclerView
 import ac.mdiq.podvinci.R
+import ac.mdiq.podvinci.activity.MainActivity
 import ac.mdiq.podvinci.core.util.FeedItemUtil
 import ac.mdiq.podvinci.fragment.ItemPagerFragment
 import ac.mdiq.podvinci.menuhandler.FeedItemMenuHandler
 import ac.mdiq.podvinci.model.feed.FeedItem
 import ac.mdiq.podvinci.ui.common.ThemeUtils
 import ac.mdiq.podvinci.view.viewholder.EpisodeItemViewHolder
+import android.R.color
+import android.app.Activity
+import android.os.Build
+import android.view.*
+import androidx.media3.common.util.UnstableApi
+import androidx.recyclerview.widget.RecyclerView
 import org.apache.commons.lang3.ArrayUtils
 import java.lang.ref.WeakReference
+
 
 /**
  * List adapter for the list of new episodes.
@@ -53,7 +54,7 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) : SelectableAdapte
     }
 
     @UnstableApi override fun onBindViewHolder(holder: EpisodeItemViewHolder, pos: Int) {
-        if (pos >= episodes.size) {
+        if (pos >= episodes.size || pos < 0) {
             beforeBindViewHolder(holder, pos)
             holder.bindDummy()
             afterBindViewHolder(holder, pos)
@@ -72,10 +73,10 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) : SelectableAdapte
 
         holder.itemView.setOnClickListener { v: View? ->
             val activity: MainActivity? = mainActivityRef.get()
-            if (activity != null && !inActionMode()) {
+            if (!inActionMode()) {
                 val ids: LongArray = FeedItemUtil.getIds(episodes)
                 val position = ArrayUtils.indexOf(ids, item.id)
-                activity.loadChildFragment(ItemPagerFragment.newInstance(ids, position))
+                activity?.loadChildFragment(ItemPagerFragment.newInstance(ids, position))
             } else {
                 toggleSelection(holder.bindingAdapterPosition)
             }
@@ -88,8 +89,7 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) : SelectableAdapte
         }
         holder.itemView.setOnTouchListener(View.OnTouchListener { v: View?, e: MotionEvent ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (e.isFromSource(InputDevice.SOURCE_MOUSE)
-                        && e.buttonState == MotionEvent.BUTTON_SECONDARY) {
+                if (e.isFromSource(InputDevice.SOURCE_MOUSE) && e.buttonState == MotionEvent.BUTTON_SECONDARY) {
                     longPressedItem = item
                     longPressedPosition = holder.bindingAdapterPosition
                     return@OnTouchListener false
@@ -146,26 +146,28 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) : SelectableAdapte
     }
 
     override fun getItemId(position: Int): Long {
-        if (position >= episodes.size) {
-            return RecyclerView.NO_ID // Dummy views
-        }
-        val item: FeedItem = episodes[position]
-        return item.id
+//        if (position >= episodes.size) {
+//            return RecyclerView.NO_ID // Dummy views
+//        }
+//        val item = episodes[position]
+//        return item.id ?: RecyclerView.NO_POSITION.toLong()
+        return getItem(position)?.id ?: RecyclerView.NO_ID
     }
 
     override fun getItemCount(): Int {
         return dummyViews + episodes.size
     }
 
-    protected fun getItem(index: Int): FeedItem {
-        return episodes[index]
+    protected fun getItem(index: Int): FeedItem? {
+//        return episodes[index]
+        return if (index in episodes.indices) episodes[index] else null
     }
 
     protected val activity: Activity?
         get() = mainActivityRef.get()
 
     @UnstableApi override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
-        val inflater: MenuInflater = mainActivityRef.get()!!.menuInflater
+        val inflater: MenuInflater = activity!!.menuInflater
         if (inActionMode()) {
             inflater.inflate(R.menu.multi_select_context_popup, menu)
         } else {
@@ -201,8 +203,9 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) : SelectableAdapte
         get() {
             val items: MutableList<FeedItem> = ArrayList()
             for (i in 0 until itemCount) {
-                if (isSelected(i)) {
-                    items.add(getItem(i))
+                if (i < episodes.size && isSelected(i)) {
+                    val item = getItem(i)
+                    if (item != null) items.add(item)
                 }
             }
             return items

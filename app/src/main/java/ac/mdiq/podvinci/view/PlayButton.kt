@@ -24,20 +24,23 @@ class PlayButton : AppCompatImageButton {
         if (this.isShowPlay != showPlay) {
             this.isShowPlay = showPlay
             contentDescription = context.getString(if (showPlay) R.string.play_label else R.string.pause_label)
-            if (isVideoScreen) {
-                setImageResource(if (showPlay) R.drawable.ic_play_video_white else R.drawable.ic_pause_video_white)
-            } else if (!isShown) {
-                setImageResource(if (showPlay) R.drawable.ic_play_48dp else R.drawable.ic_pause)
-            } else if (showPlay) {
-                val drawable = AnimatedVectorDrawableCompat.create(
-                    context, R.drawable.ic_animate_pause_play)
-                setImageDrawable(drawable)
-                drawable!!.start()
-            } else {
-                val drawable = AnimatedVectorDrawableCompat.create(
-                    context, R.drawable.ic_animate_play_pause)
-                setImageDrawable(drawable)
-                drawable!!.start()
+            when {
+                isVideoScreen -> {
+                    setImageResource(if (showPlay) R.drawable.ic_play_video_white else R.drawable.ic_pause_video_white)
+                }
+                !isShown -> {
+                    setImageResource(if (showPlay) R.drawable.ic_play_48dp else R.drawable.ic_pause)
+                }
+                showPlay -> {
+                    val drawable = AnimatedVectorDrawableCompat.create(context, R.drawable.ic_animate_pause_play)
+                    setImageDrawable(drawable)
+                    drawable?.start()
+                }
+                else -> {
+                    val drawable = AnimatedVectorDrawableCompat.create(context, R.drawable.ic_animate_play_pause)
+                    setImageDrawable(drawable)
+                    drawable?.start()
+                }
             }
         }
     }

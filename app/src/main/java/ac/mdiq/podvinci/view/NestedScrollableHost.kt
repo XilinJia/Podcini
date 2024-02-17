@@ -69,10 +69,7 @@ class NestedScrollableHost : FrameLayout {
     }
 
     private fun setAttributes(context: Context, attrs: AttributeSet?) {
-        val a = context.theme.obtainStyledAttributes(
-            attrs,
-            R.styleable.NestedScrollableHost,
-            0, 0)
+        val a = context.theme.obtainStyledAttributes(attrs, R.styleable.NestedScrollableHost, 0, 0)
 
         try {
             preferHorizontal = a.getInteger(R.styleable.NestedScrollableHost_preferHorizontal, 1)
@@ -89,11 +86,11 @@ class NestedScrollableHost : FrameLayout {
 
         viewTreeObserver.addOnPreDrawListener(object : ViewTreeObserver.OnPreDrawListener {
             override fun onPreDraw(): Boolean {
-                var v = parent as View
+                var v = parent as? View
                 while (v != null && v !is ViewPager2 || isntSameDirection(v)) {
-                    v = v.parent as View
+                    v = v!!.parent as? View
                 }
-                parentViewPager = v as ViewPager2
+                parentViewPager = v as? ViewPager2
 
                 viewTreeObserver.removeOnPreDrawListener(this)
                 return false
@@ -145,7 +142,6 @@ class NestedScrollableHost : FrameLayout {
         if (!canChildScroll(orientation, -1f) && !canChildScroll(orientation, 1f) && !preferedDirection) {
             return
         }
-
 
         if (e.action == MotionEvent.ACTION_DOWN) {
             initialX = e.x

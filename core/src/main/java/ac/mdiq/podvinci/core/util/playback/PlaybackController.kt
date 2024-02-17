@@ -74,19 +74,17 @@ abstract class PlaybackController(private val activity: FragmentActivity?) {
         initialized = true
 
 //        TODO: this shit doesn't work
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-//            activity?.registerReceiver(statusUpdate, IntentFilter(
-//                PlaybackService.ACTION_PLAYER_STATUS_CHANGED), Context.RECEIVER_NOT_EXPORTED)
-//            activity?.registerReceiver(notificationReceiver, IntentFilter(
-//                PlaybackServiceInterface.ACTION_PLAYER_NOTIFICATION), Context.RECEIVER_NOT_EXPORTED)
-//        } else {
-//            ContextCompat.registerReceiver(activity!!, statusUpdate, IntentFilter(
-//                PlaybackService.ACTION_PLAYER_STATUS_CHANGED), ContextCompat.RECEIVER_EXPORTED)
-//            ContextCompat.registerReceiver(activity, notificationReceiver, IntentFilter(
-//                PlaybackServiceInterface.ACTION_PLAYER_NOTIFICATION), ContextCompat.RECEIVER_EXPORTED)
-//        }
-        activity?.registerReceiver(statusUpdate, IntentFilter(PlaybackService.ACTION_PLAYER_STATUS_CHANGED))
-        activity?.registerReceiver(notificationReceiver, IntentFilter(PlaybackServiceInterface.ACTION_PLAYER_NOTIFICATION))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            activity?.registerReceiver(statusUpdate, IntentFilter(
+                PlaybackService.ACTION_PLAYER_STATUS_CHANGED), Context.RECEIVER_NOT_EXPORTED)
+            activity?.registerReceiver(notificationReceiver, IntentFilter(
+                PlaybackServiceInterface.ACTION_PLAYER_NOTIFICATION), Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            activity?.registerReceiver(statusUpdate, IntentFilter(PlaybackService.ACTION_PLAYER_STATUS_CHANGED))
+            activity?.registerReceiver(notificationReceiver, IntentFilter(PlaybackServiceInterface.ACTION_PLAYER_NOTIFICATION))
+        }
+//        activity?.registerReceiver(statusUpdate, IntentFilter(PlaybackService.ACTION_PLAYER_STATUS_CHANGED))
+//        activity?.registerReceiver(notificationReceiver, IntentFilter(PlaybackServiceInterface.ACTION_PLAYER_NOTIFICATION))
 
         if (!released) {
             bindToService()
@@ -390,7 +388,7 @@ abstract class PlaybackController(private val activity: FragmentActivity?) {
             if (playbackService == null || playbackService!!.audioTracks.isNullOrEmpty()) {
                 return emptyList()
             }
-            return playbackService!!.audioTracks!!.filterNotNull().map { it }
+            return playbackService!!.audioTracks.filterNotNull().map { it }
         }
 
     val selectedAudioTrack: Int

@@ -52,22 +52,21 @@ import java.util.*
  * Fragment for displaying feed subscriptions
  */
 class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAdapter.OnSelectModeListener {
-    private var subscriptionRecycler: RecyclerView? = null
-    private var subscriptionAdapter: SubscriptionsRecyclerAdapter? = null
-    private var emptyView: EmptyViewHandler? = null
-    private var feedsFilteredMsg: LinearLayout? = null
-    private var toolbar: MaterialToolbar? = null
-    private var swipeRefreshLayout: SwipeRefreshLayout? = null
-    private var progressBar: ProgressBar? = null
-    private var displayedFolder: String? = null
+    private lateinit var subscriptionRecycler: RecyclerView
+    private lateinit var subscriptionAdapter: SubscriptionsRecyclerAdapter
+    private lateinit var emptyView: EmptyViewHandler
+    private lateinit var feedsFilteredMsg: LinearLayout
+    private lateinit var toolbar: MaterialToolbar
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private lateinit var progressBar: ProgressBar
+    private lateinit var displayedFolder: String
+    private lateinit var prefs: SharedPreferences
+    private lateinit var speedDialView: SpeedDialView
+    
     private var displayUpArrow = false
 
     private var disposable: Disposable? = null
-    private var prefs: SharedPreferences? = null
-
-    private var speedDialView: SpeedDialView? = null
-
-    private var listItems: List<NavDrawerData.DrawerItem?>? = null
+    private var listItems: List<NavDrawerData.DrawerItem> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,36 +80,34 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
     ): View {
         val root: View = inflater.inflate(R.layout.fragment_subscriptions, container, false)
         toolbar = root.findViewById(R.id.toolbar)
-        toolbar?.setOnMenuItemClickListener(this)
-        toolbar?.setOnLongClickListener { v: View? ->
-            subscriptionRecycler!!.scrollToPosition(5)
-            subscriptionRecycler!!.post { subscriptionRecycler!!.smoothScrollToPosition(0) }
+        toolbar.setOnMenuItemClickListener(this)
+        toolbar.setOnLongClickListener { v: View? ->
+            subscriptionRecycler.scrollToPosition(5)
+            subscriptionRecycler.post { subscriptionRecycler.smoothScrollToPosition(0) }
             false
         }
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) {
             displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
         }
-        if (toolbar != null) (activity as MainActivity).setupToolbarToggle(toolbar!!, displayUpArrow)
-        toolbar?.inflateMenu(R.menu.subscriptions)
+        (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
+        toolbar.inflateMenu(R.menu.subscriptions)
         for (i in COLUMN_CHECKBOX_IDS.indices) {
             // Do this in Java to localize numbers
-            toolbar?.menu?.findItem(COLUMN_CHECKBOX_IDS[i])
+            toolbar.menu?.findItem(COLUMN_CHECKBOX_IDS[i])
                 ?.setTitle(String.format(Locale.getDefault(), "%d", i + MIN_NUM_COLUMNS))
         }
         refreshToolbarState()
 
         if (arguments != null) {
             displayedFolder = requireArguments().getString(ARGUMENT_FOLDER, null)
-            if (displayedFolder != null) {
-                toolbar?.title = displayedFolder
-            }
+            toolbar.title = displayedFolder
         }
 
         subscriptionRecycler = root.findViewById(R.id.subscriptions_grid)
-        subscriptionRecycler?.addItemDecoration(SubscriptionsRecyclerAdapter.GridDividerItemDecorator())
-        if (subscriptionRecycler != null) registerForContextMenu(subscriptionRecycler!!)
-        subscriptionRecycler?.addOnScrollListener(LiftOnScrollListener(root.findViewById(R.id.appbar)))
+        subscriptionRecycler.addItemDecoration(SubscriptionsRecyclerAdapter.GridDividerItemDecorator())
+        registerForContextMenu(subscriptionRecycler)
+        subscriptionRecycler.addOnScrollListener(LiftOnScrollListener(root.findViewById(R.id.appbar)))
         subscriptionAdapter = object : SubscriptionsRecyclerAdapter(activity as MainActivity) {
             override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
                 super.onCreateContextMenu(menu, v, menuInfo)
@@ -120,13 +117,13 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
                 }
             }
         }
-        setColumnNumber(prefs!!.getInt(PREF_NUM_COLUMNS, defaultNumOfColumns))
-        subscriptionAdapter?.setOnSelectModeListener(this)
-        subscriptionRecycler?.adapter = subscriptionAdapter
+        setColumnNumber(prefs.getInt(PREF_NUM_COLUMNS, defaultNumOfColumns))
+        subscriptionAdapter.setOnSelectModeListener(this)
+        subscriptionRecycler.adapter = subscriptionAdapter
         setupEmptyView()
 
         progressBar = root.findViewById(R.id.progressBar)
-        progressBar?.visibility = View.VISIBLE
+        progressBar.visibility = View.VISIBLE
 
         val subscriptionAddButton: FloatingActionButton =
             root.findViewById(R.id.subscriptions_add)
@@ -137,21 +134,21 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
         }
 
         feedsFilteredMsg = root.findViewById(R.id.feeds_filtered_message)
-        feedsFilteredMsg?.setOnClickListener { l: View? ->
+        feedsFilteredMsg.setOnClickListener { l: View? ->
             SubscriptionsFilterDialog().show(
                 childFragmentManager, "filter")
         }
 
         swipeRefreshLayout = root.findViewById(R.id.swipeRefresh)
-        swipeRefreshLayout?.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
-        swipeRefreshLayout?.setOnRefreshListener {
+        swipeRefreshLayout.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
+        swipeRefreshLayout.setOnRefreshListener {
             FeedUpdateManager.runOnceOrAsk(requireContext())
         }
 
         speedDialView = root.findViewById(R.id.fabSD)
-        speedDialView?.overlayLayout = root.findViewById(R.id.fabSDOverlay)
-        speedDialView?.inflate(R.menu.nav_feed_action_speeddial)
-        speedDialView?.setOnChangeListener(object : SpeedDialView.OnChangeListener {
+        speedDialView.overlayLayout = root.findViewById(R.id.fabSDOverlay)
+        speedDialView.inflate(R.menu.nav_feed_action_speeddial)
+        speedDialView.setOnChangeListener(object : SpeedDialView.OnChangeListener {
             override fun onMainActionSelected(): Boolean {
                 return false
             }
@@ -159,9 +156,9 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
             override fun onToggleChanged(isOpen: Boolean) {
             }
         })
-        speedDialView?.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
+        speedDialView.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
             FeedMultiSelectActionHandler(activity as MainActivity,
-                subscriptionAdapter!!.selectedItems.filterIsInstance<Feed>()).handleAction(actionItem.id)
+                subscriptionAdapter.selectedItems.filterIsInstance<Feed>()).handleAction(actionItem.id)
             true
         }
 
@@ -174,13 +171,13 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
     }
 
     private fun refreshToolbarState() {
-        val columns: Int = prefs!!.getInt(PREF_NUM_COLUMNS, defaultNumOfColumns)
-        toolbar?.menu?.findItem(COLUMN_CHECKBOX_IDS[columns - MIN_NUM_COLUMNS])?.setChecked(true)
+        val columns: Int = prefs.getInt(PREF_NUM_COLUMNS, defaultNumOfColumns)
+        toolbar.menu?.findItem(COLUMN_CHECKBOX_IDS[columns - MIN_NUM_COLUMNS])?.setChecked(true)
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: FeedUpdateRunningEvent) {
-        swipeRefreshLayout?.isRefreshing = event.isFeedUpdateRunning
+        swipeRefreshLayout.isRefreshing = event.isFeedUpdateRunning
     }
 
     @UnstableApi override fun onMenuItemClick(item: MenuItem): Boolean {
@@ -229,18 +226,18 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
     private fun setColumnNumber(columns: Int) {
         val gridLayoutManager = GridLayoutManager(context,
             columns, RecyclerView.VERTICAL, false)
-        subscriptionAdapter?.setColumnCount(columns)
-        subscriptionRecycler!!.layoutManager = gridLayoutManager
-        prefs!!.edit().putInt(PREF_NUM_COLUMNS, columns).apply()
+        subscriptionAdapter.setColumnCount(columns)
+        subscriptionRecycler.layoutManager = gridLayoutManager
+        prefs.edit().putInt(PREF_NUM_COLUMNS, columns).apply()
         refreshToolbarState()
     }
 
     private fun setupEmptyView() {
         emptyView = EmptyViewHandler(context)
-        emptyView?.setIcon(R.drawable.ic_subscriptions)
-        emptyView?.setTitle(R.string.no_subscriptions_head_label)
-        emptyView?.setMessage(R.string.no_subscriptions_label)
-        if (subscriptionRecycler != null) emptyView?.attachToRecyclerView(subscriptionRecycler!!)
+        emptyView.setIcon(R.drawable.ic_subscriptions)
+        emptyView.setTitle(R.string.no_subscriptions_head_label)
+        emptyView.setMessage(R.string.no_subscriptions_label)
+        emptyView.attachToRecyclerView(subscriptionRecycler)
     }
 
     override fun onStart() {
@@ -253,13 +250,12 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
         super.onStop()
         EventBus.getDefault().unregister(this)
         disposable?.dispose()
-        subscriptionAdapter?.endSelectMode()
+        subscriptionAdapter.endSelectMode()
     }
 
     private fun loadSubscriptions() {
         disposable?.dispose()
-
-        emptyView?.hide()
+        emptyView.hide()
         disposable = Observable.fromCallable {
             val data: NavDrawerData = DBReader.getNavDrawerData(UserPreferences.subscriptionsFilter)
             val items: List<NavDrawerData.DrawerItem> = data.items
@@ -273,23 +269,23 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
-                { result: List<NavDrawerData.DrawerItem?> ->
-                    if (listItems != null && listItems!!.size > result.size) {
+                { result: List<NavDrawerData.DrawerItem> ->
+                    if ( listItems.size > result.size) {
                         // We have fewer items. This can result in items being selected that are no longer visible.
-                        subscriptionAdapter?.endSelectMode()
+                        subscriptionAdapter.endSelectMode()
                     }
                     listItems = result
-                    progressBar?.visibility = View.GONE
-                    subscriptionAdapter?.setItems(result.filterNotNull())
-                    emptyView?.updateVisibility()
+                    progressBar.visibility = View.GONE
+                    subscriptionAdapter.setItems(result)
+                    emptyView.updateVisibility()
                 }, { error: Throwable? ->
                     Log.e(TAG, Log.getStackTraceString(error))
                 })
 
         if (UserPreferences.subscriptionsFilter.isEnabled) {
-            feedsFilteredMsg?.visibility = View.VISIBLE
+            feedsFilteredMsg.visibility = View.VISIBLE
         } else {
-            feedsFilteredMsg?.visibility = View.GONE
+            feedsFilteredMsg.visibility = View.GONE
         }
     }
 
@@ -297,7 +293,7 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
         get() = resources.getInteger(R.integer.subscriptions_default_num_of_columns)
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
-        val drawerItem: NavDrawerData.DrawerItem = subscriptionAdapter!!.getSelectedItem() ?: return false
+        val drawerItem: NavDrawerData.DrawerItem = subscriptionAdapter.getSelectedItem() ?: return false
         val itemId = item.itemId
         if (drawerItem.type == NavDrawerData.DrawerItem.Type.TAG && itemId == R.id.rename_folder_item) {
             RenameItemDialog(activity as Activity, drawerItem).show()
@@ -306,8 +302,8 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
 
         val feed: Feed = (drawerItem as NavDrawerData.FeedDrawerItem).feed
         if (itemId == R.id.multi_select) {
-            speedDialView?.visibility = View.VISIBLE
-            return subscriptionAdapter!!.onContextItemSelected(item)
+            speedDialView.visibility = View.VISIBLE
+            return subscriptionAdapter.onContextItemSelected(item)
         }
         return FeedMenuHandler.onMenuItemClicked(this, item.itemId, feed) { this.loadSubscriptions() }
     }
@@ -323,20 +319,19 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
     }
 
     override fun onEndSelectMode() {
-        speedDialView?.close()
-        speedDialView?.visibility = View.GONE
-        if (listItems != null) subscriptionAdapter?.setItems(listItems!!.filterNotNull())
+        speedDialView.close()
+        speedDialView.visibility = View.GONE
+        subscriptionAdapter.setItems(listItems)
     }
 
     override fun onStartSelectMode() {
         val feedsOnly: MutableList<NavDrawerData.DrawerItem> = ArrayList<NavDrawerData.DrawerItem>()
-        if (listItems != null) for (item in listItems!!) {
-            if (item == null) continue
+        for (item in listItems) {
             if (item.type == NavDrawerData.DrawerItem.Type.FEED) {
                 feedsOnly.add(item)
             }
         }
-        subscriptionAdapter?.setItems(feedsOnly)
+        subscriptionAdapter.setItems(feedsOnly)
     }
 
     companion object {

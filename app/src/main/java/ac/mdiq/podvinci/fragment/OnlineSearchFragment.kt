@@ -33,11 +33,12 @@ class OnlineSearchFragment
      */
     private var adapter: ItunesAdapter? = null
     private var searchProvider: PodcastSearcher? = null
-    private var gridView: GridView? = null
-    private var progressBar: ProgressBar? = null
-    private var txtvError: TextView? = null
-    private var butRetry: Button? = null
-    private var txtvEmpty: TextView? = null
+    
+    private lateinit var gridView: GridView
+    private lateinit var progressBar: ProgressBar
+    private lateinit var txtvError: TextView
+    private lateinit var butRetry: Button
+    private lateinit var txtvEmpty: TextView
 
     /**
      * List of podcasts retreived from the search
@@ -65,10 +66,10 @@ class OnlineSearchFragment
         val root: View = inflater.inflate(R.layout.fragment_itunes_search, container, false)
         gridView = root.findViewById(R.id.gridView)
         adapter = ItunesAdapter(requireContext(), ArrayList())
-        gridView?.setAdapter(adapter)
+        gridView.setAdapter(adapter)
 
         //Show information about the podcast when the list item is clicked
-        gridView?.onItemClickListener =
+        gridView.onItemClickListener =
             AdapterView.OnItemClickListener { parent: AdapterView<*>?, view1: View?, position: Int, id: Long ->
                 val podcast = searchResults!![position]
                 if (podcast != null) {
@@ -86,7 +87,7 @@ class OnlineSearchFragment
         if (searchProvider != null) txtvPoweredBy.text = getString(R.string.search_powered_by, searchProvider!!.name)
         setupToolbar(root.findViewById(R.id.toolbar))
 
-        gridView?.setOnScrollListener(object : AbsListView.OnScrollListener {
+        gridView.setOnScrollListener(object : AbsListView.OnScrollListener {
             override fun onScrollStateChanged(view: AbsListView, scrollState: Int) {
                 if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL) {
                     val imm = activity!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -158,29 +159,29 @@ class OnlineSearchFragment
         disposable = searchProvider?.search(query)
             ?.subscribe({ result: List<PodcastSearchResult?>? ->
                 searchResults = result
-                progressBar?.visibility = View.GONE
+                progressBar.visibility = View.GONE
                 adapter?.clear()
                 if (searchResults != null) adapter?.addAll(searchResults!!)
                 adapter?.notifyDataSetInvalidated()
-                gridView?.visibility = if (searchResults!!.isNotEmpty()) View.VISIBLE else View.GONE
-                txtvEmpty?.visibility = if (searchResults!!.isEmpty()) View.VISIBLE else View.GONE
-                txtvEmpty?.text = getString(R.string.no_results_for_query) + query
+                gridView.visibility = if (searchResults!!.isNotEmpty()) View.VISIBLE else View.GONE
+                txtvEmpty.visibility = if (searchResults!!.isEmpty()) View.VISIBLE else View.GONE
+                txtvEmpty.text = getString(R.string.no_results_for_query) + query
             }, { error: Throwable ->
                 Log.e(TAG, Log.getStackTraceString(error))
-                progressBar?.visibility = View.GONE
-                txtvError?.text = error.toString()
-                txtvError?.visibility = View.VISIBLE
-                butRetry?.setOnClickListener { v: View? -> search(query) }
-                butRetry!!.visibility = View.VISIBLE
+                progressBar.visibility = View.GONE
+                txtvError.text = error.toString()
+                txtvError.visibility = View.VISIBLE
+                butRetry.setOnClickListener { v: View? -> search(query) }
+                butRetry.visibility = View.VISIBLE
             })
     }
 
     private fun showOnlyProgressBar() {
-        gridView?.visibility = View.GONE
-        txtvError?.visibility = View.GONE
-        butRetry!!.visibility = View.GONE
-        txtvEmpty?.visibility = View.GONE
-        progressBar?.visibility = View.VISIBLE
+        gridView.visibility = View.GONE
+        txtvError.visibility = View.GONE
+        butRetry.visibility = View.GONE
+        txtvEmpty.visibility = View.GONE
+        progressBar.visibility = View.VISIBLE
     }
 
     private fun showInputMethod(view: View) {

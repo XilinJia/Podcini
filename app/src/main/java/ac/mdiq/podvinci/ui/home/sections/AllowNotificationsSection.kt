@@ -19,37 +19,39 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import ac.mdiq.podvinci.R
 import ac.mdiq.podvinci.databinding.HomeSectionNotificationBinding
 import ac.mdiq.podvinci.ui.home.HomeFragment
+import androidx.media3.common.util.UnstableApi
 
+@UnstableApi
 class AllowNotificationsSection : Fragment() {
-    var viewBinding: HomeSectionNotificationBinding? = null
+    lateinit var viewBinding: HomeSectionNotificationBinding
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
                 (activity as MainActivity).loadFragment(HomeFragment.TAG, null)
             } else {
-                viewBinding!!.openSettingsButton.visibility = View.VISIBLE
-                viewBinding!!.allowButton.visibility = View.GONE
+                viewBinding.openSettingsButton.visibility = View.VISIBLE
+                viewBinding.allowButton.visibility = View.GONE
                 Toast.makeText(context, R.string.notification_permission_denied, Toast.LENGTH_LONG).show()
             }
         }
 
-    override fun onCreateView(inflater: LayoutInflater,
-                              container: ViewGroup?, savedInstanceState: Bundle?
+    @UnstableApi override fun onCreateView(inflater: LayoutInflater,
+                                           container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         viewBinding = HomeSectionNotificationBinding.inflate(inflater)
-        viewBinding!!.allowButton.setOnClickListener { v: View? ->
+        viewBinding.allowButton.setOnClickListener { v: View? ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
-        viewBinding!!.openSettingsButton.setOnClickListener { view: View? ->
+        viewBinding.openSettingsButton.setOnClickListener { view: View? ->
             val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
             val uri = Uri.fromParts("package", requireContext().packageName, null)
             intent.setData(uri)
             startActivity(intent)
         }
-        viewBinding!!.denyButton.setOnClickListener { v: View? ->
+        viewBinding.denyButton.setOnClickListener { v: View? ->
             val builder = MaterialAlertDialogBuilder(requireContext())
             builder.setMessage(R.string.notification_permission_deny_warning)
             builder.setPositiveButton(R.string.deny_label
@@ -61,6 +63,6 @@ class AllowNotificationsSection : Fragment() {
             builder.setNegativeButton(R.string.cancel_label, null)
             builder.show()
         }
-        return viewBinding!!.root
+        return viewBinding.root
     }
 }

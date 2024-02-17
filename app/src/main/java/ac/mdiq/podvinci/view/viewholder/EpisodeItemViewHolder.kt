@@ -41,8 +41,9 @@ import kotlin.math.max
  * Holds the view which shows FeedItems.
  */
 @UnstableApi
-class EpisodeItemViewHolder(activity: MainActivity, parent: ViewGroup?) :
+class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGroup?) :
     RecyclerView.ViewHolder(LayoutInflater.from(activity).inflate(R.layout.feeditemlist_item, parent, false)) {
+
     private val container: View = itemView.findViewById(R.id.container)
     @JvmField
     val dragHandle: ImageView = itemView.findViewById(R.id.drag_handle)
@@ -69,7 +70,6 @@ class EpisodeItemViewHolder(activity: MainActivity, parent: ViewGroup?) :
     @JvmField
     val coverHolder: CardView
 
-    private val activity: MainActivity = activity
     private var item: FeedItem? = null
 
     init {
@@ -269,8 +269,11 @@ class EpisodeItemViewHolder(activity: MainActivity, parent: ViewGroup?) :
      * Hides the separator dot between icons and text if there are no icons.
      */
     fun hideSeparatorIfNecessary() {
-        val hasIcons =
-            isInbox.visibility == View.VISIBLE || isInQueue.visibility == View.VISIBLE || isVideo.visibility == View.VISIBLE || isFavorite.visibility == View.VISIBLE || isInbox.visibility == View.VISIBLE
+        val hasIcons = isInbox.visibility == View.VISIBLE ||
+                isInQueue.visibility == View.VISIBLE ||
+                isVideo.visibility == View.VISIBLE ||
+                isFavorite.visibility == View.VISIBLE ||
+                isInbox.visibility == View.VISIBLE
         separatorIcons.visibility = if (hasIcons) View.VISIBLE else View.GONE
     }
 

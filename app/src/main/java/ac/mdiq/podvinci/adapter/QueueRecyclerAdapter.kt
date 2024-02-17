@@ -16,10 +16,8 @@ import ac.mdiq.podvinci.view.viewholder.EpisodeItemViewHolder
 /**
  * List adapter for the queue.
  */
-open class QueueRecyclerAdapter(mainActivity: MainActivity, swipeActions: SwipeActions) : EpisodeItemListAdapter(mainActivity) {
-    private val swipeActions: SwipeActions = swipeActions
+open class QueueRecyclerAdapter(mainActivity: MainActivity, private val swipeActions: SwipeActions) : EpisodeItemListAdapter(mainActivity) {
     private var dragDropEnabled: Boolean
-
 
     init {
         dragDropEnabled = !(UserPreferences.isQueueKeepSorted || UserPreferences.isQueueLocked)
@@ -46,7 +44,7 @@ open class QueueRecyclerAdapter(mainActivity: MainActivity, swipeActions: SwipeA
                 false
             }
             holder.coverHolder.setOnTouchListener { v1, event ->
-                if (event.actionMasked === MotionEvent.ACTION_DOWN) {
+                if (event.actionMasked == MotionEvent.ACTION_DOWN) {
                     val isLtr = holder.itemView.getLayoutDirection() == View.LAYOUT_DIRECTION_LTR
                     val factor = (if (isLtr) 1 else -1).toFloat()
                     if (factor * event.x < factor * 0.5 * v1.width) {
@@ -75,10 +73,10 @@ open class QueueRecyclerAdapter(mainActivity: MainActivity, swipeActions: SwipeA
         if (!inActionMode()) {
             menu.findItem(R.id.multi_select).setVisible(true)
             val keepSorted: Boolean = UserPreferences.isQueueKeepSorted
-            if (getItem(0).id === longPressedItem?.id || keepSorted) {
+            if (getItem(0)?.id === longPressedItem?.id || keepSorted) {
                 menu.findItem(R.id.move_to_top_item).setVisible(false)
             }
-            if (getItem(itemCount - 1).id === longPressedItem?.id || keepSorted) {
+            if (getItem(itemCount - 1)?.id === longPressedItem?.id || keepSorted) {
                 menu.findItem(R.id.move_to_bottom_item).setVisible(false)
             }
         } else {

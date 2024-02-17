@@ -6,6 +6,7 @@ import ac.mdiq.podvinci.R
 import ac.mdiq.podvinci.core.storage.DBWriter
 import ac.mdiq.podvinci.model.feed.FeedItem
 import ac.mdiq.podvinci.view.LocalDeleteModal.showLocalFeedDeleteWarningIfNecessary
+import androidx.media3.common.util.UnstableApi
 
 class DeleteActionButton(item: FeedItem) : ItemActionButton(item) {
     override fun getLabel(): Int {
@@ -14,11 +15,10 @@ class DeleteActionButton(item: FeedItem) : ItemActionButton(item) {
     override fun getDrawable(): Int {
         return R.drawable.ic_delete
     }
-    override fun onClick(context: Context) {
+    @UnstableApi override fun onClick(context: Context) {
         val media = item.media ?: return
 
-        showLocalFeedDeleteWarningIfNecessary(context, listOf(item)
-        ) { DBWriter.deleteFeedMediaOfItem(context, media.id) }
+        showLocalFeedDeleteWarningIfNecessary(context, listOf(item)) { DBWriter.deleteFeedMediaOfItem(context, media.id) }
     }
 
     override val visibility: Int

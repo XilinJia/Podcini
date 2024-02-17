@@ -37,11 +37,12 @@ import org.greenrobot.eventbus.ThreadMode
  * Fragment which is supposed to be displayed outside of the MediaplayerActivity.
  */
 class ExternalPlayerFragment : Fragment() {
-    private var imgvCover: ImageView? = null
-    private var txtvTitle: TextView? = null
-    private var butPlay: PlayButton? = null
-    private var feedName: TextView? = null
-    private var progressBar: ProgressBar? = null
+    private lateinit var imgvCover: ImageView
+    private lateinit var txtvTitle: TextView
+    private lateinit var butPlay: PlayButton
+    private lateinit var feedName: TextView
+    private lateinit var progressBar: ProgressBar
+
     private var controller: PlaybackController? = null
     private var disposable: Disposable? = null
 
@@ -73,7 +74,7 @@ class ExternalPlayerFragment : Fragment() {
     @UnstableApi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        butPlay!!.setOnClickListener { v: View? ->
+        butPlay.setOnClickListener { v: View? ->
             if (controller == null) {
                 return@setOnClickListener
             }
@@ -91,7 +92,7 @@ class ExternalPlayerFragment : Fragment() {
     private fun setupPlaybackController(): PlaybackController {
         return object : PlaybackController(activity) {
             override fun updatePlayButtonShowsPlay(showPlay: Boolean) {
-                butPlay!!.setIsShowPlay(showPlay)
+                butPlay.setIsShowPlay(showPlay)
             }
 
             override fun loadMediaInfo() {
@@ -116,10 +117,9 @@ class ExternalPlayerFragment : Fragment() {
     @UnstableApi
     override fun onStop() {
         super.onStop()
-        if (controller != null) {
-            controller!!.release()
-            controller = null
-        }
+        controller?.release()
+        controller = null
+
         EventBus.getDefault().unregister(this)
     }
 
@@ -132,10 +132,10 @@ class ExternalPlayerFragment : Fragment() {
                 || controller!!.duration == Playable.INVALID_TIME) {
             return
         }
-        progressBar!!.progress = (controller!!.position.toDouble() / controller!!.duration * 100).toInt()
+        progressBar.progress = (controller!!.position.toDouble() / controller!!.duration * 100).toInt()
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onPlaybackServiceChanged(event: PlaybackServiceEvent) {
         if (event.action == PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN) {
             (activity as MainActivity).setPlayerVisible(false)
@@ -145,17 +145,14 @@ class ExternalPlayerFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         Log.d(TAG, "Fragment is about to be destroyed")
-        if (disposable != null) {
-            disposable!!.dispose()
-        }
+        disposable?.dispose()
+
     }
 
     @UnstableApi
     override fun onPause() {
         super.onPause()
-        if (controller != null) {
-            controller!!.pause()
-        }
+        controller?.pause()
     }
 
     @UnstableApi
@@ -166,9 +163,7 @@ class ExternalPlayerFragment : Fragment() {
             return
         }
 
-        if (disposable != null) {
-            disposable!!.dispose()
-        }
+        disposable?.dispose()
         disposable = Maybe.fromCallable<Playable?> { controller!!.getMedia() }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -183,8 +178,8 @@ class ExternalPlayerFragment : Fragment() {
             return
         }
         (activity as MainActivity).setPlayerVisible(true)
-        txtvTitle!!.text = media.getEpisodeTitle()
-        feedName!!.text = media.getFeedTitle()
+        txtvTitle.text = media.getEpisodeTitle()
+        feedName.text = media.getFeedTitle()
         onPositionObserverUpdate(PlaybackPositionEvent(media.getPosition(), media.getDuration()))
 
         val options = RequestOptions()
@@ -199,13 +194,13 @@ class ExternalPlayerFragment : Fragment() {
                 .load(getFallbackImageLocation(media))
                 .apply(options))
             .apply(options)
-            .into(imgvCover!!)
+            .into(imgvCover)
 
         if (controller != null && controller!!.isPlayingVideoLocally) {
             (activity as MainActivity).bottomSheet?.setLocked(true)
             (activity as MainActivity).bottomSheet?.setState(BottomSheetBehavior.STATE_COLLAPSED)
         } else {
-            butPlay!!.visibility = View.VISIBLE
+            butPlay.visibility = View.VISIBLE
             (activity as MainActivity).bottomSheet?.setLocked(false)
         }
     }

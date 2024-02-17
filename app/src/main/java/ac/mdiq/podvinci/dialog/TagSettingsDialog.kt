@@ -43,7 +43,7 @@ class TagSettingsDialog : DialogFragment() {
         viewBinding!!.tagsRecycler.layoutManager = GridLayoutManager(context, 2)
         viewBinding!!.tagsRecycler.addItemDecoration(ItemOffsetDecoration(requireContext(), 4))
         adapter = object : SimpleChipAdapter(requireContext()) {
-            override fun getChips(): List<String?> {
+            override fun getChips(): List<String> {
                 return displayedTags?: listOf()
             }
 

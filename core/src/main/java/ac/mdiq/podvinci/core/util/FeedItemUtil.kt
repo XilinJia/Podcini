@@ -10,7 +10,7 @@ object FeedItemUtil {
     fun indexOfItemWithId(items: List<FeedItem?>, id: Long): Int {
         for (i in items.indices) {
             val item = items[i]
-            if (item != null && item.id == id) {
+            if (item?.id == id) {
                 return i
             }
         }
@@ -21,7 +21,7 @@ object FeedItemUtil {
     fun indexOfItemWithDownloadUrl(items: List<FeedItem?>, downloadUrl: String): Int {
         for (i in items.indices) {
             val item = items[i]
-            if (item?.media != null && item.media!!.download_url == downloadUrl) {
+            if (item?.media?.download_url == downloadUrl) {
                 return i
             }
         }
@@ -30,7 +30,7 @@ object FeedItemUtil {
 
     @JvmStatic
     fun getIds(items: List<FeedItem>?): LongArray {
-        if (items == null || items.isEmpty()) {
+        if (items.isNullOrEmpty()) {
             return LongArray(0)
         }
         val result = LongArray(items.size)

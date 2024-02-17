@@ -2,6 +2,8 @@ package ac.mdiq.podvinci.core.service.playback
 
 import android.annotation.SuppressLint
 import android.app.Notification
+import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+import android.os.Build
 import android.util.Log
 import androidx.core.app.ServiceCompat
 import kotlin.concurrent.Volatile
@@ -13,11 +15,13 @@ internal class PlaybackServiceStateManager(private val playbackService: Playback
     @Volatile
     private var hasReceivedValidStartCommand = false
 
-    @SuppressLint("ForegroundServiceType")
-    fun startForeground(notificationId: Int, notification: Notification?) {
+    fun startForeground(notificationId: Int, notification: Notification) {
         Log.d(TAG, "startForeground")
-        // TODO: need to add declaration in manifest
-        playbackService.startForeground(notificationId, notification)
+        if (Build.VERSION.SDK_INT >= 29) {
+            playbackService.startForeground(notificationId, notification, FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
+        } else {
+            playbackService.startForeground(notificationId, notification)
+        }
         isInForeground = true
     }
 

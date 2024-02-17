@@ -16,8 +16,8 @@ import ac.mdiq.podvinci.R
  */
 class SimpleIconListAdapter<T : SimpleIconListAdapter.ListItem>(private val context: Context,
                                                                 private val listItems: List<T>
-) : ArrayAdapter<T>(
-    context, R.layout.simple_icon_list_item, listItems) {
+) : ArrayAdapter<T>(context, R.layout.simple_icon_list_item, listItems) {
+
     override fun getView(position: Int, view: View?, parent: ViewGroup): View {
         var view = view
         if (view == null) {

@@ -53,7 +53,7 @@ class ChapterSeekBar : AppCompatSeekBar {
         if (dividerPos != null) {
             this.dividerPos = FloatArray(dividerPos.size + 2)
             this.dividerPos!![0] = 0f
-            System.arraycopy(dividerPos, 0, this.dividerPos, 1, dividerPos.size)
+            System.arraycopy(dividerPos, 0, this.dividerPos!!, 1, dividerPos.size)
             this.dividerPos!![this.dividerPos!!.size - 1] = 1f
         } else {
             this.dividerPos = null
@@ -104,30 +104,32 @@ class ChapterSeekBar : AppCompatSeekBar {
 
         canvas.translate(paddingLeft.toFloat(), paddingTop.toFloat())
 
-        for (i in 1 until dividerPos!!.size) {
-            val right = dividerPos!![i] * width - chapterMargin
-            val left = dividerPos!![i - 1] * width
-            val rightCurr = dividerPos!![currChapter] * width - chapterMargin
-            val leftCurr = dividerPos!![currChapter - 1] * width
+        if (dividerPos != null && dividerPos!!.isNotEmpty()) {
+            for (i in 1 until dividerPos!!.size) {
+                val right = dividerPos!![i] * width - chapterMargin
+                val left = dividerPos!![i - 1] * width
+                val rightCurr = dividerPos!![currChapter] * width - chapterMargin
+                val leftCurr = dividerPos!![currChapter - 1] * width
 
-            canvas.drawRect(left, top, right, bottom, paintBackground)
+                canvas.drawRect(left, top, right, bottom, paintBackground)
 
-            if (progressSecondary > 0 && progressSecondary < width) {
-                if (right < progressSecondary) {
-                    canvas.drawRect(left, top, right, bottom, paintBackground)
-                } else if (progressSecondary > left) {
-                    canvas.drawRect(left, top, progressSecondary, bottom, paintBackground)
+                if (progressSecondary > 0 && progressSecondary < width) {
+                    if (right < progressSecondary) {
+                        canvas.drawRect(left, top, right, bottom, paintBackground)
+                    } else if (progressSecondary > left) {
+                        canvas.drawRect(left, top, progressSecondary, bottom, paintBackground)
+                    }
                 }
-            }
 
-            if (right < progressPrimary) {
-                currChapter = i + 1
-                canvas.drawRect(left, top, right, bottom, paintProgressPrimary)
-            } else if (isHighlighted || isPressed) {
-                canvas.drawRect(leftCurr, topExpanded, rightCurr, bottomExpanded, paintBackground)
-                canvas.drawRect(leftCurr, topExpanded, progressPrimary, bottomExpanded, paintProgressPrimary)
-            } else {
-                canvas.drawRect(leftCurr, top, progressPrimary, bottom, paintProgressPrimary)
+                if (right < progressPrimary) {
+                    currChapter = i + 1
+                    canvas.drawRect(left, top, right, bottom, paintProgressPrimary)
+                } else if (isHighlighted || isPressed) {
+                    canvas.drawRect(leftCurr, topExpanded, rightCurr, bottomExpanded, paintBackground)
+                    canvas.drawRect(leftCurr, topExpanded, progressPrimary, bottomExpanded, paintProgressPrimary)
+                } else {
+                    canvas.drawRect(leftCurr, top, progressPrimary, bottom, paintProgressPrimary)
+                }
             }
         }
         canvas.restoreToCount(saveCount)

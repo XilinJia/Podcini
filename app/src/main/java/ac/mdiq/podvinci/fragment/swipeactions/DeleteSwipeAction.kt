@@ -30,9 +30,8 @@ class DeleteSwipeAction : SwipeAction {
         if (!item.isDownloaded && !item.feed!!.isLocalFeed) {
             return
         }
-        showLocalFeedDeleteWarningIfNecessary(
-            fragment.requireContext(), listOf(item)
-        ) { DBWriter.deleteFeedMediaOfItem(fragment.requireContext(), item.media!!.id) }
+        showLocalFeedDeleteWarningIfNecessary(fragment.requireContext(), listOf(item)) {
+            DBWriter.deleteFeedMediaOfItem(fragment.requireContext(), item.media!!.id) }
     }
 
     override fun willRemove(filter: FeedItemFilter, item: FeedItem): Boolean {

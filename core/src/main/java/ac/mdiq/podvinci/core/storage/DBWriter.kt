@@ -205,7 +205,7 @@ import java.util.concurrent.TimeUnit
                 removedFromQueue.add(item)
             }
             if (item.media != null) {
-                if (item.media!!.id == currentlyPlayingFeedMediaId) {
+                if (item.media?.id == currentlyPlayingFeedMediaId) {
                     // Applies to both downloaded and streamed media
                     writeNoMediaPlaying()
                     sendLocalBroadcast(context, PlaybackServiceInterface.ACTION_SHUTDOWN_PLAYBACK_SERVICE)

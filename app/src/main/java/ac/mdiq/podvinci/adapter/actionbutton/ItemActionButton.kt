@@ -30,19 +30,29 @@ abstract class ItemActionButton internal constructor(@JvmField var item: FeedIte
         fun forItem(item: FeedItem): ItemActionButton {
             val media = item.media ?: return MarkAsPlayedActionButton(item)
 
-            val isDownloadingMedia = if (media.download_url==null) false else DownloadServiceInterface.get()?.isDownloadingEpisode(media.download_url!!)?:false
-            return if (isCurrentlyPlaying(media)) {
-                PauseActionButton(item)
-            } else if (item.feed != null && item.feed!!.isLocalFeed) {
-                PlayLocalActionButton(item)
-            } else if (media.isDownloaded()) {
-                PlayActionButton(item)
-            } else if (isDownloadingMedia) {
-                CancelDownloadActionButton(item)
-            } else if (isStreamOverDownload) {
-                StreamActionButton(item)
-            } else {
-                DownloadActionButton(item)
+            val isDownloadingMedia = when (media.download_url) {
+                null -> false
+                else -> DownloadServiceInterface.get()?.isDownloadingEpisode(media.download_url!!)?:false
+            }
+            return when {
+                isCurrentlyPlaying(media) -> {
+                    PauseActionButton(item)
+                }
+                item.feed != null && item.feed!!.isLocalFeed -> {
+                    PlayLocalActionButton(item)
+                }
+                media.isDownloaded() -> {
+                    PlayActionButton(item)
+                }
+                isDownloadingMedia -> {
+                    CancelDownloadActionButton(item)
+                }
+                isStreamOverDownload -> {
+                    StreamActionButton(item)
+                }
+                else -> {
+                    DownloadActionButton(item)
+                }
             }
         }
     }

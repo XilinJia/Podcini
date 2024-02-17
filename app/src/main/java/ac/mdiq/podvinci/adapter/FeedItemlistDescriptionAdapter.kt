@@ -1,13 +1,5 @@
 package ac.mdiq.podvinci.adapter
 
-import android.content.Context
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.TextView
-import androidx.media3.common.util.UnstableApi
 import ac.mdiq.podvinci.R
 import ac.mdiq.podvinci.core.service.playback.PlaybackService.Companion.getPlayerActivityIntent
 import ac.mdiq.podvinci.core.util.DateFormatter.formatAbbrev
@@ -19,15 +11,20 @@ import ac.mdiq.podvinci.model.feed.FeedItem
 import ac.mdiq.podvinci.model.playback.MediaType
 import ac.mdiq.podvinci.model.playback.Playable
 import ac.mdiq.podvinci.model.playback.RemoteMedia
-import java.lang.Boolean
-import kotlin.Int
+import android.content.Context
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.TextView
+import androidx.media3.common.util.UnstableApi
 
 /**
  * List adapter for showing a list of FeedItems with their title and description.
  */
-class FeedItemlistDescriptionAdapter(context: Context?, resource: Int, objects: List<FeedItem?>?) :
-    ArrayAdapter<FeedItem?>(
-        context!!, resource, objects!!) {
+class FeedItemlistDescriptionAdapter(context: Context, resource: Int, objects: List<FeedItem?>?) :
+    ArrayAdapter<FeedItem?>(context, resource, objects!!) {
     @UnstableApi override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         var convertView = convertView
         val holder: Holder
@@ -59,7 +56,7 @@ class FeedItemlistDescriptionAdapter(context: Context?, resource: Int, objects: 
             holder.description!!.text = description
             holder.description!!.maxLines = MAX_LINES_COLLAPSED
         }
-        holder.description!!.tag = Boolean.FALSE // not expanded
+        holder.description!!.tag = false
         holder.preview!!.visibility = View.GONE
         holder.preview!!.setOnClickListener { v: View? ->
             if (item.media == null) {
@@ -79,13 +76,13 @@ class FeedItemlistDescriptionAdapter(context: Context?, resource: Int, objects: 
             }
         }
         convertView!!.setOnClickListener { v: View? ->
-            if (holder.description!!.tag === Boolean.TRUE) {
+            if (holder.description!!.tag == true) {
                 holder.description!!.maxLines = MAX_LINES_COLLAPSED
                 holder.preview!!.visibility = View.GONE
-                holder.description!!.tag = Boolean.FALSE
+                holder.description!!.tag = false
             } else {
                 holder.description!!.maxLines = 30
-                holder.description!!.tag = Boolean.TRUE
+                holder.description!!.tag = true
 
                 holder.preview!!.visibility = if (item.media != null) View.VISIBLE else View.GONE
                 holder.preview!!.setText(R.string.preview_episode)

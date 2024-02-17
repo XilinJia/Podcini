@@ -242,10 +242,8 @@ class PlaybackServiceTaskManager(private val context: Context,
         cancelWidgetUpdater()
         disableSleepTimer()
 
-        if (chapterLoaderFuture != null) {
-            chapterLoaderFuture!!.dispose()
-            chapterLoaderFuture = null
-        }
+        chapterLoaderFuture?.dispose()
+        chapterLoaderFuture = null
     }
 
     /**

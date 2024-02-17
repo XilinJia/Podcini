@@ -1,26 +1,27 @@
 package ac.mdiq.podvinci.fragment
 
-import ac.mdiq.podvinci.activity.MainActivity
-import android.content.Context
-import android.content.Intent
-import android.content.SharedPreferences
-import android.os.Bundle
-import android.text.TextUtils
-import android.util.DisplayMetrics
-import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.*
-import androidx.fragment.app.Fragment
 import ac.mdiq.podvinci.BuildConfig
 import ac.mdiq.podvinci.R
+import ac.mdiq.podvinci.activity.MainActivity
 import ac.mdiq.podvinci.activity.OnlineFeedViewActivity
 import ac.mdiq.podvinci.adapter.FeedDiscoverAdapter
 import ac.mdiq.podvinci.core.storage.DBReader
 import ac.mdiq.podvinci.event.DiscoveryDefaultUpdateEvent
 import ac.mdiq.podvinci.net.discovery.ItunesTopListLoader
 import ac.mdiq.podvinci.net.discovery.PodcastSearchResult
+import android.content.Context
+import android.content.Intent
+import android.content.SharedPreferences
+import android.os.Bundle
+import android.util.DisplayMetrics
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.*
+import androidx.annotation.OptIn
+import androidx.fragment.app.Fragment
+import androidx.media3.common.util.UnstableApi
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -32,14 +33,15 @@ import java.util.*
 
 class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
     private var disposable: Disposable? = null
-    private var adapter: FeedDiscoverAdapter? = null
-    private var discoverGridLayout: GridView? = null
-    private var errorTextView: TextView? = null
-    private var poweredByTextView: TextView? = null
-    private var errorView: LinearLayout? = null
-    private var errorRetry: Button? = null
+    
+    private lateinit var adapter: FeedDiscoverAdapter
+    private lateinit var discoverGridLayout: GridView
+    private lateinit var errorTextView: TextView
+    private lateinit var poweredByTextView: TextView
+    private lateinit var errorView: LinearLayout
+    private lateinit var errorRetry: Button
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    @OptIn(UnstableApi::class) override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         val root: View = inflater.inflate(R.layout.quick_feed_discovery, container, false)
         val discoverMore = root.findViewById<View>(R.id.discover_more)
@@ -52,15 +54,15 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
         poweredByTextView = root.findViewById(R.id.discover_powered_by_itunes)
 
         adapter = FeedDiscoverAdapter(activity as MainActivity)
-        discoverGridLayout?.setAdapter(adapter)
-        discoverGridLayout?.onItemClickListener = this
+        discoverGridLayout.setAdapter(adapter)
+        discoverGridLayout.onItemClickListener = this
 
         val displayMetrics: DisplayMetrics = requireContext().resources.displayMetrics
         val screenWidthDp: Float = displayMetrics.widthPixels / displayMetrics.density
         if (screenWidthDp > 600) {
-            discoverGridLayout?.numColumns = 6
+            discoverGridLayout.numColumns = 6
         } else {
-            discoverGridLayout?.numColumns = 4
+            discoverGridLayout.numColumns = 4
         }
 
         // Fill with dummy elements to have a fixed height and
@@ -70,7 +72,7 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
             dummies.add(PodcastSearchResult.dummy())
         }
 
-        adapter?.updateData(dummies)
+        adapter.updateData(dummies)
         loadToplist()
 
         EventBus.getDefault().register(this)
@@ -90,31 +92,31 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
     }
 
     private fun loadToplist() {
-        errorView?.visibility = View.GONE
-        errorRetry!!.visibility = View.INVISIBLE
-        errorRetry?.setText(R.string.retry_label)
-        poweredByTextView?.visibility = View.VISIBLE
+        errorView.visibility = View.GONE
+        errorRetry.visibility = View.INVISIBLE
+        errorRetry.setText(R.string.retry_label)
+        poweredByTextView.visibility = View.VISIBLE
 
         val loader = ItunesTopListLoader(requireContext())
         val prefs: SharedPreferences = requireActivity().getSharedPreferences(ItunesTopListLoader.PREFS, Context.MODE_PRIVATE)
         val countryCode: String = prefs.getString(ItunesTopListLoader.PREF_KEY_COUNTRY_CODE,
             Locale.getDefault().country)!!
         if (prefs.getBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, false)) {
-            errorTextView?.setText(R.string.discover_is_hidden)
-            errorView?.visibility = View.VISIBLE
-            discoverGridLayout?.visibility = View.GONE
-            errorRetry!!.visibility = View.GONE
-            poweredByTextView?.visibility = View.GONE
+            errorTextView.setText(R.string.discover_is_hidden)
+            errorView.visibility = View.VISIBLE
+            discoverGridLayout.visibility = View.GONE
+            errorRetry.visibility = View.GONE
+            poweredByTextView.visibility = View.GONE
             return
         }
         if (BuildConfig.FLAVOR == "free" && prefs.getBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, true)) {
-            errorTextView?.text = ""
-            errorView?.visibility = View.VISIBLE
-            discoverGridLayout?.visibility = View.VISIBLE
-            errorRetry!!.visibility = View.VISIBLE
-            errorRetry?.setText(R.string.discover_confirm)
-            poweredByTextView?.visibility = View.VISIBLE
-            errorRetry!!.setOnClickListener { v: View? ->
+            errorTextView.text = ""
+            errorView.visibility = View.VISIBLE
+            discoverGridLayout.visibility = View.VISIBLE
+            errorRetry.visibility = View.VISIBLE
+            errorRetry.setText(R.string.discover_confirm)
+            poweredByTextView.visibility = View.VISIBLE
+            errorRetry.setOnClickListener { v: View? ->
                 prefs.edit().putBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, false).apply()
                 loadToplist()
             }
@@ -130,32 +132,32 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { podcasts: List<PodcastSearchResult> ->
-                    errorView?.visibility = View.GONE
+                    errorView.visibility = View.GONE
                     if (podcasts.isEmpty()) {
-                        errorTextView?.text = resources.getText(R.string.search_status_no_results)
-                        errorView?.visibility = View.VISIBLE
-                        discoverGridLayout?.visibility = View.INVISIBLE
+                        errorTextView.text = resources.getText(R.string.search_status_no_results)
+                        errorView.visibility = View.VISIBLE
+                        discoverGridLayout.visibility = View.INVISIBLE
                     } else {
-                        discoverGridLayout?.visibility = View.VISIBLE
-                        adapter?.updateData(podcasts)
+                        discoverGridLayout.visibility = View.VISIBLE
+                        adapter.updateData(podcasts)
                     }
                 }, { error: Throwable ->
                     Log.e(TAG, Log.getStackTraceString(error))
-                    errorTextView?.text = error.localizedMessage
-                    errorView?.visibility = View.VISIBLE
-                    discoverGridLayout?.visibility = View.INVISIBLE
-                    errorRetry!!.visibility = View.VISIBLE
-                    errorRetry?.setOnClickListener { v: View? -> loadToplist() }
+                    errorTextView.text = error.localizedMessage
+                    errorView.visibility = View.VISIBLE
+                    discoverGridLayout.visibility = View.INVISIBLE
+                    errorRetry.visibility = View.VISIBLE
+                    errorRetry.setOnClickListener { v: View? -> loadToplist() }
                 })
     }
 
     override fun onItemClick(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
-        val podcast: PodcastSearchResult = adapter!!.getItem(position)
-        if (TextUtils.isEmpty(podcast.feedUrl)) {
+        val podcast: PodcastSearchResult? = adapter.getItem(position)
+        if (podcast?.feedUrl.isNullOrEmpty()) {
             return
         }
         val intent = Intent(activity, OnlineFeedViewActivity::class.java)
-        intent.putExtra(OnlineFeedViewActivity.ARG_FEEDURL, podcast.feedUrl)
+        intent.putExtra(OnlineFeedViewActivity.ARG_FEEDURL, podcast!!.feedUrl)
         startActivity(intent)
     }
 

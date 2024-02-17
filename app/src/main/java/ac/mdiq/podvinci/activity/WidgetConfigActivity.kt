@@ -19,13 +19,13 @@ import ac.mdiq.podvinci.core.widget.WidgetUpdaterWorker
 class WidgetConfigActivity : AppCompatActivity() {
     private var appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
 
-    private var opacitySeekBar: SeekBar? = null
-    private var opacityTextView: TextView? = null
-    private var widgetPreview: View? = null
-    private var ckPlaybackSpeed: CheckBox? = null
-    private var ckRewind: CheckBox? = null
-    private var ckFastForward: CheckBox? = null
-    private var ckSkip: CheckBox? = null
+    private lateinit var widgetPreview: View
+    private lateinit var opacitySeekBar: SeekBar
+    private lateinit var opacityTextView: TextView
+    private lateinit var ckPlaybackSpeed: CheckBox
+    private lateinit var ckRewind: CheckBox
+    private lateinit var ckFastForward: CheckBox
+    private lateinit var ckSkip: CheckBox
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(getTheme(this))
@@ -50,84 +50,82 @@ class WidgetConfigActivity : AppCompatActivity() {
         opacitySeekBar = findViewById(R.id.widget_opacity_seekBar)
         widgetPreview = findViewById(R.id.widgetLayout)
         findViewById<View>(R.id.butConfirm).setOnClickListener { v: View? -> confirmCreateWidget() }
-        if (opacitySeekBar != null) {
-            opacitySeekBar!!.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
-                override fun onProgressChanged(seekBar: SeekBar, i: Int, b: Boolean) {
-                    opacityTextView?.text = seekBar.progress.toString() + "%"
-                    val color = getColorWithAlpha(PlayerWidget.DEFAULT_COLOR, opacitySeekBar!!.progress)
-                    widgetPreview?.setBackgroundColor(color)
-                }
+        opacitySeekBar.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar, i: Int, b: Boolean) {
+                opacityTextView.text = seekBar.progress.toString() + "%"
+                val color = getColorWithAlpha(PlayerWidget.DEFAULT_COLOR, opacitySeekBar.progress)
+                widgetPreview.setBackgroundColor(color)
+            }
 
-                override fun onStartTrackingTouch(seekBar: SeekBar) {
-                }
+            override fun onStartTrackingTouch(seekBar: SeekBar) {
+            }
 
-                override fun onStopTrackingTouch(seekBar: SeekBar) {
-                }
-            })
-        }
-        if (widgetPreview != null) {
-            widgetPreview!!.findViewById<View>(R.id.txtNoPlaying).visibility = View.GONE
-            val title = widgetPreview!!.findViewById<TextView>(R.id.txtvTitle)
-            title.visibility = View.VISIBLE
-            title.setText(R.string.app_name)
-            val progress = widgetPreview!!.findViewById<TextView>(R.id.txtvProgress)
-            progress.visibility = View.VISIBLE
-            progress.setText(R.string.position_default_label)
-        }
+            override fun onStopTrackingTouch(seekBar: SeekBar) {
+            }
+        })
+
+        widgetPreview.findViewById<View>(R.id.txtNoPlaying).visibility = View.GONE
+        val title = widgetPreview.findViewById<TextView>(R.id.txtvTitle)
+        title.visibility = View.VISIBLE
+        title.setText(R.string.app_name)
+        val progress = widgetPreview.findViewById<TextView>(R.id.txtvProgress)
+        progress.visibility = View.VISIBLE
+        progress.setText(R.string.position_default_label)
+
         ckPlaybackSpeed = findViewById(R.id.ckPlaybackSpeed)
-        ckPlaybackSpeed?.setOnClickListener { v: View? -> displayPreviewPanel() }
+        ckPlaybackSpeed.setOnClickListener { v: View? -> displayPreviewPanel() }
         ckRewind = findViewById(R.id.ckRewind)
-        ckRewind?.setOnClickListener { v: View? -> displayPreviewPanel() }
+        ckRewind.setOnClickListener { v: View? -> displayPreviewPanel() }
         ckFastForward = findViewById(R.id.ckFastForward)
-        ckFastForward?.setOnClickListener { v: View? -> displayPreviewPanel() }
+        ckFastForward.setOnClickListener { v: View? -> displayPreviewPanel() }
         ckSkip = findViewById(R.id.ckSkip)
-        ckSkip?.setOnClickListener { v: View? -> displayPreviewPanel() }
+        ckSkip.setOnClickListener { v: View? -> displayPreviewPanel() }
 
         setInitialState()
     }
 
     private fun setInitialState() {
         val prefs = getSharedPreferences(PlayerWidget.PREFS_NAME, MODE_PRIVATE)
-        ckPlaybackSpeed!!.isChecked = prefs.getBoolean(PlayerWidget.KEY_WIDGET_PLAYBACK_SPEED + appWidgetId, false)
-        ckRewind!!.isChecked = prefs.getBoolean(PlayerWidget.KEY_WIDGET_REWIND + appWidgetId, false)
-        ckFastForward!!.isChecked = prefs.getBoolean(PlayerWidget.KEY_WIDGET_FAST_FORWARD + appWidgetId, false)
-        ckSkip!!.isChecked = prefs.getBoolean(PlayerWidget.KEY_WIDGET_SKIP + appWidgetId, false)
+        ckPlaybackSpeed.isChecked = prefs.getBoolean(PlayerWidget.KEY_WIDGET_PLAYBACK_SPEED + appWidgetId, false)
+        ckRewind.isChecked = prefs.getBoolean(PlayerWidget.KEY_WIDGET_REWIND + appWidgetId, false)
+        ckFastForward.isChecked = prefs.getBoolean(PlayerWidget.KEY_WIDGET_FAST_FORWARD + appWidgetId, false)
+        ckSkip.isChecked = prefs.getBoolean(PlayerWidget.KEY_WIDGET_SKIP + appWidgetId, false)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             val color = prefs.getInt(PlayerWidget.KEY_WIDGET_COLOR + appWidgetId, PlayerWidget.DEFAULT_COLOR)
             val opacity = Color.alpha(color) * 100 / 0xFF
 
-            opacitySeekBar!!.setProgress(opacity, false)
+            opacitySeekBar.setProgress(opacity, false)
         }
         displayPreviewPanel()
     }
 
     private fun displayPreviewPanel() {
         val showExtendedPreview =
-            ckPlaybackSpeed!!.isChecked || ckRewind!!.isChecked || ckFastForward!!.isChecked || ckSkip!!.isChecked
-        widgetPreview!!.findViewById<View>(R.id.extendedButtonsContainer).visibility =
+            ckPlaybackSpeed.isChecked || ckRewind.isChecked || ckFastForward.isChecked || ckSkip.isChecked
+        widgetPreview.findViewById<View>(R.id.extendedButtonsContainer).visibility =
             if (showExtendedPreview) View.VISIBLE else View.GONE
-        widgetPreview!!.findViewById<View>(R.id.butPlay).visibility =
+        widgetPreview.findViewById<View>(R.id.butPlay).visibility =
             if (showExtendedPreview) View.GONE else View.VISIBLE
-        widgetPreview!!.findViewById<View>(R.id.butPlaybackSpeed).visibility =
-            if (ckPlaybackSpeed!!.isChecked) View.VISIBLE else View.GONE
-        widgetPreview!!.findViewById<View>(R.id.butFastForward).visibility =
-            if (ckFastForward!!.isChecked) View.VISIBLE else View.GONE
-        widgetPreview!!.findViewById<View>(R.id.butSkip).visibility =
-            if (ckSkip!!.isChecked) View.VISIBLE else View.GONE
-        widgetPreview!!.findViewById<View>(R.id.butRew).visibility =
-            if (ckRewind!!.isChecked) View.VISIBLE else View.GONE
+        widgetPreview.findViewById<View>(R.id.butPlaybackSpeed).visibility =
+            if (ckPlaybackSpeed.isChecked) View.VISIBLE else View.GONE
+        widgetPreview.findViewById<View>(R.id.butFastForward).visibility =
+            if (ckFastForward.isChecked) View.VISIBLE else View.GONE
+        widgetPreview.findViewById<View>(R.id.butSkip).visibility =
+            if (ckSkip.isChecked) View.VISIBLE else View.GONE
+        widgetPreview.findViewById<View>(R.id.butRew).visibility =
+            if (ckRewind.isChecked) View.VISIBLE else View.GONE
     }
 
     private fun confirmCreateWidget() {
-        val backgroundColor = getColorWithAlpha(PlayerWidget.DEFAULT_COLOR, opacitySeekBar!!.progress)
+        val backgroundColor = getColorWithAlpha(PlayerWidget.DEFAULT_COLOR, opacitySeekBar.progress)
 
         val prefs = getSharedPreferences(PlayerWidget.PREFS_NAME, MODE_PRIVATE)
         val editor = prefs.edit()
         editor.putInt(PlayerWidget.KEY_WIDGET_COLOR + appWidgetId, backgroundColor)
-        editor.putBoolean(PlayerWidget.KEY_WIDGET_PLAYBACK_SPEED + appWidgetId, ckPlaybackSpeed!!.isChecked)
-        editor.putBoolean(PlayerWidget.KEY_WIDGET_SKIP + appWidgetId, ckSkip!!.isChecked)
-        editor.putBoolean(PlayerWidget.KEY_WIDGET_REWIND + appWidgetId, ckRewind!!.isChecked)
-        editor.putBoolean(PlayerWidget.KEY_WIDGET_FAST_FORWARD + appWidgetId, ckFastForward!!.isChecked)
+        editor.putBoolean(PlayerWidget.KEY_WIDGET_PLAYBACK_SPEED + appWidgetId, ckPlaybackSpeed.isChecked)
+        editor.putBoolean(PlayerWidget.KEY_WIDGET_SKIP + appWidgetId, ckSkip.isChecked)
+        editor.putBoolean(PlayerWidget.KEY_WIDGET_REWIND + appWidgetId, ckRewind.isChecked)
+        editor.putBoolean(PlayerWidget.KEY_WIDGET_FAST_FORWARD + appWidgetId, ckFastForward.isChecked)
         editor.apply()
 
         val resultValue = Intent()

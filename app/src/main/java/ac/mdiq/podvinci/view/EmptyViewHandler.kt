@@ -58,38 +58,41 @@ class EmptyViewHandler(context: Context?) {
     }
 
     private fun addToParentView(view: View) {
-        var parent = (view.parent as ViewGroup)
+        var parent = view.parent as? ViewGroup
         while (parent != null) {
-            if (parent is RelativeLayout) {
-                parent.addView(emptyView)
-                val layoutParams =
-                    emptyView.layoutParams as RelativeLayout.LayoutParams
-                layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
-                emptyView.layoutParams = layoutParams
-                break
-            } else if (parent is FrameLayout) {
-                parent.addView(emptyView)
-                val layoutParams =
-                    emptyView.layoutParams as FrameLayout.LayoutParams
-                layoutParams.gravity = Gravity.CENTER
-                emptyView.layoutParams = layoutParams
-                break
-            } else if (parent is CoordinatorLayout) {
-                parent.addView(emptyView)
-                val layoutParams =
-                    emptyView.layoutParams as CoordinatorLayout.LayoutParams
-                layoutParams.gravity = Gravity.CENTER
-                emptyView.layoutParams = layoutParams
-                break
+            when (parent) {
+                is RelativeLayout -> {
+                    parent.addView(emptyView)
+                    val layoutParams =
+                        emptyView.layoutParams as RelativeLayout.LayoutParams
+                    layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
+                    emptyView.layoutParams = layoutParams
+                    break
+                }
+                is FrameLayout -> {
+                    parent.addView(emptyView)
+                    val layoutParams =
+                        emptyView.layoutParams as FrameLayout.LayoutParams
+                    layoutParams.gravity = Gravity.CENTER
+                    emptyView.layoutParams = layoutParams
+                    break
+                }
+                is CoordinatorLayout -> {
+                    parent.addView(emptyView)
+                    val layoutParams =
+                        emptyView.layoutParams as CoordinatorLayout.LayoutParams
+                    layoutParams.gravity = Gravity.CENTER
+                    emptyView.layoutParams = layoutParams
+                    break
+                }
             }
-            parent = parent.parent as ViewGroup
+            parent = parent.parent as? ViewGroup
         }
     }
 
     fun updateAdapter(adapter: RecyclerView.Adapter<*>?) {
-        if (this.recyclerAdapter != null) {
-            recyclerAdapter!!.unregisterAdapterDataObserver(adapterObserver)
-        }
+        recyclerAdapter?.unregisterAdapterDataObserver(adapterObserver)
+
         this.recyclerAdapter = adapter
         adapter?.registerAdapterDataObserver(adapterObserver)
         updateVisibility()

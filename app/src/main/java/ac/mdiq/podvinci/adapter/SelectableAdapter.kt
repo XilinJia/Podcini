@@ -23,10 +23,7 @@ abstract class SelectableAdapter<T : RecyclerView.ViewHolder?>(private val activ
         if (inActionMode()) {
             endSelectMode()
         }
-
-        if (onSelectModeListener != null) {
-            onSelectModeListener!!.onStartSelectMode()
-        }
+        onSelectModeListener?.onStartSelectMode()
 
         shouldSelectLazyLoadedItems = false
         selectedIds.clear()
@@ -75,7 +72,7 @@ abstract class SelectableAdapter<T : RecyclerView.ViewHolder?>(private val activ
     fun endSelectMode() {
         if (inActionMode()) {
             callOnEndSelectMode()
-            actionMode!!.finish()
+            actionMode?.finish()
         }
     }
 
@@ -164,9 +161,7 @@ abstract class SelectableAdapter<T : RecyclerView.ViewHolder?>(private val activ
     }
 
     private fun callOnEndSelectMode() {
-        if (onSelectModeListener != null) {
-            onSelectModeListener!!.onEndSelectMode()
-        }
+        onSelectModeListener?.onEndSelectMode()
     }
 
     fun shouldSelectLazyLoadedItems(): Boolean {

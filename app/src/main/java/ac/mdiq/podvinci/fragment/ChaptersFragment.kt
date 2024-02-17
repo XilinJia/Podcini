@@ -37,14 +37,15 @@ import org.greenrobot.eventbus.ThreadMode
 
 @UnstableApi
 class ChaptersFragment : AppCompatDialogFragment() {
-    private var adapter: ChaptersListAdapter? = null
+    private lateinit var layoutManager: LinearLayoutManager
+    private lateinit var progressBar: ProgressBar
+    private lateinit var adapter: ChaptersListAdapter
+
     private var controller: PlaybackController? = null
     private var disposable: Disposable? = null
     private var focusedChapter = -1
     private var media: Playable? = null
-    private var layoutManager: LinearLayoutManager? = null
-    private var progressBar: ProgressBar? = null
-
+    
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = MaterialAlertDialogBuilder(requireContext())
             .setTitle(getString(R.string.chapters_label))
@@ -55,7 +56,7 @@ class ChaptersFragment : AppCompatDialogFragment() {
         dialog.show()
         dialog.getButton(DialogInterface.BUTTON_NEUTRAL).visibility = View.INVISIBLE
         dialog.getButton(DialogInterface.BUTTON_NEUTRAL).setOnClickListener { v: View? ->
-            progressBar!!.visibility = View.VISIBLE
+            progressBar.visibility = View.VISIBLE
             loadMediaInfo(true)
         }
 
@@ -70,22 +71,21 @@ class ChaptersFragment : AppCompatDialogFragment() {
         progressBar = root.findViewById(R.id.progLoading)
         layoutManager = LinearLayoutManager(activity)
         recyclerView.layoutManager = layoutManager
-        recyclerView.addItemDecoration(DividerItemDecoration(recyclerView.context,
-            layoutManager!!.orientation))
+        recyclerView.addItemDecoration(DividerItemDecoration(recyclerView.context, layoutManager.orientation))
 
         adapter = ChaptersListAdapter(requireContext(), object : ChaptersListAdapter.Callback {
             override fun onPlayChapterButtonClicked(pos: Int) {
-                if (controller!!.status != PlayerStatus.PLAYING) {
+                if (controller?.status != PlayerStatus.PLAYING) {
                     controller!!.playPause()
                 }
-                val chapter = adapter!!.getItem(pos)
-                controller!!.seekTo(chapter.start.toInt())
+                val chapter = adapter.getItem(pos)
+                if (chapter != null) controller!!.seekTo(chapter.start.toInt())
                 updateChapterSelection(pos, true)
             }
         })
         recyclerView.adapter = adapter
 
-        progressBar?.visibility = View.VISIBLE
+        progressBar.visibility = View.VISIBLE
 
         val wrapHeight = CoordinatorLayout.LayoutParams(
             CoordinatorLayout.LayoutParams.MATCH_PARENT, CoordinatorLayout.LayoutParams.WRAP_CONTENT)
@@ -108,11 +108,8 @@ class ChaptersFragment : AppCompatDialogFragment() {
 
     override fun onStop() {
         super.onStop()
-
-        if (disposable != null) {
-            disposable!!.dispose()
-        }
-        controller!!.release()
+        disposable?.dispose()
+        controller?.release()
         controller = null
         EventBus.getDefault().unregister(this)
     }
@@ -120,20 +117,18 @@ class ChaptersFragment : AppCompatDialogFragment() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: PlaybackPositionEvent) {
         updateChapterSelection(getCurrentChapter(media), false)
-        adapter!!.notifyTimeChanged(event.position.toLong())
+        adapter.notifyTimeChanged(event.position.toLong())
     }
 
     private fun getCurrentChapter(media: Playable?): Int {
-        if (controller == null) {
-            return -1
-        }
+        if (controller == null) return -1
+
         return getCurrentChapterIndex(media, controller!!.position)
     }
 
     private fun loadMediaInfo(forceRefresh: Boolean) {
-        if (disposable != null) {
-            disposable!!.dispose()
-        }
+        disposable?.dispose()
+
         disposable = Maybe.create { emitter: MaybeEmitter<Any> ->
             val media = controller!!.getMedia()
             if (media != null) {
@@ -152,36 +147,29 @@ class ChaptersFragment : AppCompatDialogFragment() {
     private fun onMediaChanged(media: Playable) {
         this.media = media
         focusedChapter = -1
-        if (adapter == null) {
-            return
-        }
+
         if (media.getChapters().isEmpty()) {
             dismiss()
             Toast.makeText(context, R.string.no_chapters_label, Toast.LENGTH_LONG).show()
         } else {
-            progressBar!!.visibility = View.GONE
+            progressBar.visibility = View.GONE
         }
-        adapter!!.setMedia(media)
-        (dialog as AlertDialog?)!!.getButton(DialogInterface.BUTTON_NEUTRAL).visibility =
-            View.INVISIBLE
+        adapter.setMedia(media)
+        (dialog as AlertDialog).getButton(DialogInterface.BUTTON_NEUTRAL).visibility = View.INVISIBLE
         if ((media is FeedMedia) && media.getItem() != null && !TextUtils.isEmpty(media.getItem()!!.podcastIndexChapterUrl)) {
-            (dialog as AlertDialog?)!!.getButton(DialogInterface.BUTTON_NEUTRAL).visibility = View.VISIBLE
+            (dialog as AlertDialog).getButton(DialogInterface.BUTTON_NEUTRAL).visibility = View.VISIBLE
         }
         val positionOfCurrentChapter = getCurrentChapter(media)
         updateChapterSelection(positionOfCurrentChapter, true)
     }
 
     private fun updateChapterSelection(position: Int, scrollTo: Boolean) {
-        if (adapter == null) {
-            return
-        }
-
         if (position != -1 && focusedChapter != position) {
             focusedChapter = position
-            adapter!!.notifyChapterChanged(focusedChapter)
-            if (scrollTo && (layoutManager!!.findFirstCompletelyVisibleItemPosition() >= position
-                            || layoutManager!!.findLastCompletelyVisibleItemPosition() <= position)) {
-                layoutManager!!.scrollToPositionWithOffset(position, 100)
+            adapter.notifyChapterChanged(focusedChapter)
+            if (scrollTo && (layoutManager.findFirstCompletelyVisibleItemPosition() >= position
+                            || layoutManager.findLastCompletelyVisibleItemPosition() <= position)) {
+                layoutManager.scrollToPositionWithOffset(position, 100)
             }
         }
     }

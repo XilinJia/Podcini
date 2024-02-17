@@ -64,22 +64,23 @@ import kotlin.math.min
  */
 @UnstableApi
 class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar.OnMenuItemClickListener {
-    var butPlaybackSpeed: PlaybackSpeedIndicatorView? = null
-    var txtvPlaybackSpeed: TextView? = null
-    private var pager: ViewPager2? = null
-    private var txtvPosition: TextView? = null
-    private var txtvLength: TextView? = null
-    private var sbPosition: ChapterSeekBar? = null
-    private var butRev: ImageButton? = null
-    private var txtvRev: TextView? = null
-    private var butPlay: PlayButton? = null
-    private var butFF: ImageButton? = null
-    private var txtvFF: TextView? = null
-    private var butSkip: ImageButton? = null
-    private var toolbar: MaterialToolbar? = null
-    private var progressIndicator: ProgressBar? = null
-    private var cardViewSeek: CardView? = null
-    private var txtvSeek: TextView? = null
+    lateinit var butPlaybackSpeed: PlaybackSpeedIndicatorView
+    lateinit var txtvPlaybackSpeed: TextView
+    private lateinit var pager: ViewPager2
+    private lateinit var txtvPosition: TextView
+    private lateinit var txtvLength: TextView
+    private lateinit var sbPosition: ChapterSeekBar
+    private lateinit var butRev: ImageButton
+    private lateinit var txtvRev: TextView
+    private lateinit  var butPlay: PlayButton
+    private lateinit  var butFF: ImageButton
+    private lateinit  var txtvFF: TextView
+    private lateinit  var butSkip: ImageButton
+    private lateinit var toolbar: MaterialToolbar
+    
+    private lateinit var progressIndicator: ProgressBar
+    private lateinit  var cardViewSeek: CardView
+    private lateinit  var txtvSeek: TextView
 
     private var controller: PlaybackController? = null
     private var disposable: Disposable? = null
@@ -97,11 +98,11 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         val root: View = inflater.inflate(R.layout.audioplayer_fragment, container, false)
         root.setOnTouchListener { v: View?, event: MotionEvent? -> true } // Avoid clicks going through player to fragments below
         toolbar = root.findViewById(R.id.toolbar)
-        toolbar?.title = ""
-        toolbar?.setNavigationOnClickListener { v: View? ->
+        toolbar.title = ""
+        toolbar.setNavigationOnClickListener { v: View? ->
             (activity as MainActivity).bottomSheet?.setState(BottomSheetBehavior.STATE_COLLAPSED)
         }
-        toolbar?.setOnMenuItemClickListener(this)
+        toolbar.setOnMenuItemClickListener(this)
 
         val externalPlayerFragment = ExternalPlayerFragment()
         childFragmentManager.beginTransaction()
@@ -127,19 +128,19 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
         setupLengthTextView()
         setupControlButtons()
-        butPlaybackSpeed?.setOnClickListener { v: View? ->
+        butPlaybackSpeed.setOnClickListener { v: View? ->
             VariableSpeedDialog().show(
                 childFragmentManager, null)
         }
-        sbPosition?.setOnSeekBarChangeListener(this)
+        sbPosition.setOnSeekBarChangeListener(this)
 
         pager = root.findViewById(R.id.pager)
-        pager?.adapter = AudioPlayerPagerAdapter(this@AudioPlayerFragment)
+        pager.adapter = AudioPlayerPagerAdapter(this@AudioPlayerFragment)
         // Required for getChildAt(int) in ViewPagerBottomSheetBehavior to return the correct page
-        pager?.offscreenPageLimit = NUM_CONTENT_FRAGMENTS
-        pager?.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+        pager.offscreenPageLimit = NUM_CONTENT_FRAGMENTS
+        pager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
-                pager?.post {
+                pager.post {
                     if (activity != null) {
                         // By the time this is posted, the activity might be closed again.
                         (activity as MainActivity).bottomSheet?.updateScrollingChild()
@@ -167,39 +168,39 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             }
         }
 
-        sbPosition?.setDividerPos(dividerPos)
+        sbPosition.setDividerPos(dividerPos)
     }
 
     private fun setupControlButtons() {
-        butRev?.setOnClickListener { v: View? ->
+        butRev.setOnClickListener { v: View? ->
             if (controller != null) {
                 val curr: Int = controller!!.position
                 controller!!.seekTo(curr - UserPreferences.rewindSecs * 1000)
             }
         }
-        butRev?.setOnLongClickListener { v: View? ->
+        butRev.setOnLongClickListener { v: View? ->
             SkipPreferenceDialog.showSkipPreference(requireContext(),
                 SkipPreferenceDialog.SkipDirection.SKIP_REWIND, txtvRev)
             true
         }
-        butPlay?.setOnClickListener { v: View? ->
+        butPlay.setOnClickListener { v: View? ->
             if (controller != null) {
                 controller!!.init()
                 controller!!.playPause()
             }
         }
-        butFF?.setOnClickListener { v: View? ->
+        butFF.setOnClickListener { v: View? ->
             if (controller != null) {
                 val curr: Int = controller!!.position
                 controller!!.seekTo(curr + UserPreferences.fastForwardSecs * 1000)
             }
         }
-        butFF?.setOnLongClickListener { v: View? ->
+        butFF.setOnLongClickListener { v: View? ->
             SkipPreferenceDialog.showSkipPreference(requireContext(),
                 SkipPreferenceDialog.SkipDirection.SKIP_FORWARD, txtvFF)
             false
         }
-        butSkip?.setOnClickListener { v: View? ->
+        butSkip.setOnClickListener { v: View? ->
             activity?.sendBroadcast(
                 MediaButtonReceiver.createIntent(requireContext(), KeyEvent.KEYCODE_MEDIA_NEXT))
         }
@@ -222,7 +223,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
     private fun setupLengthTextView() {
         showTimeLeft = UserPreferences.shouldShowRemainingTime()
-        txtvLength?.setOnClickListener(View.OnClickListener { v: View? ->
+        txtvLength.setOnClickListener(View.OnClickListener { v: View? ->
             if (controller == null) {
                 return@OnClickListener
             }
@@ -235,8 +236,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun updatePlaybackSpeedButton(event: SpeedChangedEvent) {
         val speedStr: String = DecimalFormat("0.00").format(event.newSpeed.toDouble())
-        txtvPlaybackSpeed?.text = speedStr
-        butPlaybackSpeed?.setSpeed(event.newSpeed)
+        txtvPlaybackSpeed.text = speedStr
+        butPlaybackSpeed.setSpeed(event.newSpeed)
     }
 
     private fun loadMediaInfo(includingChapters: Boolean) {
@@ -268,7 +269,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     private fun newPlaybackController(): PlaybackController {
         return object : PlaybackController(activity) {
             override fun updatePlayButtonShowsPlay(showPlay: Boolean) {
-                butPlay?.setIsShowPlay(showPlay)
+                butPlay.setIsShowPlay(showPlay)
             }
 
             override fun loadMediaInfo() {
@@ -311,41 +312,37 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         controller?.init()
         loadMediaInfo(false)
         EventBus.getDefault().register(this)
-        txtvRev?.text = NumberFormat.getInstance().format(UserPreferences.rewindSecs.toLong())
-        txtvFF?.text = NumberFormat.getInstance().format(UserPreferences.fastForwardSecs.toLong())
+        txtvRev.text = NumberFormat.getInstance().format(UserPreferences.rewindSecs.toLong())
+        txtvFF.text = NumberFormat.getInstance().format(UserPreferences.fastForwardSecs.toLong())
     }
 
     override fun onStop() {
         super.onStop()
         controller?.release()
         controller = null
-        progressIndicator?.visibility = View.GONE // Controller released; we will not receive buffering updates
+        progressIndicator.visibility = View.GONE // Controller released; we will not receive buffering updates
         EventBus.getDefault().unregister(this)
-        if (disposable != null) {
-            disposable!!.dispose()
-        }
+        disposable?.dispose()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     @Suppress("unused")
     fun bufferUpdate(event: BufferUpdateEvent) {
         if (event.hasStarted()) {
-            progressIndicator?.visibility = View.VISIBLE
+            progressIndicator.visibility = View.VISIBLE
         } else if (event.hasEnded()) {
-            progressIndicator?.visibility = View.GONE
+            progressIndicator.visibility = View.GONE
         } else if (controller != null && controller!!.isStreaming) {
-            sbPosition?.setSecondaryProgress((event.progress * sbPosition!!.max).toInt())
+            sbPosition.setSecondaryProgress((event.progress * sbPosition.max).toInt())
         } else {
-            sbPosition?.setSecondaryProgress(0)
+            sbPosition.setSecondaryProgress(0)
         }
     }
 
     @UnstableApi
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun updatePosition(event: PlaybackPositionEvent) {
-        if (controller == null || txtvPosition == null || txtvLength == null || sbPosition == null) {
-            return
-        }
+        if (controller == null) return
 
         val converter = TimeSpeedConverter(controller!!.currentPlaybackSpeedMultiplier)
         val currentPosition: Int = converter.convert(event.position)
@@ -357,23 +354,23 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             Log.w(TAG, "Could not react to position observer update because of invalid time")
             return
         }
-        txtvPosition?.text = Converter.getDurationStringLong(currentPosition)
-        txtvPosition?.setContentDescription(getString(R.string.position,
+        txtvPosition.text = Converter.getDurationStringLong(currentPosition)
+        txtvPosition.setContentDescription(getString(R.string.position,
             Converter.getDurationStringLocalized(requireContext(), currentPosition.toLong())))
         showTimeLeft = UserPreferences.shouldShowRemainingTime()
         if (showTimeLeft) {
-            txtvLength?.setContentDescription(getString(R.string.remaining_time,
+            txtvLength.setContentDescription(getString(R.string.remaining_time,
                 Converter.getDurationStringLocalized(requireContext(), remainingTime.toLong())))
-            txtvLength?.text = (if ((remainingTime > 0)) "-" else "") + Converter.getDurationStringLong(remainingTime)
+            txtvLength.text = (if ((remainingTime > 0)) "-" else "") + Converter.getDurationStringLong(remainingTime)
         } else {
-            txtvLength?.setContentDescription(getString(R.string.chapter_duration,
+            txtvLength.setContentDescription(getString(R.string.chapter_duration,
                 Converter.getDurationStringLocalized(requireContext(), duration.toLong())))
-            txtvLength?.text = Converter.getDurationStringLong(duration)
+            txtvLength.text = Converter.getDurationStringLong(duration)
         }
 
-        if (sbPosition == null || !sbPosition!!.isPressed) {
+        if (!sbPosition.isPressed) {
             val progress: Float = (event.position.toFloat()) / event.duration
-            sbPosition?.progress = (progress * sbPosition!!.max).toInt()
+            sbPosition.progress = (progress * sbPosition.max).toInt()
         }
     }
 
@@ -388,9 +385,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     }
 
     override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-        if (controller == null || txtvLength == null) {
-            return
-        }
+        if (controller == null) return
 
         if (fromUser) {
             val prog: Float = progress / (seekBar.max.toFloat())
@@ -398,19 +393,19 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             var position: Int = converter.convert((prog * controller!!.duration).toInt())
             val newChapterIndex: Int = ChapterUtils.getCurrentChapterIndex(controller!!.getMedia(), position)
             if (newChapterIndex > -1) {
-                if ((sbPosition == null || !sbPosition!!.isPressed) && currentChapterIndex != newChapterIndex) {
+                if (!sbPosition.isPressed && currentChapterIndex != newChapterIndex) {
                     currentChapterIndex = newChapterIndex
                     val media = controller!!.getMedia()
                     position = media?.getChapters()?.get(currentChapterIndex)?.start?.toInt() ?: 0
                     seekedToChapterStart = true
                     controller!!.seekTo(position)
                     updateUi(controller!!.getMedia())
-                    sbPosition?.highlightCurrentChapter()
+                    sbPosition.highlightCurrentChapter()
                 }
-                txtvSeek?.text = controller!!.getMedia()?.getChapters()?.get(newChapterIndex)?.title ?: (""
+                txtvSeek.text = controller!!.getMedia()?.getChapters()?.get(newChapterIndex)?.title ?: (""
                         + "\n" + Converter.getDurationStringLong(position))
             } else {
-                txtvSeek?.text = Converter.getDurationStringLong(position)
+                txtvSeek.text = Converter.getDurationStringLong(position)
             }
         } else if (duration != controller!!.duration) {
             updateUi(controller!!.getMedia())
@@ -419,9 +414,9 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
     override fun onStartTrackingTouch(seekBar: SeekBar) {
         // interrupt position Observer, restart later
-        cardViewSeek?.scaleX = .8f
-        cardViewSeek?.scaleY = .8f
-        cardViewSeek?.animate()
+        cardViewSeek.scaleX = .8f
+        cardViewSeek.scaleY = .8f
+        cardViewSeek.animate()
             ?.setInterpolator(FastOutSlowInInterpolator())
             ?.alpha(1f)?.scaleX(1f)?.scaleY(1f)
             ?.setDuration(200)
@@ -437,9 +432,9 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 controller!!.seekTo((prog * controller!!.duration).toInt())
             }
         }
-        cardViewSeek?.scaleX = 1f
-        cardViewSeek?.scaleY = 1f
-        cardViewSeek?.animate()
+        cardViewSeek.scaleX = 1f
+        cardViewSeek.scaleY = 1f
+        cardViewSeek.animate()
             ?.setInterpolator(FastOutSlowInInterpolator())
             ?.alpha(0f)?.scaleX(.8f)?.scaleY(.8f)
             ?.setDuration(200)
@@ -447,29 +442,26 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     }
 
     fun setupOptionsMenu(media: Playable?) {
-        if (toolbar == null) return
-        if (toolbar!!.menu.size() == 0) {
-            toolbar!!.inflateMenu(R.menu.mediaplayer)
+        if (toolbar.menu.size() == 0) {
+            toolbar.inflateMenu(R.menu.mediaplayer)
         }
-        if (controller == null) {
-            return
-        }
+
         val isFeedMedia = media is FeedMedia
-        toolbar?.menu?.findItem(R.id.open_feed_item)?.setVisible(isFeedMedia)
+        toolbar.menu?.findItem(R.id.open_feed_item)?.setVisible(isFeedMedia)
         if (isFeedMedia) {
-            FeedItemMenuHandler.onPrepareMenu(toolbar!!.menu, (media as FeedMedia).getItem())
+            FeedItemMenuHandler.onPrepareMenu(toolbar.menu, (media as FeedMedia).getItem())
         }
 
-        toolbar!!.menu.findItem(R.id.set_sleeptimer_item).setVisible(!controller!!.sleepTimerActive())
-        toolbar!!.menu.findItem(R.id.disable_sleeptimer_item).setVisible(controller!!.sleepTimerActive())
-
-        (activity as CastEnabledActivity).requestCastButton(toolbar!!.menu)
+        if (controller != null) {
+            toolbar.menu.findItem(R.id.set_sleeptimer_item).setVisible(!controller!!.sleepTimerActive())
+            toolbar.menu.findItem(R.id.disable_sleeptimer_item).setVisible(controller!!.sleepTimerActive())
+        }
+        (activity as CastEnabledActivity).requestCastButton(toolbar.menu)
     }
 
     override fun onMenuItemClick(item: MenuItem): Boolean {
-        if (controller == null) {
-            return false
-        }
+        if (controller == null) return false
+
         val media: Playable = controller!!.getMedia() ?: return false
 
         val feedItem: FeedItem? = if ((media is FeedMedia)) media.getItem() else null
@@ -497,8 +489,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         player.alpha = 1 - playerFadeProgress
         player.visibility = if (playerFadeProgress > 0.99f) View.INVISIBLE else View.VISIBLE
         val toolbarFadeProgress = (max(0.0, min(0.2, (slideOffset - 0.6f).toDouble())) / 0.2f).toFloat()
-        toolbar?.setAlpha(toolbarFadeProgress)
-        toolbar?.visibility = if (toolbarFadeProgress < 0.01f) View.INVISIBLE else View.VISIBLE
+        toolbar.setAlpha(toolbarFadeProgress)
+        toolbar.visibility = if (toolbarFadeProgress < 0.01f) View.INVISIBLE else View.VISIBLE
     }
 
     private class AudioPlayerPagerAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) {
@@ -522,11 +514,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
     @JvmOverloads
     fun scrollToPage(page: Int, smoothScroll: Boolean = false) {
-        if (pager == null) {
-            return
-        }
-
-        pager?.setCurrentItem(page, smoothScroll)
+        pager.setCurrentItem(page, smoothScroll)
 
         val visibleChild = childFragmentManager.findFragmentByTag("f$POS_DESCRIPTION")
         if (visibleChild is ItemDescriptionFragment) {

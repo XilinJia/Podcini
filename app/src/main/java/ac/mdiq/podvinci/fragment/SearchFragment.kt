@@ -286,9 +286,9 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: PlaybackPositionEvent) {
         for (i in 0 until adapter.itemCount) {
-            val holder: EpisodeItemViewHolder =
-                recyclerView.findViewHolderForAdapterPosition(i) as EpisodeItemViewHolder
-            if (holder.isCurrentlyPlayingItem) {
+            val holder: EpisodeItemViewHolder? =
+                recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
+            if (holder != null && holder.isCurrentlyPlayingItem) {
                 holder.notifyPlaybackPositionUpdated(event)
                 break
             }

@@ -59,10 +59,10 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
     private lateinit var toolbar: MaterialToolbar
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var progressBar: ProgressBar
-    private lateinit var displayedFolder: String
     private lateinit var prefs: SharedPreferences
     private lateinit var speedDialView: SpeedDialView
-    
+
+    private var displayedFolder: String = ""
     private var displayUpArrow = false
 
     private var disposable: Disposable? = null

@@ -165,7 +165,6 @@ class PlaybackService : MediaBrowserServiceCompat() {
         stateManager = PlaybackServiceStateManager(this)
         notificationBuilder = PlaybackServiceNotificationBuilder(this)
 
-        //        TODO: this shit doesn't work
         if (Build.VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
             registerReceiver(autoStateUpdated, IntentFilter("com.google.android.gms.car.media.STATUS"), RECEIVER_NOT_EXPORTED)
             registerReceiver(shutdownReceiver, IntentFilter(PlaybackServiceInterface.ACTION_SHUTDOWN_PLAYBACK_SERVICE), RECEIVER_NOT_EXPORTED)

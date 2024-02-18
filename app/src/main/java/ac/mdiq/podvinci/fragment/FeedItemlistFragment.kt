@@ -336,7 +336,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
     fun onEventMainThread(event: PlaybackPositionEvent) {
         for (i in 0 until adapter.itemCount) {
             val holder: EpisodeItemViewHolder? =
-                viewBinding.recyclerView.findViewHolderForAdapterPosition(i) as EpisodeItemViewHolder?
+                viewBinding.recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
             if (holder != null && holder.isCurrentlyPlayingItem) {
                 holder.notifyPlaybackPositionUpdated(event)
                 break

@@ -48,9 +48,9 @@ object MediaSizeLoader {
                 try {
                     val response = client.newCall(httpReq.build()).execute()
                     if (response.isSuccessful) {
-                        val contentLength = response.header("Content-Length")
+                        val contentLength = response.header("Content-Length")?:"0"
                         try {
-                            size = contentLength!!.toInt().toLong()
+                            size = contentLength.toInt().toLong()
                         } catch (e: NumberFormatException) {
                             Log.e(TAG, Log.getStackTraceString(e))
                         }

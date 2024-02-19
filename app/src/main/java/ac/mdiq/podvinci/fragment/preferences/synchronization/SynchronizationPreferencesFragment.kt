@@ -37,7 +37,7 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
 
     override fun onStart() {
         super.onStart()
-        (activity as PreferenceActivity?)!!.supportActionBar!!.setTitle(R.string.synchronization_pref)
+        (activity as PreferenceActivity).supportActionBar!!.setTitle(R.string.synchronization_pref)
         updateScreen()
         EventBus.getDefault().register(this)
     }
@@ -45,7 +45,7 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
     override fun onStop() {
         super.onStop()
         EventBus.getDefault().unregister(this)
-        (activity as PreferenceActivity?)!!.supportActionBar!!.subtitle = ""
+        (activity as PreferenceActivity).supportActionBar!!.subtitle = ""
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
@@ -59,7 +59,7 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
             updateLastSyncReport(SynchronizationSettings.isLastSyncSuccessful,
                 SynchronizationSettings.lastSyncAttempt)
         } else {
-            (activity as PreferenceActivity?)!!.supportActionBar!!
+            (activity as PreferenceActivity).supportActionBar!!
                 .setSubtitle(event.messageResId)
         }
     }
@@ -203,7 +203,7 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
         ) R.string.gpodnetsync_pref_report_successful else R.string.gpodnetsync_pref_report_failed),
             DateUtils.getRelativeDateTimeString(context,
                 lastTime, DateUtils.MINUTE_IN_MILLIS, DateUtils.WEEK_IN_MILLIS, DateUtils.FORMAT_SHOW_TIME))
-        (activity as PreferenceActivity?)!!.supportActionBar!!.subtitle = status
+        (activity as PreferenceActivity).supportActionBar!!.subtitle = status
     }
 
     companion object {

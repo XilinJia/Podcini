@@ -25,6 +25,7 @@ import ac.mdiq.podvinci.model.playback.MediaType
 import ac.mdiq.podvinci.model.playback.Playable
 import ac.mdiq.podvinci.playback.base.PlayerStatus
 import ac.mdiq.podvinci.view.PlayButton
+import androidx.annotation.OptIn
 import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -68,9 +69,19 @@ class ExternalPlayerFragment : Fragment() {
                 }
             }
         }
+        controller = setupPlaybackController()
+        controller!!.init()
+        loadMediaInfo()
+        EventBus.getDefault().register(this)
         return root
     }
 
+    @OptIn(UnstableApi::class) override fun onDestroyView() {
+        super.onDestroyView()
+        controller?.release()
+        controller = null
+        EventBus.getDefault().unregister(this)
+    }
     @UnstableApi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -105,22 +116,20 @@ class ExternalPlayerFragment : Fragment() {
         }
     }
 
-    @UnstableApi
     override fun onStart() {
         super.onStart()
-        controller = setupPlaybackController()
-        controller!!.init()
-        loadMediaInfo()
-        EventBus.getDefault().register(this)
+//        controller = setupPlaybackController()
+//        controller!!.init()
+//        loadMediaInfo()
+//        EventBus.getDefault().register(this)
     }
 
-    @UnstableApi
     override fun onStop() {
         super.onStop()
-        controller?.release()
-        controller = null
-
-        EventBus.getDefault().unregister(this)
+//        controller?.release()
+//        controller = null
+//
+//        EventBus.getDefault().unregister(this)
     }
 
     @UnstableApi
@@ -146,7 +155,6 @@ class ExternalPlayerFragment : Fragment() {
         super.onDestroy()
         Log.d(TAG, "Fragment is about to be destroyed")
         disposable?.dispose()
-
     }
 
     @UnstableApi

@@ -29,6 +29,7 @@ import ac.mdiq.podvinci.storage.preferences.UserPreferences
 import ac.mdiq.podvinci.ui.echo.EchoActivity
 import ac.mdiq.podvinci.ui.home.sections.*
 import ac.mdiq.podvinci.view.LiftOnScrollListener
+import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -68,7 +69,7 @@ class HomeFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         return viewBinding.root
     }
 
-    private fun populateSectionList() {
+    @OptIn(UnstableApi::class) private fun populateSectionList() {
         viewBinding.homeContainer.removeAllViews()
 
         val prefs: SharedPreferences = requireContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)

@@ -149,7 +149,20 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             }
         })
 
+        controller = newPlaybackController()
+        controller?.init()
+        loadMediaInfo(false)
+        EventBus.getDefault().register(this)
+
         return root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        controller?.release()
+        controller = null
+        EventBus.getDefault().unregister(this)
+        Log.d(TAG, "Fragment destroyed")
     }
 
     private fun setChapterDividers(media: Playable?) {
@@ -241,9 +254,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     }
 
     private fun loadMediaInfo(includingChapters: Boolean) {
-        if (disposable != null) {
-            disposable!!.dispose()
-        }
+        disposable?.dispose()
+
         disposable = Maybe.create<Playable> { emitter: MaybeEmitter<Playable?> ->
             val media: Playable? = controller?.getMedia()
             if (media != null) {
@@ -308,20 +320,20 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
     override fun onStart() {
         super.onStart()
-        controller = newPlaybackController()
-        controller?.init()
-        loadMediaInfo(false)
-        EventBus.getDefault().register(this)
+//        controller = newPlaybackController()
+//        controller?.init()
+//        loadMediaInfo(false)
+//        EventBus.getDefault().register(this)
         txtvRev.text = NumberFormat.getInstance().format(UserPreferences.rewindSecs.toLong())
         txtvFF.text = NumberFormat.getInstance().format(UserPreferences.fastForwardSecs.toLong())
     }
 
     override fun onStop() {
         super.onStop()
-        controller?.release()
-        controller = null
+//        controller?.release()
+//        controller = null
+//        EventBus.getDefault().unregister(this)
         progressIndicator.visibility = View.GONE // Controller released; we will not receive buffering updates
-        EventBus.getDefault().unregister(this)
         disposable?.dispose()
     }
 

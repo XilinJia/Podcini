@@ -24,10 +24,15 @@ object DownloadResultCursorMapper {
         val indexCompletionDate = cursor.getColumnIndexOrThrow(PodDBAdapter.KEY_COMPLETION_DATE)
         val indexReasonDetailed = cursor.getColumnIndexOrThrow(PodDBAdapter.KEY_REASON_DETAILED)
 
-        return DownloadResult(cursor.getLong(indexId), cursor.getString(indexTitle), cursor.getLong(indexFeedFile),
-            cursor.getInt(indexFileFileType), cursor.getInt(indexSuccessful) > 0,
+        return DownloadResult(
+            cursor.getLong(indexId),
+            cursor.getString(indexTitle),
+            cursor.getLong(indexFeedFile),
+            cursor.getInt(indexFileFileType),
+            cursor.getInt(indexSuccessful) > 0,
             fromCode(cursor.getInt(indexReason)),
             Date(cursor.getLong(indexCompletionDate)),
-            cursor.getString(indexReasonDetailed))
+            if (!cursor.isNull(indexReasonDetailed)) cursor.getString(indexReasonDetailed) else ""
+        )
     }
 }

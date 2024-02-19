@@ -19,7 +19,6 @@ import android.os.IBinder
 import android.util.Log
 import android.util.Pair
 import android.view.SurfaceHolder
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.media3.common.util.UnstableApi
 import org.greenrobot.eventbus.EventBus
@@ -73,7 +72,6 @@ abstract class PlaybackController(private val activity: FragmentActivity?) {
         }
         initialized = true
 
-//        TODO: this shit doesn't work
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             activity?.registerReceiver(statusUpdate, IntentFilter(
                 PlaybackService.ACTION_PLAYER_STATUS_CHANGED), Context.RECEIVER_NOT_EXPORTED)

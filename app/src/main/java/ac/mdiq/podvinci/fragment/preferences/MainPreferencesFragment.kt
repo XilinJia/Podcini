@@ -54,39 +54,39 @@ class MainPreferencesFragment : PreferenceFragmentCompat() {
 
     override fun onStart() {
         super.onStart()
-        (activity as PreferenceActivity?)!!.supportActionBar!!.setTitle(R.string.settings_label)
+        (activity as PreferenceActivity).supportActionBar!!.setTitle(R.string.settings_label)
     }
 
     @SuppressLint("CommitTransaction")
     private fun setupMainScreen() {
         findPreference<Preference>(PREF_SCREEN_USER_INTERFACE)!!.onPreferenceClickListener =
             Preference.OnPreferenceClickListener { preference: Preference? ->
-                (activity as PreferenceActivity?)!!.openScreen(R.xml.preferences_user_interface)
+                (activity as PreferenceActivity).openScreen(R.xml.preferences_user_interface)
                 true
             }
         findPreference<Preference>(PREF_SCREEN_PLAYBACK)!!.onPreferenceClickListener =
             Preference.OnPreferenceClickListener { preference: Preference? ->
-                (activity as PreferenceActivity?)!!.openScreen(R.xml.preferences_playback)
+                (activity as PreferenceActivity).openScreen(R.xml.preferences_playback)
                 true
             }
         findPreference<Preference>(PREF_SCREEN_DOWNLOADS)!!.onPreferenceClickListener =
             Preference.OnPreferenceClickListener { preference: Preference? ->
-                (activity as PreferenceActivity?)!!.openScreen(R.xml.preferences_downloads)
+                (activity as PreferenceActivity).openScreen(R.xml.preferences_downloads)
                 true
             }
         findPreference<Preference>(PREF_SCREEN_SYNCHRONIZATION)!!.onPreferenceClickListener =
             Preference.OnPreferenceClickListener { preference: Preference? ->
-                (activity as PreferenceActivity?)!!.openScreen(R.xml.preferences_synchronization)
+                (activity as PreferenceActivity).openScreen(R.xml.preferences_synchronization)
                 true
             }
         findPreference<Preference>(PREF_SCREEN_IMPORT_EXPORT)!!.onPreferenceClickListener =
             Preference.OnPreferenceClickListener { preference: Preference? ->
-                (activity as PreferenceActivity?)!!.openScreen(R.xml.preferences_import_export)
+                (activity as PreferenceActivity).openScreen(R.xml.preferences_import_export)
                 true
             }
         findPreference<Preference>(PREF_NOTIFICATION)!!.onPreferenceClickListener =
             Preference.OnPreferenceClickListener { preference: Preference? ->
-                (activity as PreferenceActivity?)!!.openScreen(R.xml.preferences_notifications)
+                (activity as PreferenceActivity).openScreen(R.xml.preferences_notifications)
                 true
             }
         findPreference<Preference>(PREF_ABOUT)!!.onPreferenceClickListener =

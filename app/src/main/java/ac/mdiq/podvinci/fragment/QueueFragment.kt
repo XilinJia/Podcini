@@ -142,8 +142,8 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
         speedDialView = root.findViewById(R.id.fabSD)
         speedDialView.overlayLayout = root.findViewById(R.id.fabSDOverlay)
         speedDialView.inflate(R.menu.episodes_apply_action_speeddial)
-        speedDialView.removeActionItemById(R.id.mark_read_batch)
-        speedDialView.removeActionItemById(R.id.mark_unread_batch)
+//        speedDialView.removeActionItemById(R.id.mark_read_batch)
+//        speedDialView.removeActionItemById(R.id.mark_unread_batch)
         speedDialView.removeActionItemById(R.id.add_to_queue_batch)
         speedDialView.removeActionItemById(R.id.remove_all_inbox_item)
         speedDialView.setOnChangeListener(object : SpeedDialView.OnChangeListener {
@@ -337,9 +337,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
                 val conDialog: ConfirmationDialog = object : ConfirmationDialog(requireContext(),
                     R.string.clear_queue_label,
                     R.string.clear_queue_confirmation_msg) {
-                    @UnstableApi override fun onConfirmButtonPressed(
-                            dialog: DialogInterface
-                    ) {
+                    @UnstableApi override fun onConfirmButtonPressed(dialog: DialogInterface) {
                         dialog.dismiss()
                         DBWriter.clearQueue()
                     }
@@ -512,11 +510,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
             return view
         }
 
-        override fun onAddItem(title: Int,
-                                         ascending: SortOrder,
-                                         descending: SortOrder,
-                                         ascendingIsDefault: Boolean
-        ) {
+        override fun onAddItem(title: Int, ascending: SortOrder, descending: SortOrder, ascendingIsDefault: Boolean) {
             if (ascending != SortOrder.EPISODE_FILENAME_A_Z && ascending != SortOrder.SIZE_SMALL_LARGE) {
                 super.onAddItem(title, ascending, descending, ascendingIsDefault)
             }

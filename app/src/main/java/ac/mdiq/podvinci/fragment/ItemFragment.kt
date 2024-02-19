@@ -154,6 +154,16 @@ class ItemFragment : Fragment() {
             }
             actionButton2?.onClick(requireContext())
         })
+
+        EventBus.getDefault().register(this)
+        controller = object : PlaybackController(activity) {
+            override fun loadMediaInfo() {
+                // Do nothing
+            }
+        }
+        controller?.init()
+        load()
+
         return layout
     }
 
@@ -193,14 +203,14 @@ class ItemFragment : Fragment() {
 
     @UnstableApi override fun onStart() {
         super.onStart()
-        EventBus.getDefault().register(this)
-        controller = object : PlaybackController(activity) {
-            override fun loadMediaInfo() {
-                // Do nothing
-            }
-        }
-        controller?.init()
-        load()
+//        EventBus.getDefault().register(this)
+//        controller = object : PlaybackController(activity) {
+//            override fun loadMediaInfo() {
+//                // Do nothing
+//            }
+//        }
+//        controller?.init()
+//        load()
     }
 
     @UnstableApi override fun onResume() {
@@ -213,12 +223,14 @@ class ItemFragment : Fragment() {
 
     @UnstableApi override fun onStop() {
         super.onStop()
-        EventBus.getDefault().unregister(this)
-        controller?.release()
+//        EventBus.getDefault().unregister(this)
+//        controller?.release()
     }
 
-    override fun onDestroyView() {
+    @OptIn(UnstableApi::class) override fun onDestroyView() {
         super.onDestroyView()
+        EventBus.getDefault().unregister(this)
+        controller?.release()
         disposable?.dispose()
         root.removeView(webvDescription)
         webvDescription.destroy()

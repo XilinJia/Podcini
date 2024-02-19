@@ -58,7 +58,7 @@ class SwipePreferencesFragment : PreferenceFragmentCompat() {
 
     override fun onStart() {
         super.onStart()
-        (activity as PreferenceActivity?)!!.supportActionBar!!.setTitle(R.string.swipeactions_label)
+        (activity as PreferenceActivity).supportActionBar!!.setTitle(R.string.swipeactions_label)
     }
 
     companion object {

@@ -57,6 +57,6 @@ class AboutFragment : PreferenceFragmentCompat() {
 
     override fun onStart() {
         super.onStart()
-        (activity as PreferenceActivity?)!!.supportActionBar!!.setTitle(R.string.about_pref)
+        (activity as PreferenceActivity).supportActionBar!!.setTitle(R.string.about_pref)
     }
 }

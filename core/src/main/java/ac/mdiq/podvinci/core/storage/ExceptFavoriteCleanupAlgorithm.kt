@@ -26,17 +26,17 @@ class ExceptFavoriteCleanupAlgorithm : EpisodeCleanupAlgorithm() {
     }
 
     public override fun performCleanup(context: Context?, numberOfEpisodesToDelete: Int): Int {
-        val candidates = candidates
+        var candidates = candidates
 
         // in the absence of better data, we'll sort by item publication date
-        Collections.sort(candidates) { lhs: FeedItem, rhs: FeedItem ->
+        candidates = candidates.sortedWith { lhs: FeedItem, rhs: FeedItem ->
             val l = lhs.getPubDate()
             val r = rhs.getPubDate()
             if (l != null && r != null) {
-                return@sort l.compareTo(r)
+                return@sortedWith l.compareTo(r)
             } else {
                 // No date - compare by id which should be always incremented
-                return@sort lhs.id.compareTo(rhs.id)
+                return@sortedWith lhs.id.compareTo(rhs.id)
             }
         }
 

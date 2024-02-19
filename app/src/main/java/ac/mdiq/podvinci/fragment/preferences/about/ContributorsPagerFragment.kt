@@ -44,7 +44,7 @@ class ContributorsPagerFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        (activity as PreferenceActivity?)!!.supportActionBar!!.setTitle(R.string.contributors)
+        (activity as PreferenceActivity).supportActionBar!!.setTitle(R.string.contributors)
     }
 
     class StatisticsPagerAdapter internal constructor(fragment: Fragment) : FragmentStateAdapter(fragment) {

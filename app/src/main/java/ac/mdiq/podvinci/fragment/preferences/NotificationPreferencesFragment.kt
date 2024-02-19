@@ -15,7 +15,7 @@ class NotificationPreferencesFragment : PreferenceFragmentCompat() {
 
     override fun onStart() {
         super.onStart()
-        (activity as PreferenceActivity?)!!.supportActionBar!!.setTitle(R.string.notification_pref_fragment)
+        (activity as PreferenceActivity).supportActionBar!!.setTitle(R.string.notification_pref_fragment)
     }
 
     private fun setUpScreen() {

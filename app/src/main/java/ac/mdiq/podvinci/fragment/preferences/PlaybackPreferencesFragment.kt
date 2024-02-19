@@ -27,7 +27,7 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
 
     override fun onStart() {
         super.onStart()
-        (activity as PreferenceActivity?)!!.supportActionBar!!.setTitle(R.string.playback_pref)
+        (activity as PreferenceActivity).supportActionBar!!.setTitle(R.string.playback_pref)
     }
 
     private fun setupPlaybackScreen() {

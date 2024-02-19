@@ -176,11 +176,9 @@ class PlaybackServiceNotificationBuilder(private val context: Context) {
         compactActionList.add(numActions)
         numActions++
 
-        if (UserPreferences.showNextChapterOnFullNotification() && playable!!.getChapters() != null) {
-            val nextChapterPendingIntent = getPendingIntentForCustomMediaAction(
-                PlaybackService.CUSTOM_ACTION_NEXT_CHAPTER, numActions)
-            notification.addAction(R.drawable.ic_notification_next_chapter, context.getString(R.string.next_chapter),
-                nextChapterPendingIntent)
+        if (UserPreferences.showNextChapterOnFullNotification() && playable?.getChapters() != null) {
+            val nextChapterPendingIntent = getPendingIntentForCustomMediaAction(PlaybackService.CUSTOM_ACTION_NEXT_CHAPTER, numActions)
+            notification.addAction(R.drawable.ic_notification_next_chapter, context.getString(R.string.next_chapter), nextChapterPendingIntent)
             numActions++
         }
 

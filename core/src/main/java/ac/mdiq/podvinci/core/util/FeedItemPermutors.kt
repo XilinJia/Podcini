@@ -139,7 +139,7 @@ object FeedItemPermutors {
 
         val feeds: MutableList<List<FeedItem>> = ArrayList()
         for ((_, value) in map) {
-            Collections.sort(value, itemComparator)
+            value.sortWith(itemComparator)
             feeds.add(value)
         }
 

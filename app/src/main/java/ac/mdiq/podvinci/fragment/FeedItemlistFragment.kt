@@ -77,9 +77,9 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
     private lateinit var nextPageLoader: MoreContentListFooterUtil
     
     private var displayUpArrow = false
+    private var headerCreated = false
     private var feedID: Long = 0
     private var feed: Feed? = null
-    private var headerCreated = false
     private var disposable: Disposable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -236,8 +236,8 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
             }
             R.id.refresh_complete_item -> {
                 Thread {
-                    feed?.nextPageLink = feed!!.download_url
-                    feed?.pageNr = 0
+                    feed!!.nextPageLink = feed!!.download_url
+                    feed!!.pageNr = 0
                     try {
                         DBWriter.resetPagedFeedPage(feed).get()
                         FeedUpdateManager.runOnce(context, feed)

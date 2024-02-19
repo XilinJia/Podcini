@@ -91,11 +91,6 @@ class ChaptersFragment : AppCompatDialogFragment() {
             CoordinatorLayout.LayoutParams.MATCH_PARENT, CoordinatorLayout.LayoutParams.WRAP_CONTENT)
         recyclerView.layoutParams = wrapHeight
 
-        return root
-    }
-
-    override fun onStart() {
-        super.onStart()
         controller = object : PlaybackController(activity) {
             override fun loadMediaInfo() {
                 this@ChaptersFragment.loadMediaInfo(false)
@@ -104,14 +99,35 @@ class ChaptersFragment : AppCompatDialogFragment() {
         controller?.init()
         EventBus.getDefault().register(this)
         loadMediaInfo(false)
+
+        return root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        controller?.release()
+        controller = null
+        EventBus.getDefault().unregister(this)
+    }
+
+    override fun onStart() {
+        super.onStart()
+//        controller = object : PlaybackController(activity) {
+//            override fun loadMediaInfo() {
+//                this@ChaptersFragment.loadMediaInfo(false)
+//            }
+//        }
+//        controller?.init()
+//        EventBus.getDefault().register(this)
+//        loadMediaInfo(false)
     }
 
     override fun onStop() {
         super.onStop()
         disposable?.dispose()
-        controller?.release()
-        controller = null
-        EventBus.getDefault().unregister(this)
+//        controller?.release()
+//        controller = null
+//        EventBus.getDefault().unregister(this)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

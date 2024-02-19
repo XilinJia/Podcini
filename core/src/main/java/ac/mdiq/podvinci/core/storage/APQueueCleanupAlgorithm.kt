@@ -22,10 +22,10 @@ class APQueueCleanupAlgorithm : EpisodeCleanupAlgorithm() {
     }
 
     public override fun performCleanup(context: Context?, numberOfEpisodesToDelete: Int): Int {
-        val candidates = candidates
+        var candidates = candidates
 
         // in the absence of better data, we'll sort by item publication date
-        Collections.sort(candidates) { lhs: FeedItem, rhs: FeedItem ->
+        candidates = candidates.sortedWith { lhs: FeedItem, rhs: FeedItem ->
             var l = lhs.getPubDate()
             var r = rhs.getPubDate()
 

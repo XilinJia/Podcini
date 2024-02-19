@@ -167,8 +167,8 @@ object ChapterUtils {
     private fun readId3ChaptersFrom(inVal: CountingInputStream): List<Chapter> {
         val reader = ChapterReader(inVal)
         reader.readInputStream()
-        val chapters = reader.getChapters()
-        Collections.sort(chapters, ChapterStartTimeComparator())
+        var chapters = reader.getChapters()
+        chapters = chapters.sortedWith(ChapterStartTimeComparator())
         enumerateEmptyChapterTitles(chapters)
         if (!chaptersValid(chapters)) {
             Log.i(TAG, "Chapter data was invalid")
@@ -181,8 +181,8 @@ object ChapterUtils {
     private fun readOggChaptersFromInputStream(input: InputStream): List<Chapter> {
         val reader = VorbisCommentChapterReader(BufferedInputStream(input))
         reader.readInputStream()
-        val chapters = reader.getChapters()
-        Collections.sort(chapters, ChapterStartTimeComparator())
+        var chapters = reader.getChapters()
+        chapters = chapters.sortedWith(ChapterStartTimeComparator())
         enumerateEmptyChapterTitles(chapters)
         if (chaptersValid(chapters)) {
             return chapters

@@ -31,7 +31,7 @@ class UserInterfacePreferencesFragment : PreferenceFragmentCompat() {
 
     override fun onStart() {
         super.onStart()
-        (activity as PreferenceActivity?)!!.supportActionBar!!.setTitle(R.string.user_interface_label)
+        (activity as PreferenceActivity).supportActionBar!!.setTitle(R.string.user_interface_label)
     }
 
     private fun setupInterfaceScreen() {
@@ -78,7 +78,7 @@ class UserInterfacePreferencesFragment : PreferenceFragmentCompat() {
             })
         findPreference<Preference>(PREF_SWIPE)
             ?.setOnPreferenceClickListener { preference: Preference? ->
-                (activity as PreferenceActivity?)!!.openScreen(R.xml.preferences_swipe)
+                (activity as PreferenceActivity).openScreen(R.xml.preferences_swipe)
                 true
             }
 

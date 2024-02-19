@@ -211,7 +211,7 @@ import java.util.concurrent.*
         } else {
             Log.d(TAG, "Feed with title " + newFeed.title + " already exists. Syncing new with existing one.")
 
-            Collections.sort(newFeed.items, FeedItemPubdateComparator())
+            newFeed.items.sortWith(FeedItemPubdateComparator())
 
             if (newFeed.pageNr == savedFeed.pageNr) {
                 if (savedFeed.compareWithOther(newFeed)) {

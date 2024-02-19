@@ -48,9 +48,9 @@ internal object DbTestUtils {
                             "http://example.com", "http://example.com/image.png"))
                     }
                 }
-                f.items?.add(item)
+                f.items.add(item)
             }
-            Collections.sort(f.items, FeedItemPubdateComparator())
+            f.items.sortWith(FeedItemPubdateComparator())
             adapter.setCompleteFeed(f)
             Assert.assertTrue(f.id != 0L)
             for (item in f.items!!) {

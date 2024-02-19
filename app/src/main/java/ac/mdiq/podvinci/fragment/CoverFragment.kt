@@ -29,6 +29,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import androidx.annotation.OptIn
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.BlendModeColorFilterCompat
 import androidx.core.graphics.BlendModeCompat
@@ -78,7 +79,25 @@ class CoverFragment : Fragment() {
         }
         viewBinding.butPrevChapter.setOnClickListener { v: View? -> seekToPrevChapter() }
         viewBinding.butNextChapter.setOnClickListener { v: View? -> seekToNextChapter() }
+
+        controller = object : PlaybackController(activity) {
+            override fun loadMediaInfo() {
+                this@CoverFragment.loadMediaInfo(false)
+            }
+        }
+        controller?.init()
+        loadMediaInfo(false)
+        EventBus.getDefault().register(this)
+
         return viewBinding.root
+    }
+
+    @OptIn(UnstableApi::class) override fun onDestroyView() {
+        super.onDestroyView()
+        controller?.release()
+        controller = null
+        EventBus.getDefault().unregister(this)
+        Log.d(TAG, "Fragment destroyed")
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -231,22 +250,22 @@ class CoverFragment : Fragment() {
 
     @UnstableApi override fun onStart() {
         super.onStart()
-        controller = object : PlaybackController(activity) {
-            override fun loadMediaInfo() {
-                this@CoverFragment.loadMediaInfo(false)
-            }
-        }
-        controller?.init()
-        loadMediaInfo(false)
-        EventBus.getDefault().register(this)
+//        controller = object : PlaybackController(activity) {
+//            override fun loadMediaInfo() {
+//                this@CoverFragment.loadMediaInfo(false)
+//            }
+//        }
+//        controller?.init()
+//        loadMediaInfo(false)
+//        EventBus.getDefault().register(this)
     }
 
     @UnstableApi override fun onStop() {
         super.onStop()
         disposable?.dispose()
-        controller?.release()
-        controller = null
-        EventBus.getDefault().unregister(this)
+//        controller?.release()
+//        controller = null
+//        EventBus.getDefault().unregister(this)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

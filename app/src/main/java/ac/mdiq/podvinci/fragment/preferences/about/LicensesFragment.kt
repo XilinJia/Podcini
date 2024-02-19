@@ -98,13 +98,11 @@ class LicensesFragment : ListFragment() {
 
     override fun onStop() {
         super.onStop()
-        if (licensesLoader != null) {
-            licensesLoader!!.dispose()
-        }
+        licensesLoader?.dispose()
     }
 
     override fun onStart() {
         super.onStart()
-        (activity as PreferenceActivity?)!!.supportActionBar!!.setTitle(R.string.licenses)
+        (activity as PreferenceActivity).supportActionBar!!.setTitle(R.string.licenses)
     }
 }

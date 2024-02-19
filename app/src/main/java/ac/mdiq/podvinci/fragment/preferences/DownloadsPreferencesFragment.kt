@@ -32,7 +32,7 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
 
     override fun onStart() {
         super.onStart()
-        (activity as PreferenceActivity?)!!.supportActionBar!!.setTitle(R.string.downloads_pref)
+        (activity as PreferenceActivity).supportActionBar!!.setTitle(R.string.downloads_pref)
         PreferenceManager.getDefaultSharedPreferences(requireContext()).registerOnSharedPreferenceChangeListener(
             this)
     }
@@ -51,7 +51,7 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
     private fun setupNetworkScreen() {
         findPreference<Preference>(PREF_SCREEN_AUTODL)!!.onPreferenceClickListener =
             Preference.OnPreferenceClickListener { preference: Preference? ->
-                (activity as PreferenceActivity?)!!.openScreen(R.xml.preferences_autodownload)
+                (activity as PreferenceActivity).openScreen(R.xml.preferences_autodownload)
                 true
             }
         // validate and set correct value: number of downloads between 1 and 50 (inclusive)

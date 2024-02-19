@@ -1656,12 +1656,14 @@ class PlaybackService : MediaBrowserServiceCompat() {
         positionEventTimer = Observable.interval(POSITION_EVENT_INTERVAL, TimeUnit.SECONDS)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { number: Long? ->
+                Log.d(TAG, "notificationBuilder.updatePosition currentPosition: $currentPosition, currentPlaybackSpeed: $currentPlaybackSpeed")
                 EventBus.getDefault().post(PlaybackPositionEvent(currentPosition, duration))
-                if (Build.VERSION.SDK_INT < 29) {
+//                TODO: why set SDK_INT < 29
+//                if (Build.VERSION.SDK_INT < 29) {
                     notificationBuilder.updatePosition(currentPosition, currentPlaybackSpeed)
                     val notificationManager = getSystemService(NOTIFICATION_SERVICE) as? NotificationManager
                     notificationManager?.notify(R.id.notification_playing, notificationBuilder.build())
-                }
+//                }
                 skipEndingIfNecessary()
             }
     }
@@ -1860,6 +1862,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
          */
         private const val TAG = "PlaybackService"
 
+//        TODO: need to experiment this value
         private const val POSITION_EVENT_INTERVAL = 10L
 
         const val ACTION_PLAYER_STATUS_CHANGED: String = "action.ac.mdiq.podvinci.core.service.playerStatusChanged"

@@ -35,7 +35,7 @@ class AutoDownloadPreferencesFragment : PreferenceFragmentCompat() {
 
     override fun onStart() {
         super.onStart()
-        (activity as PreferenceActivity?)!!.supportActionBar!!.setTitle(R.string.pref_automatic_download_title)
+        (activity as PreferenceActivity).supportActionBar!!.setTitle(R.string.pref_automatic_download_title)
     }
 
     override fun onResume() {

@@ -28,6 +28,7 @@ import io.reactivex.schedulers.Schedulers
 @UnstableApi
 class ItemDescriptionFragment : Fragment() {
     private lateinit var webvDescription: ShownotesWebView
+
     private var webViewLoader: Disposable? = null
     private var controller: PlaybackController? = null
 
@@ -36,9 +37,7 @@ class ItemDescriptionFragment : Fragment() {
         val root = inflater.inflate(R.layout.item_description_fragment, container, false)
         webvDescription = root.findViewById(R.id.webview)
         webvDescription.setTimecodeSelectedListener { time: Int? ->
-            if (controller != null) {
-                controller!!.seekTo(time!!)
-            }
+            controller?.seekTo(time!!)
         }
         webvDescription.setPageFinishedListener {
             // Restoring the scroll position might not always work
@@ -56,11 +55,21 @@ class ItemDescriptionFragment : Fragment() {
             }
         })
         registerForContextMenu(webvDescription)
+        controller = object : PlaybackController(activity) {
+            override fun loadMediaInfo() {
+                load()
+            }
+        }
+        controller?.init()
+
+        load()
         return root
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onDestroyView() {
+        super.onDestroyView()
+        controller?.release()
+        controller = null
         Log.d(TAG, "Fragment destroyed")
         webvDescription.removeAllViews()
         webvDescription.destroy()
@@ -71,13 +80,12 @@ class ItemDescriptionFragment : Fragment() {
     }
 
     @UnstableApi private fun load() {
-        Log.d(TAG, "load()")
-        if (webViewLoader != null) {
-            webViewLoader!!.dispose()
-        }
+        Log.d(TAG, "load() called")
+        webViewLoader?.dispose()
+
         val context = context ?: return
         webViewLoader = Maybe.create { emitter: MaybeEmitter<String?> ->
-            val media = controller!!.getMedia()
+            val media = controller?.getMedia()
             if (media == null) {
                 emitter.onComplete()
                 return@create
@@ -112,8 +120,7 @@ class ItemDescriptionFragment : Fragment() {
         if (controller?.getMedia() != null) {
             Log.d(TAG, "Saving scroll position: " + webvDescription.scrollY)
             editor.putInt(PREF_SCROLL_Y, webvDescription.scrollY)
-            editor.putString(PREF_PLAYABLE_ID, controller!!.getMedia()!!.getIdentifier()
-                .toString())
+            editor.putString(PREF_PLAYABLE_ID, controller!!.getMedia()!!.getIdentifier().toString())
         } else {
             Log.d(TAG, "savePreferences was called while media or webview was null")
             editor.putInt(PREF_SCROLL_Y, -1)
@@ -145,23 +152,21 @@ class ItemDescriptionFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        controller = object : PlaybackController(activity) {
-            override fun loadMediaInfo() {
-                load()
-            }
-        }
-        controller?.init()
-        load()
+//        controller = object : PlaybackController(activity) {
+//            override fun loadMediaInfo() {
+//                load()
+//            }
+//        }
+//        controller?.init()
+//        load()
     }
 
     override fun onStop() {
         super.onStop()
 
-        if (webViewLoader != null) {
-            webViewLoader!!.dispose()
-        }
-        controller!!.release()
-        controller = null
+        webViewLoader?.dispose()
+//        controller?.release()
+//        controller = null
     }
 
     companion object {

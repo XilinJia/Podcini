@@ -75,7 +75,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
 
     override fun onStart() {
         super.onStart()
-        (activity as PreferenceActivity?)!!.supportActionBar!!.setTitle(R.string.import_export_pref)
+        (activity as PreferenceActivity).supportActionBar!!.setTitle(R.string.import_export_pref)
     }
 
     override fun onStop() {

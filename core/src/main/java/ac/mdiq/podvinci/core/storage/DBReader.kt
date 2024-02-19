@@ -342,9 +342,9 @@ object DBReader {
                 i++
             }
             itemCursor = adapter.getFeedItemCursor(itemIds.filterNotNull().toTypedArray())
-            val items = extractItemlistFromCursor(adapter, itemCursor)
+            val items = extractItemlistFromCursor(adapter, itemCursor).toMutableList()
             loadAdditionalFeedItemListData(items)
-            Collections.sort(items, PlaybackCompletionDateComparator())
+            items.sortWith(PlaybackCompletionDateComparator())
             return items
         } finally {
             mediaCursor?.close()
@@ -378,7 +378,7 @@ object DBReader {
                 while (cursor.moveToNext()) {
                     downloadLog.add(convert(cursor))
                 }
-                Collections.sort(downloadLog, DownloadResultComparator())
+                downloadLog.sortWith(DownloadResultComparator())
                 return downloadLog
             }
         } finally {
@@ -404,7 +404,7 @@ object DBReader {
                 while (cursor.moveToNext()) {
                     downloadLog.add(convert(cursor))
                 }
-                Collections.sort(downloadLog, DownloadResultComparator())
+                downloadLog.sortWith(DownloadResultComparator())
                 return downloadLog
             }
         } finally {
@@ -621,6 +621,11 @@ object DBReader {
      */
     fun loadDescriptionOfFeedItem(item: FeedItem) {
         Log.d(TAG, "loadDescriptionOfFeedItem() called with: item = [$item]")
+        //        TODO: need to find out who are often calling this
+//        val stackTraceElements = Thread.currentThread().stackTrace
+//        stackTraceElements.forEach { element ->
+//            println(element)
+//        }
         val adapter = getInstance()
         adapter!!.open()
         try {
@@ -712,9 +717,9 @@ object DBReader {
         adapter!!.open()
         try {
             adapter.getFeedItemCursorByUrl(urls!!).use { itemCursor ->
-                val items = extractItemlistFromCursor(adapter, itemCursor)
+                val items = extractItemlistFromCursor(adapter, itemCursor).toMutableList()
                 loadAdditionalFeedItemListData(items)
-                Collections.sort(items, PlaybackCompletionDateComparator())
+                items.sortWith(PlaybackCompletionDateComparator())
                 return items
             }
         } finally {
@@ -870,7 +875,7 @@ object DBReader {
             }
         }
 
-        Collections.sort(feeds, comparator)
+        feeds = feeds.sortedWith(comparator)
         val queueSize = adapter.queueSize
         val numNewItems = getTotalEpisodeCount(FeedItemFilter(FeedItemFilter.NEW))
         val numDownloadedItems = getTotalEpisodeCount(FeedItemFilter(FeedItemFilter.DOWNLOADED))

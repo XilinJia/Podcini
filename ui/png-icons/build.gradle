@@ -5,7 +5,7 @@ plugins {
 apply from: "../../common.gradle"
 
 android {
-    namespace "ac.mdiq.podvinci.ui.pngicons"
+    namespace "ac.mdiq.podcini.ui.pngicons"
 
     defaultConfig {
         vectorDrawables.useSupportLibrary false

@@ -2,7 +2,7 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:squareImageView="http://schemas.android.com/apk/ac.mdiq.podvinci"
+    xmlns:squareImageView="http://schemas.android.com/apk/ac.mdiq.podcini"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/cover_fragment"
     android:layout_width="match_parent"

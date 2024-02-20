@@ -6,7 +6,7 @@ apply from: "../../common.gradle"
 apply from: "../../playFlavor.gradle"
 
 android {
-    namespace "ac.mdiq.podvinci.ui.glide"
+    namespace "ac.mdiq.podcini.ui.glide"
 }
 
 dependencies {

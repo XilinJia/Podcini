@@ -51,9 +51,9 @@
   <string name="home_continue_title">Pokračovat v poslechu</string>
   <string name="home_new_title">Podívejte se, co je nového</string>
   <string name="home_downloads_title">Správa stahování</string>
-  <string name="home_welcome_title">Vítejte v PodVinci!</string>
+  <string name="home_welcome_title">Vítejte v Podcini!</string>
   <string name="home_welcome_text">Zatím nejste přihlášeni k odběru žádných podcastů. Otevřete boční nabídku a přidejte podcast.</string>
-  <string name="notification_permission_text">PodVinci potřebuje vaše povolení k zobrazování oznámení. Ve výchozím nastavení PodVinci zobrazuje oznámení pouze během stahování nebo když se něco pokazí.</string>
+  <string name="notification_permission_text">Podcini potřebuje vaše povolení k zobrazování oznámení. Ve výchozím nastavení Podcini zobrazuje oznámení pouze během stahování nebo když se něco pokazí.</string>
   <string name="notification_permission_denied">Zamítli jste oprávnění.</string>
   <string name="notification_permission_deny_warning">Pokud oznámení zakážete a něco se pokazí, nemusí se vám podařit zjistit proč.</string>
   <string name="deny_label">Zakázat</string>
@@ -274,7 +274,7 @@
   <string name="skip_episode_label">Přeskočit epizodu</string>
   <string name="reset_position">Obnovit pozici přehrávání</string>
   <string name="no_items_selected">Nic není vybráno</string>
-  <string name="delete_local_feed_warning_body">Smazání odstraní epizodu z aplikace PodVinci a zároveň odstraní mediální soubor z úložiště vašeho zařízení. Nebude možné jej znovu stáhnout prostřednictvím PodVinciu.</string>
+  <string name="delete_local_feed_warning_body">Smazání odstraní epizodu z aplikace Podcini a zároveň odstraní mediální soubor z úložiště vašeho zařízení. Nebude možné jej znovu stáhnout prostřednictvím Podciniu.</string>
   <!--Download messages and labels-->
   <string name="download_successful">úspěšné</string>
   <string name="download_pending">Čeká na stažení</string>
@@ -318,10 +318,10 @@
   <string name="download_type_feed">Kanál</string>
   <string name="download_type_media">Soubor</string>
   <string name="null_value_podcast_error">Nebyl poskytnut žádný podcast, co by mohl být zobrazen.</string>
-  <string name="no_feed_url_podcast_found_by_search">Navrhovaný podcast neměl odkaz na RSS, PodVinci našel podcast, který by mohl odpovídat</string>
+  <string name="no_feed_url_podcast_found_by_search">Navrhovaný podcast neměl odkaz na RSS, Podcini našel podcast, který by mohl odpovídat</string>
   <string name="authentication_notification_title">Vyžadováno ověření</string>
   <string name="confirm_mobile_download_dialog_title">Potvrdit stahování přes mobilní data</string>
-  <string name="confirm_mobile_download_dialog_message">Stahování přes mobilní datové připojení je v nastavení zakázáno. PodVinci může epizodu stáhnout později automaticky, až bude k dispozici Wi-Fi.</string>
+  <string name="confirm_mobile_download_dialog_message">Stahování přes mobilní datové připojení je v nastavení zakázáno. Podcini může epizodu stáhnout později automaticky, až bude k dispozici Wi-Fi.</string>
   <string name="confirm_mobile_download_dialog_message_vpn">Aplikace VPN předstírá, že je mobilní sítí (měřeným připojením). Stahování podcastů přes mobilní datové připojení je v nastavení zakázáno. Pokud chcete tento problém odstranit, obraťte se na tvůrce aplikace VPN.</string>
   <string name="confirm_mobile_download_dialog_download_later">Stáhnout později</string>
   <string name="confirm_mobile_download_dialog_allow_this_time">I přesto stáhnout</string>
@@ -337,7 +337,7 @@
   <string name="playback_error_source">Není přístup k mediálnímu souboru</string>
   <string name="playback_error_unknown">Neznámá chyba</string>
   <string name="no_media_playing_label">Žádné probíhající přehrávání</string>
-  <string name="unknown_media_key">PodVinci - Neznámý klíč médií: %1$d</string>
+  <string name="unknown_media_key">Podcini - Neznámý klíč médií: %1$d</string>
   <string name="error_file_not_found">Soubor nebyl nalezen</string>
   <string name="no_media_label">Položka neobsahuje mediální soubor</string>
   <!--Queue operations-->
@@ -415,7 +415,7 @@
   <string name="pref_auto_delete_title">Automatické mazání</string>
   <string name="pref_auto_local_delete_title">Automatické smazání z lokálních složek</string>
   <string name="pref_auto_local_delete_sum">Zahrnout lokální složky ve funkci automatického mazání</string>
-  <string name="pref_auto_local_delete_dialog_body">U místních složek dojde k odstranění epizod z aplikace PodVinci a k odstranění jejich mediálních souborů z úložiště zařízení. Nelze je znovu stáhnout prostřednictvím PodVinciu. Povolit automatické mazání?</string>
+  <string name="pref_auto_local_delete_dialog_body">U místních složek dojde k odstranění epizod z aplikace Podcini a k odstranění jejich mediálních souborů z úložiště zařízení. Nelze je znovu stáhnout prostřednictvím Podciniu. Povolit automatické mazání?</string>
   <string name="pref_smart_mark_as_played_sum">Označit epizody jako poslechnuté i pokud ještě zbývá určitý počet sekund přehrávání do jejich konce</string>
   <string name="pref_smart_mark_as_played_title">Chytré označování jako poslechnuté</string>
   <string name="pref_skip_keeps_episodes_sum">Neodstraňovat epizody při jejich přeskočení</string>
@@ -427,7 +427,7 @@
   <string name="downloads_pref">Stahování</string>
   <string name="downloads_pref_sum">Interval aktualizace, Mobilní data, Automatické stahování, Automatické mazání</string>
   <string name="feed_refresh_title">Aktualizovat podcasty</string>
-  <string name="feed_refresh_sum">Zadejte interval, ve kterém bude PodVinci automaticky vyhledávat nové epizody</string>
+  <string name="feed_refresh_sum">Zadejte interval, ve kterém bude Podcini automaticky vyhledávat nové epizody</string>
   <string name="feed_refresh_never">Nikdy</string>
   <string name="feed_every_hour">Každou hodinu</string>
   <string name="feed_every_2_hours">Každé 2 hodiny</string>
@@ -520,7 +520,7 @@
   <string name="pref_skip_silence_title">Přeskočit ticho v audiu</string>
   <string name="behavior">Chování</string>
   <string name="pref_default_page">Výchozí stránka</string>
-  <string name="pref_default_page_sum">Obrazovka, která se otevře při spuštění PodVinci.</string>
+  <string name="pref_default_page_sum">Obrazovka, která se otevře při spuštění Podcini.</string>
   <string name="pref_back_button_opens_drawer">Tlačítko Zpět otevře menu</string>
   <string name="pref_back_button_opens_drawer_summary">Stisknutím tlačítka zpět na výchozí stránce se otevře navigační panel</string>
   <string name="remember_last_page">Pamatovat si poslední stránku</string>
@@ -544,15 +544,15 @@
   <string name="pref_new_episodes_action_sum">Akce, která se provede pro nové epizody</string>
   <!--About screen-->
   <string name="about_pref">O aplikaci</string>
-  <string name="podvinci_version">Verze aplikace PodVinci</string>
+  <string name="podcini_version">Verze aplikace Podcini</string>
   <string name="contributors">Přispěvatelé</string>
-  <string name="contributors_summary">Kdokoli může pomoct vylepšit PodVinci – kódem, překlady nebo pomáháním ostatním v našem fóru</string>
+  <string name="contributors_summary">Kdokoli může pomoct vylepšit Podcini – kódem, překlady nebo pomáháním ostatním v našem fóru</string>
   <string name="developers">Vývojáři</string>
   <string name="translators">Překladatelé</string>
   <string name="special_thanks">Zvláštní poděkování</string>
   <string name="privacy_policy">Zásady ochrany osobních údajů</string>
   <string name="licenses">Licence</string>
-  <string name="licenses_summary">PodVinci používá další skvělý software</string>
+  <string name="licenses_summary">Podcini používá další skvělý software</string>
   <!--Search-->
   <string name="search_status_no_results">Žádné výsledky</string>
   <string name="type_to_search">Zadejte vyhledávací dotaz</string>
@@ -576,8 +576,8 @@
   <string name="html_export_summary">Ukažte své odběry přátelům</string>
   <string name="opml_export_summary">Přenést odběry do jiné podcastové aplikace</string>
   <string name="opml_import_summary">Importovat vaše odběry z jiné podcastové aplikace</string>
-  <string name="database_export_summary">Přenést odběry, poslechnuté epizody a frontu do aplikace PodVinci na jiném zařízení</string>
-  <string name="database_import_summary">Importovat PodVinci databázi z jiného zařízení</string>
+  <string name="database_export_summary">Přenést odběry, poslechnuté epizody a frontu do aplikace Podcini na jiném zařízení</string>
+  <string name="database_import_summary">Importovat Podcini databázi z jiného zařízení</string>
   <string name="opml_import_label">OPML import</string>
   <string name="opml_add_podcast_label">Importovat podcasty (OPML)</string>
   <string name="opml_reader_error">Došlo k chybě při čtení OPML dokumentu:</string>
@@ -595,7 +595,7 @@
   <string name="opml_import_ask_read_permission">Pro přečtení OPML souboru je vyžadován  přístup k externímu úložišti</string>
   <string name="successful_import_label">Import úspěšný</string>
   <string name="import_ok">Ťuknutím na OK restartujte AntenaPod</string>
-  <string name="import_no_downgrade">Tato databáze byla exportována z novější verze aplikace PodVinci. Vaše instalovaná verze není schopná ji zpracovat.</string>
+  <string name="import_no_downgrade">Tato databáze byla exportována z novější verze aplikace Podcini. Vaše instalovaná verze není schopná ji zpracovat.</string>
   <string name="favorites_export_label">Export oblíbených</string>
   <string name="favorites_export_summary">Exportovat oblíbené do souboru</string>
   <!--Sleep timer-->
@@ -636,12 +636,12 @@
   <string name="synchronization_choose_title">Vyberte poskytovatele synchronizace</string>
   <string name="synchronization_summary_unchoosen">K synchronizaci odběrů a stavu přehrávání epizod si můžete vybrat z více poskytovatelů</string>
   <string name="dialog_choose_sync_service_title">Vyberte poskytovatele synchronizace</string>
-  <string name="gpodnet_description">Gpodder.net je open-source služba pro synchronizaci podcastů, kterou si můžete nainstalovat na vlastní server. Gpodder.net je nezávislý na projektu PodVinci.</string>
-  <string name="synchronization_summary_nextcloud">Gpoddersync je open-source Nextcloud aplikace, kterou můžete snadno nainstalovat na vlastní server. Aplikace je nezávislá na projektu PodVinci.</string>
+  <string name="gpodnet_description">Gpodder.net je open-source služba pro synchronizaci podcastů, kterou si můžete nainstalovat na vlastní server. Gpodder.net je nezávislý na projektu Podcini.</string>
+  <string name="synchronization_summary_nextcloud">Gpoddersync je open-source Nextcloud aplikace, kterou můžete snadno nainstalovat na vlastní server. Aplikace je nezávislá na projektu Podcini.</string>
   <string name="synchronization_host_explanation">Lze si zvolit vlastní server k synchronizaci. Po volbě preferovaného serveru synchronizace, sem prosím zadejte jeho adresu. </string>
   <string name="synchronization_host_label">Adresa serveru</string>
   <string name="proceed_to_login_butLabel">Pokračovat k přihlášení</string>
-  <string name="synchronization_nextcloud_authenticate_browser">Povolte přístup pomocí otevřeného webového prohlížeče a pak se vraťte do PodVinciu.</string>
+  <string name="synchronization_nextcloud_authenticate_browser">Povolte přístup pomocí otevřeného webového prohlížeče a pak se vraťte do Podciniu.</string>
   <string name="gpodnetauth_login_butLabel">Přihlásit se</string>
   <string name="synchronization_credentials_explanation">Prosím, uveďte přihlašovací údaje k synchronizovanému serveru. </string>
   <string name="gpodnetauth_encryption_warning">Heslo a data nejsou šifrována!</string>
@@ -650,10 +650,10 @@
   <string name="synchronization_login_butLabel">Přihlásit se</string>
   <string name="synchronization_selectDevice_explanation">Zde prosím vyberte zařízení již vytvořené na sychronizovaném serveru, nebo zde vytvořte nové. </string>
   <string name="gpodnetauth_device_name">Název zařízení</string>
-  <string name="gpodnetauth_device_name_default">PodVinci na %1$s</string>
+  <string name="gpodnetauth_device_name_default">Podcini na %1$s</string>
   <string name="gpodnetauth_existing_devices">Existující zařízení</string>
   <string name="gpodnetauth_create_device">Vytvořit zařízení</string>
-  <string name="gpodnetauth_finish_descr">Gratulujeme! Váš gpodder.net účet je nyní úspěšně propojen s vaším zařízením. PodVinci bude automaticky synchronizovat odebírané podcasty s nastaveným účtem na gpodder.net.</string>
+  <string name="gpodnetauth_finish_descr">Gratulujeme! Váš gpodder.net účet je nyní úspěšně propojen s vaším zařízením. Podcini bude automaticky synchronizovat odebírané podcasty s nastaveným účtem na gpodder.net.</string>
   <string name="gpodnetauth_finish_butsyncnow">Synchronizovat nyní</string>
   <string name="pref_gpodnet_setlogin_information_title">Změna přihlašovacích údajů</string>
   <string name="pref_gpodnet_setlogin_information_sum">Změní přihlašovací údaje k vašemu gpodder.net účtu.</string>
@@ -671,7 +671,7 @@
   <string name="gpodnetsync_username_characters_error">Uživatelské jméno může obsahovat pouze písmena, čísla, pomlčky a podtržítka.</string>
   <!--Directory chooser-->
   <string name="choose_data_directory">Vybrat umístění dat</string>
-  <string name="choose_data_directory_message">Vyberte prosím váš výchozí datový adresář. PodVinci vytvoří všechny potřebné podadresáře.</string>
+  <string name="choose_data_directory_message">Vyberte prosím váš výchozí datový adresář. Podcini vytvoří všechny potřebné podadresáře.</string>
   <string name="choose_data_directory_available_space">%1$s z %2$s volných</string>
   <string name="pref_pausePlaybackForFocusLoss_sum">Místo snížení hlasitosti pozastavit přehrávání v případě, že jiná aplikace přehrává zvuk.</string>
   <string name="pref_pausePlaybackForFocusLoss_title">Automatické pozastavení přehrávání</string>
@@ -717,7 +717,7 @@
   <string name="exclude_episodes_shorter_than">Vyloučit epizody kratší než</string>
   <string name="keep_updated">Udržovat aktuální</string>
   <string name="keep_updated_summary">Zahrnout tento podcast při (automatickém) obnovování všech podcastů</string>
-  <string name="auto_download_disabled_globally">Automatické stahování je zakázané v hlavním nastavení PodVinciu</string>
+  <string name="auto_download_disabled_globally">Automatické stahování je zakázané v hlavním nastavení Podciniu</string>
   <string name="statistics_time_played">Přehráno celkem:</string>
   <string name="statistics_total_duration">Délka všech epizod (odhad):</string>
   <string name="statistics_episodes_on_device">Epizod na přístroji:</string>
@@ -726,7 +726,7 @@
   <string name="statistics_view_all">Náhled všech podcastů »</string>
   <string name="edit_url_menu">Upravit adresu URL kanálu</string>
   <string name="edit_url_confirmation_msg">Změna adresy RSS může snadno narušit stav přehrávání a výpis epizod podcastu. Její změnu NEDOPORUČUJEME a v případě, že se něco pokazí, NEBUDE poskytnuta podpora. Tuto změnu nelze vrátit zpět. Poškozený odběr NELZE opravit pouhou změnou adresy zpět. Před pokračováním doporučujeme vytvořit zálohu.</string>
-  <!--PodVinciSP-->
+  <!--PodciniSP-->
   <string name="sp_apps_importing_feeds_msg">Importuji odběry z jednoúčelových aplikací...</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">Vyhledat podcast…</string>
@@ -749,7 +749,7 @@
   <string name="local_folder">Místní adresář</string>
   <string name="reconnect_local_folder">Znovu připojit místní adresář</string>
   <string name="reconnect_local_folder_warning">V případě zamítnutých oprávnění může být tato možnost použita pro připojení ke stejnému adresáři. Nevybírejte ale jiný adresář.</string>
-  <string name="local_feed_description">Byl založen následující virtuální podcast vytvořením adresáře v PodVinci.</string>
+  <string name="local_feed_description">Byl založen následující virtuální podcast vytvořením adresáře v Podcini.</string>
   <string name="unable_to_start_system_file_manager">Nedaří se spustit správce souborů</string>
   <string name="filter">Filtr</string>
   <string name="hide_is_favorite_label">Je mezi oblíbenými</string>

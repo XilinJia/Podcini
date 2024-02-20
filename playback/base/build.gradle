@@ -5,7 +5,7 @@ plugins {
 apply from: "../../common.gradle"
 
 android {
-    namespace "ac.mdiq.podvinci.playback.base"
+    namespace "ac.mdiq.podcini.playback.base"
 }
 
 dependencies {

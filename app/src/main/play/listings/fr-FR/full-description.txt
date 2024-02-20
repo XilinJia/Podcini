@@ -1,8 +1,8 @@
-PodVinci est un lecteur de podcast permettant l'accès à des millions de podcast gratuits ou payants produit par des podcasters indépendants ou de gros éditeurs comme la BBC, NPR, CNN. Ajoutez, importez et exportez facilement des podcasts à partir d'ITunes, de fichiers OPML ou de liens RSS.
+Podcini est un lecteur de podcast permettant l'accès à des millions de podcast gratuits ou payants produit par des podcasters indépendants ou de gros éditeurs comme la BBC, NPR, CNN. Ajoutez, importez et exportez facilement des podcasts à partir d'ITunes, de fichiers OPML ou de liens RSS.
 Téléchargez, streamez ou ajoutez à la liste de lecture vos épisodes et écoutez les comme vous aimez avec une vitesse de lecture réglable, le support des chapitres et un minuteur d'arrêt automatique.
 Economisez votre temps, votre batterie et votre consommation de données grâce à l'automatisation des téléchargements (date, fréquence, choix du réseau WiFi) et la suppression des épisodes (selon vos critères)
 
-Conçu par des fans de podcast, PodVinci est gratuit, open source et sans publicité.
+Conçu par des fans de podcast, Podcini est gratuit, open source et sans publicité.
 
 <b>Importez, organisez et écoutez</b>
 • Gérez la lecture à l'aide : de widget, de notification système, de commande casque ou bluetooth
@@ -21,11 +21,11 @@ Conçu par des fans de podcast, PodVinci est gratuit, open source et sans public
 • Adaptez l'interface selon vos préférences avec le thème clair ou sombre 
 • Sauvegardez vos abonnements avec gPodder.net ou des exports OPML 
 
-<b>Rejoignez la communauté d'PodVinci !</b>
-PodVinci est développé activement par des volontaires. Vous pouvez aussi contribuer avec du code, des traductions ou des commentaires !
+<b>Rejoignez la communauté d'Podcini !</b>
+Podcini est développé activement par des volontaires. Vous pouvez aussi contribuer avec du code, des traductions ou des commentaires !
 
 Les utilisateurs de notre forum seront heureux de répondre à vos questions. Rejoignez-nous pour discuter des fonctionnalités et des podcasts.
-https://forum.podvinci.org/
+https://forum.podcini.org/
 
 Rendez-vous sur Transifex pour aider la traduction :
-https://www.transifex.com/podvinci/podvinci
+https://www.transifex.com/podcini/podcini

@@ -51,7 +51,7 @@
   <string name="home_continue_title">Jatka kuuntelua</string>
   <string name="home_new_title">Näytä uudistukset</string>
   <string name="home_downloads_title">Hallinnoi latauksia</string>
-  <string name="home_welcome_title">Tervetuloa PodVinciiin!</string>
+  <string name="home_welcome_title">Tervetuloa Podciniiin!</string>
   <string name="home_welcome_text">Et tilaa yhtään podcastia vielä. Avaa sivuvalikko lisätäksesi podcastin.</string>
   <string name="notification_permission_denied">Et antanut lupaa.</string>
   <string name="open_settings">Avaa asetukset</string>
@@ -272,10 +272,10 @@
   <string name="download_type_feed">Syöte</string>
   <string name="download_type_media">Mediatiedosto</string>
   <string name="null_value_podcast_error">Ei voida näyttää olematonta podcastia</string>
-  <string name="no_feed_url_podcast_found_by_search">Ehdotetulla podcastilla ei ollut RSS-linkkiä, PodVinci löysi mahdollisesti vastaavan podcastin</string>
+  <string name="no_feed_url_podcast_found_by_search">Ehdotetulla podcastilla ei ollut RSS-linkkiä, Podcini löysi mahdollisesti vastaavan podcastin</string>
   <string name="authentication_notification_title">Todentaminen vaaditaan</string>
   <string name="confirm_mobile_download_dialog_title">Vahvista mobiililataus</string>
-  <string name="confirm_mobile_download_dialog_message">Lataaminen mobiilidatayhteydellä on poissa päältä asetuksissa. PodVinci voi ladata jakson myöhemmin automaattisesti, kun Wi-Fi-yhteys on käytettävissä.</string>
+  <string name="confirm_mobile_download_dialog_message">Lataaminen mobiilidatayhteydellä on poissa päältä asetuksissa. Podcini voi ladata jakson myöhemmin automaattisesti, kun Wi-Fi-yhteys on käytettävissä.</string>
   <string name="confirm_mobile_download_dialog_download_later">Lataa myöhemmin</string>
   <string name="confirm_mobile_download_dialog_allow_this_time">Lataa silti</string>
   <string name="confirm_mobile_streaming_notification_title">Vahvista suoratoisto mobiilidatayhteydellä</string>
@@ -289,7 +289,7 @@
   <string name="playback_error_source">Mediatiedostoa ei voida käyttää</string>
   <string name="playback_error_unknown">Tuntematon virhe</string>
   <string name="no_media_playing_label">Mediaa ei toisteta</string>
-  <string name="unknown_media_key">PodVinci - Tuntematon media-avain: %1$d</string>
+  <string name="unknown_media_key">Podcini - Tuntematon media-avain: %1$d</string>
   <string name="error_file_not_found">Tiedostoa ei löytynyt</string>
   <string name="no_media_label">Kohde ei sisällä mediatiedostoa</string>
   <!--Queue operations-->
@@ -475,15 +475,15 @@
   <string name="pref_show_subscription_title">Näytä tilauksen nimi</string>
   <!--About screen-->
   <string name="about_pref">Tietoja</string>
-  <string name="podvinci_version">PodVinci versio</string>
+  <string name="podcini_version">Podcini versio</string>
   <string name="contributors">Osallistujat</string>
-  <string name="contributors_summary">Kuka tahansa voi auttaa tekemään PodVinciista paremman - koodilla, käännöksillä, tai avustamalla käyttäjiä foorumilla</string>
+  <string name="contributors_summary">Kuka tahansa voi auttaa tekemään Podciniista paremman - koodilla, käännöksillä, tai avustamalla käyttäjiä foorumilla</string>
   <string name="developers">Kehittäjät</string>
   <string name="translators">Kääntäjät</string>
   <string name="special_thanks">Erityiskiitokset</string>
   <string name="privacy_policy">Tietosuojakäytäntö</string>
   <string name="licenses">Lisenssit</string>
-  <string name="licenses_summary">PodVinci käyttää muita hienoja ohjelmistoja</string>
+  <string name="licenses_summary">Podcini käyttää muita hienoja ohjelmistoja</string>
   <!--Search-->
   <string name="search_status_no_results">Ei löydetty tuloksia</string>
   <string name="type_to_search">Kirjoita hakulause etsiäksesi</string>
@@ -506,8 +506,8 @@
   <string name="html_export_summary">Näytä tilauksesi ystävälle</string>
   <string name="opml_export_summary">Siirrä tilauksesi toiseen podcast-sovellukseen</string>
   <string name="opml_import_summary">Tuo tilauksesi toisesta podcast-sovelluksesta</string>
-  <string name="database_export_summary">Siirrä tilaukset, kuunnellut jaksot ja jono toisella laitteella olevaan PodVinciiin</string>
-  <string name="database_import_summary">Tuo PodVinci-tietokanta toiselta laitteelta</string>
+  <string name="database_export_summary">Siirrä tilaukset, kuunnellut jaksot ja jono toisella laitteella olevaan Podciniiin</string>
+  <string name="database_import_summary">Tuo Podcini-tietokanta toiselta laitteelta</string>
   <string name="opml_import_label">OPML-tuonti</string>
   <string name="opml_add_podcast_label">Tuo podcastien lista (OPML)</string>
   <string name="opml_reader_error">Virhe lukiessa OPML dokumenttia:</string>
@@ -524,8 +524,8 @@
   <string name="export_success_title">Vienti onnistunut</string>
   <string name="opml_import_ask_read_permission">Pääsy ulkoiseen solvellukseen tarvitaan OPML tiedoston lukemiseen</string>
   <string name="successful_import_label">Tuonti onnistui</string>
-  <string name="import_ok">Valitse OK käynnistääksesi PodVinciin uudelleen</string>
-  <string name="import_no_downgrade">Tämä tietokanta on viety PodVinciin uudemmalla versiolla. Tämänhetkinen versiosi ei vielä osaa käsitellä sitä.</string>
+  <string name="import_ok">Valitse OK käynnistääksesi Podciniin uudelleen</string>
+  <string name="import_no_downgrade">Tämä tietokanta on viety Podciniin uudemmalla versiolla. Tämänhetkinen versiosi ei vielä osaa käsitellä sitä.</string>
   <string name="favorites_export_label">Suosikkien vienti</string>
   <string name="favorites_export_summary">Vie tallennetut suosikit tiedostoon</string>
   <!--Sleep timer-->
@@ -557,12 +557,12 @@
   <string name="synchronization_choose_title">Valitse synkronointipalveluntarjoaja</string>
   <string name="synchronization_summary_unchoosen">Voit valita useista palveluntarjoajista, joiden kanssa voit synkronoida tilauksesi ja jaksojen toistotilan</string>
   <string name="dialog_choose_sync_service_title">Valitse synkronointipalveluntarjoaja</string>
-  <string name="gpodnet_description">Gpodder.net on avoimen lähdekoodin podcast-synkronointipalvelu, jonka voit asentaa omalle palvelimellesi. Gpodder.net on riippumaton PodVinci-projektista.</string>
-  <string name="synchronization_summary_nextcloud">Gpoddersync on avoimen lähdekoodin Nextcloud-sovellus, jonka voit helposti asentaa omalle palvelimellesi. Sovellus on riippumaton PodVinci-projektista.</string>
+  <string name="gpodnet_description">Gpodder.net on avoimen lähdekoodin podcast-synkronointipalvelu, jonka voit asentaa omalle palvelimellesi. Gpodder.net on riippumaton Podcini-projektista.</string>
+  <string name="synchronization_summary_nextcloud">Gpoddersync on avoimen lähdekoodin Nextcloud-sovellus, jonka voit helposti asentaa omalle palvelimellesi. Sovellus on riippumaton Podcini-projektista.</string>
   <string name="synchronization_host_explanation">Voit valita oman synkronointipalvelimesi. Kun olet tunnistanut mieluisen synkronointipalvelimesi, anna sen osoite tässä.</string>
   <string name="synchronization_host_label">Palvelimen osoite</string>
   <string name="proceed_to_login_butLabel">Jatka kirjautumaan</string>
-  <string name="synchronization_nextcloud_authenticate_browser">Myönnä käyttöoikeus avatun verkkoselaimen avulla ja palaa PodVinciiin.</string>
+  <string name="synchronization_nextcloud_authenticate_browser">Myönnä käyttöoikeus avatun verkkoselaimen avulla ja palaa Podciniiin.</string>
   <string name="gpodnetauth_login_butLabel">Sisäänkirjautuminen</string>
   <string name="synchronization_credentials_explanation">Anna synkronointipalvelimen tilisi kirjautumistiedot.</string>
   <string name="gpodnetauth_encryption_warning">Salasanaa ja tietoja ei salata!</string>
@@ -571,10 +571,10 @@
   <string name="synchronization_login_butLabel">Kirjaudu</string>
   <string name="synchronization_selectDevice_explanation">Valitse laite, jonka loit synkronointipalvelimella, tai luo uusi.</string>
   <string name="gpodnetauth_device_name">Laitteen nimi</string>
-  <string name="gpodnetauth_device_name_default">PodVinci laitteella %1$s</string>
+  <string name="gpodnetauth_device_name_default">Podcini laitteella %1$s</string>
   <string name="gpodnetauth_existing_devices">Olemassaolevat laitteet</string>
   <string name="gpodnetauth_create_device">Luo laite</string>
-  <string name="gpodnetauth_finish_descr">Onneksi olkoon! Sinun gpodder.net tili on liitetty laitteeseesi. PodVinci alkaa automaattisesti synkronoimaan gpodder.net tiliisi.</string>
+  <string name="gpodnetauth_finish_descr">Onneksi olkoon! Sinun gpodder.net tili on liitetty laitteeseesi. Podcini alkaa automaattisesti synkronoimaan gpodder.net tiliisi.</string>
   <string name="gpodnetauth_finish_butsyncnow">Aloita synkrointi nyt</string>
   <string name="pref_gpodnet_setlogin_information_title">Vaihda kirjautumistietoja</string>
   <string name="pref_gpodnet_setlogin_information_sum">Vaihda kirjautumistietoja gpodder.net tiliisi.</string>
@@ -592,7 +592,7 @@
   <string name="gpodnetsync_username_characters_error">Käyttäjätunnukset saavat sisältää vain kirjaimia, numeroita, viivoja ja aliviivoja.</string>
   <!--Directory chooser-->
   <string name="choose_data_directory">Valitse datahakemisto</string>
-  <string name="choose_data_directory_message">Valitse datahakemiston juuri. PodVinci luo tarvittavat alihakemistot</string>
+  <string name="choose_data_directory_message">Valitse datahakemiston juuri. Podcini luo tarvittavat alihakemistot</string>
   <string name="choose_data_directory_available_space">%1$s / %2$s vapaana</string>
   <string name="pref_pausePlaybackForFocusLoss_sum">Pysäytä toisto äänenvoimakkuuden hiljentämisen sijasta, kun toinen sovellus haluaa soittaa ääniä.</string>
   <string name="pref_pausePlaybackForFocusLoss_title">Pysäytä keskeytyksiin</string>
@@ -631,7 +631,7 @@
   <string name="exclude_episodes_shorter_than">Jätä ulkopuolelle lyhyemmät jaksot kuin</string>
   <string name="keep_updated">Pidä päivitettynä</string>
   <string name="keep_updated_summary">Sisällytä tämä podcast kun kaikki podcastit (auto)päivitetään</string>
-  <string name="auto_download_disabled_globally">Automaattinen lataaminen on pysäytetty PodVinciin asetuksissa</string>
+  <string name="auto_download_disabled_globally">Automaattinen lataaminen on pysäytetty Podciniin asetuksissa</string>
   <string name="statistics_time_played">Toistoaika:</string>
   <string name="statistics_total_duration">Koknaiskesto (arvio):</string>
   <string name="statistics_episodes_on_device">Jaksoja laitteella:</string>
@@ -640,7 +640,7 @@
   <string name="statistics_view_all">Kaikki podcastit »</string>
   <string name="edit_url_menu">Muokkaa syötteen URLia</string>
   <string name="edit_url_confirmation_msg">Syötteen osoitteen muokkaaminen voi helposti sotkea podcastin toistotilan ja jaksolistaukset. Sen muokkaamista EI suositella, EIKÄ tukea tarjota mikäli jokin menee vikaan. Tätä ei saa tekemättömäksi. Sotkeutunutta tilausta EI voi korjata yksinkertaisesti vaihtamalla osoite takaisin. Varmuuskopion ottaminen ennen jatkamista on suositeltavaa.</string>
-  <!--PodVinciSP-->
+  <!--PodciniSP-->
   <string name="sp_apps_importing_feeds_msg">Tuodaan tilauksia sovelluksista</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">Etsi podcastia...</string>
@@ -660,7 +660,7 @@
   <string name="local_folder">Paikallinen kansio</string>
   <string name="reconnect_local_folder">Yhdistä paikallinen kansio uudelleen</string>
   <string name="reconnect_local_folder_warning">Jos lupa evätään, voit käyttää tätä yhteyden muodostamiseen uudelleen täsmälleen samaan kansioon. Älä valitse toista kansiota.</string>
-  <string name="local_feed_description">Tämä virtuaalinen podcast luotiin lisäämällä kansio PodVinciiin.</string>
+  <string name="local_feed_description">Tämä virtuaalinen podcast luotiin lisäämällä kansio Podciniiin.</string>
   <string name="unable_to_start_system_file_manager">Järjestelmän tiedostonhallintaa ei voi käynnistää</string>
   <string name="filter">Suodin</string>
   <string name="hide_is_favorite_label">On suosikki</string>

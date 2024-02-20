@@ -25,7 +25,7 @@
 את תהליכי הפיתוח הפעילים של אנטנה־פּוֹד מובילים מתנדבים. ניתן לתרום גם כן, עם קוד או עם הערה!
 
 חברי הפורום החביבים שלנו שמחים לסייע בכל שאלה שעשויה לצוץ לך. מזמינים אותך לדון בתכונות של היישומון ועל פודקאסטים בכלל.
-https://forum.podvinci.org/
+https://forum.podcini.org/
 
 Transifex הוא המקום לסייע עם התרגומים:
-https://www.transifex.com/podvinci/podvinci
+https://www.transifex.com/podcini/podcini

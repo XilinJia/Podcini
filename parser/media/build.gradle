@@ -5,7 +5,7 @@ plugins {
 apply from: "../../common.gradle"
 
 android {
-    namespace "ac.mdiq.podvinci.parser.media"
+    namespace "ac.mdiq.podcini.parser.media"
 }
 
 dependencies {

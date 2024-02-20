@@ -6,7 +6,7 @@ plugins {
 apply from: "../../common.gradle"
 
 android {
-    namespace "ac.mdiq.podvinci.storage.preferences"
+    namespace "ac.mdiq.podcini.storage.preferences"
 
     lint {
         disable "StaticFieldLeak"

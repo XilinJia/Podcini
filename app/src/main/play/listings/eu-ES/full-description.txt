@@ -1,8 +1,8 @@
-PodVinci podcast kudeatzaile eta erreproduzigailua da, eta berehalako sarbidea ematen dizu doako eta ordainpeko milioika podcast-etara, podcaster independenteetatik BBC, NPR eta CNN bezalako estazio handietara. Iturriak modu errazean gehitu, inportatu eta esportatzen ditu, iTunesen, OPML fitxategien edo RSS motako URLen zerrenda erabiliz. Esfortzua, bateria eta datuak aurrezten ditu gertaeren deskarga- eta ezabatze-kontrolekin (gogokoetan eta denbora-doikuntzetan oinarrituta).
+Podcini podcast kudeatzaile eta erreproduzigailua da, eta berehalako sarbidea ematen dizu doako eta ordainpeko milioika podcast-etara, podcaster independenteetatik BBC, NPR eta CNN bezalako estazio handietara. Iturriak modu errazean gehitu, inportatu eta esportatzen ditu, iTunesen, OPML fitxategien edo RSS motako URLen zerrenda erabiliz. Esfortzua, bateria eta datuak aurrezten ditu gertaeren deskarga- eta ezabatze-kontrolekin (gogokoetan eta denbora-doikuntzetan oinarrituta).
 Deskargatu, stream-ean entzun, edo gehitu saioak ilaran eta goza itzazu nahi bezala erreprodukzio abiadura doigarriarekin, kapituluetarako euskarria eta lo-tenporizadorearekin.
 Aurreztu lana, bateria eta datu-kontsumoa deskargatzeko automatizazio-kontrol indartsuekin (zehaztu zein ordutan eta zein Wi-Fi saretatik) eta ezabatu antzinako gertakariak (zure lehentasunetan oinarrituta).
 
-Podcastaren jarraitzaile sutsuek sortua, PodVinci askea da zentzu guztietan: kode irekia, doakoa eta publizitaterik gabekoa.
+Podcastaren jarraitzaile sutsuek sortua, Podcini askea da zentzu guztietan: kode irekia, doakoa eta publizitaterik gabekoa.
 
 <b>Inportatu, antolatu eta erreproduzitu</b>
 Erreprodukzioa edozein lekutatik administratzen du: kontrola hasierako pantailan, sistemaren jakinarazpena eta aurikular eta bluetooth kontrolak
@@ -21,11 +21,11 @@ Iturriak gehitu eta inportatu iTunes eta gPodder.net direktorio eta, OPML artxib
 • Zure ingurura egokitu gai argia edo iluna erabiliz
 • Zure harpidetzen segurtasun-kopia bat egin, gPodder.net eta OPML esportazio integratua erabiliz
 
-<b>Bat egin PodVinci komunitatearekin!</b>
-PodVinci etengabe ari da garatzen boluntarioekin. Zuk ere ekarpena egin dezakezu, zure kodearekin edo zure iruzkinekin!
+<b>Bat egin Podcini komunitatearekin!</b>
+Podcini etengabe ari da garatzen boluntarioekin. Zuk ere ekarpena egin dezakezu, zure kodearekin edo zure iruzkinekin!
 
 Foroko kideak pozik daude galdera bakoitzarekin laguntzeagatik. Ezaugarriak eta podcastinga, oro har, eztabaidatzera gonbidatuta zaude.
-https://forum.podvinci.org/
+https://forum.podcini.org/
 
 Transifex itzulpenekin laguntzeko lekua da:
-https://www.transifex.com/podvinci/podvinci
+https://www.transifex.com/podcini/podcini

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <libraries>
     <library
-        name="PodVinci"
+        name="Podcini"
         author="Xilin Jia"
-        website="https://github.com/XilinJia/PodVinci"
+        website="https://github.com/XilinJia/Podcini"
         license="GPL-3.0"
         licenseText="LICENSE.txt" />
     <library

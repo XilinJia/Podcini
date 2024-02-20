@@ -1,8 +1,8 @@
-PodVinci es un gestor y reproductor de podcasts que te da acceso instantáneo a millones de podcast gratuitos y de pago; desde podcasters independientes a grandes estaciones como la BBC, NPR y CNN. Agrega, importa y exporta las fuentes de manera sencilla usando el listado de iTunes, archivos OPML o las URL de tipo RSS. Ahorra esfuerzo, batería y datos con los controles de descarga y de borrado de episodios (basado en favoritos y ajustes de tiempo).
+Podcini es un gestor y reproductor de podcasts que te da acceso instantáneo a millones de podcast gratuitos y de pago; desde podcasters independientes a grandes estaciones como la BBC, NPR y CNN. Agrega, importa y exporta las fuentes de manera sencilla usando el listado de iTunes, archivos OPML o las URL de tipo RSS. Ahorra esfuerzo, batería y datos con los controles de descarga y de borrado de episodios (basado en favoritos y ajustes de tiempo).
 Descarga, escucha en stream o añade a la cola episodios y disfrútalos como quieras con velocidad de reproducción ajustable, soporte para capítulos y temporizador de sueño.
 Ahorra esfuerzo, batería y consumo de datos con los potentes controles de automatización para descarga (especifica la hora y desde qué redes Wi-Fi) y el borrado de episodios antiguos (basado en tus preferencias).
 
-Creado por entusiastas del pódcast, PodVinci es libre en todos los sentidos: código abierto, gratuito y sin publicidad.
+Creado por entusiastas del pódcast, Podcini es libre en todos los sentidos: código abierto, gratuito y sin publicidad.
 
 <b>Importar, organizar y reproducir</b>
 • Administra la reproducción desde cualquier parte: control en la pantalla de inicio, las notificaciones del sistema y los controles de auriculares y bluetooth
@@ -21,11 +21,11 @@ Creado por entusiastas del pódcast, PodVinci es libre en todos los sentidos: c�
 • Adáptate a tu entorno usando el tema claro u oscuro
 • Haz una copia de seguridad de tus suscripciones con la integración de gPodder.net y exportando a OPML
 
-<b>¡Únete a la comunidad PodVinci!</b>
-PodVinci es desarrollado por voluntarios. ¡Tú también puedes contribuir, con tu código o con tus comentarios!
+<b>¡Únete a la comunidad Podcini!</b>
+Podcini es desarrollado por voluntarios. ¡Tú también puedes contribuir, con tu código o con tus comentarios!
 
 Nuestros amables miembros del foro te ayudarán con cualquier duda que tengas. Estás invitado a discutir sobre las características y el podcasting en general.
-https://forum.podvinci.org/
+https://forum.podcini.org/
 
 Ayuda con las traducciones en Transifex:
-https://www.transifex.com/podvinci/podvinci
+https://www.transifex.com/podcini/podcini

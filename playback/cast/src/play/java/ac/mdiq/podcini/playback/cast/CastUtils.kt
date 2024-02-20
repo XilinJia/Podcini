@@ -1,0 +1,172 @@
+package ac.mdiq.podcini.playback.cast
+
+import ac.mdiq.podcini.model.feed.Feed
+import ac.mdiq.podcini.model.feed.FeedMedia
+import ac.mdiq.podcini.model.playback.MediaType
+import ac.mdiq.podcini.model.playback.Playable
+import ac.mdiq.podcini.model.playback.RemoteMedia
+import android.content.ContentResolver
+import android.text.TextUtils
+import android.util.Log
+import com.google.android.gms.cast.CastDevice
+import com.google.android.gms.cast.MediaInfo
+import com.google.android.gms.cast.MediaMetadata
+import com.google.android.gms.cast.framework.CastSession
+
+/**
+ * Helper functions for Cast support.
+ */
+object CastUtils {
+    private const val TAG = "CastUtils"
+
+    const val KEY_MEDIA_ID: String = "ac.mdiq.podcini.core.cast.MediaId"
+
+    const val KEY_EPISODE_IDENTIFIER: String = "ac.mdiq.podcini.core.cast.EpisodeId"
+    const val KEY_EPISODE_LINK: String = "ac.mdiq.podcini.core.cast.EpisodeLink"
+    const val KEY_STREAM_URL: String = "ac.mdiq.podcini.core.cast.StreamUrl"
+    const val KEY_FEED_URL: String = "ac.mdiq.podcini.core.cast.FeedUrl"
+    const val KEY_FEED_WEBSITE: String = "ac.mdiq.podcini.core.cast.FeedWebsite"
+    const val KEY_EPISODE_NOTES: String = "ac.mdiq.podcini.core.cast.EpisodeNotes"
+
+    /**
+     * The field `Podcini.FormatVersion` specifies which version of MediaMetaData
+     * fields we're using. Future implementations should try to be backwards compatible with earlier
+     * versions, and earlier versions should be forward compatible until the version indicated by
+     * `MAX_VERSION_FORWARD_COMPATIBILITY`. If an update makes the format unreadable for
+     * an earlier version, then its version number should be greater than the
+     * `MAX_VERSION_FORWARD_COMPATIBILITY` value set on the earlier one, so that it
+     * doesn't try to parse the object.
+     */
+    const val KEY_FORMAT_VERSION: String = "ac.mdiq.podcini.core.cast.FormatVersion"
+    const val FORMAT_VERSION_VALUE: Int = 1
+    const val MAX_VERSION_FORWARD_COMPATIBILITY: Int = 9999
+
+    fun isCastable(media: Playable?, castSession: CastSession?): Boolean {
+        if (media == null || castSession == null || castSession.castDevice == null) {
+            return false
+        }
+        if (media is FeedMedia || media is RemoteMedia) {
+            val url = media.getStreamUrl()
+            if (url.isNullOrEmpty()) {
+                return false
+            }
+            if (url.startsWith(ContentResolver.SCHEME_CONTENT)) {
+                return false // Local feed
+            }
+            return when (media.getMediaType()) {
+                MediaType.AUDIO -> castSession.castDevice!!
+                    .hasCapability(CastDevice.CAPABILITY_AUDIO_OUT)
+                MediaType.VIDEO -> castSession.castDevice!!.hasCapability(CastDevice.CAPABILITY_VIDEO_OUT)
+                else -> false
+            }
+        }
+        return false
+    }
+
+    /**
+     * Converts [MediaInfo] objects into the appropriate implementation of [Playable].
+     * @return [Playable] object in a format proper for casting.
+     */
+    fun makeRemoteMedia(media: MediaInfo): Playable? {
+        val metadata = media.metadata
+        val version = metadata!!.getInt(KEY_FORMAT_VERSION)
+        if (version <= 0 || version > MAX_VERSION_FORWARD_COMPATIBILITY) {
+            Log.w(TAG, "MediaInfo object obtained from the cast device is not compatible with this"
+                    + "version of Podcini CastUtils, curVer=" + FORMAT_VERSION_VALUE
+                    + ", object version=" + version)
+            return null
+        }
+        val imageList = metadata.images
+        var imageUrl: String? = null
+        if (imageList.isNotEmpty()) {
+            imageUrl = imageList[0].url.toString()
+        }
+        val notes = metadata.getString(KEY_EPISODE_NOTES)
+        val result = RemoteMedia(media.contentId,
+            metadata.getString(KEY_EPISODE_IDENTIFIER),
+            metadata.getString(KEY_FEED_URL),
+            metadata.getString(MediaMetadata.KEY_SUBTITLE),
+            metadata.getString(MediaMetadata.KEY_TITLE),
+            metadata.getString(KEY_EPISODE_LINK),
+            metadata.getString(MediaMetadata.KEY_ARTIST),
+            imageUrl,
+            metadata.getString(KEY_FEED_WEBSITE),
+            media.contentType,
+            metadata.getDate(MediaMetadata.KEY_RELEASE_DATE)!!.time,
+            notes)
+        if (result.getDuration() == 0 && media.streamDuration > 0) {
+            result.setDuration(media.streamDuration.toInt())
+        }
+        return result
+    }
+
+    /**
+     * Compares a [MediaInfo] instance with a [FeedMedia] one and evaluates whether they
+     * represent the same podcast episode.
+     *
+     * @param info      the [MediaInfo] object to be compared.
+     * @param media     the [FeedMedia] object to be compared.
+     * @return <true>true</true> if there's a match, `false` otherwise.
+     *
+     * @see RemoteMedia.equals
+     */
+    fun matches(info: MediaInfo?, media: FeedMedia?): Boolean {
+        if (info == null || media == null) {
+            return false
+        }
+        if (!TextUtils.equals(info.contentId, media.getStreamUrl())) {
+            return false
+        }
+        val metadata = info.metadata
+        val fi = media.getItem()
+        if (fi == null || metadata == null || !TextUtils.equals(metadata.getString(KEY_EPISODE_IDENTIFIER), fi.itemIdentifier)) {
+            return false
+        }
+        val feed: Feed? = fi.feed
+        return feed != null && TextUtils.equals(metadata.getString(KEY_FEED_URL), feed.download_url)
+    }
+
+    /**
+     * Compares a [MediaInfo] instance with a [RemoteMedia] one and evaluates whether they
+     * represent the same podcast episode.
+     *
+     * @param info      the [MediaInfo] object to be compared.
+     * @param media     the [RemoteMedia] object to be compared.
+     * @return <true>true</true> if there's a match, `false` otherwise.
+     *
+     * @see RemoteMedia.equals
+     */
+    fun matches(info: MediaInfo?, media: RemoteMedia?): Boolean {
+        if (info == null || media == null) {
+            return false
+        }
+        if (!TextUtils.equals(info.contentId, media.getStreamUrl())) {
+            return false
+        }
+        val metadata = info.metadata
+        return (metadata != null && TextUtils.equals(metadata.getString(KEY_EPISODE_IDENTIFIER),
+            media.getEpisodeIdentifier())
+                && TextUtils.equals(metadata.getString(KEY_FEED_URL), media.feedUrl))
+    }
+
+    /**
+     * Compares a [MediaInfo] instance with a [Playable] and evaluates whether they
+     * represent the same podcast episode. Useful every time we get a MediaInfo from the Cast Device
+     * and want to avoid unnecessary conversions.
+     *
+     * @param info      the [MediaInfo] object to be compared.
+     * @param media     the [Playable] object to be compared.
+     * @return <true>true</true> if there's a match, `false` otherwise.
+     *
+     * @see RemoteMedia.equals
+     */
+    fun matches(info: MediaInfo?, media: Playable?): Boolean {
+        if (info == null || media == null) {
+            return false
+        }
+        if (media is RemoteMedia) {
+            return matches(info, media as RemoteMedia?)
+        }
+        return media is FeedMedia && matches(info, media as FeedMedia?)
+    }
+}

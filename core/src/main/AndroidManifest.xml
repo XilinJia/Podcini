@@ -28,7 +28,7 @@
 
             <intent-filter>
                 <action android:name="android.media.browse.MediaBrowserService"/>
-                <action android:name="ac.mdiq.podvinci.intents.PLAYBACK_SERVICE" />
+                <action android:name="ac.mdiq.podcini.intents.PLAYBACK_SERVICE" />
             </intent-filter>
         </service>
 
@@ -39,7 +39,7 @@
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
             <intent-filter>
-                <action android:name="ac.mdiq.podvinci.NOTIFY_BUTTON_RECEIVER" />
+                <action android:name="ac.mdiq.podcini.NOTIFY_BUTTON_RECEIVER" />
             </intent-filter>
         </receiver>
 

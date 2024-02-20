@@ -7,7 +7,7 @@ apply from: "../common.gradle"
 apply from: "../playFlavor.gradle"
 
 android {
-    namespace "ac.mdiq.podvinci.core"
+    namespace "ac.mdiq.podcini.core"
 
     lint {
         disable "InvalidPeriodicWorkRequestInterval", "ObsoleteLintCustomCheck", "DefaultLocale", "UnusedAttribute",
@@ -18,7 +18,7 @@ android {
     defaultConfig {
         javaCompileOptions {
             annotationProcessorOptions {
-                arguments = [eventBusIndex: 'ac.mdiq.podvinci.core.ApCoreEventBusIndex']
+                arguments = [eventBusIndex: 'ac.mdiq.podcini.core.ApCoreEventBusIndex']
             }
         }
     }
@@ -107,6 +107,6 @@ dependencies {
 
 kapt {
     arguments {
-        arg('eventBusIndex', 'ac.mdiq.podvinci.core.ApCoreEventBusIndex')
+        arg('eventBusIndex', 'ac.mdiq.podcini.core.ApCoreEventBusIndex')
     }
 }

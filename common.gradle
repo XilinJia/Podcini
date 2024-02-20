@@ -11,17 +11,17 @@ android {
         vectorDrawables.useSupportLibrary false
         vectorDrawables.generatedDensities = []
 
-        testApplicationId "ac.mdiq.podvinci.core.tests"
+        testApplicationId "ac.mdiq.podcini.core.tests"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard.cfg"
-            resValue "string", "app_name", "PodVinci"
+            resValue "string", "app_name", "Podcini"
         }
         debug {
-            resValue "string", "app_name", "PodVinci Debug"
+            resValue "string", "app_name", "Podcini Debug"
         }
     }
 

@@ -1,8 +1,8 @@
-PodVinci to menedżer i odtwarzacz podcastów, który pozwala na natychmiastowy dostęp do milionów darmowych i płatnych podcastów, od niezależnych twórców po wielkie wydawnictwa takie jak BBC, NPR i CNN. Bezproblemowo dodawaj, importuj i eksportuj ich kanały używając bazy danych podcastów iTunes, plików OPML lub zwykłych adresów RSS.
+Podcini to menedżer i odtwarzacz podcastów, który pozwala na natychmiastowy dostęp do milionów darmowych i płatnych podcastów, od niezależnych twórców po wielkie wydawnictwa takie jak BBC, NPR i CNN. Bezproblemowo dodawaj, importuj i eksportuj ich kanały używając bazy danych podcastów iTunes, plików OPML lub zwykłych adresów RSS.
 Pobieraj, streamuj lub dodawaj do kolejki odcinki i korzystaj z nich jak chcesz, przy pomocy konfigurowalnej prędkości odtwarzania, wsparcia rozdziałów i wyłącznika czasowego.
 Oszczędź czas, baterię i ilość pobranych danych komórkowych dzięki wielu możliwościom automatyzacji pobierania odcinków (określanie czasu, interwałów i sieci WiFi) i kasowania odcinków (na podstawie twoich ulubionych i ustawień opóźnienia)
 
-Stworzony przez miłośników podcastów, PodVinci jest darmowy w każdym znaczeniu tego słowa: otwarty kod, bez opłat, bez reklam.
+Stworzony przez miłośników podcastów, Podcini jest darmowy w każdym znaczeniu tego słowa: otwarty kod, bez opłat, bez reklam.
 
 <b>Importuj, organizuj i odtwarzaj</b>
 • Zarządzaj odtwarzaniem z dowolnego miejsca: widgetu na ekranie głównym, powiadomienia systemowego, pilota na kablu słuchawkowym, urządzeń bluetooth
@@ -21,11 +21,11 @@ Dodawaj i importuj kanały z iTunes i gPodder.net, plików OPML oraz z adresów 
 • Dostosuj wygląd dzięki motywom: ciemny, jasny, czarny (dla ekranów AMOLED)
 • Twórz kopie zapasowe swoich subskrypcji dzięki integracji gPodder.net lub eksportuj je do pliku OPML
 
-<b>Dołącz do społeczności PodVinci</b>
-PodVinci jest ciągle rozwijane przez ochotników. Ty też możesz pomóc, kodem lub komentarzem!
+<b>Dołącz do społeczności Podcini</b>
+Podcini jest ciągle rozwijane przez ochotników. Ty też możesz pomóc, kodem lub komentarzem!
 
 Życzliwi użytkownicy forum chętnie odpowiedzą na twoje pytania. Zapraszamy do rozmów o funkcjach programu i generalnie o podcastingu.
-https://forum.podvinci.org/
+https://forum.podcini.org/
 
-Chcesz pomóc tłumaczyć PodVinci - możesz to zrobić na Transifex:
-https://www.transifex.com/podvinci/podvinci
+Chcesz pomóc tłumaczyć Podcini - możesz to zrobić na Transifex:
+https://www.transifex.com/podcini/podcini

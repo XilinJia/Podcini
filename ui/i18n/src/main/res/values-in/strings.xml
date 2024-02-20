@@ -41,7 +41,7 @@
   <string name="home_continue_title">Lanjut dengarkan</string>
   <string name="home_new_title">Lihat apa yang baru</string>
   <string name="home_downloads_title">Atur unduhan</string>
-  <string name="home_welcome_title">Selamat datang ke PodVinci!</string>
+  <string name="home_welcome_title">Selamat datang ke Podcini!</string>
   <string name="home_welcome_text">Anda belum menambahkan podcast apapun. Buka menu di samping untuk menambahkan podcast.</string>
   <string name="open_settings">Buka pengaturan</string>
   <string name="configure_home">Konfigurasikan Layar Utama</string>
@@ -185,7 +185,7 @@
   <string name="skip_episode_label">Lewati episode</string>
   <string name="reset_position">Atur ulang posisi pemutaran</string>
   <string name="no_items_selected">Tidak ada item yang dipilih</string>
-  <string name="delete_local_feed_warning_body">Dengan menghapus episode dari PodVinci, berkas episode akan dihapus dari PodVinci dan dari penyimpanan perangkat Anda. Episode tersebut tidak dapat diunduh lagi melalui PodVinci.</string>
+  <string name="delete_local_feed_warning_body">Dengan menghapus episode dari Podcini, berkas episode akan dihapus dari Podcini dan dari penyimpanan perangkat Anda. Episode tersebut tidak dapat diunduh lagi melalui Podcini.</string>
   <!--Download messages and labels-->
   <string name="download_successful">berhasil</string>
   <string name="download_pending">Unduhan terunda</string>
@@ -213,9 +213,9 @@
   <string name="download_type_feed">Umpan</string>
   <string name="download_type_media">Berkas Media</string>
   <string name="null_value_podcast_error">Tidak ada podcast disediakan yang dapat ditampilkan.</string>
-  <string name="no_feed_url_podcast_found_by_search">Podcast yang disarankan tidak memiliki tautan RSS, PodVinci menemukan podcast yang mungkin serupa</string>
+  <string name="no_feed_url_podcast_found_by_search">Podcast yang disarankan tidak memiliki tautan RSS, Podcini menemukan podcast yang mungkin serupa</string>
   <string name="authentication_notification_title">Autentikasi dibutuhkan</string>
-  <string name="confirm_mobile_download_dialog_message">Penyegaran podcast dengan jaringan data seluler dinonaktifkan di pengaturan. PodVinci dapat mengunduh episode secara otomatis saat jaringan Wi-Fi ada.</string>
+  <string name="confirm_mobile_download_dialog_message">Penyegaran podcast dengan jaringan data seluler dinonaktifkan di pengaturan. Podcini dapat mengunduh episode secara otomatis saat jaringan Wi-Fi ada.</string>
   <string name="confirm_mobile_download_dialog_message_vpn">Aplikasi VPN Anda dianggap jaringan data seluler (koneksi terukur). Penyegaran podcast dengan jaringan data seluler dinonaktifkan di pengaturan. Jika ingin menyelesaikan masalah ini, hubungi pembuat aplikasi VPN Anda.</string>
   <string name="confirm_mobile_streaming_notification_title">Konfirmasi streaming dengan data seluler</string>
   <string name="confirm_mobile_streaming_notification_message">Streaming lewat jaringan data seluler dimatikan di pengaturan. Ketuk jika tetap ingin streaming.</string>
@@ -227,7 +227,7 @@
   <string name="playback_error_timeout">Masa operasi habis</string>
   <string name="playback_error_source">Tidak dapat mengakses berkas media</string>
   <string name="no_media_playing_label">Tidak ada media yang dimainkan</string>
-  <string name="unknown_media_key">PodVinci - Kunci media tidak diketahui: %1$d</string>
+  <string name="unknown_media_key">Podcini - Kunci media tidak diketahui: %1$d</string>
   <string name="error_file_not_found">Berkas tidak ditemukan</string>
   <string name="no_media_label">Barang yang dipilih tidak memiliki berkas media</string>
   <!--Queue operations-->
@@ -300,7 +300,7 @@
   <string name="playback_pref_sum">Kontrol headphone, Jangka waktu lewati, Antrean</string>
   <string name="downloads_pref_sum">Waktu pembaharuan, Jaringan seluler, Unduh otomatis, Hapus otomatis</string>
   <string name="feed_refresh_title">Segarkan podcast</string>
-  <string name="feed_refresh_sum">Tentukan jangka waktu di mana PodVinci secara otomatis mencari episode baru</string>
+  <string name="feed_refresh_sum">Tentukan jangka waktu di mana Podcini secara otomatis mencari episode baru</string>
   <string name="feed_refresh_never">Jangan pernah</string>
   <string name="feed_every_hour">Setiap jam</string>
   <string name="feed_every_2_hours">Tiap 2 jam</string>
@@ -390,15 +390,15 @@
   <string name="pref_contribute">Kontribusi</string>
   <!--About screen-->
   <string name="about_pref">Tentang</string>
-  <string name="podvinci_version">Versi PodVinci</string>
+  <string name="podcini_version">Versi Podcini</string>
   <string name="contributors">Para Kontributor</string>
-  <string name="contributors_summary">Semua orang dapat membantu PodVinci menjadi lebih baik - kontribusi kode, penambahan terjemahan atau membantu satu sama lain di forum kami</string>
+  <string name="contributors_summary">Semua orang dapat membantu Podcini menjadi lebih baik - kontribusi kode, penambahan terjemahan atau membantu satu sama lain di forum kami</string>
   <string name="developers">Para Pengembang</string>
   <string name="translators">Para Penerjemah</string>
   <string name="special_thanks">Ucapan terima kasih</string>
   <string name="privacy_policy">Kebijakan privasi</string>
   <string name="licenses">Lisensi</string>
-  <string name="licenses_summary">PodVinci menggunakan perangkat lunak hebat lainnya</string>
+  <string name="licenses_summary">Podcini menggunakan perangkat lunak hebat lainnya</string>
   <!--Search-->
   <string name="search_status_no_results">Tidak ada hasil yang ditemukan</string>
   <string name="type_to_search">Tulis kueri untuk mencari</string>
@@ -421,8 +421,8 @@
   <string name="html_export_summary">Tunjukkan langganan-langganan Anda kepada teman Anda</string>
   <string name="opml_export_summary">Transfer langganan ke aplikasi podcast lainnya</string>
   <string name="opml_import_summary">Impor langganan dari aplikasi podcast lainnya</string>
-  <string name="database_export_summary">Transfer langganan, episode yang diputar, dan antrean ke PodVinci di perangkat lain</string>
-  <string name="database_import_summary">Impor database PodVinci dari perangkat lain</string>
+  <string name="database_export_summary">Transfer langganan, episode yang diputar, dan antrean ke Podcini di perangkat lain</string>
+  <string name="database_import_summary">Impor database Podcini dari perangkat lain</string>
   <string name="opml_import_label">Impor OPML</string>
   <string name="opml_add_podcast_label">Impor daftar podcast (OPML)</string>
   <string name="opml_reader_error">Sebuah kesalahan terjadi ketika membaca dokumen OPML:</string>
@@ -439,8 +439,8 @@
   <string name="export_success_title">Ekspor berhasil</string>
   <string name="opml_import_ask_read_permission">Akses ke penyimpanan eksternal diperlukan untuk membaca berkas OPML</string>
   <string name="successful_import_label">Impor sukses!</string>
-  <string name="import_ok">Tolong tekan OK untuk mengulang kembali PodVinci</string>
-  <string name="import_no_downgrade">Database ini diekspor pada versi PodVinci yang lebih baru. Versi PodVinci yang Anda miliki belum dapat menangani berkas ini.</string>
+  <string name="import_ok">Tolong tekan OK untuk mengulang kembali Podcini</string>
+  <string name="import_no_downgrade">Database ini diekspor pada versi Podcini yang lebih baru. Versi Podcini yang Anda miliki belum dapat menangani berkas ini.</string>
   <string name="favorites_export_label">Ekspor Favorit</string>
   <string name="favorites_export_summary">Ekspor favorites disimpan ke file</string>
   <!--Sleep timer-->
@@ -471,12 +471,12 @@
   <string name="synchronization_choose_title">Pilih layanan penyedia sinkronisasi</string>
   <string name="synchronization_summary_unchoosen">Anda dapat memilih dari berbagai layanan penyedia  untuk menyinkronisasikan langganan dan status memutar episode Anda dengan</string>
   <string name="dialog_choose_sync_service_title">Pilih layanan penyedia sinkronisasi</string>
-  <string name="gpodnet_description">Gpodder.net adalah layanan sinkronisasi podcast sumber terbuka yang bisa Anda pasang pada server Anda sendiri. Gpodder.net tidak bergantung kepada proyek PodVinci project.</string>
-  <string name="synchronization_summary_nextcloud">Gpoddersync adalah aplikasi Nextcloud bersumber terbuka yang dapat Anda pasang di server Anda sendiri. Gpoddersync tidak bergantung kepada proyek PodVinci project.</string>
+  <string name="gpodnet_description">Gpodder.net adalah layanan sinkronisasi podcast sumber terbuka yang bisa Anda pasang pada server Anda sendiri. Gpodder.net tidak bergantung kepada proyek Podcini project.</string>
+  <string name="synchronization_summary_nextcloud">Gpoddersync adalah aplikasi Nextcloud bersumber terbuka yang dapat Anda pasang di server Anda sendiri. Gpoddersync tidak bergantung kepada proyek Podcini project.</string>
   <string name="synchronization_host_explanation">Anda dapat memilih server Anda sendiri untuk sinkronisasi. Saat sudah memilih server sinkronisasi yang diinginkan, masukkan alamat server Anda di sini.</string>
   <string name="synchronization_host_label">Alamat server</string>
   <string name="proceed_to_login_butLabel">Masuk</string>
-  <string name="synchronization_nextcloud_authenticate_browser">Berikan akses untuk membuka peramban dan kembali ke PodVinci.</string>
+  <string name="synchronization_nextcloud_authenticate_browser">Berikan akses untuk membuka peramban dan kembali ke Podcini.</string>
   <string name="gpodnetauth_login_butLabel">Masuk</string>
   <string name="synchronization_credentials_explanation">Mohon sediakan kredensial dari akun Anda pada server sinkronisasi yang dipilih.</string>
   <string name="gpodnetauth_encryption_warning">Kata sandi dan data tidak dienkripsi!</string>
@@ -485,10 +485,10 @@
   <string name="synchronization_login_butLabel">Masuk</string>
   <string name="synchronization_selectDevice_explanation">Mohon pilih perangkat yang Anda buat di server sinkronisasi atau buat yang baru.</string>
   <string name="gpodnetauth_device_name">Nama perangkat</string>
-  <string name="gpodnetauth_device_name_default">PodVinci di %1$s</string>
+  <string name="gpodnetauth_device_name_default">Podcini di %1$s</string>
   <string name="gpodnetauth_existing_devices">Perangkat yang sudah ada</string>
   <string name="gpodnetauth_create_device">Buat perangkat</string>
-  <string name="gpodnetauth_finish_descr">Selamat! Akun gpodder.net Anda sekarang terhubung dengan perangkat Anda. PodVinci sekarang akan secara otomatis sinkronkan langganan pada perangkat Anda dengan akun gpodder.net Anda.</string>
+  <string name="gpodnetauth_finish_descr">Selamat! Akun gpodder.net Anda sekarang terhubung dengan perangkat Anda. Podcini sekarang akan secara otomatis sinkronkan langganan pada perangkat Anda dengan akun gpodder.net Anda.</string>
   <string name="gpodnetauth_finish_butsyncnow">Mulai sinkronisasi sekarang</string>
   <string name="pref_gpodnet_setlogin_information_title">Ubah informasi login</string>
   <string name="pref_gpodnet_setlogin_information_sum">Ubah informasi login untuk akun gpodder.net Anda</string>
@@ -506,7 +506,7 @@
   <string name="gpodnetsync_username_characters_error">Nama pengguna hanya dapat mengandung huruf, angka, tanda penghubung, dan underscore.</string>
   <!--Directory chooser-->
   <string name="choose_data_directory">Pilih folder data</string>
-  <string name="choose_data_directory_message">Pilih dasar dari folder data Anda. PodVinci akan menyesuaikan membuat sub-direktori yang diperlukan.</string>
+  <string name="choose_data_directory_message">Pilih dasar dari folder data Anda. Podcini akan menyesuaikan membuat sub-direktori yang diperlukan.</string>
   <string name="choose_data_directory_available_space">%1$s dari %2$s kosong</string>
   <string name="pref_pausePlaybackForFocusLoss_sum">Saat aplikasi lain memutar suara, jeda pemutaran alih-alih menurunkan volume suara.</string>
   <string name="pref_pausePlaybackForFocusLoss_title">Jeda untuk interupsi</string>
@@ -541,7 +541,7 @@
   <string name="include_terms">Masukkan hanya jika episode berisikan istilah yang ditentukan di bawah</string>
   <string name="exclude_episodes_shorter_than">Kecualikan episode yang lebih pendek dari</string>
   <string name="keep_updated_summary">Sertakan podcast ini saat (otomatis) menyegarkan semua podcast</string>
-  <string name="auto_download_disabled_globally">Unduh otomatis dinonaktifkan di pengaturan PodVinci utama</string>
+  <string name="auto_download_disabled_globally">Unduh otomatis dinonaktifkan di pengaturan Podcini utama</string>
   <string name="statistics_time_played">Waktu diputar:</string>
   <string name="statistics_total_duration">Total durasi (perkiraan):</string>
   <string name="statistics_episodes_on_device">Episode yang ada di perangkat ini:</string>
@@ -550,7 +550,7 @@
   <string name="statistics_view_all">Lihat untuk semua podcast »</string>
   <string name="edit_url_menu">Sunting URL umpan</string>
   <string name="edit_url_confirmation_msg">Mengganti alamat RSS dapat merusak status pemutaran dan daftar episode podcast. Kami menyarankan untuk TIDAK mengubahnya dan kami tidak dapat memberikan bantuan jika ada yang salah. Aksi ini tidak dapat dikembalikan. Langganan yang rusak tidak dapat diperbaiki hanya dengan mengganti alamatnya kembali. Sebaiknya buat cadangan jika tetap ingin melanjutkan.</string>
-  <!--PodVinciSP-->
+  <!--PodciniSP-->
   <string name="sp_apps_importing_feeds_msg">Impor langganan dari aplikasi bertujuan tunggal...</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">Cari podcast...</string>
@@ -571,7 +571,7 @@
   <string name="local_folder">Folder lokal</string>
   <string name="reconnect_local_folder">Hubungkan kembali folder lokal</string>
   <string name="reconnect_local_folder_warning">Jika terjadi penolakan izin, Anda dapat menggunakan ini untuk menghubungkan kembali ke folder yang sama. Jangan memilih folder yang berbeda.</string>
-  <string name="local_feed_description">Podcast virtual ini dibuat dengan menambahkan folder ke PodVinci.</string>
+  <string name="local_feed_description">Podcast virtual ini dibuat dengan menambahkan folder ke Podcini.</string>
   <string name="unable_to_start_system_file_manager">Tidak dapat memulai file manager sistem</string>
   <string name="filter">Filter</string>
   <string name="hide_is_favorite_label">Favorit</string>

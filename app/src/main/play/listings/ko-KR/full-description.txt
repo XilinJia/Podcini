@@ -25,7 +25,7 @@
 안테나팟은 자원자들에 의해 활발하게 개발되고 있습니다. 여러분도 코드 또는 코멘트로 기여할 수 있습니다!
 
 저희의 친절한 포럼 멤버들은 여러분의 어떤 질문에 대해서든 기쁘게 도움을 드릴 것입니다. 기능이나 팟캐스트 일반에 대한 토론도 할 수 있습니다.
-https://forum.podvinci.org/
+https://forum.podcini.org/
 
 Transifex는 번역에 도움을 줄 수 있는 곳입니다:
-https://www.transifex.com/podvinci/podvinci
+https://www.transifex.com/podcini/podcini

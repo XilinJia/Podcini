@@ -50,7 +50,7 @@
   <string name="home_continue_title">Kontynuuj słuchanie</string>
   <string name="home_new_title">Sprawdź nowości</string>
   <string name="home_downloads_title">Zarządzaj pobranymi</string>
-  <string name="home_welcome_title">Witamy w PodVinci!</string>
+  <string name="home_welcome_title">Witamy w Podcini!</string>
   <string name="home_welcome_text">Nie subskrybujesz jeszcze żadnych podcastów. Otwórz menu boczne, aby dodać podcasty.</string>
   <string name="notification_permission_denied">Nie udzielono zgody.</string>
   <string name="open_settings">Otwórz ustawienia</string>
@@ -297,7 +297,7 @@
   <string name="download_type_feed">Kanał</string>
   <string name="download_type_media">Plik multimedialny</string>
   <string name="null_value_podcast_error">Nie podano podcastu, który można wyświetlić.</string>
-  <string name="no_feed_url_podcast_found_by_search">Zasugerowany podcast nie ma linku RSS, aplikacja PodVinci znalazła inny podcast, który może pasować</string>
+  <string name="no_feed_url_podcast_found_by_search">Zasugerowany podcast nie ma linku RSS, aplikacja Podcini znalazła inny podcast, który może pasować</string>
   <string name="authentication_notification_title">Wymagana autoryzacja</string>
   <string name="confirm_mobile_download_dialog_title">Potwierdź pobieranie przez sieć komórkową</string>
   <string name="confirm_mobile_download_dialog_download_later">Pobierz później</string>
@@ -313,7 +313,7 @@
   <string name="playback_error_source">Nie można odtworzyć pliku</string>
   <string name="playback_error_unknown">Nieznany błąd</string>
   <string name="no_media_playing_label">Żadne media nie odtwarzane </string>
-  <string name="unknown_media_key">PodVinci - Nieznany klawisz: %1$d</string>
+  <string name="unknown_media_key">Podcini - Nieznany klawisz: %1$d</string>
   <string name="error_file_not_found">Nie znaleziono pliku</string>
   <string name="no_media_label">Element nie zawiera pliku multimedialnego</string>
   <!--Queue operations-->
@@ -492,15 +492,15 @@
   <string name="pref_show_subscription_title">Pokaż nazwę subskrypcji</string>
   <!--About screen-->
   <string name="about_pref">O...</string>
-  <string name="podvinci_version">Wersja PodVinci</string>
+  <string name="podcini_version">Wersja Podcini</string>
   <string name="contributors">Kontrybutorzy</string>
-  <string name="contributors_summary">Każdy może pomóc ulepszyć PodVinci - pisząc kod, tłumacząc lub pomagając użytkownikom na forum.</string>
+  <string name="contributors_summary">Każdy może pomóc ulepszyć Podcini - pisząc kod, tłumacząc lub pomagając użytkownikom na forum.</string>
   <string name="developers">Twórcy</string>
   <string name="translators">Tłumacze</string>
   <string name="special_thanks">Specjalne podziękowania</string>
   <string name="privacy_policy">Polityka prywatności</string>
   <string name="licenses">Licencje</string>
-  <string name="licenses_summary">PodVinci używa różnego świetnego oprogramowania/bibliotek</string>
+  <string name="licenses_summary">Podcini używa różnego świetnego oprogramowania/bibliotek</string>
   <!--Search-->
   <string name="search_status_no_results">Brak wyników</string>
   <string name="type_to_search">Wpisz szukaną frazę</string>
@@ -523,8 +523,8 @@
   <string name="html_export_summary">Pokaż swoje subskrypcje znajomym</string>
   <string name="opml_export_summary">Przenieś swoje subskrypcje do innej aplikacji</string>
   <string name="opml_import_summary">Przenieś swoje subskrypcje z innej aplikacji</string>
-  <string name="database_export_summary">Przenieś subskrypcje, listę odsłuchanych odcinków i kolejkę do PodVinci na innym urządzeniu</string>
-  <string name="database_import_summary">Importuj bazę danych PodVinci z innego urządzenia</string>
+  <string name="database_export_summary">Przenieś subskrypcje, listę odsłuchanych odcinków i kolejkę do Podcini na innym urządzeniu</string>
+  <string name="database_import_summary">Importuj bazę danych Podcini z innego urządzenia</string>
   <string name="opml_import_label">Import pliku OMPL</string>
   <string name="opml_add_podcast_label">Importuj listę podcastów (OPML)</string>
   <string name="opml_reader_error">Wystąpił błąd podczas odczytywania pliku OPML:</string>
@@ -541,8 +541,8 @@
   <string name="export_success_title">Export zakończony powodzeniem</string>
   <string name="opml_import_ask_read_permission">Dostęp do zewnętrznej pamięci jest potrzebny do odczytywania plików OPML</string>
   <string name="successful_import_label">Import udany</string>
-  <string name="import_ok">Naciśnij OK, aby zrestartować PodVinci</string>
-  <string name="import_no_downgrade">Baza danych została eksportowana z nowszej wersji PodVinci. Twoja wersja nie potrafi obsłużyć tego pliku. </string>
+  <string name="import_ok">Naciśnij OK, aby zrestartować Podcini</string>
+  <string name="import_no_downgrade">Baza danych została eksportowana z nowszej wersji Podcini. Twoja wersja nie potrafi obsłużyć tego pliku. </string>
   <string name="favorites_export_label">Eksport ulubionych</string>
   <string name="favorites_export_summary">Wyeksportuj ulubione do pliku</string>
   <!--Sleep timer-->
@@ -580,12 +580,12 @@
   <string name="synchronization_choose_title">Wybierz dostawcę synchronizacji</string>
   <string name="synchronization_summary_unchoosen">Możesz wybrać synchronizację subskrypcji i stanu odtwarzania odcinków z pomocą kilku dostawców</string>
   <string name="dialog_choose_sync_service_title">Wybierz dostawcę synchronizacji</string>
-  <string name="gpodnet_description">Gpodder.net to serwis open-source do synchronizacji podcastów, który możesz zainstalować na własnym serwerze. Gpodder.net nie jest powiązany z projektem PodVinci.</string>
-  <string name="synchronization_summary_nextcloud">Gpoddersync to open-source aplikacja Nextcloudu, którą możesz łatwo zainstalować na swój serwer. Aplikacja nie jest powiązana z projektem PodVinci.</string>
+  <string name="gpodnet_description">Gpodder.net to serwis open-source do synchronizacji podcastów, który możesz zainstalować na własnym serwerze. Gpodder.net nie jest powiązany z projektem Podcini.</string>
+  <string name="synchronization_summary_nextcloud">Gpoddersync to open-source aplikacja Nextcloudu, którą możesz łatwo zainstalować na swój serwer. Aplikacja nie jest powiązana z projektem Podcini.</string>
   <string name="synchronization_host_explanation">Możesz wybrać swój własny serwer do synchronizacji. Po zidentyfikowaniu preferowanego serwera synchronizacji, wpisz tutaj jego adres.</string>
   <string name="synchronization_host_label">Adres serwera</string>
   <string name="proceed_to_login_butLabel">Przejdź do logowania</string>
-  <string name="synchronization_nextcloud_authenticate_browser">Zezwól na dostęp w otwartym oknie przeglądarki i wróć do aplikacji PodVinci.</string>
+  <string name="synchronization_nextcloud_authenticate_browser">Zezwól na dostęp w otwartym oknie przeglądarki i wróć do aplikacji Podcini.</string>
   <string name="gpodnetauth_login_butLabel">Login</string>
   <string name="synchronization_credentials_explanation">Podaj dane uwierzytelniające swojego konta na serwerze synchronizacji.</string>
   <string name="gpodnetauth_encryption_warning">Hasło i dane nie są zaszyfrowane!</string>
@@ -594,10 +594,10 @@
   <string name="synchronization_login_butLabel">Zaloguj się</string>
   <string name="synchronization_selectDevice_explanation">Wybierz urządzenie, które zostało utworzone na serwerze synchronizacji lub utwórz nowe.</string>
   <string name="gpodnetauth_device_name">Nazwa urządzenia</string>
-  <string name="gpodnetauth_device_name_default">PodVinci na %1$s</string>
+  <string name="gpodnetauth_device_name_default">Podcini na %1$s</string>
   <string name="gpodnetauth_existing_devices">Istniejące urządzenia</string>
   <string name="gpodnetauth_create_device">Utwórz urządzenie</string>
-  <string name="gpodnetauth_finish_descr">Gratulacje! Twoje konto na gpodder.net jest połączone z urządzeniem.  PodVinci będzie automatycznie synchronizować subskrypcje na urządzeniu z kontem na gpodder.net. </string>
+  <string name="gpodnetauth_finish_descr">Gratulacje! Twoje konto na gpodder.net jest połączone z urządzeniem.  Podcini będzie automatycznie synchronizować subskrypcje na urządzeniu z kontem na gpodder.net. </string>
   <string name="gpodnetauth_finish_butsyncnow">Rozpocznij synchronizację</string>
   <string name="pref_gpodnet_setlogin_information_title">Zmień informacje logowania</string>
   <string name="pref_gpodnet_setlogin_information_sum">Zmień dane logowania konta gpodder.net.</string>
@@ -614,7 +614,7 @@
   <string name="gpodnetsync_pref_report_failed">Porażka</string>
   <string name="gpodnetsync_username_characters_error">Nazwa użytkownika może zawierać tylko litery, cyfry, myślniki i podkreślniki.</string>
   <!--Directory chooser-->
-  <string name="choose_data_directory_message">Wybierz główny folder dla danych. PodVinci utworzy odpowiednie podkatalogi.</string>
+  <string name="choose_data_directory_message">Wybierz główny folder dla danych. Podcini utworzy odpowiednie podkatalogi.</string>
   <string name="choose_data_directory_available_space">%1$s z %2$s wolnych </string>
   <string name="pref_pausePlaybackForFocusLoss_sum">Wstrzymaj odtwarzanie zamiast wyciszenia jeśli inna aplikacja chce odtworzyć dźwięk.</string>
   <!--Online feed view-->
@@ -650,7 +650,7 @@
   <string name="include_terms">Uwzględnij tylko odcinki zawierające dowolne z poniższych wyrażeń</string>
   <string name="exclude_episodes_shorter_than">Wyklucz odcinki krótsze niż</string>
   <string name="keep_updated_summary">Uwzględnij ten podcast przy (automatycznym) odświeżaniu wszystkich kanałów</string>
-  <string name="auto_download_disabled_globally">Automatyczne pobieranie jest wyłączone w globalnych ustawieniach PodVinci</string>
+  <string name="auto_download_disabled_globally">Automatyczne pobieranie jest wyłączone w globalnych ustawieniach Podcini</string>
   <string name="statistics_time_played">Czas odtwarzania:</string>
   <string name="statistics_total_duration">Całkowity czas trwania (szacunkowy):</string>
   <string name="statistics_episodes_on_device">Odcinki na urządzeniu:</string>
@@ -659,7 +659,7 @@
   <string name="statistics_view_all">Zobacz wszystkie podcasty »</string>
   <string name="edit_url_menu">Edytuj adres kanału</string>
   <string name="edit_url_confirmation_msg">Zmiana adresu RSS może łatwo zepsuć stan odtwarzania i listę odcinków podcastu. NIE zalecamy zmiany i NIE zapewniamy wsparcia, jeśli coś pójdzie nie tak. Tego nie da się cofnąć. Uszkodzonej subskrypcji NIE MOŻNA naprawić poprzez zwykłą zmianę adresu z powrotem. Sugerujemy utworzenie kopii zapasowej przed kontynuowaniem.</string>
-  <!--PodVinciSP-->
+  <!--PodciniSP-->
   <string name="sp_apps_importing_feeds_msg">Importowanie subskrybcji z jednozadaniowych aplikacji</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">Szukaj podcast…</string>
@@ -682,7 +682,7 @@
   <string name="local_folder">Lokalny folder</string>
   <string name="reconnect_local_folder">Połącz ponownie lokalny folder</string>
   <string name="reconnect_local_folder_warning">W przypadku odmowy uprawnień, możesz użyć tej opcji do ponownego połączenia do tego samego folderu lokalnego. Nie wybieraj innego folderu.</string>
-  <string name="local_feed_description">Ten wirtualny podcast został stworzony przez dodanie lokalnego folderu do PodVinci.</string>
+  <string name="local_feed_description">Ten wirtualny podcast został stworzony przez dodanie lokalnego folderu do Podcini.</string>
   <string name="unable_to_start_system_file_manager">Nie można uruchomić menedżera plików</string>
   <string name="filter">Filtruj</string>
   <string name="hide_is_favorite_label">Ulubione</string>

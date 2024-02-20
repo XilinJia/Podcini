@@ -44,7 +44,7 @@
                     android:layout_height="wrap_content"
                     android:foreground="?attr/selectableItemBackground"
                     android:importantForAccessibility="no"
-                    style="@style/PodVinci.TextView.ListItemSecondaryTitle"
+                    style="@style/Podcini.TextView.ListItemSecondaryTitle"
                     tools:text="Podcast title" />
 
                 <TextView
@@ -65,7 +65,7 @@
                         android:id="@+id/txtvDuration"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        style="@style/PodVinci.TextView.ListItemSecondaryTitle"
+                        style="@style/Podcini.TextView.ListItemSecondaryTitle"
                         tools:text="@sample/episodes.json/data/duration" />
 
                     <TextView
@@ -78,13 +78,13 @@
                         android:layout_marginEnd="4dp"
                         android:importantForAccessibility="no"
                         android:text="·"
-                        style="@style/PodVinci.TextView.ListItemSecondaryTitle" />
+                        style="@style/Podcini.TextView.ListItemSecondaryTitle" />
 
                     <TextView
                         android:id="@+id/txtvPublished"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        style="@style/PodVinci.TextView.ListItemSecondaryTitle"
+                        style="@style/Podcini.TextView.ListItemSecondaryTitle"
                         tools:text="Jan 23" />
 
                 </LinearLayout>
@@ -145,7 +145,7 @@
                     android:layout_marginBottom="4dp"
                     android:layout_gravity="bottom|end">
 
-                    <ac.mdiq.podvinci.ui.common.CircularProgressBar
+                    <ac.mdiq.podcini.ui.common.CircularProgressBar
                         android:id="@+id/circularProgressBar"
                         android:layout_width="36dp"
                         android:layout_height="36dp"
@@ -190,19 +190,19 @@
 
     </LinearLayout>
 
-    <ac.mdiq.podvinci.view.NestedScrollableHost
+    <ac.mdiq.podcini.view.NestedScrollableHost
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/header"
         app:preferVertical="3">
 
-        <ac.mdiq.podvinci.view.ShownotesWebView
+        <ac.mdiq.podcini.view.ShownotesWebView
             android:id="@+id/webvDescription"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:foreground="?android:windowContentOverlay" />
 
-    </ac.mdiq.podvinci.view.NestedScrollableHost>
+    </ac.mdiq.podcini.view.NestedScrollableHost>
 
     <FrameLayout
         android:layout_width="match_parent"

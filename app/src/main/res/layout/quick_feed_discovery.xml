@@ -37,7 +37,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <ac.mdiq.podvinci.ui.common.WrappingGridView
+        <ac.mdiq.podcini.ui.common.WrappingGridView
             android:id="@+id/discover_grid"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

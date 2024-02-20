@@ -86,7 +86,7 @@
             android:layoutDirection="ltr"
             android:orientation="vertical">
 
-            <ac.mdiq.podvinci.view.ChapterSeekBar
+            <ac.mdiq.podcini.view.ChapterSeekBar
                 android:id="@+id/sbPosition"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -104,7 +104,7 @@
                 android:paddingLeft="8dp"
                 android:paddingRight="8dp">
 
-                <ac.mdiq.podvinci.view.NoRelayoutTextView
+                <ac.mdiq.podcini.view.NoRelayoutTextView
                     android:id="@+id/txtvPosition"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -116,7 +116,7 @@
                     android:textColor="?android:attr/textColorSecondary"
                     android:textSize="@dimen/text_size_micro" />
 
-                <ac.mdiq.podvinci.view.NoRelayoutTextView
+                <ac.mdiq.podcini.view.NoRelayoutTextView
                     android:id="@+id/txtvLength"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -138,7 +138,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp">
 
-                <ac.mdiq.podvinci.view.PlayButton
+                <ac.mdiq.podcini.view.PlayButton
                     android:id="@+id/butPlay"
                     android:layout_width="@dimen/audioplayer_playercontrols_length_big"
                     android:layout_height="@dimen/audioplayer_playercontrols_length_big"
@@ -155,7 +155,7 @@
                     app:srcCompat="@drawable/ic_play_48dp"
                     tools:srcCompat="@drawable/ic_play_48dp" />
 
-                <ac.mdiq.podvinci.ui.common.CircularProgressBar
+                <ac.mdiq.podcini.ui.common.CircularProgressBar
                     android:layout_width="@dimen/audioplayer_playercontrols_length_big"
                     android:layout_height="@dimen/audioplayer_playercontrols_length_big"
                     android:layout_centerHorizontal="true"
@@ -205,7 +205,7 @@
                     android:textColor="?android:attr/textColorSecondary"
                     android:textSize="12sp" />
 
-                <ac.mdiq.podvinci.ui.common.PlaybackSpeedIndicatorView
+                <ac.mdiq.podcini.ui.common.PlaybackSpeedIndicatorView
                     android:id="@+id/butPlaybackSpeed"
                     android:layout_width="@dimen/audioplayer_playercontrols_length"
                     android:layout_height="@dimen/audioplayer_playercontrols_length"

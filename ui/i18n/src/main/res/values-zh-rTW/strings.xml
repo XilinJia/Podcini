@@ -151,7 +151,7 @@
   <string name="playback_error_timeout">操作逾時</string>
   <string name="playback_error_source">無法取得該媒體檔案</string>
   <string name="no_media_playing_label">播放完畢</string>
-  <string name="unknown_media_key">PodVinci - 媒體按鍵無法辨識：%1$d</string>
+  <string name="unknown_media_key">Podcini - 媒體按鍵無法辨識：%1$d</string>
   <string name="error_file_not_found">找不到檔案</string>
   <!--Queue operations-->
   <string name="queue_locked">待播清單已鎖定</string>
@@ -269,15 +269,15 @@
   <string name="not_kept_updated">未設定維持更新</string>
   <!--About screen-->
   <string name="about_pref">關於</string>
-  <string name="podvinci_version">PodVinci 版本</string>
+  <string name="podcini_version">Podcini 版本</string>
   <string name="contributors">貢獻者</string>
-  <string name="contributors_summary">無論寫程式、翻譯或幫助其他使用者，每個人都能讓 PodVinci 更加完美！</string>
+  <string name="contributors_summary">無論寫程式、翻譯或幫助其他使用者，每個人都能讓 Podcini 更加完美！</string>
   <string name="developers">開發人員</string>
   <string name="translators">譯者</string>
   <string name="special_thanks">特別感謝</string>
   <string name="privacy_policy">隱私條款</string>
   <string name="licenses">授權條款</string>
-  <string name="licenses_summary">PodVinci 中也用了其他很棒的軟體</string>
+  <string name="licenses_summary">Podcini 中也用了其他很棒的軟體</string>
   <!--Search-->
   <string name="search_status_no_results">搜尋無結果</string>
   <string name="search_label">搜尋</string>
@@ -298,8 +298,8 @@
   <string name="html_export_summary">顯示您的訂閱給朋友</string>
   <string name="opml_export_summary">將您的訂閱清單移到另一個 Podcast 軟體</string>
   <string name="opml_import_summary">從其他 Podcast 軟體匯入訂閱清單</string>
-  <string name="database_export_summary">將訂閱、聆聽紀錄、待播清單等資訊傳送到其他設備上的 PodVinci</string>
-  <string name="database_import_summary">自其他設備匯入 PodVinci 資料庫</string>
+  <string name="database_export_summary">將訂閱、聆聽紀錄、待播清單等資訊傳送到其他設備上的 Podcini</string>
+  <string name="database_import_summary">自其他設備匯入 Podcini 資料庫</string>
   <string name="opml_add_podcast_label">自 OPML 匯入 Podcast 清單</string>
   <string name="opml_reader_error">讀取 OPML 時發生錯誤：</string>
   <string name="opml_import_error_no_file">未選擇任何檔案！</string>
@@ -315,8 +315,8 @@
   <string name="export_success_title">匯出成功</string>
   <string name="opml_import_ask_read_permission">讀取 OPML 檔需要存取外部儲存空間的權限</string>
   <string name="successful_import_label">匯入完畢</string>
-  <string name="import_ok">請按下 OK 重新啟動 PodVinci</string>
-  <string name="import_no_downgrade">此資料庫是以新版 PodVinci 匯出的，您目前使用的版本無法使用這份資料。</string>
+  <string name="import_ok">請按下 OK 重新啟動 Podcini</string>
+  <string name="import_no_downgrade">此資料庫是以新版 Podcini 匯出的，您目前使用的版本無法使用這份資料。</string>
   <string name="favorites_export_label">匯出我的最愛</string>
   <string name="favorites_export_summary">將儲存的我的最愛清單匯出為檔案</string>
   <!--Sleep timer-->
@@ -350,7 +350,7 @@
   <string name="gpodnetauth_device_name">裝置名稱</string>
   <string name="gpodnetauth_existing_devices">現存裝置</string>
   <string name="gpodnetauth_create_device">新增裝置</string>
-  <string name="gpodnetauth_finish_descr">恭喜，您的 gpodder.net 帳號已經成功連結到當前的設備！PodVinci 今後將自動與 gpodder.net 同步此設備的訂閱清單。</string>
+  <string name="gpodnetauth_finish_descr">恭喜，您的 gpodder.net 帳號已經成功連結到當前的設備！Podcini 今後將自動與 gpodder.net 同步此設備的訂閱清單。</string>
   <string name="gpodnetauth_finish_butsyncnow">現在開始同步</string>
   <string name="pref_gpodnet_setlogin_information_title">變更登入資訊</string>
   <string name="pref_gpodnet_setlogin_information_sum">修改您的 gpodder.net 帳號登入資訊</string>
@@ -361,7 +361,7 @@
   <string name="gpodnetsync_pref_report_failed">失敗</string>
   <string name="gpodnetsync_username_characters_error">帳號中只能包含英文字母、數字、橫線及底線</string>
   <!--Directory chooser-->
-  <string name="choose_data_directory_message">請選擇您儲存檔案用的資料夾，PodVinci 會自動建立相應的子資料夾。</string>
+  <string name="choose_data_directory_message">請選擇您儲存檔案用的資料夾，Podcini 會自動建立相應的子資料夾。</string>
   <string name="choose_data_directory_available_space">可用空間 %1$s/%2$s</string>
   <string name="pref_pausePlaybackForFocusLoss_sum">有其他 App 也要播放聲音時，停止播放 Podcast（而非降低音量）</string>
   <!--Online feed view-->
@@ -385,12 +385,12 @@
   <string name="authentication_descr">修改此 Podcast 的帳號與密碼。</string>
   <string name="episode_filters_description">自動下載時要列入或排除的條件清單</string>
   <string name="keep_updated_summary">自動更新所有 Podcast 時，也包括此 Podcast</string>
-  <string name="auto_download_disabled_globally">PodVinci 的主設定中已停用自動下載功能</string>
+  <string name="auto_download_disabled_globally">Podcini 的主設定中已停用自動下載功能</string>
   <string name="statistics_episodes_on_device">裝置上的單集：</string>
   <string name="statistics_space_used">佔用空間：</string>
   <string name="statistics_view_all">檢視所有 Podcast »</string>
-  <!--PodVinciSP-->
-  <string name="sp_apps_importing_feeds_msg">從 PodVinciSP 匯入訂閱清單</string>
+  <!--PodciniSP-->
+  <string name="sp_apps_importing_feeds_msg">從 PodciniSP 匯入訂閱清單</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">搜尋 Podcast…</string>
   <string name="search_fyyd_label">搜尋 fyyd</string>
@@ -407,7 +407,7 @@
   <string name="local_folder">本機資料夾</string>
   <string name="reconnect_local_folder">重新連接本機資料夾</string>
   <string name="reconnect_local_folder_warning">若因權限問題被拒絕連接，您可以用此方法重新連上同一個資料夾。此時請勿選擇其他的資料夾。</string>
-  <string name="local_feed_description">此虛擬 Podcast 是在 PodVinci 裡增加資料夾而產生的。</string>
+  <string name="local_feed_description">此虛擬 Podcast 是在 Podcini 裡增加資料夾而產生的。</string>
   <string name="unable_to_start_system_file_manager">無法啟用系統的檔案管理工具</string>
   <string name="filter">篩選</string>
   <string name="hide_is_favorite_label">為最愛</string>

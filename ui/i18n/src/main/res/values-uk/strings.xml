@@ -51,9 +51,9 @@
   <string name="home_continue_title">Продовжити прослуховування</string>
   <string name="home_new_title">Переглянути, що нового</string>
   <string name="home_downloads_title">Керування завантаженнями</string>
-  <string name="home_welcome_title">Вітаємо у PodVinci!</string>
+  <string name="home_welcome_title">Вітаємо у Podcini!</string>
   <string name="home_welcome_text">Ви ще не підписані на жодний подкаст. Відкрийте бічне меню, щоб додати подкаст.</string>
-  <string name="notification_permission_text">PodVinci потрібен ваш дозвіл, щоб показувати сповіщення. За замовчуванням PodVinci показує сповіщення лише під час завантаження або коли щось йде не так.</string>
+  <string name="notification_permission_text">Podcini потрібен ваш дозвіл, щоб показувати сповіщення. За замовчуванням Podcini показує сповіщення лише під час завантаження або коли щось йде не так.</string>
   <string name="notification_permission_denied">Ви відмовили у дозволі.</string>
   <string name="notification_permission_deny_warning">Якщо ви вимкнете сповіщення і щось піде не так, то, можливо, ви не зможете з\'ясувати, чому це сталося.</string>
   <string name="deny_label">Блокувати</string>
@@ -274,7 +274,7 @@
   <string name="skip_episode_label">Пропустити епізод</string>
   <string name="reset_position">Скинути позицію відтворення</string>
   <string name="no_items_selected">Не вибрано жодний елемент</string>
-  <string name="delete_local_feed_warning_body">Видалення видаляє епізод з PodVinci і видаляє медіафайл зі сховища вашого пристрою. Його не можна буде знову завантажити через PodVinci.</string>
+  <string name="delete_local_feed_warning_body">Видалення видаляє епізод з Podcini і видаляє медіафайл зі сховища вашого пристрою. Його не можна буде знову завантажити через Podcini.</string>
   <!--Download messages and labels-->
   <string name="download_successful">успішно</string>
   <string name="download_pending">Потрібно завантажити</string>
@@ -318,10 +318,10 @@
   <string name="download_type_feed">Канал</string>
   <string name="download_type_media">Файл з медіа</string>
   <string name="null_value_podcast_error">Не надано подкаст для перегляду.</string>
-  <string name="no_feed_url_podcast_found_by_search">Запропонований подкаст не мав посилання на RSS-стрічку, але PodVinci вдалося знайти схожий</string>
+  <string name="no_feed_url_podcast_found_by_search">Запропонований подкаст не мав посилання на RSS-стрічку, але Podcini вдалося знайти схожий</string>
   <string name="authentication_notification_title">Потрібна автентифікація</string>
   <string name="confirm_mobile_download_dialog_title">Підтвердження завантаження через мобільну мережу</string>
-  <string name="confirm_mobile_download_dialog_message">Завантаження через мобільний зв\'язок вимкнено в налаштуваннях. PodVinci може завантажити епізод пізніше автоматично, коли з\'явиться Wi-Fi.</string>
+  <string name="confirm_mobile_download_dialog_message">Завантаження через мобільний зв\'язок вимкнено в налаштуваннях. Podcini може завантажити епізод пізніше автоматично, коли з\'явиться Wi-Fi.</string>
   <string name="confirm_mobile_download_dialog_message_vpn">Ваш VPN-додаток прикидається мобільною мережею (з\'єднання з лічильником). Завантаження через мобільне з\'єднання вимкнено в налаштуваннях. Якщо ви хочете, щоб цю проблему було виправлено, зверніться до розробників вашого VPN-додатку.</string>
   <string name="confirm_mobile_download_dialog_download_later">Завантажити пізніше</string>
   <string name="confirm_mobile_download_dialog_allow_this_time">Все одно завантажити</string>
@@ -337,7 +337,7 @@
   <string name="playback_error_source">Не вдається отримати доступ до медіафайлу</string>
   <string name="playback_error_unknown">Невідома помилка</string>
   <string name="no_media_playing_label">Немає що грати</string>
-  <string name="unknown_media_key">PodVinci - Невідомий медіа ключ: %1$d</string>
+  <string name="unknown_media_key">Podcini - Невідомий медіа ключ: %1$d</string>
   <string name="error_file_not_found">Файл не знайдено</string>
   <string name="no_media_label">Елемент не містить медіафайлу</string>
   <!--Queue operations-->
@@ -415,7 +415,7 @@
   <string name="pref_auto_delete_title">Автовидалення</string>
   <string name="pref_auto_local_delete_title">Автовидалення з локальних тек</string>
   <string name="pref_auto_local_delete_sum">Функція автовидалення видалятиме також і локальні теки</string>
-  <string name="pref_auto_local_delete_dialog_body">Зверніть увагу, що для локальних тек це призведе до видалення епізодів з PodVinci і видалення їхніх медіафайлів зі сховища вашого пристрою. Їх не можна буде знову завантажити через PodVinci. Увімкнути автоматичне видалення?</string>
+  <string name="pref_auto_local_delete_dialog_body">Зверніть увагу, що для локальних тек це призведе до видалення епізодів з Podcini і видалення їхніх медіафайлів зі сховища вашого пристрою. Їх не можна буде знову завантажити через Podcini. Увімкнути автоматичне видалення?</string>
   <string name="pref_smart_mark_as_played_sum">Позначити епізоди як відтворені, навіть якщо залишилось менш ніж зазначене число секунд до кінця відтворення</string>
   <string name="pref_smart_mark_as_played_title">Розумне позначення прослуханих епізодів</string>
   <string name="pref_skip_keeps_episodes_sum">Зберігати пропущені  епізоди при програванні  </string>
@@ -427,7 +427,7 @@
   <string name="downloads_pref">Завантаження</string>
   <string name="downloads_pref_sum">Інтервал оновлення, Мобільні дані, Автоматичне завантаження, Автоматичне видалення</string>
   <string name="feed_refresh_title">Оновити подкасти</string>
-  <string name="feed_refresh_sum">Вкажіть інтервал, з яким PodVinci автоматично шукатиме нові епізоди</string>
+  <string name="feed_refresh_sum">Вкажіть інтервал, з яким Podcini автоматично шукатиме нові епізоди</string>
   <string name="feed_refresh_never">Ніколи</string>
   <string name="feed_every_hour">Щогодини</string>
   <string name="feed_every_2_hours">Кожні 2 години</string>
@@ -520,7 +520,7 @@
   <string name="pref_skip_silence_title">Пропустити тишу в аудіо</string>
   <string name="behavior">Поведінка</string>
   <string name="pref_default_page">Сторінка додатку за замовчуванням</string>
-  <string name="pref_default_page_sum">Екран, який відкривається при запуску PodVinci</string>
+  <string name="pref_default_page_sum">Екран, який відкривається при запуску Podcini</string>
   <string name="pref_back_button_opens_drawer">Кнопка назад відкриває навігаційну панель</string>
   <string name="pref_back_button_opens_drawer_summary">Натискання кнопки назад на сторінці за замовчуванням відкриває навігаційну панель</string>
   <string name="remember_last_page">Остання відкрита сторінка</string>
@@ -544,15 +544,15 @@
   <string name="pref_new_episodes_action_sum">Дія що буде виконана для нових епізодів</string>
   <!--About screen-->
   <string name="about_pref">Про програму</string>
-  <string name="podvinci_version">Версія PodVinci</string>
+  <string name="podcini_version">Версія Podcini</string>
   <string name="contributors">Учасники</string>
-  <string name="contributors_summary">Кожен може допомогти покращити PodVinci - за допомогою коду, перекладу або допомагаючи користувачам на нашому форумі</string>
+  <string name="contributors_summary">Кожен може допомогти покращити Podcini - за допомогою коду, перекладу або допомагаючи користувачам на нашому форумі</string>
   <string name="developers">Розробники</string>
   <string name="translators">Перекладачі</string>
   <string name="special_thanks">Особлива подяка</string>
   <string name="privacy_policy">Політика конфіденційності</string>
   <string name="licenses">Ліцензії</string>
-  <string name="licenses_summary">PodVinci використовує інше чудове програмне забезпечення</string>
+  <string name="licenses_summary">Podcini використовує інше чудове програмне забезпечення</string>
   <!--Search-->
   <string name="search_status_no_results">Жодних результатів немає</string>
   <string name="type_to_search">Введіть запит для пошуку</string>
@@ -576,8 +576,8 @@
   <string name="html_export_summary">Показати свої підписки другу</string>
   <string name="opml_export_summary">Перенесіть свої підписки на інший додаток для подкастів</string>
   <string name="opml_import_summary">Імпортуйте свої підписки з іншого додатка для подкастів</string>
-  <string name="database_export_summary">Перенесіть підписки, прослухані епізоди та чергу на PodVinci в іншому пристрої</string>
-  <string name="database_import_summary">Імпортуйте базу даних PodVinci з іншого пристрою</string>
+  <string name="database_export_summary">Перенесіть підписки, прослухані епізоди та чергу на Podcini в іншому пристрої</string>
+  <string name="database_import_summary">Імпортуйте базу даних Podcini з іншого пристрою</string>
   <string name="opml_import_label">Імпорт OPML</string>
   <string name="opml_add_podcast_label">Імпортувати список подкастів (OPML)</string>
   <string name="opml_reader_error">Помилка при читанні документа OPML:</string>
@@ -594,8 +594,8 @@
   <string name="export_success_title">Успішний експорт</string>
   <string name="opml_import_ask_read_permission">Щоб прочитати файл OPML потрібен доступ до зовнішнього носія</string>
   <string name="successful_import_label">Імпорт - успішний</string>
-  <string name="import_ok">Будь ласка, натисніть OK, щоб перезапустити PodVinci</string>
-  <string name="import_no_downgrade">Ця база даних була експортована з новішою версією PodVinci. Ваша поточна установка ще не знає, як обробляти цей файл.</string>
+  <string name="import_ok">Будь ласка, натисніть OK, щоб перезапустити Podcini</string>
+  <string name="import_no_downgrade">Ця база даних була експортована з новішою версією Podcini. Ваша поточна установка ще не знає, як обробляти цей файл.</string>
   <string name="favorites_export_label">Експорт улюбленого</string>
   <string name="favorites_export_summary">Експортувати збережені улюблені файли</string>
   <!--Sleep timer-->
@@ -642,12 +642,12 @@
   <string name="synchronization_choose_title">Обрати постачальника синхронізації</string>
   <string name="synchronization_summary_unchoosen">Ви можете вибрати одного з декількох провайдерів для синхронізації ваших підписок і стану відтворення епізодів</string>
   <string name="dialog_choose_sync_service_title">Обрати постачальника синхронізації</string>
-  <string name="gpodnet_description">Gpodder.net — це сервіс синхронізації подкастів з відкритим вихідним кодом, який ви можете встановити на власному сервері. Gpodder.net не залежить від проекту PodVinci.</string>
-  <string name="synchronization_summary_nextcloud">Gpoddersync — це додаток Nextcloud з відкритим вихідним кодом, який ви можете легко встановити на власний сервер. Додаток не залежить від проекту PodVinci.</string>
+  <string name="gpodnet_description">Gpodder.net — це сервіс синхронізації подкастів з відкритим вихідним кодом, який ви можете встановити на власному сервері. Gpodder.net не залежить від проекту Podcini.</string>
+  <string name="synchronization_summary_nextcloud">Gpoddersync — це додаток Nextcloud з відкритим вихідним кодом, який ви можете легко встановити на власний сервер. Додаток не залежить від проекту Podcini.</string>
   <string name="synchronization_host_explanation">Ви можете вибрати власний сервер для синхронізації. Коли ви визначитеся з бажаним сервером синхронізації, будь ласка, введіть його адресу тут.</string>
   <string name="synchronization_host_label">Адреса сервера</string>
   <string name="proceed_to_login_butLabel">Перейти до сторінки авторизації</string>
-  <string name="synchronization_nextcloud_authenticate_browser">Надайте доступ в відкритому веб-браузері й поверніться до PodVinci.</string>
+  <string name="synchronization_nextcloud_authenticate_browser">Надайте доступ в відкритому веб-браузері й поверніться до Podcini.</string>
   <string name="gpodnetauth_login_butLabel">Логін</string>
   <string name="synchronization_credentials_explanation">Будь ласка, вкажіть дані авторизації вашого облікового запису від сервера синхронізації.</string>
   <string name="gpodnetauth_encryption_warning">Пароль та дані не зашифровані!</string>
@@ -656,10 +656,10 @@
   <string name="synchronization_login_butLabel">Увійти</string>
   <string name="synchronization_selectDevice_explanation">Виберіть пристрій, який ви створили на сервері синхронізації, або створіть новий.</string>
   <string name="gpodnetauth_device_name">Назва пристрою</string>
-  <string name="gpodnetauth_device_name_default">PodVinci на %1$s</string>
+  <string name="gpodnetauth_device_name_default">Podcini на %1$s</string>
   <string name="gpodnetauth_existing_devices">Існуючі пристрої</string>
   <string name="gpodnetauth_create_device">Створити пристрій</string>
-  <string name="gpodnetauth_finish_descr">Вітаємо! Ваш обліковий запис gpodder.net тепер пов\'язаний з вашим пристроєм. Відтепер PodVinci буде автоматично синхронізувати підписки на вашому пристрої з вашим акаунтом gpodder.net.</string>
+  <string name="gpodnetauth_finish_descr">Вітаємо! Ваш обліковий запис gpodder.net тепер пов\'язаний з вашим пристроєм. Відтепер Podcini буде автоматично синхронізувати підписки на вашому пристрої з вашим акаунтом gpodder.net.</string>
   <string name="gpodnetauth_finish_butsyncnow">Почати синхронізацію</string>
   <string name="pref_gpodnet_setlogin_information_title">Змінити інформацію для входу</string>
   <string name="pref_gpodnet_setlogin_information_sum">Змінити інформацію щодо облікового запису gpodder.net</string>
@@ -677,7 +677,7 @@
   <string name="gpodnetsync_username_characters_error">Імена користувачів можуть містити лише літери, цифри, дефіси та підкреслення.</string>
   <!--Directory chooser-->
   <string name="choose_data_directory">Оберіть теку для даних</string>
-  <string name="choose_data_directory_message">Оберіть, будь ласка, базовий каталог даних. PodVinci створить відповідні підрозділи.</string>
+  <string name="choose_data_directory_message">Оберіть, будь ласка, базовий каталог даних. Podcini створить відповідні підрозділи.</string>
   <string name="choose_data_directory_available_space">%1$s з %2$s вільно</string>
   <string name="pref_pausePlaybackForFocusLoss_sum">Призупиняти програвання замість зниження гучності коли інша програма хоче програти звук</string>
   <string name="pref_pausePlaybackForFocusLoss_title">Пауза в разі переривання</string>
@@ -723,7 +723,7 @@
   <string name="exclude_episodes_shorter_than">Виключити епізоди коротші, ніж</string>
   <string name="keep_updated">Слідкувати за оновленнями</string>
   <string name="keep_updated_summary">Включати цей подкаст під час (автоматичного) оновлення всіх подкастів</string>
-  <string name="auto_download_disabled_globally">Автозавантаження вимкнено в налаштуваннях PodVinci</string>
+  <string name="auto_download_disabled_globally">Автозавантаження вимкнено в налаштуваннях Podcini</string>
   <string name="statistics_time_played">Час відтворення:</string>
   <string name="statistics_total_duration">Загальна тривалість (орієнтовно):</string>
   <string name="statistics_episodes_on_device">Епізоди на пристрої:</string>
@@ -732,7 +732,7 @@
   <string name="statistics_view_all">Переглянути всі подкасти »</string>
   <string name="edit_url_menu">Редагувати URL-адресу каналу</string>
   <string name="edit_url_confirmation_msg">Зміна RSS-адреси може легко зламати стан відтворення та списки епізодів подкасту. Ми НЕ рекомендуємо змінювати її і НЕ надаватимемо підтримку, якщо щось піде не так. Це не можна скасувати. Порушену підписку НЕ МОЖНА відновити, просто змінивши адресу назад. Ми рекомендуємо створити резервну копію, перш ніж продовжувати.</string>
-  <!--PodVinciSP-->
+  <!--PodciniSP-->
   <string name="sp_apps_importing_feeds_msg">Імпорт подкастів з інших програм...</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">Шукати подкаст...</string>
@@ -755,7 +755,7 @@
   <string name="local_folder">Локальна папка</string>
   <string name="reconnect_local_folder">Перепід\'єднати локальну папку</string>
   <string name="reconnect_local_folder_warning">У разі відмови у дозволі ви можете використовувати це для повторного підключення до тієї ж папки. Не вибирайте іншу папку.</string>
-  <string name="local_feed_description">Цей віртуальний подкаст був створений шляхом додавання папки до PodVinci.</string>
+  <string name="local_feed_description">Цей віртуальний подкаст був створений шляхом додавання папки до Podcini.</string>
   <string name="unable_to_start_system_file_manager">Не запускається системний файловий менеджер</string>
   <string name="filter">Фільтр</string>
   <string name="hide_is_favorite_label">В улюблених</string>

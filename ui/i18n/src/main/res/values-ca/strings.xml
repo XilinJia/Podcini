@@ -51,9 +51,9 @@
   <string name="home_continue_title">Seguiu escoltant</string>
   <string name="home_new_title">Novetats</string>
   <string name="home_downloads_title">Gestioneu les descàrregues</string>
-  <string name="home_welcome_title">Benvinguts/des a l\'PodVinci!</string>
+  <string name="home_welcome_title">Benvinguts/des a l\'Podcini!</string>
   <string name="home_welcome_text">Encara no esteu subscrit a cap podcast. Obriu el menú lateral per afegir-ne un.</string>
-  <string name="notification_permission_text">PodVinci necessita el vostre permís per mostrar notificacions. Per defecte, PodVinci només mostra notificacions mentre alguna cosa s\'està baixant o quan alguna cosa surt malament.</string>
+  <string name="notification_permission_text">Podcini necessita el vostre permís per mostrar notificacions. Per defecte, Podcini només mostra notificacions mentre alguna cosa s\'està baixant o quan alguna cosa surt malament.</string>
   <string name="notification_permission_denied">S\'ha denegat el permís per a les notificacions</string>
   <string name="deny_label">Denega</string>
   <string name="open_settings">Obre la configuració</string>
@@ -276,10 +276,10 @@
   <string name="download_type_feed">Canal</string>
   <string name="download_type_media">Fitxer</string>
   <string name="null_value_podcast_error">No s\'ha proporcionat cap podcast que puga mostrar-se.</string>
-  <string name="no_feed_url_podcast_found_by_search">El podcast suggerit no té cap enllaç RSS, PodVinci ha trobat un podcast potser coincident</string>
+  <string name="no_feed_url_podcast_found_by_search">El podcast suggerit no té cap enllaç RSS, Podcini ha trobat un podcast potser coincident</string>
   <string name="authentication_notification_title">Cal autenticar-se</string>
   <string name="confirm_mobile_download_dialog_title">Confirma descàrrega per xarxa mòbil</string>
-  <string name="confirm_mobile_download_dialog_message">S\'han desactivat les descàrregues per xarxa mòbil a la configuració. PodVinci podrà descarregar l\'episodi automàticament quan hi hagi conexió Wi-Fi.</string>
+  <string name="confirm_mobile_download_dialog_message">S\'han desactivat les descàrregues per xarxa mòbil a la configuració. Podcini podrà descarregar l\'episodi automàticament quan hi hagi conexió Wi-Fi.</string>
   <string name="confirm_mobile_download_dialog_download_later">Baixa més tard</string>
   <string name="confirm_mobile_download_dialog_allow_this_time">Baixa igualment</string>
   <string name="confirm_mobile_streaming_notification_title">Confirmar reproducció per xarxa mòbil</string>
@@ -294,7 +294,7 @@
   <string name="playback_error_source">No s\'ha pogut accedir al arxiu de media.</string>
   <string name="playback_error_unknown">Error desconegut</string>
   <string name="no_media_playing_label">No s\'està reproduint res</string>
-  <string name="unknown_media_key">PodVinci - Control desconegut: %1$d</string>
+  <string name="unknown_media_key">Podcini - Control desconegut: %1$d</string>
   <string name="error_file_not_found">Arxiu no trobat</string>
   <string name="no_media_label">L\'element no conté cap fitxer multimèdia</string>
   <!--Queue operations-->
@@ -381,7 +381,7 @@
   <string name="downloads_pref">Baixades</string>
   <string name="downloads_pref_sum">Intèrval d\'actualització, dades mòbils, baixades automàtiques, esborrat automàtic</string>
   <string name="feed_refresh_title">Actualitza els pòdcasts</string>
-  <string name="feed_refresh_sum">Especifiqueu un interval segons el qual PodVinci cercarà nous episodis automàticament</string>
+  <string name="feed_refresh_sum">Especifiqueu un interval segons el qual Podcini cercarà nous episodis automàticament</string>
   <string name="feed_refresh_never">Mai</string>
   <string name="feed_every_hour">Cada hora</string>
   <string name="feed_every_2_hours">Cada 2 hores</string>
@@ -490,15 +490,15 @@
   <string name="pref_new_episodes_action_sum">Acció a fer per a episodis nous</string>
   <!--About screen-->
   <string name="about_pref">Quant a</string>
-  <string name="podvinci_version">Versió d\'PodVinci</string>
+  <string name="podcini_version">Versió d\'Podcini</string>
   <string name="contributors">Contribuïdors</string>
-  <string name="contributors_summary">Tothom pot ajudar a fer PodVinci millor - amb codi, traduccions o ajudant als usuaris al nostre fòrum</string>
+  <string name="contributors_summary">Tothom pot ajudar a fer Podcini millor - amb codi, traduccions o ajudant als usuaris al nostre fòrum</string>
   <string name="developers">Desenvolupadors</string>
   <string name="translators">Traductors</string>
   <string name="special_thanks">Agraïments especials</string>
   <string name="privacy_policy">Política de privacitat</string>
   <string name="licenses">Llicències</string>
-  <string name="licenses_summary">PodVinci usa altre programari genial</string>
+  <string name="licenses_summary">Podcini usa altre programari genial</string>
   <!--Search-->
   <string name="search_status_no_results">No s\'ha trobat cap resultat</string>
   <string name="type_to_search">Escriu una consulta per buscar</string>
@@ -522,8 +522,8 @@
   <string name="html_export_summary">Mostra les teues subscripcions a un amic</string>
   <string name="opml_export_summary">Transfereix les teues subscripcions a un altra aplicació de podcast</string>
   <string name="opml_import_summary">Importa les teues subscripcions des d\'un altra aplicació de podcast</string>
-  <string name="database_export_summary">Transfereix subscripcions i cola a PodVinci en un altre dispositiu</string>
-  <string name="database_import_summary">Importa base de dades d\'PodVinci des d\'un altre dispositiu</string>
+  <string name="database_export_summary">Transfereix subscripcions i cola a Podcini en un altre dispositiu</string>
+  <string name="database_import_summary">Importa base de dades d\'Podcini des d\'un altre dispositiu</string>
   <string name="opml_import_label">Importació d\'OPML</string>
   <string name="opml_add_podcast_label">Importa llista de podcasts (OPML)</string>
   <string name="opml_reader_error">S\'ha produït un error en llegir el document OPML: </string>
@@ -540,8 +540,8 @@
   <string name="export_success_title">Exportació correcta</string>
   <string name="opml_import_ask_read_permission">Per llegir arxius OPML és necessari accés a la memòria externa</string>
   <string name="successful_import_label">Importació correcta</string>
-  <string name="import_ok">Si us plau, premeu D\'acord per reiniciar PodVinci</string>
-  <string name="import_no_downgrade">Aquesta base de dades va ser exportada amb una versió més nova d\'PodVinci. La versió que tens ara mateixa no sap com processar-la.</string>
+  <string name="import_ok">Si us plau, premeu D\'acord per reiniciar Podcini</string>
+  <string name="import_no_downgrade">Aquesta base de dades va ser exportada amb una versió més nova d\'Podcini. La versió que tens ara mateixa no sap com processar-la.</string>
   <string name="favorites_export_label">Exportar preferits</string>
   <string name="favorites_export_summary">Exportar episodis favorits a un arxiu</string>
   <!--Sleep timer-->
@@ -575,12 +575,12 @@
   <string name="synchronization_choose_title">Escolleix el vostre proveïdor de sincronització</string>
   <string name="synchronization_summary_unchoosen">Podeu escollir entre múltiples proveïdors per sincronitzar-hi les vostres subscripcions i l\'estat de reproducció dels episodis</string>
   <string name="dialog_choose_sync_service_title">Escolleix proveïdor de sincronització</string>
-  <string name="gpodnet_description">Gpodder.net és un servei de sincronització de podcasts de codi obert que podeu instal·lar al vostre propi servidor. Gpodder.net és independent del projecte PodVinci.</string>
-  <string name="synchronization_summary_nextcloud">Gpoddersync és una aplicació de codi obert de Nextcloud que podeu instal·lar fàcilment al vostre servidor. L\'aplicació és independent del projecte PodVinci.</string>
+  <string name="gpodnet_description">Gpodder.net és un servei de sincronització de podcasts de codi obert que podeu instal·lar al vostre propi servidor. Gpodder.net és independent del projecte Podcini.</string>
+  <string name="synchronization_summary_nextcloud">Gpoddersync és una aplicació de codi obert de Nextcloud que podeu instal·lar fàcilment al vostre servidor. L\'aplicació és independent del projecte Podcini.</string>
   <string name="synchronization_host_explanation">Podeu triar el vostre propi servidor per sincronitzar-lo. Quan hàgiu identificat el vostre servidor de sincronització preferit, introduïu la seva adreça aquí.</string>
   <string name="synchronization_host_label">Adreça del servidor</string>
   <string name="proceed_to_login_butLabel">Continua per iniciar la sessió</string>
-  <string name="synchronization_nextcloud_authenticate_browser">Concediu accés des de la finestra del navegador oberta i torneu a PodVinci.</string>
+  <string name="synchronization_nextcloud_authenticate_browser">Concediu accés des de la finestra del navegador oberta i torneu a Podcini.</string>
   <string name="gpodnetauth_login_butLabel">Entra</string>
   <string name="synchronization_credentials_explanation">Proporcioneu les credencials del vostre compte al servidor de sincronització.</string>
   <string name="gpodnetauth_encryption_warning">La contrasenya i les dades no estan encriptades!</string>
@@ -589,10 +589,10 @@
   <string name="synchronization_login_butLabel">Inicia la sessió</string>
   <string name="synchronization_selectDevice_explanation">Per favor, seleccioneu el dispositiu que heu creat al servidor de sincronització o creeu-ne un de nou.</string>
   <string name="gpodnetauth_device_name">Nom del dispositiu</string>
-  <string name="gpodnetauth_device_name_default">PodVinci a %1$s</string>
+  <string name="gpodnetauth_device_name_default">Podcini a %1$s</string>
   <string name="gpodnetauth_existing_devices">Dispositius existents</string>
   <string name="gpodnetauth_create_device">Crea dispositiu</string>
-  <string name="gpodnetauth_finish_descr">Felicitats! El vostre compte de gpodder.net s\'ha enllaçat amb el dispositiu. D\'ara endavant, PodVinci sincronitzarà automàticament les subscripcions del dispositiu al vostre compte.</string>
+  <string name="gpodnetauth_finish_descr">Felicitats! El vostre compte de gpodder.net s\'ha enllaçat amb el dispositiu. D\'ara endavant, Podcini sincronitzarà automàticament les subscripcions del dispositiu al vostre compte.</string>
   <string name="gpodnetauth_finish_butsyncnow">Sincronitza ara</string>
   <string name="pref_gpodnet_setlogin_information_title">Dades d\'inici de sessió</string>
   <string name="pref_gpodnet_setlogin_information_sum">Canvia les dades d\'inici de sessió del vostre compte de gpodder.net</string>
@@ -610,7 +610,7 @@
   <string name="gpodnetsync_username_characters_error">Noms d\'usuari sols poden contindre lletres, dígits, guions i guions baixos.</string>
   <!--Directory chooser-->
   <string name="choose_data_directory">Selecciona carpeta de dades</string>
-  <string name="choose_data_directory_message">Selecciona l\'arrel del teu directori d\'informació. PodVinci crearà els subdirectoris pertinents</string>
+  <string name="choose_data_directory_message">Selecciona l\'arrel del teu directori d\'informació. Podcini crearà els subdirectoris pertinents</string>
   <string name="choose_data_directory_available_space">%1$s de %2$s lliures</string>
   <string name="pref_pausePlaybackForFocusLoss_sum">Pausa la reproducció en lloc de baixar el volum quan una altra app necessiti reproduir sons</string>
   <string name="pref_pausePlaybackForFocusLoss_title">Pausa per interrupcions</string>
@@ -654,7 +654,7 @@
   <string name="exclude_episodes_shorter_than">Exclou episodis més curts que</string>
   <string name="keep_updated">Mantenir actualitzat</string>
   <string name="keep_updated_summary">Incloure aquest podcast quan (auto-)actualitzen tots els podcasts</string>
-  <string name="auto_download_disabled_globally">La baixada automàtica està deshabilitada als ajustos generals d\'PodVinci</string>
+  <string name="auto_download_disabled_globally">La baixada automàtica està deshabilitada als ajustos generals d\'Podcini</string>
   <string name="statistics_time_played">Temps reproducció:</string>
   <string name="statistics_total_duration">Durada total (estimada):</string>
   <string name="statistics_episodes_on_device">Episodis al dispositiu:</string>
@@ -663,7 +663,7 @@
   <string name="statistics_view_all">Veure per tots els podcasts »</string>
   <string name="edit_url_menu">Edita l\'enllaç del canal</string>
   <string name="edit_url_confirmation_msg">Canviar l\'adreça RSS pot trencar fàcilment l\'estat de reproducció i les llistes d\'episodis del podcast. NO recomanem canviar-lo i NO oferirem suport si alguna cosa va malament. Això no es pot desfer. La subscripció trencada NO es pot reparar simplement canviant l\'adreça. Us suggerim que creeu una còpia de seguretat abans de continuar.</string>
-  <!--PodVinciSP-->
+  <!--PodciniSP-->
   <string name="sp_apps_importing_feeds_msg">S\'estan important les subscripcions des de les apps de propòsit únic...</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">Cerca podcast…</string>
@@ -686,7 +686,7 @@
   <string name="local_folder">Carpeta local</string>
   <string name="reconnect_local_folder">Torna a connectar la carpeta local</string>
   <string name="reconnect_local_folder_warning">En cas de denegació de permisos, pots utilitzar-ho per tornar a connectar a la mateixa carpeta. No seleccionis cap altra carpeta.</string>
-  <string name="local_feed_description">Aquest podcast virtual es va crear afegint una carpeta a PodVinci.</string>
+  <string name="local_feed_description">Aquest podcast virtual es va crear afegint una carpeta a Podcini.</string>
   <string name="unable_to_start_system_file_manager">No es pot iniciar el gestor de fitxers del sistema</string>
   <string name="filter">Filtra</string>
   <string name="hide_is_favorite_label">És favorit</string>

@@ -1,8 +1,8 @@
-PodVinci ist ein Podcast-Manager und -Player, mit dem Du direkten Zugriff auf Millionen von freien und kostenpflichtigen Podcasts hast, von unabhängigen Podcastern bis zu großen Rundfunkanstalten oder Hörfunksendern wie BBC, NPR und CNN. Abonniere, importiere und exportiere deine Feeds mühelos mit Hilfe des iTunes-Podcast-Verzeichnisses, OPML-Dateien oder RSS-URLs.
+Podcini ist ein Podcast-Manager und -Player, mit dem Du direkten Zugriff auf Millionen von freien und kostenpflichtigen Podcasts hast, von unabhängigen Podcastern bis zu großen Rundfunkanstalten oder Hörfunksendern wie BBC, NPR und CNN. Abonniere, importiere und exportiere deine Feeds mühelos mit Hilfe des iTunes-Podcast-Verzeichnisses, OPML-Dateien oder RSS-URLs.
 Downloade, streame oder sortiere Episoden in der Abspielliste und genieße sie mit einstellbarer Wiedergabegeschwindigkeit, Unterstützung von Kapiteln und Schlummerfunktion.
 Reduziere Aufwand, Stromverbrauch und Datenverbrauch durch leistungsfähige Kontrolle der Downloads (bestimmte Uhrzeiten, Intervalle, WiFi-Netze) und des Löschens (basierend auf deinen Favoriten und weiteren Einstellungen).
 
-PodVinci ist von Podcast-Enthusiasten gemacht und frei im wahrsten Sinne des Wortes: Open Source, keine Kosten, keine Werbung.
+Podcini ist von Podcast-Enthusiasten gemacht und frei im wahrsten Sinne des Wortes: Open Source, keine Kosten, keine Werbung.
 
 <b>Importiere, organisiere und spiele ab</b>
 • Bediene die Wiedergabe von überall: Startbildschirm-Widget, Benachrichtigung und Kopfhörer- und Bluetooth-Bedienelemente
@@ -21,11 +21,11 @@ PodVinci ist von Podcast-Enthusiasten gemacht und frei im wahrsten Sinne des Wor
 • Passt sich deiner Umgebung mit dem hellen oder dunklen Theme an
 • Sichere deine Abonnements mit gPodder.net oder über den OPML-Export
 
-<b>Tritt der PodVinci-Community bei!</b>
-PodVinci wird aktiv von Freiwilligen weiterentwickelt. Auch du kannst bei der Entwicklung mit Quellcode oder Kommentaren mitwirken!
+<b>Tritt der Podcini-Community bei!</b>
+Podcini wird aktiv von Freiwilligen weiterentwickelt. Auch du kannst bei der Entwicklung mit Quellcode oder Kommentaren mitwirken!
 
 Unsere freundlichen Freiwilligen im Forum stehen dir bei allen Fragen zur Seite. Gerne kannst du dich dort auch über neue Funktionen und über Podcasting generell austauschen.
-https://forum.podvinci.org/
+https://forum.podcini.org/
 
 Mit Transifex kannst du uns beim Übersetzen helfen:
-https://www.transifex.com/podvinci/podvinci
+https://www.transifex.com/podcini/podcini

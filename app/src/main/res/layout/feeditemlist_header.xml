@@ -121,7 +121,7 @@
                 android:shadowColor="@color/black"
                 android:shadowRadius="2"
                 android:textColor="@color/white"
-                style="@style/PodVinci.TextView.Heading"
+                style="@style/Podcini.TextView.Heading"
                 tools:text="Podcast title" />
 
             <TextView

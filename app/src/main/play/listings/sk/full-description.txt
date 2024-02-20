@@ -1,8 +1,8 @@
-PodVinci je správca a prehrávač podcastov, ktorý vám sprostredkuje okamžitý prístup k miliónom bezplatným a spoplatneným podcastom - od nezávislých podcastérov až k vydavateľstvám ako BBC, NPR a CNN. Pridávajte, importujte a exportujte ich zdroje bez problémov pomocou databázy podcastov iTunes, OPML súborov alebo odkazov na RSS.
+Podcini je správca a prehrávač podcastov, ktorý vám sprostredkuje okamžitý prístup k miliónom bezplatným a spoplatneným podcastom - od nezávislých podcastérov až k vydavateľstvám ako BBC, NPR a CNN. Pridávajte, importujte a exportujte ich zdroje bez problémov pomocou databázy podcastov iTunes, OPML súborov alebo odkazov na RSS.
 Stiahnite, streamujte alebo plánujte epizódy a užívajte si ich ako sa vám páči s nastaviteľnou rýchlosťou prehrávania, podporou kapitol a časovačom vypnutia.
 Ušetrite si námahu, baterku a mobilné dáta pomocou výkonnej automatickej kontroly sťahovania epizód (určite čas, intervaly a WiFi siete) a mazania epizód (založené na obľúbených epizódach a nastavení oneskorenia).
 
-PodVinci je spravovaný podcastovými entuziastami a je slobodný v každom slova zmysle: otvorený zdrojový kód, zadarmo, bez reklamy.
+Podcini je spravovaný podcastovými entuziastami a je slobodný v každom slova zmysle: otvorený zdrojový kód, zadarmo, bez reklamy.
 
 <b>Importovať, spravovať a prehrať</b>
 • Ovládajte prehrávanie odkiaľkoľvek: domovská obrazovka, systémové upozornenia a handsfree a ovládanie cez bluetooth
@@ -21,11 +21,11 @@ Počúvajte heslom chránené zdroje a epizódy
 • Prispôsobte si vzhľad na svetlý alebo tmavý
 • Zálohujte si odbery pomocou gPodder.net a OPML exportu
 
-<b>Pridať sa do komunity PodVinci!</b>
-PodVinci aktívne vyvíjajú dobrovoľníci. Tiež môžete prispieť kódom alebo komentárom.
+<b>Pridať sa do komunity Podcini!</b>
+Podcini aktívne vyvíjajú dobrovoľníci. Tiež môžete prispieť kódom alebo komentárom.
 
 Na našom fóre môžete v priateľskej atmosfére diskutovať a nájsť odpovede na vaše otázky o nových funkciách alebo všeobecne o podcastingu. 
-https://forum.podvinci.org/
+https://forum.podcini.org/
 
 Transifex je miesto, kde môžete pomôcť s prekladom:
-https://www.transifex.com/podvinci/podvinci
+https://www.transifex.com/podcini/podcini

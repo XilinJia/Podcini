@@ -5,7 +5,7 @@ plugins {
 apply from: "../common.gradle"
 
 android {
-    namespace "ac.mdiq.podvinci.event"
+    namespace "ac.mdiq.podcini.event"
 }
 
 dependencies {

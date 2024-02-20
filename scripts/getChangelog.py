@@ -4,9 +4,9 @@ import requests
 import time
 import re
 
-REPO = "PodVinci/PodVinci"
+REPO = "Podcini/Podcini"
 
-print("Hello, welcome to the PodVinci PR list generator!")
+print("Hello, welcome to the Podcini PR list generator!")
 print("First, please enter your GitHub API token.")
 print("If you don't have one yet, create it at https://github.com/settings/tokens")
 

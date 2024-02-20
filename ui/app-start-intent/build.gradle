@@ -5,7 +5,7 @@ plugins {
 apply from: "../../common.gradle"
 
 android {
-    namespace "ac.mdiq.podvinci.ui.appstartintent"
+    namespace "ac.mdiq.podcini.ui.appstartintent"
 }
 
 dependencies {

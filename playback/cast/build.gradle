@@ -6,7 +6,7 @@ apply from: "../../common.gradle"
 apply from: "../../playFlavor.gradle"
 
 android {
-    namespace "ac.mdiq.podvinci.playback.cast"
+    namespace "ac.mdiq.podcini.playback.cast"
 }
 
 dependencies {

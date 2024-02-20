@@ -38,7 +38,7 @@
             android:id="@+id/txtvTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="@style/PodVinci.TextView.ListItemPrimaryTitle"
+            style="@style/Podcini.TextView.ListItemPrimaryTitle"
             tools:background="@android:color/holo_green_dark"
             tools:text="Podcast title" />
 

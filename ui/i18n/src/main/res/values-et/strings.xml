@@ -48,7 +48,7 @@
   <string name="home_continue_title">Jätka kuulamist</string>
   <string name="home_new_title">Mis on uut</string>
   <string name="home_downloads_title">Halda allalaadimisi</string>
-  <string name="home_welcome_title">Tere tulemast PodVincii!</string>
+  <string name="home_welcome_title">Tere tulemast Podcinii!</string>
   <string name="open_settings">Ava seaded</string>
   <!--Download Statistics fragment-->
   <!--Main activity-->
@@ -244,7 +244,7 @@
   <string name="playback_error_timeout">Tegevus aegus</string>
   <string name="playback_error_source">Puudub ligipääs meediafailile</string>
   <string name="no_media_playing_label">Mingit faili ei esitata</string>
-  <string name="unknown_media_key">PodVinci - Tundmatu meedia võti: %1$d</string>
+  <string name="unknown_media_key">Podcini - Tundmatu meedia võti: %1$d</string>
   <string name="error_file_not_found">Faili ei leitud</string>
   <string name="no_media_label">Element ei sisalda meediafaili</string>
   <!--Queue operations-->
@@ -369,15 +369,15 @@
   <string name="new_episode_notification_disabled">Teavitus keelatud</string>
   <!--About screen-->
   <string name="about_pref">Info</string>
-  <string name="podvinci_version">PodVincii versioon</string>
+  <string name="podcini_version">Podcinii versioon</string>
   <string name="contributors">Kaastöölised</string>
-  <string name="contributors_summary">Igaüks võib aidata teha PodVincii paremaks - kirjutades koodi, tõlkides või aidates foorumis teisi kasutajaid</string>
+  <string name="contributors_summary">Igaüks võib aidata teha Podcinii paremaks - kirjutades koodi, tõlkides või aidates foorumis teisi kasutajaid</string>
   <string name="developers">Arendajad</string>
   <string name="translators">Tõlkijad</string>
   <string name="special_thanks">Eritänu</string>
   <string name="privacy_policy">Privaatsus</string>
   <string name="licenses">Litsentsid</string>
-  <string name="licenses_summary">PodVinci kasutab teiste suurepärast tarkvara</string>
+  <string name="licenses_summary">Podcini kasutab teiste suurepärast tarkvara</string>
   <!--Search-->
   <string name="search_status_no_results">Ei leitud midagi</string>
   <string name="search_label">Otsi</string>
@@ -399,8 +399,8 @@
   <string name="html_export_summary">Näita oma tellimusi sõbrale</string>
   <string name="opml_export_summary">Tellimuste liigutamine teise taskuhäälingu äppi</string>
   <string name="opml_import_summary">Tellimuste importimine teisest taskuhäälingu äpist</string>
-  <string name="database_export_summary">Tellimuste, kuulatud saadete ja ooterjärjekorra liigutamine PodVincii mõnes teises seadmes</string>
-  <string name="database_import_summary">PodVincii andmebaasi import teisest seadmest</string>
+  <string name="database_export_summary">Tellimuste, kuulatud saadete ja ooterjärjekorra liigutamine Podcinii mõnes teises seadmes</string>
+  <string name="database_import_summary">Podcinii andmebaasi import teisest seadmest</string>
   <string name="opml_add_podcast_label">Impordi taskuhäälingute nimekiri (OPML)</string>
   <string name="opml_reader_error">OPML dokumendi lugemisel tekkis tõrge:</string>
   <string name="opml_import_error_no_file">Ühtegi faili pole valitud!</string>
@@ -416,8 +416,8 @@
   <string name="export_success_title">Eksportimine edukas</string>
   <string name="opml_import_ask_read_permission">OPML faili lugemiseks on vajalik ligipääs välisele salvestusruumile</string>
   <string name="successful_import_label">Importimine oli edukas</string>
-  <string name="import_ok">Vajuta OK, et PodVinci taaskäivitada</string>
-  <string name="import_no_downgrade">See andmebaas on eksporditud PodVincii uuemast versioonist. Sinu praegune äpp ei oska seda faili käsitseda.</string>
+  <string name="import_ok">Vajuta OK, et Podcini taaskäivitada</string>
+  <string name="import_no_downgrade">See andmebaas on eksporditud Podcinii uuemast versioonist. Sinu praegune äpp ei oska seda faili käsitseda.</string>
   <string name="favorites_export_label">Lemmikute eksport</string>
   <string name="favorites_export_summary">Ekspordi salvestatud lemmikud faili</string>
   <!--Sleep timer-->
@@ -450,10 +450,10 @@
   <string name="username_label">Kasutajanimi</string>
   <string name="password_label">Parool</string>
   <string name="gpodnetauth_device_name">Seadme nimi</string>
-  <string name="gpodnetauth_device_name_default">PodVinci %1$s seadmel</string>
+  <string name="gpodnetauth_device_name_default">Podcini %1$s seadmel</string>
   <string name="gpodnetauth_existing_devices">Olemasolevad seadmed</string>
   <string name="gpodnetauth_create_device">Loo uus seade</string>
-  <string name="gpodnetauth_finish_descr">Palju õnne! Sinu gpodder.net konto on nüüd lingitud sinu seadmega. PodVinci süngib nüüdsest tellimused sinu seadmes gpodder.net-i kontoga.</string>
+  <string name="gpodnetauth_finish_descr">Palju õnne! Sinu gpodder.net konto on nüüd lingitud sinu seadmega. Podcini süngib nüüdsest tellimused sinu seadmes gpodder.net-i kontoga.</string>
   <string name="gpodnetauth_finish_butsyncnow">Alusta kohe sünkroonimist</string>
   <string name="pref_gpodnet_setlogin_information_title">Muuda kasutajakonto infot</string>
   <string name="pref_gpodnet_setlogin_information_sum">Muuda oma gpodder.net konto sisselogimise andmeid.</string>
@@ -463,7 +463,7 @@
   <string name="gpodnetsync_pref_report_failed">Ebaõnnestus</string>
   <string name="gpodnetsync_username_characters_error">Kasutajanimi võib sisaldada ainult tähti, numbreid, side- ja allkriipsu.</string>
   <!--Directory chooser-->
-  <string name="choose_data_directory_message">Palun vali oma andmete kaust. PodVinci loob vajalikud alamkaustad.</string>
+  <string name="choose_data_directory_message">Palun vali oma andmete kaust. Podcini loob vajalikud alamkaustad.</string>
   <string name="choose_data_directory_available_space">vaba on %1$s %2$s-st</string>
   <string name="pref_pausePlaybackForFocusLoss_sum">Kui teine äpp tahab helisid mängida, pausi esitus, selle asemel et vähendada helitugevust</string>
   <!--Online feed view-->
@@ -489,11 +489,11 @@
   <string name="authentication_descr">Muuda kasutajanime ja parooli selle taskuhäälingu ja saadete jaoks.</string>
   <string name="episode_filters_description">Terminite loetelu, mille alusel otsustada, kas saade tuleks arvata sisse või välja automaatsel allalaadimisel</string>
   <string name="keep_updated_summary">Uuenda koos teiste taskuhäälingute (automaatse) värskendamisega ka seda</string>
-  <string name="auto_download_disabled_globally">Automaatne allalaadimine on keelatud PodVincii peamistes seadetes</string>
+  <string name="auto_download_disabled_globally">Automaatne allalaadimine on keelatud Podcinii peamistes seadetes</string>
   <string name="statistics_episodes_on_device">Saated seadmes:</string>
   <string name="statistics_space_used">Kasutatud kettaruum:</string>
   <string name="statistics_view_all">Vaata kõiki taskuhäälinguid »</string>
-  <!--PodVinciSP-->
+  <!--PodciniSP-->
   <string name="sp_apps_importing_feeds_msg">Tellimuste importimine teistest äppidest...</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">Otsi taskuhäälingut...</string>
@@ -511,7 +511,7 @@
   <string name="local_folder">Kohalik kaust</string>
   <string name="reconnect_local_folder">Ühenda kohalik kaust uuesti</string>
   <string name="reconnect_local_folder_warning">Ligipääsuõiguste keelamise puhul võid kasutada seda, et täpselt sama kausta uuesti ühendada. Ära valli mõnda teist kausta.</string>
-  <string name="local_feed_description">See virtuaalne taskuhääling loodi kausta lisamisega PodVincii.</string>
+  <string name="local_feed_description">See virtuaalne taskuhääling loodi kausta lisamisega Podcinii.</string>
   <string name="unable_to_start_system_file_manager">Süsteemi failihalduri käivitamine ebaõnnestus</string>
   <string name="filter">Filter</string>
   <string name="hide_is_favorite_label">On lemmik</string>

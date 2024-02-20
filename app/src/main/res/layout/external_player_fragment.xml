@@ -55,7 +55,7 @@
 
         </LinearLayout>
 
-        <ac.mdiq.podvinci.view.PlayButton
+        <ac.mdiq.podcini.view.PlayButton
             android:id="@+id/butPlay"
             android:layout_width="52dp"
             android:layout_height="match_parent"

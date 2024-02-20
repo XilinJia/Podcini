@@ -51,9 +51,9 @@
   <string name="home_continue_title">Fortsæt med at lytte</string>
   <string name="home_new_title">Se nyheder</string>
   <string name="home_downloads_title">Administrer overførsler</string>
-  <string name="home_welcome_title">Velkommen til PodVinci!</string>
+  <string name="home_welcome_title">Velkommen til Podcini!</string>
   <string name="home_welcome_text">Du har endnu ikke abonneret på nogen podcasts. Åbn sidemenuen for at tilføje en podcast.</string>
-  <string name="notification_permission_text">PodVinci har brug for din tilladelse til at vise notifikationer. Som udgangspunkt viser PodVinci kun notifikationer, mens noget hentes, eller når noget går galt.</string>
+  <string name="notification_permission_text">Podcini har brug for din tilladelse til at vise notifikationer. Som udgangspunkt viser Podcini kun notifikationer, mens noget hentes, eller når noget går galt.</string>
   <string name="notification_permission_denied">Du afviste tilladelsen.</string>
   <string name="notification_permission_deny_warning">Hvis du deaktiverer notifikationer, og noget går galt, kan du måske ikke finde ud af, hvorfor det gik galt.</string>
   <string name="deny_label">Nægt</string>
@@ -246,7 +246,7 @@
   <string name="skip_episode_label">Spring afsnit over</string>
   <string name="reset_position">Nulstil afspilningsposition</string>
   <string name="no_items_selected">Intet valgte</string>
-  <string name="delete_local_feed_warning_body">Sletning fjerner afsnittet fra PodVinci og sletter mediefilen fra din enheds lager. Det kan ikke hentes igen via PodVinci.</string>
+  <string name="delete_local_feed_warning_body">Sletning fjerner afsnittet fra Podcini og sletter mediefilen fra din enheds lager. Det kan ikke hentes igen via Podcini.</string>
   <!--Download messages and labels-->
   <string name="download_successful">lykkedes</string>
   <string name="download_pending">Afventer overførsel</string>
@@ -288,10 +288,10 @@
   <string name="download_type_feed">Feed</string>
   <string name="download_type_media">Mediefil</string>
   <string name="null_value_podcast_error">Kan ikke vises. Ingen podcast angivet.</string>
-  <string name="no_feed_url_podcast_found_by_search">Den foreslåede podcast havde ikke et RSS-link, PodVinci fandt en podcast, der måske matcher</string>
+  <string name="no_feed_url_podcast_found_by_search">Den foreslåede podcast havde ikke et RSS-link, Podcini fandt en podcast, der måske matcher</string>
   <string name="authentication_notification_title">Godkendelse kræves</string>
   <string name="confirm_mobile_download_dialog_title">Bekræft mobiloverførsel </string>
-  <string name="confirm_mobile_download_dialog_message">Overførsel via mobildataforbindelse er deaktiveret i indstillingerne. PodVinci kan hente afsnittet automatisk senere, når Wi-Fi er tilgængeligt.</string>
+  <string name="confirm_mobile_download_dialog_message">Overførsel via mobildataforbindelse er deaktiveret i indstillingerne. Podcini kan hente afsnittet automatisk senere, når Wi-Fi er tilgængeligt.</string>
   <string name="confirm_mobile_download_dialog_message_vpn">Din VPN-app udgiver sig for at være et mobilnetværk (forbrugsafregnet forbindelse). Overførsel af podcasts via mobildataforbindelse er deaktiveret i indstillingerne.\n\nVil du overføre alligevel? Hvis du vil have løst dette problem, skal du kontakte udviklerne af din VPN-app.</string>
   <string name="confirm_mobile_download_dialog_download_later">Hent senere</string>
   <string name="confirm_mobile_download_dialog_allow_this_time">Hent alligevel</string>
@@ -307,7 +307,7 @@
   <string name="playback_error_source">Kunne ikke tilgå mediefil</string>
   <string name="playback_error_unknown">Ukendt fejl</string>
   <string name="no_media_playing_label">Ingen medier afspiller</string>
-  <string name="unknown_media_key">PodVinci - Ukendt medienøgle: %1$d</string>
+  <string name="unknown_media_key">Podcini - Ukendt medienøgle: %1$d</string>
   <string name="error_file_not_found">Fil ikke fundet</string>
   <string name="no_media_label">Element indeholder ikke en mediefil.</string>
   <!--Queue operations-->
@@ -385,7 +385,7 @@
   <string name="pref_auto_delete_title">Slet automatisk</string>
   <string name="pref_auto_local_delete_title">Slet automatisk fra lokale mapper</string>
   <string name="pref_auto_local_delete_sum">Inkluder lokale mapper i automatisk sletning</string>
-  <string name="pref_auto_local_delete_dialog_body">Bemærk, at for lokale mapper vil dette fjerne afsnit fra PodVinci og slette deres mediefiler fra din enheds lager. De kan ikke hentes igen via PodVinci. Aktivér automatisk sletning?</string>
+  <string name="pref_auto_local_delete_dialog_body">Bemærk, at for lokale mapper vil dette fjerne afsnit fra Podcini og slette deres mediefiler fra din enheds lager. De kan ikke hentes igen via Podcini. Aktivér automatisk sletning?</string>
   <string name="pref_smart_mark_as_played_sum">Markér afsnit som værende afspillet, selv om op til et angivet antal sekunders spilletid stadig mangler</string>
   <string name="pref_smart_mark_as_played_title">Smart markering som afspillet</string>
   <string name="pref_skip_keeps_episodes_sum">Behold afsnit når de bliver sprunget over</string>
@@ -397,7 +397,7 @@
   <string name="downloads_pref">Overførsler</string>
   <string name="downloads_pref_sum">Opdateringsinterval, Mobildata, Automatisk overførsel, Automatisk sletning</string>
   <string name="feed_refresh_title">Opdater podcasts</string>
-  <string name="feed_refresh_sum">Angiv et interval, hvormed PodVinci automatisk søger efter nye afsnit.</string>
+  <string name="feed_refresh_sum">Angiv et interval, hvormed Podcini automatisk søger efter nye afsnit.</string>
   <string name="feed_refresh_never">Aldrig</string>
   <string name="feed_every_hour">Hver time</string>
   <string name="feed_every_2_hours">Hver 2. time</string>
@@ -490,7 +490,7 @@
   <string name="pref_skip_silence_title">Spring stilhed over</string>
   <string name="behavior">Funktion</string>
   <string name="pref_default_page">Standardside</string>
-  <string name="pref_default_page_sum">Skærm, der åbnes, når PodVinci startes</string>
+  <string name="pref_default_page_sum">Skærm, der åbnes, når Podcini startes</string>
   <string name="pref_back_button_opens_drawer">Tilbageknap åbner panel</string>
   <string name="pref_back_button_opens_drawer_summary">Ved tryk på tilbage-knappen på standardsiden åbnes navigationspanelet</string>
   <string name="remember_last_page">Husk sidste side</string>
@@ -514,15 +514,15 @@
   <string name="pref_new_episodes_action_sum">Handling ved nye afsnit</string>
   <!--About screen-->
   <string name="about_pref">Om</string>
-  <string name="podvinci_version">PodVinci-version</string>
+  <string name="podcini_version">Podcini-version</string>
   <string name="contributors">Bidragydere</string>
-  <string name="contributors_summary">Alle kan hjælpe med at lave PodVinci bedre - med kode, oversættelse eller ved at hjælpe brugere i vores forum</string>
+  <string name="contributors_summary">Alle kan hjælpe med at lave Podcini bedre - med kode, oversættelse eller ved at hjælpe brugere i vores forum</string>
   <string name="developers">Udviklere</string>
   <string name="translators">Oversættere</string>
   <string name="special_thanks">Særlig tak</string>
   <string name="privacy_policy">Privatlivspolitik</string>
   <string name="licenses">Licenser</string>
-  <string name="licenses_summary">PodVinci bruger anden fantastisk software</string>
+  <string name="licenses_summary">Podcini bruger anden fantastisk software</string>
   <!--Search-->
   <string name="search_status_no_results">Fandt ingen resultater</string>
   <string name="type_to_search">Indtast en forespørgsel for at søge</string>
@@ -546,8 +546,8 @@
   <string name="html_export_summary">Vis abonnementer</string>
   <string name="opml_export_summary">Flyt abonnementer til en anden podcast-app</string>
   <string name="opml_import_summary">Importér dine abonnementer fra et andet podcast-program</string>
-  <string name="database_export_summary">Flyt abonnementer, aflyttede afsnit og kø til PodVinci på en anden enhed</string>
-  <string name="database_import_summary">Importér PodVinci-database fra en anden enhed</string>
+  <string name="database_export_summary">Flyt abonnementer, aflyttede afsnit og kø til Podcini på en anden enhed</string>
+  <string name="database_import_summary">Importér Podcini-database fra en anden enhed</string>
   <string name="opml_import_label">OPML-import</string>
   <string name="opml_add_podcast_label">Importér podcastliste (OPML)</string>
   <string name="opml_reader_error">Der opstod en fejl, da OPML-dokumentet blev forsøgt indlæst:</string>
@@ -564,8 +564,8 @@
   <string name="export_success_title">Eksport lykkedes</string>
   <string name="opml_import_ask_read_permission">Adgang til eksternt lager er påkrævet for at læse OPML-filen</string>
   <string name="successful_import_label">Importeret</string>
-  <string name="import_ok">Tryk venligst OK for at genstarte PodVinci</string>
-  <string name="import_no_downgrade">Databasen blev eksporteret fra en nyere version af PodVinci. Din nuværende installation ved endnu ikke hvordan den skal håndtere denne fil.</string>
+  <string name="import_ok">Tryk venligst OK for at genstarte Podcini</string>
+  <string name="import_no_downgrade">Databasen blev eksporteret fra en nyere version af Podcini. Din nuværende installation ved endnu ikke hvordan den skal håndtere denne fil.</string>
   <string name="favorites_export_label">Eksport af favoritter</string>
   <string name="favorites_export_summary">Eksportér gemte favoritter til fil</string>
   <!--Sleep timer-->
@@ -604,12 +604,12 @@
   <string name="synchronization_choose_title">Vælg synkroniseringsudbyder</string>
   <string name="synchronization_summary_unchoosen">Du kan vælge mellem flere udbydere til at synkronisere dine abonnementer og afspilningsstatus for afsnit med</string>
   <string name="dialog_choose_sync_service_title">Vælg synkroniseringsudbyder</string>
-  <string name="gpodnet_description">Gpodder.net er en open source synkroniseringstjeneste til podcasts, som du kan installere på din egen server. Gpodder.net er uafhængig af PodVinci-projektet.</string>
-  <string name="synchronization_summary_nextcloud">Gpoddersync er en open source-app fra Nextcloud, som du nemt kan installere på din egen server. Appen er uafhængig af PodVinci-projektet.</string>
+  <string name="gpodnet_description">Gpodder.net er en open source synkroniseringstjeneste til podcasts, som du kan installere på din egen server. Gpodder.net er uafhængig af Podcini-projektet.</string>
+  <string name="synchronization_summary_nextcloud">Gpoddersync er en open source-app fra Nextcloud, som du nemt kan installere på din egen server. Appen er uafhængig af Podcini-projektet.</string>
   <string name="synchronization_host_explanation">Du kan vælge din egen server at synkronisere med. Når du har fundet din foretrukne synkroniseringsserver, skal du indtaste dens adresse her.</string>
   <string name="synchronization_host_label">Server-adresse</string>
   <string name="proceed_to_login_butLabel">Fortsæt til login</string>
-  <string name="synchronization_nextcloud_authenticate_browser">Giv adgang ved hjælp af den åbne internetbrowser, og vend tilbage til PodVinci.</string>
+  <string name="synchronization_nextcloud_authenticate_browser">Giv adgang ved hjælp af den åbne internetbrowser, og vend tilbage til Podcini.</string>
   <string name="gpodnetauth_login_butLabel">Log ind</string>
   <string name="synchronization_credentials_explanation">Angiv legitimationsoplysningerne for din konto på synkroniseringsserveren.</string>
   <string name="gpodnetauth_encryption_warning">Adgangskode og data er ikke krypteret!</string>
@@ -618,10 +618,10 @@
   <string name="synchronization_login_butLabel">Log ind</string>
   <string name="synchronization_selectDevice_explanation">Vælg den enhed, som du har oprettet på synkroniseringsserveren, eller opret en ny enhed.</string>
   <string name="gpodnetauth_device_name">Enhedsnavn</string>
-  <string name="gpodnetauth_device_name_default">PodVinci på %1$s</string>
+  <string name="gpodnetauth_device_name_default">Podcini på %1$s</string>
   <string name="gpodnetauth_existing_devices">Eksisterende enheder</string>
   <string name="gpodnetauth_create_device">Opret ny enhed</string>
-  <string name="gpodnetauth_finish_descr">Tillykke! Din gpodder.net-konto er nu forbundet med din enhed. PodVinci vil fra nu af automatisk synkronisere dine abonnementer på din enhed med din gpodder.net-konto.</string>
+  <string name="gpodnetauth_finish_descr">Tillykke! Din gpodder.net-konto er nu forbundet med din enhed. Podcini vil fra nu af automatisk synkronisere dine abonnementer på din enhed med din gpodder.net-konto.</string>
   <string name="gpodnetauth_finish_butsyncnow">Start synkronisering nu</string>
   <string name="pref_gpodnet_setlogin_information_title">Ændr loginoplysninger</string>
   <string name="pref_gpodnet_setlogin_information_sum">Ændr din gpodder.net-kontos loginoplysninger.</string>
@@ -639,7 +639,7 @@
   <string name="gpodnetsync_username_characters_error">Brugernavne kan kun indeholde bogstaver, tal, bindestreger og understreger.</string>
   <!--Directory chooser-->
   <string name="choose_data_directory">Vælg datamappe</string>
-  <string name="choose_data_directory_message">Vælg venligst roden af din datamappe. PodVinci vil oprette passende undermapper.</string>
+  <string name="choose_data_directory_message">Vælg venligst roden af din datamappe. Podcini vil oprette passende undermapper.</string>
   <string name="choose_data_directory_available_space">%1$s af %2$s ledig</string>
   <string name="pref_pausePlaybackForFocusLoss_sum">Sæt afspilning på pause i stedet for at sænke lydniveauet, når en anden app vil afspille lyde</string>
   <string name="pref_pausePlaybackForFocusLoss_title">Sæt på pause ved afbrydelser</string>
@@ -685,7 +685,7 @@
   <string name="exclude_episodes_shorter_than">Medtag ikke afsnit, der er kortere end</string>
   <string name="keep_updated">Hold opdateret</string>
   <string name="keep_updated_summary">Inkludér denne podcast når alle podcasts opdateres</string>
-  <string name="auto_download_disabled_globally">Automatisk download slået fra i de generelle PodVinci indstilinger</string>
+  <string name="auto_download_disabled_globally">Automatisk download slået fra i de generelle Podcini indstilinger</string>
   <string name="statistics_time_played">Afspillet tid:</string>
   <string name="statistics_total_duration">Samlet varighed (skøn):</string>
   <string name="statistics_episodes_on_device">Afsnit på enheden:</string>
@@ -694,7 +694,7 @@
   <string name="statistics_view_all">Vis for alle podcasts »</string>
   <string name="edit_url_menu">Rediger feed-URL</string>
   <string name="edit_url_confirmation_msg">Hvis du ændrer RSS-adressen, kan du nemt ødelægge podcastens afspilningstilstand og afsnitslisterne for podcasten. Vi anbefaler IKKE at ændre den og vil IKKE yde support, hvis noget går galt. Dette kan ikke gøres om. Det ødelagte abonnement KAN IKKE repareres ved blot at ændre adressen tilbage. Vi foreslår, at du opretter en sikkerhedskopi, før du fortsætter.</string>
-  <!--PodVinciSP-->
+  <!--PodciniSP-->
   <string name="sp_apps_importing_feeds_msg">Importerer abonnementer fra enkeltformålsapps…</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">Søg efter podcast ...</string>
@@ -717,7 +717,7 @@
   <string name="local_folder">Lokal mappe</string>
   <string name="reconnect_local_folder">Genforbind lokal mappe</string>
   <string name="reconnect_local_folder_warning">I tilfælde af nægtelse af tilladelse kan du bruge denne til at forbinde til præcis den samme mappe. Vælg ikke en anden mappe.</string>
-  <string name="local_feed_description">Denne virtuelle podcast blev oprettet ved at en mappe blev føjet til PodVinci.</string>
+  <string name="local_feed_description">Denne virtuelle podcast blev oprettet ved at en mappe blev føjet til Podcini.</string>
   <string name="unable_to_start_system_file_manager">Kunne ikke starte system filhåndtering</string>
   <string name="filter">Filtrér</string>
   <string name="hide_is_favorite_label">Er favorit</string>

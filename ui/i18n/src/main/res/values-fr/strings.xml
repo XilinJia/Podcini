@@ -51,9 +51,9 @@
   <string name="home_continue_title">Continuer d\'écouter</string>
   <string name="home_new_title">Les nouveautés</string>
   <string name="home_downloads_title">Derniers téléchargements</string>
-  <string name="home_welcome_title">Bienvenu dans PodVinci !</string>
+  <string name="home_welcome_title">Bienvenu dans Podcini !</string>
   <string name="home_welcome_text">Vous n\'avez pas encore d\'abonnements. Ouvrez le menu latéral pour ajouter des podcasts.</string>
-  <string name="notification_permission_text">PodVinci a besoin de votre autorisation pour afficher les notifications. Par défaut, PodVinci, ne notifie que si quelque chose est en cours de téléchargement ou pose problème.</string>
+  <string name="notification_permission_text">Podcini a besoin de votre autorisation pour afficher les notifications. Par défaut, Podcini, ne notifie que si quelque chose est en cours de téléchargement ou pose problème.</string>
   <string name="notification_permission_denied">Vous avez refusé l\'autorisation.</string>
   <string name="notification_permission_deny_warning">Si vous désactivez les notifications et que quelque chose pose problème vous risquez de ne pas comprendre pourquoi.</string>
   <string name="deny_label">Refuser</string>
@@ -260,7 +260,7 @@
   <string name="skip_episode_label">Passer cet épisode</string>
   <string name="reset_position">Réinitialiser la position de lecture</string>
   <string name="no_items_selected">Rien n\'a été sélectionné</string>
-  <string name="delete_local_feed_warning_body">La suppression d\'un épisode dans PodVinci le supprime aussi de votre appareil. Il sera définitivement perdu et ne pourra pas être \"retélécharger\" à partir d\'PodVinci.</string>
+  <string name="delete_local_feed_warning_body">La suppression d\'un épisode dans Podcini le supprime aussi de votre appareil. Il sera définitivement perdu et ne pourra pas être \"retélécharger\" à partir d\'Podcini.</string>
   <!--Download messages and labels-->
   <string name="download_successful">terminé</string>
   <string name="download_pending">Téléchargement en attente</string>
@@ -303,10 +303,10 @@
   <string name="download_type_feed">Flux</string>
   <string name="download_type_media">Fichier média</string>
   <string name="null_value_podcast_error">Aucun podcast correspondant.</string>
-  <string name="no_feed_url_podcast_found_by_search">Le podcast suggéré ne donne pas de lien RSS mais PodVinci a trouvé un lien qui pourrait correspondre</string>
+  <string name="no_feed_url_podcast_found_by_search">Le podcast suggéré ne donne pas de lien RSS mais Podcini a trouvé un lien qui pourrait correspondre</string>
   <string name="authentication_notification_title">Authentification requise</string>
   <string name="confirm_mobile_download_dialog_title">Confirmer le téléchargement avec la connexion mobile</string>
-  <string name="confirm_mobile_download_dialog_message">Le téléchargement avec la connexion mobile est désactivé dans les options. PodVinci peut télécharger l\'épisode automatiquement plus tard quand le Wifi sera disponible.</string>
+  <string name="confirm_mobile_download_dialog_message">Le téléchargement avec la connexion mobile est désactivé dans les options. Podcini peut télécharger l\'épisode automatiquement plus tard quand le Wifi sera disponible.</string>
   <string name="confirm_mobile_download_dialog_message_vpn">Votre application VPN apparaît comme une connexion mobile (limitée). Dans les préférences l\'usage de ce type de connexion est désactivé pour les téléchargements. Si vous voulez régler ce problème, contactez les créateurs de votre application VPN.</string>
   <string name="confirm_mobile_download_dialog_download_later">Télécharger plus tard</string>
   <string name="confirm_mobile_download_dialog_allow_this_time">Télécharger quand même</string>
@@ -322,7 +322,7 @@
   <string name="playback_error_source">Impossible d\'accéder au fichier</string>
   <string name="playback_error_unknown">Erreur inconnue</string>
   <string name="no_media_playing_label">Aucune lecture</string>
-  <string name="unknown_media_key">PodVinci - Touche média inconnue : %1$d</string>
+  <string name="unknown_media_key">Podcini - Touche média inconnue : %1$d</string>
   <string name="error_file_not_found">Fichier non trouvé</string>
   <string name="no_media_label">Aucun fichier média disponible</string>
   <!--Queue operations-->
@@ -400,7 +400,7 @@
   <string name="pref_auto_delete_title">Suppression automatique</string>
   <string name="pref_auto_local_delete_title">Suppression automatique pour dossiers locaux</string>
   <string name="pref_auto_local_delete_sum">Inclure les dossiers locaux lors de la suppression automatique</string>
-  <string name="pref_auto_local_delete_dialog_body">Attention la suppression des épisodes des dossiers locaux dans PodVinci les suppriment aussi de votre appareil. Ils seront définitivement perdus et ne pourront pas être \"retélécharger\" à partir d\'PodVinci. Activer quand même l\'option ?</string>
+  <string name="pref_auto_local_delete_dialog_body">Attention la suppression des épisodes des dossiers locaux dans Podcini les suppriment aussi de votre appareil. Ils seront définitivement perdus et ne pourront pas être \"retélécharger\" à partir d\'Podcini. Activer quand même l\'option ?</string>
   <string name="pref_smart_mark_as_played_sum">En dessous de la durée choisie les épisodes seront marqués comme lus même s\'ils n\'ont pas été terminés</string>
   <string name="pref_smart_mark_as_played_title">Marquer comme lu intelligemment</string>
   <string name="pref_skip_keeps_episodes_sum">Garder les épisodes quand ils sont passés</string>
@@ -412,7 +412,7 @@
   <string name="downloads_pref">Téléchargements</string>
   <string name="downloads_pref_sum">Fréquence de mise à jour, utilisation de la connexion mobile, téléchargements et suppressions automatiques</string>
   <string name="feed_refresh_title">Actualiser les podcasts</string>
-  <string name="feed_refresh_sum">Choisir la fréquence de mise à jour automatique des épisodes par PodVinci</string>
+  <string name="feed_refresh_sum">Choisir la fréquence de mise à jour automatique des épisodes par Podcini</string>
   <string name="feed_refresh_never">Jamais</string>
   <string name="feed_every_hour">Toutes les heures</string>
   <string name="feed_every_2_hours">Toutes les 2 heures</string>
@@ -505,7 +505,7 @@
   <string name="pref_skip_silence_title">Supprimer les silences</string>
   <string name="behavior">Comportement</string>
   <string name="pref_default_page">Écran par défaut</string>
-  <string name="pref_default_page_sum">Choisir l\'écran par défaut à l\'ouverture d\'PodVinci</string>
+  <string name="pref_default_page_sum">Choisir l\'écran par défaut à l\'ouverture d\'Podcini</string>
   <string name="pref_back_button_opens_drawer">Le bouton retour ouvre le volet de navigation</string>
   <string name="pref_back_button_opens_drawer_summary">Ouvrir le volet de navigation quand le bouton retour est utilisé sur l\'écran par défaut</string>
   <string name="remember_last_page">Dernier écran utilisé</string>
@@ -529,15 +529,15 @@
   <string name="pref_new_episodes_action_sum">Action à effectuer pour les nouveaux épisodes</string>
   <!--About screen-->
   <string name="about_pref">À propos</string>
-  <string name="podvinci_version">Version d\'PodVinci</string>
+  <string name="podcini_version">Version d\'Podcini</string>
   <string name="contributors">Contributeurs</string>
-  <string name="contributors_summary">Tout le monde peut contribuer à l\'amélioration d\'PodVinci - avec du code, des traductions ou en aidant les utilisateurs dans notre forum.</string>
+  <string name="contributors_summary">Tout le monde peut contribuer à l\'amélioration d\'Podcini - avec du code, des traductions ou en aidant les utilisateurs dans notre forum.</string>
   <string name="developers">Développeurs</string>
   <string name="translators">Traducteurs</string>
   <string name="special_thanks">Remerciements spéciaux</string>
   <string name="privacy_policy">Politique de confidentialité</string>
   <string name="licenses">Licences</string>
-  <string name="licenses_summary">PodVinci utilise le code d\'autres logiciels</string>
+  <string name="licenses_summary">Podcini utilise le code d\'autres logiciels</string>
   <!--Search-->
   <string name="search_status_no_results">Aucun résultat trouvé</string>
   <string name="type_to_search">Entrer une requête pour chercher</string>
@@ -562,7 +562,7 @@
   <string name="opml_export_summary">Transférer vos abonnements à une autre application de podcasts</string>
   <string name="opml_import_summary">Importer les abonnements d\'une autre application de podcasts</string>
   <string name="database_export_summary">Transférer les abonnements, les épisodes écoutés et la liste de lecture sur un autre appareil</string>
-  <string name="database_import_summary">Importer une base de données PodVinci d\'un autre appareil</string>
+  <string name="database_import_summary">Importer une base de données Podcini d\'un autre appareil</string>
   <string name="opml_import_label">Importer un fichier OPML</string>
   <string name="opml_add_podcast_label">Importer une liste de podcasts (fichier OPML)</string>
   <string name="opml_reader_error">Une erreur s\'est produite pendant la lecture du fichier OPML :</string>
@@ -579,8 +579,8 @@
   <string name="export_success_title">Export réussi</string>
   <string name="opml_import_ask_read_permission">L\'accès au stockage externe est requis pour lire le fichier OPML</string>
   <string name="successful_import_label">Import réussi</string>
-  <string name="import_ok">Appuyer sur OK pour redémarrer PodVinci</string>
-  <string name="import_no_downgrade">La base de données a été exportée avec une version plus récente d\'PodVinci. L\'application actuelle ne sait pas comment l\'importer.</string>
+  <string name="import_ok">Appuyer sur OK pour redémarrer Podcini</string>
+  <string name="import_no_downgrade">La base de données a été exportée avec une version plus récente d\'Podcini. L\'application actuelle ne sait pas comment l\'importer.</string>
   <string name="favorites_export_label">Exporter les favoris</string>
   <string name="favorites_export_summary">Exporter les favoris dans un fichier</string>
   <!--Sleep timer-->
@@ -623,12 +623,12 @@
   <string name="synchronization_choose_title">Choisir le service de synchronisation</string>
   <string name="synchronization_summary_unchoosen">Vous pouvez choisir entre plusieurs services pour synchroniser les abonnements et les statuts des épisodes</string>
   <string name="dialog_choose_sync_service_title">Choisir le service de synchronisation</string>
-  <string name="gpodnet_description">Gpodder.net est un service open-source de synchronisation que vous pouvez installer facilement sur votre propre serveur. Gpodder.net est indépendant du projet PodVinci.</string>
-  <string name="synchronization_summary_nextcloud">Gpoddersync est une application Nextcloud open-source que vous pouvez installer facilement sur votre propre serveur. L\'application est indépendante du projet PodVinci.</string>
+  <string name="gpodnet_description">Gpodder.net est un service open-source de synchronisation que vous pouvez installer facilement sur votre propre serveur. Gpodder.net est indépendant du projet Podcini.</string>
+  <string name="synchronization_summary_nextcloud">Gpoddersync est une application Nextcloud open-source que vous pouvez installer facilement sur votre propre serveur. L\'application est indépendante du projet Podcini.</string>
   <string name="synchronization_host_explanation">Vous pouvez décider du serveur à utiliser pour synchroniser vos données. Quand vous en aurez choisi un, entrer son adresse ici.</string>
   <string name="synchronization_host_label">Adresse du serveur</string>
   <string name="proceed_to_login_butLabel">S\'identifier</string>
-  <string name="synchronization_nextcloud_authenticate_browser">Autoriser l\'accès à l\'aide du navigateur qui a été ouvert puis revenez sur PodVinci.</string>
+  <string name="synchronization_nextcloud_authenticate_browser">Autoriser l\'accès à l\'aide du navigateur qui a été ouvert puis revenez sur Podcini.</string>
   <string name="gpodnetauth_login_butLabel">Connexion</string>
   <string name="synchronization_credentials_explanation">Merci de renseigner vos informations de connexion au serveur de synchronisation.</string>
   <string name="gpodnetauth_encryption_warning">Le mot de passe et les données ne sont pas cryptés !</string>
@@ -637,10 +637,10 @@
   <string name="synchronization_login_butLabel">Connexion</string>
   <string name="synchronization_selectDevice_explanation">Sélectionner votre appareil sur le serveur de synchronisation ou créez-en un nouveau.</string>
   <string name="gpodnetauth_device_name">Nom de l\'appareil</string>
-  <string name="gpodnetauth_device_name_default">PodVinci sur %1$s</string>
+  <string name="gpodnetauth_device_name_default">Podcini sur %1$s</string>
   <string name="gpodnetauth_existing_devices">Appareils déjà existants</string>
   <string name="gpodnetauth_create_device">Créer un appareil</string>
-  <string name="gpodnetauth_finish_descr">Félicitations ! Votre compte gpodder.net est maintenant lié à votre appareil. PodVinci va désormais automatiquement synchroniser vos podcasts sur votre appareil avec votre compte gpodder.</string>
+  <string name="gpodnetauth_finish_descr">Félicitations ! Votre compte gpodder.net est maintenant lié à votre appareil. Podcini va désormais automatiquement synchroniser vos podcasts sur votre appareil avec votre compte gpodder.</string>
   <string name="gpodnetauth_finish_butsyncnow">Commencer la synchronisation</string>
   <string name="pref_gpodnet_setlogin_information_title">Modifier les informations de connexion</string>
   <string name="pref_gpodnet_setlogin_information_sum">Modifier les information de connexion pour votre compte gpodder.net</string>
@@ -658,7 +658,7 @@
   <string name="gpodnetsync_username_characters_error">Le nom d\'utilisateur ne peut contenir que des lettres, des chiffres, des traits d\'union ou des tirets bas.</string>
   <!--Directory chooser-->
   <string name="choose_data_directory">Choisir le répertoire</string>
-  <string name="choose_data_directory_message">Choisissez le répertoire où enregistrer les données. PodVinci créera automatiquement les sous-répertoires nécessaires.</string>
+  <string name="choose_data_directory_message">Choisissez le répertoire où enregistrer les données. Podcini créera automatiquement les sous-répertoires nécessaires.</string>
   <string name="choose_data_directory_available_space">%1$s sur %2$s d\'espace libre</string>
   <string name="pref_pausePlaybackForFocusLoss_sum">Mettre en pause la lecture au lieu de baisser le volume quand une autre application joue un son</string>
   <string name="pref_pausePlaybackForFocusLoss_title">Mettre en pause lors d\'interruptions</string>
@@ -713,7 +713,7 @@
   <string name="statistics_view_all">Voir les statistiques pour tous les podcasts »</string>
   <string name="edit_url_menu">Modifier le lien</string>
   <string name="edit_url_confirmation_msg">Modifier le lien RSS peut facilement corrompre l\'état de lecture et la liste des épisodes du podcast. Il est recommandé de NE PAS LE CHANGER et AUCUNE AIDE ne pourra être fournie si quelque chose se passe mal. Cette action ne peut pas être annulée. L\'abonnement NE POURRA PAS ÊTRE RÉPARÉ en remettant juste l\'ancien lien. Il est recommandé de CRÉER UNE SAUVEGARDE avant de continuer.</string>
-  <!--PodVinciSP-->
+  <!--PodciniSP-->
   <string name="sp_apps_importing_feeds_msg">Importation des abonnements à partir d\'applications à usage unique...</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">Trouver un podcast...</string>
@@ -736,7 +736,7 @@
   <string name="local_folder">Dossier local</string>
   <string name="reconnect_local_folder">Se reconnecter au dossier</string>
   <string name="reconnect_local_folder_warning">En cas de refus de permission vous pouvez utiliser cette option pour vous reconnecter au même dossier. Ne sélectionnez pas un autre dossier.</string>
-  <string name="local_feed_description">Ce podcast a été crée à partir d\'un dossier ajouté à PodVinci.</string>
+  <string name="local_feed_description">Ce podcast a été crée à partir d\'un dossier ajouté à Podcini.</string>
   <string name="unable_to_start_system_file_manager">Impossible d\'ouvrir le gestionnaire de fichier</string>
   <string name="filter">Filtrer</string>
   <string name="hide_is_favorite_label">Favori</string>

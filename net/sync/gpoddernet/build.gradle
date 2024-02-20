@@ -5,7 +5,7 @@ plugins {
 apply from: "../../../common.gradle"
 
 android {
-    namespace "ac.mdiq.podvinci.net.sync.gpoddernet"
+    namespace "ac.mdiq.podcini.net.sync.gpoddernet"
 }
 
 dependencies {

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:squareImageView="http://schemas.android.com/apk/ac.mdiq.podvinci"
+    xmlns:squareImageView="http://schemas.android.com/apk/ac.mdiq.podcini"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="96dp"
@@ -19,7 +19,7 @@
         app:cardPreventCornerOverlap="false"
         app:cardElevation="2dp">
 
-        <ac.mdiq.podvinci.ui.common.SquareImageView
+        <ac.mdiq.podcini.ui.common.SquareImageView
             android:id="@+id/discovery_cover"
             android:layout_width="match_parent"
             android:layout_height="96dp"

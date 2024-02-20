@@ -8,7 +8,7 @@ apply from: "../common.gradle"
 apply from: "../playFlavor.gradle"
 
 android {
-    namespace "ac.mdiq.podvinci"
+    namespace "ac.mdiq.podcini"
     lint {
         disable 'ObsoleteLintCustomCheck', 'CheckResult', 'UnusedAttribute', 'BatteryLife', 'InflateParams',
                 'RestrictedApi', 'TrustAllX509TrustManager', 'ExportedReceiver', 'AllowBackup', 'VectorDrawableCompat',
@@ -39,7 +39,7 @@ android {
 
         javaCompileOptions {
             annotationProcessorOptions {
-                arguments = [eventBusIndex: 'ac.mdiq.podvinci.ApEventBusIndex']
+                arguments = [eventBusIndex: 'ac.mdiq.podcini.ApEventBusIndex']
             }
         }
     }
@@ -56,10 +56,10 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix ".debug"
-            resValue "string", "provider_authority", "ac.mdiq.podvinci.debug.provider"
+            resValue "string", "provider_authority", "ac.mdiq.podcini.debug.provider"
         }
         release {
-            resValue "string", "provider_authority", "ac.mdiq.podvinci.provider"
+            resValue "string", "provider_authority", "ac.mdiq.podcini.provider"
             minifyEnabled true
             shrinkResources true
             signingConfig signingConfigs.releaseConfig
@@ -67,7 +67,7 @@ android {
     }
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
-            def applicationName = "PodVinci"
+            def applicationName = "Podcini"
             outputFileName = "${applicationName}_${variant.buildType.name}_${defaultConfig.versionName}.apk"
         }
     }
@@ -162,11 +162,11 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
 }
 
-if (project.hasProperty("podvinciPlayPublisherCredentials")) {
+if (project.hasProperty("podciniPlayPublisherCredentials")) {
     apply plugin: 'com.github.triplet.play'
     play {
         track.set('alpha')
-        serviceAccountCredentials.set(file(podvinciPlayPublisherCredentials))
+        serviceAccountCredentials.set(file(podciniPlayPublisherCredentials))
     }
 }
 

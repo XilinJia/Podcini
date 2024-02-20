@@ -7,10 +7,10 @@
         android:icon="@mipmap/ic_launcher"
         android:supportsRtl="true">
         <activity
-            android:label="@string/podvinci_echo"
+            android:label="@string/podcini_echo"
             android:name=".EchoActivity"
             android:exported="false"
-            android:theme="@style/Theme.PodVinci.Dark.NoTitle">
+            android:theme="@style/Theme.Podcini.Dark.NoTitle">
             <intent-filter>
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>

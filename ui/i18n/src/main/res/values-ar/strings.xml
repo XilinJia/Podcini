@@ -51,7 +51,7 @@
   <string name="home_continue_title">واصل الاستماع</string>
   <string name="home_new_title">اطلع على الجديد</string>
   <string name="home_downloads_title">إدارة التنزيلات</string>
-  <string name="home_welcome_title">مرحبا بك في PodVinci!</string>
+  <string name="home_welcome_title">مرحبا بك في Podcini!</string>
   <string name="home_welcome_text">أنت لست مشتركا بأي بودكاست، أفتح الدرج لإضافة بودكاست.</string>
   <string name="notification_permission_denied">لقد رفضت السماح بلإشعارات</string>
   <string name="open_settings">افتح الإعدادات</string>
@@ -333,10 +333,10 @@
   <string name="download_type_feed">قناة</string>
   <string name="download_type_media">ملف وسائط</string>
   <string name="null_value_podcast_error">لم نُعطى بودكاست يمكن عرضه.</string>
-  <string name="no_feed_url_podcast_found_by_search">لم يتم العثور على رابط RSS للبودكاست المقترح، لقد عثر PodVinci على بودكاست أخر قد يطابقه</string>
+  <string name="no_feed_url_podcast_found_by_search">لم يتم العثور على رابط RSS للبودكاست المقترح، لقد عثر Podcini على بودكاست أخر قد يطابقه</string>
   <string name="authentication_notification_title">التحقق مطلوب</string>
   <string name="confirm_mobile_download_dialog_title">أكد رغبة التنزيل باستخدام بيانات الجوال</string>
-  <string name="confirm_mobile_download_dialog_message">تم تعطيل ميزة التنزيل باستخدام بيانات الجوال من داخل الإعدادات. يمكن لـ PodVinci أن يقوم بتنزيل الحلقة تلقائيا عند توفر شبكة واي-فاي.</string>
+  <string name="confirm_mobile_download_dialog_message">تم تعطيل ميزة التنزيل باستخدام بيانات الجوال من داخل الإعدادات. يمكن لـ Podcini أن يقوم بتنزيل الحلقة تلقائيا عند توفر شبكة واي-فاي.</string>
   <string name="confirm_mobile_download_dialog_download_later">التنزيل لاحقا</string>
   <string name="confirm_mobile_download_dialog_allow_this_time">التنزيل على أي حال</string>
   <string name="confirm_mobile_streaming_notification_title">أكد البث التدفقي باستخدام بيانات الجوال</string>
@@ -351,7 +351,7 @@
   <string name="playback_error_source">لا يمكن الوصول لملف الوسائط</string>
   <string name="playback_error_unknown">خطأ غير معروف</string>
   <string name="no_media_playing_label">لا يوجد وسائط قيد التشغيل</string>
-  <string name="unknown_media_key">PodVinci - مفتاح وسائط غير معروف: %1$d</string>
+  <string name="unknown_media_key">Podcini - مفتاح وسائط غير معروف: %1$d</string>
   <string name="error_file_not_found">ملف غير موجود</string>
   <string name="no_media_label">لا يوجد ملف وسائط بالعنصر</string>
   <!--Queue operations-->
@@ -437,7 +437,7 @@
   <string name="downloads_pref">تنزيلات</string>
   <string name="downloads_pref_sum">الفترة الزمنية للتحديثات، بيانات الجوال، التنزيل التلقائي، الحذف التلقائي</string>
   <string name="feed_refresh_title">حدث البودكاستات</string>
-  <string name="feed_refresh_sum">حدد الفترة الزمنية التي سيقوم PodVinci فيها تلقائيا بالبحث عن حلقات جديدة </string>
+  <string name="feed_refresh_sum">حدد الفترة الزمنية التي سيقوم Podcini فيها تلقائيا بالبحث عن حلقات جديدة </string>
   <string name="feed_refresh_never">أبداً</string>
   <string name="feed_every_hour">كل ساعة</string>
   <string name="feed_every_2_hours">كل 2 ساعتين</string>
@@ -546,15 +546,15 @@
   <string name="pref_new_episodes_action_sum">كيف يتم التعامل مع الحلقات الجديدة</string>
   <!--About screen-->
   <string name="about_pref">حول</string>
-  <string name="podvinci_version">اصدار PodVinci</string>
+  <string name="podcini_version">اصدار Podcini</string>
   <string name="contributors">المساهمون</string>
-  <string name="contributors_summary">يمكن للجميع المساعدة في تحسين PodVinci - من خلال البرمجة أو الترجمات أو من خلال مساعدة المستخدمين في منتدانا</string>
+  <string name="contributors_summary">يمكن للجميع المساعدة في تحسين Podcini - من خلال البرمجة أو الترجمات أو من خلال مساعدة المستخدمين في منتدانا</string>
   <string name="developers">المطورين</string>
   <string name="translators">المترجمين</string>
   <string name="special_thanks">شكر خاص</string>
   <string name="privacy_policy">سياسة الخصوصية</string>
   <string name="licenses">رخص البرمجيات</string>
-  <string name="licenses_summary">يعتمد PodVinci على برامج عظيمة أخرى</string>
+  <string name="licenses_summary">يعتمد Podcini على برامج عظيمة أخرى</string>
   <!--Search-->
   <string name="search_status_no_results">لم يتم العثور على نتائج</string>
   <string name="type_to_search">اكتب شيئاً للبحث</string>
@@ -577,8 +577,8 @@
   <string name="html_export_summary">عرض إشتراكاتك لصديق</string>
   <string name="opml_export_summary">نقل اشتراكاتك لبرنامج بودكاست آخر</string>
   <string name="opml_import_summary">استيراد اشتراكاتك من برنامج بودكاست آخر</string>
-  <string name="database_export_summary">نقل الاشتراكات والحلقات المسموعة ولائحة الإستماع لـ PodVinci على جهاز آخر</string>
-  <string name="database_import_summary">استوراد قاعدة بيانات PodVinci من جهاز آخر</string>
+  <string name="database_export_summary">نقل الاشتراكات والحلقات المسموعة ولائحة الإستماع لـ Podcini على جهاز آخر</string>
+  <string name="database_import_summary">استوراد قاعدة بيانات Podcini من جهاز آخر</string>
   <string name="opml_import_label">استيراد ملف بصيغة OPML</string>
   <string name="opml_add_podcast_label">استورد قائمة بودكاستات (OPML)</string>
   <string name="opml_reader_error">حدث خطأ أثناء قراءة مستند OPML:</string>
@@ -595,8 +595,8 @@
   <string name="export_success_title">تم التصدير بنجاح</string>
   <string name="opml_import_ask_read_permission">الوصول الى مساحة التخزين الخارجية مطلوب لقراءة ملف الـ OPML</string>
   <string name="successful_import_label">استيراد ناجح</string>
-  <string name="import_ok">الرجاء الضغط على \"حسناً\" لإعادة تشغيل PodVinci</string>
-  <string name="import_no_downgrade">تم تصدير قاعدة البيانات هذه بإصدار حديث  من PodVinci. التثبيت الحالي الخاص بك لا يعرف حتى الآن كيفية التعامل مع هذا الملف.</string>
+  <string name="import_ok">الرجاء الضغط على \"حسناً\" لإعادة تشغيل Podcini</string>
+  <string name="import_no_downgrade">تم تصدير قاعدة البيانات هذه بإصدار حديث  من Podcini. التثبيت الحالي الخاص بك لا يعرف حتى الآن كيفية التعامل مع هذا الملف.</string>
   <string name="favorites_export_label">تصدير الحلقات المفضلة</string>
   <string name="favorites_export_summary">تصدير الحلقات المفضلة لملف</string>
   <!--Sleep timer-->
@@ -642,12 +642,12 @@
   <string name="synchronization_choose_title">اختر مزود خدمة التزامن</string>
   <string name="synchronization_summary_unchoosen">يمكنك الاختيار من بين عدة مزودين لمزامنة اشتراكاتك وحالة تشغيل الحلقة معهم</string>
   <string name="dialog_choose_sync_service_title">اختر مزود خدمة التزامن</string>
-  <string name="gpodnet_description">Gpodder.net هي خدمة مزامنة بودكاست مفتوحة المصدر يمكنك تنصيبها على السيرفر الخاص بك. Gpodder.net خدمة مستقلة عن مشروع PodVinci.</string>
-  <string name="synchronization_summary_nextcloud">Gpoddersync هو تطبيق Nextcloud مفتوح المصدر يمكنك تنصيبه على سيرفرك بكل سهولة. التطبيق مستقل عن مشروع PodVinci.</string>
+  <string name="gpodnet_description">Gpodder.net هي خدمة مزامنة بودكاست مفتوحة المصدر يمكنك تنصيبها على السيرفر الخاص بك. Gpodder.net خدمة مستقلة عن مشروع Podcini.</string>
+  <string name="synchronization_summary_nextcloud">Gpoddersync هو تطبيق Nextcloud مفتوح المصدر يمكنك تنصيبه على سيرفرك بكل سهولة. التطبيق مستقل عن مشروع Podcini.</string>
   <string name="synchronization_host_explanation">يمكنك اختيار سيرفر خاص بك للمزامنة. عند اقتناءك لسيرفر المزامنة المرغوب، يرجى اضافة عنوانه هنا.</string>
   <string name="synchronization_host_label">عنوان الخادم</string>
   <string name="proceed_to_login_butLabel">الشروع إلى تسجيل الدخول</string>
-  <string name="synchronization_nextcloud_authenticate_browser">أمنح الوصول باستخدام المتصفح الذي تم فتحه ثم أرجع إلى PodVinci. </string>
+  <string name="synchronization_nextcloud_authenticate_browser">أمنح الوصول باستخدام المتصفح الذي تم فتحه ثم أرجع إلى Podcini. </string>
   <string name="gpodnetauth_login_butLabel">تسجيل الدخول</string>
   <string name="synchronization_credentials_explanation">الرجاء إضافة بيانات الدخول لحسابك على خادم المزامنة.</string>
   <string name="gpodnetauth_encryption_warning">كلمة السر والبيانات غير مشفرة!</string>
@@ -656,10 +656,10 @@
   <string name="synchronization_login_butLabel">سجّل الدخول</string>
   <string name="synchronization_selectDevice_explanation">الرجاء اختيار الجهاز الذي أنشأته على خادم المزامنة، أو أنشأ جهازا أخر  </string>
   <string name="gpodnetauth_device_name">أسم الجهاز</string>
-  <string name="gpodnetauth_device_name_default">PodVinci على %1$s</string>
+  <string name="gpodnetauth_device_name_default">Podcini على %1$s</string>
   <string name="gpodnetauth_existing_devices">أجهزة موجودة</string>
   <string name="gpodnetauth_create_device">أنشئ جهاز</string>
-  <string name="gpodnetauth_finish_descr">تهانينا! حسابك في gpodder.net مربوط الآن مع جهازك. سيزامن PodVinci من الآن وصاعدا اشتراكاتك على جهازك مع حسابك على gpodder.net.</string>
+  <string name="gpodnetauth_finish_descr">تهانينا! حسابك في gpodder.net مربوط الآن مع جهازك. سيزامن Podcini من الآن وصاعدا اشتراكاتك على جهازك مع حسابك على gpodder.net.</string>
   <string name="gpodnetauth_finish_butsyncnow">ابدأ المزامنة الآن</string>
   <string name="pref_gpodnet_setlogin_information_title">تغيير بيانات تسجيل الدخول</string>
   <string name="pref_gpodnet_setlogin_information_sum">قم بتغيير بيانات تسجيل الدخول لحساب gpodder.net الخاص بك.</string>
@@ -677,7 +677,7 @@
   <string name="gpodnetsync_username_characters_error">يشترط أن تحتوي أسماء المستخدمين على أحرف وأرقام وواصلات وشرطات سفلية فقط.</string>
   <!--Directory chooser-->
   <string name="choose_data_directory">إختيار مجلد البيانات</string>
-  <string name="choose_data_directory_message">الرجاء اختيار قاعدة مجلد البيانات الخاص بك. سيقوم PodVinci بإنشاء المجلدات الفرعية المناسبة.</string>
+  <string name="choose_data_directory_message">الرجاء اختيار قاعدة مجلد البيانات الخاص بك. سيقوم Podcini بإنشاء المجلدات الفرعية المناسبة.</string>
   <string name="choose_data_directory_available_space">%1$sمن %2$sفاضي  </string>
   <string name="pref_pausePlaybackForFocusLoss_sum">توقف التشغيل بدل اخفات الصوت عندما برنامج يشغل صوت</string>
   <string name="pref_pausePlaybackForFocusLoss_title">توقف للمقاطعات</string>
@@ -716,7 +716,7 @@
   <string name="exclude_episodes_shorter_than">استبعد الحلقات الاقصر من</string>
   <string name="keep_updated">أبقيه محدثا</string>
   <string name="keep_updated_summary">قم بإضافة هذا البودكاست عند تحديث (أو التحديث التلقائي) جميع ملفات البودكاستات</string>
-  <string name="auto_download_disabled_globally">التنزيل التلقائي معطل في الإعدادات الرئيسية لـ PodVinci</string>
+  <string name="auto_download_disabled_globally">التنزيل التلقائي معطل في الإعدادات الرئيسية لـ Podcini</string>
   <string name="statistics_time_played">وقت التشغيل الكامل:</string>
   <string name="statistics_total_duration">الزمن الكامل(تقريبيا):</string>
   <string name="statistics_episodes_on_device">حلقات مسجلة على هذا الجهاز:</string>
@@ -725,7 +725,7 @@
   <string name="statistics_view_all">عرض لجميع البودكاستات »</string>
   <string name="edit_url_menu">عدل على الرابط </string>
   <string name="edit_url_confirmation_msg">تغيير رابط الـ RSS قد يؤدي إلى كسر حالة التشغيل و قائمة الحلقات للبودكاست. نحن لا ننصح بتغيرها ولن نقوم بتوفير أي دعم في حالة حصول أي خطأ. لا يمكن التراجع عن هذا التغيير. الاشتراك المكسور لن يمكن أن يتم استرجاعه بإعادة إرجاع الرابط القديم. ننصح بإنشاء نسخة احتياطية قبل المتابعة.</string>
-  <!--PodVinciSP-->
+  <!--PodciniSP-->
   <string name="sp_apps_importing_feeds_msg">استيراد الاشتراكات من التطبيقات ذات الغرض الواحد ...</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">ابحث عن بودكاست...</string>
@@ -748,7 +748,7 @@
   <string name="local_folder">مجلد محلي</string>
   <string name="reconnect_local_folder">إعادة توصيل المجلد المحلي</string>
   <string name="reconnect_local_folder_warning">في حالة رفض الإذن ، يمكنك استخدام هذا لإعادة الاتصال بالمجلد نفسه. لا تقم بتحديد مجلد آخر.</string>
-  <string name="local_feed_description">هذا البودكاست الإفتراضي تم خلقه بإضافة مجلد محلي إلى PodVinci</string>
+  <string name="local_feed_description">هذا البودكاست الإفتراضي تم خلقه بإضافة مجلد محلي إلى Podcini</string>
   <string name="unable_to_start_system_file_manager">غير قادر على تشغيل مدير ملفات النظام</string>
   <string name="filter">المصفاة</string>
   <string name="hide_is_favorite_label">في المفضلة</string>

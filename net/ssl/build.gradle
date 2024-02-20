@@ -6,7 +6,7 @@ apply from: "../../common.gradle"
 apply from: "../../playFlavor.gradle"
 
 android {
-    namespace "ac.mdiq.podvinci.net.ssl"
+    namespace "ac.mdiq.podcini.net.ssl"
 }
 
 dependencies {

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="Theme.PodVinci.Dynamic.Light" parent="Theme.Base.PodVinci.Dynamic.Light">
+    <style name="Theme.Podcini.Dynamic.Light" parent="Theme.Base.Podcini.Dynamic.Light">
         <!-- Room for API dependent attributes -->
 
         <!-- To make icons visible on API 21-23. Overwritten in API-specific folder -->
@@ -9,10 +9,10 @@
         <item name="android:navigationBarColor">@color/grey600</item>
     </style>
 
-    <style name="Theme.Base.PodVinci.Dynamic.Light" parent="Theme.Material3.DynamicColors.Light">
+    <style name="Theme.Base.Podcini.Dynamic.Light" parent="Theme.Material3.DynamicColors.Light">
         <item name="progressBarTheme">@style/ProgressBarLight</item>
         <item name="background_color">@color/background_light</item>
-        <item name="actionBarStyle">@style/Widget.PodVinci.ActionBar</item>
+        <item name="actionBarStyle">@style/Widget.Podcini.ActionBar</item>
         <item name="background_elevated">@color/background_elevated_light</item>
         <item name="action_icon_color">@color/black</item>
         <item name="android:textAllCaps">false</item>
@@ -30,7 +30,7 @@
         <item name="preferenceTheme">@style/AppPreferenceThemeOverlay</item>
     </style>
 
-    <style name="Theme.PodVinci.Light" parent="Theme.PodVinci.Dynamic.Light">
+    <style name="Theme.Podcini.Light" parent="Theme.Podcini.Dynamic.Light">
         <item name="isMaterial3DynamicColorApplied">false</item>
         <item name="colorPrimary">@color/accent_light</item>
         <item name="colorOnPrimary">@color/white</item>
@@ -45,14 +45,14 @@
         <item name="colorSurfaceVariant">#D3DCE0</item>
     </style>
 
-    <style name="Theme.PodVinci.Dynamic.Dark" parent="Theme.Base.PodVinci.Dynamic.Dark">
+    <style name="Theme.Podcini.Dynamic.Dark" parent="Theme.Base.Podcini.Dynamic.Dark">
         <!-- Room for API dependent attributes -->
     </style>
 
-    <style name="Theme.Base.PodVinci.Dynamic.Dark" parent="Theme.Material3.DynamicColors.Dark">
+    <style name="Theme.Base.Podcini.Dynamic.Dark" parent="Theme.Material3.DynamicColors.Dark">
         <item name="progressBarTheme">@style/ProgressBarDark</item>
         <item name="background_color">@color/background_darktheme</item>
-        <item name="actionBarStyle">@style/Widget.PodVinci.ActionBar</item>
+        <item name="actionBarStyle">@style/Widget.Podcini.ActionBar</item>
         <item name="background_elevated">@color/background_elevated_darktheme</item>
         <item name="action_icon_color">@color/white</item>
         <item name="android:textAllCaps">false</item>
@@ -73,7 +73,7 @@
         <item name="preferenceTheme">@style/AppPreferenceThemeOverlay</item>
     </style>
 
-    <style name="Theme.PodVinci.Dark" parent="Theme.PodVinci.Dynamic.Dark">
+    <style name="Theme.Podcini.Dark" parent="Theme.Podcini.Dynamic.Dark">
         <item name="isMaterial3DynamicColorApplied">false</item>
         <item name="colorPrimary">@color/accent_dark</item>
         <item name="colorOnPrimary">@color/black</item>
@@ -88,7 +88,7 @@
         <item name="colorSurfaceVariant">#2F3B4F</item>
     </style>
 
-    <style name="Theme.PodVinci.Dynamic.TrueBlack" parent="Theme.PodVinci.Dynamic.Dark">
+    <style name="Theme.Podcini.Dynamic.TrueBlack" parent="Theme.Podcini.Dynamic.Dark">
         <item name="android:textColorPrimary">@color/white</item>
         <item name="android:color">@color/white</item>
         <item name="android:colorBackground">@color/black</item>
@@ -98,7 +98,7 @@
         <item name="android:navigationBarColor">@color/black</item>
     </style>
 
-    <style name="Theme.PodVinci.TrueBlack" parent="Theme.PodVinci.Dark">
+    <style name="Theme.Podcini.TrueBlack" parent="Theme.Podcini.Dark">
         <item name="android:textColorPrimary">@color/white</item>
         <item name="android:color">@color/white</item>
         <item name="android:colorBackground">@color/black</item>
@@ -108,43 +108,43 @@
         <item name="android:navigationBarColor">@color/black</item>
     </style>
 
-    <style name="Theme.PodVinci.Dynamic.Light.NoTitle" parent="Theme.PodVinci.Dynamic.Light">
+    <style name="Theme.Podcini.Dynamic.Light.NoTitle" parent="Theme.Podcini.Dynamic.Light">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="windowActionModeOverlay">true</item>
     </style>
 
-    <style name="Theme.PodVinci.Light.NoTitle" parent="Theme.PodVinci.Light">
+    <style name="Theme.Podcini.Light.NoTitle" parent="Theme.Podcini.Light">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="windowActionModeOverlay">true</item>
     </style>
 
-    <style name="Theme.PodVinci.Dynamic.Dark.NoTitle" parent="Theme.PodVinci.Dynamic.Dark">
+    <style name="Theme.Podcini.Dynamic.Dark.NoTitle" parent="Theme.Podcini.Dynamic.Dark">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="windowActionModeOverlay">true</item>
     </style>
 
-    <style name="Theme.PodVinci.Dark.NoTitle" parent="Theme.PodVinci.Dark">
+    <style name="Theme.Podcini.Dark.NoTitle" parent="Theme.Podcini.Dark">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="windowActionModeOverlay">true</item>
     </style>
 
-    <style name="Theme.PodVinci.TrueBlack.NoTitle" parent="Theme.PodVinci.TrueBlack">
+    <style name="Theme.Podcini.TrueBlack.NoTitle" parent="Theme.Podcini.TrueBlack">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="windowActionModeOverlay">true</item>
     </style>
 
-    <style name="Theme.PodVinci.Dynamic.TrueBlack.NoTitle" parent="Theme.PodVinci.Dynamic.TrueBlack">
+    <style name="Theme.Podcini.Dynamic.TrueBlack.NoTitle" parent="Theme.Podcini.Dynamic.TrueBlack">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="windowActionModeOverlay">true</item>
     </style>
 
-    <style name="Theme.PodVinci.Dynamic.Light.Translucent" parent="Theme.PodVinci.Dynamic.Light.NoTitle">
+    <style name="Theme.Podcini.Dynamic.Light.Translucent" parent="Theme.Podcini.Dynamic.Light.NoTitle">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar" tools:targetApi="M">false</item>
         <item name="android:windowIsTranslucent">true</item>
@@ -155,7 +155,7 @@
         <item name="android:fitsSystemWindows">true</item>
     </style>
 
-    <style name="Theme.PodVinci.Light.Translucent" parent="Theme.PodVinci.Light.NoTitle">
+    <style name="Theme.Podcini.Light.Translucent" parent="Theme.Podcini.Light.NoTitle">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar" tools:targetApi="M">false</item>
         <item name="android:windowIsTranslucent">true</item>
@@ -166,7 +166,7 @@
         <item name="android:fitsSystemWindows">true</item>
     </style>
 
-    <style name="Theme.PodVinci.Dynamic.Dark.Translucent" parent="Theme.PodVinci.Dynamic.Dark.NoTitle">
+    <style name="Theme.Podcini.Dynamic.Dark.Translucent" parent="Theme.Podcini.Dynamic.Dark.NoTitle">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar" tools:targetApi="M">false</item>
         <item name="android:windowIsTranslucent">true</item>
@@ -177,7 +177,7 @@
         <item name="android:fitsSystemWindows">true</item>
     </style>
 
-    <style name="Theme.PodVinci.Dark.Translucent" parent="Theme.PodVinci.Dark.NoTitle">
+    <style name="Theme.Podcini.Dark.Translucent" parent="Theme.Podcini.Dark.NoTitle">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar" tools:targetApi="M">false</item>
         <item name="android:windowIsTranslucent">true</item>
@@ -188,7 +188,7 @@
         <item name="android:fitsSystemWindows">true</item>
     </style>
 
-    <style name="Theme.PodVinci.Dynamic.TrueBlack.Translucent" parent="Theme.PodVinci.Dynamic.TrueBlack.NoTitle">
+    <style name="Theme.Podcini.Dynamic.TrueBlack.Translucent" parent="Theme.Podcini.Dynamic.TrueBlack.NoTitle">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar" tools:targetApi="M">false</item>
         <item name="android:windowIsTranslucent">true</item>
@@ -199,7 +199,7 @@
         <item name="android:fitsSystemWindows">true</item>
     </style>
 
-    <style name="Theme.PodVinci.TrueBlack.Translucent" parent="Theme.PodVinci.TrueBlack.NoTitle">
+    <style name="Theme.Podcini.TrueBlack.Translucent" parent="Theme.Podcini.TrueBlack.NoTitle">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar" tools:targetApi="M">false</item>
         <item name="android:windowIsTranslucent">true</item>
@@ -215,7 +215,7 @@
         <item name="android:windowExitAnimation">@android:anim/fade_out</item>
     </style>
 
-    <style name="Theme.PodVinci.Splash" parent="Theme.SplashScreen">
+    <style name="Theme.Podcini.Splash" parent="Theme.SplashScreen">
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar" tools:targetApi="M">false</item>
@@ -227,17 +227,17 @@
         <item name="windowSplashScreenAnimatedIcon">@drawable/launcher_animate</item>
     </style>
 
-    <style name="Theme.PodVinci.VideoPlayer" parent="@style/Theme.PodVinci.Dark">
+    <style name="Theme.Podcini.VideoPlayer" parent="@style/Theme.Podcini.Dark">
         <item name="windowActionBarOverlay">true</item>
     </style>
 
-    <style name="PodVinci.TextView.Heading" parent="@android:style/TextAppearance.Medium">
+    <style name="Podcini.TextView.Heading" parent="@android:style/TextAppearance.Medium">
         <item name="android:textSize">@dimen/text_size_large</item>
         <item name="android:textColor">?android:attr/textColorPrimary</item>
         <item name="android:fontFamily">sans-serif-light</item>
     </style>
 
-    <style name="PodVinci.TextView.ListItemPrimaryTitle" parent="@style/TextAppearance.Material3.BodyLarge">
+    <style name="Podcini.TextView.ListItemPrimaryTitle" parent="@style/TextAppearance.Material3.BodyLarge">
         <item name="android:textColor">?attr/colorOnSurface</item>
         <item name="android:maxLines">2</item>
         <item name="android:ellipsize">end</item>
@@ -245,13 +245,13 @@
         <item name="android:lineHeight" tools:targetApi="p">20sp</item>
     </style>
 
-    <style name="PodVinci.TextView.ListItemSecondaryTitle" parent="@style/TextAppearance.Material3.BodyMedium">
+    <style name="Podcini.TextView.ListItemSecondaryTitle" parent="@style/TextAppearance.Material3.BodyMedium">
         <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
         <item name="android:lines">1</item>
         <item name="android:ellipsize">end</item>
     </style>
 
-    <style name="PodVinci.TextView.ListItemBody" parent="@style/TextAppearance.Material3.BodyMedium">
+    <style name="Podcini.TextView.ListItemBody" parent="@style/TextAppearance.Material3.BodyMedium">
         <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
         <item name="lineHeight">18sp</item>
         <item name="android:lineHeight" tools:targetApi="p">18sp</item>
@@ -280,7 +280,7 @@
         <item name="fastScrollVerticalTrackDrawable">@drawable/scrollbar_track</item>
     </style>
 
-    <style name="Widget.PodVinci.ActionBar" parent="Widget.Material3.Light.ActionBar.Solid">
+    <style name="Widget.Podcini.ActionBar" parent="Widget.Material3.Light.ActionBar.Solid">
         <item name="background">?android:attr/colorBackground</item>
         <item name="elevation">0dp</item>
     </style>

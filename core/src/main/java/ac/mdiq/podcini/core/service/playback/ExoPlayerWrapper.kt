@@ -76,6 +76,7 @@ class ExoPlayerWrapper internal constructor(private val context: Context) {
         val audioOffloadPreferences = AudioOffloadPreferences.Builder()
             .setAudioOffloadMode(AudioOffloadPreferences.AUDIO_OFFLOAD_MODE_ENABLED) // Add additional options as needed
             .setIsGaplessSupportRequired(true)
+            .setIsSpeedChangeSupportRequired(true)
             .build()
         exoPlayer = ExoPlayer.Builder(context, DefaultRenderersFactory(context))
             .setTrackSelector(trackSelector)

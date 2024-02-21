@@ -46,7 +46,7 @@ class CompositeX509TrustManager(private val trustManagers: List<X509TrustManager
     override fun getAcceptedIssuers(): Array<X509Certificate> {
         val certificates: MutableList<X509Certificate> = ArrayList()
         for (trustManager in trustManagers) {
-            certificates.addAll(Arrays.asList(*trustManager.acceptedIssuers))
+            certificates.addAll(listOf(*trustManager.acceptedIssuers))
         }
         return certificates.toTypedArray<X509Certificate>()
     }

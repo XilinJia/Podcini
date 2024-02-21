@@ -91,7 +91,7 @@ class ChaptersFragment : AppCompatDialogFragment() {
             CoordinatorLayout.LayoutParams.MATCH_PARENT, CoordinatorLayout.LayoutParams.WRAP_CONTENT)
         recyclerView.layoutParams = wrapHeight
 
-        controller = object : PlaybackController(activity) {
+        controller = object : PlaybackController(requireActivity()) {
             override fun loadMediaInfo() {
                 this@ChaptersFragment.loadMediaInfo(false)
             }

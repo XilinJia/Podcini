@@ -1863,7 +1863,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
         private const val TAG = "PlaybackService"
 
 //        TODO: need to experiment this value
-        private const val POSITION_EVENT_INTERVAL = 10L
+        private const val POSITION_EVENT_INTERVAL = 5L
 
         const val ACTION_PLAYER_STATUS_CHANGED: String = "action.ac.mdiq.podcini.core.service.playerStatusChanged"
         private const val AVRCP_ACTION_PLAYER_STATUS_CHANGED = "com.android.music.playstatechanged"

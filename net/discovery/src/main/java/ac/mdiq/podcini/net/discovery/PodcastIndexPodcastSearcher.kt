@@ -17,9 +17,9 @@ import java.security.MessageDigest
 import java.util.*
 
 class PodcastIndexPodcastSearcher : PodcastSearcher {
-    override fun search(query: String): Single<List<PodcastSearchResult?>?>? {
+    override fun search(query: String): Single<List<PodcastSearchResult?>?> {
         return Single.create { subscriber: SingleEmitter<List<PodcastSearchResult?>?> ->
-            var encodedQuery = try {
+            val encodedQuery = try {
                 URLEncoder.encode(query, "UTF-8")
             } catch (e: UnsupportedEncodingException) {
                 // this won't ever be thrown
@@ -57,7 +57,7 @@ class PodcastIndexPodcastSearcher : PodcastSearcher {
             .observeOn(AndroidSchedulers.mainThread())
     }
 
-    override fun lookupUrl(url: String): Single<String>? {
+    override fun lookupUrl(url: String): Single<String> {
         return Single.just(url)
     }
 

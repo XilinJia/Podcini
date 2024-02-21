@@ -29,9 +29,10 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
 class QueueSection : HomeSection() {
-    private var listAdapter: HorizontalItemListAdapter? = null
     private var disposable: Disposable? = null
-    private var queue: MutableList<FeedItem>? = ArrayList()
+
+    private lateinit var listAdapter: HorizontalItemListAdapter
+    private var queue: MutableList<FeedItem> = ArrayList()
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater,
                                            container: ViewGroup?, savedInstanceState: Bundle?
@@ -44,7 +45,7 @@ class QueueSection : HomeSection() {
                 ) { item: MenuItem -> this@QueueSection.onContextItemSelected(item) }
             }
         }
-        listAdapter?.setDummyViews(NUM_EPISODES)
+        listAdapter.setDummyViews(NUM_EPISODES)
         viewBinding.recyclerView.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
         viewBinding.recyclerView.adapter = listAdapter
         val paddingHorizontal: Int = (12 * resources.displayMetrics.density).toInt()
@@ -74,18 +75,18 @@ class QueueSection : HomeSection() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: FeedItemEvent) {
         Log.d(TAG, "onEventMainThread() called with: event = [$event]")
-        if (queue == null) {
+        if (queue.isEmpty()) {
             return
         }
         var i = 0
         val size: Int = event.items.size
         while (i < size) {
             val item: FeedItem = event.items[i]
-            val pos: Int = FeedItemUtil.indexOfItemWithId(queue!!, item.id)
+            val pos: Int = FeedItemUtil.indexOfItemWithId(queue, item.id)
             if (pos >= 0) {
-                queue!!.removeAt(pos)
-                queue!!.add(pos, item)
-                listAdapter?.notifyItemChangedCompat(pos)
+                queue.removeAt(pos)
+                queue.add(pos, item)
+                listAdapter.notifyItemChangedCompat(pos)
             }
             i++
         }
@@ -93,23 +94,20 @@ class QueueSection : HomeSection() {
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: EpisodeDownloadEvent) {
-        if (queue == null) return
+        if (queue.isEmpty()) return
         for (downloadUrl in event.urls) {
-            val pos: Int = FeedItemUtil.indexOfItemWithDownloadUrl(queue!!, downloadUrl)
+            val pos: Int = FeedItemUtil.indexOfItemWithDownloadUrl(queue, downloadUrl)
             if (pos >= 0) {
-                listAdapter?.notifyItemChangedCompat(pos)
+                listAdapter.notifyItemChangedCompat(pos)
             }
         }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: PlaybackPositionEvent) {
-        if (listAdapter == null) {
-            return
-        }
         var foundCurrentlyPlayingItem = false
         var currentlyPlayingItemIsFirst = true
-        for (i in 0 until listAdapter!!.itemCount) {
+        for (i in 0 until listAdapter.itemCount) {
             val holder: HorizontalItemViewHolder =
                 viewBinding.recyclerView.findViewHolderForAdapterPosition(i) as? HorizontalItemViewHolder ?: continue
             if (holder.isCurrentlyPlayingItem) {
@@ -140,8 +138,8 @@ class QueueSection : HomeSection() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ queue: List<FeedItem> ->
                 this.queue = queue.toMutableList()
-                listAdapter?.setDummyViews(0)
-                listAdapter?.updateData(queue)
+                listAdapter.setDummyViews(0)
+                listAdapter.updateData(queue)
             }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
     }
 

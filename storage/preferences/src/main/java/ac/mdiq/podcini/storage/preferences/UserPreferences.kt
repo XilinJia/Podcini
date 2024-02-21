@@ -172,7 +172,7 @@ object UserPreferences {
     var hiddenDrawerItems: List<String?>?
         get() {
             val hiddenItems = prefs!!.getString(PREF_HIDDEN_DRAWER_ITEMS, "")
-            return ArrayList(Arrays.asList(*TextUtils.split(hiddenItems, ",")))
+            return ArrayList(listOf(*TextUtils.split(hiddenItems, ",")))
         }
         set(items) {
             val str = TextUtils.join(",", items!!)
@@ -186,7 +186,7 @@ object UserPreferences {
         get() {
             val buttons = TextUtils.split(
                 prefs!!.getString(PREF_FULL_NOTIFICATION_BUTTONS,
-                    NOTIFICATION_BUTTON_SKIP.toString() + "," + NOTIFICATION_BUTTON_PLAYBACK_SPEED), ",")
+                    "$NOTIFICATION_BUTTON_SKIP,$NOTIFICATION_BUTTON_PLAYBACK_SPEED"), ",")
 
             val notificationButtons: MutableList<Int> = ArrayList()
             for (button in buttons) {

@@ -56,6 +56,7 @@ import org.greenrobot.eventbus.ThreadMode
  */
 class CoverFragment : Fragment() {
     private lateinit var viewBinding: CoverFragmentBinding
+
     private var controller: PlaybackController? = null
     private var disposable: Disposable? = null
     private var displayedChapterIndex = -1
@@ -80,7 +81,7 @@ class CoverFragment : Fragment() {
         viewBinding.butPrevChapter.setOnClickListener { v: View? -> seekToPrevChapter() }
         viewBinding.butNextChapter.setOnClickListener { v: View? -> seekToNextChapter() }
 
-        controller = object : PlaybackController(activity) {
+        controller = object : PlaybackController(requireActivity()) {
             override fun loadMediaInfo() {
                 this@CoverFragment.loadMediaInfo(false)
             }

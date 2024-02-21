@@ -274,6 +274,10 @@ class FeedMedia : FeedFile, Playable {
         return item!!.chapters!!
     }
 
+    override fun chaptersLoaded(): Boolean {
+        return item?.chapters != null
+    }
+
     override fun getWebsiteLink(): String? {
         if (item == null) {
             return null

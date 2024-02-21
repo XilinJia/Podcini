@@ -423,7 +423,7 @@ class OnlineFeedViewActivity : AppCompatActivity() {
 
         viewBinding.titleLabel.text = feed.title
         viewBinding.authorLabel.text = feed.author
-        headerBinding.txtvDescription.text = HtmlToPlainText.getPlainText(feed.description)
+        headerBinding.txtvDescription.text = HtmlToPlainText.getPlainText(feed.description?:"")
 
         viewBinding.subscribeButton.setOnClickListener { v: View? ->
             if (feedInFeedlist()) {

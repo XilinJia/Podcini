@@ -19,7 +19,7 @@ object PodcastSearcherRegistry {
         }
         private set
 
-    fun lookupUrl(url: String): Single<String>? {
+    fun lookupUrl(url: String): Single<String> {
         for (searchProviderInfo in searchProviders) {
             if (searchProviderInfo.searcher.javaClass != CombinedSearcher::class.java
                     && searchProviderInfo.searcher.urlNeedsLookup(url)) {

@@ -46,7 +46,7 @@ object ChapterUtils {
 
     @JvmStatic
     fun loadChapters(playable: Playable, context: Context, forceRefresh: Boolean) {
-        if (playable.getChapters().isNotEmpty() && !forceRefresh) {
+        if (playable.chaptersLoaded() && !forceRefresh) {
             // Already loaded
             return
         }
@@ -72,6 +72,7 @@ object ChapterUtils {
         val chaptersFromMediaFile = loadChaptersFromMediaFile(playable, context)
         val chaptersMergePhase1 = merge(chaptersFromDatabase, chaptersFromMediaFile)
         val chapters = merge(chaptersMergePhase1, chaptersFromPodcastIndex)
+        Log.d(TAG, "loadChapters chapters size: ${chapters?.size?:0} ${playable.getEpisodeTitle()}")
         if (chapters == null) {
             // Do not try loading again. There are no chapters.
             playable.setChapters(listOf())
@@ -135,19 +136,19 @@ object ChapterUtils {
         }
     }
 
-    fun loadChaptersFromUrl(url: String, forceRefresh: Boolean): List<Chapter>? {
+    fun loadChaptersFromUrl(url: String, forceRefresh: Boolean): List<Chapter> {
         if (forceRefresh) {
             return loadChaptersFromUrl(url, CacheControl.FORCE_NETWORK)
         }
         val cachedChapters = loadChaptersFromUrl(url, CacheControl.FORCE_CACHE)
-        if (cachedChapters == null || cachedChapters.size <= 1) {
+        if (cachedChapters.size <= 1) {
             // Some publishers use one dummy chapter before actual chapters are available
             return loadChaptersFromUrl(url, CacheControl.FORCE_NETWORK)
         }
         return cachedChapters
     }
 
-    private fun loadChaptersFromUrl(url: String, cacheControl: CacheControl): List<Chapter>? {
+    private fun loadChaptersFromUrl(url: String, cacheControl: CacheControl): List<Chapter> {
         var response: Response? = null
         try {
             val request: Request = Builder().url(url).cacheControl(cacheControl).build()
@@ -160,7 +161,7 @@ object ChapterUtils {
         } finally {
             response?.close()
         }
-        return null
+        return listOf()
     }
 
     @Throws(IOException::class, ID3ReaderException::class)

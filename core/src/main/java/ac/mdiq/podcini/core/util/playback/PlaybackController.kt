@@ -30,9 +30,9 @@ import org.greenrobot.eventbus.ThreadMode
  * control playback instead of communicating with the PlaybackService directly.
  */
 @UnstableApi
-abstract class PlaybackController(private val activity: FragmentActivity?) {
+abstract class PlaybackController(private val activity: FragmentActivity) {
     private var playbackService: PlaybackService? = null
-    private var media: Playable? = null
+
     var status: PlayerStatus = PlayerStatus.STOPPED
         private set
 
@@ -73,16 +73,16 @@ abstract class PlaybackController(private val activity: FragmentActivity?) {
         initialized = true
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            activity?.registerReceiver(statusUpdate, IntentFilter(
+            activity.registerReceiver(statusUpdate, IntentFilter(
                 PlaybackService.ACTION_PLAYER_STATUS_CHANGED), Context.RECEIVER_NOT_EXPORTED)
-            activity?.registerReceiver(notificationReceiver, IntentFilter(
+            activity.registerReceiver(notificationReceiver, IntentFilter(
                 PlaybackServiceInterface.ACTION_PLAYER_NOTIFICATION), Context.RECEIVER_NOT_EXPORTED)
         } else {
-            activity?.registerReceiver(statusUpdate, IntentFilter(PlaybackService.ACTION_PLAYER_STATUS_CHANGED))
-            activity?.registerReceiver(notificationReceiver, IntentFilter(PlaybackServiceInterface.ACTION_PLAYER_NOTIFICATION))
+            activity.registerReceiver(statusUpdate, IntentFilter(PlaybackService.ACTION_PLAYER_STATUS_CHANGED))
+            activity.registerReceiver(notificationReceiver, IntentFilter(PlaybackServiceInterface.ACTION_PLAYER_NOTIFICATION))
         }
-//        activity?.registerReceiver(statusUpdate, IntentFilter(PlaybackService.ACTION_PLAYER_STATUS_CHANGED))
-//        activity?.registerReceiver(notificationReceiver, IntentFilter(PlaybackServiceInterface.ACTION_PLAYER_NOTIFICATION))
+//        activity.registerReceiver(statusUpdate, IntentFilter(PlaybackService.ACTION_PLAYER_STATUS_CHANGED))
+//        activity.registerReceiver(notificationReceiver, IntentFilter(PlaybackServiceInterface.ACTION_PLAYER_NOTIFICATION))
 
         if (!released) {
             bindToService()
@@ -100,13 +100,13 @@ abstract class PlaybackController(private val activity: FragmentActivity?) {
         Log.d(TAG, "Releasing PlaybackController")
 
         try {
-            activity?.unregisterReceiver(statusUpdate)
+            activity.unregisterReceiver(statusUpdate)
         } catch (e: IllegalArgumentException) {
             // ignore
         }
 
         try {
-            activity?.unregisterReceiver(notificationReceiver)
+            activity.unregisterReceiver(notificationReceiver)
         } catch (e: IllegalArgumentException) {
             // ignore
         }
@@ -122,7 +122,7 @@ abstract class PlaybackController(private val activity: FragmentActivity?) {
 
     private fun unbind() {
         try {
-            activity?.unbindService(mConnection)
+            activity.unbindService(mConnection)
         } catch (e: IllegalArgumentException) {
             // ignore
         }
@@ -144,7 +144,7 @@ abstract class PlaybackController(private val activity: FragmentActivity?) {
     private fun bindToService() {
         Log.d(TAG, "Trying to connect to service")
         check(PlaybackService.isRunning) { "Trying to bind but service is not running" }
-        val bound = activity?.bindService(Intent(activity, PlaybackService::class.java), mConnection, 0)
+        val bound = activity.bindService(Intent(activity, PlaybackService::class.java), mConnection, 0)
         Log.d(TAG, "Result for service binding: $bound")
     }
 
@@ -171,7 +171,7 @@ abstract class PlaybackController(private val activity: FragmentActivity?) {
 
     private val statusUpdate: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            Log.d(TAG, "Received statusUpdate Intent.")
+//            Log.d(TAG, "Received statusUpdate Intent.")
             if (playbackService != null) {
                 val info = playbackService!!.pSMPInfo
                 status = info.playerStatus
@@ -218,7 +218,7 @@ abstract class PlaybackController(private val activity: FragmentActivity?) {
      * should be used to update the GUI or start/cancel background threads.
      */
     private fun handleStatus() {
-        Log.d(TAG, "status: $status")
+        Log.d(TAG, "handleStatus() called status: $status")
         checkMediaInfoLoaded()
         when (status) {
             PlayerStatus.PLAYING -> updatePlayButtonShowsPlay(false)
@@ -267,7 +267,7 @@ abstract class PlaybackController(private val activity: FragmentActivity?) {
     fun playPause() {
         if (media == null) return
         if (playbackService == null) {
-            if (activity != null) PlaybackServiceStarter(activity, media!!).start()
+            PlaybackServiceStarter(activity, media!!).start()
             Log.w(TAG, "Play/Pause button was pressed, but playbackservice was null!")
             return
         }
@@ -280,7 +280,7 @@ abstract class PlaybackController(private val activity: FragmentActivity?) {
                 playbackService!!.prepare()
             }
             else -> {
-                if (activity != null) PlaybackServiceStarter(activity, media!!)
+                PlaybackServiceStarter(activity, media!!)
                     .callEvenIfRunning(true)
                     .start()
                 Log.w(TAG, "Play/Pause button was pressed and PlaybackService state was unknown")
@@ -289,46 +289,28 @@ abstract class PlaybackController(private val activity: FragmentActivity?) {
     }
 
     val position: Int
-        get() = if (playbackService != null) {
-            playbackService!!.currentPosition
-        } else if (getMedia() != null) {
-            getMedia()!!.getPosition()
-        } else {
-            Playable.INVALID_TIME
-        }
+        get() = playbackService?.currentPosition ?: getMedia()?.getPosition()?:Playable.INVALID_TIME
 
     val duration: Int
-        get() = if (playbackService != null) {
-            playbackService!!.duration
-        } else if (getMedia() != null) {
-            getMedia()!!.getDuration()
-        } else {
-            Playable.INVALID_TIME
-        }
+        get() = playbackService?.duration ?: getMedia()?.getDuration()?:Playable.INVALID_TIME
 
     fun getMedia(): Playable? {
-        if (media == null && activity != null) {
-            media = PlaybackPreferences.createInstanceFromPreferences(activity)
-        }
+        if (media == null && playbackService != null) media = playbackService!!.pSMPInfo.playable
+        if (media == null) media = PlaybackPreferences.createInstanceFromPreferences(activity)
+
         return media
     }
 
     fun sleepTimerActive(): Boolean {
-        return playbackService != null && playbackService!!.sleepTimerActive()
+        return playbackService?.sleepTimerActive() ?: false
     }
 
     fun disableSleepTimer() {
-        if (playbackService != null) {
-            playbackService!!.disableSleepTimer()
-        }
+        playbackService?.disableSleepTimer()
     }
 
     val sleepTimerTimeLeft: Long
-        get() = if (playbackService != null) {
-            playbackService!!.sleepTimerTimeLeft
-        } else {
-            Playable.INVALID_TIME.toLong()
-        }
+        get() = playbackService?.sleepTimerTimeLeft ?: Playable.INVALID_TIME.toLong()
 
     fun extendSleepTimer(extendTime: Long) {
         val timeLeft = sleepTimerTimeLeft
@@ -338,26 +320,24 @@ abstract class PlaybackController(private val activity: FragmentActivity?) {
     }
 
     fun setSleepTimer(time: Long) {
-        if (playbackService != null) {
-            playbackService!!.setSleepTimer(time)
-        }
+        playbackService?.setSleepTimer(time)
     }
 
     fun seekTo(time: Int) {
         if (playbackService != null) {
             playbackService!!.seekTo(time)
-        } else if (getMedia() is FeedMedia) {
-            val media = getMedia() as FeedMedia?
-            media!!.setPosition(time)
-            DBWriter.setFeedItem(media.getItem())
-            EventBus.getDefault().post(PlaybackPositionEvent(time, getMedia()!!.getDuration()))
+        } else {
+            val media = getMedia()
+            if (media is FeedMedia) {
+                media.setPosition(time)
+                DBWriter.setFeedItem(media.getItem())
+                EventBus.getDefault().post(PlaybackPositionEvent(time, media.getDuration()))
+            }
         }
     }
 
     fun setVideoSurface(holder: SurfaceHolder?) {
-        if (playbackService != null) {
-            playbackService!!.setVideoSurface(holder)
-        }
+        playbackService?.setVideoSurface(holder)
     }
 
     fun setPlaybackSpeed(speed: Float) {
@@ -369,21 +349,15 @@ abstract class PlaybackController(private val activity: FragmentActivity?) {
     }
 
     fun setSkipSilence(skipSilence: Boolean) {
-        if (playbackService != null) {
-            playbackService!!.skipSilence(skipSilence)
-        }
+        playbackService?.skipSilence(skipSilence)
     }
 
     val currentPlaybackSpeedMultiplier: Float
-        get() = if (playbackService != null) {
-            playbackService!!.currentPlaybackSpeed
-        } else {
-            getCurrentPlaybackSpeed(getMedia())
-        }
+        get() = playbackService?.currentPlaybackSpeed ?: getCurrentPlaybackSpeed(getMedia())
 
     val audioTracks: List<String>
         get() {
-            if (playbackService == null || playbackService!!.audioTracks.isNullOrEmpty()) {
+            if (playbackService == null || playbackService!!.audioTracks.isEmpty()) {
                 return emptyList()
             }
             return playbackService!!.audioTracks.filterNotNull().map { it }
@@ -391,16 +365,11 @@ abstract class PlaybackController(private val activity: FragmentActivity?) {
 
     val selectedAudioTrack: Int
         get() {
-            if (playbackService == null) {
-                return -1
-            }
-            return playbackService!!.selectedAudioTrack
+            return playbackService?.selectedAudioTrack?: -1
         }
 
     fun setAudioTrack(track: Int) {
-        if (playbackService != null) {
-            playbackService!!.setAudioTrack(track)
-        }
+        playbackService?.setAudioTrack(track)
     }
 
     val isPlayingVideoLocally: Boolean
@@ -409,20 +378,14 @@ abstract class PlaybackController(private val activity: FragmentActivity?) {
         } else if (playbackService != null) {
             PlaybackService.currentMediaType == MediaType.VIDEO
         } else {
-            getMedia() != null && getMedia()!!.getMediaType() == MediaType.VIDEO
+            getMedia()?.getMediaType() == MediaType.VIDEO
         }
 
     val videoSize: Pair<Int, Int>?
-        get() = if (playbackService != null) {
-            playbackService!!.videoSize
-        } else {
-            null
-        }
+        get() = playbackService?.videoSize
 
     fun notifyVideoSurfaceAbandoned() {
-        if (playbackService != null) {
-            playbackService!!.notifyVideoSurfaceAbandoned()
-        }
+        playbackService?.notifyVideoSurfaceAbandoned()
     }
 
     val isStreaming: Boolean
@@ -430,5 +393,7 @@ abstract class PlaybackController(private val activity: FragmentActivity?) {
 
     companion object {
         private const val TAG = "PlaybackController"
+
+        private var media: Playable? = null
     }
 }

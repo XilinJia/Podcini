@@ -8,14 +8,19 @@ object DurationParser {
     fun inMillis(durationStr: String): Long {
         val parts = durationStr.trim { it <= ' ' }.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
-        return if (parts.size == 1) {
-            toMillis(parts[0])
-        } else if (parts.size == 2) {
-            toMillis("0", parts[0], parts[1])
-        } else if (parts.size == 3) {
-            toMillis(parts[0], parts[1], parts[2])
-        } else {
-            throw NumberFormatException()
+        return when (parts.size) {
+            1 -> {
+                toMillis(parts[0])
+            }
+            2 -> {
+                toMillis("0", parts[0], parts[1])
+            }
+            3 -> {
+                toMillis(parts[0], parts[1], parts[2])
+            }
+            else -> {
+                throw NumberFormatException()
+            }
         }
     }
 

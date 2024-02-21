@@ -10,7 +10,7 @@ import io.reactivex.schedulers.Schedulers
 class FyydPodcastSearcher : PodcastSearcher {
     private val client = FyydClient(getHttpClient())
 
-    override fun search(query: String): Single<List<PodcastSearchResult?>?>? {
+    override fun search(query: String): Single<List<PodcastSearchResult?>?> {
         return Single.create { subscriber: SingleEmitter<List<PodcastSearchResult?>?> ->
             val response = client.searchPodcasts(
                 query, 10)
@@ -30,7 +30,7 @@ class FyydPodcastSearcher : PodcastSearcher {
             .observeOn(AndroidSchedulers.mainThread())
     }
 
-    override fun lookupUrl(url: String): Single<String>? {
+    override fun lookupUrl(url: String): Single<String> {
         return Single.just(url)
     }
 

@@ -58,7 +58,7 @@ import java.util.concurrent.*
     @UnstableApi @JvmStatic
     fun removeFeedWithDownloadUrl(context: Context?, downloadUrl: String) {
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         val cursor = adapter.feedCursorDownloadUrls
         var feedID: Long = 0
         if (cursor.moveToFirst()) {
@@ -200,7 +200,7 @@ import java.util.concurrent.*
         val unlistedItems: MutableList<FeedItem> = ArrayList()
 
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
 
         // Look up feed in the feedslist
         val savedFeed = searchFeedByIdentifyingValueOrID(newFeed)
@@ -339,6 +339,7 @@ import java.util.concurrent.*
             } else {
                 DBWriter.setCompleteFeed(savedFeed).get()
             }
+            DBReader.updateFeedList(adapter)
             if (removeUnlistedItems) {
                 DBWriter.deleteFeedItems(context, unlistedItems).get()
             }
@@ -420,7 +421,7 @@ import java.util.concurrent.*
         @Throws(Exception::class)
         override fun call(): T? {
             val adapter = getInstance()
-            adapter!!.open()
+            adapter.open()
             execute(adapter)
             adapter.close()
             return result

@@ -4,7 +4,7 @@ import ac.mdiq.podcini.model.feed.FeedItem
 
 class QueueEvent private constructor(@JvmField val action: Action,
                                      @JvmField val item: FeedItem?,
-                                     @JvmField val items: List<FeedItem>?,
+                                     @JvmField val items: List<FeedItem>,
                                      @JvmField val position: Int
 ) {
     enum class Action {
@@ -14,38 +14,38 @@ class QueueEvent private constructor(@JvmField val action: Action,
 
     companion object {
         @JvmStatic
-        fun added(item: FeedItem?, position: Int): QueueEvent {
-            return QueueEvent(Action.ADDED, item, null, position)
+        fun added(item: FeedItem, position: Int): QueueEvent {
+            return QueueEvent(Action.ADDED, item, listOf(), position)
         }
 
         @JvmStatic
-        fun setQueue(queue: List<FeedItem>?): QueueEvent {
+        fun setQueue(queue: List<FeedItem>): QueueEvent {
             return QueueEvent(Action.SET_QUEUE, null, queue, -1)
         }
 
         @JvmStatic
-        fun removed(item: FeedItem?): QueueEvent {
-            return QueueEvent(Action.REMOVED, item, null, -1)
+        fun removed(item: FeedItem): QueueEvent {
+            return QueueEvent(Action.REMOVED, item, listOf(), -1)
         }
 
         @JvmStatic
-        fun irreversibleRemoved(item: FeedItem?): QueueEvent {
-            return QueueEvent(Action.IRREVERSIBLE_REMOVED, item, null, -1)
+        fun irreversibleRemoved(item: FeedItem): QueueEvent {
+            return QueueEvent(Action.IRREVERSIBLE_REMOVED, item, listOf(), -1)
         }
 
         @JvmStatic
         fun cleared(): QueueEvent {
-            return QueueEvent(Action.CLEARED, null, null, -1)
+            return QueueEvent(Action.CLEARED, null, listOf(), -1)
         }
 
         @JvmStatic
-        fun sorted(sortedQueue: List<FeedItem>?): QueueEvent {
+        fun sorted(sortedQueue: List<FeedItem>): QueueEvent {
             return QueueEvent(Action.SORTED, null, sortedQueue, -1)
         }
 
         @JvmStatic
-        fun moved(item: FeedItem?, newPosition: Int): QueueEvent {
-            return QueueEvent(Action.MOVED, item, null, newPosition)
+        fun moved(item: FeedItem, newPosition: Int): QueueEvent {
+            return QueueEvent(Action.MOVED, item, listOf(), newPosition)
         }
     }
 }

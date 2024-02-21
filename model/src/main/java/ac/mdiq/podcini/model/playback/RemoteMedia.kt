@@ -124,6 +124,10 @@ class RemoteMedia : Playable {
         return chapters ?: listOf()
     }
 
+    override fun chaptersLoaded(): Boolean {
+        return chapters != null
+    }
+
     override fun getEpisodeTitle(): String {
         return episodeTitle!!
     }

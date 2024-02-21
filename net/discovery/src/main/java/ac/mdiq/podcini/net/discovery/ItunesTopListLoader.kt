@@ -18,7 +18,7 @@ class ItunesTopListLoader(private val context: Context) {
     @Throws(JSONException::class, IOException::class)
     fun loadToplist(country: String, limit: Int, subscribed: List<Feed>): List<PodcastSearchResult> {
         val client = getHttpClient()
-        var feedString: String
+        val feedString: String
         var loadCountry = country
         if (COUNTRY_CODE_UNSET == country) {
             loadCountry = Locale.getDefault().country

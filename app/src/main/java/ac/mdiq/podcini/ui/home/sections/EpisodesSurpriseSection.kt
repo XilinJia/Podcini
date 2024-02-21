@@ -29,7 +29,8 @@ import org.greenrobot.eventbus.ThreadMode
 import java.util.*
 
 class EpisodesSurpriseSection : HomeSection() {
-    private var listAdapter: HorizontalItemListAdapter? = null
+    private lateinit var listAdapter: HorizontalItemListAdapter
+    
     private var disposable: Disposable? = null
     private var episodes: MutableList<FeedItem> = ArrayList<FeedItem>()
 
@@ -52,7 +53,7 @@ class EpisodesSurpriseSection : HomeSection() {
                 }
             }
         }
-        listAdapter?.setDummyViews(NUM_EPISODES)
+        listAdapter.setDummyViews(NUM_EPISODES)
         viewBinding.recyclerView.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
         viewBinding.recyclerView.adapter = listAdapter
         val paddingHorizontal: Int = (12 * resources.displayMetrics.density).toInt()
@@ -94,7 +95,7 @@ class EpisodesSurpriseSection : HomeSection() {
             if (pos >= 0) {
                 episodes.removeAt(pos)
                 episodes.add(pos, item)
-                listAdapter?.notifyItemChangedCompat(pos)
+                listAdapter.notifyItemChangedCompat(pos)
             }
             i++
         }
@@ -104,17 +105,14 @@ class EpisodesSurpriseSection : HomeSection() {
     fun onEventMainThread(event: EpisodeDownloadEvent) {
         for (downloadUrl in event.urls) {
             val pos: Int = FeedItemUtil.indexOfItemWithDownloadUrl(episodes, downloadUrl)
-            if (pos >= 0) listAdapter?.notifyItemChangedCompat(pos)
+            if (pos >= 0) listAdapter.notifyItemChangedCompat(pos)
 
         }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: PlaybackPositionEvent) {
-        if (listAdapter == null) {
-            return
-        }
-        for (i in 0 until listAdapter!!.itemCount) {
+        for (i in 0 until listAdapter.itemCount) {
             val holder: HorizontalItemViewHolder? = viewBinding.recyclerView.findViewHolderForAdapterPosition(i) as? HorizontalItemViewHolder
             if (holder != null && holder.isCurrentlyPlayingItem) {
                 holder.notifyPlaybackPositionUpdated(event)
@@ -131,8 +129,8 @@ class EpisodesSurpriseSection : HomeSection() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ episodes: List<FeedItem> ->
                 this.episodes = episodes.toMutableList()
-                listAdapter?.setDummyViews(0)
-                listAdapter?.updateData(episodes)
+                listAdapter.setDummyViews(0)
+                listAdapter.updateData(episodes)
             }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
     }
 

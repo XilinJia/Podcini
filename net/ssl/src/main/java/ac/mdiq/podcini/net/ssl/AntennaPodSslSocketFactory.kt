@@ -15,7 +15,7 @@ import javax.net.ssl.TrustManager
  * This fixes issues with old Android versions that abort if the server does not know TLS 1.0
  */
 class PodciniSslSocketFactory(trustManager: TrustManager) : SSLSocketFactory() {
-    private var factory: SSLSocketFactory? = null
+    private lateinit var factory: SSLSocketFactory
 
     init {
         try {
@@ -37,51 +37,51 @@ class PodciniSslSocketFactory(trustManager: TrustManager) : SSLSocketFactory() {
     }
 
     override fun getDefaultCipherSuites(): Array<String> {
-        return factory!!.defaultCipherSuites
+        return factory.defaultCipherSuites
     }
 
     override fun getSupportedCipherSuites(): Array<String> {
-        return factory!!.supportedCipherSuites
+        return factory.supportedCipherSuites
     }
 
     @Throws(IOException::class)
     override fun createSocket(): Socket {
-        val result = factory!!.createSocket() as SSLSocket
+        val result = factory.createSocket() as SSLSocket
         configureSocket(result)
         return result
     }
 
     @Throws(IOException::class)
     override fun createSocket(var1: String, var2: Int): Socket {
-        val result = factory!!.createSocket(var1, var2) as SSLSocket
+        val result = factory.createSocket(var1, var2) as SSLSocket
         configureSocket(result)
         return result
     }
 
     @Throws(IOException::class)
     override fun createSocket(var1: Socket, var2: String, var3: Int, var4: Boolean): Socket {
-        val result = factory!!.createSocket(var1, var2, var3, var4) as SSLSocket
+        val result = factory.createSocket(var1, var2, var3, var4) as SSLSocket
         configureSocket(result)
         return result
     }
 
     @Throws(IOException::class)
     override fun createSocket(var1: InetAddress, var2: Int): Socket {
-        val result = factory!!.createSocket(var1, var2) as SSLSocket
+        val result = factory.createSocket(var1, var2) as SSLSocket
         configureSocket(result)
         return result
     }
 
     @Throws(IOException::class)
     override fun createSocket(var1: String, var2: Int, var3: InetAddress, var4: Int): Socket {
-        val result = factory!!.createSocket(var1, var2, var3, var4) as SSLSocket
+        val result = factory.createSocket(var1, var2, var3, var4) as SSLSocket
         configureSocket(result)
         return result
     }
 
     @Throws(IOException::class)
     override fun createSocket(var1: InetAddress, var2: Int, var3: InetAddress, var4: Int): Socket {
-        val result = factory!!.createSocket(var1, var2, var3, var4) as SSLSocket
+        val result = factory.createSocket(var1, var2, var3, var4) as SSLSocket
         configureSocket(result)
         return result
     }

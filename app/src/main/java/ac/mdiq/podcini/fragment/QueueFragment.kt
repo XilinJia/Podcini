@@ -459,7 +459,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
     }
 
     private fun loadItems(restoreScrollPosition: Boolean) {
-        Log.d(TAG, "loadItems()")
+        Log.d(TAG, "loadItems() called")
         disposable?.dispose()
 
         if (queue.isEmpty()) {

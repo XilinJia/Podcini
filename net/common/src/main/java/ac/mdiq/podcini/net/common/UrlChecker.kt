@@ -30,34 +30,43 @@ object UrlChecker {
         var url = url
         url = url.trim { it <= ' ' }
         val lowerCaseUrl = url.lowercase() // protocol names are case insensitive
-        if (lowerCaseUrl.startsWith("feed://")) {
-            Log.d(TAG, "Replacing feed:// with http://")
-            return prepareUrl(url.substring("feed://".length))
-        } else if (lowerCaseUrl.startsWith("pcast://")) {
-            Log.d(TAG, "Removing pcast://")
-            return prepareUrl(url.substring("pcast://".length))
-        } else if (lowerCaseUrl.startsWith("pcast:")) {
-            Log.d(TAG, "Removing pcast:")
-            return prepareUrl(url.substring("pcast:".length))
-        } else if (lowerCaseUrl.startsWith("itpc")) {
-            Log.d(TAG, "Replacing itpc:// with http://")
-            return prepareUrl(url.substring("itpc://".length))
-        } else if (lowerCaseUrl.startsWith(AP_SUBSCRIBE)) {
-            Log.d(TAG, "Removing podcini-subscribe://")
-            return prepareUrl(url.substring(AP_SUBSCRIBE.length))
-        } else if (lowerCaseUrl.contains(AP_SUBSCRIBE_DEEPLINK)) {
-            Log.d(TAG, "Removing $AP_SUBSCRIBE_DEEPLINK")
-            val removedWebsite = url.substring(url.indexOf("?url=") + "?url=".length)
-            return try {
-                prepareUrl(URLDecoder.decode(removedWebsite, "UTF-8"))
-            } catch (e: UnsupportedEncodingException) {
-                prepareUrl(removedWebsite)
+        when {
+            lowerCaseUrl.startsWith("feed://") -> {
+                Log.d(TAG, "Replacing feed:// with http://")
+                return prepareUrl(url.substring("feed://".length))
             }
-        } else if (!(lowerCaseUrl.startsWith("http://") || lowerCaseUrl.startsWith("https://"))) {
-            Log.d(TAG, "Adding http:// at the beginning of the URL")
-            return "http://$url"
-        } else {
-            return url
+            lowerCaseUrl.startsWith("pcast://") -> {
+                Log.d(TAG, "Removing pcast://")
+                return prepareUrl(url.substring("pcast://".length))
+            }
+            lowerCaseUrl.startsWith("pcast:") -> {
+                Log.d(TAG, "Removing pcast:")
+                return prepareUrl(url.substring("pcast:".length))
+            }
+            lowerCaseUrl.startsWith("itpc") -> {
+                Log.d(TAG, "Replacing itpc:// with http://")
+                return prepareUrl(url.substring("itpc://".length))
+            }
+            lowerCaseUrl.startsWith(AP_SUBSCRIBE) -> {
+                Log.d(TAG, "Removing podcini-subscribe://")
+                return prepareUrl(url.substring(AP_SUBSCRIBE.length))
+            }
+            lowerCaseUrl.contains(AP_SUBSCRIBE_DEEPLINK) -> {
+                Log.d(TAG, "Removing $AP_SUBSCRIBE_DEEPLINK")
+                val removedWebsite = url.substring(url.indexOf("?url=") + "?url=".length)
+                return try {
+                    prepareUrl(URLDecoder.decode(removedWebsite, "UTF-8"))
+                } catch (e: UnsupportedEncodingException) {
+                    prepareUrl(removedWebsite)
+                }
+            }
+            !(lowerCaseUrl.startsWith("http://") || lowerCaseUrl.startsWith("https://")) -> {
+                Log.d(TAG, "Adding http:// at the beginning of the URL")
+                return "http://$url"
+            }
+            else -> {
+                return url
+            }
         }
     }
 

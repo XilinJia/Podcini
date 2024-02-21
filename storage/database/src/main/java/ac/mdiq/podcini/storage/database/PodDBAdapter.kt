@@ -217,8 +217,8 @@ class PodDBAdapter private constructor() {
             db.beginTransactionNonExclusive()
             for (feed in feeds) {
                 setFeed(feed)
-                if (feed.items != null) {
-                    for (item in feed.items!!) {
+                if (feed.items.isNotEmpty()) {
+                    for (item in feed.items) {
                         updateOrInsertFeedItem(item, false)
                     }
                 }
@@ -546,8 +546,8 @@ class PodDBAdapter private constructor() {
     fun removeFeed(feed: Feed) {
         try {
             db.beginTransactionNonExclusive()
-            if (feed.items != null) {
-                removeFeedItems(feed.items!!)
+            if (feed.items.isNotEmpty()) {
+                removeFeedItems(feed.items)
             }
             // delete download log entries for feed
             db.delete(TABLE_NAME_DOWNLOAD_LOG, "$KEY_FEEDFILE=? AND $KEY_FEEDFILETYPE=?",
@@ -1427,11 +1427,11 @@ class PodDBAdapter private constructor() {
 
         @JvmStatic
         @Synchronized
-        fun getInstance(): PodDBAdapter? {
+        fun getInstance(): PodDBAdapter {
             if (instance == null) {
                 instance = PodDBAdapter()
             }
-            return instance
+            return instance!!
         }
 
         /**
@@ -1449,14 +1449,14 @@ class PodDBAdapter private constructor() {
         @JvmStatic
         @VisibleForTesting(otherwise = VisibleForTesting.NONE)
         fun tearDownTests() {
-            getInstance()!!.dbHelper.close()
+            getInstance().dbHelper.close()
             instance = null
         }
 
         @JvmStatic
         fun deleteDatabase(): Boolean {
             val adapter = getInstance()
-            adapter!!.open()
+            adapter.open()
             try {
                 for (tableName in ALL_TABLES) {
                     adapter.db.delete(tableName, "1", null)

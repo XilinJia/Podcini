@@ -100,7 +100,7 @@ class TypeGetter {
                     try {
                         reader.close()
                     } catch (e: IOException) {
-                        Log.d(TAG, "IOException: " + reader.toString())
+                        Log.d(TAG, "IOException: $reader")
                         e.printStackTrace()
                     }
                 }
@@ -111,9 +111,11 @@ class TypeGetter {
     }
 
     private fun createReader(feed: Feed): Reader? {
+        if (feed.file_url == null) return null
+
         val reader: Reader
         try {
-            reader = XmlStreamReader(File(feed.file_url))
+            reader = XmlStreamReader(File(feed.file_url!!))
         } catch (e: FileNotFoundException) {
             Log.d(TAG, "FileNotFoundException: " + feed.file_url)
             e.printStackTrace()

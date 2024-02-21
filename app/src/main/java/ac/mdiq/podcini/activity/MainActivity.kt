@@ -35,6 +35,7 @@ import com.google.android.material.snackbar.Snackbar
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.core.preferences.ThemeSwitcher.getNoTitleTheme
 import ac.mdiq.podcini.core.receiver.MediaButtonReceiver.Companion.createIntent
+import ac.mdiq.podcini.core.storage.DBReader
 import ac.mdiq.podcini.core.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.core.util.download.FeedUpdateManager
 import ac.mdiq.podcini.core.util.download.FeedUpdateManager.restartUpdateAlarm
@@ -102,6 +103,8 @@ class MainActivity : CastEnabledActivity() {
                 .setInsets(WindowInsetsCompat.Type.navigationBars(), Insets.NONE)
                 .build()
         }
+
+        DBReader.updateFeedList()
 
         val fm = supportFragmentManager
         if (fm.findFragmentByTag(MAIN_FRAGMENT_TAG) == null) {

@@ -65,7 +65,7 @@ class LocalFeedUpdaterTest {
         PodDBAdapter.init(context!!)
         deleteDatabase()
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.close()
 
         mapDummyMetadata(LOCAL_FEED_DIR1)

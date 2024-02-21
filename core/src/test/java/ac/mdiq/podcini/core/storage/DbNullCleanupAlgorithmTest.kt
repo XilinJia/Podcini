@@ -43,7 +43,7 @@ class DbNullCleanupAlgorithmTest {
         PodDBAdapter.init(context!!)
         deleteDatabase()
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.close()
 
         val prefEdit = PreferenceManager.getDefaultSharedPreferences(context!!.applicationContext).edit()
@@ -95,7 +95,7 @@ class DbNullCleanupAlgorithmTest {
         }
 
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.setCompleteFeed(feed)
         adapter.close()
 

@@ -108,11 +108,11 @@ class PlaybackServiceMediaPlayerTest {
         f.preferences = prefs
         f.items = mutableListOf()
         val i = FeedItem(0, "t", "i", "l", Date(), FeedItem.UNPLAYED, f)
-        f.items!!.add(i)
+        f.items.add(i)
         val media = FeedMedia(0, i, 0, 0, 0, "audio/wav", fileUrl, downloadUrl, fileUrl != null, null, 0, 0)
         i.setMedia(media)
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.setCompleteFeed(f)
         Assert.assertTrue(media.id != 0L)
         adapter.close()
@@ -130,14 +130,18 @@ class PlaybackServiceMediaPlayerTest {
                 try {
                     checkPSMPInfo(newInfo)
                     check(newInfo!!.playerStatus != PlayerStatus.ERROR) { "MediaPlayer error" }
-                    if (countDownLatch.count == 0L) {
-                        Assert.fail()
-                    } else if (countDownLatch.count == 2L) {
-                        Assert.assertEquals(PlayerStatus.INITIALIZING, newInfo.playerStatus)
-                        countDownLatch.countDown()
-                    } else {
-                        Assert.assertEquals(PlayerStatus.INITIALIZED, newInfo.playerStatus)
-                        countDownLatch.countDown()
+                    when (countDownLatch.count) {
+                        0L -> {
+                            Assert.fail()
+                        }
+                        2L -> {
+                            Assert.assertEquals(PlayerStatus.INITIALIZING, newInfo.playerStatus)
+                            countDownLatch.countDown()
+                        }
+                        else -> {
+                            Assert.assertEquals(PlayerStatus.INITIALIZED, newInfo.playerStatus)
+                            countDownLatch.countDown()
+                        }
                     }
                 } catch (e: AssertionFailedError) {
                     if (assertionError == null) assertionError = e
@@ -168,14 +172,18 @@ class PlaybackServiceMediaPlayerTest {
                 try {
                     checkPSMPInfo(newInfo)
                     check(newInfo!!.playerStatus != PlayerStatus.ERROR) { "MediaPlayer error" }
-                    if (countDownLatch.count == 0L) {
-                        Assert.fail()
-                    } else if (countDownLatch.count == 2L) {
-                        Assert.assertEquals(PlayerStatus.INITIALIZING, newInfo.playerStatus)
-                        countDownLatch.countDown()
-                    } else {
-                        Assert.assertEquals(PlayerStatus.INITIALIZED, newInfo.playerStatus)
-                        countDownLatch.countDown()
+                    when (countDownLatch.count) {
+                        0L -> {
+                            Assert.fail()
+                        }
+                        2L -> {
+                            Assert.assertEquals(PlayerStatus.INITIALIZING, newInfo.playerStatus)
+                            countDownLatch.countDown()
+                        }
+                        else -> {
+                            Assert.assertEquals(PlayerStatus.INITIALIZED, newInfo.playerStatus)
+                            countDownLatch.countDown()
+                        }
                     }
                 } catch (e: AssertionFailedError) {
                     if (assertionError == null) assertionError = e
@@ -207,16 +215,22 @@ class PlaybackServiceMediaPlayerTest {
                 try {
                     checkPSMPInfo(newInfo)
                     check(newInfo!!.playerStatus != PlayerStatus.ERROR) { "MediaPlayer error" }
-                    if (countDownLatch.count == 0L) {
-                        Assert.fail()
-                    } else if (countDownLatch.count == 4L) {
-                        Assert.assertEquals(PlayerStatus.INITIALIZING, newInfo.playerStatus)
-                    } else if (countDownLatch.count == 3L) {
-                        Assert.assertEquals(PlayerStatus.INITIALIZED, newInfo.playerStatus)
-                    } else if (countDownLatch.count == 2L) {
-                        Assert.assertEquals(PlayerStatus.PREPARING, newInfo.playerStatus)
-                    } else if (countDownLatch.count == 1L) {
-                        Assert.assertEquals(PlayerStatus.PREPARED, newInfo.playerStatus)
+                    when (countDownLatch.count) {
+                        0L -> {
+                            Assert.fail()
+                        }
+                        4L -> {
+                            Assert.assertEquals(PlayerStatus.INITIALIZING, newInfo.playerStatus)
+                        }
+                        3L -> {
+                            Assert.assertEquals(PlayerStatus.INITIALIZED, newInfo.playerStatus)
+                        }
+                        2L -> {
+                            Assert.assertEquals(PlayerStatus.PREPARING, newInfo.playerStatus)
+                        }
+                        1L -> {
+                            Assert.assertEquals(PlayerStatus.PREPARED, newInfo.playerStatus)
+                        }
                     }
                     countDownLatch.countDown()
                 } catch (e: AssertionFailedError) {
@@ -247,18 +261,25 @@ class PlaybackServiceMediaPlayerTest {
                 try {
                     checkPSMPInfo(newInfo)
                     check(newInfo!!.playerStatus != PlayerStatus.ERROR) { "MediaPlayer error" }
-                    if (countDownLatch.count == 0L) {
-                        Assert.fail()
-                    } else if (countDownLatch.count == 5L) {
-                        Assert.assertEquals(PlayerStatus.INITIALIZING, newInfo.playerStatus)
-                    } else if (countDownLatch.count == 4L) {
-                        Assert.assertEquals(PlayerStatus.INITIALIZED, newInfo.playerStatus)
-                    } else if (countDownLatch.count == 3L) {
-                        Assert.assertEquals(PlayerStatus.PREPARING, newInfo.playerStatus)
-                    } else if (countDownLatch.count == 2L) {
-                        Assert.assertEquals(PlayerStatus.PREPARED, newInfo.playerStatus)
-                    } else if (countDownLatch.count == 1L) {
-                        Assert.assertEquals(PlayerStatus.PLAYING, newInfo.playerStatus)
+                    when (countDownLatch.count) {
+                        0L -> {
+                            Assert.fail()
+                        }
+                        5L -> {
+                            Assert.assertEquals(PlayerStatus.INITIALIZING, newInfo.playerStatus)
+                        }
+                        4L -> {
+                            Assert.assertEquals(PlayerStatus.INITIALIZED, newInfo.playerStatus)
+                        }
+                        3L -> {
+                            Assert.assertEquals(PlayerStatus.PREPARING, newInfo.playerStatus)
+                        }
+                        2L -> {
+                            Assert.assertEquals(PlayerStatus.PREPARED, newInfo.playerStatus)
+                        }
+                        1L -> {
+                            Assert.assertEquals(PlayerStatus.PLAYING, newInfo.playerStatus)
+                        }
                     }
                     countDownLatch.countDown()
                 } catch (e: AssertionFailedError) {
@@ -288,14 +309,18 @@ class PlaybackServiceMediaPlayerTest {
                 try {
                     checkPSMPInfo(newInfo)
                     check(newInfo!!.playerStatus != PlayerStatus.ERROR) { "MediaPlayer error" }
-                    if (countDownLatch.count == 0L) {
-                        Assert.fail()
-                    } else if (countDownLatch.count == 2L) {
-                        Assert.assertEquals(PlayerStatus.INITIALIZING, newInfo.playerStatus)
-                        countDownLatch.countDown()
-                    } else {
-                        Assert.assertEquals(PlayerStatus.INITIALIZED, newInfo.playerStatus)
-                        countDownLatch.countDown()
+                    when (countDownLatch.count) {
+                        0L -> {
+                            Assert.fail()
+                        }
+                        2L -> {
+                            Assert.assertEquals(PlayerStatus.INITIALIZING, newInfo.playerStatus)
+                            countDownLatch.countDown()
+                        }
+                        else -> {
+                            Assert.assertEquals(PlayerStatus.INITIALIZED, newInfo.playerStatus)
+                            countDownLatch.countDown()
+                        }
                     }
                 } catch (e: AssertionFailedError) {
                     if (assertionError == null) assertionError = e
@@ -325,14 +350,18 @@ class PlaybackServiceMediaPlayerTest {
                 try {
                     checkPSMPInfo(newInfo)
                     check(newInfo!!.playerStatus != PlayerStatus.ERROR) { "MediaPlayer error" }
-                    if (countDownLatch.count == 0L) {
-                        Assert.fail()
-                    } else if (countDownLatch.count == 2L) {
-                        Assert.assertEquals(PlayerStatus.INITIALIZING, newInfo.playerStatus)
-                        countDownLatch.countDown()
-                    } else {
-                        Assert.assertEquals(PlayerStatus.INITIALIZED, newInfo.playerStatus)
-                        countDownLatch.countDown()
+                    when (countDownLatch.count) {
+                        0L -> {
+                            Assert.fail()
+                        }
+                        2L -> {
+                            Assert.assertEquals(PlayerStatus.INITIALIZING, newInfo.playerStatus)
+                            countDownLatch.countDown()
+                        }
+                        else -> {
+                            Assert.assertEquals(PlayerStatus.INITIALIZED, newInfo.playerStatus)
+                            countDownLatch.countDown()
+                        }
                     }
                 } catch (e: AssertionFailedError) {
                     if (assertionError == null) assertionError = e
@@ -362,16 +391,22 @@ class PlaybackServiceMediaPlayerTest {
                 try {
                     checkPSMPInfo(newInfo)
                     check(newInfo!!.playerStatus != PlayerStatus.ERROR) { "MediaPlayer error" }
-                    if (countDownLatch.count == 0L) {
-                        Assert.fail()
-                    } else if (countDownLatch.count == 4L) {
-                        Assert.assertEquals(PlayerStatus.INITIALIZING, newInfo.playerStatus)
-                    } else if (countDownLatch.count == 3L) {
-                        Assert.assertEquals(PlayerStatus.INITIALIZED, newInfo.playerStatus)
-                    } else if (countDownLatch.count == 2L) {
-                        Assert.assertEquals(PlayerStatus.PREPARING, newInfo.playerStatus)
-                    } else if (countDownLatch.count == 1L) {
-                        Assert.assertEquals(PlayerStatus.PREPARED, newInfo.playerStatus)
+                    when (countDownLatch.count) {
+                        0L -> {
+                            Assert.fail()
+                        }
+                        4L -> {
+                            Assert.assertEquals(PlayerStatus.INITIALIZING, newInfo.playerStatus)
+                        }
+                        3L -> {
+                            Assert.assertEquals(PlayerStatus.INITIALIZED, newInfo.playerStatus)
+                        }
+                        2L -> {
+                            Assert.assertEquals(PlayerStatus.PREPARING, newInfo.playerStatus)
+                        }
+                        1L -> {
+                            Assert.assertEquals(PlayerStatus.PREPARED, newInfo.playerStatus)
+                        }
                     }
                     countDownLatch.countDown()
                 } catch (e: AssertionFailedError) {
@@ -401,18 +436,25 @@ class PlaybackServiceMediaPlayerTest {
                 try {
                     checkPSMPInfo(newInfo)
                     check(newInfo!!.playerStatus != PlayerStatus.ERROR) { "MediaPlayer error" }
-                    if (countDownLatch.count == 0L) {
-                        Assert.fail()
-                    } else if (countDownLatch.count == 5L) {
-                        Assert.assertEquals(PlayerStatus.INITIALIZING, newInfo.playerStatus)
-                    } else if (countDownLatch.count == 4L) {
-                        Assert.assertEquals(PlayerStatus.INITIALIZED, newInfo.playerStatus)
-                    } else if (countDownLatch.count == 3L) {
-                        Assert.assertEquals(PlayerStatus.PREPARING, newInfo.playerStatus)
-                    } else if (countDownLatch.count == 2L) {
-                        Assert.assertEquals(PlayerStatus.PREPARED, newInfo.playerStatus)
-                    } else if (countDownLatch.count == 1L) {
-                        Assert.assertEquals(PlayerStatus.PLAYING, newInfo.playerStatus)
+                    when (countDownLatch.count) {
+                        0L -> {
+                            Assert.fail()
+                        }
+                        5L -> {
+                            Assert.assertEquals(PlayerStatus.INITIALIZING, newInfo.playerStatus)
+                        }
+                        4L -> {
+                            Assert.assertEquals(PlayerStatus.INITIALIZED, newInfo.playerStatus)
+                        }
+                        3L -> {
+                            Assert.assertEquals(PlayerStatus.PREPARING, newInfo.playerStatus)
+                        }
+                        2L -> {
+                            Assert.assertEquals(PlayerStatus.PREPARED, newInfo.playerStatus)
+                        }
+                        1L -> {
+                            Assert.assertEquals(PlayerStatus.PLAYING, newInfo.playerStatus)
+                        }
                     }
                 } catch (e: AssertionFailedError) {
                     if (assertionError == null) assertionError = e

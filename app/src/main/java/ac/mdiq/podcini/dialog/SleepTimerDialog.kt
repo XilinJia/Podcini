@@ -46,7 +46,7 @@ class SleepTimerDialog : DialogFragment() {
 
     @UnstableApi override fun onStart() {
         super.onStart()
-        controller = object : PlaybackController(activity) {
+        controller = object : PlaybackController(requireActivity()) {
             override fun loadMediaInfo() {
             }
         }

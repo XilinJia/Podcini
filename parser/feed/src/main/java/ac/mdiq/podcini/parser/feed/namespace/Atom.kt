@@ -205,7 +205,7 @@ class Atom : Namespace() {
         /**
          * Regexp to test whether an Element is a Text Element.
          */
-        private const val isText = (TITLE + "|" + CONTENT + "|" + SUBTITLE + "|" + SUMMARY)
+        private const val isText = ("$TITLE|$CONTENT|$SUBTITLE|$SUMMARY")
 
         private const val isFeed = FEED + "|" + Rss20.CHANNEL
         private const val isFeedItem = ENTRY + "|" + Rss20.ITEM

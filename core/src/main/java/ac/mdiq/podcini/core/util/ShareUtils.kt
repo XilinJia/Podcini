@@ -87,8 +87,11 @@ object ShareUtils {
 
     @JvmStatic
     fun shareFeedItemFile(context: Context, media: FeedMedia) {
+        val lurl = media.getLocalMediaUrl()
+        if (lurl.isNullOrEmpty()) return
+
         val fileUri = FileProvider.getUriForFile(context, context.getString(R.string.provider_authority),
-            File(media.getLocalMediaUrl()))
+            File(lurl))
 
         IntentBuilder(context)
             .setType(media.mime_type)

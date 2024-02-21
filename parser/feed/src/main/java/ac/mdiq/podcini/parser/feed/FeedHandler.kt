@@ -1,9 +1,9 @@
 package ac.mdiq.podcini.parser.feed
 
-import android.util.Log
 import ac.mdiq.podcini.model.feed.Feed
 import ac.mdiq.podcini.parser.feed.UnsupportedFeedtypeException
 import ac.mdiq.podcini.parser.feed.util.TypeGetter
+import android.util.Log
 import org.apache.commons.io.input.XmlStreamReader
 import org.xml.sax.InputSource
 import org.xml.sax.SAXException

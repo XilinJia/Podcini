@@ -147,12 +147,16 @@ open class ID3Reader(private val inputStream: CountingInputStream) {
 
     @Throws(IOException::class)
     fun readEncodedString(encoding: Int, max: Int): String {
-        return if (encoding == ENCODING_UTF16_WITH_BOM.toInt() || encoding == ENCODING_UTF16_WITHOUT_BOM.toInt()) {
-            readEncodedString2(Charset.forName("UTF-16"), max)
-        } else if (encoding == ENCODING_UTF8.toInt()) {
-            readEncodedString2(Charset.forName("UTF-8"), max)
-        } else {
-            readEncodedString1(Charset.forName("ISO-8859-1"), max)
+        return when (encoding) {
+            ENCODING_UTF16_WITH_BOM.toInt(), ENCODING_UTF16_WITHOUT_BOM.toInt() -> {
+                readEncodedString2(Charset.forName("UTF-16"), max)
+            }
+            ENCODING_UTF8.toInt() -> {
+                readEncodedString2(Charset.forName("UTF-8"), max)
+            }
+            else -> {
+                readEncodedString1(Charset.forName("ISO-8859-1"), max)
+            }
         }
     }
 

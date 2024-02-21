@@ -29,6 +29,8 @@ interface Playable : Parcelable, Serializable {
      */
     fun getChapters(): List<Chapter>
 
+    fun chaptersLoaded(): Boolean
+
     /**
      * Returns a link to a website that is meant to be shown in a browser
      */

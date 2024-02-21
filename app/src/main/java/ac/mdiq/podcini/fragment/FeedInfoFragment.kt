@@ -195,7 +195,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         txtvTitle.text = feed!!.title
         txtvTitle.setMaxLines(6)
 
-        val description: String = HtmlToPlainText.getPlainText(feed!!.description)?:""
+        val description: String = HtmlToPlainText.getPlainText(feed!!.description?:"")
 
         txtvDescription.text = description
 

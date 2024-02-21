@@ -212,12 +212,10 @@ class PlaybackServiceTaskManager(private val context: Context,
      */
     @Synchronized
     fun startChapterLoader(media: Playable) {
-        if (chapterLoaderFuture != null) {
-            chapterLoaderFuture!!.dispose()
-            chapterLoaderFuture = null
-        }
+        chapterLoaderFuture?.dispose()
+        chapterLoaderFuture = null
 
-        if (media.getChapters().isEmpty()) {
+        if (!media.chaptersLoaded()) {
             chapterLoaderFuture = Completable.create { emitter: CompletableEmitter ->
                 ChapterUtils.loadChapters(media, context, false)
                 emitter.onComplete()

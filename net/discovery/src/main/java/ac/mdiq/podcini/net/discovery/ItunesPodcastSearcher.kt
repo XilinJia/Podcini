@@ -15,7 +15,7 @@ import java.net.URLEncoder
 import java.util.regex.Pattern
 
 class ItunesPodcastSearcher : PodcastSearcher {
-    override fun search(query: String): Single<List<PodcastSearchResult?>?>? {
+    override fun search(query: String): Single<List<PodcastSearchResult?>?> {
         return Single.create<List<PodcastSearchResult?>?> { subscriber: SingleEmitter<List<PodcastSearchResult?>?> ->
             val encodedQuery = try {
                 URLEncoder.encode(query, "UTF-8")
@@ -58,7 +58,7 @@ class ItunesPodcastSearcher : PodcastSearcher {
             .observeOn(AndroidSchedulers.mainThread())
     }
 
-    override fun lookupUrl(url: String): Single<String>? {
+    override fun lookupUrl(url: String): Single<String> {
         val pattern = Pattern.compile(PATTERN_BY_ID)
         val matcher = pattern.matcher(url)
         val lookupUrl = if (matcher.find()) ("https://itunes.apple.com/lookup?id=" + matcher.group(1)) else url

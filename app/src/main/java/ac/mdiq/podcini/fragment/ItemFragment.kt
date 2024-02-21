@@ -156,7 +156,7 @@ class ItemFragment : Fragment() {
         })
 
         EventBus.getDefault().register(this)
-        controller = object : PlaybackController(activity) {
+        controller = object : PlaybackController(requireActivity()) {
             override fun loadMediaInfo() {
                 // Do nothing
             }

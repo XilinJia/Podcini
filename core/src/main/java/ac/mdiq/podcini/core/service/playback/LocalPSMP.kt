@@ -38,9 +38,8 @@ import kotlin.concurrent.Volatile
  * Manages the MediaPlayer object of the PlaybackService.
  */
 @UnstableApi
-class LocalPSMP(context: Context,
-                callback: PSMPCallback
-) : PlaybackServiceMediaPlayer(context, callback) {
+class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMediaPlayer(context, callback) {
+
     private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
     @Volatile

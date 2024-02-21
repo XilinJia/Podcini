@@ -1,6 +1,5 @@
 package ac.mdiq.podcini.core.util.syndication
 
-import android.text.TextUtils
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.jsoup.internal.StringUtil
@@ -37,7 +36,7 @@ class HtmlToPlainText {
      * @param element the root element to format
      * @return formatted text
      */
-    fun getPlainText(element: Element?): String {
+    fun getPlainText(element: Element): String {
         val formatter = FormattingVisitor()
         // walk the DOM, and call .head() and .tail() for each node
         NodeTraversor.traverse(formatter, element)
@@ -52,14 +51,19 @@ class HtmlToPlainText {
         // hit when the node is first seen
         override fun head(node: Node, depth: Int) {
             val name = node.nodeName()
-            if (node is TextNode) {
-                append(node.text()) // TextNodes carry all user-readable text in the DOM.
-            } else if (name == "li") {
-                append("\n * ")
-            } else if (name == "dt") {
-                append("  ")
-            } else if (StringUtil.`in`(name, "p", "h1", "h2", "h3", "h4", "h5", "tr")) {
-                append("\n")
+            when {
+                node is TextNode -> {
+                    append(node.text()) // TextNodes carry all user-readable text in the DOM.
+                }
+                name == "li" -> {
+                    append("\n * ")
+                }
+                name == "dt" -> {
+                    append("  ")
+                }
+                StringUtil.`in`(name, "p", "h1", "h2", "h3", "h4", "h5", "tr") -> {
+                    append("\n")
+                }
             }
         }
 
@@ -95,13 +99,13 @@ class HtmlToPlainText {
          * @param str String with any encoding
          * @return Human readable text with minimal HTML formatting
          */
-        fun getPlainText(str: String?): String? {
+        fun getPlainText(str: String): String {
             var str = str
-            if (!TextUtils.isEmpty(str) && isHtml(str)) {
+            if (str.isNotEmpty() && isHtml(str)) {
                 val formatter = HtmlToPlainText()
                 val feedDescription = Jsoup.parse(str)
                 str = StringUtils.trim(formatter.getPlainText(feedDescription))
-            } else if (TextUtils.isEmpty(str)) {
+            } else if (str.isEmpty()) {
                 str = ""
             }
 
@@ -116,7 +120,7 @@ class HtmlToPlainText {
          */
         private fun isHtml(str: String?): Boolean {
             val htmlTagPattern = "<(\"[^\"]*\"|'[^']*'|[^'\">])*>"
-            return Pattern.compile(htmlTagPattern).matcher(str).find()
+            return Pattern.compile(htmlTagPattern).matcher(str.toString()).find()
         }
     }
 }

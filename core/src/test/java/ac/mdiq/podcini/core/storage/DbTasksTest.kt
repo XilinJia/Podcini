@@ -46,7 +46,7 @@ class DbTasksTest {
         PodDBAdapter.init(context!!)
         deleteDatabase()
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.close()
     }
 
@@ -63,14 +63,14 @@ class DbTasksTest {
         val feed = Feed("url", null, "title")
         feed.items = mutableListOf()
         for (i in 0 until numItems) {
-            feed.items?.add(FeedItem(0, "item $i", "id $i", "link $i",
+            feed.items.add(FeedItem(0, "item $i", "id $i", "link $i",
                 Date(), FeedItem.UNPLAYED, feed))
         }
         val newFeed = updateFeed(context!!, feed, false)
 
         Assert.assertEquals(feed.id, newFeed!!.id)
         Assert.assertTrue(feed.id != 0L)
-        for (item in feed.items!!) {
+        for (item in feed.items) {
             Assert.assertFalse(item.isPlayed())
             Assert.assertTrue(item.id != 0L)
         }
@@ -99,11 +99,11 @@ class DbTasksTest {
         val feed = Feed("url", null, "title")
         feed.items = mutableListOf()
         for (i in 0 until numItemsOld) {
-            feed.items?.add(FeedItem(0, "item $i", "id $i", "link $i",
+            feed.items.add(FeedItem(0, "item $i", "id $i", "link $i",
                 Date(i.toLong()), FeedItem.PLAYED, feed))
         }
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.setCompleteFeed(feed)
         adapter.close()
 
@@ -112,14 +112,14 @@ class DbTasksTest {
         val feedID = feed.id
         feed.id = 0
         val itemIDs: MutableList<Long> = ArrayList()
-        for (item in feed.items!!) {
+        for (item in feed.items) {
             Assert.assertTrue(item.id != 0L)
             itemIDs.add(item.id)
             item.id = 0
         }
 
         for (i in numItemsOld until numItemsNew + numItemsOld) {
-            feed.items?.add(0, FeedItem(0, "item $i", "id $i", "link $i",
+            feed.items.add(0, FeedItem(0, "item $i", "id $i", "link $i",
                 Date(i.toLong()), FeedItem.UNPLAYED, feed))
         }
 
@@ -141,7 +141,7 @@ class DbTasksTest {
         feed.items = (mutableListOf(item))
 
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.setCompleteFeed(feed)
         adapter.close()
 
@@ -159,7 +159,7 @@ class DbTasksTest {
         Assert.assertNotSame(newFeed, feed)
 
         val feedFromDB = getFeed(newFeed!!.id)
-        val feedItemFromDB: FeedItem = feedFromDB!!.items!![0]
+        val feedItemFromDB: FeedItem = feedFromDB!!.items[0]
         Assert.assertTrue(feedItemFromDB.isNew)
     }
 
@@ -168,16 +168,16 @@ class DbTasksTest {
         val feed = Feed("url", null, "title")
         feed.items = mutableListOf()
         for (i in 0..9) {
-            feed.items?.add(
+            feed.items.add(
                 FeedItem(0, "item $i", "id $i", "link $i", Date(i.toLong()), FeedItem.PLAYED, feed))
         }
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.setCompleteFeed(feed)
         adapter.close()
 
         // delete some items
-        feed.items?.subList(0, 2)?.clear()
+        feed.items.subList(0, 2).clear()
         val newFeed = updateFeed(context!!, feed, true)
         assertEquals(8, newFeed?.items?.size) // 10 - 2 = 8 items
 
@@ -194,10 +194,10 @@ class DbTasksTest {
                 FeedItem(0, "item $i", "id $i", "link $i", Date(i.toLong()), FeedItem.PLAYED, feed)
             val media = FeedMedia(item, "download url $i", 123, "media/mp3")
             item.setMedia(media)
-            feed.items?.add(item)
+            feed.items.add(item)
         }
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.setCompleteFeed(feed)
         adapter.close()
 
@@ -219,11 +219,11 @@ class DbTasksTest {
 
     private fun updatedFeedTest(newFeed: Feed?, feedID: Long, itemIDs: List<Long>, numItemsOld: Int, numItemsNew: Int) {
         Assert.assertEquals(feedID, newFeed!!.id)
-        assertEquals(numItemsNew + numItemsOld, newFeed.items?.size)
-        newFeed.items?.reverse()
+        assertEquals(numItemsNew + numItemsOld, newFeed.items.size)
+        newFeed.items.reverse()
         var lastDate = Date(0)
         for (i in 0 until numItemsOld) {
-            val item: FeedItem = newFeed.items!![i]
+            val item: FeedItem = newFeed.items[i]
             Assert.assertSame(newFeed, item.feed)
             Assert.assertEquals(itemIDs[i], item.id)
             Assert.assertTrue(item.isPlayed())
@@ -231,7 +231,7 @@ class DbTasksTest {
             lastDate = item.pubDate!!
         }
         for (i in numItemsOld until numItemsNew + numItemsOld) {
-            val item: FeedItem = newFeed.items!![i]
+            val item: FeedItem = newFeed.items[i]
             Assert.assertSame(newFeed, item.feed)
             Assert.assertTrue(item.id != 0L)
             Assert.assertFalse(item.isPlayed())
@@ -254,7 +254,7 @@ class DbTasksTest {
         }
 
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.setCompleteFeed(feed)
         adapter.close()
         return feed

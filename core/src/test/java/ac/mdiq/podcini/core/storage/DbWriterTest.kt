@@ -71,7 +71,7 @@ class DbWriterTest {
         PodDBAdapter.init(context!!)
         deleteDatabase()
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.close()
 
         val prefEdit = PreferenceManager.getDefaultSharedPreferences(
@@ -144,7 +144,7 @@ class DbWriterTest {
         items.add(item)
 
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.setCompleteFeed(feed)
         adapter.close()
         Assert.assertTrue(media!!.id != 0L)
@@ -181,7 +181,7 @@ class DbWriterTest {
         queue.add(item)
 
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.setCompleteFeed(feed)
         adapter.setQueue(queue)
         adapter.close()
@@ -225,7 +225,7 @@ class DbWriterTest {
         }
 
         var adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.setCompleteFeed(feed)
         adapter.close()
 
@@ -243,7 +243,7 @@ class DbWriterTest {
         }
 
         adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         var c = adapter.getFeedCursor(feed.id)
         Assert.assertEquals(0, c.count.toLong())
         c.close()
@@ -269,7 +269,7 @@ class DbWriterTest {
         feed.imageUrl = ("url")
 
         var adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.setCompleteFeed(feed)
         adapter.close()
 
@@ -278,7 +278,7 @@ class DbWriterTest {
         deleteFeed(context!!, feed.id)[TIMEOUT, TimeUnit.SECONDS]
 
         adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         val c = adapter.getFeedCursor(feed.id)
         Assert.assertEquals(0, c.count.toLong())
         c.close()
@@ -303,7 +303,7 @@ class DbWriterTest {
         }
 
         var adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.setCompleteFeed(feed)
         adapter.close()
 
@@ -315,7 +315,7 @@ class DbWriterTest {
         deleteFeed(context!!, feed.id)[TIMEOUT, TimeUnit.SECONDS]
 
         adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         var c = adapter.getFeedCursor(feed.id)
         Assert.assertEquals(0, c.count.toLong())
         c.close()
@@ -349,7 +349,7 @@ class DbWriterTest {
         }
 
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.setCompleteFeed(feed)
         adapter.close()
 
@@ -410,7 +410,7 @@ class DbWriterTest {
         }
 
         var adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.setCompleteFeed(feed)
         adapter.close()
 
@@ -423,7 +423,7 @@ class DbWriterTest {
         deleteFeed(context!!, feed.id)[TIMEOUT, TimeUnit.SECONDS]
 
         adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         var c = adapter.getFeedCursor(feed.id)
         Assert.assertEquals(0, c.count.toLong())
         c.close()
@@ -453,7 +453,7 @@ class DbWriterTest {
         }
 
         var adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.setCompleteFeed(feed)
         adapter.close()
 
@@ -461,7 +461,7 @@ class DbWriterTest {
         deleteFeedItems(context!!, itemsToDelete)[TIMEOUT, TimeUnit.SECONDS]
 
         adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         for (i in 0 until feed.items.size) {
             val feedItem: FeedItem = feed.items[i]
             val c = adapter.getFeedItemCursor(feedItem.id.toString())
@@ -484,7 +484,7 @@ class DbWriterTest {
         feed.items.add(item)
         item.setMedia(media)
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.setCompleteFeed(feed)
         adapter.close()
         Assert.assertTrue(media.id != 0L)
@@ -497,7 +497,7 @@ class DbWriterTest {
         var media: FeedMedia? = playbackHistorySetup(null)
         addItemToPlaybackHistory(media)[TIMEOUT, TimeUnit.SECONDS]
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         media = getFeedMedia(media!!.id)
         adapter.close()
 
@@ -513,7 +513,7 @@ class DbWriterTest {
         var media: FeedMedia? = playbackHistorySetup(Date(oldDate))
         addItemToPlaybackHistory(media)[TIMEOUT, TimeUnit.SECONDS]
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         media = getFeedMedia(media!!.id)
         adapter.close()
 
@@ -534,7 +534,7 @@ class DbWriterTest {
         }
 
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.setCompleteFeed(feed)
         adapter.close()
 
@@ -561,7 +561,7 @@ class DbWriterTest {
         feed.items.add(item)
 
         var adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.setCompleteFeed(feed)
         adapter.close()
 
@@ -569,7 +569,7 @@ class DbWriterTest {
         addQueueItem(context, item)[TIMEOUT, TimeUnit.SECONDS]
 
         adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         val cursor = adapter.queueIDCursor
         Assert.assertTrue(cursor.moveToFirst())
         Assert.assertEquals(item.id, cursor.getLong(0))
@@ -587,7 +587,7 @@ class DbWriterTest {
         feed.items.add(item)
 
         var adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.setCompleteFeed(feed)
         adapter.close()
 
@@ -595,7 +595,7 @@ class DbWriterTest {
         addQueueItem(context, item)[TIMEOUT, TimeUnit.SECONDS]
 
         adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         var cursor = adapter.queueIDCursor
         Assert.assertTrue(cursor.moveToFirst())
         Assert.assertEquals(item.id, cursor.getLong(0))
@@ -604,7 +604,7 @@ class DbWriterTest {
 
         addQueueItem(context, item)[TIMEOUT, TimeUnit.SECONDS]
         adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         cursor = adapter.queueIDCursor
         Assert.assertTrue(cursor.moveToFirst())
         Assert.assertEquals(item.id, cursor.getLong(0))
@@ -619,7 +619,7 @@ class DbWriterTest {
         val numItems = 10
         val feed = queueTestSetupMultipleItems(numItems)
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         val cursor = adapter.queueIDCursor
         Assert.assertTrue(cursor.moveToFirst())
         Assert.assertEquals(numItems.toLong(), cursor.count.toLong())
@@ -643,7 +643,7 @@ class DbWriterTest {
         queueTestSetupMultipleItems(numItems)
         clearQueue()[TIMEOUT, TimeUnit.SECONDS]
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         val cursor = adapter.queueIDCursor
         Assert.assertFalse(cursor.moveToFirst())
         cursor.close()
@@ -659,13 +659,13 @@ class DbWriterTest {
         for (removeIndex in 0 until numItems) {
             val item: FeedItem = feed.items[removeIndex]
             var adapter = getInstance()
-            adapter!!.open()
+            adapter.open()
             adapter.setQueue(feed.items.toList())
             adapter.close()
 
             removeQueueItem(context!!, false, item)[TIMEOUT, TimeUnit.SECONDS]
             adapter = getInstance()
-            adapter!!.open()
+            adapter.open()
             val queue = adapter.queueIDCursor
             Assert.assertEquals((numItems - 1).toLong(), queue.count.toLong())
             for (i in 0 until queue.count) {
@@ -732,7 +732,7 @@ class DbWriterTest {
         }
 
         var adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.setCompleteFeed(feed)
         adapter.close()
 
@@ -748,13 +748,13 @@ class DbWriterTest {
                 val fromID: Long = feed.items[from].id
 
                 adapter = getInstance()
-                adapter!!.open()
+                adapter.open()
                 adapter.setQueue(feed.items)
                 adapter.close()
 
                 moveQueueItem(from, to, false)[TIMEOUT, TimeUnit.SECONDS]
                 adapter = getInstance()
-                adapter!!.open()
+                adapter.open()
                 val queue = adapter.queueIDCursor
                 Assert.assertEquals(numItems.toLong(), queue.count.toLong())
                 Assert.assertTrue(queue.moveToPosition(from))
@@ -782,7 +782,7 @@ class DbWriterTest {
         }
 
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.setCompleteFeed(feed)
         adapter.close()
 
@@ -824,10 +824,10 @@ class DbWriterTest {
         private fun withPodDB(action: Consumer<PodDBAdapter?>) {
             val adapter = getInstance()
             try {
-                adapter!!.open()
+                adapter.open()
                 action.accept(adapter)
             } finally {
-                adapter!!.close()
+                adapter.close()
             }
         }
 

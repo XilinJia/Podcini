@@ -11,7 +11,7 @@ import java.util.*
 import java.util.concurrent.CountDownLatch
 
 class CombinedSearcher : PodcastSearcher {
-    override fun search(query: String): Single<List<PodcastSearchResult?>?>? {
+    override fun search(query: String): Single<List<PodcastSearchResult?>?> {
         val disposables = ArrayList<Disposable>()
         val singleResults: MutableList<List<PodcastSearchResult?>?> = ArrayList(
             Collections.nCopies<List<PodcastSearchResult?>?>(PodcastSearcherRegistry.searchProviders.size, null))
@@ -23,9 +23,8 @@ class CombinedSearcher : PodcastSearcher {
                 latch.countDown()
                 continue
             }
-            val index = i
-            disposables.add(searcher.search(query)!!.subscribe({ e: List<PodcastSearchResult?>? ->
-                singleResults[index] = e
+            disposables.add(searcher.search(query).subscribe({ e: List<PodcastSearchResult?>? ->
+                singleResults[i] = e
                 latch.countDown()
             }, { throwable: Throwable? ->
                 Log.d(TAG, Log.getStackTraceString(throwable))
@@ -79,7 +78,7 @@ class CombinedSearcher : PodcastSearcher {
         return results
     }
 
-    override fun lookupUrl(url: String): Single<String>? {
+    override fun lookupUrl(url: String): Single<String> {
         return PodcastSearcherRegistry.lookupUrl(url)
     }
 

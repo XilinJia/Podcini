@@ -31,7 +31,8 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
 class DownloadsSection : HomeSection() {
-    private var adapter: EpisodeItemListAdapter? = null
+    private lateinit var adapter: EpisodeItemListAdapter
+    
     private var disposable: Disposable? = null
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -50,7 +51,7 @@ class DownloadsSection : HomeSection() {
                 }
             }
         }
-        adapter?.setDummyViews(NUM_EPISODES)
+        adapter.setDummyViews(NUM_EPISODES)
         viewBinding.recyclerView.adapter = adapter
 
         val swipeActions = SwipeActions(this, CompletedDownloadsFragment.TAG)
@@ -75,10 +76,7 @@ class DownloadsSection : HomeSection() {
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: PlaybackPositionEvent) {
-        if (adapter == null) {
-            return
-        }
-        for (i in 0 until adapter!!.itemCount) {
+        for (i in 0 until adapter.itemCount) {
             val holder: EpisodeItemViewHolder? = viewBinding.recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
             if (holder != null && holder.isCurrentlyPlayingItem) {
                 holder.notifyPlaybackPositionUpdated(event)
@@ -117,8 +115,8 @@ class DownloadsSection : HomeSection() {
                 if (downloads.size > NUM_EPISODES) {
                     downloads = downloads.subList(0, NUM_EPISODES)
                 }
-                adapter?.setDummyViews(0)
-                adapter?.updateItems(downloads)
+                adapter.setDummyViews(0)
+                adapter.updateItems(downloads)
             }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
     }
 

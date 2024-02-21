@@ -42,7 +42,7 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
 
     @UnstableApi override fun onStart() {
         super.onStart()
-        controller = object : PlaybackController(activity) {
+        controller = object : PlaybackController(requireActivity()) {
             override fun loadMediaInfo() {
                 updateSpeed(SpeedChangedEvent(controller!!.currentPlaybackSpeedMultiplier))
             }

@@ -11,6 +11,7 @@ import ac.mdiq.podcini.model.playback.Playable
 
 @UnstableApi
 class PlaybackServiceStarter(private val context: Context, private val media: Playable) {
+
     private var shouldStreamThisTime = false
     private var callEvenIfRunning = false
 

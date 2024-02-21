@@ -126,9 +126,9 @@ import java.util.concurrent.TimeUnit
             media.setFile_url(null)
             media.setHasEmbeddedPicture(false)
             val adapter = getInstance()
-            adapter?.open()
-            adapter?.setMedia(media)
-            adapter?.close()
+            adapter.open()
+            adapter.setMedia(media)
+            adapter.close()
         }
 
         if (media.id == currentlyPlayingFeedMediaId) {
@@ -174,9 +174,9 @@ import java.util.concurrent.TimeUnit
 
             // delete feed
             val adapter = getInstance()
-            adapter?.open()
-            adapter?.removeFeed(feed)
-            adapter?.close()
+            adapter.open()
+            adapter.removeFeed(feed)
+            adapter.close()
 
             if (!feed.isLocalFeed && feed.download_url != null) {
                 SynchronizationQueueSink.enqueueFeedRemovedIfSynchronizationIsActive(context, feed.download_url!!)
@@ -220,12 +220,12 @@ import java.util.concurrent.TimeUnit
         }
 
         val adapter = getInstance()
-        adapter?.open()
+        adapter.open()
         if (removedFromQueue.isNotEmpty()) {
-            adapter?.setQueue(queue)
+            adapter.setQueue(queue)
         }
-        adapter?.removeFeedItems(items)
-        adapter?.close()
+        adapter.removeFeedItems(items)
+        adapter.close()
 
         for (item in removedFromQueue) {
             EventBus.getDefault().post(irreversibleRemoved(item))
@@ -246,9 +246,9 @@ import java.util.concurrent.TimeUnit
     fun clearPlaybackHistory(): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
-            adapter?.open()
-            adapter?.clearPlaybackHistory()
-            adapter?.close()
+            adapter.open()
+            adapter.clearPlaybackHistory()
+            adapter.close()
             EventBus.getDefault().post(PlaybackHistoryEvent.listUpdated())
         }
     }
@@ -259,9 +259,9 @@ import java.util.concurrent.TimeUnit
     fun clearDownloadLog(): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
-            adapter?.open()
-            adapter?.clearDownloadLog()
-            adapter?.close()
+            adapter.open()
+            adapter.clearDownloadLog()
+            adapter.close()
             EventBus.getDefault().post(DownloadLogEvent.listUpdated())
         }
     }
@@ -292,9 +292,9 @@ import java.util.concurrent.TimeUnit
             media!!.setPlaybackCompletionDate(date)
 
             val adapter = getInstance()
-            adapter?.open()
-            adapter?.setFeedMediaPlaybackCompletionDate(media)
-            adapter?.close()
+            adapter.open()
+            adapter.setFeedMediaPlaybackCompletionDate(media)
+            adapter.close()
             EventBus.getDefault().post(PlaybackHistoryEvent.listUpdated())
         }
     }
@@ -307,9 +307,9 @@ import java.util.concurrent.TimeUnit
     fun addDownloadStatus(status: DownloadResult?): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
-            adapter?.open()
-            adapter?.setDownloadStatus(status!!)
-            adapter?.close()
+            adapter.open()
+            adapter.setDownloadStatus(status!!)
+            adapter.close()
             EventBus.getDefault().post(DownloadLogEvent.listUpdated())
         }
     }
@@ -329,7 +329,7 @@ import java.util.concurrent.TimeUnit
     ): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
-            adapter?.open()
+            adapter.open()
             val queue = getQueue(adapter).toMutableList()
             val item: FeedItem?
 
@@ -337,7 +337,7 @@ import java.util.concurrent.TimeUnit
                 item = getFeedItem(itemId)
                 if (item != null) {
                     queue.add(index, item)
-                    adapter?.setQueue(queue)
+                    adapter.setQueue(queue)
                     item.addTag(FeedItem.TAG_QUEUE)
                     EventBus.getDefault().post(added(item, index))
                     EventBus.getDefault().post(updated(item))
@@ -347,7 +347,7 @@ import java.util.concurrent.TimeUnit
                 }
             }
 
-            adapter?.close()
+            adapter.close()
             if (performAutoDownload) {
                 autodownloadUndownloadedItems(context)
             }
@@ -402,7 +402,7 @@ import java.util.concurrent.TimeUnit
                 return@runOnDbThread
             }
             val adapter = getInstance()
-            adapter?.open()
+            adapter.open()
             val queue = getQueue(adapter).toMutableList()
 
             var queueModified = false
@@ -432,7 +432,7 @@ import java.util.concurrent.TimeUnit
             }
             if (queueModified) {
                 applySortOrder(queue, events)
-                adapter?.setQueue(queue)
+                adapter.setQueue(queue)
                 for (event in events) {
                     EventBus.getDefault().post(event)
                 }
@@ -441,7 +441,7 @@ import java.util.concurrent.TimeUnit
                     markItemPlayed(FeedItem.UNPLAYED, *markAsUnplayedIds.toArray())
                 }
             }
-            adapter?.close()
+            adapter.close()
             if (performAutoDownload) {
                 autodownloadUndownloadedItems(context)
             }
@@ -482,9 +482,9 @@ import java.util.concurrent.TimeUnit
     fun clearQueue(): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
-            adapter?.open()
-            adapter?.clearQueue()
-            adapter?.close()
+            adapter.open()
+            adapter.clearQueue()
+            adapter.close()
             EventBus.getDefault().post(cleared())
         }
     }
@@ -518,7 +518,7 @@ import java.util.concurrent.TimeUnit
             return
         }
         val adapter = getInstance()
-        adapter?.open()
+        adapter.open()
         val queue = getQueue(adapter).toMutableList()
 
         var queueModified = false
@@ -543,7 +543,7 @@ import java.util.concurrent.TimeUnit
             }
         }
         if (queueModified) {
-            adapter?.setQueue(queue)
+            adapter.setQueue(queue)
             for (event in events) {
                 EventBus.getDefault().post(event)
             }
@@ -551,7 +551,7 @@ import java.util.concurrent.TimeUnit
         } else {
             Log.w(TAG, "Queue was not modified by call to removeQueueItem")
         }
-        adapter?.close()
+        adapter.close()
         if (performAutoDownload) {
             autodownloadUndownloadedItems(context)
         }
@@ -567,9 +567,9 @@ import java.util.concurrent.TimeUnit
 
     fun addFavoriteItem(item: FeedItem): Future<*> {
         return runOnDbThread {
-            val adapter = getInstance()?.open()
-            adapter?.addFavoriteItem(item)
-            adapter?.close()
+            val adapter = getInstance().open()
+            adapter.addFavoriteItem(item)
+            adapter.close()
             item.addTag(FeedItem.TAG_FAVORITE)
             EventBus.getDefault().post(FavoritesEvent())
             EventBus.getDefault().post(updated(item))
@@ -578,9 +578,9 @@ import java.util.concurrent.TimeUnit
 
     fun removeFavoriteItem(item: FeedItem): Future<*> {
         return runOnDbThread {
-            val adapter = getInstance()?.open()
-            adapter?.removeFavoriteItem(item)
-            adapter?.close()
+            val adapter = getInstance().open()
+            adapter.removeFavoriteItem(item)
+            adapter.close()
             item.removeTag(FeedItem.TAG_FAVORITE)
             EventBus.getDefault().post(FavoritesEvent())
             EventBus.getDefault().post(updated(item))
@@ -658,7 +658,7 @@ import java.util.concurrent.TimeUnit
                                     to: Int, broadcastUpdate: Boolean
     ) {
         val adapter = getInstance()
-        adapter?.open()
+        adapter.open()
         val queue = getQueue(adapter).toMutableList()
 
         if (queue.isNotEmpty()) {
@@ -666,7 +666,7 @@ import java.util.concurrent.TimeUnit
                 val item: FeedItem = queue.removeAt(from)
                 queue.add(to, item)
 
-                adapter?.setQueue(queue)
+                adapter.setQueue(queue)
                 if (broadcastUpdate) {
                     EventBus.getDefault().post(moved(item, to))
                 }
@@ -674,15 +674,15 @@ import java.util.concurrent.TimeUnit
         } else {
             Log.e(TAG, "moveQueueItemHelper: Could not load queue")
         }
-        adapter?.close()
+        adapter.close()
     }
 
     fun resetPagedFeedPage(feed: Feed?): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
-            adapter?.open()
-            adapter?.resetPagedFeedPage(feed!!)
-            adapter?.close()
+            adapter.open()
+            adapter.resetPagedFeedPage(feed!!)
+            adapter.close()
         }
     }
 
@@ -711,9 +711,9 @@ import java.util.concurrent.TimeUnit
     ): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
-            adapter?.open()
-            adapter?.setFeedItemRead(played, *itemIds)
-            adapter?.close()
+            adapter.open()
+            adapter.setFeedItemRead(played, *itemIds)
+            adapter.close()
             if (broadcastUpdate) {
                 EventBus.getDefault().post(UnreadItemsUpdateEvent())
             }
@@ -740,10 +740,10 @@ import java.util.concurrent.TimeUnit
     ): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
-            adapter?.open()
-            adapter?.setFeedItemRead(played, itemId, mediaId,
+            adapter.open()
+            adapter.setFeedItemRead(played, itemId, mediaId,
                 resetMediaPosition)
-            adapter?.close()
+            adapter.close()
             EventBus.getDefault().post(UnreadItemsUpdateEvent())
         }
     }
@@ -756,9 +756,9 @@ import java.util.concurrent.TimeUnit
     fun removeFeedNewFlag(feedId: Long): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
-            adapter?.open()
-            adapter?.setFeedItems(FeedItem.NEW, FeedItem.UNPLAYED, feedId)
-            adapter?.close()
+            adapter.open()
+            adapter.setFeedItems(FeedItem.NEW, FeedItem.UNPLAYED, feedId)
+            adapter.close()
             EventBus.getDefault().post(UnreadItemsUpdateEvent())
         }
     }
@@ -770,9 +770,9 @@ import java.util.concurrent.TimeUnit
     fun removeAllNewFlags(): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
-            adapter?.open()
-            adapter?.setFeedItems(FeedItem.NEW, FeedItem.UNPLAYED)
-            adapter?.close()
+            adapter.open()
+            adapter.setFeedItems(FeedItem.NEW, FeedItem.UNPLAYED)
+            adapter.close()
             EventBus.getDefault().post(UnreadItemsUpdateEvent())
         }
     }
@@ -780,9 +780,9 @@ import java.util.concurrent.TimeUnit
     fun addNewFeed(context: Context, vararg feeds: Feed): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
-            adapter?.open()
-            adapter?.setCompleteFeed(*feeds)
-            adapter?.close()
+            adapter.open()
+            adapter.setCompleteFeed(*feeds)
+            adapter.close()
 
             for (feed in feeds) {
                 if (!feed.isLocalFeed && feed.download_url != null) {
@@ -798,18 +798,18 @@ import java.util.concurrent.TimeUnit
     fun setCompleteFeed(vararg feeds: Feed): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
-            adapter?.open()
-            adapter?.setCompleteFeed(*feeds)
-            adapter?.close()
+            adapter.open()
+            adapter.setCompleteFeed(*feeds)
+            adapter.close()
         }
     }
 
     fun setItemList(items: List<FeedItem>): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
-            adapter?.open()
-            adapter?.storeFeedItemlist(items)
-            adapter?.close()
+            adapter.open()
+            adapter.storeFeedItemlist(items)
+            adapter.close()
             EventBus.getDefault().post(updated(items))
         }
     }
@@ -823,7 +823,7 @@ import java.util.concurrent.TimeUnit
     fun setFeedMedia(media: FeedMedia?): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
-            adapter!!.open()
+            adapter.open()
             adapter.setMedia(media)
             adapter.close()
         }
@@ -838,7 +838,7 @@ import java.util.concurrent.TimeUnit
     fun setFeedMediaPlaybackInformation(media: FeedMedia?): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
-            adapter!!.open()
+            adapter.open()
             adapter.setFeedMediaPlaybackInformation(media!!)
             adapter.close()
         }
@@ -854,7 +854,7 @@ import java.util.concurrent.TimeUnit
     fun setFeedItem(item: FeedItem?): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
-            adapter!!.open()
+            adapter.open()
             adapter.setSingleFeedItem(item!!)
             adapter.close()
             EventBus.getDefault().post(updated(item))
@@ -868,7 +868,7 @@ import java.util.concurrent.TimeUnit
         Log.d(TAG, "updateFeedDownloadURL(original: $original, updated: $updated)")
         return runOnDbThread {
             val adapter = getInstance()
-            adapter!!.open()
+            adapter.open()
             adapter.setFeedDownloadUrl(original, updated)
             adapter.close()
         }
@@ -882,7 +882,7 @@ import java.util.concurrent.TimeUnit
     fun setFeedPreferences(preferences: FeedPreferences): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
-            adapter!!.open()
+            adapter.open()
             adapter.setFeedPreferences(preferences)
             adapter.close()
             EventBus.getDefault().post(FeedListUpdateEvent(preferences.feedID))
@@ -913,7 +913,7 @@ import java.util.concurrent.TimeUnit
     ): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
-            adapter!!.open()
+            adapter.open()
             adapter.setFeedLastUpdateFailed(feedId, lastUpdateFailed)
             adapter.close()
             EventBus.getDefault().post(FeedListUpdateEvent(feedId))
@@ -923,7 +923,7 @@ import java.util.concurrent.TimeUnit
     fun setFeedCustomTitle(feed: Feed): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
-            adapter!!.open()
+            adapter.open()
             adapter.setFeedCustomTitle(feed.id, feed.getCustomTitle())
             adapter.close()
             EventBus.getDefault().post(FeedListUpdateEvent(feed))
@@ -945,7 +945,7 @@ import java.util.concurrent.TimeUnit
         val permutor = getPermutor(sortOrder)
         return runOnDbThread {
             val adapter = getInstance()
-            adapter!!.open()
+            adapter.open()
             val queue = getQueue(adapter).toMutableList()
 
             permutor.reorder(queue)
@@ -969,7 +969,7 @@ import java.util.concurrent.TimeUnit
         Log.d(TAG, "setFeedItemsFilter() called with: feedId = [$feedId], filterValues = [$filterValues]")
         return runOnDbThread {
             val adapter = getInstance()
-            adapter!!.open()
+            adapter.open()
             adapter.setFeedItemFilter(feedId, filterValues)
             adapter.close()
             EventBus.getDefault().post(FeedEvent(FeedEvent.Action.FILTER_CHANGED, feedId))
@@ -983,7 +983,7 @@ import java.util.concurrent.TimeUnit
     fun setFeedItemSortOrder(feedId: Long, sortOrder: SortOrder?): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
-            adapter!!.open()
+            adapter.open()
             adapter.setFeedItemSortOrder(feedId, sortOrder)
             adapter.close()
             EventBus.getDefault().post(FeedEvent(FeedEvent.Action.SORT_ORDER_CHANGED, feedId))
@@ -996,7 +996,7 @@ import java.util.concurrent.TimeUnit
     fun resetStatistics(): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
-            adapter!!.open()
+            adapter.open()
             adapter.resetAllMediaPlayedDuration()
             adapter.close()
         }

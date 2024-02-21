@@ -46,7 +46,7 @@ class DbReaderTest {
             PodDBAdapter.init(context)
             deleteDatabase()
             val adapter = getInstance()
-            adapter!!.open()
+            adapter.open()
             adapter.close()
         }
 
@@ -73,7 +73,7 @@ class DbReaderTest {
         @Test
         fun testGetFeedListSortOrder() {
             val adapter = getInstance()
-            adapter!!.open()
+            adapter.open()
 
             val feed1 = Feed(0, null, "A", "link", "d", null, null, null, "rss", "A", null, "", "", true)
             val feed2 = Feed(0, null, "b", "link", "d", null, null, null, "rss", "b", null, "", "", true)
@@ -167,7 +167,7 @@ class DbReaderTest {
                 }
             }
             val adapter = getInstance()
-            adapter!!.open()
+            adapter.open()
             adapter.setQueue(queue)
             adapter.close()
             return queue
@@ -219,7 +219,7 @@ class DbReaderTest {
                 }
             }
             val adapter = getInstance()
-            adapter!!.open()
+            adapter.open()
             adapter.storeFeedItemlist(downloaded)
             adapter.close()
             return downloaded
@@ -258,7 +258,7 @@ class DbReaderTest {
                 }
             }
             val adapter = getInstance()
-            adapter!!.open()
+            adapter.open()
             adapter.storeFeedItemlist(newItems)
             adapter.close()
             return newItems
@@ -298,7 +298,7 @@ class DbReaderTest {
 
             val adapter = getInstance()
             for (playedItems in mutableListOf(0, 1, 20, 100)) {
-                adapter!!.open()
+                adapter.open()
                 for (i in 0 until playedItems) {
                     val m: FeedMedia = feed.items[i].media!!
                     m.setPlaybackCompletionDate(Date((i + 1).toLong()))
@@ -331,7 +331,7 @@ class DbReaderTest {
             val numNew = 2
             val feeds = DbTestUtils.saveFeedlist(numFeeds, numItems, true)
             val adapter = getInstance()
-            adapter!!.open()
+            adapter.open()
             for (i in 0 until numNew) {
                 val item: FeedItem = feeds[0].items[i]
                 item.setNew()
@@ -445,7 +445,7 @@ class DbReaderTest {
             val ids = LongArray(playedItems)
 
             val adapter = getInstance()
-            adapter!!.open()
+            adapter.open()
             for (i in 0 until playedItems) {
                 val m: FeedMedia = feed.items[i].media!!
                 m.setPlaybackCompletionDate(Date((i + 1).toLong()))

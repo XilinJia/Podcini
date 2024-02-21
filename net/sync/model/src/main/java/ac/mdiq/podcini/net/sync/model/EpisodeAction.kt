@@ -1,8 +1,7 @@
 package ac.mdiq.podcini.net.sync.model
 
-import android.text.TextUtils
-import android.util.Log
 import ac.mdiq.podcini.model.feed.FeedItem
+import android.util.Log
 import org.json.JSONException
 import org.json.JSONObject
 import java.text.ParseException
@@ -87,7 +86,7 @@ class EpisodeAction private constructor(builder: Builder) {
             obj.put("action", this.actionString)
             val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
             formatter.timeZone = TimeZone.getTimeZone("UTC")
-            obj.put("timestamp", formatter.format(this.timestamp))
+            if (this.timestamp != null) obj.put("timestamp", formatter.format(this.timestamp))
             if (this.action == Action.PLAY) {
                 obj.put("started", this.started)
                 obj.put("position", this.position)
@@ -190,10 +189,10 @@ class EpisodeAction private constructor(builder: Builder) {
          */
         @JvmStatic
         fun readFromJsonObject(`object`: JSONObject): EpisodeAction? {
-            val podcast = `object`.optString("podcast", null)
-            val episode = `object`.optString("episode", null)
-            val actionString = `object`.optString("action", null)
-            if (TextUtils.isEmpty(podcast) || TextUtils.isEmpty(episode) || TextUtils.isEmpty(actionString)) {
+            val podcast = `object`.optString("podcast")
+            val episode = `object`.optString("episode")
+            val actionString = `object`.optString("action")
+            if (podcast.isNullOrEmpty() || episode.isNullOrEmpty() || actionString.isNullOrEmpty()) {
                 return null
             }
             val action: Action
@@ -203,8 +202,8 @@ class EpisodeAction private constructor(builder: Builder) {
                 return null
             }
             val builder = Builder(podcast, episode, action)
-            val utcTimestamp = `object`.optString("timestamp", null)
-            if (!TextUtils.isEmpty(utcTimestamp)) {
+            val utcTimestamp = `object`.optString("timestamp")
+            if (utcTimestamp.isNotEmpty()) {
                 try {
                     val parser = SimpleDateFormat(PATTERN_ISO_DATEFORMAT, Locale.US)
                     parser.timeZone = TimeZone.getTimeZone("UTC")
@@ -213,8 +212,8 @@ class EpisodeAction private constructor(builder: Builder) {
                     e.printStackTrace()
                 }
             }
-            val guid = `object`.optString("guid", null)
-            if (!TextUtils.isEmpty(guid)) {
+            val guid = `object`.optString("guid")
+            if (guid.isNotEmpty()) {
                 builder.guid(guid)
             }
             if (action == Action.PLAY) {

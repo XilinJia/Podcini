@@ -12,7 +12,7 @@ class VorbisCommentMetadataReader(input: InputStream?) : VorbisCommentReader(inp
 
     public override fun onContentVectorValue(key: String?, value: String?) {
         if (KEY_DESCRIPTION == key || KEY_COMMENT == key) {
-            if (description == null || value!!.length > description!!.length) {
+            if (description == null || (value != null && value.length > description!!.length)) {
                 description = value
             }
         }

@@ -97,10 +97,11 @@ class HomeFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     private fun addSection(section: Fragment?) {
+        if (section == null) return
         val containerView = FragmentContainerView(requireContext())
         containerView.id = View.generateViewId()
         viewBinding.homeContainer.addView(containerView)
-        if (section != null) childFragmentManager.beginTransaction().add(containerView.id, section).commit()
+        childFragmentManager.beginTransaction().add(containerView.id, section).commit()
     }
 
     private fun getSection(tag: String): Fragment? {

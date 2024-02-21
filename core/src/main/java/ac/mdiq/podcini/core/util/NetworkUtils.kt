@@ -111,7 +111,7 @@ object NetworkUtils {
     private val isInAllowedWifiNetwork: Boolean
         get() {
             val wm = context!!.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-            val selectedNetworks = Arrays.asList(*UserPreferences.autodownloadSelectedNetworks)
+            val selectedNetworks = listOf(*UserPreferences.autodownloadSelectedNetworks)
             return selectedNetworks.contains(wm.connectionInfo.networkId.toString())
         }
 

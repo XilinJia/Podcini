@@ -189,7 +189,7 @@ class UITestUtils(private val context: Context) {
         localFeedDataAdded = true
 
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.setCompleteFeed(*hostedFeeds.toTypedArray<Feed>())
         adapter.setQueue(queue)
         adapter.close()

@@ -33,13 +33,13 @@ object ChapterMerger {
                     return if (score(chapters1) > score(chapters2)) chapters1 else chapters2
                 }
 
-                if (TextUtils.isEmpty(chapterTarget.imageUrl)) {
+                if (chapterTarget.imageUrl.isNullOrEmpty()) {
                     chapterTarget.imageUrl = chapterOther.imageUrl
                 }
-                if (TextUtils.isEmpty(chapterTarget.link)) {
+                if (chapterTarget.link.isNullOrEmpty()) {
                     chapterTarget.link = chapterOther.link
                 }
-                if (TextUtils.isEmpty(chapterTarget.title)) {
+                if (chapterTarget.title.isNullOrEmpty()) {
                     chapterTarget.title = chapterOther.title
                 }
             }
@@ -54,9 +54,9 @@ object ChapterMerger {
         var score = 0
         for (chapter in chapters) {
             score = (score
-                    + (if (TextUtils.isEmpty(chapter.title)) 0 else 1)
-                    + (if (TextUtils.isEmpty(chapter.link)) 0 else 1)
-                    + (if (TextUtils.isEmpty(chapter.imageUrl)) 0 else 1))
+                    + (if (chapter.title.isNullOrEmpty()) 0 else 1)
+                    + (if (chapter.link.isNullOrEmpty()) 0 else 1)
+                    + (if (chapter.imageUrl.isNullOrEmpty()) 0 else 1))
         }
         return score
     }

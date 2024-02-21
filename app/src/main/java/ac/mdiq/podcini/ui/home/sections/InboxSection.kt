@@ -32,7 +32,8 @@ import org.greenrobot.eventbus.ThreadMode
 import java.util.*
 
 class InboxSection : HomeSection() {
-    private var adapter: EpisodeItemListAdapter? = null
+    private lateinit var adapter: EpisodeItemListAdapter
+
     private var items: List<FeedItem> = ArrayList<FeedItem>()
     private var disposable: Disposable? = null
 
@@ -51,7 +52,7 @@ class InboxSection : HomeSection() {
                 ) { item: MenuItem -> this@InboxSection.onContextItemSelected(item) }
             }
         }
-        adapter?.setDummyViews(NUM_EPISODES)
+        adapter.setDummyViews(NUM_EPISODES)
         viewBinding.recyclerView.adapter = adapter
 
         val swipeActions = SwipeActions(this, InboxFragment.TAG)
@@ -89,7 +90,7 @@ class InboxSection : HomeSection() {
         for (downloadUrl in event.urls) {
             val pos: Int = FeedItemUtil.indexOfItemWithDownloadUrl(items, downloadUrl)
             if (pos >= 0) {
-                adapter?.notifyItemChangedCompat(pos)
+                adapter.notifyItemChangedCompat(pos)
             }
         }
     }
@@ -112,8 +113,8 @@ class InboxSection : HomeSection() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ data: Pair<List<FeedItem>, Int> ->
                 items = data.first
-                adapter?.setDummyViews(0)
-                adapter?.updateItems(items)
+                adapter.setDummyViews(0)
+                adapter.updateItems(items)
                 viewBinding.numNewItemsLabel.visibility = View.VISIBLE
                 if (data.second >= 100) {
                     viewBinding.numNewItemsLabel.text = String.format(Locale.getDefault(), "%d+", 99)

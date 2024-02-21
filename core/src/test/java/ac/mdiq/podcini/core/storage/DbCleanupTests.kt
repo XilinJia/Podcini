@@ -60,7 +60,7 @@ open class DbCleanupTests {
         PodDBAdapter.init(context!!)
         deleteDatabase()
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.close()
 
         val prefEdit = PreferenceManager
@@ -136,7 +136,7 @@ open class DbCleanupTests {
         }
 
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.setCompleteFeed(feed)
         if (addToQueue) {
             adapter.setQueue(items)
@@ -200,11 +200,11 @@ open class DbCleanupTests {
 
         // add candidate for performAutoCleanup
         val feeds = DbTestUtils.saveFeedlist(1, 1, true)
-        val m: FeedMedia = feeds[0].items!!.get(0).media!!
+        val m: FeedMedia = feeds[0].items[0].media!!
         m.setDownloaded(true)
         m.setFile_url("file")
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.setMedia(m)
         adapter.close()
 

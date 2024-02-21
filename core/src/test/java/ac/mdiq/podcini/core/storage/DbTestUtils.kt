@@ -28,7 +28,7 @@ internal object DbTestUtils {
 
         val feeds: MutableList<Feed> = ArrayList()
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         for (i in 0 until numFeeds) {
             val f = Feed(0, null, "feed $i", "link$i", "descr", null, null,
                 null, null, "id$i", null, null, "url$i", false)
@@ -53,7 +53,7 @@ internal object DbTestUtils {
             f.items.sortWith(FeedItemPubdateComparator())
             adapter.setCompleteFeed(f)
             Assert.assertTrue(f.id != 0L)
-            for (item in f.items!!) {
+            for (item in f.items) {
                 Assert.assertTrue(item.id != 0L)
             }
             feeds.add(f)

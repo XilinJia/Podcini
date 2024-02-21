@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.parser.media.vorbis
 
 import android.util.Log
-import ac.mdiq.podcini.parser.media.vorbis.VorbisCommentReaderException
 import org.apache.commons.io.EndianUtils
 import org.apache.commons.io.IOUtils
 import java.io.IOException
@@ -136,7 +135,7 @@ abstract class VorbisCommentReader internal constructor(private val input: Input
             while (posInHaystack < 0) {
                 posInHaystack += haystack.size
             }
-            posInHaystack = posInHaystack % haystack.size
+            posInHaystack %= haystack.size
             if (haystack[posInHaystack] != needle[needle.size - 1 - i]) {
                 return false
             }

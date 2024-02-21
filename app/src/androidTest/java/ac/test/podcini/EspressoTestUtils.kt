@@ -171,7 +171,7 @@ object EspressoTestUtils {
         init(InstrumentationRegistry.getInstrumentation().targetContext)
         deleteDatabase()
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.close()
     }
 

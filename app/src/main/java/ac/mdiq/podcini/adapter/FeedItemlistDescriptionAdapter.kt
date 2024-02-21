@@ -49,10 +49,10 @@ class FeedItemlistDescriptionAdapter(context: Context, resource: Int, objects: L
         holder.title!!.text = item!!.title
         holder.pubDate!!.text = formatAbbrev(context, item.pubDate)
         if (item.description != null) {
-            val description = HtmlToPlainText.getPlainText(item.description)
-                ?.replace("\n".toRegex(), " ")
-                ?.replace("\\s+".toRegex(), " ")
-                ?.trim { it <= ' ' }
+            val description = HtmlToPlainText.getPlainText(item.description!!)
+                .replace("\n".toRegex(), " ")
+                .replace("\\s+".toRegex(), " ")
+                .trim { it <= ' ' }
             holder.description!!.text = description
             holder.description!!.maxLines = MAX_LINES_COLLAPSED
         }

@@ -279,7 +279,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     }
 
     private fun newPlaybackController(): PlaybackController {
-        return object : PlaybackController(activity) {
+        return object : PlaybackController(requireActivity()) {
             override fun updatePlayButtonShowsPlay(showPlay: Boolean) {
                 butPlay.setIsShowPlay(showPlay)
             }
@@ -295,10 +295,10 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     }
 
     private fun updateUi(media: Playable?) {
-        if (controller == null || media == null) {
+        if (controller != null) duration = controller!!.duration
+        if (media == null) {
             return
         }
-        duration = controller!!.duration
         updatePosition(PlaybackPositionEvent(media.getPosition(), media.getDuration()))
         updatePlaybackSpeedButton(SpeedChangedEvent(PlaybackSpeedUtils.getCurrentPlaybackSpeed(media)))
         setChapterDividers(media)
@@ -460,7 +460,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
         val isFeedMedia = media is FeedMedia
         toolbar.menu?.findItem(R.id.open_feed_item)?.setVisible(isFeedMedia)
-        if (isFeedMedia) {
+        if (media != null && isFeedMedia) {
             FeedItemMenuHandler.onPrepareMenu(toolbar.menu, (media as FeedMedia).getItem())
         }
 

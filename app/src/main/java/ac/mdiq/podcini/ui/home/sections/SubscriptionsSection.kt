@@ -27,7 +27,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
 class SubscriptionsSection : HomeSection() {
-    private var listAdapter: HorizontalFeedListAdapter? = null
+    private lateinit var listAdapter: HorizontalFeedListAdapter
     private var disposable: Disposable? = null
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater,
@@ -45,7 +45,7 @@ class SubscriptionsSection : HomeSection() {
                 }
             }
         }
-        listAdapter?.setDummyViews(NUM_FEEDS)
+        listAdapter.setDummyViews(NUM_FEEDS)
         viewBinding.recyclerView.adapter = listAdapter
         val paddingHorizontal: Int = (12 * resources.displayMetrics.density).toInt()
         viewBinding.recyclerView.setPadding(paddingHorizontal, 0, paddingHorizontal, 0)
@@ -93,8 +93,8 @@ class SubscriptionsSection : HomeSection() {
                     feeds.add(stats[i].feed)
                     i++
                 }
-                listAdapter?.setDummyViews(0)
-                listAdapter?.updateData(feeds)
+                listAdapter.setDummyViews(0)
+                listAdapter.updateData(feeds)
             }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
     }
 

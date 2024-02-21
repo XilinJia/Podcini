@@ -249,7 +249,7 @@ class LongList @JvmOverloads constructor(initialCapacity: Int = 4) {
 
     companion object {
         fun of(vararg values: Long): LongList {
-            if (values == null || values.size == 0) {
+            if (values == null || values.isEmpty()) {
                 return LongList(0)
             }
             val result = LongList(values.size)

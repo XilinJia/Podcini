@@ -43,7 +43,7 @@ class PlaybackServiceTaskManagerTest {
         init(context)
         deleteDatabase()
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.close()
         setShakeToReset(false)
         setVibrate(false)
@@ -61,15 +61,15 @@ class PlaybackServiceTaskManagerTest {
         val f = Feed(0, null, "title", "link", "d", null, null, null, null, "id", null, "null", "url", false)
         f.items = mutableListOf()
         for (i in 0 until NUM_ITEMS) {
-            f.items!!.add(FeedItem(0, pref + i, pref + i, "link", Date(), FeedItem.PLAYED, f))
+            f.items.add(FeedItem(0, pref + i, pref + i, "link", Date(), FeedItem.PLAYED, f))
         }
         val adapter = getInstance()
-        adapter!!.open()
+        adapter.open()
         adapter.setCompleteFeed(f)
-        adapter.setQueue(f.items!!)
+        adapter.setQueue(f.items)
         adapter.close()
 
-        for (item in f.items!!) {
+        for (item in f.items) {
             Assert.assertTrue(item.id != 0L)
         }
         return f.items

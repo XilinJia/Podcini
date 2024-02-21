@@ -89,7 +89,7 @@ class ExternalPlayerFragment : Fragment() {
             if (controller == null) {
                 return@setOnClickListener
             }
-            if (controller!!.getMedia() != null && controller!!.getMedia()!!.getMediaType() == MediaType.VIDEO && controller!!.status != PlayerStatus.PLAYING) {
+            if (controller!!.getMedia()?.getMediaType() == MediaType.VIDEO && controller!!.status != PlayerStatus.PLAYING) {
                 controller!!.playPause()
                 requireContext().startActivity(getPlayerActivityIntent(requireContext(), controller!!.getMedia()!!))
             } else {
@@ -101,7 +101,7 @@ class ExternalPlayerFragment : Fragment() {
 
     @UnstableApi
     private fun setupPlaybackController(): PlaybackController {
-        return object : PlaybackController(activity) {
+        return object : PlaybackController(requireActivity()) {
             override fun updatePlayButtonShowsPlay(showPlay: Boolean) {
                 butPlay.setIsShowPlay(showPlay)
             }

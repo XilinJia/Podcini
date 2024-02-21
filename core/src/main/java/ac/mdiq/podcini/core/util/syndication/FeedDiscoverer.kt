@@ -62,7 +62,7 @@ class FeedDiscoverer {
         val uri = Uri.parse(strUrl)
         if (uri.isRelative) {
             val res = Uri.parse(baseUrl).buildUpon().path(strUrl).build()
-            return if ((res != null)) res.toString() else null
+            return res?.toString()
         } else {
             return strUrl
         }

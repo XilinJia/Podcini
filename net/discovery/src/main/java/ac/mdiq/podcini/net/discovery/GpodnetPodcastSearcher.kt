@@ -10,7 +10,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 
 class GpodnetPodcastSearcher : PodcastSearcher {
-    override fun search(query: String): Single<List<PodcastSearchResult?>?>? {
+    override fun search(query: String): Single<List<PodcastSearchResult?>?> {
         return Single.create { subscriber: SingleEmitter<List<PodcastSearchResult?>?> ->
             try {
                 val service = GpodnetService(getHttpClient(),
@@ -31,7 +31,7 @@ class GpodnetPodcastSearcher : PodcastSearcher {
             .observeOn(AndroidSchedulers.mainThread())
     }
 
-    override fun lookupUrl(url: String): Single<String>? {
+    override fun lookupUrl(url: String): Single<String> {
         return Single.just(url)
     }
 

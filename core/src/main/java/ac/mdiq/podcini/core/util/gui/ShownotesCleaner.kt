@@ -175,11 +175,11 @@ class ShownotesCleaner(context: Context, private val rawShownotes: String, priva
         @JvmStatic
         fun getTimecodeLinkTime(link: String?): Int {
             if (isTimecodeLink(link)) {
-                val m = TIMECODE_LINK_REGEX.matcher(link)
+                val m = TIMECODE_LINK_REGEX.matcher(link!!)
 
                 try {
                     if (m.find()) {
-                        return m.group(1).toInt()
+                        return m.group(1)?.toInt()?:0
                     }
                 } catch (e: NumberFormatException) {
                     e.printStackTrace()

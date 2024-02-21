@@ -123,7 +123,7 @@ class FeedItem : FeedComponent, Serializable {
         this.title = title
         this.itemIdentifier = itemIdentifier
         this.link = link
-        this.pubDate = if ((pubDate != null)) pubDate.clone() as Date else null
+        this.pubDate = if (pubDate != null) pubDate.clone() as Date else null
         this.playState = state
         this.feed = feed
         this.hasChapters = false
@@ -145,7 +145,7 @@ class FeedItem : FeedComponent, Serializable {
         this.title = title
         this.itemIdentifier = itemIdentifier
         this.link = link
-        this.pubDate = if ((pubDate != null)) pubDate.clone() as Date else null
+        this.pubDate = if (pubDate != null) pubDate.clone() as Date else null
         this.playState = state
         this.feed = feed
         this.hasChapters = hasChapters
@@ -246,7 +246,7 @@ class FeedItem : FeedComponent, Serializable {
     }
 
     fun isPlayed(): Boolean {
-        return playState === PLAYED
+        return playState == PLAYED
     }
 
     fun setPlayed(played: Boolean) {
@@ -299,7 +299,7 @@ class FeedItem : FeedComponent, Serializable {
     }
 
     fun hasChapters(): Boolean {
-        return hasChapters
+        return chapters?.isNotEmpty() ?: hasChapters
     }
 
     fun disableAutoDownload() {

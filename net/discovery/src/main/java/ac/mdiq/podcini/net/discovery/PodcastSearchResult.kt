@@ -36,9 +36,9 @@ class PodcastSearchResult private constructor(
          */
         fun fromItunes(json: JSONObject): PodcastSearchResult {
             val title = json.optString("collectionName", "")
-            val imageUrl = json.optString("artworkUrl100", null)
-            val feedUrl = json.optString("feedUrl", null)
-            val author = json.optString("artistName", null)
+            val imageUrl: String? = json.optString("artworkUrl100").takeIf { it.isNotEmpty() }
+            val feedUrl: String? = json.optString("feedUrl").takeIf { it.isNotEmpty() }
+            val author: String? = json.optString("artistName").takeIf { it.isNotEmpty() }
             return PodcastSearchResult(title, imageUrl, feedUrl, author)
         }
 
@@ -90,9 +90,9 @@ class PodcastSearchResult private constructor(
 
         fun fromPodcastIndex(json: JSONObject): PodcastSearchResult {
             val title = json.optString("title", "")
-            val imageUrl = json.optString("image", null)
-            val feedUrl = json.optString("url", null)
-            val author = json.optString("author", null)
+            val imageUrl: String? = json.optString("image").takeIf { it.isNotEmpty() }
+            val feedUrl: String? = json.optString("url").takeIf { it.isNotEmpty() }
+            val author: String? = json.optString("author").takeIf { it.isNotEmpty() }
             return PodcastSearchResult(title, imageUrl, feedUrl, author)
         }
     }

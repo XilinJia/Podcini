@@ -1,9 +1,8 @@
 package ac.mdiq.podcini.parser.media.vorbis
 
-import android.util.Log
 import ac.mdiq.podcini.model.feed.Chapter
 import ac.mdiq.podcini.parser.media.BuildConfig
-import ac.mdiq.podcini.parser.media.vorbis.VorbisCommentReaderException
+import android.util.Log
 import java.io.InputStream
 import java.util.concurrent.TimeUnit
 
@@ -22,24 +21,24 @@ class VorbisCommentChapterReader(input: InputStream?) : VorbisCommentReader(inpu
         val attribute = getAttributeTypeFromKey(key)
         val id = getIdFromKey(key)
         var chapter = getChapterById(id.toLong())
-        if (attribute == null) {
-            if (getChapterById(id.toLong()) == null) {
-                // new chapter
-                val start = getStartTimeFromValue(value)
-                chapter = Chapter()
-                chapter.chapterId = "" + id
-                chapter.start = start
-                chapters.add(chapter)
-            } else {
-                throw VorbisCommentReaderException("Found chapter with duplicate ID ($key, $value)")
+        when (attribute) {
+            null -> {
+                if (getChapterById(id.toLong()) == null) {
+                    // new chapter
+                    val start = getStartTimeFromValue(value)
+                    chapter = Chapter()
+                    chapter.chapterId = "" + id
+                    chapter.start = start
+                    chapters.add(chapter)
+                } else {
+                    throw VorbisCommentReaderException("Found chapter with duplicate ID ($key, $value)")
+                }
             }
-        } else if (attribute == CHAPTER_ATTRIBUTE_TITLE) {
-            if (chapter != null) {
-                chapter.title = value
+            CHAPTER_ATTRIBUTE_TITLE -> {
+                if (chapter != null) chapter.title = value
             }
-        } else if (attribute == CHAPTER_ATTRIBUTE_LINK) {
-            if (chapter != null) {
-                chapter.link = value
+            CHAPTER_ATTRIBUTE_LINK -> {
+                if (chapter != null) chapter.link = value
             }
         }
     }

@@ -55,7 +55,7 @@ class ItemDescriptionFragment : Fragment() {
             }
         })
         registerForContextMenu(webvDescription)
-        controller = object : PlaybackController(activity) {
+        controller = object : PlaybackController(requireActivity()) {
             override fun loadMediaInfo() {
                 load()
             }
@@ -91,10 +91,12 @@ class ItemDescriptionFragment : Fragment() {
                 return@create
             }
             if (media is FeedMedia) {
-                if (media.getItem() == null) {
-                    media.setItem(DBReader.getFeedItem(media.itemId))
+                var item = media.getItem()
+                if (item == null) {
+                    item = DBReader.getFeedItem(media.itemId)
+                    media.setItem(item)
                 }
-                if (media.getItem() != null) DBReader.loadDescriptionOfFeedItem(media.getItem()!!)
+                if (item != null && item.description == null) DBReader.loadDescriptionOfFeedItem(item)
             }
             val shownotesCleaner = ShownotesCleaner(context, media.getDescription()?:"", media.getDuration())
             emitter.onSuccess(shownotesCleaner.processShownotes())

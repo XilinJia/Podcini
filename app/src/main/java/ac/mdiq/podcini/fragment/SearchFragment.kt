@@ -87,6 +87,8 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
                                            savedInstanceState: Bundle?
     ): View {
         val layout: View = inflater.inflate(R.layout.search_fragment, container, false)
+
+        Log.d(TAG, "fregment onCreateView")
         setupToolbar(layout.findViewById(R.id.toolbar))
         speedDialBinding = MultiSelectSpeedDialBinding.bind(layout)
         progressBar = layout.findViewById(R.id.progressBar)

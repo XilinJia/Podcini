@@ -97,6 +97,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         super.onCreateView(inflater, container, savedInstanceState)
         val root: View = inflater.inflate(R.layout.audioplayer_fragment, container, false)
         root.setOnTouchListener { v: View?, event: MotionEvent? -> true } // Avoid clicks going through player to fragments below
+
+        Log.d(TAG, "fregment onCreateView")
         toolbar = root.findViewById(R.id.toolbar)
         toolbar.title = ""
         toolbar.setNavigationOnClickListener { v: View? ->

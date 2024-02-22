@@ -17,6 +17,7 @@ import ac.mdiq.podcini.core.storage.DBReader
 import ac.mdiq.podcini.event.FeedItemEvent
 import ac.mdiq.podcini.menuhandler.FeedItemMenuHandler
 import ac.mdiq.podcini.model.feed.FeedItem
+import android.util.Log
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -41,6 +42,8 @@ class ItemPagerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     ): View {
         super.onCreateView(inflater, container, savedInstanceState)
         val layout: View = inflater.inflate(R.layout.feeditem_pager_fragment, container, false)
+
+        Log.d(TAG, "fregment onCreateView")
         toolbar = layout.findViewById(R.id.toolbar)
         toolbar.title = ""
         toolbar.inflateMenu(R.menu.feeditem_options)
@@ -153,6 +156,7 @@ class ItemPagerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     companion object {
+        const val TAG: String = "ItemPagerFragment"
         private const val ARG_FEEDITEMS = "feeditems"
         private const val ARG_FEEDITEM_POS = "feeditem_pos"
         private const val KEY_PAGER_ID = "pager_id"

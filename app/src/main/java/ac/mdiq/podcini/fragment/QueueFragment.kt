@@ -85,6 +85,8 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         val root: View = inflater.inflate(R.layout.queue_fragment, container, false)
+
+        Log.d(TAG, "fregment onCreateView")
         toolbar = root.findViewById(R.id.toolbar)
         toolbar.setOnMenuItemClickListener(this)
         toolbar.setOnLongClickListener { v: View? ->

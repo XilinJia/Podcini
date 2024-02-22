@@ -17,6 +17,8 @@ import ac.mdiq.podcini.model.feed.FeedItemFilter
 import ac.mdiq.podcini.model.feed.SortOrder
 import ac.mdiq.podcini.storage.preferences.UserPreferences.allEpisodesSortOrder
 import ac.mdiq.podcini.storage.preferences.UserPreferences.prefFilterAllEpisodes
+import android.util.Log
+import androidx.annotation.OptIn
 import org.apache.commons.lang3.StringUtils
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -27,25 +29,24 @@ import org.greenrobot.eventbus.Subscribe
 class AllEpisodesFragment : EpisodesListFragment() {
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val root = super.onCreateView(inflater, container, savedInstanceState)
-        toolbar?.inflateMenu(R.menu.episodes)
-        toolbar?.setTitle(R.string.episodes_label)
+        Log.d(TAG, "fregment onCreateView")
+
+        toolbar.inflateMenu(R.menu.episodes)
+        toolbar.setTitle(R.string.episodes_label)
         updateToolbar()
         updateFilterUi()
-        txtvInformation?.setOnClickListener { v: View? ->
-            AllEpisodesFilterDialog.newInstance(getFilter()).show(
-                childFragmentManager, null)
+        txtvInformation.setOnClickListener { v: View? ->
+            AllEpisodesFilterDialog.newInstance(getFilter()).show(childFragmentManager, null)
         }
         return root
     }
 
     override fun loadData(): List<FeedItem> {
-        return DBReader.getEpisodes(0, page * EPISODES_PER_PAGE, getFilter(),
-            allEpisodesSortOrder)
+        return DBReader.getEpisodes(0, page * EPISODES_PER_PAGE, getFilter(), allEpisodesSortOrder)
     }
 
     override fun loadMoreData(page: Int): List<FeedItem> {
-        return DBReader.getEpisodes((page - 1) * EPISODES_PER_PAGE, EPISODES_PER_PAGE, getFilter(),
-            allEpisodesSortOrder)
+        return DBReader.getEpisodes((page - 1) * EPISODES_PER_PAGE, EPISODES_PER_PAGE, getFilter(), allEpisodesSortOrder)
     }
 
     override fun loadTotalItemCount(): Int {
@@ -64,7 +65,7 @@ class AllEpisodesFragment : EpisodesListFragment() {
         return PREF_NAME
     }
 
-    override fun onMenuItemClick(item: MenuItem): Boolean {
+    @OptIn(UnstableApi::class) override fun onMenuItemClick(item: MenuItem): Boolean {
         if (super.onOptionsItemSelected(item)) {
             return true
         }
@@ -100,15 +101,15 @@ class AllEpisodesFragment : EpisodesListFragment() {
     }
 
     private fun updateFilterUi() {
-        swipeActions?.setFilter(getFilter())
+        swipeActions.setFilter(getFilter())
         if (getFilter().values.isNotEmpty()) {
-            if (txtvInformation != null) txtvInformation!!.visibility = View.VISIBLE
-            emptyView?.setMessage(R.string.no_all_episodes_filtered_label)
+            txtvInformation.visibility = View.VISIBLE
+            emptyView.setMessage(R.string.no_all_episodes_filtered_label)
         } else {
-            if (txtvInformation != null) txtvInformation!!.visibility = View.GONE
-            emptyView?.setMessage(R.string.no_all_episodes_label)
+            txtvInformation.visibility = View.GONE
+            emptyView.setMessage(R.string.no_all_episodes_label)
         }
-        toolbar?.menu?.findItem(R.id.action_favorites)?.setIcon(
+        toolbar.menu?.findItem(R.id.action_favorites)?.setIcon(
             if (getFilter().showIsFavorite) R.drawable.ic_star else R.drawable.ic_star_border)
     }
 

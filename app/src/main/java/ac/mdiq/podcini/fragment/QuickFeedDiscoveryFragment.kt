@@ -44,6 +44,8 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
     @OptIn(UnstableApi::class) override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         val root: View = inflater.inflate(R.layout.quick_feed_discovery, container, false)
+
+        Log.d(TAG, "fregment onCreateView")
         val discoverMore = root.findViewById<View>(R.id.discover_more)
         discoverMore.setOnClickListener { v: View? -> (activity as MainActivity).loadChildFragment(DiscoveryFragment()) }
 

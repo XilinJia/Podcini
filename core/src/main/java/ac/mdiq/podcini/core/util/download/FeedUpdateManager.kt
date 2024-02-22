@@ -32,9 +32,9 @@ object FeedUpdateManager {
      * @param context Context
      */
     @JvmStatic
-    fun restartUpdateAlarm(context: Context?, replace: Boolean) {
+    fun restartUpdateAlarm(context: Context, replace: Boolean) {
         if (UserPreferences.isAutoUpdateDisabled) {
-            WorkManager.getInstance(context!!).cancelUniqueWork(WORK_ID_FEED_UPDATE)
+            WorkManager.getInstance(context).cancelUniqueWork(WORK_ID_FEED_UPDATE)
         } else {
             val workRequest: PeriodicWorkRequest = PeriodicWorkRequest.Builder(
                 FeedUpdateWorker::class.java, UserPreferences.updateInterval, TimeUnit.HOURS)
@@ -42,14 +42,14 @@ object FeedUpdateManager {
                     .setRequiredNetworkType(if (UserPreferences.isAllowMobileFeedRefresh
                     ) NetworkType.CONNECTED else NetworkType.UNMETERED).build())
                 .build()
-            WorkManager.getInstance(context!!).enqueueUniquePeriodicWork(WORK_ID_FEED_UPDATE,
+            WorkManager.getInstance(context).enqueueUniquePeriodicWork(WORK_ID_FEED_UPDATE,
                 if (replace) ExistingPeriodicWorkPolicy.REPLACE else ExistingPeriodicWorkPolicy.KEEP, workRequest)
         }
     }
 
     @JvmStatic
     @JvmOverloads
-    fun runOnce(context: Context?, feed: Feed? = null, nextPage: Boolean = false) {
+    fun runOnce(context: Context, feed: Feed? = null, nextPage: Boolean = false) {
         val workRequest: OneTimeWorkRequest.Builder = OneTimeWorkRequest.Builder(FeedUpdateWorker::class.java)
             .setInitialDelay(0L, TimeUnit.MILLISECONDS)
             .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
@@ -65,7 +65,7 @@ object FeedUpdateManager {
             builder.putBoolean(EXTRA_NEXT_PAGE, nextPage)
         }
         workRequest.setInputData(builder.build())
-        WorkManager.getInstance(context!!).enqueueUniqueWork(WORK_ID_FEED_UPDATE_MANUAL,
+        WorkManager.getInstance(context).enqueueUniqueWork(WORK_ID_FEED_UPDATE_MANUAL,
             ExistingWorkPolicy.REPLACE, workRequest.build())
     }
 
@@ -73,14 +73,19 @@ object FeedUpdateManager {
     @JvmOverloads
     fun runOnceOrAsk(context: Context, feed: Feed? = null) {
         Log.d(TAG, "Run auto update immediately in background.")
-        if (feed != null && feed.isLocalFeed) {
-            runOnce(context, feed)
-        } else if (!networkAvailable()) {
-            EventBus.getDefault().post(MessageEvent(context.getString(R.string.download_error_no_connection)))
-        } else if (isFeedRefreshAllowed) {
-            runOnce(context, feed)
-        } else {
-            confirmMobileRefresh(context, feed)
+        when {
+            feed != null && feed.isLocalFeed -> {
+                runOnce(context, feed)
+            }
+            !networkAvailable() -> {
+                EventBus.getDefault().post(MessageEvent(context.getString(R.string.download_error_no_connection)))
+            }
+            isFeedRefreshAllowed -> {
+                runOnce(context, feed)
+            }
+            else -> {
+                confirmMobileRefresh(context, feed)
+            }
         }
     }
 

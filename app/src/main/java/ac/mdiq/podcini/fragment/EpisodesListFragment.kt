@@ -127,7 +127,10 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
+
         val root: View = inflater.inflate(R.layout.episodes_list_fragment, container, false)
+
+        Log.d(TAG, "fregment onCreateView")
         txtvInformation = root.findViewById(R.id.txtvInformation)
         toolbar = root.findViewById(R.id.toolbar)
         toolbar.setOnMenuItemClickListener(this)

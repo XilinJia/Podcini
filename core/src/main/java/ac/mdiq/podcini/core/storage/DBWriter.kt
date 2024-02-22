@@ -706,9 +706,7 @@ import java.util.concurrent.TimeUnit
      *        This option is usually set to true
      * @param itemIds IDs of the FeedItems.
      */
-    fun markItemPlayed(played: Int, broadcastUpdate: Boolean,
-                       vararg itemIds: Long
-    ): Future<*> {
+    fun markItemPlayed(played: Int, broadcastUpdate: Boolean, vararg itemIds: Long): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()

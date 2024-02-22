@@ -63,6 +63,8 @@ class CoverFragment : Fragment() {
     private var media: Playable? = null
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+
+        Log.d(TAG, "fregment onCreateView")
         viewBinding = CoverFragmentBinding.inflate(inflater)
         viewBinding.imgvCover.setOnClickListener { v: View? -> onPlayPause() }
         viewBinding.openDescription.setOnClickListener { view: View? ->

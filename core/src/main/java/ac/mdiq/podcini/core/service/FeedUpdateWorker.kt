@@ -59,6 +59,7 @@ class FeedUpdateWorker(context: Context, params: WorkerParameters) : Worker(cont
             toUpdate.shuffle() // If the worker gets cancelled early, every feed has a chance to be updated
         } else {
             val feed = DBReader.getFeed(feedId) ?: return Result.success()
+            Log.d(TAG, "doWork feed.download_url: ${feed.download_url}")
             if (!feed.isLocalFeed) {
                 allAreLocal = false
             }
@@ -187,7 +188,7 @@ class FeedUpdateWorker(context: Context, params: WorkerParameters) : Worker(cont
         if (!request.source.isNullOrEmpty()) {
             if (!downloader.permanentRedirectUrl.isNullOrEmpty()) {
                 DBWriter.updateFeedDownloadURL(request.source!!, downloader.permanentRedirectUrl!!)
-            } else if (feedSyncTask.redirectUrl != request.source) {
+            } else if (feedSyncTask.redirectUrl.isNotEmpty() && feedSyncTask.redirectUrl != request.source) {
                 DBWriter.updateFeedDownloadURL(request.source!!, feedSyncTask.redirectUrl)
             }
         }

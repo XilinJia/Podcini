@@ -22,6 +22,7 @@ import ac.mdiq.podcini.model.feed.FeedItem
 import ac.mdiq.podcini.model.feed.FeedItemFilter
 import ac.mdiq.podcini.model.feed.SortOrder
 import ac.mdiq.podcini.storage.preferences.UserPreferences
+import android.util.Log
 import androidx.annotation.OptIn
 import org.greenrobot.eventbus.EventBus
 
@@ -40,6 +41,8 @@ class InboxFragment : EpisodesListFragment() {
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val root = super.onCreateView(inflater, container, savedInstanceState)
+
+        Log.d(TAG, "fregment onCreateView")
         toolbar.inflateMenu(R.menu.inbox)
         toolbar.setTitle(R.string.inbox_label)
         prefs = requireActivity().getSharedPreferences(getPrefName(), Context.MODE_PRIVATE)

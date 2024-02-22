@@ -39,7 +39,7 @@ import java.util.concurrent.ExecutionException
         try {
             DBWriter.updateFeedDownloadURL(original, updated).get()
             feed.download_url = updated
-            runOnce(activityRef.get(), feed)
+            runOnce(activityRef.get()!!, feed)
         } catch (e: ExecutionException) {
             throw RuntimeException(e)
         } catch (e: InterruptedException) {

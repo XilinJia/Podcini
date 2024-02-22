@@ -91,6 +91,8 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         val root: View = inflater.inflate(R.layout.feedinfo, null)
+
+        Log.d(TAG, "fregment onCreateView")
         toolbar = root.findViewById(R.id.toolbar)
         toolbar.title = ""
         toolbar.inflateMenu(R.menu.feedinfo)

@@ -35,6 +35,8 @@ class ItemDescriptionFragment : Fragment() {
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         Log.d(TAG, "Creating view")
         val root = inflater.inflate(R.layout.item_description_fragment, container, false)
+
+        Log.d(TAG, "fregment onCreateView")
         webvDescription = root.findViewById(R.id.webview)
         webvDescription.setTimecodeSelectedListener { time: Int? ->
             controller?.seekTo(time!!)

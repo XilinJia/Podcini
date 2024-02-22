@@ -101,6 +101,7 @@ class ItemFragment : Fragment() {
 
         root = layout.findViewById(R.id.content_root)
 
+        Log.d(TAG, "fregment onCreateView")
         txtvPodcast = layout.findViewById(R.id.txtvPodcast)
         txtvPodcast.setOnClickListener { v: View? -> openPodcast() }
         txtvTitle = layout.findViewById(R.id.txtvTitle)

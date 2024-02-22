@@ -94,6 +94,8 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
         val root = inflater.inflate(R.layout.fragment_itunes_search, container, false)
+
+        Log.d(TAG, "fregment onCreateView")
         gridView = root.findViewById(R.id.gridView)
         adapter = ItunesAdapter(requireActivity(), ArrayList())
         gridView.setAdapter(adapter)

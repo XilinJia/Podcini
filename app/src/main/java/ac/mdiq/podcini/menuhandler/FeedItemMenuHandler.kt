@@ -133,65 +133,79 @@ object FeedItemMenuHandler {
      */
     fun onMenuItemClicked(fragment: Fragment, menuItemId: Int, selectedItem: FeedItem): Boolean {
         val context = fragment.requireContext()
-        if (menuItemId == R.id.skip_episode_item) {
-            context.sendBroadcast(MediaButtonReceiver.createIntent(context, KeyEvent.KEYCODE_MEDIA_NEXT))
-        } else if (menuItemId == R.id.remove_item) {
-            LocalDeleteModal.showLocalFeedDeleteWarningIfNecessary(context, listOf(selectedItem)
-            ) {
-                if (selectedItem.media != null) DBWriter.deleteFeedMediaOfItem(context,
-                    selectedItem.media!!.id)
+        when (menuItemId) {
+            R.id.skip_episode_item -> {
+                context.sendBroadcast(MediaButtonReceiver.createIntent(context, KeyEvent.KEYCODE_MEDIA_NEXT))
             }
-        } else if (menuItemId == R.id.remove_inbox_item) {
-            removeNewFlagWithUndo(fragment, selectedItem)
-        } else if (menuItemId == R.id.mark_read_item) {
-            selectedItem.setPlayed(true)
-            DBWriter.markItemPlayed(selectedItem, FeedItem.PLAYED, true)
-            if (selectedItem.feed?.isLocalFeed != true && SynchronizationSettings.isProviderConnected) {
-                val media: FeedMedia? = selectedItem.media
-                // not all items have media, Gpodder only cares about those that do
-                if (media != null) {
-                    val actionPlay: EpisodeAction = EpisodeAction.Builder(selectedItem, EpisodeAction.PLAY)
-                        .currentTimestamp()
-                        .started(media.getDuration() / 1000)
-                        .position(media.getDuration() / 1000)
-                        .total(media.getDuration() / 1000)
-                        .build()
-                    SynchronizationQueueSink.enqueueEpisodeActionIfSynchronizationIsActive(context, actionPlay)
+            R.id.remove_item -> {
+                LocalDeleteModal.showLocalFeedDeleteWarningIfNecessary(context, listOf(selectedItem)
+                ) {
+                    if (selectedItem.media != null) DBWriter.deleteFeedMediaOfItem(context,
+                        selectedItem.media!!.id)
                 }
             }
-        } else if (menuItemId == R.id.mark_unread_item) {
-            selectedItem.setPlayed(false)
-            DBWriter.markItemPlayed(selectedItem, FeedItem.UNPLAYED, false)
-            if (selectedItem.feed?.isLocalFeed != true && selectedItem.media != null) {
-                val actionNew: EpisodeAction = EpisodeAction.Builder(selectedItem, EpisodeAction.NEW)
-                    .currentTimestamp()
-                    .build()
-                SynchronizationQueueSink.enqueueEpisodeActionIfSynchronizationIsActive(context, actionNew)
+            R.id.remove_inbox_item -> {
+                removeNewFlagWithUndo(fragment, selectedItem)
             }
-        } else if (menuItemId == R.id.add_to_queue_item) {
-            DBWriter.addQueueItem(context, selectedItem)
-        } else if (menuItemId == R.id.remove_from_queue_item) {
-            DBWriter.removeQueueItem(context, true, selectedItem)
-        } else if (menuItemId == R.id.add_to_favorites_item) {
-            DBWriter.addFavoriteItem(selectedItem)
-        } else if (menuItemId == R.id.remove_from_favorites_item) {
-            DBWriter.removeFavoriteItem(selectedItem)
-        } else if (menuItemId == R.id.reset_position) {
-            selectedItem.media?.setPosition(0)
-            if (PlaybackPreferences.currentlyPlayingFeedMediaId == (selectedItem.media?.id ?: "")) {
-                PlaybackPreferences.writeNoMediaPlaying()
-                IntentUtils.sendLocalBroadcast(context, PlaybackServiceInterface.ACTION_SHUTDOWN_PLAYBACK_SERVICE)
+            R.id.mark_read_item -> {
+                selectedItem.setPlayed(true)
+                DBWriter.markItemPlayed(selectedItem, FeedItem.PLAYED, true)
+                if (selectedItem.feed?.isLocalFeed != true && SynchronizationSettings.isProviderConnected) {
+                    val media: FeedMedia? = selectedItem.media
+                    // not all items have media, Gpodder only cares about those that do
+                    if (media != null) {
+                        val actionPlay: EpisodeAction = EpisodeAction.Builder(selectedItem, EpisodeAction.PLAY)
+                            .currentTimestamp()
+                            .started(media.getDuration() / 1000)
+                            .position(media.getDuration() / 1000)
+                            .total(media.getDuration() / 1000)
+                            .build()
+                        SynchronizationQueueSink.enqueueEpisodeActionIfSynchronizationIsActive(context, actionPlay)
+                    }
+                }
             }
-            DBWriter.markItemPlayed(selectedItem, FeedItem.UNPLAYED, true)
-        } else if (menuItemId == R.id.visit_website_item) {
-            val url = FeedItemUtil.getLinkWithFallback(selectedItem)
-            if (url != null) IntentUtils.openInBrowser(context, url)
-        } else if (menuItemId == R.id.share_item) {
-            val shareDialog: ShareDialog = ShareDialog.newInstance(selectedItem)
-            shareDialog.show((fragment.requireActivity().supportFragmentManager), "ShareEpisodeDialog")
-        } else {
-            Log.d(TAG, "Unknown menuItemId: $menuItemId")
-            return false
+            R.id.mark_unread_item -> {
+                selectedItem.setPlayed(false)
+                DBWriter.markItemPlayed(selectedItem, FeedItem.UNPLAYED, false)
+                if (selectedItem.feed?.isLocalFeed != true && selectedItem.media != null) {
+                    val actionNew: EpisodeAction = EpisodeAction.Builder(selectedItem, EpisodeAction.NEW)
+                        .currentTimestamp()
+                        .build()
+                    SynchronizationQueueSink.enqueueEpisodeActionIfSynchronizationIsActive(context, actionNew)
+                }
+            }
+            R.id.add_to_queue_item -> {
+                DBWriter.addQueueItem(context, selectedItem)
+            }
+            R.id.remove_from_queue_item -> {
+                DBWriter.removeQueueItem(context, true, selectedItem)
+            }
+            R.id.add_to_favorites_item -> {
+                DBWriter.addFavoriteItem(selectedItem)
+            }
+            R.id.remove_from_favorites_item -> {
+                DBWriter.removeFavoriteItem(selectedItem)
+            }
+            R.id.reset_position -> {
+                selectedItem.media?.setPosition(0)
+                if (PlaybackPreferences.currentlyPlayingFeedMediaId == (selectedItem.media?.id ?: "")) {
+                    PlaybackPreferences.writeNoMediaPlaying()
+                    IntentUtils.sendLocalBroadcast(context, PlaybackServiceInterface.ACTION_SHUTDOWN_PLAYBACK_SERVICE)
+                }
+                DBWriter.markItemPlayed(selectedItem, FeedItem.UNPLAYED, true)
+            }
+            R.id.visit_website_item -> {
+                val url = FeedItemUtil.getLinkWithFallback(selectedItem)
+                if (url != null) IntentUtils.openInBrowser(context, url)
+            }
+            R.id.share_item -> {
+                val shareDialog: ShareDialog = ShareDialog.newInstance(selectedItem)
+                shareDialog.show((fragment.requireActivity().supportFragmentManager), "ShareEpisodeDialog")
+            }
+            else -> {
+                Log.d(TAG, "Unknown menuItemId: $menuItemId")
+                return false
+            }
         }
 
         // Refresh menu state

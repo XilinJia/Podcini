@@ -53,6 +53,7 @@ class AddFeedFragment : Fragment() {
         viewBinding = AddfeedBinding.inflate(inflater)
         activity = getActivity() as? MainActivity
 
+        Log.d(TAG, "fregment onCreateView")
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) {
             displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)

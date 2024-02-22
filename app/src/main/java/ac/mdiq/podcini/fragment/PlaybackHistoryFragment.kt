@@ -14,6 +14,7 @@ import ac.mdiq.podcini.core.storage.DBWriter
 import ac.mdiq.podcini.event.playback.PlaybackHistoryEvent
 import ac.mdiq.podcini.model.feed.FeedItem
 import ac.mdiq.podcini.model.feed.FeedItemFilter
+import android.util.Log
 import androidx.annotation.OptIn
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -28,6 +29,8 @@ class PlaybackHistoryFragment : EpisodesListFragment() {
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val root = super.onCreateView(inflater, container, savedInstanceState)
+
+        Log.d(TAG, "fregment onCreateView")
         toolbar.inflateMenu(R.menu.playback_history)
         toolbar.setTitle(R.string.playback_history_label)
         updateToolbar()

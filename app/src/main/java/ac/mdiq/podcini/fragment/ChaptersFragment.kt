@@ -67,6 +67,8 @@ class ChaptersFragment : AppCompatDialogFragment() {
     fun onCreateView(inflater: LayoutInflater): View {
         val root = inflater.inflate(R.layout.simple_list_fragment, null, false)
         root.findViewById<View>(R.id.toolbar).visibility = View.GONE
+
+        Log.d(TAG, "fregment onCreateView")
         val recyclerView = root.findViewById<RecyclerView>(R.id.recyclerView)
         progressBar = root.findViewById(R.id.progLoading)
         layoutManager = LinearLayoutManager(activity)

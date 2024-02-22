@@ -72,6 +72,8 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
                                            savedInstanceState: Bundle?
     ): View {
         val root: View = inflater.inflate(R.layout.simple_list_fragment, container, false)
+
+        Log.d(TAG, "fregment onCreateView")
         toolbar = root.findViewById(R.id.toolbar)
         toolbar.setTitle(R.string.downloads_label)
         toolbar.inflateMenu(R.menu.downloads_completed)

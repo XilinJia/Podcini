@@ -89,7 +89,7 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String?) {
         if (UserPreferences.PREF_UPDATE_INTERVAL == key) {
-            restartUpdateAlarm(context, true)
+            restartUpdateAlarm(requireContext(), true)
         }
     }
 

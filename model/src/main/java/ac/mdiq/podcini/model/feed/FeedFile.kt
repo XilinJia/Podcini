@@ -1,6 +1,7 @@
 package ac.mdiq.podcini.model.feed
 
 import android.text.TextUtils
+import android.util.Log
 import java.io.File
 
 /**
@@ -21,6 +22,7 @@ abstract class FeedFile @JvmOverloads constructor(@JvmField var file_url: String
      * will automatically be interpreted as false if the file_url is null.
      */
     init {
+//        Log.d("FeedFile", "$file_url $download_url $downloaded")
         this.downloaded = (file_url != null) && downloaded
     }
 

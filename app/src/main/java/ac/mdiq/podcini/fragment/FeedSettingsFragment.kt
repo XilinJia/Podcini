@@ -61,6 +61,7 @@ class FeedSettingsFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val root = inflater.inflate(R.layout.feedsettings, container, false)
         val feedId = requireArguments().getLong(EXTRA_FEED_ID)
+        Log.d(TAG, "fregment onCreateView")
 
         val toolbar = root.findViewById<MaterialToolbar>(R.id.toolbar)
         toolbar.setNavigationOnClickListener { v: View? -> parentFragmentManager.popBackStack() }

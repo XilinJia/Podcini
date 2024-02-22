@@ -47,6 +47,7 @@ class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, To
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
+        Log.d(TAG, "fregment onCreateView")
         viewBinding = DownloadLogFragmentBinding.inflate(inflater)
         viewBinding.toolbar.inflateMenu(R.menu.download_log)
         viewBinding.toolbar.setOnMenuItemClickListener(this)

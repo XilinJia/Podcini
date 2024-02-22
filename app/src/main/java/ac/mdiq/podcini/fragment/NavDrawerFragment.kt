@@ -69,6 +69,8 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
     ): View {
         super.onCreateView(inflater, container, savedInstanceState)
         val root: View = inflater.inflate(R.layout.nav_list, container, false)
+
+        Log.d(TAG, "fregment onCreateView")
         setupDrawerRoundBackground(root)
         ViewCompat.setOnApplyWindowInsetsListener(root
         ) { view: View, insets: WindowInsetsCompat ->

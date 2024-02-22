@@ -52,6 +52,8 @@ class ExternalPlayerFragment : Fragment() {
                               savedInstanceState: Bundle?
     ): View? {
         val root = inflater.inflate(R.layout.external_player_fragment, container, false)
+
+        Log.d(TAG, "fregment onCreateView")
         imgvCover = root.findViewById(R.id.imgvCover)
         txtvTitle = root.findViewById(R.id.txtvTitle)
         butPlay = root.findViewById(R.id.butPlay)

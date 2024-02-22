@@ -31,6 +31,7 @@ import kotlin.math.min
 object DBReader {
     private const val TAG = "DBReader"
     private var feeds: MutableList<Feed> = mutableListOf()
+    private val feedListLock = Any()
 
     /**
      * Maximum size of the list returned by [.getDownloadLog].
@@ -40,23 +41,7 @@ object DBReader {
     @JvmStatic
     fun getFeedList(): List<Feed> {
         return feeds
-
-//        Log.d(TAG, "Extracting Feedlist")
-
-//        val adapter = getInstance()
-//        adapter.open()
-//        try {
-//            return getFeedList(adapter)
-//        } finally {
-//            adapter.close()
-//        }
     }
-
-//    fun getFeedList(adapter: PodDBAdapter): List<Feed> {
-//        if (feeds != null) return feeds!!
-//        updateFeedList(adapter)
-//        return feeds!!
-//    }
 
     fun updateFeedList() {
         val adapter = getInstance()
@@ -69,11 +54,13 @@ object DBReader {
     }
 
     fun updateFeedList(adapter: PodDBAdapter) {
-        adapter.allFeedsCursor.use { cursor ->
-            feeds = ArrayList(cursor.count)
-            while (cursor.moveToNext()) {
-                val feed = extractFeedFromCursorRow(cursor)
-                feeds.add(feed)
+        synchronized(feedListLock) {
+            adapter.allFeedsCursor.use { cursor ->
+                feeds = ArrayList(cursor.count)
+                while (cursor.moveToNext()) {
+                    val feed = extractFeedFromCursorRow(cursor)
+                    feeds.add(feed)
+                }
             }
         }
     }
@@ -105,7 +92,10 @@ object DBReader {
      */
     fun loadAdditionalFeedItemListData(items: List<FeedItem>) {
         loadTagsOfFeedItemList(items)
-        loadFeedDataOfFeedItemList(items)
+
+        synchronized(feedListLock) {
+            loadFeedDataOfFeedItemList(items)
+        }
     }
 
     private fun loadTagsOfFeedItemList(items: List<FeedItem>) {
@@ -131,7 +121,8 @@ object DBReader {
      */
     private fun loadFeedDataOfFeedItemList(items: List<FeedItem>) {
         val feedIndex: MutableMap<Long, Feed> = ArrayMap(feeds.size)
-        for (feed in feeds) {
+        val feedsCopy = ArrayList(feeds)
+        for (feed in feedsCopy) {
             feedIndex[feed.id] = feed
         }
         for (item in items) {

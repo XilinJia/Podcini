@@ -92,6 +92,8 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                                            savedInstanceState: Bundle?
     ): View {
+        Log.d(TAG, "fregment onCreateView")
+
         viewBinding = FeedItemListFragmentBinding.inflate(inflater)
         speedDialBinding = MultiSelectSpeedDialBinding.bind(viewBinding.root)
         viewBinding.toolbar.inflateMenu(R.menu.feedlist)
@@ -132,7 +134,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         nextPageLoader.setClickListener(object : MoreContentListFooterUtil.Listener {
             override fun onClick() {
                 if (feed != null) {
-                    FeedUpdateManager.runOnce(context, feed, true)
+                    FeedUpdateManager.runOnce(requireContext(), feed, true)
                 }
             }
         })
@@ -152,8 +154,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 
         viewBinding.swipeRefresh.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
         viewBinding.swipeRefresh.setOnRefreshListener {
-            FeedUpdateManager.runOnceOrAsk(requireContext(),
-                feed)
+            FeedUpdateManager.runOnceOrAsk(requireContext(), feed)
         }
 
         loadItems()
@@ -240,7 +241,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
                     feed!!.pageNr = 0
                     try {
                         DBWriter.resetPagedFeedPage(feed).get()
-                        FeedUpdateManager.runOnce(context, feed)
+                        FeedUpdateManager.runOnce(requireContext(), feed)
                     } catch (e: ExecutionException) {
                         throw RuntimeException(e)
                     } catch (e: InterruptedException) {

@@ -24,6 +24,7 @@ import ac.mdiq.podcini.core.util.download.FeedUpdateManager
 import ac.mdiq.podcini.databinding.HomeFragmentBinding
 import ac.mdiq.podcini.event.FeedListUpdateEvent
 import ac.mdiq.podcini.event.FeedUpdateRunningEvent
+import ac.mdiq.podcini.fragment.ItemPagerFragment
 import ac.mdiq.podcini.fragment.SearchFragment
 import ac.mdiq.podcini.storage.preferences.UserPreferences
 import ac.mdiq.podcini.ui.echo.EchoActivity
@@ -51,6 +52,8 @@ class HomeFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
+
+        Log.d(TAG, "fregment onCreateView")
         viewBinding = HomeFragmentBinding.inflate(inflater)
         viewBinding.toolbar.inflateMenu(R.menu.home)
         viewBinding.toolbar.setOnMenuItemClickListener(this)

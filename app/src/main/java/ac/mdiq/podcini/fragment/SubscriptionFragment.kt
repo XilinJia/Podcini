@@ -79,6 +79,8 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
                                            savedInstanceState: Bundle?
     ): View {
         val root: View = inflater.inflate(R.layout.fragment_subscriptions, container, false)
+
+        Log.d(TAG, "fregment onCreateView")
         toolbar = root.findViewById(R.id.toolbar)
         toolbar.setOnMenuItemClickListener(this)
         toolbar.setOnLongClickListener { v: View? ->

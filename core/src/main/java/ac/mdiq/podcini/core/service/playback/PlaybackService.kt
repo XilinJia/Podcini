@@ -781,11 +781,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
 
     private val mediaPlayerCallback: PSMPCallback = object : PSMPCallback {
         override fun statusChanged(newInfo: PSMPInfo?) {
-            currentMediaType = if (mediaPlayer != null) {
-                mediaPlayer!!.getCurrentMediaType()
-            } else {
-                MediaType.UNKNOWN
-            }
+            currentMediaType = mediaPlayer?.getCurrentMediaType() ?: MediaType.UNKNOWN
 
             updateMediaSession(newInfo!!.playerStatus)
             when (newInfo.playerStatus) {

@@ -25,7 +25,7 @@ Gjord av podcastentusiaster, Podcini är fri i ordets alla bemärkelser: öppen 
 Podcini utvecklas av frivilliga eldsjälar. Även du kan bidra via utvecklingsinsatser eller kommentarer!
 
 Våra vänliga forummedlemmar hjälper glatt till med alla frågor du har. Du inbjuds också att diskutera funktioner och podcasting generellt.
-https://forum.podcini.org/
+https://github.com/XilinJia/Podcini
 
 Transifex är platsen att gå till för att hjälpa till med översättningen:
-https://www.transifex.com/podcini/podcini
+to be announced

@@ -25,7 +25,7 @@ Creado por entusiastas del pódcast, Podcini es libre en todos los sentidos: có
 Podcini es desarrollado por voluntarios. ¡Tú también puedes contribuir, con tu código o con tus comentarios!
 
 Nuestros amables miembros del foro te ayudarán con cualquier duda que tengas. Estás invitado a discutir sobre las características y el podcasting en general.
-https://forum.podcini.org/
+https://github.com/XilinJia/Podcini
 
 Ayuda con las traducciones en Transifex:
-https://www.transifex.com/podcini/podcini
+to be announced

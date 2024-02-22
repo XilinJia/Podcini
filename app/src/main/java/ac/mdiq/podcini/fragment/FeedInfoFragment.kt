@@ -82,8 +82,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             val cm = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             cm.setPrimaryClip(clipData)
             if (Build.VERSION.SDK_INT <= 32) {
-                (activity as MainActivity).showSnackbarAbovePlayer(R.string.copied_to_clipboard,
-                    Snackbar.LENGTH_SHORT)
+                (activity as MainActivity).showSnackbarAbovePlayer(R.string.copied_to_clipboard, Snackbar.LENGTH_SHORT)
             }
         }
     }
@@ -118,7 +117,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         txtvTitle = root.findViewById(R.id.txtvTitle)
         txtvAuthorHeader = root.findViewById(R.id.txtvAuthor)
         imgvBackground = root.findViewById(R.id.imgvBackground)
-        header = root.findViewById(R.id.headerContainer)
+        header = root.findViewById(R.id.header)
         infoContainer = root.findViewById(R.id.infoContainer)
         root.findViewById<View>(R.id.butShowInfo).visibility = View.INVISIBLE
         root.findViewById<View>(R.id.butShowSettings).visibility = View.INVISIBLE

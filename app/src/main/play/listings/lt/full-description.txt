@@ -25,7 +25,7 @@ Sukurtas tinklalaidžių entuziastų, „Podcini“ yra laisvas visomis prasmėm
 „Podcini“ vysto savanoriai. Ir Jūs galite prisidėti, nuo atsiliepimų iki programinio kodo!
 
 Draugiški mūsų forumo nariai pasiruošę padėti visais turimais klausimais. Kviečiame diskutuoti apie programėlės funkcijas bei bendrai apie tinklalaides.
-https://forum.podcini.org/
+https://github.com/XilinJia/Podcini
 
 Prie vertimų galite prisidėti „Transifex“:
-https://www.transifex.com/podcini/podcini
+to be announced

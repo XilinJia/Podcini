@@ -25,7 +25,7 @@ Vytvořeno nadšenci do podcastů, Podcini je software s otevřeným zdrojovým 
 Podcini je aktivně vyvíjen dobrovolníky. Můžete přispět také svým kódem nebo komentáři!
 
 Naše přátelská členská základna vám ráda zodpoví jakékoli dotazy. Zveme vás k diskuzi o Podciniu nebo i podcastech obecně.
-https://forum.podcini.org/
+https://github.com/XilinJia/Podcini
 
 Na Transifexu můžete pomoct s překladem:
-https://www.transifex.com/podcini/podcini
+to be announced

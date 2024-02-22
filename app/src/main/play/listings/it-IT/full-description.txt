@@ -25,7 +25,7 @@ Creato da appassionati di podcast, Podcini è libero in tutti i sensi: open sour
 Podcini è sviluppato da volontari. Anche tu puoi contribuire, con il codice o con dei commenti!
 
 I simpatici membri del nostro forum sono felici di rispondere a qualsiasi domanda tu possa avere. Ti invitiamo anche a discutere di funzionalità e podcasting.
-https://forum.podcini.org/
+https://github.com/XilinJia/Podcini
 
 Transifex è dove puoi contribuire alla traduzione:
-https://www.transifex.com/podcini/podcini
+to be announced

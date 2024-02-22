@@ -25,7 +25,7 @@ Podcini, ki so ga izdelali ljubitelji podkastov, je brezplačen v vseh pomenih b
 Podcini aktivno razvijajo prostovoljci. Prispevate lahko tudi vi, s kodo ali s komentarjem!
 
 Naši prijazni člani foruma Vam z veseljem pomagajo pri vsakem vprašanju. Vabljeni tudi k razpravi o funkcijah in podcastingu na splošno.
-https://forum.podcini.org/
+https://github.com/XilinJia/Podcini
 
 Transifex je kraj za pomoč pri prevodih:
-https://www.transifex.com/podcini/podcini
+to be announced

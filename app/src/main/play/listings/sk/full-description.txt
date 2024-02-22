@@ -25,7 +25,7 @@ Počúvajte heslom chránené zdroje a epizódy
 Podcini aktívne vyvíjajú dobrovoľníci. Tiež môžete prispieť kódom alebo komentárom.
 
 Na našom fóre môžete v priateľskej atmosfére diskutovať a nájsť odpovede na vaše otázky o nových funkciách alebo všeobecne o podcastingu. 
-https://forum.podcini.org/
+https://github.com/XilinJia/Podcini
 
 Transifex je miesto, kde môžete pomôcť s prekladom:
-https://www.transifex.com/podcini/podcini
+to be announced

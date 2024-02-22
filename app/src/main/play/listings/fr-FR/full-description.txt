@@ -25,7 +25,7 @@ Conçu par des fans de podcast, Podcini est gratuit, open source et sans publici
 Podcini est développé activement par des volontaires. Vous pouvez aussi contribuer avec du code, des traductions ou des commentaires !
 
 Les utilisateurs de notre forum seront heureux de répondre à vos questions. Rejoignez-nous pour discuter des fonctionnalités et des podcasts.
-https://forum.podcini.org/
+https://github.com/XilinJia/Podcini
 
 Rendez-vous sur Transifex pour aider la traduction :
-https://www.transifex.com/podcini/podcini
+to be announced

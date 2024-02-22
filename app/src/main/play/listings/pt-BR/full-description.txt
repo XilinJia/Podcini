@@ -25,7 +25,7 @@ Junte-se à comunidade do Podcini!
 O Podcini está sob constante desenvolvimento através de voluntários. Você também pode contribuir, com código ou um comentário!
 
 Nossos simpáticos membros do fórum ficarão felizes em ajudar com todas as perguntas que você tiver. Você está convidado a discutir sobre funcionalidades e podcasts em geral também.
-https://forum.podcini.org/
+https://github.com/XilinJia/Podcini
 
 Transifex é o lugar para ajudar com as traduções:<br>
-https://www.transifex.com/podcini/podcini
+to be announced

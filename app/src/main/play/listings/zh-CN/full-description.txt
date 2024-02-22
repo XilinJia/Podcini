@@ -25,7 +25,7 @@ Podcini是一个播客管理器和播放器，可以让你即时访问数以百�
 Podcini 用爱发电，借助社区持续更新。您也可以通过提交代码或发表评论做出贡献！
 
 我们友好的论坛成员乐意为您的每个问题提供帮助。我们还邀请您讨论功能和播客。
-https://forum.podcini.org/
+https://github.com/XilinJia/Podcini
 
 您可以前往 Transifex 协助翻译：
-https://www.transifex.com/podcini/podcini
+to be announced

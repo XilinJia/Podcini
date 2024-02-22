@@ -25,7 +25,7 @@ Iturriak gehitu eta inportatu iTunes eta gPodder.net direktorio eta, OPML artxib
 Podcini etengabe ari da garatzen boluntarioekin. Zuk ere ekarpena egin dezakezu, zure kodearekin edo zure iruzkinekin!
 
 Foroko kideak pozik daude galdera bakoitzarekin laguntzeagatik. Ezaugarriak eta podcastinga, oro har, eztabaidatzera gonbidatuta zaude.
-https://forum.podcini.org/
+https://github.com/XilinJia/Podcini
 
 Transifex itzulpenekin laguntzeko lekua da:
-https://www.transifex.com/podcini/podcini
+to be announced

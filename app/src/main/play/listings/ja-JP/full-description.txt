@@ -25,7 +25,7 @@ Podcini は、独立したポッドキャスターから BBC、NPR、CNN など�
 Podcini はボランティアによって活発に開発中です。コードやコメントで、あなたも貢献することができます!
 
 フレンドリーなフォーラムメンバーが、あらゆる質問に喜んでお答えします。機能やポッドキャスト全般についてもご相談ください。
-https://forum.podcini.org/
+https://github.com/XilinJia/Podcini
 
 Transifex は翻訳を支援する場所です:
-https://www.transifex.com/podcini/podcini
+to be announced

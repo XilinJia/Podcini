@@ -25,7 +25,7 @@ Creează o copie de siguranță cu integrarea gPodder.net și exportul în fiși
 Podcini se dezvoltă activ cu ajutorul voluntarilor. Poți să contribui și tu cu cod sau cu un comentariu!
 
 Membrii forumului nostru sunt prietenoși si fericiți să vă ajute cu fiecare întrebare ai avea. Ești invitat să discuți funcționalități noi sau podcasturi în general.
-https://forum.podcini.org/
+https://github.com/XilinJia/Podcini
 
 Pentru a ajuta cu traducerile atunci trebuie să folosești Transifex
-https://www.transifex.com/podcini/podcini
+to be announced

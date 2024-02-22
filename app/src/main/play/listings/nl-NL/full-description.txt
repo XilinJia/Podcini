@@ -25,7 +25,7 @@ Podcini is gemaakt door podcast-enthousiastelingen. Het team van vrijwilligers b
 Podcini wordt regelmatig geüpdatet door vrijwilligers. En jij kan ook helpen, met code of commentaar!
 
 De vriendelijke leden van ons forum helpen je graag met welke vraag dan ook. Deel gerust ook ideëen voor nieuwe functies of podcasts in het algemeen.
-https://forum.podcini.org/
+https://github.com/XilinJia/Podcini
 
 Transifex is de beste plek om te helpen met vertalen:
-https://www.transifex.com/podcini/podcini
+to be announced

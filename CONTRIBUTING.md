@@ -24,7 +24,7 @@ How to submit a feature request
 Translating Podcini
 ----------------------
 
-If you would like to translate the app into another language or improve an existing translation, you can visit the [Transifex project page](https://www.transifex.com/podcini/podcini/). From there, you can either join a language team if it already exists or create a new language team.
+If you would like to translate the app into another language or improve an existing translation, you can visit the [Transifex project page](to be announced/). From there, you can either join a language team if it already exists or create a new language team.
 
 Submit a pull request
 ---------------------
@@ -37,7 +37,7 @@ Submit a pull request
 - Please do not upgrade dependencies or build tools unless you have a good reason for it. Doing so can easily introduce bugs that are hard to track down.
 - If you plan to do a change that touches many files (10+), please ask beforehand. This usually causes merge conflicts for other developers.
 - Please follow our code style. You can use Checkstyle within Android Studio using our [configuration file](https://github.com/XilinJia/Podcini/blob/develop/config/checkstyle/checkstyle-new-code.xml).
-- Please only change the English string resources. Translations are handled on [Transifex](https://www.transifex.com/podcini/podcini/).
+- Please only change the English string resources. Translations are handled on [Transifex](to be announced/).
 
 Building From Source
 --------------------------

@@ -25,7 +25,7 @@ Kuna Podcini on tehtud taskuhäälingu entusiastide poolt, on Podcini vaba selle
 Podcini on vabatahtlike poolt aktiivselt arendamisel. Ka sina võid anda oma osa, kirjutades koodi või andes tagasisidet!
 
 Meie sõbralikud foorumi liikmed aitavad sind meeleldi leida vastuse kõigile küsimustele. Oled oodatud arutama nii äpi võimalusi kui taskuhäälinguid üldiselt.
-https://forum.podcini.org/
+https://github.com/XilinJia/Podcini
 
 Transifex on koht, kus saab aidata tõlgetega:
-https://www.transifex.com/podcini/podcini
+to be announced

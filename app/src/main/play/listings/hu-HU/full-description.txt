@@ -25,7 +25,7 @@ Podcast-rajongók készítésében, az Podcini teljesen szabad, nyílt forrásk�
 Az Podciniot aktívan fejlesztik az önkéntesek. Ön is közreműködhet: kóddal vagy megjegyzésekkel!
 
 A barátságos fórumtagjaink örömmel segítenek minden felmerülő kérdésben. Meghívjuk, hogy beszélgessen a funkciókról, valamint általánosságban a podcastolásról.
-https://forum.podcini.org/
+https://github.com/XilinJia/Podcini
 
 A Transifexen segíthet a fordításokban:
-https://www.transifex.com/podcini/podcini
+to be announced

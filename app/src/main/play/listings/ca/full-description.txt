@@ -25,7 +25,7 @@ Fet per entusiastes dels podcasts, Podcini es lliure en tots els sentits de la p
 L'Podcini el desenvolupen voluntaris. Podeu col·laborar, amb codi o comentaris.
 
 Els amigables membres del nostre fòrum estaran contents d'ajudar-vos amb qualsevol pregunta. Esteu convidats a parlar de les features i de podcasting en general, a més.
-https://forum.podcini.org/
+https://github.com/XilinJia/Podcini
 
 Transifex és el lloc on podeu ajudar amb les traduccions.
-https://www.transifex.com/podcini/podcini
+to be announced

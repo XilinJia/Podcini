@@ -25,7 +25,7 @@ Podcasteihin uppoutuneihin luoma sovellus, Podcini on vapaa ja ilmainen kaikissa
 Podcini on vapaaehtoisten aktiivisessa kehityksessä. Sinä voit auttaa koodilla tai kommentilla!
 
 Ystävälliset foorumin jäsenet vastaavat mielellään jokaiseen kysymykseesi. Kutsumme sinut keskustelemaan myös ominaisuuksista ja podcasteista yleisesti.
-https://forum.podcini.org/
+https://github.com/XilinJia/Podcini
 
 Transifex on kielikäännöksien kirjoitusalusta:
-https://www.transifex.com/podcini/podcini
+to be announced

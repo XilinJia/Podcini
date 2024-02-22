@@ -25,7 +25,7 @@ Podcini ist von Podcast-Enthusiasten gemacht und frei im wahrsten Sinne des Wort
 Podcini wird aktiv von Freiwilligen weiterentwickelt. Auch du kannst bei der Entwicklung mit Quellcode oder Kommentaren mitwirken!
 
 Unsere freundlichen Freiwilligen im Forum stehen dir bei allen Fragen zur Seite. Gerne kannst du dich dort auch über neue Funktionen und über Podcasting generell austauschen.
-https://forum.podcini.org/
+https://github.com/XilinJia/Podcini
 
 Mit Transifex kannst du uns beim Übersetzen helfen:
-https://www.transifex.com/podcini/podcini
+to be announced

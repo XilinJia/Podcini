@@ -25,7 +25,7 @@ Feita por entusiastas do podcast, Podcini é libre en todos os sentidos da palab
 Podcini está baixo continuo desenvolvemento grazas a persoas voluntarias. Ti tamén podes contribuír, con código ou con comentarios!
 
 No noso foro estamos encantados de poder axudarche con calquera dúbida que teñas. Convidámoste a comentar a aplicación e o podcasting en xeral.
-https://forum.podcini.org/
+https://github.com/XilinJia/Podcini
 
 As traducións fanse en Transifex:
-https://www.transifex.com/podcini/podcini
+to be announced

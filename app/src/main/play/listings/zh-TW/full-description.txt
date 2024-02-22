@@ -25,7 +25,7 @@ Podcini 由 Podcast 愛好者鼎力製作，免費、無廣告、開放原始碼
 Podcini 由志工熱情製作，您也可以加入 -- 幫忙寫程式或給意見都非常歡迎！
 
 若您遇上使用問題，論壇上的社群成員都樂意提供協助。您也可以加入討論未來功能、其他 Podcast 相關的事情。
-https://forum.podcini.org/
+https://github.com/XilinJia/Podcini
 
 協助翻譯請至 Transifex：
-https://www.transifex.com/podcini/podcini
+to be announced

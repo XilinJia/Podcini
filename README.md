@@ -13,3 +13,9 @@ Differing from the forked project, this project is purely Kotlin based, relies o
 ## License
 
 Podcini, same as its forked project AntennaPod, is licensed under the GNU General Public License (GPL-3.0). You can find the license text in the LICENSE file.
+
+## Copyright
+
+New files and modifications in the project is copyrighted in 2024 by Xilin Jia.
+
+Original files from the forked project maintains copyrights of the AntennaPod team.

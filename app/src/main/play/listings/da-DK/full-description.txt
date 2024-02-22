@@ -25,7 +25,7 @@ Backup dine abonnementer med gpodder.net integreationen og OPML-eksport
 Podcini er under aktiv udvikling af frivillige. Du kan også bidrage, enten med kode eller kommentarer!
 
 Vores venlige forummedlemmer vil gerne hjælpe med ethvert spørgsmål du skulle have. Du er også velkommen til at diskutere funktionalitet og podcasts generelt.
-https://forum.podcini.org/
+https://github.com/XilinJia/Podcini
 
 Transifex er stedet hvor du kan hjælpe med at oversætte:
-https://www.transifex.com/podcini/podcini
+to be announced

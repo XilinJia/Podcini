@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="4dp"
-    tools:layout_width="150dp">
+    tools:layout_width="400dp">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/outerContainer"
@@ -45,8 +45,7 @@
                     android:textStyle="bold"
                     android:textColor="?android:attr/textColorPrimary"
                     android:lines="1"
-                    android:importantForAccessibility="no"
-                    tools:text="@sample/episodes.json/data/title" />
+                    android:text="Title" />
 
                 <TextView
                     android:id="@+id/producerLabel"
@@ -54,8 +53,7 @@
                     android:layout_height="wrap_content"
                     android:textColor="?android:attr/textColorSecondary"
                     android:lines="1"
-                    android:importantForAccessibility="no"
-                    tools:text="@sample/episodes.json/data/title" />
+                    android:text="Author" />
 
                 <TextView
                     android:id="@+id/countLabel"
@@ -63,28 +61,19 @@
                     android:layout_height="wrap_content"
                     android:textColor="?android:attr/textColorSecondary"
                     android:lines="1"
-                    android:importantForAccessibility="no"
-                    tools:text="@sample/episodes.json/data/title" />
-
+                    android:text="number episodes" />
             </LinearLayout>
-
-        </LinearLayout>
-
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
 
             <ImageView
                 android:id="@+id/errorIcon"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:layout_alignParentEnd="true"
                 android:layout_margin="8dp"
                 android:visibility="gone"
                 android:contentDescription="@string/refresh_failed_msg"
                 app:srcCompat="@drawable/ic_error"
                 tools:visibility="visible" />
-        </RelativeLayout>
+        </LinearLayout>
 
         <FrameLayout
             android:id="@+id/selectContainer"

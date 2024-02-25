@@ -861,7 +861,8 @@ object UserPreferences {
 
     @JvmStatic
     fun shouldShowSubscriptionTitle(): Boolean {
-        return prefs.getBoolean(PREF_SUBSCRIPTION_TITLE, true)
+        return true
+//        return prefs.getBoolean(PREF_SUBSCRIPTION_TITLE, true)
     }
 
     @JvmStatic

@@ -33,7 +33,6 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
     private var listItems: List<NavDrawerData.DrawerItem>
     private var selectedItem: NavDrawerData.DrawerItem? = null
     private var longPressedPosition: Int = 0 // used to init actionMode
-    private var columnCount = 1
 
     init {
         this.listItems = ArrayList()
@@ -49,9 +48,8 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SubscriptionViewHolder {
-        val itemView: View =
-            LayoutInflater.from(mainActivityRef.get()).inflate(R.layout.subscription_item, parent, false)
-        itemView.findViewById<View>(R.id.titleLabel).visibility = if (viewType == COVER_WITH_TITLE) View.VISIBLE else View.GONE
+        val itemView: View = LayoutInflater.from(mainActivityRef.get()).inflate(R.layout.subscription_item, parent, false)
+//        itemView.findViewById<View>(R.id.titleLabel).visibility = if (viewType == COVER_WITH_TITLE) View.VISIBLE else View.GONE
         return SubscriptionViewHolder(itemView)
     }
 
@@ -178,7 +176,8 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (UserPreferences.shouldShowSubscriptionTitle()) COVER_WITH_TITLE else 0
+        return 0
+//        return if (UserPreferences.shouldShowSubscriptionTitle()) COVER_WITH_TITLE else 0
     }
 
     inner class SubscriptionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -247,7 +246,7 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
     }
 
     companion object {
-        private const val COVER_WITH_TITLE = 1
+//        private const val COVER_WITH_TITLE = 1
 
         fun convertDpToPixel(context: Context, dp: Float): Float {
             return dp * context.resources.displayMetrics.density

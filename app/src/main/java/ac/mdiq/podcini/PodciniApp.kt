@@ -9,15 +9,14 @@ import com.google.android.material.color.DynamicColors
 import com.joanzapata.iconify.Iconify
 import com.joanzapata.iconify.fonts.FontAwesomeModule
 import com.joanzapata.iconify.fonts.MaterialModule
-import ac.mdiq.podcini.activity.SplashActivity
-import ac.mdiq.podcini.config.ApplicationCallbacksImpl
-import ac.mdiq.podcini.core.ApCoreEventBusIndex
-import ac.mdiq.podcini.core.ClientConfig
-import ac.mdiq.podcini.core.ClientConfigurator
-import ac.mdiq.podcini.error.CrashReportWriter
-import ac.mdiq.podcini.error.RxJavaErrorHandlerSetup
+import ac.mdiq.podcini.ui.activity.SplashActivity
+import ac.mdiq.podcini.util.config.ApplicationCallbacksImpl
+import ac.mdiq.podcini.util.config.ClientConfig
+import ac.mdiq.podcini.util.config.ClientConfigurator
+import ac.mdiq.podcini.util.error.CrashReportWriter
+import ac.mdiq.podcini.util.error.RxJavaErrorHandlerSetup
 import ac.mdiq.podcini.preferences.PreferenceUpgrader
-import ac.mdiq.podcini.spa.SPAUtil
+import ac.mdiq.podcini.util.SPAUtil
 import org.greenrobot.eventbus.EventBus
 
 /** Main application class.  */
@@ -26,7 +25,8 @@ class PodciniApp : Application() {
     override fun onCreate() {
         super.onCreate()
         ClientConfig.USER_AGENT = "Podcini/" + BuildConfig.VERSION_NAME
-        ClientConfig.applicationCallbacks = ApplicationCallbacksImpl()
+        ClientConfig.applicationCallbacks =
+            ApplicationCallbacksImpl()
 
         Thread.setDefaultUncaughtExceptionHandler(CrashReportWriter())
         RxJavaErrorHandlerSetup.setupRxJavaErrorHandler()
@@ -53,7 +53,7 @@ class PodciniApp : Application() {
         SPAUtil.sendSPAppsQueryFeedsIntent(this)
         EventBus.builder()
             .addIndex(ApEventBusIndex())
-            .addIndex(ApCoreEventBusIndex())
+//            .addIndex(ApCoreEventBusIndex())
             .logNoSubscriberMessages(false)
             .sendNoSubscriberEvent(false)
             .installDefaultEventBus()

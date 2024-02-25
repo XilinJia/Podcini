@@ -86,7 +86,7 @@
             android:layoutDirection="ltr"
             android:orientation="vertical">
 
-            <ac.mdiq.podcini.view.ChapterSeekBar
+            <ac.mdiq.podcini.ui.view.ChapterSeekBar
                 android:id="@+id/sbPosition"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -104,7 +104,7 @@
                 android:paddingLeft="8dp"
                 android:paddingRight="8dp">
 
-                <ac.mdiq.podcini.view.NoRelayoutTextView
+                <ac.mdiq.podcini.ui.view.NoRelayoutTextView
                     android:id="@+id/txtvPosition"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -116,7 +116,7 @@
                     android:textColor="?android:attr/textColorSecondary"
                     android:textSize="@dimen/text_size_micro" />
 
-                <ac.mdiq.podcini.view.NoRelayoutTextView
+                <ac.mdiq.podcini.ui.view.NoRelayoutTextView
                     android:id="@+id/txtvLength"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -138,7 +138,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp">
 
-                <ac.mdiq.podcini.view.PlayButton
+                <ac.mdiq.podcini.ui.view.PlayButton
                     android:id="@+id/butPlay"
                     android:layout_width="@dimen/audioplayer_playercontrols_length_big"
                     android:layout_height="@dimen/audioplayer_playercontrols_length_big"

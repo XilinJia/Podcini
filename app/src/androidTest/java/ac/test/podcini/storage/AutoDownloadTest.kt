@@ -2,14 +2,14 @@ package de.test.podcini.storage
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
-import ac.mdiq.podcini.core.preferences.PlaybackPreferences.Companion.currentlyPlayingFeedMediaId
-import ac.mdiq.podcini.core.storage.AutomaticDownloadAlgorithm
-import ac.mdiq.podcini.core.storage.DBReader.getQueue
-import ac.mdiq.podcini.core.storage.DBTasks.setDownloadAlgorithm
-import ac.mdiq.podcini.core.util.playback.PlaybackServiceStarter
-import ac.mdiq.podcini.model.feed.FeedItem
-import ac.mdiq.podcini.storage.preferences.UserPreferences.isAllowMobileStreaming
-import ac.mdiq.podcini.storage.preferences.UserPreferences.isFollowQueue
+import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.currentlyPlayingFeedMediaId
+import ac.mdiq.podcini.storage.AutomaticDownloadAlgorithm
+import ac.mdiq.podcini.storage.DBReader.getQueue
+import ac.mdiq.podcini.storage.DBTasks.setDownloadAlgorithm
+import ac.mdiq.podcini.playback.PlaybackServiceStarter
+import ac.mdiq.podcini.storage.model.feed.FeedItem
+import ac.mdiq.podcini.preferences.UserPreferences.isAllowMobileStreaming
+import ac.mdiq.podcini.preferences.UserPreferences.isFollowQueue
 import de.test.podcini.EspressoTestUtils
 import de.test.podcini.ui.UITestUtils
 import org.awaitility.Awaitility
@@ -106,7 +106,7 @@ class AutoDownloadTest {
         var currentlyPlayingAtDownload: Long = -1
             private set
 
-        override fun autoDownloadUndownloadedItems(context: Context?): Runnable? {
+        override fun autoDownloadUndownloadedItems(context: Context): Runnable? {
             return Runnable {
                 if (currentlyPlayingAtDownload == -1L) {
                     currentlyPlayingAtDownload = currentlyPlayingFeedMediaId

@@ -1,6 +1,6 @@
 package de.test.podcini.service.playback
 
-import ac.mdiq.podcini.core.preferences.SleepTimerPreferences.isInTimeRange
+import ac.mdiq.podcini.preferences.SleepTimerPreferences.isInTimeRange
 import org.junit.Assert
 import org.junit.Test
 

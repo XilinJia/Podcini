@@ -49,11 +49,11 @@
             android:title="@string/pref_filter_feed_title"
             android:key="prefSubscriptionsFilter"
             android:summary="@string/pref_filter_feed_sum" />
-        <SwitchPreferenceCompat
-            android:title="@string/pref_show_subscription_title"
-            android:key="prefSubscriptionTitle"
-            android:summary="@string/pref_show_subscription_title_summary"
-            android:defaultValue="false" />
+<!--        <SwitchPreferenceCompat-->
+<!--            android:title="@string/pref_show_subscription_title"-->
+<!--            android:key="prefSubscriptionTitle"-->
+<!--            android:summary="@string/pref_show_subscription_title_summary"-->
+<!--            android:defaultValue="true" />-->
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/external_elements">
         <SwitchPreferenceCompat
@@ -81,7 +81,7 @@
                 android:key="prefDefaultPage"
                 android:title="@string/pref_default_page"
                 android:summary="@string/pref_default_page_sum"
-                android:defaultValue="HomeFragment"/>
+                android:defaultValue="SubscriptionFragment"/>
         <SwitchPreferenceCompat
                 android:key="prefBackButtonOpensDrawer"
                 android:title="@string/pref_back_button_opens_drawer"

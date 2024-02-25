@@ -7,8 +7,8 @@ import android.net.ConnectivityManager
 import android.text.TextUtils
 import android.util.Log
 import androidx.media3.common.util.UnstableApi
-import ac.mdiq.podcini.core.ClientConfigurator
-import ac.mdiq.podcini.core.util.download.NetworkConnectionChangeHandler.networkChangedDetected
+import ac.mdiq.podcini.util.config.ClientConfigurator
+import ac.mdiq.podcini.net.download.NetworkConnectionChangeHandler.networkChangedDetected
 
 class ConnectivityActionReceiver : BroadcastReceiver() {
     @UnstableApi override fun onReceive(context: Context, intent: Intent) {

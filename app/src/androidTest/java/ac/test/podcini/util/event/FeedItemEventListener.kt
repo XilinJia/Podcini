@@ -1,6 +1,6 @@
 package de.test.podcini.util.event
 
-import ac.mdiq.podcini.event.FeedItemEvent
+import ac.mdiq.podcini.util.event.FeedItemEvent
 import io.reactivex.functions.Consumer
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -10,14 +10,14 @@ import org.greenrobot.eventbus.Subscribe
  *
  */
 class FeedItemEventListener {
-    private val events: MutableList<FeedItemEvent> = ArrayList()
+    private val events: MutableList<ac.mdiq.podcini.util.event.FeedItemEvent> = ArrayList()
 
     @Subscribe
-    fun onEvent(event: FeedItemEvent) {
+    fun onEvent(event: ac.mdiq.podcini.util.event.FeedItemEvent) {
         events.add(event)
     }
 
-    fun getEvents(): List<FeedItemEvent> {
+    fun getEvents(): List<ac.mdiq.podcini.util.event.FeedItemEvent> {
         return events
     }
 

@@ -3,11 +3,11 @@ package de.test.podcini.ui
 import android.content.Context
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
-import ac.mdiq.podcini.event.FeedListUpdateEvent
-import ac.mdiq.podcini.event.QueueEvent.Companion.setQueue
-import ac.mdiq.podcini.model.feed.Feed
-import ac.mdiq.podcini.model.feed.FeedItem
-import ac.mdiq.podcini.model.feed.FeedMedia
+import ac.mdiq.podcini.util.event.FeedListUpdateEvent
+import ac.mdiq.podcini.util.event.QueueEvent.Companion.setQueue
+import ac.mdiq.podcini.storage.model.feed.Feed
+import ac.mdiq.podcini.storage.model.feed.FeedItem
+import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.storage.database.PodDBAdapter.Companion.deleteDatabase
 import ac.mdiq.podcini.storage.database.PodDBAdapter.Companion.getInstance
 import de.test.podcini.util.service.download.HTTPBin
@@ -193,7 +193,7 @@ class UITestUtils(private val context: Context) {
         adapter.setCompleteFeed(*hostedFeeds.toTypedArray<Feed>())
         adapter.setQueue(queue)
         adapter.close()
-        EventBus.getDefault().post(FeedListUpdateEvent(hostedFeeds))
+        EventBus.getDefault().post(ac.mdiq.podcini.util.event.FeedListUpdateEvent(hostedFeeds))
         EventBus.getDefault().post(setQueue(queue))
     }
 

@@ -3,6 +3,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="auto">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+                     tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
@@ -32,7 +45,7 @@
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:backupAgent=".core.backup.OpmlBackupAgent"
+        android:backupAgent=".storage.backup.OpmlBackupAgent"
         android:restoreAnyVersion="true"
         android:theme="@style/Theme.Podcini.Splash"
         android:usesCleartextTraffic="true"
@@ -42,15 +55,51 @@
         android:allowAudioPlaybackCapture="true"
         android:networkSecurityConfig="@xml/network_security_config">
 
-<!--        <service-->
-<!--                android:name=".core.service.playback.PlaybackService"-->
-<!--                android:foregroundServiceType="mediaPlayback"-->
-<!--                android:exported="false"-->
-<!--                tools:replace="android:exported">-->
-<!--        </service>-->
+        <service android:name=".service.playback.PlaybackService"
+                 android:foregroundServiceType="mediaPlayback"
+                 android:label="@string/app_name"
+                 android:enabled="true"
+                 android:exported="false"
+                 tools:ignore="ExportedService">
+
+            <intent-filter>
+                <action android:name="android.media.browse.MediaBrowserService"/>
+                <action android:name="ac.mdiq.podcini.intents.PLAYBACK_SERVICE" />
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name=".receiver.MediaButtonReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="ac.mdiq.podcini.NOTIFY_BUTTON_RECEIVER" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name=".receiver.FeedUpdateReceiver"
+            android:label="@string/feed_update_receiver_name"
+            android:exported="true"
+            tools:ignore="ExportedReceiver" /> <!-- allow feeds update to be triggered by external apps -->
+
+        <service
+            android:name=".service.QuickSettingsTileService"
+            android:enabled="true"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:icon="@drawable/ic_notification"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+            <meta-data android:name="android.service.quicksettings.ACTIVE_TILE" android:value="true" />
+            <meta-data android:name="android.service.quicksettings.TOGGLEABLE_TILE" android:value="true" />
+        </service>
 
         <activity
-            android:name=".activity.PlaybackSpeedDialogActivity"
+            android:name=".ui.activity.PlaybackSpeedDialogActivity"
             android:noHistory="true"
             android:exported="false"
             android:excludeFromRecents="true"
@@ -81,7 +130,7 @@
         <meta-data android:name="com.samsung.android.multidisplay.keep_process_alive" android:value="true"/>
 
         <activity
-            android:name=".activity.SplashActivity"
+            android:name=".ui.activity.SplashActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:exported="true">
             <intent-filter>
@@ -100,7 +149,7 @@
         </activity>
 
         <activity
-            android:name=".activity.MainActivity"
+            android:name=".ui.activity.MainActivity"
             android:configChanges="keyboardHidden|orientation|screenSize|smallestScreenSize|screenLayout|density|uiMode|keyboard|navigation"
             android:windowSoftInputMode="stateAlwaysHidden"
             android:launchMode="singleTask"
@@ -135,20 +184,20 @@
         </activity>
 
         <activity
-            android:name=".activity.PreferenceActivity"
+            android:name=".ui.activity.PreferenceActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:exported="false"
             android:label="@string/settings_label">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="ac.mdiq.podcini.activity.MainActivity"/>
+                android:value="ac.mdiq.podcini.ui.activity.MainActivity"/>
             <intent-filter>
                 <action android:name="android.intent.action.APPLICATION_PREFERENCES" />
             </intent-filter>
         </activity>
 
         <activity
-            android:name=".activity.WidgetConfigActivity"
+            android:name=".ui.activity.WidgetConfigActivity"
             android:label="@string/widget_settings"
             android:exported="true">
             <intent-filter>
@@ -157,7 +206,7 @@
         </activity>
 
         <receiver
-            android:name=".core.receiver.PlayerWidget"
+            android:name=".receiver.PlayerWidget"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
@@ -170,7 +219,7 @@
         </receiver>
 
         <activity
-            android:name=".activity.OpmlImportActivity"
+            android:name=".ui.activity.OpmlImportActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/opml_import_label"
             android:exported="true">
@@ -196,22 +245,22 @@
             </intent-filter>
         </activity>
         <activity
-                android:name=".activity.BugReportActivity"
+                android:name=".ui.activity.BugReportActivity"
                 android:label="@string/bug_report_title">
             <meta-data
                     android:name="android.support.PARENT_ACTIVITY"
-                    android:value="ac.mdiq.podcini.activity.PreferenceActivity"/>
+                    android:value="ac.mdiq.podcini.ui.activity.PreferenceActivity"/>
         </activity>
 
         <activity
-            android:name=".activity.VideoplayerActivity"
+            android:name=".ui.activity.VideoplayerActivity"
             android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize"
             android:supportsPictureInPicture="true"
             android:screenOrientation="sensorLandscape"
             android:exported="false">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="ac.mdiq.podcini.activity.MainActivity"/>
+                android:value="ac.mdiq.podcini.ui.activity.MainActivity"/>
             <intent-filter>
                 <action android:name="ac.mdiq.podcini.intents.VIDEO_PLAYER" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -219,14 +268,14 @@
         </activity>
 
         <activity
-            android:name=".activity.OnlineFeedViewActivity"
+            android:name=".ui.activity.OnlineFeedViewActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/Theme.Podcini.Dark.Translucent"
             android:label="@string/add_feed_label"
             android:exported="true">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="ac.mdiq.podcini.activity.MainActivity"/>
+                android:value="ac.mdiq.podcini.ui.activity.MainActivity"/>
 
             <!-- URLs ending with '.xml' or '.rss' -->
             <intent-filter>
@@ -336,7 +385,7 @@
 
         </activity>
 
-        <activity android:name=".activity.SelectSubscriptionActivity"
+        <activity android:name=".ui.activity.SelectSubscriptionActivity"
             android:label="@string/shortcut_subscription_label"
             android:icon="@drawable/ic_subscriptions_shortcut"
             android:theme="@style/Theme.Podcini.Dark.Translucent"
@@ -386,5 +435,12 @@
             android:name="com.google.android.actions"
             android:resource="@xml/actions" />
     </application>
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+    </queries>
 
 </manifest>

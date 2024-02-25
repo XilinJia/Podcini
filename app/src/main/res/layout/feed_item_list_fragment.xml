@@ -52,7 +52,7 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <ac.mdiq.podcini.view.EpisodeItemListRecyclerView
+        <ac.mdiq.podcini.ui.view.EpisodeItemListRecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

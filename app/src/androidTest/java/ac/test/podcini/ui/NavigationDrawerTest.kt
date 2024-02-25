@@ -11,10 +11,10 @@ import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.activity.MainActivity
-import ac.mdiq.podcini.activity.PreferenceActivity
-import ac.mdiq.podcini.fragment.*
-import ac.mdiq.podcini.storage.preferences.UserPreferences.hiddenDrawerItems
+import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.activity.PreferenceActivity
+import ac.mdiq.podcini.ui.fragment.*
+import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
 import de.test.podcini.EspressoTestUtils
 import de.test.podcini.NthMatcher
 import org.hamcrest.Matchers
@@ -62,13 +62,6 @@ class NavigationDrawerTest {
         uiTestUtils!!.addLocalFeedData(false)
         hiddenDrawerItems = ArrayList()
         activityRule.launchActivity(Intent())
-
-        // home
-        openNavDrawer()
-        EspressoTestUtils.onDrawerItem(ViewMatchers.withText(R.string.home_label)).perform(ViewActions.click())
-        Espresso.onView(ViewMatchers.isRoot())
-            .perform(EspressoTestUtils.waitForView(Matchers.allOf(ViewMatchers.isDescendantOfA(ViewMatchers.withId(R.id.toolbar)),
-                ViewMatchers.withText(R.string.home_label)), 1000))
 
         // queue
         openNavDrawer()
@@ -159,7 +152,7 @@ class NavigationDrawerTest {
 
     @Test
     fun testDrawerPreferencesUnhideSomeElements() {
-        var hidden = listOf<String>(PlaybackHistoryFragment.TAG, CompletedDownloadsFragment.TAG)
+        var hidden = listOf(PlaybackHistoryFragment.TAG, CompletedDownloadsFragment.TAG)
         hiddenDrawerItems = hidden
         activityRule.launchActivity(Intent())
         openNavDrawer()
@@ -170,7 +163,7 @@ class NavigationDrawerTest {
         Espresso.onView(ViewMatchers.withText(R.string.downloads_label)).perform(ViewActions.click())
         Espresso.onView(ViewMatchers.withText(R.string.confirm_label)).perform(ViewActions.click())
 
-        hidden = hiddenDrawerItems as List<String>
+        hidden = hiddenDrawerItems?.filterNotNull()?: listOf()
         Assert.assertEquals(2, hidden.size.toLong())
         Assert.assertTrue(hidden.contains(QueueFragment.TAG))
         Assert.assertTrue(hidden.contains(PlaybackHistoryFragment.TAG))

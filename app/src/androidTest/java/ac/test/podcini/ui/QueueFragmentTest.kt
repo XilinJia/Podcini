@@ -7,8 +7,8 @@ import androidx.test.espresso.intent.rule.IntentsTestRule
 import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.activity.MainActivity
-import ac.mdiq.podcini.fragment.QueueFragment
+import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.fragment.QueueFragment
 import de.test.podcini.EspressoTestUtils
 import de.test.podcini.NthMatcher
 import org.hamcrest.CoreMatchers

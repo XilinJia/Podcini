@@ -1,4 +1,4 @@
-package ac.mdiq.podcini.dialog
+package ac.mdiq.podcini.ui.dialog
 
 import ac.mdiq.podcini.BuildConfig
 import android.app.Activity

@@ -3,6 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/subscription_fragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -47,11 +48,47 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <LinearLayout
+        android:id="@+id/selection_block"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:paddingVertical="10dp"
+        android:layout_marginTop="-12dp"
+        android:background="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:layout_below="@id/appbar">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/search_box"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:inputType="text"
+            android:hint="@string/feed_search_hint_text"
+            android:lines="1"
+            android:imeOptions="actionSearch"/>
+
+        <Spinner
+            android:id="@+id/category_spinner"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:dropDownWidth="200.dp"
+            android:padding="8dp"
+            android:paddingBottom="20dp"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="@dimen/text_size_micro"
+            android:spinnerMode="dropdown"/>
+
+    </LinearLayout>
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/appbar">
+        android:layout_below="@id/selection_block">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/subscriptions_grid"

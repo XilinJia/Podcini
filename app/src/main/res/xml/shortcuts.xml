@@ -7,7 +7,7 @@
         android:shortcutShortLabel="@string/queue_label">
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetClass="ac.mdiq.podcini.activity.MainActivity"
+            android:targetClass="ac.mdiq.podcini.ui.activity.MainActivity"
             android:targetPackage="ac.mdiq.podcini">
             <extra
                 android:name="fragment_tag"
@@ -22,7 +22,7 @@
         android:shortcutShortLabel="@string/episodes_label">
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetClass="ac.mdiq.podcini.activity.MainActivity"
+            android:targetClass="ac.mdiq.podcini.ui.activity.MainActivity"
             android:targetPackage="ac.mdiq.podcini">
             <extra
                 android:name="fragment_tag"
@@ -37,7 +37,7 @@
         android:shortcutShortLabel="@string/subscriptions_label">
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetClass="ac.mdiq.podcini.activity.MainActivity"
+            android:targetClass="ac.mdiq.podcini.ui.activity.MainActivity"
             android:targetPackage="ac.mdiq.podcini">
             <extra
                 android:name="fragment_tag"
@@ -52,7 +52,7 @@
         android:shortcutShortLabel="@string/refresh_label">
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetClass="ac.mdiq.podcini.activity.MainActivity"
+            android:targetClass="ac.mdiq.podcini.ui.activity.MainActivity"
             android:targetPackage="ac.mdiq.podcini">
             <extra
                 android:name="refresh_on_start"

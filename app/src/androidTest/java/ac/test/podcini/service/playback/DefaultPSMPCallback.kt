@@ -1,7 +1,7 @@
 package de.test.podcini.service.playback
 
-import ac.mdiq.podcini.model.playback.MediaType
-import ac.mdiq.podcini.model.playback.Playable
+import ac.mdiq.podcini.storage.model.playback.MediaType
+import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.playback.base.PlaybackServiceMediaPlayer.PSMPCallback
 import ac.mdiq.podcini.playback.base.PlaybackServiceMediaPlayer.PSMPInfo
 

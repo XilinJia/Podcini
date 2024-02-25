@@ -13,19 +13,19 @@ import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.ActivityTestRule
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.activity.MainActivity
-import ac.mdiq.podcini.core.preferences.PlaybackPreferences.Companion.currentlyPlayingFeedMediaId
-import ac.mdiq.podcini.core.receiver.MediaButtonReceiver.Companion.createIntent
-import ac.mdiq.podcini.core.storage.DBReader.getEpisodes
-import ac.mdiq.podcini.core.storage.DBReader.getFeedItem
-import ac.mdiq.podcini.core.storage.DBReader.getQueue
-import ac.mdiq.podcini.core.storage.DBReader.getQueueIDList
-import ac.mdiq.podcini.core.storage.DBWriter.clearQueue
-import ac.mdiq.podcini.core.util.playback.PlaybackController
-import ac.mdiq.podcini.model.feed.FeedItemFilter.Companion.unfiltered
-import ac.mdiq.podcini.model.feed.SortOrder
+import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.currentlyPlayingFeedMediaId
+import ac.mdiq.podcini.receiver.MediaButtonReceiver.Companion.createIntent
+import ac.mdiq.podcini.storage.DBReader.getEpisodes
+import ac.mdiq.podcini.storage.DBReader.getFeedItem
+import ac.mdiq.podcini.storage.DBReader.getQueue
+import ac.mdiq.podcini.storage.DBReader.getQueueIDList
+import ac.mdiq.podcini.storage.DBWriter.clearQueue
+import ac.mdiq.podcini.playback.PlaybackController
+import ac.mdiq.podcini.storage.model.feed.FeedItemFilter.Companion.unfiltered
+import ac.mdiq.podcini.storage.model.feed.SortOrder
 import ac.mdiq.podcini.playback.base.PlayerStatus
-import ac.mdiq.podcini.storage.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences
 import de.test.podcini.EspressoTestUtils
 import de.test.podcini.IgnoreOnCi
 import de.test.podcini.ui.UITestUtils
@@ -44,7 +44,7 @@ class PlaybackTest {
     var activityTestRule: ActivityTestRule<MainActivity> = ActivityTestRule(MainActivity::class.java, false, false)
 
     private var uiTestUtils: UITestUtils? = null
-    protected var context: Context? = null
+    protected lateinit var context: Context
     private var controller: PlaybackController? = null
 
     @Before
@@ -54,7 +54,7 @@ class PlaybackTest {
         EspressoTestUtils.clearPreferences()
         EspressoTestUtils.clearDatabase()
 
-        uiTestUtils = UITestUtils(context!!)
+        uiTestUtils = UITestUtils(context)
         uiTestUtils!!.setup()
     }
 
@@ -192,28 +192,28 @@ class PlaybackTest {
     }
 
     protected fun setContinuousPlaybackPreference(value: Boolean) {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(context!!)
+        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
         prefs.edit().putBoolean(UserPreferences.PREF_FOLLOW_QUEUE, value).commit()
     }
 
     protected fun setSkipKeepsEpisodePreference(value: Boolean) {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(context!!)
+        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
         prefs.edit().putBoolean(UserPreferences.PREF_SKIP_KEEPS_EPISODE, value).commit()
     }
 
     protected fun setSmartMarkAsPlayedPreference(smartMarkAsPlayedSecs: Int) {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(context!!)
+        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
         prefs.edit().putString(UserPreferences.PREF_SMART_MARK_AS_PLAYED_SECS,
             smartMarkAsPlayedSecs.toString(10))
             .commit()
     }
 
     private fun skipEpisode() {
-        context!!.sendBroadcast(createIntent(context, KeyEvent.KEYCODE_MEDIA_NEXT))
+        context.sendBroadcast(createIntent(context, KeyEvent.KEYCODE_MEDIA_NEXT))
     }
 
     protected fun pauseEpisode() {
-        context!!.sendBroadcast(createIntent(context, KeyEvent.KEYCODE_MEDIA_PAUSE))
+        context.sendBroadcast(createIntent(context, KeyEvent.KEYCODE_MEDIA_PAUSE))
     }
 
     protected fun startLocalPlayback() {

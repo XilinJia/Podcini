@@ -1,6 +1,6 @@
 package de.test.podcini.util.syndication.feedgenerator
 
-import ac.mdiq.podcini.model.feed.Feed
+import ac.mdiq.podcini.storage.model.feed.Feed
 import java.io.IOException
 import java.io.OutputStream
 

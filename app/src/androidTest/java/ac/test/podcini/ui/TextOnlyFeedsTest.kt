@@ -8,7 +8,7 @@ import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.activity.MainActivity
+import ac.mdiq.podcini.ui.activity.MainActivity
 import de.test.podcini.EspressoTestUtils
 import org.hamcrest.CoreMatchers
 import org.junit.After

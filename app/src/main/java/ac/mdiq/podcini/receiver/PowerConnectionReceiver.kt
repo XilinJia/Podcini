@@ -5,10 +5,10 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.media3.common.util.UnstableApi
-import ac.mdiq.podcini.core.ClientConfigurator
-import ac.mdiq.podcini.core.storage.DBTasks
+import ac.mdiq.podcini.util.config.ClientConfigurator
+import ac.mdiq.podcini.storage.DBTasks
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
-import ac.mdiq.podcini.storage.preferences.UserPreferences.isEnableAutodownloadOnBattery
+import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownloadOnBattery
 
 // modified from http://developer.android.com/training/monitoring-device-state/battery-monitoring.html
 // and ConnectivityActionReceiver.java

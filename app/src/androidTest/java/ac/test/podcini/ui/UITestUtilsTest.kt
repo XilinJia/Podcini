@@ -2,7 +2,7 @@ package de.test.podcini.ui
 
 import androidx.test.filters.MediumTest
 import androidx.test.platform.app.InstrumentationRegistry
-import ac.mdiq.podcini.model.feed.Feed
+import ac.mdiq.podcini.storage.model.feed.Feed
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -41,7 +41,7 @@ class UITestUtilsTest {
 
         for (feed in feeds) {
             testUrlReachable(feed.download_url)
-            for (item in feed.items!!) {
+            for (item in feed.items) {
                 if (item.hasMedia()) {
                     testUrlReachable(item.media!!.download_url)
                 }
@@ -68,14 +68,14 @@ class UITestUtilsTest {
 
         for (feed in uiTestUtils!!.hostedFeeds) {
             Assert.assertTrue(feed.id != 0L)
-            for (item in feed.items!!) {
+            for (item in feed.items) {
                 Assert.assertTrue(item.id != 0L)
                 if (item.hasMedia()) {
                     Assert.assertTrue(item.media!!.id != 0L)
                     if (downloadEpisodes) {
                         Assert.assertTrue(item.media!!.isDownloaded())
                         Assert.assertNotNull(item.media!!.getFile_url())
-                        val file = File(item.media!!.getFile_url())
+                        val file = File(item.media!!.getFile_url()!!)
                         Assert.assertTrue(file.exists())
                     }
                 }

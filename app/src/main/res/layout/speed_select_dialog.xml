@@ -24,7 +24,7 @@
 
     </LinearLayout>
 
-    <ac.mdiq.podcini.view.PlaybackSpeedSeekBar
+    <ac.mdiq.podcini.ui.view.PlaybackSpeedSeekBar
         android:id="@+id/speed_seek_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

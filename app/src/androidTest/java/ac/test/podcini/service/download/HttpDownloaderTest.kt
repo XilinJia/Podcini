@@ -3,12 +3,12 @@ package de.test.podcini.service.download
 import android.util.Log
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
-import ac.mdiq.podcini.core.service.download.Downloader
-import ac.mdiq.podcini.core.service.download.HttpDownloader
-import ac.mdiq.podcini.model.download.DownloadError
-import ac.mdiq.podcini.model.feed.FeedFile
+import ac.mdiq.podcini.service.download.Downloader
+import ac.mdiq.podcini.service.download.HttpDownloader
+import ac.mdiq.podcini.storage.model.download.DownloadError
+import ac.mdiq.podcini.storage.model.feed.FeedFile
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
-import ac.mdiq.podcini.storage.preferences.UserPreferences.init
+import ac.mdiq.podcini.preferences.UserPreferences.init
 import de.test.podcini.util.service.download.HTTPBin
 import org.junit.After
 import org.junit.Assert
@@ -28,10 +28,11 @@ class HttpDownloaderTest {
     @Throws(Exception::class)
     fun tearDown() {
         val contents = destDir!!.listFiles()
-        for (f in contents) {
-            Assert.assertTrue(f.delete())
+        if (contents != null) {
+            for (f in contents) {
+                Assert.assertTrue(f.delete())
+            }
         }
-
         httpServer!!.stop()
     }
 
@@ -61,18 +62,18 @@ class HttpDownloaderTest {
 
     private fun download(url: String?, title: String, expectedResult: Boolean, deleteExisting: Boolean = true,
                          username: String? = null, password: String? = null
-    ): Downloader {
+    ): ac.mdiq.podcini.service.download.Downloader {
         val feedFile: FeedFile = setupFeedFile(url, title, deleteExisting)
         val request = DownloadRequest(
             feedFile.getFile_url()!!, url!!, title, 0, feedFile.getTypeAsInt(),
             username, password, null, false)
-        val downloader: Downloader = HttpDownloader(request)
+        val downloader: ac.mdiq.podcini.service.download.Downloader = HttpDownloader(request)
         downloader.call()
         val status = downloader.result
         Assert.assertNotNull(status)
         Assert.assertEquals(expectedResult, status.isSuccessful)
         // the file should not exist if the download has failed and deleteExisting was true
-        Assert.assertTrue(!deleteExisting || File(feedFile.getFile_url()).exists() == expectedResult)
+        Assert.assertTrue(!deleteExisting || File(feedFile.getFile_url()!!).exists() == expectedResult)
         return downloader
     }
 
@@ -100,7 +101,7 @@ class HttpDownloaderTest {
     fun testCancel() {
         val url = httpServer!!.baseUrl + "/delay/3"
         val feedFile = setupFeedFile(url, "delay", true)
-        val downloader: Downloader = HttpDownloader(DownloadRequest(
+        val downloader: ac.mdiq.podcini.service.download.Downloader = HttpDownloader(DownloadRequest(
             feedFile.getFile_url()!!, url, "delay", 0,
             feedFile.getTypeAsInt(), null, null, null, false))
         val t: Thread = object : Thread() {
@@ -122,7 +123,7 @@ class HttpDownloaderTest {
     @Test
     fun testDeleteOnFailShouldDelete() {
         val downloader = download(url404, "testDeleteOnFailShouldDelete", false, true, null, null)
-        Assert.assertFalse(File(downloader.downloadRequest.destination).exists())
+        Assert.assertFalse(File(downloader.downloadRequest.destination!!).exists())
     }
 
     @Test
@@ -133,7 +134,7 @@ class HttpDownloaderTest {
         dest.delete()
         Assert.assertTrue(dest.createNewFile())
         val downloader = download(url404, filename, false, false, null, null)
-        Assert.assertTrue(File(downloader.downloadRequest.destination).exists())
+        Assert.assertTrue(File(downloader.downloadRequest.destination!!).exists())
     }
 
     @Test

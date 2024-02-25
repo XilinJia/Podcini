@@ -6,11 +6,15 @@ This is based on a fork from the popular project AntennaPod (<https://github.com
 
 Differing from the forked project, this project is purely Kotlin based, relies on the most recent dependencies, and most importantly has migrated the media player to androidx.media3, and added mechanism of AudioOffloadMode which is supposed to be kind to device battery.  Efficiencies are also sought on running the app.  App build is also upgraded to target Android 14.
 
-### Screenshots
+## Version 4.0
+
+Some drastic changes are made in the project since version 4.0.  There is now a whole new interface of the Subscriptions page showing only the feeds with tags as filters, no longer having tags as folders in the page.  And the default page of the app is changed to the Subscriptions page.  Alongside, the Home and Echo pages are removed from the project.  Also, the project becomes mono-module, with only the app module.
+
+## Screenshots
 
 <img src="./images/1_drawer.jpg" width="238" /> <img src="./images/2_setting.jpg" width="238" /> <img src="./images/3_setting.jpg" width="238" />
 
-<img src="./images/4_home.jpg" width="238" /> <img src="./images/5_queue.jpg" width="238" />  
+<img src="./images/4_subscriptions.jpg" width="238" /> <img src="./images/5_queue.jpg" width="238" />  
 
 <img src="./images/6_podcast.jpg" width="238" /> <img src="./images/7_podcast.jpg" width="238" /> <img src="./images/8_episode.jpg" width="238" />   
 
@@ -28,4 +32,4 @@ Podcini, same as its forked project AntennaPod, is licensed under the GNU Genera
 
 New files and modifications in the project is copyrighted in 2024 by Xilin Jia.
 
-Original files from the forked project maintains copyrights of the AntennaPod team.
+Original contents from the forked project maintains copyrights of the AntennaPod team.

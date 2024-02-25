@@ -2,7 +2,7 @@
 <FindBugsFilter>
     <Match>
         <Bug pattern="BC_UNCONFIRMED_CAST"/>
-        <Class name="ac.mdiq.podcini.adapter.NavListAdapter"/>
+        <Class name="ac.mdiq.podcini.ui.adapter.NavListAdapter"/>
     </Match>
     <Match>
         <Bug pattern="BC_UNCONFIRMED_CAST_OF_RETURN_VALUE"/>
@@ -10,7 +10,7 @@
     </Match>
     <Match>
         <Bug pattern="DM_DEFAULT_ENCODING"/>
-        <Class name="ac.mdiq.podcini.parser.media.vorbis.VorbisCommentReader"/>
+        <Class name="ac.mdiq.podcini.feed.parser.media.vorbis.VorbisCommentReader"/>
     </Match>
     <Match>
         <Bug pattern="HSC_HUGE_SHARED_STRING_CONSTANT"/>
@@ -18,11 +18,11 @@
     </Match>
     <Match>
         <Bug pattern="MS_CANNOT_BE_FINAL"/>
-        <Class name="ac.mdiq.podcini.core.service.playback.PlaybackService"/>
+        <Class name="ac.mdiq.podcini.service.playback.PlaybackService"/>
     </Match>
     <Match>
         <Bug pattern="MS_MUTABLE_ARRAY"/>
-        <Class name="ac.mdiq.podcini.fragment.NavDrawerFragment"/>
+        <Class name="ac.mdiq.podcini.ui.fragment.NavDrawerFragment"/>
     </Match>
     <Match>
         <Bug pattern="NM_SAME_SIMPLE_NAME_AS_SUPERCLASS"/>
@@ -38,11 +38,11 @@
     </Match>
     <Match>
         <Bug pattern="NP_NULL_ON_SOME_PATH"/>
-        <Class name="ac.mdiq.podcini.model.feed.FeedMedia"/>
+        <Class name="ac.mdiq.podcini.storage.model.feed.FeedMedia"/>
     </Match>
     <Match>
         <Bug pattern="NP_NULL_PARAM_DEREF"/>
-        <Class name="ac.mdiq.podcini.model.feed.FeedMedia"/>
+        <Class name="ac.mdiq.podcini.storage.model.feed.FeedMedia"/>
     </Match>
     <Match>
         <Bug pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE"/>
@@ -54,28 +54,28 @@
     </Match>
     <Match>
         <Bug pattern="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD"/>
-        <Class name="ac.mdiq.podcini.core.service.download.DownloadService"/>
+        <Class name="ac.mdiq.podcini.service.download.DownloadService"/>
     </Match>
     <Match>
         <Bug pattern="MS_CANNOT_BE_FINAL"/>
-        <Class name="ac.mdiq.podcini.core.service.download.DownloadService"/>
+        <Class name="ac.mdiq.podcini.service.download.DownloadService"/>
     </Match>
     <Match>
         <Bug pattern="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD"/>
-        <Class name="ac.mdiq.podcini.core.service.playback.PlaybackService"/>
+        <Class name="ac.mdiq.podcini.service.playback.PlaybackService"/>
     </Match>
     <Match>
         <Bug pattern="UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD"/>
-        <Class name="ac.mdiq.podcini.core.storage.NavDrawerData$TagDrawerItem"/>
+<!--        <Class name="ac.mdiq.podcini.storage.NavDrawerData$TagDrawerItem"/>-->
     </Match>
     <Match>
         <Bug pattern="UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"/>
-        <Class name="ac.mdiq.podcini.core.cast.CastButtonVisibilityManager"/>
+        <Class name="ac.mdiq.podcini.cast.CastButtonVisibilityManager"/>
     </Match>
 
-    <Match><Class name="ac.mdiq.podcini.core.ClientConfig"/></Match>
+    <Match><Class name="ac.mdiq.podcini.util.config.ClientConfig"/></Match>
 
-    <Match><Package name="ac.mdiq.podcini.core.glide"/></Match>
+    <Match><Package name="ac.mdiq.podcini.ui.glide"/></Match>
     <Match><Package name="ac.mdiq.podcini.databinding"/></Match>
 
     <Match><Bug pattern="EI_EXPOSE_REP"/></Match>

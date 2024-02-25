@@ -3,9 +3,9 @@ package de.test.podcini.service.playback
 import androidx.test.annotation.UiThreadTest
 import androidx.test.filters.MediumTest
 import androidx.test.platform.app.InstrumentationRegistry
-import ac.mdiq.podcini.core.service.playback.LocalPSMP
-import ac.mdiq.podcini.model.feed.*
-import ac.mdiq.podcini.model.playback.Playable
+import ac.mdiq.podcini.service.playback.LocalPSMP
+import ac.mdiq.podcini.storage.model.feed.*
+import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.playback.base.PlaybackServiceMediaPlayer
 import ac.mdiq.podcini.playback.base.PlaybackServiceMediaPlayer.PSMPInfo
 import ac.mdiq.podcini.playback.base.PlayerStatus

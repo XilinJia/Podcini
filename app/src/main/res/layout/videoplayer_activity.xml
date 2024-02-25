@@ -8,7 +8,7 @@
     android:orientation="vertical"
     android:id="@+id/videoPlayerContainer">
 
-    <ac.mdiq.podcini.view.AspectRatioVideoView
+    <ac.mdiq.podcini.ui.view.AspectRatioVideoView
         android:id="@+id/videoView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -41,7 +41,7 @@
             android:contentDescription="@string/rewind_label"
             app:srcCompat="@drawable/ic_fast_rewind_video_white" />
 
-        <ac.mdiq.podcini.view.PlayButton
+        <ac.mdiq.podcini.ui.view.PlayButton
             android:id="@+id/playButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

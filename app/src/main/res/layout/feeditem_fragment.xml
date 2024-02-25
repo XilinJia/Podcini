@@ -190,19 +190,19 @@
 
     </LinearLayout>
 
-    <ac.mdiq.podcini.view.NestedScrollableHost
+    <ac.mdiq.podcini.ui.view.NestedScrollableHost
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/header"
         app:preferVertical="3">
 
-        <ac.mdiq.podcini.view.ShownotesWebView
+        <ac.mdiq.podcini.ui.view.ShownotesWebView
             android:id="@+id/webvDescription"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:foreground="?android:windowContentOverlay" />
 
-    </ac.mdiq.podcini.view.NestedScrollableHost>
+    </ac.mdiq.podcini.ui.view.NestedScrollableHost>
 
     <FrameLayout
         android:layout_width="match_parent"

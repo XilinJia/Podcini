@@ -8,10 +8,10 @@ import android.util.Log
 import android.widget.Toast
 import androidx.media3.common.util.UnstableApi
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.core.ClientConfigurator
-import ac.mdiq.podcini.core.storage.DBTasks
-import ac.mdiq.podcini.core.util.download.FeedUpdateManager.runOnce
-import ac.mdiq.podcini.model.feed.Feed
+import ac.mdiq.podcini.util.config.ClientConfigurator
+import ac.mdiq.podcini.storage.DBTasks
+import ac.mdiq.podcini.net.download.FeedUpdateManager.runOnce
+import ac.mdiq.podcini.storage.model.feed.Feed
 
 /**
  * Receives intents from Podcini Single Purpose apps

@@ -1,4 +1,4 @@
-package ac.mdiq.podcini.dialog
+package ac.mdiq.podcini.ui.dialog
 
 import android.content.Context
 import androidx.annotation.VisibleForTesting

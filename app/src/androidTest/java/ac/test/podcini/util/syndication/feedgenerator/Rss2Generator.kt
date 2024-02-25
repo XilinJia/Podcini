@@ -1,9 +1,9 @@
 package de.test.podcini.util.syndication.feedgenerator
 
 import android.util.Xml
-import ac.mdiq.podcini.core.util.DateFormatter.formatRfc822Date
-import ac.mdiq.podcini.model.feed.Feed
-import ac.mdiq.podcini.parser.feed.namespace.PodcastIndex
+import ac.mdiq.podcini.util.DateFormatter.formatRfc822Date
+import ac.mdiq.podcini.storage.model.feed.Feed
+import ac.mdiq.podcini.feed.parser.namespace.PodcastIndex
 import de.test.podcini.util.syndication.feedgenerator.GeneratorUtil.addPaymentLink
 import java.io.IOException
 import java.io.OutputStream
@@ -56,15 +56,15 @@ class Rss2Generator : FeedGenerator {
         }
 
         val fundingList = feed.paymentLinks
-        if (fundingList != null) {
+        if (fundingList.isNotEmpty()) {
             for (funding in fundingList) {
                 addPaymentLink(xml, funding.url, true)
             }
         }
 
         // Write FeedItem data
-        if (feed.items != null) {
-            for (item in feed.items!!) {
+        if (feed.items.isNotEmpty()) {
+            for (item in feed.items) {
                 xml.startTag(null, "item")
 
                 if (item.title != null) {
@@ -99,7 +99,7 @@ class Rss2Generator : FeedGenerator {
                     xml.attribute(null, "type", item.media!!.mime_type)
                     xml.endTag(null, "enclosure")
                 }
-                if (fundingList != null) {
+                if (fundingList.isNotEmpty()) {
                     for (funding in fundingList) {
                         xml.startTag(PodcastIndex.NSTAG, "funding")
                         xml.attribute(PodcastIndex.NSTAG, "url", funding.url)

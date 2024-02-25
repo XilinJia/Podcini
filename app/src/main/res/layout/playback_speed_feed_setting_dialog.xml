@@ -19,7 +19,7 @@
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
-        <ac.mdiq.podcini.view.PlaybackSpeedSeekBar
+        <ac.mdiq.podcini.ui.view.PlaybackSpeedSeekBar
             android:id="@+id/seekBar"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

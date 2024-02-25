@@ -7,9 +7,9 @@ import androidx.preference.MultiSelectListPreference
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class MaterialMultiSelectListPreference : MultiSelectListPreference {
-    constructor(context: Context?) : super(context!!)
+    constructor(context: Context) : super(context!!)
 
-    constructor(context: Context?, attrs: AttributeSet?) : super(context!!, attrs)
+    constructor(context: Context, attrs: AttributeSet?) : super(context!!, attrs)
 
     override fun onClick() {
         val builder = MaterialAlertDialogBuilder(context)

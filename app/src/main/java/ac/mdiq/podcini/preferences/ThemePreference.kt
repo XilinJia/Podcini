@@ -9,16 +9,15 @@ import androidx.preference.PreferenceViewHolder
 import com.google.android.material.elevation.SurfaceColors
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.ThemePreferenceBinding
-import ac.mdiq.podcini.storage.preferences.UserPreferences
 
 class ThemePreference : Preference {
     var viewBinding: ThemePreferenceBinding? = null
 
-    constructor(context: Context?) : super(context!!) {
+    constructor(context: Context) : super(context!!) {
         layoutResource = R.layout.theme_preference
     }
 
-    constructor(context: Context?, attrs: AttributeSet?) : super(context!!, attrs) {
+    constructor(context: Context, attrs: AttributeSet?) : super(context!!, attrs) {
         layoutResource = R.layout.theme_preference
     }
 

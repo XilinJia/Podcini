@@ -3,4 +3,5 @@
     <integer name="subscriptions_default_num_of_columns">3</integer>
     <integer name="nav_drawer_screen_size_percent">80</integer>
     <integer name="swipe_refresh_distance">300</integer>
+    <integer name="fragment_transition_duration">300</integer>
 </resources>

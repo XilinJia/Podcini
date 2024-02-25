@@ -85,7 +85,7 @@
                 android:id="@+id/quickFeedDiscovery"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:name="ac.mdiq.podcini.fragment.QuickFeedDiscoveryFragment" />
+                android:name="ac.mdiq.podcini.ui.fragment.QuickFeedDiscoveryFragment" />
 
             <TextView
                 android:layout_width="match_parent"

@@ -22,7 +22,7 @@
   <string name="episode_cache_full_message">Episodcachens gräns har nåtts. Du kan öka cachens storlek i inställningarna.</string>
   <string name="years_statistics_label">År</string>
   <string name="notification_pref_fragment">Aviseringar</string>
-  <string name="recently_played_episodes">Nyligen spelade episoder</string>
+
   <!--Google Assistant-->
   <string name="app_action_not_found">\"%1$s\" hittades inte</string>
   <!--SwipeActions-->
@@ -46,13 +46,13 @@
   <string name="statistics_counting_range">Spelat mellan %1$s och %2$s</string>
   <string name="statistics_counting_total">Spelat totalt</string>
   <!--Home fragment-->
-  <string name="home_surprise_title">Bli överraskad</string>
-  <string name="home_classics_title">Kolla dina klassiker</string>
-  <string name="home_continue_title">Fortsätt lyssna</string>
-  <string name="home_new_title">Se vad som är nytt</string>
-  <string name="home_downloads_title">Hantera nedladdningar</string>
-  <string name="home_welcome_title">Välkommen till Podcini!</string>
-  <string name="home_welcome_text">Du prenumererar inte på några poddar än. Öppna sidomenyn för att lägga till en podcast.</string>
+
+
+
+
+
+
+
   <string name="notification_permission_text">Podcini behöver ditt tillstånd att visa notiser. Som standard visar Podcini bara notiser när något laddas ner eller när något går fel.</string>
   <string name="notification_permission_denied">Du nekade behörigheten.</string>
   <string name="notification_permission_deny_warning">Om du stänger av notiser och något går fel kan det vara svårt att få reda på varför.</string>
@@ -168,7 +168,7 @@
   <string name="remove_feed_label">Ta bort podcast</string>
   <string name="share_label">Dela</string>
   <string name="share_file_label">Dela fil</string>
-  <string name="share_rss_address_label">RSS adress:</string>
+
   <string name="feed_delete_confirmation_msg">Bekräfta att du vill ta bort podcasten \"%1$s\", ALLA dess episoder (inklusive nedladdade episoder), och dess statistik.</string>
   <string name="feed_delete_confirmation_msg_batch">Vänligen bekräfta att du vill ta bort markerade podcasts. ALLA dess avsnitt (inklusive nedladdade avsnitt) och dess statistik.</string>
   <string name="feed_delete_confirmation_local_msg">Vänligen bekräfta att du vill ta bort podcast \"%1$s\" och dess statistik. Filerna i den lokala källkatalogen kommer inte att tas bort.</string>
@@ -466,10 +466,9 @@
   <string name="pref_expandNotify_sum">Detta utvidgar vanligen aviseringen och visar uppspelningskontroller.</string>
   <string name="pref_persistNotify_title">Bestående uppspelningskontroller</string>
   <string name="pref_persistNotify_sum">Behåll notiser och låsskärmskontroller när uppspelning pausats</string>
-  <string name="pref_compact_notification_buttons_title">Ställ in kompakta aviseringsknappar</string>
-  <string name="pref_compact_notification_buttons_sum">Ändra uppspelningsknapparna när notifieringen är kollapsad. Spela/paus-knappen visas alltid.</string>
-  <string name="pref_compact_notification_buttons_dialog_title">Välj maximalt %1$d st.</string>
-  <string name="pref_compact_notification_buttons_dialog_error">Du kan bara välja maximalt %1$d st.</string>
+
+
+
   <string name="pref_enqueue_location_title">Köplats</string>
   <string name="pref_enqueue_location_sum">Lägg till episoder i: %1$s</string>
   <string name="enqueue_location_back">Slutet</string>
@@ -730,22 +729,22 @@
   <string name="hide_played_episodes_label">Spelad</string>
   <string name="not_played">Ej spelad</string>
   <!--Sort-->
-  <string name="sort_title_a_z">Titel (A \u2192 Ö)</string>
-  <string name="sort_title_z_a">Titel (Ö \u2192 A)</string>
-  <string name="sort_date_new_old">Datum (Ny \u2192 Gammal)</string>
-  <string name="sort_date_old_new">Datum (Gammal \u2192 Ny)</string>
-  <string name="sort_duration_short_long">Längd (Kort \u2192 Lång)</string>
-  <string name="sort_duration_long_short">Längd (Lång \u2192 Kort)</string>
-  <string name="sort_filename_a_z">Filnamn (A \u2192 Ö)</string>
-  <string name="sort_filename_z_a">Filnamne (Ö \u2192 A)</string>
-  <string name="sort_a_z">A \u2192 Ö</string>
-  <string name="sort_z_a">Ö \u2192 A</string>
-  <string name="sort_new_old">Ny \u2192 Gammal</string>
-  <string name="sort_old_new">Gammal \u2192 Ny</string>
-  <string name="sort_short_long">Kort \u2192 Lång</string>
-  <string name="sort_long_short">Lång \u2192 Kort</string>
-  <string name="sort_small_large">Liten \u2192 Stor</string>
-  <string name="sort_large_small">Stor \u2192 Liten</string>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   <!--Share episode dialog-->
   <string name="share_playback_position_dialog_label">Inkludera uppspelningsposition</string>
   <string name="share_dialog_episode_website_label">Episodes webbplats</string>
@@ -756,7 +755,7 @@
   <!--Audio controls-->
   <string name="audio_controls">Ljudkontroller</string>
   <string name="playback_speed">Uppspelningshastighet</string>
-  <string name="audio_effects">Ljudeffekter</string>
+
   <string name="player_switch_to_audio_only">Växla till endast ljud</string>
   <!--proxy settings-->
   <string name="proxy_type_label">Typ</string>

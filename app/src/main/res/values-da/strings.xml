@@ -22,7 +22,7 @@
   <string name="episode_cache_full_message">Der er ikke mere plads i mellemlageret for afsnit. Du kan øge størrelsen på mellemlageret i Indstillinger.</string>
   <string name="years_statistics_label">År</string>
   <string name="notification_pref_fragment">Notifikationer </string>
-  <string name="recently_played_episodes">Senest afspillede afsnit</string>
+
   <!--Google Assistant-->
   <string name="app_action_not_found">\"%1$s\" ikke fundet</string>
   <!--SwipeActions-->
@@ -46,13 +46,13 @@
   <string name="statistics_counting_range">Afspillet mellem %1$s og %2$s</string>
   <string name="statistics_counting_total">Afspillet i alt</string>
   <!--Home fragment-->
-  <string name="home_surprise_title">Bliv overrasket</string>
-  <string name="home_classics_title">Tjek dine klassikere</string>
-  <string name="home_continue_title">Fortsæt med at lytte</string>
-  <string name="home_new_title">Se nyheder</string>
-  <string name="home_downloads_title">Administrer overførsler</string>
-  <string name="home_welcome_title">Velkommen til Podcini!</string>
-  <string name="home_welcome_text">Du har endnu ikke abonneret på nogen podcasts. Åbn sidemenuen for at tilføje en podcast.</string>
+
+
+
+
+
+
+
   <string name="notification_permission_text">Podcini har brug for din tilladelse til at vise notifikationer. Som udgangspunkt viser Podcini kun notifikationer, mens noget hentes, eller når noget går galt.</string>
   <string name="notification_permission_denied">Du afviste tilladelsen.</string>
   <string name="notification_permission_deny_warning">Hvis du deaktiverer notifikationer, og noget går galt, kan du måske ikke finde ud af, hvorfor det gik galt.</string>
@@ -168,7 +168,7 @@
   <string name="remove_feed_label">Fjern podcast</string>
   <string name="share_label">Del</string>
   <string name="share_file_label">Del fil</string>
-  <string name="share_rss_address_label">RSS-adresse:</string>
+
   <string name="feed_delete_confirmation_msg">Bekræft, at du vil slette podcasten \"%1$s\", ALLE dens afsnit (inklusive overførte afsnit) og dens statistikker.</string>
   <string name="feed_delete_confirmation_msg_batch">Bekræft, at du vil fjerne de valgte podcasts, ALLE deres afsnit (inklusive overførte afsnit) og deres statistikker.</string>
   <string name="feed_delete_confirmation_local_msg">Bekræft, at du vil fjerne podcasten \"%1$s\" og dens statistikker. Filerne i den lokale kildemappe vil ikke blive slettet.</string>
@@ -465,10 +465,9 @@
   <string name="pref_expandNotify_sum">Dette udvider normalt notifikationen til at vise afspilningsknapper.</string>
   <string name="pref_persistNotify_title">Vedholdende afspilningsknapper</string>
   <string name="pref_persistNotify_sum">Bevar notifikations- og låseskærmskontrol, når afspilningen er sat på pause</string>
-  <string name="pref_compact_notification_buttons_title">Indstil kompakte notifikationsknapper</string>
-  <string name="pref_compact_notification_buttons_sum">Ændr afspilningsknapperne når notifikationen minimeres. Afspil/pause-knappen vises altid.</string>
-  <string name="pref_compact_notification_buttons_dialog_title">Vælg højst %1$d knapper</string>
-  <string name="pref_compact_notification_buttons_dialog_error">Du kan højst vælge %1$d knapper.</string>
+
+
+
   <string name="pref_enqueue_location_title">Køplacering</string>
   <string name="pref_enqueue_location_sum">Føj afsnit til: %1$s</string>
   <string name="enqueue_location_back">Slutningen</string>
@@ -733,22 +732,22 @@
   <string name="hide_played_episodes_label">Afspillede</string>
   <string name="not_played">Ikke afspillet</string>
   <!--Sort-->
-  <string name="sort_title_a_z">Titel (A \u2192 Å)</string>
-  <string name="sort_title_z_a">Titel (Å \u2192 A)</string>
-  <string name="sort_date_new_old">Dato (ny \u2192 gammel)</string>
-  <string name="sort_date_old_new">Dato (gammel \u2192 ny)</string>
-  <string name="sort_duration_short_long">Varighed (kort \u2192 lang)</string>
-  <string name="sort_duration_long_short">Varighed (lang \u2192 kort)</string>
-  <string name="sort_filename_a_z">Filnavn (A \u2192 Z)</string>
-  <string name="sort_filename_z_a">Filnavn (Z \u2192 A)</string>
-  <string name="sort_a_z">A \u2192 Z</string>
-  <string name="sort_z_a">Z \u2192 A</string>
-  <string name="sort_new_old">Ny \u2192 Gammel</string>
-  <string name="sort_old_new">Gammel \u2192 Ny</string>
-  <string name="sort_short_long">Kort \u2192 Lang</string>
-  <string name="sort_long_short">Lang \u2192 Kort</string>
-  <string name="sort_small_large">Lille \u2192 Stor</string>
-  <string name="sort_large_small">Stor \u2192 Lille</string>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   <!--Share episode dialog-->
   <string name="share_playback_position_dialog_label">Inkluder afspilningsposition</string>
   <string name="share_dialog_episode_website_label">Adresse på afsnit</string>
@@ -759,7 +758,7 @@
   <!--Audio controls-->
   <string name="audio_controls">Lydknapper</string>
   <string name="playback_speed">Afspilningshastighed</string>
-  <string name="audio_effects">Lydeffekter</string>
+
   <string name="player_switch_to_audio_only">Skift til ren lyd</string>
   <!--proxy settings-->
   <string name="proxy_type_label">Type</string>

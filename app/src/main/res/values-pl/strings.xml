@@ -22,7 +22,7 @@
   <string name="episode_cache_full_message">Limit pamięci cache został osiągnięty. Możesz zwiększyć pojemność cache w ustawieniach aplikacji.</string>
   <string name="years_statistics_label">Lata</string>
   <string name="notification_pref_fragment">Powiadomienia</string>
-  <string name="recently_played_episodes">Ostatnio odtworzone odcinki</string>
+
   <!--Google Assistant-->
   <string name="app_action_not_found">Nie odnaleziono \"%1$s\"</string>
   <!--SwipeActions-->
@@ -45,13 +45,13 @@
   <string name="statistics_counting_range">Puść pomiędzy %1$sa %2$s</string>
   <string name="statistics_counting_total">W sumie odtwarzane</string>
   <!--Home fragment-->
-  <string name="home_surprise_title">Otrzymaj niespodziankę</string>
-  <string name="home_classics_title">Sprawdź swoje klasyki</string>
-  <string name="home_continue_title">Kontynuuj słuchanie</string>
-  <string name="home_new_title">Sprawdź nowości</string>
-  <string name="home_downloads_title">Zarządzaj pobranymi</string>
-  <string name="home_welcome_title">Witamy w Podcini!</string>
-  <string name="home_welcome_text">Nie subskrybujesz jeszcze żadnych podcastów. Otwórz menu boczne, aby dodać podcasty.</string>
+
+
+
+
+
+
+
   <string name="notification_permission_denied">Nie udzielono zgody.</string>
   <string name="open_settings">Otwórz ustawienia</string>
   <string name="configure_home">Konfiguruj stronę główną</string>
@@ -167,7 +167,7 @@
   <string name="remove_feed_label">Usuń podcast</string>
   <string name="share_label">Udostępnij</string>
   <string name="share_file_label">Udostępnij plik</string>
-  <string name="share_rss_address_label">adres RSS:</string>
+
   <string name="feed_remover_msg">Usuwanie podcastu</string>
   <string name="load_complete_feed">Odśwież cały podcast</string>
   <string name="multi_select">Wybierz wiele</string>
@@ -454,9 +454,8 @@
   <string name="pref_rewind_sum">Dostosuj liczbę sekund do przeskoczenia przy kliknięciu przewijania do tyłu</string>
   <string name="pref_expandNotify_title">Wysoki priorytet powiadomienia</string>
   <string name="pref_expandNotify_sum">Rozwija powiadomienie, aby pokazać przyciski odtwarzania</string>
-  <string name="pref_compact_notification_buttons_sum">Zmień przyciski odtwarzania, gdy powiadomienia są zwinięte. Przycisk odtwórz/pauza jest zawsze uwzględniony.</string>
-  <string name="pref_compact_notification_buttons_dialog_title">Wybierz maksimum z %1$d przedmiotów</string>
-  <string name="pref_compact_notification_buttons_dialog_error">Możesz tylko wybrać maksimum z %1$d przedmiotów.</string>
+
+
   <string name="pref_enqueue_location_sum">Dodaj odcinki do: %1$s</string>
   <string name="enqueue_location_back">Koniec</string>
   <string name="enqueue_location_front">Początek</string>
@@ -698,20 +697,20 @@
   <string name="hide_played_episodes_label">Odtworzone</string>
   <string name="not_played">Nie odtworzone</string>
   <!--Sort-->
-  <string name="sort_title_a_z">Tytuł (A \u2192 Z)</string>
-  <string name="sort_title_z_a">Tytuł (Z \u2192 A)</string>
-  <string name="sort_date_new_old">Data (Nowe \u2192 Stare)</string>
-  <string name="sort_date_old_new">Data (Stare \u2192 Nowe)</string>
-  <string name="sort_duration_short_long">Długość (Krótkie \u2192 Długie)</string>
-  <string name="sort_duration_long_short">Długość (Długie \u2192 Krótkie)</string>
-  <string name="sort_filename_a_z">Nazwa pliku (A \u2192 Z)</string>
-  <string name="sort_filename_z_a">Nazwa pliku (Z \u2192 A)</string>
-  <string name="sort_a_z">A \u2192 Z</string>
-  <string name="sort_z_a">Z \u2192 A</string>
-  <string name="sort_new_old">Nowe \u2192 Stare</string>
-  <string name="sort_old_new">Stare \u2192 Nowe</string>
-  <string name="sort_short_long">Krótkie \u2192 Długie</string>
-  <string name="sort_long_short">Długie \u2192 Krótkie</string>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   <!--Share episode dialog-->
   <string name="share_playback_position_dialog_label">Uwzględnianie pozycji odtwarzania</string>
   <string name="share_dialog_episode_website_label">Adres strony odcinka</string>
@@ -722,7 +721,7 @@
   <!--Audio controls-->
   <string name="audio_controls">Sterowanie audio</string>
   <string name="playback_speed">Prędkość odtwarzania</string>
-  <string name="audio_effects">Efekty audio</string>
+
   <string name="player_switch_to_audio_only">Odtwórz tylko dźwięk</string>
   <!--proxy settings-->
   <string name="proxy_type_label">Typ</string>

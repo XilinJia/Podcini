@@ -22,7 +22,7 @@
   <string name="episode_cache_full_message">Der Episodenspeicher ist voll. Du kannst die Größe des Episodenspeichers in den Einstellungen erhöhen.</string>
   <string name="years_statistics_label">Jahre</string>
   <string name="notification_pref_fragment">Benachrichtigungen</string>
-  <string name="recently_played_episodes">Zuletzt abgespielte Episoden</string>
+
   <!--Google Assistant-->
   <string name="app_action_not_found">\"%1$s\" nicht gefunden</string>
   <!--SwipeActions-->
@@ -46,13 +46,13 @@
   <string name="statistics_counting_range">Abgespielt zwischen %1$s und %2$s</string>
   <string name="statistics_counting_total">Insgesamt abgespielt</string>
   <!--Home fragment-->
-  <string name="home_surprise_title">Lass dich überraschen</string>
-  <string name="home_classics_title">Genieße deine Klassiker</string>
-  <string name="home_continue_title">Höre weiter</string>
-  <string name="home_new_title">Was gibt\'s Neues</string>
-  <string name="home_downloads_title">Verwalte Downloads</string>
-  <string name="home_welcome_title">Willkommen bei Podcini!</string>
-  <string name="home_welcome_text">Du hast noch keinen Podcast abonniert. Öffne das Seitenmenü, um einen Podcast hinzuzufügen.</string>
+
+
+
+
+
+
+
   <string name="notification_permission_text">Podcini benötigt deine Erlaubnis, um Benachrichtigungen anzuzeigen. Standardmäßig zeigt Podcini nur Benachrichtigungen an, wenn etwas heruntergeladen wird oder wenn etwas schief läuft.</string>
   <string name="notification_permission_denied">Du hast die Berechtigung abgelehnt.</string>
   <string name="notification_permission_deny_warning">Wenn die Benachrichtigungen deaktiviert werden und etwas schief geht, kannst du möglicherweise nicht herausfinden, warum dies passiert ist.</string>
@@ -168,7 +168,7 @@
   <string name="remove_feed_label">Podcast entfernen</string>
   <string name="share_label">Teilen</string>
   <string name="share_file_label">Teile Datei</string>
-  <string name="share_rss_address_label">RSS-Adresse:</string>
+
   <string name="feed_delete_confirmation_msg">Bitte bestätige, dass du den Podcast \"%1$s\", ALLE seine Episoden (einschließlich heruntergeladener Episoden) und Statistiken löschen möchtest.</string>
   <string name="feed_delete_confirmation_msg_batch">Bitte bestätige, dass du die ausgewählten Podcasts, ALLE ihre Episoden (einschließlich heruntergeladener Episoden) und Statistiken löschen möchtest.</string>
   <string name="feed_delete_confirmation_local_msg">Bitte bestätige, dass du den Podcast \"%1$s\" und seine Statistiken löschen möchtest. Die Dateien im lokalen Quellordner werden nicht gelöscht.</string>
@@ -465,10 +465,9 @@
   <string name="pref_expandNotify_sum">Dies erweitert normalerweise die Benachrichtigung und zeigt so die Wiedergabetasten an</string>
   <string name="pref_persistNotify_title">Persistente Wiedergabesteuerung</string>
   <string name="pref_persistNotify_sum">Bedienelemente in der Benachrichtigungsleiste und auf dem Sperrbildschirm anzeigen, während die Wiedergabe pausiert ist</string>
-  <string name="pref_compact_notification_buttons_title">Kompakte Benachrichtigungstasten</string>
-  <string name="pref_compact_notification_buttons_sum">Die Wiedergabetasten auswählen, die angezeigt werden, wenn die Benachrichtigung eingeklappt ist. Die Wiedergabe/Pause-Taste wird immer angezeigt.</string>
-  <string name="pref_compact_notification_buttons_dialog_title">Wähle bis zu %1$d Einträge aus</string>
-  <string name="pref_compact_notification_buttons_dialog_error">Du kannst maximal %1$d Einträge auswählen.</string>
+
+
+
   <string name="pref_enqueue_location_title">Position beim Einreihen</string>
   <string name="pref_enqueue_location_sum">Episoden hinzufügen: %1$s </string>
   <string name="enqueue_location_back">Hinten</string>
@@ -733,22 +732,22 @@
   <string name="hide_played_episodes_label">Gespielt</string>
   <string name="not_played">Nicht abgespielt</string>
   <!--Sort-->
-  <string name="sort_title_a_z">Titel (A \u2192 Z)</string>
-  <string name="sort_title_z_a">Titel (Z \u2192 A)</string>
-  <string name="sort_date_new_old">Datum (neu \u2192 alt)</string>
-  <string name="sort_date_old_new">Datum (alt \u2192 neu)</string>
-  <string name="sort_duration_short_long">Dauer (kurz \u2192 lang)</string>
-  <string name="sort_duration_long_short">Dauer (lang \u2192 kurz)</string>
-  <string name="sort_filename_a_z">Dateiname (A \u2192 Z)</string>
-  <string name="sort_filename_z_a">Dateiname (Z \u2192 A)</string>
-  <string name="sort_a_z">A \u2192 Z</string>
-  <string name="sort_z_a">Z \u2192 A</string>
-  <string name="sort_new_old">Neu \u2192 Alt</string>
-  <string name="sort_old_new">Alt \u2192 Neu</string>
-  <string name="sort_short_long">Kurz \u2192 Lang</string>
-  <string name="sort_long_short">Lang \u2192 Kurz</string>
-  <string name="sort_small_large">Klein \u2192 Groß</string>
-  <string name="sort_large_small">Groß \u2192 Klein</string>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   <!--Share episode dialog-->
   <string name="share_playback_position_dialog_label">Wiedergabeposition einbeziehen</string>
   <string name="share_dialog_episode_website_label">Webseite der Episode</string>
@@ -759,7 +758,7 @@
   <!--Audio controls-->
   <string name="audio_controls">Audioregler</string>
   <string name="playback_speed">Abspielgeschwindigkeit</string>
-  <string name="audio_effects">Audioeffekte</string>
+
   <string name="player_switch_to_audio_only">Auf nur Audio umschalten</string>
   <!--proxy settings-->
   <string name="proxy_type_label">Typ</string>

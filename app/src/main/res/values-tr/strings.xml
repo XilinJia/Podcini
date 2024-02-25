@@ -22,7 +22,7 @@
   <string name="episode_cache_full_message">Bölüm önbelleği limitine ulaşıldı. Ayarlardan önbellek limitini arttırabilirsiniz. </string>
   <string name="years_statistics_label">Yıllar</string>
   <string name="notification_pref_fragment">Bildirimler</string>
-  <string name="recently_played_episodes">Son oynatılan bölümler</string>
+
   <!--Google Assistant-->
   <string name="app_action_not_found">\"%1$s\" bulunamadı</string>
   <!--SwipeActions-->
@@ -46,13 +46,13 @@
   <string name="statistics_counting_range">%1$s ile %2$s arasında çalınan</string>
   <string name="statistics_counting_total">Toplamda çalınan</string>
   <!--Home fragment-->
-  <string name="home_surprise_title">Sürprizle karşılaş</string>
-  <string name="home_classics_title">Klasiklerinizi kontrol edin</string>
-  <string name="home_continue_title">Dinlemeye devam et</string>
-  <string name="home_new_title">Yenilikler</string>
-  <string name="home_downloads_title">İndirmeleri yönet</string>
-  <string name="home_welcome_title">Podcini\'a hoşgeldin!</string>
-  <string name="home_welcome_text">Henüz hiçbir podcast\'e abone olmadın. Kenar menüyü aç ve bir podcast ekle.</string>
+
+
+
+
+
+
+
   <string name="notification_permission_denied">İzni reddettiniz</string>
   <string name="open_settings">Ayarları aç</string>
   <string name="configure_home">Ana Ekranı Özelleştir</string>
@@ -157,7 +157,7 @@
   <string name="remove_feed_label">Podcasti kaldır</string>
   <string name="share_label">Paylaş</string>
   <string name="share_file_label">Dosyaları paylaşın</string>
-  <string name="share_rss_address_label">RSS adresi:</string>
+
   <string name="feed_delete_confirmation_msg">Lütfen \"%1$s\" podcastin, TÜM bölümlerini (indirilen bölümler dahil) ve istatistiklerini silmek istediğinizi onaylayın.</string>
   <string name="feed_delete_confirmation_msg_batch">Lütfen seçilen podcast\'leri, TÜM bölümlerini (indirilen bölümler dahil) ve istatistiklerini kaldırmak istediğinizi onaylayın.</string>
   <string name="feed_delete_confirmation_local_msg">Lütfen \"\'%1$s\'\" yayınlarını ve istatistiklerini kaldırmak istediğinizi onaylayın. Yerel kaynak klasöründeki dosyalar silinmeyecektir.</string>
@@ -441,10 +441,9 @@
   <string name="pref_expandNotify_title">Yüksek bildirim önceliği</string>
   <string name="pref_expandNotify_sum">Bu genellikle bildirimi oynatma düğmelerini gösterecek şekilde genişletir.</string>
   <string name="pref_persistNotify_title">Kalıcı oynatma kontrolleri</string>
-  <string name="pref_compact_notification_buttons_title">Kompakt bildirim düğmelerini ayarlayın</string>
-  <string name="pref_compact_notification_buttons_sum">Bildirim daraltıldığında oynatma düğmelerini değiştirin. Oynat/Duraklat düğmesi her zaman dahil edilir.</string>
-  <string name="pref_compact_notification_buttons_dialog_title">En fazla %1$d öğe seçiniz</string>
-  <string name="pref_compact_notification_buttons_dialog_error">Yalnızca en fazla %1$d öğe seçebilirsiniz.</string>
+
+
+
   <string name="pref_enqueue_location_title">Kuyruğa alma konumu</string>
   <string name="pref_enqueue_location_sum">Bölümleri şuraya ekle: %1$s</string>
   <string name="enqueue_location_back">Geri</string>
@@ -692,20 +691,20 @@
   <string name="hide_played_episodes_label">Oynatıldı</string>
   <string name="not_played">Oynatılmadı</string>
   <!--Sort-->
-  <string name="sort_title_a_z">Başlık (A \u2192 Z)</string>
-  <string name="sort_title_z_a">Başlık (Z \u2192 A)</string>
-  <string name="sort_date_new_old">Tarih (Yeni \u2192 Eski)</string>
-  <string name="sort_date_old_new">Tarih (Eski \u2192 Yeni)</string>
-  <string name="sort_duration_short_long">Süre (Kısa \u2192 Uzun)</string>
-  <string name="sort_duration_long_short">Süre (Uzun \u2192 Kısa)</string>
-  <string name="sort_filename_a_z">Dosya İsmi (A \u2192 Z)</string>
-  <string name="sort_filename_z_a">Dosya İsmi (Z \u2192 A)</string>
-  <string name="sort_a_z">A \u2192 Z</string>
-  <string name="sort_z_a">Z \u2192 A</string>
-  <string name="sort_new_old">Yeni \u2192 Eski</string>
-  <string name="sort_old_new">Eski \u2192 Yeni</string>
-  <string name="sort_short_long">Kısa \u2192 Uzun</string>
-  <string name="sort_long_short">Uzun \u2192 Kısa</string>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   <!--Share episode dialog-->
   <string name="share_playback_position_dialog_label">Dinleme konumunu dahil et</string>
   <string name="share_dialog_episode_website_label">Bölüm web sayfası</string>
@@ -716,7 +715,7 @@
   <!--Audio controls-->
   <string name="audio_controls">Ses kontrolleri</string>
   <string name="playback_speed">Oynatma hızı</string>
-  <string name="audio_effects">Ses efektleri</string>
+
   <string name="player_switch_to_audio_only">Sadece Ses Moduna Dön</string>
   <!--proxy settings-->
   <string name="proxy_type_label">Tür</string>

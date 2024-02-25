@@ -33,13 +33,13 @@
   <string name="statistics_counting_range">%1$s から %2$s までの間に再生</string>
   <string name="statistics_counting_total">合計再生回数</string>
   <!--Home fragment-->
-  <string name="home_surprise_title">発見</string>
-  <string name="home_classics_title">過去のエピソード</string>
-  <string name="home_continue_title">続きを聴く</string>
-  <string name="home_new_title">新着の確認</string>
-  <string name="home_downloads_title">ダウンロードの管理</string>
-  <string name="home_welcome_title">ようこそ、Podciniへ！</string>
-  <string name="home_welcome_text">現在、ポッドキャストを何も購読していません。サイドメニューを開いてポッドキャストを追加してください。</string>
+
+
+
+
+
+
+
   <string name="configure_home">ホーム画面の設定</string>
   <!--Download Statistics fragment-->
   <string name="total_size_downloaded_podcasts">デバイス上のエピソードの合計サイズ</string>
@@ -121,7 +121,7 @@
   <string name="rename_feed_label">ポッドキャスト名を変更</string>
   <string name="remove_feed_label">ポッドキャストを削除</string>
   <string name="share_label">共有</string>
-  <string name="share_rss_address_label">RSSアドレス:</string>
+
   <string name="feed_remover_msg">ポッドキャストを削除中</string>
   <string name="load_complete_feed">ポッドキャストをすべて更新</string>
   <string name="multi_select">複数選択</string>
@@ -315,9 +315,8 @@
   <string name="pref_fast_forward_sum">早送りボタンをタップしたときに進む秒数をカスタマイズします</string>
   <string name="pref_rewind_sum">巻き戻しボタンをタップしたときに戻る秒数をカスタマイズします</string>
   <string name="pref_expandNotify_sum">これは通常再生ボタンを表示するように通知を展開します。</string>
-  <string name="pref_compact_notification_buttons_sum">通知が折りたたまれたときの再生ボタンを変更します。再生/一時停止ボタンは常に含まれています。</string>
-  <string name="pref_compact_notification_buttons_dialog_title">最大 %1$d 個のアイテムを選択</string>
-  <string name="pref_compact_notification_buttons_dialog_error">最大で %1$d 個のアイテムを選択できます。</string>
+
+
   <string name="pref_enqueue_location_sum">エピソードを追加: %1$s</string>
   <string name="enqueue_location_back">後ろ</string>
   <string name="enqueue_location_front">前</string>
@@ -536,20 +535,20 @@
   <string name="hide_played_episodes_label">再生済み</string>
   <string name="not_played">未再生</string>
   <!--Sort-->
-  <string name="sort_title_a_z">タイトル (A \u2192 Z)</string>
-  <string name="sort_title_z_a">タイトル (Z \u2192 A)</string>
-  <string name="sort_date_new_old">日付 (新 \u2192 旧)</string>
-  <string name="sort_date_old_new">日付 (旧 \u2192 新)</string>
-  <string name="sort_duration_short_long">時間 (短 \u2192 長)</string>
-  <string name="sort_duration_long_short">時間 (長 \u2192 短)</string>
-  <string name="sort_filename_a_z">ファイル名 (A \u2192 Z)</string>
-  <string name="sort_filename_z_a">ファイル名  (Z \u2192 A)</string>
-  <string name="sort_a_z">A \u2192 Z</string>
-  <string name="sort_z_a">Z \u2192 A</string>
-  <string name="sort_new_old">新 \u2192 旧</string>
-  <string name="sort_old_new">旧 \u2192 新</string>
-  <string name="sort_short_long">短 \u2192 長</string>
-  <string name="sort_long_short">長 \u2192 短</string>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   <!--Share episode dialog-->
   <string name="share_playback_position_dialog_label">再生位置を含める</string>
   <string name="share_dialog_episode_website_label">エピソードのWebページ</string>

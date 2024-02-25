@@ -22,7 +22,7 @@
   <string name="episode_cache_full_message">Saioen cache-a mugara iritsi da. Ezarpenetan cache-aren tamaina handitu dezakezu.</string>
   <string name="years_statistics_label">Urteak</string>
   <string name="notification_pref_fragment">Jakinarazpenak</string>
-  <string name="recently_played_episodes">Azkena erreproduzitutako saioak</string>
+
   <!--Google Assistant-->
   <string name="app_action_not_found">\"%1$s\" ez da aurkitu</string>
   <!--SwipeActions-->
@@ -46,12 +46,12 @@
   <string name="statistics_counting_range">%1$s eta %2$s bitartean joa</string>
   <string name="statistics_counting_total">Joa guztira</string>
   <!--Home fragment-->
-  <string name="home_classics_title">Arakatu zure klasikoak</string>
-  <string name="home_continue_title">Jarraitu entzuten</string>
-  <string name="home_new_title">Ikusi berriak</string>
-  <string name="home_downloads_title">Kudeatu deskargak</string>
-  <string name="home_welcome_title">Ongi etorri Podcini-era!</string>
-  <string name="home_welcome_text">Oraindik ez zara harpidetu podcast bakar batera ere. Ireki alboko menua podcast bat gehitzeko.</string>
+
+
+
+
+
+
   <string name="notification_permission_text">Podciniek zure baimena behar du jakinarazpenak bistaratzeko. Modu lehenetsian Podciniek bi kasutan soilik erakusten ditu jakinarazpenak: zerbait deskargatu bitartean edo zerbait oker doanean.</string>
   <string name="notification_permission_denied">Baimena ukatu duzu.</string>
   <string name="deny_label">Ukatu</string>
@@ -161,7 +161,7 @@
   <string name="remove_feed_label">Kendu podcasta</string>
   <string name="share_label">Partekatu</string>
   <string name="share_file_label">Partekatu fitxategia</string>
-  <string name="share_rss_address_label">RSS helbidea:</string>
+
   <string name="feed_remover_msg">Podcasta ezabatzen</string>
   <string name="load_complete_feed">Eguneratu osatutako podcasta</string>
   <string name="multi_select">Hautaketa anitza</string>
@@ -424,9 +424,8 @@
   <string name="pref_rewind_sum">Pertsonalizatu zenbat segundu egingo duen atzera atzera botoia sakatzean
 </string>
   <string name="pref_expandNotify_sum">Honek jakinarazpenak zabaltzen ditu erreprodukzio botoiak erakusteko</string>
-  <string name="pref_compact_notification_buttons_sum">Aldatu botoiak jakinarazpena hartuta dagoenean. Erreproduzitu/eten botoia beti dago sartuta.</string>
-  <string name="pref_compact_notification_buttons_dialog_title">Aukeratu gehienez %1$d elementu</string>
-  <string name="pref_compact_notification_buttons_dialog_error">Ezingo duzu %1$d elementu baino gehiago aukeratu.</string>
+
+
   <string name="pref_enqueue_location_sum">Saioak hemen gehitu: %1$s</string>
   <string name="enqueue_location_back">Bukaera</string>
   <string name="enqueue_location_front">Hasiera</string>
@@ -654,22 +653,22 @@
   <string name="hide_played_episodes_label">Ikusita</string>
   <string name="not_played">Erreproduzitu gabea</string>
   <!--Sort-->
-  <string name="sort_title_a_z">Izenburua (A \u2192 Z)</string>
-  <string name="sort_title_z_a">Izenburua (Z \u2192 A)</string>
-  <string name="sort_date_new_old">Data (berria \u2192 zaharra)</string>
-  <string name="sort_date_old_new">Data (zaharra \u2192 berria)</string>
-  <string name="sort_duration_short_long">Iraupena (motza\u2192 luzea)</string>
-  <string name="sort_duration_long_short">Iraupena (luzea\u2192 motza)</string>
-  <string name="sort_filename_a_z">Artxiboaren izena (A \u2192 Z)</string>
-  <string name="sort_filename_z_a">Artxiboaren izena (Z \u2192 A)</string>
-  <string name="sort_a_z">A \u2192 Z</string>
-  <string name="sort_z_a">Z \u2192 A</string>
-  <string name="sort_new_old">Berria \u2192 zaharra</string>
-  <string name="sort_old_new">Zaharra \u2192 berria</string>
-  <string name="sort_short_long">Motza \u2192 luzea</string>
-  <string name="sort_long_short">Luzea \u2192 motza</string>
-  <string name="sort_small_large">Motza \u2192 luzea</string>
-  <string name="sort_large_small">Luzea \u2192 motza</string>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   <!--Share episode dialog-->
   <string name="share_playback_position_dialog_label">Sartu erreprodukzioaren unea</string>
   <string name="share_dialog_episode_website_label">Saioaren orrialdea</string>
@@ -680,7 +679,7 @@
   <!--Audio controls-->
   <string name="audio_controls">Audio kontrolak</string>
   <string name="playback_speed">Erreprodukzio abiadura</string>
-  <string name="audio_effects">Audio efektuak</string>
+
   <string name="player_switch_to_audio_only">Aldatu soilik audiora</string>
   <!--proxy settings-->
   <string name="proxy_type_label">Mota</string>

@@ -22,7 +22,7 @@
   <string name="episode_cache_full_message">تجاوز از کران انبارهٔ قسمت. می‌توانید اندازهٔ انباره را در تنظیمات افزایش دهید.</string>
   <string name="years_statistics_label">سال</string>
   <string name="notification_pref_fragment">آگاهی‌ها</string>
-  <string name="recently_played_episodes">قسمت‌های پخش شدهٔ اخیر</string>
+
   <!--Google Assistant-->
   <string name="app_action_not_found">«%1$s» یافت نشد</string>
   <!--SwipeActions-->
@@ -46,13 +46,13 @@
   <string name="statistics_counting_range">پخش شده بین %1$s و %2$s</string>
   <string name="statistics_counting_total">پخش شده در مجموع</string>
   <!--Home fragment-->
-  <string name="home_surprise_title">شگفت زده شوید</string>
-  <string name="home_classics_title">موارد کلاسیک خود را بررسی کنید</string>
-  <string name="home_continue_title">ادامه گوش کردن</string>
-  <string name="home_new_title">ببینید چه مواردی جدید است</string>
-  <string name="home_downloads_title">مدیریت موارد بارگیری‌شده</string>
-  <string name="home_welcome_title">به آنتناپاد خوش‌آمدید!</string>
-  <string name="home_welcome_text">شما هنوز عضو پادکستی نشده اید. منو برای اضافه کردن پادکست باز نمایید.</string>
+
+
+
+
+
+
+
   <string name="notification_permission_denied">اجازه را رد کردید.</string>
   <string name="open_settings">گشودن تنظمیات</string>
   <string name="configure_home">پیکربندی صفحه اصلی</string>
@@ -157,7 +157,7 @@
   <string name="remove_feed_label">پاک کردن پادکست</string>
   <string name="share_label">هم‌رسانی</string>
   <string name="share_file_label">هم‌رسانی پرونده</string>
-  <string name="share_rss_address_label">نشانی خوراک:</string>
+
   <string name="feed_delete_confirmation_msg">لطفا تأیید کنید که می‌خواهید پادکست «%1$s» و تمامی قسمت‌ها (از جمله قسمت‌های بار گرفته)  و آمارهایش را حذف کنید.</string>
   <string name="feed_delete_confirmation_msg_batch">لطفا تأیید کنید که می‌خواهید پادکست‌های گزیده و تمامی قسمت‌ها (از جمله قسمت‌های بار گرفته) و آمارهایشان را بردارید.</string>
   <string name="feed_delete_confirmation_local_msg">لطفا تأیید کنید که می‌خواهید پادکست «%1$s» و آمارهایش را بردارید. پرونده‌ها در شاخهٔ منبع محلّی حذف نخواهند شد.</string>
@@ -441,10 +441,9 @@
   <string name="pref_expandNotify_title">اولویت زیاد آگاهی</string>
   <string name="pref_expandNotify_sum">معمولاً آگاهی را برای نمایش دکمه های پخش می‌گستراند.</string>
   <string name="pref_persistNotify_title">واپایشگرهای پخش ثابت</string>
-  <string name="pref_compact_notification_buttons_title">تنظیم دکمه‌های آگاهی فشرده</string>
-  <string name="pref_compact_notification_buttons_sum">تغییر دکمه‌های پخش هنگام جمع شدن آگاهی. دکمهٔ پخش و مکث همواره آشکار است.</string>
-  <string name="pref_compact_notification_buttons_dialog_title">حداکثر %1$d مورد را انتخاب کنید</string>
-  <string name="pref_compact_notification_buttons_dialog_error">شما فقط می توانید حداکثر %1$d مورد را انتخاب کنید.</string>
+
+
+
   <string name="pref_enqueue_location_title">مکان صف‌بندی</string>
   <string name="pref_enqueue_location_sum">افزودن قسمت‌ها به : %1$s</string>
   <string name="enqueue_location_back">عقب</string>
@@ -692,20 +691,20 @@
   <string name="hide_played_episodes_label">پخش شد</string>
   <string name="not_played">اجرا نشده</string>
   <!--Sort-->
-  <string name="sort_title_a_z">عنوان (الفبایی معکوس)</string>
-  <string name="sort_title_z_a">عنوان (الفبایی)</string>
-  <string name="sort_date_new_old">تاریخ (جدید به قدیم)</string>
-  <string name="sort_date_old_new">تاریخ (قدیم به جدید)</string>
-  <string name="sort_duration_short_long">طول (کوتاه به بلند)</string>
-  <string name="sort_duration_long_short">طول (بلند به کوتاه)</string>
-  <string name="sort_filename_a_z">نام پرونده (A تا Z)</string>
-  <string name="sort_filename_z_a">نام پرونده (A تا Z)</string>
-  <string name="sort_a_z">برعکس الفبایی</string>
-  <string name="sort_z_a">الفبایی</string>
-  <string name="sort_new_old">جدید به قدیم</string>
-  <string name="sort_old_new">قدیم به جدید</string>
-  <string name="sort_short_long">کوتاه به بلند</string>
-  <string name="sort_long_short">بلند به کوتاه</string>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   <!--Share episode dialog-->
   <string name="share_playback_position_dialog_label">موقعیت پخش را لحاظ کنید</string>
   <string name="share_dialog_episode_website_label">پایگاه وب قسمت</string>
@@ -716,7 +715,7 @@
   <!--Audio controls-->
   <string name="audio_controls">کنترل های صوتی</string>
   <string name="playback_speed">سرعت پخش</string>
-  <string name="audio_effects">جلوه های صوتی</string>
+
   <string name="player_switch_to_audio_only">تعییر به فقط صدا</string>
   <!--proxy settings-->
   <string name="proxy_type_label">نوع</string>

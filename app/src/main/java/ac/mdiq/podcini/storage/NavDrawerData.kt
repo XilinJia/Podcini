@@ -2,7 +2,7 @@ package ac.mdiq.podcini.storage
 
 import ac.mdiq.podcini.storage.model.feed.Feed
 
-class NavDrawerData(@JvmField val items: List<DrawerItem>,
+class NavDrawerData(@JvmField val items: List<FeedDrawerItem>,
                     @JvmField val queueSize: Int,
                     @JvmField val numNewItems: Int,
                     val numDownloadedItems: Int,

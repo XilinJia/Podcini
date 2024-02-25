@@ -906,7 +906,7 @@ object DBReader {
         val numNewItems = getTotalEpisodeCount(FeedItemFilter(FeedItemFilter.NEW))
         val numDownloadedItems = getTotalEpisodeCount(FeedItemFilter(FeedItemFilter.DOWNLOADED))
 
-        val items: MutableList<DrawerItem> = ArrayList()
+        val items: MutableList<FeedDrawerItem> = ArrayList()
         for (feed in feeds) {
             val counter = if (feedCounters.containsKey(feed.id)) feedCounters[feed.id]!! else 0
             val drawerItem = FeedDrawerItem(feed, feed.id, counter)

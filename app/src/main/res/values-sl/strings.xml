@@ -311,9 +311,8 @@
   <string name="pref_fast_forward_sum">Prilagodite število sekund za skok naprej, ko kliknete gumb za hitro previjanje naprej</string>
   <string name="pref_rewind_sum">Prilagodite število sekund za skok nazaj, ko kliknete gumb za previjanje nazaj</string>
   <string name="pref_expandNotify_sum">To običajno razširi obvestilo, da prikaže gumbe za predvajanje.</string>
-  <string name="pref_compact_notification_buttons_sum">Ko je obvestilo strnjeno, spremenite gumbe za predvajanje. Gumb za predvajanje/pavza je vedno vključen.</string>
-  <string name="pref_compact_notification_buttons_dialog_title">Izberite največ %1$d elementov</string>
-  <string name="pref_compact_notification_buttons_dialog_error">Izberete lahko samo največ %1$d elementov.</string>
+
+
   <string name="pref_enqueue_location_sum">Dodaj epizode v: %1$s</string>
   <string name="enqueue_location_back">Na koncu</string>
   <string name="enqueue_location_front">Na začetku</string>
@@ -520,20 +519,20 @@
   <string name="hide_played_episodes_label">Predvajano</string>
   <string name="not_played">Ni predvajano</string>
   <!--Sort-->
-  <string name="sort_title_a_z">Naslov (A \u2192 Z)</string>
-  <string name="sort_title_z_a">Naslov (Z \u2192 A)</string>
-  <string name="sort_date_new_old">Datum (New \u2192 Old)</string>
-  <string name="sort_date_old_new">Datum (Old \u2192 New)</string>
-  <string name="sort_duration_short_long">Trajanje (Short \u2192 Long)</string>
-  <string name="sort_duration_long_short">Trajanje (Long \u2192 Short)</string>
-  <string name="sort_filename_a_z">Ime datoteke (A \u2192 Z)</string>
-  <string name="sort_filename_z_a">Ime datoteke (Z \u2192 A)</string>
-  <string name="sort_a_z">A \u2192 Z</string>
-  <string name="sort_z_a">Z \u2192 A</string>
-  <string name="sort_new_old">Novi \u2192 Stari</string>
-  <string name="sort_old_new">Stari \u2192 Novi</string>
-  <string name="sort_short_long">Kratki \u2192 Dolgi</string>
-  <string name="sort_long_short">Dolgi \u2192 Kratki</string>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   <!--Share episode dialog-->
   <string name="share_dialog_episode_website_label">Spletna stran epizode</string>
   <string name="share_dialog_media_file_label">Predstavnostna datoteka</string>

@@ -22,7 +22,7 @@
   <string name="episode_cache_full_message">에피소드 캐시 한계값에 도달했습니다. 설정에서 캐시 크기를 늘릴 수 있습니다.</string>
   <string name="years_statistics_label">연</string>
   <string name="notification_pref_fragment">알림</string>
-  <string name="recently_played_episodes">최근 재생한 에피소드</string>
+
   <!--Google Assistant-->
   <string name="app_action_not_found">\"%1$s\" 없음</string>
   <!--SwipeActions-->
@@ -46,13 +46,13 @@
   <string name="statistics_counting_range">%1$s와 %2$s 사이에 재생</string>
   <string name="statistics_counting_total">전체 재생</string>
   <!--Home fragment-->
-  <string name="home_surprise_title">아무거나 보기</string>
-  <string name="home_classics_title">예전 이야기 다시 보기</string>
-  <string name="home_continue_title">계속 듣기</string>
-  <string name="home_new_title">새로운 사항 보기</string>
-  <string name="home_downloads_title">다운로드 관리</string>
-  <string name="home_welcome_title">안테나팟에 잘 오셨습니다!</string>
-  <string name="home_welcome_text">아직 어떤 팟캐스트도 구독하지 않았습니다. 가장자리 메뉴를 열어 팟캐스트를 추가하십시오.</string>
+
+
+
+
+
+
+
   <string name="notification_permission_denied">권한을 거부했습니다.</string>
   <string name="open_settings">설정 열기</string>
   <string name="configure_home">홈 화면 구성</string>
@@ -151,7 +151,7 @@
   <string name="remove_feed_label">팟캐스트 제거</string>
   <string name="share_label">공유</string>
   <string name="share_file_label">파일 공유</string>
-  <string name="share_rss_address_label">RSS 주소:</string>
+
   <string name="feed_delete_confirmation_msg">정말로 \"%1$s\" 팟캐스트, 그 모든 에피소드 (다운로드한 에피소드 포함), 그 통계를 삭제할지 확인하십시오.</string>
   <string name="feed_delete_confirmation_msg_batch">확인하면 선택한 팟캐스트와, 그 팟캐스트의 모든 에피소드 (다운로드한 에피소드 포함) 및 통계를 삭제합니다.</string>
   <string name="feed_delete_confirmation_local_msg">정말로 \"%1$s\" 팟캐스트 및 그 통계를 지울지 확인하십시오. 로컬 소스 폴더에 있는 파일은 삭제하지 않을 것입니다.</string>
@@ -426,10 +426,9 @@
   <string name="pref_expandNotify_title">높은 알림 우선순위</string>
   <string name="pref_expandNotify_sum">알림에서 재생 버튼이 표시되도록 확장합니다.</string>
   <string name="pref_persistNotify_title">재생 조작 항상 표시</string>
-  <string name="pref_compact_notification_buttons_title">간략한 알림 버튼 사용</string>
-  <string name="pref_compact_notification_buttons_sum">알림이 중첩되었을 경우 재생 버튼을 바꿉니다. 재생/일시정지 단추는 항상 포함됩니다.</string>
-  <string name="pref_compact_notification_buttons_dialog_title">최대 %1$d개 항목 선택</string>
-  <string name="pref_compact_notification_buttons_dialog_error">최대 %1$d개 항목만 선택할 수 있습니다.</string>
+
+
+
   <string name="pref_enqueue_location_title">대기열 추가 위치</string>
   <string name="pref_enqueue_location_sum">에피소드 추가 위치: %1$s</string>
   <string name="enqueue_location_back">뒤</string>
@@ -674,20 +673,20 @@
   <string name="hide_played_episodes_label">재생함</string>
   <string name="not_played">재생함 아님</string>
   <!--Sort-->
-  <string name="sort_title_a_z">제목 (A \u2192 Z)</string>
-  <string name="sort_title_z_a">제목 (Z \u2192 A)</string>
-  <string name="sort_date_new_old">시각 (최근 \u2192 과거)</string>
-  <string name="sort_date_old_new">시각 (과거 \u2192 최근)</string>
-  <string name="sort_duration_short_long">길이 (짧음 \u2192 김)</string>
-  <string name="sort_duration_long_short">길이 (김 \u2192 짧음)</string>
-  <string name="sort_filename_a_z">파일 이름 (A \u2192 Z)</string>
-  <string name="sort_filename_z_a">파일 이름 (Z \u2192 A)</string>
-  <string name="sort_a_z">A \u2192 Z</string>
-  <string name="sort_z_a">Z \u2192 A</string>
-  <string name="sort_new_old">최근 \u2192 과거</string>
-  <string name="sort_old_new">과거 \u2192 최근</string>
-  <string name="sort_short_long">짧음 \u2192 김</string>
-  <string name="sort_long_short">김 \u2192 짧음</string>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   <!--Share episode dialog-->
   <string name="share_playback_position_dialog_label">재생 위치 포함</string>
   <string name="share_dialog_episode_website_label">에피소드 웹페이지</string>
@@ -698,7 +697,7 @@
   <!--Audio controls-->
   <string name="audio_controls">오디오 조작</string>
   <string name="playback_speed">재생 속도</string>
-  <string name="audio_effects">오디오 효과</string>
+
   <string name="player_switch_to_audio_only">오디오 전용으로 전환</string>
   <!--proxy settings-->
   <string name="proxy_type_label">종류</string>

@@ -21,7 +21,7 @@
   <string name="episode_cache_full_message">Saadete vahemälu limiit on täis. Vahemälu limiiti saab suurendada seadete alt.</string>
   <string name="years_statistics_label">Aastad</string>
   <string name="notification_pref_fragment">Teavitused</string>
-  <string name="recently_played_episodes">Hiljuti kuulatud saated</string>
+
   <!--Google Assistant-->
   <string name="app_action_not_found">\"%1$s\" ei leitud</string>
   <!--SwipeActions-->
@@ -43,12 +43,12 @@
   <string name="statistics_reset_data_msg">See lähtestab kõigi esitatud saadete kuulamise pikkuse ajaloo. Kas oled kindel, et tahad jätkata?</string>
   <string name="statistics_counting_total">Kokku kuulatud</string>
   <!--Home fragment-->
-  <string name="home_surprise_title">Üllata mind</string>
-  <string name="home_classics_title">Vaata klassikalisi</string>
-  <string name="home_continue_title">Jätka kuulamist</string>
-  <string name="home_new_title">Mis on uut</string>
-  <string name="home_downloads_title">Halda allalaadimisi</string>
-  <string name="home_welcome_title">Tere tulemast Podcinii!</string>
+
+
+
+
+
+
   <string name="open_settings">Ava seaded</string>
   <!--Download Statistics fragment-->
   <!--Main activity-->
@@ -341,9 +341,8 @@
   <string name="pref_fast_forward_sum">Määra, mitu sekundit edasi hüpatakse, kui vajutatakse edasi kerimise nuppu</string>
   <string name="pref_rewind_sum">Määra, mitu sekundit tagasi hüpatakse, kui vajutatakse tagasi kerimise nuppu</string>
   <string name="pref_expandNotify_sum">See tavaliselt kuvab teadet laiemana ning näha on esitusnupud.</string>
-  <string name="pref_compact_notification_buttons_sum">Muuda esitamise nuppe, kui teavitus on suletud. Eritamise/pausi nupp on alati saadaval.</string>
-  <string name="pref_compact_notification_buttons_dialog_title">Vali maksimaalselt %1$d kirjet</string>
-  <string name="pref_compact_notification_buttons_dialog_error">Maksimaalselt saab valida %1$d kirjet.</string>
+
+
   <string name="pref_enqueue_location_sum">Saated lisatakse: %1$s</string>
   <string name="enqueue_location_back">Algusesse</string>
   <string name="enqueue_location_front">Lõppu</string>
@@ -527,18 +526,18 @@
   <string name="hide_played_episodes_label">Esitatud</string>
   <string name="not_played">Pole esitatud</string>
   <!--Sort-->
-  <string name="sort_title_a_z">Pealkiri (A \u2192 Z)</string>
-  <string name="sort_title_z_a">Pealkiri (Z \u2192 A)</string>
-  <string name="sort_date_new_old">Kuupäev (uus \u2192 vana)</string>
-  <string name="sort_date_old_new">Kuupäev (vana \u2192 uus)</string>
-  <string name="sort_duration_short_long">Kestus (lühike \u2192 pikk)</string>
-  <string name="sort_duration_long_short">Kestus (pikk \u2192 lühike)</string>
-  <string name="sort_a_z">A \u2192 Z</string>
-  <string name="sort_z_a">Z \u2192 A</string>
-  <string name="sort_new_old">Uus \u2192 vana</string>
-  <string name="sort_old_new">Vana \u2192 uus</string>
-  <string name="sort_short_long">Lühike \u2192 pikk</string>
-  <string name="sort_long_short">Pikk \u2192 lühike</string>
+
+
+
+
+
+
+
+
+
+
+
+
   <!--Share episode dialog-->
   <string name="share_dialog_episode_website_label">Saate veebisait</string>
   <string name="share_dialog_media_file_label">Meediafail</string>

@@ -12,7 +12,6 @@ import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.adapter.SubscriptionsRecyclerAdapter
 import ac.mdiq.podcini.ui.dialog.FeedSortDialog
-import ac.mdiq.podcini.ui.dialog.RenameItemDialog
 import ac.mdiq.podcini.ui.dialog.SubscriptionsFilterDialog
 import ac.mdiq.podcini.ui.fragment.actions.FeedMultiSelectActionHandler
 import ac.mdiq.podcini.ui.menuhandler.FeedMenuHandler
@@ -20,7 +19,6 @@ import ac.mdiq.podcini.ui.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.ui.view.EmptyViewHandler
 import ac.mdiq.podcini.ui.view.LiftOnScrollListener
-import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -64,11 +62,14 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
     private lateinit var prefs: SharedPreferences
     private lateinit var speedDialView: SpeedDialView
 
+    private val tags: MutableList<String> = mutableListOf()
+    private var tagFilterIndex = 1
     private var displayedFolder: String = ""
     private var displayUpArrow = false
 
     private var disposable: Disposable? = null
-    private var listItems: List<NavDrawerData.DrawerItem> = mutableListOf()
+    private var feedList: List<NavDrawerData.FeedDrawerItem> = mutableListOf()
+    private var feedListFiltered: List<NavDrawerData.FeedDrawerItem> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,9 +81,7 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                                            savedInstanceState: Bundle?
     ): View {
-//        val root: View = inflater.inflate(R.layout.fragment_subscriptions, container, false)
         val viewBinding = FragmentSubscriptionsBinding.inflate(inflater)
-//        val root = viewBinding.root
 
         Log.d(TAG, "fragment onCreateView")
         toolbar = viewBinding.toolbar
@@ -98,12 +97,6 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
         }
         (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
         toolbar.inflateMenu(R.menu.subscriptions)
-//        for (i in COLUMN_CHECKBOX_IDS.indices) {
-//            // Do this in Java to localize numbers
-//            toolbar.menu?.findItem(COLUMN_CHECKBOX_IDS[i])
-//                ?.setTitle(String.format(Locale.getDefault(), "%d", i + MIN_NUM_COLUMNS))
-//        }
-//        refreshToolbarState()
 
         if (arguments != null) {
             displayedFolder = requireArguments().getString(ARGUMENT_FOLDER, null)
@@ -125,13 +118,11 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
         }
         val gridLayoutManager = GridLayoutManager(context, 1, RecyclerView.VERTICAL, false)
         subscriptionRecycler.layoutManager = gridLayoutManager
-//        refreshToolbarState()
 
         subscriptionAdapter.setOnSelectModeListener(this)
         subscriptionRecycler.adapter = subscriptionAdapter
         setupEmptyView()
 
-        val tags: MutableList<String> = mutableListOf()
         tags.add("None")
         tags.add("All")
         tags.addAll(DBReader.getTags())
@@ -142,16 +133,8 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
         catSpinner.setSelection(adapter.getPosition("All"))
         catSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
-                if (position == 1) {
-                    subscriptionAdapter.setItems(listItems)
-                    return
-                }
-                if (position == 0) {
-                    return
-                }
-                val tag = tags[position]
-                val resultList = (listItems as List<NavDrawerData.FeedDrawerItem>).filter { it.feed.preferences?.getTags()?.contains(tag)?:false }
-                subscriptionAdapter.setItems(resultList)
+                tagFilterIndex = position
+                filterOnTag()
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -161,7 +144,7 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
         searchBox.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 val text = searchBox.text.toString().lowercase(Locale.getDefault())
-                val resultList = (listItems as List<NavDrawerData.FeedDrawerItem>).filter {
+                val resultList = feedListFiltered.filter {
                     it.title?.lowercase(Locale.getDefault())?.contains(text)?:false ||
                             it.feed.author?.lowercase(Locale.getDefault())?.contains(text)?:false
                 }
@@ -230,11 +213,28 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
         super.onSaveInstanceState(outState)
     }
 
-//    private fun refreshToolbarState() {
-////        val columns: Int = prefs.getInt(PREF_NUM_COLUMNS, defaultNumOfColumns)
-////        toolbar.menu?.findItem(COLUMN_CHECKBOX_IDS[columns - MIN_NUM_COLUMNS])?.setChecked(true)
-//    }
-
+    fun filterOnTag() {
+        when (tagFilterIndex) {
+//            All feeds
+            1 -> {
+                feedListFiltered = feedList
+            }
+//            feeds without tag
+            0 -> {
+                feedListFiltered = feedList.filter {
+                    it.feed.preferences?.getTags().isNullOrEmpty()
+                }
+            }
+//            feeds with the chosen tag
+            else -> {
+                val tag = tags[tagFilterIndex]
+                feedListFiltered = feedList.filter {
+                    it.feed.preferences?.getTags()?.contains(tag) ?: false
+                }
+            }
+        }
+        subscriptionAdapter.setItems(feedListFiltered)
+    }
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: ac.mdiq.podcini.util.event.FeedUpdateRunningEvent) {
         swipeRefreshLayout.isRefreshing = event.isFeedUpdateRunning
@@ -285,25 +285,21 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
         emptyView.hide()
         disposable = Observable.fromCallable {
             val data: NavDrawerData = DBReader.getNavDrawerData(UserPreferences.subscriptionsFilter)
-            val items: List<NavDrawerData.DrawerItem> = data.items
-//            for (item in items) {
-//                if (item.type == NavDrawerData.DrawerItem.Type.TAG && item.title == displayedFolder) {
-//                    return@fromCallable (item as NavDrawerData.TagDrawerItem).children
-//                }
-//            }
+            val items: List<NavDrawerData.FeedDrawerItem> = data.items
             items
         }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
-                { result: List<NavDrawerData.DrawerItem> ->
-                    if ( listItems.size > result.size) {
+                { result: List<NavDrawerData.FeedDrawerItem> ->
+                    if ( feedListFiltered.size > result.size) {
                         // We have fewer items. This can result in items being selected that are no longer visible.
                         subscriptionAdapter.endSelectMode()
                     }
-                    listItems = result
+                    feedList = result
+                    filterOnTag()
                     progressBar.visibility = View.GONE
-                    subscriptionAdapter.setItems(result)
+                    subscriptionAdapter.setItems(feedListFiltered)
                     emptyView.updateVisibility()
                 }, { error: Throwable? ->
                     Log.e(TAG, Log.getStackTraceString(error))
@@ -315,9 +311,6 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
             feedsFilteredMsg.visibility = View.GONE
         }
     }
-
-    private val defaultNumOfColumns: Int
-        get() = resources.getInteger(R.integer.subscriptions_default_num_of_columns)
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
         val drawerItem: NavDrawerData.DrawerItem = subscriptionAdapter.getSelectedItem() ?: return false
@@ -348,15 +341,13 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
     override fun onEndSelectMode() {
         speedDialView.close()
         speedDialView.visibility = View.GONE
-        subscriptionAdapter.setItems(listItems)
+        subscriptionAdapter.setItems(feedListFiltered)
     }
 
     override fun onStartSelectMode() {
         val feedsOnly: MutableList<NavDrawerData.DrawerItem> = ArrayList<NavDrawerData.DrawerItem>()
-        for (item in listItems) {
-            if (item.type == NavDrawerData.DrawerItem.Type.FEED) {
-                feedsOnly.add(item)
-            }
+        for (item in feedListFiltered) {
+            feedsOnly.add(item)
         }
         subscriptionAdapter.setItems(feedsOnly)
     }
@@ -366,9 +357,6 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
         private const val PREFS = "SubscriptionFragment"
         private const val KEY_UP_ARROW = "up_arrow"
         private const val ARGUMENT_FOLDER = "folder"
-
-//        TODO
-        private const val MIN_NUM_COLUMNS = 1
 
         fun newInstance(folderTitle: String?): SubscriptionFragment {
             val fragment = SubscriptionFragment()

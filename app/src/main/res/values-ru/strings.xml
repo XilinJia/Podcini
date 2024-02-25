@@ -22,7 +22,7 @@
   <string name="episode_cache_full_message">Достигнут предел кэша выпусков. Объем кэша можно увеличить в настройках.</string>
   <string name="years_statistics_label">По годам</string>
   <string name="notification_pref_fragment">Уведомления</string>
-  <string name="recently_played_episodes">Недавно прослушанные выпуски</string>
+
   <!--Google Assistant-->
   <string name="app_action_not_found">«%1$s» не найдено</string>
   <!--SwipeActions-->
@@ -46,13 +46,13 @@
   <string name="statistics_counting_range">Прослушанные с %1$s по %2$s</string>
   <string name="statistics_counting_total">Прослушано за всё время</string>
   <!--Home fragment-->
-  <string name="home_surprise_title">Случайные</string>
-  <string name="home_classics_title">Проверенное временем</string>
-  <string name="home_continue_title">Слушать дальше</string>
-  <string name="home_new_title">Что нового</string>
-  <string name="home_downloads_title">Загрузки</string>
-  <string name="home_welcome_title">Привет, это Podcini!</string>
-  <string name="home_welcome_text">Вы ещё не подписаны ни на один подкаст. Откройте боковое меню, чтобы добавить подкаст.</string>
+
+
+
+
+
+
+
   <string name="notification_permission_denied">Вы не дали разрешения.</string>
   <string name="open_settings">Открыть настройки</string>
   <string name="configure_home">Настроить главную</string>
@@ -169,7 +169,7 @@
   <string name="remove_feed_label">Удалить подкаст</string>
   <string name="share_label">Поделиться</string>
   <string name="share_file_label">Поделиться файлом</string>
-  <string name="share_rss_address_label">RSS-адрес:</string>
+
   <string name="feed_delete_confirmation_msg">Подтвердите, что хотите удалить подкаст «%1$s», все его выпуски (включая загруженные) и его статистику.</string>
   <string name="feed_delete_confirmation_msg_batch">Подтвердите, что хотите удалить выбранные подкасты, все их выпуски (включая загруженные) и их статистику.</string>
   <string name="feed_delete_confirmation_local_msg">Подтвердите, что хотите удалить подкаст «%1$s» и его статистику. Файлы в локальной исходной папке не будут удалены.</string>
@@ -471,10 +471,9 @@
   <string name="pref_expandNotify_title">Уведомление с высоким приоритетом</string>
   <string name="pref_expandNotify_sum">Как правило, разворачивает уведомление, показывая кнопки управления воспроизведением.</string>
   <string name="pref_persistNotify_title">Постоянное управление воспроизведением</string>
-  <string name="pref_compact_notification_buttons_title">Выбрать кнопки компактного уведомления</string>
-  <string name="pref_compact_notification_buttons_sum">Сменить кнопки воспроизведения свёрнутого уведомления. Кнопка воспроизведения/паузы присутствует всегда.</string>
-  <string name="pref_compact_notification_buttons_dialog_title">Выберите не более %1$d элементов</string>
-  <string name="pref_compact_notification_buttons_dialog_error">Нельзя выбрать больше %1$d элементов.</string>
+
+
+
   <string name="pref_enqueue_location_title">Размещение в очереди</string>
   <string name="pref_enqueue_location_sum">Добавлять выпуски %1$s</string>
   <string name="enqueue_location_back">в конец</string>
@@ -728,20 +727,20 @@
   <string name="hide_played_episodes_label">Прослушанное</string>
   <string name="not_played">Непрослушанное</string>
   <!--Sort-->
-  <string name="sort_title_a_z">от А к Я</string>
-  <string name="sort_title_z_a">от Я к А</string>
-  <string name="sort_date_new_old">от новых к старым</string>
-  <string name="sort_date_old_new">от старых к новым</string>
-  <string name="sort_duration_short_long">от коротких к длинным</string>
-  <string name="sort_duration_long_short">от длинных к коротким</string>
-  <string name="sort_filename_a_z">имя файла от А к Я</string>
-  <string name="sort_filename_z_a">имя файла от Я к А</string>
-  <string name="sort_a_z">от А к Я</string>
-  <string name="sort_z_a">от Я к А</string>
-  <string name="sort_new_old">от новых к старым</string>
-  <string name="sort_old_new">от старых к новым</string>
-  <string name="sort_short_long">от коротких к длинным</string>
-  <string name="sort_long_short">от длинных к коротким</string>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   <!--Share episode dialog-->
   <string name="share_playback_position_dialog_label">С позицией воспроизведения</string>
   <string name="share_dialog_episode_website_label">Сайт выпуска</string>
@@ -752,7 +751,7 @@
   <!--Audio controls-->
   <string name="audio_controls">Управление звучанием</string>
   <string name="playback_speed">Скорость воспроизведения</string>
-  <string name="audio_effects">Звуковые эффекты</string>
+
   <string name="player_switch_to_audio_only">Переключиться на аудио</string>
   <!--proxy settings-->
   <string name="proxy_type_label">Тип</string>

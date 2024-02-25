@@ -22,7 +22,7 @@
   <string name="episode_cache_full_message">S\'ha arribat al límit de la memòria cau d\'episodis. Pots incrementar-ne la capacitat a la configuració.</string>
   <string name="years_statistics_label">Anys</string>
   <string name="notification_pref_fragment">Notificacions</string>
-  <string name="recently_played_episodes">Darrers episodis reproduïts</string>
+
   <!--Google Assistant-->
   <string name="app_action_not_found">No s\'ha trobat «%1$s»</string>
   <!--SwipeActions-->
@@ -46,13 +46,13 @@
   <string name="statistics_counting_range">Reproduït entre entre %1$s i %2$s</string>
   <string name="statistics_counting_total">Reproduït en total</string>
   <!--Home fragment-->
-  <string name="home_surprise_title">Sorpreneu-vos!</string>
-  <string name="home_classics_title">Consulta els teus clàssics</string>
-  <string name="home_continue_title">Seguiu escoltant</string>
-  <string name="home_new_title">Novetats</string>
-  <string name="home_downloads_title">Gestioneu les descàrregues</string>
-  <string name="home_welcome_title">Benvinguts/des a l\'Podcini!</string>
-  <string name="home_welcome_text">Encara no esteu subscrit a cap podcast. Obriu el menú lateral per afegir-ne un.</string>
+
+
+
+
+
+
+
   <string name="notification_permission_text">Podcini necessita el vostre permís per mostrar notificacions. Per defecte, Podcini només mostra notificacions mentre alguna cosa s\'està baixant o quan alguna cosa surt malament.</string>
   <string name="notification_permission_denied">S\'ha denegat el permís per a les notificacions</string>
   <string name="deny_label">Denega</string>
@@ -159,7 +159,7 @@
   <string name="remove_feed_label">Suprimeix podcast</string>
   <string name="share_label">Comparteix</string>
   <string name="share_file_label">Comparteix l\'arxiu</string>
-  <string name="share_rss_address_label">Adreça RSS:</string>
+
   <string name="feed_delete_confirmation_msg">Confirmeu que voleu suprimir el pòdcast «%1$s», TOTS els seus capítols (incloent-hi els descarregats) i estadístiques.</string>
   <string name="feed_delete_confirmation_msg_batch">Confirmeu que voleu eliminar el pòdcast seleccionat, TOTS els seus capítols (incloent-hi els descarregats) i estadístiques.</string>
   <string name="feed_delete_confirmation_local_msg">Confirmeu que voleu eliminar el pòdcast «%1$s» i totes les seves estadístiques. Els arxius a la carpeta origen local no s\'eliminaran</string>
@@ -445,10 +445,9 @@
   <string name="pref_expandNotify_title">Alta prioritat a les notificacions</string>
   <string name="pref_expandNotify_sum">Això normalment expandeix la notificació per a mostrar botons de reproducció</string>
   <string name="pref_persistNotify_title">Contorls de reproducció persistents</string>
-  <string name="pref_compact_notification_buttons_title">Activar botons de notificació compactes</string>
-  <string name="pref_compact_notification_buttons_sum">Canvieu els botons de reproducció quan es redueix la notificació. El botó de reproducció/pausa sempre s\'inclou.</string>
-  <string name="pref_compact_notification_buttons_dialog_title">Selecciona un màxim de %1$d elements.</string>
-  <string name="pref_compact_notification_buttons_dialog_error">Només pots seleccionar un màxim de %1$d elements.</string>
+
+
+
   <string name="pref_enqueue_location_title">Afegir a la cua en determinada posició</string>
   <string name="pref_enqueue_location_sum">Afegir episodis a: %1$s</string>
   <string name="enqueue_location_back">Enrere</string>
@@ -702,22 +701,22 @@
   <string name="hide_played_episodes_label">Reproduït</string>
   <string name="not_played">No reproduït</string>
   <!--Sort-->
-  <string name="sort_title_a_z">Títol (A \u2192 Z)</string>
-  <string name="sort_title_z_a">Títol (Z \u2192 A)</string>
-  <string name="sort_date_new_old">Data (Nou \u2192 Antic)</string>
-  <string name="sort_date_old_new">Data (Antic \u2192 Nou)</string>
-  <string name="sort_duration_short_long">Durada (Curt \u2192 Llarg)</string>
-  <string name="sort_duration_long_short">Durada (Llarg \u2192 Curt)</string>
-  <string name="sort_filename_a_z">Nom del fitxer (A \u2192 Z)</string>
-  <string name="sort_filename_z_a">Nom del fitxer (Z \u2192 A)</string>
-  <string name="sort_a_z">A \u2192 Z</string>
-  <string name="sort_z_a">Z \u2192 A</string>
-  <string name="sort_new_old">Nou \u2192 Antic</string>
-  <string name="sort_old_new">Antic \u2192 Nou</string>
-  <string name="sort_short_long">Curt \u2192 Llarg</string>
-  <string name="sort_long_short">Llarg \u2192 Curt</string>
-  <string name="sort_small_large">Petit \u2192 Gran</string>
-  <string name="sort_large_small">Gran \u2192 Petit</string>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   <!--Share episode dialog-->
   <string name="share_playback_position_dialog_label">Incloure la posició de reproducció</string>
   <string name="share_dialog_episode_website_label">Pàgina web de l\'episodi</string>
@@ -728,7 +727,7 @@
   <!--Audio controls-->
   <string name="audio_controls">Controls d\'audio</string>
   <string name="playback_speed">Velocitat de reproducció</string>
-  <string name="audio_effects">Efectes d\'àudio</string>
+
   <string name="player_switch_to_audio_only">Canvia a només àudio</string>
   <!--proxy settings-->
   <string name="proxy_type_label">Tipus</string>

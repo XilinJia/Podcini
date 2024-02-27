@@ -1,9 +1,7 @@
 package ac.mdiq.podcini.ui.gui
 
-import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.MoreContentListFooterBinding
 import android.view.View
-import android.widget.ImageView
-import android.widget.ProgressBar
 
 /**
  * Utility methods for the more_content_list_footer layout.
@@ -14,16 +12,15 @@ class MoreContentListFooterUtil(val root: View) {
     private var listener: Listener? = null
 
     init {
-        root.setOnClickListener { v: View? ->
-            if (listener != null && !loading) {
-                listener!!.onClick()
-            }
+        root.setOnClickListener {
+            if (!loading) listener?.onClick()
         }
     }
 
     fun setLoadingState(newState: Boolean) {
-        val imageView = root.findViewById<ImageView>(R.id.imgExpand)
-        val progressBar = root.findViewById<ProgressBar>(R.id.progBar)
+        val binding = MoreContentListFooterBinding.bind(root)
+        val imageView = binding.imgExpand
+        val progressBar = binding.progBar
         if (newState) {
             imageView.visibility = View.GONE
             progressBar.visibility = View.VISIBLE

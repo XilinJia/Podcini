@@ -2,6 +2,7 @@ package ac.mdiq.podcini.ui.fragment
 
 //import ac.mdiq.podcini.ui.home.HomeFragment
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.NavListBinding
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.DBWriter
@@ -14,7 +15,6 @@ import ac.mdiq.podcini.ui.appstartintent.MainActivityStarter
 import ac.mdiq.podcini.ui.common.ThemeUtils
 import ac.mdiq.podcini.ui.dialog.*
 import ac.mdiq.podcini.ui.menuhandler.MenuItemUtils
-import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import android.R.attr
 import android.app.Activity
 import android.content.Context
@@ -37,7 +37,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.shape.MaterialShapeDrawable
 import com.google.android.material.shape.ShapeAppearanceModel
@@ -65,11 +64,12 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         super.onCreateView(inflater, container, savedInstanceState)
-        val root: View = inflater.inflate(R.layout.nav_list, container, false)
+        val binding = NavListBinding.inflate(inflater)
+//        val root: View = inflater.inflate(R.layout.nav_list, container, false)
 
         Log.d(TAG, "fragment onCreateView")
-        setupDrawerRoundBackground(root)
-        ViewCompat.setOnApplyWindowInsetsListener(root
+        setupDrawerRoundBackground(binding.root)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root
         ) { view: View, insets: WindowInsetsCompat ->
             val bars: Insets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.setPadding(bars.left, bars.top, bars.right, 0)
@@ -89,20 +89,19 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
 //        TODO: what is this?
         openFolders = HashSet(preferences.getStringSet(PREF_OPEN_FOLDERS, HashSet<String>())) // Must not modify
 
-        progressBar = root.findViewById(R.id.progressBar)
-        val navList = root.findViewById<RecyclerView>(R.id.nav_list)
+        progressBar = binding.progressBar
+        val navList = binding.navRecycler
         navAdapter = NavListAdapter(itemAccess, requireActivity())
         navAdapter.setHasStableIds(true)
         navList.adapter = navAdapter
         navList.layoutManager = LinearLayoutManager(context)
 
-        root.findViewById<View>(R.id.nav_settings).setOnClickListener {
-            startActivity(Intent(
-                activity, PreferenceActivity::class.java))
+        binding.navSettings.setOnClickListener {
+            startActivity(Intent(activity, PreferenceActivity::class.java))
         }
 
         preferences.registerOnSharedPreferenceChangeListener(this)
-        return root
+        return binding.root
     }
 
     private fun setupDrawerRoundBackground(root: View) {
@@ -344,8 +343,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
             if (position < navAdapter.getFragmentTags().size) {
                 DrawerPreferencesDialog.show(context!!) {
                     navAdapter.notifyDataSetChanged()
-                    if (UserPreferences.hiddenDrawerItems != null && UserPreferences.hiddenDrawerItems!!.contains(
-                                getLastNavFragment(requireContext()))) {
+                    if (UserPreferences.hiddenDrawerItems.contains(getLastNavFragment(requireContext()))) {
                         MainActivityStarter(requireContext())
                             .withFragmentLoaded(UserPreferences.defaultPage)
                             .withDrawerOpen()

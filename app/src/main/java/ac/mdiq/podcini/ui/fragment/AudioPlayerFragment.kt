@@ -22,6 +22,7 @@ import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.elevation.SurfaceColors
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.AudioplayerFragmentBinding
 import ac.mdiq.podcini.feed.util.PlaybackSpeedUtils
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
 import ac.mdiq.podcini.util.ChapterUtils
@@ -61,8 +62,10 @@ import kotlin.math.min
  */
 @UnstableApi
 class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar.OnMenuItemClickListener {
+    lateinit var viewBinding: AudioplayerFragmentBinding
     lateinit var butPlaybackSpeed: PlaybackSpeedIndicatorView
     lateinit var txtvPlaybackSpeed: TextView
+
     private lateinit var pager: ViewPager2
     private lateinit var txtvPosition: TextView
     private lateinit var txtvLength: TextView
@@ -74,6 +77,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     private lateinit  var txtvFF: TextView
     private lateinit  var butSkip: ImageButton
     private lateinit var toolbar: MaterialToolbar
+    private lateinit var playerFragment: View
     
     private lateinit var progressIndicator: ProgressBar
     private lateinit  var cardViewSeek: CardView
@@ -92,11 +96,13 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                               savedInstanceState: Bundle?
     ): View {
         super.onCreateView(inflater, container, savedInstanceState)
-        val root: View = inflater.inflate(R.layout.audioplayer_fragment, container, false)
-        root.setOnTouchListener { _: View?, _: MotionEvent? -> true } // Avoid clicks going through player to fragments below
+        viewBinding = AudioplayerFragmentBinding.inflate(inflater)
+
+//        val root: View = inflater.inflate(R.layout.audioplayer_fragment, container, false)
+        viewBinding.root.setOnTouchListener { _: View?, _: MotionEvent? -> true } // Avoid clicks going through player to fragments below
 
         Log.d(TAG, "fragment onCreateView")
-        toolbar = root.findViewById(R.id.toolbar)
+        toolbar = viewBinding.toolbar
         toolbar.title = ""
         toolbar.setNavigationOnClickListener {
             (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
@@ -107,23 +113,25 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         childFragmentManager.beginTransaction()
             .replace(R.id.playerFragment, externalPlayerFragment, ExternalPlayerFragment.TAG)
             .commit()
-        root.findViewById<View>(R.id.playerFragment).setBackgroundColor(
+//        playerFragment = viewBinding.playerFragment
+        playerFragment = viewBinding.root.findViewById(R.id.playerFragment)
+        playerFragment.setBackgroundColor(
             SurfaceColors.getColorForElevation(requireContext(), 8 * resources.displayMetrics.density))
 
-        butPlaybackSpeed = root.findViewById(R.id.butPlaybackSpeed)
-        txtvPlaybackSpeed = root.findViewById(R.id.txtvPlaybackSpeed)
-        sbPosition = root.findViewById(R.id.sbPosition)
-        txtvPosition = root.findViewById(R.id.txtvPosition)
-        txtvLength = root.findViewById(R.id.txtvLength)
-        butRev = root.findViewById(R.id.butRev)
-        txtvRev = root.findViewById(R.id.txtvRev)
-        butPlay = root.findViewById(R.id.butPlay)
-        butFF = root.findViewById(R.id.butFF)
-        txtvFF = root.findViewById(R.id.txtvFF)
-        butSkip = root.findViewById(R.id.butSkip)
-        progressIndicator = root.findViewById(R.id.progLoading)
-        cardViewSeek = root.findViewById(R.id.cardViewSeek)
-        txtvSeek = root.findViewById(R.id.txtvSeek)
+        butPlaybackSpeed = viewBinding.butPlaybackSpeed
+        txtvPlaybackSpeed = viewBinding.txtvPlaybackSpeed
+        sbPosition = viewBinding.sbPosition
+        txtvPosition = viewBinding.txtvPosition
+        txtvLength = viewBinding.txtvLength
+        butRev = viewBinding.butRev
+        txtvRev = viewBinding.txtvRev
+        butPlay = viewBinding.butPlay
+        butFF = viewBinding.butFF
+        txtvFF = viewBinding.txtvFF
+        butSkip = viewBinding.butSkip
+        progressIndicator = viewBinding.progLoading
+        cardViewSeek = viewBinding.cardViewSeek
+        txtvSeek = viewBinding.txtvSeek
 
         setupLengthTextView()
         setupControlButtons()
@@ -133,7 +141,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         }
         sbPosition.setOnSeekBarChangeListener(this)
 
-        pager = root.findViewById(R.id.pager)
+        pager = viewBinding.pager
         pager.adapter = AudioPlayerPagerAdapter(this@AudioPlayerFragment)
         // Required for getChildAt(int) in ViewPagerBottomSheetBehavior to return the correct page
         pager.offscreenPageLimit = NUM_CONTENT_FRAGMENTS
@@ -153,7 +161,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         loadMediaInfo(false)
         EventBus.getDefault().register(this)
 
-        return root
+        return viewBinding.root
     }
 
     override fun onDestroyView() {
@@ -493,7 +501,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
     fun fadePlayerToToolbar(slideOffset: Float) {
         val playerFadeProgress = (max(0.0, min(0.2, (slideOffset - 0.2f).toDouble())) / 0.2f).toFloat()
-        val player = requireView().findViewById<View>(R.id.playerFragment)
+        val player = playerFragment
         player.alpha = 1 - playerFadeProgress
         player.visibility = if (playerFadeProgress > 0.99f) View.INVISIBLE else View.VISIBLE
         val toolbarFadeProgress = (max(0.0, min(0.2, (slideOffset - 0.6f).toDouble())) / 0.2f).toFloat()

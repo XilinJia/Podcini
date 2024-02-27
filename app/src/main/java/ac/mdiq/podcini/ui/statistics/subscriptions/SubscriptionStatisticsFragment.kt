@@ -2,6 +2,11 @@ package ac.mdiq.podcini.ui.statistics.subscriptions
 
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.StatisticsFragmentBinding
+import ac.mdiq.podcini.storage.DBReader
+import ac.mdiq.podcini.storage.DBReader.StatisticsResult
+import ac.mdiq.podcini.storage.StatisticsItem
+import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -10,11 +15,6 @@ import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import ac.mdiq.podcini.storage.DBReader
-import ac.mdiq.podcini.storage.DBReader.StatisticsResult
-import ac.mdiq.podcini.storage.StatisticsItem
-import ac.mdiq.podcini.util.event.StatisticsEvent
-import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -22,7 +22,6 @@ import io.reactivex.schedulers.Schedulers
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import java.util.*
 import kotlin.math.max
 import kotlin.math.min
 
@@ -43,17 +42,18 @@ class SubscriptionStatisticsFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?
-    ): View? {
-        val root = inflater.inflate(R.layout.statistics_fragment, container, false)
-        feedStatisticsList = root.findViewById(R.id.statistics_list)
-        progressBar = root.findViewById(R.id.progressBar)
+    ): View {
+        val binding = StatisticsFragmentBinding.inflate(inflater)
+//        val root = inflater.inflate(R.layout.statistics_fragment, container, false)
+        feedStatisticsList = binding.statisticsList
+        progressBar = binding.progressBar
         listAdapter = PlaybackStatisticsListAdapter(this)
         feedStatisticsList?.setLayoutManager(LinearLayoutManager(context))
         feedStatisticsList?.setAdapter(listAdapter)
         EventBus.getDefault().register(this)
         refreshStatistics()
 
-        return root
+        return binding.root
     }
 
     override fun onDestroyView() {
@@ -100,9 +100,9 @@ class SubscriptionStatisticsFragment : Fragment() {
         disposable = Observable.fromCallable {
             val statisticsData = DBReader.getStatistics(
                 includeMarkedAsPlayed, timeFilterFrom, timeFilterTo)
-            statisticsData.feedTime.sortWith(Comparator { item1: StatisticsItem, item2: StatisticsItem ->
+            statisticsData.feedTime.sortWith { item1: StatisticsItem, item2: StatisticsItem ->
                 item2.timePlayed.compareTo(item1.timePlayed)
-            })
+            }
             statisticsData
         }
             .subscribeOn(Schedulers.io())

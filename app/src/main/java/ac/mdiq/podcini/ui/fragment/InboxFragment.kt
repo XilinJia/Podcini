@@ -1,29 +1,29 @@
 package ac.mdiq.podcini.ui.fragment
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.CheckboxDoNotShowAgainBinding
+import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.storage.DBReader
+import ac.mdiq.podcini.storage.DBWriter
+import ac.mdiq.podcini.storage.model.feed.FeedItem
+import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
+import ac.mdiq.podcini.storage.model.feed.SortOrder
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.dialog.ItemSortDialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.Toast
+import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.storage.DBReader
-import ac.mdiq.podcini.storage.DBWriter
-import ac.mdiq.podcini.ui.dialog.ItemSortDialog
-import ac.mdiq.podcini.util.event.FeedListUpdateEvent
-import ac.mdiq.podcini.storage.model.feed.FeedItem
-import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
-import ac.mdiq.podcini.storage.model.feed.SortOrder
-import ac.mdiq.podcini.preferences.UserPreferences
-import android.util.Log
-import androidx.annotation.OptIn
 import org.greenrobot.eventbus.EventBus
 
 /**
@@ -103,7 +103,8 @@ class InboxFragment : EpisodesListFragment() {
         builder.setMessage(R.string.remove_all_inbox_confirmation_msg)
 
         val view = View.inflate(context, R.layout.checkbox_do_not_show_again, null)
-        val checkNeverAskAgain: CheckBox = view.findViewById(R.id.checkbox_do_not_show_again)
+        val binding = CheckboxDoNotShowAgainBinding.bind(view)
+        val checkNeverAskAgain: CheckBox = binding.checkboxDoNotShowAgain
         builder.setView(view)
 
         builder.setPositiveButton(R.string.confirm_label) { dialog: DialogInterface, _: Int ->

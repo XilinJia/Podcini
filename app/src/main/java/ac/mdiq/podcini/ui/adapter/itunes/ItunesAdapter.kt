@@ -13,6 +13,7 @@ import com.bumptech.glide.load.resource.bitmap.FitCenter
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.ItunesPodcastListitemBinding
 import ac.mdiq.podcini.net.discovery.PodcastSearchResult
 import androidx.media3.common.util.UnstableApi
 
@@ -78,16 +79,17 @@ class ItunesAdapter(
      * View holder object for the GridView
      */
     internal class PodcastViewHolder(view: View) {
+        val binding = ItunesPodcastListitemBinding.bind(view)
         /**
          * ImageView holding the Podcast image
          */
-        val coverView: ImageView = view.findViewById(R.id.imgvCover)
+        val coverView: ImageView = binding.imgvCover
 
         /**
          * TextView holding the Podcast title
          */
-        val titleView: TextView = view.findViewById(R.id.txtvTitle)
+        val titleView: TextView = binding.txtvTitle
 
-        val authorView: TextView = view.findViewById(R.id.txtvAuthor)
+        val authorView: TextView = binding.txtvAuthor
     }
 }

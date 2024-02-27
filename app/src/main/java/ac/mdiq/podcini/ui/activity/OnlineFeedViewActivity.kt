@@ -392,7 +392,7 @@ class OnlineFeedViewActivity : AppCompatActivity() {
         viewBinding.feedDisplayContainer.visibility = View.VISIBLE
         if (isFeedFoundBySearch) {
             val resId = R.string.no_feed_url_podcast_found_by_search
-            Snackbar.make(findViewById(android.R.id.content), resId, Snackbar.LENGTH_LONG).show()
+            Snackbar.make(viewBinding.root, resId, Snackbar.LENGTH_LONG).show()
         }
 
         viewBinding.backgroundImage.colorFilter = LightingColorFilter(-0x7d7d7e, 0x000000)

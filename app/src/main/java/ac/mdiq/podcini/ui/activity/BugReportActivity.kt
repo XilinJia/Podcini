@@ -1,5 +1,11 @@
 package ac.mdiq.podcini.ui.activity
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.BugReportBinding
+import ac.mdiq.podcini.preferences.ThemeSwitcher.getTheme
+import ac.mdiq.podcini.preferences.UserPreferences.getDataFolder
+import ac.mdiq.podcini.util.IntentUtils.openInBrowser
+import ac.mdiq.podcini.util.error.CrashReportWriter
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.DialogInterface
@@ -8,18 +14,11 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ShareCompat.IntentBuilder
 import androidx.core.content.FileProvider
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.preferences.ThemeSwitcher.getTheme
-import ac.mdiq.podcini.util.IntentUtils.openInBrowser
-import ac.mdiq.podcini.util.error.CrashReportWriter
-import ac.mdiq.podcini.preferences.UserPreferences.getDataFolder
 import org.apache.commons.io.IOUtils
 import java.io.File
 import java.io.FileInputStream
@@ -30,15 +29,18 @@ import java.nio.charset.Charset
  * Displays the 'crash report' screen
  */
 class BugReportActivity : AppCompatActivity() {
+    private lateinit var binding: BugReportBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(getTheme(this))
         super.onCreate(savedInstanceState)
         supportActionBar!!.setDisplayShowHomeEnabled(true)
+        binding = BugReportBinding.inflate(layoutInflater)
         setContentView(R.layout.bug_report)
 
         var stacktrace = "No crash report recorded"
         try {
-            val crashFile = ac.mdiq.podcini.util.error.CrashReportWriter.file
+            val crashFile = CrashReportWriter.file
             if (crashFile.exists()) {
                 stacktrace = IOUtils.toString(FileInputStream(crashFile), Charset.forName("UTF-8"))
             } else {
@@ -48,25 +50,24 @@ class BugReportActivity : AppCompatActivity() {
             e.printStackTrace()
         }
 
-        val crashDetailsTextView = findViewById<TextView>(R.id.crash_report_logs)
+        val crashDetailsTextView = binding.crashReportLogs
         crashDetailsTextView.text = """
-            ${ac.mdiq.podcini.util.error.CrashReportWriter.systemInfo}
+            ${CrashReportWriter.systemInfo}
             
             $stacktrace
             """.trimIndent()
 
-        findViewById<View>(R.id.btn_open_bug_tracker).setOnClickListener {
+        binding.btnOpenBugTracker.setOnClickListener {
             openInBrowser(
                 this@BugReportActivity, "https://github.com/XilinJia/Podcini/issues")
         }
 
-        findViewById<View>(R.id.btn_copy_log).setOnClickListener {
+        binding.btnCopyLog.setOnClickListener {
             val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
             val clip = ClipData.newPlainText(getString(R.string.bug_report_title), crashDetailsTextView.text)
             clipboard.setPrimaryClip(clip)
             if (Build.VERSION.SDK_INT < 32) {
-                Snackbar.make(findViewById(android.R.id.content), R.string.copied_to_clipboard,
-                    Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(binding.root, R.string.copied_to_clipboard, Snackbar.LENGTH_SHORT).show()
             }
         }
     }
@@ -109,12 +110,12 @@ class BugReportActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 e.printStackTrace()
                 val strResId = R.string.log_file_share_exception
-                Snackbar.make(findViewById(android.R.id.content), strResId, Snackbar.LENGTH_LONG)
+                Snackbar.make(binding.root, strResId, Snackbar.LENGTH_LONG)
                     .show()
             }
         } catch (e: IOException) {
             e.printStackTrace()
-            Snackbar.make(findViewById(android.R.id.content), e.message!!, Snackbar.LENGTH_LONG).show()
+            Snackbar.make(binding.root, e.message!!, Snackbar.LENGTH_LONG).show()
         }
     }
 

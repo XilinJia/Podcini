@@ -2,7 +2,7 @@
 <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/container"
+        android:id="@+id/simplechapter_item"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -68,6 +68,8 @@
                 tools:text="Duration: 00:00:00"/>
     </LinearLayout>
 
-    <include layout="@layout/secondary_action"/>
+    <include
+        android:id="@+id/secondary_action_layout"
+        layout="@layout/secondary_action"/>
 
 </LinearLayout>

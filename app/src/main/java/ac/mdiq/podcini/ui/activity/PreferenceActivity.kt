@@ -101,7 +101,6 @@ class PreferenceActivity : AppCompatActivity(), SearchPreferenceResultListener {
                 .commit()
         }
 
-
         return fragment
     }
 

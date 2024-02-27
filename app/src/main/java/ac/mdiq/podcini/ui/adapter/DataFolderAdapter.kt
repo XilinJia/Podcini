@@ -11,6 +11,7 @@ import android.widget.TextView
 import androidx.core.util.Consumer
 import androidx.recyclerview.widget.RecyclerView
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.ChooseDataFolderDialogEntryBinding
 import ac.mdiq.podcini.util.StorageUtils.getFreeSpaceAvailable
 import ac.mdiq.podcini.util.StorageUtils.getTotalSpaceAvailable
 import ac.mdiq.podcini.preferences.UserPreferences.getDataFolder
@@ -86,11 +87,12 @@ class DataFolderAdapter(context: Context, selectionHandler: Consumer<String>) : 
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val root: View = itemView.findViewById(R.id.root)
-        val path: TextView = itemView.findViewById(R.id.path)
-        val size: TextView = itemView.findViewById(R.id.size)
-        val radioButton: RadioButton = itemView.findViewById(R.id.radio_button)
-        val progressBar: ProgressBar = itemView.findViewById(R.id.used_space)
+        val binding = ChooseDataFolderDialogEntryBinding.bind(itemView)
+        val root: View = binding.root
+        val path: TextView = binding.path
+        val size: TextView = binding.size
+        val radioButton: RadioButton = binding.radioButton
+        val progressBar: ProgressBar = binding.usedSpace
     }
 
     internal class StoragePath(val fullPath: String) {

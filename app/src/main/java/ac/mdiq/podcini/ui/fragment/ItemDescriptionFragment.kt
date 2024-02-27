@@ -1,5 +1,11 @@
 package ac.mdiq.podcini.ui.fragment
 
+import ac.mdiq.podcini.databinding.ItemDescriptionFragmentBinding
+import ac.mdiq.podcini.playback.PlaybackController
+import ac.mdiq.podcini.storage.DBReader
+import ac.mdiq.podcini.storage.model.feed.FeedMedia
+import ac.mdiq.podcini.ui.gui.ShownotesCleaner
+import ac.mdiq.podcini.ui.view.ShownotesWebView
 import android.app.Activity
 import android.os.Bundle
 import android.util.Log
@@ -10,12 +16,6 @@ import android.view.View.OnLayoutChangeListener
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.media3.common.util.UnstableApi
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.storage.DBReader
-import ac.mdiq.podcini.ui.gui.ShownotesCleaner
-import ac.mdiq.podcini.playback.PlaybackController
-import ac.mdiq.podcini.storage.model.feed.FeedMedia
-import ac.mdiq.podcini.ui.view.ShownotesWebView
 import io.reactivex.Maybe
 import io.reactivex.MaybeEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -32,12 +32,13 @@ class ItemDescriptionFragment : Fragment() {
     private var webViewLoader: Disposable? = null
     private var controller: PlaybackController? = null
 
-    @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Log.d(TAG, "Creating view")
-        val root = inflater.inflate(R.layout.item_description_fragment, container, false)
+        val binding = ItemDescriptionFragmentBinding.inflate(inflater)
+//        val root = inflater.inflate(R.layout.item_description_fragment, container, false)
 
         Log.d(TAG, "fragment onCreateView")
-        webvDescription = root.findViewById(R.id.webview)
+        webvDescription = binding.webview
         webvDescription.setTimecodeSelectedListener { time: Int? ->
             controller?.seekTo(time!!)
         }
@@ -46,14 +47,14 @@ class ItemDescriptionFragment : Fragment() {
             webvDescription.postDelayed({ this@ItemDescriptionFragment.restoreFromPreference() }, 50)
         }
 
-        root.addOnLayoutChangeListener(object : OnLayoutChangeListener {
+        binding.root.addOnLayoutChangeListener(object : OnLayoutChangeListener {
             override fun onLayoutChange(v: View, left: Int, top: Int, right: Int,
                                         bottom: Int, oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int
             ) {
-                if (root.measuredHeight != webvDescription.minimumHeight) {
-                    webvDescription.setMinimumHeight(root.measuredHeight)
+                if (binding.root.measuredHeight != webvDescription.minimumHeight) {
+                    webvDescription.setMinimumHeight(binding.root.measuredHeight)
                 }
-                root.removeOnLayoutChangeListener(this)
+                binding.root.removeOnLayoutChangeListener(this)
             }
         })
         registerForContextMenu(webvDescription)
@@ -65,7 +66,7 @@ class ItemDescriptionFragment : Fragment() {
         controller?.init()
 
         load()
-        return root
+        return binding.root
     }
 
     override fun onDestroyView() {

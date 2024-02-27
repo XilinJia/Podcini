@@ -2,6 +2,9 @@ package ac.mdiq.podcini.ui.statistics.years
 
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.StatisticsFragmentBinding
+import ac.mdiq.podcini.storage.DBReader
+import ac.mdiq.podcini.storage.DBReader.MonthlyStatisticsItem
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -12,9 +15,6 @@ import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import ac.mdiq.podcini.storage.DBReader
-import ac.mdiq.podcini.storage.DBReader.MonthlyStatisticsItem
-import ac.mdiq.podcini.util.event.StatisticsEvent
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -34,17 +34,18 @@ class YearsStatisticsFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?
-    ): View? {
-        val root = inflater.inflate(R.layout.statistics_fragment, container, false)
-        yearStatisticsList = root.findViewById(R.id.statistics_list)
-        progressBar = root.findViewById(R.id.progressBar)
+    ): View {
+        val binding = StatisticsFragmentBinding.inflate(inflater)
+//        val root = inflater.inflate(R.layout.statistics_fragment, container, false)
+        yearStatisticsList = binding.statisticsList
+        progressBar = binding.progressBar
         listAdapter = YearStatisticsListAdapter(requireContext())
         yearStatisticsList?.layoutManager = LinearLayoutManager(context)
         yearStatisticsList?.adapter = listAdapter
         EventBus.getDefault().register(this)
         refreshStatistics()
 
-        return root
+        return binding.root
     }
 
     override fun onDestroyView() {

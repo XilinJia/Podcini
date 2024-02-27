@@ -8,9 +8,13 @@ import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.core.util.Consumer
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.PlaybackSpeedSeekBarBinding
+import android.view.LayoutInflater
 
 class PlaybackSpeedSeekBar : FrameLayout {
+    private lateinit var binding: PlaybackSpeedSeekBarBinding
     private lateinit var seekBar: SeekBar
+
     private var progressChangedListener: Consumer<Float>? = null
 
     constructor(context: Context) : super(context) {
@@ -26,10 +30,11 @@ class PlaybackSpeedSeekBar : FrameLayout {
     }
 
     private fun setup() {
-        inflate(context, R.layout.playback_speed_seek_bar, this)
-        seekBar = findViewById(R.id.playback_speed)
-        findViewById<View>(R.id.butDecSpeed).setOnClickListener { v: View? -> seekBar.progress -= 2 }
-        findViewById<View>(R.id.butIncSpeed).setOnClickListener { v: View? -> seekBar.progress += 2 }
+        val inflater = LayoutInflater.from(context)
+        binding = PlaybackSpeedSeekBarBinding.inflate(inflater, this, false)
+        seekBar = binding.playbackSpeed
+        binding.butDecSpeed.setOnClickListener { v: View? -> seekBar.progress -= 2 }
+        binding.butIncSpeed.setOnClickListener { v: View? -> seekBar.progress += 2 }
 
         seekBar.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
@@ -61,7 +66,7 @@ class PlaybackSpeedSeekBar : FrameLayout {
     override fun setEnabled(enabled: Boolean) {
         super.setEnabled(enabled)
         seekBar.isEnabled = enabled
-        findViewById<View>(R.id.butDecSpeed).isEnabled = enabled
-        findViewById<View>(R.id.butIncSpeed).isEnabled = enabled
+        binding.butDecSpeed.isEnabled = enabled
+        binding.butIncSpeed.isEnabled = enabled
     }
 }

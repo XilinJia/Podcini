@@ -1,7 +1,13 @@
 package ac.mdiq.podcini.ui.fragment
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.FeeditemPagerFragmentBinding
+import ac.mdiq.podcini.storage.DBReader
+import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.menuhandler.FeedItemMenuHandler
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -12,12 +18,6 @@ import androidx.media3.common.util.UnstableApi
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.appbar.MaterialToolbar
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.storage.DBReader
-import ac.mdiq.podcini.util.event.FeedItemEvent
-import ac.mdiq.podcini.ui.menuhandler.FeedItemMenuHandler
-import ac.mdiq.podcini.storage.model.feed.FeedItem
-import android.util.Log
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -41,10 +41,11 @@ class ItemPagerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         super.onCreateView(inflater, container, savedInstanceState)
-        val layout: View = inflater.inflate(R.layout.feeditem_pager_fragment, container, false)
+        val binding = FeeditemPagerFragmentBinding.inflate(inflater)
+//        val layout: View = inflater.inflate(R.layout.feeditem_pager_fragment, container, false)
 
         Log.d(TAG, "fragment onCreateView")
-        toolbar = layout.findViewById(R.id.toolbar)
+        toolbar = binding.toolbar
         toolbar.title = ""
         toolbar.inflateMenu(R.menu.feeditem_options)
         toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
@@ -54,7 +55,7 @@ class ItemPagerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         val feedItemPos = max(0.0, requireArguments().getInt(ARG_FEEDITEM_POS).toDouble())
             .toInt()
 
-        pager = layout.findViewById(R.id.pager)
+        pager = binding.pager
         // FragmentStatePagerAdapter documentation:
         // > When using FragmentStatePagerAdapter the host ViewPager must have a valid ID set.
         // When opening multiple ItemPagerFragments by clicking "item" -> "visit podcast" -> "item" -> etc,
@@ -78,7 +79,7 @@ class ItemPagerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
 
         EventBus.getDefault().register(this)
-        return layout
+        return binding.root
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

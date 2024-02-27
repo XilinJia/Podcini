@@ -17,6 +17,7 @@ import androidx.preference.PreferenceFragmentCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.AlertdialogSyncProviderChooserBinding
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.net.sync.SyncService
 import ac.mdiq.podcini.net.sync.SynchronizationCredentials
@@ -49,7 +50,7 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
-    fun syncStatusChanged(event: ac.mdiq.podcini.util.event.SyncServiceEvent) {
+    fun syncStatusChanged(event: SyncServiceEvent) {
         if (!SynchronizationSettings.isProviderConnected) {
             return
         }
@@ -157,13 +158,12 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
                 var convertView = convertView
                 val inflater = LayoutInflater.from(context)
                 if (convertView == null) {
-                    convertView = inflater.inflate(
-                        R.layout.alertdialog_sync_provider_chooser, null)
-
+                    convertView = inflater.inflate(R.layout.alertdialog_sync_provider_chooser, null)
+                    val binding = AlertdialogSyncProviderChooserBinding.bind(convertView)
                     holder = ViewHolder()
                     if (holder != null) {
-                        holder!!.icon = convertView.findViewById<View>(R.id.icon) as ImageView
-                        holder!!.title = convertView.findViewById<View>(R.id.title) as TextView
+                        holder!!.icon = binding.icon
+                        holder!!.title = binding.title
                         convertView.tag = holder
                     }
                 } else {

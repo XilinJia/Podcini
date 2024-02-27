@@ -1,6 +1,7 @@
 package ac.mdiq.podcini.ui.adapter
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.ItemdescriptionListitemBinding
 import ac.mdiq.podcini.service.playback.PlaybackService.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.util.DateFormatter.formatAbbrev
 import ac.mdiq.podcini.util.NetworkUtils.isStreamingAllowed
@@ -36,10 +37,11 @@ class FeedItemlistDescriptionAdapter(context: Context, resource: Int, objects: L
             holder = Holder()
             val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
             convertView = inflater.inflate(R.layout.itemdescription_listitem, parent, false)
-            holder.title = convertView.findViewById(R.id.txtvTitle)
-            holder.pubDate = convertView.findViewById(R.id.txtvPubDate)
-            holder.description = convertView.findViewById(R.id.txtvDescription)
-            holder.preview = convertView.findViewById(R.id.butPreview)
+            val binding = ItemdescriptionListitemBinding.bind(convertView)
+            holder.title = binding.txtvTitle
+            holder.pubDate = binding.txtvPubDate
+            holder.description = binding.txtvDescription
+            holder.preview = binding.butPreview
 
             convertView.tag = holder
         } else {

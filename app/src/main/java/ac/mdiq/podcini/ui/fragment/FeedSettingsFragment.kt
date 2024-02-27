@@ -1,5 +1,24 @@
 package ac.mdiq.podcini.ui.fragment
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.FeedsettingsBinding
+import ac.mdiq.podcini.databinding.PlaybackSpeedFeedSettingDialogBinding
+import ac.mdiq.podcini.net.download.FeedUpdateManager.runOnce
+import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
+import ac.mdiq.podcini.storage.DBReader
+import ac.mdiq.podcini.storage.DBWriter
+import ac.mdiq.podcini.storage.model.feed.Feed
+import ac.mdiq.podcini.storage.model.feed.FeedFilter
+import ac.mdiq.podcini.storage.model.feed.FeedPreferences
+import ac.mdiq.podcini.storage.model.feed.FeedPreferences.AutoDeleteAction
+import ac.mdiq.podcini.storage.model.feed.FeedPreferences.NewEpisodesAction
+import ac.mdiq.podcini.storage.model.feed.VolumeAdaptionSetting
+import ac.mdiq.podcini.ui.dialog.AuthenticationDialog
+import ac.mdiq.podcini.ui.dialog.EpisodeFilterDialog
+import ac.mdiq.podcini.ui.dialog.FeedPreferenceSkipDialog
+import ac.mdiq.podcini.ui.dialog.TagSettingsDialog
+import ac.mdiq.podcini.util.event.settings.SpeedPresetChangedEvent
+import ac.mdiq.podcini.util.event.settings.VolumeAdaptionChangedEvent
 import android.Manifest
 import android.content.DialogInterface
 import android.content.Intent
@@ -15,36 +34,16 @@ import android.view.ViewGroup
 import android.widget.CompoundButton
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.OptIn
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.media3.common.util.UnstableApi
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.storage.DBReader
-import ac.mdiq.podcini.storage.DBWriter
-import ac.mdiq.podcini.net.download.FeedUpdateManager.runOnce
-import ac.mdiq.podcini.databinding.PlaybackSpeedFeedSettingDialogBinding
-import ac.mdiq.podcini.ui.dialog.AuthenticationDialog
-import ac.mdiq.podcini.ui.dialog.EpisodeFilterDialog
-import ac.mdiq.podcini.ui.dialog.FeedPreferenceSkipDialog
-import ac.mdiq.podcini.ui.dialog.TagSettingsDialog
-import ac.mdiq.podcini.util.event.settings.SkipIntroEndingChangedEvent
-import ac.mdiq.podcini.util.event.settings.SpeedPresetChangedEvent
-import ac.mdiq.podcini.util.event.settings.VolumeAdaptionChangedEvent
-import ac.mdiq.podcini.storage.model.feed.Feed
-import ac.mdiq.podcini.storage.model.feed.FeedFilter
-import ac.mdiq.podcini.storage.model.feed.FeedPreferences
-import ac.mdiq.podcini.storage.model.feed.FeedPreferences.AutoDeleteAction
-import ac.mdiq.podcini.storage.model.feed.FeedPreferences.NewEpisodesAction
-import ac.mdiq.podcini.storage.model.feed.VolumeAdaptionSetting
-import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
-import androidx.annotation.OptIn
-import androidx.media3.common.util.UnstableApi
 import io.reactivex.Maybe
 import io.reactivex.MaybeEmitter
 import io.reactivex.MaybeOnSubscribe
@@ -58,12 +57,13 @@ import java.util.concurrent.ExecutionException
 class FeedSettingsFragment : Fragment() {
     private var disposable: Disposable? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val root = inflater.inflate(R.layout.feedsettings, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        val binding = FeedsettingsBinding.inflate(inflater)
+//        val root = inflater.inflate(R.layout.feedsettings, container, false)
         val feedId = requireArguments().getLong(EXTRA_FEED_ID)
         Log.d(TAG, "fragment onCreateView")
 
-        val toolbar = root.findViewById<MaterialToolbar>(R.id.toolbar)
+        val toolbar = binding.toolbar
         toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
 
         parentFragmentManager.beginTransaction()
@@ -86,14 +86,12 @@ class FeedSettingsFragment : Fragment() {
                 {})
 
 
-        return root
+        return binding.root
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        if (disposable != null) {
-            disposable!!.dispose()
-        }
+        disposable?.dispose()
     }
 
     class FeedSettingsPreferenceFragment : PreferenceFragmentCompat() {

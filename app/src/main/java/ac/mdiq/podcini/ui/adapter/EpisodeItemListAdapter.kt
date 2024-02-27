@@ -21,13 +21,13 @@ import java.lang.ref.WeakReference
 /**
  * List adapter for the list of new episodes.
  */
-open class EpisodeItemListAdapter(mainActivity: MainActivity) : SelectableAdapter<EpisodeItemViewHolder?>(mainActivity),
-    View.OnCreateContextMenuListener {
+open class EpisodeItemListAdapter(mainActivity: MainActivity) :
+    SelectableAdapter<EpisodeItemViewHolder?>(mainActivity), View.OnCreateContextMenuListener {
 
     private val mainActivityRef: WeakReference<MainActivity> = WeakReference<MainActivity>(mainActivity)
     private var episodes: List<FeedItem> = ArrayList()
     var longPressedItem: FeedItem? = null
-    var longPressedPosition: Int = 0 // used to init actionMode
+    private var longPressedPosition: Int = 0 // used to init actionMode
     private var dummyViews = 0
 
     init {
@@ -146,11 +146,6 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) : SelectableAdapte
     }
 
     override fun getItemId(position: Int): Long {
-//        if (position >= episodes.size) {
-//            return RecyclerView.NO_ID // Dummy views
-//        }
-//        val item = episodes[position]
-//        return item.id ?: RecyclerView.NO_POSITION.toLong()
         return getItem(position)?.id ?: RecyclerView.NO_ID
     }
 
@@ -159,7 +154,6 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) : SelectableAdapte
     }
 
     protected fun getItem(index: Int): FeedItem? {
-//        return episodes[index]
         return if (index in episodes.indices) episodes[index] else null
     }
 

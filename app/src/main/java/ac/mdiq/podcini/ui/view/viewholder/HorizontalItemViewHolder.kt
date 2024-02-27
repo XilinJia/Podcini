@@ -13,6 +13,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.elevation.SurfaceColors
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.HorizontalItemlistItemBinding
 import ac.mdiq.podcini.ui.adapter.CoverLoader
 import ac.mdiq.podcini.feed.util.ImageResourceUtils
 import ac.mdiq.podcini.util.DateFormatter
@@ -28,18 +29,19 @@ import kotlin.math.max
 
 class HorizontalItemViewHolder(private val activity: MainActivity, parent: ViewGroup?) :
     RecyclerView.ViewHolder(LayoutInflater.from(activity).inflate(R.layout.horizontal_itemlist_item, parent, false)) {
+    val binding = HorizontalItemlistItemBinding.bind(itemView)
 
     @JvmField
-    val card: CardView = itemView.findViewById(R.id.card)
+    val card: CardView = binding.card
 
     @JvmField
-    val secondaryActionIcon: ImageView = itemView.findViewById(R.id.secondaryActionIcon)
-    private val cover: SquareImageView = itemView.findViewById(R.id.cover)
-    private val title: TextView = itemView.findViewById(R.id.titleLabel)
-    private val date: TextView = itemView.findViewById(R.id.dateLabel)
-    private val progressBar: ProgressBar = itemView.findViewById(R.id.progressBar)
-    private val circularProgressBar: CircularProgressBar = itemView.findViewById(R.id.circularProgressBar)
-    private val progressBarReplacementSpacer: View = itemView.findViewById(R.id.progressBarReplacementSpacer)
+    val secondaryActionIcon: ImageView = binding.secondaryActionIcon
+    private val cover: SquareImageView = binding.cover
+    private val title: TextView = binding.titleLabel
+    private val date: TextView = binding.dateLabel
+    private val progressBar: ProgressBar = binding.progressBar
+    private val circularProgressBar: CircularProgressBar = binding.circularProgressBar
+    private val progressBarReplacementSpacer: View = binding.progressBarReplacementSpacer
 
     private var item: FeedItem? = null
 

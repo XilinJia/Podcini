@@ -2,6 +2,13 @@ package ac.mdiq.podcini.ui.statistics
 
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.PagerFragmentBinding
+import ac.mdiq.podcini.storage.DBWriter
+import ac.mdiq.podcini.ui.common.PagedToolbarFragment
+import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
+import ac.mdiq.podcini.ui.statistics.downloads.DownloadStatisticsFragment
+import ac.mdiq.podcini.ui.statistics.subscriptions.SubscriptionStatisticsFragment
+import ac.mdiq.podcini.ui.statistics.years.YearsStatisticsFragment
 import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
@@ -17,13 +24,6 @@ import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
-import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
-import ac.mdiq.podcini.storage.DBWriter
-import ac.mdiq.podcini.util.event.StatisticsEvent
-import ac.mdiq.podcini.ui.common.PagedToolbarFragment
-import ac.mdiq.podcini.ui.statistics.downloads.DownloadStatisticsFragment
-import ac.mdiq.podcini.ui.statistics.subscriptions.SubscriptionStatisticsFragment
-import ac.mdiq.podcini.ui.statistics.years.YearsStatisticsFragment
 import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -42,16 +42,16 @@ class StatisticsFragment : PagedToolbarFragment() {
     ): View? {
         super.onCreateView(inflater, container, savedInstanceState)
         setHasOptionsMenu(true)
-
-        val rootView = inflater.inflate(R.layout.pager_fragment, container, false)
-        viewPager = rootView.findViewById(R.id.viewpager)
-        toolbar = rootView.findViewById(R.id.toolbar)
+        val binding = PagerFragmentBinding.inflate(inflater)
+//        val rootView = inflater.inflate(R.layout.pager_fragment, container, false)
+        viewPager = binding.viewpager
+        toolbar = binding.toolbar
         toolbar?.title = getString(R.string.statistics_label)
         toolbar?.inflateMenu(R.menu.statistics)
-        toolbar?.setNavigationOnClickListener { v: View? -> parentFragmentManager.popBackStack() }
+        toolbar?.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
         viewPager?.adapter = StatisticsPagerAdapter(this)
         // Give the TabLayout the ViewPager
-        tabLayout = rootView.findViewById(R.id.sliding_tabs)
+        tabLayout = binding.slidingTabs
         if (toolbar != null && viewPager != null) super.setupPagedToolbar(toolbar!!, viewPager!!)
         if (tabLayout == null || viewPager == null) return null
 
@@ -63,7 +63,7 @@ class StatisticsFragment : PagedToolbarFragment() {
                 else -> {}
             }
         }.attach()
-        return rootView
+        return binding.root
     }
 
     @UnstableApi override fun onOptionsItemSelected(item: MenuItem): Boolean {

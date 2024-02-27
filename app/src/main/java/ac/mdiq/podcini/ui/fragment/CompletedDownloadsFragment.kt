@@ -13,6 +13,8 @@ import com.google.android.material.snackbar.Snackbar
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
+import ac.mdiq.podcini.databinding.SimpleListFragmentBinding
 import ac.mdiq.podcini.ui.adapter.EpisodeItemListAdapter
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.adapter.actionbutton.DeleteActionButton
@@ -67,10 +69,11 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                                            savedInstanceState: Bundle?
     ): View {
-        val root: View = inflater.inflate(R.layout.simple_list_fragment, container, false)
+        val viewBinding = SimpleListFragmentBinding.inflate(inflater)
+//        val root: View = inflater.inflate(R.layout.simple_list_fragment, container, false)
 
         Log.d(TAG, "fragment onCreateView")
-        toolbar = root.findViewById(R.id.toolbar)
+        toolbar = viewBinding.toolbar
         toolbar.setTitle(R.string.downloads_label)
         toolbar.inflateMenu(R.menu.downloads_completed)
         toolbar.setOnMenuItemClickListener(this)
@@ -85,12 +88,12 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
         }
         (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
 
-        recyclerView = root.findViewById(R.id.recyclerView)
+        recyclerView = viewBinding.recyclerView
         recyclerView.setRecycledViewPool((activity as MainActivity).recycledViewPool)
         adapter = CompletedDownloadsListAdapter(activity as MainActivity)
         adapter.setOnSelectModeListener(this)
         recyclerView.adapter = adapter
-        recyclerView.addOnScrollListener(LiftOnScrollListener(root.findViewById(R.id.appbar)))
+        recyclerView.addOnScrollListener(LiftOnScrollListener(viewBinding.appbar))
         swipeActions = SwipeActions(this, TAG).attachTo(recyclerView)
         swipeActions.setFilter(FeedItemFilter(FeedItemFilter.DOWNLOADED))
 
@@ -99,11 +102,12 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
             animator.supportsChangeAnimations = false
         }
 
-        progressBar = root.findViewById(R.id.progLoading)
+        progressBar = viewBinding.progLoading
         progressBar.visibility = View.VISIBLE
 
-        speedDialView = root.findViewById(R.id.fabSD)
-        speedDialView.overlayLayout = root.findViewById(R.id.fabSDOverlay)
+        val multiSelectDial = MultiSelectSpeedDialBinding.bind(viewBinding.root)
+        speedDialView = multiSelectDial.fabSD
+        speedDialView.overlayLayout = multiSelectDial.fabSDOverlay
         speedDialView.inflate(R.menu.episodes_apply_action_speeddial)
         speedDialView.removeActionItemById(R.id.download_batch)
         speedDialView.removeActionItemById(R.id.mark_read_batch)
@@ -140,7 +144,7 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
 
         loadItems()
 
-        return root
+        return viewBinding.root
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

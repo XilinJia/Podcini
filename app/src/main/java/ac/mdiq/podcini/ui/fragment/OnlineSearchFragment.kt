@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment
 import androidx.media3.common.util.UnstableApi
 import com.google.android.material.appbar.MaterialToolbar
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.FragmentItunesSearchBinding
 import ac.mdiq.podcini.ui.activity.OnlineFeedViewActivity
 import ac.mdiq.podcini.ui.adapter.itunes.ItunesAdapter
 import ac.mdiq.podcini.net.discovery.PodcastSearchResult
@@ -63,10 +64,11 @@ class OnlineSearchFragment
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         // Inflate the layout for this fragment
-        val root: View = inflater.inflate(R.layout.fragment_itunes_search, container, false)
+        val binding = FragmentItunesSearchBinding.inflate(inflater)
+//        val root: View = inflater.inflate(R.layout.fragment_itunes_search, container, false)
 
         Log.d(TAG, "fragment onCreateView")
-        gridView = root.findViewById(R.id.gridView)
+        gridView = binding.gridView
         adapter = ItunesAdapter(requireContext(), ArrayList())
         gridView.setAdapter(adapter)
 
@@ -81,13 +83,13 @@ class OnlineSearchFragment
                     startActivity(intent)
                 }
             }
-        progressBar = root.findViewById(R.id.progressBar)
-        txtvError = root.findViewById(R.id.txtvError)
-        butRetry = root.findViewById(R.id.butRetry)
-        txtvEmpty = root.findViewById(android.R.id.empty)
-        val txtvPoweredBy: TextView = root.findViewById(R.id.search_powered_by)
+        progressBar = binding.progressBar
+        txtvError = binding.txtvError
+        butRetry = binding.butRetry
+        txtvEmpty = binding.empty
+        val txtvPoweredBy: TextView = binding.searchPoweredBy
         if (searchProvider != null) txtvPoweredBy.text = getString(R.string.search_powered_by, searchProvider!!.name)
-        setupToolbar(root.findViewById(R.id.toolbar))
+        setupToolbar(binding.toolbar)
 
         gridView.setOnScrollListener(object : AbsListView.OnScrollListener {
             override fun onScrollStateChanged(view: AbsListView, scrollState: Int) {
@@ -104,7 +106,7 @@ class OnlineSearchFragment
             ) {
             }
         })
-        return root
+        return binding.root
     }
 
     override fun onDestroy() {

@@ -31,6 +31,7 @@ import ac.mdiq.podcini.ui.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.storage.FeedSearcher
 import ac.mdiq.podcini.util.FeedItemUtil
 import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
+import ac.mdiq.podcini.databinding.SearchFragmentBinding
 import ac.mdiq.podcini.util.event.*
 import ac.mdiq.podcini.playback.event.PlaybackPositionEvent
 import ac.mdiq.podcini.ui.fragment.actions.EpisodeMultiSelectActionHandler
@@ -86,13 +87,14 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                                            savedInstanceState: Bundle?
     ): View {
-        val layout: View = inflater.inflate(R.layout.search_fragment, container, false)
+        val viewBinding = SearchFragmentBinding.inflate(inflater)
+//        val layout: View = inflater.inflate(R.layout.search_fragment, container, false)
 
         Log.d(TAG, "fragment onCreateView")
-        setupToolbar(layout.findViewById(R.id.toolbar))
-        speedDialBinding = MultiSelectSpeedDialBinding.bind(layout)
-        progressBar = layout.findViewById(R.id.progressBar)
-        recyclerView = layout.findViewById(R.id.recyclerView)
+        setupToolbar(viewBinding.toolbar)
+        speedDialBinding = MultiSelectSpeedDialBinding.bind(viewBinding.root)
+        progressBar = viewBinding.progressBar
+        recyclerView = viewBinding.recyclerView
         recyclerView.setRecycledViewPool((activity as MainActivity).recycledViewPool)
         registerForContextMenu(recyclerView)
         adapter = object : EpisodeItemListAdapter(activity as MainActivity) {
@@ -107,9 +109,9 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
         }
         adapter.setOnSelectModeListener(this)
         recyclerView.adapter = adapter
-        recyclerView.addOnScrollListener(LiftOnScrollListener(layout.findViewById(R.id.appbar)))
+        recyclerView.addOnScrollListener(LiftOnScrollListener(viewBinding.appbar))
 
-        val recyclerViewFeeds = layout.findViewById<RecyclerView>(R.id.recyclerViewFeeds)
+        val recyclerViewFeeds = viewBinding.recyclerViewFeeds
         val layoutManagerFeeds = LinearLayoutManager(activity)
         layoutManagerFeeds.orientation = RecyclerView.HORIZONTAL
         recyclerViewFeeds.layoutManager = layoutManagerFeeds
@@ -131,7 +133,7 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
         emptyViewHandler.setMessage(R.string.type_to_search)
         EventBus.getDefault().register(this)
 
-        chip = layout.findViewById(R.id.feed_title_chip)
+        chip = viewBinding.feedTitleChip
         chip.setOnCloseIconClickListener {
             requireArguments().putLong(ARG_FEED, 0)
             searchWithProgressBar()
@@ -176,7 +178,7 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
             true
         }
 
-        return layout
+        return viewBinding.root
     }
 
     override fun onDestroyView() {
@@ -248,17 +250,17 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
     }
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onFeedListChanged(event: ac.mdiq.podcini.util.event.FeedListUpdateEvent?) {
+    fun onFeedListChanged(event: FeedListUpdateEvent?) {
         search()
     }
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onUnreadItemsChanged(event: ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent?) {
+    fun onUnreadItemsChanged(event: UnreadItemsUpdateEvent?) {
         search()
     }
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: ac.mdiq.podcini.util.event.FeedItemEvent) {
+    fun onEventMainThread(event: FeedItemEvent) {
         Log.d(TAG, "onEventMainThread() called with: event = [$event]")
 
         var i = 0
@@ -298,7 +300,7 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
     }
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onPlayerStatusChanged(event: ac.mdiq.podcini.util.event.PlayerStatusEvent?) {
+    fun onPlayerStatusChanged(event: PlayerStatusEvent?) {
         search()
     }
 

@@ -1,13 +1,13 @@
 package ac.mdiq.podcini.ui.dialog
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.ChooseDataFolderDialogBinding
+import ac.mdiq.podcini.ui.adapter.DataFolderAdapter
 import android.content.Context
 import android.view.View
 import androidx.core.util.Consumer
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.adapter.DataFolderAdapter
 
 object ChooseDataFolderDialog {
     fun showDialog(context: Context, handlerFunc: Consumer<String?>) {
@@ -18,7 +18,8 @@ object ChooseDataFolderDialog {
             .setMessage(R.string.choose_data_directory_message)
             .setNegativeButton(R.string.cancel_label, null)
             .create()
-        val recyclerView = content.findViewById<RecyclerView>(R.id.recyclerView)
+        val binding = ChooseDataFolderDialogBinding.bind(content)
+        val recyclerView = binding.recyclerView
         recyclerView.layoutManager = LinearLayoutManager(context)
         val adapter = DataFolderAdapter(context) { path: String? ->
             dialog.dismiss()

@@ -1,24 +1,24 @@
 package ac.mdiq.podcini.ui.dialog
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.FeedPrefSkipDialogBinding
 import android.content.Context
 import android.content.DialogInterface
 import android.view.View
-import android.widget.EditText
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import ac.mdiq.podcini.R
 
 /**
  * Displays a dialog with a username and password text field and an optional checkbox to save username and preferences.
  */
-abstract class FeedPreferenceSkipDialog(context: Context, skipIntroInitialValue: Int, skipEndInitialValue: Int
-) : MaterialAlertDialogBuilder(context) {
+abstract class FeedPreferenceSkipDialog(context: Context, skipIntroInitialValue: Int, skipEndInitialValue: Int) : MaterialAlertDialogBuilder(context) {
     init {
         setTitle(R.string.pref_feed_skip)
-        val rootView = View.inflate(context, R.layout.feed_pref_skip_dialog, null)
-        setView(rootView)
+        val binding = FeedPrefSkipDialogBinding.bind(View.inflate(context, R.layout.feed_pref_skip_dialog, null))
+//        val rootView = View.inflate(context, R.layout.feed_pref_skip_dialog, null)
+        setView(binding.root)
 
-        val etxtSkipIntro = rootView.findViewById<EditText>(R.id.etxtSkipIntro)
-        val etxtSkipEnd = rootView.findViewById<EditText>(R.id.etxtSkipEnd)
+        val etxtSkipIntro = binding.etxtSkipIntro
+        val etxtSkipEnd = binding.etxtSkipEnd
 
         etxtSkipIntro.setText(skipIntroInitialValue.toString())
         etxtSkipEnd.setText(skipEndInitialValue.toString())

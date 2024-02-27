@@ -10,6 +10,7 @@ import androidx.annotation.DrawableRes
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.recyclerview.widget.RecyclerView
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.EmptyViewLayoutBinding
 
 class EmptyViewHandler(context: Context) {
     private var layoutAdded = false
@@ -63,24 +64,21 @@ class EmptyViewHandler(context: Context) {
             when (parent) {
                 is RelativeLayout -> {
                     parent.addView(emptyView)
-                    val layoutParams =
-                        emptyView.layoutParams as RelativeLayout.LayoutParams
+                    val layoutParams = emptyView.layoutParams as RelativeLayout.LayoutParams
                     layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
                     emptyView.layoutParams = layoutParams
                     break
                 }
                 is FrameLayout -> {
                     parent.addView(emptyView)
-                    val layoutParams =
-                        emptyView.layoutParams as FrameLayout.LayoutParams
+                    val layoutParams = emptyView.layoutParams as FrameLayout.LayoutParams
                     layoutParams.gravity = Gravity.CENTER
                     emptyView.layoutParams = layoutParams
                     break
                 }
                 is CoordinatorLayout -> {
                     parent.addView(emptyView)
-                    val layoutParams =
-                        emptyView.layoutParams as CoordinatorLayout.LayoutParams
+                    val layoutParams = emptyView.layoutParams as CoordinatorLayout.LayoutParams
                     layoutParams.gravity = Gravity.CENTER
                     emptyView.layoutParams = layoutParams
                     break
@@ -99,9 +97,7 @@ class EmptyViewHandler(context: Context) {
     }
 
     private fun updateAdapter(adapter: ListAdapter?) {
-        if (this.listAdapter != null) {
-            listAdapter!!.unregisterDataSetObserver(listAdapterObserver)
-        }
+        listAdapter?.unregisterDataSetObserver(listAdapterObserver)
         this.listAdapter = adapter
         adapter?.registerDataSetObserver(listAdapterObserver)
         updateVisibility()
@@ -121,9 +117,10 @@ class EmptyViewHandler(context: Context) {
 
     init {
         emptyView = View.inflate(context, R.layout.empty_view_layout, null)
-        tvTitle = emptyView.findViewById(R.id.emptyViewTitle)
-        tvMessage = emptyView.findViewById(R.id.emptyViewMessage)
-        ivIcon = emptyView.findViewById(R.id.emptyViewIcon)
+        val binding = EmptyViewLayoutBinding.bind(emptyView)
+        tvTitle = binding.emptyViewTitle
+        tvMessage = binding.emptyViewMessage
+        ivIcon = binding.emptyViewIcon
     }
 
     fun updateVisibility() {

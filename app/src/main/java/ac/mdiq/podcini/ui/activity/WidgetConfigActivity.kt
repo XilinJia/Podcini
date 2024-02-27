@@ -12,6 +12,8 @@ import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.ActivityWidgetConfigBinding
+import ac.mdiq.podcini.databinding.PlayerWidgetBinding
 import ac.mdiq.podcini.preferences.ThemeSwitcher.getTheme
 import ac.mdiq.podcini.receiver.PlayerWidget
 import ac.mdiq.podcini.ui.widget.WidgetUpdaterWorker
@@ -20,6 +22,7 @@ class WidgetConfigActivity : AppCompatActivity() {
     private var appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
 
     private lateinit var widgetPreview: View
+    private lateinit var wpBinding: PlayerWidgetBinding
     private lateinit var opacitySeekBar: SeekBar
     private lateinit var opacityTextView: TextView
     private lateinit var ckPlaybackSpeed: CheckBox
@@ -30,6 +33,7 @@ class WidgetConfigActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(getTheme(this))
         super.onCreate(savedInstanceState)
+        val binding = ActivityWidgetConfigBinding.inflate(layoutInflater)
         setContentView(R.layout.activity_widget_config)
 
         val configIntent = intent
@@ -46,10 +50,12 @@ class WidgetConfigActivity : AppCompatActivity() {
             finish()
         }
 
-        opacityTextView = findViewById(R.id.widget_opacity_textView)
-        opacitySeekBar = findViewById(R.id.widget_opacity_seekBar)
-        widgetPreview = findViewById(R.id.widgetLayout)
-        findViewById<View>(R.id.butConfirm).setOnClickListener { confirmCreateWidget() }
+        opacityTextView = binding.widgetOpacityTextView
+        opacitySeekBar = binding.widgetOpacitySeekBar
+        widgetPreview = binding.widgetConfigPreview.widgetLayout
+        wpBinding = PlayerWidgetBinding.bind(widgetPreview)
+
+        binding.butConfirm.setOnClickListener { confirmCreateWidget() }
         opacitySeekBar.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, i: Int, b: Boolean) {
                 opacityTextView.text = seekBar.progress.toString() + "%"
@@ -64,21 +70,21 @@ class WidgetConfigActivity : AppCompatActivity() {
             }
         })
 
-        widgetPreview.findViewById<View>(R.id.txtNoPlaying).visibility = View.GONE
-        val title = widgetPreview.findViewById<TextView>(R.id.txtvTitle)
+        wpBinding.txtNoPlaying.visibility = View.GONE
+        val title = wpBinding.txtvTitle
         title.visibility = View.VISIBLE
         title.setText(R.string.app_name)
-        val progress = widgetPreview.findViewById<TextView>(R.id.txtvProgress)
+        val progress = wpBinding.txtvProgress
         progress.visibility = View.VISIBLE
         progress.setText(R.string.position_default_label)
 
-        ckPlaybackSpeed = findViewById(R.id.ckPlaybackSpeed)
+        ckPlaybackSpeed = binding.ckPlaybackSpeed
         ckPlaybackSpeed.setOnClickListener { displayPreviewPanel() }
-        ckRewind = findViewById(R.id.ckRewind)
+        ckRewind = binding.ckRewind
         ckRewind.setOnClickListener { displayPreviewPanel() }
-        ckFastForward = findViewById(R.id.ckFastForward)
+        ckFastForward = binding.ckFastForward
         ckFastForward.setOnClickListener { displayPreviewPanel() }
-        ckSkip = findViewById(R.id.ckSkip)
+        ckSkip = binding.ckSkip
         ckSkip.setOnClickListener { displayPreviewPanel() }
 
         setInitialState()
@@ -100,20 +106,13 @@ class WidgetConfigActivity : AppCompatActivity() {
     }
 
     private fun displayPreviewPanel() {
-        val showExtendedPreview =
-            ckPlaybackSpeed.isChecked || ckRewind.isChecked || ckFastForward.isChecked || ckSkip.isChecked
-        widgetPreview.findViewById<View>(R.id.extendedButtonsContainer).visibility =
-            if (showExtendedPreview) View.VISIBLE else View.GONE
-        widgetPreview.findViewById<View>(R.id.butPlay).visibility =
-            if (showExtendedPreview) View.GONE else View.VISIBLE
-        widgetPreview.findViewById<View>(R.id.butPlaybackSpeed).visibility =
-            if (ckPlaybackSpeed.isChecked) View.VISIBLE else View.GONE
-        widgetPreview.findViewById<View>(R.id.butFastForward).visibility =
-            if (ckFastForward.isChecked) View.VISIBLE else View.GONE
-        widgetPreview.findViewById<View>(R.id.butSkip).visibility =
-            if (ckSkip.isChecked) View.VISIBLE else View.GONE
-        widgetPreview.findViewById<View>(R.id.butRew).visibility =
-            if (ckRewind.isChecked) View.VISIBLE else View.GONE
+        val showExtendedPreview = ckPlaybackSpeed.isChecked || ckRewind.isChecked || ckFastForward.isChecked || ckSkip.isChecked
+        wpBinding.extendedButtonsContainer.visibility = if (showExtendedPreview) View.VISIBLE else View.GONE
+        wpBinding.butPlay.visibility = if (showExtendedPreview) View.GONE else View.VISIBLE
+        wpBinding.butPlaybackSpeed.visibility = if (ckPlaybackSpeed.isChecked) View.VISIBLE else View.GONE
+        wpBinding.butFastForward.visibility = if (ckFastForward.isChecked) View.VISIBLE else View.GONE
+        wpBinding.butSkip.visibility = if (ckSkip.isChecked) View.VISIBLE else View.GONE
+        wpBinding.butRew.visibility = if (ckRewind.isChecked) View.VISIBLE else View.GONE
     }
 
     private fun confirmCreateWidget() {

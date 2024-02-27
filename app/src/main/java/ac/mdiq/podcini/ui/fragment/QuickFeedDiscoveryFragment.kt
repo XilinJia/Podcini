@@ -2,6 +2,7 @@ package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.QuickFeedDiscoveryBinding
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.OnlineFeedViewActivity
 import ac.mdiq.podcini.ui.adapter.FeedDiscoverAdapter
@@ -43,17 +44,18 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
 
     @OptIn(UnstableApi::class) override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
-        val root: View = inflater.inflate(R.layout.quick_feed_discovery, container, false)
+        val viewBinding = QuickFeedDiscoveryBinding.inflate(inflater)
+//        val root: View = inflater.inflate(R.layout.quick_feed_discovery, container, false)
 
         Log.d(TAG, "fragment onCreateView")
-        val discoverMore = root.findViewById<View>(R.id.discover_more)
+        val discoverMore = viewBinding.discoverMore
         discoverMore.setOnClickListener { (activity as MainActivity).loadChildFragment(DiscoveryFragment()) }
 
-        discoverGridLayout = root.findViewById(R.id.discover_grid)
-        errorView = root.findViewById(R.id.discover_error)
-        errorTextView = root.findViewById(R.id.discover_error_txtV)
-        errorRetry = root.findViewById(R.id.discover_error_retry_btn)
-        poweredByTextView = root.findViewById(R.id.discover_powered_by_itunes)
+        discoverGridLayout = viewBinding.discoverGrid
+        errorView = viewBinding.discoverError
+        errorTextView = viewBinding.discoverErrorTxtV
+        errorRetry = viewBinding.discoverErrorRetryBtn
+        poweredByTextView = viewBinding.discoverPoweredByItunes
 
         adapter = FeedDiscoverAdapter(activity as MainActivity)
         discoverGridLayout.setAdapter(adapter)
@@ -78,7 +80,7 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
         loadToplist()
 
         EventBus.getDefault().register(this)
-        return root
+        return viewBinding.root
     }
 
     override fun onDestroy() {
@@ -89,7 +91,7 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     @Suppress("unused")
-    fun onDiscoveryDefaultUpdateEvent(event: ac.mdiq.podcini.util.event.DiscoveryDefaultUpdateEvent?) {
+    fun onDiscoveryDefaultUpdateEvent(event: DiscoveryDefaultUpdateEvent?) {
         loadToplist()
     }
 

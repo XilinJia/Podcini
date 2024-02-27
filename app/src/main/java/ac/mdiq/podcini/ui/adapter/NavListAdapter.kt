@@ -22,6 +22,8 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.NavListitemBinding
+import ac.mdiq.podcini.databinding.NavSectionItemBinding
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.storage.NavDrawerData.*
 import ac.mdiq.podcini.ui.fragment.*
@@ -324,20 +326,23 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
     open class Holder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
     internal class DividerHolder(itemView: View) : Holder(itemView) {
-        val feedsFilteredMsg: LinearLayout = itemView.findViewById(R.id.nav_feeds_filtered_message)
+        val binding = NavSectionItemBinding.bind(itemView)
+        val feedsFilteredMsg: LinearLayout = binding.navFeedsFilteredMessage
     }
 
     internal class NavHolder(itemView: View) : Holder(itemView) {
-        val image: ImageView = itemView.findViewById(R.id.imgvCover)
-        val title: TextView = itemView.findViewById(R.id.txtvTitle)
-        val count: TextView = itemView.findViewById(R.id.txtvCount)
+        val binding = NavListitemBinding.bind(itemView)
+        val image: ImageView = binding.imgvCover
+        val title: TextView = binding.txtvTitle
+        val count: TextView = binding.txtvCount
     }
 
     internal class FeedHolder(itemView: View) : Holder(itemView) {
-        val image: ImageView = itemView.findViewById(R.id.imgvCover)
-        val title: TextView = itemView.findViewById(R.id.txtvTitle)
-        val failure: ImageView = itemView.findViewById(R.id.itxtvFailure)
-        val count: TextView = itemView.findViewById(R.id.txtvCount)
+        val binding = NavListitemBinding.bind(itemView)
+        val image: ImageView = binding.imgvCover
+        val title: TextView = binding.txtvTitle
+        val failure: ImageView = binding.itxtvFailure
+        val count: TextView = binding.txtvCount
     }
 
     interface ItemAccess : OnCreateContextMenuListener {

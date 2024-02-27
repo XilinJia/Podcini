@@ -1,6 +1,12 @@
 package ac.mdiq.podcini.ui.adapter
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.SubscriptionItemBinding
+import ac.mdiq.podcini.storage.NavDrawerData
+import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.fragment.FeedItemlistFragment
+import ac.mdiq.podcini.ui.fragment.SubscriptionFragment
 import android.content.Context
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
@@ -13,12 +19,6 @@ import androidx.fragment.app.Fragment
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.elevation.SurfaceColors
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.storage.NavDrawerData
-import ac.mdiq.podcini.ui.fragment.FeedItemlistFragment
-import ac.mdiq.podcini.ui.fragment.SubscriptionFragment
-import ac.mdiq.podcini.storage.model.feed.Feed
-import ac.mdiq.podcini.preferences.UserPreferences
 import java.lang.ref.WeakReference
 import java.text.NumberFormat
 
@@ -49,7 +49,6 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SubscriptionViewHolder {
         val itemView: View = LayoutInflater.from(mainActivityRef.get()).inflate(R.layout.subscription_item, parent, false)
-//        itemView.findViewById<View>(R.id.titleLabel).visibility = if (viewType == COVER_WITH_TITLE) View.VISIBLE else View.GONE
         return SubscriptionViewHolder(itemView)
     }
 
@@ -68,11 +67,11 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
                 setSelected(holder.bindingAdapterPosition,
                     isChecked)
             }
-            if (holder.coverImage != null) holder.coverImage.alpha = 0.6f
+            holder.coverImage.alpha = 0.6f
             holder.count.visibility = View.GONE
         } else {
             holder.selectView.visibility = View.GONE
-            if (holder.coverImage != null) holder.coverImage.alpha = 1.0f
+            holder.coverImage.alpha = 1.0f
         }
 
         holder.itemView.setOnLongClickListener {
@@ -168,36 +167,25 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
         notifyDataSetChanged()
     }
 
-    override fun setSelected(pos: Int, selected: Boolean) {
-        val drawerItem: NavDrawerData.DrawerItem = listItems[pos]
-        if (drawerItem.type == NavDrawerData.DrawerItem.Type.FEED) {
-            super.setSelected(pos, selected)
-        }
-    }
-
-    override fun getItemViewType(position: Int): Int {
-        return 0
-//        return if (UserPreferences.shouldShowSubscriptionTitle()) COVER_WITH_TITLE else 0
-    }
-
     inner class SubscriptionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val title = itemView.findViewById<TextView>(R.id.titleLabel)
-        private val producer = itemView.findViewById<TextView>(R.id.producerLabel)
-        val count: TextView = itemView.findViewById(R.id.countLabel)
+        val binding = SubscriptionItemBinding.bind(itemView)
+        private val title = binding.titleLabel
+        private val producer = binding.producerLabel
+        val count: TextView = binding.countLabel
 
-        val coverImage: ImageView? = itemView.findViewById(R.id.coverImage)
-        val selectView: FrameLayout = itemView.findViewById(R.id.selectContainer)
-        val selectCheckbox: CheckBox = itemView.findViewById(R.id.selectCheckBox)
-        private val card: CardView = itemView.findViewById(R.id.outerContainer)
+        val coverImage: ImageView = binding.coverImage
+        val selectView: FrameLayout = binding.selectContainer
+        val selectCheckbox: CheckBox = binding.selectCheckBox
+        private val card: CardView = binding.outerContainer
 
-        private val errorIcon: View = itemView.findViewById(R.id.errorIcon)
+        private val errorIcon: View = binding.errorIcon
 
         fun bind(drawerItem: NavDrawerData.DrawerItem) {
             val drawable: Drawable? = AppCompatResources.getDrawable(selectView.context, R.drawable.ic_checkbox_background)
             selectView.background = drawable // Setting this in XML crashes API <= 21
             title.text = drawerItem.title
             producer.text = drawerItem.producer
-            if (coverImage != null) coverImage.contentDescription = drawerItem.title
+            coverImage.contentDescription = drawerItem.title
             if (drawerItem.counter > 0) {
                 count.text = NumberFormat.getInstance().format(drawerItem.counter.toLong()) + " episodes"
                 count.visibility = View.VISIBLE
@@ -214,7 +202,7 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
                 coverLoader.withResource(R.drawable.ic_tag)
                 errorIcon.visibility = View.GONE
             }
-            if (coverImage != null) coverLoader.withCoverView(coverImage)
+            coverLoader.withCoverView(coverImage)
             coverLoader.load()
 
             val density: Float = mainActivityRef.get()!!.resources.displayMetrics.density
@@ -246,8 +234,6 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
     }
 
     companion object {
-//        private const val COVER_WITH_TITLE = 1
-
         fun convertDpToPixel(context: Context, dp: Float): Float {
             return dp * context.resources.displayMetrics.density
         }

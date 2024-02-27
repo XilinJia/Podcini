@@ -15,6 +15,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.ExternalPlayerFragmentBinding
 import ac.mdiq.podcini.feed.util.ImageResourceUtils.getEpisodeListImageLocation
 import ac.mdiq.podcini.feed.util.ImageResourceUtils.getFallbackImageLocation
 import ac.mdiq.podcini.service.playback.PlaybackService.Companion.getPlayerActivityIntent
@@ -50,23 +51,24 @@ class ExternalPlayerFragment : Fragment() {
     @UnstableApi
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?
-    ): View? {
-        val root = inflater.inflate(R.layout.external_player_fragment, container, false)
+    ): View {
+        val viewBinding = ExternalPlayerFragmentBinding.inflate(inflater)
 
         Log.d(TAG, "fragment onCreateView")
-        imgvCover = root.findViewById(R.id.imgvCover)
-        txtvTitle = root.findViewById(R.id.txtvTitle)
-        butPlay = root.findViewById(R.id.butPlay)
-        feedName = root.findViewById(R.id.txtvAuthor)
-        progressBar = root.findViewById(R.id.episodeProgress)
+        imgvCover = viewBinding.imgvCover
+        txtvTitle = viewBinding.txtvTitle
+        butPlay = viewBinding.butPlay
+        feedName = viewBinding.txtvAuthor
+        progressBar = viewBinding.episodeProgress
 
-        root.findViewById<View>(R.id.fragmentLayout).setOnClickListener {
-            Log.d(TAG, "layoutInfo was clicked")
-            if (controller != null && controller!!.getMedia() != null) {
-                if (controller!!.getMedia()!!.getMediaType() == MediaType.AUDIO) {
+        viewBinding.externalPlayerFragment.setOnClickListener {
+            Log.d(TAG, "externalPlayerFragment was clicked")
+            val media = controller?.getMedia()
+            if (media != null) {
+                if (media.getMediaType() == MediaType.AUDIO) {
                     (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_EXPANDED)
                 } else {
-                    val intent = getPlayerActivityIntent(requireContext(), controller!!.getMedia()!!)
+                    val intent = getPlayerActivityIntent(requireContext(), media)
                     startActivity(intent)
                 }
             }
@@ -75,7 +77,7 @@ class ExternalPlayerFragment : Fragment() {
         controller!!.init()
         loadMediaInfo()
         EventBus.getDefault().register(this)
-        return root
+        return viewBinding.root
     }
 
     @OptIn(UnstableApi::class) override fun onDestroyView() {
@@ -91,9 +93,10 @@ class ExternalPlayerFragment : Fragment() {
             if (controller == null) {
                 return@setOnClickListener
             }
-            if (controller!!.getMedia()?.getMediaType() == MediaType.VIDEO && controller!!.status != PlayerStatus.PLAYING) {
+            val media = controller!!.getMedia()
+            if (media?.getMediaType() == MediaType.VIDEO && controller!!.status != PlayerStatus.PLAYING) {
                 controller!!.playPause()
-                requireContext().startActivity(getPlayerActivityIntent(requireContext(), controller!!.getMedia()!!))
+                requireContext().startActivity(getPlayerActivityIntent(requireContext(), media))
             } else {
                 controller!!.playPause()
             }
@@ -123,8 +126,7 @@ class ExternalPlayerFragment : Fragment() {
     fun onPositionObserverUpdate(event: PlaybackPositionEvent?) {
         if (controller == null) {
             return
-        } else if (controller!!.position == Playable.INVALID_TIME
-                || controller!!.duration == Playable.INVALID_TIME) {
+        } else if (controller!!.position == Playable.INVALID_TIME || controller!!.duration == Playable.INVALID_TIME) {
             return
         }
         progressBar.progress = (controller!!.position.toDouble() / controller!!.duration * 100).toInt()
@@ -174,8 +176,7 @@ class ExternalPlayerFragment : Fragment() {
         (activity as MainActivity).setPlayerVisible(true)
         txtvTitle.text = media.getEpisodeTitle()
         feedName.text = media.getFeedTitle()
-        onPositionObserverUpdate(PlaybackPositionEvent(media.getPosition(),
-            media.getDuration()))
+        onPositionObserverUpdate(PlaybackPositionEvent(media.getPosition(), media.getDuration()))
 
         val options = RequestOptions()
             .placeholder(R.color.light_gray)
@@ -191,7 +192,7 @@ class ExternalPlayerFragment : Fragment() {
             .apply(options)
             .into(imgvCover)
 
-        if (controller != null && controller!!.isPlayingVideoLocally) {
+        if (controller?.isPlayingVideoLocally == true) {
             (activity as MainActivity).bottomSheet.setLocked(true)
             (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
         } else {

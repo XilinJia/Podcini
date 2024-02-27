@@ -2,6 +2,7 @@ package ac.mdiq.podcini.ui.activity
 
 //import ac.mdiq.podcini.ui.home.HomeFragment
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.MainActivityBinding
 import ac.mdiq.podcini.net.download.FeedUpdateManager
 import ac.mdiq.podcini.net.download.FeedUpdateManager.restartUpdateAlarm
 import ac.mdiq.podcini.net.download.FeedUpdateManager.runOnceOrAsk
@@ -39,6 +40,7 @@ import android.view.ViewGroup.MarginLayoutParams
 import android.widget.EditText
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.graphics.Insets
+import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -68,6 +70,9 @@ class MainActivity : CastEnabledActivity() {
 //    some device doesn't have a drawer
     private var drawerLayout: DrawerLayout? = null
 
+    private lateinit var binding: MainActivityBinding
+    private lateinit var mainView: View
+    private lateinit var audioPlayerFragmentView: View
     private lateinit var navDrawer: View
     private lateinit var dummyView : View
     lateinit var bottomSheet: LockableBottomSheetBehavior<*>
@@ -91,17 +96,20 @@ class MainActivity : CastEnabledActivity() {
         }
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.main)
+        binding = MainActivityBinding.inflate(layoutInflater)
+        setContentView(R.layout.main_activity)
         recycledViewPool.setMaxRecycledViews(R.id.view_type_episode_item, 25)
 
         dummyView = object : View(this) {}
 
-        drawerLayout = findViewById(R.id.drawer_layout)
+        drawerLayout = findViewById(R.id.main_layout)
         navDrawer = findViewById(R.id.navDrawerFragment)
         setNavDrawerSize()
 
+        mainView = findViewById(R.id.main_view)
+
         // Consume navigation bar insets - we apply them in setPlayerVisible()
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_view)) { _: View?, insets: WindowInsetsCompat ->
+        ViewCompat.setOnApplyWindowInsetsListener(mainView) { _: View?, insets: WindowInsetsCompat ->
             navigationBarInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
             updateInsets()
             WindowInsetsCompat.Builder(insets)
@@ -136,10 +144,11 @@ class MainActivity : CastEnabledActivity() {
         val audioPlayerFragment = AudioPlayerFragment()
         transaction.replace(R.id.audioplayerFragment, audioPlayerFragment, AudioPlayerFragment.TAG)
         transaction.commit()
+        navDrawer = findViewById(R.id.navDrawerFragment)
+        audioPlayerFragmentView = findViewById(R.id.audioplayerFragment)
 
         checkFirstLaunch()
-        val bottomSheet = findViewById<View>(R.id.audioplayerFragment)
-        this.bottomSheet = BottomSheetBehavior.from(bottomSheet) as LockableBottomSheetBehavior<*>
+        this.bottomSheet = BottomSheetBehavior.from(audioPlayerFragmentView) as LockableBottomSheetBehavior<*>
         this.bottomSheet.isHideable = false
         this.bottomSheet.setBottomSheetCallback(bottomSheetCallback)
 
@@ -237,19 +246,18 @@ class MainActivity : CastEnabledActivity() {
             if (slideOffset == 0.0f) { //STATE_COLLAPSED
                 audioPlayer.scrollToPage(AudioPlayerFragment.POS_COVER)
             }
-
             audioPlayer.fadePlayerToToolbar(slideOffset)
         }
     }
 
     fun setupToolbarToggle(toolbar: MaterialToolbar, displayUpArrow: Boolean) {
+        Log.d(TAG, "setupToolbarToggle ${drawerLayout?.id} $displayUpArrow")
         // Tablet layout does not have a drawer
         if (drawerLayout != null) {
             if (drawerToggle != null) {
                 drawerLayout!!.removeDrawerListener(drawerToggle!!)
             }
-            drawerToggle = ActionBarDrawerToggle(this, drawerLayout, toolbar,
-                R.string.drawer_open, R.string.drawer_close)
+            drawerToggle = ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close)
             drawerLayout!!.addDrawerListener(drawerToggle!!)
             drawerToggle!!.syncState()
             drawerToggle!!.isDrawerIndicatorEnabled = !displayUpArrow
@@ -282,7 +290,7 @@ class MainActivity : CastEnabledActivity() {
         get() = drawerLayout?.isDrawerOpen(navDrawer)?:false
 
     private fun updateInsets() {
-        setPlayerVisible(findViewById<View>(R.id.audioplayerFragment).visibility == View.VISIBLE)
+        setPlayerVisible(audioPlayerFragmentView.visibility == View.VISIBLE)
         val playerHeight = resources.getDimension(R.dimen.external_player_height).toInt()
         bottomSheet.peekHeight = playerHeight + navigationBarInsets.bottom
     }
@@ -294,7 +302,7 @@ class MainActivity : CastEnabledActivity() {
         } else {
             bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
         }
-        val mainView = findViewById<FragmentContainerView>(R.id.main_view)
+//        val mainView = findViewById<FragmentContainerView>(R.id.main_view)
         val params = mainView.layoutParams as MarginLayoutParams
         val externalPlayerHeight = resources.getDimension(R.dimen.external_player_height).toInt()
         params.setMargins(navigationBarInsets.left, 0, navigationBarInsets.right,
@@ -304,7 +312,7 @@ class MainActivity : CastEnabledActivity() {
         val playerParams = playerView.layoutParams as MarginLayoutParams
         playerParams.setMargins(navigationBarInsets.left, 0, navigationBarInsets.right, 0)
         playerView.layoutParams = playerParams
-        findViewById<View>(R.id.audioplayerFragment).visibility = if (visible) View.VISIBLE else View.GONE
+        audioPlayerFragmentView.visibility = if (visible) View.VISIBLE else View.GONE
     }
 
     fun loadFragment(tag: String?, args: Bundle?) {
@@ -313,7 +321,6 @@ class MainActivity : CastEnabledActivity() {
         Log.d(TAG, "loadFragment(tag: $tag, args: $args)")
         val fragment: Fragment
         when (tag) {
-//            HomeFragment.TAG -> fragment = HomeFragment()
             QueueFragment.TAG -> fragment = QueueFragment()
             InboxFragment.TAG -> fragment = InboxFragment()
             AllEpisodesFragment.TAG -> fragment = AllEpisodesFragment()
@@ -322,7 +329,7 @@ class MainActivity : CastEnabledActivity() {
             AddFeedFragment.TAG -> fragment = AddFeedFragment()
             SubscriptionFragment.TAG -> fragment = SubscriptionFragment()
             else -> {
-                // default to home screen
+                // default to subscriptions screen
                 fragment = SubscriptionFragment()
                 tag = SubscriptionFragment.TAG
                 args = null
@@ -360,6 +367,7 @@ class MainActivity : CastEnabledActivity() {
         // not commit anything in an AsyncTask, but that's a bigger
         // change than we want now.
         t.commitAllowingStateLoss()
+        mainView = findViewById(R.id.main_view)
 
         // Tablet layout does not have a drawer
         drawerLayout?.closeDrawer(navDrawer)
@@ -384,25 +392,23 @@ class MainActivity : CastEnabledActivity() {
             .add(R.id.main_view, fragment, MAIN_FRAGMENT_TAG)
             .addToBackStack(null)
             .commit()
+        mainView = findViewById(R.id.main_view)
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
-        if (drawerToggle != null) { // Tablet layout does not have a drawer
-            drawerToggle!!.syncState()
-        }
+        drawerToggle?.syncState()
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        if (drawerToggle != null) { // Tablet layout does not have a drawer
-            drawerToggle!!.onConfigurationChanged(newConfig)
-        }
+        drawerToggle?.onConfigurationChanged(newConfig)
         setNavDrawerSize()
     }
 
     private fun setNavDrawerSize() {
-        if (drawerToggle == null) { // Tablet layout does not have a drawer
+        // Tablet layout does not have a drawer
+        if (drawerLayout == null) {
             return
         }
         val screenPercent = resources.getInteger(R.integer.nav_drawer_screen_size_percent) * 0.01f
@@ -410,6 +416,7 @@ class MainActivity : CastEnabledActivity() {
         val maxWidth = resources.getDimension(R.dimen.nav_drawer_max_screen_size).toInt()
 
         navDrawer.layoutParams.width = min(width.toDouble(), maxWidth.toDouble()).toInt()
+        Log.d(TAG, "setNavDrawerSize: ${navDrawer.layoutParams.width}")
     }
 
     private val screenWidth: Int
@@ -469,6 +476,7 @@ class MainActivity : CastEnabledActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        Log.d(TAG, "onOptionsItemSelected ${item.title}")
         if (drawerToggle != null && drawerToggle!!.onOptionsItemSelected(item)) { // Tablet layout does not have a drawer
             return true
         } else if (item.itemId == android.R.id.home) {
@@ -483,22 +491,27 @@ class MainActivity : CastEnabledActivity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        if (isDrawerOpen) {
-            drawerLayout?.closeDrawer(navDrawer)
-        } else if (bottomSheet.state == BottomSheetBehavior.STATE_EXPANDED) {
-            bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
-        } else if (supportFragmentManager.backStackEntryCount != 0) {
-            super.onBackPressed()
-        } else {
-            val toPage = defaultPage
-            if (NavDrawerFragment.getLastNavFragment(this) == toPage || UserPreferences.DEFAULT_PAGE_REMEMBER == toPage) {
-                if (backButtonOpensDrawer()) {
-                    drawerLayout?.openDrawer(navDrawer)
+        when {
+            isDrawerOpen -> {
+                drawerLayout?.closeDrawer(navDrawer)
+            }
+            bottomSheet.state == BottomSheetBehavior.STATE_EXPANDED -> {
+                bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
+            }
+            supportFragmentManager.backStackEntryCount != 0 -> {
+                super.onBackPressed()
+            }
+            else -> {
+                val toPage = defaultPage
+                if (NavDrawerFragment.getLastNavFragment(this) == toPage || UserPreferences.DEFAULT_PAGE_REMEMBER == toPage) {
+                    if (backButtonOpensDrawer()) {
+                        drawerLayout?.openDrawer(navDrawer)
+                    } else {
+                        super.onBackPressed()
+                    }
                 } else {
-                    super.onBackPressed()
+                    loadFragment(toPage, null)
                 }
-            } else {
-                loadFragment(toPage, null)
             }
         }
     }
@@ -516,31 +529,36 @@ class MainActivity : CastEnabledActivity() {
     private fun handleNavIntent() {
         Log.d(TAG, "handleNavIntent()")
         val intent = intent
-        if (intent.hasExtra(EXTRA_FEED_ID)) {
-            val feedId = intent.getLongExtra(EXTRA_FEED_ID, 0)
-            val args = intent.getBundleExtra(MainActivityStarter.EXTRA_FRAGMENT_ARGS)
-            if (feedId > 0) {
-                val startedFromSearch = intent.getBooleanExtra(EXTRA_STARTED_FROM_SEARCH, false)
-                val addToBackStack = intent.getBooleanExtra(EXTRA_ADD_TO_BACK_STACK, false)
-                if (startedFromSearch || addToBackStack) {
-                    loadChildFragment(FeedItemlistFragment.newInstance(feedId))
-                } else {
-                    loadFeedFragmentById(feedId, args)
+        when {
+            intent.hasExtra(EXTRA_FEED_ID) -> {
+                val feedId = intent.getLongExtra(EXTRA_FEED_ID, 0)
+                val args = intent.getBundleExtra(MainActivityStarter.EXTRA_FRAGMENT_ARGS)
+                if (feedId > 0) {
+                    val startedFromSearch = intent.getBooleanExtra(EXTRA_STARTED_FROM_SEARCH, false)
+                    val addToBackStack = intent.getBooleanExtra(EXTRA_ADD_TO_BACK_STACK, false)
+                    if (startedFromSearch || addToBackStack) {
+                        loadChildFragment(FeedItemlistFragment.newInstance(feedId))
+                    } else {
+                        loadFeedFragmentById(feedId, args)
+                    }
                 }
+                bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
             }
-            bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
-        } else if (intent.hasExtra(MainActivityStarter.EXTRA_FRAGMENT_TAG)) {
-            val tag = intent.getStringExtra(MainActivityStarter.EXTRA_FRAGMENT_TAG)
-            val args = intent.getBundleExtra(MainActivityStarter.EXTRA_FRAGMENT_ARGS)
-            if (tag != null) {
-                loadFragment(tag, args)
+            intent.hasExtra(MainActivityStarter.EXTRA_FRAGMENT_TAG) -> {
+                val tag = intent.getStringExtra(MainActivityStarter.EXTRA_FRAGMENT_TAG)
+                val args = intent.getBundleExtra(MainActivityStarter.EXTRA_FRAGMENT_ARGS)
+                if (tag != null) {
+                    loadFragment(tag, args)
+                }
+                bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
             }
-            bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
-        } else if (intent.getBooleanExtra(MainActivityStarter.EXTRA_OPEN_PLAYER, false)) {
-            bottomSheet.state = BottomSheetBehavior.STATE_EXPANDED
-            bottomSheetCallback.onSlide(dummyView, 1.0f)
-        } else {
-            handleDeeplink(intent.data)
+            intent.getBooleanExtra(MainActivityStarter.EXTRA_OPEN_PLAYER, false) -> {
+                bottomSheet.state = BottomSheetBehavior.STATE_EXPANDED
+                bottomSheetCallback.onSlide(dummyView, 1.0f)
+            }
+            else -> {
+                handleDeeplink(intent.data)
+            }
         }
 
         if (intent.getBooleanExtra(MainActivityStarter.EXTRA_OPEN_DRAWER, false)) {
@@ -566,12 +584,12 @@ class MainActivity : CastEnabledActivity() {
     fun showSnackbarAbovePlayer(text: CharSequence?, duration: Int): Snackbar {
         val s: Snackbar
         if (bottomSheet.state == BottomSheetBehavior.STATE_COLLAPSED) {
-            s = Snackbar.make(findViewById(R.id.main_view), text!!, duration)
-            if (findViewById<View>(R.id.audioplayerFragment).visibility == View.VISIBLE) {
-                s.setAnchorView(findViewById(R.id.audioplayerFragment))
+            s = Snackbar.make(mainView, text!!, duration)
+            if (audioPlayerFragmentView.visibility == View.VISIBLE) {
+                s.setAnchorView(audioPlayerFragmentView)
             }
         } else {
-            s = Snackbar.make(findViewById(android.R.id.content), text!!, duration)
+            s = Snackbar.make(binding.root, text!!, duration)
         }
         s.show()
         return s
@@ -589,7 +607,7 @@ class MainActivity : CastEnabledActivity() {
      * @param uri incoming deep link
      */
     private fun handleDeeplink(uri: Uri?) {
-        if (uri == null || uri.path == null) {
+        if (uri?.path == null) {
             return
         }
         Log.d(TAG, "Handling deeplink: $uri")

@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.elevation.SurfaceColors
 import com.joanzapata.iconify.Iconify
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.FeeditemlistItemBinding
 import ac.mdiq.podcini.ui.adapter.CoverLoader
 import ac.mdiq.podcini.feed.util.ImageResourceUtils
 import ac.mdiq.podcini.util.DateFormatter
@@ -41,13 +42,14 @@ import kotlin.math.max
 @UnstableApi
 class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGroup?) :
     RecyclerView.ViewHolder(LayoutInflater.from(activity).inflate(R.layout.feeditemlist_item, parent, false)) {
+    val binding: FeeditemlistItemBinding = FeeditemlistItemBinding.bind(itemView)
 
-    private val container: View = itemView.findViewById(R.id.container)
+    private val container: View = binding.container
     @JvmField
-    val dragHandle: ImageView = itemView.findViewById(R.id.drag_handle)
-    private val placeholder: TextView = itemView.findViewById(R.id.txtvPlaceholder)
-    private val cover: ImageView = itemView.findViewById(R.id.imgvCover)
-    private val title: TextView = itemView.findViewById(R.id.txtvTitle)
+    val dragHandle: ImageView = binding.dragHandle
+    private val placeholder: TextView = binding.txtvPlaceholder
+    private val cover: ImageView = binding.imgvCover
+    private val title: TextView = binding.txtvTitle
     private val pubDate: TextView
     private val position: TextView
     private val duration: TextView
@@ -74,21 +76,21 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
         if (Build.VERSION.SDK_INT >= 23) {
             title.setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_FULL)
         }
-        pubDate = itemView.findViewById(R.id.txtvPubDate)
-        position = itemView.findViewById(R.id.txtvPosition)
-        duration = itemView.findViewById(R.id.txtvDuration)
-        progressBar = itemView.findViewById(R.id.progressBar)
-        isInQueue = itemView.findViewById(R.id.ivInPlaylist)
-        isVideo = itemView.findViewById(R.id.ivIsVideo)
-        isInbox = itemView.findViewById(R.id.statusInbox)
-        isFavorite = itemView.findViewById(R.id.isFavorite)
-        size = itemView.findViewById(R.id.size)
-        separatorIcons = itemView.findViewById(R.id.separatorIcons)
-        secondaryActionProgress = itemView.findViewById(R.id.secondaryActionProgress)
-        secondaryActionButton = itemView.findViewById(R.id.secondaryActionButton)
-        secondaryActionIcon = itemView.findViewById(R.id.secondaryActionIcon)
-        coverHolder = itemView.findViewById(R.id.coverHolder)
-        leftPadding = itemView.findViewById(R.id.left_padding)
+        pubDate = binding.txtvPubDate
+        position = binding.txtvPosition
+        duration = binding.txtvDuration
+        progressBar = binding.progressBar
+        isInQueue = binding.ivInPlaylist
+        isVideo = binding.ivIsVideo
+        isInbox = binding.statusInbox
+        isFavorite = binding.isFavorite
+        size = binding.size
+        separatorIcons = binding.separatorIcons
+        secondaryActionProgress = binding.secondaryActionButton.secondaryActionProgress
+        secondaryActionButton = binding.secondaryActionButton.root
+        secondaryActionIcon = binding.secondaryActionButton.secondaryActionIcon
+        coverHolder = binding.coverHolder
+        leftPadding = binding.leftPadding
         itemView.tag = this
     }
 

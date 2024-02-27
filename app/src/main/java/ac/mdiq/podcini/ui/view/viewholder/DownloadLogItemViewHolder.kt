@@ -1,5 +1,7 @@
 package ac.mdiq.podcini.ui.view.viewholder
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.DownloadlogItemBinding
 import android.content.Context
 import android.os.Build
 import android.text.Layout
@@ -10,27 +12,25 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.joanzapata.iconify.widget.IconTextView
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.common.CircularProgressBar
 
 class DownloadLogItemViewHolder(context: Context, parent: ViewGroup?) :
     RecyclerView.ViewHolder(LayoutInflater.from(context).inflate(R.layout.downloadlog_item, parent, false)) {
-
+    val binding = DownloadlogItemBinding.bind(itemView)
     @JvmField
-    val secondaryActionButton: View = itemView.findViewById(R.id.secondaryActionButton)
+    val secondaryActionButton: View = binding.secondaryActionLayout.secondaryAction
     @JvmField
-    val secondaryActionIcon: ImageView = itemView.findViewById(R.id.secondaryActionIcon)
-    val secondaryActionProgress: CircularProgressBar = itemView.findViewById(R.id.secondaryActionProgress)
+    val secondaryActionIcon: ImageView = binding.secondaryActionLayout.secondaryActionIcon
+//    val secondaryActionProgress: CircularProgressBar = binding.secondaryAction.secondaryActionProgress
     @JvmField
-    val icon: IconTextView = itemView.findViewById(R.id.txtvIcon)
+    val icon: IconTextView = binding.txtvIcon
     @JvmField
-    val title: TextView = itemView.findViewById(R.id.txtvTitle)
+    val title: TextView = binding.txtvTitle
     @JvmField
-    val status: TextView = itemView.findViewById(R.id.status)
+    val status: TextView = binding.status
     @JvmField
-    val reason: TextView = itemView.findViewById(R.id.txtvReason)
+    val reason: TextView = binding.txtvReason
     @JvmField
-    val tapForDetails: TextView = itemView.findViewById(R.id.txtvTapForDetails)
+    val tapForDetails: TextView = binding.txtvTapForDetails
 
     init {
         if (Build.VERSION.SDK_INT >= 23) {

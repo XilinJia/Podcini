@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.HorizontalFeedItemBinding
 import ac.mdiq.podcini.ui.fragment.FeedItemlistFragment
 import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.ui.common.SquareImageView
@@ -112,14 +113,15 @@ open class HorizontalFeedListAdapter(mainActivity: MainActivity) :
     }
 
     class Holder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        var imageView: SquareImageView = itemView.findViewById(R.id.discovery_cover)
+        val binding = HorizontalFeedItemBinding.bind(itemView)
+        var imageView: SquareImageView = binding.discoveryCover
         var cardView: CardView
         var actionButton: Button
 
         init {
             imageView.setDirection(SquareImageView.DIRECTION_HEIGHT)
-            actionButton = itemView.findViewById(R.id.actionButton)
-            cardView = itemView.findViewById(R.id.cardView)
+            actionButton = binding.actionButton
+            cardView = binding.cardView
         }
     }
 }

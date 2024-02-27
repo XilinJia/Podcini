@@ -1,12 +1,19 @@
 package ac.mdiq.podcini.ui.dialog
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.SpeedSelectDialogBinding
+import ac.mdiq.podcini.playback.PlaybackController
+import ac.mdiq.podcini.playback.event.SpeedChangedEvent
+import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
+import ac.mdiq.podcini.preferences.UserPreferences.playbackSpeedArray
+import ac.mdiq.podcini.ui.view.ItemOffsetDecoration
+import ac.mdiq.podcini.ui.view.PlaybackSpeedSeekBar
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CheckBox
 import android.widget.CompoundButton
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.GridLayoutManager
@@ -14,13 +21,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.chip.Chip
 import com.google.android.material.snackbar.Snackbar
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.playback.PlaybackController
-import ac.mdiq.podcini.playback.event.SpeedChangedEvent
-import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
-import ac.mdiq.podcini.preferences.UserPreferences.playbackSpeedArray
-import ac.mdiq.podcini.ui.view.ItemOffsetDecoration
-import ac.mdiq.podcini.ui.view.PlaybackSpeedSeekBar
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -69,32 +69,33 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                                            savedInstanceState: Bundle?
     ): View? {
-        val root = View.inflate(context, R.layout.speed_select_dialog, null)
-        speedSeekBar = root.findViewById(R.id.speed_seek_bar)
+        val binding = SpeedSelectDialogBinding.inflate(inflater)
+//        val root = View.inflate(context, R.layout.speed_select_dialog, null)
+        speedSeekBar = binding.speedSeekBar
         speedSeekBar.setProgressChangedListener { multiplier: Float? ->
             controller?.setPlaybackSpeed(multiplier!!)
         }
-        val selectedSpeedsGrid = root.findViewById<RecyclerView>(R.id.selected_speeds_grid)
+        val selectedSpeedsGrid = binding.selectedSpeedsGrid
         selectedSpeedsGrid.layoutManager = GridLayoutManager(context, 3)
         selectedSpeedsGrid.addItemDecoration(ItemOffsetDecoration(requireContext(), 4))
         adapter = SpeedSelectionAdapter()
         adapter.setHasStableIds(true)
         selectedSpeedsGrid.adapter = adapter
 
-        addCurrentSpeedChip = root.findViewById(R.id.add_current_speed_chip)
+        addCurrentSpeedChip = binding.addCurrentSpeedChip
         addCurrentSpeedChip.isCloseIconVisible = true
         addCurrentSpeedChip.setCloseIconResource(R.drawable.ic_add)
         addCurrentSpeedChip.setOnCloseIconClickListener { addCurrentSpeed() }
         addCurrentSpeedChip.closeIconContentDescription = getString(R.string.add_preset)
         addCurrentSpeedChip.setOnClickListener { addCurrentSpeed() }
 
-        val skipSilence = root.findViewById<CheckBox>(R.id.skipSilence)
+        val skipSilence = binding.skipSilence
         skipSilence.isChecked = isSkipSilence
         skipSilence.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
             isSkipSilence = isChecked
             controller!!.setSkipSilence(isChecked)
         }
-        return root
+        return binding.root
     }
 
     private fun addCurrentSpeed() {

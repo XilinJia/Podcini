@@ -10,6 +10,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.SimpleIconListItemBinding
 
 /**
  * Displays a list of items that have a subtitle and an icon.
@@ -25,15 +26,16 @@ class SimpleIconListAdapter<T : SimpleIconListAdapter.ListItem>(private val cont
         }
 
         val item: ListItem = listItems[position]
-        (view!!.findViewById<View>(R.id.title) as TextView).text = item.title
-        (view.findViewById<View>(R.id.subtitle) as TextView).text = item.subtitle
+        val binding = SimpleIconListItemBinding.bind(view!!)
+        binding.title.text = item.title
+        binding.subtitle.text = item.subtitle
         Glide.with(context)
             .load(item.imageUrl)
             .apply(RequestOptions()
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .fitCenter()
                 .dontAnimate())
-            .into(((view.findViewById<View>(R.id.icon) as ImageView)))
+            .into(binding.icon)
         return view
     }
 

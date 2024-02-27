@@ -19,6 +19,8 @@ import ac.mdiq.podcini.ui.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.ui.view.EmptyViewHandler
 import ac.mdiq.podcini.ui.view.LiftOnScrollListener
+import ac.mdiq.podcini.util.event.FeedListUpdateEvent
+import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -79,8 +81,7 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
     }
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                                           savedInstanceState: Bundle?
-    ): View {
+                                           savedInstanceState: Bundle?): View {
         val viewBinding = FragmentSubscriptionsBinding.inflate(inflater)
 
         Log.d(TAG, "fragment onCreateView")
@@ -222,7 +223,8 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
 //            feeds without tag
             0 -> {
                 feedListFiltered = feedList.filter {
-                    it.feed.preferences?.getTags().isNullOrEmpty()
+                    val tags = it.feed.preferences?.getTags()
+                    tags.isNullOrEmpty() || (tags.size == 1 && tags.toList()[0] == "#root")
                 }
             }
 //            feeds with the chosen tag
@@ -315,10 +317,6 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
     override fun onContextItemSelected(item: MenuItem): Boolean {
         val drawerItem: NavDrawerData.DrawerItem = subscriptionAdapter.getSelectedItem() ?: return false
         val itemId = item.itemId
-//        if (drawerItem.type == NavDrawerData.DrawerItem.Type.TAG && itemId == R.id.rename_folder_item) {
-//            RenameItemDialog(activity as Activity, drawerItem).show()
-//            return true
-//        }
 
         val feed: Feed = (drawerItem as NavDrawerData.FeedDrawerItem).feed
         if (itemId == R.id.multi_select) {
@@ -329,12 +327,12 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onFeedListChanged(event: ac.mdiq.podcini.util.event.FeedListUpdateEvent?) {
+    fun onFeedListChanged(event: FeedListUpdateEvent?) {
         loadSubscriptions()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onUnreadItemsChanged(event: ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent?) {
+    fun onUnreadItemsChanged(event: UnreadItemsUpdateEvent?) {
         loadSubscriptions()
     }
 

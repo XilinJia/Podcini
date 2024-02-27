@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:id="@+id/activity_widget_config"
     tools:context="ac.mdiq.podcini.ui.activity.WidgetConfigActivity">
 
     <FrameLayout

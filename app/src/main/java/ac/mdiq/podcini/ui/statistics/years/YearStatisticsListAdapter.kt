@@ -2,6 +2,8 @@ package ac.mdiq.podcini.ui.statistics.years
 
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.StatisticsListitemBarchartBinding
+import ac.mdiq.podcini.databinding.StatisticsYearListitemBinding
 import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
@@ -86,12 +88,14 @@ class YearStatisticsListAdapter(val context: Context) : RecyclerView.Adapter<Rec
     }
 
     internal class HeaderHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        var barChart: BarChartView = itemView.findViewById(R.id.barChart)
+        val binding = StatisticsListitemBarchartBinding.bind(itemView)
+        var barChart: BarChartView = binding.barChart
     }
 
     internal class StatisticsHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        var year: TextView = itemView.findViewById(R.id.yearLabel)
-        var hours: TextView = itemView.findViewById(R.id.hoursLabel)
+        val binding = StatisticsYearListitemBinding.bind(itemView)
+        var year: TextView = binding.yearLabel
+        var hours: TextView = binding.hoursLabel
     }
 
     companion object {

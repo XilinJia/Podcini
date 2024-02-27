@@ -40,7 +40,7 @@ class SplashActivity : Activity() {
                     finish()
                 }, { error: Throwable ->
                     error.printStackTrace()
-                    ac.mdiq.podcini.util.error.CrashReportWriter.write(error)
+                    CrashReportWriter.write(error)
                     Toast.makeText(this, error.localizedMessage, Toast.LENGTH_LONG).show()
                     finish()
                 })

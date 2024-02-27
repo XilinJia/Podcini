@@ -10,6 +10,7 @@ import com.bumptech.glide.load.resource.bitmap.FitCenter
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.QuickFeedDiscoveryItemBinding
 import ac.mdiq.podcini.net.discovery.PodcastSearchResult
 import java.lang.ref.WeakReference
 
@@ -41,8 +42,9 @@ class FeedDiscoverAdapter(mainActivity: MainActivity) : BaseAdapter() {
 
         if (convertView == null) {
             convertView = View.inflate(mainActivityRef.get(), R.layout.quick_feed_discovery_item, null)
+            val binding = QuickFeedDiscoveryItemBinding.bind(convertView)
             holder = Holder()
-            holder.imageView = convertView.findViewById(R.id.discovery_cover)
+            holder.imageView = binding.discoveryCover
             convertView.tag = holder
         } else {
             holder = convertView.tag as Holder

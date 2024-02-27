@@ -11,6 +11,7 @@ import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.ProxySettingsBinding
 import ac.mdiq.podcini.service.download.PodciniHttpClient.newBuilder
 import ac.mdiq.podcini.service.download.PodciniHttpClient.reinit
 import ac.mdiq.podcini.service.download.PodciniHttpClient.setProxyConfig
@@ -46,7 +47,8 @@ class ProxyDialog(private val context: Context) {
 
     fun show(): Dialog {
         val content = View.inflate(context, R.layout.proxy_settings, null)
-        spType = content.findViewById(R.id.spType)
+        val binding = ProxySettingsBinding.bind(content)
+        spType = binding.spType
 
         dialog = MaterialAlertDialogBuilder(context)
             .setTitle(R.string.pref_proxy_title)
@@ -86,22 +88,22 @@ class ProxyDialog(private val context: Context) {
         spType.setAdapter(adapter)
         val proxyConfig = proxyConfig
         spType.setSelection(adapter.getPosition(proxyConfig.type.name))
-        etHost = content.findViewById(R.id.etHost)
+        etHost = binding.etHost
         if (!proxyConfig.host.isNullOrEmpty()) {
             etHost.setText(proxyConfig.host)
         }
         etHost.addTextChangedListener(requireTestOnChange)
-        etPort = content.findViewById(R.id.etPort)
+        etPort = binding.etPort
         if (proxyConfig.port > 0) {
             etPort.setText(proxyConfig.port.toString())
         }
         etPort.addTextChangedListener(requireTestOnChange)
-        etUsername = content.findViewById(R.id.etUsername)
+        etUsername = binding.etUsername
         if (!proxyConfig.username.isNullOrEmpty()) {
             etUsername.setText(proxyConfig.username)
         }
         etUsername.addTextChangedListener(requireTestOnChange)
-        etPassword = content.findViewById(R.id.etPassword)
+        etPassword = binding.etPassword
         if (!proxyConfig.password.isNullOrEmpty()) {
             etPassword.setText(proxyConfig.password)
         }
@@ -121,7 +123,7 @@ class ProxyDialog(private val context: Context) {
                 enableSettings(false)
             }
         }
-        txtvMessage = content.findViewById(R.id.txtvMessage)
+        txtvMessage = binding.txtvMessage
         checkValidity()
         return dialog
     }

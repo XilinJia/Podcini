@@ -5,6 +5,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="@dimen/listitem_iconwithtext_height"
+    android:id="@+id/nav_listitem"
     android:orientation="vertical"
     android:layout_marginHorizontal="8dp"
     android:background="@drawable/drawer_item_background">

@@ -1,5 +1,15 @@
 package ac.mdiq.podcini.ui.fragment
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.SimpleListFragmentBinding
+import ac.mdiq.podcini.playback.PlaybackController
+import ac.mdiq.podcini.playback.base.PlayerStatus
+import ac.mdiq.podcini.playback.event.PlaybackPositionEvent
+import ac.mdiq.podcini.storage.model.feed.FeedMedia
+import ac.mdiq.podcini.storage.model.playback.Playable
+import ac.mdiq.podcini.ui.adapter.ChaptersListAdapter
+import ac.mdiq.podcini.util.ChapterUtils.getCurrentChapterIndex
+import ac.mdiq.podcini.util.ChapterUtils.loadChapters
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
@@ -14,17 +24,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.adapter.ChaptersListAdapter
-import ac.mdiq.podcini.util.ChapterUtils.getCurrentChapterIndex
-import ac.mdiq.podcini.util.ChapterUtils.loadChapters
-import ac.mdiq.podcini.playback.PlaybackController
-import ac.mdiq.podcini.playback.event.PlaybackPositionEvent
-import ac.mdiq.podcini.storage.model.feed.FeedMedia
-import ac.mdiq.podcini.storage.model.playback.Playable
-import ac.mdiq.podcini.playback.base.PlayerStatus
 import io.reactivex.Maybe
 import io.reactivex.MaybeEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -62,14 +62,14 @@ class ChaptersFragment : AppCompatDialogFragment() {
         return dialog
     }
 
-
     fun onCreateView(inflater: LayoutInflater): View {
-        val root = inflater.inflate(R.layout.simple_list_fragment, null, false)
-        root.findViewById<View>(R.id.toolbar).visibility = View.GONE
+        val viewBinding = SimpleListFragmentBinding.inflate(inflater)
+//        val root = inflater.inflate(R.layout.simple_list_fragment, null, false)
+        viewBinding.toolbar.visibility = View.GONE
 
         Log.d(TAG, "fragment onCreateView")
-        val recyclerView = root.findViewById<RecyclerView>(R.id.recyclerView)
-        progressBar = root.findViewById(R.id.progLoading)
+        val recyclerView = viewBinding.recyclerView
+        progressBar = viewBinding.progLoading
         layoutManager = LinearLayoutManager(activity)
         recyclerView.layoutManager = layoutManager
         recyclerView.addItemDecoration(DividerItemDecoration(recyclerView.context, layoutManager.orientation))
@@ -101,7 +101,7 @@ class ChaptersFragment : AppCompatDialogFragment() {
         EventBus.getDefault().register(this)
         loadMediaInfo(false)
 
-        return root
+        return viewBinding.root
     }
 
     override fun onDestroyView() {

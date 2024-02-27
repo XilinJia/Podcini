@@ -1,11 +1,11 @@
 package ac.mdiq.podcini.ui.fragment.preferences.dialog
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.DialogSwitchPreferenceBinding
 import android.content.Context
 import android.content.DialogInterface
 import android.view.LayoutInflater
-import androidx.appcompat.widget.SwitchCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import ac.mdiq.podcini.R
 
 class PreferenceSwitchDialog(private var context: Context, private val title: String, private val text: String) {
     private var onPreferenceChangedListener: OnPreferenceChangedListener? = null
@@ -25,7 +25,8 @@ class PreferenceSwitchDialog(private var context: Context, private val title: St
 
         val inflater = LayoutInflater.from(this.context)
         val layout = inflater.inflate(R.layout.dialog_switch_preference, null, false)
-        val switchButton = layout.findViewById<SwitchCompat>(R.id.dialogSwitch)
+        val binding = DialogSwitchPreferenceBinding.bind(layout)
+        val switchButton = binding.dialogSwitch
         switchButton.text = text
         builder.setView(layout)
 

@@ -1,5 +1,15 @@
 package ac.mdiq.podcini.ui.fragment
 
+import ac.mdiq.podcini.BuildConfig
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.FragmentItunesSearchBinding
+import ac.mdiq.podcini.databinding.SelectCountryDialogBinding
+import ac.mdiq.podcini.net.discovery.ItunesTopListLoader
+import ac.mdiq.podcini.net.discovery.PodcastSearchResult
+import ac.mdiq.podcini.storage.DBReader
+import ac.mdiq.podcini.ui.activity.OnlineFeedViewActivity
+import ac.mdiq.podcini.ui.adapter.itunes.ItunesAdapter
+import ac.mdiq.podcini.util.event.DiscoveryDefaultUpdateEvent
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -18,15 +28,6 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
-import com.google.android.material.textfield.TextInputLayout
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.activity.OnlineFeedViewActivity
-import ac.mdiq.podcini.ui.adapter.itunes.ItunesAdapter
-import ac.mdiq.podcini.BuildConfig
-import ac.mdiq.podcini.storage.DBReader
-import ac.mdiq.podcini.util.event.DiscoveryDefaultUpdateEvent
-import ac.mdiq.podcini.net.discovery.ItunesTopListLoader
-import ac.mdiq.podcini.net.discovery.PodcastSearchResult
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -91,16 +92,17 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         needsConfirm = prefs.getBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, true)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         // Inflate the layout for this fragment
-        val root = inflater.inflate(R.layout.fragment_itunes_search, container, false)
+        val viewBinding = FragmentItunesSearchBinding.inflate(inflater)
+//        val root = inflater.inflate(R.layout.fragment_itunes_search, container, false)
 
         Log.d(TAG, "fragment onCreateView")
-        gridView = root.findViewById(R.id.gridView)
+        gridView = viewBinding.gridView
         adapter = ItunesAdapter(requireActivity(), ArrayList())
         gridView.setAdapter(adapter)
 
-        toolbar = root.findViewById(R.id.toolbar)
+        toolbar = viewBinding.toolbar
         toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
         toolbar.inflateMenu(R.menu.countries_menu)
         val discoverHideItem = toolbar.menu.findItem(R.id.discover_hide_item)
@@ -119,13 +121,13 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             startActivity(intent)
         }
 
-        progressBar = root.findViewById(R.id.progressBar)
-        txtvError = root.findViewById(R.id.txtvError)
-        butRetry = root.findViewById(R.id.butRetry)
-        txtvEmpty = root.findViewById(android.R.id.empty)
+        progressBar = viewBinding.progressBar
+        txtvError = viewBinding.txtvError
+        butRetry = viewBinding.butRetry
+        txtvEmpty = viewBinding.empty
 
         loadToplist(countryCode)
-        return root
+        return viewBinding.root
     }
 
     override fun onDestroy() {
@@ -200,7 +202,7 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             hidden = item.isChecked
             prefs.edit().putBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, hidden).apply()
 
-            EventBus.getDefault().post(ac.mdiq.podcini.util.event.DiscoveryDefaultUpdateEvent())
+            EventBus.getDefault().post(DiscoveryDefaultUpdateEvent())
             loadToplist(countryCode)
             return true
         } else if (itemId == R.id.discover_countries_item) {
@@ -222,10 +224,10 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             val countryNamesSort: MutableList<String> = ArrayList(countryCodeNames.values)
             countryNamesSort.sort()
 
-            val dataAdapter =
-                ArrayAdapter(this.requireContext(), android.R.layout.simple_list_item_1, countryNamesSort)
-            val textInput = selectCountryDialogView.findViewById<TextInputLayout>(R.id.country_text_input)
-            val editText = textInput.editText as MaterialAutoCompleteTextView?
+            val dataAdapter = ArrayAdapter(this.requireContext(), android.R.layout.simple_list_item_1, countryNamesSort)
+            val scBinding = SelectCountryDialogBinding.bind(selectCountryDialogView)
+            val textInput = scBinding.countryTextInput
+            val editText = textInput.editText as? MaterialAutoCompleteTextView
             editText!!.setAdapter(dataAdapter)
             editText.setText(countryCodeNames[countryCode])
             editText.setOnClickListener {
@@ -253,7 +255,7 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 prefs.edit().putBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, hidden).apply()
                 prefs.edit().putString(ItunesTopListLoader.PREF_KEY_COUNTRY_CODE, countryCode).apply()
 
-                EventBus.getDefault().post(ac.mdiq.podcini.util.event.DiscoveryDefaultUpdateEvent())
+                EventBus.getDefault().post(DiscoveryDefaultUpdateEvent())
                 loadToplist(countryCode)
             }
             builder.setNegativeButton(R.string.cancel_label, null)

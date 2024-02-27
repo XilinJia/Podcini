@@ -212,7 +212,6 @@ class CoverFragment : Fragment() {
                 viewBinding.butNextChapter.visibility = View.VISIBLE
             }
         }
-
         displayCoverImage()
     }
 
@@ -307,8 +306,7 @@ class CoverFragment : Fragment() {
             viewBinding.coverHolder.layoutParams =
                 LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f)
             viewBinding.coverFragmentTextContainer.layoutParams =
-                LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT)
+                LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
         } else {
             viewBinding.coverHolder.layoutParams =
                 LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
@@ -325,10 +323,7 @@ class CoverFragment : Fragment() {
     }
 
     @UnstableApi fun onPlayPause() {
-        if (controller == null) {
-            return
-        }
-        controller!!.playPause()
+        controller?.playPause()
     }
 
     @UnstableApi private fun copyText(text: String): Boolean {

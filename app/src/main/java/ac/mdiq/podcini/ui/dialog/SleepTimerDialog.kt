@@ -1,6 +1,7 @@
 package ac.mdiq.podcini.ui.dialog
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.TimeDialogBinding
 import ac.mdiq.podcini.playback.event.SleepTimerUpdatedEvent
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnable
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnableFrom
@@ -60,22 +61,24 @@ class SleepTimerDialog : DialogFragment() {
     }
 
     @UnstableApi override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val content = View.inflate(context, R.layout.time_dialog, null)
+        val binding = TimeDialogBinding.inflate(layoutInflater)
+        val content = binding.root
+//        val content = View.inflate(context, R.layout.time_dialog, null)
         val builder = MaterialAlertDialogBuilder(requireContext())
         builder.setTitle(R.string.sleep_timer_label)
-        builder.setView(content)
+        builder.setView(binding.root)
         builder.setPositiveButton(R.string.close_label, null)
 
-        etxtTime = content.findViewById(R.id.etxtTime)
-        timeSetup = content.findViewById(R.id.timeSetup)
-        timeDisplay = content.findViewById(R.id.timeDisplay)
+        etxtTime = binding.etxtTime
+        timeSetup = binding.timeSetup
+        timeDisplay = binding.timeDisplay
         timeDisplay.visibility = View.GONE
-        time = content.findViewById(R.id.time)
-        val extendSleepFiveMinutesButton = content.findViewById<Button>(R.id.extendSleepFiveMinutesButton)
+        time = binding.time
+        val extendSleepFiveMinutesButton = binding.extendSleepFiveMinutesButton
         extendSleepFiveMinutesButton.text = getString(R.string.extend_sleep_timer_label, 5)
-        val extendSleepTenMinutesButton = content.findViewById<Button>(R.id.extendSleepTenMinutesButton)
+        val extendSleepTenMinutesButton = binding.extendSleepTenMinutesButton
         extendSleepTenMinutesButton.text = getString(R.string.extend_sleep_timer_label, 10)
-        val extendSleepTwentyMinutesButton = content.findViewById<Button>(R.id.extendSleepTwentyMinutesButton)
+        val extendSleepTwentyMinutesButton = binding.extendSleepTwentyMinutesButton
         extendSleepTwentyMinutesButton.text = getString(R.string.extend_sleep_timer_label, 20)
         extendSleepFiveMinutesButton.setOnClickListener {
             controller.extendSleepTimer((5 * 1000 * 60).toLong())
@@ -93,10 +96,10 @@ class SleepTimerDialog : DialogFragment() {
             imm.showSoftInput(etxtTime, InputMethodManager.SHOW_IMPLICIT)
         }, 100)
 
-        val cbShakeToReset = content.findViewById<CheckBox>(R.id.cbShakeToReset)
-        val cbVibrate = content.findViewById<CheckBox>(R.id.cbVibrate)
-        chAutoEnable = content.findViewById(R.id.chAutoEnable)
-        val changeTimesButton = content.findViewById<ImageView>(R.id.changeTimesButton)
+        val cbShakeToReset = binding.cbShakeToReset
+        val cbVibrate = binding.cbVibrate
+        chAutoEnable = binding.chAutoEnable
+        val changeTimesButton = binding.changeTimesButton
 
         cbShakeToReset.isChecked = shakeToReset()
         cbVibrate.isChecked = vibrate()
@@ -121,11 +124,11 @@ class SleepTimerDialog : DialogFragment() {
             showTimeRangeDialog(requireContext(), from, to)
         }
 
-        val disableButton = content.findViewById<Button>(R.id.disableSleeptimerButton)
+        val disableButton = binding.disableSleeptimerButton
         disableButton.setOnClickListener {
             controller.disableSleepTimer()
         }
-        val setButton = content.findViewById<Button>(R.id.setSleeptimerButton)
+        val setButton = binding.setSleeptimerButton
         setButton.setOnClickListener {
             if (!PlaybackService.isRunning) {
                 Snackbar.make(content, R.string.no_media_playing_label, Snackbar.LENGTH_LONG).show()

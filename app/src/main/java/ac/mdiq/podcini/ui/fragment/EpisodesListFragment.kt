@@ -19,6 +19,8 @@ import com.google.android.material.snackbar.Snackbar
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.EpisodesListFragmentBinding
+import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.ui.adapter.EpisodeItemListAdapter
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
@@ -71,10 +73,6 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
     protected var disposable: Disposable? = null
     protected lateinit var txtvInformation: TextView
 
-    override fun onStart() {
-        super.onStart()
-    }
-
     override fun onResume() {
         super.onResume()
         registerForContextMenu(recyclerView)
@@ -125,11 +123,12 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
 
-        val root: View = inflater.inflate(R.layout.episodes_list_fragment, container, false)
+        val viewBinding = EpisodesListFragmentBinding.inflate(inflater)
+//        val root: View = inflater.inflate(R.layout.episodes_list_fragment, container, false)
 
         Log.d(TAG, "fragment onCreateView")
-        txtvInformation = root.findViewById(R.id.txtvInformation)
-        toolbar = root.findViewById(R.id.toolbar)
+        txtvInformation = viewBinding.txtvInformation
+        toolbar = viewBinding.toolbar
         toolbar.setOnMenuItemClickListener(this)
         toolbar.setOnLongClickListener {
             recyclerView.scrollToPosition(5)
@@ -142,10 +141,10 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
         }
         (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
 
-        recyclerView = root.findViewById(R.id.recyclerView)
+        recyclerView = viewBinding.recyclerView
         recyclerView.setRecycledViewPool((activity as MainActivity).recycledViewPool)
         setupLoadMoreScrollListener()
-        recyclerView.addOnScrollListener(LiftOnScrollListener(root.findViewById(R.id.appbar)))
+        recyclerView.addOnScrollListener(LiftOnScrollListener(viewBinding.appbar))
 
         swipeActions = SwipeActions(this, getFragmentTag()).attachTo(recyclerView)
         swipeActions.setFilter(getFilter())
@@ -155,7 +154,7 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
             animator.supportsChangeAnimations = false
         }
 
-        swipeRefreshLayout = root.findViewById(R.id.swipeRefresh)
+        swipeRefreshLayout = viewBinding.swipeRefresh
         swipeRefreshLayout.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
         swipeRefreshLayout.setOnRefreshListener {
             FeedUpdateManager.runOnceOrAsk(requireContext())
@@ -175,7 +174,7 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
         }
         listAdapter.setOnSelectModeListener(this)
         recyclerView.adapter = listAdapter
-        progressBar = root.findViewById(R.id.progressBar)
+        progressBar = viewBinding.progressBar
         progressBar.visibility = View.VISIBLE
 
         emptyView = EmptyViewHandler(requireContext())
@@ -186,8 +185,9 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
         emptyView.updateAdapter(listAdapter)
         emptyView.hide()
 
-        speedDialView = root.findViewById(R.id.fabSD)
-        speedDialView.overlayLayout = root.findViewById(R.id.fabSDOverlay)
+        val multiSelectDial = MultiSelectSpeedDialBinding.bind(viewBinding.root)
+        speedDialView = multiSelectDial.fabSD
+        speedDialView.overlayLayout = multiSelectDial.fabSDOverlay
         speedDialView.inflate(R.menu.episodes_apply_action_speeddial)
         speedDialView.setOnChangeListener(object : SpeedDialView.OnChangeListener {
             override fun onMainActionSelected(): Boolean {
@@ -227,7 +227,7 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
         EventBus.getDefault().register(this)
         loadItems()
 
-        return root
+        return viewBinding.root
     }
 
     @UnstableApi private fun performMultiSelectAction(actionItemId: Int) {
@@ -311,7 +311,7 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: ac.mdiq.podcini.util.event.FeedItemEvent) {
+    fun onEventMainThread(event: FeedItemEvent) {
         Log.d(TAG, "onEventMainThread() called with: event = [$event]")
         for (item in event.items) {
             val pos: Int = FeedItemUtil.indexOfItemWithId(episodes, item.id)
@@ -361,17 +361,17 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onPlayerStatusChanged(event: ac.mdiq.podcini.util.event.PlayerStatusEvent?) {
+    fun onPlayerStatusChanged(event: PlayerStatusEvent?) {
         loadItems()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onUnreadItemsChanged(event: ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent?) {
+    fun onUnreadItemsChanged(event: UnreadItemsUpdateEvent?) {
         loadItems()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onFeedListChanged(event: ac.mdiq.podcini.util.event.FeedListUpdateEvent?) {
+    fun onFeedListChanged(event: FeedListUpdateEvent?) {
         loadItems()
     }
 
@@ -420,7 +420,7 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: ac.mdiq.podcini.util.event.FeedUpdateRunningEvent) {
+    fun onEventMainThread(event: FeedUpdateRunningEvent) {
         swipeRefreshLayout.isRefreshing = event.isFeedUpdateRunning
     }
 

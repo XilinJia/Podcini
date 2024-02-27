@@ -2,6 +2,8 @@ package ac.mdiq.podcini.ui.statistics
 
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.StatisticsListitemBinding
+import ac.mdiq.podcini.databinding.StatisticsListitemTotalBinding
 import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
@@ -72,17 +74,19 @@ abstract class StatisticsListAdapter protected constructor(@JvmField protected v
     }
 
     internal class HeaderHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        var totalTime: TextView = itemView.findViewById(R.id.total_time)
-        var pieChart: PieChartView = itemView.findViewById(R.id.pie_chart)
-        var totalText: TextView = itemView.findViewById(R.id.total_description)
+        val binding = StatisticsListitemTotalBinding.bind(itemView)
+        var totalTime: TextView = binding.totalTime
+        var pieChart: PieChartView = binding.pieChart
+        var totalText: TextView = binding.totalDescription
     }
 
     class StatisticsHolder internal constructor(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        var image: ImageView = itemView.findViewById(R.id.imgvCover)
-        var title: TextView = itemView.findViewById(R.id.txtvTitle)
+        val binding = StatisticsListitemBinding.bind(itemView)
+        var image: ImageView = binding.imgvCover
+        var title: TextView = binding.txtvTitle
         @JvmField
-        var value: TextView = itemView.findViewById(R.id.txtvValue)
-        var chip: TextView = itemView.findViewById(R.id.chip)
+        var value: TextView = binding.txtvValue
+        var chip: TextView = binding.chip
     }
 
     protected abstract val headerCaption: String?

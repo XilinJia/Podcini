@@ -167,7 +167,7 @@ class SwipeActionsDialog(private val context: Context, private val tag: String) 
 
     private fun populateMockEpisode(view: FeeditemlistItemBinding) {
         view.container.alpha = 0.3f
-        view.secondaryActionButton.secondaryActionButton.visibility = View.GONE
+        view.secondaryActionButton.secondaryAction.visibility = View.GONE
         view.dragHandle.visibility = View.GONE
         view.statusInbox.visibility = View.GONE
         view.txtvTitle.text = "███████"

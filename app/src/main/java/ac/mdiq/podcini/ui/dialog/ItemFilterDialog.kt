@@ -14,8 +14,8 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButtonToggleGroup
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.feed.FeedItemFilterGroup
 import ac.mdiq.podcini.databinding.FilterDialogBinding
+import ac.mdiq.podcini.feed.FeedItemFilterGroup
 import ac.mdiq.podcini.databinding.FilterDialogRowBinding
 import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
 
@@ -78,7 +78,7 @@ abstract class ItemFilterDialog : BottomSheetDialogFragment() {
     }
 
     private fun setupFullHeight(bottomSheetDialog: BottomSheetDialog) {
-        val bottomSheet = bottomSheetDialog.findViewById<View>(R.id.design_bottom_sheet) as FrameLayout?
+        val bottomSheet = bottomSheetDialog.findViewById<View>(R.id.design_bottom_sheet) as? FrameLayout
         if (bottomSheet != null) {
             val behavior = BottomSheetBehavior.from(bottomSheet)
             val layoutParams = bottomSheet.layoutParams
@@ -98,9 +98,7 @@ abstract class ItemFilterDialog : BottomSheetDialogFragment() {
                 if (group.checkedButtonId == View.NO_ID) {
                     continue
                 }
-                val tag = group.findViewById<View>(group.checkedButtonId).tag as String?
-                    ?: // Clear buttons use no tag
-                    continue
+                val tag = group.findViewById<View>(group.checkedButtonId).tag as? String ?: continue
                 newFilterValues.add(tag)
             }
             return newFilterValues

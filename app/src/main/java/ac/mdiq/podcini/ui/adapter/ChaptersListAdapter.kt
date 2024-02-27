@@ -14,6 +14,7 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.elevation.SurfaceColors
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.SimplechapterItemBinding
 import ac.mdiq.podcini.ui.adapter.ChaptersListAdapter.ChapterHolder
 import ac.mdiq.podcini.util.Converter.getDurationStringLocalized
 import ac.mdiq.podcini.util.Converter.getDurationStringLong
@@ -109,14 +110,15 @@ class ChaptersListAdapter(private val context: Context, private val callback: Ca
     }
 
     class ChapterHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val title: TextView = itemView.findViewById(R.id.txtvTitle)
-        val start: TextView = itemView.findViewById(R.id.txtvStart)
-        val link: TextView = itemView.findViewById(R.id.txtvLink)
-        val duration: TextView = itemView.findViewById(R.id.txtvDuration)
-        val image: ImageView = itemView.findViewById(R.id.imgvCover)
-        val secondaryActionButton: View = itemView.findViewById(R.id.secondaryActionButton)
-        val secondaryActionIcon: ImageView = itemView.findViewById(R.id.secondaryActionIcon)
-        val progressBar: CircularProgressBar = itemView.findViewById(R.id.secondaryActionProgress)
+        val binding: SimplechapterItemBinding = SimplechapterItemBinding.bind(itemView)
+        val title: TextView = binding.txtvTitle
+        val start: TextView = binding.txtvStart
+        val link: TextView = binding.txtvLink
+        val duration: TextView = binding.txtvDuration
+        val image: ImageView = binding.imgvCover
+        val secondaryActionButton: View = binding.secondaryActionLayout.secondaryAction
+        val secondaryActionIcon: ImageView = binding.secondaryActionLayout.secondaryActionIcon
+        val progressBar: CircularProgressBar = binding.secondaryActionLayout.secondaryActionProgress
     }
 
     fun notifyChapterChanged(newChapterIndex: Int) {

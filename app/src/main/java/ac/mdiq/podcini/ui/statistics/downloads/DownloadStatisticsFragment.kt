@@ -2,6 +2,10 @@ package ac.mdiq.podcini.ui.statistics.downloads
 
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.StatisticsFragmentBinding
+import ac.mdiq.podcini.storage.DBReader
+import ac.mdiq.podcini.storage.DBReader.StatisticsResult
+import ac.mdiq.podcini.storage.StatisticsItem
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -12,14 +16,10 @@ import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import ac.mdiq.podcini.storage.DBReader
-import ac.mdiq.podcini.storage.DBReader.StatisticsResult
-import ac.mdiq.podcini.storage.StatisticsItem
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
-import java.util.*
 
 /**
  * Displays the 'download statistics' screen
@@ -32,16 +32,17 @@ class DownloadStatisticsFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?
-    ): View? {
-        val root = inflater.inflate(R.layout.statistics_fragment, container, false)
-        downloadStatisticsList = root.findViewById(R.id.statistics_list)
-        progressBar = root.findViewById(R.id.progressBar)
+    ): View {
+        val binding = StatisticsFragmentBinding.inflate(inflater)
+//        val root = inflater.inflate(R.layout.statistics_fragment, container, false)
+        downloadStatisticsList = binding.statisticsList
+        progressBar = binding.progressBar
         listAdapter = DownloadStatisticsListAdapter(requireContext(), this)
         downloadStatisticsList?.setLayoutManager(LinearLayoutManager(context))
         downloadStatisticsList?.setAdapter(listAdapter)
         refreshDownloadStatistics()
 
-        return root
+        return binding.root
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
@@ -65,9 +66,9 @@ class DownloadStatisticsFragment : Fragment() {
             Observable.fromCallable {
                 // Filters do not matter here
                 val statisticsData = DBReader.getStatistics(false, 0, Long.MAX_VALUE)
-                statisticsData.feedTime.sortWith(Comparator { item1: StatisticsItem, item2: StatisticsItem ->
+                statisticsData.feedTime.sortWith { item1: StatisticsItem, item2: StatisticsItem ->
                     item2.totalDownloadSize.compareTo(item1.totalDownloadSize)
-                })
+                }
                 statisticsData
             }
                 .subscribeOn(Schedulers.io())

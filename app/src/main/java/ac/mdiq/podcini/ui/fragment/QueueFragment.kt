@@ -23,6 +23,9 @@ import com.google.android.material.snackbar.Snackbar
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.CheckboxDoNotShowAgainBinding
+import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
+import ac.mdiq.podcini.databinding.QueueFragmentBinding
 import ac.mdiq.podcini.ui.adapter.QueueRecyclerAdapter
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
@@ -83,10 +86,11 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
-        val root: View = inflater.inflate(R.layout.queue_fragment, container, false)
+        val binding = QueueFragmentBinding.inflate(inflater)
+//        val root: View = inflater.inflate(R.layout.queue_fragment, container, false)
 
         Log.d(TAG, "fragment onCreateView")
-        toolbar = root.findViewById(R.id.toolbar)
+        toolbar = binding.toolbar
         toolbar.setOnMenuItemClickListener(this)
         toolbar.setOnLongClickListener {
             recyclerView.scrollToPosition(5)
@@ -100,18 +104,18 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
         (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
         toolbar.inflateMenu(R.menu.queue)
         refreshToolbarState()
-        progressBar = root.findViewById(R.id.progressBar)
+        progressBar = binding.progressBar
         progressBar.visibility = View.VISIBLE
 
-        infoBar = root.findViewById(R.id.info_bar)
-        recyclerView = root.findViewById(R.id.recyclerView)
+        infoBar = binding.infoBar
+        recyclerView = binding.recyclerView
         val animator: RecyclerView.ItemAnimator? = recyclerView.itemAnimator
         if (animator != null && animator is SimpleItemAnimator) {
             animator.supportsChangeAnimations = false
         }
         recyclerView.setRecycledViewPool((activity as MainActivity).recycledViewPool)
         registerForContextMenu(recyclerView)
-        recyclerView.addOnScrollListener(LiftOnScrollListener(root.findViewById(R.id.appbar)))
+        recyclerView.addOnScrollListener(LiftOnScrollListener(binding.appbar))
 
         swipeActions = QueueSwipeActions()
         swipeActions.setFilter(FeedItemFilter(FeedItemFilter.QUEUED))
@@ -127,7 +131,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
         recyclerAdapter?.setOnSelectModeListener(this)
         recyclerView.adapter = recyclerAdapter
 
-        swipeRefreshLayout = root.findViewById(R.id.swipeRefresh)
+        swipeRefreshLayout = binding.swipeRefresh
         swipeRefreshLayout.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
         swipeRefreshLayout.setOnRefreshListener {
             FeedUpdateManager.runOnceOrAsk(requireContext())
@@ -140,8 +144,9 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
         emptyView.setMessage(R.string.no_items_label)
         emptyView.updateAdapter(recyclerAdapter)
 
-        speedDialView = root.findViewById(R.id.fabSD)
-        speedDialView.overlayLayout = root.findViewById(R.id.fabSDOverlay)
+        val multiSelectDial = MultiSelectSpeedDialBinding.bind(binding.root)
+        speedDialView = multiSelectDial.fabSD
+        speedDialView.overlayLayout = multiSelectDial.fabSDOverlay
         speedDialView.inflate(R.menu.episodes_apply_action_speeddial)
 //        speedDialView.removeActionItemById(R.id.mark_read_batch)
 //        speedDialView.removeActionItemById(R.id.mark_unread_batch)
@@ -169,14 +174,12 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
         loadItems(true)
         EventBus.getDefault().register(this)
 
-        return root
+        return binding.root
     }
 
     override fun onStart() {
         super.onStart()
-        if (queue.isNotEmpty()) {
-            recyclerView.restoreScrollPosition(TAG)
-        }
+        if (queue.isNotEmpty()) recyclerView.restoreScrollPosition(TAG)
     }
 
     override fun onPause() {
@@ -190,35 +193,35 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: ac.mdiq.podcini.util.event.QueueEvent) {
+    fun onEventMainThread(event: QueueEvent) {
         Log.d(TAG, "onEventMainThread() called with: event = [$event]")
         if (recyclerAdapter == null) {
             loadItems(true)
             return
         }
         when (event.action) {
-            ac.mdiq.podcini.util.event.QueueEvent.Action.ADDED -> {
+            QueueEvent.Action.ADDED -> {
                 if (event.item != null) queue.add(event.position, event.item)
                 recyclerAdapter?.notifyItemInserted(event.position)
             }
-            ac.mdiq.podcini.util.event.QueueEvent.Action.SET_QUEUE, ac.mdiq.podcini.util.event.QueueEvent.Action.SORTED -> {
+            QueueEvent.Action.SET_QUEUE, QueueEvent.Action.SORTED -> {
                 queue = event.items.toMutableList()
                 recyclerAdapter?.updateItems(event.items)
             }
-            ac.mdiq.podcini.util.event.QueueEvent.Action.REMOVED, ac.mdiq.podcini.util.event.QueueEvent.Action.IRREVERSIBLE_REMOVED -> {
+            QueueEvent.Action.REMOVED, QueueEvent.Action.IRREVERSIBLE_REMOVED -> {
                 if (event.item != null) {
                     val position: Int = FeedItemUtil.indexOfItemWithId(queue.toList(), event.item.id)
                     queue.removeAt(position)
                     recyclerAdapter?.notifyItemRemoved(position)
                 }
             }
-            ac.mdiq.podcini.util.event.QueueEvent.Action.CLEARED -> {
+            QueueEvent.Action.CLEARED -> {
                 queue.clear()
                 recyclerAdapter?.updateItems(queue)
             }
-            ac.mdiq.podcini.util.event.QueueEvent.Action.MOVED -> return
-            ac.mdiq.podcini.util.event.QueueEvent.Action.ADDED_ITEMS -> return
-            ac.mdiq.podcini.util.event.QueueEvent.Action.DELETED_MEDIA -> return
+            QueueEvent.Action.MOVED -> return
+            QueueEvent.Action.ADDED_ITEMS -> return
+            QueueEvent.Action.DELETED_MEDIA -> return
         }
         recyclerAdapter?.updateDragDropEnabled()
         refreshToolbarState()
@@ -227,7 +230,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: ac.mdiq.podcini.util.event.FeedItemEvent) {
+    fun onEventMainThread(event: FeedItemEvent) {
         Log.d(TAG, "onEventMainThread() called with: event = [$event]")
         if (recyclerAdapter == null) {
             loadItems(true)
@@ -272,13 +275,13 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onPlayerStatusChanged(event: ac.mdiq.podcini.util.event.PlayerStatusEvent?) {
+    fun onPlayerStatusChanged(event: PlayerStatusEvent?) {
         loadItems(false)
         refreshToolbarState()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onUnreadItemsChanged(event: ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent?) {
+    fun onUnreadItemsChanged(event: UnreadItemsUpdateEvent?) {
         // Sent when playback position is reset
         loadItems(false)
         refreshToolbarState()
@@ -313,7 +316,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: ac.mdiq.podcini.util.event.FeedUpdateRunningEvent) {
+    fun onEventMainThread(event: FeedUpdateRunningEvent) {
         swipeRefreshLayout.isRefreshing = event.isFeedUpdateRunning
     }
 
@@ -367,7 +370,8 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
                 builder.setMessage(R.string.queue_lock_warning)
 
                 val view = View.inflate(context, R.layout.checkbox_do_not_show_again, null)
-                val checkDoNotShowAgain: CheckBox = view.findViewById(R.id.checkbox_do_not_show_again)
+                val binding = CheckboxDoNotShowAgainBinding.bind(view)
+                val checkDoNotShowAgain: CheckBox = binding.checkboxDoNotShowAgain
                 builder.setView(view)
 
                 builder.setPositiveButton(R.string.lock_queue
@@ -384,9 +388,8 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
     @UnstableApi private fun setQueueLocked(locked: Boolean) {
         UserPreferences.isQueueLocked = locked
         refreshToolbarState()
-        if (recyclerAdapter != null) {
-            recyclerAdapter?.updateDragDropEnabled()
-        }
+        recyclerAdapter?.updateDragDropEnabled()
+
         if (queue.size == 0) {
             if (locked) {
                 (activity as MainActivity).showSnackbarAbovePlayer(R.string.queue_locked, Snackbar.LENGTH_SHORT)
@@ -439,7 +442,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
 
     private fun refreshInfoBar() {
         var info = String.format(Locale.getDefault(), "%d%s", queue.size, getString(R.string.episodes_suffix))
-        if (queue.size > 0) {
+        if (queue.isNotEmpty()) {
             var timeLeft: Long = 0
             for (item in queue) {
                 var playbackSpeed = 1f
@@ -462,23 +465,19 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
         Log.d(TAG, "loadItems() called")
         disposable?.dispose()
 
-        if (queue.isEmpty()) {
-            emptyView.hide()
-        }
-        disposable =
-            Observable.fromCallable { DBReader.getQueue().toMutableList() }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ items: MutableList<FeedItem> ->
-                    queue = items
-                    progressBar.visibility = View.GONE
-                    recyclerAdapter?.setDummyViews(0)
-                    recyclerAdapter?.updateItems(queue)
-                    if (restoreScrollPosition) {
-                        recyclerView.restoreScrollPosition(TAG)
-                    }
-                    refreshInfoBar()
-                }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
+        if (queue.isEmpty()) emptyView.hide()
+
+        disposable = Observable.fromCallable { DBReader.getQueue().toMutableList() }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ items: MutableList<FeedItem> ->
+                queue = items
+                progressBar.visibility = View.GONE
+                recyclerAdapter?.setDummyViews(0)
+                recyclerAdapter?.updateItems(queue)
+                if (restoreScrollPosition) recyclerView.restoreScrollPosition(TAG)
+                refreshInfoBar()
+            }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
     }
 
     override fun onStartSelectMode() {
@@ -503,10 +502,10 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
                 sortOrder = UserPreferences.queueKeepSortedOrder
             }
             val view: View = super.onCreateView(inflater, container, savedInstanceState)!!
-            viewBinding?.keepSortedCheckbox?.visibility = View.VISIBLE
-            viewBinding?.keepSortedCheckbox?.setChecked(UserPreferences.isQueueKeepSorted)
+            viewBinding.keepSortedCheckbox.visibility = View.VISIBLE
+            viewBinding.keepSortedCheckbox.setChecked(UserPreferences.isQueueKeepSorted)
             // Disable until something gets selected
-            viewBinding?.keepSortedCheckbox?.setEnabled(UserPreferences.isQueueKeepSorted)
+            viewBinding.keepSortedCheckbox.setEnabled(UserPreferences.isQueueKeepSorted)
             return view
         }
 
@@ -518,11 +517,11 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
 
         @UnstableApi override fun onSelectionChanged() {
             super.onSelectionChanged()
-            viewBinding?.keepSortedCheckbox?.setEnabled(sortOrder != SortOrder.RANDOM)
+            viewBinding.keepSortedCheckbox.setEnabled(sortOrder != SortOrder.RANDOM)
             if (sortOrder == SortOrder.RANDOM) {
-                viewBinding?.keepSortedCheckbox?.setChecked(false)
+                viewBinding.keepSortedCheckbox.setChecked(false)
             }
-            if (viewBinding != null) UserPreferences.isQueueKeepSorted = viewBinding!!.keepSortedCheckbox.isChecked
+            UserPreferences.isQueueKeepSorted = viewBinding.keepSortedCheckbox.isChecked
             UserPreferences.queueKeepSortedOrder = sortOrder
             DBWriter.reorderQueue(sortOrder, true)
         }
@@ -534,8 +533,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
         var dragFrom: Int = -1
         var dragTo: Int = -1
 
-        override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder,
-                            target: RecyclerView.ViewHolder
+        override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder
         ): Boolean {
             val fromPosition = viewHolder.bindingAdapterPosition
             val toPosition = target.bindingAdapterPosition

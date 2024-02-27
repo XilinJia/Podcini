@@ -1,19 +1,20 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.databinding.FeedinfoBinding
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.DBTasks
-import ac.mdiq.podcini.util.IntentUtils
-import ac.mdiq.podcini.util.ShareUtils
-import ac.mdiq.podcini.util.syndication.HtmlToPlainText
-import ac.mdiq.podcini.ui.dialog.EditUrlSettingsDialog
 import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.storage.model.feed.FeedFunding
+import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.dialog.EditUrlSettingsDialog
 import ac.mdiq.podcini.ui.glide.FastBlurTransformation
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.ui.statistics.feed.FeedStatisticsFragment
 import ac.mdiq.podcini.ui.view.ToolbarIconTintManager
+import ac.mdiq.podcini.util.IntentUtils
+import ac.mdiq.podcini.util.ShareUtils
+import ac.mdiq.podcini.util.syndication.HtmlToPlainText
 import android.R.string
 import android.app.Activity
 import android.content.*
@@ -89,18 +90,19 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
-        val root: View = inflater.inflate(R.layout.feedinfo, null)
+        val viewBinding = FeedinfoBinding.inflate(inflater)
+//        val root: View = inflater.inflate(R.layout.feedinfo, null)
 
         Log.d(TAG, "fragment onCreateView")
-        toolbar = root.findViewById(R.id.toolbar)
+        toolbar = viewBinding.toolbar
         toolbar.title = ""
         toolbar.inflateMenu(R.menu.feedinfo)
         toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
         toolbar.setOnMenuItemClickListener(this)
         refreshToolbarState()
 
-        val appBar: AppBarLayout = root.findViewById(R.id.appBar)
-        val collapsingToolbar: CollapsingToolbarLayout = root.findViewById(R.id.collapsing_toolbar)
+        val appBar: AppBarLayout = viewBinding.appBar
+        val collapsingToolbar: CollapsingToolbarLayout = viewBinding.collapsingToolbar
         val iconTintManager: ToolbarIconTintManager =
             object : ToolbarIconTintManager(requireContext(), toolbar, collapsingToolbar) {
                 override fun doTint(themedContext: Context) {
@@ -113,22 +115,22 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         iconTintManager.updateTint()
         appBar.addOnOffsetChangedListener(iconTintManager)
 
-        imgvCover = root.findViewById(R.id.imgvCover)
-        txtvTitle = root.findViewById(R.id.txtvTitle)
-        txtvAuthorHeader = root.findViewById(R.id.txtvAuthor)
-        imgvBackground = root.findViewById(R.id.imgvBackground)
-        header = root.findViewById(R.id.header)
-        infoContainer = root.findViewById(R.id.infoContainer)
-        root.findViewById<View>(R.id.butShowInfo).visibility = View.INVISIBLE
-        root.findViewById<View>(R.id.butShowSettings).visibility = View.INVISIBLE
-        root.findViewById<View>(R.id.butFilter).visibility = View.INVISIBLE
+        imgvCover = viewBinding.header.imgvCover
+        txtvTitle = viewBinding.header.txtvTitle
+        txtvAuthorHeader = viewBinding.header.txtvAuthor
+        imgvBackground = viewBinding.imgvBackground
+        header = viewBinding.header.root
+        infoContainer = viewBinding.infoContainer
+        viewBinding.header.butShowInfo.visibility = View.INVISIBLE
+        viewBinding.header.butShowSettings.visibility = View.INVISIBLE
+        viewBinding.header.butFilter.visibility = View.INVISIBLE
         // https://github.com/bumptech/glide/issues/529
         imgvBackground.colorFilter = LightingColorFilter(-0x7d7d7e, 0x000000)
 
-        txtvDescription = root.findViewById(R.id.txtvDescription)
-        txtvUrl = root.findViewById(R.id.txtvUrl)
-        lblSupport = root.findViewById(R.id.lblSupport)
-        txtvFundingUrl = root.findViewById(R.id.txtvFundingUrl)
+        txtvDescription = viewBinding.txtvDescription
+        txtvUrl = viewBinding.txtvUrl
+        lblSupport = viewBinding.lblSupport
+        txtvFundingUrl = viewBinding.txtvFundingUrl
 
         txtvUrl.setOnClickListener(copyUrlToClipboard)
 
@@ -137,12 +139,12 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             FeedStatisticsFragment.newInstance(feedId, false), "feed_statistics_fragment")
             .commitAllowingStateLoss()
 
-        root.findViewById<View>(R.id.btnvOpenStatistics).setOnClickListener {
+        viewBinding.btnvOpenStatistics.setOnClickListener {
             val fragment = StatisticsFragment()
             (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
         }
 
-        return root
+        return viewBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

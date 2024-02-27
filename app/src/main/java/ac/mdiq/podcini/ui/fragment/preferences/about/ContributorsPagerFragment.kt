@@ -1,16 +1,16 @@
 package ac.mdiq.podcini.ui.fragment.preferences.about
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.PagerFragmentBinding
+import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.activity.PreferenceActivity
 
 /**
  * Displays the 'about->Contributors' pager screen.
@@ -18,16 +18,16 @@ import ac.mdiq.podcini.ui.activity.PreferenceActivity
 class ContributorsPagerFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         super.onCreateView(inflater, container, savedInstanceState)
         setHasOptionsMenu(true)
-
-        val rootView = inflater.inflate(R.layout.pager_fragment, container, false)
-        val viewPager = rootView.findViewById<ViewPager2>(R.id.viewpager)
+        val binding = PagerFragmentBinding.inflate(inflater)
+//        val rootView = inflater.inflate(R.layout.pager_fragment, container, false)
+        val viewPager = binding.viewpager
         viewPager.adapter = StatisticsPagerAdapter(
             this)
         // Give the TabLayout the ViewPager
-        val tabLayout = rootView.findViewById<TabLayout>(R.id.sliding_tabs)
+        val tabLayout = binding.slidingTabs
         TabLayoutMediator(tabLayout, viewPager) { tab: TabLayout.Tab, position: Int ->
             when (position) {
                 POS_DEVELOPERS -> tab.setText(R.string.developers)
@@ -37,9 +37,9 @@ class ContributorsPagerFragment : Fragment() {
             }
         }.attach()
 
-        rootView.findViewById<View>(R.id.toolbar).visibility = View.GONE
+        binding.toolbar.visibility = View.GONE
 
-        return rootView
+        return binding.root
     }
 
     override fun onStart() {

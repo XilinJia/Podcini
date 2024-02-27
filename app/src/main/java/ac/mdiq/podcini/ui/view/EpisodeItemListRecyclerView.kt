@@ -16,13 +16,13 @@ class EpisodeItemListRecyclerView : RecyclerView {
         setup()
     }
 
-    constructor(context: Context, attrs: AttributeSet?) : super(ContextThemeWrapper(context,
-        R.style.FastScrollRecyclerView), attrs) {
+    constructor(context: Context, attrs: AttributeSet?) :
+            super(ContextThemeWrapper(context, R.style.FastScrollRecyclerView), attrs) {
         setup()
     }
 
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(ContextThemeWrapper(context,
-        R.style.FastScrollRecyclerView), attrs, defStyleAttr) {
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) :
+            super(ContextThemeWrapper(context, R.style.FastScrollRecyclerView), attrs, defStyleAttr) {
         setup()
     }
 

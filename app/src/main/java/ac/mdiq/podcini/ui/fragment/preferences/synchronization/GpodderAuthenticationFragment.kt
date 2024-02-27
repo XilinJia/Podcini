@@ -1,5 +1,15 @@
 package ac.mdiq.podcini.ui.fragment.preferences.synchronization
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.*
+import ac.mdiq.podcini.net.sync.SyncService
+import ac.mdiq.podcini.net.sync.SynchronizationCredentials
+import ac.mdiq.podcini.net.sync.SynchronizationProviderViewData
+import ac.mdiq.podcini.net.sync.SynchronizationSettings
+import ac.mdiq.podcini.net.sync.gpoddernet.GpodnetService
+import ac.mdiq.podcini.net.sync.gpoddernet.model.GpodnetDevice
+import ac.mdiq.podcini.service.download.PodciniHttpClient.getHttpClient
+import ac.mdiq.podcini.util.FileNameGenerator.generateFileName
 import android.app.Dialog
 import android.content.Context
 import android.os.Build
@@ -8,19 +18,10 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import android.widget.*
+import android.widget.TextView
+import android.widget.ViewFlipper
 import androidx.fragment.app.DialogFragment
-import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.service.download.PodciniHttpClient.getHttpClient
-import ac.mdiq.podcini.net.sync.SyncService
-import ac.mdiq.podcini.net.sync.SynchronizationCredentials
-import ac.mdiq.podcini.net.sync.SynchronizationProviderViewData
-import ac.mdiq.podcini.net.sync.SynchronizationSettings
-import ac.mdiq.podcini.util.FileNameGenerator.generateFileName
-import ac.mdiq.podcini.net.sync.gpoddernet.GpodnetService
-import ac.mdiq.podcini.net.sync.gpoddernet.model.GpodnetDevice
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -54,20 +55,21 @@ class GpodderAuthenticationFragment : DialogFragment() {
         dialog.setNegativeButton(R.string.cancel_label, null)
         dialog.setCancelable(false)
         this.isCancelable = false
-
-        val root = View.inflate(context, R.layout.gpodnetauth_dialog, null)
-        viewFlipper = root.findViewById(R.id.viewflipper)
+        val binding = GpodnetauthDialogBinding.inflate(layoutInflater)
+//        val root = View.inflate(context, R.layout.gpodnetauth_dialog, null)
+        viewFlipper = binding.viewflipper
         advance()
-        dialog.setView(root)
+        dialog.setView(binding.root)
 
         return dialog.create()
     }
 
     private fun setupHostView(view: View) {
-        val selectHost = view.findViewById<Button>(R.id.chooseHostButton)
-        val serverUrlText = view.findViewById<EditText>(R.id.serverUrlText)
+        val binding = GpodnetauthHostBinding.bind(view)
+        val selectHost = binding.chooseHostButton
+        val serverUrlText = binding.serverUrlText
         selectHost.setOnClickListener {
-            if (serverUrlText.text.isEmpty()) {
+            if (serverUrlText.text.isNullOrEmpty()) {
                 return@setOnClickListener
             }
             SynchronizationCredentials.clear(requireContext())
@@ -75,18 +77,19 @@ class GpodderAuthenticationFragment : DialogFragment() {
             service = GpodnetService(getHttpClient(),
                 SynchronizationCredentials.hosturl, SynchronizationCredentials.deviceID?:"",
                 SynchronizationCredentials.username?:"", SynchronizationCredentials.password?:"")
-            dialog!!.setTitle(SynchronizationCredentials.hosturl)
+            dialog?.setTitle(SynchronizationCredentials.hosturl)
             advance()
         }
     }
 
     private fun setupLoginView(view: View) {
-        val username = view.findViewById<EditText>(R.id.etxtUsername)
-        val password = view.findViewById<EditText>(R.id.etxtPassword)
-        val login = view.findViewById<Button>(R.id.butLogin)
-        val txtvError = view.findViewById<TextView>(R.id.credentialsError)
-        val progressBar = view.findViewById<ProgressBar>(R.id.progBarLogin)
-        val createAccountWarning = view.findViewById<TextView>(R.id.createAccountWarning)
+        val binding = GpodnetauthCredentialsBinding.bind(view)
+        val username = binding.etxtUsername
+        val password = binding.etxtPassword
+        val login = binding.butLogin
+        val txtvError = binding.credentialsError
+        val progressBar = binding.progBarLogin
+        val createAccountWarning = binding.createAccountWarning
 
         if (SynchronizationCredentials.hosturl != null && SynchronizationCredentials.hosturl!!.startsWith("http://")) {
             createAccountWarning.visibility = View.VISIBLE
@@ -109,9 +112,9 @@ class GpodderAuthenticationFragment : DialogFragment() {
             val inputManager = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             inputManager.hideSoftInputFromWindow(login.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
             Completable.fromAction {
-                service!!.setCredentials(usernameStr, passwordStr)
-                service!!.login()
-                devices = service!!.devices
+                service?.setCredentials(usernameStr, passwordStr)
+                service?.login()
+                if (service != null) devices = service!!.devices
                 this@GpodderAuthenticationFragment.username = usernameStr
                 this@GpodderAuthenticationFragment.password = passwordStr
             }
@@ -131,29 +134,32 @@ class GpodderAuthenticationFragment : DialogFragment() {
     }
 
     private fun setupDeviceView(view: View) {
-        val deviceName = view.findViewById<EditText>(R.id.deviceName)
-        val devicesContainer = view.findViewById<LinearLayout>(R.id.devicesContainer)
+        val binding = GpodnetauthDeviceBinding.bind(view)
+        val deviceName = binding.deviceName
+        val devicesContainer = binding.devicesContainer
         deviceName.setText(generateDeviceName())
 
-        val createDeviceButton = view.findViewById<MaterialButton>(R.id.createDeviceButton)
+        val createDeviceButton = binding.createDeviceButton
         createDeviceButton.setOnClickListener { createDevice(view) }
 
         for (device in devices!!) {
-            val row = View.inflate(context, R.layout.gpodnetauth_device_row, null)
-            val selectDeviceButton = row.findViewById<Button>(R.id.selectDeviceButton)
+            val rBinding = GpodnetauthDeviceRowBinding.inflate(layoutInflater)
+//            val row = View.inflate(context, R.layout.gpodnetauth_device_row, null)
+            val selectDeviceButton = rBinding.selectDeviceButton
             selectDeviceButton.setOnClickListener {
                 selectedDevice = device
                 advance()
             }
             selectDeviceButton.text = device.caption
-            devicesContainer.addView(row)
+            devicesContainer.addView(rBinding.root)
         }
     }
 
     private fun createDevice(view: View) {
-        val deviceName = view.findViewById<EditText>(R.id.deviceName)
-        val txtvError = view.findViewById<TextView>(R.id.deviceSelectError)
-        val progBarCreateDevice = view.findViewById<ProgressBar>(R.id.progbarCreateDevice)
+        val binding = GpodnetauthDeviceBinding.bind(view)
+        val deviceName = binding.deviceName
+        val txtvError = binding.deviceSelectError
+        val progBarCreateDevice = binding.progbarCreateDevice
 
         val deviceNameStr = deviceName.text.toString()
         if (isDeviceInList(deviceNameStr)) {
@@ -213,7 +219,8 @@ class GpodderAuthenticationFragment : DialogFragment() {
     }
 
     private fun setupFinishView(view: View) {
-        val sync = view.findViewById<Button>(R.id.butSyncNow)
+        val binding = GpodnetauthFinishBinding.bind(view)
+        val sync = binding.butSyncNow
 
         sync.setOnClickListener {
             dismiss()

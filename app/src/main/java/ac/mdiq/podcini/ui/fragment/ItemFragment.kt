@@ -1,6 +1,26 @@
 package ac.mdiq.podcini.ui.fragment
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.FeeditemFragmentBinding
+import ac.mdiq.podcini.databinding.PopupBubbleViewBinding
+import ac.mdiq.podcini.feed.util.ImageResourceUtils
+import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.playback.PlaybackController
+import ac.mdiq.podcini.preferences.UsageStatistics
+import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.storage.DBReader
+import ac.mdiq.podcini.storage.model.feed.FeedItem
+import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.adapter.actionbutton.*
+import ac.mdiq.podcini.ui.common.CircularProgressBar
+import ac.mdiq.podcini.ui.common.ThemeUtils
+import ac.mdiq.podcini.ui.gui.ShownotesCleaner
+import ac.mdiq.podcini.ui.view.ShownotesWebView
+import ac.mdiq.podcini.util.DateFormatter
+import ac.mdiq.podcini.util.PlaybackStatus
+import ac.mdiq.podcini.util.event.EpisodeDownloadEvent
+import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
 import android.os.Build
 import android.os.Bundle
 import android.text.Layout
@@ -14,6 +34,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.annotation.OptIn
 import androidx.fragment.app.Fragment
 import androidx.media3.common.util.UnstableApi
 import com.bumptech.glide.Glide
@@ -25,27 +46,6 @@ import com.skydoves.balloon.ArrowOrientation
 import com.skydoves.balloon.ArrowOrientationRules
 import com.skydoves.balloon.Balloon
 import com.skydoves.balloon.BalloonAnimation
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.adapter.actionbutton.*
-import ac.mdiq.podcini.feed.util.ImageResourceUtils
-import ac.mdiq.podcini.preferences.UsageStatistics
-import ac.mdiq.podcini.storage.DBReader
-import ac.mdiq.podcini.util.DateFormatter
-import ac.mdiq.podcini.util.PlaybackStatus
-import ac.mdiq.podcini.ui.gui.ShownotesCleaner
-import ac.mdiq.podcini.playback.PlaybackController
-import ac.mdiq.podcini.util.event.EpisodeDownloadEvent
-import ac.mdiq.podcini.util.event.FeedItemEvent
-import ac.mdiq.podcini.util.event.PlayerStatusEvent
-import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
-import ac.mdiq.podcini.storage.model.feed.FeedItem
-import ac.mdiq.podcini.storage.model.feed.FeedMedia
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.ui.common.CircularProgressBar
-import ac.mdiq.podcini.ui.common.ThemeUtils
-import ac.mdiq.podcini.ui.view.ShownotesWebView
-import androidx.annotation.OptIn
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -96,21 +96,19 @@ class ItemFragment : Fragment() {
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
-        val layout: View = inflater.inflate(R.layout.feeditem_fragment, container, false)
-
-        root = layout.findViewById(R.id.content_root)
+        val viewBinding = FeeditemFragmentBinding.inflate(inflater)
 
         Log.d(TAG, "fragment onCreateView")
-        txtvPodcast = layout.findViewById(R.id.txtvPodcast)
+        txtvPodcast = viewBinding.txtvPodcast
         txtvPodcast.setOnClickListener { openPodcast() }
-        txtvTitle = layout.findViewById(R.id.txtvTitle)
+        txtvTitle = viewBinding.txtvTitle
         if (Build.VERSION.SDK_INT >= 23) {
             txtvTitle.setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_FULL)
         }
-        txtvDuration = layout.findViewById(R.id.txtvDuration)
-        txtvPublished = layout.findViewById(R.id.txtvPublished)
+        txtvDuration = viewBinding.txtvDuration
+        txtvPublished = viewBinding.txtvPublished
         txtvTitle.ellipsize = TextUtils.TruncateAt.END
-        webvDescription = layout.findViewById(R.id.webvDescription)
+        webvDescription = viewBinding.webvDescription
         webvDescription.setTimecodeSelectedListener { time: Int? ->
             if (controller != null && item != null && item!!.media != null && controller!!.getMedia() != null &&
                     item!!.media!!.getIdentifier() == controller!!.getMedia()!!.getIdentifier()) {
@@ -122,17 +120,17 @@ class ItemFragment : Fragment() {
         }
         registerForContextMenu(webvDescription)
 
-        imgvCover = layout.findViewById(R.id.imgvCover)
+        imgvCover = viewBinding.imgvCover
         imgvCover.setOnClickListener { openPodcast() }
-        progbarDownload = layout.findViewById(R.id.circularProgressBar)
-        progbarLoading = layout.findViewById(R.id.progbarLoading)
-        butAction1 = layout.findViewById(R.id.butAction1)
-        butAction2 = layout.findViewById(R.id.butAction2)
-        butAction1Icon = layout.findViewById(R.id.butAction1Icon)
-        butAction2Icon = layout.findViewById(R.id.butAction2Icon)
-        butAction1Text = layout.findViewById(R.id.butAction1Text)
-        butAction2Text = layout.findViewById(R.id.butAction2Text)
-        noMediaLabel = layout.findViewById(R.id.noMediaLabel)
+        progbarDownload = viewBinding.circularProgressBar
+        progbarLoading = viewBinding.progbarLoading
+        butAction1 = viewBinding.butAction1
+        butAction2 = viewBinding.butAction2
+        butAction1Icon = viewBinding.butAction1Icon
+        butAction2Icon = viewBinding.butAction2Icon
+        butAction1Text = viewBinding.butAction1Text
+        butAction2Text = viewBinding.butAction2Text
+        noMediaLabel = viewBinding.noMediaLabel
 
         butAction1.setOnClickListener(View.OnClickListener {
             if (actionButton1 is StreamActionButton && !UserPreferences.isStreamOverDownload
@@ -164,7 +162,7 @@ class ItemFragment : Fragment() {
         controller?.init()
         load()
 
-        return layout
+        return viewBinding.root
     }
 
     @OptIn(UnstableApi::class) private fun showOnDemandConfigBalloon(offerStreaming: Boolean) {
@@ -182,15 +180,16 @@ class ItemFragment : Fragment() {
             .setDismissWhenTouchOutside(true)
             .setLifecycleOwner(this)
             .build()
-        val positiveButton = balloon.getContentView().findViewById<Button>(R.id.balloon_button_positive)
-        val negativeButton = balloon.getContentView().findViewById<Button>(R.id.balloon_button_negative)
-        val message: TextView = balloon.getContentView().findViewById(R.id.balloon_message)
-        message.setText(if (offerStreaming
-        ) R.string.on_demand_config_stream_text else R.string.on_demand_config_download_text)
+        val binding = PopupBubbleViewBinding.bind(balloon.getContentView())
+        val positiveButton = binding.balloonButtonPositive
+        val negativeButton = binding.balloonButtonNegative
+        val message: TextView = binding.balloonMessage
+        message.setText(if (offerStreaming) R.string.on_demand_config_stream_text
+        else R.string.on_demand_config_download_text)
         positiveButton.setOnClickListener {
             UserPreferences.isStreamOverDownload = offerStreaming
             // Update all visible lists to reflect new streaming action button
-            EventBus.getDefault().post(ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent())
+            EventBus.getDefault().post(UnreadItemsUpdateEvent())
             (activity as MainActivity).showSnackbarAbovePlayer(R.string.on_demand_config_setting_changed, Snackbar.LENGTH_SHORT)
             balloon.dismiss()
         }
@@ -359,7 +358,7 @@ class ItemFragment : Fragment() {
     }
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onUnreadItemsChanged(event: ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent?) {
+    fun onUnreadItemsChanged(event: UnreadItemsUpdateEvent?) {
         load()
     }
 

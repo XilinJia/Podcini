@@ -179,11 +179,7 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
                 val item = itemAccess.getItem(itemPos)
                 if (item != null) {
                     bindListItem(item, holder as FeedHolder)
-                    if (item.type == DrawerItem.Type.FEED) {
-                        bindFeedView(item as FeedDrawerItem, holder)
-                    } else {
-//                        bindTagView(item as TagDrawerItem, holder)
-                    }
+                    bindFeedView(item as FeedDrawerItem, holder)
                 }
                 holder.itemView.setOnCreateContextMenuListener(itemAccess)
             }
@@ -276,7 +272,7 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
         }
     }
 
-    private fun bindListItem(item: DrawerItem, holder: FeedHolder) {
+    private fun bindListItem(item: FeedDrawerItem, holder: FeedHolder) {
         if (item.counter > 0) {
             holder.count.visibility = View.VISIBLE
             holder.count.text = NumberFormat.getInstance().format(item.counter.toLong())
@@ -348,7 +344,7 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
     interface ItemAccess : OnCreateContextMenuListener {
         val count: Int
 
-        fun getItem(position: Int): DrawerItem?
+        fun getItem(position: Int): FeedDrawerItem?
 
         fun isSelected(position: Int): Boolean
 

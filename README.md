@@ -6,9 +6,11 @@ This is based on a fork from the popular project AntennaPod (<https://github.com
 
 Differing from the forked project, this project is purely Kotlin based, relies on the most recent dependencies, and most importantly has migrated the media player to androidx.media3, and added mechanism of AudioOffloadMode which is supposed to be kind to device battery.  Efficiencies are also sought on running the app.  App build is also upgraded to target Android 14.
 
-## Version 4.0
+## Version 4
 
 Some drastic changes are made in the project since version 4.0.  There is now a whole new interface of the Subscriptions page showing only the feeds with tags as filters, no longer having tags as folders in the page.  And the default page of the app is changed to the Subscriptions page.  Alongside, the Home and Echo pages are removed from the project.  Also, the project becomes mono-module, with only the app module.
+
+Version 4.1 brings a more convenient player control and tags enhancements, while also enables view binding for most views in the codebase.
 
 ## Screenshots
 

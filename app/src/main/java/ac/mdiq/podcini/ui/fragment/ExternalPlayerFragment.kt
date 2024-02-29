@@ -269,7 +269,6 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
         txtvFF.text = NumberFormat.getInstance().format(UserPreferences.fastForwardSecs.toLong())
         val media = controller?.getMedia()
         if (media != null) updatePlaybackSpeedButton(SpeedChangedEvent(PlaybackSpeedUtils.getCurrentPlaybackSpeed(media)))
-
     }
 
     @UnstableApi

@@ -2,10 +2,9 @@ package ac.mdiq.podcini.ui.dialog
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.EditTextDialogBinding
-import ac.mdiq.podcini.storage.model.feed.Feed
-import ac.mdiq.podcini.storage.model.feed.FeedPreferences
 import ac.mdiq.podcini.storage.DBWriter
-import ac.mdiq.podcini.storage.NavDrawerData.*
+import ac.mdiq.podcini.storage.NavDrawerData.FeedDrawerItem
+import ac.mdiq.podcini.storage.model.feed.Feed
 import android.app.Activity
 import android.content.DialogInterface
 import android.util.Log
@@ -20,14 +19,14 @@ import java.lang.ref.WeakReference
 class RenameItemDialog {
     private val activityRef: WeakReference<Activity>
     private var feed: Feed? = null
-    private var drawerItem: DrawerItem? = null
+    private var drawerItem: FeedDrawerItem? = null
 
     constructor(activity: Activity, feed: Feed?) {
         this.activityRef = WeakReference(activity)
         this.feed = feed
     }
 
-    constructor(activity: Activity, drawerItem: DrawerItem?) {
+    constructor(activity: Activity, drawerItem: FeedDrawerItem?) {
         this.activityRef = WeakReference(activity)
         this.drawerItem = drawerItem
     }

@@ -9,25 +9,13 @@ class NavDrawerData(@JvmField val items: List<FeedDrawerItem>,
                     val feedCounters: Map<Long, Int>,
                     val reclaimableSpace: Int
 ) {
-    abstract class DrawerItem(val type: Type, var id: Long) {
-        enum class Type {
-            FEED
-        }
+    class FeedDrawerItem(val feed: Feed, val id: Long, val counter: Int) {
+         var layer: Int = 0
 
-        var layer: Int = 0
-
-        abstract val title: String?
-
-        open val producer: String = ""
-
-        abstract val counter: Int
-    }
-
-    class FeedDrawerItem(val feed: Feed, id: Long, override val counter: Int) : DrawerItem(Type.FEED, id) {
-        override val title: String?
+         val title: String?
             get() = feed.title
 
-        override val producer: String
+         val producer: String
             get() = feed.author?:""
     }
 }

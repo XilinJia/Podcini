@@ -169,7 +169,9 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
             producer.text = drawerItem.producer
             coverImage.contentDescription = drawerItem.title
             if (drawerItem.counter > 0) {
-                count.text = NumberFormat.getInstance().format(drawerItem.feed.items.size.toLong()) + " episodes"
+//                TODO: need to use more specific number
+                count.text = NumberFormat.getInstance().format(drawerItem.counter.toLong()) + " episodes"
+//                count.text = NumberFormat.getInstance().format(drawerItem.feed.items.size.toLong()) + " episodes"
                 count.visibility = View.VISIBLE
             } else {
                 count.visibility = View.GONE

@@ -40,8 +40,7 @@ class FeedMedia : FeedFile, Playable {
     var itemId: Long = 0
         private set
 
-    constructor(i: FeedItem?, download_url: String?, size: Long,
-                mime_type: String?
+    constructor(i: FeedItem?, download_url: String?, size: Long, mime_type: String?
     ) : super(null, download_url, false) {
         this.item = i
         this.size = size
@@ -268,10 +267,7 @@ class FeedMedia : FeedFile, Playable {
     }
 
     override fun getChapters(): List<Chapter> {
-        if (item?.chapters == null) {
-            return listOf()
-        }
-        return item!!.chapters!!
+        return item?.chapters?:listOf()
     }
 
     override fun chaptersLoaded(): Boolean {
@@ -279,17 +275,11 @@ class FeedMedia : FeedFile, Playable {
     }
 
     override fun getWebsiteLink(): String? {
-        if (item == null) {
-            return null
-        }
-        return item!!.link
+        return item?.link
     }
 
     override fun getFeedTitle(): String {
-        if (item?.feed?.title == null) {
-            return ""
-        }
-        return item!!.feed!!.title!!
+        return item?.feed?.title?:""
     }
 
     override fun getIdentifier(): Any {

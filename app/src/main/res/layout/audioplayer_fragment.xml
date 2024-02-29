@@ -44,10 +44,9 @@
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="8dp"
-            android:layout_alignBottom="@id/pager"
             android:importantForAccessibility="no"
             app:srcCompat="@drawable/bg_gradient"
-            app:tint="?android:attr/colorBackground" />
+            app:tint="?android:attr/colorBackground"/>
 
         <androidx.cardview.widget.CardView
             android:id="@+id/cardViewSeek"
@@ -115,7 +114,7 @@
                     android:layout_marginLeft="16dp"
                     android:text="@string/position_default_label"
                     android:textColor="?android:attr/textColorSecondary"
-                    android:textSize="@dimen/text_size_micro" />
+                    android:textSize="@dimen/text_size_micro"/>
 
                 <ac.mdiq.podcini.ui.view.NoRelayoutTextView
                     android:id="@+id/txtvLength"
@@ -129,7 +128,7 @@
                     android:background="?android:attr/selectableItemBackground"
                     android:text="@string/position_default_label"
                     android:textColor="?android:attr/textColorSecondary"
-                    android:textSize="@dimen/text_size_micro" />
+                    android:textSize="@dimen/text_size_micro"/>
 
             </RelativeLayout>
 

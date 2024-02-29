@@ -124,7 +124,7 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
         subscriptionRecycler.adapter = subscriptionAdapter
         setupEmptyView()
 
-        tags.add("None")
+        tags.add("Untagged")
         tags.add("All")
         tags.addAll(DBReader.getTags())
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, tags)
@@ -315,10 +315,10 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
-        val drawerItem: NavDrawerData.DrawerItem = subscriptionAdapter.getSelectedItem() ?: return false
+        val drawerItem: NavDrawerData.FeedDrawerItem = subscriptionAdapter.getSelectedItem() ?: return false
         val itemId = item.itemId
 
-        val feed: Feed = (drawerItem as NavDrawerData.FeedDrawerItem).feed
+        val feed: Feed = drawerItem.feed
         if (itemId == R.id.multi_select) {
             speedDialView.visibility = View.VISIBLE
             return subscriptionAdapter.onContextItemSelected(item)
@@ -328,6 +328,7 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onFeedListChanged(event: FeedListUpdateEvent?) {
+        DBReader.updateFeedList()
         loadSubscriptions()
     }
 
@@ -343,7 +344,7 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
     }
 
     override fun onStartSelectMode() {
-        val feedsOnly: MutableList<NavDrawerData.DrawerItem> = ArrayList<NavDrawerData.DrawerItem>()
+        val feedsOnly: MutableList<NavDrawerData.FeedDrawerItem> = ArrayList<NavDrawerData.FeedDrawerItem>()
         for (item in feedListFiltered) {
             feedsOnly.add(item)
         }

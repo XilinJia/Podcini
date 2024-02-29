@@ -52,8 +52,8 @@ import kotlin.math.max
 
 class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListener {
     private var navDrawerData: NavDrawerData? = null
-    private var flatItemList: List<NavDrawerData.DrawerItem>? = null
-    private var contextPressedItem: NavDrawerData.DrawerItem? = null
+    private var flatItemList: List<NavDrawerData.FeedDrawerItem>? = null
+    private var contextPressedItem: NavDrawerData.FeedDrawerItem? = null
     private var disposable: Disposable? = null
 
     private lateinit var navAdapter: NavListAdapter
@@ -140,28 +140,20 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
         val inflater: MenuInflater = requireActivity().menuInflater
         if (contextPressedItem != null) {
             menu.setHeaderTitle(contextPressedItem!!.title)
-            if (contextPressedItem!!.type == NavDrawerData.DrawerItem.Type.FEED) {
-                inflater.inflate(R.menu.nav_feed_context, menu)
-                // episodes are not loaded, so we cannot check if the podcast has new or unplayed ones!
-            } else {
-                inflater.inflate(R.menu.nav_folder_context, menu)
-            }
+            inflater.inflate(R.menu.nav_feed_context, menu)
+            // episodes are not loaded, so we cannot check if the podcast has new or unplayed ones!
         }
         MenuItemUtils.setOnClickListeners(menu
         ) { item: MenuItem -> this.onContextItemSelected(item) }
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
-        val pressedItem: NavDrawerData.DrawerItem? = contextPressedItem
+        val pressedItem: NavDrawerData.FeedDrawerItem? = contextPressedItem
         contextPressedItem = null
         if (pressedItem == null) {
             return false
         }
-        return if (pressedItem.type == NavDrawerData.DrawerItem.Type.FEED) {
-            onFeedContextMenuClicked((pressedItem as NavDrawerData.FeedDrawerItem).feed, item)
-        } else {
-            onTagContextMenuClicked(pressedItem, item)
-        }
+        return onFeedContextMenuClicked(pressedItem.feed, item)
     }
 
     @OptIn(UnstableApi::class) private fun onFeedContextMenuClicked(feed: Feed, item: MenuItem): Boolean {
@@ -202,7 +194,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
         }
     }
 
-    private fun onTagContextMenuClicked(drawerItem: NavDrawerData.DrawerItem?, item: MenuItem): Boolean {
+    private fun onTagContextMenuClicked(drawerItem: NavDrawerData.FeedDrawerItem?, item: MenuItem): Boolean {
         val itemId = item.itemId
         if (itemId == R.id.rename_folder_item) {
             RenameItemDialog(activity as Activity, drawerItem).show()
@@ -245,7 +237,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
                 0
             }
 
-        override fun getItem(position: Int): NavDrawerData.DrawerItem? {
+        override fun getItem(position: Int): NavDrawerData.FeedDrawerItem? {
             return if (flatItemList != null && 0 <= position && position < flatItemList!!.size) {
                 flatItemList!![position]
             } else {
@@ -260,11 +252,9 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
             } else if (StringUtils.isNumeric(lastNavFragment)) { // last fragment was not a list, but a feed
                 val feedId = lastNavFragment.toLong()
                 if (navDrawerData != null) {
-                    val itemToCheck: NavDrawerData.DrawerItem = flatItemList!![position - navAdapter.subscriptionOffset]
-                    if (itemToCheck.type == NavDrawerData.DrawerItem.Type.FEED) {
-                        // When the same feed is displayed multiple times, it should be highlighted multiple times.
-                        return (itemToCheck as NavDrawerData.FeedDrawerItem).feed.id == feedId
-                    }
+                    val itemToCheck: NavDrawerData.FeedDrawerItem = flatItemList!![position - navAdapter.subscriptionOffset]
+                    // When the same feed is displayed multiple times, it should be highlighted multiple times.
+                    return itemToCheck.feed.id == feedId
                 }
             }
             return false
@@ -303,35 +293,10 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
                     (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
                 } else {
                     val pos: Int = position - navAdapter.subscriptionOffset
-                    val clickedItem: NavDrawerData.DrawerItem = flatItemList!![pos]
-
-                    if (clickedItem.type == NavDrawerData.DrawerItem.Type.FEED) {
-                        val feedId: Long = (clickedItem as NavDrawerData.FeedDrawerItem).feed.id
-                        (activity as MainActivity).loadFeedFragmentById(feedId, null)
-                        (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
-                    } else {
-//                        val folder: NavDrawerData.TagDrawerItem = (clickedItem as NavDrawerData.TagDrawerItem)
-//                        if (openFolders.contains(folder.name)) {
-//                            openFolders.remove(folder.name)
-//                        } else {
-//                            openFolders.add(folder.name)
-//                        }
-//
-//                        context!!.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-//                            .edit()
-//                            .putStringSet(PREF_OPEN_FOLDERS, openFolders)
-//                            .apply()
-//
-//                        disposable =
-//                            Observable.fromCallable { makeFlatDrawerData(navDrawerData!!.items, 0) }
-//                                .subscribeOn(Schedulers.computation())
-//                                .observeOn(AndroidSchedulers.mainThread())
-//                                .subscribe(
-//                                    { result: List<NavDrawerData.DrawerItem>? ->
-//                                        flatItemList = result
-//                                        navAdapter.notifyDataSetChanged()
-//                                    }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
-                    }
+                    val clickedItem: NavDrawerData.FeedDrawerItem = flatItemList!![pos]
+                    val feedId: Long = clickedItem.feed.id
+                    (activity as MainActivity).loadFeedFragmentById(feedId, null)
+                    (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
                 }
             } else if (UserPreferences.subscriptionsFilter.isEnabled
                     && navAdapter.showSubscriptionList) {
@@ -370,7 +335,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
-                { result: Pair<NavDrawerData, List<NavDrawerData.DrawerItem>> ->
+                { result: Pair<NavDrawerData, List<NavDrawerData.FeedDrawerItem>> ->
                     navDrawerData = result.first
                     flatItemList = result.second
                     navAdapter.notifyDataSetChanged()
@@ -381,18 +346,11 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
                 })
     }
 
-    private fun makeFlatDrawerData(items: List<NavDrawerData.DrawerItem>, layer: Int): List<NavDrawerData.DrawerItem> {
-        val flatItems: MutableList<NavDrawerData.DrawerItem> = ArrayList()
+    private fun makeFlatDrawerData(items: List<NavDrawerData.FeedDrawerItem>, layer: Int): List<NavDrawerData.FeedDrawerItem> {
+        val flatItems: MutableList<NavDrawerData.FeedDrawerItem> = ArrayList()
         for (item in items) {
             item.layer = layer
             flatItems.add(item)
-//            if (item.type == NavDrawerData.DrawerItem.Type.TAG) {
-//                val folder: NavDrawerData.TagDrawerItem = (item as NavDrawerData.TagDrawerItem)
-//                folder.isOpen = openFolders.contains(folder.name)
-//                if (folder.isOpen) {
-//                    flatItems.addAll(makeFlatDrawerData(item.children, layer + 1))
-//                }
-//            }
         }
         return flatItems
     }

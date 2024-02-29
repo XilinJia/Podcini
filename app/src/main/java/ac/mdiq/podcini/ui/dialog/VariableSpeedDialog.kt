@@ -72,8 +72,8 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
         val binding = SpeedSelectDialogBinding.inflate(inflater)
 //        val root = View.inflate(context, R.layout.speed_select_dialog, null)
         speedSeekBar = binding.speedSeekBar
-        speedSeekBar.setProgressChangedListener { multiplier: Float? ->
-            controller?.setPlaybackSpeed(multiplier!!)
+        speedSeekBar.setProgressChangedListener { multiplier: Float ->
+            controller?.setPlaybackSpeed(multiplier)
         }
         val selectedSpeedsGrid = binding.selectedSpeedsGrid
         selectedSpeedsGrid.layoutManager = GridLayoutManager(context, 3)

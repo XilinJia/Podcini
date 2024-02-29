@@ -134,7 +134,7 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
             } else {
                 // stop playback of this episode
                 if (playerStatus == PlayerStatus.PAUSED || playerStatus == PlayerStatus.PLAYING || playerStatus == PlayerStatus.PREPARED) {
-                    mediaPlayer!!.stop()
+                    mediaPlayer?.stop()
                 }
                 // set temporarily to pause in order to update list with current position
                 if (playerStatus == PlayerStatus.PLAYING) {
@@ -150,31 +150,32 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
             }
         }
 
-        this.media = playable
+        media = playable
         this.stream = stream
-        this.mediaType = media!!.getMediaType()
-        this.videoSize = null
+        mediaType = media!!.getMediaType()
+        videoSize = null
         createMediaPlayer()
         this@LocalPSMP.startWhenPrepared.set(startWhenPrepared)
         setPlayerStatus(PlayerStatus.INITIALIZING, media)
         try {
             callback.ensureMediaInfoLoaded(media!!)
             callback.onMediaChanged(false)
+//            TODO: speed
             setPlaybackParams(PlaybackSpeedUtils.getCurrentPlaybackSpeed(media), UserPreferences.isSkipSilence)
             if (stream) {
                 if (media!!.getStreamUrl() != null) {
                     if (playable is FeedMedia && playable.getItem()?.feed?.preferences != null) {
                         val preferences = playable.getItem()!!.feed!!.preferences!!
-                        mediaPlayer!!.setDataSource(
+                        mediaPlayer?.setDataSource(
                             media!!.getStreamUrl()!!,
                             preferences.username,
                             preferences.password)
                     } else {
-                        mediaPlayer!!.setDataSource(media!!.getStreamUrl()!!)
+                        mediaPlayer?.setDataSource(media!!.getStreamUrl()!!)
                     }
                 }
             } else if (media!!.getLocalMediaUrl() != null && File(media!!.getLocalMediaUrl()!!).canRead()) {
-                mediaPlayer!!.setDataSource(media!!.getLocalMediaUrl()!!)
+                mediaPlayer?.setDataSource(media!!.getLocalMediaUrl()!!)
             } else {
                 throw IOException("Unable to read local file " + media!!.getLocalMediaUrl())
             }
@@ -185,7 +186,7 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
 
             if (prepareImmediately) {
                 setPlayerStatus(PlayerStatus.PREPARING, media)
-                mediaPlayer!!.prepare()
+                mediaPlayer?.prepare()
                 onPrepared(startWhenPrepared)
             }
         } catch (e: IOException) {
@@ -214,17 +215,17 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
                 Log.d(TAG, "Audiofocus successfully requested")
                 Log.d(TAG, "Resuming/Starting playback")
                 acquireWifiLockIfNecessary()
-
+//  TODO: speed
                 setPlaybackParams(PlaybackSpeedUtils.getCurrentPlaybackSpeed(media), UserPreferences.isSkipSilence)
                 setVolume(1.0f, 1.0f)
 
-                if (playerStatus == PlayerStatus.PREPARED && media!!.getPosition() > 0) {
+                if (media != null && playerStatus == PlayerStatus.PREPARED && media!!.getPosition() > 0) {
                     val newPosition = RewindAfterPauseUtils.calculatePositionWithRewind(
                         media!!.getPosition(),
                         media!!.getLastPlayedTime())
                     seekTo(newPosition)
                 }
-                mediaPlayer!!.start()
+                mediaPlayer?.start()
 
                 setPlayerStatus(PlayerStatus.PLAYING, media)
                 pausedBecauseOfTransientAudiofocusLoss = false
@@ -252,7 +253,7 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
         releaseWifiLockIfNecessary()
         if (playerStatus == PlayerStatus.PLAYING) {
             Log.d(TAG, "Pausing playback.")
-            mediaPlayer!!.pause()
+            mediaPlayer?.pause()
             setPlayerStatus(PlayerStatus.PAUSED, media, getPosition())
 
             if (abandonFocus) {
@@ -282,7 +283,7 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
         if (playerStatus == PlayerStatus.INITIALIZED) {
             Log.d(TAG, "Preparing media player")
             setPlayerStatus(PlayerStatus.PREPARING, media)
-            mediaPlayer!!.prepare()
+            mediaPlayer?.prepare()
             onPrepared(startWhenPrepared.get())
         }
     }
@@ -294,18 +295,20 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
         check(playerStatus == PlayerStatus.PREPARING) { "Player is not in PREPARING state" }
         Log.d(TAG, "Resource prepared")
 
-        if (mediaType == MediaType.VIDEO) {
+        if (mediaPlayer != null && mediaType == MediaType.VIDEO) {
             videoSize = Pair(mediaPlayer!!.videoWidth, mediaPlayer!!.videoHeight)
         }
 
-        // TODO this call has no effect!
-        if (media!!.getPosition() > 0) {
-            seekTo(media!!.getPosition())
-        }
+        if (media != null) {
+            // TODO this call has no effect!
+            if (media!!.getPosition() > 0) {
+                seekTo(media!!.getPosition())
+            }
 
-        if (media!!.getDuration() <= 0) {
-            Log.d(TAG, "Setting duration of media")
-            media!!.setDuration(mediaPlayer!!.duration)
+            if (media!!.getDuration() <= 0) {
+                Log.d(TAG, "Setting duration of media")
+                if (mediaPlayer != null) media!!.setDuration(mediaPlayer!!.duration)
+            }
         }
         setPlayerStatus(PlayerStatus.PREPARED, media)
 
@@ -362,9 +365,9 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
             seekLatch = CountDownLatch(1)
             statusBeforeSeeking = playerStatus
             setPlayerStatus(PlayerStatus.SEEKING, media, getPosition())
-            mediaPlayer!!.seekTo(t)
+            mediaPlayer?.seekTo(t)
             if (statusBeforeSeeking == PlayerStatus.PREPARED) {
-                media!!.setPosition(t)
+                media?.setPosition(t)
             }
             try {
                 seekLatch!!.await(3, TimeUnit.SECONDS)
@@ -372,7 +375,7 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
                 Log.e(TAG, Log.getStackTraceString(e))
             }
         } else if (playerStatus == PlayerStatus.INITIALIZED) {
-            media!!.setPosition(t)
+            media?.setPosition(t)
             startWhenPrepared.set(false)
             prepare()
         }
@@ -398,7 +401,7 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
     override fun getDuration(): Int {
         var retVal = Playable.INVALID_TIME
         if (playerStatus == PlayerStatus.PLAYING || playerStatus == PlayerStatus.PAUSED || playerStatus == PlayerStatus.PREPARED) {
-            retVal = mediaPlayer!!.duration
+            if (mediaPlayer != null) retVal = mediaPlayer!!.duration
         }
         if (retVal <= 0 && media != null && media!!.getDuration() > 0) {
             retVal = media!!.getDuration()
@@ -412,7 +415,7 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
     override fun getPosition(): Int {
         var retVal = Playable.INVALID_TIME
         if (playerStatus.isAtLeast(PlayerStatus.PREPARED)) {
-            retVal = mediaPlayer!!.currentPosition
+            if (mediaPlayer != null) retVal = mediaPlayer!!.currentPosition
         }
         if (retVal <= 0 && media != null && media!!.getPosition() >= 0) {
             retVal = media!!.getPosition()
@@ -435,7 +438,7 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
     override fun setPlaybackParams(speed: Float, skipSilence: Boolean) {
         Log.d(TAG, "Playback speed was set to $speed")
         EventBus.getDefault().post(SpeedChangedEvent(speed))
-        mediaPlayer!!.setPlaybackParams(speed, skipSilence)
+        mediaPlayer?.setPlaybackParams(speed, skipSilence)
     }
 
     /**
@@ -443,8 +446,8 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
      */
     override fun getPlaybackSpeed(): Float {
         var retVal = 1f
-        if ((playerStatus == PlayerStatus.PLAYING || playerStatus == PlayerStatus.PAUSED || playerStatus == PlayerStatus.INITIALIZED || playerStatus == PlayerStatus.PREPARED)) {
-            retVal = mediaPlayer!!.currentSpeedMultiplier
+        if (playerStatus == PlayerStatus.PLAYING || playerStatus == PlayerStatus.PAUSED || playerStatus == PlayerStatus.INITIALIZED || playerStatus == PlayerStatus.PREPARED) {
+            if (mediaPlayer != null) retVal = mediaPlayer!!.currentSpeedMultiplier
         }
         return retVal
     }
@@ -466,7 +469,7 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
                 volumeRight *= adaptionFactor
             }
         }
-        mediaPlayer!!.setVolume(volumeLeft, volumeRight)
+        mediaPlayer?.setVolume(volumeLeft, volumeRight)
         Log.d(TAG, "Media player volume was set to $volumeLeft $volumeRight")
     }
 
@@ -507,7 +510,7 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
     override fun resetVideoSurface() {
         if (mediaType == MediaType.VIDEO) {
             Log.d(TAG, "Resetting video surface")
-            mediaPlayer!!.setDisplay(null)
+            mediaPlayer?.setDisplay(null)
             reinit()
         } else {
             Log.e(TAG, "Resetting video surface for media of Audio type")
@@ -543,21 +546,20 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
     }
 
     override fun getAudioTracks(): List<String> {
-        return mediaPlayer!!.audioTracks
+        return mediaPlayer?.audioTracks?: listOf()
     }
 
     override fun setAudioTrack(track: Int) {
-        mediaPlayer!!.setAudioTrack(track)
+        if (mediaPlayer != null) mediaPlayer!!.setAudioTrack(track)
     }
 
     override fun getSelectedAudioTrack(): Int {
-        return mediaPlayer!!.selectedAudioTrack
+        return mediaPlayer?.selectedAudioTrack?:0
     }
 
     private fun createMediaPlayer() {
-        if (mediaPlayer != null) {
-            mediaPlayer!!.release()
-        }
+        mediaPlayer?.release()
+
         if (media == null) {
             mediaPlayer = null
             playerStatus = PlayerStatus.STOPPED
@@ -573,49 +575,52 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
         if (isShutDown) {
             return@OnAudioFocusChangeListener
         }
-        if (!PlaybackService.isRunning) {
-            abandonAudioFocus()
-            Log.d(TAG, "onAudioFocusChange: PlaybackService is no longer running")
-            return@OnAudioFocusChangeListener
-        }
-        if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
-            Log.d(TAG, "Lost audio focus")
-            pause(true, false)
-            callback.shouldStop()
-        } else if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK
-                && !UserPreferences.shouldPauseForFocusLoss()) {
-            if (playerStatus == PlayerStatus.PLAYING) {
-                Log.d(TAG, "Lost audio focus temporarily. Ducking...")
-                setVolume(0.25f, 0.25f)
+        when {
+            !PlaybackService.isRunning -> {
+                abandonAudioFocus()
+                Log.d(TAG, "onAudioFocusChange: PlaybackService is no longer running")
+                return@OnAudioFocusChangeListener
+            }
+            focusChange == AudioManager.AUDIOFOCUS_LOSS -> {
+                Log.d(TAG, "Lost audio focus")
+                pause(true, false)
+                callback.shouldStop()
+            }
+            focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK
+                    && !UserPreferences.shouldPauseForFocusLoss() -> {
+                if (playerStatus == PlayerStatus.PLAYING) {
+                    Log.d(TAG, "Lost audio focus temporarily. Ducking...")
+                    setVolume(0.25f, 0.25f)
+                    pausedBecauseOfTransientAudiofocusLoss = false
+                }
+            }
+            focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT || focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+                if (playerStatus == PlayerStatus.PLAYING) {
+                    Log.d(TAG, "Lost audio focus temporarily. Pausing...")
+                    mediaPlayer?.pause() // Pause without telling the PlaybackService
+                    pausedBecauseOfTransientAudiofocusLoss = true
+
+                    audioFocusCanceller.removeCallbacksAndMessages(null)
+                    audioFocusCanceller.postDelayed({
+                        if (pausedBecauseOfTransientAudiofocusLoss) {
+                            // Still did not get back the audio focus. Now actually pause.
+                            pause(true, false)
+                        }
+                    }, 30000)
+                }
+            }
+            focusChange == AudioManager.AUDIOFOCUS_GAIN -> {
+                Log.d(TAG, "Gained audio focus")
+                audioFocusCanceller.removeCallbacksAndMessages(null)
+                if (pausedBecauseOfTransientAudiofocusLoss) { // we paused => play now
+                    mediaPlayer?.start()
+                } else { // we ducked => raise audio level back
+                    setVolume(1.0f, 1.0f)
+                }
                 pausedBecauseOfTransientAudiofocusLoss = false
             }
-        } else if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT
-                || focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) {
-            if (playerStatus == PlayerStatus.PLAYING) {
-                Log.d(TAG, "Lost audio focus temporarily. Pausing...")
-                mediaPlayer!!.pause() // Pause without telling the PlaybackService
-                pausedBecauseOfTransientAudiofocusLoss = true
-
-                audioFocusCanceller.removeCallbacksAndMessages(null)
-                audioFocusCanceller.postDelayed({
-                    if (pausedBecauseOfTransientAudiofocusLoss) {
-                        // Still did not get back the audio focus. Now actually pause.
-                        pause(true, false)
-                    }
-                }, 30000)
-            }
-        } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
-            Log.d(TAG, "Gained audio focus")
-            audioFocusCanceller.removeCallbacksAndMessages(null)
-            if (pausedBecauseOfTransientAudiofocusLoss) { // we paused => play now
-                mediaPlayer!!.start()
-            } else { // we ducked => raise audio level back
-                setVolume(1.0f, 1.0f)
-            }
-            pausedBecauseOfTransientAudiofocusLoss = false
         }
     }
-
 
     init {
         mediaType = MediaType.UNKNOWN
@@ -639,16 +644,12 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
         val isPlaying = playerStatus == PlayerStatus.PLAYING
 
         // we're relying on the position stored in the Playable object for post-playback processing
-        if (media != null) {
-            val position = getPosition()
-            if (position >= 0) {
-                media!!.setPosition(position)
-            }
+        val position = getPosition()
+        if (position >= 0) {
+            media?.setPosition(position)
         }
 
-        if (mediaPlayer != null) {
-            mediaPlayer!!.reset()
-        }
+        mediaPlayer?.reset()
 
         abandonAudioFocus()
 
@@ -726,21 +727,21 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
     }
 
     private fun clearMediaPlayerListeners() {
+        if (mediaPlayer == null) return
         mediaPlayer!!.setOnCompletionListener {}
         mediaPlayer!!.setOnSeekCompleteListener {}
-        mediaPlayer!!.setOnBufferingUpdateListener { percent: Int? -> }
+        mediaPlayer!!.setOnBufferingUpdateListener { }
         mediaPlayer!!.setOnErrorListener { x: String? -> }
     }
 
     private fun genericSeekCompleteListener() {
         Log.d(TAG, "genericSeekCompleteListener")
-        if (seekLatch != null) {
-            seekLatch!!.countDown()
-        }
+        seekLatch?.countDown()
+
         if (playerStatus == PlayerStatus.PLAYING) {
-            callback.onPlaybackStart(media!!, getPosition())
+            if (media != null) callback.onPlaybackStart(media!!, getPosition())
         }
-        if (playerStatus == PlayerStatus.SEEKING) {
+        if (playerStatus == PlayerStatus.SEEKING && statusBeforeSeeking != null) {
             setPlayerStatus(statusBeforeSeeking!!, media, getPosition())
         }
     }

@@ -6,7 +6,6 @@ import ac.mdiq.podcini.storage.NavDrawerData
 import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.fragment.FeedItemlistFragment
-import ac.mdiq.podcini.ui.fragment.SubscriptionFragment
 import android.content.Context
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
@@ -30,8 +29,8 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
     View.OnCreateContextMenuListener {
 
     private val mainActivityRef: WeakReference<MainActivity> = WeakReference<MainActivity>(mainActivity)
-    private var listItems: List<NavDrawerData.DrawerItem>
-    private var selectedItem: NavDrawerData.DrawerItem? = null
+    private var listItems: List<NavDrawerData.FeedDrawerItem>
+    private var selectedItem: NavDrawerData.FeedDrawerItem? = null
     private var longPressedPosition: Int = 0 // used to init actionMode
 
     init {
@@ -43,7 +42,7 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
         return listItems[position]
     }
 
-    fun getSelectedItem(): NavDrawerData.DrawerItem? {
+    fun getSelectedItem(): NavDrawerData.FeedDrawerItem? {
         return selectedItem
     }
 
@@ -53,15 +52,13 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
     }
 
     @UnstableApi override fun onBindViewHolder(holder: SubscriptionViewHolder, position: Int) {
-        val drawerItem: NavDrawerData.DrawerItem = listItems[position]
-        val isFeed = drawerItem.type == NavDrawerData.DrawerItem.Type.FEED
+        val drawerItem: NavDrawerData.FeedDrawerItem = listItems[position]
         holder.bind(drawerItem)
         holder.itemView.setOnCreateContextMenuListener(this)
         if (inActionMode()) {
-            if (isFeed) {
-                holder.selectCheckbox.visibility = View.VISIBLE
-                holder.selectView.visibility = View.VISIBLE
-            }
+            holder.selectCheckbox.visibility = View.VISIBLE
+            holder.selectView.visibility = View.VISIBLE
+
             holder.selectCheckbox.setChecked((isSelected(position)))
             holder.selectCheckbox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
                 setSelected(holder.bindingAdapterPosition,
@@ -76,9 +73,7 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
 
         holder.itemView.setOnLongClickListener {
             if (!inActionMode()) {
-                if (isFeed) {
-                    longPressedPosition = holder.bindingAdapterPosition
-                }
+                longPressedPosition = holder.bindingAdapterPosition
                 selectedItem = drawerItem
             }
             false
@@ -89,9 +84,7 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
                 if (e.isFromSource(InputDevice.SOURCE_MOUSE)
                         && e.buttonState == MotionEvent.BUTTON_SECONDARY) {
                     if (!inActionMode()) {
-                        if (isFeed) {
-                            longPressedPosition = holder.bindingAdapterPosition
-                        }
+                        longPressedPosition = holder.bindingAdapterPosition
                         selectedItem = drawerItem
                     }
                 }
@@ -99,16 +92,11 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
             false
         }
         holder.itemView.setOnClickListener {
-            if (isFeed) {
-                if (inActionMode()) {
-                    holder.selectCheckbox.setChecked(!isSelected(holder.bindingAdapterPosition))
-                } else {
-                    val fragment: Fragment = FeedItemlistFragment
-                        .newInstance((drawerItem as NavDrawerData.FeedDrawerItem).feed.id)
-                    mainActivityRef.get()?.loadChildFragment(fragment)
-                }
-            } else if (!inActionMode()) {
-                val fragment: Fragment = SubscriptionFragment.newInstance(drawerItem.title)
+            if (inActionMode()) {
+                holder.selectCheckbox.setChecked(!isSelected(holder.bindingAdapterPosition))
+            } else {
+                val fragment: Fragment = FeedItemlistFragment
+                    .newInstance(drawerItem.feed.id)
                 mainActivityRef.get()?.loadChildFragment(fragment)
             }
         }
@@ -130,12 +118,8 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
             return
         }
         val inflater: MenuInflater = mainActivityRef.get()!!.menuInflater
-        if (selectedItem?.type == NavDrawerData.DrawerItem.Type.FEED) {
-            inflater.inflate(R.menu.nav_feed_context, menu)
-            menu.findItem(R.id.multi_select).setVisible(true)
-        } else {
-            inflater.inflate(R.menu.nav_folder_context, menu)
-        }
+        inflater.inflate(R.menu.nav_feed_context, menu)
+        menu.findItem(R.id.multi_select).setVisible(true)
         menu.setHeaderTitle(selectedItem?.title)
     }
 
@@ -152,17 +136,15 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
             val items = ArrayList<Feed>()
             for (i in 0 until itemCount) {
                 if (isSelected(i)) {
-                    val drawerItem: NavDrawerData.DrawerItem = listItems[i]
-                    if (drawerItem.type == NavDrawerData.DrawerItem.Type.FEED) {
-                        val feed: Feed = (drawerItem as NavDrawerData.FeedDrawerItem).feed
-                        items.add(feed)
-                    }
+                    val drawerItem: NavDrawerData.FeedDrawerItem = listItems[i]
+                    val feed: Feed = drawerItem.feed
+                    items.add(feed)
                 }
             }
             return items
         }
 
-    fun setItems(listItems: List<NavDrawerData.DrawerItem>) {
+    fun setItems(listItems: List<NavDrawerData.FeedDrawerItem>) {
         this.listItems = listItems
         notifyDataSetChanged()
     }
@@ -180,28 +162,24 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
 
         private val errorIcon: View = binding.errorIcon
 
-        fun bind(drawerItem: NavDrawerData.DrawerItem) {
+        fun bind(drawerItem: NavDrawerData.FeedDrawerItem) {
             val drawable: Drawable? = AppCompatResources.getDrawable(selectView.context, R.drawable.ic_checkbox_background)
             selectView.background = drawable // Setting this in XML crashes API <= 21
             title.text = drawerItem.title
             producer.text = drawerItem.producer
             coverImage.contentDescription = drawerItem.title
             if (drawerItem.counter > 0) {
-                count.text = NumberFormat.getInstance().format(drawerItem.counter.toLong()) + " episodes"
+                count.text = NumberFormat.getInstance().format(drawerItem.feed.items.size.toLong()) + " episodes"
                 count.visibility = View.VISIBLE
             } else {
                 count.visibility = View.GONE
             }
 
             val coverLoader = CoverLoader(mainActivityRef.get()!!)
-            if (drawerItem.type == NavDrawerData.DrawerItem.Type.FEED) {
-                val feed: Feed = (drawerItem as NavDrawerData.FeedDrawerItem).feed
-                coverLoader.withUri(feed.imageUrl)
-                errorIcon.visibility = if (feed.hasLastUpdateFailed()) View.VISIBLE else View.GONE
-            } else {
-                coverLoader.withResource(R.drawable.ic_tag)
-                errorIcon.visibility = View.GONE
-            }
+            val feed: Feed = drawerItem.feed
+            coverLoader.withUri(feed.imageUrl)
+            errorIcon.visibility = if (feed.hasLastUpdateFailed()) View.VISIBLE else View.GONE
+
             coverLoader.withCoverView(coverImage)
             coverLoader.load()
 

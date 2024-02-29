@@ -46,8 +46,8 @@ class ExoPlayerWrapper internal constructor(private val context: Context) {
     private val bufferingUpdateDisposable: Disposable
     private lateinit var exoPlayer: ExoPlayer
     private lateinit var trackSelector: DefaultTrackSelector
-    private var loudnessEnhancer: LoudnessEnhancer? = null
 
+    private var loudnessEnhancer: LoudnessEnhancer? = null
     private var mediaSource: MediaSource? = null
     private var audioSeekCompleteListener: Runnable? = null
     private var audioCompletionListener: Runnable? = null
@@ -61,7 +61,7 @@ class ExoPlayerWrapper internal constructor(private val context: Context) {
         playbackParameters = exoPlayer.playbackParameters
         bufferingUpdateDisposable = Observable.interval(bufferUpdateInterval, TimeUnit.SECONDS)
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { tickNumber: Long? ->
+            .subscribe {
                 bufferingUpdateListener?.accept(exoPlayer.bufferedPercentage)
             }
     }
@@ -198,7 +198,7 @@ class ExoPlayerWrapper internal constructor(private val context: Context) {
 //                .setUserAgent(ClientConfig.USER_AGENT);
         val httpDataSourceFactory =
             OkHttpDataSource.Factory(PodciniHttpClient.getHttpClient() as okhttp3.Call.Factory)
-                .setUserAgent(ac.mdiq.podcini.util.config.ClientConfig.USER_AGENT)
+                .setUserAgent(ClientConfig.USER_AGENT)
 
         if (!user.isNullOrEmpty() && !password.isNullOrEmpty()) {
             val requestProperties = HashMap<String, String>()

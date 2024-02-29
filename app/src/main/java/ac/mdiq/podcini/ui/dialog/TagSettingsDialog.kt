@@ -1,27 +1,27 @@
 package ac.mdiq.podcini.ui.dialog
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.EditTagsDialogBinding
+import ac.mdiq.podcini.storage.DBReader
+import ac.mdiq.podcini.storage.DBWriter
+import ac.mdiq.podcini.storage.model.feed.FeedPreferences
+import ac.mdiq.podcini.ui.adapter.SimpleChipAdapter
+import ac.mdiq.podcini.ui.view.ItemOffsetDecoration
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
+import androidx.annotation.OptIn
 import androidx.fragment.app.DialogFragment
+import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.adapter.SimpleChipAdapter
-import ac.mdiq.podcini.storage.DBReader
-import ac.mdiq.podcini.storage.DBWriter
-import ac.mdiq.podcini.storage.NavDrawerData.DrawerItem
-import ac.mdiq.podcini.databinding.EditTagsDialogBinding
-import ac.mdiq.podcini.storage.model.feed.FeedPreferences
-import ac.mdiq.podcini.ui.view.ItemOffsetDecoration
-import androidx.annotation.OptIn
-import androidx.media3.common.util.UnstableApi
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import java.io.Serializable
 
 class TagSettingsDialog : DialogFragment() {
     private lateinit var displayedTags: MutableList<String>
@@ -29,10 +29,10 @@ class TagSettingsDialog : DialogFragment() {
     private lateinit var adapter: SimpleChipAdapter
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val feedPreferencesList =
-            requireArguments().getSerializable(ARG_FEED_PREFERENCES) as? ArrayList<FeedPreferences>
-        val commonTags: MutableSet<String> = HashSet(
-            feedPreferencesList!![0].getTags())
+        val serializedData: Serializable? = requireArguments().getSerializable(ARG_FEED_PREFERENCES)
+        val feedPreferencesList = if (serializedData is ArrayList<*>) serializedData.filterIsInstance<FeedPreferences>() else listOf()
+//        val feedPreferencesList = serializedData as? List<FeedPreferences> ?: listOf()
+        val commonTags: MutableSet<String> = if (feedPreferencesList.isEmpty()) mutableSetOf() else HashSet(feedPreferencesList[0].getTags())
 
         for (preference in feedPreferencesList) {
             commonTags.retainAll(preference.getTags())
@@ -54,11 +54,10 @@ class TagSettingsDialog : DialogFragment() {
             }
         }
         viewBinding.tagsRecycler.adapter = adapter
-        viewBinding.rootFolderCheckbox.isChecked = commonTags.contains(FeedPreferences.TAG_ROOT)
+//        viewBinding.rootFolderCheckbox.isChecked = commonTags.contains(FeedPreferences.TAG_ROOT)
 
         viewBinding.newTagTextInput.setEndIconOnClickListener {
-            addTag(
-                viewBinding.newTagEditText.text.toString().trim { it <= ' ' })
+            addTag(viewBinding.newTagEditText.text.toString().trim { it <= ' ' })
         }
 
         loadTags()
@@ -79,30 +78,21 @@ class TagSettingsDialog : DialogFragment() {
         dialog.setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
             addTag(viewBinding.newTagEditText.text.toString().trim { it <= ' ' })
             updatePreferencesTags(feedPreferencesList, commonTags)
+            DBReader.buildTags()
         }
         dialog.setNegativeButton(R.string.cancel_label, null)
         return dialog.create()
     }
 
     private fun loadTags() {
-        Observable.fromCallable<List<String>> {
-//            val data = DBReader.getNavDrawerData(null)
-//            val items = data.items
-            val folders: MutableList<String> = ArrayList()
-//            for (item in items) {
-//                if (item.type == DrawerItem.Type.TAG) {
-//                    if (item.title != null) folders.add(item.title!!)
-//                }
-//            }
-            folders
+        Observable.fromCallable {
+            DBReader.getTags()
         }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { result: List<String> ->
-                    val acAdapter = ArrayAdapter(
-                        requireContext(),
-                        R.layout.single_tag_text_view, result)
+                    val acAdapter = ArrayAdapter(requireContext(), R.layout.single_tag_text_view, result)
                     viewBinding.newTagEditText.setAdapter(acAdapter)
                 }, { error: Throwable? ->
                     Log.e(TAG, Log.getStackTraceString(error))
@@ -118,11 +108,11 @@ class TagSettingsDialog : DialogFragment() {
         adapter.notifyDataSetChanged()
     }
 
-    @OptIn(UnstableApi::class) private fun updatePreferencesTags(feedPreferencesList: List<FeedPreferences>?, commonTags: Set<String?>) {
-        if (viewBinding.rootFolderCheckbox.isChecked) {
-            displayedTags.add(FeedPreferences.TAG_ROOT)
-        }
-        for (preferences in feedPreferencesList!!) {
+    @OptIn(UnstableApi::class) private fun updatePreferencesTags(feedPreferencesList: List<FeedPreferences>, commonTags: Set<String>) {
+//        if (viewBinding.rootFolderCheckbox.isChecked) {
+//            displayedTags.add(FeedPreferences.TAG_ROOT)
+//        }
+        for (preferences in feedPreferencesList) {
             preferences.getTags().removeAll(commonTags)
             preferences.getTags().addAll(displayedTags)
             DBWriter.setFeedPreferences(preferences)

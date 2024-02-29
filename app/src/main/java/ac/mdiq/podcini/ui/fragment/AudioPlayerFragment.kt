@@ -44,6 +44,9 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.ui.common.PlaybackSpeedIndicatorView
 import ac.mdiq.podcini.ui.view.ChapterSeekBar
 import ac.mdiq.podcini.ui.view.PlayButton
+import ac.mdiq.podcini.util.Converter
+import ac.mdiq.podcini.util.event.PlayerErrorEvent
+import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
 import io.reactivex.Maybe
 import io.reactivex.MaybeEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -105,7 +108,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         toolbar = viewBinding.toolbar
         toolbar.title = ""
         toolbar.setNavigationOnClickListener {
-            (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
+            (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_EXPANDED)
         }
         toolbar.setOnMenuItemClickListener(this)
 
@@ -136,8 +139,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         setupLengthTextView()
         setupControlButtons()
         butPlaybackSpeed.setOnClickListener {
-            VariableSpeedDialog().show(
-                childFragmentManager, null)
+            VariableSpeedDialog().show(childFragmentManager, null)
         }
         sbPosition.setOnSeekBarChangeListener(this)
 
@@ -204,10 +206,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             true
         }
         butPlay.setOnClickListener {
-            if (controller != null) {
-                controller!!.init()
-                controller!!.playPause()
-            }
+            controller?.init()
+            controller?.playPause()
         }
         butFF.setOnClickListener {
             if (controller != null) {
@@ -227,18 +227,17 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onUnreadItemsUpdate(event: ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent?) {
+    fun onUnreadItemsUpdate(event: UnreadItemsUpdateEvent?) {
         if (controller == null) {
             return
         }
-        updatePosition(PlaybackPositionEvent(controller!!.position,
-            controller!!.duration))
+        updatePosition(PlaybackPositionEvent(controller!!.position, controller!!.duration))
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onPlaybackServiceChanged(event: PlaybackServiceEvent) {
         if (event.action == PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN) {
-            (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
+            (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_EXPANDED
         }
     }
 
@@ -264,7 +263,6 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
     private fun loadMediaInfo(includingChapters: Boolean) {
         disposable?.dispose()
-
         disposable = Maybe.create<Playable> { emitter: MaybeEmitter<Playable?> ->
             val media: Playable? = controller?.getMedia()
             if (media != null) {
@@ -298,7 +296,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             }
 
             override fun onPlaybackEnd() {
-                (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
+                (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_EXPANDED
             }
         }
     }
@@ -308,10 +306,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         if (media == null) {
             return
         }
-        updatePosition(PlaybackPositionEvent(media.getPosition(),
-            media.getDuration()))
-        updatePlaybackSpeedButton(SpeedChangedEvent(PlaybackSpeedUtils.getCurrentPlaybackSpeed(
-            media)))
+        updatePosition(PlaybackPositionEvent(media.getPosition(), media.getDuration()))
+        updatePlaybackSpeedButton(SpeedChangedEvent(PlaybackSpeedUtils.getCurrentPlaybackSpeed(media)))
         setChapterDividers(media)
         setupOptionsMenu(media)
     }
@@ -370,18 +366,18 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             Log.w(TAG, "Could not react to position observer update because of invalid time")
             return
         }
-        txtvPosition.text = ac.mdiq.podcini.util.Converter.getDurationStringLong(currentPosition)
+        txtvPosition.text = Converter.getDurationStringLong(currentPosition)
         txtvPosition.setContentDescription(getString(R.string.position,
-            ac.mdiq.podcini.util.Converter.getDurationStringLocalized(requireContext(), currentPosition.toLong())))
+            Converter.getDurationStringLocalized(requireContext(), currentPosition.toLong())))
         showTimeLeft = UserPreferences.shouldShowRemainingTime()
         if (showTimeLeft) {
             txtvLength.setContentDescription(getString(R.string.remaining_time,
-                ac.mdiq.podcini.util.Converter.getDurationStringLocalized(requireContext(), remainingTime.toLong())))
-            txtvLength.text = (if ((remainingTime > 0)) "-" else "") + ac.mdiq.podcini.util.Converter.getDurationStringLong(remainingTime)
+                Converter.getDurationStringLocalized(requireContext(), remainingTime.toLong())))
+            txtvLength.text = (if ((remainingTime > 0)) "-" else "") + Converter.getDurationStringLong(remainingTime)
         } else {
             txtvLength.setContentDescription(getString(R.string.chapter_duration,
-                ac.mdiq.podcini.util.Converter.getDurationStringLocalized(requireContext(), duration.toLong())))
-            txtvLength.text = ac.mdiq.podcini.util.Converter.getDurationStringLong(duration)
+                Converter.getDurationStringLocalized(requireContext(), duration.toLong())))
+            txtvLength.text = Converter.getDurationStringLong(duration)
         }
 
         if (!sbPosition.isPressed) {
@@ -396,7 +392,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun mediaPlayerError(event: ac.mdiq.podcini.util.event.PlayerErrorEvent) {
+    fun mediaPlayerError(event: PlayerErrorEvent) {
         MediaPlayerErrorDialog.show(activity as Activity, event)
     }
 
@@ -419,9 +415,9 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                     sbPosition.highlightCurrentChapter()
                 }
                 txtvSeek.text = controller!!.getMedia()?.getChapters()?.get(newChapterIndex)?.title ?: (""
-                        + "\n" + ac.mdiq.podcini.util.Converter.getDurationStringLong(position))
+                        + "\n" + Converter.getDurationStringLong(position))
             } else {
-                txtvSeek.text = ac.mdiq.podcini.util.Converter.getDurationStringLong(position)
+                txtvSeek.text = Converter.getDurationStringLong(position)
             }
         } else if (duration != controller!!.duration) {
             updateUi(controller!!.getMedia())

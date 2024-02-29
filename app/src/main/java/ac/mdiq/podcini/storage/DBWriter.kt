@@ -108,7 +108,7 @@ import java.util.concurrent.TimeUnit
             // Local feed
             val documentFile = DocumentFile.fromSingleUri(context, Uri.parse(media.getFile_url()))
             if (documentFile == null || !documentFile.exists() || !documentFile.delete()) {
-                EventBus.getDefault().post(ac.mdiq.podcini.util.event.MessageEvent(context.getString(R.string.delete_local_failed)))
+                EventBus.getDefault().post(MessageEvent(context.getString(R.string.delete_local_failed)))
                 return false
             }
             media.setFile_url(null)
@@ -117,7 +117,7 @@ import java.util.concurrent.TimeUnit
             // delete downloaded media file
             val mediaFile = File(media.getFile_url()!!)
             if (mediaFile.exists() && !mediaFile.delete()) {
-                val evt = ac.mdiq.podcini.util.event.MessageEvent(context.getString(R.string.delete_failed))
+                val evt = MessageEvent(context.getString(R.string.delete_failed))
                 EventBus.getDefault().post(evt)
                 return false
             }
@@ -180,7 +180,7 @@ import java.util.concurrent.TimeUnit
             if (!feed.isLocalFeed && feed.download_url != null) {
                 SynchronizationQueueSink.enqueueFeedRemovedIfSynchronizationIsActive(context, feed.download_url!!)
             }
-            EventBus.getDefault().post(ac.mdiq.podcini.util.event.FeedListUpdateEvent(feed))
+            EventBus.getDefault().post(FeedListUpdateEvent(feed))
         }
     }
 
@@ -233,7 +233,7 @@ import java.util.concurrent.TimeUnit
         // we assume we also removed download log entries for the feed or its media files.
         // especially important if download or refresh failed, as the user should not be able
         // to retry these
-        EventBus.getDefault().post(ac.mdiq.podcini.util.event.DownloadLogEvent.listUpdated())
+        EventBus.getDefault().post(DownloadLogEvent.listUpdated())
 
         val backupManager = BackupManager(context)
         backupManager.dataChanged()
@@ -261,7 +261,7 @@ import java.util.concurrent.TimeUnit
             adapter.open()
             adapter.clearDownloadLog()
             adapter.close()
-            EventBus.getDefault().post(ac.mdiq.podcini.util.event.DownloadLogEvent.listUpdated())
+            EventBus.getDefault().post(DownloadLogEvent.listUpdated())
         }
     }
 
@@ -309,7 +309,7 @@ import java.util.concurrent.TimeUnit
             adapter.open()
             adapter.setDownloadStatus(status!!)
             adapter.close()
-            EventBus.getDefault().post(ac.mdiq.podcini.util.event.DownloadLogEvent.listUpdated())
+            EventBus.getDefault().post(DownloadLogEvent.listUpdated())
         }
     }
 
@@ -406,11 +406,11 @@ import java.util.concurrent.TimeUnit
 
             var queueModified = false
             val markAsUnplayedIds = LongList()
-            val events: MutableList<ac.mdiq.podcini.util.event.QueueEvent> = ArrayList()
+            val events: MutableList<QueueEvent> = ArrayList()
             val updatedItems: MutableList<FeedItem> = ArrayList()
             val positionCalculator =
                 ItemEnqueuePositionCalculator(enqueueLocation)
-            val currentlyPlaying = createInstanceFromPreferences(context!!)
+            val currentlyPlaying = createInstanceFromPreferences(context)
             var insertPosition = positionCalculator.calcPosition(queue, currentlyPlaying)
             for (itemId in itemIds) {
                 if (!itemListContains(queue, itemId)) {
@@ -454,7 +454,7 @@ import java.util.concurrent.TimeUnit
      * @param queue  The queue to be sorted.
      * @param events Replaces the events by a single SORT event if the list has to be sorted automatically.
      */
-    private fun applySortOrder(queue: MutableList<FeedItem>, events: MutableList<ac.mdiq.podcini.util.event.QueueEvent>) {
+    private fun applySortOrder(queue: MutableList<FeedItem>, events: MutableList<QueueEvent>) {
         if (!isQueueKeepSorted) {
             // queue is not in keep sorted mode, there's nothing to do
             return
@@ -471,7 +471,7 @@ import java.util.concurrent.TimeUnit
 
         // Replace ADDED events by a single SORTED event
         events.clear()
-        events.add(ac.mdiq.podcini.util.event.QueueEvent.sorted(queue))
+        events.add(QueueEvent.sorted(queue))
     }
 
     /**
@@ -521,7 +521,7 @@ import java.util.concurrent.TimeUnit
         val queue = getQueue(adapter).toMutableList()
 
         var queueModified = false
-        val events: MutableList<ac.mdiq.podcini.util.event.QueueEvent> = ArrayList()
+        val events: MutableList<QueueEvent> = ArrayList()
         val updatedItems: MutableList<FeedItem> = ArrayList()
         for (itemId in itemIds) {
             val position = indexInItemList(queue, itemId)
@@ -712,7 +712,7 @@ import java.util.concurrent.TimeUnit
             adapter.setFeedItemRead(played, *itemIds)
             adapter.close()
             if (broadcastUpdate) {
-                EventBus.getDefault().post(ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent())
+                EventBus.getDefault().post(UnreadItemsUpdateEvent())
             }
         }
     }
@@ -741,7 +741,7 @@ import java.util.concurrent.TimeUnit
             adapter.setFeedItemRead(played, itemId, mediaId,
                 resetMediaPosition)
             adapter.close()
-            EventBus.getDefault().post(ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent())
+            EventBus.getDefault().post(UnreadItemsUpdateEvent())
         }
     }
 
@@ -756,7 +756,7 @@ import java.util.concurrent.TimeUnit
             adapter.open()
             adapter.setFeedItems(FeedItem.NEW, FeedItem.UNPLAYED, feedId)
             adapter.close()
-            EventBus.getDefault().post(ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent())
+            EventBus.getDefault().post(UnreadItemsUpdateEvent())
         }
     }
 
@@ -770,7 +770,7 @@ import java.util.concurrent.TimeUnit
             adapter.open()
             adapter.setFeedItems(FeedItem.NEW, FeedItem.UNPLAYED)
             adapter.close()
-            EventBus.getDefault().post(ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent())
+            EventBus.getDefault().post(UnreadItemsUpdateEvent())
         }
     }
 
@@ -882,7 +882,7 @@ import java.util.concurrent.TimeUnit
             adapter.open()
             adapter.setFeedPreferences(preferences)
             adapter.close()
-            EventBus.getDefault().post(ac.mdiq.podcini.util.event.FeedListUpdateEvent(preferences.feedID))
+            EventBus.getDefault().post(FeedListUpdateEvent(preferences.feedID))
         }
     }
 
@@ -913,7 +913,7 @@ import java.util.concurrent.TimeUnit
             adapter.open()
             adapter.setFeedLastUpdateFailed(feedId, lastUpdateFailed)
             adapter.close()
-            EventBus.getDefault().post(ac.mdiq.podcini.util.event.FeedListUpdateEvent(feedId))
+            EventBus.getDefault().post(FeedListUpdateEvent(feedId))
         }
     }
 
@@ -923,7 +923,7 @@ import java.util.concurrent.TimeUnit
             adapter.open()
             adapter.setFeedCustomTitle(feed.id, feed.getCustomTitle())
             adapter.close()
-            EventBus.getDefault().post(ac.mdiq.podcini.util.event.FeedListUpdateEvent(feed))
+            EventBus.getDefault().post(FeedListUpdateEvent(feed))
         }
     }
 
@@ -948,7 +948,7 @@ import java.util.concurrent.TimeUnit
             permutor.reorder(queue)
             adapter.setQueue(queue)
             if (broadcastUpdate) {
-                EventBus.getDefault().post(ac.mdiq.podcini.util.event.QueueEvent.sorted(queue))
+                EventBus.getDefault().post(QueueEvent.sorted(queue))
             }
             adapter.close()
         }

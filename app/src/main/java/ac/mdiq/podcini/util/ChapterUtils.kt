@@ -32,10 +32,10 @@ object ChapterUtils {
 
     @JvmStatic
     fun getCurrentChapterIndex(media: Playable?, position: Int): Int {
-        if (media?.getChapters() == null || media.getChapters().isEmpty()) {
+        val chapters = media?.getChapters()
+        if (chapters.isNullOrEmpty()) {
             return -1
         }
-        val chapters = media.getChapters()
         for (i in chapters.indices) {
             if (chapters[i].start > position) {
                 return i - 1
@@ -154,7 +154,7 @@ object ChapterUtils {
             val request: Request = Builder().url(url).cacheControl(cacheControl).build()
             response = getHttpClient().newCall(request).execute()
             if (response.isSuccessful && response.body != null) {
-                return ac.mdiq.podcini.feed.parser.PodcastIndexChapterParser.parse(response.body!!.string())
+                return PodcastIndexChapterParser.parse(response.body!!.string())
             }
         } catch (e: IOException) {
             e.printStackTrace()

@@ -97,6 +97,7 @@ class ItemFragment : Fragment() {
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         val viewBinding = FeeditemFragmentBinding.inflate(inflater)
+        root = viewBinding.root
 
         Log.d(TAG, "fragment onCreateView")
         txtvPodcast = viewBinding.txtvPodcast
@@ -110,8 +111,8 @@ class ItemFragment : Fragment() {
         txtvTitle.ellipsize = TextUtils.TruncateAt.END
         webvDescription = viewBinding.webvDescription
         webvDescription.setTimecodeSelectedListener { time: Int? ->
-            if (controller != null && item != null && item!!.media != null && controller!!.getMedia() != null &&
-                    item!!.media!!.getIdentifier() == controller!!.getMedia()!!.getIdentifier()) {
+            val cMedia = controller?.getMedia()
+            if (item?.media?.getIdentifier() == cMedia?.getIdentifier()) {
                 controller!!.seekTo(time ?: 0)
             } else {
                 (activity as MainActivity).showSnackbarAbovePlayer(R.string.play_this_to_seek_position,
@@ -378,8 +379,7 @@ class ItemFragment : Fragment() {
                 itemsLoaded = true
             },
                 { error: Throwable? ->
-                    Log.e(TAG,
-                        Log.getStackTraceString(error))
+                    Log.e(TAG, Log.getStackTraceString(error))
                 })
     }
 
@@ -387,7 +387,7 @@ class ItemFragment : Fragment() {
         val feedItem: FeedItem? = DBReader.getFeedItem(itemId)
         val context = context
         if (feedItem != null && context != null) {
-            val duration = if (feedItem.media != null) feedItem.media!!.getDuration() else Int.MAX_VALUE
+            val duration = feedItem.media?.getDuration()?: Int.MAX_VALUE
             DBReader.loadDescriptionOfFeedItem(feedItem)
             val t = ShownotesCleaner(context, feedItem.description?:"", duration)
             webviewData = t.processShownotes()

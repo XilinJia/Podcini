@@ -547,9 +547,8 @@ class MainActivity : CastEnabledActivity() {
             intent.hasExtra(MainActivityStarter.EXTRA_FRAGMENT_TAG) -> {
                 val tag = intent.getStringExtra(MainActivityStarter.EXTRA_FRAGMENT_TAG)
                 val args = intent.getBundleExtra(MainActivityStarter.EXTRA_FRAGMENT_ARGS)
-                if (tag != null) {
-                    loadFragment(tag, args)
-                }
+                if (tag != null) loadFragment(tag, args)
+
                 bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
             }
             intent.getBooleanExtra(MainActivityStarter.EXTRA_OPEN_PLAYER, false) -> {

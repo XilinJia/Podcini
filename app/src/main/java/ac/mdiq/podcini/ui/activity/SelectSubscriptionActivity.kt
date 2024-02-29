@@ -68,17 +68,13 @@ class SelectSubscriptionActivity : AppCompatActivity() {
         }
     }
 
-    fun getFeedItems(items: List<NavDrawerData.DrawerItem?>, result: MutableList<Feed>): List<Feed> {
+    fun getFeedItems(items: List<NavDrawerData.FeedDrawerItem?>, result: MutableList<Feed>): List<Feed> {
         for (item in items) {
             if (item == null) continue
-//            if (item.type == NavDrawerData.DrawerItem.Type.TAG) {
-//                getFeedItems((item as NavDrawerData.TagDrawerItem).children, result)
-//            } else {
-                val feed: Feed = (item as NavDrawerData.FeedDrawerItem).feed
+                val feed: Feed = item.feed
                 if (!result.contains(feed)) {
                     result.add(feed)
                 }
-//            }
         }
         return result
     }

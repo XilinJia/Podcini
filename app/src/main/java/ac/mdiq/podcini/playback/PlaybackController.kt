@@ -331,8 +331,7 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
             if (media is FeedMedia) {
                 media.setPosition(time)
                 DBWriter.setFeedItem(media.getItem())
-                EventBus.getDefault().post(PlaybackPositionEvent(time,
-                    media.getDuration()))
+                EventBus.getDefault().post(PlaybackPositionEvent(time, media.getDuration()))
             }
         }
     }
@@ -358,7 +357,7 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
 
     val audioTracks: List<String>
         get() {
-            if (playbackService == null || playbackService!!.audioTracks.isEmpty()) {
+            if (playbackService?.audioTracks.isNullOrEmpty()) {
                 return emptyList()
             }
             return playbackService!!.audioTracks.filterNotNull().map { it }

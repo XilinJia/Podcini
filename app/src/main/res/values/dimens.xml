@@ -5,7 +5,7 @@
     <dimen name="drawer_corner_size">16dp</dimen>
     <dimen name="widget_margin">0dp</dimen>
     <dimen name="widget_inner_radius">4dp</dimen>
-    <dimen name="external_player_height">64dp</dimen>
+    <dimen name="external_player_height">100dp</dimen>
     <dimen name="text_size_micro">12sp</dimen>
     <dimen name="text_size_small">14sp</dimen>
     <dimen name="text_size_navdrawer">16sp</dimen>
@@ -27,7 +27,7 @@
 
     <dimen name="audioplayer_playercontrols_length">48dp</dimen>
     <dimen name="audioplayer_playercontrols_length_big">64dp</dimen>
-    <dimen name="audioplayer_playercontrols_margin">12dp</dimen>
+    <dimen name="audioplayer_playercontrols_margin">4dp</dimen>
 
     <dimen name="nav_drawer_max_screen_size">480dp</dimen>
 </resources>

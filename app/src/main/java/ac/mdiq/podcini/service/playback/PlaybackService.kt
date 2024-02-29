@@ -1517,6 +1517,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     @Suppress("unused")
     fun speedPresetChanged(event: SpeedPresetChangedEvent) {
+//        TODO: speed
         if (playable is FeedMedia) {
             if ((playable as FeedMedia).getItem()?.feed?.id == event.feedId) {
                 if (event.speed == FeedPreferences.SPEED_USE_GLOBAL) {

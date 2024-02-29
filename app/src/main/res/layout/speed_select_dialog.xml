@@ -31,6 +31,33 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp" />
 
+    <RadioGroup
+        android:id="@+id/propertyOf"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <RadioButton
+            android:id="@+id/for_episode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/Episode"
+            android:checked="true"/>
+
+        <RadioButton
+            android:id="@+id/for_podcast"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/Podcast" />
+
+        <RadioButton
+            android:id="@+id/for_all"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/All" />
+    </RadioGroup>
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

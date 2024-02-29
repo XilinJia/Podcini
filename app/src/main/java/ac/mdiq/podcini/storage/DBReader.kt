@@ -18,6 +18,7 @@ import ac.mdiq.podcini.storage.database.mapper.DownloadResultCursorMapper.conver
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.feedCounterSetting
 import ac.mdiq.podcini.preferences.UserPreferences.feedOrder
+import ac.mdiq.podcini.storage.model.feed.FeedPreferences.Companion.TAG_ROOT
 import java.util.*
 import kotlin.math.min
 
@@ -60,7 +61,8 @@ object DBReader {
     fun updateFeedList(adapter: PodDBAdapter) {
         synchronized(feedListLock) {
             adapter.allFeedsCursor.use { cursor ->
-                feeds = ArrayList(cursor.count)
+//                feeds = ArrayList(cursor.count)
+                feeds.clear()
                 while (cursor.moveToNext()) {
                     val feed = extractFeedFromCursorRow(cursor)
                     feeds.add(feed)
@@ -70,14 +72,16 @@ object DBReader {
         }
     }
 
-    private fun buildTags() {
+    fun buildTags() {
         val tagsSet = mutableSetOf<String>()
         for (feed in feeds) {
             for (tag in feed.preferences!!.getTags()) {
-                tagsSet.add(tag)
+                if (tag != TAG_ROOT) tagsSet.add(tag)
             }
         }
-        tags = tagsSet.toMutableList()
+        tags.clear()
+        tags.addAll(tagsSet)
+        tags.sort()
     }
 
     @JvmStatic
@@ -841,7 +845,8 @@ object DBReader {
         val feedCounters: Map<Long, Int> = adapter.getFeedCounters(feedCounterSetting)
 //        getFeedList(adapter)
 
-        if (subscriptionsFilter != null) {
+//        TODO:
+        if (false || subscriptionsFilter != null) {
             feeds = subscriptionsFilter.filter(feeds, feedCounters as Map<Long?, Int>).toMutableList()
         }
 

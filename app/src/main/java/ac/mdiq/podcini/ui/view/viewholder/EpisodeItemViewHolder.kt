@@ -31,6 +31,7 @@ import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.ui.adapter.actionbutton.ItemActionButton
 import ac.mdiq.podcini.ui.common.CircularProgressBar
 import ac.mdiq.podcini.ui.common.ThemeUtils
 import io.reactivex.functions.Consumer
@@ -42,6 +43,7 @@ import kotlin.math.max
 @UnstableApi
 class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGroup?) :
     RecyclerView.ViewHolder(LayoutInflater.from(activity).inflate(R.layout.feeditemlist_item, parent, false)) {
+
     val binding: FeeditemlistItemBinding = FeeditemlistItemBinding.bind(itemView)
 
     private val container: View = binding.container
@@ -110,7 +112,7 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
         isInQueue.visibility = if (item.isTagged(FeedItem.TAG_QUEUE)) View.VISIBLE else View.GONE
         container.alpha = if (item.isPlayed()) 0.5f else 1.0f
 
-        val actionButton: ac.mdiq.podcini.ui.adapter.actionbutton.ItemActionButton = ac.mdiq.podcini.ui.adapter.actionbutton.ItemActionButton.forItem(item)
+        val actionButton: ItemActionButton = ItemActionButton.forItem(item)
         actionButton.configure(secondaryActionButton, secondaryActionIcon, activity)
         secondaryActionButton.isFocusable = false
 

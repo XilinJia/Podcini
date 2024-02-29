@@ -1,15 +1,14 @@
 package ac.mdiq.podcini.ui.view
 
+import ac.mdiq.podcini.databinding.PlaybackSpeedSeekBarBinding
 import android.content.Context
 import android.util.AttributeSet
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.core.util.Consumer
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.PlaybackSpeedSeekBarBinding
-import android.view.LayoutInflater
 
 class PlaybackSpeedSeekBar : FrameLayout {
     private lateinit var binding: PlaybackSpeedSeekBarBinding
@@ -30,25 +29,20 @@ class PlaybackSpeedSeekBar : FrameLayout {
     }
 
     private fun setup() {
-        val inflater = LayoutInflater.from(context)
-        binding = PlaybackSpeedSeekBarBinding.inflate(inflater, this, false)
+        binding = PlaybackSpeedSeekBarBinding.inflate(LayoutInflater.from(context), this, true)
         seekBar = binding.playbackSpeed
-        binding.butDecSpeed.setOnClickListener { v: View? -> seekBar.progress -= 2 }
-        binding.butIncSpeed.setOnClickListener { v: View? -> seekBar.progress += 2 }
+        binding.butDecSpeed.setOnClickListener { seekBar.progress -= 2 }
+        binding.butIncSpeed.setOnClickListener { seekBar.progress += 2 }
 
         seekBar.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                 val playbackSpeed = (progress + 10) / 20.0f
-                if (progressChangedListener != null) {
-                    progressChangedListener!!.accept(playbackSpeed)
-                }
+                progressChangedListener?.accept(playbackSpeed)
             }
 
-            override fun onStartTrackingTouch(seekBar: SeekBar) {
-            }
+            override fun onStartTrackingTouch(seekBar: SeekBar) {}
 
-            override fun onStopTrackingTouch(seekBar: SeekBar) {
-            }
+            override fun onStopTrackingTouch(seekBar: SeekBar) {}
         })
     }
 

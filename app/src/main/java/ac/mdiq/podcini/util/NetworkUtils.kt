@@ -21,7 +21,7 @@ object NetworkUtils {
     @JvmStatic
     val isAutoDownloadAllowed: Boolean
         get() {
-            val cm = context!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val networkInfo = cm.activeNetworkInfo ?: return false
             return if (networkInfo.type == ConnectivityManager.TYPE_WIFI) {
                 if (UserPreferences.isEnableAutodownloadWifiFilter) {
@@ -38,7 +38,7 @@ object NetworkUtils {
 
     @JvmStatic
     fun networkAvailable(): Boolean {
-        val cm = context!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val info = cm.activeNetworkInfo
         return info != null && info.isConnected
     }
@@ -71,7 +71,7 @@ object NetworkUtils {
 
     private val isNetworkMetered: Boolean
         get() {
-            val connManager = context!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val connManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             return connManager.isActiveNetworkMetered
         }
 
@@ -81,7 +81,7 @@ object NetworkUtils {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
                 return false
             }
-            val connManager = context!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val connManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val capabilities = connManager.getNetworkCapabilities(connManager.activeNetwork)
             return (capabilities != null && capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
                     && capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN))
@@ -89,27 +89,23 @@ object NetworkUtils {
 
     private val isNetworkCellular: Boolean
         get() {
-            val connManager = context!!.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val connManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             if (Build.VERSION.SDK_INT >= 23) {
-                val network = connManager.activeNetwork
-                    ?: return false // Nothing connected
-                val info = connManager.getNetworkInfo(network)
-                    ?: return true // Better be safe than sorry
-                val capabilities = connManager.getNetworkCapabilities(network)
-                    ?: return true // Better be safe than sorry
+                val network = connManager.activeNetwork ?: return false // Nothing connected
+                val info = connManager.getNetworkInfo(network) ?: return true // Better be safe than sorry
+                val capabilities = connManager.getNetworkCapabilities(network) ?: return true // Better be safe than sorry
                 return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
             } else {
                 // if the default network is a VPN,
                 // this method will return the NetworkInfo for one of its underlying networks
-                val info = connManager.activeNetworkInfo
-                    ?: return false // Nothing connected
+                val info = connManager.activeNetworkInfo ?: return false // Nothing connected
                 return info.type == ConnectivityManager.TYPE_MOBILE
             }
         }
 
     private val isInAllowedWifiNetwork: Boolean
         get() {
-            val wm = context!!.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+            val wm = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
             val selectedNetworks = listOf(*UserPreferences.autodownloadSelectedNetworks)
             return selectedNetworks.contains(wm.connectionInfo.networkId.toString())
         }

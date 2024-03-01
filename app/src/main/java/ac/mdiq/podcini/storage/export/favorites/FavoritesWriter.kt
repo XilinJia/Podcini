@@ -104,7 +104,7 @@ class FavoritesWriter : ExportWriter {
         writer!!.append(favItem)
     }
 
-    override fun fileExtension(): String? {
+    override fun fileExtension(): String {
         return "html"
     }
 

@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.ui.glide
 
+import ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
@@ -12,7 +13,6 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.engine.cache.InternalCacheDiskCacheFactory
 import com.bumptech.glide.module.AppGlideModule
 import com.bumptech.glide.request.RequestOptions
-import ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage
 import java.io.InputStream
 import java.nio.ByteBuffer
 

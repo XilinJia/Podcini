@@ -11,7 +11,7 @@ class EmbeddedChapterImage(@JvmField val media: Playable, private val imageUrl: 
     var length: Int = 0
 
     init {
-        val m = ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage.Companion.EMBEDDED_IMAGE_MATCHER.matcher(imageUrl)
+        val m = EMBEDDED_IMAGE_MATCHER.matcher(imageUrl)
         if (m.find()) {
             this.position = m.group(1)?.toInt() ?: 0
             this.length = m.group(2)?.toInt() ?: 0
@@ -27,7 +27,7 @@ class EmbeddedChapterImage(@JvmField val media: Playable, private val imageUrl: 
         if (o == null || javaClass != o.javaClass) {
             return false
         }
-        val that = o as ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage
+        val that = o as EmbeddedChapterImage
         return TextUtils.equals(imageUrl, that.imageUrl)
     }
 
@@ -44,14 +44,14 @@ class EmbeddedChapterImage(@JvmField val media: Playable, private val imageUrl: 
         }
 
         private fun isEmbeddedChapterImage(imageUrl: String): Boolean {
-            return ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage.Companion.EMBEDDED_IMAGE_MATCHER.matcher(imageUrl).matches()
+            return EMBEDDED_IMAGE_MATCHER.matcher(imageUrl).matches()
         }
 
         fun getModelFor(media: Playable, chapter: Int): Any? {
             val imageUrl = media.getChapters()[chapter].imageUrl
-            return if (imageUrl != null && ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage.Companion.isEmbeddedChapterImage(
+            return if (imageUrl != null && isEmbeddedChapterImage(
                         imageUrl)) {
-                ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage(media, imageUrl)
+                EmbeddedChapterImage(media, imageUrl)
             } else {
                 imageUrl
             }

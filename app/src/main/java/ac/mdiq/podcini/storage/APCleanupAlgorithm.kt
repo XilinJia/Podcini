@@ -28,7 +28,7 @@ class APCleanupAlgorithm(
     public override fun performCleanup(context: Context, numberOfEpisodesToDelete: Int): Int {
         val candidates = candidates.toMutableList()
 
-        candidates.sortWith(Comparator { lhs: FeedItem, rhs: FeedItem ->
+        candidates.sortWith { lhs: FeedItem, rhs: FeedItem ->
             var l = lhs.media!!.getPlaybackCompletionDate()
             var r = rhs.media!!.getPlaybackCompletionDate()
 
@@ -39,7 +39,7 @@ class APCleanupAlgorithm(
                 r = Date()
             }
             l.compareTo(r)
-        })
+        }
 
         val delete = if (candidates.size > numberOfEpisodesToDelete) {
             candidates.subList(0, numberOfEpisodesToDelete)

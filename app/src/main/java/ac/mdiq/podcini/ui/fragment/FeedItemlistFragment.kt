@@ -301,7 +301,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: ac.mdiq.podcini.util.event.FeedItemEvent) {
+    fun onEventMainThread(event: FeedItemEvent) {
         Log.d(TAG, "onEventMainThread() called with: event = [$event]")
         if (feed == null || feed!!.items.isEmpty()) {
             return
@@ -352,7 +352,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
     }
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onQueueChanged(event: ac.mdiq.podcini.util.event.QueueEvent?) {
+    fun onQueueChanged(event: QueueEvent?) {
         Log.d(TAG, "onQueueChanged called")
         updateUi()
     }
@@ -378,19 +378,19 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
     }
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onPlayerStatusChanged(event: ac.mdiq.podcini.util.event.PlayerStatusEvent?) {
+    fun onPlayerStatusChanged(event: PlayerStatusEvent?) {
         Log.d(TAG, "onPlayerStatusChanged called")
         updateUi()
     }
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onUnreadItemsChanged(event: ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent?) {
+    fun onUnreadItemsChanged(event: UnreadItemsUpdateEvent?) {
         Log.d(TAG, "onUnreadItemsChanged called")
         updateUi()
     }
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onFeedListChanged(event: ac.mdiq.podcini.util.event.FeedListUpdateEvent) {
+    fun onFeedListChanged(event: FeedListUpdateEvent) {
         if (feed != null && event.contains(feed!!)) {
             Log.d(TAG, "onFeedListChanged called")
             updateUi()
@@ -398,7 +398,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: ac.mdiq.podcini.util.event.FeedUpdateRunningEvent) {
+    fun onEventMainThread(event: FeedUpdateRunningEvent) {
         nextPageLoader.setLoadingState(event.isFeedUpdateRunning)
         if (!event.isFeedUpdateRunning) {
             nextPageLoader.root.visibility = View.GONE

@@ -1,24 +1,24 @@
 package ac.mdiq.podcini.ui.fragment
 
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
-import androidx.media3.common.util.UnstableApi
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.preferences.UserPreferences.allEpisodesSortOrder
+import ac.mdiq.podcini.preferences.UserPreferences.prefFilterAllEpisodes
 import ac.mdiq.podcini.storage.DBReader
+import ac.mdiq.podcini.storage.model.feed.FeedItem
+import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
+import ac.mdiq.podcini.storage.model.feed.SortOrder
 import ac.mdiq.podcini.ui.dialog.AllEpisodesFilterDialog
 import ac.mdiq.podcini.ui.dialog.AllEpisodesFilterDialog.AllEpisodesFilterChangedEvent
 import ac.mdiq.podcini.ui.dialog.ItemSortDialog
 import ac.mdiq.podcini.util.event.FeedListUpdateEvent
-import ac.mdiq.podcini.storage.model.feed.FeedItem
-import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
-import ac.mdiq.podcini.storage.model.feed.SortOrder
-import ac.mdiq.podcini.preferences.UserPreferences.allEpisodesSortOrder
-import ac.mdiq.podcini.preferences.UserPreferences.prefFilterAllEpisodes
+import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
 import org.apache.commons.lang3.StringUtils
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -128,7 +128,7 @@ class AllEpisodesFragment : EpisodesListFragment() {
         override fun onSelectionChanged() {
             super.onSelectionChanged()
             allEpisodesSortOrder = sortOrder
-            EventBus.getDefault().post(ac.mdiq.podcini.util.event.FeedListUpdateEvent(0))
+            EventBus.getDefault().post(FeedListUpdateEvent(0))
         }
     }
 

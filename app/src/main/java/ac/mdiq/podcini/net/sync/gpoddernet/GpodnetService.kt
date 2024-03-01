@@ -204,7 +204,7 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
      * is an authentication error.
      */
     @Throws(GpodnetServiceException::class)
-    override fun uploadSubscriptionChanges(added: List<String?>?, removed: List<String?>?): UploadChangesResponse? {
+    override fun uploadSubscriptionChanges(added: List<String?>?, removed: List<String?>?): UploadChangesResponse {
         requireLoggedIn()
         try {
             val url = URI(baseScheme, null, baseHost, basePort,
@@ -242,7 +242,7 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
      * @throws GpodnetServiceAuthenticationException If there is an authentication error.
      */
     @Throws(GpodnetServiceException::class)
-    override fun getSubscriptionChanges(timestamp: Long): SubscriptionChanges? {
+    override fun getSubscriptionChanges(timestamp: Long): SubscriptionChanges {
         requireLoggedIn()
         val params = String.format(Locale.US, "since=%d", timestamp)
         val path = String.format("/api/2/subscriptions/%s/%s.json", username, deviceId)
@@ -339,7 +339,7 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
      * @throws SyncServiceException If there is an authentication error.
      */
     @Throws(SyncServiceException::class)
-    override fun getEpisodeActionChanges(timestamp: Long): EpisodeActionChanges? {
+    override fun getEpisodeActionChanges(timestamp: Long): EpisodeActionChanges {
         requireLoggedIn()
         val params = String.format(Locale.US, "since=%d", timestamp)
         val path = String.format("/api/2/episodes/%s.json", username)

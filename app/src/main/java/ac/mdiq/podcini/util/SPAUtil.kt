@@ -27,7 +27,7 @@ object SPAUtil {
     @Synchronized
     fun sendSPAppsQueryFeedsIntent(context: Context): Boolean {
 //        assert(context != null) { "context = null" }
-        val appContext = context!!.applicationContext
+        val appContext = context.applicationContext
         if (appContext == null) {
             Log.wtf(TAG, "Unable to get application context")
             return false

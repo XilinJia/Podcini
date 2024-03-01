@@ -1,6 +1,18 @@
 package ac.mdiq.podcini.service.download
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
+import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.service.download.DownloadRequestCreator.create
+import ac.mdiq.podcini.service.download.handler.MediaDownloadedHandler
+import ac.mdiq.podcini.storage.DBReader
+import ac.mdiq.podcini.storage.DBWriter
+import ac.mdiq.podcini.storage.model.download.DownloadError
+import ac.mdiq.podcini.storage.model.feed.FeedMedia
+import ac.mdiq.podcini.ui.appstartintent.MainActivityStarter
+import ac.mdiq.podcini.ui.gui.NotificationUtils
+import ac.mdiq.podcini.util.config.ClientConfigurator
+import ac.mdiq.podcini.util.event.MessageEvent
 import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -15,18 +27,6 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
-import ac.mdiq.podcini.util.config.ClientConfigurator
-import ac.mdiq.podcini.service.download.DownloadRequestCreator.create
-import ac.mdiq.podcini.service.download.handler.MediaDownloadedHandler
-import ac.mdiq.podcini.storage.DBReader
-import ac.mdiq.podcini.storage.DBWriter
-import ac.mdiq.podcini.ui.gui.NotificationUtils
-import ac.mdiq.podcini.util.event.MessageEvent
-import ac.mdiq.podcini.storage.model.download.DownloadError
-import ac.mdiq.podcini.storage.model.feed.FeedMedia
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
-import ac.mdiq.podcini.ui.appstartintent.MainActivityStarter
 import org.apache.commons.io.FileUtils
 import org.greenrobot.eventbus.EventBus
 import java.io.File
@@ -35,7 +35,7 @@ import java.util.*
 import java.util.concurrent.ExecutionException
 
 class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
-    private var downloader: ac.mdiq.podcini.service.download.Downloader? = null
+    private var downloader: Downloader? = null
 
     @UnstableApi
     override fun doWork(): Result {
@@ -196,7 +196,7 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
         if (episodeTitle.length > 20) {
             episodeTitle = episodeTitle.substring(0, 19) + "…"
         }
-        EventBus.getDefault().post(ac.mdiq.podcini.util.event.MessageEvent(
+        EventBus.getDefault().post(MessageEvent(
             applicationContext.getString(
                 if (retrying) R.string.download_error_retrying else R.string.download_error_not_retrying,
                 episodeTitle), { ctx: Context -> MainActivityStarter(ctx!!).withDownloadLogsOpen().start() },
@@ -216,7 +216,7 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
     }
 
     private fun sendErrorNotification(title: String) {
-        if (EventBus.getDefault().hasSubscriberForEvent(ac.mdiq.podcini.util.event.MessageEvent::class.java)) {
+        if (EventBus.getDefault().hasSubscriberForEvent(MessageEvent::class.java)) {
             sendMessage(title, false)
             return
         }

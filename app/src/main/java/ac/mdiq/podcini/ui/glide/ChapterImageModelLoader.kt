@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.ui.glide
 
+import ac.mdiq.podcini.service.download.PodciniHttpClient.getHttpClient
 import com.bumptech.glide.Priority
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.Options
@@ -8,8 +9,6 @@ import com.bumptech.glide.load.model.ModelLoader
 import com.bumptech.glide.load.model.ModelLoaderFactory
 import com.bumptech.glide.load.model.MultiModelLoaderFactory
 import com.bumptech.glide.signature.ObjectKey
-import ac.mdiq.podcini.service.download.PodciniHttpClient.getHttpClient
-import ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage
 import okhttp3.Request.Builder
 import org.apache.commons.io.IOUtils
 import java.io.BufferedInputStream
@@ -33,7 +32,7 @@ class ChapterImageModelLoader : ModelLoader<ac.mdiq.podcini.storage.model.feed.E
                                width: Int,
                                height: Int,
                                options: Options
-    ): ModelLoader.LoadData<ByteBuffer?>? {
+    ): ModelLoader.LoadData<ByteBuffer?> {
         return ModelLoader.LoadData(ObjectKey(model), EmbeddedImageFetcher(model))
     }
 
@@ -46,14 +45,14 @@ class ChapterImageModelLoader : ModelLoader<ac.mdiq.podcini.storage.model.feed.E
             var stream: BufferedInputStream? = null
             try {
                 if (image.media.localFileAvailable()) {
-                    val localFile: File = File(image.media.getLocalMediaUrl())
+                    val localFile = File(image.media.getLocalMediaUrl())
                     stream = BufferedInputStream(FileInputStream(localFile))
                     IOUtils.skip(stream, image.position.toLong())
                     val imageContent = ByteArray(image.length)
                     IOUtils.read(stream, imageContent, 0, image.length)
                     callback.onDataReady(ByteBuffer.wrap(imageContent))
                 } else {
-                    val httpReq: Builder = Builder()
+                    val httpReq = Builder()
                     // Skipping would download the whole file
                     httpReq.header("Range", "bytes=" + image.position + "-" + (image.position + image.length))
                     val url = image.media.getStreamUrl()

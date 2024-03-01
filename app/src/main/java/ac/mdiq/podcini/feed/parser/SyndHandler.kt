@@ -11,7 +11,7 @@ import org.xml.sax.helpers.DefaultHandler
 /** Superclass for all SAX Handlers which process Syndication formats  */
 class SyndHandler(feed: Feed, type: TypeGetter.Type) : DefaultHandler() {
     @JvmField
-    val state: ac.mdiq.podcini.feed.parser.HandlerState = ac.mdiq.podcini.feed.parser.HandlerState(feed)
+    val state: HandlerState = HandlerState(feed)
 
     init {
         if (type == TypeGetter.Type.RSS20 || type == TypeGetter.Type.RSS091) {

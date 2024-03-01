@@ -510,7 +510,9 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             Log.d(TAG, "getItem($position)")
 
             return when (position) {
+//                TODO: cover page is not very useful
                 POS_COVER -> CoverFragment()
+//                POS_COVER -> ItemDescriptionFragment()
                 POS_DESCRIPTION -> ItemDescriptionFragment()
                 else -> ItemDescriptionFragment()
             }

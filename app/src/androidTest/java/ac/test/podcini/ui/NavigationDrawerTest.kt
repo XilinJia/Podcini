@@ -52,8 +52,8 @@ class NavigationDrawerTest {
 
     private fun openNavDrawer() {
         Espresso.onView(ViewMatchers.isRoot())
-            .perform(EspressoTestUtils.waitForView(ViewMatchers.withId(R.id.main_activity), 1000))
-        Espresso.onView(ViewMatchers.withId(R.id.main_activity)).perform(DrawerActions.open())
+            .perform(EspressoTestUtils.waitForView(ViewMatchers.withId(R.id.main_layout), 1000))
+        Espresso.onView(ViewMatchers.withId(R.id.main_layout)).perform(DrawerActions.open())
     }
 
     @Test

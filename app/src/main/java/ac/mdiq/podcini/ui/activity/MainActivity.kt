@@ -40,7 +40,6 @@ import android.view.ViewGroup.MarginLayoutParams
 import android.widget.EditText
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.graphics.Insets
-import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -160,10 +159,16 @@ class MainActivity : CastEnabledActivity() {
             .observe(this) { workInfos: List<WorkInfo> ->
                 var isRefreshingFeeds = false
                 for (workInfo in workInfos) {
-                    if (workInfo.state == WorkInfo.State.RUNNING) {
-                        isRefreshingFeeds = true
-                    } else if (workInfo.state == WorkInfo.State.ENQUEUED) {
-                        isRefreshingFeeds = true
+                    when (workInfo.state) {
+                        WorkInfo.State.RUNNING -> {
+                            isRefreshingFeeds = true
+                        }
+                        WorkInfo.State.ENQUEUED -> {
+                            isRefreshingFeeds = true
+                        }
+                        else -> {
+                //                        Log.d(TAG, "workInfo.state ${workInfo.state}")
+                        }
                     }
                 }
                 EventBus.getDefault().postSticky(ac.mdiq.podcini.util.event.FeedUpdateRunningEvent(isRefreshingFeeds))
@@ -190,7 +195,15 @@ class MainActivity : CastEnabledActivity() {
                         WorkInfo.State.ENQUEUED, WorkInfo.State.BLOCKED -> {
                             DownloadStatus.STATE_QUEUED
                         }
-                        else -> {
+                        WorkInfo.State.SUCCEEDED -> {
+                            DownloadStatus.STATE_COMPLETED
+                        }
+                        WorkInfo.State.FAILED -> {
+                            Log.e(TAG, "download failed $downloadUrl")
+                            DownloadStatus.STATE_COMPLETED
+                        }
+                        WorkInfo.State.CANCELLED -> {
+                            Log.d(TAG, "download cancelled $downloadUrl")
                             DownloadStatus.STATE_COMPLETED
                         }
                     }

@@ -1,17 +1,17 @@
 package ac.mdiq.podcini.preferences
 
+import ac.mdiq.podcini.playback.base.PlayerStatus
+import ac.mdiq.podcini.storage.DBReader
+import ac.mdiq.podcini.storage.model.feed.FeedMedia
+import ac.mdiq.podcini.storage.model.feed.FeedPreferences
+import ac.mdiq.podcini.storage.model.playback.MediaType
+import ac.mdiq.podcini.storage.model.playback.Playable
+import ac.mdiq.podcini.util.event.PlayerStatusEvent
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.util.Log
 import androidx.preference.PreferenceManager
-import ac.mdiq.podcini.storage.DBReader
-import ac.mdiq.podcini.util.event.PlayerStatusEvent
-import ac.mdiq.podcini.storage.model.feed.FeedMedia
-import ac.mdiq.podcini.storage.model.feed.FeedPreferences
-import ac.mdiq.podcini.storage.model.playback.MediaType
-import ac.mdiq.podcini.storage.model.playback.Playable
-import ac.mdiq.podcini.playback.base.PlayerStatus
 import org.greenrobot.eventbus.EventBus
 
 /**
@@ -22,7 +22,7 @@ import org.greenrobot.eventbus.EventBus
 class PlaybackPreferences private constructor() : OnSharedPreferenceChangeListener {
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String?) {
         if (PREF_CURRENT_PLAYER_STATUS == key) {
-            EventBus.getDefault().post(ac.mdiq.podcini.util.event.PlayerStatusEvent())
+            EventBus.getDefault().post(PlayerStatusEvent())
         }
     }
 

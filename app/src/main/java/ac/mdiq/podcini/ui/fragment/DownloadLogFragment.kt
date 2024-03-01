@@ -1,5 +1,14 @@
 package ac.mdiq.podcini.ui.fragment
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.DownloadLogFragmentBinding
+import ac.mdiq.podcini.storage.DBReader
+import ac.mdiq.podcini.storage.DBWriter
+import ac.mdiq.podcini.storage.model.download.DownloadResult
+import ac.mdiq.podcini.ui.adapter.DownloadLogAdapter
+import ac.mdiq.podcini.ui.dialog.DownloadLogDetailsDialog
+import ac.mdiq.podcini.ui.view.EmptyViewHandler
+import ac.mdiq.podcini.util.event.DownloadLogEvent
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -8,15 +17,6 @@ import android.widget.AdapterView.OnItemClickListener
 import androidx.appcompat.widget.Toolbar
 import androidx.media3.common.util.UnstableApi
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.adapter.DownloadLogAdapter
-import ac.mdiq.podcini.util.event.DownloadLogEvent
-import ac.mdiq.podcini.storage.DBReader
-import ac.mdiq.podcini.storage.DBWriter
-import ac.mdiq.podcini.databinding.DownloadLogFragmentBinding
-import ac.mdiq.podcini.ui.dialog.DownloadLogDetailsDialog
-import ac.mdiq.podcini.storage.model.download.DownloadResult
-import ac.mdiq.podcini.ui.view.EmptyViewHandler
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -76,7 +76,7 @@ class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, To
     }
 
     @Subscribe
-    fun onDownloadLogChanged(event: ac.mdiq.podcini.util.event.DownloadLogEvent?) {
+    fun onDownloadLogChanged(event: DownloadLogEvent?) {
         loadDownloadLog()
     }
 

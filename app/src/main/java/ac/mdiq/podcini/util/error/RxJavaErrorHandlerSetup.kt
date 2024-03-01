@@ -13,14 +13,14 @@ object RxJavaErrorHandlerSetup {
         RxJavaPlugins.setErrorHandler { exception: Throwable? ->
             if (exception is UndeliverableException) {
                 // Probably just disposed because the fragment was left
-                Log.d(ac.mdiq.podcini.util.error.RxJavaErrorHandlerSetup.TAG, "Ignored exception: " + Log.getStackTraceString(exception))
+                Log.d(TAG, "Ignored exception: " + Log.getStackTraceString(exception))
                 return@setErrorHandler
             }
             // Usually, undeliverable exceptions are wrapped in an UndeliverableException.
             // If an undeliverable exception is a NPE (or some others), wrapping does not happen.
             // Podcini threads might throw NPEs after disposing because we set controllers to null.
             // Just swallow all exceptions here.
-            Log.e(ac.mdiq.podcini.util.error.RxJavaErrorHandlerSetup.TAG, Log.getStackTraceString(exception))
+            Log.e(TAG, Log.getStackTraceString(exception))
             write(exception!!)
             if (BuildConfig.DEBUG) {
                 Thread.currentThread().uncaughtExceptionHandler

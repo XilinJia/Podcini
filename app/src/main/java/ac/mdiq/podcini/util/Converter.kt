@@ -19,17 +19,17 @@ object Converter {
         if (duration <= 0) {
             return "00:00:00"
         } else {
-            val hms = ac.mdiq.podcini.util.Converter.millisecondsToHms(duration.toLong())
+            val hms = millisecondsToHms(duration.toLong())
             return String.format(Locale.getDefault(), "%02d:%02d:%02d", hms[0], hms[1], hms[2])
         }
     }
 
     private fun millisecondsToHms(duration: Long): IntArray {
-        val h = (duration / ac.mdiq.podcini.util.Converter.HOURS_MIL).toInt()
-        var rest = duration - h * ac.mdiq.podcini.util.Converter.HOURS_MIL
-        val m = (rest / ac.mdiq.podcini.util.Converter.MINUTES_MIL).toInt()
-        rest -= (m * ac.mdiq.podcini.util.Converter.MINUTES_MIL).toLong()
-        val s = (rest / ac.mdiq.podcini.util.Converter.SECONDS_MIL).toInt()
+        val h = (duration / HOURS_MIL).toInt()
+        var rest = duration - h * HOURS_MIL
+        val m = (rest / MINUTES_MIL).toInt()
+        rest -= (m * MINUTES_MIL).toLong()
+        val s = (rest / SECONDS_MIL).toInt()
         return intArrayOf(h, m, s)
     }
 
@@ -38,10 +38,10 @@ object Converter {
      */
     @JvmStatic
     fun getDurationStringShort(duration: Int, durationIsInHours: Boolean): String {
-        val firstPartBase = if (durationIsInHours) ac.mdiq.podcini.util.Converter.HOURS_MIL else ac.mdiq.podcini.util.Converter.MINUTES_MIL
+        val firstPartBase = if (durationIsInHours) HOURS_MIL else MINUTES_MIL
         val firstPart = duration / firstPartBase
         val leftoverFromFirstPart = duration - firstPart * firstPartBase
-        val secondPart = leftoverFromFirstPart / (if (durationIsInHours) ac.mdiq.podcini.util.Converter.MINUTES_MIL else ac.mdiq.podcini.util.Converter.SECONDS_MIL)
+        val secondPart = leftoverFromFirstPart / (if (durationIsInHours) MINUTES_MIL else SECONDS_MIL)
 
         return String.format(Locale.getDefault(), "%02d:%02d", firstPart, secondPart)
     }
@@ -80,21 +80,21 @@ object Converter {
      */
     @JvmStatic
     fun getDurationStringLocalized(context: Context, duration: Long): String {
-        return ac.mdiq.podcini.util.Converter.getDurationStringLocalized(context.resources, duration)
+        return getDurationStringLocalized(context.resources, duration)
     }
 
     @JvmStatic
     fun getDurationStringLocalized(resources: Resources, duration: Long): String {
         var result = ""
-        var h = (duration / ac.mdiq.podcini.util.Converter.HOURS_MIL).toInt()
+        var h = (duration / HOURS_MIL).toInt()
         val d = h / 24
         if (d > 0) {
             val days = resources.getQuantityString(R.plurals.time_days_quantified, d, d)
             result += days.replace(" ", "\u00A0") + " "
             h -= d * 24
         }
-        val rest = (duration - (d * 24 + h) * ac.mdiq.podcini.util.Converter.HOURS_MIL).toInt()
-        val m = rest / ac.mdiq.podcini.util.Converter.MINUTES_MIL
+        val rest = (duration - (d * 24 + h) * HOURS_MIL).toInt()
+        val m = rest / MINUTES_MIL
         if (h > 0) {
             val hours = resources.getQuantityString(R.plurals.time_hours_quantified, h, h)
             result += hours.replace(" ", "\u00A0")

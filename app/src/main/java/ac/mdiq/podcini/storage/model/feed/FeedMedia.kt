@@ -421,7 +421,7 @@ class FeedMedia : FeedFile, Playable {
 
         @JvmField
         val CREATOR: Parcelable.Creator<FeedMedia> = object : Parcelable.Creator<FeedMedia> {
-            override fun createFromParcel(inVal: Parcel): FeedMedia? {
+            override fun createFromParcel(inVal: Parcel): FeedMedia {
                 val id = inVal.readLong()
                 val itemID = inVal.readLong()
                 val result = FeedMedia(id,

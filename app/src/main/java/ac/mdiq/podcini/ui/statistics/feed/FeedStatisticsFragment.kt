@@ -23,7 +23,7 @@ class FeedStatisticsFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         feedId = requireArguments().getLong(EXTRA_FEED_ID)
         viewBinding = FeedStatisticsBinding.inflate(inflater)
 
@@ -44,10 +44,10 @@ class FeedStatisticsFragment : Fragment() {
         disposable =
             Observable.fromCallable {
                 val statisticsData = DBReader.getStatistics(true, 0, Long.MAX_VALUE)
-                statisticsData.feedTime.sortWith(Comparator { item1: StatisticsItem, item2: StatisticsItem ->
+                statisticsData.feedTime.sortWith { item1: StatisticsItem, item2: StatisticsItem ->
                     java.lang.Long.compare(item2.timePlayed,
                         item1.timePlayed)
-                })
+                }
 
                 for (statisticsItem in statisticsData.feedTime) {
                     if (statisticsItem.feed.id == feedId) {

@@ -15,7 +15,7 @@ class CrashReportWriter : Thread.UncaughtExceptionHandler {
     private val defaultHandler: Thread.UncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
 
     override fun uncaughtException(thread: Thread, ex: Throwable) {
-        ac.mdiq.podcini.util.error.CrashReportWriter.Companion.write(ex)
+        write(ex)
         defaultHandler.uncaughtException(thread, ex)
     }
 
@@ -28,7 +28,7 @@ class CrashReportWriter : Thread.UncaughtExceptionHandler {
 
         @JvmStatic
         fun write(exception: Throwable) {
-            val path = ac.mdiq.podcini.util.error.CrashReportWriter.Companion.file
+            val path = file
             var out: PrintWriter? = null
             try {
                 out = PrintWriter(path, "UTF-8")
@@ -41,7 +41,7 @@ class CrashReportWriter : Thread.UncaughtExceptionHandler {
                 exception.printStackTrace(out)
                 out.println("```")
             } catch (e: IOException) {
-                Log.e(ac.mdiq.podcini.util.error.CrashReportWriter.Companion.TAG, Log.getStackTraceString(e))
+                Log.e(TAG, Log.getStackTraceString(e))
             } finally {
                 IOUtils.closeQuietly(out)
             }

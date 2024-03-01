@@ -78,7 +78,7 @@ object FeedUpdateManager {
                 runOnce(context, feed)
             }
             !networkAvailable() -> {
-                EventBus.getDefault().post(ac.mdiq.podcini.util.event.MessageEvent(context.getString(R.string.download_error_no_connection)))
+                EventBus.getDefault().post(MessageEvent(context.getString(R.string.download_error_no_connection)))
             }
             isFeedRefreshAllowed -> {
                 runOnce(context, feed)
@@ -93,8 +93,8 @@ object FeedUpdateManager {
         val builder = MaterialAlertDialogBuilder(context)
             .setTitle(R.string.feed_refresh_title)
             .setPositiveButton(R.string.confirm_mobile_streaming_button_once
-            ) { dialog: DialogInterface?, which: Int -> runOnce(context, feed) }
-            .setNeutralButton(R.string.confirm_mobile_streaming_button_always) { dialog: DialogInterface?, which: Int ->
+            ) { _: DialogInterface?, _: Int -> runOnce(context, feed) }
+            .setNeutralButton(R.string.confirm_mobile_streaming_button_always) { _: DialogInterface?, _: Int ->
                 UserPreferences.isAllowMobileFeedRefresh = true
                 runOnce(context, feed)
             }

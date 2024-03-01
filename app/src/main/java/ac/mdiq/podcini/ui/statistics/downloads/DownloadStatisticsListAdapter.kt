@@ -23,7 +23,7 @@ class DownloadStatisticsListAdapter(context: Context, private val fragment: Frag
     override val headerValue: String
         get() = Formatter.formatShortFileSize(context, pieChartData!!.sum.toLong())
 
-    override fun generateChartData(statisticsData: List<StatisticsItem>?): PieChartData? {
+    override fun generateChartData(statisticsData: List<StatisticsItem>?): PieChartData {
         val dataValues = FloatArray(statisticsData!!.size)
         for (i in statisticsData.indices) {
             val item = statisticsData[i]

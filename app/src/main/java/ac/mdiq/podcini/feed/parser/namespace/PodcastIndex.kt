@@ -1,11 +1,12 @@
 package ac.mdiq.podcini.feed.parser.namespace
 
+import ac.mdiq.podcini.feed.parser.HandlerState
 import ac.mdiq.podcini.storage.model.feed.FeedFunding
 import ac.mdiq.podcini.feed.parser.element.SyndElement
 import org.xml.sax.Attributes
 
 class PodcastIndex : Namespace() {
-    override fun handleElementStart(localName: String, state: ac.mdiq.podcini.feed.parser.HandlerState,
+    override fun handleElementStart(localName: String, state: HandlerState,
                                     attributes: Attributes): SyndElement {
         if (FUNDING == localName) {
             val href = attributes.getValue(URL)
@@ -21,7 +22,7 @@ class PodcastIndex : Namespace() {
         return SyndElement(localName, this)
     }
 
-    override fun handleElementEnd(localName: String, state: ac.mdiq.podcini.feed.parser.HandlerState) {
+    override fun handleElementEnd(localName: String, state: HandlerState) {
         if (state.contentBuf == null) {
             return
         }

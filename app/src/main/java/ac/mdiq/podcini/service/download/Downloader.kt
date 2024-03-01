@@ -1,12 +1,12 @@
 package ac.mdiq.podcini.service.download
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
+import ac.mdiq.podcini.storage.model.download.DownloadResult
+import ac.mdiq.podcini.util.config.ClientConfig
 import android.content.Context
 import android.net.wifi.WifiManager
 import android.net.wifi.WifiManager.WifiLock
-import ac.mdiq.podcini.util.config.ClientConfig
-import ac.mdiq.podcini.storage.model.download.DownloadResult
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
 import java.util.*
 import java.util.concurrent.Callable
 import kotlin.concurrent.Volatile
@@ -14,7 +14,7 @@ import kotlin.concurrent.Volatile
 /**
  * Downloads files
  */
-abstract class Downloader(val downloadRequest: DownloadRequest) : Callable<ac.mdiq.podcini.service.download.Downloader> {
+abstract class Downloader(val downloadRequest: DownloadRequest) : Callable<Downloader> {
     @Volatile
     var isFinished: Boolean = false
         private set
@@ -37,11 +37,11 @@ abstract class Downloader(val downloadRequest: DownloadRequest) : Callable<ac.md
 
     protected abstract fun download()
 
-    override fun call(): ac.mdiq.podcini.service.download.Downloader {
-        val wifiManager = ac.mdiq.podcini.util.config.ClientConfig.applicationCallbacks?.getApplicationInstance()?.applicationContext?.getSystemService(Context.WIFI_SERVICE) as? WifiManager
+    override fun call(): Downloader {
+        val wifiManager = ClientConfig.applicationCallbacks?.getApplicationInstance()?.applicationContext?.getSystemService(Context.WIFI_SERVICE) as? WifiManager
         var wifiLock: WifiLock? = null
         if (wifiManager != null) {
-            wifiLock = wifiManager.createWifiLock(ac.mdiq.podcini.service.download.Downloader.Companion.TAG)
+            wifiLock = wifiManager.createWifiLock(TAG)
             wifiLock.acquire()
         }
 

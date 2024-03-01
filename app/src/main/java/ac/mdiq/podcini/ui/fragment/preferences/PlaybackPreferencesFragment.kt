@@ -1,5 +1,13 @@
 package ac.mdiq.podcini.ui.fragment.preferences
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.preferences.UsageStatistics
+import ac.mdiq.podcini.preferences.UsageStatistics.doNotAskAgain
+import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.ui.activity.PreferenceActivity
+import ac.mdiq.podcini.ui.dialog.SkipPreferenceDialog
+import ac.mdiq.podcini.ui.dialog.VariableSpeedDialog
+import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
 import android.app.Activity
 import android.os.Build
 import android.os.Bundle
@@ -7,14 +15,6 @@ import androidx.collection.ArrayMap
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.activity.PreferenceActivity
-import ac.mdiq.podcini.preferences.UsageStatistics
-import ac.mdiq.podcini.preferences.UsageStatistics.doNotAskAgain
-import ac.mdiq.podcini.ui.dialog.SkipPreferenceDialog
-import ac.mdiq.podcini.ui.dialog.VariableSpeedDialog
-import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
-import ac.mdiq.podcini.preferences.UserPreferences
 import org.greenrobot.eventbus.EventBus
 
 class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
@@ -51,7 +51,7 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
         findPreference<Preference>(PREF_PLAYBACK_PREFER_STREAMING)!!.onPreferenceChangeListener =
             Preference.OnPreferenceChangeListener { _: Preference?, _: Any? ->
                 // Update all visible lists to reflect new streaming action button
-                EventBus.getDefault().post(ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent())
+                EventBus.getDefault().post(UnreadItemsUpdateEvent())
                 // User consciously decided whether to prefer the streaming button, disable suggestion to change that
                 doNotAskAgain(UsageStatistics.ACTION_STREAM)
                 true

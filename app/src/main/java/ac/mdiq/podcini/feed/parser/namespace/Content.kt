@@ -5,11 +5,11 @@ import ac.mdiq.podcini.feed.parser.element.SyndElement
 import org.xml.sax.Attributes
 
 class Content : Namespace() {
-    override fun handleElementStart(localName: String, state: ac.mdiq.podcini.feed.parser.HandlerState, attributes: Attributes): SyndElement {
+    override fun handleElementStart(localName: String, state: HandlerState, attributes: Attributes): SyndElement {
         return SyndElement(localName, this)
     }
 
-    override fun handleElementEnd(localName: String, state: ac.mdiq.podcini.feed.parser.HandlerState) {
+    override fun handleElementEnd(localName: String, state: HandlerState) {
         if (ENCODED == localName && state.currentItem != null && state.contentBuf != null) {
             state.currentItem!!.setDescriptionIfLonger(state.contentBuf.toString())
         }

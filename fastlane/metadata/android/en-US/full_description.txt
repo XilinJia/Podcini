@@ -7,6 +7,8 @@ Save effort, battery power and mobile data usage with powerful automation contro
 
 Made by podcast-enthusiasts, Podcini is free in all senses of the word: open source, no costs, no ads.
 
+Podcini emphasizes on efficient battery usage, streamlined podcast management and convenient player control while listening.
+
 <b>Import, organize and play</b>
 • Manage playback from anywhere: homescreen widget, system notification and earplug and bluetooth controls
 • Add and import feeds via the Apple Podcasts, gPodder.net, fyyd or Podcast Index directories, OPML files and RSS or Atom links
@@ -28,5 +30,3 @@ Made by podcast-enthusiasts, Podcini is free in all senses of the word: open sou
 Podcini is under active development by volunteers. You can contribute too, with code or with comment!
 https://github.com/XilinJia/Podcini
 
-Transifex is the place to help with translations:
-(to be announced)

@@ -1,6 +1,5 @@
 package ac.mdiq.podcini.service.playback
 
-import android.annotation.SuppressLint
 import android.app.Notification
 import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
 import android.os.Build

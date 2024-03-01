@@ -1,15 +1,24 @@
 package ac.mdiq.podcini.net.sync
 
 import ac.mdiq.podcini.R
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.content.Context
-import android.os.Build
-import android.util.Log
-import androidx.core.app.NotificationCompat
-import androidx.media3.common.util.UnstableApi
-import androidx.work.*
-import androidx.work.Constraints.Builder
+import ac.mdiq.podcini.net.common.UrlChecker.containsUrl
+import ac.mdiq.podcini.net.download.FeedUpdateManager.runOnce
+import ac.mdiq.podcini.net.sync.EpisodeActionFilter.getRemoteActionsOverridingLocalActions
+import ac.mdiq.podcini.net.sync.GuidValidator.isValidGuid
+import ac.mdiq.podcini.net.sync.LockingAsyncExecutor.executeLockedAsync
+import ac.mdiq.podcini.net.sync.SynchronizationCredentials.deviceID
+import ac.mdiq.podcini.net.sync.SynchronizationCredentials.hosturl
+import ac.mdiq.podcini.net.sync.SynchronizationCredentials.password
+import ac.mdiq.podcini.net.sync.SynchronizationCredentials.username
+import ac.mdiq.podcini.net.sync.SynchronizationProviderViewData.Companion.fromIdentifier
+import ac.mdiq.podcini.net.sync.gpoddernet.GpodnetService
+import ac.mdiq.podcini.net.sync.model.EpisodeAction
+import ac.mdiq.podcini.net.sync.model.ISyncService
+import ac.mdiq.podcini.net.sync.model.SyncServiceException
+import ac.mdiq.podcini.net.sync.nextcloud.NextcloudSyncService
+import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueStorage
+import ac.mdiq.podcini.preferences.UserPreferences.gpodnetNotificationsEnabled
+import ac.mdiq.podcini.preferences.UserPreferences.isAllowMobileSync
 import ac.mdiq.podcini.service.download.PodciniHttpClient.getHttpClient
 import ac.mdiq.podcini.storage.DBReader.getEpisodes
 import ac.mdiq.podcini.storage.DBReader.getFeedItemByGuidOrEpisodeUrl
@@ -19,31 +28,22 @@ import ac.mdiq.podcini.storage.DBTasks.removeFeedWithDownloadUrl
 import ac.mdiq.podcini.storage.DBTasks.updateFeed
 import ac.mdiq.podcini.storage.DBWriter.removeQueueItem
 import ac.mdiq.podcini.storage.DBWriter.setItemList
-import ac.mdiq.podcini.net.sync.EpisodeActionFilter.getRemoteActionsOverridingLocalActions
-import ac.mdiq.podcini.net.sync.GuidValidator.isValidGuid
-import ac.mdiq.podcini.net.sync.LockingAsyncExecutor.executeLockedAsync
-import ac.mdiq.podcini.net.sync.SynchronizationCredentials.deviceID
-import ac.mdiq.podcini.net.sync.SynchronizationCredentials.hosturl
-import ac.mdiq.podcini.net.sync.SynchronizationCredentials.password
-import ac.mdiq.podcini.net.sync.SynchronizationCredentials.username
-import ac.mdiq.podcini.net.sync.SynchronizationProviderViewData.Companion.fromIdentifier
-import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueStorage
+import ac.mdiq.podcini.storage.model.feed.*
+import ac.mdiq.podcini.ui.gui.NotificationUtils
 import ac.mdiq.podcini.util.FeedItemUtil.hasAlmostEnded
 import ac.mdiq.podcini.util.LongList
-import ac.mdiq.podcini.net.download.FeedUpdateManager.runOnce
-import ac.mdiq.podcini.ui.gui.NotificationUtils
 import ac.mdiq.podcini.util.event.FeedUpdateRunningEvent
 import ac.mdiq.podcini.util.event.MessageEvent
 import ac.mdiq.podcini.util.event.SyncServiceEvent
-import ac.mdiq.podcini.storage.model.feed.*
-import ac.mdiq.podcini.net.common.UrlChecker.containsUrl
-import ac.mdiq.podcini.net.sync.gpoddernet.GpodnetService
-import ac.mdiq.podcini.net.sync.model.EpisodeAction
-import ac.mdiq.podcini.net.sync.model.ISyncService
-import ac.mdiq.podcini.net.sync.model.SyncServiceException
-import ac.mdiq.podcini.net.sync.nextcloud.NextcloudSyncService
-import ac.mdiq.podcini.preferences.UserPreferences.gpodnetNotificationsEnabled
-import ac.mdiq.podcini.preferences.UserPreferences.isAllowMobileSync
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.os.Build
+import android.util.Log
+import androidx.core.app.NotificationCompat
+import androidx.media3.common.util.UnstableApi
+import androidx.work.*
+import androidx.work.Constraints.Builder
 import org.apache.commons.lang3.StringUtils
 import org.greenrobot.eventbus.EventBus
 import java.util.concurrent.TimeUnit
@@ -64,11 +64,11 @@ class SyncService(context: Context, params: WorkerParameters) : Worker(context, 
             syncEpisodeActions(activeSyncProvider)
             activeSyncProvider.logout()
             clearErrorNotifications()
-            EventBus.getDefault().postSticky(ac.mdiq.podcini.util.event.SyncServiceEvent(R.string.sync_status_success))
+            EventBus.getDefault().postSticky(SyncServiceEvent(R.string.sync_status_success))
             SynchronizationSettings.setLastSynchronizationAttemptSuccess(true)
             return Result.success()
         } catch (e: Exception) {
-            EventBus.getDefault().postSticky(ac.mdiq.podcini.util.event.SyncServiceEvent(R.string.sync_status_error))
+            EventBus.getDefault().postSticky(SyncServiceEvent(R.string.sync_status_error))
             SynchronizationSettings.setLastSynchronizationAttemptSuccess(false)
             Log.e(TAG, Log.getStackTraceString(e))
 
@@ -90,7 +90,7 @@ class SyncService(context: Context, params: WorkerParameters) : Worker(context, 
     @UnstableApi @Throws(SyncServiceException::class)
     private fun syncSubscriptions(syncServiceImpl: ISyncService) {
         val lastSync = SynchronizationSettings.lastSubscriptionSynchronizationTimestamp
-        EventBus.getDefault().postSticky(ac.mdiq.podcini.util.event.SyncServiceEvent(R.string.sync_status_subscriptions))
+        EventBus.getDefault().postSticky(SyncServiceEvent(R.string.sync_status_subscriptions))
         val localSubscriptions: List<String?> = getFeedListDownloadUrls()
         val subscriptionChanges = syncServiceImpl.getSubscriptionChanges(lastSync)
         var newTimeStamp = subscriptionChanges?.timestamp?:0L
@@ -144,12 +144,12 @@ class SyncService(context: Context, params: WorkerParameters) : Worker(context, 
     }
 
     private fun waitForDownloadServiceCompleted() {
-        EventBus.getDefault().postSticky(ac.mdiq.podcini.util.event.SyncServiceEvent(R.string.sync_status_wait_for_downloads))
+        EventBus.getDefault().postSticky(SyncServiceEvent(R.string.sync_status_wait_for_downloads))
         try {
             while (true) {
                 Thread.sleep(1000)
                 val event = EventBus.getDefault().getStickyEvent(
-                    ac.mdiq.podcini.util.event.FeedUpdateRunningEvent::class.java)
+                    FeedUpdateRunningEvent::class.java)
                 if (event == null || !event.isFeedUpdateRunning) {
                     return
                 }
@@ -162,17 +162,17 @@ class SyncService(context: Context, params: WorkerParameters) : Worker(context, 
     @UnstableApi @Throws(SyncServiceException::class)
     private fun syncEpisodeActions(syncServiceImpl: ISyncService) {
         val lastSync = SynchronizationSettings.lastEpisodeActionSynchronizationTimestamp
-        EventBus.getDefault().postSticky(ac.mdiq.podcini.util.event.SyncServiceEvent(R.string.sync_status_episodes_download))
+        EventBus.getDefault().postSticky(SyncServiceEvent(R.string.sync_status_episodes_download))
         val getResponse = syncServiceImpl.getEpisodeActionChanges(lastSync)
         var newTimeStamp = getResponse?.timestamp?:0L
         val remoteActions = getResponse?.episodeActions?: listOf()
         processEpisodeActions(remoteActions)
 
         // upload local actions
-        EventBus.getDefault().postSticky(ac.mdiq.podcini.util.event.SyncServiceEvent(R.string.sync_status_episodes_upload))
+        EventBus.getDefault().postSticky(SyncServiceEvent(R.string.sync_status_episodes_upload))
         val queuedEpisodeActions: MutableList<EpisodeAction> = synchronizationQueueStorage.queuedEpisodeActions
         if (lastSync == 0L) {
-            EventBus.getDefault().postSticky(ac.mdiq.podcini.util.event.SyncServiceEvent(R.string.sync_status_upload_played))
+            EventBus.getDefault().postSticky(SyncServiceEvent(R.string.sync_status_upload_played))
             val readItems = getEpisodes(0, Int.MAX_VALUE,
                 FeedItemFilter(FeedItemFilter.PLAYED), SortOrder.DATE_NEW_OLD)
             Log.d(TAG, "First sync. Upload state for all " + readItems.size + " played episodes")
@@ -257,8 +257,8 @@ class SyncService(context: Context, params: WorkerParameters) : Worker(context, 
             Log.d(TAG, "Skipping sync error notification because of user setting")
             return
         }
-        if (EventBus.getDefault().hasSubscriberForEvent(ac.mdiq.podcini.util.event.MessageEvent::class.java)) {
-            EventBus.getDefault().post(ac.mdiq.podcini.util.event.MessageEvent(description))
+        if (EventBus.getDefault().hasSubscriberForEvent(MessageEvent::class.java)) {
+            EventBus.getDefault().post(MessageEvent(description))
             return
         }
 
@@ -323,7 +323,7 @@ class SyncService(context: Context, params: WorkerParameters) : Worker(context, 
             } else {
                 // Give it some time, so other possible actions can be queued.
                 builder.setInitialDelay(20L, TimeUnit.SECONDS)
-                EventBus.getDefault().postSticky(ac.mdiq.podcini.util.event.SyncServiceEvent(R.string.sync_status_started))
+                EventBus.getDefault().postSticky(SyncServiceEvent(R.string.sync_status_started))
             }
             return builder
         }

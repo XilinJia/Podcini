@@ -1,8 +1,8 @@
 package ac.mdiq.podcini.net.discovery
 
 import ac.mdiq.podcini.BuildConfig
-import ac.mdiq.podcini.util.config.ClientConfig
 import ac.mdiq.podcini.service.download.PodciniHttpClient.getHttpClient
+import ac.mdiq.podcini.util.config.ClientConfig
 import io.reactivex.Single
 import io.reactivex.SingleEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -83,7 +83,7 @@ class PodcastIndexPodcastSearcher : PodcastSearcher {
             .addHeader("X-Auth-Date", apiHeaderTime)
             .addHeader("X-Auth-Key", BuildConfig.PODCASTINDEX_API_KEY)
             .addHeader("Authorization", hashString)
-            .addHeader("User-Agent", ac.mdiq.podcini.util.config.ClientConfig.USER_AGENT?:"")
+            .addHeader("User-Agent", ClientConfig.USER_AGENT?:"")
             .url(url)
         return httpReq.build()
     }

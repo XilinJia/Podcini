@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.ui.common
 
 import android.content.Context
-import android.util.Log
 import android.util.TypedValue
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
@@ -9,7 +8,6 @@ import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 
 object ThemeUtils {
-    @OptIn(ExperimentalStdlibApi::class)
     @JvmStatic
     @ColorInt
     fun getColorFromAttr(context: Context, @AttrRes attr: Int): Int {

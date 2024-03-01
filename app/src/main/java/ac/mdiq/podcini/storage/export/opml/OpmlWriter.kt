@@ -57,7 +57,7 @@ class OpmlWriter : ExportWriter {
         Log.d(TAG, "Finished writing document")
     }
 
-    override fun fileExtension(): String? {
+    override fun fileExtension(): String {
         return "opml"
     }
 

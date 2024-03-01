@@ -1,10 +1,10 @@
 package ac.mdiq.podcini.net.sync
 
-import android.content.Context
-import android.content.SharedPreferences
-import ac.mdiq.podcini.util.config.ClientConfig
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink.clearQueue
 import ac.mdiq.podcini.preferences.UserPreferences.setGpodnetNotificationsEnabled
+import ac.mdiq.podcini.util.config.ClientConfig
+import android.content.Context
+import android.content.SharedPreferences
 
 /**
  * Manages preferences for accessing gpodder.net service and other sync providers
@@ -17,7 +17,7 @@ object SynchronizationCredentials {
     private const val PREF_HOSTNAME = "prefGpodnetHostname"
 
     private val preferences: SharedPreferences
-        get() = ac.mdiq.podcini.util.config.ClientConfig.applicationCallbacks!!.getApplicationInstance()!!.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        get() = ClientConfig.applicationCallbacks!!.getApplicationInstance()!!.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
 
     @JvmStatic
     var username: String?

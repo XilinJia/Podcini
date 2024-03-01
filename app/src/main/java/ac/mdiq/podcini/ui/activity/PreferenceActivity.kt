@@ -1,5 +1,11 @@
 package ac.mdiq.podcini.ui.activity
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.SettingsActivityBinding
+import ac.mdiq.podcini.preferences.ThemeSwitcher.getTheme
+import ac.mdiq.podcini.ui.fragment.preferences.*
+import ac.mdiq.podcini.ui.fragment.preferences.synchronization.SynchronizationPreferencesFragment
+import ac.mdiq.podcini.util.event.MessageEvent
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Build
@@ -15,12 +21,6 @@ import com.bytehamster.lib.preferencesearch.SearchPreferenceResult
 import com.bytehamster.lib.preferencesearch.SearchPreferenceResultListener
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.preferences.ThemeSwitcher.getTheme
-import ac.mdiq.podcini.databinding.SettingsActivityBinding
-import ac.mdiq.podcini.util.event.MessageEvent
-import ac.mdiq.podcini.ui.fragment.preferences.*
-import ac.mdiq.podcini.ui.fragment.preferences.synchronization.SynchronizationPreferencesFragment
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -153,7 +153,7 @@ class PreferenceActivity : AppCompatActivity(), SearchPreferenceResultListener {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: ac.mdiq.podcini.util.event.MessageEvent) {
+    fun onEventMainThread(event: MessageEvent) {
         Log.d(FRAGMENT_TAG, "onEvent($event)")
         val s = Snackbar.make(binding.root, event.message, Snackbar.LENGTH_LONG)
         if (event.action != null) {

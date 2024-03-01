@@ -34,7 +34,7 @@ class MediaDownloadedHandler(private val context: Context, var updatedStatus: Do
         val broadcastUnreadStateUpdate = media.getItem() != null && media.getItem()!!.isNew
         media.setDownloaded(true)
         media.file_url = request.destination
-        if (request.destination != null) media.size = File(request.destination!!).length()
+        if (request.destination != null) media.size = File(request.destination).length()
         media.checkEmbeddedPicture() // enforce check
 
         // check if file has chapters
@@ -73,7 +73,7 @@ class MediaDownloadedHandler(private val context: Context, var updatedStatus: Do
                 // to ensure subscribers will get the updated FeedMedia as well
                 DBWriter.setFeedItem(item).get()
                 if (broadcastUnreadStateUpdate) {
-                    EventBus.getDefault().post(ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent())
+                    EventBus.getDefault().post(UnreadItemsUpdateEvent())
                 }
             }
         } catch (e: InterruptedException) {

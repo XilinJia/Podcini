@@ -1,11 +1,10 @@
 package ac.mdiq.podcini.ui.adapter
 
+import ac.mdiq.podcini.R
 import android.content.Context
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
-import ac.mdiq.podcini.R
 
 abstract class SimpleChipAdapter(private val context: Context) : RecyclerView.Adapter<SimpleChipAdapter.ViewHolder>() {
     init {

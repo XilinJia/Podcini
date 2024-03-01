@@ -1,0 +1,2 @@
+ 
+Version 4.1.0 brings a more convenient player control and tags enhancements, while also enables view binding for most views in the codebase.

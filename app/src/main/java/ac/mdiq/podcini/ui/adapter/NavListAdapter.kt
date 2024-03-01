@@ -1,5 +1,16 @@
 package ac.mdiq.podcini.ui.adapter
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.NavListitemBinding
+import ac.mdiq.podcini.databinding.NavSectionItemBinding
+import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.episodeCacheSize
+import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
+import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
+import ac.mdiq.podcini.preferences.UserPreferences.subscriptionsFilter
+import ac.mdiq.podcini.storage.NavDrawerData.FeedDrawerItem
+import ac.mdiq.podcini.ui.activity.PreferenceActivity
+import ac.mdiq.podcini.ui.fragment.*
 import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
@@ -14,6 +25,8 @@ import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.annotation.DrawableRes
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -21,20 +34,6 @@ import com.bumptech.glide.load.resource.bitmap.FitCenter
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.NavListitemBinding
-import ac.mdiq.podcini.databinding.NavSectionItemBinding
-import ac.mdiq.podcini.ui.activity.PreferenceActivity
-import ac.mdiq.podcini.storage.NavDrawerData.*
-import ac.mdiq.podcini.ui.fragment.*
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.episodeCacheSize
-import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
-import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
-import ac.mdiq.podcini.preferences.UserPreferences.subscriptionsFilter
-import ac.mdiq.podcini.ui.statistics.StatisticsFragment
-import androidx.annotation.OptIn
-import androidx.media3.common.util.UnstableApi
 import org.apache.commons.lang3.ArrayUtils
 import java.lang.ref.WeakReference
 import java.text.NumberFormat
@@ -179,7 +178,7 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
                 val item = itemAccess.getItem(itemPos)
                 if (item != null) {
                     bindListItem(item, holder as FeedHolder)
-                    bindFeedView(item as FeedDrawerItem, holder)
+                    bindFeedView(item, holder)
                 }
                 holder.itemView.setOnCreateContextMenuListener(itemAccess)
             }

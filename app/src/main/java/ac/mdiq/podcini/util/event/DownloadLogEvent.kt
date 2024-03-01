@@ -7,8 +7,8 @@ class DownloadLogEvent private constructor() {
 
     companion object {
         @JvmStatic
-        fun listUpdated(): ac.mdiq.podcini.util.event.DownloadLogEvent {
-            return ac.mdiq.podcini.util.event.DownloadLogEvent()
+        fun listUpdated(): DownloadLogEvent {
+            return DownloadLogEvent()
         }
     }
 }

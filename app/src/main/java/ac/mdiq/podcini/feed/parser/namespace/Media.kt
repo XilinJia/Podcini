@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 
 /** Processes tags from the http://search.yahoo.com/mrss/ namespace.  */
 class Media : Namespace() {
-    override fun handleElementStart(localName: String, state: ac.mdiq.podcini.feed.parser.HandlerState, attributes: Attributes): SyndElement {
+    override fun handleElementStart(localName: String, state: HandlerState, attributes: Attributes): SyndElement {
         if (CONTENT == localName) {
             val url = attributes.getValue(DOWNLOAD_URL)
             val defaultStr = attributes.getValue(DEFAULT)
@@ -88,7 +88,7 @@ class Media : Namespace() {
         return SyndElement(localName, this)
     }
 
-    override fun handleElementEnd(localName: String, state: ac.mdiq.podcini.feed.parser.HandlerState) {
+    override fun handleElementEnd(localName: String, state: HandlerState) {
         if (DESCRIPTION == localName) {
             val content = state.contentBuf.toString()
             if (state.currentItem != null) {

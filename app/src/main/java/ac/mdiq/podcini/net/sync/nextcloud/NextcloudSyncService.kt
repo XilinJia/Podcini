@@ -23,7 +23,7 @@ class NextcloudSyncService(private val httpClient: OkHttpClient, baseHosturl: St
     }
 
     @Throws(SyncServiceException::class)
-    override fun getSubscriptionChanges(lastSync: Long): SubscriptionChanges? {
+    override fun getSubscriptionChanges(lastSync: Long): SubscriptionChanges {
         try {
             val url: HttpUrl.Builder = makeUrl("/index.php/apps/gpoddersync/subscriptions")
             url.addQueryParameter("since", "" + lastSync)
@@ -45,7 +45,7 @@ class NextcloudSyncService(private val httpClient: OkHttpClient, baseHosturl: St
     @Throws(NextcloudSynchronizationServiceException::class)
     override fun uploadSubscriptionChanges(addedFeeds: List<String?>?,
                                            removedFeeds: List<String?>?
-    ): UploadChangesResponse? {
+    ): UploadChangesResponse {
         try {
             val url: HttpUrl.Builder = makeUrl("/index.php/apps/gpoddersync/subscription_change/create")
             val requestObject = JSONObject()
@@ -62,7 +62,7 @@ class NextcloudSyncService(private val httpClient: OkHttpClient, baseHosturl: St
     }
 
     @Throws(SyncServiceException::class)
-    override fun getEpisodeActionChanges(timestamp: Long): EpisodeActionChanges? {
+    override fun getEpisodeActionChanges(timestamp: Long): EpisodeActionChanges {
         try {
             val uri: HttpUrl.Builder = makeUrl("/index.php/apps/gpoddersync/episode_action")
             uri.addQueryParameter("since", "" + timestamp)
@@ -82,7 +82,7 @@ class NextcloudSyncService(private val httpClient: OkHttpClient, baseHosturl: St
     }
 
     @Throws(NextcloudSynchronizationServiceException::class)
-    override fun uploadEpisodeActions(queuedEpisodeActions: List<EpisodeAction?>?): UploadChangesResponse? {
+    override fun uploadEpisodeActions(queuedEpisodeActions: List<EpisodeAction?>?): UploadChangesResponse {
         var i = 0
         while (i < queuedEpisodeActions!!.size) {
             uploadEpisodeActionsPartial(queuedEpisodeActions,

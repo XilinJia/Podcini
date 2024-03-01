@@ -11,5 +11,5 @@ object ClientConfig {
     var USER_AGENT: String? = null
 
     @JvmField
-    var applicationCallbacks: ac.mdiq.podcini.util.config.ApplicationCallbacks? = null
+    var applicationCallbacks: ApplicationCallbacks? = null
 }

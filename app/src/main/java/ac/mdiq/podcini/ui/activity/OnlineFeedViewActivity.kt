@@ -307,7 +307,7 @@ class OnlineFeedViewActivity : AppCompatActivity() {
     }
 
     @UnstableApi @Subscribe
-    fun onFeedListChanged(event: ac.mdiq.podcini.util.event.FeedListUpdateEvent?) {
+    fun onFeedListChanged(event: FeedListUpdateEvent?) {
         updater = Observable.fromCallable { DBReader.getFeedList() }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -329,9 +329,9 @@ class OnlineFeedViewActivity : AppCompatActivity() {
         parser = Maybe.fromCallable { doParseFeed(destination) }
             .subscribeOn(Schedulers.computation())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribeWith(object : DisposableMaybeObserver<ac.mdiq.podcini.feed.parser.FeedHandlerResult?>() {
+            .subscribeWith(object : DisposableMaybeObserver<FeedHandlerResult?>() {
 
-                @UnstableApi override fun onSuccess(result: ac.mdiq.podcini.feed.parser.FeedHandlerResult) {
+                @UnstableApi override fun onSuccess(result: FeedHandlerResult) {
                     showFeedInformation(result.feed, result.alternateFeedUrls)
                 }
 
@@ -353,8 +353,8 @@ class OnlineFeedViewActivity : AppCompatActivity() {
      * @throws Exception If unsuccessful but we do not know a resolution.
      */
     @Throws(Exception::class)
-    private fun doParseFeed(destination: String): ac.mdiq.podcini.feed.parser.FeedHandlerResult? {
-        val handler = ac.mdiq.podcini.feed.parser.FeedHandler()
+    private fun doParseFeed(destination: String): FeedHandlerResult? {
+        val handler = FeedHandler()
         val feed = Feed(selectedDownloadUrl, null)
         feed.file_url = destination
         val destinationFile = File(destination)
@@ -615,7 +615,7 @@ class OnlineFeedViewActivity : AppCompatActivity() {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun playbackStateChanged(event: ac.mdiq.podcini.util.event.PlayerStatusEvent?) {
+    fun playbackStateChanged(event: PlayerStatusEvent?) {
         val isPlayingPreview = currentlyPlayingMediaType == RemoteMedia.PLAYABLE_TYPE_REMOTE_MEDIA.toLong()
         viewBinding.stopPreviewButton.visibility = if (isPlayingPreview) View.VISIBLE else View.GONE
     }

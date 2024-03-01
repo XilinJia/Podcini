@@ -1,8 +1,8 @@
 package ac.mdiq.podcini.net.sync
 
+import ac.mdiq.podcini.util.config.ClientConfig
 import android.content.Context
 import android.content.SharedPreferences
-import ac.mdiq.podcini.util.config.ClientConfig
 
 object SynchronizationSettings {
     const val LAST_SYNC_ATTEMPT_TIMESTAMP: String = "last_sync_attempt_timestamp"
@@ -69,6 +69,6 @@ object SynchronizationSettings {
     }
 
     private val sharedPreferences: SharedPreferences
-        get() = ac.mdiq.podcini.util.config.ClientConfig.applicationCallbacks!!.getApplicationInstance()!!
+        get() = ClientConfig.applicationCallbacks!!.getApplicationInstance()!!
             .getSharedPreferences(NAME, Context.MODE_PRIVATE)
 }

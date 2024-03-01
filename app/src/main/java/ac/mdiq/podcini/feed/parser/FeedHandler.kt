@@ -16,11 +16,11 @@ class FeedHandler {
     @Throws(SAXException::class,
         IOException::class,
         ParserConfigurationException::class,
-        ac.mdiq.podcini.feed.parser.UnsupportedFeedtypeException::class)
-    fun parseFeed(feed: Feed): ac.mdiq.podcini.feed.parser.FeedHandlerResult {
+        UnsupportedFeedtypeException::class)
+    fun parseFeed(feed: Feed): FeedHandlerResult {
         val tg = TypeGetter()
         val type = tg.getType(feed)
-        val handler = ac.mdiq.podcini.feed.parser.SyndHandler(feed, type)
+        val handler = SyndHandler(feed, type)
 
         if (feed.file_url != null) {
             val factory = SAXParserFactory.newInstance()
@@ -34,7 +34,7 @@ class FeedHandler {
             saxParser.parse(inputSource, handler)
             inputStreamReader.close()
         }
-        return ac.mdiq.podcini.feed.parser.FeedHandlerResult(handler.state.feed,
+        return FeedHandlerResult(handler.state.feed,
             handler.state.alternateUrls,
             handler.state.redirectUrl ?: "")
     }

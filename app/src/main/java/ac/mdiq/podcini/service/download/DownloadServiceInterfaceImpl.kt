@@ -17,12 +17,12 @@ import java.util.concurrent.TimeUnit
 class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
     override fun downloadNow(context: Context, item: FeedItem, ignoreConstraints: Boolean) {
         val workRequest: OneTimeWorkRequest.Builder =
-            ac.mdiq.podcini.service.download.DownloadServiceInterfaceImpl.Companion.getRequest(context, item)
+            getRequest(context, item)
         workRequest.setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
         if (ignoreConstraints) {
             workRequest.setConstraints(Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
         } else {
-            workRequest.setConstraints(ac.mdiq.podcini.service.download.DownloadServiceInterfaceImpl.Companion.constraints)
+            workRequest.setConstraints(constraints)
         }
         if (item.media?.download_url != null) WorkManager.getInstance(context).enqueueUniqueWork(item.media!!.download_url!!,
             ExistingWorkPolicy.KEEP, workRequest.build())
@@ -30,8 +30,8 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
 
     override fun download(context: Context, item: FeedItem) {
         val workRequest: OneTimeWorkRequest.Builder =
-            ac.mdiq.podcini.service.download.DownloadServiceInterfaceImpl.Companion.getRequest(context, item)
-        workRequest.setConstraints(ac.mdiq.podcini.service.download.DownloadServiceInterfaceImpl.Companion.constraints)
+            getRequest(context, item)
+        workRequest.setConstraints(constraints)
         if (item.media?.download_url != null) WorkManager.getInstance(context).enqueueUniqueWork(item.media!!.download_url!!,
             ExistingWorkPolicy.KEEP, workRequest.build())
     }
@@ -64,7 +64,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
 
     companion object {
         private fun getRequest(context: Context, item: FeedItem): OneTimeWorkRequest.Builder {
-            val workRequest: OneTimeWorkRequest.Builder = OneTimeWorkRequest.Builder(ac.mdiq.podcini.service.download.EpisodeDownloadWorker::class.java)
+            val workRequest: OneTimeWorkRequest.Builder = OneTimeWorkRequest.Builder(EpisodeDownloadWorker::class.java)
                 .setInitialDelay(0L, TimeUnit.MILLISECONDS)
                 .addTag(WORK_TAG)
                 .addTag(WORK_TAG_EPISODE_URL + item.media!!.download_url)

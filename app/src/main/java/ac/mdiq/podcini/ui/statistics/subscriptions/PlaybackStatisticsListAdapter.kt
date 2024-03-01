@@ -44,7 +44,7 @@ class PlaybackStatisticsListAdapter(private val fragment: Fragment) : Statistics
     override val headerValue: String
         get() = shortLocalizedDuration(context, pieChartData!!.sum.toLong())
 
-    override fun generateChartData(statisticsData: List<StatisticsItem>?): PieChartData? {
+    override fun generateChartData(statisticsData: List<StatisticsItem>?): PieChartData {
         val dataValues = FloatArray(statisticsData!!.size)
         for (i in statisticsData.indices) {
             val item = statisticsData[i]

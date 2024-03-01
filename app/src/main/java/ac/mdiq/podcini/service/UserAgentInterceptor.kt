@@ -10,7 +10,7 @@ class UserAgentInterceptor : Interceptor {
     @Throws(IOException::class)
     override fun intercept(chain: Chain): Response {
         return chain.proceed(chain.request().newBuilder()
-            .header("User-Agent", ac.mdiq.podcini.util.config.ClientConfig.USER_AGENT?:"")
+            .header("User-Agent", ClientConfig.USER_AGENT?:"")
             .build())
     }
 }

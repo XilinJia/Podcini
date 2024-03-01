@@ -1,26 +1,25 @@
 package ac.mdiq.podcini.ui.fragment.preferences
 
-import android.content.Context
-import android.content.DialogInterface
-import android.os.Build
-import android.os.Bundle
-import android.view.View
-import androidx.appcompat.app.AlertDialog
-import androidx.core.app.ActivityCompat
-import androidx.preference.Preference
-import androidx.preference.PreferenceFragmentCompat
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.snackbar.Snackbar
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.fullNotificationButtons
+import ac.mdiq.podcini.preferences.UserPreferences.setShowRemainTimeSetting
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.ui.dialog.DrawerPreferencesDialog
 import ac.mdiq.podcini.ui.dialog.FeedSortDialog
 import ac.mdiq.podcini.ui.dialog.SubscriptionsFilterDialog
 import ac.mdiq.podcini.util.event.PlayerStatusEvent
 import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.fullNotificationButtons
-import ac.mdiq.podcini.preferences.UserPreferences.setShowRemainTimeSetting
+import android.content.Context
+import android.content.DialogInterface
+import android.os.Build
+import android.os.Bundle
+import androidx.appcompat.app.AlertDialog
+import androidx.core.app.ActivityCompat
+import androidx.preference.Preference
+import androidx.preference.PreferenceFragmentCompat
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import org.greenrobot.eventbus.EventBus
 
 class UserInterfacePreferencesFragment : PreferenceFragmentCompat() {
@@ -49,8 +48,8 @@ class UserInterfacePreferencesFragment : PreferenceFragmentCompat() {
         findPreference<Preference>(UserPreferences.PREF_SHOW_TIME_LEFT)
             ?.setOnPreferenceChangeListener { _: Preference?, newValue: Any? ->
                 setShowRemainTimeSetting(newValue as Boolean?)
-                EventBus.getDefault().post(ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent())
-                EventBus.getDefault().post(ac.mdiq.podcini.util.event.PlayerStatusEvent())
+                EventBus.getDefault().post(UnreadItemsUpdateEvent())
+                EventBus.getDefault().post(PlayerStatusEvent())
                 true
             }
 

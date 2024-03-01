@@ -3,6 +3,8 @@ package ac.mdiq.podcini.ui.statistics.subscriptions
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.StatisticsFilterDialogBinding
+import ac.mdiq.podcini.ui.statistics.StatisticsFragment
+import ac.mdiq.podcini.util.event.StatisticsEvent
 import android.content.Context
 import android.content.DialogInterface
 import android.content.SharedPreferences
@@ -13,8 +15,6 @@ import android.widget.ArrayAdapter
 import android.widget.CompoundButton
 import androidx.core.util.Pair
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import ac.mdiq.podcini.util.event.StatisticsEvent
-import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import org.greenrobot.eventbus.EventBus
 import java.text.SimpleDateFormat
 import java.util.*
@@ -100,7 +100,7 @@ class StatisticsFilterDialog(private val context: Context, oldestDate: Long) {
                 .putLong(StatisticsFragment.PREF_FILTER_FROM, timeFilterFrom)
                 .putLong(StatisticsFragment.PREF_FILTER_TO, timeFilterTo)
                 .apply()
-            EventBus.getDefault().post(ac.mdiq.podcini.util.event.StatisticsEvent())
+            EventBus.getDefault().post(StatisticsEvent())
         }
         builder.show()
     }

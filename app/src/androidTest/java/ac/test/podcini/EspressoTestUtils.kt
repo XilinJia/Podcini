@@ -184,8 +184,8 @@ object EspressoTestUtils {
     }
 
     fun openNavDrawer() {
-        Espresso.onView(ViewMatchers.isRoot()).perform(waitForView(ViewMatchers.withId(R.id.main_activity), 1000))
-        Espresso.onView(ViewMatchers.withId(R.id.main_activity)).perform(DrawerActions.open())
+        Espresso.onView(ViewMatchers.isRoot()).perform(waitForView(ViewMatchers.withId(R.id.main_layout), 1000))
+        Espresso.onView(ViewMatchers.withId(R.id.main_layout)).perform(DrawerActions.open())
     }
 
     fun onDrawerItem(viewMatcher: Matcher<View>?): ViewInteraction {

@@ -14,7 +14,7 @@ import androidx.media3.common.util.UnstableApi
 @OptIn(UnstableApi::class)
 object DrawerPreferencesDialog {
     fun show(context: Context, callback: Runnable?) {
-        val hiddenDrawerItems = hiddenDrawerItems?.toMutableList()?: mutableListOf()
+        val hiddenDrawerItems = hiddenDrawerItems.toMutableList()
         val navTitles = context.resources.getStringArray(R.array.nav_drawer_titles)
         val checked = BooleanArray(NavDrawerFragment.NAV_DRAWER_TAGS.size)
         for (i in NavDrawerFragment.NAV_DRAWER_TAGS.indices) {

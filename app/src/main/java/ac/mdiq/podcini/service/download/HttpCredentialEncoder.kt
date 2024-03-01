@@ -1,6 +1,6 @@
 package ac.mdiq.podcini.service.download
 
-import okio.ByteString;
+import okio.ByteString
 import java.io.UnsupportedEncodingException
 
 object HttpCredentialEncoder {

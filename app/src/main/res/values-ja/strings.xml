@@ -361,11 +361,11 @@
   <string name="no_results_for_query">\"%1$s\" の結果は見つかりませんでした</string>
   <!--Synchronization-->
   <string name="sync_status_started">同期開始</string>
-  <string name="sync_status_episodes_upload">エピソードの変更をアップロード中...</string>
-  <string name="sync_status_episodes_download">エピソードの変更をダウンロード中...</string>
-  <string name="sync_status_upload_played">再生の状態をアップロード中...</string>
-  <string name="sync_status_subscriptions">購読を同期中...</string>
-  <string name="sync_status_wait_for_downloads">ダウンロード完了待ち...</string>
+  <string name="sync_status_episodes_upload">エピソードの変更をアップロード中…</string>
+  <string name="sync_status_episodes_download">エピソードの変更をダウンロード中…</string>
+  <string name="sync_status_upload_played">再生の状態をアップロード中…</string>
+  <string name="sync_status_subscriptions">購読を同期中…</string>
+  <string name="sync_status_wait_for_downloads">ダウンロード完了待ち…</string>
   <string name="sync_status_success">同期しました</string>
   <string name="sync_status_error">同期に失敗しました</string>
   <!--import and export-->

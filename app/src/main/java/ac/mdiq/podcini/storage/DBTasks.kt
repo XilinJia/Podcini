@@ -295,17 +295,17 @@ import java.util.concurrent.*
                         savedFeed.items.add(idx, item)
                     }
 
-                    var action = savedFeed.preferences!!.newEpisodesAction
-                    if (action == NewEpisodesAction.GLOBAL) {
-                        action = newEpisodesAction
-                    }
-                    if (action == NewEpisodesAction.ADD_TO_INBOX
-                            && (item.getPubDate() == null || priorMostRecentDate == null || priorMostRecentDate.before(
-                                item.getPubDate()) || priorMostRecentDate == item.getPubDate())) {
-                        Log.d(TAG, "Marking item published on " + item.getPubDate()
-                                + " new, prior most recent date = " + priorMostRecentDate)
-                        item.setNew()
-                    }
+//                    var action = savedFeed.preferences!!.newEpisodesAction
+//                    if (action == NewEpisodesAction.GLOBAL) {
+//                        action = newEpisodesAction
+//                    }
+//                    if (action == NewEpisodesAction.ADD_TO_INBOX
+//                            && (item.getPubDate() == null || priorMostRecentDate == null || priorMostRecentDate.before(
+//                                item.getPubDate()) || priorMostRecentDate == item.getPubDate())) {
+//                        Log.d(TAG, "Marking item published on " + item.getPubDate()
+//                                + " new, prior most recent date = " + priorMostRecentDate)
+//                        item.setNew()
+//                    }
                 }
             }
 

@@ -42,16 +42,9 @@
   <string name="statistics_filter_all_time">Kaikki</string>
   <string name="statistics_filter_past_year">Viimeisin vuosi</string>
   <string name="statistics_reset_data">Nollaa tilastotiedot</string>
-  <string name="statistics_reset_data_msg">Tämä poistaa kaikkien jaksojen toiston keston historian. Haluatko varmasti jatkaa?</string>
+  <string name="statistics_reset_data_msg">Tämä poistaa kaikkien jaksojen toiston keston historian. Haluatko varmasti jatkaa\?</string>
   <string name="statistics_counting_range">Toistettu %1$s ja %2$s välillä</string>
   <string name="statistics_counting_total">Toistettu yhteensä</string>
-  <!--Home fragment-->
-
-
-
-
-
-
 
   <string name="notification_permission_denied">Et antanut lupaa.</string>
   <string name="open_settings">Avaa asetukset</string>
@@ -82,7 +75,7 @@
   <string name="go_to_position_label">Mene tähän aikamerkkiin</string>
   <!--Playback history-->
   <string name="clear_history_label">Tyhjennä historia</string>
-  <string name="clear_playback_history_msg">Tämä tyhjentää koko toistohistorian. Oletko varma, että haluat jatkaa?</string>
+  <string name="clear_playback_history_msg">Tämä tyhjentää koko toistohistorian. Oletko varma, että haluat jatkaa\?</string>
   <string name="remove_history_label">Poista historiasta</string>
   <string name="removed_history_label">Poistettu historiasta</string>
   <!--Other-->
@@ -178,7 +171,7 @@
   <string name="edit_tags">Muokkaa tunnisteita</string>
   <string name="add_tag">Lisää tunniste</string>
   <string name="rename_tag_label">Nimeä tunniste uudelleen</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message">Podcastien päivittäminen mobiilidatayhteydellä on poistettu käytöstä asetuksissa.\n\nHaluatko silti päivittää?</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message">Podcastien päivittäminen mobiilidatayhteydellä on poistettu käytöstä asetuksissa.\n\nHaluatko silti päivittää\?</string>
   <!--actions on feeditems-->
   <string name="download_label">Lataa</string>
   <plurals name="downloading_batch_label">
@@ -345,7 +338,7 @@
   <string name="interruptions">Keskeytykset</string>
   <string name="playback_control">Toistonhallinta</string>
   <string name="reassign_hardware_buttons">Uudelleenmääritä laitteiden painikkeet</string>
-  <string name="preference_search_hint">Hae...</string>
+  <string name="preference_search_hint">Hae…</string>
   <string name="preference_search_no_results">Ei tuloksia</string>
   <string name="preference_search_clear_history">Tyhjennä historia</string>
   <string name="pref_episode_cleanup_title">Jakson siivous</string>
@@ -490,11 +483,11 @@
   <string name="no_results_for_query">Ei löydetty tuloksia \"%1$s\"</string>
   <!--Synchronization-->
   <string name="sync_status_started">Synkronointi aloitettu</string>
-  <string name="sync_status_episodes_upload">Ladataan jaksomuutokset palvelimelle...</string>
-  <string name="sync_status_episodes_download">Ladataan jaksomuutokset palvelimelta...</string>
-  <string name="sync_status_upload_played">Ladataan toistojen tilat palvelimelle...</string>
-  <string name="sync_status_subscriptions">Synkronoidaan tilauksia...</string>
-  <string name="sync_status_wait_for_downloads">Odotetaan latausten valmistumista...</string>
+  <string name="sync_status_episodes_upload">Ladataan jaksomuutokset palvelimelle…</string>
+  <string name="sync_status_episodes_download">Ladataan jaksomuutokset palvelimelta…</string>
+  <string name="sync_status_upload_played">Ladataan toistojen tilat palvelimelle…</string>
+  <string name="sync_status_subscriptions">Synkronoidaan tilauksia…</string>
+  <string name="sync_status_wait_for_downloads">Odotetaan latausten valmistumista…</string>
   <string name="sync_status_success">Synkronointi onnistui</string>
   <string name="sync_status_error">Synkronointi epäonnistui</string>
   <!--import and export-->
@@ -517,8 +510,8 @@
   <string name="html_export_label">HTML vienti</string>
   <string name="database_export_label">Tietokannan vienti</string>
   <string name="database_import_label">Tietokannan tuonti</string>
-  <string name="database_import_warning">Tietokannan tuonti korvaa kaikki nykyiset tilauksesi ja toistohistoriasi. Vie nykyinen tietokanta halutessasi varmuuskopioksi ennen jatkamista. Haluatko korvata?</string>
-  <string name="please_wait">Ole hyvä ja odota...</string>
+  <string name="database_import_warning">Tietokannan tuonti korvaa kaikki nykyiset tilauksesi ja toistohistoriasi. Vie nykyinen tietokanta halutessasi varmuuskopioksi ennen jatkamista. Haluatko korvata\?</string>
+  <string name="please_wait">Ole hyvä ja odota…</string>
   <string name="export_error_label">Vientivirhe</string>
   <string name="export_success_title">Vienti onnistunut</string>
   <string name="opml_import_ask_read_permission">Pääsy ulkoiseen solvellukseen tarvitaan OPML tiedoston lukemiseen</string>
@@ -597,7 +590,7 @@
   <string name="pref_pausePlaybackForFocusLoss_title">Pysäytä keskeytyksiin</string>
   <!--Online feed view-->
   <string name="subscribe_label">Tilaa</string>
-  <string name="subscribing_label">Tilataan...</string>
+  <string name="subscribing_label">Tilataan…</string>
   <string name="preview_episode">Näyte</string>
   <string name="stop_preview">Pysäytä näyte</string>
   <!--Content descriptions for image buttons-->
@@ -642,7 +635,7 @@
   <!--PodciniSP-->
   <string name="sp_apps_importing_feeds_msg">Tuodaan tilauksia sovelluksista</string>
   <!--Add podcast fragment-->
-  <string name="search_podcast_hint">Etsi podcastia...</string>
+  <string name="search_podcast_hint">Etsi podcastia…</string>
   <string name="search_fyyd_label">Etsi fyyd:sta</string>
   <string name="gpodnet_search_hint">Etsi gpodder.net</string>
   <string name="advanced">Edistyneet</string>
@@ -707,7 +700,7 @@
   <string name="port_label">Portti</string>
   <string name="optional_hint">(Valinnainen)</string>
   <string name="proxy_test_label">Testi</string>
-  <string name="proxy_checking">Testaa...</string>
+  <string name="proxy_checking">Testaa…</string>
   <string name="proxy_test_successful">Testi onnistui</string>
   <string name="proxy_test_failed">Testi epäonnistui</string>
   <string name="proxy_host_empty_error">Host ei voi olla tyhjä</string>
@@ -736,8 +729,8 @@
   <string name="widget_opacity">Läpikuultamattomuus</string>
   <!--On-Demand configuration-->
   <string name="on_demand_config_setting_changed">Asetuksen päivitys onnistui.</string>
-  <string name="on_demand_config_stream_text">Näyttää siltä, että suoratoistat paljon. Haluatko, että jaksoluetteloissa näytetään suoratoistopainikkeet?</string>
-  <string name="on_demand_config_download_text">Näyttää siltä, että lataat paljon. Haluatko, että jaksoluetteloissa näytetään latauspainikkeet?</string>
+  <string name="on_demand_config_stream_text">Näyttää siltä, että suoratoistat paljon. Haluatko, että jaksoluetteloissa näytetään suoratoistopainikkeet\?</string>
+  <string name="on_demand_config_download_text">Näyttää siltä, että lataat paljon. Haluatko, että jaksoluetteloissa näytetään latauspainikkeet\?</string>
   <string name="shortcut_subscription_label">Tilauksen pikakuvake</string>
   <string name="shortcut_select_subscription">Valitse tilaus</string>
   <string name="add_shortcut">Lisää pikakuvake</string>

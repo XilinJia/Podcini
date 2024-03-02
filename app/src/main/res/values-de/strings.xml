@@ -42,17 +42,10 @@
   <string name="statistics_filter_all_time">Gesamter Zeitraum</string>
   <string name="statistics_filter_past_year">Letztes Jahr</string>
   <string name="statistics_reset_data">Statistiken zurücksetzen</string>
-  <string name="statistics_reset_data_msg">Die Abspieldauer wird für alle Episoden gelöscht. Möchtest du wirklich fortfahren?</string>
+  <string name="statistics_reset_data_msg">Die Abspieldauer wird für alle Episoden gelöscht. Möchtest du wirklich fortfahren\?</string>
   <string name="statistics_counting_range">Abgespielt zwischen %1$s und %2$s</string>
   <string name="statistics_counting_total">Insgesamt abgespielt</string>
   <!--Home fragment-->
-
-
-
-
-
-
-
   <string name="notification_permission_text">Podcini benötigt deine Erlaubnis, um Benachrichtigungen anzuzeigen. Standardmäßig zeigt Podcini nur Benachrichtigungen an, wenn etwas heruntergeladen wird oder wenn etwas schief läuft.</string>
   <string name="notification_permission_denied">Du hast die Berechtigung abgelehnt.</string>
   <string name="notification_permission_deny_warning">Wenn die Benachrichtigungen deaktiviert werden und etwas schief geht, kannst du möglicherweise nicht herausfinden, warum dies passiert ist.</string>
@@ -85,7 +78,7 @@
   <string name="go_to_position_label">Gehe zu dieser Position</string>
   <!--Playback history-->
   <string name="clear_history_label">Verlauf leeren</string>
-  <string name="clear_playback_history_msg">Dadurch wird der gesamte Wiedergabeverlauf gelöscht. Möchtest du wirklich fortfahren?</string>
+  <string name="clear_playback_history_msg">Dadurch wird der gesamte Wiedergabeverlauf gelöscht. Möchtest du wirklich fortfahren\?</string>
   <string name="remove_history_label">Aus dem Verlauf entfernen</string>
   <string name="removed_history_label">Aus dem Verlauf entfernt</string>
   <!--Other-->
@@ -189,8 +182,8 @@
   <string name="edit_tags">Tags bearbeiten</string>
   <string name="add_tag">Tag hinzufügen</string>
   <string name="rename_tag_label">Tag umbenennen</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message">Das Aktualisieren von Abonnements über eine mobile Datenverbindung ist in den Einstellungen deaktiviert.\n\nMöchtest du sie trotzdem aktualisieren?</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message_vpn">Deine VPN-App gibt vor, ein mobiles Netzwerk zu sein (gebührenpflichtige Verbindung). Das Aktualisieren von Podcasts über eine mobile Datenverbindung ist in den Einstellungen deaktiviert.\n\nMöchtest du trotzdem aktualisieren? Wenn du möchtest, dass dieses Problem behoben wird, wende dich an die Entwickler der VPN-App.</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message">Das Aktualisieren von Abonnements über eine mobile Datenverbindung ist in den Einstellungen deaktiviert.\n\nMöchtest du sie trotzdem aktualisieren\?</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message_vpn">Deine VPN-App gibt vor, ein mobiles Netzwerk zu sein (gebührenpflichtige Verbindung). Das Aktualisieren von Podcasts über eine mobile Datenverbindung ist in den Einstellungen deaktiviert.\n\nMöchtest du trotzdem aktualisieren\? Wenn du möchtest, dass dieses Problem behoben wird, wende dich an die Entwickler der VPN-App.</string>
   <!--actions on feeditems-->
   <string name="download_label">Herunterladen</string>
   <plurals name="downloading_batch_label">
@@ -385,7 +378,7 @@
   <string name="pref_auto_delete_title">Automatisches Löschen</string>
   <string name="pref_auto_local_delete_title">Automatisches Löschen aus lokalen Ordnern</string>
   <string name="pref_auto_local_delete_sum">Lokale Ordner in die automatische Löschfunktion einbeziehen</string>
-  <string name="pref_auto_local_delete_dialog_body">Beachte, dass bei lokalen Ordnern die Episoden aus Podcini entfernt und die zugehörigen Mediendateien aus dem Gerätespeicher gelöscht werden. Sie können dann nicht mehr über Podcini heruntergeladen werden. Automatisches Löschen aktivieren?</string>
+  <string name="pref_auto_local_delete_dialog_body">Beachte, dass bei lokalen Ordnern die Episoden aus Podcini entfernt und die zugehörigen Mediendateien aus dem Gerätespeicher gelöscht werden. Sie können dann nicht mehr über Podcini heruntergeladen werden. Automatisches Löschen aktivieren\?</string>
   <string name="pref_smart_mark_as_played_sum">Episoden als abgespielt markieren, auch wenn weniger als eine bestimmte Anzahl von Sekunden an Restspielzeit übrig ist</string>
   <string name="pref_smart_mark_as_played_title">Intelligentes \"als abgespielt markieren\"</string>
   <string name="pref_skip_keeps_episodes_sum">Episoden behalten, wenn sie übersprungen werden</string>
@@ -534,7 +527,7 @@
   <string name="sync_status_episodes_download">Lade Episoden-Änderungen herunter…</string>
   <string name="sync_status_upload_played">Lade Abspielstatus hoch…</string>
   <string name="sync_status_subscriptions">Synchronisiere Abonnements…</string>
-  <string name="sync_status_wait_for_downloads">Warte auf Abschluss der Downloads...</string>
+  <string name="sync_status_wait_for_downloads">Warte auf Abschluss der Downloads…</string>
   <string name="sync_status_success">Synchronisation erfolgreich</string>
   <string name="sync_status_error">Synchronisation fehlgeschlagen</string>
   <!--import and export-->
@@ -557,8 +550,8 @@
   <string name="html_export_label">HTML exportieren</string>
   <string name="database_export_label">Datenbank exportieren</string>
   <string name="database_import_label">Datenbank importieren</string>
-  <string name="database_import_warning">Das Importieren einer Datenbank ersetzt alle Abonnements und abgespielte Episoden. Ein Export als Backup wird empfohlen. Möchtest du die Datenbank wirklich ersetzen?</string>
-  <string name="please_wait">Bitte warten...</string>
+  <string name="database_import_warning">Das Importieren einer Datenbank ersetzt alle Abonnements und abgespielte Episoden. Ein Export als Backup wird empfohlen. Möchtest du die Datenbank wirklich ersetzen\?</string>
+  <string name="please_wait">Bitte warten…</string>
   <string name="export_error_label">Exportfehler</string>
   <string name="export_success_title">Export erfolgreich</string>
   <string name="opml_import_ask_read_permission">Zugriff auf externen Speicher wird benötigt, um die OPML-Datei zu lesen</string>
@@ -795,8 +788,8 @@
   <string name="widget_opacity">Deckkraft</string>
   <!--On-Demand configuration-->
   <string name="on_demand_config_setting_changed">Einstellung erfolgreich aktualisiert.</string>
-  <string name="on_demand_config_stream_text">Es sieht so aus, als würdest du viel streamen. Möchtest du in Listen den Streamen-Button anzeigen?</string>
-  <string name="on_demand_config_download_text">Es sieht so aus, als würdest du viel herunterladen. Möchtest du in Listen den Download-Button anzeigen?</string>
+  <string name="on_demand_config_stream_text">Es sieht so aus, als würdest du viel streamen. Möchtest du in Listen den Streamen-Button anzeigen\?</string>
+  <string name="on_demand_config_download_text">Es sieht so aus, als würdest du viel herunterladen. Möchtest du in Listen den Download-Button anzeigen\?</string>
   <string name="shortcut_subscription_label">Abonnement-Verknüpfung</string>
   <string name="shortcut_select_subscription">Abonnement auswählen</string>
   <string name="add_shortcut">Verknüpfung hinzufügen</string>

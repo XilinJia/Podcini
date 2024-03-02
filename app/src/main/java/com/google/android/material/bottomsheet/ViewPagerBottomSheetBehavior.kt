@@ -17,7 +17,7 @@ import java.lang.ref.WeakReference
 open class ViewPagerBottomSheetBehavior<V : View?> : BottomSheetBehavior<V> {
     constructor() : super()
 
-    constructor(context: Context, attrs: AttributeSet?) : super(context!!, attrs)
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
 
     public override fun findScrollingChild(view: View): View? {
         if (view.isNestedScrollingEnabled) {
@@ -45,10 +45,8 @@ open class ViewPagerBottomSheetBehavior<V : View?> : BottomSheetBehavior<V> {
     }
 
     fun updateScrollingChild() {
-        if (viewRef == null) {
-            return
-        }
-        val scrollingChild = findScrollingChild(viewRef!!.get()!!)
+        val childView = viewRef?.get() ?: return
+        val scrollingChild = findScrollingChild(childView)
         nestedScrollingChildRef = WeakReference(scrollingChild)
     }
 }

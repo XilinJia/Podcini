@@ -42,17 +42,10 @@
   <string name="statistics_filter_all_time">Sempre</string>
   <string name="statistics_filter_past_year">Ultimo anno</string>
   <string name="statistics_reset_data">Resetta statistiche</string>
-  <string name="statistics_reset_data_msg">Verranno eliminate le statistiche sul tempo di riproduzione di tutti gli episodi. Procedo?</string>
+  <string name="statistics_reset_data_msg">Verranno eliminate le statistiche sul tempo di riproduzione di tutti gli episodi. Procedo\?</string>
   <string name="statistics_counting_range">Riprodotto fra %1$s e %2$s</string>
   <string name="statistics_counting_total">Riprodotto in totale</string>
   <!--Home fragment-->
-
-
-
-
-
-
-
   <string name="notification_permission_text">Podcini ha bisogno del tuo permesso per mostrarti le notifiche. Per impostazione predefinita, Podcini ti mostra notifiche solo quando stai scaricando qualcosa o quando qualcosa va storto.</string>
   <string name="notification_permission_denied">Hai negato l\'autorizzazione.</string>
   <string name="notification_permission_deny_warning">Se disabiliti le notifiche e qualcosa va storto, potresti non essere in grado di individuare la causa del problema.</string>
@@ -85,7 +78,7 @@
   <string name="go_to_position_label">Vai alla posizione</string>
   <!--Playback history-->
   <string name="clear_history_label">Svuota cronologia</string>
-  <string name="clear_playback_history_msg">Verrà eliminata tutta la cronologia di riproduzione. Vuoi procedere?</string>
+  <string name="clear_playback_history_msg">Verrà eliminata tutta la cronologia di riproduzione. Vuoi procedere\?</string>
   <string name="remove_history_label">Rimuovi dalla cronologia</string>
   <string name="removed_history_label">Rimosso dalla cronologia</string>
   <!--Other-->
@@ -164,7 +157,7 @@
   <!--Actions on feeds-->
   <string name="remove_all_inbox_label">Svuota l\'inbox</string>
   <string name="removed_all_inbox_msg">Inbox svuotata</string>
-  <string name="remove_all_inbox_confirmation_msg">Confermi di voler rimuovere tutti gli episodi dall\'inbox?</string>
+  <string name="remove_all_inbox_confirmation_msg">Confermi di voler rimuovere tutti gli episodi dall\'inbox\?</string>
   <string name="multi_select_mark_played_confirmation">Conferma di voler segnare tutti gli episodi selezionati come riprodotti</string>
   <string name="multi_select_mark_unplayed_confirmation">Conferma di voler segnare tutti gli episodi selezionati come non riprodotti</string>
   <string name="show_info_label">Informazioni</string>
@@ -196,8 +189,8 @@
   <string name="edit_tags">Modifica i tag</string>
   <string name="add_tag">Aggiungi tag</string>
   <string name="rename_tag_label">Rinomina tag</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message">L\'aggiornamento dei podcast da connessione dati mobile è disabilitato nelle impostazioni.\n\nVuoi aggiornare comunque?</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message_vpn">La tua app VPN finge di essere una rete mobile (connessione a consumo). L\'aggiornamento dei podcast su rete dati mobile è disabilitato nelle impostazioni.\n\nVuoi aggiornare comunque? Se vuoi che questo problema sia risolto, contatta i creatori della tua app VPN.</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message">L\'aggiornamento dei podcast da connessione dati mobile è disabilitato nelle impostazioni.\n\nVuoi aggiornare comunque\?</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message_vpn">La tua app VPN finge di essere una rete mobile (connessione a consumo). L\'aggiornamento dei podcast su rete dati mobile è disabilitato nelle impostazioni.\n\nVuoi aggiornare comunque\? Se vuoi che questo problema sia risolto, contatta i creatori della tua app VPN.</string>
   <!--actions on feeditems-->
   <string name="download_label">Download</string>
   <plurals name="downloading_batch_label">
@@ -379,7 +372,7 @@
   <string name="interruptions">Interruzioni</string>
   <string name="playback_control">Controllo riproduzione</string>
   <string name="reassign_hardware_buttons">Riassegna pulsanti hardware</string>
-  <string name="preference_search_hint">Cerca...</string>
+  <string name="preference_search_hint">Cerca…</string>
   <string name="preference_search_no_results">Nessun risultato</string>
   <string name="preference_search_clear_history">Svuota cronologia</string>
   <string name="pref_episode_cleanup_title">Pulizia episodi</string>
@@ -400,7 +393,7 @@
   <string name="pref_auto_delete_title">Elimina automaticamente</string>
   <string name="pref_auto_local_delete_title">Eliminazione automatica da cartelle locali</string>
   <string name="pref_auto_local_delete_sum">Includi le cartelle locali nella funzione di eliminazione automatica</string>
-  <string name="pref_auto_local_delete_dialog_body">Nota che per le cartelle locali questa funzione rimuoverà gli episodi da Podcini ed eliminerà i file multimediali dallo spazio di archiviazione del tuo dispositivo. Non potranno essere scaricati di nuovo attraverso Podcini. Sei sicuro di voler abilitare l\'eliminazione automatica?</string>
+  <string name="pref_auto_local_delete_dialog_body">Nota che per le cartelle locali questa funzione rimuoverà gli episodi da Podcini ed eliminerà i file multimediali dallo spazio di archiviazione del tuo dispositivo. Non potranno essere scaricati di nuovo attraverso Podcini. Sei sicuro di voler abilitare l\'eliminazione automatica\?</string>
   <string name="pref_smart_mark_as_played_sum">Contrassegna gli episodi come riprodotti anche se rimangono alcuni secondi da riprodurre</string>
   <string name="pref_smart_mark_as_played_title">Marcatura intelligente</string>
   <string name="pref_skip_keeps_episodes_sum">Mantiene gli episodi nella coda quando vengono saltati</string>
@@ -545,11 +538,11 @@
   <string name="search_online">Cerca online</string>
   <!--Synchronization-->
   <string name="sync_status_started">Sincronizzazione avviata</string>
-  <string name="sync_status_episodes_upload">Caricamento modifiche dell\'episodio...</string>
-  <string name="sync_status_episodes_download">Download modifiche dell\'episodio...</string>
-  <string name="sync_status_upload_played">Invio stato della riproduzione...</string>
-  <string name="sync_status_subscriptions">Sincronizzazione iscrizioni...</string>
-  <string name="sync_status_wait_for_downloads">In attesa che i download vengano completati...</string>
+  <string name="sync_status_episodes_upload">Caricamento modifiche dell\'episodio…</string>
+  <string name="sync_status_episodes_download">Download modifiche dell\'episodio…</string>
+  <string name="sync_status_upload_played">Invio stato della riproduzione…</string>
+  <string name="sync_status_subscriptions">Sincronizzazione iscrizioni…</string>
+  <string name="sync_status_wait_for_downloads">In attesa che i download vengano completati…</string>
   <string name="sync_status_success">Sincronizzazione eseguita con successo</string>
   <string name="sync_status_error">Sincronizzazione fallita</string>
   <!--import and export-->
@@ -572,8 +565,8 @@
   <string name="html_export_label">Esporta in HTML</string>
   <string name="database_export_label">Esporta database</string>
   <string name="database_import_label">Importa database</string>
-  <string name="database_import_warning">L\'importazione di un database sostituirà tutte le iscrizioni attuali e la cronologia di riproduzione. Dovresti eseguire un backup del tuo database attuale. Vuoi proseguire?</string>
-  <string name="please_wait">Attendi...</string>
+  <string name="database_import_warning">L\'importazione di un database sostituirà tutte le iscrizioni attuali e la cronologia di riproduzione. Dovresti eseguire un backup del tuo database attuale. Vuoi proseguire\?</string>
+  <string name="please_wait">Attendi…</string>
   <string name="export_error_label">Errore di esportazione</string>
   <string name="export_success_title">Esportazione eseguita</string>
   <string name="opml_import_ask_read_permission">Per leggere il file OPML è necessario l\'accesso alla memoria esterna</string>
@@ -663,7 +656,7 @@
   <string name="pref_pausePlaybackForFocusLoss_title">Pausa su interruzione</string>
   <!--Online feed view-->
   <string name="subscribe_label">Iscriviti</string>
-  <string name="subscribing_label">Iscrizione...</string>
+  <string name="subscribing_label">Iscrizione…</string>
   <string name="preview_episode">Anteprima</string>
   <string name="stop_preview">Ferma anteprima</string>
   <!--Content descriptions for image buttons-->
@@ -713,9 +706,9 @@
   <string name="edit_url_menu">Modifica URL del feed</string>
   <string name="edit_url_confirmation_msg">Cambiare l\'indirizzo RSS può compromettere lo stato della riproduzione e l\'ascolto degli episodi di un podcast. Consigliamo di NON cambiarlo e NON forniamo supporto se qualcosa non dovesse funzionare. L\'operazione NON è reversibile e l\'iscrizione NON può essere ripristinata tornando all\'indirizzo precedente. Ti consigliamo di effettuare un backup prima di continuare.</string>
   <!--PodciniSP-->
-  <string name="sp_apps_importing_feeds_msg">Importazione delle iscrizioni da applicazioni specifiche in corso...</string>
+  <string name="sp_apps_importing_feeds_msg">Importazione delle iscrizioni da applicazioni specifiche in corso…</string>
   <!--Add podcast fragment-->
-  <string name="search_podcast_hint">Cerca podcast...</string>
+  <string name="search_podcast_hint">Cerca podcast…</string>
   <string name="search_itunes_label">Cerca su Apple Podcast</string>
   <string name="search_podcastindex_label">Cerca su Podcast Index</string>
   <string name="search_fyyd_label">Cerca su fyyd</string>
@@ -785,7 +778,7 @@
   <string name="port_label">Porta</string>
   <string name="optional_hint">(Opzionale)</string>
   <string name="proxy_test_label">Verifica</string>
-  <string name="proxy_checking">Controllo in corso...</string>
+  <string name="proxy_checking">Controllo in corso…</string>
   <string name="proxy_test_successful">Test avvenuto con successo</string>
   <string name="proxy_test_failed">Test fallito</string>
   <string name="proxy_host_empty_error">L\'host non può essere vuoto</string>
@@ -814,8 +807,8 @@
   <string name="widget_opacity">Opacità</string>
   <!--On-Demand configuration-->
   <string name="on_demand_config_setting_changed">Impostazione aggiornata correttamente.</string>
-  <string name="on_demand_config_stream_text">Sembra che ascolti molto in streaming. Vuoi che gli elenchi degli episodi mostrino i pulsanti per lo streaming?</string>
-  <string name="on_demand_config_download_text">Sembra che scarichi molto. Vuoi che gli elenchi degli episodi mostrino i pulsanti per il download?</string>
+  <string name="on_demand_config_stream_text">Sembra che ascolti molto in streaming. Vuoi che gli elenchi degli episodi mostrino i pulsanti per lo streaming\?</string>
+  <string name="on_demand_config_download_text">Sembra che scarichi molto. Vuoi che gli elenchi degli episodi mostrino i pulsanti per il download\?</string>
   <string name="shortcut_subscription_label">Scorciatoia iscrizione</string>
   <string name="shortcut_select_subscription">Seleziona podcast</string>
   <string name="add_shortcut">Aggiungi collegamento</string>

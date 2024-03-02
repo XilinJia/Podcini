@@ -42,17 +42,10 @@
   <string name="statistics_filter_all_time">За всё время</string>
   <string name="statistics_filter_past_year">В течение года</string>
   <string name="statistics_reset_data">Сбросить статистику</string>
-  <string name="statistics_reset_data_msg">Вы уверены, что хотите безвозвратно стереть статистику воспроизведения всех выпусков?</string>
+  <string name="statistics_reset_data_msg">Вы уверены, что хотите безвозвратно стереть статистику воспроизведения всех выпусков\?</string>
   <string name="statistics_counting_range">Прослушанные с %1$s по %2$s</string>
   <string name="statistics_counting_total">Прослушано за всё время</string>
   <!--Home fragment-->
-
-
-
-
-
-
-
   <string name="notification_permission_denied">Вы не дали разрешения.</string>
   <string name="open_settings">Открыть настройки</string>
   <string name="configure_home">Настроить главную</string>
@@ -82,7 +75,7 @@
   <string name="go_to_position_label">Перейти к этому месту</string>
   <!--Playback history-->
   <string name="clear_history_label">Очистить историю</string>
-  <string name="clear_playback_history_msg">Вы уверены, что хотите стереть всю историю вопроизведения?</string>
+  <string name="clear_playback_history_msg">Вы уверены, что хотите стереть всю историю вопроизведения\?</string>
   <string name="remove_history_label">Удалить из истории</string>
   <string name="removed_history_label">Удалено из истории</string>
   <!--Other-->
@@ -159,7 +152,7 @@
   <!--Actions on feeds-->
   <string name="remove_all_inbox_label">Убрать всё из входящих</string>
   <string name="removed_all_inbox_msg">Всё убрано из входящих</string>
-  <string name="remove_all_inbox_confirmation_msg">Убрать всё из входящих?</string>
+  <string name="remove_all_inbox_confirmation_msg">Убрать всё из входящих\?</string>
   <string name="multi_select_mark_played_confirmation">Подтвердите, что хотите отметить все выбранные выпуски как прослушанные.</string>
   <string name="multi_select_mark_unplayed_confirmation">Подтвердите, что хотите отметить все выбранные выпуски как непрослушанные.</string>
   <string name="show_info_label">Показать информацию</string>
@@ -179,7 +172,7 @@
   <string name="select_all_above">Выбрать все выше</string>
   <string name="select_all_below">Выбрать все ниже</string>
   <string name="filtered_label">Отфильтровано</string>
-  <string name="refresh_failed_msg">{fa-exclamation-circle} Последнее обновление не удалось. Подробнее...</string>
+  <string name="refresh_failed_msg">{fa-exclamation-circle} Последнее обновление не удалось. Подробнее…</string>
   <string name="open_podcast">Открыть подкаст</string>
   <string name="please_wait_for_data">Подождите, пока загружаются данные</string>
   <string name="updates_disabled_label">Обновления отключены</string>
@@ -192,7 +185,7 @@
   <string name="edit_tags">Править метки</string>
   <string name="add_tag">Добавить метку</string>
   <string name="rename_tag_label">Изменить метку</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message">Обновление подкастов через мобильное соединение отключено в настройках.\n\nВы действительно хотите обновить подкасты?</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message">Обновление подкастов через мобильное соединение отключено в настройках.\n\nВы действительно хотите обновить подкасты\?</string>
   <!--actions on feeditems-->
   <string name="download_label">Загрузить</string>
   <plurals name="downloading_batch_label">
@@ -269,7 +262,7 @@
   <string name="download_log_details_message">%1$s \n\nПричина: \n%2$s \n\Адрес файла:\n%3$s</string>
   <string name="download_error_retrying">\"%1$s\" загрузка не удалась. Повтор – позже.</string>
   <string name="download_error_not_retrying">\"%1$s\" загрузка не удалась.</string>
-  <string name="download_error_tap_for_details">Подробнее...</string>
+  <string name="download_error_tap_for_details">Подробнее…</string>
   <string name="download_error_device_not_found">Устройство хранения не найдено</string>
   <string name="download_error_insufficient_space">На устройстве не осталось места.</string>
   <string name="download_error_http_data_error">Ошибка данных HTTP</string>
@@ -558,7 +551,7 @@
   <string name="html_export_label">Экспорт в HTML</string>
   <string name="database_export_label">Экспорт базы данных</string>
   <string name="database_import_label">Импорт базы данных</string>
-  <string name="database_import_warning">Импорт базы данных приведет к замене всех текущих подписок и истории воспроизведения. Следует экспортировать текущую базу данных, чтобы иметь резервную копию. Хотите заменить?</string>
+  <string name="database_import_warning">Импорт базы данных приведет к замене всех текущих подписок и истории воспроизведения. Следует экспортировать текущую базу данных, чтобы иметь резервную копию. Хотите заменить\?</string>
   <string name="please_wait">Подождите…</string>
   <string name="export_error_label">Ошибка экспорта</string>
   <string name="export_success_title">Экспорт выполнен</string>
@@ -788,8 +781,8 @@
   <string name="widget_opacity">Непрозрачность</string>
   <!--On-Demand configuration-->
   <string name="on_demand_config_setting_changed">Настройки успешно обновлены.</string>
-  <string name="on_demand_config_stream_text">Похоже, вы часто слушаете по сети. Хотите, чтобы в списке выпусков отображались кнопки для потокового воспроизведения?</string>
-  <string name="on_demand_config_download_text">Похоже, вы часто слушаете загружаете выпуски. Хотите, чтобы в списке выпусков отображались кнопки для загрузки?</string>
+  <string name="on_demand_config_stream_text">Похоже, вы часто слушаете по сети. Хотите, чтобы в списке выпусков отображались кнопки для потокового воспроизведения\?</string>
+  <string name="on_demand_config_download_text">Похоже, вы часто слушаете загружаете выпуски. Хотите, чтобы в списке выпусков отображались кнопки для загрузки\?</string>
   <string name="shortcut_subscription_label">Ярлык подписки</string>
   <string name="shortcut_select_subscription">Выбрать подписку</string>
   <string name="add_shortcut">Добавить ярлык</string>

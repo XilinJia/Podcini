@@ -42,16 +42,9 @@
   <string name="statistics_filter_all_time">Alltid</string>
   <string name="statistics_filter_past_year">Siste året</string>
   <string name="statistics_reset_data">Tilbakestill statistikkdata</string>
-  <string name="statistics_reset_data_msg">Dette vil slette historikk om varighet som er spilt for alle episoder. Er du sikker på at du vil fortsette?</string>
+  <string name="statistics_reset_data_msg">Dette vil slette historikk om varighet som er spilt for alle episoder. Er du sikker på at du vil fortsette\?</string>
   <string name="statistics_counting_range">Avspilt mellom %1$s og %2$s</string>
   <string name="statistics_counting_total">Avspilt totalt</string>
-  <!--Home fragment-->
-
-
-
-
-
-
 
   <string name="notification_permission_denied">Du avslå tillatelsen.</string>
   <string name="open_settings">Åpne innstillinger</string>
@@ -82,7 +75,7 @@
   <string name="go_to_position_label">Gå til denne posisjonen</string>
   <!--Playback history-->
   <string name="clear_history_label">Tøm historikk</string>
-  <string name="clear_playback_history_msg">Dette vil slette hele avspillingshistorikk. Er du sikker på at du vil forsette?</string>
+  <string name="clear_playback_history_msg">Dette vil slette hele avspillingshistorikk. Er du sikker på at du vil forsette\?</string>
   <string name="remove_history_label">Fjern fra historikk</string>
   <string name="removed_history_label">Fjernet fra historikk</string>
   <!--Other-->
@@ -174,7 +167,7 @@
   <string name="edit_tags">Endre tagger</string>
   <string name="add_tag">Legg til tag</string>
   <string name="rename_tag_label">Endre tagnavn</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message">Å laste inn podcaster på nytt over mobildata er slått av i innstillingene.\n\nVill du likevel laste inn alt på nytt?</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message">Å laste inn podcaster på nytt over mobildata er slått av i innstillingene.\n\nVill du likevel laste inn alt på nytt\?</string>
   <!--actions on feeditems-->
   <string name="download_label">Last ned</string>
   <plurals name="downloading_batch_label">
@@ -338,7 +331,7 @@
   <string name="interruptions">Forstyrrelser</string>
   <string name="playback_control">Avspillingskontroll</string>
   <string name="reassign_hardware_buttons">Tilpass hardware knapper</string>
-  <string name="preference_search_hint">Søk...</string>
+  <string name="preference_search_hint">Søk…</string>
   <string name="preference_search_no_results">Ingen resultater</string>
   <string name="preference_search_clear_history">Slett logg</string>
   <string name="pref_episode_cleanup_title">Episodeopprydding</string>
@@ -492,11 +485,11 @@
   <string name="no_results_for_query">Ingen resultalter for \"%1$s\"</string>
   <!--Synchronization-->
   <string name="sync_status_started">Synkronisering startet</string>
-  <string name="sync_status_episodes_upload">Laster opp endringer av episoder...</string>
-  <string name="sync_status_episodes_download">Laster ned endringer av episoder...</string>
-  <string name="sync_status_upload_played">Oppdatere avspillings status...</string>
-  <string name="sync_status_subscriptions">Synkroniserer abonnementer...</string>
-  <string name="sync_status_wait_for_downloads">Venter på nedlastingen avsluttes som ferdig...</string>
+  <string name="sync_status_episodes_upload">Laster opp endringer av episoder…</string>
+  <string name="sync_status_episodes_download">Laster ned endringer av episoder…</string>
+  <string name="sync_status_upload_played">Oppdatere avspillings status…</string>
+  <string name="sync_status_subscriptions">Synkroniserer abonnementer…</string>
+  <string name="sync_status_wait_for_downloads">Venter på nedlastingen avsluttes som ferdig…</string>
   <string name="sync_status_success">Synkronisering suksessfull</string>
   <string name="sync_status_error">Synkronisering feilet</string>
   <!--import and export-->
@@ -519,7 +512,7 @@
   <string name="html_export_label">HTML eksport</string>
   <string name="database_export_label">Database-eksportering</string>
   <string name="database_import_label">Database-importering</string>
-  <string name="database_import_warning">Å importere en database vil erstatte all dine abonnementer og avspillingshistorie. Det er anbefalt  å eksportere din eksisterende database som backup. Vil du importere nå?</string>
+  <string name="database_import_warning">Å importere en database vil erstatte all dine abonnementer og avspillingshistorie. Det er anbefalt  å eksportere din eksisterende database som backup. Vil du importere nå\?</string>
   <string name="please_wait">Vennligst vent…</string>
   <string name="export_error_label">Feil ved eksportering</string>
   <string name="export_success_title">Eksportering vellykket!</string>
@@ -601,7 +594,7 @@
   <string name="pref_pausePlaybackForFocusLoss_title">Pause for forstyrrelser</string>
   <!--Online feed view-->
   <string name="subscribe_label">Abonner</string>
-  <string name="subscribing_label">Abonnerer...</string>
+  <string name="subscribing_label">Abonnerer…</string>
   <string name="preview_episode">Forhåndsvisning</string>
   <string name="stop_preview">Stopp forhåndsvisning</string>
   <!--Content descriptions for image buttons-->
@@ -644,9 +637,9 @@
   <string name="edit_url_menu">Endre feed URL</string>
   <string name="edit_url_confirmation_msg">Å endre RSS adressen kan lett ødelegge avspillingsstatuset og episode køen av podcastene. We anbefaler IKKE å endre den og vil ikke tilby noen som helst støtte hvis noe slutte å virke. Dette kan ikke angres. En ødelagt abonnement kan ikke fikses med å endre adressen tilbake. Vi anbefaler å lage en sikkerhetskopi før du forsetter.</string>
   <!--PodciniSP-->
-  <string name="sp_apps_importing_feeds_msg">Importerer abonnementer fra enkeltstående applikasjoner...</string>
+  <string name="sp_apps_importing_feeds_msg">Importerer abonnementer fra enkeltstående applikasjoner…</string>
   <!--Add podcast fragment-->
-  <string name="search_podcast_hint">Søk etter podkast...</string>
+  <string name="search_podcast_hint">Søk etter podkast…</string>
   <string name="search_itunes_label">Leter i Apple Podcasts</string>
   <string name="search_podcastindex_label">Søk i podkast indeks</string>
   <string name="search_fyyd_label">Søk med fyyd</string>
@@ -714,7 +707,7 @@
   <string name="port_label">Port</string>
   <string name="optional_hint">(Valgfri)</string>
   <string name="proxy_test_label">Test</string>
-  <string name="proxy_checking">Kontrollerer...</string>
+  <string name="proxy_checking">Kontrollerer…</string>
   <string name="proxy_test_successful">Test vellykket</string>
   <string name="proxy_test_failed">Test mislykket</string>
   <string name="proxy_host_empty_error">Vert kan ikke være tom</string>
@@ -743,8 +736,8 @@
   <string name="widget_opacity">Gjennomsiktighet</string>
   <!--On-Demand configuration-->
   <string name="on_demand_config_setting_changed">Innstillingen suksessfull oppdatert.</string>
-  <string name="on_demand_config_stream_text">Ser ut som du strømmer masse. Vil du at episodenes lister viser strømmingsknapper?</string>
-  <string name="on_demand_config_download_text">Ser ut som du laster ned masse. Vil du at episodenes lister viser nedlastingsknapper?</string>
+  <string name="on_demand_config_stream_text">Ser ut som du strømmer masse. Vil du at episodenes lister viser strømmingsknapper\?</string>
+  <string name="on_demand_config_download_text">Ser ut som du laster ned masse. Vil du at episodenes lister viser nedlastingsknapper\?</string>
   <string name="shortcut_subscription_label">Abonnement snarvei</string>
   <string name="shortcut_select_subscription">Velg abonnement</string>
   <string name="add_shortcut">Legg til snarvei</string>

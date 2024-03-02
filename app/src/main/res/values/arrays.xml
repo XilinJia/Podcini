@@ -195,7 +195,7 @@
         <item>@string/queue_label</item>
         <item>@string/episodes_label</item>
         <item>@string/downloads_label</item>
-        <item>@string/inbox_label</item>
+<!--        <item>@string/inbox_label</item>-->
         <item>@string/playback_history_label</item>
 <!--        <item>@string/statistics_label</item>-->
         <item>@string/add_feed_label</item>

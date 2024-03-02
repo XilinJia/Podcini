@@ -378,7 +378,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
             QueueFragment.TAG,
             AllEpisodesFragment.TAG,
             CompletedDownloadsFragment.TAG,
-            InboxFragment.TAG,
+//            InboxFragment.TAG,
             PlaybackHistoryFragment.TAG,
 //            StatisticsFragment.TAG,
             AddFeedFragment.TAG,

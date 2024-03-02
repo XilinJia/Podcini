@@ -561,11 +561,11 @@
   <string name="no_results_for_query">لا توجد نتائج لـ\"%1$s\"</string>
   <!--Synchronization-->
   <string name="sync_status_started">بدأت المزامنة</string>
-  <string name="sync_status_episodes_upload">جارٍ تحميل تغييرات الحلقة ...</string>
+  <string name="sync_status_episodes_upload">جارٍ تحميل تغييرات الحلقة …</string>
   <string name="sync_status_episodes_download">تنزيل التغييرات الخاصة بالحلقة</string>
-  <string name="sync_status_upload_played">جارٍ تحميل حالة التشغيل...</string>
-  <string name="sync_status_subscriptions">تتزامن الاشتراكات الآن...</string>
-  <string name="sync_status_wait_for_downloads">بانتظار اكتمال التنزيلات...</string>
+  <string name="sync_status_upload_played">جارٍ تحميل حالة التشغيل…</string>
+  <string name="sync_status_subscriptions">تتزامن الاشتراكات الآن…</string>
+  <string name="sync_status_wait_for_downloads">بانتظار اكتمال التنزيلات…</string>
   <string name="sync_status_success">نجحت المزامنة</string>
   <string name="sync_status_error">فشلت المزامنة</string>
   <!--import and export-->
@@ -589,7 +589,7 @@
   <string name="database_export_label">تصدير قاعدة البيانات</string>
   <string name="database_import_label">استيراد قاعدة البيانات</string>
   <string name="database_import_warning">استيراد قاعدة بيانات سيمسح كل اشتراكاتك الحالية وسجل الاستماع. الأفضل أن تصدر قاعدة البيانات الحالية لأرشيف. هل تريد تبديل البيانات؟</string>
-  <string name="please_wait">يرجى الانتظار...</string>
+  <string name="please_wait">يرجى الانتظار…</string>
   <string name="export_error_label">حدث خطأ أثناء التصدير</string>
   <string name="export_success_title">تم التصدير بنجاح</string>
   <string name="opml_import_ask_read_permission">الوصول الى مساحة التخزين الخارجية مطلوب لقراءة ملف الـ OPML</string>
@@ -682,7 +682,7 @@
   <string name="pref_pausePlaybackForFocusLoss_title">توقف للمقاطعات</string>
   <!--Online feed view-->
   <string name="subscribe_label">أشترك</string>
-  <string name="subscribing_label">جاري الاشتراك...</string>
+  <string name="subscribing_label">جاري الاشتراك…</string>
   <string name="preview_episode">معاينة</string>
   <string name="stop_preview">أوقف المعاينة</string>
   <!--Content descriptions for image buttons-->
@@ -725,9 +725,9 @@
   <string name="edit_url_menu">عدل على الرابط </string>
   <string name="edit_url_confirmation_msg">تغيير رابط الـ RSS قد يؤدي إلى كسر حالة التشغيل و قائمة الحلقات للبودكاست. نحن لا ننصح بتغيرها ولن نقوم بتوفير أي دعم في حالة حصول أي خطأ. لا يمكن التراجع عن هذا التغيير. الاشتراك المكسور لن يمكن أن يتم استرجاعه بإعادة إرجاع الرابط القديم. ننصح بإنشاء نسخة احتياطية قبل المتابعة.</string>
   <!--PodciniSP-->
-  <string name="sp_apps_importing_feeds_msg">استيراد الاشتراكات من التطبيقات ذات الغرض الواحد ...</string>
+  <string name="sp_apps_importing_feeds_msg">استيراد الاشتراكات من التطبيقات ذات الغرض الواحد …</string>
   <!--Add podcast fragment-->
-  <string name="search_podcast_hint">ابحث عن بودكاست...</string>
+  <string name="search_podcast_hint">ابحث عن بودكاست…</string>
   <string name="search_itunes_label">ابحث Apple Podcasts</string>
   <string name="search_podcastindex_label">إبحث في Podcast Index</string>
   <string name="search_fyyd_label">ابحث fyyd</string>
@@ -795,7 +795,7 @@
   <string name="port_label">رقم المنفذ</string>
   <string name="optional_hint">(إختياري)</string>
   <string name="proxy_test_label">اختبار</string>
-  <string name="proxy_checking">تفحص...</string>
+  <string name="proxy_checking">تفحص…</string>
   <string name="proxy_test_successful">اختبار ناجح</string>
   <string name="proxy_test_failed">الإختبار فشل</string>
   <string name="proxy_host_empty_error">لا يمكن أن يكون اسم المضيف فارغًا</string>

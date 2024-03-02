@@ -341,7 +341,7 @@
   <string name="interruptions">Etenaldiak</string>
   <string name="playback_control">Erreprodukzioaren kontrola</string>
   <string name="reassign_hardware_buttons">Birjarri hardware botoiak</string>
-  <string name="preference_search_hint">Bilatu...</string>
+  <string name="preference_search_hint">Bilatu…</string>
   <string name="preference_search_no_results">Emaitzarik ez</string>
   <string name="preference_search_clear_history">Historia ezabatu</string>
   <string name="pref_episode_cleanup_summary">Deskarga automatikoak saio berrietarako lekua behar badu kentzeko eskubidea izan beharko luketen saioak</string>
@@ -473,9 +473,9 @@
   <!--Synchronization-->
   <string name="sync_status_started">Sinkronizatzen hasi da</string>
   <string name="sync_status_episodes_upload">Saio aldaketak kargatzen…</string>
-  <string name="sync_status_episodes_download">Saio aldaketak deskargatzen ...</string>
+  <string name="sync_status_episodes_download">Saio aldaketak deskargatzen …</string>
   <string name="sync_status_upload_played">Ikusitakoen egoera kargatzen…</string>
-  <string name="sync_status_subscriptions">Harpidetzak sinkronizatzen ...</string>
+  <string name="sync_status_subscriptions">Harpidetzak sinkronizatzen …</string>
   <string name="sync_status_wait_for_downloads">Itxaroten deskargak amaitu arte… </string>
   <string name="sync_status_success">Sinkronizazioa amaitu da</string>
   <string name="sync_status_error">Sinkronizazioak huts egin du</string>
@@ -500,7 +500,7 @@
   <string name="database_export_label">Bidali datu basea</string>
   <string name="database_import_label">Ekarri datu basea</string>
   <string name="database_import_warning">Datu-base bat inportatzeak egungo harpidetza guztiak eta erreprodukzio-historia ordezkatuko ditu. Egungo datu-basea esportatu behar duzu segurtasun-kopia gisa. Ordezkatu nahi duzu?</string>
-  <string name="please_wait">Itxaron mesedez...</string>
+  <string name="please_wait">Itxaron mesedez…</string>
   <string name="export_error_label">Errorea esportatzean</string>
   <string name="export_success_title">Esportatzea ongi burutu da</string>
   <string name="opml_import_ask_read_permission">Kanpo biltegiratzerako sarbidea behar duzu OPML fitxategia irakurtzeko</string>
@@ -574,7 +574,7 @@
   <string name="pref_pausePlaybackForFocusLoss_sum">Bolumena jaitsi beharrean erreprodukzioa geldiarazi beste aplikazio batek soinuak erreproduzitzen dituenean</string>
   <!--Online feed view-->
   <string name="subscribe_label">Harpidetu</string>
-  <string name="subscribing_label">Harpidetzen...</string>
+  <string name="subscribing_label">Harpidetzen…</string>
   <string name="preview_episode">Aurretiko ikuspegia</string>
   <string name="stop_preview">Gelditu aurretiko ikuspegia</string>
   <!--Content descriptions for image buttons-->
@@ -687,7 +687,7 @@
   <string name="port_label">Portua</string>
   <string name="optional_hint">(Aukerako)</string>
   <string name="proxy_test_label">Testa</string>
-  <string name="proxy_checking">Egiaztatzen...</string>
+  <string name="proxy_checking">Egiaztatzen…</string>
   <string name="proxy_test_successful">Test arrakastatsua</string>
   <string name="proxy_test_failed">Testak huts egin du</string>
   <string name="proxy_host_empty_error">Host-ak ezin du hutsik egon</string>

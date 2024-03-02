@@ -42,17 +42,10 @@
   <string name="statistics_filter_all_time">Todo el tiempo</string>
   <string name="statistics_filter_past_year">Año pasado</string>
   <string name="statistics_reset_data">Restablecer estadísticas</string>
-  <string name="statistics_reset_data_msg">Esto borrará el historial de duración reproducida de todos los episodios. ¿Confirma que quiere hacerlo?</string>
+  <string name="statistics_reset_data_msg">Esto borrará el historial de duración reproducida de todos los episodios. ¿Confirma que quiere hacerlo\?</string>
   <string name="statistics_counting_range">Reproducido entre%1$s y %2$s</string>
   <string name="statistics_counting_total">Reproducido en total</string>
   <!--Home fragment-->
-
-
-
-
-
-
-
   <string name="notification_permission_text">Podcini necesita </string>
   <string name="notification_permission_denied">Denegaste el permiso.</string>
   <string name="notification_permission_deny_warning">Si deshabilita las notificaciones y se produce un error, puede no encontrarlo posteriormente.</string>
@@ -85,7 +78,7 @@
   <string name="go_to_position_label">Ir a esa posición</string>
   <!--Playback history-->
   <string name="clear_history_label">Borrar historial</string>
-  <string name="clear_playback_history_msg">Esto borrará el historial de reproducción al completo. ¿Confirma que quiere hacerlo?</string>
+  <string name="clear_playback_history_msg">Esto borrará el historial de reproducción al completo. ¿Confirma que quiere hacerlo\?</string>
   <string name="remove_history_label">Eliminar del historial</string>
   <string name="removed_history_label">Eliminado del historial</string>
   <!--Other-->
@@ -196,8 +189,8 @@
   <string name="edit_tags">Editar etiquetas</string>
   <string name="add_tag">Añadir etiqueta</string>
   <string name="rename_tag_label">Renombrar etiqueta</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message">Actualizar podcasts usando una conexión de datos móviles está desactivado en las opciones.\n\n¿De veras quieres actualizar los podcasts usando una conexión de datos móviles?</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message_vpn">Tu VPN simula ser una red móvil (conexión medida). La actualización de podcasts sobre conexiones de datos está deshabilitada en los ajustes.\n\n¿Quieres refrescarlos a pesar de todo? Si quieres solucionar el problema, contacta con los creadores de tu aplicación VPN.</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message">Actualizar podcasts usando una conexión de datos móviles está desactivado en las opciones.\n\n¿De veras quieres actualizar los podcasts usando una conexión de datos móviles\?</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message_vpn">Tu VPN simula ser una red móvil (conexión medida). La actualización de podcasts sobre conexiones de datos está deshabilitada en los ajustes.\n\n¿Quieres refrescarlos a pesar de todo\? Si quieres solucionar el problema, contacta con los creadores de tu aplicación VPN.</string>
   <!--actions on feeditems-->
   <string name="download_label">Descargar</string>
   <plurals name="downloading_batch_label">
@@ -379,7 +372,7 @@
   <string name="interruptions">Interrupciones</string>
   <string name="playback_control">Control de reproducción</string>
   <string name="reassign_hardware_buttons">Reasignar botones físicos</string>
-  <string name="preference_search_hint">Buscar...</string>
+  <string name="preference_search_hint">Buscar…</string>
   <string name="preference_search_no_results">Sin resultados</string>
   <string name="preference_search_clear_history">Borrar historial</string>
   <string name="pref_episode_cleanup_title">Limpieza de episodios</string>
@@ -400,7 +393,7 @@
   <string name="pref_auto_delete_title">Eliminar automáticamente</string>
   <string name="pref_auto_local_delete_title">Autoborrar en local</string>
   <string name="pref_auto_local_delete_sum">Incluir carpetas locales en la funcionalidad de autoborrado</string>
-  <string name="pref_auto_local_delete_dialog_body">Tenga en cuenta que en las carpetas locales los episodios serán borrados de AtennaPod y eliminará los archivos multimedia del almacenamiento de su dispositivo. Por tanto, no pueden ser descargados de nuevo a través de Podcini. ¿Quiere activar el autoborrado?</string>
+  <string name="pref_auto_local_delete_dialog_body">Tenga en cuenta que en las carpetas locales los episodios serán borrados de AtennaPod y eliminará los archivos multimedia del almacenamiento de su dispositivo. Por tanto, no pueden ser descargados de nuevo a través de Podcini. ¿Quiere activar el autoborrado\?</string>
   <string name="pref_smart_mark_as_played_sum">Marca los episodios como reproducidos incluso si todavía quedan unos segundos por escuchar</string>
   <string name="pref_smart_mark_as_played_title">Marcado inteligente como reproducido</string>
   <string name="pref_skip_keeps_episodes_sum">Conservar los episodios cuando son saltados</string>
@@ -545,11 +538,11 @@
   <string name="search_online">Buscar en línea</string>
   <!--Synchronization-->
   <string name="sync_status_started">Sincronización iniciada</string>
-  <string name="sync_status_episodes_upload">Subiendo cambios de episodio...</string>
-  <string name="sync_status_episodes_download">Descargando cambios de episodios...</string>
-  <string name="sync_status_upload_played">Subiendo estado de reproducción...</string>
-  <string name="sync_status_subscriptions">Sincronizando suscripciones...</string>
-  <string name="sync_status_wait_for_downloads">Esperando a que las descargas terminen...</string>
+  <string name="sync_status_episodes_upload">Subiendo cambios de episodio…</string>
+  <string name="sync_status_episodes_download">Descargando cambios de episodios…</string>
+  <string name="sync_status_upload_played">Subiendo estado de reproducción…</string>
+  <string name="sync_status_subscriptions">Sincronizando suscripciones…</string>
+  <string name="sync_status_wait_for_downloads">Esperando a que las descargas terminen…</string>
   <string name="sync_status_success">Sincronización exitosa</string>
   <string name="sync_status_error">Error en la sincronización</string>
   <!--import and export-->
@@ -572,8 +565,8 @@
   <string name="html_export_label">Exportar a HTML</string>
   <string name="database_export_label">Exportar base de datos</string>
   <string name="database_import_label">Importar base de datos</string>
-  <string name="database_import_warning">La importación de una base de datos reemplazará todas las suscripciones actuales y el historial de reproducción. Debes exportar la base de datos actual como una copia de seguridad. ¿Quieres reemplazarla?</string>
-  <string name="please_wait">Por favor espera...</string>
+  <string name="database_import_warning">La importación de una base de datos reemplazará todas las suscripciones actuales y el historial de reproducción. Debes exportar la base de datos actual como una copia de seguridad. ¿Quieres reemplazarla\?</string>
+  <string name="please_wait">Por favor espera…</string>
   <string name="export_error_label">Error en la exportación</string>
   <string name="export_success_title">Exportación exitosa</string>
   <string name="opml_import_ask_read_permission">Necesita acceso al almacenamiento externo para leer archivos OPML</string>
@@ -663,7 +656,7 @@
   <string name="pref_pausePlaybackForFocusLoss_title">Pausar durante las interrupciones</string>
   <!--Online feed view-->
   <string name="subscribe_label">Suscribirse</string>
-  <string name="subscribing_label">Suscribiendo...</string>
+  <string name="subscribing_label">Suscribiendo…</string>
   <string name="preview_episode">Vista Previa</string>
   <string name="stop_preview">Detener la vista previa</string>
   <!--Content descriptions for image buttons-->
@@ -715,7 +708,7 @@
   <!--PodciniSP-->
   <string name="sp_apps_importing_feeds_msg">Importando suscripciones de aplicaciones de uso específico…</string>
   <!--Add podcast fragment-->
-  <string name="search_podcast_hint">Buscar podcast...</string>
+  <string name="search_podcast_hint">Buscar podcast…</string>
   <string name="search_itunes_label">Buscar en Apple Podcasts</string>
   <string name="search_podcastindex_label">Buscar en Podcast Index</string>
   <string name="search_fyyd_label">Buscar en fyyd</string>
@@ -814,8 +807,8 @@
   <string name="widget_opacity">Opacidad</string>
   <!--On-Demand configuration-->
   <string name="on_demand_config_setting_changed">Configuración actualizada satisfactoriamente.</string>
-  <string name="on_demand_config_stream_text">Parece que usas mucho la reproducción en directo. ¿Quieres que las listas de episodios muestren los botones de escuchar en directo?</string>
-  <string name="on_demand_config_download_text">Parece que usas mucho las descargas. ¿Quieres mostrar el botón de descargar en la lista de episodios?</string>
+  <string name="on_demand_config_stream_text">Parece que usas mucho la reproducción en directo. ¿Quieres que las listas de episodios muestren los botones de escuchar en directo\?</string>
+  <string name="on_demand_config_download_text">Parece que usas mucho las descargas. ¿Quieres mostrar el botón de descargar en la lista de episodios\?</string>
   <string name="shortcut_subscription_label">Atajo de suscripción</string>
   <string name="shortcut_select_subscription">Seleccionar suscripción</string>
   <string name="add_shortcut">Añadir atajo</string>

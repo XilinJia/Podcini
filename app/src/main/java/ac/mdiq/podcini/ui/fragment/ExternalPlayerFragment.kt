@@ -60,6 +60,7 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
     lateinit var butPlaybackSpeed: PlaybackSpeedIndicatorView
     lateinit var txtvPlaybackSpeed: TextView
 
+    private lateinit var episodeTitle: TextView
     private lateinit var butRev: ImageButton
     private lateinit var txtvRev: TextView
     private lateinit  var butFF: ImageButton
@@ -81,6 +82,7 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
         val viewBinding = ExternalPlayerFragmentBinding.inflate(inflater)
         Log.d(TAG, "fragment onCreateView")
 
+        episodeTitle = viewBinding.titleView
         butPlaybackSpeed = viewBinding.butPlaybackSpeed
         txtvPlaybackSpeed = viewBinding.txtvPlaybackSpeed
         imgvCover = viewBinding.imgvCover
@@ -136,6 +138,7 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
                 return@setOnClickListener
             }
             val media = controller!!.getMedia()
+
             if (media?.getMediaType() == MediaType.VIDEO && controller!!.status != PlayerStatus.PLAYING) {
                 controller!!.playPause()
                 requireContext().startActivity(getPlayerActivityIntent(requireContext(), media))
@@ -267,8 +270,8 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
         super.onStart()
         txtvRev.text = NumberFormat.getInstance().format(UserPreferences.rewindSecs.toLong())
         txtvFF.text = NumberFormat.getInstance().format(UserPreferences.fastForwardSecs.toLong())
-        val media = controller?.getMedia()
-        if (media != null) updatePlaybackSpeedButton(SpeedChangedEvent(PlaybackSpeedUtils.getCurrentPlaybackSpeed(media)))
+        val media = controller?.getMedia() ?: return
+        updatePlaybackSpeedButton(SpeedChangedEvent(PlaybackSpeedUtils.getCurrentPlaybackSpeed(media)))
     }
 
     @UnstableApi
@@ -354,9 +357,8 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
         if (media == null) {
             return
         }
+        episodeTitle.text = media.getEpisodeTitle()
         (activity as MainActivity).setPlayerVisible(true)
-//        txtvTitle.text = media.getEpisodeTitle()
-//        feedName.text = media.getFeedTitle()
         onPositionObserverUpdate(PlaybackPositionEvent(media.getPosition(), media.getDuration()))
 
         val options = RequestOptions()

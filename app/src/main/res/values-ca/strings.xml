@@ -42,16 +42,9 @@
   <string name="statistics_filter_all_time">Tot el temps</string>
   <string name="statistics_filter_past_year">Any passat</string>
   <string name="statistics_reset_data">Resetejar dades estadístiques</string>
-  <string name="statistics_reset_data_msg">Açò esborrarà l\'històric de la duració reproduïda per a tots els episodis. ¿Segur que vols continuar?</string>
+  <string name="statistics_reset_data_msg">Açò esborrarà l\'històric de la duració reproduïda per a tots els episodis. ¿Segur que vols continuar\?</string>
   <string name="statistics_counting_range">Reproduït entre entre %1$s i %2$s</string>
   <string name="statistics_counting_total">Reproduït en total</string>
-  <!--Home fragment-->
-
-
-
-
-
-
 
   <string name="notification_permission_text">Podcini necessita el vostre permís per mostrar notificacions. Per defecte, Podcini només mostra notificacions mentre alguna cosa s\'està baixant o quan alguna cosa surt malament.</string>
   <string name="notification_permission_denied">S\'ha denegat el permís per a les notificacions</string>
@@ -84,7 +77,7 @@
   <string name="go_to_position_label">Vés a la posició</string>
   <!--Playback history-->
   <string name="clear_history_label">Neteja l\'historial</string>
-  <string name="clear_playback_history_msg">Això netejarà tot l\'historial de reproducció. Esteu segur que voleu continuar?</string>
+  <string name="clear_playback_history_msg">Això netejarà tot l\'historial de reproducció. Esteu segur que voleu continuar\?</string>
   <string name="remove_history_label">Elimina de l\'historial</string>
   <string name="removed_history_label">Eliminat de l\'historial</string>
   <!--Other-->
@@ -180,7 +173,7 @@
   <string name="edit_tags">Edita etiquetes</string>
   <string name="add_tag">Afegeix etiqueta</string>
   <string name="rename_tag_label">Canvia etiqueta</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message">L\'actualització d\'episodis en connexió de dades està inhabilitada a les preferències.\n\nTot i això, voleu actualitzar els podcasts en connexió de dades?</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message">L\'actualització d\'episodis en connexió de dades està inhabilitada a les preferències.\n\nTot i això, voleu actualitzar els podcasts en connexió de dades\?</string>
   <!--actions on feeditems-->
   <string name="download_label">Baixa</string>
   <plurals name="downloading_batch_label">
@@ -507,10 +500,10 @@
   <!--Synchronization-->
   <string name="sync_status_started">Sincronització començada</string>
   <string name="sync_status_episodes_upload">Pujant canvis d\'episodi</string>
-  <string name="sync_status_episodes_download">Descarregant canvis d\'episodi...</string>
-  <string name="sync_status_upload_played">Pujant estat de reproducció...</string>
-  <string name="sync_status_subscriptions">Sincronitzant subscripcions...</string>
-  <string name="sync_status_wait_for_downloads">Esperant la finalització de les baixades...</string>
+  <string name="sync_status_episodes_download">Descarregant canvis d\'episodi…</string>
+  <string name="sync_status_upload_played">Pujant estat de reproducció…</string>
+  <string name="sync_status_subscriptions">Sincronitzant subscripcions…</string>
+  <string name="sync_status_wait_for_downloads">Esperant la finalització de les baixades…</string>
   <string name="sync_status_success">Sincronització exitosa</string>
   <string name="sync_status_error">Sincronització fallida</string>
   <!--import and export-->
@@ -533,8 +526,8 @@
   <string name="html_export_label">Exporta HTML</string>
   <string name="database_export_label">Exporta base de dades</string>
   <string name="database_import_label">Importa base de dades</string>
-  <string name="database_import_warning">Importar una base de dades reemplaçarà totes les teues subscripcions i històric de reproducció. Deuries exportar la teua base de dades com a còpia de seguretat. Vols reemplaçar?</string>
-  <string name="please_wait">Per favor, espera...</string>
+  <string name="database_import_warning">Importar una base de dades reemplaçarà totes les teues subscripcions i històric de reproducció. Deuries exportar la teua base de dades com a còpia de seguretat. Vols reemplaçar\?</string>
+  <string name="please_wait">Per favor, espera…</string>
   <string name="export_error_label">Error d\'exportació</string>
   <string name="export_success_title">Exportació correcta</string>
   <string name="opml_import_ask_read_permission">Per llegir arxius OPML és necessari accés a la memòria externa</string>
@@ -615,7 +608,7 @@
   <string name="pref_pausePlaybackForFocusLoss_title">Pausa per interrupcions</string>
   <!--Online feed view-->
   <string name="subscribe_label">Subscriu</string>
-  <string name="subscribing_label">Subscrivint...</string>
+  <string name="subscribing_label">Subscrivint…</string>
   <string name="preview_episode">Vista prelimiar</string>
   <string name="stop_preview">Atura vista preliminar</string>
   <!--Content descriptions for image buttons-->
@@ -663,7 +656,7 @@
   <string name="edit_url_menu">Edita l\'enllaç del canal</string>
   <string name="edit_url_confirmation_msg">Canviar l\'adreça RSS pot trencar fàcilment l\'estat de reproducció i les llistes d\'episodis del podcast. NO recomanem canviar-lo i NO oferirem suport si alguna cosa va malament. Això no es pot desfer. La subscripció trencada NO es pot reparar simplement canviant l\'adreça. Us suggerim que creeu una còpia de seguretat abans de continuar.</string>
   <!--PodciniSP-->
-  <string name="sp_apps_importing_feeds_msg">S\'estan important les subscripcions des de les apps de propòsit únic...</string>
+  <string name="sp_apps_importing_feeds_msg">S\'estan important les subscripcions des de les apps de propòsit únic…</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">Cerca podcast…</string>
   <string name="search_itunes_label">Cerca a Apple Podcasts</string>
@@ -735,7 +728,7 @@
   <string name="port_label">Port</string>
   <string name="optional_hint">(Opcional)</string>
   <string name="proxy_test_label">Test</string>
-  <string name="proxy_checking">Comprovant...</string>
+  <string name="proxy_checking">Comprovant…</string>
   <string name="proxy_test_successful">Test correcte</string>
   <string name="proxy_test_failed">Test fallit</string>
   <string name="proxy_host_empty_error">El host no pot estar buit</string>
@@ -764,8 +757,8 @@
   <string name="widget_opacity">Opacitat</string>
   <!--On-Demand configuration-->
   <string name="on_demand_config_setting_changed">Ajust actualitzar exitosament</string>
-  <string name="on_demand_config_stream_text">Pareix que escoltes en línia molt a sovint. Vols que les llistes d\'episodis mostren botons per a escoltar en línia?</string>
-  <string name="on_demand_config_download_text">Pareix que baixes molt a sovint. Vols que les llistes d\'episodis mostren botons per a baixar episodis?</string>
+  <string name="on_demand_config_stream_text">Pareix que escoltes en línia molt a sovint. Vols que les llistes d\'episodis mostren botons per a escoltar en línia\?</string>
+  <string name="on_demand_config_download_text">Pareix que baixes molt a sovint. Vols que les llistes d\'episodis mostren botons per a baixar episodis\?</string>
   <string name="shortcut_subscription_label">Drecera a la subscripció</string>
   <string name="shortcut_select_subscription">Selecciona subscripció</string>
   <string name="add_shortcut">Afegeix drecera</string>

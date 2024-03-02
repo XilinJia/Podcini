@@ -37,14 +37,14 @@ class SwipeActionsDialog(private val context: Context, private val tag: String) 
 
         var forFragment = ""
         when (tag) {
-            InboxFragment.TAG -> {
-                forFragment = context.getString(R.string.inbox_label)
-                keys = Stream.of(keys).filter { a: SwipeAction ->
-                    (!a.getId().equals(SwipeAction.TOGGLE_PLAYED)
-                            && !a.getId().equals(SwipeAction.DELETE)
-                            && !a.getId().equals(SwipeAction.REMOVE_FROM_HISTORY))
-                }.toList()
-            }
+//            InboxFragment.TAG -> {
+//                forFragment = context.getString(R.string.inbox_label)
+//                keys = Stream.of(keys).filter { a: SwipeAction ->
+//                    (!a.getId().equals(SwipeAction.TOGGLE_PLAYED)
+//                            && !a.getId().equals(SwipeAction.DELETE)
+//                            && !a.getId().equals(SwipeAction.REMOVE_FROM_HISTORY))
+//                }.toList()
+//            }
             AllEpisodesFragment.TAG -> {
                 forFragment = context.getString(R.string.episodes_label)
                 keys = Stream.of(keys).filter { a: SwipeAction -> !a.getId().equals(SwipeAction.REMOVE_FROM_HISTORY) }.toList()

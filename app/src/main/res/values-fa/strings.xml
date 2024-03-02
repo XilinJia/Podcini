@@ -347,7 +347,7 @@
   <string name="interruptions">وقفه‌ها</string>
   <string name="playback_control">واپایش پخش</string>
   <string name="reassign_hardware_buttons">تغییر کاربری دکمه های سخت افزاری</string>
-  <string name="preference_search_hint">جست‌وجو...</string>
+  <string name="preference_search_hint">جست‌وجو…</string>
   <string name="preference_search_no_results">نتیجه‌ای یافت نشد</string>
   <string name="preference_search_clear_history">پاک کردن تاریخچه</string>
   <string name="pref_episode_cleanup_title">پاک‌سازی قسمت</string>
@@ -504,7 +504,7 @@
   <string name="sync_status_episodes_upload">بارگذاری تغییرات قسمت…</string>
   <string name="sync_status_episodes_download">بارگیری تغییرات قسمت…</string>
   <string name="sync_status_upload_played">در حال بارگذاری وضعیت پخش شده</string>
-  <string name="sync_status_subscriptions">همگام سازی اشتراک ها ...</string>
+  <string name="sync_status_subscriptions">همگام سازی اشتراک ها …</string>
   <string name="sync_status_wait_for_downloads">در انتظار تکمیل موارد دانلودی…</string>
   <string name="sync_status_success">همگام سازی موفقیت آمیز</string>
   <string name="sync_status_error">همگام سازی ناموفقیت آمیز</string>
@@ -529,7 +529,7 @@
   <string name="database_export_label">خارج کردن پایگاه داده</string>
   <string name="database_import_label">وارد کردن پایگاه داده</string>
   <string name="database_import_warning">وارد کردن یک پایگاه داده باعث جایگزین تمام اشتراکهای فعلی و سابقه پخش شما خواهد شد. شما باید پایگاه داده فعلی خود را به عنوان پشتیبان خارج کنید. آیا شما میخواهید جایگزین کنید؟</string>
-  <string name="please_wait">صبر کنید لطفا ...</string>
+  <string name="please_wait">صبر کنید لطفا …</string>
   <string name="export_error_label">خطا در خارج کردن</string>
   <string name="export_success_title">خارج کردن موفقیت آمیز</string>
   <string name="opml_import_ask_read_permission">برای خواندن پروندهٔ OPML نباز به دسترسی حافظهٔ خارجی است</string>
@@ -610,7 +610,7 @@
   <string name="pref_pausePlaybackForFocusLoss_title">مکث برای وقفه‌ها</string>
   <!--Online feed view-->
   <string name="subscribe_label">اشتراک</string>
-  <string name="subscribing_label">مشترک شدن ...</string>
+  <string name="subscribing_label">مشترک شدن …</string>
   <string name="preview_episode">پیش نمایش</string>
   <string name="stop_preview">توقف پیش نمایش</string>
   <!--Content descriptions for image buttons-->
@@ -655,7 +655,7 @@
   <!--PodciniSP-->
   <string name="sp_apps_importing_feeds_msg">وارد کردن اشتراک از برنامه های تک منظوره</string>
   <!--Add podcast fragment-->
-  <string name="search_podcast_hint">جستجوی پادکست ...</string>
+  <string name="search_podcast_hint">جستجوی پادکست …</string>
   <string name="search_itunes_label">جست‌وجوی پادکست‌های اپل</string>
   <string name="search_podcastindex_label">جست‌وجوی پادکست ایندکس</string>
   <string name="search_fyyd_label">در fyyd جستجو کن</string>

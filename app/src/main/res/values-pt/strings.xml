@@ -42,17 +42,10 @@
   <string name="statistics_filter_all_time">De sempre</string>
   <string name="statistics_filter_past_year">Último ano</string>
   <string name="statistics_reset_data">Reiniciar estatísticas dos dados</string>
-  <string name="statistics_reset_data_msg">Está prestes a eliminar o histórico do tempo de reprodução de todos os episódios. Tem a certeza de que deseja continuar?</string>
+  <string name="statistics_reset_data_msg">Está prestes a eliminar o histórico do tempo de reprodução de todos os episódios. Tem a certeza de que deseja continuar\?</string>
   <string name="statistics_counting_range">Reproduzidos entre %1$s e %2$s</string>
   <string name="statistics_counting_total">Total</string>
   <!--Home fragment-->
-
-
-
-
-
-
-
   <string name="notification_permission_text">Podcini precisa de sua permissão para mostrar notificações. Por definição, a aplicação apenas mostra notificações se estiver a descarregar ficheiros ou se algo errado acontecer.</string>
   <string name="notification_permission_denied">Permissões recusadas</string>
   <string name="notification_permission_deny_warning">Se desativar as notificações e ocorrer algum erro, não receberá quaisquer informações acerca desse erro</string>
@@ -85,7 +78,7 @@
   <string name="go_to_position_label">Ir para esta posição</string>
   <!--Playback history-->
   <string name="clear_history_label">Limpar histórico</string>
-  <string name="clear_playback_history_msg">Está prestes a eliminar todo o histórico de reprodução. Tem a certeza de que deseja continuar?</string>
+  <string name="clear_playback_history_msg">Está prestes a eliminar todo o histórico de reprodução. Tem a certeza de que deseja continuar\?</string>
   <string name="remove_history_label">Remover do histórico</string>
   <string name="removed_history_label">Removido do histórico</string>
   <!--Other-->
@@ -164,9 +157,9 @@
   <!--Actions on feeds-->
   <string name="remove_all_inbox_label">Remover tudo da caixa de entrada</string>
   <string name="removed_all_inbox_msg">Tudo removido da caixa de entrada</string>
-  <string name="remove_all_inbox_confirmation_msg">Confirma que deseja remover tudo da caixa de entrada?</string>
-  <string name="multi_select_mark_played_confirmation">Confirma que deseja marcar todos os itens selecionados como reproduzidos?</string>
-  <string name="multi_select_mark_unplayed_confirmation">Confirma que deseja marcar todos os itens selecionados como não reproduzidos?</string>
+  <string name="remove_all_inbox_confirmation_msg">Confirma que deseja remover tudo da caixa de entrada\?</string>
+  <string name="multi_select_mark_played_confirmation">Confirma que deseja marcar todos os itens selecionados como reproduzidos\?</string>
+  <string name="multi_select_mark_unplayed_confirmation">Confirma que deseja marcar todos os itens selecionados como não reproduzidos\?</string>
   <string name="show_info_label">Mostrar informações</string>
   <string name="show_feed_settings_label">Mostrar definições do podcast</string>
   <string name="feed_settings_label">Definições do podcast</string>
@@ -175,9 +168,9 @@
   <string name="share_label">Partilhar</string>
   <string name="share_file_label">Partilhar ficheiro</string>
 
-  <string name="feed_delete_confirmation_msg">Tem a certeza de que deseja eliminar o podcast  \"%1$s\", TODOS os seus episódios (inclusive descarregados) e as estatísticas?</string>
-  <string name="feed_delete_confirmation_msg_batch">Tem a certeza de que deseja eliminar os podcasts selecionados, TODOS os seus episódios (inclusive descarregados) e as estatísticas?</string>
-  <string name="feed_delete_confirmation_local_msg">Tem a certeza de que deseja eliminar o podcast \"%1$s\" e as suas estatísticas? Os ficheiros existentes na pasta não serão eliminados.</string>
+  <string name="feed_delete_confirmation_msg">Tem a certeza de que deseja eliminar o podcast  \"%1$s\", TODOS os seus episódios (inclusive descarregados) e as estatísticas\?</string>
+  <string name="feed_delete_confirmation_msg_batch">Tem a certeza de que deseja eliminar os podcasts selecionados, TODOS os seus episódios (inclusive descarregados) e as estatísticas\?</string>
+  <string name="feed_delete_confirmation_local_msg">Tem a certeza de que deseja eliminar o podcast \"%1$s\" e as suas estatísticas\? Os ficheiros existentes na pasta não serão eliminados.</string>
   <string name="feed_remover_msg">A remover podcast</string>
   <string name="load_complete_feed">Recarregar podcast</string>
   <string name="multi_select">Seleção múltipla</string>
@@ -196,8 +189,8 @@
   <string name="edit_tags">Editar etiquetas</string>
   <string name="add_tag">Adicionar etiqueta</string>
   <string name="rename_tag_label">Mudar nome da etiqueta</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message">A atualização de podcasts através de dados móveis está desativada nas definições.\n\nPretende, ainda assim, atualizar?</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message_vpn">A sua VPN pretende atuar como uma rede móvel (ligação móvel com limites). A atualização de podcasts através de dados móveis está desativada nas definições.\n\nPretende, ainda assim, recarregar? Se quiser que este problema seja corrigido, deve contactar os criadores da VPN.</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message">A atualização de podcasts através de dados móveis está desativada nas definições.\n\nPretende, ainda assim, atualizar\?</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message_vpn">A sua VPN pretende atuar como uma rede móvel (ligação móvel com limites). A atualização de podcasts através de dados móveis está desativada nas definições.\n\nPretende, ainda assim, recarregar\? Se quiser que este problema seja corrigido, deve contactar os criadores da VPN.</string>
   <!--actions on feeditems-->
   <string name="download_label">Descarregar</string>
   <plurals name="downloading_batch_label">
@@ -344,7 +337,7 @@
   <string name="random">Aleatório</string>
   <string name="smart_shuffle">Mistura inteligente</string>
   <string name="size">Tamanho</string>
-  <string name="clear_queue_confirmation_msg">Tem a certeza de que deseja remover todos os episódios da fila de reprodução?</string>
+  <string name="clear_queue_confirmation_msg">Tem a certeza de que deseja remover todos os episódios da fila de reprodução\?</string>
   <string name="time_left_label">Tempo restante:\u0020</string>
   <!--Variable Speed-->
   <string name="speed_presets">Predefinições</string>
@@ -379,7 +372,7 @@
   <string name="interruptions">Interrupções</string>
   <string name="playback_control">Controlo de reprodução</string>
   <string name="reassign_hardware_buttons">Atribuir botões do dispositivo</string>
-  <string name="preference_search_hint">Pesquisar...</string>
+  <string name="preference_search_hint">Pesquisar…</string>
   <string name="preference_search_no_results">Não existem resultados</string>
   <string name="preference_search_clear_history">Limpar histórico</string>
   <string name="pref_episode_cleanup_title">Limpeza de episódios</string>
@@ -400,7 +393,7 @@
   <string name="pref_auto_delete_title">Eliminação automática</string>
   <string name="pref_auto_local_delete_title">Eliminação automática para pastas locais</string>
   <string name="pref_auto_local_delete_sum">Incluir pastas locais na funcionalidade Eliminação automática</string>
-  <string name="pref_auto_local_delete_dialog_body">Tem a certeza de que deseja ativar a eliminação automática? Para pastas locais, esta opção elimina os episódios da aplicação, do dispositivo e não será possível uma nova descarga. Ativar eliminação automática?</string>
+  <string name="pref_auto_local_delete_dialog_body">Tem a certeza de que deseja ativar a eliminação automática\? Para pastas locais, esta opção elimina os episódios da aplicação, do dispositivo e não será possível uma nova descarga. Ativar eliminação automática\?</string>
   <string name="pref_smart_mark_as_played_sum">Marcar episódio como reproduzido mesmo que restem alguns segundos de reprodução</string>
   <string name="pref_smart_mark_as_played_title">Marcar como reproduzido (inteligente)</string>
   <string name="pref_skip_keeps_episodes_sum">Manter episódios mesmo se tiverem sido ignorados</string>
@@ -545,11 +538,11 @@
   <string name="search_online">Pesquisar online</string>
   <!--Synchronization-->
   <string name="sync_status_started">Sincronização iniciada</string>
-  <string name="sync_status_episodes_upload">Atualizar alterações nos episódios...</string>
-  <string name="sync_status_episodes_download">Descarregar alterações nos episódios...</string>
-  <string name="sync_status_upload_played">Carregar estado de reprodução...</string>
-  <string name="sync_status_subscriptions">Sincronizar subscrições...</string>
-  <string name="sync_status_wait_for_downloads">A aguardar pelo fim das descargas...</string>
+  <string name="sync_status_episodes_upload">Atualizar alterações nos episódios…</string>
+  <string name="sync_status_episodes_download">Descarregar alterações nos episódios…</string>
+  <string name="sync_status_upload_played">Carregar estado de reprodução…</string>
+  <string name="sync_status_subscriptions">Sincronizar subscrições…</string>
+  <string name="sync_status_wait_for_downloads">A aguardar pelo fim das descargas…</string>
   <string name="sync_status_success">Sincronização bem sucedida</string>
   <string name="sync_status_error">Falha na sincronização</string>
   <!--import and export-->
@@ -572,8 +565,8 @@
   <string name="html_export_label">Exportação HTML</string>
   <string name="database_export_label">Exportar base de dados</string>
   <string name="database_import_label">Importar base de dados</string>
-  <string name="database_import_warning">A importação de uma base de dados substitui as subscrições atuais e o histórico de reprodução. Deve efetuar um backup da base de dados atual. Substituir?</string>
-  <string name="please_wait">Aguarde...</string>
+  <string name="database_import_warning">A importação de uma base de dados substitui as subscrições atuais e o histórico de reprodução. Deve efetuar um backup da base de dados atual. Substituir\?</string>
+  <string name="please_wait">Aguarde…</string>
   <string name="export_error_label">Erro de exportação</string>
   <string name="export_success_title">Exportação efetuada</string>
   <string name="opml_import_ask_read_permission">Requer acesso ao armazenamento externo para ler o ficheiro OPML</string>
@@ -658,7 +651,7 @@
   <string name="pref_pausePlaybackForFocusLoss_title">Pausa nas interrupções</string>
   <!--Online feed view-->
   <string name="subscribe_label">Subscrever</string>
-  <string name="subscribing_label">Subscrição em curso...</string>
+  <string name="subscribing_label">Subscrição em curso…</string>
   <string name="preview_episode">Antevisão</string>
   <string name="stop_preview">Parar pré-visualização</string>
   <!--Content descriptions for image buttons-->
@@ -708,9 +701,9 @@
   <string name="edit_url_menu">Editar URL</string>
   <string name="edit_url_confirmation_msg">A alteração do endereço RSS pode destruir o estado de reprodução e os episódios do podcast. NÃO recomendamos esta alteração e NÃO podemos ajudar caso algo corra mal. Esta ação não pode ser revertida. A subscrição danificada NÃO pode ser reparada com uma simples alteração do endereço. Deve criar um backup antes de continuar.</string>
   <!--PodciniSP-->
-  <string name="sp_apps_importing_feeds_msg">Importar subscrições de aplicações single-purpose...</string>
+  <string name="sp_apps_importing_feeds_msg">Importar subscrições de aplicações single-purpose…</string>
   <!--Add podcast fragment-->
-  <string name="search_podcast_hint">Pesquisar podcast...</string>
+  <string name="search_podcast_hint">Pesquisar podcast…</string>
   <string name="search_itunes_label">Pesquisar em Apple Podcasts</string>
   <string name="search_podcastindex_label">Pesquisar em Podcast Index</string>
   <string name="search_fyyd_label">Pesquisar em fyyd</string>
@@ -780,7 +773,7 @@
   <string name="port_label">Porta</string>
   <string name="optional_hint">(Opcional)</string>
   <string name="proxy_test_label">Testar</string>
-  <string name="proxy_checking">A verificar...</string>
+  <string name="proxy_checking">A verificar…</string>
   <string name="proxy_test_successful">Teste bem sucedido</string>
   <string name="proxy_test_failed">Teste falhou</string>
   <string name="proxy_host_empty_error">O servidor não pode estar vazio</string>
@@ -809,8 +802,8 @@
   <string name="widget_opacity">Opacidade</string>
   <!--On-Demand configuration-->
   <string name="on_demand_config_setting_changed">Definições atualizadas com sucesso.</string>
-  <string name="on_demand_config_stream_text">Parece que você prefere as emissões. Deseja que a lista de episódios mostre os botões adequados?</string>
-  <string name="on_demand_config_download_text">Parece que você prefere as descargas. Deseja que a lista de episódios mostre os botões adequados?</string>
+  <string name="on_demand_config_stream_text">Parece que você prefere as emissões. Deseja que a lista de episódios mostre os botões adequados\?</string>
+  <string name="on_demand_config_download_text">Parece que você prefere as descargas. Deseja que a lista de episódios mostre os botões adequados\?</string>
   <string name="shortcut_subscription_label">Atalho da subscrição</string>
   <string name="shortcut_select_subscription">Selecione a subscrição</string>
   <string name="add_shortcut">Adicionar atalho</string>

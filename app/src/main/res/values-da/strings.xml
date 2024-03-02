@@ -42,17 +42,10 @@
   <string name="statistics_filter_all_time">Al tid</string>
   <string name="statistics_filter_past_year">Det seneste år</string>
   <string name="statistics_reset_data">Nulstil statistik</string>
-  <string name="statistics_reset_data_msg">Dette vil slette historikken over hvor meget der er afspillet for alle afsnit. Er du sikker på, at du vil fortsætte?</string>
+  <string name="statistics_reset_data_msg">Dette vil slette historikken over hvor meget der er afspillet for alle afsnit. Er du sikker på, at du vil fortsætte\?</string>
   <string name="statistics_counting_range">Afspillet mellem %1$s og %2$s</string>
   <string name="statistics_counting_total">Afspillet i alt</string>
   <!--Home fragment-->
-
-
-
-
-
-
-
   <string name="notification_permission_text">Podcini har brug for din tilladelse til at vise notifikationer. Som udgangspunkt viser Podcini kun notifikationer, mens noget hentes, eller når noget går galt.</string>
   <string name="notification_permission_denied">Du afviste tilladelsen.</string>
   <string name="notification_permission_deny_warning">Hvis du deaktiverer notifikationer, og noget går galt, kan du måske ikke finde ud af, hvorfor det gik galt.</string>
@@ -85,7 +78,7 @@
   <string name="go_to_position_label">Gå til denne position</string>
   <!--Playback history-->
   <string name="clear_history_label">Ryd historik</string>
-  <string name="clear_playback_history_msg">Dette vil slette hele afspilningshistorikken. Er du sikker på, at du vil fortsætte?</string>
+  <string name="clear_playback_history_msg">Dette vil slette hele afspilningshistorikken. Er du sikker på, at du vil fortsætte\?</string>
   <string name="remove_history_label">Fjern fra historik</string>
   <string name="removed_history_label">Fjernet fra historik</string>
   <!--Other-->
@@ -189,8 +182,8 @@
   <string name="edit_tags">Rediger etiketter</string>
   <string name="add_tag">Tilføj etiket</string>
   <string name="rename_tag_label">Omdøb etiket</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message">Opdatering af podcasts via mobildataforbindelse er deaktiveret i indstillingerne.\n\nØnsker du alligevel at opdatere?</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message_vpn">Din VPN-app udgiver sig for at være et mobilnetværk (forbrugsafregnet forbindelse). Opdatering af podcasts via mobildataforbindelse er deaktiveret i indstillingerne.\n\nVil du opdatere alligevel? Hvis du vil have løst dette problem, skal du kontakte udviklerne af din VPN-app.</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message">Opdatering af podcasts via mobildataforbindelse er deaktiveret i indstillingerne.\n\nØnsker du alligevel at opdatere\?</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message_vpn">Din VPN-app udgiver sig for at være et mobilnetværk (forbrugsafregnet forbindelse). Opdatering af podcasts via mobildataforbindelse er deaktiveret i indstillingerne.\n\nVil du opdatere alligevel\? Hvis du vil have løst dette problem, skal du kontakte udviklerne af din VPN-app.</string>
   <!--actions on feeditems-->
   <string name="download_label">Hent</string>
   <plurals name="downloading_batch_label">
@@ -292,7 +285,7 @@
   <string name="authentication_notification_title">Godkendelse kræves</string>
   <string name="confirm_mobile_download_dialog_title">Bekræft mobiloverførsel </string>
   <string name="confirm_mobile_download_dialog_message">Overførsel via mobildataforbindelse er deaktiveret i indstillingerne. Podcini kan hente afsnittet automatisk senere, når Wi-Fi er tilgængeligt.</string>
-  <string name="confirm_mobile_download_dialog_message_vpn">Din VPN-app udgiver sig for at være et mobilnetværk (forbrugsafregnet forbindelse). Overførsel af podcasts via mobildataforbindelse er deaktiveret i indstillingerne.\n\nVil du overføre alligevel? Hvis du vil have løst dette problem, skal du kontakte udviklerne af din VPN-app.</string>
+  <string name="confirm_mobile_download_dialog_message_vpn">Din VPN-app udgiver sig for at være et mobilnetværk (forbrugsafregnet forbindelse). Overførsel af podcasts via mobildataforbindelse er deaktiveret i indstillingerne.\n\nVil du overføre alligevel\? Hvis du vil have løst dette problem, skal du kontakte udviklerne af din VPN-app.</string>
   <string name="confirm_mobile_download_dialog_download_later">Hent senere</string>
   <string name="confirm_mobile_download_dialog_allow_this_time">Hent alligevel</string>
   <string name="confirm_mobile_streaming_notification_title">Bekræft mobilstreaming</string>
@@ -364,7 +357,7 @@
   <string name="interruptions">Afbrydelser</string>
   <string name="playback_control">Afspilningskontrol</string>
   <string name="reassign_hardware_buttons">Omfordel de fysiske knapper</string>
-  <string name="preference_search_hint">Søg...</string>
+  <string name="preference_search_hint">Søg…</string>
   <string name="preference_search_no_results">Ingen resultater</string>
   <string name="preference_search_clear_history">Slet historik</string>
   <string name="pref_episode_cleanup_title">Afsnitsoprydning</string>
@@ -385,7 +378,7 @@
   <string name="pref_auto_delete_title">Slet automatisk</string>
   <string name="pref_auto_local_delete_title">Slet automatisk fra lokale mapper</string>
   <string name="pref_auto_local_delete_sum">Inkluder lokale mapper i automatisk sletning</string>
-  <string name="pref_auto_local_delete_dialog_body">Bemærk, at for lokale mapper vil dette fjerne afsnit fra Podcini og slette deres mediefiler fra din enheds lager. De kan ikke hentes igen via Podcini. Aktivér automatisk sletning?</string>
+  <string name="pref_auto_local_delete_dialog_body">Bemærk, at for lokale mapper vil dette fjerne afsnit fra Podcini og slette deres mediefiler fra din enheds lager. De kan ikke hentes igen via Podcini. Aktivér automatisk sletning\?</string>
   <string name="pref_smart_mark_as_played_sum">Markér afsnit som værende afspillet, selv om op til et angivet antal sekunders spilletid stadig mangler</string>
   <string name="pref_smart_mark_as_played_title">Smart markering som afspillet</string>
   <string name="pref_skip_keeps_episodes_sum">Behold afsnit når de bliver sprunget over</string>
@@ -530,11 +523,11 @@
   <string name="search_online">Søg online</string>
   <!--Synchronization-->
   <string name="sync_status_started">Synkronisering startet</string>
-  <string name="sync_status_episodes_upload">Overfører afsnitændringer...</string>
-  <string name="sync_status_episodes_download">Henter afsnitændringer...</string>
-  <string name="sync_status_upload_played">Overfører afspillet status...</string>
-  <string name="sync_status_subscriptions">Synkroniserer abonnementer...</string>
-  <string name="sync_status_wait_for_downloads">Venter på, at overførsler er færdige...</string>
+  <string name="sync_status_episodes_upload">Overfører afsnitændringer…</string>
+  <string name="sync_status_episodes_download">Henter afsnitændringer…</string>
+  <string name="sync_status_upload_played">Overfører afspillet status…</string>
+  <string name="sync_status_subscriptions">Synkroniserer abonnementer…</string>
+  <string name="sync_status_wait_for_downloads">Venter på, at overførsler er færdige…</string>
   <string name="sync_status_success">Synkroniseret</string>
   <string name="sync_status_error">Synkronisering mislykkedes</string>
   <!--import and export-->
@@ -557,8 +550,8 @@
   <string name="html_export_label">HTML-eksport</string>
   <string name="database_export_label">Eksport af database</string>
   <string name="database_import_label">Importér database</string>
-  <string name="database_import_warning">Import af database vil overskrive alle dine nuværende abonnementer og din afspilningshistorik. Du bør eksportere din nuværende database som en sikkerhedskopi først. Vil du overskrive?</string>
-  <string name="please_wait">Vent...</string>
+  <string name="database_import_warning">Import af database vil overskrive alle dine nuværende abonnementer og din afspilningshistorik. Du bør eksportere din nuværende database som en sikkerhedskopi først. Vil du overskrive\?</string>
+  <string name="please_wait">Vent…</string>
   <string name="export_error_label">Eksportfejl</string>
   <string name="export_success_title">Eksport lykkedes</string>
   <string name="opml_import_ask_read_permission">Adgang til eksternt lager er påkrævet for at læse OPML-filen</string>
@@ -644,7 +637,7 @@
   <string name="pref_pausePlaybackForFocusLoss_title">Sæt på pause ved afbrydelser</string>
   <!--Online feed view-->
   <string name="subscribe_label">Abonner</string>
-  <string name="subscribing_label">Abonnerer ...</string>
+  <string name="subscribing_label">Abonnerer …</string>
   <string name="preview_episode">Forhåndsvisning</string>
   <string name="stop_preview">Stop forhåndsvisning</string>
   <!--Content descriptions for image buttons-->
@@ -696,7 +689,7 @@
   <!--PodciniSP-->
   <string name="sp_apps_importing_feeds_msg">Importerer abonnementer fra enkeltformålsapps…</string>
   <!--Add podcast fragment-->
-  <string name="search_podcast_hint">Søg efter podcast ...</string>
+  <string name="search_podcast_hint">Søg efter podcast …</string>
   <string name="search_itunes_label">Søg i Apple Podcasts</string>
   <string name="search_podcastindex_label">Søg i Podcast Index</string>
   <string name="search_fyyd_label">Søg i fyyd</string>
@@ -795,8 +788,8 @@
   <string name="widget_opacity">Ugennemsigtighed</string>
   <!--On-Demand configuration-->
   <string name="on_demand_config_setting_changed">Indstilling opdateret.</string>
-  <string name="on_demand_config_stream_text">Det ser ud til at du streamer en del. Vil du have vist streamknapper i afsnitslister?</string>
-  <string name="on_demand_config_download_text">Det ser ud til at du downloader meget. Vil du have downloadknapper vist i afsnitslister?</string>
+  <string name="on_demand_config_stream_text">Det ser ud til at du streamer en del. Vil du have vist streamknapper i afsnitslister\?</string>
+  <string name="on_demand_config_download_text">Det ser ud til at du downloader meget. Vil du have downloadknapper vist i afsnitslister\?</string>
   <string name="shortcut_subscription_label">Genvej til abonnement</string>
   <string name="shortcut_select_subscription">Vælg abonnement</string>
   <string name="add_shortcut">Tilføj genvej</string>

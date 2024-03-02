@@ -42,17 +42,10 @@
   <string name="statistics_filter_all_time">Za celou dobu</string>
   <string name="statistics_filter_past_year">Za poslední rok</string>
   <string name="statistics_reset_data">Vynulovat statistiky</string>
-  <string name="statistics_reset_data_msg">Toto smaže veškerou historii přehrávání pro všechny epizody. Vážně chcete pokračovat?</string>
+  <string name="statistics_reset_data_msg">Toto smaže veškerou historii přehrávání pro všechny epizody. Vážně chcete pokračovat\?</string>
   <string name="statistics_counting_range">Přehráno mezi 1%1$s a 2%2$s</string>
   <string name="statistics_counting_total">Celkem přehnáno</string>
   <!--Home fragment-->
-
-
-
-
-
-
-
   <string name="notification_permission_text">Podcini potřebuje vaše povolení k zobrazování oznámení. Ve výchozím nastavení Podcini zobrazuje oznámení pouze během stahování nebo když se něco pokazí.</string>
   <string name="notification_permission_denied">Zamítli jste oprávnění.</string>
   <string name="notification_permission_deny_warning">Pokud oznámení zakážete a něco se pokazí, nemusí se vám podařit zjistit proč.</string>
@@ -85,7 +78,7 @@
   <string name="go_to_position_label">Přejít na pozici</string>
   <!--Playback history-->
   <string name="clear_history_label">Vymazat historii</string>
-  <string name="clear_playback_history_msg">Toto vymaže celou historii přehrávání. Jste si jisti, že chcete pokračovat?</string>
+  <string name="clear_playback_history_msg">Toto vymaže celou historii přehrávání. Jste si jisti, že chcete pokračovat\?</string>
   <string name="remove_history_label">Odstranit z historie</string>
   <string name="removed_history_label">Odstraněno z historie</string>
   <!--Other-->
@@ -203,8 +196,8 @@
   <string name="edit_tags">Upravit klíčová slova</string>
   <string name="add_tag">Přidat klíčové slovo</string>
   <string name="rename_tag_label">Přejmenovat klíčové slovo</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message">Aktualizace podcastů přes mobilní data je v nastavení zakázána.\n\nChcete je i přesto aktualizovat?</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message_vpn">Aplikace VPN předstírá, že je mobilní sítí (měřeným připojením). Obnovování podcastů přes mobilní datové připojení je v nastavení zakázáno.\n\nChcete přesto obnovit? Pokud chcete tento problém odstranit, obraťte se na tvůrce aplikace VPN.</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message">Aktualizace podcastů přes mobilní data je v nastavení zakázána.\n\nChcete je i přesto aktualizovat\?</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message_vpn">Aplikace VPN předstírá, že je mobilní sítí (měřeným připojením). Obnovování podcastů přes mobilní datové připojení je v nastavení zakázáno.\n\nChcete přesto obnovit\? Pokud chcete tento problém odstranit, obraťte se na tvůrce aplikace VPN.</string>
   <!--actions on feeditems-->
   <string name="download_label">Stáhnout</string>
   <plurals name="downloading_batch_label">
@@ -415,7 +408,7 @@
   <string name="pref_auto_delete_title">Automatické mazání</string>
   <string name="pref_auto_local_delete_title">Automatické smazání z lokálních složek</string>
   <string name="pref_auto_local_delete_sum">Zahrnout lokální složky ve funkci automatického mazání</string>
-  <string name="pref_auto_local_delete_dialog_body">U místních složek dojde k odstranění epizod z aplikace Podcini a k odstranění jejich mediálních souborů z úložiště zařízení. Nelze je znovu stáhnout prostřednictvím Podciniu. Povolit automatické mazání?</string>
+  <string name="pref_auto_local_delete_dialog_body">U místních složek dojde k odstranění epizod z aplikace Podcini a k odstranění jejich mediálních souborů z úložiště zařízení. Nelze je znovu stáhnout prostřednictvím Podciniu. Povolit automatické mazání\?</string>
   <string name="pref_smart_mark_as_played_sum">Označit epizody jako poslechnuté i pokud ještě zbývá určitý počet sekund přehrávání do jejich konce</string>
   <string name="pref_smart_mark_as_played_title">Chytré označování jako poslechnuté</string>
   <string name="pref_skip_keeps_episodes_sum">Neodstraňovat epizody při jejich přeskočení</string>
@@ -564,7 +557,7 @@
   <string name="sync_status_episodes_download">Stahují se změny epizod…</string>
   <string name="sync_status_upload_played">Nahrává se stav poslechnutí…</string>
   <string name="sync_status_subscriptions">Synchronizuji odběry…</string>
-  <string name="sync_status_wait_for_downloads">Čekání na dokončení stahování...</string>
+  <string name="sync_status_wait_for_downloads">Čekání na dokončení stahování…</string>
   <string name="sync_status_success">Synchronizace proběhla úspěšně</string>
   <string name="sync_status_error">Synchronizace selhala</string>
   <!--import and export-->
@@ -587,7 +580,7 @@
   <string name="html_export_label">HTML export</string>
   <string name="database_export_label">Export databáze</string>
   <string name="database_import_label">Import databáze</string>
-  <string name="database_import_warning">Importem databáze nahradíte všechny své odběry a historii poslechu. Doporučujeme nejdříve exportovat současnou databázi pro případnou obnovu. Opravdu chcete databázi nahradit?</string>
+  <string name="database_import_warning">Importem databáze nahradíte všechny své odběry a historii poslechu. Doporučujeme nejdříve exportovat současnou databázi pro případnou obnovu. Opravdu chcete databázi nahradit\?</string>
   <string name="please_wait">Čekejte prosím…</string>
   <string name="export_error_label">Chyba exportu</string>
   <string name="export_success_title">Export úspěšný</string>
@@ -726,7 +719,7 @@
   <string name="edit_url_menu">Upravit adresu URL kanálu</string>
   <string name="edit_url_confirmation_msg">Změna adresy RSS může snadno narušit stav přehrávání a výpis epizod podcastu. Její změnu NEDOPORUČUJEME a v případě, že se něco pokazí, NEBUDE poskytnuta podpora. Tuto změnu nelze vrátit zpět. Poškozený odběr NELZE opravit pouhou změnou adresy zpět. Před pokračováním doporučujeme vytvořit zálohu.</string>
   <!--PodciniSP-->
-  <string name="sp_apps_importing_feeds_msg">Importuji odběry z jednoúčelových aplikací...</string>
+  <string name="sp_apps_importing_feeds_msg">Importuji odběry z jednoúčelových aplikací…</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">Vyhledat podcast…</string>
   <string name="search_itunes_label">Vyhledávání v Apple Podcastech</string>
@@ -798,7 +791,7 @@
   <string name="port_label">Port</string>
   <string name="optional_hint">(Volitelný)</string>
   <string name="proxy_test_label">Test</string>
-  <string name="proxy_checking">Kontrola...</string>
+  <string name="proxy_checking">Kontrola…</string>
   <string name="proxy_test_successful">Test úspěšný</string>
   <string name="proxy_test_failed">Test selhal</string>
   <string name="proxy_host_empty_error">Host nesmí být prázdný</string>
@@ -827,8 +820,8 @@
   <string name="widget_opacity">Průhlednost</string>
   <!--On-Demand configuration-->
   <string name="on_demand_config_setting_changed">Nastavení úspěšně aktualizováno</string>
-  <string name="on_demand_config_stream_text"> Vypadá to, že častěji streamujete než stahujete. Chcete zobrazovat tlačítko streamovat v seznamu epizod? </string>
-  <string name="on_demand_config_download_text">Vypadá to, že častěji stahujete než streamujete. Chcete zobrazovat tlačítko stáhnout v seznamu epizod?</string>
+  <string name="on_demand_config_stream_text"> Vypadá to, že častěji streamujete než stahujete. Chcete zobrazovat tlačítko streamovat v seznamu epizod\? </string>
+  <string name="on_demand_config_download_text">Vypadá to, že častěji stahujete než streamujete. Chcete zobrazovat tlačítko stáhnout v seznamu epizod\?</string>
   <string name="shortcut_subscription_label">Zkratka odběru</string>
   <string name="shortcut_select_subscription">Vyberte odběr</string>
   <string name="add_shortcut">Přidat zkratku</string>

@@ -6,24 +6,30 @@ import java.io.Serializable
 /**
  * Contains preferences for a single feed.
  */
-class FeedPreferences(@JvmField var feedID: Long, @JvmField var autoDownload: Boolean,
+class FeedPreferences(@JvmField var feedID: Long,
+                      @JvmField var autoDownload: Boolean,
                       /**
                        * @return true if this feed should be refreshed when everything else is being refreshed
                        * if false the feed should only be refreshed if requested directly.
                        */
                       @JvmField var keepUpdated: Boolean,
-                      var currentAutoDelete: AutoDeleteAction, @JvmField var volumeAdaptionSetting: VolumeAdaptionSetting?,
-                      @JvmField var username: String?, @JvmField var password: String?,
+                      var currentAutoDelete: AutoDeleteAction,
+                      @JvmField var volumeAdaptionSetting: VolumeAdaptionSetting?,
+                      @JvmField var username: String?,
+                      @JvmField var password: String?,
                       /**
                        * @return the filter for this feed
                        */
                       @JvmField var filter: FeedFilter,
-                      @JvmField var feedPlaybackSpeed: Float, @JvmField var feedSkipIntro: Int, @JvmField var feedSkipEnding: Int,
+                      @JvmField var feedPlaybackSpeed: Float,
+                      @JvmField var feedSkipIntro: Int,
+                      @JvmField var feedSkipEnding: Int,
                       /**
                        * getter for preference if notifications should be display for new episodes.
                        * @return true for displaying notifications
                        */
-                      @JvmField var showEpisodeNotification: Boolean, @JvmField var newEpisodesAction: NewEpisodesAction?,
+                      @JvmField var showEpisodeNotification: Boolean,
+                      @JvmField var newEpisodesAction: NewEpisodesAction?,
                       tags: Set<String>?
 ) : Serializable {
     enum class AutoDeleteAction(@JvmField val code: Int) {
@@ -46,7 +52,7 @@ class FeedPreferences(@JvmField var feedID: Long, @JvmField var autoDownload: Bo
 
     enum class NewEpisodesAction(@JvmField val code: Int) {
         GLOBAL(0),
-        ADD_TO_INBOX(1),
+//        ADD_TO_INBOX(1),
         NOTHING(2);
 
         companion object {
@@ -57,7 +63,7 @@ class FeedPreferences(@JvmField var feedID: Long, @JvmField var autoDownload: Bo
                         return action
                     }
                 }
-                return ADD_TO_INBOX
+                return GLOBAL
             }
         }
     }

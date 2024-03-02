@@ -22,6 +22,10 @@ Version 4.1 brings a more convenient player control and tags enhancements, while
 
 <img src="./images/9_speed.jpg" width="238" /> <img src="./images/10_player.jpg" width="238" />
 
+## Changelogs
+
+[Here](changelog.md)
+
 ## Privacy Policy
 
 [Privacy Policy](PrivacyPolicy.md)
@@ -35,3 +39,7 @@ Podcini, same as its forked project AntennaPod, is licensed under the GNU Genera
 New files and modifications in the project is copyrighted in 2024 by Xilin Jia.
 
 Original contents from the forked project maintains copyrights of the AntennaPod team.
+
+## Translation
+
+[At Transifex](https://app.transifex.com/xilinjia/podcini/dashboard/)

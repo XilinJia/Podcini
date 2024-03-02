@@ -148,7 +148,7 @@
   <string name="multi_select_mark_played_confirmation">Mar plij, kadarnait e fell deoc\'h merkañ pep item dibabet evel lennet.</string>
   <string name="multi_select_mark_unplayed_confirmation">Kadarnait e fell deoc\'h merkañ an holl elfennoù diuzet evel anlennet.</string>
   <string name="show_info_label">Diskouez ar munudoù</string>
-  <string name="show_feed_settings_label">Arventennoù ar podksignad...</string>
+  <string name="show_feed_settings_label">Arventennoù ar podksignad…</string>
   <string name="feed_settings_label">Arventennoù ar podskignad</string>
   <string name="rename_feed_label">Adenvel ar podskignad</string>
   <string name="remove_feed_label">Dilemel ar podskignad</string>
@@ -342,7 +342,7 @@
   <string name="interruptions"> Diskrogoù</string>
   <string name="playback_control">Reoliadurioù lenn</string>
   <string name="reassign_hardware_buttons">Asinañ en-dro afelloù fizikel</string>
-  <string name="preference_search_hint">Klask...</string>
+  <string name="preference_search_hint">Klask…</string>
   <string name="preference_search_no_results">Disoc\'h ebet</string>
   <string name="preference_search_clear_history">Skarzhañ ar roll istor</string>
   <string name="pref_episode_cleanup_summary">Ar rannoù a c\'hallfe bezañ dilamet ma vez ezhomm muioc\'h a egor dieub gant ar pellgargañ emgefreek.</string>
@@ -441,8 +441,8 @@
   <string name="sync_status_started">Goubredañ loc\'het</string>
   <string name="sync_status_episodes_upload">Oc\'h uskargañ kemmoù ar rannoù</string>
   <string name="sync_status_episodes_download">O pellgargañ kemmoù ar rannoù</string>
-  <string name="sync_status_upload_played">Oc\'h uskargañ ar statudoù lenn...</string>
-  <string name="sync_status_subscriptions">O c\'houbredañ ar c\'houmanantoù...</string>
+  <string name="sync_status_upload_played">Oc\'h uskargañ ar statudoù lenn…</string>
+  <string name="sync_status_subscriptions">O c\'houbredañ ar c\'houmanantoù…</string>
   <string name="sync_status_wait_for_downloads">O c\'hortoz eo echu ar pellgargadurioù</string>
   <string name="sync_status_success">Goubredet gant berzh</string>
   <string name="sync_status_error">C\'hwitadenn en ur c\'houbredañ</string>
@@ -467,7 +467,7 @@
   <string name="database_export_label">Ezporzhiañ ar stlennvon</string>
   <string name="database_import_label">Enporzhiañ ar stlennvon</string>
   <string name="database_import_warning">Enporzhiañ ur stlennvon a amsavo ho holl goumanantoù ha roll istor lenn. Erbediñ a reomp ezporzhiañ ho stlennvon en a-raok. Fellout a ra deoc\'h enporzhiañ?</string>
-  <string name="please_wait">Gortozit un tamm...</string>
+  <string name="please_wait">Gortozit un tamm…</string>
   <string name="export_error_label">Fazi ezporzhiañ</string>
   <string name="export_success_title">Ezporzhiet gant berzh</string>
   <string name="opml_import_ask_read_permission">Ret eo aotren haeziñ ar c\'hadaviñ diavaez evit lenn ar restr OPML</string>
@@ -549,7 +549,7 @@
   <string name="pref_pausePlaybackForFocusLoss_sum">Ehaniñ al lenn kentoc\'h eget izelaat ar son pa fell d\'un arload all ober sonioù</string>
   <!--Online feed view-->
   <string name="subscribe_label">Koumanantiñ</string>
-  <string name="subscribing_label">O koumanantiñ...</string>
+  <string name="subscribing_label">O koumanantiñ…</string>
   <string name="preview_episode">Raklenn</string>
   <string name="stop_preview">Paouez ar raklen</string>
   <!--Content descriptions for image buttons-->
@@ -585,9 +585,9 @@
   <string name="statistics_view_all">Diskouez an holl bodskignadoù »</string>
   <string name="edit_url_menu">Kemm URL ar wazh</string>
   <!--PodciniSP-->
-  <string name="sp_apps_importing_feeds_msg">Oc\'h enporzhiañ ar c\'houmanantoù diwar arloadoù gant un arver unel...</string>
+  <string name="sp_apps_importing_feeds_msg">Oc\'h enporzhiañ ar c\'houmanantoù diwar arloadoù gant un arver unel…</string>
   <!--Add podcast fragment-->
-  <string name="search_podcast_hint">Klask ur podskignad...</string>
+  <string name="search_podcast_hint">Klask ur podskignad…</string>
   <string name="search_fyyd_label">Klask war fydd</string>
   <string name="gpodnet_search_hint">Klask war gpodder.ner</string>
   <string name="advanced">Araokaet</string>
@@ -649,7 +649,7 @@
   <string name="port_label">Porzh</string>
   <string name="optional_hint">(Diret)</string>
   <string name="proxy_test_label">Amprouiñ</string>
-  <string name="proxy_checking">O wiriañ...</string>
+  <string name="proxy_checking">O wiriañ…</string>
   <string name="proxy_test_successful">Amprouet gant berzh</string>
   <string name="proxy_test_failed">C\'hwitet</string>
   <string name="proxy_host_empty_error">N\'hall ket an ostiz bezañ goullo</string>

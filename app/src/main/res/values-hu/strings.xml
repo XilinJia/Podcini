@@ -39,17 +39,10 @@
   <string name="statistics_filter_all_time">Valaha</string>
   <string name="statistics_filter_past_year">Tavaly</string>
   <string name="statistics_reset_data">Statisztikai adatok alaphelyzetbe állítása</string>
-  <string name="statistics_reset_data_msg">Ez törli az összes epizód lejátszási hosszát. Biztos, hogy folytatja?</string>
+  <string name="statistics_reset_data_msg">Ez törli az összes epizód lejátszási hosszát. Biztos, hogy folytatja\?</string>
   <string name="statistics_counting_range">%1$s és %2$s között lejátszott</string>
   <string name="statistics_counting_total">Lejátszva összesen</string>
   <!--Home fragment-->
-
-
-
-
-
-
-
   <string name="notification_permission_denied">Ön megtagadta az engedélyt.</string>
   <string name="open_settings">Beállítások megnyitása</string>
   <string name="configure_home">Kezdőképernyő beállítása</string>
@@ -78,7 +71,7 @@
   <string name="go_to_position_label">Pozícióhoz ugrás</string>
   <!--Playback history-->
   <string name="clear_history_label">Előzmények törlése</string>
-  <string name="clear_playback_history_msg">Ez törli az összes lejátszási előzményt. Biztos, hogy folytatja?</string>
+  <string name="clear_playback_history_msg">Ez törli az összes lejátszási előzményt. Biztos, hogy folytatja\?</string>
   <string name="remove_history_label">Eltávolítás az előzményekből</string>
   <string name="removed_history_label">Eltávolítva az előzményekből</string>
   <!--Other-->
@@ -166,7 +159,7 @@
   <string name="edit_tags">Címkék szerkesztése</string>
   <string name="add_tag">Címke hozzáadása</string>
   <string name="rename_tag_label">Címke átnevezése</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message">A mobil adatkapcsolaton történő podcastfrissítés ki van kapcsolva a beállításokban.\n\nMindenképp frissít?</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message">A mobil adatkapcsolaton történő podcastfrissítés ki van kapcsolva a beállításokban.\n\nMindenképp frissít\?</string>
   <!--actions on feeditems-->
   <string name="download_label">Letöltés</string>
   <plurals name="downloading_batch_label">
@@ -431,7 +424,7 @@
   <string name="html_export_label">HTML exportálása</string>
   <string name="database_export_label">Adatbázis exportálása</string>
   <string name="database_import_label">Adatbázis importálása</string>
-  <string name="database_import_warning">Az adatbázis importálása lecseréli a jelenlegi feliratkozásait és lejátszási előzményeit. Célszerű biztonsági mentésként exportálni a jelenlegi adatbázist. Biztos, hogy lecseréli?</string>
+  <string name="database_import_warning">Az adatbázis importálása lecseréli a jelenlegi feliratkozásait és lejátszási előzményeit. Célszerű biztonsági mentésként exportálni a jelenlegi adatbázist. Biztos, hogy lecseréli\?</string>
   <string name="please_wait">Várjon…</string>
   <string name="export_error_label">Exportálási hiba</string>
   <string name="export_success_title">Exportálás sikeres</string>
@@ -642,8 +635,8 @@
   <string name="widget_opacity">Átlátszatlanság</string>
   <!--On-Demand configuration-->
   <string name="on_demand_config_setting_changed">Beállítás sikeresen frissítve.</string>
-  <string name="on_demand_config_stream_text">Úgy néz ki, hogy sokszor használja a közvetítést. Szeretné megjeleníteni a közvetítési gombokat az epizódlistákban?</string>
-  <string name="on_demand_config_download_text">Úgy néz ki, hogy sokszor tölt le. Szeretné megjeleníteni a letöltési gombokat az epizódlistákban?</string>
+  <string name="on_demand_config_stream_text">Úgy néz ki, hogy sokszor használja a közvetítést. Szeretné megjeleníteni a közvetítési gombokat az epizódlistákban\?</string>
+  <string name="on_demand_config_download_text">Úgy néz ki, hogy sokszor tölt le. Szeretné megjeleníteni a letöltési gombokat az epizódlistákban\?</string>
   <string name="shortcut_subscription_label">Feliratkozás indítója</string>
   <string name="shortcut_select_subscription">Feliratkozás kiválasztása</string>
 </resources>

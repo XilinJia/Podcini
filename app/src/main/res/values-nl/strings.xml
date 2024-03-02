@@ -41,7 +41,7 @@
   <string name="statistics_filter_all_time">Alles</string>
   <string name="statistics_filter_past_year">Afgelopen jaar</string>
   <string name="statistics_reset_data">Statistieken op nul zetten</string>
-  <string name="statistics_reset_data_msg">Dit wist alle luistertijden van alle afleveringen. Doorgaan?</string>
+  <string name="statistics_reset_data_msg">Dit wist alle luistertijden van alle afleveringen. Doorgaan\?</string>
   <string name="statistics_counting_range">Beluisterd tussen %1$s en %2$s</string>
   <string name="statistics_counting_total">In totaal beluisterd</string>
   <!--Home fragment-->
@@ -81,7 +81,7 @@
   <string name="go_to_position_label">Ga naar deze positie</string>
   <!--Playback history-->
   <string name="clear_history_label">Geschiedenis wissen</string>
-  <string name="clear_playback_history_msg">Hierdoor wordt alle geschiedenis gewist. Weet je zeker dat je wilt doorgaan?</string>
+  <string name="clear_playback_history_msg">Hierdoor wordt alle geschiedenis gewist. Weet je zeker dat je wilt doorgaan\?</string>
   <string name="remove_history_label">Verwijderen uit geschiedenis</string>
   <string name="removed_history_label">Verwijderd uit geschiedenis</string>
   <!--Other-->
@@ -177,7 +177,7 @@
   <string name="edit_tags">Labels bewerken</string>
   <string name="add_tag">Label toekennen</string>
   <string name="rename_tag_label">Labelnaam wijzigen</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message">Het vernieuwen van de podcasts via mobiel internet is uitgeschakeld in de instellingen.\n\nWeet je zeker dat je wilt vernieuwen?</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message">Het vernieuwen van de podcasts via mobiel internet is uitgeschakeld in de instellingen.\n\nWeet je zeker dat je wilt vernieuwen\?</string>
   <!--actions on feeditems-->
   <string name="download_label">Downloaden</string>
   <plurals name="downloading_batch_label">
@@ -303,7 +303,7 @@
   <string name="feed_title">Podcast-titel</string>
   <string name="random">Willekeurig</string>
   <string name="smart_shuffle">Slim willekeurig afspelen</string>
-  <string name="clear_queue_confirmation_msg">ALLE afleveringen in de wachtrij  verwijderen?</string>
+  <string name="clear_queue_confirmation_msg">ALLE afleveringen in de wachtrij  verwijderen\?</string>
   <string name="time_left_label">Resterende tijd:\u0020</string>
   <!--Variable Speed-->
   <string name="speed_presets">Voorinstellingen</string>
@@ -338,7 +338,7 @@
   <string name="interruptions">Onderbrekingen</string>
   <string name="playback_control">Afspeelbediening</string>
   <string name="reassign_hardware_buttons">Hardwareknoppen opnieuw toewijzen</string>
-  <string name="preference_search_hint">Zoeken...</string>
+  <string name="preference_search_hint">Zoeken…</string>
   <string name="preference_search_no_results">Geen resultaten</string>
   <string name="preference_search_clear_history">Geschiedenis wissen</string>
   <string name="pref_episode_cleanup_title">Afleveringen opruimen</string>
@@ -457,8 +457,8 @@
   <string name="no_results_for_query">Geen resultaten gevonden voor  \"%1$s\"</string>
   <!--Synchronization-->
   <string name="sync_status_started">Synchronisatie gestart</string>
-  <string name="sync_status_episodes_upload">Bezig met uploaden van aflevering veranderingen...</string>
-  <string name="sync_status_episodes_download">Bezig met downloaden van aflevering veranderingen...</string>
+  <string name="sync_status_episodes_upload">Bezig met uploaden van aflevering veranderingen…</string>
+  <string name="sync_status_episodes_download">Bezig met downloaden van aflevering veranderingen…</string>
   <string name="sync_status_upload_played">Afspeelstatus aan het uploaden …</string>
   <string name="sync_status_subscriptions">Abonnementen aan het synchroniseren…</string>
   <string name="sync_status_wait_for_downloads">Bezig met wachten op downloads…</string>
@@ -484,8 +484,8 @@
   <string name="html_export_label">HTML exporteren</string>
   <string name="database_export_label">Database exporteren</string>
   <string name="database_import_label">Database importeren</string>
-  <string name="database_import_warning">Bij het importeren van een database worden alle huidige abonnementen en de afspeelgeschiedenis vervangen. Exporteer ter back-up de huidige database. Doorgaan?</string>
-  <string name="please_wait">Even geduld...</string>
+  <string name="database_import_warning">Bij het importeren van een database worden alle huidige abonnementen en de afspeelgeschiedenis vervangen. Exporteer ter back-up de huidige database. Doorgaan\?</string>
+  <string name="please_wait">Even geduld…</string>
   <string name="export_error_label">Exportfout</string>
   <string name="export_success_title">Geëxporteerd</string>
   <string name="opml_import_ask_read_permission">Toegang tot externe locaties is nodig om het OPML-bestand te kunnen lezen</string>
@@ -561,7 +561,7 @@
   <string name="pref_pausePlaybackForFocusLoss_sum">Onderbreek het afspelen in plaats van het volume te verlagen wanneer een andere app geluiden wil afspelen</string>
   <!--Online feed view-->
   <string name="subscribe_label">Abonneren</string>
-  <string name="subscribing_label">Bezig met abonneren...</string>
+  <string name="subscribing_label">Bezig met abonneren…</string>
   <string name="preview_episode">Voorvertoning</string>
   <string name="stop_preview">Stop voorvertoning</string>
   <!--Content descriptions for image buttons-->
@@ -599,9 +599,9 @@
   <string name="edit_url_menu">Feed-url bewerken</string>
   <string name="edit_url_confirmation_msg">Let op: door het aanpassen van het rss-adres kan de afspeelstatus en afleveringenlijst worden vergeten. We raden NIET aan om dit te doen en bieden GEEN ondersteuning als er iets misgaat. Deze actie is tevens onomkeerbaar, dus het oorspronkelijke adres kan niet worden hersteld. Maak van tevoren een reservekopie.</string>
   <!--PodciniSP-->
-  <string name="sp_apps_importing_feeds_msg">Bezig met importeren van abonnementen uit eenmalige apps...</string>
+  <string name="sp_apps_importing_feeds_msg">Bezig met importeren van abonnementen uit eenmalige apps…</string>
   <!--Add podcast fragment-->
-  <string name="search_podcast_hint">Podcast zoeken...</string>
+  <string name="search_podcast_hint">Podcast zoeken…</string>
   <string name="search_fyyd_label">Fyyd doorzoeken</string>
   <string name="gpodnet_search_hint">gpodder.net doorzoeken</string>
   <string name="advanced">Geavanceerd</string>
@@ -664,7 +664,7 @@
   <string name="port_label">Poort</string>
   <string name="optional_hint">(optioneel)</string>
   <string name="proxy_test_label">Testen</string>
-  <string name="proxy_checking">Bezig met controleren...</string>
+  <string name="proxy_checking">Bezig met controleren…</string>
   <string name="proxy_test_successful">Test geslaagd</string>
   <string name="proxy_test_failed">Test mislukt</string>
   <string name="proxy_host_empty_error">Host mag niet blanco zijn</string>
@@ -677,7 +677,7 @@
   <string name="notification_group_news">Nieuws</string>
   <string name="notification_channel_user_action">Actie vereist</string>
   <string name="notification_channel_user_action_description">Tonen als een actie vereist is, bijvoorbeeld als je een wachtwoord moet invoeren.</string>
-  <string name="notification_channel_downloading">Bezig met downloaden...</string>
+  <string name="notification_channel_downloading">Bezig met downloaden…</string>
   <string name="notification_channel_downloading_description">Tonen als er iets wordt gedownload.</string>
   <string name="notification_channel_playing">Nu aan het afspelen</string>
   <string name="notification_channel_playing_description">Hiermee kun je het afspelen bedienen. Dit is de voornaamste melding tijdens het afspelen van een podcast.</string>
@@ -692,8 +692,8 @@
   <string name="widget_opacity">Doorzichtigheid</string>
   <!--On-Demand configuration-->
   <string name="on_demand_config_setting_changed">De instelling is aangepast.</string>
-  <string name="on_demand_config_stream_text">Het lijkt er op dat je vaak streamt. Wil je streamknoppen tonen in de lijst met afleveringen?</string>
-  <string name="on_demand_config_download_text">Het lijkt er op dat je vaak dowloadt. Wil je downloadknoppen tonen in de lijst met afleveringen?</string>
+  <string name="on_demand_config_stream_text">Het lijkt er op dat je vaak streamt. Wil je streamknoppen tonen in de lijst met afleveringen\?</string>
+  <string name="on_demand_config_download_text">Het lijkt er op dat je vaak dowloadt. Wil je downloadknoppen tonen in de lijst met afleveringen\?</string>
   <string name="shortcut_subscription_label">Abonnementssnelkoppeling</string>
   <string name="shortcut_select_subscription">Kies een abonnement</string>
 </resources>

@@ -29,7 +29,7 @@
   <string name="statistics_filter_all_time">Vseh časov</string>
   <string name="statistics_filter_past_year">Preteklo leto</string>
   <string name="statistics_reset_data">Ponastavi statistične podatke</string>
-  <string name="statistics_reset_data_msg">To bo pobrisalo vso zgodovino pretečenega časa predvajanja  vseh epizod. Ali ste prepričani da želite nadaljevati?</string>
+  <string name="statistics_reset_data_msg">To bo pobrisalo vso zgodovino pretečenega časa predvajanja  vseh epizod. Ali ste prepričani da želite nadaljevati\?</string>
   <!--Home fragment-->
   <!--Download Statistics fragment-->
   <!--Main activity-->
@@ -262,7 +262,7 @@
   <string name="interruptions">Prekinitve</string>
   <string name="playback_control">Predvajalne kontrole</string>
   <string name="reassign_hardware_buttons">Ponovno dodelite gumbe strojne opreme</string>
-  <string name="preference_search_hint">Iščem...</string>
+  <string name="preference_search_hint">Iščem…</string>
   <string name="preference_search_no_results">Ni rezultatov</string>
   <string name="preference_search_clear_history">Pobriši zgodovino</string>
   <string name="pref_episode_cleanup_summary">Epizode, ki bi morale biti primerne za odstranitev, če samodejni prenos potrebuje prostor za nove epizode</string>
@@ -359,8 +359,8 @@
   <string name="sync_status_episodes_upload">Nalaganje sprememb epizode …</string>
   <string name="sync_status_episodes_download">Prenašanje sprememb epizode …</string>
   <string name="sync_status_upload_played">Nalaganje stanja predvajanja …</string>
-  <string name="sync_status_subscriptions">Sinhronizacija naročnin...</string>
-  <string name="sync_status_wait_for_downloads">Čakamo, da se prenosi končajo...</string>
+  <string name="sync_status_subscriptions">Sinhronizacija naročnin…</string>
+  <string name="sync_status_wait_for_downloads">Čakamo, da se prenosi končajo…</string>
   <string name="sync_status_success">Sinhronizacija uspela</string>
   <string name="sync_status_error">Sinhronizacija ni uspela</string>
   <!--import and export-->
@@ -382,8 +382,8 @@
   <string name="html_export_label">Izvoz HTML</string>
   <string name="database_export_label">Izvoz podatkovne baze</string>
   <string name="database_import_label">Uvoz podatkovne baze</string>
-  <string name="database_import_warning">Uvoz podatkovne baze bo nadomestil vse vaše trenutne naročnine in zgodovino predvajanja. Priporočamo, da svojo trenutno zbirko podatkov izvozite kot varnostno kopijo. Ali želite vseeno zamenjati?</string>
-  <string name="please_wait">Prosimo počakajte...</string>
+  <string name="database_import_warning">Uvoz podatkovne baze bo nadomestil vse vaše trenutne naročnine in zgodovino predvajanja. Priporočamo, da svojo trenutno zbirko podatkov izvozite kot varnostno kopijo. Ali želite vseeno zamenjati\?</string>
+  <string name="please_wait">Prosimo počakajte…</string>
   <string name="export_error_label">Napaka pri izvozu</string>
   <string name="export_success_title">Izvoz uspešen</string>
   <string name="opml_import_ask_read_permission">Za branje datoteke OPML je potreben dostop do zunanjega pomnilnika</string>
@@ -455,7 +455,7 @@
   <string name="pref_pausePlaybackForFocusLoss_sum">Začasno ustavite predvajanje, namesto da zmanjšate glasnost, ko želi druga aplikacija predvajati zvoke</string>
   <!--Online feed view-->
   <string name="subscribe_label">Naročite se</string>
-  <string name="subscribing_label">Naročanje...</string>
+  <string name="subscribing_label">Naročanje…</string>
   <string name="preview_episode">Predogled</string>
   <string name="stop_preview">Ustavi predogled</string>
   <!--Content descriptions for image buttons-->
@@ -488,7 +488,7 @@
   <!--PodciniSP-->
   <string name="sp_apps_importing_feeds_msg">Uvažanje naročnin iz enonamenskih aplikacij …</string>
   <!--Add podcast fragment-->
-  <string name="search_podcast_hint">Išči podcast...</string>
+  <string name="search_podcast_hint">Išči podcast…</string>
   <string name="search_fyyd_label">Išči fyyd</string>
   <string name="gpodnet_search_hint">Poišči na gpodder.net</string>
   <string name="advanced">Napredno</string>
@@ -573,8 +573,8 @@
   <string name="widget_opacity">Motnost</string>
   <!--On-Demand configuration-->
   <string name="on_demand_config_setting_changed">Nastavitev je bila uspešno posodobljena.</string>
-  <string name="on_demand_config_stream_text">Videti je, da veliko pretakate. Ali želite, da so na seznamih epizod prikazani gumbi za pretočno predvajanje?</string>
-  <string name="on_demand_config_download_text">Videti je, da veliko prenašate. Ali želite, da so na seznamih epizod prikazani gumbi za prenos?</string>
+  <string name="on_demand_config_stream_text">Videti je, da veliko pretakate. Ali želite, da so na seznamih epizod prikazani gumbi za pretočno predvajanje\?</string>
+  <string name="on_demand_config_download_text">Videti je, da veliko prenašate. Ali želite, da so na seznamih epizod prikazani gumbi za prenos\?</string>
   <string name="shortcut_subscription_label">Bližnica do naročnine</string>
   <string name="shortcut_select_subscription">Izberi naročnino</string>
 </resources>

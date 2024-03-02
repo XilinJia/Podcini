@@ -423,8 +423,7 @@
   <string name="pref_automatic_download_on_battery_title">未充电时下载</string>
   <string name="pref_automatic_download_on_battery_sum">未充电时允许自动下载</string>
   <string name="pref_episode_cache_title">节目缓存</string>
-  <string name="pref_episode_cache_summary">缓存在设备上的已下载节目总数
-若达到此数目，自动下载将被暂停</string>
+  <string name="pref_episode_cache_summary">缓存在设备上的已下载节目总数 若达到此数目，自动下载将被暂停</string>
   <string name="pref_episode_cover_title">使用节目封面</string>
   <string name="pref_episode_cover_summary">勾选后，在列表中使用一期节目特定的封面图。如果不勾选，应用程序将始终使用播客封面图像。</string>
   <string name="pref_show_remain_time_title">显示剩余时间</string>
@@ -451,9 +450,6 @@
   <string name="pref_expandNotify_sum">这通常会拓展通知以显示播放按钮。</string>
   <string name="pref_persistNotify_title">持久性播放控制</string>
   <string name="pref_persistNotify_sum">播放暂停时保留通知和锁屏控制</string>
-
-
-
   <string name="pref_enqueue_location_title">新节目在队列中的位置</string>
   <string name="pref_enqueue_location_sum">添加音频节目至：%1$s</string>
   <string name="enqueue_location_back">后退</string>
@@ -516,10 +512,10 @@
   <string name="search_online">在线搜索</string>
   <!--Synchronization-->
   <string name="sync_status_started">同步已开始</string>
-  <string name="sync_status_episodes_upload">正上传节目更改...</string>
-  <string name="sync_status_episodes_download">正下载节目更改...</string>
-  <string name="sync_status_upload_played">上传播放状态中...</string>
-  <string name="sync_status_subscriptions">同步订阅中...</string>
+  <string name="sync_status_episodes_upload">正上传节目更改…</string>
+  <string name="sync_status_episodes_download">正下载节目更改…</string>
+  <string name="sync_status_upload_played">上传播放状态中…</string>
+  <string name="sync_status_subscriptions">同步订阅中…</string>
   <string name="sync_status_wait_for_downloads">等待下载完成…</string>
   <string name="sync_status_success">成功同步</string>
   <string name="sync_status_error">同步失败</string>
@@ -544,7 +540,7 @@
   <string name="database_export_label">数据库导出</string>
   <string name="database_import_label">数据库导入</string>
   <string name="database_import_warning">导入数据库将替换所有当前订阅和播放历史记录。您应该将当前数据库导出为备份。您要替换吗？</string>
-  <string name="please_wait">请等待...</string>
+  <string name="please_wait">请等待…</string>
   <string name="export_error_label">导出出错</string>
   <string name="export_success_title">成功导出</string>
   <string name="opml_import_ask_read_permission">读取 OPML 文件需要访问外部存储的权限</string>
@@ -626,7 +622,7 @@
   <string name="pref_pausePlaybackForFocusLoss_title">中断暂停</string>
   <!--Online feed view-->
   <string name="subscribe_label">订阅</string>
-  <string name="subscribing_label">订阅中...</string>
+  <string name="subscribing_label">订阅中…</string>
   <string name="preview_episode">预览</string>
   <string name="stop_preview">停止预览</string>
   <!--Content descriptions for image buttons-->
@@ -676,7 +672,7 @@
   <string name="edit_url_menu">编辑订阅源 URL</string>
   <string name="edit_url_confirmation_msg">更改 RSS 地址很容易破坏播客的播放状态和节目列表。我们不建议更改它，如果出现任何错误我们不会提供支持。这是无法挽回的。无法通过简单地将地址更改回来修复损坏的订阅。我们建议在继续之前创建备份。</string>
   <!--PodciniSP-->
-  <string name="sp_apps_importing_feeds_msg">正在从选定的应用中导入订阅...</string>
+  <string name="sp_apps_importing_feeds_msg">正在从选定的应用中导入订阅…</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">搜索播客……</string>
   <string name="search_itunes_label">搜索 Apple Podcasts</string>
@@ -777,8 +773,8 @@
   <string name="widget_opacity">不透明度</string>
   <!--On-Demand configuration-->
   <string name="on_demand_config_setting_changed">成功更新设置</string>
-  <string name="on_demand_config_stream_text">看起来你在线播放了很多节目。你想要剧集列表显示流按钮吗?</string>
-  <string name="on_demand_config_download_text">看起来你下载了很多节目。你想要播放列表显示下载按钮吗?</string>
+  <string name="on_demand_config_stream_text">看起来你在线播放了很多节目。你想要剧集列表显示流按钮吗\?</string>
+  <string name="on_demand_config_download_text">看起来你下载了很多节目。你想要播放列表显示下载按钮吗\?</string>
   <string name="shortcut_subscription_label">订阅快捷方式</string>
   <string name="shortcut_select_subscription">选择订阅</string>
   <string name="add_shortcut">添加快捷方式</string>

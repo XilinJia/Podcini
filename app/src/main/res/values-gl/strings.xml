@@ -364,7 +364,7 @@
   <string name="interruptions">Interrupcións</string>
   <string name="playback_control">Control de reprodución</string>
   <string name="reassign_hardware_buttons">Reasignar botóns físicos</string>
-  <string name="preference_search_hint">Busca....</string>
+  <string name="preference_search_hint">Busca….</string>
   <string name="preference_search_no_results">Sen resultados</string>
   <string name="preference_search_clear_history">Eliminar historial</string>
   <string name="pref_episode_cleanup_title">Limpeza de episodios</string>
@@ -530,11 +530,11 @@
   <string name="search_online">Busca en liña</string>
   <!--Synchronization-->
   <string name="sync_status_started">Comezou a sincr.</string>
-  <string name="sync_status_episodes_upload">Subindo cambios nos episodios...</string>
-  <string name="sync_status_episodes_download">Descargando cambios nos episodios...</string>
-  <string name="sync_status_upload_played">Subindo estado de reprodución...</string>
-  <string name="sync_status_subscriptions">Sincronizando subscricións...</string>
-  <string name="sync_status_wait_for_downloads">Agardando a completar as descargas...</string>
+  <string name="sync_status_episodes_upload">Subindo cambios nos episodios…</string>
+  <string name="sync_status_episodes_download">Descargando cambios nos episodios…</string>
+  <string name="sync_status_upload_played">Subindo estado de reprodución…</string>
+  <string name="sync_status_subscriptions">Sincronizando subscricións…</string>
+  <string name="sync_status_wait_for_downloads">Agardando a completar as descargas…</string>
   <string name="sync_status_success">Sincronización correcta</string>
   <string name="sync_status_error">Fallou a sincronización</string>
   <!--import and export-->
@@ -558,7 +558,7 @@
   <string name="database_export_label">Exportar base de datos</string>
   <string name="database_import_label">Importar base de datos</string>
   <string name="database_import_warning">Ao importar a base de datos substituirás todas as subscricións actuais e historial de reprodución. Deberías exportar a base de datos actual como copia de apoio. Desexas substituíla?</string>
-  <string name="please_wait">Agarda...</string>
+  <string name="please_wait">Agarda…</string>
   <string name="export_error_label">Fallo ao exportar</string>
   <string name="export_success_title">Exportado con éxito</string>
   <string name="opml_import_ask_read_permission">Precísase acceso ao almacenamento externo para ler o ficheiro OPML</string>
@@ -644,7 +644,7 @@
   <string name="pref_pausePlaybackForFocusLoss_title">Pausa para interrupcións</string>
   <!--Online feed view-->
   <string name="subscribe_label">Subscribir</string>
-  <string name="subscribing_label">Subscribindo...</string>
+  <string name="subscribing_label">Subscribindo…</string>
   <string name="preview_episode">Vista previa</string>
   <string name="stop_preview">Deter vista previa</string>
   <!--Content descriptions for image buttons-->
@@ -694,9 +694,9 @@
   <string name="edit_url_menu">Editar URL da fonte</string>
   <string name="edit_url_confirmation_msg">Ao mudar o enderezo RSS podes quebrar o estado da reprodución e as listas de episodios do podcast. Non recomendamos cambialo e NON proporcionamos axuda se algo vai mal. Non ten volta atrás. Unha subscrición mal configurada NON PODE ser reparada simplemente volvendo ao enderezo anterior. Suxerimos crear unha copia de apoio antes de continuar.</string>
   <!--PodciniSP-->
-  <string name="sp_apps_importing_feeds_msg">Importando as subscricións desde aplicacións de propósito único...</string>
+  <string name="sp_apps_importing_feeds_msg">Importando as subscricións desde aplicacións de propósito único…</string>
   <!--Add podcast fragment-->
-  <string name="search_podcast_hint">Buscar podcast...</string>
+  <string name="search_podcast_hint">Buscar podcast…</string>
   <string name="search_itunes_label">Buscar en Apple Podcasts</string>
   <string name="search_podcastindex_label">Buscar en Podcast Index</string>
   <string name="search_fyyd_label">Buscar en fyyd</string>
@@ -766,7 +766,7 @@
   <string name="port_label">Porto</string>
   <string name="optional_hint">(Optativo)</string>
   <string name="proxy_test_label">Proba</string>
-  <string name="proxy_checking">Comprobando...</string>
+  <string name="proxy_checking">Comprobando…</string>
   <string name="proxy_test_successful">Proba exitosa</string>
   <string name="proxy_test_failed">Fallo na proba</string>
   <string name="proxy_host_empty_error">Servidor non pode quedar baleiro</string>

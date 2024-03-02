@@ -35,8 +35,7 @@ class FeedParserTask(private val request: DownloadRequest) : Callable<ac.mdiq.po
         feed.id = request.feedfileId
         feed.setDownloaded(true)
         feed.preferences = FeedPreferences(0, true, FeedPreferences.AutoDeleteAction.GLOBAL,
-            VolumeAdaptionSetting.OFF, FeedPreferences.NewEpisodesAction.GLOBAL, request.username,
-            request.password)
+            VolumeAdaptionSetting.OFF, FeedPreferences.NewEpisodesAction.GLOBAL, request.username, request.password)
         if (request.arguments != null) feed.pageNr = request.arguments.getInt(DownloadRequest.REQUEST_ARG_PAGE_NR, 0)
 
         var reason: DownloadError? = null

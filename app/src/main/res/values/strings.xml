@@ -51,7 +51,7 @@
     <string name="statistics_filter_all_time">All time</string>
     <string name="statistics_filter_past_year">Past year</string>
     <string name="statistics_reset_data">Reset statistics data</string>
-    <string name="statistics_reset_data_msg">This will erase the history of duration played for all episodes. Are you sure you want to proceed?</string>
+    <string name="statistics_reset_data_msg">This will erase the history of duration played for all episodes. Are you sure you want to proceed\?</string>
     <string name="statistics_counting_range">Played between %1$s and %2$s</string>
     <string name="statistics_counting_total">Played in total</string>
 
@@ -92,7 +92,7 @@
 
     <!-- Playback history -->
     <string name="clear_history_label">Clear history</string>
-    <string name="clear_playback_history_msg">This will clear the entire playback history. Are you sure you want to proceed?</string>
+    <string name="clear_playback_history_msg">This will clear the entire playback history. Are you sure you want to proceed\?</string>
     <string name="remove_history_label">Remove from history</string>
     <string name="removed_history_label">Removed from history</string>
 
@@ -197,8 +197,8 @@
     <string name="edit_tags">Edit tags</string>
     <string name="add_tag">Add tag</string>
     <string name="rename_tag_label">Rename tag</string>
-    <string name="confirm_mobile_feed_refresh_dialog_message">Refreshing podcasts over mobile data connection is disabled in the settings.\n\nDo you want to refresh anyway?</string>
-    <string name="confirm_mobile_feed_refresh_dialog_message_vpn">Your VPN app pretends to be a mobile network (metered connection). Refreshing podcasts over mobile data connection is disabled in the settings.\n\nDo you want to refresh anyway? If you want this problem to be fixed, contact the creators of your VPN app.</string>
+    <string name="confirm_mobile_feed_refresh_dialog_message">Refreshing podcasts over mobile data connection is disabled in the settings.\n\nDo you want to refresh anyway\?</string>
+    <string name="confirm_mobile_feed_refresh_dialog_message_vpn">Your VPN app pretends to be a mobile network (metered connection). Refreshing podcasts over mobile data connection is disabled in the settings.\n\nDo you want to refresh anyway\? If you want this problem to be fixed, contact the creators of your VPN app.</string>
 
     <!-- actions on feeditems -->
     <string name="download_label">Download</string>
@@ -401,7 +401,7 @@
     <string name="pref_auto_delete_title">Auto delete</string>
     <string name="pref_auto_local_delete_title">Auto delete from local folders</string>
     <string name="pref_auto_local_delete_sum">Include local folders in Auto delete functionality</string>
-    <string name="pref_auto_local_delete_dialog_body">Note that for local folders this will remove episodes from Podcini and delete their media files from your device storage. They cannot be downloaded again through Podcini. Enable auto delete?</string>
+    <string name="pref_auto_local_delete_dialog_body">Note that for local folders this will remove episodes from Podcini and delete their media files from your device storage. They cannot be downloaded again through Podcini. Enable auto delete\?</string>
     <string name="pref_smart_mark_as_played_sum">Mark episodes as played even if less than a certain amount of seconds of playing time is still left</string>
     <string name="pref_smart_mark_as_played_title">Smart mark as played</string>
     <string name="pref_skip_keeps_episodes_sum">Keep episodes when they are skipped</string>
@@ -578,7 +578,7 @@
     <string name="html_export_label">HTML export</string>
     <string name="database_export_label">Database export</string>
     <string name="database_import_label">Database import</string>
-    <string name="database_import_warning">Importing a database will replace all of your current subscriptions and playing history. You should export your current database as a backup. Do you want to replace?</string>
+    <string name="database_import_warning">Importing a database will replace all of your current subscriptions and playing history. You should export your current database as a backup. Do you want to replace\?</string>
     <string name="please_wait">Please wait&#8230;</string>
     <string name="export_error_label">Export error</string>
     <string name="export_success_title">Export successful</string>
@@ -818,8 +818,8 @@
 
     <!-- On-Demand configuration -->
     <string name="on_demand_config_setting_changed">Setting updated successfully.</string>
-    <string name="on_demand_config_stream_text">Looks like you stream a lot. Do you want episode lists to show stream buttons?</string>
-    <string name="on_demand_config_download_text">Looks like you download a lot. Do you want episode lists to show download buttons?</string>
+    <string name="on_demand_config_stream_text">Looks like you stream a lot. Do you want episode lists to show stream buttons\?</string>
+    <string name="on_demand_config_download_text">Looks like you download a lot. Do you want episode lists to show download buttons\?</string>
 
     <string name="shortcut_subscription_label">Subscription shortcut</string>
     <string name="shortcut_select_subscription">Select subscription</string>

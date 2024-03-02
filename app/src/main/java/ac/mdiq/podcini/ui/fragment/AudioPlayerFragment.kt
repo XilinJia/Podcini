@@ -69,6 +69,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     lateinit var butPlaybackSpeed: PlaybackSpeedIndicatorView
     lateinit var txtvPlaybackSpeed: TextView
 
+    private lateinit var episodeTitle: TextView
     private lateinit var pager: ViewPager2
     private lateinit var txtvPosition: TextView
     private lateinit var txtvLength: TextView
@@ -101,7 +102,6 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         super.onCreateView(inflater, container, savedInstanceState)
         viewBinding = AudioplayerFragmentBinding.inflate(inflater)
 
-//        val root: View = inflater.inflate(R.layout.audioplayer_fragment, container, false)
         viewBinding.root.setOnTouchListener { _: View?, _: MotionEvent? -> true } // Avoid clicks going through player to fragments below
 
         Log.d(TAG, "fragment onCreateView")
@@ -121,6 +121,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         playerFragment.setBackgroundColor(
             SurfaceColors.getColorForElevation(requireContext(), 8 * resources.displayMetrics.density))
 
+        episodeTitle = viewBinding.titleView
         butPlaybackSpeed = viewBinding.butPlaybackSpeed
         txtvPlaybackSpeed = viewBinding.txtvPlaybackSpeed
         sbPosition = viewBinding.sbPosition
@@ -175,9 +176,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     }
 
     private fun setChapterDividers(media: Playable?) {
-        if (media == null) {
-            return
-        }
+        if (media == null) return
 
         var dividerPos: FloatArray? = null
 
@@ -306,6 +305,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         if (media == null) {
             return
         }
+        episodeTitle.text = media.getEpisodeTitle()
         updatePosition(PlaybackPositionEvent(media.getPosition(), media.getDuration()))
         updatePlaybackSpeedButton(SpeedChangedEvent(PlaybackSpeedUtils.getCurrentPlaybackSpeed(media)))
         setChapterDividers(media)
@@ -472,9 +472,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     }
 
     override fun onMenuItemClick(item: MenuItem): Boolean {
-        if (controller == null) return false
-
-        val media: Playable = controller!!.getMedia() ?: return false
+        val media: Playable = controller?.getMedia() ?: return false
 
         val feedItem: FeedItem? = if ((media is FeedMedia)) media.getItem() else null
         if (feedItem != null && FeedItemMenuHandler.onMenuItemClicked(this, item.itemId, feedItem)) {
@@ -511,9 +509,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
             return when (position) {
 //                TODO: cover page is not very useful
-                POS_COVER -> CoverFragment()
-//                POS_COVER -> ItemDescriptionFragment()
-                POS_DESCRIPTION -> ItemDescriptionFragment()
+                FIRST_PAGE -> ItemDescriptionFragment()
+                SECOND_PAGE -> CoverFragment()
                 else -> ItemDescriptionFragment()
             }
         }
@@ -530,7 +527,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     fun scrollToPage(page: Int, smoothScroll: Boolean = false) {
         pager.setCurrentItem(page, smoothScroll)
 
-        val visibleChild = childFragmentManager.findFragmentByTag("f$POS_DESCRIPTION")
+        val visibleChild = childFragmentManager.findFragmentByTag("f$FIRST_PAGE")
         if (visibleChild is ItemDescriptionFragment) {
             visibleChild.scrollToTop()
         }
@@ -538,8 +535,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
     companion object {
         const val TAG: String = "AudioPlayerFragment"
-        const val POS_COVER: Int = 0
-        const val POS_DESCRIPTION: Int = 1
+        const val FIRST_PAGE: Int = 0
+        const val SECOND_PAGE: Int = 1
         private const val NUM_CONTENT_FRAGMENTS = 2
     }
 }

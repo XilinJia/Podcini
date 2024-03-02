@@ -41,7 +41,7 @@
   <string name="statistics_filter_all_time">Od początku</string>
   <string name="statistics_filter_past_year">Ostatni rok</string>
   <string name="statistics_reset_data">Resetuj statystyki</string>
-  <string name="statistics_reset_data_msg">Operacja skasuje historię długości odtwarzania wszystkich odcinków. Czy na pewno chcesz kontynuować?</string>
+  <string name="statistics_reset_data_msg">Operacja skasuje historię długości odtwarzania wszystkich odcinków. Czy na pewno chcesz kontynuować\?</string>
   <string name="statistics_counting_range">Puść pomiędzy %1$sa %2$s</string>
   <string name="statistics_counting_total">W sumie odtwarzane</string>
   <!--Home fragment-->
@@ -81,7 +81,7 @@
   <string name="go_to_position_label">Przejdź do tego miejsca</string>
   <!--Playback history-->
   <string name="clear_history_label">Wyczyść historię</string>
-  <string name="clear_playback_history_msg">Spowoduje to wyczyszczenie całej historii odtwarzania. Czy na pewno chcesz kontynuować?</string>
+  <string name="clear_playback_history_msg">Spowoduje to wyczyszczenie całej historii odtwarzania. Czy na pewno chcesz kontynuować\?</string>
   <string name="remove_history_label">Usuń z historii</string>
   <string name="removed_history_label">Usunięto z historii</string>
   <!--Other-->
@@ -186,7 +186,7 @@
   <string name="edit_tags">Edytuj tagi</string>
   <string name="add_tag">Dodaj tag</string>
   <string name="rename_tag_label">Zmień nazwę tagu</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message">Sprawdzanie dostępności nowych odcinków z użyciem danych komórkowych jest zablokowane w ustawieniach.\n\nCzy nadal chcesz odświeżyć podcasty poprzez dane komórkowe?</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message">Sprawdzanie dostępności nowych odcinków z użyciem danych komórkowych jest zablokowane w ustawieniach.\n\nCzy nadal chcesz odświeżyć podcasty poprzez dane komórkowe\?</string>
   <!--actions on feeditems-->
   <string name="download_label">Pobierz</string>
   <plurals name="downloading_batch_label">
@@ -490,7 +490,7 @@
   <string name="pref_contribute">Przyczyń się do rozwoju</string>
   <string name="pref_show_subscription_title">Pokaż nazwę subskrypcji</string>
   <!--About screen-->
-  <string name="about_pref">O...</string>
+  <string name="about_pref">O…</string>
   <string name="podcini_version">Wersja Podcini</string>
   <string name="contributors">Kontrybutorzy</string>
   <string name="contributors_summary">Każdy może pomóc ulepszyć Podcini - pisząc kod, tłumacząc lub pomagając użytkownikom na forum.</string>
@@ -507,11 +507,11 @@
   <string name="no_results_for_query">Brak wyników dla \"%1$s\"</string>
   <!--Synchronization-->
   <string name="sync_status_started">Rozpoczęto synchronizację</string>
-  <string name="sync_status_episodes_upload">Wysyłanie zmian odcinków...</string>
-  <string name="sync_status_episodes_download">Pobieranie zmian odcinków...</string>
-  <string name="sync_status_upload_played">Wysyłanie statusu odtworzeń...</string>
-  <string name="sync_status_subscriptions">Synchronizowanie subskrypcji...</string>
-  <string name="sync_status_wait_for_downloads">Oczekiwanie na dokończenie pobierania...</string>
+  <string name="sync_status_episodes_upload">Wysyłanie zmian odcinków…</string>
+  <string name="sync_status_episodes_download">Pobieranie zmian odcinków…</string>
+  <string name="sync_status_upload_played">Wysyłanie statusu odtworzeń…</string>
+  <string name="sync_status_subscriptions">Synchronizowanie subskrypcji…</string>
+  <string name="sync_status_wait_for_downloads">Oczekiwanie na dokończenie pobierania…</string>
   <string name="sync_status_success">Synchronizacja udana</string>
   <string name="sync_status_error">Synchronizacja nie powiodła się</string>
   <!--import and export-->
@@ -534,8 +534,8 @@
   <string name="html_export_label">Eksport HTML</string>
   <string name="database_export_label">Eksport bazy danych</string>
   <string name="database_import_label">Import bazy danych</string>
-  <string name="database_import_warning">Import bazy danych nadpisze wszystkie twoje aktualne subskrypcje i historię odtworzeń. Zalecany jest eksport aktualnej bazy danych jako kopia zapasowa. Czy chcesz zamienić?</string>
-  <string name="please_wait">Proszę czekać...</string>
+  <string name="database_import_warning">Import bazy danych nadpisze wszystkie twoje aktualne subskrypcje i historię odtworzeń. Zalecany jest eksport aktualnej bazy danych jako kopia zapasowa. Czy chcesz zamienić\?</string>
+  <string name="please_wait">Proszę czekać…</string>
   <string name="export_error_label">Błąd eksportu</string>
   <string name="export_success_title">Export zakończony powodzeniem</string>
   <string name="opml_import_ask_read_permission">Dostęp do zewnętrznej pamięci jest potrzebny do odczytywania plików OPML</string>
@@ -618,7 +618,7 @@
   <string name="pref_pausePlaybackForFocusLoss_sum">Wstrzymaj odtwarzanie zamiast wyciszenia jeśli inna aplikacja chce odtworzyć dźwięk.</string>
   <!--Online feed view-->
   <string name="subscribe_label">Subskrybuj</string>
-  <string name="subscribing_label">Subskrybuję...</string>
+  <string name="subscribing_label">Subskrybuję…</string>
   <string name="preview_episode">Podgląd</string>
   <string name="stop_preview">Zakończ podgląd</string>
   <!--Content descriptions for image buttons-->
@@ -729,7 +729,7 @@
   <string name="port_label">Port</string>
   <string name="optional_hint">(Dodatkowe)</string>
   <string name="proxy_test_label">Test</string>
-  <string name="proxy_checking">Sprawdzanie...</string>
+  <string name="proxy_checking">Sprawdzanie…</string>
   <string name="proxy_test_successful">Test zakończony powodzeniem</string>
   <string name="proxy_test_failed">Test zakończony niepowodzeniem</string>
   <string name="proxy_host_empty_error">Host nie może być pusty!</string>
@@ -758,8 +758,8 @@
   <string name="widget_opacity">Nieprzezroczystość</string>
   <!--On-Demand configuration-->
   <string name="on_demand_config_setting_changed">Ustawienia uaktualnione pomyślnie.</string>
-  <string name="on_demand_config_stream_text">Wygląda na to, że dużo streamujesz. Czy chcesz, aby na listach odcinków pokazywać przyciski do streamowania?</string>
-  <string name="on_demand_config_download_text">Wygląda na to, że dużo pobierasz. Czy chcesz, aby na listach odcinków pokazywać przyciski do pobierania?</string>
+  <string name="on_demand_config_stream_text">Wygląda na to, że dużo streamujesz. Czy chcesz, aby na listach odcinków pokazywać przyciski do streamowania\?</string>
+  <string name="on_demand_config_download_text">Wygląda na to, że dużo pobierasz. Czy chcesz, aby na listach odcinków pokazywać przyciski do pobierania\?</string>
   <string name="shortcut_subscription_label">Skrót subskrypcji</string>
   <string name="shortcut_select_subscription">Wybierz subskrypcję</string>
   <string name="add_shortcut">Dodaj skrót</string>

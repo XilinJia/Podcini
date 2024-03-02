@@ -42,16 +42,9 @@
   <string name="statistics_filter_all_time">De sempre</string>
   <string name="statistics_filter_past_year">Último ano</string>
   <string name="statistics_reset_data">Limpar dados de estatísticas</string>
-  <string name="statistics_reset_data_msg">Isso ira apagar o histórico de duração de reprodução de todos os episódios. Tem certeza que deseja continuar?</string>
+  <string name="statistics_reset_data_msg">Isso ira apagar o histórico de duração de reprodução de todos os episódios. Tem certeza que deseja continuar\?</string>
   <string name="statistics_counting_range">Reproduzidos entre %1$s e %2$s</string>
   <string name="statistics_counting_total">Reproduzidos no total</string>
-  <!--Home fragment-->
-
-
-
-
-
-
 
   <string name="notification_permission_denied">Você negou a permissão.</string>
   <string name="open_settings">Abrir as configurações</string>
@@ -82,7 +75,7 @@
   <string name="go_to_position_label">Ir para esta posição</string>
   <!--Playback history-->
   <string name="clear_history_label">Limpar histórico</string>
-  <string name="clear_playback_history_msg">Isto irá excluir todo o histórico de reprodução. Tem certeza que deseja prosseguir?</string>
+  <string name="clear_playback_history_msg">Isto irá excluir todo o histórico de reprodução. Tem certeza que deseja prosseguir\?</string>
   <string name="remove_history_label">Remover do histórico</string>
   <string name="removed_history_label">Removido do histórico</string>
   <!--Other-->
@@ -185,7 +178,7 @@
   <string name="edit_tags">Editar etiquetas</string>
   <string name="add_tag">Adicionar etiqueta</string>
   <string name="rename_tag_label">Renomear etiqueta</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message">A atualização de podcasts através de dados móveis está desativada nas definições.\n\nDeseja atualizar mesmo assim?</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message">A atualização de podcasts através de dados móveis está desativada nas definições.\n\nDeseja atualizar mesmo assim\?</string>
   <!--actions on feeditems-->
   <string name="download_label">Download</string>
   <plurals name="downloading_batch_label">
@@ -362,7 +355,7 @@
   <string name="interruptions">Interrupções</string>
   <string name="playback_control">Controle de reprodução</string>
   <string name="reassign_hardware_buttons">Reassociar os botões físicos</string>
-  <string name="preference_search_hint">Procurar...</string>
+  <string name="preference_search_hint">Procurar…</string>
   <string name="preference_search_no_results">Nenhum resultado</string>
   <string name="preference_search_clear_history">Limpar histórico</string>
   <string name="pref_episode_cleanup_title">Limpeza de episódios</string>
@@ -501,11 +494,11 @@
   <string name="no_results_for_query">Nenhum resultado para \"%1$s\"</string>
   <!--Synchronization-->
   <string name="sync_status_started">Sincronização iniciada</string>
-  <string name="sync_status_episodes_upload">Enviando alterações de episódio...</string>
+  <string name="sync_status_episodes_upload">Enviando alterações de episódio…</string>
   <string name="sync_status_episodes_download">Baixando alterações de episódio…</string>
-  <string name="sync_status_upload_played">Enviando status de reprodução...</string>
-  <string name="sync_status_subscriptions">Sincronizando assinaturas...</string>
-  <string name="sync_status_wait_for_downloads">Esperando os downloads terminarem...</string>
+  <string name="sync_status_upload_played">Enviando status de reprodução…</string>
+  <string name="sync_status_subscriptions">Sincronizando assinaturas…</string>
+  <string name="sync_status_wait_for_downloads">Esperando os downloads terminarem…</string>
   <string name="sync_status_success">Sincronização bem sucedida</string>
   <string name="sync_status_error">Falha na sincronização</string>
   <!--import and export-->
@@ -528,8 +521,8 @@
   <string name="html_export_label">Exportar HTML</string>
   <string name="database_export_label">Exportação do banco de dados</string>
   <string name="database_import_label">Importação do banco de dados</string>
-  <string name="database_import_warning">A importação de um banco de dados substituirá todas as suas assinaturas atuais e histórico de reprodução. Você deve exportar seu banco de dados atual como um backup. Você quer substituir?</string>
-  <string name="please_wait">Por favor aguarde...</string>
+  <string name="database_import_warning">A importação de um banco de dados substituirá todas as suas assinaturas atuais e histórico de reprodução. Você deve exportar seu banco de dados atual como um backup. Você quer substituir\?</string>
+  <string name="please_wait">Por favor aguarde…</string>
   <string name="export_error_label">Erro na exportação</string>
   <string name="export_success_title">Exportado com sucesso</string>
   <string name="opml_import_ask_read_permission">É necessário acesso ao armazenamento externo para ler o arquivo OPML</string>
@@ -611,7 +604,7 @@
   <string name="pref_pausePlaybackForFocusLoss_title">Pausa nas interrupções</string>
   <!--Online feed view-->
   <string name="subscribe_label">Assinar</string>
-  <string name="subscribing_label">Assinando...</string>
+  <string name="subscribing_label">Assinando…</string>
   <string name="preview_episode">Pré-visualizar</string>
   <string name="stop_preview">Parar pré-visualização</string>
   <!--Content descriptions for image buttons-->
@@ -651,9 +644,9 @@
   <string name="edit_url_menu">Editar URL da fonte</string>
   <string name="edit_url_confirmation_msg">Alterar o endereço RSS pode facilmente desfazer a lista e o estado atual de reprodução do podcast. Nós NÃO recomendamos a mudança e NÃO forneceremos suporte caso algo dê errado. Este processo não pode ser desfeito. A inscrição danificada NÃO pode ser reparada com a alteração para o endereço anterior. É recomendável fazer um backup antes de prosseguir.</string>
   <!--PodciniSP-->
-  <string name="sp_apps_importing_feeds_msg">Importando assinaturas de aplicativos de finalidade única...</string>
+  <string name="sp_apps_importing_feeds_msg">Importando assinaturas de aplicativos de finalidade única…</string>
   <!--Add podcast fragment-->
-  <string name="search_podcast_hint">Procurar podcast...</string>
+  <string name="search_podcast_hint">Procurar podcast…</string>
   <string name="search_itunes_label">Pesquisar em Apple Podcasts</string>
   <string name="search_fyyd_label">Pesquisar em fyyd</string>
   <string name="gpodnet_search_hint">Buscar no gpodder.net</string>
@@ -717,7 +710,7 @@
   <string name="port_label">Porta</string>
   <string name="optional_hint">(Opcional)</string>
   <string name="proxy_test_label">Testar</string>
-  <string name="proxy_checking">Verificando...</string>
+  <string name="proxy_checking">Verificando…</string>
   <string name="proxy_test_successful">Teste realizado com sucesso</string>
   <string name="proxy_test_failed">Falha no teste</string>
   <string name="proxy_host_empty_error">O servidor não pode estar em branco</string>
@@ -746,8 +739,8 @@
   <string name="widget_opacity">Opacidade</string>
   <!--On-Demand configuration-->
   <string name="on_demand_config_setting_changed">Configuração atualizada com sucesso</string>
-  <string name="on_demand_config_stream_text">Parece que você faz muito stream. Quer que as listas de episódios mostrem botões de stream?</string>
-  <string name="on_demand_config_download_text">Parece que você faz muitos downloads. Quer que as listas de episódios mostrem botões de download?</string>
+  <string name="on_demand_config_stream_text">Parece que você faz muito stream. Quer que as listas de episódios mostrem botões de stream\?</string>
+  <string name="on_demand_config_download_text">Parece que você faz muitos downloads. Quer que as listas de episódios mostrem botões de download\?</string>
   <string name="shortcut_subscription_label">Atalho da assinatura</string>
   <string name="shortcut_select_subscription">Selecione a assinatura</string>
 </resources>

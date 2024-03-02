@@ -250,14 +250,10 @@ class MainActivity : CastEnabledActivity() {
              }
          }
         override fun onSlide(view: View, slideOffset: Float) {
-            val audioPlayer = supportFragmentManager
-                .findFragmentByTag(AudioPlayerFragment.TAG) as AudioPlayerFragment?
-            if (audioPlayer == null) {
-                return
-            }
+            val audioPlayer = supportFragmentManager.findFragmentByTag(AudioPlayerFragment.TAG) as? AudioPlayerFragment ?: return
 
             if (slideOffset == 0.0f) { //STATE_COLLAPSED
-                audioPlayer.scrollToPage(AudioPlayerFragment.POS_COVER)
+                audioPlayer.scrollToPage(AudioPlayerFragment.FIRST_PAGE)
             }
             audioPlayer.fadePlayerToToolbar(slideOffset)
         }
@@ -335,7 +331,7 @@ class MainActivity : CastEnabledActivity() {
         val fragment: Fragment
         when (tag) {
             QueueFragment.TAG -> fragment = QueueFragment()
-            InboxFragment.TAG -> fragment = InboxFragment()
+//            InboxFragment.TAG -> fragment = InboxFragment()
             AllEpisodesFragment.TAG -> fragment = AllEpisodesFragment()
             CompletedDownloadsFragment.TAG -> fragment = CompletedDownloadsFragment()
             PlaybackHistoryFragment.TAG -> fragment = PlaybackHistoryFragment()

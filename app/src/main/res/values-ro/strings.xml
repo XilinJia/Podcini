@@ -42,17 +42,10 @@
   <string name="statistics_filter_all_time">Mereu</string>
   <string name="statistics_filter_past_year">Ultimul an</string>
   <string name="statistics_reset_data">Resetează datele statistice</string>
-  <string name="statistics_reset_data_msg">Această setare va șterge istoricul duratei de redare pentru toate episoadele. Sunteți sigur că doriți să continuați ?</string>
+  <string name="statistics_reset_data_msg">Această setare va șterge istoricul duratei de redare pentru toate episoadele. Sunteți sigur că doriți să continuați \?</string>
   <string name="statistics_counting_range">Redat între %1$s și %2$s</string>
   <string name="statistics_counting_total">Redat în total</string>
   <!--Home fragment-->
-
-
-
-
-
-
-
   <string name="notification_permission_text">Podcini necesită permisiunea ta pentru a afișa notificări. În mod implicit Podcini afișează notificări doar în momentul în care un podcast este descărcat sau în momentul în care apare o eroare.</string>
   <string name="notification_permission_denied">Ați refuzat permisiunea.</string>
   <string name="notification_permission_deny_warning">Dacă dezactivezi notificările și ceva nu funcționează corect, există posibilitatea de a nu putea să afli ce a mers greșit.</string>
@@ -85,7 +78,7 @@
   <string name="go_to_position_label">Mergi la poziția asta</string>
   <!--Playback history-->
   <string name="clear_history_label">Golește istoric</string>
-  <string name="clear_playback_history_msg">Această setare va goli întregul istoric de redare. Ești sigur că dorești să continui?</string>
+  <string name="clear_playback_history_msg">Această setare va goli întregul istoric de redare. Ești sigur că dorești să continui\?</string>
   <string name="remove_history_label">Elimină din istoric</string>
   <string name="removed_history_label">Eliminat din istoric</string>
   <!--Other-->
@@ -196,8 +189,8 @@
   <string name="edit_tags">Editează etichetele</string>
   <string name="add_tag">Adaugă etichetă</string>
   <string name="rename_tag_label">Redenumește etichetele</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message">Funcți de reîncărcare a podcasturilor folosind o conexiune mobilă este dezactivată.\n\nDorești să reîncarci oricum ?</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message_vpn">Aplicația ta VPN pretinde a fi o rețea de date mobilă. Reîmprospătarea podcasturilor folosind o conexiune de date mobile este dezactivată în setări.\n\nDorești totuși să reîmprospătezi ? Dacă dorești să rezolvi această problemă re rugăm să contactezi dezvoltatorii aplicației tale VPN.</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message">Funcți de reîncărcare a podcasturilor folosind o conexiune mobilă este dezactivată.\n\nDorești să reîncarci oricum \?</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message_vpn">Aplicația ta VPN pretinde a fi o rețea de date mobilă. Reîmprospătarea podcasturilor folosind o conexiune de date mobile este dezactivată în setări.\n\nDorești totuși să reîmprospătezi \? Dacă dorești să rezolvi această problemă re rugăm să contactezi dezvoltatorii aplicației tale VPN.</string>
   <!--actions on feeditems-->
   <string name="download_label">Descarcă</string>
   <plurals name="downloading_batch_label">
@@ -379,7 +372,7 @@
   <string name="interruptions">Intreruperi</string>
   <string name="playback_control">Controlul redării</string>
   <string name="reassign_hardware_buttons">Reatribuiți butoanele fizice</string>
-  <string name="preference_search_hint">Căutare...</string>
+  <string name="preference_search_hint">Căutare…</string>
   <string name="preference_search_no_results">Fără rezultate</string>
   <string name="preference_search_clear_history">Istoric gol</string>
   <string name="pref_episode_cleanup_title">Curățare episoade</string>
@@ -400,7 +393,7 @@
   <string name="pref_auto_delete_title">Șterge automat</string>
   <string name="pref_auto_local_delete_title">Ștergere automată din dosarul local</string>
   <string name="pref_auto_local_delete_sum">Include dosare locale în funcționalitatea de ștergere automată</string>
-  <string name="pref_auto_local_delete_dialog_body">Reține faptul ca pentru dosare locale această funcție va elimina episoade din Podcini și va șterge fișiere media din memoria dispozitivului folosit. Aceste fișiere nu vor mai putea fi descărcate din nou folosind Podcini. Dorești activarea duncției de ștergere automată?</string>
+  <string name="pref_auto_local_delete_dialog_body">Reține faptul ca pentru dosare locale această funcție va elimina episoade din Podcini și va șterge fișiere media din memoria dispozitivului folosit. Aceste fișiere nu vor mai putea fi descărcate din nou folosind Podcini. Dorești activarea duncției de ștergere automată\?</string>
   <string name="pref_smart_mark_as_played_sum">Marchează episoadele ca redate chiar dacă un anumit număr de secunde din episod au rămas</string>
   <string name="pref_smart_mark_as_played_title">Marchează inteligent ca fiind redate</string>
   <string name="pref_skip_keeps_episodes_sum">Păstrează episoade când acestea sunt sărite</string>
@@ -545,11 +538,11 @@
   <string name="search_online">Caută online</string>
   <!--Synchronization-->
   <string name="sync_status_started">Sincronizarea a început</string>
-  <string name="sync_status_episodes_upload">Se încarcă schimbările episoadelor...</string>
-  <string name="sync_status_episodes_download">Se descarcă modificările episoadelor...</string>
-  <string name="sync_status_upload_played">Se încarcă starea fișierelor redate...</string>
-  <string name="sync_status_subscriptions">Se sincronizează abonamentele...</string>
-  <string name="sync_status_wait_for_downloads">Aștepați ca descărcarea să se încheie...</string>
+  <string name="sync_status_episodes_upload">Se încarcă schimbările episoadelor…</string>
+  <string name="sync_status_episodes_download">Se descarcă modificările episoadelor…</string>
+  <string name="sync_status_upload_played">Se încarcă starea fișierelor redate…</string>
+  <string name="sync_status_subscriptions">Se sincronizează abonamentele…</string>
+  <string name="sync_status_wait_for_downloads">Aștepați ca descărcarea să se încheie…</string>
   <string name="sync_status_success">Sincronizarea a reușit</string>
   <string name="sync_status_error">Sincronizarea a eșuat</string>
   <!--import and export-->
@@ -572,8 +565,8 @@
   <string name="html_export_label">export HTML</string>
   <string name="database_export_label">export bază de date</string>
   <string name="database_import_label">import bază de date</string>
-  <string name="database_import_warning">Importarea unei baze de date va înlocui abonamentele tale și istoricul fișierelor redate. Ar trebui să exporți baza de date curentă ca un fișier de rezervă. Doreșți să înlocuieșți?</string>
-  <string name="please_wait">Vă rugăm așteptați...</string>
+  <string name="database_import_warning">Importarea unei baze de date va înlocui abonamentele tale și istoricul fișierelor redate. Ar trebui să exporți baza de date curentă ca un fișier de rezervă. Doreșți să înlocuieșți\?</string>
+  <string name="please_wait">Vă rugăm așteptați…</string>
   <string name="export_error_label">Eroare exportare</string>
   <string name="export_success_title">Exportarea a reușit</string>
   <string name="opml_import_ask_read_permission">Accesarea memoriei externe este necesară pentru a citi fișierul OPML</string>
@@ -658,7 +651,7 @@
   <string name="pref_pausePlaybackForFocusLoss_title">Pauză pentru întreruperi</string>
   <!--Online feed view-->
   <string name="subscribe_label">Abonează-te</string>
-  <string name="subscribing_label">În curs de abonare...</string>
+  <string name="subscribing_label">În curs de abonare…</string>
   <string name="preview_episode">Previzualizare</string>
   <string name="stop_preview">Oprește previzualizarea</string>
   <!--Content descriptions for image buttons-->
@@ -708,9 +701,9 @@
   <string name="edit_url_menu">Editează fluxurile URL</string>
   <string name="edit_url_confirmation_msg">Schimbarea adresei RSS poate distruge cu ușurință starea de redare și listele de episoade ale podcastului. NU recomandăm schimbarea acestuia și NU vă vom oferi asistență dacă ceva nu merge bine. Acest lucru nu poate fi anulat. Abonamentul defect NU POATE fi reparat prin simpla schimbare a adresei înapoi. Vă sugerăm să creați o copie de rezervă înainte de a continua.</string>
   <!--PodciniSP-->
-  <string name="sp_apps_importing_feeds_msg">Importare abonamente din aplicații cu un singur scop...</string>
+  <string name="sp_apps_importing_feeds_msg">Importare abonamente din aplicații cu un singur scop…</string>
   <!--Add podcast fragment-->
-  <string name="search_podcast_hint">Caută podcast...</string>
+  <string name="search_podcast_hint">Caută podcast…</string>
   <string name="search_itunes_label">Caută în Apple Podcasts</string>
   <string name="search_podcastindex_label">Caută în Podcast Index</string>
   <string name="search_fyyd_label">Caută în fyyd</string>
@@ -780,7 +773,7 @@
   <string name="port_label">Port</string>
   <string name="optional_hint">(Opțional)</string>
   <string name="proxy_test_label">Se testează</string>
-  <string name="proxy_checking">Se verifică...</string>
+  <string name="proxy_checking">Se verifică…</string>
   <string name="proxy_test_successful">Testul a reușit</string>
   <string name="proxy_test_failed">Testul a eșuat</string>
   <string name="proxy_host_empty_error">Numele serverului gazdă nu poate fi gol</string>
@@ -809,8 +802,8 @@
   <string name="widget_opacity">Transparență</string>
   <!--On-Demand configuration-->
   <string name="on_demand_config_setting_changed">Setarea a fost actualizată cu succes</string>
-  <string name="on_demand_config_stream_text">Se pare că faci streaming foarte mult. Dorești ca lista de episoade să arate butonul de stream ?</string>
-  <string name="on_demand_config_download_text">Se pare că descarci foarte mult. Dorești ca lista de episoade să arate butonul de descărcare ?</string>
+  <string name="on_demand_config_stream_text">Se pare că faci streaming foarte mult. Dorești ca lista de episoade să arate butonul de stream \?</string>
+  <string name="on_demand_config_download_text">Se pare că descarci foarte mult. Dorești ca lista de episoade să arate butonul de descărcare \?</string>
   <string name="shortcut_subscription_label">Scurtătură pentru abonamente</string>
   <string name="shortcut_select_subscription">Selectează abonamentul</string>
   <string name="add_shortcut">Adaugă scurtătură</string>

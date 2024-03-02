@@ -19,13 +19,13 @@ class SwipePreferencesFragment : PreferenceFragmentCompat() {
                 })
                 true
             }
-        findPreference<Preference>(PREF_SWIPE_INBOX)?.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                SwipeActionsDialog(requireContext(), InboxFragment.TAG).show (object : SwipeActionsDialog.Callback {
-                    override fun onCall() {}
-                })
-                true
-            }
+//        findPreference<Preference>(PREF_SWIPE_INBOX)?.onPreferenceClickListener =
+//            Preference.OnPreferenceClickListener {
+//                SwipeActionsDialog(requireContext(), InboxFragment.TAG).show (object : SwipeActionsDialog.Callback {
+//                    override fun onCall() {}
+//                })
+//                true
+//            }
         findPreference<Preference>(PREF_SWIPE_EPISODES)?.onPreferenceClickListener =
             Preference.OnPreferenceClickListener {
                 SwipeActionsDialog(requireContext(), AllEpisodesFragment.TAG).show (object : SwipeActionsDialog.Callback {

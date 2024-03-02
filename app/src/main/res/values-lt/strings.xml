@@ -27,7 +27,7 @@
   <string name="statistics_filter_all_time">Visų laikų</string>
   <string name="statistics_filter_past_year">Pernai</string>
   <string name="statistics_reset_data">Nustatyti statistikos duomenis iš naujo</string>
-  <string name="statistics_reset_data_msg">Bus išvalyta visų epizodų perklausytos trukmės istorija. Ar tikrai norite tęsti?</string>
+  <string name="statistics_reset_data_msg">Bus išvalyta visų epizodų perklausytos trukmės istorija. Ar tikrai norite tęsti\?</string>
   <string name="statistics_counting_range">Atkurta tarp %1$s ir %2$s</string>
   <string name="statistics_counting_total">Iš viso atkurta</string>
   <!--Home fragment-->
@@ -133,7 +133,7 @@
   </plurals>
   <string name="edit_tags">Redaguoti žymes</string>
   <string name="rename_tag_label">Pervadinti žymę</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message">Tinklalaidžių atnaujinimas mobiliuoju internetu išjungtas nustatymuose.\n\nAr vis tiek norite atnaujinti?</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message">Tinklalaidžių atnaujinimas mobiliuoju internetu išjungtas nustatymuose.\n\nAr vis tiek norite atnaujinti\?</string>
   <!--actions on feeditems-->
   <string name="download_label">Atsisiųsti</string>
   <plurals name="downloading_batch_label">
@@ -274,7 +274,7 @@
   <string name="interruptions">Pertraukimai</string>
   <string name="playback_control">Atkūrimo valdymas</string>
   <string name="reassign_hardware_buttons">Keisti aparatinius mygtukus</string>
-  <string name="preference_search_hint">Ieškoti...</string>
+  <string name="preference_search_hint">Ieškoti…</string>
   <string name="preference_search_no_results">Rezultatų nėra</string>
   <string name="preference_search_clear_history">Išvalyti istoriją</string>
   <string name="pref_episode_cleanup_summary">Epizodai, kurie gali būti ištrinti automatinio atsiuntimo metu pritrūkus laisvos vietos naujiems epizodams </string>
@@ -368,11 +368,11 @@
   <string name="no_results_for_query">Rezultatų paieškai \"%1$s\" nėra.</string>
   <!--Synchronization-->
   <string name="sync_status_started">Sinchronizavimas pradėtas</string>
-  <string name="sync_status_episodes_upload">Išsiunčiami epizodų pasikeitimai...</string>
-  <string name="sync_status_episodes_download">Atsiunčiami epizodų pasikeitimai...</string>
-  <string name="sync_status_upload_played">Išsiunčiama atkūrimo būsena...</string>
-  <string name="sync_status_subscriptions">Sinchronizuojamos prenumeratos...</string>
-  <string name="sync_status_wait_for_downloads">Laukiama, kol bus užbaigti atsiuntimai...</string>
+  <string name="sync_status_episodes_upload">Išsiunčiami epizodų pasikeitimai…</string>
+  <string name="sync_status_episodes_download">Atsiunčiami epizodų pasikeitimai…</string>
+  <string name="sync_status_upload_played">Išsiunčiama atkūrimo būsena…</string>
+  <string name="sync_status_subscriptions">Sinchronizuojamos prenumeratos…</string>
+  <string name="sync_status_wait_for_downloads">Laukiama, kol bus užbaigti atsiuntimai…</string>
   <string name="sync_status_success">Sinchronizavimas sėkmingas</string>
   <string name="sync_status_error">Sinchronizavimas nepavyko</string>
   <!--import and export-->
@@ -395,8 +395,8 @@
   <string name="html_export_label">HTML eksportas</string>
   <string name="database_export_label">Duomenų bazės eksportas</string>
   <string name="database_import_label">Duomenų bazės importas</string>
-  <string name="database_import_warning">Importuojant duomenų bazę bus pakeistos visos dabartinės jūsų prenumeratos ir atkūrimo istorija. Rekomenduojame eksportuoti dabartinę duomenų bazę kaip atsarginę kopiją. Ar norite pakeisti?</string>
-  <string name="please_wait">Prašome luktelėti...</string>
+  <string name="database_import_warning">Importuojant duomenų bazę bus pakeistos visos dabartinės jūsų prenumeratos ir atkūrimo istorija. Rekomenduojame eksportuoti dabartinę duomenų bazę kaip atsarginę kopiją. Ar norite pakeisti\?</string>
+  <string name="please_wait">Prašome luktelėti…</string>
   <string name="export_error_label">Eksporto klaida</string>
   <string name="export_success_title">Sėkmingai eksportuota</string>
   <string name="opml_import_ask_read_permission">Norint nuskaityti OPML failą reikalinga prieiga prie išorinės laikmenos</string>
@@ -471,7 +471,7 @@
   <string name="pref_pausePlaybackForFocusLoss_sum">Kai kita programėlė nori atkurti garsus, pristabdyti atkūrimą vietoje garsio sumažinimo</string>
   <!--Online feed view-->
   <string name="subscribe_label">Prenumeruoti</string>
-  <string name="subscribing_label">Prenumeruojama...</string>
+  <string name="subscribing_label">Prenumeruojama…</string>
   <string name="preview_episode">Peržiūra</string>
   <string name="stop_preview">Stabdyti peržiūrą</string>
   <!--Content descriptions for image buttons-->
@@ -504,9 +504,9 @@
   <string name="statistics_episodes_started_total">Pradėti epizodai/iš viso:</string>
   <string name="statistics_view_all">Žiūrėti visoms tinklalaidėms »</string>
   <!--PodciniSP-->
-  <string name="sp_apps_importing_feeds_msg">Įkeliamos prenumeratos iš specializuotų programėlių...</string>
+  <string name="sp_apps_importing_feeds_msg">Įkeliamos prenumeratos iš specializuotų programėlių…</string>
   <!--Add podcast fragment-->
-  <string name="search_podcast_hint">Ieškoti tinklalaidės...</string>
+  <string name="search_podcast_hint">Ieškoti tinklalaidės…</string>
   <string name="search_fyyd_label">Ieškoti „fyyd“</string>
   <string name="gpodnet_search_hint">Ieškoti „gpodder.net“ svetainėje</string>
   <string name="advanced">Išplėstinis</string>
@@ -537,20 +537,6 @@
   <string name="hide_played_episodes_label">Perklausyti</string>
   <string name="not_played">Neperklausyti</string>
   <!--Sort-->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   <!--Share episode dialog-->
   <string name="share_playback_position_dialog_label">Įtraukti atkūrimo poziciją</string>
   <string name="share_dialog_episode_website_label">Epizodo tinklalapiu</string>
@@ -567,7 +553,7 @@
   <string name="port_label">Prievadas</string>
   <string name="optional_hint">(neprivalomas)</string>
   <string name="proxy_test_label">Išbandyti</string>
-  <string name="proxy_checking">Tikrinama...</string>
+  <string name="proxy_checking">Tikrinama…</string>
   <string name="proxy_test_successful">Bandymas sėkmingas</string>
   <string name="proxy_test_failed">Bandymas nesėkmingas</string>
   <string name="proxy_host_empty_error">Serverio laukelis negali būti tuščias</string>
@@ -595,8 +581,8 @@
   <string name="widget_opacity">Dengiamumas</string>
   <!--On-Demand configuration-->
   <string name="on_demand_config_setting_changed">Nustatymas sėkmingai atnaujintas.</string>
-  <string name="on_demand_config_stream_text">Panašu, jog dažnai klausotės tiesiogiai. Ar norite, jog epizodų sąraše būtų rodomi tiesioginio klausymosi mygtukai?</string>
-  <string name="on_demand_config_download_text">Panašu, jog dažnai atsisiunčiate epizodus. Ar norite, jog epizodų sąraše būtų rodomi atsiuntimo mygtukai?</string>
+  <string name="on_demand_config_stream_text">Panašu, jog dažnai klausotės tiesiogiai. Ar norite, jog epizodų sąraše būtų rodomi tiesioginio klausymosi mygtukai\?</string>
+  <string name="on_demand_config_download_text">Panašu, jog dažnai atsisiunčiate epizodus. Ar norite, jog epizodų sąraše būtų rodomi atsiuntimo mygtukai\?</string>
   <string name="shortcut_subscription_label">Prenumeratos trumpinys</string>
   <string name="shortcut_select_subscription">Pažymėti prenumeratą</string>
 </resources>

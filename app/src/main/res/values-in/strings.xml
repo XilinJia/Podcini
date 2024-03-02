@@ -278,7 +278,7 @@
   <string name="interruptions">Gangguan</string>
   <string name="playback_control">Kontrol pemutaran</string>
   <string name="reassign_hardware_buttons">Tetapkan ulang tombol perangkat</string>
-  <string name="preference_search_hint">Cari...</string>
+  <string name="preference_search_hint">Cari…</string>
   <string name="preference_search_no_results">Tidak ditemukan</string>
   <string name="preference_search_clear_history">Bersihkan riwayat</string>
   <string name="pref_episode_cleanup_summary">Episode yang memenuhi syarat untuk penghapusan jika Pengunduhan Otomatis membutuhkan ruang untuk episode baru</string>
@@ -405,11 +405,11 @@
   <string name="no_results_for_query">Tidak ada hasil yang ditemukan untuk \"%1$s\"`</string>
   <!--Synchronization-->
   <string name="sync_status_started">Sinkronisasi dijalankan</string>
-  <string name="sync_status_episodes_upload">Mengunggah perubahan pada episode...</string>
-  <string name="sync_status_episodes_download">Mengunduh perubahan pada episode...</string>
-  <string name="sync_status_upload_played">Mengunggah status diputar...</string>
-  <string name="sync_status_subscriptions">Sedang menyinkronisasikan langganan...</string>
-  <string name="sync_status_wait_for_downloads">Menunggu unduhan selesai...</string>
+  <string name="sync_status_episodes_upload">Mengunggah perubahan pada episode…</string>
+  <string name="sync_status_episodes_download">Mengunduh perubahan pada episode…</string>
+  <string name="sync_status_upload_played">Mengunggah status diputar…</string>
+  <string name="sync_status_subscriptions">Sedang menyinkronisasikan langganan…</string>
+  <string name="sync_status_wait_for_downloads">Menunggu unduhan selesai…</string>
   <string name="sync_status_success">Sinkronisasi sukses!</string>
   <string name="sync_status_error">Sinkronisasi gagal..</string>
   <!--import and export-->
@@ -433,7 +433,7 @@
   <string name="database_export_label">Ekspor Database</string>
   <string name="database_import_label">Import Database</string>
   <string name="database_import_warning">Mengimpor database akan menggantikan seluruh langganan dan riwayat pemutaran Anda. Anda sebaiknya mengekspor database yang sekarang Anda miliki sebagai cadangan. Tetap lanjutkan?</string>
-  <string name="please_wait">Mohon tunggu...</string>
+  <string name="please_wait">Mohon tunggu…</string>
   <string name="export_error_label">Kesalahan ekspor</string>
   <string name="export_success_title">Ekspor berhasil</string>
   <string name="opml_import_ask_read_permission">Akses ke penyimpanan eksternal diperlukan untuk membaca berkas OPML</string>
@@ -511,7 +511,7 @@
   <string name="pref_pausePlaybackForFocusLoss_title">Jeda untuk interupsi</string>
   <!--Online feed view-->
   <string name="subscribe_label">Langganan</string>
-  <string name="subscribing_label">Berlangganan...</string>
+  <string name="subscribing_label">Berlangganan…</string>
   <string name="preview_episode">Pratinjau</string>
   <string name="stop_preview">Berhenti pratinjau</string>
   <!--Content descriptions for image buttons-->
@@ -550,9 +550,9 @@
   <string name="edit_url_menu">Sunting URL umpan</string>
   <string name="edit_url_confirmation_msg">Mengganti alamat RSS dapat merusak status pemutaran dan daftar episode podcast. Kami menyarankan untuk TIDAK mengubahnya dan kami tidak dapat memberikan bantuan jika ada yang salah. Aksi ini tidak dapat dikembalikan. Langganan yang rusak tidak dapat diperbaiki hanya dengan mengganti alamatnya kembali. Sebaiknya buat cadangan jika tetap ingin melanjutkan.</string>
   <!--PodciniSP-->
-  <string name="sp_apps_importing_feeds_msg">Impor langganan dari aplikasi bertujuan tunggal...</string>
+  <string name="sp_apps_importing_feeds_msg">Impor langganan dari aplikasi bertujuan tunggal…</string>
   <!--Add podcast fragment-->
-  <string name="search_podcast_hint">Cari podcast...</string>
+  <string name="search_podcast_hint">Cari podcast…</string>
   <string name="search_fyyd_label">Cari fyyd</string>
   <string name="gpodnet_search_hint">Telusur gpodder.net</string>
   <string name="advanced">Lanjutan</string>
@@ -618,7 +618,7 @@
   <string name="port_label">Port</string>
   <string name="optional_hint">(Opsional)</string>
   <string name="proxy_test_label">Tes</string>
-  <string name="proxy_checking">Memeriksa...</string>
+  <string name="proxy_checking">Memeriksa…</string>
   <string name="proxy_test_successful">Tes berhasil</string>
   <string name="proxy_test_failed">Tes gagal</string>
   <string name="proxy_host_empty_error">Host tidak bisa kosong</string>

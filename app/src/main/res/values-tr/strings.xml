@@ -42,7 +42,7 @@
   <string name="statistics_filter_all_time">Tüm zamanlar</string>
   <string name="statistics_filter_past_year">Geçen sene</string>
   <string name="statistics_reset_data">İstatistik verilerini sıfırla</string>
-  <string name="statistics_reset_data_msg">Bu işlem, tüm bölümler için oynanan süre geçmişini siler. Devam etmek istediğinizden emin misiniz?</string>
+  <string name="statistics_reset_data_msg">Bu işlem, tüm bölümler için oynanan süre geçmişini siler. Devam etmek istediğinizden emin misiniz\?</string>
   <string name="statistics_counting_range">%1$s ile %2$s arasında çalınan</string>
   <string name="statistics_counting_total">Toplamda çalınan</string>
   <!--Home fragment-->
@@ -82,7 +82,7 @@
   <string name="go_to_position_label">Bu konuma gidin</string>
   <!--Playback history-->
   <string name="clear_history_label">Geçmişi temizle</string>
-  <string name="clear_playback_history_msg">Bu tüm oynatma geçmişini silecek. Devam etmek istediğinden emin misin?</string>
+  <string name="clear_playback_history_msg">Bu tüm oynatma geçmişini silecek. Devam etmek istediğinden emin misin\?</string>
   <string name="remove_history_label">Geçmişten kaldır</string>
   <string name="removed_history_label">Geçmişten kaldırıldı</string>
   <!--Other-->
@@ -178,7 +178,7 @@
   <string name="edit_tags">Etiketleri düzenle</string>
   <string name="add_tag">Etiket ekle</string>
   <string name="rename_tag_label">Etiketleri yeniden adlandır</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message">Mobil veri bağlantısı üzerinden Podcastlerin yenilenmesi ayarlarda devre dışı bırakılmıştır.\n\nYine de yenilemek istiyor musunuz?</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message">Mobil veri bağlantısı üzerinden Podcastlerin yenilenmesi ayarlarda devre dışı bırakılmıştır.\n\nYine de yenilemek istiyor musunuz\?</string>
   <!--actions on feeditems-->
   <string name="download_label">İndir</string>
   <plurals name="downloading_batch_label">
@@ -501,12 +501,12 @@
   <string name="no_results_for_query"> \"%1$s\" için bir sonuç bulunamadı</string>
   <!--Synchronization-->
   <string name="sync_status_started">Senkronizasyon başlatıldı</string>
-  <string name="sync_status_episodes_upload">Bölüm değişiklikleri yükleniyor...</string>
-  <string name="sync_status_episodes_download">Bölüm değişiklikleri indiriliyor...</string>
-  <string name="sync_status_upload_played">Oynama durumu yükleniyor...</string>
+  <string name="sync_status_episodes_upload">Bölüm değişiklikleri yükleniyor…</string>
+  <string name="sync_status_episodes_download">Bölüm değişiklikleri indiriliyor…</string>
+  <string name="sync_status_upload_played">Oynama durumu yükleniyor…</string>
   <string name="sync_status_subscriptions">Synchronizing subscriptions…</string>
   <string name="sync_status_wait_for_downloads">İndirmelerin tamamlanması bekleniyor</string>
-  <string name="sync_status_success">Abonelikler senkronize ediliyor...</string>
+  <string name="sync_status_success">Abonelikler senkronize ediliyor…</string>
   <string name="sync_status_error">Senkronizasyon başarısız oldu</string>
   <!--import and export-->
   <string name="import_export_summary">Abonelikleri ve kuyruğu başka bir cihaza taşıma</string>
@@ -528,8 +528,8 @@
   <string name="html_export_label">HTML Dışa aktarma</string>
   <string name="database_export_label">Veri tabanını dışarı aktarma</string>
   <string name="database_import_label">Veri tabanını içe aktarma</string>
-  <string name="database_import_warning">Bir veritabanını içe aktarmak, mevcut tüm aboneliklerinizi ve çalma geçmişinizi değiştirecektir. Mevcut veritabanınızı yedek olarak dışa aktarmalısınız. Yerini değiştirmek istiyor musunuz?</string>
-  <string name="please_wait">Lütfen bekleyin...</string>
+  <string name="database_import_warning">Bir veritabanını içe aktarmak, mevcut tüm aboneliklerinizi ve çalma geçmişinizi değiştirecektir. Mevcut veritabanınızı yedek olarak dışa aktarmalısınız. Yerini değiştirmek istiyor musunuz\?</string>
+  <string name="please_wait">Lütfen bekleyin…</string>
   <string name="export_error_label">Dışa aktarma hatası</string>
   <string name="export_success_title">Dışa aktarma başarılı</string>
   <string name="opml_import_ask_read_permission">OPML dosyasını okumak için harici depolama alanına erişim gereklidir</string>
@@ -653,7 +653,7 @@
   <string name="edit_url_menu">URL düzenle</string>
   <string name="edit_url_confirmation_msg">RSS adresini değiştirmek podcast\'in çalma durumunu ve bölüm listelemesini kolayca bozabilir. Değiştirmeyi önermiyoruz ve herhangi bir aksilikte destek SAĞLANMAYACAK. Bu geri alınamaz. Bozuk abonelik adresi yeniden değiştirmekle DÜZELMEZ. Devam etmeden önce yedek oluşturmanı öneriyoruz.</string>
   <!--PodciniSP-->
-  <string name="sp_apps_importing_feeds_msg">Üyelikler tek-amaçlı uygulamalardan içe aktarılıyor...</string>
+  <string name="sp_apps_importing_feeds_msg">Üyelikler tek-amaçlı uygulamalardan içe aktarılıyor…</string>
   <!--Add podcast fragment-->
   <string name="search_podcast_hint">Podcast ara…</string>
   <string name="search_itunes_label">Apple Podcasts\'de ara</string>
@@ -723,7 +723,7 @@
   <string name="port_label">Bağlantı Noktası</string>
   <string name="optional_hint">(İsteğe bağlı)</string>
   <string name="proxy_test_label">Test</string>
-  <string name="proxy_checking">Kontrol ediliyor...</string>
+  <string name="proxy_checking">Kontrol ediliyor…</string>
   <string name="proxy_test_successful">Test başarılı</string>
   <string name="proxy_test_failed">Test başarısız</string>
   <string name="proxy_host_empty_error">Ana Sunucu boş olamaz</string>
@@ -752,8 +752,8 @@
   <string name="widget_opacity">Şeffaflık</string>
   <!--On-Demand configuration-->
   <string name="on_demand_config_setting_changed">Ayar güncellendi.</string>
-  <string name="on_demand_config_stream_text">Sesleri indirmeden anlık dinlemeyi tercih ediyor gibisiniz. Bölüm listesinde anlık dinleme butonlarının kısayol olarak eklenmesini ister misiniz?</string>
-  <string name="on_demand_config_download_text">Sesleri indirdikten sonra dinlemeyi tercih ediyor gibisiniz. Bölüm listesinde indirme butonlarının kısayol olarak eklenmesini ister misiniz?</string>
+  <string name="on_demand_config_stream_text">Sesleri indirmeden anlık dinlemeyi tercih ediyor gibisiniz. Bölüm listesinde anlık dinleme butonlarının kısayol olarak eklenmesini ister misiniz\?</string>
+  <string name="on_demand_config_download_text">Sesleri indirdikten sonra dinlemeyi tercih ediyor gibisiniz. Bölüm listesinde indirme butonlarının kısayol olarak eklenmesini ister misiniz\?</string>
   <string name="shortcut_subscription_label">Abonelik kısayolu</string>
   <string name="shortcut_select_subscription">Abonelik seçiniz</string>
   <string name="add_shortcut">Kısayol ekle</string>

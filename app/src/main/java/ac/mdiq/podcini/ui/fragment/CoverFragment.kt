@@ -68,7 +68,7 @@ class CoverFragment : Fragment() {
         viewBinding.imgvCover.setOnClickListener { onPlayPause() }
         viewBinding.openDescription.setOnClickListener {
             (requireParentFragment() as AudioPlayerFragment)
-                .scrollToPage(AudioPlayerFragment.POS_DESCRIPTION, true)
+                .scrollToPage(AudioPlayerFragment.FIRST_PAGE, true)
         }
         val colorFilter: ColorFilter? = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(
             viewBinding.txtvPodcastTitle.currentTextColor, BlendModeCompat.SRC_IN)

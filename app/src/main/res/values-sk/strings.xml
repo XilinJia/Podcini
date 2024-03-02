@@ -42,17 +42,10 @@
   <string name="statistics_filter_all_time">Celý čas</string>
   <string name="statistics_filter_past_year">Posledný rok</string>
   <string name="statistics_reset_data">Vynulovať štatistiky</string>
-  <string name="statistics_reset_data_msg">Táto operácia vymaže časovú históriu prehrávania všetkých epizód. Ste si istý že chcete vykonať túto akciu?</string>
+  <string name="statistics_reset_data_msg">Táto operácia vymaže časovú históriu prehrávania všetkých epizód. Ste si istý že chcete vykonať túto akciu\?</string>
   <string name="statistics_counting_range">Prehrané medzi %1$s a %2$s</string>
   <string name="statistics_counting_total">Prehrané celkom</string>
   <!--Home fragment-->
-
-
-
-
-
-
-
   <string name="notification_permission_text">Podcini potrebuje vaše povolenie na zobrazovanie upozornení. V predvolenom nastavení Podcini zobrazuje upozornenia iba vtedy, keď sa niečo sťahuje alebo keď sa niečo nepodarí.</string>
   <string name="notification_permission_denied">Odmietli ste povolenie.</string>
   <string name="notification_permission_deny_warning">Ak vypnete upozornenia a niečo sa nepodarí, možno nebudete môcť zistiť, prečo sa to nepodarilo.</string>
@@ -85,7 +78,7 @@
   <string name="go_to_position_label">Skočiť na túto pozíciu</string>
   <!--Playback history-->
   <string name="clear_history_label">Vymazať históriu</string>
-  <string name="clear_playback_history_msg">Toto vymaže celú históriu prehrávania. Ste si istý, že chcete pokračovať?</string>
+  <string name="clear_playback_history_msg">Toto vymaže celú históriu prehrávania. Ste si istý, že chcete pokračovať\?</string>
   <string name="remove_history_label">Odstrániť z histórie</string>
   <string name="removed_history_label">Odstránené z histórie</string>
   <!--Other-->
@@ -203,8 +196,8 @@
   <string name="edit_tags">Upraviť štítky</string>
   <string name="add_tag">Pridať štítok</string>
   <string name="rename_tag_label">Premenovať štítok</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message">Obnovovanie podcastov pri mobilnom pripojení je vypnuté v nastaveniach.\n\nChcete ich obnoviť aj tak?</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message_vpn">Vaša VPN aplikácia predstiera, že je mobilná sieť (merané pripojenie). Obnovovanie podcastov cez mobilné dátové pripojenie je v nastaveniach zakázané.\n\nChcete napriek tomu obnoviť? Ak chcete, aby bol tento problém vyriešený, kontaktujte tvorcov vašej VPN aplikácie.</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message">Obnovovanie podcastov pri mobilnom pripojení je vypnuté v nastaveniach.\n\nChcete ich obnoviť aj tak\?</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message_vpn">Vaša VPN aplikácia predstiera, že je mobilná sieť (merané pripojenie). Obnovovanie podcastov cez mobilné dátové pripojenie je v nastaveniach zakázané.\n\nChcete napriek tomu obnoviť\? Ak chcete, aby bol tento problém vyriešený, kontaktujte tvorcov vašej VPN aplikácie.</string>
   <!--actions on feeditems-->
   <string name="download_label">Stiahnuť</string>
   <plurals name="downloading_batch_label">
@@ -415,7 +408,7 @@
   <string name="pref_auto_delete_title">Automatické mazanie</string>
   <string name="pref_auto_local_delete_title">Automatické mazanie z lokálnych priečinkov</string>
   <string name="pref_auto_local_delete_sum">Zahrnúť lokálne priečinky do funkcie Automatického mazania</string>
-  <string name="pref_auto_local_delete_dialog_body">Vezmite na vedomie, že toto pre lokálne priečinky odstráni epizódy z Podcini a zmaže ich mediálne súbory z úložiska vášho zariadenia. Nedajú sa znova stiahnuť cez Podcini. Povoliť automatické mazanie?</string>
+  <string name="pref_auto_local_delete_dialog_body">Vezmite na vedomie, že toto pre lokálne priečinky odstráni epizódy z Podcini a zmaže ich mediálne súbory z úložiska vášho zariadenia. Nedajú sa znova stiahnuť cez Podcini. Povoliť automatické mazanie\?</string>
   <string name="pref_smart_mark_as_played_sum">Označiť epizódy ako vypočuté aj pokiaľ ešte zostáva určitý počet sekúnd prehrávania do ich konca</string>
   <string name="pref_smart_mark_as_played_title">Inteligentné označovanie ako vypočuté</string>
   <string name="pref_skip_keeps_episodes_sum">Neodstraňovať epizódy pri ich preskočení</string>
@@ -564,7 +557,7 @@
   <string name="sync_status_episodes_download">Sťahujú sa zmeny epizód…</string>
   <string name="sync_status_upload_played">Nahráva sa stav prehratia…</string>
   <string name="sync_status_subscriptions">Synchronizujú sa odbery…</string>
-  <string name="sync_status_wait_for_downloads">Čakám na dokončenie sťahovania...</string>
+  <string name="sync_status_wait_for_downloads">Čakám na dokončenie sťahovania…</string>
   <string name="sync_status_success">Synchronizácia bola úspešná</string>
   <string name="sync_status_error">Synchronizácia zlyhala</string>
   <!--import and export-->
@@ -587,7 +580,7 @@
   <string name="html_export_label">Exportovať ako HTML</string>
   <string name="database_export_label">Export databázy</string>
   <string name="database_import_label">Import databázy</string>
-  <string name="database_import_warning">Import databázy prepíše všetky vaše aktuálne odbery a históriu prehrávania. Aktuálnu databázu by ste mali exportovať ako zálohu. Chcete ju prepísať?</string>
+  <string name="database_import_warning">Import databázy prepíše všetky vaše aktuálne odbery a históriu prehrávania. Aktuálnu databázu by ste mali exportovať ako zálohu. Chcete ju prepísať\?</string>
   <string name="please_wait">Prosím čakajte…</string>
   <string name="export_error_label">Chyba exportu</string>
   <string name="export_success_title">Export bol úspešný</string>
@@ -833,8 +826,8 @@
   <string name="widget_opacity">Nepriehľadnosť</string>
   <!--On-Demand configuration-->
   <string name="on_demand_config_setting_changed">Nastavenie bolo úspešne aktualizované.</string>
-  <string name="on_demand_config_stream_text">Zdá sa, že veľa streamujete. Chcete, aby zoznamy epizód zobrazovali tlačidlá pre streamovanie?</string>
-  <string name="on_demand_config_download_text">Zdá sa, že veľa sťahujete. Chcete, aby zoznamy epizód zobrazovali tlačidlá pre sťahovanie?</string>
+  <string name="on_demand_config_stream_text">Zdá sa, že veľa streamujete. Chcete, aby zoznamy epizód zobrazovali tlačidlá pre streamovanie\?</string>
+  <string name="on_demand_config_download_text">Zdá sa, že veľa sťahujete. Chcete, aby zoznamy epizód zobrazovali tlačidlá pre sťahovanie\?</string>
   <string name="shortcut_subscription_label">Skratka odberu</string>
   <string name="shortcut_select_subscription">Vyberte odber</string>
   <string name="add_shortcut">Pridať skratku</string>

@@ -369,7 +369,7 @@ class FeedSettingsFragment : Fragment() {
 
             when (feedPreferences!!.newEpisodesAction) {
                 NewEpisodesAction.GLOBAL -> newEpisodesAction.setSummary(R.string.global_default)
-                NewEpisodesAction.ADD_TO_INBOX -> newEpisodesAction.setSummary(R.string.feed_new_episodes_action_add_to_inbox)
+//                NewEpisodesAction.ADD_TO_INBOX -> newEpisodesAction.setSummary(R.string.feed_new_episodes_action_add_to_inbox)
                 NewEpisodesAction.NOTHING -> newEpisodesAction.setSummary(R.string.feed_new_episodes_action_nothing)
                 else -> {}
             }

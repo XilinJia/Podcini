@@ -233,7 +233,7 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
         @JvmStatic
         fun getPrefsWithDefaults(context: Context, tag: String): Actions {
             val defaultActions = when (tag) {
-                InboxFragment.TAG -> SwipeAction.ADD_TO_QUEUE + "," + SwipeAction.REMOVE_FROM_INBOX
+//                InboxFragment.TAG -> SwipeAction.ADD_TO_QUEUE + "," + SwipeAction.REMOVE_FROM_INBOX
                 QueueFragment.TAG -> SwipeAction.REMOVE_FROM_QUEUE + "," + SwipeAction.REMOVE_FROM_QUEUE
                 CompletedDownloadsFragment.TAG -> SwipeAction.DELETE + "," + SwipeAction.DELETE
                 PlaybackHistoryFragment.TAG -> SwipeAction.REMOVE_FROM_HISTORY + "," + SwipeAction.REMOVE_FROM_HISTORY

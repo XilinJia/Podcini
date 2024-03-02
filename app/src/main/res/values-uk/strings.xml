@@ -42,16 +42,9 @@
   <string name="statistics_filter_all_time">Увесь час</string>
   <string name="statistics_filter_past_year">Минулий рік</string>
   <string name="statistics_reset_data">Cкинути дані статистики</string>
-  <string name="statistics_reset_data_msg">Це видалить всі дані про тривалість відтворення епізодів. Ви впевнені, що хочете продовжити?</string>
+  <string name="statistics_reset_data_msg">Це видалить всі дані про тривалість відтворення епізодів. Ви впевнені, що хочете продовжити\?</string>
   <string name="statistics_counting_range">Прослухано між %1$sта%2$s </string>
   <string name="statistics_counting_total">Прослухано взагалі</string>
-  <!--Home fragment-->
-
-
-
-
-
-
 
   <string name="notification_permission_text">Podcini потрібен ваш дозвіл, щоб показувати сповіщення. За замовчуванням Podcini показує сповіщення лише під час завантаження або коли щось йде не так.</string>
   <string name="notification_permission_denied">Ви відмовили у дозволі.</string>
@@ -85,7 +78,7 @@
   <string name="go_to_position_label">До цієї позиції</string>
   <!--Playback history-->
   <string name="clear_history_label">Очистити історію</string>
-  <string name="clear_playback_history_msg">Це очистить всю історію відтворень. Ви впевнені, що хочете продовжити?</string>
+  <string name="clear_playback_history_msg">Це очистить всю історію відтворень. Ви впевнені, що хочете продовжити\?</string>
   <string name="remove_history_label">Вилучити з історії</string>
   <string name="removed_history_label">Вилучено з історії</string>
   <!--Other-->
@@ -203,8 +196,8 @@
   <string name="edit_tags">Редагувати теги</string>
   <string name="add_tag">Додати тег</string>
   <string name="rename_tag_label">Перейменувати тег</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message">Оновлення подкастів через мобільний зв\'язок вимкнено в налаштуваннях.\n\nВи все одно хочете оновити?</string>
-  <string name="confirm_mobile_feed_refresh_dialog_message_vpn">Ваш VPN-додаток видає себе за мобільну мережу (зʼєднання з лічильником). Оновлення подкастів через мобільне з\'єднання вимкнено в налаштуваннях.\n\nВи все одно хочете оновити? Якщо ви хочете, щоб цю проблему було виправлено, зверніться до розробників вашого VPN-додатку.</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message">Оновлення подкастів через мобільний зв\'язок вимкнено в налаштуваннях.\n\nВи все одно хочете оновити\?</string>
+  <string name="confirm_mobile_feed_refresh_dialog_message_vpn">Ваш VPN-додаток видає себе за мобільну мережу (зʼєднання з лічильником). Оновлення подкастів через мобільне з\'єднання вимкнено в налаштуваннях.\n\nВи все одно хочете оновити\? Якщо ви хочете, щоб цю проблему було виправлено, зверніться до розробників вашого VPN-додатку.</string>
   <!--actions on feeditems-->
   <string name="download_label">Завантажити</string>
   <plurals name="downloading_batch_label">
@@ -394,7 +387,7 @@
   <string name="interruptions">Тимчасові паузи</string>
   <string name="playback_control">Керування відтворенням</string>
   <string name="reassign_hardware_buttons">Перепризначення апаратних кнопок</string>
-  <string name="preference_search_hint">Пошук...</string>
+  <string name="preference_search_hint">Пошук…</string>
   <string name="preference_search_no_results">Немає результатів</string>
   <string name="preference_search_clear_history">Очистити історію</string>
   <string name="pref_episode_cleanup_title">Очищення епізодів</string>
@@ -415,7 +408,7 @@
   <string name="pref_auto_delete_title">Автовидалення</string>
   <string name="pref_auto_local_delete_title">Автовидалення з локальних тек</string>
   <string name="pref_auto_local_delete_sum">Функція автовидалення видалятиме також і локальні теки</string>
-  <string name="pref_auto_local_delete_dialog_body">Зверніть увагу, що для локальних тек це призведе до видалення епізодів з Podcini і видалення їхніх медіафайлів зі сховища вашого пристрою. Їх не можна буде знову завантажити через Podcini. Увімкнути автоматичне видалення?</string>
+  <string name="pref_auto_local_delete_dialog_body">Зверніть увагу, що для локальних тек це призведе до видалення епізодів з Podcini і видалення їхніх медіафайлів зі сховища вашого пристрою. Їх не можна буде знову завантажити через Podcini. Увімкнути автоматичне видалення\?</string>
   <string name="pref_smart_mark_as_played_sum">Позначити епізоди як відтворені, навіть якщо залишилось менш ніж зазначене число секунд до кінця відтворення</string>
   <string name="pref_smart_mark_as_played_title">Розумне позначення прослуханих епізодів</string>
   <string name="pref_skip_keeps_episodes_sum">Зберігати пропущені  епізоди при програванні  </string>
@@ -587,7 +580,7 @@
   <string name="html_export_label">Експорт до HTML</string>
   <string name="database_export_label">Експортувати базу даних</string>
   <string name="database_import_label">Імпортувати базу даних</string>
-  <string name="database_import_warning">Імпорт бази даних замінить усі ваші поточні підписки та історію відтворення. Ви повинні експортувати свою поточну базу даних як резервну копію. Бажаєте замінити?</string>
+  <string name="database_import_warning">Імпорт бази даних замінить усі ваші поточні підписки та історію відтворення. Ви повинні експортувати свою поточну базу даних як резервну копію. Бажаєте замінити\?</string>
   <string name="please_wait">Будь ласка, зачекайте…</string>
   <string name="export_error_label">Помилка експорту</string>
   <string name="export_success_title">Успішний експорт</string>
@@ -682,7 +675,7 @@
   <string name="pref_pausePlaybackForFocusLoss_title">Пауза в разі переривання</string>
   <!--Online feed view-->
   <string name="subscribe_label">Підписатися</string>
-  <string name="subscribing_label">Підписка...</string>
+  <string name="subscribing_label">Підписка…</string>
   <string name="preview_episode">Предперегляд</string>
   <string name="stop_preview">Зупинити предперегляд</string>
   <!--Content descriptions for image buttons-->
@@ -732,9 +725,9 @@
   <string name="edit_url_menu">Редагувати URL-адресу каналу</string>
   <string name="edit_url_confirmation_msg">Зміна RSS-адреси може легко зламати стан відтворення та списки епізодів подкасту. Ми НЕ рекомендуємо змінювати її і НЕ надаватимемо підтримку, якщо щось піде не так. Це не можна скасувати. Порушену підписку НЕ МОЖНА відновити, просто змінивши адресу назад. Ми рекомендуємо створити резервну копію, перш ніж продовжувати.</string>
   <!--PodciniSP-->
-  <string name="sp_apps_importing_feeds_msg">Імпорт подкастів з інших програм...</string>
+  <string name="sp_apps_importing_feeds_msg">Імпорт подкастів з інших програм…</string>
   <!--Add podcast fragment-->
-  <string name="search_podcast_hint">Шукати подкаст...</string>
+  <string name="search_podcast_hint">Шукати подкаст…</string>
   <string name="search_itunes_label">Шукати на Apple Podcasts</string>
   <string name="search_podcastindex_label">Шукати на Podcast Index</string>
   <string name="search_fyyd_label">Шукати на Fyyd</string>
@@ -804,7 +797,7 @@
   <string name="port_label">Порт</string>
   <string name="optional_hint">(Необов\'язково)</string>
   <string name="proxy_test_label">Тест</string>
-  <string name="proxy_checking">Триває перевірка...</string>
+  <string name="proxy_checking">Триває перевірка…</string>
   <string name="proxy_test_successful">Протестовано успішно</string>
   <string name="proxy_test_failed">Протестовано з помилками</string>
   <string name="proxy_host_empty_error">Поле \"Хост\" не може бути пустим</string>
@@ -833,8 +826,8 @@
   <string name="widget_opacity">Непрозорість</string>
   <!--On-Demand configuration-->
   <string name="on_demand_config_setting_changed">Налаштування успішно оновлено.</string>
-  <string name="on_demand_config_stream_text">Схоже, ви багато передаєте. Ви хочете, щоб у списках епізодів відображалися кнопки трансляції?</string>
-  <string name="on_demand_config_download_text">Схоже, ви багато завантажуєте. Ви хочете, щоб у списках епізодів відображалися кнопки завантаження?</string>
+  <string name="on_demand_config_stream_text">Схоже, ви багато передаєте. Ви хочете, щоб у списках епізодів відображалися кнопки трансляції\?</string>
+  <string name="on_demand_config_download_text">Схоже, ви багато завантажуєте. Ви хочете, щоб у списках епізодів відображалися кнопки завантаження\?</string>
   <string name="shortcut_subscription_label">Скорочення підписки</string>
   <string name="shortcut_select_subscription">Вибрати підписку</string>
   <string name="add_shortcut">Додати ярлик</string>

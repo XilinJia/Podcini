@@ -53,7 +53,7 @@ object UserPreferences {
 
     const val PREF_QUEUE_KEEP_SORTED: String = "prefQueueKeepSorted"
     const val PREF_QUEUE_KEEP_SORTED_ORDER: String = "prefQueueKeepSortedOrder"
-    const val PREF_NEW_EPISODES_ACTION: String = "prefNewEpisodesAction"
+    const val PREF_NEW_EPISODES_ACTION: String = "prefNewEpisodesAction"    // not used
     private const val PREF_DOWNLOADS_SORTED_ORDER = "prefDownloadSortedOrder"
     private const val PREF_INBOX_SORTED_ORDER = "prefInboxSortedOrder"
 
@@ -817,7 +817,7 @@ object UserPreferences {
     val newEpisodesAction: NewEpisodesAction
         get() {
             val str = prefs.getString(PREF_NEW_EPISODES_ACTION,
-                "" + NewEpisodesAction.ADD_TO_INBOX.code)
+                "" + NewEpisodesAction.GLOBAL.code)
             return NewEpisodesAction.fromCode(str!!.toInt())
         }
 

@@ -96,7 +96,7 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
     private fun getDrawable(tag: String?): Int {
         return when (tag) {
             QueueFragment.TAG -> R.drawable.ic_playlist_play
-            InboxFragment.TAG -> R.drawable.ic_inbox
+//            InboxFragment.TAG -> R.drawable.ic_inbox
             AllEpisodesFragment.TAG -> R.drawable.ic_feed
             CompletedDownloadsFragment.TAG -> R.drawable.ic_download
             PlaybackHistoryFragment.TAG -> R.drawable.ic_history
@@ -218,13 +218,13 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
                     holder.count.visibility = View.VISIBLE
                 }
             }
-            tag == InboxFragment.TAG -> {
-                val unreadItems = itemAccess.numberOfNewItems
-                if (unreadItems > 0) {
-                    holder.count.text = NumberFormat.getInstance().format(unreadItems.toLong())
-                    holder.count.visibility = View.VISIBLE
-                }
-            }
+//            tag == InboxFragment.TAG -> {
+//                val unreadItems = itemAccess.numberOfNewItems
+//                if (unreadItems > 0) {
+//                    holder.count.text = NumberFormat.getInstance().format(unreadItems.toLong())
+//                    holder.count.visibility = View.VISIBLE
+//                }
+//            }
             tag == SubscriptionFragment.TAG -> {
                 val sum = itemAccess.feedCounterSum
                 if (sum > 0) {

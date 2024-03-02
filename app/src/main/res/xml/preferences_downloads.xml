@@ -15,13 +15,13 @@
             android:title="@string/feed_refresh_title"
             android:summary="@string/feed_refresh_sum"
             android:defaultValue="12"/>
-        <ac.mdiq.podcini.preferences.MaterialListPreference
-            android:entryValues="@array/globalNewEpisodesActionValues"
-            android:entries="@array/globalNewEpisodesActionItems"
-            android:key="prefNewEpisodesAction"
-            android:title="@string/pref_new_episodes_action_title"
-            android:summary="@string/pref_new_episodes_action_sum"
-            android:defaultValue="1"/>
+<!--        <ac.mdiq.podcini.preferences.MaterialListPreference-->
+<!--            android:entryValues="@array/globalNewEpisodesActionValues"-->
+<!--            android:entries="@array/globalNewEpisodesActionItems"-->
+<!--            android:key="prefNewEpisodesAction"-->
+<!--            android:title="@string/pref_new_episodes_action_title"-->
+<!--            android:summary="@string/pref_new_episodes_action_sum"-->
+<!--            android:defaultValue="1"/>-->
         <Preference
             android:summary="@string/pref_automatic_download_sum"
             android:key="prefAutoDownloadSettings"

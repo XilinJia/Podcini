@@ -34,6 +34,7 @@
                 tools:src="@tools:sample/avatars" />
 
             <LinearLayout
+                android:id="@+id/info_card"
                 android:layout_width="0.dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"

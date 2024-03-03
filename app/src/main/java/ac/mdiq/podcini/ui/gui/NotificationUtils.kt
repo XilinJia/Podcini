@@ -34,6 +34,7 @@ object NotificationUtils {
             createChannelError(context),
             createChannelSyncError(context),
             createChannelEpisodeNotification(context))
+
         mNotificationManager.createNotificationChannelsCompat(channels)
     }
 

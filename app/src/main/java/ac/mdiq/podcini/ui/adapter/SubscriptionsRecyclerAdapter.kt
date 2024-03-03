@@ -54,15 +54,13 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
     @UnstableApi override fun onBindViewHolder(holder: SubscriptionViewHolder, position: Int) {
         val drawerItem: NavDrawerData.FeedDrawerItem = listItems[position]
         holder.bind(drawerItem)
-        holder.itemView.setOnCreateContextMenuListener(this)
         if (inActionMode()) {
             holder.selectCheckbox.visibility = View.VISIBLE
             holder.selectView.visibility = View.VISIBLE
 
             holder.selectCheckbox.setChecked((isSelected(position)))
             holder.selectCheckbox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
-                setSelected(holder.bindingAdapterPosition,
-                    isChecked)
+                setSelected(holder.bindingAdapterPosition, isChecked)
             }
             holder.coverImage.alpha = 0.6f
             holder.count.visibility = View.GONE
@@ -71,13 +69,30 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
             holder.coverImage.alpha = 1.0f
         }
 
-        holder.itemView.setOnLongClickListener {
-            if (!inActionMode()) {
-                longPressedPosition = holder.bindingAdapterPosition
-                selectedItem = drawerItem
-            }
+        holder.coverImage.setOnCreateContextMenuListener(this)
+        holder.coverImage.setOnLongClickListener {
+            longPressedPosition = holder.bindingAdapterPosition
+            selectedItem = drawerItem
+            startSelectMode(longPressedPosition)
             false
         }
+        holder.coverImage.setOnClickListener {
+            if (inActionMode()) {
+                holder.selectCheckbox.setChecked(!isSelected(holder.bindingAdapterPosition))
+            } else {
+                longPressedPosition = holder.bindingAdapterPosition
+                selectedItem = drawerItem
+                it.showContextMenu()
+            }
+        }
+//        holder.infoCard.setOnCreateContextMenuListener(this)
+//        holder.infoCard.setOnLongClickListener {
+//            if (!inActionMode()) {
+//                longPressedPosition = holder.bindingAdapterPosition
+//                selectedItem = drawerItem
+//            }
+//            false
+//        }
 
         holder.itemView.setOnTouchListener { _: View?, e: MotionEvent ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -95,8 +110,7 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
             if (inActionMode()) {
                 holder.selectCheckbox.setChecked(!isSelected(holder.bindingAdapterPosition))
             } else {
-                val fragment: Fragment = FeedItemlistFragment
-                    .newInstance(drawerItem.feed.id)
+                val fragment: Fragment = FeedItemlistFragment.newInstance(drawerItem.feed.id)
                 mainActivityRef.get()?.loadChildFragment(fragment)
             }
         }
@@ -114,13 +128,18 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
     }
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
-        if (inActionMode() || selectedItem == null) {
+        if (selectedItem == null) {
             return
         }
         val inflater: MenuInflater = mainActivityRef.get()!!.menuInflater
-        inflater.inflate(R.menu.nav_feed_context, menu)
-        menu.findItem(R.id.multi_select).setVisible(true)
-        menu.setHeaderTitle(selectedItem?.title)
+        if (inActionMode()) {
+            inflater.inflate(R.menu.multi_select_context_popup, menu)
+//            menu.findItem(R.id.multi_select).setVisible(true)
+        } else {
+            inflater.inflate(R.menu.nav_feed_context, menu)
+//            menu.findItem(R.id.multi_select).setVisible(true)
+            menu.setHeaderTitle(selectedItem?.title)
+        }
     }
 
     fun onContextItemSelected(item: MenuItem): Boolean {
@@ -156,6 +175,7 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
         val count: TextView = binding.countLabel
 
         val coverImage: ImageView = binding.coverImage
+        val infoCard: LinearLayout = binding.infoCard
         val selectView: FrameLayout = binding.selectContainer
         val selectCheckbox: CheckBox = binding.selectCheckBox
         private val card: CardView = binding.outerContainer

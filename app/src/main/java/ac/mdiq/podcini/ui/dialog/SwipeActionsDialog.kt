@@ -37,14 +37,6 @@ class SwipeActionsDialog(private val context: Context, private val tag: String) 
 
         var forFragment = ""
         when (tag) {
-//            InboxFragment.TAG -> {
-//                forFragment = context.getString(R.string.inbox_label)
-//                keys = Stream.of(keys).filter { a: SwipeAction ->
-//                    (!a.getId().equals(SwipeAction.TOGGLE_PLAYED)
-//                            && !a.getId().equals(SwipeAction.DELETE)
-//                            && !a.getId().equals(SwipeAction.REMOVE_FROM_HISTORY))
-//                }.toList()
-//            }
             AllEpisodesFragment.TAG -> {
                 forFragment = context.getString(R.string.episodes_label)
                 keys = Stream.of(keys).filter { a: SwipeAction -> !a.getId().equals(SwipeAction.REMOVE_FROM_HISTORY) }.toList()
@@ -52,8 +44,7 @@ class SwipeActionsDialog(private val context: Context, private val tag: String) 
             CompletedDownloadsFragment.TAG -> {
                 forFragment = context.getString(R.string.downloads_label)
                 keys = Stream.of(keys).filter { a: SwipeAction ->
-                    (!a.getId().equals(SwipeAction.REMOVE_FROM_INBOX)
-                            && !a.getId().equals(SwipeAction.REMOVE_FROM_HISTORY)
+                    (!a.getId().equals(SwipeAction.REMOVE_FROM_HISTORY)
                             && !a.getId().equals(SwipeAction.START_DOWNLOAD)) }.toList()
             }
             FeedItemlistFragment.TAG -> {
@@ -64,12 +55,11 @@ class SwipeActionsDialog(private val context: Context, private val tag: String) 
                 forFragment = context.getString(R.string.queue_label)
                 keys = Stream.of(keys).filter { a: SwipeAction ->
                     (!a.getId().equals(SwipeAction.ADD_TO_QUEUE)
-                            && !a.getId().equals(SwipeAction.REMOVE_FROM_INBOX)
                             && !a.getId().equals(SwipeAction.REMOVE_FROM_HISTORY)) }.toList()
             }
             PlaybackHistoryFragment.TAG -> {
                 forFragment = context.getString(R.string.playback_history_label)
-                keys = Stream.of(keys).filter { a: SwipeAction -> !a.getId().equals(SwipeAction.REMOVE_FROM_INBOX) }.toList()
+                keys = Stream.of(keys).toList()
             }
             else -> {}
         }
@@ -169,7 +159,6 @@ class SwipeActionsDialog(private val context: Context, private val tag: String) 
         view.container.alpha = 0.3f
         view.secondaryActionButton.secondaryAction.visibility = View.GONE
         view.dragHandle.visibility = View.GONE
-        view.statusInbox.visibility = View.GONE
         view.txtvTitle.text = "███████"
         view.txtvPosition.text = "█████"
     }

@@ -71,7 +71,30 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) :
         val item: FeedItem = episodes[pos]
         holder.bind(item)
 
-        holder.itemView.setOnClickListener {
+        holder.coverHolder.setOnCreateContextMenuListener(this)
+        holder.coverHolder.setOnLongClickListener {
+            longPressedItem = item
+            longPressedPosition = holder.bindingAdapterPosition
+            startSelectMode(longPressedPosition)
+            false
+        }
+        holder.coverHolder.setOnClickListener {
+            if (inActionMode()) {
+                toggleSelection(holder.bindingAdapterPosition)
+            } else {
+                longPressedItem = item
+                longPressedPosition = holder.bindingAdapterPosition
+                it.showContextMenu()
+            }
+        }
+
+//        holder.infoCard.setOnCreateContextMenuListener(this)
+//        holder.infoCard.setOnLongClickListener {
+//            longPressedItem = item
+//            longPressedPosition = holder.bindingAdapterPosition
+//            false
+//        }
+        holder.infoCard.setOnClickListener {
             val activity: MainActivity? = mainActivityRef.get()
             if (!inActionMode()) {
                 val ids: LongArray = FeedItemUtil.getIds(episodes)
@@ -80,12 +103,6 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) :
             } else {
                 toggleSelection(holder.bindingAdapterPosition)
             }
-        }
-        holder.itemView.setOnCreateContextMenuListener(this)
-        holder.itemView.setOnLongClickListener {
-            longPressedItem = item
-            longPressedPosition = holder.bindingAdapterPosition
-            false
         }
         holder.itemView.setOnTouchListener(View.OnTouchListener { _: View?, e: MotionEvent ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

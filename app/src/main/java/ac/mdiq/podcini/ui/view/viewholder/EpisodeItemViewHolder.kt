@@ -34,6 +34,8 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.ui.adapter.actionbutton.ItemActionButton
 import ac.mdiq.podcini.ui.common.CircularProgressBar
 import ac.mdiq.podcini.ui.common.ThemeUtils
+import ac.mdiq.podcini.util.Converter
+import android.widget.LinearLayout
 import io.reactivex.functions.Consumer
 import kotlin.math.max
 
@@ -56,7 +58,6 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
     private val position: TextView
     private val duration: TextView
     private val size: TextView
-    val isInbox: ImageView
     @JvmField
     val isInQueue: ImageView
     private val isVideo: ImageView
@@ -71,6 +72,8 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
     private val leftPadding: View
     @JvmField
     val coverHolder: CardView
+    @JvmField
+    val infoCard: LinearLayout
 
     private var item: FeedItem? = null
 
@@ -84,7 +87,6 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
         progressBar = binding.progressBar
         isInQueue = binding.ivInPlaylist
         isVideo = binding.ivIsVideo
-        isInbox = binding.statusInbox
         isFavorite = binding.isFavorite
         size = binding.size
         separatorIcons = binding.separatorIcons
@@ -92,6 +94,7 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
         secondaryActionButton = binding.secondaryActionButton.root
         secondaryActionIcon = binding.secondaryActionButton.secondaryActionIcon
         coverHolder = binding.coverHolder
+        infoCard = binding.infoCard
         leftPadding = binding.leftPadding
         itemView.tag = this
     }
@@ -107,7 +110,6 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
         }
         pubDate.text = DateFormatter.formatAbbrev(activity, item.getPubDate())
         pubDate.setContentDescription(DateFormatter.formatForAccessibility(item.getPubDate()))
-        isInbox.visibility = if (item.isNew) View.VISIBLE else View.GONE
         isFavorite.visibility = if (item.isTagged(FeedItem.TAG_FAVORITE)) View.VISIBLE else View.GONE
         isInQueue.visibility = if (item.isTagged(FeedItem.TAG_QUEUE)) View.VISIBLE else View.GONE
         container.alpha = if (item.isPlayed()) 0.5f else 1.0f
@@ -210,7 +212,6 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
         item = FeedItem()
         container.alpha = 0.1f
         secondaryActionIcon.setImageDrawable(null)
-        isInbox.visibility = View.VISIBLE
         isVideo.visibility = View.GONE
         isFavorite.visibility = View.GONE
         isInQueue.visibility = View.GONE
@@ -235,9 +236,10 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
     }
 
     private fun updateDuration(event: PlaybackPositionEvent) {
-        if (feedItem?.media != null) {
-            feedItem!!.media!!.setPosition(event.position)
-            feedItem!!.media!!.setDuration(event.duration)
+        val media = feedItem?.media
+        if (media != null) {
+            media.setPosition(event.position)
+            media.setDuration(event.duration)
         }
         val currentPosition: Int = event.position
         val timeDuration: Int = event.duration
@@ -248,9 +250,9 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
             return
         }
         if (UserPreferences.shouldShowRemainingTime()) {
-            duration.text = (if (remainingTime > 0) "-" else "") + ac.mdiq.podcini.util.Converter.getDurationStringLong(remainingTime)
+            duration.text = (if (remainingTime > 0) "-" else "") + Converter.getDurationStringLong(remainingTime)
         } else {
-            duration.text = ac.mdiq.podcini.util.Converter.getDurationStringLong(timeDuration)
+            duration.text = Converter.getDurationStringLong(timeDuration)
         }
     }
 
@@ -271,11 +273,9 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
      * Hides the separator dot between icons and text if there are no icons.
      */
     fun hideSeparatorIfNecessary() {
-        val hasIcons = isInbox.visibility == View.VISIBLE ||
-                isInQueue.visibility == View.VISIBLE ||
+        val hasIcons = isInQueue.visibility == View.VISIBLE ||
                 isVideo.visibility == View.VISIBLE ||
-                isFavorite.visibility == View.VISIBLE ||
-                isInbox.visibility == View.VISIBLE
+                isFavorite.visibility == View.VISIBLE
         separatorIcons.visibility = if (hasIcons) View.VISIBLE else View.GONE
     }
 

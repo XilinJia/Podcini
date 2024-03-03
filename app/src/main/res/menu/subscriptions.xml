@@ -2,26 +2,29 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:custom="http://schemas.android.com/apk/res-auto">
     <item
-            android:id="@+id/action_search"
-            android:icon="@drawable/ic_search"
-            custom:showAsAction="always"
-            android:title="@string/search_label"/>
+        android:id="@+id/action_search"
+        android:icon="@drawable/ic_search"
+        custom:showAsAction="always"
+        android:title="@string/search_label"/>
     <item
-            android:id="@+id/action_statistics"
-            android:icon="@drawable/ic_chart_box"
-            android:title="@string/statistics_label"
-            custom:showAsAction="always" />
+        android:id="@+id/subscriptions_sort"
+        android:title="@string/sort"
+        android:icon="@drawable/arrows_sort"
+        custom:showAsAction="always" />
     <item
-            android:id="@+id/refresh_item"
-            android:title="@string/refresh_label"
-            android:menuCategory="container"
-            custom:showAsAction="never" />
+        android:id="@+id/action_statistics"
+        android:icon="@drawable/ic_chart_box"
+        android:title="@string/statistics_label"
+        android:visible="false"
+        custom:showAsAction="always" />
     <item
-            android:id="@+id/subscriptions_filter"
-            android:title="@string/filter"
-            custom:showAsAction="never" />
+        android:id="@+id/refresh_item"
+        android:title="@string/refresh_label"
+        android:menuCategory="container"
+        custom:showAsAction="never" />
     <item
-            android:id="@+id/subscriptions_sort"
-            android:title="@string/sort"
-            custom:showAsAction="never" />
+        android:id="@+id/subscriptions_filter"
+        android:title="@string/filter"
+        android:visible="false"
+        custom:showAsAction="never"/>
 </menu>

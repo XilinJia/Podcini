@@ -113,7 +113,7 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
         speedDialView.removeActionItemById(R.id.mark_read_batch)
         speedDialView.removeActionItemById(R.id.mark_unread_batch)
         speedDialView.removeActionItemById(R.id.remove_from_queue_batch)
-        speedDialView.removeActionItemById(R.id.remove_all_inbox_item)
+//        speedDialView.removeActionItemById(R.id.remove_all_inbox_item)
         speedDialView.setOnChangeListener(object : SpeedDialView.OnChangeListener {
             override fun onMainActionSelected(): Boolean {
                 return false
@@ -343,9 +343,9 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
 
         override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
             super.onCreateContextMenu(menu, v, menuInfo)
-            if (!inActionMode()) {
-                menu.findItem(R.id.multi_select).setVisible(true)
-            }
+//            if (!inActionMode()) {
+//                menu.findItem(R.id.multi_select).setVisible(true)
+//            }
             MenuItemUtils.setOnClickListeners(menu) { item: MenuItem ->
                 this@CompletedDownloadsFragment.onContextItemSelected(item)
             }

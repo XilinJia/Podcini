@@ -362,7 +362,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         if (feed != null && feed!!.isLocalFeed) {
             speedDialBinding.fabSD.removeActionItemById(R.id.download_batch)
         }
-        speedDialBinding.fabSD.removeActionItemById(R.id.remove_all_inbox_item)
+//        speedDialBinding.fabSD.removeActionItemById(R.id.remove_all_inbox_item)
         speedDialBinding.fabSD.visibility = View.VISIBLE
         updateToolbar()
     }
@@ -431,12 +431,10 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         if (feed != null && feed!!.itemFilter != null) {
             val filter: FeedItemFilter? = feed!!.itemFilter
             if (filter != null && filter.values.isNotEmpty()) {
-                viewBinding.header.txtvInformation.text = ("{md-info-outline} "
-                        + this.getString(R.string.filtered_label))
+                viewBinding.header.txtvInformation.text = ("{md-info-outline} " + this.getString(R.string.filtered_label))
                 Iconify.addIcons(viewBinding.header.txtvInformation)
                 viewBinding.header.txtvInformation.setOnClickListener {
-                    FeedItemFilterDialog.newInstance(feed!!).show(
-                        childFragmentManager, null)
+                    FeedItemFilterDialog.newInstance(feed!!).show(childFragmentManager, null)
                 }
                 viewBinding.header.txtvInformation.visibility = View.VISIBLE
             } else {
@@ -571,14 +569,14 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 
     private inner class FeedItemListAdapter(mainActivity: MainActivity) : EpisodeItemListAdapter(mainActivity) {
         @UnstableApi override fun beforeBindViewHolder(holder: EpisodeItemViewHolder, pos: Int) {
-            holder.coverHolder.visibility = View.GONE
+//            holder.coverHolder.visibility = View.GONE
         }
 
         @UnstableApi override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
             super.onCreateContextMenu(menu, v, menuInfo)
-            if (!inActionMode()) {
-                menu.findItem(R.id.multi_select).setVisible(true)
-            }
+//            if (!inActionMode()) {
+//                menu.findItem(R.id.multi_select).setVisible(true)
+//            }
             MenuItemUtils.setOnClickListeners(menu) { item: MenuItem ->
                 this@FeedItemlistFragment.onContextItemSelected(item)
             }

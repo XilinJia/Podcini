@@ -93,8 +93,9 @@ import java.util.concurrent.TimeUnit
             if (media != null) {
                 val result = deleteFeedMediaSynchronous(context, media)
 
-                if (result && shouldDeleteRemoveFromQueue()) {
-                    removeQueueItemSynchronous(context, false, media.getItem()!!.id)
+                val item = media.getItem()
+                if (result && item != null && shouldDeleteRemoveFromQueue()) {
+                    removeQueueItemSynchronous(context, false, item.id)
                 }
             }
         }
@@ -104,7 +105,8 @@ import java.util.concurrent.TimeUnit
         Log.i(TAG, String.format(Locale.US, "Requested to delete FeedMedia [id=%d, title=%s, downloaded=%s",
             media.id, media.getEpisodeTitle(), media.isDownloaded()))
         var localDelete = false
-        if (media.getFile_url() != null && media.getFile_url()!!.startsWith("content://")) {
+        val url = media.getFile_url()
+        if (url != null && url.startsWith("content://")) {
             // Local feed
             val documentFile = DocumentFile.fromSingleUri(context, Uri.parse(media.getFile_url()))
             if (documentFile == null || !documentFile.exists() || !documentFile.delete()) {
@@ -113,9 +115,9 @@ import java.util.concurrent.TimeUnit
             }
             media.setFile_url(null)
             localDelete = true
-        } else if (media.getFile_url() != null) {
+        } else if (url != null) {
             // delete downloaded media file
-            val mediaFile = File(media.getFile_url()!!)
+            val mediaFile = File(url)
             if (mediaFile.exists() && !mediaFile.delete()) {
                 val evt = MessageEvent(context.getString(R.string.delete_failed))
                 EventBus.getDefault().post(evt)
@@ -138,13 +140,13 @@ import java.util.concurrent.TimeUnit
             nm.cancel(R.id.notification_playing)
         }
 
-        if (localDelete) {
-            // Do full update of this feed to get rid of the item
-            updateFeed(media.getItem()!!.feed!!, context.applicationContext, null)
-        } else {
-            // Gpodder: queue delete action for synchronization
-            val item = media.getItem()
-            if (item != null) {
+        val item = media.getItem()
+        if (item != null) {
+            if (localDelete) {
+                // Do full update of this feed to get rid of the item
+                if (item.feed != null) updateFeed(item.feed!!, context.applicationContext, null)
+            } else {
+                // Gpodder: queue delete action for synchronization
                 val action = EpisodeAction.Builder(item, EpisodeAction.DELETE)
                     .currentTimestamp()
                     .build()
@@ -287,14 +289,16 @@ import java.util.concurrent.TimeUnit
     @JvmOverloads
     fun addItemToPlaybackHistory(media: FeedMedia?, date: Date? = Date()): Future<*> {
         return runOnDbThread {
-            Log.d(TAG, "Adding item to playback history")
-            media!!.setPlaybackCompletionDate(date)
+            if (media != null) {
+                Log.d(TAG, "Adding item to playback history")
+                media.setPlaybackCompletionDate(date)
 
-            val adapter = getInstance()
-            adapter.open()
-            adapter.setFeedMediaPlaybackCompletionDate(media)
-            adapter.close()
-            EventBus.getDefault().post(PlaybackHistoryEvent.listUpdated())
+                val adapter = getInstance()
+                adapter.open()
+                adapter.setFeedMediaPlaybackCompletionDate(media)
+                adapter.close()
+                EventBus.getDefault().post(PlaybackHistoryEvent.listUpdated())
+            }
         }
     }
 
@@ -305,11 +309,13 @@ import java.util.concurrent.TimeUnit
      */
     fun addDownloadStatus(status: DownloadResult?): Future<*> {
         return runOnDbThread {
-            val adapter = getInstance()
-            adapter.open()
-            adapter.setDownloadStatus(status!!)
-            adapter.close()
-            EventBus.getDefault().post(DownloadLogEvent.listUpdated())
+            if (status != null) {
+                val adapter = getInstance()
+                adapter.open()
+                adapter.setDownloadStatus(status)
+                adapter.close()
+                EventBus.getDefault().post(DownloadLogEvent.listUpdated())
+            }
         }
     }
 
@@ -466,9 +472,10 @@ import java.util.concurrent.TimeUnit
             // do not shuffle the list on every change
             return
         }
-        val permutor = getPermutor(sortOrder!!)
-        permutor.reorder(queue)
-
+        if (sortOrder != null) {
+            val permutor = getPermutor(sortOrder)
+            permutor.reorder(queue)
+        }
         // Replace ADDED events by a single SORTED event
         events.clear()
         events.add(QueueEvent.sorted(queue))
@@ -610,9 +617,7 @@ import java.util.concurrent.TimeUnit
      * @param itemId          The item to move to the bottom of the queue
      * @param broadcastUpdate true if this operation should trigger a QueueUpdateBroadcast. This option should be set to
      */
-    fun moveQueueItemToBottom(itemId: Long,
-                              broadcastUpdate: Boolean
-    ): Future<*> {
+    fun moveQueueItemToBottom(itemId: Long, broadcastUpdate: Boolean): Future<*> {
         return runOnDbThread {
             val queueIdList = getQueueIDList()
             val index = queueIdList.indexOf(itemId)
@@ -678,10 +683,12 @@ import java.util.concurrent.TimeUnit
 
     fun resetPagedFeedPage(feed: Feed?): Future<*> {
         return runOnDbThread {
-            val adapter = getInstance()
-            adapter.open()
-            adapter.resetPagedFeedPage(feed!!)
-            adapter.close()
+            if (feed != null) {
+                val adapter = getInstance()
+                adapter.open()
+                adapter.resetPagedFeedPage(feed)
+                adapter.close()
+            }
         }
     }
 
@@ -726,7 +733,7 @@ import java.util.concurrent.TimeUnit
      * @param resetMediaPosition true if this method should also reset the position of the FeedItem's FeedMedia object.
      */
     fun markItemPlayed(item: FeedItem, played: Int, resetMediaPosition: Boolean): Future<*> {
-        val mediaId = if ((item.hasMedia())) item.media!!.id else 0
+        val mediaId = if (item.media != null) item.media!!.id else 0
         return markItemPlayed(item.id, played, mediaId, resetMediaPosition)
     }
 
@@ -834,10 +841,12 @@ import java.util.concurrent.TimeUnit
     @JvmStatic
     fun setFeedMediaPlaybackInformation(media: FeedMedia?): Future<*> {
         return runOnDbThread {
-            val adapter = getInstance()
-            adapter.open()
-            adapter.setFeedMediaPlaybackInformation(media!!)
-            adapter.close()
+            if (media != null) {
+                val adapter = getInstance()
+                adapter.open()
+                adapter.setFeedMediaPlaybackInformation(media)
+                adapter.close()
+            }
         }
     }
 
@@ -850,11 +859,13 @@ import java.util.concurrent.TimeUnit
     @JvmStatic
     fun setFeedItem(item: FeedItem?): Future<*> {
         return runOnDbThread {
-            val adapter = getInstance()
-            adapter.open()
-            adapter.setSingleFeedItem(item!!)
-            adapter.close()
-            EventBus.getDefault().post(updated(item))
+            if (item != null) {
+                val adapter = getInstance()
+                adapter.open()
+                adapter.setSingleFeedItem(item)
+                adapter.close()
+                EventBus.getDefault().post(updated(item))
+            }
         }
     }
 
@@ -893,7 +904,7 @@ import java.util.concurrent.TimeUnit
     private fun indexInItemList(items: List<FeedItem?>, itemId: Long): Int {
         for (i in items.indices) {
             val item = items[i]
-            if (item!!.id == itemId) {
+            if (item?.id == itemId) {
                 return i
             }
         }

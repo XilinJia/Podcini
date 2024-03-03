@@ -15,6 +15,7 @@ import ac.mdiq.podcini.ui.appstartintent.MainActivityStarter
 import ac.mdiq.podcini.ui.common.ThemeUtils
 import ac.mdiq.podcini.ui.dialog.*
 import ac.mdiq.podcini.ui.menuhandler.MenuItemUtils
+import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import android.R.attr
 import android.app.Activity
 import android.content.Context
@@ -159,18 +160,18 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
     @OptIn(UnstableApi::class) private fun onFeedContextMenuClicked(feed: Feed, item: MenuItem): Boolean {
         val itemId = item.itemId
         when (itemId) {
-            R.id.remove_all_inbox_item -> {
-                val removeAllNewFlagsConfirmationDialog: ConfirmationDialog = object : ConfirmationDialog(requireContext(),
-                    R.string.remove_all_inbox_label,
-                    R.string.remove_all_inbox_confirmation_msg) {
-                    @OptIn(UnstableApi::class) override fun onConfirmButtonPressed(dialog: DialogInterface) {
-                        dialog.dismiss()
-                        DBWriter.removeFeedNewFlag(feed.id)
-                    }
-                }
-                removeAllNewFlagsConfirmationDialog.createNewDialog().show()
-                return true
-            }
+//            R.id.remove_all_inbox_item -> {
+//                val removeAllNewFlagsConfirmationDialog: ConfirmationDialog = object : ConfirmationDialog(requireContext(),
+//                    R.string.remove_all_inbox_label,
+//                    R.string.remove_all_inbox_confirmation_msg) {
+//                    @OptIn(UnstableApi::class) override fun onConfirmButtonPressed(dialog: DialogInterface) {
+//                        dialog.dismiss()
+//                        DBWriter.removeFeedNewFlag(feed.id)
+//                    }
+//                }
+//                removeAllNewFlagsConfirmationDialog.createNewDialog().show()
+//                return true
+//            }
             R.id.edit_tags -> {
                 if (feed.preferences != null)
                     TagSettingsDialog.newInstance(listOf(feed.preferences!!)).show(childFragmentManager, TagSettingsDialog.TAG)
@@ -378,9 +379,8 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
             QueueFragment.TAG,
             AllEpisodesFragment.TAG,
             CompletedDownloadsFragment.TAG,
-//            InboxFragment.TAG,
             PlaybackHistoryFragment.TAG,
-//            StatisticsFragment.TAG,
+            StatisticsFragment.TAG,
             AddFeedFragment.TAG,
         )
 

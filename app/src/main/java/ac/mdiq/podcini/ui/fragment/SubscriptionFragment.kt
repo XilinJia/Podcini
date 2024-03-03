@@ -16,7 +16,6 @@ import ac.mdiq.podcini.ui.dialog.SubscriptionsFilterDialog
 import ac.mdiq.podcini.ui.fragment.actions.FeedMultiSelectActionHandler
 import ac.mdiq.podcini.ui.menuhandler.FeedMenuHandler
 import ac.mdiq.podcini.ui.menuhandler.MenuItemUtils
-import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.ui.view.EmptyViewHandler
 import ac.mdiq.podcini.ui.view.LiftOnScrollListener
 import ac.mdiq.podcini.util.event.FeedListUpdateEvent
@@ -245,24 +244,20 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
     @UnstableApi override fun onMenuItemClick(item: MenuItem): Boolean {
         val itemId = item.itemId
         when (itemId) {
-            R.id.refresh_item -> {
-                FeedUpdateManager.runOnceOrAsk(requireContext())
-                return true
-            }
-            R.id.subscriptions_filter -> {
-                SubscriptionsFilterDialog().show(childFragmentManager, "filter")
+            R.id.action_search -> {
+                (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
                 return true
             }
             R.id.subscriptions_sort -> {
                 FeedSortDialog.showDialog(requireContext())
                 return true
             }
-            R.id.action_search -> {
-                (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
+            R.id.subscriptions_filter -> {
+                SubscriptionsFilterDialog().show(childFragmentManager, "filter")
                 return true
             }
-            R.id.action_statistics -> {
-                (activity as MainActivity).loadChildFragment(StatisticsFragment())
+            R.id.refresh_item -> {
+                FeedUpdateManager.runOnceOrAsk(requireContext())
                 return true
             }
             else -> return false
@@ -344,6 +339,7 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
     }
 
     override fun onStartSelectMode() {
+        speedDialView.visibility = View.VISIBLE
         val feedsOnly: MutableList<NavDrawerData.FeedDrawerItem> = ArrayList<NavDrawerData.FeedDrawerItem>()
         for (item in feedListFiltered) {
             feedsOnly.add(item)

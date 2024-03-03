@@ -103,6 +103,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.showNextChapterOnFullNotifica
 import ac.mdiq.podcini.preferences.UserPreferences.showPlaybackSpeedOnFullNotification
 import ac.mdiq.podcini.preferences.UserPreferences.showSkipOnFullNotification
 import ac.mdiq.podcini.preferences.UserPreferences.videoPlaybackSpeed
+import ac.mdiq.podcini.service.download.NewEpisodesNotification
 import ac.mdiq.podcini.ui.appstartintent.MainActivityStarter
 import ac.mdiq.podcini.ui.appstartintent.VideoPlayerActivityStarter
 import android.os.Build.VERSION_CODES
@@ -246,7 +247,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
         if (notificationBuilder.playerStatus == PlayerStatus.PLAYING) {
             notificationBuilder.playerStatus = PlayerStatus.STOPPED
             val notificationManager = NotificationManagerCompat.from(this)
-            if (ActivityCompat.checkSelfPermission(this,
+            if (Build.VERSION.SDK_INT >= 33 && ActivityCompat.checkSelfPermission(this,
                         Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
                 //    ActivityCompat#requestPermissions
@@ -255,6 +256,8 @@ class PlaybackService : MediaBrowserServiceCompat() {
                 //                                          int[] grantResults)
                 // to handle the case where the user grants the permission. See the documentation
                 // for ActivityCompat#requestPermissions for more details.
+                Log.e(TAG, "onDestroy: require POST_NOTIFICATIONS permission")
+                Toast.makeText(applicationContext, R.string.notification_permission_text, Toast.LENGTH_LONG).show()
                 return
             }
             notificationManager.notify(R.id.notification_playing, notificationBuilder.build())
@@ -576,7 +579,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
                 pendingIntentAlwaysAllow)
             .setAutoCancel(true)
         val notificationManager = NotificationManagerCompat.from(this)
-        if (ActivityCompat.checkSelfPermission(this,
+        if (Build.VERSION.SDK_INT >= 33 && ActivityCompat.checkSelfPermission(this,
                     Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
@@ -585,6 +588,8 @@ class PlaybackService : MediaBrowserServiceCompat() {
             //                                          int[] grantResults)
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
+            Log.e(TAG, "displayStreamingNotAllowedNotification: require POST_NOTIFICATIONS permission")
+            Toast.makeText(applicationContext, R.string.notification_permission_text, Toast.LENGTH_LONG).show()
             return
         }
         notificationManager.notify(R.id.notification_streaming_confirmation, builder.build())
@@ -1303,7 +1308,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
         notificationBuilder.updatePosition(currentPosition, currentPlaybackSpeed)
 
         val notificationManager = NotificationManagerCompat.from(this)
-        if (ActivityCompat.checkSelfPermission(this,
+        if (Build.VERSION.SDK_INT >= 33 && ActivityCompat.checkSelfPermission(this,
                     Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
@@ -1312,6 +1317,8 @@ class PlaybackService : MediaBrowserServiceCompat() {
             //                                          int[] grantResults)
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
+            Log.e(TAG, "setupNotification: require POST_NOTIFICATIONS permission")
+            Toast.makeText(applicationContext, R.string.notification_permission_text, Toast.LENGTH_LONG).show()
             return
         }
         notificationManager.notify(R.id.notification_playing, notificationBuilder.build())

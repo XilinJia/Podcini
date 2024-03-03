@@ -75,8 +75,10 @@ object DBReader {
     fun buildTags() {
         val tagsSet = mutableSetOf<String>()
         for (feed in feeds) {
-            for (tag in feed.preferences!!.getTags()) {
-                if (tag != TAG_ROOT) tagsSet.add(tag)
+            if (feed.preferences != null) {
+                for (tag in feed.preferences!!.getTags()) {
+                    if (tag != TAG_ROOT) tagsSet.add(tag)
+                }
             }
         }
         tags.clear()
@@ -177,18 +179,23 @@ object DBReader {
         val adapter = getInstance()
         adapter.open()
         try {
-            adapter.getItemsOfFeedCursor(feed!!, filter).use { cursor ->
-                val items = extractItemlistFromCursor(adapter, cursor).toMutableList()
-                getPermutor(sortOrder!!).reorder(items)
-                feed.items = items
-                for (item in items) {
-                    item.feed = feed
+            if (feed != null) {
+                adapter.getItemsOfFeedCursor(feed, filter).use { cursor ->
+                    val items = extractItemlistFromCursor(adapter, cursor).toMutableList()
+                    if (sortOrder != null) getPermutor(sortOrder).reorder(items)
+                    feed.items = items
+                    for (item in items) {
+                        item.feed = feed
+                    }
+                    return items
                 }
-                return items
+            } else {
+                Log.e(TAG, "getFeedItemList feed is null")
             }
         } finally {
             adapter.close()
         }
+        return listOf()
     }
 
     @JvmStatic
@@ -204,7 +211,8 @@ object DBReader {
     }
 
     private fun extractItemlistFromCursor(adapter: PodDBAdapter?, cursor: Cursor?): List<FeedItem> {
-        val result: MutableList<FeedItem> = ArrayList(cursor!!.count)
+        if (cursor == null) return listOf()
+        val result: MutableList<FeedItem> = ArrayList(cursor.count)
         if (cursor.moveToFirst()) {
             val indexMediaId = cursor.getColumnIndexOrThrow(PodDBAdapter.SELECT_KEY_MEDIA_ID)
             do {
@@ -228,7 +236,7 @@ object DBReader {
     @JvmStatic
     fun getQueue(adapter: PodDBAdapter?): List<FeedItem> {
 //        Log.d(TAG, "getQueue()")
-        adapter!!.queueCursor.use { cursor ->
+        adapter?.queueCursor.use { cursor ->
             val items = extractItemlistFromCursor(adapter, cursor)
             loadAdditionalFeedItemListData(items)
             return items
@@ -253,13 +261,14 @@ object DBReader {
     }
 
     private fun getQueueIDList(adapter: PodDBAdapter?): LongList {
-        adapter!!.queueIDCursor.use { cursor ->
+        adapter?.queueIDCursor?.use { cursor ->
             val queueIds = LongList(cursor.count)
             while (cursor.moveToNext()) {
                 queueIds.add(cursor.getLong(0))
             }
             return queueIds
         }
+        return LongList()
     }
 
     @JvmStatic
@@ -490,7 +499,7 @@ object DBReader {
         Log.d(TAG, "Loading feeditem with id $itemId")
 
         var item: FeedItem? = null
-        adapter!!.getFeedItemCursor(itemId.toString()).use { cursor ->
+        adapter?.getFeedItemCursor(itemId.toString())?.use { cursor ->
             if (cursor.moveToNext()) {
                 val list = extractItemlistFromCursor(adapter, cursor)
                 if (list.isNotEmpty()) {
@@ -500,6 +509,7 @@ object DBReader {
             }
             return item
         }
+        return item
     }
 
     /**
@@ -577,16 +587,19 @@ object DBReader {
     private fun getFeedItemByGuidOrEpisodeUrl(guid: String?, episodeUrl: String,
                                               adapter: PodDBAdapter?
     ): FeedItem? {
-        adapter!!.getFeedItemCursor(guid, episodeUrl).use { cursor ->
-            if (!cursor.moveToNext()) {
+        if (adapter != null) {
+            adapter.getFeedItemCursor(guid, episodeUrl).use { cursor ->
+                if (!cursor.moveToNext()) {
+                    return null
+                }
+                val list = extractItemlistFromCursor(adapter, cursor)
+                if (list.isNotEmpty()) {
+                    return list[0]
+                }
                 return null
             }
-            val list = extractItemlistFromCursor(adapter, cursor)
-            if (list.isNotEmpty()) {
-                return list[0]
-            }
-            return null
         }
+        return null
     }
 
     /**
@@ -608,18 +621,20 @@ object DBReader {
     }
 
     private fun getImageAuthentication(imageUrl: String, adapter: PodDBAdapter?): String {
-        var credentials: String
-        adapter!!.getImageAuthenticationCursor(imageUrl).use { cursor ->
-            if (cursor.moveToFirst()) {
-                val username = cursor.getString(0)
-                val password = cursor.getString(1)
-                credentials = if (!username.isNullOrEmpty() && password != null) {
-                    "$username:$password"
+        var credentials: String = ""
+        if (adapter != null) {
+            adapter.getImageAuthenticationCursor(imageUrl).use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val username = cursor.getString(0)
+                    val password = cursor.getString(1)
+                    credentials = if (!username.isNullOrEmpty() && password != null) {
+                        "$username:$password"
+                    } else {
+                        ""
+                    }
                 } else {
-                    ""
+                    credentials = ""
                 }
-            } else {
-                credentials = ""
             }
         }
         return credentials
@@ -696,18 +711,21 @@ object DBReader {
     }
 
     private fun loadChaptersOfFeedItem(adapter: PodDBAdapter?, item: FeedItem): List<Chapter>? {
-        adapter!!.getSimpleChaptersOfFeedItemCursor(item).use { cursor ->
-            val chaptersCount = cursor.count
-            if (chaptersCount == 0) {
-                item.chapters = null
-                return null
+        if (adapter != null) {
+            adapter.getSimpleChaptersOfFeedItemCursor(item).use { cursor ->
+                val chaptersCount = cursor.count
+                if (chaptersCount == 0) {
+                    item.chapters = null
+                    return null
+                }
+                val chapters = ArrayList<Chapter>()
+                while (cursor.moveToNext()) {
+                    chapters.add(ChapterCursorMapper.convert(cursor))
+                }
+                return chapters
             }
-            val chapters = ArrayList<Chapter>()
-            while (cursor.moveToNext()) {
-                chapters.add(ChapterCursorMapper.convert(cursor))
-            }
-            return chapters
         }
+        return null
     }
 
     /**
@@ -746,15 +764,18 @@ object DBReader {
         val adapter = getInstance()
         adapter.open()
         try {
-            adapter.getFeedItemCursorByUrl(urls!!).use { itemCursor ->
-                val items = extractItemlistFromCursor(adapter, itemCursor).toMutableList()
-                loadAdditionalFeedItemListData(items)
-                items.sortWith(PlaybackCompletionDateComparator())
-                return items
+            if (urls != null) {
+                adapter.getFeedItemCursorByUrl(urls).use { itemCursor ->
+                    val items = extractItemlistFromCursor(adapter, itemCursor).toMutableList()
+                    loadAdditionalFeedItemListData(items)
+                    items.sortWith(PlaybackCompletionDateComparator())
+                    return items
+                }
             }
         } finally {
             adapter.close()
         }
+        return listOf()
     }
 
     fun getMonthlyTimeStatistics(): List<MonthlyStatisticsItem> {
@@ -861,7 +882,7 @@ object DBReader {
                         // reverse natural order: podcast with most unplayed episodes first
                         return@Comparator -1
                     } else if (counterLhs == counterRhs) {
-                        return@Comparator lhs.title!!.compareTo(rhs.title!!, ignoreCase = true)
+                        return@Comparator lhs.title?.compareTo(rhs.title!!, ignoreCase = true) ?: -1
                     } else {
                         return@Comparator 1
                     }

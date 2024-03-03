@@ -63,7 +63,8 @@ class SwipePreferencesFragment : PreferenceFragmentCompat() {
 
     companion object {
         private const val PREF_SWIPE_QUEUE = "prefSwipeQueue"
-        private const val PREF_SWIPE_INBOX = "prefSwipeInbox"
+//        private const val PREF_SWIPE_INBOX = "prefSwipeInbox"
+//        private const val PREF_SWIPE_STATISTICS = "prefSwipeStatistics"
         private const val PREF_SWIPE_EPISODES = "prefSwipeEpisodes"
         private const val PREF_SWIPE_DOWNLOADS = "prefSwipeDownloads"
         private const val PREF_SWIPE_FEED = "prefSwipeFeed"

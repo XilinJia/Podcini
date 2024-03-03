@@ -30,6 +30,8 @@ import ac.mdiq.podcini.ui.gui.NotificationUtils
 import ac.mdiq.podcini.storage.model.download.DownloadError
 import ac.mdiq.podcini.storage.model.download.DownloadResult
 import ac.mdiq.podcini.storage.model.feed.Feed
+import android.os.Build
+import android.widget.Toast
 import java.util.*
 
 class FeedUpdateWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
@@ -107,19 +109,22 @@ class FeedUpdateWorker(context: Context, params: WorkerParameters) : Worker(cont
     }
 
     @UnstableApi private fun refreshFeeds(toUpdate: MutableList<Feed>, force: Boolean) {
+        if (Build.VERSION.SDK_INT >= 33 && ActivityCompat.checkSelfPermission(this.applicationContext,
+                    Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            Log.e(TAG, "refreshFeeds: require POST_NOTIFICATIONS permission")
+//            Toast.makeText(applicationContext, R.string.notification_permission_text, Toast.LENGTH_LONG).show()
+            return
+        }
+
         while (toUpdate.isNotEmpty()) {
             if (isStopped) {
-                return
-            }
-            if (ActivityCompat.checkSelfPermission(this.applicationContext,
-                        Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
                 return
             }
             notificationManager.notify(R.id.notification_updating_feeds, createNotification(toUpdate))
@@ -187,9 +192,9 @@ class FeedUpdateWorker(context: Context, params: WorkerParameters) : Worker(cont
         newEpisodesNotification.showIfNeeded(applicationContext, feedSyncTask.savedFeed!!)
         if (!request.source.isNullOrEmpty()) {
             if (!downloader.permanentRedirectUrl.isNullOrEmpty()) {
-                DBWriter.updateFeedDownloadURL(request.source!!, downloader.permanentRedirectUrl!!)
+                DBWriter.updateFeedDownloadURL(request.source, downloader.permanentRedirectUrl!!)
             } else if (feedSyncTask.redirectUrl.isNotEmpty() && feedSyncTask.redirectUrl != request.source) {
-                DBWriter.updateFeedDownloadURL(request.source!!, feedSyncTask.redirectUrl)
+                DBWriter.updateFeedDownloadURL(request.source, feedSyncTask.redirectUrl)
             }
         }
     }

@@ -62,6 +62,7 @@ import java.util.*
  * Shows all items in the queue.
  */
 class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAdapter.OnSelectModeListener {
+
     private lateinit var infoBar: TextView
     private lateinit var recyclerView: EpisodeItemListRecyclerView
     private lateinit var emptyView: EmptyViewHandler
@@ -87,7 +88,6 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         val binding = QueueFragmentBinding.inflate(inflater)
-//        val root: View = inflater.inflate(R.layout.queue_fragment, container, false)
 
         Log.d(TAG, "fragment onCreateView")
         toolbar = binding.toolbar
@@ -151,7 +151,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
 //        speedDialView.removeActionItemById(R.id.mark_read_batch)
 //        speedDialView.removeActionItemById(R.id.mark_unread_batch)
         speedDialView.removeActionItemById(R.id.add_to_queue_batch)
-        speedDialView.removeActionItemById(R.id.remove_all_inbox_item)
+//        speedDialView.removeActionItemById(R.id.remove_all_inbox_item)
         speedDialView.setOnChangeListener(object : SpeedDialView.OnChangeListener {
             override fun onMainActionSelected(): Boolean {
                 return false

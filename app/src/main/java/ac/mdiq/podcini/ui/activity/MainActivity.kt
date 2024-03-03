@@ -21,11 +21,15 @@ import ac.mdiq.podcini.ui.appstartintent.MainActivityStarter
 import ac.mdiq.podcini.ui.common.ThemeUtils.getDrawableFromAttr
 import ac.mdiq.podcini.ui.dialog.RatingDialog
 import ac.mdiq.podcini.ui.fragment.*
+import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.ui.view.LockableBottomSheetBehavior
 import ac.mdiq.podcini.util.event.EpisodeDownloadEvent
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.media.AudioManager
 import android.net.Uri
@@ -38,6 +42,8 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import android.widget.EditText
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
@@ -54,6 +60,7 @@ import com.bumptech.glide.Glide
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import org.apache.commons.lang3.ArrayUtils
 import org.greenrobot.eventbus.EventBus
@@ -106,6 +113,11 @@ class MainActivity : CastEnabledActivity() {
         setNavDrawerSize()
 
         mainView = findViewById(R.id.main_view)
+
+        if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+//            Toast.makeText(this, R.string.notification_permission_text, Toast.LENGTH_LONG).show()
+            requestPostNotificationPermission()
+        }
 
         // Consume navigation bar insets - we apply them in setPlayerVisible()
         ViewCompat.setOnApplyWindowInsetsListener(mainView) { _: View?, insets: WindowInsetsCompat ->
@@ -219,6 +231,22 @@ class MainActivity : CastEnabledActivity() {
             }
     }
 
+    fun requestPostNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= 33) requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+    }
+
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+            if (isGranted) {
+                return@registerForActivityResult
+            }
+            MaterialAlertDialogBuilder(this)
+                .setMessage(R.string.notification_permission_text)
+                .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int -> {} }
+                .setNegativeButton(R.string.cancel_label) { _: DialogInterface?, _: Int -> finish() }
+                .show()
+        }
+
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         updateInsets()
@@ -331,12 +359,12 @@ class MainActivity : CastEnabledActivity() {
         val fragment: Fragment
         when (tag) {
             QueueFragment.TAG -> fragment = QueueFragment()
-//            InboxFragment.TAG -> fragment = InboxFragment()
             AllEpisodesFragment.TAG -> fragment = AllEpisodesFragment()
             CompletedDownloadsFragment.TAG -> fragment = CompletedDownloadsFragment()
             PlaybackHistoryFragment.TAG -> fragment = PlaybackHistoryFragment()
             AddFeedFragment.TAG -> fragment = AddFeedFragment()
             SubscriptionFragment.TAG -> fragment = SubscriptionFragment()
+            StatisticsFragment.TAG -> fragment = StatisticsFragment()
             else -> {
                 // default to subscriptions screen
                 fragment = SubscriptionFragment()
@@ -451,6 +479,7 @@ class MainActivity : CastEnabledActivity() {
 
     override fun onResume() {
         super.onResume()
+
         handleNavIntent()
         RatingDialog.check()
 
@@ -633,6 +662,7 @@ class MainActivity : CastEnabledActivity() {
                     "EPISODES" -> loadFragment(AllEpisodesFragment.TAG, null)
                     "QUEUE" -> loadFragment(QueueFragment.TAG, null)
                     "SUBSCRIPTIONS" -> loadFragment(SubscriptionFragment.TAG, null)
+                    "STATISTCS" -> loadFragment(StatisticsFragment.TAG, null)
                     else -> {
                         showSnackbarAbovePlayer(getString(R.string.app_action_not_found)+feature, Snackbar.LENGTH_LONG)
                         return

@@ -17,8 +17,9 @@
         android:gravity="start"
         android:text="Title"
         android:textStyle="bold"
+        android:maxLines="1"
         android:textColor="?android:attr/textColorPrimary"
-        android:textSize="15sp"/>
+        android:textSize="13sp"/>
 
     <ac.mdiq.podcini.ui.view.ChapterSeekBar
         android:id="@+id/sbPosition"
@@ -97,7 +98,8 @@
                 android:padding="8dp"
                 android:scaleType="fitCenter"
                 app:srcCompat="@drawable/ic_play_48dp"
-                tools:srcCompat="@drawable/ic_play_48dp" />
+                tools:srcCompat="@drawable/ic_play_48dp"
+                app:tint="@color/medium_gray"/>
 
             <ImageButton
                 android:id="@+id/butRev"
@@ -112,7 +114,8 @@
                 android:contentDescription="@string/rewind_label"
                 android:scaleType="fitCenter"
                 app:srcCompat="@drawable/ic_fast_rewind"
-                tools:srcCompat="@drawable/ic_fast_rewind" />
+                tools:srcCompat="@drawable/ic_fast_rewind"
+                app:tint="@color/medium_gray"/>
 
             <TextView
                 android:id="@+id/txtvRev"
@@ -140,8 +143,8 @@
                 android:layout_toLeftOf="@id/butRev"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/playback_speed"
-                app:foregroundColor="?attr/action_icon_color"
-                tools:srcCompat="@drawable/ic_playback_speed" />
+                app:foregroundColor="@color/medium_gray"
+                tools:srcCompat="@drawable/ic_playback_speed"/>
 
             <TextView
                 android:id="@+id/txtvPlaybackSpeed"
@@ -171,7 +174,8 @@
                 android:contentDescription="@string/fast_forward_label"
                 android:scaleType="fitCenter"
                 app:srcCompat="@drawable/ic_fast_forward"
-                tools:srcCompat="@drawable/ic_fast_forward" />
+                tools:srcCompat="@drawable/ic_fast_forward"
+                app:tint="@color/medium_gray"/>
 
             <TextView
                 android:id="@+id/txtvFF"
@@ -201,7 +205,8 @@
                 android:contentDescription="@string/skip_episode_label"
                 android:scaleType="fitCenter"
                 app:srcCompat="@drawable/ic_skip_48dp"
-                tools:srcCompat="@drawable/ic_skip_48dp" />
+                tools:srcCompat="@drawable/ic_skip_48dp"
+                app:tint="@color/medium_gray"/>
 
         </RelativeLayout>
 

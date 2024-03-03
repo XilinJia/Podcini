@@ -124,9 +124,8 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
         super.onCreateView(inflater, container, savedInstanceState)
 
         val viewBinding = EpisodesListFragmentBinding.inflate(inflater)
-//        val root: View = inflater.inflate(R.layout.episodes_list_fragment, container, false)
-
         Log.d(TAG, "fragment onCreateView")
+
         txtvInformation = viewBinding.txtvInformation
         toolbar = viewBinding.toolbar
         toolbar.setOnMenuItemClickListener(this)
@@ -163,9 +162,9 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
         listAdapter = object : EpisodeItemListAdapter(activity as MainActivity) {
             override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
                 super.onCreateContextMenu(menu, v, menuInfo)
-                if (!inActionMode()) {
-                    menu.findItem(R.id.multi_select).setVisible(true)
-                }
+//                if (!inActionMode()) {
+//                    menu.findItem(R.id.multi_select).setVisible(true)
+//                }
                 MenuItemUtils.setOnClickListeners(menu
                 ) { item: MenuItem ->
                     this@EpisodesListFragment.onContextItemSelected(item)
@@ -231,8 +230,7 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
     }
 
     @UnstableApi private fun performMultiSelectAction(actionItemId: Int) {
-        val handler =
-            EpisodeMultiSelectActionHandler((activity as MainActivity), actionItemId)
+        val handler = EpisodeMultiSelectActionHandler((activity as MainActivity), actionItemId)
         Completable.fromAction {
             handler.handleAction(listAdapter.selectedItems.filterIsInstance<FeedItem>())
             if (listAdapter.shouldSelectLazyLoadedItems()) {

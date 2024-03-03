@@ -33,7 +33,7 @@ open class QueueRecyclerAdapter(mainActivity: MainActivity, private val swipeAct
         if (!dragDropEnabled) {
             holder.dragHandle.setVisibility(View.GONE)
             holder.dragHandle.setOnTouchListener(null)
-            holder.coverHolder.setOnTouchListener(null)
+//            holder.coverHolder.setOnTouchListener(null)
         } else {
             holder.dragHandle.setVisibility(View.VISIBLE)
             holder.dragHandle.setOnTouchListener { _: View?, event: MotionEvent ->
@@ -59,7 +59,7 @@ open class QueueRecyclerAdapter(mainActivity: MainActivity, private val swipeAct
         }
         if (inActionMode()) {
             holder.dragHandle.setOnTouchListener(null)
-            holder.coverHolder.setOnTouchListener(null)
+//            holder.coverHolder.setOnTouchListener(null)
         }
 
         holder.isInQueue.setVisibility(View.GONE)
@@ -71,7 +71,7 @@ open class QueueRecyclerAdapter(mainActivity: MainActivity, private val swipeAct
         super.onCreateContextMenu(menu, v, menuInfo)
 
         if (!inActionMode()) {
-            menu.findItem(R.id.multi_select).setVisible(true)
+//            menu.findItem(R.id.multi_select).setVisible(true)
             val keepSorted: Boolean = UserPreferences.isQueueKeepSorted
             if (getItem(0)?.id === longPressedItem?.id || keepSorted) {
                 menu.findItem(R.id.move_to_top_item).setVisible(false)

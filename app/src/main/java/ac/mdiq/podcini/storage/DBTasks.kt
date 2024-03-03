@@ -91,7 +91,7 @@ import java.util.concurrent.*
         media.setDownloaded(false)
         media.setFile_url(null)
         DBWriter.setFeedMedia(media)
-        EventBus.getDefault().post(updated(media.getItem()!!))
+        if (media.getItem() != null) EventBus.getDefault().post(updated(media.getItem()!!))
         EventBus.getDefault().post(ac.mdiq.podcini.util.event.MessageEvent(context.getString(R.string.error_file_not_found)))
     }
 
@@ -153,7 +153,8 @@ import java.util.concurrent.*
      * Get a FeedItem by its identifying value.
      */
     private fun searchFeedItemByIdentifyingValue(items: List<FeedItem>?, searchItem: FeedItem): FeedItem? {
-        for (item in items!!) {
+        if (items == null) return null
+        for (item in items) {
             if (TextUtils.equals(item.identifyingValue, searchItem.identifyingValue)) {
                 return item
             }
@@ -166,7 +167,8 @@ import java.util.concurrent.*
      * This is to work around podcasters breaking their GUIDs.
      */
     private fun searchFeedItemGuessDuplicate(items: List<FeedItem>?, searchItem: FeedItem): FeedItem? {
-        for (item in items!!) {
+        if (items == null) return null
+        for (item in items) {
             if (FeedItemDuplicateGuesser.seemDuplicates(item, searchItem)) {
                 return item
             }
@@ -220,7 +222,7 @@ import java.util.concurrent.*
                 Log.d(TAG, "New feed has a higher page number.")
                 savedFeed.nextPageLink = newFeed.nextPageLink
             }
-            if (savedFeed.preferences!!.compareWithOther(newFeed.preferences)) {
+            if (savedFeed.preferences != null && savedFeed.preferences!!.compareWithOther(newFeed.preferences)) {
                 Log.d(TAG, "Feed has updated preferences. Updating old feed's preferences")
                 savedFeed.preferences!!.updateFromOther(newFeed.preferences)
             }
@@ -240,7 +242,7 @@ import java.util.concurrent.*
                 if (!newFeed.isLocalFeed && possibleDuplicate != null && item !== possibleDuplicate) {
                     // Canonical episode is the first one returned (usually oldest)
                     DBWriter.addDownloadStatus(DownloadResult(savedFeed,
-                        item.title!!, DownloadError.ERROR_PARSER_EXCEPTION_DUPLICATE, false,
+                        item.title?:"", DownloadError.ERROR_PARSER_EXCEPTION_DUPLICATE, false,
                         """
                             The podcast host appears to have added the same episode twice. Podcini still refreshed the feed and attempted to repair it.
                             
@@ -259,7 +261,7 @@ import java.util.concurrent.*
                     if (oldItem != null) {
                         Log.d(TAG, "Repaired duplicate: $oldItem, $item")
                         DBWriter.addDownloadStatus(DownloadResult(savedFeed,
-                            item.title!!, DownloadError.ERROR_PARSER_EXCEPTION_DUPLICATE, false,
+                            item.title?:"", DownloadError.ERROR_PARSER_EXCEPTION_DUPLICATE, false,
                             """
                                 The podcast host changed the ID of an existing episode instead of just updating the episode itself. Podcini still refreshed the feed and attempted to repair it.
                                 
@@ -381,11 +383,13 @@ import java.util.concurrent.*
     fun searchFeedItems(feedID: Long, query: String): FutureTask<List<FeedItem>> {
         return FutureTask(object : QueryTask<List<FeedItem>>() {
             override fun execute(adapter: PodDBAdapter?) {
-                val searchResult = adapter!!.searchItems(feedID, query)
-                val items = extractItemlistFromCursor(searchResult)
-                loadAdditionalFeedItemListData(items)
-                setResult(items)
-                searchResult.close()
+                val searchResult = adapter?.searchItems(feedID, query)
+                if (searchResult != null) {
+                    val items = extractItemlistFromCursor(searchResult)
+                    loadAdditionalFeedItemListData(items)
+                    setResult(items)
+                    searchResult.close()
+                }
             }
         })
     }
@@ -394,15 +398,17 @@ import java.util.concurrent.*
     fun searchFeeds(query: String): FutureTask<List<Feed>> {
         return FutureTask(object : QueryTask<List<Feed>>() {
             override fun execute(adapter: PodDBAdapter?) {
-                val cursor = adapter!!.searchFeeds(query)
-                val items: MutableList<Feed> = ArrayList()
-                if (cursor.moveToFirst()) {
-                    do {
-                        items.add(convert(cursor))
-                    } while (cursor.moveToNext())
+                if (adapter != null) {
+                    val cursor = adapter.searchFeeds(query)
+                    val items: MutableList<Feed> = ArrayList()
+                    if (cursor.moveToFirst()) {
+                        do {
+                            items.add(convert(cursor))
+                        } while (cursor.moveToNext())
+                    }
+                    setResult(items)
+                    cursor.close()
                 }
-                setResult(items)
-                cursor.close()
             }
         })
     }

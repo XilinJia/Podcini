@@ -19,6 +19,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.os.Build
 import android.util.Log
+import androidx.annotation.OptIn
 import androidx.core.app.NotificationCompat
 import androidx.media3.common.util.UnstableApi
 import androidx.work.Data
@@ -79,8 +80,8 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
             e.printStackTrace()
             result = Result.failure()
         }
-        if (result == Result.failure() && downloader != null) {
-            FileUtils.deleteQuietly(File(downloader!!.downloadRequest.destination))
+        if (result == Result.failure() && downloader?.downloadRequest?.destination != null) {
+            FileUtils.deleteQuietly(File(downloader!!.downloadRequest.destination!!))
         }
         progressUpdaterThread.interrupt()
         try {
@@ -102,9 +103,7 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
 
     override fun onStopped() {
         super.onStopped()
-        if (downloader != null) {
-            downloader!!.cancel()
-        }
+        downloader?.cancel()
     }
 
     override fun getForegroundInfoAsync(): ListenableFuture<ForegroundInfo> {
@@ -112,7 +111,7 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
             ForegroundInfo(R.id.notification_downloading, generateProgressNotification()))
     }
 
-    private fun performDownload(media: FeedMedia, request: DownloadRequest): Result {
+    @OptIn(UnstableApi::class) private fun performDownload(media: FeedMedia, request: DownloadRequest): Result {
         val dest = File(request.destination)
         if (!dest.exists()) {
             try {
@@ -162,7 +161,7 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
         if (status.reason == DownloadError.ERROR_HTTP_DATA_ERROR
                 && status.reasonDetailed.toInt() == 416) {
             Log.d(TAG, "Requested invalid range, restarting download from the beginning")
-            FileUtils.deleteQuietly(File(downloader!!.downloadRequest.destination))
+            if (downloader?.downloadRequest?.destination != null) FileUtils.deleteQuietly(File(downloader!!.downloadRequest.destination!!))
             sendMessage(request.title?:"", false)
             return retry3times()
         }
@@ -199,7 +198,7 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
         EventBus.getDefault().post(MessageEvent(
             applicationContext.getString(
                 if (retrying) R.string.download_error_retrying else R.string.download_error_not_retrying,
-                episodeTitle), { ctx: Context -> MainActivityStarter(ctx!!).withDownloadLogsOpen().start() },
+                episodeTitle), { ctx: Context -> MainActivityStarter(ctx).withDownloadLogsOpen().start() },
             applicationContext.getString(R.string.download_error_details)))
     }
 
@@ -251,8 +250,7 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
             applicationContext.resources.getQuantityString(R.plurals.downloads_left,
                 progressCopy.size, progressCopy.size)
         }
-        val builder = NotificationCompat.Builder(applicationContext,
-            NotificationUtils.CHANNEL_ID_DOWNLOADING)
+        val builder = NotificationCompat.Builder(applicationContext, NotificationUtils.CHANNEL_ID_DOWNLOADING)
         builder.setTicker(applicationContext.getString(R.string.download_notification_title_episodes))
             .setContentTitle(applicationContext.getString(R.string.download_notification_title_episodes))
             .setContentText(contentText)

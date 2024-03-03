@@ -3,5 +3,6 @@
     android:width="24dp"
     android:viewportHeight="24"
     android:viewportWidth="24">
-    <path android:fillColor="?attr/action_icon_color" android:pathData="M7.41,8.59L12,13.17l4.59,-4.58L18,10l-6,6 -6,-6 1.41,-1.41z"/>
+    <path android:fillColor="?attr/action_icon_color"
+          android:pathData="M7.41,8.59L12,13.17l4.59,-4.58L18,10l-6,6 -6,-6 1.41,-1.41z"/>
 </vector>

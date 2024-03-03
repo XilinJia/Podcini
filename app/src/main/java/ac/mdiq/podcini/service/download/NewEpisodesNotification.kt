@@ -1,6 +1,7 @@
 package ac.mdiq.podcini.service.download
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.service.FeedUpdateWorker
 import android.Manifest
 import android.app.PendingIntent
 import android.content.ComponentName
@@ -19,6 +20,7 @@ import ac.mdiq.podcini.ui.gui.NotificationUtils
 import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.storage.model.feed.FeedCounter
 import ac.mdiq.podcini.storage.database.PodDBAdapter
+import android.widget.Toast
 
 class NewEpisodesNotification {
     private var countersBefore: Map<Long, Int>? = null
@@ -80,7 +82,7 @@ class NewEpisodesNotification {
                 .setAutoCancel(true)
                 .build()
 
-            if (ActivityCompat.checkSelfPermission(context,
+            if (Build.VERSION.SDK_INT >= 33 && ActivityCompat.checkSelfPermission(context,
                         Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
                 //    ActivityCompat#requestPermissions
@@ -89,6 +91,8 @@ class NewEpisodesNotification {
                 //                                          int[] grantResults)
                 // to handle the case where the user grants the permission. See the documentation
                 // for ActivityCompat#requestPermissions for more details.
+                Log.e(TAG, "showNotification: require POST_NOTIFICATIONS permission")
+                Toast.makeText(context, R.string.notification_permission_text, Toast.LENGTH_LONG).show()
                 return
             }
             notificationManager.notify(NotificationUtils.CHANNEL_ID_EPISODE_NOTIFICATIONS,
@@ -117,7 +121,7 @@ class NewEpisodesNotification {
                 .setOnlyAlertOnce(true)
                 .setAutoCancel(true)
                 .build()
-            if (ActivityCompat.checkSelfPermission(context,
+            if (Build.VERSION.SDK_INT >= 33 && ActivityCompat.checkSelfPermission(context,
                         Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
                 //    ActivityCompat#requestPermissions
@@ -126,6 +130,8 @@ class NewEpisodesNotification {
                 //                                          int[] grantResults)
                 // to handle the case where the user grants the permission. See the documentation
                 // for ActivityCompat#requestPermissions for more details.
+                Log.e(TAG, "showGroupSummaryNotification: require POST_NOTIFICATIONS permission")
+                Toast.makeText(context, R.string.notification_permission_text, Toast.LENGTH_LONG).show()
                 return
             }
             notificationManager.notify(NotificationUtils.CHANNEL_ID_EPISODE_NOTIFICATIONS, 0, notificationGroupSummary)

@@ -213,8 +213,7 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
 
         @JvmField
         val swipeActions: List<SwipeAction> = Collections.unmodifiableList(
-            listOf(AddToQueueSwipeAction(), RemoveFromInboxSwipeAction(),
-                StartDownloadSwipeAction(), MarkFavoriteSwipeAction(),
+            listOf(AddToQueueSwipeAction(), StartDownloadSwipeAction(), MarkFavoriteSwipeAction(),
                 TogglePlaybackStateSwipeAction(), RemoveFromQueueSwipeAction(),
                 DeleteSwipeAction(), RemoveFromHistorySwipeAction())
         )

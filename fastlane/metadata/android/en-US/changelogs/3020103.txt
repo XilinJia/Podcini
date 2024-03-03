@@ -1,2 +1,2 @@
  
-Version 4.1.0 sees the removal of the InBox feature, improvements on player UI, and localization updates
+Version 4.2.0 sees the removal of the InBox feature, improvements on player UI, and localization updates

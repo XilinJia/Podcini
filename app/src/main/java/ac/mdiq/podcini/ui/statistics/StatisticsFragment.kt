@@ -4,6 +4,7 @@ package ac.mdiq.podcini.ui.statistics
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.PagerFragmentBinding
 import ac.mdiq.podcini.storage.DBWriter
+import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.common.PagedToolbarFragment
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.statistics.downloads.DownloadStatisticsFragment
@@ -17,6 +18,7 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.OptIn
 import androidx.fragment.app.Fragment
 import androidx.media3.common.util.UnstableApi
 import androidx.viewpager2.adapter.FragmentStateAdapter
@@ -33,29 +35,29 @@ import org.greenrobot.eventbus.EventBus
  * Displays the 'statistics' screen
  */
 class StatisticsFragment : PagedToolbarFragment() {
-    private var tabLayout: TabLayout? = null
-    private var viewPager: ViewPager2? = null
-    private var toolbar: MaterialToolbar? = null
+    private lateinit var tabLayout: TabLayout
+    private lateinit var viewPager: ViewPager2
+    private lateinit var toolbar: MaterialToolbar
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?
-    ): View? {
+    @OptIn(UnstableApi::class) override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
+                                                         savedInstanceState: Bundle?
+    ): View {
         super.onCreateView(inflater, container, savedInstanceState)
         setHasOptionsMenu(true)
         val binding = PagerFragmentBinding.inflate(inflater)
-//        val rootView = inflater.inflate(R.layout.pager_fragment, container, false)
         viewPager = binding.viewpager
         toolbar = binding.toolbar
-        toolbar?.title = getString(R.string.statistics_label)
-        toolbar?.inflateMenu(R.menu.statistics)
-        toolbar?.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
-        viewPager?.adapter = StatisticsPagerAdapter(this)
+        toolbar.title = getString(R.string.statistics_label)
+        toolbar.inflateMenu(R.menu.statistics)
+        toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
+        (activity as MainActivity).setupToolbarToggle(toolbar, false)
+
+        viewPager.adapter = StatisticsPagerAdapter(this)
         // Give the TabLayout the ViewPager
         tabLayout = binding.slidingTabs
-        if (toolbar != null && viewPager != null) super.setupPagedToolbar(toolbar!!, viewPager!!)
-        if (tabLayout == null || viewPager == null) return null
+        super.setupPagedToolbar(toolbar, viewPager)
 
-        TabLayoutMediator(tabLayout!!, viewPager!!) { tab: TabLayout.Tab, position: Int ->
+        TabLayoutMediator(tabLayout, viewPager) { tab: TabLayout.Tab, position: Int ->
             when (position) {
                 POS_SUBSCRIPTIONS -> tab.setText(R.string.subscriptions_label)
                 POS_YEARS -> tab.setText(R.string.years_statistics_label)

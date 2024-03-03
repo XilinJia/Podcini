@@ -11,6 +11,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.subscriptionsFilter
 import ac.mdiq.podcini.storage.NavDrawerData.FeedDrawerItem
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.ui.fragment.*
+import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
@@ -96,12 +97,11 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
     private fun getDrawable(tag: String?): Int {
         return when (tag) {
             QueueFragment.TAG -> R.drawable.ic_playlist_play
-//            InboxFragment.TAG -> R.drawable.ic_inbox
             AllEpisodesFragment.TAG -> R.drawable.ic_feed
             CompletedDownloadsFragment.TAG -> R.drawable.ic_download
             PlaybackHistoryFragment.TAG -> R.drawable.ic_history
             SubscriptionFragment.TAG -> R.drawable.ic_subscriptions
-//            StatisticsFragment.TAG -> R.drawable.ic_sta
+            StatisticsFragment.TAG -> R.drawable.ic_chart_box
             AddFeedFragment.TAG -> R.drawable.ic_add
             else -> 0
         }
@@ -260,7 +260,7 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
     }
 
     private fun bindSectionDivider(holder: DividerHolder) {
-        val context = activity.get() ?: return
+//        val context = activity.get() ?: return
 
         if (subscriptionsFilter.isEnabled && showSubscriptionList) {
             holder.itemView.isEnabled = true

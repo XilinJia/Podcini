@@ -37,10 +37,11 @@ open class AutomaticDownloadAlgorithm {
     @UnstableApi open fun autoDownloadUndownloadedItems(context: Context): Runnable? {
         return Runnable {
             // true if we should auto download based on network status
-            val networkShouldAutoDl = (isAutoDownloadAllowed && isEnableAutodownload)
+            val networkShouldAutoDl = (isAutoDownloadAllowed)
+//            val networkShouldAutoDl = (isAutoDownloadAllowed && isEnableAutodownload)
 
             // true if we should auto download based on power status
-            val powerShouldAutoDl = (deviceCharging(context!!) || isEnableAutodownloadOnBattery)
+            val powerShouldAutoDl = (deviceCharging(context) || isEnableAutodownloadOnBattery)
 
             // we should only auto download if both network AND power are happy
             if (networkShouldAutoDl && powerShouldAutoDl) {
@@ -48,8 +49,7 @@ open class AutomaticDownloadAlgorithm {
 
                 val candidates: MutableList<FeedItem>
                 val queue = getQueue()
-                val newItems = getEpisodes(0, Int.MAX_VALUE,
-                    FeedItemFilter(FeedItemFilter.NEW), SortOrder.DATE_NEW_OLD)
+                val newItems = getEpisodes(0, Int.MAX_VALUE, FeedItemFilter(FeedItemFilter.NEW), SortOrder.DATE_NEW_OLD)
                 candidates = ArrayList(queue.size + newItems.size)
                 candidates.addAll(queue)
                 for (newItem in newItems) {

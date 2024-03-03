@@ -33,3 +33,17 @@
 * improvement on player UI
 * episode description now on first page of player popup page
 * localization updates
+
+## 4.2.1
+
+* Statistics moved to the drawer
+* tuned down color of player controller
+* Subscriptions menu adjustment
+* Subscriptions filter is disabled for now
+* more null safety tuning
+* fixed the refresh bug related to permissions
+* long-press operation has changed
+	* long-press on title area would be the same as a click
+	* click on an icon allows operation on the single item
+	* long-press on an icon would allow for multi-select
+	

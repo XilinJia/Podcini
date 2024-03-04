@@ -18,6 +18,9 @@ android {
                 'RtlCompat', 'RtlHardcoded', 'MissingMediaBrowserServiceIntentFilter', 'VectorPath',
                 'InvalidPeriodicWorkRequestInterval', 'NotifyDataSetChanged', 'RtlEnabled'
     }
+    buildFeatures {
+        buildConfig true
+    }
     defaultConfig {
         // Version code schema:
         // "1.2.3-beta4"    -> 1020304

@@ -71,14 +71,14 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) :
         val item: FeedItem = episodes[pos]
         holder.bind(item)
 
-        holder.coverHolder.setOnCreateContextMenuListener(this)
-        holder.coverHolder.setOnLongClickListener {
+        holder.infoCard.setOnCreateContextMenuListener(this)
+        holder.infoCard.setOnLongClickListener {
             longPressedItem = item
             longPressedPosition = holder.bindingAdapterPosition
             startSelectMode(longPressedPosition)
             false
         }
-        holder.coverHolder.setOnClickListener {
+        holder.infoCard.setOnClickListener {
             if (inActionMode()) {
                 toggleSelection(holder.bindingAdapterPosition)
             } else {
@@ -94,7 +94,7 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) :
 //            longPressedPosition = holder.bindingAdapterPosition
 //            false
 //        }
-        holder.infoCard.setOnClickListener {
+        holder.coverHolder.setOnClickListener {
             val activity: MainActivity? = mainActivityRef.get()
             if (!inActionMode()) {
                 val ids: LongArray = FeedItemUtil.getIds(episodes)

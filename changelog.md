@@ -47,3 +47,10 @@
 	* click on an icon allows operation on the single item
 	* long-press on an icon would allow for multi-select
 	
+## 4.2.2
+
+* bug fix on auto-download mistakenly set in 4.2.1
+* Sorry for another change in click operation 
+ 	* long-press on an icon would be the same as a click
+	* click on title area allows operation on the single item
+	* long-press on title area would allow for multi-select

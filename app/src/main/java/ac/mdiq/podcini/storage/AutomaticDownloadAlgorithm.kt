@@ -37,8 +37,8 @@ open class AutomaticDownloadAlgorithm {
     @UnstableApi open fun autoDownloadUndownloadedItems(context: Context): Runnable? {
         return Runnable {
             // true if we should auto download based on network status
-            val networkShouldAutoDl = (isAutoDownloadAllowed)
-//            val networkShouldAutoDl = (isAutoDownloadAllowed && isEnableAutodownload)
+//            val networkShouldAutoDl = (isAutoDownloadAllowed)
+            val networkShouldAutoDl = (isAutoDownloadAllowed && isEnableAutodownload)
 
             // true if we should auto download based on power status
             val powerShouldAutoDl = (deviceCharging(context) || isEnableAutodownloadOnBattery)

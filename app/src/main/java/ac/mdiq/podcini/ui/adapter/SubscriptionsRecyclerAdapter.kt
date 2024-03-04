@@ -69,14 +69,14 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
             holder.coverImage.alpha = 1.0f
         }
 
-        holder.coverImage.setOnCreateContextMenuListener(this)
-        holder.coverImage.setOnLongClickListener {
+        holder.infoCard.setOnCreateContextMenuListener(this)
+        holder.infoCard.setOnLongClickListener {
             longPressedPosition = holder.bindingAdapterPosition
             selectedItem = drawerItem
             startSelectMode(longPressedPosition)
             false
         }
-        holder.coverImage.setOnClickListener {
+        holder.infoCard.setOnClickListener {
             if (inActionMode()) {
                 holder.selectCheckbox.setChecked(!isSelected(holder.bindingAdapterPosition))
             } else {

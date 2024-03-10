@@ -57,7 +57,7 @@ object FeedItemMenuHandler {
         setItemVisibility(menu, R.id.visit_website_item, !(selectedItem.feed?.isLocalFeed?:false)
                 && ShareUtils.hasLinkToShare(selectedItem))
         setItemVisibility(menu, R.id.share_item, !(selectedItem.feed?.isLocalFeed?:false))
-        setItemVisibility(menu, R.id.remove_inbox_item, selectedItem.isNew)
+//        setItemVisibility(menu, R.id.remove_inbox_item, selectedItem.isNew)
         setItemVisibility(menu, R.id.mark_read_item, !selectedItem.isPlayed())
         setItemVisibility(menu, R.id.mark_unread_item, selectedItem.isPlayed())
         setItemVisibility(menu, R.id.reset_position, hasMedia && selectedItem.media?.getPosition() != 0)
@@ -144,9 +144,9 @@ object FeedItemMenuHandler {
                         selectedItem.media!!.id)
                 }
             }
-            R.id.remove_inbox_item -> {
-                removeNewFlagWithUndo(fragment, selectedItem)
-            }
+//            R.id.remove_inbox_item -> {
+//                removeNewFlagWithUndo(fragment, selectedItem)
+//            }
             R.id.mark_read_item -> {
                 selectedItem.setPlayed(true)
                 DBWriter.markItemPlayed(selectedItem, FeedItem.PLAYED, true)

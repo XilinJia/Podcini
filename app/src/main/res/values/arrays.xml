@@ -53,28 +53,6 @@
         <item>72</item>
     </string-array>
 
-    <string-array name="globalNewEpisodesActionItems">
-        <item>@string/feed_new_episodes_action_add_to_inbox</item>
-        <item>@string/feed_new_episodes_action_nothing</item>
-    </string-array>
-
-    <string-array name="globalNewEpisodesActionValues">
-        <item>1</item>
-        <item>2</item>
-    </string-array>
-
-    <string-array name="feedNewEpisodesActionItems">
-        <item>@string/global_default</item>
-        <item>@string/feed_new_episodes_action_add_to_inbox</item>
-        <item>@string/feed_new_episodes_action_nothing</item>
-    </string-array>
-
-    <string-array name="feedNewEpisodesActionValues">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-    </string-array>
-
     <string-array name="smart_mark_as_played_values">
         <item>0</item>
         <item>15</item>
@@ -83,7 +61,6 @@
         <item>120</item>
         <item>300</item>
     </string-array>
-
 
     <integer-array name="seek_delta_values">
         <item>5</item>
@@ -214,14 +191,12 @@
     </string-array>
 
     <string-array name="nav_drawer_feed_counter_options">
-        <item>@string/drawer_feed_counter_inbox</item>
         <item>@string/drawer_feed_counter_unplayed</item>
         <item>@string/drawer_feed_counter_downloaded</item>
         <item>@string/drawer_feed_counter_downloaded_unplayed</item>
         <item>@string/drawer_feed_counter_none</item>
     </string-array>
     <string-array name="nav_drawer_feed_counter_values">
-        <item>1</item>
         <item>2</item>
         <item>4</item>
         <item>5</item>
@@ -235,8 +210,7 @@
     </string-array>
 
     <string-array name="default_page_values">
-\        <item>QueueFragment</item>
-        <item>NewEpisodesFragment</item>
+        <item>QueueFragment</item>
         <item>EpisodesFragment</item>
         <item>SubscriptionFragment</item>
         <item>remember</item>
@@ -244,7 +218,6 @@
 
     <string-array name="default_page_titles">
         <item>@string/queue_label</item>
-        <item>@string/inbox_label</item>
         <item>@string/episodes_label</item>
         <item>@string/subscriptions_label</item>
         <item>@string/remember_last_page</item>

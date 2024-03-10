@@ -121,7 +121,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         imgvBackground = viewBinding.imgvBackground
         header = viewBinding.header.root
         infoContainer = viewBinding.infoContainer
-        viewBinding.header.butShowInfo.visibility = View.INVISIBLE
+//        viewBinding.header.butShowInfo.visibility = View.INVISIBLE
         viewBinding.header.butShowSettings.visibility = View.INVISIBLE
         viewBinding.header.butFilter.visibility = View.INVISIBLE
         // https://github.com/bumptech/glide/issues/529

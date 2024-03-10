@@ -8,7 +8,7 @@
   <string name="episodes_label">Bölümler</string>
   <string name="home_label">Ana Sayfa</string>
   <string name="queue_label">Kuyruk</string>
-  <string name="inbox_label">Gelen kutusu</string>
+
   <string name="favorite_episodes_label">Favoriler</string>
   <string name="settings_label">Ayarlar</string>
   <string name="downloads_label">İndirilenler</string>
@@ -66,7 +66,7 @@
   <string name="drawer_feed_order_alphabetical">Alfabetik olarak sırala</string>
   <string name="drawer_feed_order_last_update">Yayınlanma tarihine göre sırala</string>
   <string name="drawer_feed_order_most_played">Oynatılan bölüm sayısına göre sırala</string>
-  <string name="drawer_feed_counter_inbox">Gelen kutusundaki bölüm sayısı</string>
+
   <string name="drawer_feed_counter_unplayed">Çalınmamış bölümlerin sayısı</string>
   <string name="drawer_feed_counter_downloaded">İndirilen bölümlerin sayısı</string>
   <string name="drawer_feed_counter_downloaded_unplayed">İndirilen ve oynatılmamış bölümlerin sayısı</string>
@@ -111,7 +111,7 @@
   <string name="auto_delete_label">Bölümü otomatik sil</string>
   <string name="feed_auto_download_always">Her zaman</string>
   <string name="feed_auto_download_never">Hiçbir zaman</string>
-  <string name="feed_new_episodes_action_add_to_inbox">Genel kutusuna ekle</string>
+
   <string name="feed_new_episodes_action_nothing">Hiçbir şey yok</string>
   <string name="episode_cleanup_never">Hiçbir zaman</string>
   <string name="episode_cleanup_except_favorite_removal">Favorilenmemişken</string>
@@ -145,9 +145,9 @@
   </plurals>
   <string name="new_episode_notification_group_text">Aboneliklerinize ait yeni bölümler var.</string>
   <!--Actions on feeds-->
-  <string name="remove_all_inbox_label">Gelen kutusunu temizle</string>
-  <string name="removed_all_inbox_msg">Gelen kutusu temizlendi</string>
-  <string name="remove_all_inbox_confirmation_msg">Lütfen gelen kutusunu temizlemek istediğinizi onaylayın.</string>
+
+
+
   <string name="multi_select_mark_played_confirmation">Tüm seçili olanları \"Çalındı\" olarak işaretlemek istediğinizi onaylayın.</string>
   <string name="multi_select_mark_unplayed_confirmation">Tüm seçili olanları \"Çalınmadı\" olarak işaretlemek istediğinizi onaylayın.</string>
   <string name="show_info_label">Bilgiyi göster</string>
@@ -195,7 +195,7 @@
     <item quantity="one">1 indirilmiş bölüm silindi.</item>
     <item quantity="other">%d indirilmiş bölüm silindi.</item>
   </plurals>
-  <string name="remove_inbox_label">Gelen kutusundan sil</string>
+
   <string name="removed_inbox_label">Gelen kutusundan silindi</string>
   <string name="mark_read_label">Oynatıldı olarak işaretle</string>
   <string name="toggle_played_label">Oynatma durumunu değiştir</string>
@@ -222,10 +222,6 @@
   <plurals name="removed_from_queue_batch_label">
     <item quantity="one">%d bölüm kuyruktan silindi.</item>
     <item quantity="other">%d bölüm kuyruktan silindi.</item>
-  </plurals>
-  <plurals name="removed_from_inbox_batch_label">
-    <item quantity="one">%d bölümler gelen kutusundan kaldırıldı.</item>
-    <item quantity="other">%d bölümler gelen kutusundan kaldırıldı.</item>
   </plurals>
   <string name="add_to_favorite_label">Favorilere ekle</string>
   <string name="remove_from_favorite_label">Favorilerden kaldır</string>
@@ -330,8 +326,8 @@
   <string name="no_all_episodes_head_label">Hiçbir bölüm yok</string>
   <string name="no_all_episodes_label">Bir Podcast ekledikten sonra bölümleri burada gözükecek.</string>
   <string name="no_all_episodes_filtered_label">Daha çok bölüm görmek için filtreyi temizlemeyi deneyin.</string>
-  <string name="no_inbox_head_label">Gelen kutusunda bölüm yok</string>
-  <string name="no_inbox_label">Yeni bölümler geldiğinde burada görünecek. İlgi duyup duymadığınıza o zaman karar verebilirsiniz.</string>
+
+
   <string name="no_subscriptions_head_label">Abonelik yok</string>
   <string name="no_subscriptions_label">Bir Podcaste abone olmak için, aşağıdaki Artı simgesine tıklayın.</string>
   <!--Preferences-->
@@ -563,7 +559,7 @@
     <item quantity="other">%d saat</item>
   </plurals>
   <string name="auto_enable_label">Oynata basıldığında, uyku zamanlayıcısı otomatik olarak etkinleştirilsin</string>
-  <string name="auto_enable_label_with_times">%s ile %s arasında oynata basıldığında, uyku zamanlayıcısı otomatik olarak etkinleştirilsin</string>
+  <string name="auto_enable_label_with_times" formatted="false">%s ile %s arasında oynata basıldığında, uyku zamanlayıcısı otomatik olarak etkinleştirilsin</string>
   <string name="sleep_timer_enabled_label">Uyku zamanlayıcısı açıldı</string>
   <!--Synchronisation-->
   <string name="synchronization_choose_title">Senkronizasyon sağlayıcınızı seçin</string>

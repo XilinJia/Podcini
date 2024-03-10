@@ -8,7 +8,7 @@
   <string name="episodes_label">Jaksot</string>
   <string name="home_label">Koti</string>
   <string name="queue_label">Jono</string>
-  <string name="inbox_label">Saapuneet</string>
+
   <string name="favorite_episodes_label">Suosikit</string>
   <string name="settings_label">Asetukset</string>
   <string name="downloads_label">Lataukset</string>
@@ -59,7 +59,7 @@
   <string name="drawer_feed_order_alphabetical">Järjestä aakkosellisesti</string>
   <string name="drawer_feed_order_last_update">Järjestä julkaisupäivän mukaan</string>
   <string name="drawer_feed_order_most_played">Järjestä toistettujen jaksojen mukaan</string>
-  <string name="drawer_feed_counter_inbox">Jaksoja saapuneissa</string>
+
   <string name="drawer_feed_counter_unplayed">Toistamattomia jaksoja</string>
   <string name="drawer_feed_counter_downloaded">Ladattuja jaksoja</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Ladattuja ja toistamattomia jaksoja</string>
@@ -104,7 +104,7 @@
   <string name="auto_delete_label">Poista jakso automaattisesti</string>
   <string name="feed_auto_download_always">Aina</string>
   <string name="feed_auto_download_never">Ei koskaan</string>
-  <string name="feed_new_episodes_action_add_to_inbox">Lisää saapuneisiin</string>
+
   <string name="feed_new_episodes_action_nothing">Ei mitään</string>
   <string name="episode_cleanup_never">Ei koskaan</string>
   <string name="episode_cleanup_except_favorite_removal">Kun ei ole suosikeissa</string>
@@ -138,9 +138,9 @@
   </plurals>
   <string name="new_episode_notification_group_text">Tilauksissasi on uusia jaksoa.</string>
   <!--Actions on feeds-->
-  <string name="remove_all_inbox_label">Poista kaikki saapuneista</string>
-  <string name="removed_all_inbox_msg">Poistettu kaikki saapuneista</string>
-  <string name="remove_all_inbox_confirmation_msg">Vahvista, että haluat poistaa kaikki saapuneista.</string>
+
+
+
   <string name="multi_select_mark_played_confirmation">Vahvista, että haluat merkitä kaikki valitut toistetuiksi.</string>
   <string name="multi_select_mark_unplayed_confirmation">Vahvista, että haluat merkitä kaikki valitut toistamattomiksi.</string>
   <string name="show_info_label">Näytä tiedot</string>
@@ -188,7 +188,7 @@
     <item quantity="one">1 ladattu jakso poistettu.</item>
     <item quantity="other">%d ladattua jaksoa poistettu.</item>
   </plurals>
-  <string name="remove_inbox_label">Poista saapuneista</string>
+
   <string name="removed_inbox_label">Poistettu saapuneista</string>
   <string name="mark_read_label">Merkitse toistetuksi</string>
   <string name="toggle_played_label">Vaihda toistettu-tila</string>
@@ -215,10 +215,6 @@
   <plurals name="removed_from_queue_batch_label">
     <item quantity="one">%d jakso poistettu jonosta.</item>
     <item quantity="other">%d jaksoa poistettu jonosta.</item>
-  </plurals>
-  <plurals name="removed_from_inbox_batch_label">
-    <item quantity="one">%d jakso poistettu saapuneista.</item>
-    <item quantity="other">%d jaksoa poistettu saapuneista.</item>
   </plurals>
   <string name="add_to_favorite_label">Lisää suosikkeihin</string>
   <string name="remove_from_favorite_label">Poista suosikeista</string>
@@ -321,8 +317,8 @@
   <string name="no_all_episodes_head_label">Ei jaksoja</string>
   <string name="no_all_episodes_label">Kun lisää podcastin, sen jaksot näkyvät täällä.</string>
   <string name="no_all_episodes_filtered_label">Tyhjennä suodin nähdäksesi enemmän jaksoja.</string>
-  <string name="no_inbox_head_label">Ei jaksoja saapuneissa</string>
-  <string name="no_inbox_label">Kun uusia jaksoja saapuu, ne näytetään tässä. Voit sitten valita, oletko kiinnostunut niistä.</string>
+
+
   <string name="no_subscriptions_head_label">Ei tilauksia</string>
   <string name="no_subscriptions_label">Tilataksesi podcastin, paina plus-kuvaketta alla</string>
   <!--Preferences-->

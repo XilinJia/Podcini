@@ -6,7 +6,7 @@
   <string name="episodes_label">エピソード</string>
   <string name="home_label">ホーム</string>
   <string name="queue_label">キュー</string>
-  <string name="inbox_label">受信トレイ</string>
+
   <string name="favorite_episodes_label">お気に入り</string>
   <string name="settings_label">設定</string>
   <string name="downloads_label">ダウンロード</string>
@@ -50,7 +50,7 @@
   <string name="drawer_feed_order_alphabetical">アルファベット順で並べ替え</string>
   <string name="drawer_feed_order_last_update">公開日で並べ替え</string>
   <string name="drawer_feed_order_most_played">再生したエピソードの数で並べ替え</string>
-  <string name="drawer_feed_counter_inbox">受信トレイ内のエピソード数</string>
+
   <string name="drawer_feed_counter_unplayed">未再生のエピソードの数</string>
   <string name="drawer_feed_counter_downloaded">ダウンロード済のエピソードの数</string>
   <string name="drawer_feed_counter_downloaded_unplayed">ダウンロード済と未再生のエピソードの数</string>
@@ -110,9 +110,9 @@
   </plurals>
   <string name="new_episode_notification_group_text">新しいエピソードがあります。</string>
   <!--Actions on feeds-->
-  <string name="remove_all_inbox_label">受信トレイからすべて取り除く</string>
-  <string name="removed_all_inbox_msg">受信トレイからすべて取り除きました</string>
-  <string name="remove_all_inbox_confirmation_msg">受信トレイからすべて取り除くことを確認してください。</string>
+
+
+
   <string name="multi_select_mark_played_confirmation">選択したすべての項目を再生済としてマークすることを確認してください</string>
   <string name="multi_select_mark_unplayed_confirmation">選択したすべての項目を未再生としてマークすることを確認してください。</string>
   <string name="show_info_label">情報を表示</string>
@@ -150,7 +150,7 @@
   <plurals name="deleted_multi_episode_batch_label">
     <item quantity="other">ダウンロードした %d 項目のエピソードが削除されました。</item>
   </plurals>
-  <string name="remove_inbox_label">受信トレイから取り除く</string>
+
   <string name="removed_inbox_label">受信トレイから取り除きました</string>
   <string name="mark_read_label">再生済としてマーク</string>
   <string name="toggle_played_label">再生状態の切り替え</string>
@@ -171,9 +171,6 @@
   </plurals>
   <plurals name="removed_from_queue_batch_label">
     <item quantity="other">%d エピソードをキューから削除しました。</item>
-  </plurals>
-  <plurals name="removed_from_inbox_batch_label">
-    <item quantity="other">%d エピソードを受信トレイから削除しました。</item>
   </plurals>
   <string name="skip_episode_label">エピソードをスキップ</string>
   <string name="no_items_selected">項目が選択されていません</string>
@@ -249,8 +246,8 @@
   <string name="no_history_label">エピソードを視聴した後、ここに表示されます</string>
   <string name="no_all_episodes_label">ポッドキャストを追加すると、エピソードがここに表示されます。</string>
   <string name="no_all_episodes_filtered_label">フィルターをクリアすると、より多くのエピソードが表示されます。</string>
-  <string name="no_inbox_head_label">受信トレイにエピソードはありません</string>
-  <string name="no_inbox_label">新しいエピソードが到着すると、ここに表示されます。その後、あなたはそれらに興味があるかどうかの判断を下せます。</string>
+
+
   <string name="no_subscriptions_head_label">購読していません</string>
   <string name="no_subscriptions_label">ポッドキャストを購読するには、下のプラスアイコンを押してください。</string>
   <!--Preferences-->

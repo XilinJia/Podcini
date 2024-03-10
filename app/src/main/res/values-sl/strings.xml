@@ -6,7 +6,7 @@
   <string name="episodes_label">Epizode</string>
   <string name="home_label">Domov</string>
   <string name="queue_label">Čakalna vrsta</string>
-  <string name="inbox_label">Prejeto</string>
+
   <string name="favorite_episodes_label">Priljubljene</string>
   <string name="settings_label">Nastavitve</string>
   <string name="downloads_label">Prenosi</string>

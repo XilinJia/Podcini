@@ -71,11 +71,11 @@ class NavigationDrawerTest {
                 ViewMatchers.withText(R.string.queue_label)), 1000))
 
         // Inbox
-        openNavDrawer()
-        EspressoTestUtils.onDrawerItem(ViewMatchers.withText(R.string.inbox_label)).perform(ViewActions.click())
-        Espresso.onView(ViewMatchers.isRoot())
-            .perform(EspressoTestUtils.waitForView(Matchers.allOf(ViewMatchers.isDescendantOfA(ViewMatchers.withId(R.id.toolbar)),
-                ViewMatchers.withText(R.string.inbox_label)), 1000))
+//        openNavDrawer()
+//        EspressoTestUtils.onDrawerItem(ViewMatchers.withText(R.string.inbox_label)).perform(ViewActions.click())
+//        Espresso.onView(ViewMatchers.isRoot())
+//            .perform(EspressoTestUtils.waitForView(Matchers.allOf(ViewMatchers.isDescendantOfA(ViewMatchers.withId(R.id.toolbar)),
+//                ViewMatchers.withText(R.string.inbox_label)), 1000))
 
         // episodes
         openNavDrawer()

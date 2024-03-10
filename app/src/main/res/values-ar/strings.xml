@@ -8,7 +8,7 @@
   <string name="episodes_label">الحلقات</string>
   <string name="home_label">الصفحة الرئيسية</string>
   <string name="queue_label">لائحة الاستماع</string>
-  <string name="inbox_label">صندوق الوارد</string>
+
   <string name="favorite_episodes_label">المفضلات</string>
   <string name="settings_label">الإعدادات</string>
   <string name="downloads_label">التنزيلات</string>
@@ -66,7 +66,7 @@
   <string name="drawer_feed_order_alphabetical">رتب أبجديا</string>
   <string name="drawer_feed_order_last_update">رتب بتاريخ النشر</string>
   <string name="drawer_feed_order_most_played">رتب بعدد الحلقات المشغلة</string>
-  <string name="drawer_feed_counter_inbox">عدد الحلقات في صندوق الوارد</string>
+
   <string name="drawer_feed_counter_unplayed">عدد الحلقات غير المشغلة</string>
   <string name="drawer_feed_counter_downloaded">عدد الحلقات المنزلة</string>
   <string name="drawer_feed_counter_downloaded_unplayed">عدد الحلقات المنزلة وغير المشغلة</string>
@@ -111,7 +111,7 @@
   <string name="auto_delete_label">مسح الحلقات تلقائيا</string>
   <string name="feed_auto_download_always">دائما</string>
   <string name="feed_auto_download_never">ابدا</string>
-  <string name="feed_new_episodes_action_add_to_inbox">اضف إلى صندوق الوارد</string>
+
   <string name="feed_new_episodes_action_nothing">فارغ</string>
   <string name="episode_cleanup_never">ابدا</string>
   <string name="episode_cleanup_except_favorite_removal">عند عدم التفضيل</string>
@@ -169,9 +169,9 @@
   </plurals>
   <string name="new_episode_notification_group_text">حلقات جديدة من اشتراكاتك</string>
   <!--Actions on feeds-->
-  <string name="remove_all_inbox_label">أزل الكل من صندوق الوارد</string>
-  <string name="removed_all_inbox_msg">تم إزاله الكل من صندوق الوارد</string>
-  <string name="remove_all_inbox_confirmation_msg">الرجاء تأكيد رغبتك في إزالة الكل من صندوق الوارد.</string>
+
+
+
   <string name="multi_select_mark_played_confirmation">يرجى تأكيد رغبتك في تحديد جميع العناصر المختارة على أنه تم تشغيلها.</string>
   <string name="multi_select_mark_unplayed_confirmation">يرجى تأكيد رغبتك في تحديد جميع العناصر المختارة على أنه لم يتم تشغيلها.</string>
   <string name="show_info_label">اظهر معلومات</string>
@@ -231,7 +231,7 @@
     <item quantity="many">تم مسح %d حلقة منزلة.</item>
     <item quantity="other">تم مسح %d حلقات منزلة.</item>
   </plurals>
-  <string name="remove_inbox_label">أزل من صندوق الوارد</string>
+
   <string name="removed_inbox_label">تم الإزالة من صندوق الوارد</string>
   <string name="mark_read_label">علمها كمشغلة</string>
   <string name="toggle_played_label">فعل حالة التشغيل</string>
@@ -274,14 +274,6 @@
     <item quantity="few">%d حلقات أزيلت من لائحة الاستماع.</item>
     <item quantity="many">%d حلقات أزيلت من لائحة الاستماع.</item>
     <item quantity="other">%d حلقات أزيلت من لائحة الاستماع.</item>
-  </plurals>
-  <plurals name="removed_from_inbox_batch_label">
-    <item quantity="zero">%d حلقة أزيلت من صندوق الوارد.</item>
-    <item quantity="one">%d حلقة أزيلت من صندوق الوارد.</item>
-    <item quantity="two">%d حلقتان أزيلتا من صندوق الوارد.</item>
-    <item quantity="few">%d حلقات أزيلت من صندوق الوارد.</item>
-    <item quantity="many">%d حلقات أزيلت من صندوق الوارد.</item>
-    <item quantity="other">%d حلقات أزيلت من صندوق الوارد.</item>
   </plurals>
   <string name="add_to_favorite_label">اضافة للمفضلات</string>
   <string name="remove_from_favorite_label">المسح من المفضلات</string>
@@ -390,8 +382,8 @@
   <string name="no_all_episodes_head_label">لا توجد حلقات</string>
   <string name="no_all_episodes_label">ستظهر هنا الحلقة بعد إضافتها.</string>
   <string name="no_all_episodes_filtered_label">حاول مسح المصفاة لرؤية المزيد من الحلقات</string>
-  <string name="no_inbox_head_label">لا يوجد حلقات في صندوق الوارد</string>
-  <string name="no_inbox_label">عندما تصل حلقات جديدة، سيتم عرضها هنا. يمكنك بعد ذلك تحديد ما إذا كنت مهتمًا بها أم لا.</string>
+
+
   <string name="no_subscriptions_head_label">لا توجد إشتراكات</string>
   <string name="no_subscriptions_label">للاشتراك في بودكاست ، اضغط على أيقونة علامة الجمع أدناه.</string>
   <!--Preferences-->
@@ -635,7 +627,7 @@
     <item quantity="other">%d ساعة</item>
   </plurals>
   <string name="auto_enable_label">قم بتشغيل مؤقت النوم آليا عند تشغيل الحلقة</string>
-  <string name="auto_enable_label_with_times">قم بتشغيل مؤقت النوم آليا عند تشغيل الحلقة بين %s و %s</string>
+  <string name="auto_enable_label_with_times" formatted="false">قم بتشغيل مؤقت النوم آليا عند تشغيل الحلقة بين %s و %s</string>
   <string name="sleep_timer_enabled_label">مؤقت النوم مفعل</string>
   <!--Synchronisation-->
   <string name="synchronization_choose_title">اختر مزود خدمة التزامن</string>

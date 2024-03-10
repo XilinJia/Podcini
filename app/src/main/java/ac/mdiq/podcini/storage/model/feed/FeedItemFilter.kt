@@ -64,36 +64,51 @@ class FeedItemFilter(vararg properties: String) : Serializable {
         get() = listOf(*properties)
 
     fun matches(item: FeedItem): Boolean {
-        if (showNew && !item.isNew) {
-            return false
-        } else if (showPlayed && !item.isPlayed()) {
-            return false
-        } else if (showUnplayed && item.isPlayed()) {
-            return false
-        } else if (showPaused && !item.isInProgress) {
-            return false
-        } else if (showNotPaused && item.isInProgress) {
-            return false
-        } else if (showNew && !item.isNew) {
-            return false
-        } else if (showQueued && !item.isTagged(FeedItem.TAG_QUEUE)) {
-            return false
-        } else if (showNotQueued && item.isTagged(FeedItem.TAG_QUEUE)) {
-            return false
-        } else if (showDownloaded && !item.isDownloaded) {
-            return false
-        } else if (showNotDownloaded && item.isDownloaded) {
-            return false
-        } else if (showHasMedia && !item.hasMedia()) {
-            return false
-        } else if (showNoMedia && item.hasMedia()) {
-            return false
-        } else if (showIsFavorite && !item.isTagged(FeedItem.TAG_FAVORITE)) {
-            return false
-        } else if (showNotFavorite && item.isTagged(FeedItem.TAG_FAVORITE)) {
-            return false
+        when {
+            showNew && !item.isNew -> {
+                return false
+            }
+            showPlayed && !item.isPlayed() -> {
+                return false
+            }
+            showUnplayed && item.isPlayed() -> {
+                return false
+            }
+            showPaused && !item.isInProgress -> {
+                return false
+            }
+            showNotPaused && item.isInProgress -> {
+                return false
+            }
+            showNew && !item.isNew -> {
+                return false
+            }
+            showQueued && !item.isTagged(FeedItem.TAG_QUEUE) -> {
+                return false
+            }
+            showNotQueued && item.isTagged(FeedItem.TAG_QUEUE) -> {
+                return false
+            }
+            showDownloaded && !item.isDownloaded -> {
+                return false
+            }
+            showNotDownloaded && item.isDownloaded -> {
+                return false
+            }
+            showHasMedia && !item.hasMedia() -> {
+                return false
+            }
+            showNoMedia && item.hasMedia() -> {
+                return false
+            }
+            showIsFavorite && !item.isTagged(FeedItem.TAG_FAVORITE) -> {
+                return false
+            }
+            showNotFavorite && item.isTagged(FeedItem.TAG_FAVORITE) -> {
+                return false
+            }
+            else -> return true
         }
-        return true
     }
 
     companion object {

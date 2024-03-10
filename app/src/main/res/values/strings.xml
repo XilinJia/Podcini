@@ -12,7 +12,7 @@
     <string name="episodes_label">Episodes</string>
     <string name="home_label">Home</string>
     <string name="queue_label">Queue</string>
-    <string name="inbox_label">Inbox</string>
+
     <string name="favorite_episodes_label">Favorites</string>
     <string name="settings_label">Settings</string>
     <string name="downloads_label">Downloads</string>
@@ -73,7 +73,7 @@
     <string name="drawer_feed_order_alphabetical">Sort alphabetically</string>
     <string name="drawer_feed_order_last_update">Sort by publication date</string>
     <string name="drawer_feed_order_most_played">Sort by number of played episodes</string>
-    <string name="drawer_feed_counter_inbox">Number of episodes in the inbox</string>
+
     <string name="drawer_feed_counter_unplayed">Number of unplayed episodes</string>
     <string name="drawer_feed_counter_downloaded">Number of downloaded episodes</string>
     <string name="drawer_feed_counter_downloaded_unplayed">Number of downloaded and unplayed episodes</string>
@@ -130,7 +130,7 @@
     <string name="feed_volume_boost_heavy">Heavy boost</string>
     <string name="feed_auto_download_always">Always</string>
     <string name="feed_auto_download_never">Never</string>
-    <string name="feed_new_episodes_action_add_to_inbox">Add to inbox</string>
+
     <string name="feed_new_episodes_action_nothing">Nothing</string>
     <string name="episode_cleanup_never">Never</string>
     <string name="episode_cleanup_except_favorite_removal">When not favorited</string>
@@ -165,9 +165,9 @@
     <string name="new_episode_notification_group_text">Your subscriptions have new episodes.</string>
 
     <!-- Actions on feeds -->
-    <string name="remove_all_inbox_label">Remove all from inbox</string>
-    <string name="removed_all_inbox_msg">Removed all from inbox</string>
-    <string name="remove_all_inbox_confirmation_msg">Please confirm that you want to remove all from the inbox.</string>
+
+
+
     <string name="multi_select_mark_played_confirmation">Please confirm that you want to mark all selected items as played.</string>
     <string name="multi_select_mark_unplayed_confirmation">Please confirm that you want to mark all selected items as unplayed.</string>
     <string name="show_info_label">Show information</string>
@@ -217,7 +217,7 @@
         <item quantity="one">1 downloaded episode deleted.</item>
         <item quantity="other">%d downloaded episodes deleted.</item>
     </plurals>
-    <string name="remove_inbox_label">Remove from inbox</string>
+
     <string name="removed_inbox_label">Removed from inbox</string>
     <string name="mark_read_label">Mark as played</string>
     <string name="toggle_played_label">Toggle played state</string>
@@ -244,10 +244,6 @@
     <plurals name="removed_from_queue_batch_label">
         <item quantity="one">%d episode removed from queue.</item>
         <item quantity="other">%d episodes removed from queue.</item>
-    </plurals>
-    <plurals name="removed_from_inbox_batch_label">
-        <item quantity="one">%d episode removed from inbox.</item>
-        <item quantity="other">%d episodes removed from inbox.</item>
     </plurals>
     <string name="add_to_favorite_label">Add to favorites</string>
     <string name="remove_from_favorite_label">Remove from favorites</string>
@@ -362,8 +358,8 @@
     <string name="no_all_episodes_head_label">No episodes</string>
     <string name="no_all_episodes_label">When you add a podcast, the episodes will be shown here.</string>
     <string name="no_all_episodes_filtered_label">Try clearing the filter to see more episodes.</string>
-    <string name="no_inbox_head_label">No episodes in the inbox</string>
-    <string name="no_inbox_label">When new episodes arrive, they will be shown here. You can then decide if you are interested in them or not.</string>
+
+
     <string name="no_subscriptions_head_label">No subscriptions</string>
     <string name="no_subscriptions_label">To subscribe to a podcast, press the plus icon below.</string>
 
@@ -618,7 +614,7 @@
         <item quantity="other">%d days</item>
     </plurals>
     <string name="auto_enable_label">Automatically activate the sleep timer when pressing play</string>
-    <string name="auto_enable_label_with_times">Automatically activate the sleep timer when pressing play between %s and %s</string>
+    <string name="auto_enable_label_with_times" formatted="false">Automatically activate the sleep timer when pressing play between %s and %s</string>
     <string name="auto_enable_change_times">Change time range</string>
     <string name="sleep_timer_enabled_label">Sleep timer enabled</string>
 
@@ -683,7 +679,6 @@
     <string name="status_downloading_label">Episode is being downloaded</string>
     <string name="in_queue_label">In the queue</string>
     <string name="is_favorite_label">Marked as favorite</string>
-    <string name="is_inbox_label">In the inbox</string>
     <string name="is_played">Played</string>
     <string name="load_next_page_label">Load next page</string>
     <string name="position">Position: %1$s</string>

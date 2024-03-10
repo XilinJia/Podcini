@@ -232,23 +232,32 @@ class Feed : FeedFile {
          * try to return the title. If the title is not given, it will use the link
          * of the feed.
          */
-        get() = if (!feedIdentifier.isNullOrEmpty()) {
-            feedIdentifier
-        } else if (!download_url.isNullOrEmpty()) {
-            download_url
-        } else if (!feedTitle.isNullOrEmpty()) {
-            feedTitle
-        } else {
-            link
+        get() = when {
+            !feedIdentifier.isNullOrEmpty() -> {
+                feedIdentifier
+            }
+            !download_url.isNullOrEmpty() -> {
+                download_url
+            }
+            !feedTitle.isNullOrEmpty() -> {
+                feedTitle
+            }
+            else -> {
+                link
+            }
         }
 
     override fun getHumanReadableIdentifier(): String? {
-        return if (!customTitle.isNullOrEmpty()) {
-            customTitle
-        } else if (!feedTitle.isNullOrEmpty()) {
-            feedTitle
-        } else {
-            download_url
+        return when {
+            !customTitle.isNullOrEmpty() -> {
+                customTitle
+            }
+            !feedTitle.isNullOrEmpty() -> {
+                feedTitle
+            }
+            else -> {
+                download_url
+            }
         }
     }
 

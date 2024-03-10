@@ -54,3 +54,12 @@
  	* long-press on an icon would be the same as a click
 	* click on title area allows operation on the single item
 	* long-press on title area would allow for multi-select
+
+## 4.2.3
+
+* fixed bug [Inbox still set as default first tab](https://github.com/XilinJia/Podcini/issues/10)
+* cleaned up Inbox related resources
+* removed info button in FeedItemList header
+* added items count in FeedItemList header
+* fixed bug in FeedItemList when filtered list has no items
+* buildConfig is set in build.gradle instead of gradle.properties

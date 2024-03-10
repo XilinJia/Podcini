@@ -8,7 +8,7 @@
   <string name="episodes_label">Epizódok</string>
   <string name="home_label">Kezdőlap</string>
   <string name="queue_label">Lejátszási sor</string>
-  <string name="inbox_label">Beérkezett</string>
+
   <string name="favorite_episodes_label">Kedvencek</string>
   <string name="settings_label">Beállítások</string>
   <string name="downloads_label">Letöltések</string>
@@ -55,7 +55,7 @@
   <string name="drawer_feed_order_alphabetical">Rendezés betűrendben</string>
   <string name="drawer_feed_order_last_update">Rendezés közzététel dátuma szerint</string>
   <string name="drawer_feed_order_most_played">Rendezés lejátszott epizódok szerint</string>
-  <string name="drawer_feed_counter_inbox">Beérkezett epizódok száma</string>
+
   <string name="drawer_feed_counter_unplayed">Nem játszott epizódok száma</string>
   <string name="drawer_feed_counter_downloaded">Letöltött epizódok száma</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Letöltött és nem lejátszott epizódok száma</string>
@@ -130,9 +130,9 @@
   </plurals>
   <string name="new_episode_notification_group_text">A feliratkozásainak új epizódjai vannak.</string>
   <!--Actions on feeds-->
-  <string name="remove_all_inbox_label">Összes eltávolítása a beérkezők közül</string>
-  <string name="removed_all_inbox_msg">Összes eltávolítva a beérkezők közül</string>
-  <string name="remove_all_inbox_confirmation_msg">Erősítse meg, hogy az összeset eltávolítja a beérkezők közül.</string>
+
+
+
   <string name="multi_select_mark_played_confirmation">Erősítse meg, hogy az összes kiválasztott elemet lejátszottnak jelöli.</string>
   <string name="multi_select_mark_unplayed_confirmation">Erősítse meg, hogy az összes kiválasztott elemet nem lejátszottnak jelöli.</string>
   <string name="show_info_label">Információ megjelenítése</string>
@@ -176,7 +176,7 @@
     <item quantity="one">1 letöltött epizód törölve.</item>
     <item quantity="other">%d letöltött epizód törölve.</item>
   </plurals>
-  <string name="remove_inbox_label">Eltávolítás a beérkezők közül</string>
+
   <string name="removed_inbox_label">Eltávolítva a beérkezők közül</string>
   <string name="mark_read_label">Megjelölés lejátszottként</string>
   <string name="toggle_played_label">Lejátszott állapot be/ki</string>
@@ -201,10 +201,6 @@
   <plurals name="removed_from_queue_batch_label">
     <item quantity="one">%d epizód eltávolítva a lejátszási sorból.</item>
     <item quantity="other">%d epizód eltávolítva a lejátszási sorból.</item>
-  </plurals>
-  <plurals name="removed_from_inbox_batch_label">
-    <item quantity="one">%d epizód eltávolítva a beérkezők közül.</item>
-    <item quantity="other">%d epizód eltávolítva a beérkezők közül.</item>
   </plurals>
   <string name="add_to_favorite_label">Hozzáadás a kedvencekhez</string>
   <string name="remove_from_favorite_label">Eltávolítás a kedvencek közül</string>
@@ -285,8 +281,8 @@
   <string name="no_history_label">Ha meghallgat egy epizódot, meg fog itt jelenni.</string>
   <string name="no_all_episodes_label">Ha hozzáad egy podcastot, az epizódok itt fognak megjelenni.</string>
   <string name="no_all_episodes_filtered_label">Próbálja meg törölni a szűrőt, hogy több epizódot lásson.</string>
-  <string name="no_inbox_head_label">Nincsenek beérkezett epizódok</string>
-  <string name="no_inbox_label">Amikor új epizódok érkeznek, akkor itt fognak megjelenni. Azután eldöntheti, hogy érdeklik-e vagy sem.</string>
+
+
   <string name="no_subscriptions_head_label">Nincsenek feliratkozások</string>
   <string name="no_subscriptions_label">Podcastra való feliratkozáshoz nyomja meg az alábbi plusz ikont.</string>
   <!--Preferences-->

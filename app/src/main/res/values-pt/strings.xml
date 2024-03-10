@@ -8,7 +8,7 @@
   <string name="episodes_label">Episódios</string>
   <string name="home_label">Início</string>
   <string name="queue_label">Fila</string>
-  <string name="inbox_label">Caixa de entrada</string>
+
   <string name="favorite_episodes_label">Favoritos</string>
   <string name="settings_label">Definições</string>
   <string name="downloads_label">Descargas</string>
@@ -62,7 +62,7 @@
   <string name="drawer_feed_order_alphabetical">Ordenar alfabeticamente</string>
   <string name="drawer_feed_order_last_update">Ordenar por data de publicação</string>
   <string name="drawer_feed_order_most_played">Ordenar por número de episódios reproduzidos</string>
-  <string name="drawer_feed_counter_inbox">Número de episódios na caixa de entrada</string>
+
   <string name="drawer_feed_counter_unplayed">Número de episódios não reproduzidos</string>
   <string name="drawer_feed_counter_downloaded">Número de episódios descarregados</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Número de episódios descarregados e não reproduzidos</string>
@@ -115,7 +115,7 @@
   <string name="feed_volume_boost_heavy">Amplificação intensa</string>
   <string name="feed_auto_download_always">Sempre</string>
   <string name="feed_auto_download_never">Nunca</string>
-  <string name="feed_new_episodes_action_add_to_inbox">Adicionar à caixa de entrada</string>
+
   <string name="feed_new_episodes_action_nothing">Nada</string>
   <string name="episode_cleanup_never">Nunca</string>
   <string name="episode_cleanup_except_favorite_removal">Se não for favorito</string>
@@ -155,9 +155,9 @@
   </plurals>
   <string name="new_episode_notification_group_text">Existem novos episódios nas suas subscrições</string>
   <!--Actions on feeds-->
-  <string name="remove_all_inbox_label">Remover tudo da caixa de entrada</string>
-  <string name="removed_all_inbox_msg">Tudo removido da caixa de entrada</string>
-  <string name="remove_all_inbox_confirmation_msg">Confirma que deseja remover tudo da caixa de entrada\?</string>
+
+
+
   <string name="multi_select_mark_played_confirmation">Confirma que deseja marcar todos os itens selecionados como reproduzidos\?</string>
   <string name="multi_select_mark_unplayed_confirmation">Confirma que deseja marcar todos os itens selecionados como não reproduzidos\?</string>
   <string name="show_info_label">Mostrar informações</string>
@@ -210,7 +210,7 @@
     <item quantity="many">%d episódios eliminados</item>
     <item quantity="other">%d episódios eliminados</item>
   </plurals>
-  <string name="remove_inbox_label">Remover da caixa de entrada</string>
+
   <string name="removed_inbox_label">Removido da caixa de entrada</string>
   <string name="mark_read_label">Marcar como reproduzido</string>
   <string name="toggle_played_label">Alternar estado de reprodução</string>
@@ -241,11 +241,6 @@
     <item quantity="one">%d episódio removido da fila</item>
     <item quantity="many">%d episódios removidos da fila</item>
     <item quantity="other">%d episódios removidos da fila</item>
-  </plurals>
-  <plurals name="removed_from_inbox_batch_label">
-    <item quantity="one">%d episódio removido da caixa de entrada</item>
-    <item quantity="many">%d episódios removidos da caixa de entrada</item>
-    <item quantity="other">%d episódios removidos da caixa de entrada</item>
   </plurals>
   <string name="add_to_favorite_label">Adicionar aos favoritos</string>
   <string name="remove_from_favorite_label">Remover dos favoritos</string>
@@ -355,8 +350,8 @@
   <string name="no_all_episodes_head_label">Não existem episódios</string>
   <string name="no_all_episodes_label">Assim que adicionar um podcast, os episódios serão mostrados aqui</string>
   <string name="no_all_episodes_filtered_label">Tente remover o filtro para ver mais episódios</string>
-  <string name="no_inbox_head_label">Não existem episódios na caixa de entrada</string>
-  <string name="no_inbox_label">Assim que um episódio chegar, será mostrado aqui. Depois, poderá decidir se tem ou não interesse na sua reprodução.</string>
+
+
   <string name="no_subscriptions_head_label">Não tem subscrições</string>
   <string name="no_subscriptions_label">Para subscrever um podcast, prima no ícone +</string>
   <!--Preferences-->
@@ -603,7 +598,7 @@
     <item quantity="other">%d horas</item>
   </plurals>
   <string name="auto_enable_label">Ativar temporizador automaticamente ao tocar no botão Reproduzir</string>
-  <string name="auto_enable_label_with_times">Ativa automaticamente o temporizador se premir Reproduzir entre %s e %s</string>
+  <string name="auto_enable_label_with_times" formatted="false">Ativa automaticamente o temporizador se premir Reproduzir entre %s e %s</string>
   <string name="auto_enable_change_times">Alterar intervalo</string>
   <string name="sleep_timer_enabled_label">Temporizador ativado</string>
   <!--Synchronisation-->
@@ -664,7 +659,6 @@
   <string name="status_downloading_label">A descarregar episódio</string>
   <string name="in_queue_label">Na fila</string>
   <string name="is_favorite_label">Marcar como favorito</string>
-  <string name="is_inbox_label">Na caixa de entrada</string>
   <string name="is_played">Reproduzido</string>
   <string name="load_next_page_label">Carregar página seguinte</string>
   <string name="position">Posição: %1$s</string>

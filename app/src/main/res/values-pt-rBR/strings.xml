@@ -8,7 +8,7 @@
   <string name="episodes_label">Episódios</string>
   <string name="home_label">Início</string>
   <string name="queue_label">Fila</string>
-  <string name="inbox_label">Caixa de entrada</string>
+
   <string name="favorite_episodes_label">Favoritos</string>
   <string name="settings_label">Configurações</string>
   <string name="downloads_label">Downloads</string>
@@ -59,7 +59,7 @@
   <string name="drawer_feed_order_alphabetical">Ordenar alfabeticamente</string>
   <string name="drawer_feed_order_last_update">Ordenar por data de publicação</string>
   <string name="drawer_feed_order_most_played">Ordenar pelo número de episódios reproduzidos</string>
-  <string name="drawer_feed_counter_inbox">Número de episódios na caixa de entrada</string>
+
   <string name="drawer_feed_counter_unplayed">Número de episódios não reproduzidos</string>
   <string name="drawer_feed_counter_downloaded">Número de episódios baixados</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Número de episódios baixados e não reproduzidos</string>
@@ -104,7 +104,7 @@
   <string name="auto_delete_label">Excluir episódio automaticamente</string>
   <string name="feed_auto_download_always">Sempre</string>
   <string name="feed_auto_download_never">Nunca</string>
-  <string name="feed_new_episodes_action_add_to_inbox">Adicionar à caixa de entrada</string>
+
   <string name="feed_new_episodes_action_nothing">Nada</string>
   <string name="episode_cleanup_never">Nunca</string>
   <string name="episode_cleanup_except_favorite_removal">Quando não estiver entre os favoritos</string>
@@ -144,9 +144,9 @@
   </plurals>
   <string name="new_episode_notification_group_text">Suas assinaturas têm novos episódios.</string>
   <!--Actions on feeds-->
-  <string name="remove_all_inbox_label">Remover tudo da caixa de entrada</string>
-  <string name="removed_all_inbox_msg">Tudo removido da caixa de entrada</string>
-  <string name="remove_all_inbox_confirmation_msg">Por favor, confirme que você deseja remover tudo da caixa de entrada.</string>
+
+
+
   <string name="multi_select_mark_played_confirmation">Por favor, confirme que você deseja marcar todos os itens selecionados como reproduzidos.</string>
   <string name="multi_select_mark_unplayed_confirmation">Por favor, confirme que você deseja marcar todos os itens selecionados como não reproduzidos.</string>
   <string name="show_info_label">Mostrar informação</string>
@@ -197,7 +197,7 @@
     <item quantity="many">%d episódios baixados deletados.</item>
     <item quantity="other">%d episódios baixados deletados.</item>
   </plurals>
-  <string name="remove_inbox_label">Remover da caixa de entrada</string>
+
   <string name="removed_inbox_label">Removido da caixa de entrada</string>
   <string name="mark_read_label">Marcar como reproduzido</string>
   <string name="toggle_played_label">Alterar estado de reprodução</string>
@@ -228,11 +228,6 @@
     <item quantity="one">%d episódio removido da fila.</item>
     <item quantity="many">%d episódios removidos da fila.</item>
     <item quantity="other">%d episódios removidos da fila.</item>
-  </plurals>
-  <plurals name="removed_from_inbox_batch_label">
-    <item quantity="one">%d episódio removido da caixa de entrada.</item>
-    <item quantity="many">%d episódios removidos da caixa de entrada.</item>
-    <item quantity="other"> %d episódios removidos da caixa de entrada.</item>
   </plurals>
   <string name="add_to_favorite_label">Adicionar aos favoritos</string>
   <string name="remove_from_favorite_label">Remover dos favoritos</string>
@@ -338,8 +333,8 @@
   <string name="no_all_episodes_head_label">Nenhum Episódio</string>
   <string name="no_all_episodes_label">Quando você adiciona um podcast, os episódios são mostrados aqui.</string>
   <string name="no_all_episodes_filtered_label">Experimente limpar o filtro para ver mais episódios.</string>
-  <string name="no_inbox_head_label">Nenhum episódio na caixa de entrada</string>
-  <string name="no_inbox_label">Novos episódios aparecerão aqui quando forem lançados. Você pode decidir se tem interesse neles ou não.</string>
+
+
   <string name="no_subscriptions_head_label">Nenhuma assinatura</string>
   <string name="no_subscriptions_label">Para assinar um podcast, pressione o ícone de adição abaixo.</string>
   <!--Preferences-->

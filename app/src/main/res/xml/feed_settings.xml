@@ -57,14 +57,6 @@
         android:summary="@string/feed_volume_adaptation_summary"
         android:title="@string/feed_volume_adapdation" />
 
-    <ac.mdiq.podcini.preferences.MaterialListPreference
-        android:entries="@array/feedNewEpisodesActionItems"
-        android:entryValues="@array/feedNewEpisodesActionValues"
-        android:icon="@drawable/ic_feed"
-        android:key="feedNewEpisodesAction"
-        android:summary="@string/global_default"
-        android:title="@string/pref_new_episodes_action_title" />
-
     <PreferenceCategory
         android:key="autoDownloadCategory"
         android:title="@string/auto_download_settings_label">

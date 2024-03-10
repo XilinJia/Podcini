@@ -8,7 +8,7 @@
   <string name="episodes_label">Epizódy</string>
   <string name="home_label">Domov</string>
   <string name="queue_label">Poradie</string>
-  <string name="inbox_label">Schránka</string>
+
   <string name="favorite_episodes_label">Obľúbené</string>
   <string name="settings_label">Nastavenia</string>
   <string name="downloads_label">Sťahovanie</string>
@@ -62,7 +62,7 @@
   <string name="drawer_feed_order_alphabetical">Usporiadať abecedne</string>
   <string name="drawer_feed_order_last_update">Usporiadať podľa dátumu zverejnenia</string>
   <string name="drawer_feed_order_most_played">Usporiadať podľa počtu prehraných epizód</string>
-  <string name="drawer_feed_counter_inbox">Počet epizód v schránke</string>
+
   <string name="drawer_feed_counter_unplayed">Počet neprehraných epizód</string>
   <string name="drawer_feed_counter_downloaded">Počet stiahnutých epizód</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Počet stiahnutých a neprehratých epizód</string>
@@ -115,7 +115,7 @@
   <string name="feed_volume_boost_heavy">Výrazne zvýšiť</string>
   <string name="feed_auto_download_always">Vždy</string>
   <string name="feed_auto_download_never">Nikdy</string>
-  <string name="feed_new_episodes_action_add_to_inbox">Pridať do schránky</string>
+
   <string name="feed_new_episodes_action_nothing">Nič</string>
   <string name="episode_cleanup_never">Nikdy</string>
   <string name="episode_cleanup_except_favorite_removal">Ak nie je medzi obľúbenými</string>
@@ -161,9 +161,9 @@
   </plurals>
   <string name="new_episode_notification_group_text">Vaše odbery majú nové epizódy</string>
   <!--Actions on feeds-->
-  <string name="remove_all_inbox_label">Odstrániť všetko zo schránky</string>
-  <string name="removed_all_inbox_msg">Všetko zo schránky bolo odstránené</string>
-  <string name="remove_all_inbox_confirmation_msg">Prosím, potvrďte, že chcete odstrániť všetko v schránke.</string>
+
+
+
   <string name="multi_select_mark_played_confirmation">Prosím potvrďte, že chcete označiť všetky vybrané položky ako hrané.</string>
   <string name="multi_select_mark_unplayed_confirmation">Prosím potvrďte, že chcete označiť všetky vybrané položky ako nehrané.</string>
   <string name="show_info_label">Zobraziť informácie</string>
@@ -219,7 +219,7 @@
     <item quantity="many">%dstiahnutých epizód zmazaných.</item>
     <item quantity="other">%dstiahnutých epizód zmazaných.</item>
   </plurals>
-  <string name="remove_inbox_label">Odstrániť zo schránky</string>
+
   <string name="removed_inbox_label">Odstránené zo schránky</string>
   <string name="mark_read_label">Označiť ako prehrané</string>
   <string name="toggle_played_label">Prepnúť stav prehratia</string>
@@ -254,12 +254,6 @@
     <item quantity="few">%d epizódy boli odstránené z poradia</item>
     <item quantity="many">%d epizód bolo odstránených z poradia</item>
     <item quantity="other">%d epizód bolo odstránených z poradia</item>
-  </plurals>
-  <plurals name="removed_from_inbox_batch_label">
-    <item quantity="one">%depizóda bola odstránená z priečinku doručených.</item>
-    <item quantity="few">%d epizód bolo odstránených z priečinku doručených.</item>
-    <item quantity="many">%d epizód bolo odstránených z priečinku doručených.</item>
-    <item quantity="other">%d epizód bolo odstránených z priečinku doručených.</item>
   </plurals>
   <string name="add_to_favorite_label">Pridať medzi obľúbené</string>
   <string name="remove_from_favorite_label">Odstrániť z obľúbených</string>
@@ -370,8 +364,8 @@
   <string name="no_all_episodes_head_label">Žiadne epizódy</string>
   <string name="no_all_episodes_label">Keď si pridáte niektorý podcast, tak sa objaví tu.</string>
   <string name="no_all_episodes_filtered_label">Ak chcete vidieť viac epizód, skúste vypnúť filter.</string>
-  <string name="no_inbox_head_label">Žiadne epizódy v schránke</string>
-  <string name="no_inbox_label">Keď prídu nové epizódy, tak sa ukážu tu. Vy sa môžete rozhodnúť, či o ne máte alebo nemáte záujem.</string>
+
+
   <string name="no_subscriptions_head_label">Žiadne odbery</string>
   <string name="no_subscriptions_label">Pre prihlásenie odberu podcastu stlačte ikonu plus nižšie.</string>
   <!--Preferences-->
@@ -627,7 +621,7 @@
     <item quantity="other">%d dní</item>
   </plurals>
   <string name="auto_enable_label">Po stlačení tlačidla prehrávania automaticky aktivovať časovač vypnutia</string>
-  <string name="auto_enable_label_with_times">Po stlačení tlačidla prehrávania medzi %s a %s automaticky aktivovať časovač vypnutia</string>
+  <string name="auto_enable_label_with_times" formatted="false">Po stlačení tlačidla prehrávania medzi %s a %s automaticky aktivovať časovač vypnutia</string>
   <string name="auto_enable_change_times">Zmeniť časový rozsah</string>
   <string name="sleep_timer_enabled_label">Časovač vypnutia povolený</string>
   <!--Synchronisation-->
@@ -688,7 +682,6 @@
   <string name="status_downloading_label">Epizóda sa sťahuje</string>
   <string name="in_queue_label">V poradí</string>
   <string name="is_favorite_label">Označené ako obľúbené</string>
-  <string name="is_inbox_label">V schránke</string>
   <string name="is_played">Prehrané</string>
   <string name="load_next_page_label">Načítať ďalšiu stránku</string>
   <string name="position">Pozícia: %1$s</string>

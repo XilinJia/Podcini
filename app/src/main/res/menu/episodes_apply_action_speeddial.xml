@@ -37,9 +37,9 @@
         android:icon="@drawable/ic_playlist_play"
         android:title="@string/add_to_queue_label" />
 
-    <item
-        android:id="@+id/remove_from_inbox_batch"
-        android:icon="@drawable/ic_check"
-        android:title="@string/remove_inbox_label" />
+<!--    <item-->
+<!--        android:id="@+id/remove_from_inbox_batch"-->
+<!--        android:icon="@drawable/ic_check"-->
+<!--        android:title="@string/remove_inbox_label" />-->
 
 </menu>

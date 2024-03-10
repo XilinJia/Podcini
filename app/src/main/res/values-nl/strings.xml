@@ -8,7 +8,7 @@
   <string name="episodes_label">Afleveringen</string>
   <string name="home_label">Startpagina</string>
   <string name="queue_label">Wachtrij</string>
-  <string name="inbox_label">Postvak IN</string>
+
   <string name="favorite_episodes_label">Favorieten</string>
   <string name="settings_label">Instellingen</string>
   <string name="downloads_label">Downloads</string>
@@ -65,7 +65,7 @@
   <string name="drawer_feed_order_alphabetical">Op alfabetische volgorde</string>
   <string name="drawer_feed_order_last_update">Op verschijningsdatum</string>
   <string name="drawer_feed_order_most_played">Op aantal afgespeelde afleveringen</string>
-  <string name="drawer_feed_counter_inbox">Aantal beluisterde afleveringen in Postvak IN</string>
+
   <string name="drawer_feed_counter_unplayed">Aantal niet afgespeelde afleveringen</string>
   <string name="drawer_feed_counter_downloaded">Aantal gedownloade afleveringen</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Aantal gedownloade, onbeluisterde afleveringen</string>
@@ -110,7 +110,7 @@
   <string name="auto_delete_label">Aflevering automatisch verwijderen</string>
   <string name="feed_auto_download_always">Altijd</string>
   <string name="feed_auto_download_never">Nooit</string>
-  <string name="feed_new_episodes_action_add_to_inbox">Aan inbox toevoegen</string>
+
   <string name="feed_new_episodes_action_nothing">Niets</string>
   <string name="episode_cleanup_never">Nooit</string>
   <string name="episode_cleanup_except_favorite_removal">Indien niet favoriet</string>
@@ -144,9 +144,9 @@
   </plurals>
   <string name="new_episode_notification_group_text">Er zijn nieuwe afleveringen beschikbaar.</string>
   <!--Actions on feeds-->
-  <string name="remove_all_inbox_label">Alles verwijderen uit Postvak IN</string>
-  <string name="removed_all_inbox_msg">Alles is verwijderd uit Postvak IN</string>
-  <string name="remove_all_inbox_confirmation_msg">Bevestig dat je alle items wilt verwijderen uit Postvak IN.</string>
+
+
+
   <string name="multi_select_mark_played_confirmation">Bevestig dat je alle afleveringen wilt markeren als beluisterd.</string>
   <string name="multi_select_mark_unplayed_confirmation">Bevestig dat je alle afleveringen wilt markeren als onbeluisterd.</string>
   <string name="show_info_label">Informatie tonen</string>
@@ -194,7 +194,7 @@
     <item quantity="one">1 gedownloade aflevering verwijderd.</item>
     <item quantity="other">%d gedownloade afleveringen verwijderd.</item>
   </plurals>
-  <string name="remove_inbox_label">Verwijderen uit Postvak IN</string>
+
   <string name="removed_inbox_label">Verwijderd uit Postvak IN</string>
   <string name="mark_read_label">Als afgespeeld markeren</string>
   <string name="toggle_played_label">Afspeelstatus wijzigen</string>
@@ -221,10 +221,6 @@
   <plurals name="removed_from_queue_batch_label">
     <item quantity="one">%d aflevering verwijderd uit de wachtrij.</item>
     <item quantity="other">%d afleveringen verwijderd uit de wachtrij.</item>
-  </plurals>
-  <plurals name="removed_from_inbox_batch_label">
-    <item quantity="one">%d aflevering verwijderd uit Postvak In.</item>
-    <item quantity="other">%d afleveringen verwijderd uit Postvak In.</item>
   </plurals>
   <string name="add_to_favorite_label">Toevoegen aan favorieten</string>
   <string name="remove_from_favorite_label">Verwijderen uit favorieten</string>
@@ -321,8 +317,8 @@
   <string name="no_all_episodes_head_label">Geen afleveringen</string>
   <string name="no_all_episodes_label">Als je een podcast toevoegt, verschijnen de afleveringen hier.</string>
   <string name="no_all_episodes_filtered_label">Wis het filter om meer afleveringen te bekijken.</string>
-  <string name="no_inbox_head_label">Er staan geen afleveringen in Postvak IN</string>
-  <string name="no_inbox_label">Nieuwe afleveringen worden hier getoond. Vanaf hier kun je beslissen of je ze wilt behouden of niet.</string>
+
+
   <string name="no_subscriptions_head_label">Geen abonnementen</string>
   <string name="no_subscriptions_label">Tik op het plus-pictogram om je te abonneren op een podcast.</string>
   <!--Preferences-->

@@ -8,7 +8,7 @@
   <string name="episodes_label">פרקים</string>
   <string name="home_label">בית</string>
   <string name="queue_label">תור</string>
-  <string name="inbox_label">דואר נכנס</string>
+
   <string name="favorite_episodes_label">מועדפים</string>
   <string name="settings_label">הגדרות</string>
   <string name="downloads_label">הורדות</string>
@@ -69,7 +69,7 @@
   <string name="drawer_feed_order_alphabetical">מיון בסדר אלפביתי</string>
   <string name="drawer_feed_order_last_update">מיון לפי תאריך פרסום</string>
   <string name="drawer_feed_order_most_played">מיון לפי מספר פרקים שהושמעו </string>
-  <string name="drawer_feed_counter_inbox">מספר הפרקים בדואר הנכנס</string>
+
   <string name="drawer_feed_counter_unplayed">מספר פרקים שעוד לא התנגנו</string>
   <string name="drawer_feed_counter_downloaded">מספר פרקים שהתקבלו</string>
   <string name="drawer_feed_counter_downloaded_unplayed">מספר הפרקים שירדו אבל לא נוגנו</string>
@@ -122,7 +122,7 @@
   <string name="feed_volume_boost_heavy">הגברה משמעותית</string>
   <string name="feed_auto_download_always">תמיד</string>
   <string name="feed_auto_download_never">אף פעם</string>
-  <string name="feed_new_episodes_action_add_to_inbox">הוספה לדואר נכנס</string>
+
   <string name="feed_new_episodes_action_nothing">כלום</string>
   <string name="episode_cleanup_never">אף פעם</string>
   <string name="episode_cleanup_except_favorite_removal">כאשר לא במועדפים</string>
@@ -168,9 +168,9 @@
   </plurals>
   <string name="new_episode_notification_group_text">למינוי שלך יש פרקים חדשים.</string>
   <!--Actions on feeds-->
-  <string name="remove_all_inbox_label">הסרה של הכול מהדואר הנכנס</string>
-  <string name="removed_all_inbox_msg">הכול הוסר מהדואר הנכנס</string>
-  <string name="remove_all_inbox_confirmation_msg">נא לאשר להסיר הכול מהדואר הנכנס.</string>
+
+
+
   <string name="multi_select_mark_played_confirmation">נא לאשר את סימון כל הפריטים המסומנים כנוגנו.</string>
   <string name="multi_select_mark_unplayed_confirmation">נא לאשר את סימון כל הפריטים המסומנים כטרם נוגנו.</string>
   <string name="show_info_label">הצגת מידע</string>
@@ -226,7 +226,7 @@
     <item quantity="many">%d פרקים שהורדו נמחקו.</item>
     <item quantity="other">%d פרקים שהורדו נמחקו.</item>
   </plurals>
-  <string name="remove_inbox_label">הסרה מהדואר הנכנס</string>
+
   <string name="removed_inbox_label">הוסר מהדואר הנכנס</string>
   <string name="mark_read_label">סימון כנצפה</string>
   <string name="toggle_played_label">החלפת מצב נגינה</string>
@@ -261,12 +261,6 @@
     <item quantity="two">%d פרקים הוסרו מהתור.</item>
     <item quantity="many">%d פרקים הוסרו מהתור.</item>
     <item quantity="other">%d פרקים הוסרו מהתור.</item>
-  </plurals>
-  <plurals name="removed_from_inbox_batch_label">
-    <item quantity="one">הפרק הוסר מהדואר הנכנס.</item>
-    <item quantity="two">%d פרקים הוסרו מהדואר הנכנס.</item>
-    <item quantity="many">%d פרקים הוסרו מהדואר הנכנס.</item>
-    <item quantity="other">%d פרקים הוסרו מהדואר הנכנס.</item>
   </plurals>
   <string name="add_to_favorite_label">הוספה למועדפים</string>
   <string name="remove_from_favorite_label">הסרה מהמועדפים</string>
@@ -377,8 +371,8 @@
   <string name="no_all_episodes_head_label">אין פרקים</string>
   <string name="no_all_episodes_label">בעת הוספת פודקאסט, הפרקים יופיעו כאן.</string>
   <string name="no_all_episodes_filtered_label">יש לנסות לנקות את המסנן כדי לצפות בפרקים נוספים.</string>
-  <string name="no_inbox_head_label">אין פרקים בדואר הנכנס</string>
-  <string name="no_inbox_label">כאשר פרקים חדשים מגיעים, הם מופיעים כאן. אפשר להחליט אם הם מעניינים אותך או לא.</string>
+
+
   <string name="no_subscriptions_head_label">אין מינויים</string>
   <string name="no_subscriptions_label">כדי להירשם לפודקאסט, יש ללחוץ על סימן הפלוס שלהלן.</string>
   <!--Preferences-->
@@ -628,7 +622,7 @@
     <item quantity="other">%d שעות</item>
   </plurals>
   <string name="auto_enable_label">להפעיל את מתזמן השינה עם לחיצה על נגינה</string>
-  <string name="auto_enable_label_with_times">להפעיל את מתזמן השינה עם לחיצה על נגינה בין %s ל־%s</string>
+  <string name="auto_enable_label_with_times" formatted="false">להפעיל את מתזמן השינה עם לחיצה על נגינה בין %s ל־%s</string>
   <string name="auto_enable_change_times">שינוי טווח הזמן</string>
   <string name="sleep_timer_enabled_label">מתזמן השינה פעיל</string>
   <!--Synchronisation-->
@@ -689,7 +683,6 @@
   <string name="status_downloading_label">הפרק יורד</string>
   <string name="in_queue_label">בתור</string>
   <string name="is_favorite_label">מסומן כמועדף</string>
-  <string name="is_inbox_label">בפריטים הנכנסים</string>
   <string name="is_played">התנגן</string>
   <string name="load_next_page_label">טעינת הדף הבא</string>
   <string name="position">מיקום: %1$s</string>

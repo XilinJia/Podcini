@@ -8,7 +8,7 @@
   <string name="episodes_label">曲目</string>
   <string name="home_label">首页</string>
   <string name="queue_label">播放列表</string>
-  <string name="inbox_label">收件箱</string>
+
   <string name="favorite_episodes_label">收藏</string>
   <string name="settings_label">设置</string>
   <string name="downloads_label">下载</string>
@@ -69,7 +69,7 @@
   <string name="drawer_feed_order_alphabetical">按名称排序</string>
   <string name="drawer_feed_order_last_update">按出版日期排序</string>
   <string name="drawer_feed_order_most_played">根据已播放节目的数量排序</string>
-  <string name="drawer_feed_counter_inbox">收件箱内播客节目的数量</string>
+
   <string name="drawer_feed_counter_unplayed">未播曲目数</string>
   <string name="drawer_feed_counter_downloaded">已下载节目数</string>
   <string name="drawer_feed_counter_downloaded_unplayed">已下载但未播放的节目数</string>
@@ -122,7 +122,7 @@
   <string name="feed_volume_boost_heavy">大幅上调</string>
   <string name="feed_auto_download_always"> 总是</string>
   <string name="feed_auto_download_never">从不</string>
-  <string name="feed_new_episodes_action_add_to_inbox">添加到收件箱</string>
+
   <string name="feed_new_episodes_action_nothing">啥都没有</string>
   <string name="episode_cleanup_never">从不</string>
   <string name="episode_cleanup_except_favorite_removal">当未收藏时</string>
@@ -150,9 +150,9 @@
   </plurals>
   <string name="new_episode_notification_group_text">你的订阅有新节目</string>
   <!--Actions on feeds-->
-  <string name="remove_all_inbox_label">从收件箱删除所有内容</string>
-  <string name="removed_all_inbox_msg">从收件箱删除所有内容</string>
-  <string name="remove_all_inbox_confirmation_msg">请确认你想从收件箱删除所有内容</string>
+
+
+
   <string name="multi_select_mark_played_confirmation">请确认你想将所有选定项目标记为“已播放”</string>
   <string name="multi_select_mark_unplayed_confirmation">请确认你想将所有选定项目标记为“未播放”</string>
   <string name="show_info_label">查看信息</string>
@@ -199,7 +199,7 @@
   <plurals name="deleted_multi_episode_batch_label">
     <item quantity="other">删除了 %d 个已下载的节目。</item>
   </plurals>
-  <string name="remove_inbox_label">从收件箱删除</string>
+
   <string name="removed_inbox_label">已从收件箱删除</string>
   <string name="mark_read_label">标记已播放</string>
   <string name="toggle_played_label">切换播放状态</string>
@@ -222,9 +222,6 @@
   <string name="remove_from_queue_label">从队列中删除</string>
   <plurals name="removed_from_queue_batch_label">
     <item quantity="other">已从序列中移除%d个节目</item>
-  </plurals>
-  <plurals name="removed_from_inbox_batch_label">
-    <item quantity="other">从收件箱中删除了 %d 期节目。</item>
   </plurals>
   <string name="add_to_favorite_label">加为收藏</string>
   <string name="remove_from_favorite_label">从收藏中删除</string>
@@ -332,8 +329,8 @@
   <string name="no_all_episodes_head_label">无节目</string>
   <string name="no_all_episodes_label">当您添加一个播客时，节目会显示在此处</string>
   <string name="no_all_episodes_filtered_label">尝试清除过滤器查看更多播客节目</string>
-  <string name="no_inbox_head_label">收件箱内无播客节目</string>
-  <string name="no_inbox_label">新的播客节目到来时，它们将显示在这里。你可以决定你是否对它们感兴趣。</string>
+
+
   <string name="no_subscriptions_head_label">没有订阅</string>
   <string name="no_subscriptions_label">点按下方的+号按钮来订阅播客</string>
   <!--Preferences-->
@@ -574,7 +571,7 @@
     <item quantity="other">%d 天</item>
   </plurals>
   <string name="auto_enable_label">按下播放时自动激活睡眠定时器</string>
-  <string name="auto_enable_label_with_times">在 %s 和 %s间按下播放时自动激活睡眠定时器</string>
+  <string name="auto_enable_label_with_times" formatted="false">在 %s 和 %s间按下播放时自动激活睡眠定时器</string>
   <string name="auto_enable_change_times">更改时间范围</string>
   <string name="sleep_timer_enabled_label">睡眠计时器已启用</string>
   <!--Synchronisation-->
@@ -635,7 +632,6 @@
   <string name="status_downloading_label">曲目正在下载</string>
   <string name="in_queue_label">在队列中</string>
   <string name="is_favorite_label">标记为收藏</string>
-  <string name="is_inbox_label">在收件箱中</string>
   <string name="is_played">已播放</string>
   <string name="load_next_page_label">载入下一页</string>
   <string name="position">位置：%1$s</string>

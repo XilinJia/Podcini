@@ -8,7 +8,7 @@
   <string name="episodes_label">Episodis</string>
   <string name="home_label">Inici</string>
   <string name="queue_label">Cua</string>
-  <string name="inbox_label">Safata d\'entrada</string>
+
   <string name="favorite_episodes_label">Preferits</string>
   <string name="settings_label">Configuració</string>
   <string name="downloads_label">Baixades</string>
@@ -61,7 +61,7 @@
   <string name="drawer_feed_order_alphabetical">Ordre alfabètic</string>
   <string name="drawer_feed_order_last_update">Ordre per data de publicació</string>
   <string name="drawer_feed_order_most_played">Ordre per número d\'episodis reproduïts</string>
-  <string name="drawer_feed_counter_inbox">Número d\'episodis a la Safata d\'entrada</string>
+
   <string name="drawer_feed_counter_unplayed">Número d\'episodis per reproduir</string>
   <string name="drawer_feed_counter_downloaded">Número d\'episodis descarregats</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Número de descàrregues i episodis sense reproduir</string>
@@ -106,7 +106,7 @@
   <string name="auto_delete_label">Elimina l\'episodi automàticament</string>
   <string name="feed_auto_download_always">Sempre</string>
   <string name="feed_auto_download_never">Mai</string>
-  <string name="feed_new_episodes_action_add_to_inbox">Afegeix a la safata d\'entrada</string>
+
   <string name="feed_new_episodes_action_nothing">No facis res</string>
   <string name="episode_cleanup_never">Mai</string>
   <string name="episode_cleanup_except_favorite_removal">Quan no és favorit</string>
@@ -140,9 +140,9 @@
   </plurals>
   <string name="new_episode_notification_group_text">Les teves subscripcions tenen episodis nous..</string>
   <!--Actions on feeds-->
-  <string name="remove_all_inbox_label">Eliminar-ho tot de la Safata d\'entrada</string>
-  <string name="removed_all_inbox_msg">Tot eliminat de la Safata d\'entrada</string>
-  <string name="remove_all_inbox_confirmation_msg">Per favor, confirmeu que voleu eliminar-ho tot de la safata d\'entrada.</string>
+
+
+
   <string name="multi_select_mark_played_confirmation">Per favor, confirmeu que voleu marcar tots els elements seleccionats com a reproduïts.</string>
   <string name="multi_select_mark_unplayed_confirmation">Per favor, confirmeu que voleu marcar tots els elements seleccionats com a no reproduïts.</string>
   <string name="show_info_label">Mostra informació</string>
@@ -190,7 +190,7 @@
     <item quantity="one">1 episodi descarregat, suprimit.</item>
     <item quantity="other">%d episodis baixats, suprimits.</item>
   </plurals>
-  <string name="remove_inbox_label">Elimina de la Safata d\'entrada</string>
+
   <string name="removed_inbox_label">Eliminat de la Safata d\'entrada</string>
   <string name="mark_read_label">Marca com a reproduït</string>
   <string name="toggle_played_label">Commuta l\'estat de reproducció</string>
@@ -217,10 +217,6 @@
   <plurals name="removed_from_queue_batch_label">
     <item quantity="one">%d episodi retirat de la cua.</item>
     <item quantity="other">%d episodis retirats de la cua.</item>
-  </plurals>
-  <plurals name="removed_from_inbox_batch_label">
-    <item quantity="one">%d episodi eliminat de la Safata d\'entrada.</item>
-    <item quantity="other">%d episodis eliminats de la Safata d\'entrada.</item>
   </plurals>
   <string name="add_to_favorite_label">Afegeix a preferits</string>
   <string name="remove_from_favorite_label">Suprimeix de preferits</string>
@@ -327,8 +323,8 @@
   <string name="no_all_episodes_head_label">Sense episodis</string>
   <string name="no_all_episodes_label">En afegir un pòdcast els episodis apareixeran aquí.</string>
   <string name="no_all_episodes_filtered_label">Proveu a netejar el filtre per veure més episodis.</string>
-  <string name="no_inbox_head_label">Cap episodi a la safata d\'entrada</string>
-  <string name="no_inbox_label">En arribar nous episodis, es mostraran aquí. Aleshores, pots decidir si t\'interessen o no.</string>
+
+
   <string name="no_subscriptions_head_label">No hi ha subscripcions</string>
   <string name="no_subscriptions_label">Per a subscriure\'t a un podcast, toca la icona + més avall.</string>
   <!--Preferences-->
@@ -561,7 +557,7 @@
     <item quantity="other">%d hores</item>
   </plurals>
   <string name="auto_enable_label">Activar el temporitzador de son automàticament en reproduïr</string>
-  <string name="auto_enable_label_with_times">Activar el temporitzador de son automàticament en reproduïr entre %s y %s</string>
+  <string name="auto_enable_label_with_times" formatted="false">Activar el temporitzador de son automàticament en reproduïr entre %s y %s</string>
   <string name="sleep_timer_enabled_label">Temporitzador habilitat</string>
   <!--Synchronisation-->
   <string name="synchronization_choose_title">Escolleix el vostre proveïdor de sincronització</string>
@@ -620,7 +616,6 @@
   <string name="media_type_video_label">Vídeo</string>
   <string name="status_downloading_label">S\'està baixant l\'episodi</string>
   <string name="in_queue_label">A la cua</string>
-  <string name="is_inbox_label">A la safata d\'entrada</string>
   <string name="is_played">Reproduït</string>
   <string name="load_next_page_label">Carrega la següent pàgina</string>
   <string name="position">Posició: %1$s</string>

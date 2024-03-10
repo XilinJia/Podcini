@@ -322,6 +322,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: EpisodeDownloadEvent) {
+        Log.d(TAG, "onEventMainThread() called with: event = [$event]")
         if (feed == null || feed!!.items.isEmpty()) {
             return
         }
@@ -335,6 +336,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: PlaybackPositionEvent) {
+        Log.d(TAG, "onEventMainThread() called with: event = [$event]")
         for (i in 0 until adapter.itemCount) {
             val holder: EpisodeItemViewHolder? =
                 viewBinding.recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
@@ -446,13 +448,11 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
     }
 
     @UnstableApi private fun setupHeaderView() {
-        if (feed == null || headerCreated) {
-            return
-        }
+        if (feed == null || headerCreated) return
 
         // https://github.com/bumptech/glide/issues/529
         viewBinding.imgvBackground.colorFilter = LightingColorFilter(-0x99999a, 0x000000)
-        viewBinding.header.butShowInfo.setOnClickListener { showFeedInfo() }
+//        viewBinding.header.butShowInfo.setOnClickListener { showFeedInfo() }
         viewBinding.header.imgvCover.setOnClickListener { showFeedInfo() }
         viewBinding.header.butShowSettings.setOnClickListener {
             if (feed != null) {
@@ -464,6 +464,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
             if (feed != null) FeedItemFilterDialog.newInstance(feed!!).show(childFragmentManager, null)
         }
         viewBinding.header.txtvFailure.setOnClickListener { showErrorDetails() }
+        viewBinding.header.counts.text = adapter.itemCount.toString()
         headerCreated = true
     }
 
@@ -529,7 +530,8 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
                     refreshHeaderView()
                     viewBinding.progressBar.visibility = View.GONE
                     adapter.setDummyViews(0)
-                    if (feed != null && feed!!.items.isNotEmpty()) adapter.updateItems(feed!!.items)
+                    if (feed != null) adapter.updateItems(feed!!.items)
+                    viewBinding.header.counts.text = (feed?.items?.size?:0).toString()
                     updateToolbar()
                 }, { error: Throwable? ->
                     feed = null

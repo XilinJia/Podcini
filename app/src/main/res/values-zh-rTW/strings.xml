@@ -6,7 +6,7 @@
   <string name="episodes_label">單集</string>
   <string name="home_label">首頁</string>
   <string name="queue_label">待播清單</string>
-  <string name="inbox_label">收件匣</string>
+
   <string name="favorite_episodes_label">最愛</string>
   <string name="settings_label">設定</string>
   <string name="downloads_label">下載</string>

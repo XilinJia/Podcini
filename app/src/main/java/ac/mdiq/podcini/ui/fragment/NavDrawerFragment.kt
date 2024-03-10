@@ -5,7 +5,6 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.NavListBinding
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.DBReader
-import ac.mdiq.podcini.storage.DBWriter
 import ac.mdiq.podcini.storage.NavDrawerData
 import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.ui.activity.MainActivity
@@ -19,7 +18,6 @@ import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import android.R.attr
 import android.app.Activity
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.ColorStateList
@@ -160,18 +158,6 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
     @OptIn(UnstableApi::class) private fun onFeedContextMenuClicked(feed: Feed, item: MenuItem): Boolean {
         val itemId = item.itemId
         when (itemId) {
-//            R.id.remove_all_inbox_item -> {
-//                val removeAllNewFlagsConfirmationDialog: ConfirmationDialog = object : ConfirmationDialog(requireContext(),
-//                    R.string.remove_all_inbox_label,
-//                    R.string.remove_all_inbox_confirmation_msg) {
-//                    @OptIn(UnstableApi::class) override fun onConfirmButtonPressed(dialog: DialogInterface) {
-//                        dialog.dismiss()
-//                        DBWriter.removeFeedNewFlag(feed.id)
-//                    }
-//                }
-//                removeAllNewFlagsConfirmationDialog.createNewDialog().show()
-//                return true
-//            }
             R.id.edit_tags -> {
                 if (feed.preferences != null)
                     TagSettingsDialog.newInstance(listOf(feed.preferences!!)).show(childFragmentManager, TagSettingsDialog.TAG)

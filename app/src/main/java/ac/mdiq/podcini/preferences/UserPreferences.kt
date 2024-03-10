@@ -837,15 +837,15 @@ object UserPreferences {
             prefs.edit().putString(PREF_DOWNLOADS_SORTED_ORDER, "" + sortOrder!!.code).apply()
         }
 
-    @JvmStatic
-    var inboxSortedOrder: SortOrder?
-        get() {
-            val sortOrderStr = prefs.getString(PREF_INBOX_SORTED_ORDER, "" + SortOrder.DATE_NEW_OLD.code)
-            return SortOrder.fromCodeString(sortOrderStr)
-        }
-        set(sortOrder) {
-            prefs.edit().putString(PREF_INBOX_SORTED_ORDER, "" + sortOrder!!.code).apply()
-        }
+//    @JvmStatic
+//    var inboxSortedOrder: SortOrder?
+//        get() {
+//            val sortOrderStr = prefs.getString(PREF_INBOX_SORTED_ORDER, "" + SortOrder.DATE_NEW_OLD.code)
+//            return SortOrder.fromCodeString(sortOrderStr)
+//        }
+//        set(sortOrder) {
+//            prefs.edit().putString(PREF_INBOX_SORTED_ORDER, "" + sortOrder!!.code).apply()
+//        }
 
     @JvmStatic
     var subscriptionsFilter: SubscriptionsFilter

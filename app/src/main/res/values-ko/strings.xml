@@ -8,7 +8,7 @@
   <string name="episodes_label">에피소드</string>
   <string name="home_label">홈</string>
   <string name="queue_label">대기열</string>
-  <string name="inbox_label">새로 받음</string>
+
   <string name="favorite_episodes_label">즐겨찾기</string>
   <string name="settings_label">설정</string>
   <string name="downloads_label">다운로드</string>
@@ -59,7 +59,7 @@
   <string name="drawer_feed_order_alphabetical">사전 순서로 정렬</string>
   <string name="drawer_feed_order_last_update">공개 날짜 순서대로 정렬</string>
   <string name="drawer_feed_order_most_played">재생한 에피소드 개수에 따라 정렬</string>
-  <string name="drawer_feed_counter_inbox">새로 받음 목록의 에피소드 개수</string>
+
   <string name="drawer_feed_counter_unplayed">재생하지 않은 에피소드 수</string>
   <string name="drawer_feed_counter_downloaded">다운로드한 에피소드 수</string>
   <string name="drawer_feed_counter_downloaded_unplayed">다운로드 개수 및 재생하지 않은 에피소드</string>
@@ -104,7 +104,7 @@
   <string name="auto_delete_label">에피소드 자동 삭제</string>
   <string name="feed_auto_download_always">항상</string>
   <string name="feed_auto_download_never">안 함</string>
-  <string name="feed_new_episodes_action_add_to_inbox">새로 받음 목록에 추가</string>
+
   <string name="feed_new_episodes_action_nothing">없음</string>
   <string name="episode_cleanup_never">안 함</string>
   <string name="episode_cleanup_except_favorite_removal">즐겨찾기 아닐 때</string>
@@ -132,9 +132,9 @@
   </plurals>
   <string name="new_episode_notification_group_text">구독에 새 에피소드가 있습니다.</string>
   <!--Actions on feeds-->
-  <string name="remove_all_inbox_label">새로 받음 목록에서 모두 제거</string>
-  <string name="removed_all_inbox_msg">새로 받음 목록에서 모두 제거함</string>
-  <string name="remove_all_inbox_confirmation_msg">정말로 새로 받음 목록에서 모두 제거할지 확인하십시오.</string>
+
+
+
   <string name="multi_select_mark_played_confirmation">정말로 선택한 항목을 재생함으로 표시할지 확인하십시오.</string>
   <string name="multi_select_mark_unplayed_confirmation">정말로 선택한 항목을 재생하지 않음으로 표시할지 확인하십시오.</string>
   <string name="show_info_label">정보 표시</string>
@@ -179,7 +179,7 @@
   <plurals name="deleted_multi_episode_batch_label">
     <item quantity="other">다운로드한 %d개 에피소드 삭제함.</item>
   </plurals>
-  <string name="remove_inbox_label">새로 받음 목록에서 제거</string>
+
   <string name="removed_inbox_label">새로 받음 목록에서 제거함</string>
   <string name="mark_read_label">재생했다고 표시</string>
   <string name="toggle_played_label">재생함 상태 토글</string>
@@ -202,9 +202,6 @@
   <string name="remove_from_queue_label">대기열에서 제거</string>
   <plurals name="removed_from_queue_batch_label">
     <item quantity="other">%d개 에피소드를 대기열에서 제거했습니다.</item>
-  </plurals>
-  <plurals name="removed_from_inbox_batch_label">
-    <item quantity="other">%d개 에피소드를 새로 받음 목록에서 제거했습니다.</item>
   </plurals>
   <string name="add_to_favorite_label">즐겨찾기에 추가</string>
   <string name="remove_from_favorite_label">즐겨찾기에서 제거</string>
@@ -308,8 +305,8 @@
   <string name="no_all_episodes_head_label">에피소드 없음</string>
   <string name="no_all_episodes_label">팟캐스트를 추가하면, 그 팟캐스트의 에피소드가 여기 나타납니다.</string>
   <string name="no_all_episodes_filtered_label">더 많은 에피소드를 보려면 필터를 지워보십시오.</string>
-  <string name="no_inbox_head_label">새로 받음 목록에 에피소드 없음</string>
-  <string name="no_inbox_label">새 에피소드가 도착하면 여기에 표시됩니다. 그 다음에 그 에피소드에 관심이 있는지 없는지 결정할 수 있습니다.</string>
+
+
   <string name="no_subscriptions_head_label">구독 없음</string>
   <string name="no_subscriptions_label">팟캐스트에 구독하려면, 아래 더하기 아이콘을 누르십시오.</string>
   <!--Preferences-->
@@ -538,7 +535,7 @@
     <item quantity="other">%d시간</item>
   </plurals>
   <string name="auto_enable_label">재생을 누를 때 자동으로 취침 타이머를 활성화</string>
-  <string name="auto_enable_label_with_times">%s와 %s 사이에 재생을 누를 때 자동으로 취침 타이머를 활성화</string>
+  <string name="auto_enable_label_with_times" formatted="false">%s와 %s 사이에 재생을 누를 때 자동으로 취침 타이머를 활성화</string>
   <string name="sleep_timer_enabled_label">취침 타이머 사용함</string>
   <!--Synchronisation-->
   <string name="synchronization_choose_title">동기화 프로바이더 선택</string>

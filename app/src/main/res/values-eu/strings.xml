@@ -8,7 +8,7 @@
   <string name="episodes_label">Saioak</string>
   <string name="home_label">Hasiera</string>
   <string name="queue_label">Ilara</string>
-  <string name="inbox_label">Sarrerako ontzia</string>
+
   <string name="favorite_episodes_label">Gogokoak</string>
   <string name="settings_label">Ezarpenak</string>
   <string name="downloads_label">Deskargak</string>
@@ -66,7 +66,7 @@
   <string name="drawer_feed_order_alphabetical">Antolatu alfabetikoki</string>
   <string name="drawer_feed_order_last_update">Antolatu argitaratze dataz</string>
   <string name="drawer_feed_order_most_played">Antolatu ikusitako saioen arabera</string>
-  <string name="drawer_feed_counter_inbox">Sarrerako ontziko saio kopurua</string>
+
   <string name="drawer_feed_counter_unplayed">Entzun gabeko saioen zenbatekoa</string>
   <string name="drawer_feed_counter_downloaded">Deskargatutako saio kopurua</string>
   <string name="drawer_feed_counter_none">Bat ere ez</string>
@@ -115,7 +115,7 @@
   <string name="feed_volume_boost_heavy">Igoera handia</string>
   <string name="feed_auto_download_always">Beti</string>
   <string name="feed_auto_download_never">Inoiz ez</string>
-  <string name="feed_new_episodes_action_add_to_inbox">Gehitu sarrerako ontzira</string>
+
   <string name="feed_new_episodes_action_nothing">Ezer ez</string>
   <string name="episode_cleanup_never">Inoiz ez</string>
   <string name="episode_cleanup_except_favorite_removal">Gogoko ez denean</string>
@@ -149,9 +149,9 @@
   </plurals>
   <string name="new_episode_notification_group_text">Zure harpidetzak saio berriak ditu.</string>
   <!--Actions on feeds-->
-  <string name="remove_all_inbox_label">Kendu dena sarrerako ontzitik</string>
-  <string name="removed_all_inbox_msg">Sarrerako ontzitik dena kendu da</string>
-  <string name="remove_all_inbox_confirmation_msg">Mesedez, baieztatu dena kendu nahi duzula sarrerako ontzitik.</string>
+
+
+
   <string name="multi_select_mark_played_confirmation">Egiaztatu erreproduzitutzat hautatutako elementu guztiak markatu nahi dituzula.</string>
   <string name="multi_select_mark_unplayed_confirmation">Egiaztatu hautatutako elementu guztiak erreproduzitu gabekotzat markatu nahi dituzula.</string>
   <string name="show_info_label">Programaren informazioa</string>
@@ -195,7 +195,7 @@
     <item quantity="one">deskargatutako kapitulu 1 ezabatu egin da</item>
     <item quantity="other">%d deskargatutako kapituluak ezabatu egin dira</item>
   </plurals>
-  <string name="remove_inbox_label">Kendu sarrerako ontzitik</string>
+
   <string name="removed_inbox_label">Sarrerako ontzitik kenduta</string>
   <string name="mark_read_label">Markatu entzundakotzat</string>
   <string name="toggle_played_label">Erreprodukzio-egoera txandakatu</string>
@@ -222,10 +222,6 @@
   <plurals name="removed_from_queue_batch_label">
     <item quantity="one">%d saio ilaratik kenduta.</item>
     <item quantity="other">%d saio ilaratik kenduta.</item>
-  </plurals>
-  <plurals name="removed_from_inbox_batch_label">
-    <item quantity="one">Saio %d kendu da sarrerako ontzitik.</item>
-    <item quantity="other">%d saio kendu dira sarrerako ontzitik.</item>
   </plurals>
   <string name="add_to_favorite_label">Gehitu gogokoetara</string>
   <string name="remove_from_favorite_label">Kendu gogokoetatik</string>
@@ -324,8 +320,8 @@
   <string name="no_all_episodes_head_label">Ez dago saiorik</string>
   <string name="no_all_episodes_label">Podcast bat gehitzen duzunean saioak hemen azalduko dira.</string>
   <string name="no_all_episodes_filtered_label">Saiatu iragazkia ezabatzen kapitulu gehiago ikusteko.</string>
-  <string name="no_inbox_head_label">Ez dago saiorik sarrerako ontzian</string>
-  <string name="no_inbox_label">Kapitulu berriak iristen direnean, hemen agertuko dira. Orduan erabaki ahal izango duzu ea interesatzen zaizun ala ez.</string>
+
+
   <string name="no_subscriptions_head_label">Ez dago harpidetzarik</string>
   <string name="no_subscriptions_label">Podcast batean harpidetzeko, sakatu beheko \"gehi\" ikonoa.</string>
   <!--Preferences-->
@@ -587,7 +583,6 @@
   <string name="status_downloading_label">Saioa deskargatzen ari da</string>
   <string name="in_queue_label">Ilaran</string>
   <string name="is_favorite_label">Gogoko gisa markatua</string>
-  <string name="is_inbox_label">Sarrerako ontzian</string>
   <string name="is_played">Erreproduzitua</string>
   <string name="load_next_page_label">Hurrengo orria kargatu</string>
   <string name="position">Kokalekua: %1$s</string>

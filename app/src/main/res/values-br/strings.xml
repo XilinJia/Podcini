@@ -8,7 +8,7 @@
   <string name="episodes_label">Rannoù</string>
   <string name="home_label">Degemer</string>
   <string name="queue_label">Lost</string>
-  <string name="inbox_label">Boest degemer</string>
+
   <string name="favorite_episodes_label">Sinedoù</string>
   <string name="settings_label">Gwellvezioù</string>
   <string name="downloads_label">Pellgargadennoù</string>
@@ -59,7 +59,7 @@
   <string name="drawer_feed_order_alphabetical">Rummañ dre urzh al lizherenneg</string>
   <string name="drawer_feed_order_last_update">Rummañ dre an deiziad embann</string>
   <string name="drawer_feed_order_most_played">Rummañ dre an niver a rannoù lennet</string>
-  <string name="drawer_feed_counter_inbox">Niver a rann er voest degemer</string>
+
   <string name="drawer_feed_counter_unplayed">Niver a rannoù n\'int ket bet lennet</string>
   <string name="drawer_feed_counter_downloaded">Niver a rannoù pellgarget</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Niver a rannoù pellgarget n\'int ket bet lennet</string>
@@ -142,9 +142,9 @@
   </plurals>
   <string name="new_episode_notification_group_text">Rannoù nevez zo gant ho ko koumanantoù.</string>
   <!--Actions on feeds-->
-  <string name="remove_all_inbox_label">Naetaat ar voest degemer</string>
-  <string name="removed_all_inbox_msg">Naetaet eo bet ar voest degemer</string>
-  <string name="remove_all_inbox_confirmation_msg">Mar plij, kadarnait e fell deoc\'h tennañ pep tra eus ar voest degemer</string>
+
+
+
   <string name="multi_select_mark_played_confirmation">Mar plij, kadarnait e fell deoc\'h merkañ pep item dibabet evel lennet.</string>
   <string name="multi_select_mark_unplayed_confirmation">Kadarnait e fell deoc\'h merkañ an holl elfennoù diuzet evel anlennet.</string>
   <string name="show_info_label">Diskouez ar munudoù</string>
@@ -194,7 +194,7 @@
     <item quantity="many">Dilamet ez eus bet %d rann pellgarget.</item>
     <item quantity="other">Dilamet ez eus bet %d rann pellgarget.</item>
   </plurals>
-  <string name="remove_inbox_label">Tennañ eus ar voest degemer</string>
+
   <string name="removed_inbox_label">Tennet eo bet eus ar voest degemer</string>
   <string name="mark_read_label">Merkañ evel lennet</string>
   <string name="toggle_played_label">Lakaat da gemm stad al lenn</string>
@@ -233,13 +233,6 @@
     <item quantity="few">%d rann tennet eus al lost</item>
     <item quantity="many">%d rann tennet eus al lost</item>
     <item quantity="other">%d rann tennet eus al lost</item>
-  </plurals>
-  <plurals name="removed_from_inbox_batch_label">
-    <item quantity="one">%d rann tennet eus ar voest degemer</item>
-    <item quantity="two">%d rann tennet eus ar voest degemer</item>
-    <item quantity="few">%d rann tennet eus ar voest degemer</item>
-    <item quantity="many">%d rann tennet eus ar voest degemer</item>
-    <item quantity="other">%d rann tennet eus ar voest degemer</item>
   </plurals>
   <string name="visit_website_label">Gweladenniñ al lec\'hienn</string>
   <string name="skip_episode_label">Tremen a rann</string>
@@ -326,7 +319,7 @@
   <string name="no_history_label">Goude bezañ selaouet ur rann e vo diskouezet amañ</string>
   <string name="no_all_episodes_label">Pa ouzhpennit ur podskignad e vo diskouezet ar rannoù amañ.</string>
   <string name="no_all_episodes_filtered_label">Klaskit netaat ar sil evit gwelet ar rannoù.</string>
-  <string name="no_inbox_head_label">N\'eus rann ebet er voest degemer</string>
+
   <string name="no_subscriptions_head_label">Koumanant ebet</string>
   <string name="no_subscriptions_label">Evit koumanantiñ d\'ur podskignad, pouezit war an arlun mui.</string>
   <!--Preferences-->

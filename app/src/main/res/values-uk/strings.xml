@@ -8,7 +8,7 @@
   <string name="episodes_label">Епізоди</string>
   <string name="home_label">Домашня</string>
   <string name="queue_label">Черга</string>
-  <string name="inbox_label">Вхідні</string>
+
   <string name="favorite_episodes_label">Улюблені</string>
   <string name="settings_label">Налаштування</string>
   <string name="downloads_label">Завантаження</string>
@@ -62,7 +62,7 @@
   <string name="drawer_feed_order_alphabetical">Сортувати за абеткою</string>
   <string name="drawer_feed_order_last_update">Сортувати за датою публікації</string>
   <string name="drawer_feed_order_most_played">Сортувати за кількістю прослуханих епізодів</string>
-  <string name="drawer_feed_counter_inbox">Кількість епізодів у вхідних</string>
+
   <string name="drawer_feed_counter_unplayed">Кількість непрослуханих епізодів</string>
   <string name="drawer_feed_counter_downloaded">Кількість завантажених епізодів</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Кількість завантажених але не прослуханих епізодів</string>
@@ -115,7 +115,7 @@
   <string name="feed_volume_boost_heavy">Сильно збільшити</string>
   <string name="feed_auto_download_always">Завжди</string>
   <string name="feed_auto_download_never">Ніколи</string>
-  <string name="feed_new_episodes_action_add_to_inbox">Додати у вхідні</string>
+
   <string name="feed_new_episodes_action_nothing">Нічого</string>
   <string name="episode_cleanup_never">Ніколи</string>
   <string name="episode_cleanup_except_favorite_removal">Коли не вибрано</string>
@@ -161,9 +161,9 @@
   </plurals>
   <string name="new_episode_notification_group_text">Ваші підписки мають нові епізоди.</string>
   <!--Actions on feeds-->
-  <string name="remove_all_inbox_label">Видалити все з вхідних</string>
-  <string name="removed_all_inbox_msg">Вхідні очищено</string>
-  <string name="remove_all_inbox_confirmation_msg">Будь ласка, підтвердіть, що ви хочете видалити всі вхідні епізоди.</string>
+
+
+
   <string name="multi_select_mark_played_confirmation">Підтвердіть, якщо бажаєте, позначення усіх вибраних елементів як відтворені.</string>
   <string name="multi_select_mark_unplayed_confirmation">Будь ласка, підтвердіть, що ви хочете позначити всі вибрані елементи як \"не відтворені\".</string>
   <string name="show_info_label">Інформація</string>
@@ -219,7 +219,7 @@
     <item quantity="many">%dзавантажених епізодів видалено.</item>
     <item quantity="other">%d завантажених епізодів видалено.</item>
   </plurals>
-  <string name="remove_inbox_label">Вилучити з вхідних</string>
+
   <string name="removed_inbox_label">Вилучено з вхідних</string>
   <string name="mark_read_label">Позначити як відтворений</string>
   <string name="toggle_played_label">Перемикнути стан прослуханості</string>
@@ -254,12 +254,6 @@
     <item quantity="few">%d епізоди видалено з черги.</item>
     <item quantity="many">%d епізодів видалено з черги.</item>
     <item quantity="other">%d епізодів видалено з черги.</item>
-  </plurals>
-  <plurals name="removed_from_inbox_batch_label">
-    <item quantity="one">%d епізод вилучено зі скриньки вхідних.</item>
-    <item quantity="few">%d епізоди вилучено зі скриньки вхідних.</item>
-    <item quantity="many">%d епізодів вилучено зі скриньки вхідних.</item>
-    <item quantity="other">%d епізоди(-ів) вилучено зі скриньки вхідних.</item>
   </plurals>
   <string name="add_to_favorite_label">Додати до обраного</string>
   <string name="remove_from_favorite_label">Вилучити з обраних</string>
@@ -370,8 +364,8 @@
   <string name="no_all_episodes_head_label">Немає епізодів</string>
   <string name="no_all_episodes_label">Коли ви додасте подкаст, тут з’явиться перелік його епізодів.</string>
   <string name="no_all_episodes_filtered_label">Спробуйте очистити фільтр, щоб побачити більше епізодів.</string>
-  <string name="no_inbox_head_label">У папці \"Вхідні\" немає епізодів</string>
-  <string name="no_inbox_label">Коли з\'являться нові епізоди, вони будуть показані тут. Ви зможете вирішити, чи цікавлять вони вас, чи ні.</string>
+
+
   <string name="no_subscriptions_head_label">Немає підписок</string>
   <string name="no_subscriptions_label">Щоб підписатись на подкаст, натисніть на значок плюса нижче</string>
   <!--Preferences-->
@@ -627,7 +621,7 @@
     <item quantity="other">%d днів</item>
   </plurals>
   <string name="auto_enable_label">Автоматично активувати таймер сну при натисканні кнопки відтворення</string>
-  <string name="auto_enable_label_with_times">Автоматично активувати таймер сну при натисканні на кнопку відтворення в проміжок часу між %s та %s</string>
+  <string name="auto_enable_label_with_times" formatted="false">Автоматично активувати таймер сну при натисканні на кнопку відтворення в проміжок часу між %s та %s</string>
   <string name="auto_enable_change_times">Змінити проміжок часу</string>
   <string name="sleep_timer_enabled_label">Таймер сну увімкнено</string>
   <!--Synchronisation-->
@@ -688,7 +682,6 @@
   <string name="status_downloading_label">Епізод завантажується</string>
   <string name="in_queue_label">В черзі</string>
   <string name="is_favorite_label">Відмічений як улюблений</string>
-  <string name="is_inbox_label">В теці \"Вхідні\"</string>
   <string name="is_played">Відтворений</string>
   <string name="load_next_page_label">Завантажити наступну сторінку</string>
   <string name="position">Позиція: %1$s</string>

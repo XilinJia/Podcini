@@ -8,7 +8,7 @@
   <string name="episodes_label">Afsnit</string>
   <string name="home_label">Hjem</string>
   <string name="queue_label">Kø</string>
-  <string name="inbox_label">Indbakke</string>
+
   <string name="favorite_episodes_label">Favoritter</string>
   <string name="settings_label">Indstillinger</string>
   <string name="downloads_label">Overførsler</string>
@@ -62,7 +62,7 @@
   <string name="drawer_feed_order_alphabetical">Sorter alfabetisk</string>
   <string name="drawer_feed_order_last_update">Sorter efter udgivelsesdato</string>
   <string name="drawer_feed_order_most_played">Sorter efter antal afspillede afsnit</string>
-  <string name="drawer_feed_counter_inbox">Antal afsnit i indbakken</string>
+
   <string name="drawer_feed_counter_unplayed">Antal uafspillede afsnit</string>
   <string name="drawer_feed_counter_downloaded">Antal overførte afsnit</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Antal overførte og uafspillede afsnit</string>
@@ -115,7 +115,7 @@
   <string name="feed_volume_boost_heavy">Kraftig forstærkning</string>
   <string name="feed_auto_download_always">Altid</string>
   <string name="feed_auto_download_never">Aldrig</string>
-  <string name="feed_new_episodes_action_add_to_inbox">Tilføj til indbakke</string>
+
   <string name="feed_new_episodes_action_nothing">Ingenting</string>
   <string name="episode_cleanup_never">Aldrig</string>
   <string name="episode_cleanup_except_favorite_removal">Hvis ikke en favorit</string>
@@ -149,9 +149,9 @@
   </plurals>
   <string name="new_episode_notification_group_text">Dine abonnementer har nye afsnit</string>
   <!--Actions on feeds-->
-  <string name="remove_all_inbox_label">Fjern alle fra indbakken</string>
-  <string name="removed_all_inbox_msg">Fjernede alle fra indbakken</string>
-  <string name="remove_all_inbox_confirmation_msg">Bekræft, at du ønsker at fjerne alle fra indbakken.</string>
+
+
+
   <string name="multi_select_mark_played_confirmation">Bekræft, at du ønsker at markere alle valgte emner som afspillet.</string>
   <string name="multi_select_mark_unplayed_confirmation">Bekræft, at du ønsker at markere alle valgte emner som uafspillet.</string>
   <string name="show_info_label">Vis information</string>
@@ -201,7 +201,7 @@
     <item quantity="one">1 overført afsnit slettet.</item>
     <item quantity="other">%d overførte afsnit slettet.</item>
   </plurals>
-  <string name="remove_inbox_label">Fjern fra indbakken</string>
+
   <string name="removed_inbox_label">Fjernet fra indbakken</string>
   <string name="mark_read_label">Markér som afspillet</string>
   <string name="toggle_played_label">Skift afspilningstilstand</string>
@@ -228,10 +228,6 @@
   <plurals name="removed_from_queue_batch_label">
     <item quantity="one">%d afsnit fjernet fra køen.</item>
     <item quantity="other">%d afsnit fjernet fra køen.</item>
-  </plurals>
-  <plurals name="removed_from_inbox_batch_label">
-    <item quantity="one">%d afsnit fjernet fra indbakken.</item>
-    <item quantity="other">%d afsnit fjernet fra indbakken.</item>
   </plurals>
   <string name="add_to_favorite_label">Føj til favoritter</string>
   <string name="remove_from_favorite_label">Fjern fra favoritter</string>
@@ -340,8 +336,8 @@
   <string name="no_all_episodes_head_label">Ingen afsnit</string>
   <string name="no_all_episodes_label">Når du tilføjer en podcast, vil afsnittene blive vist her.</string>
   <string name="no_all_episodes_filtered_label">Prøv at rydde filteret for at se flere afsnit.</string>
-  <string name="no_inbox_head_label">Ingen afsnit i indbakken</string>
-  <string name="no_inbox_label">Når der kommer nye afsnit, vil de blive vist her. Du kan så beslutte, om du er interesseret i dem eller ej.</string>
+
+
   <string name="no_subscriptions_head_label">Ingen abonnementer</string>
   <string name="no_subscriptions_label">For at abonnere på en podcast, klik plus ikonet nedenfor</string>
   <!--Preferences-->
@@ -589,7 +585,7 @@
     <item quantity="other">%d dage</item>
   </plurals>
   <string name="auto_enable_label">Aktivér automatisk slukkefunktion ved at tryk på afspil</string>
-  <string name="auto_enable_label_with_times">Aktivér automatisk slukkefunktion ved tryk på afspil mellem %s og %s</string>
+  <string name="auto_enable_label_with_times" formatted="false">Aktivér automatisk slukkefunktion ved tryk på afspil mellem %s og %s</string>
   <string name="auto_enable_change_times">Skift tidsinterval</string>
   <string name="sleep_timer_enabled_label">Søvntimer slået til</string>
   <!--Synchronisation-->
@@ -650,7 +646,6 @@
   <string name="status_downloading_label">Afsnit overføres</string>
   <string name="in_queue_label">I køen</string>
   <string name="is_favorite_label">Markeret som favorit</string>
-  <string name="is_inbox_label">I indbakken</string>
   <string name="is_played">Afspillet</string>
   <string name="load_next_page_label">Indlæs næste side</string>
   <string name="position">Position: %1$s</string>

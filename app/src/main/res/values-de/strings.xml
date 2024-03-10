@@ -8,7 +8,7 @@
   <string name="episodes_label">Episoden</string>
   <string name="home_label">Start</string>
   <string name="queue_label">Warteschlange</string>
-  <string name="inbox_label">Posteingang</string>
+
   <string name="favorite_episodes_label">Favoriten</string>
   <string name="settings_label">Einstellungen</string>
   <string name="downloads_label">Downloads</string>
@@ -62,7 +62,7 @@
   <string name="drawer_feed_order_alphabetical">Alphabetisch sortieren</string>
   <string name="drawer_feed_order_last_update">Nach Veröffentlichungsdatum sortieren</string>
   <string name="drawer_feed_order_most_played">Nach Anzahl gespielter Episoden sortieren</string>
-  <string name="drawer_feed_counter_inbox">Anzahl der Episoden im Posteingang</string>
+
   <string name="drawer_feed_counter_unplayed">Anzahl nicht abgespielter Episoden</string>
   <string name="drawer_feed_counter_downloaded">Anzahl heruntergeladener Episoden</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Anzahl heruntergeladener und nicht abgespielter Episoden</string>
@@ -115,7 +115,7 @@
   <string name="feed_volume_boost_heavy">Starke Erhöhung</string>
   <string name="feed_auto_download_always">Immer</string>
   <string name="feed_auto_download_never">Nie</string>
-  <string name="feed_new_episodes_action_add_to_inbox">Zum Posteingang hinzufügen</string>
+
   <string name="feed_new_episodes_action_nothing">Nichts</string>
   <string name="episode_cleanup_never">Nie</string>
   <string name="episode_cleanup_except_favorite_removal">Wenn nicht favorisiert</string>
@@ -149,9 +149,9 @@
   </plurals>
   <string name="new_episode_notification_group_text">Deine Abonnements haben neue Episoden.</string>
   <!--Actions on feeds-->
-  <string name="remove_all_inbox_label">Alle aus dem Posteingang entfernen</string>
-  <string name="removed_all_inbox_msg">Alle aus dem Posteingang entfernt</string>
-  <string name="remove_all_inbox_confirmation_msg">Bitte bestätige, dass du alles aus dem Posteingang entfernen möchtest.</string>
+
+
+
   <string name="multi_select_mark_played_confirmation">Bitte bestätige, dass du alle ausgewählten Einträge als abgespielt markieren möchtest.</string>
   <string name="multi_select_mark_unplayed_confirmation">Bitte bestätige, dass du alle ausgewählten Einträge als nicht abgespielt markieren möchtest.</string>
   <string name="show_info_label">Informationen anzeigen</string>
@@ -201,7 +201,7 @@
     <item quantity="one">1 heruntergeladene Episode gelöscht.</item>
     <item quantity="other">%d heruntergeladene Episoden gelöscht.</item>
   </plurals>
-  <string name="remove_inbox_label">Aus dem Posteingang entfernen</string>
+
   <string name="removed_inbox_label">Aus dem Posteingang entfernt</string>
   <string name="mark_read_label">Als gespielt markieren</string>
   <string name="toggle_played_label">Abgespielt-Zustand umschalten</string>
@@ -228,10 +228,6 @@
   <plurals name="removed_from_queue_batch_label">
     <item quantity="one">%d Episode aus der Warteschlange entfernt. </item>
     <item quantity="other">%d Episoden aus der Warteschlange entfernt.</item>
-  </plurals>
-  <plurals name="removed_from_inbox_batch_label">
-    <item quantity="one">%d Episode aus dem Posteingang entfernt.</item>
-    <item quantity="other">%d Episoden aus dem Posteingang entfernt.</item>
   </plurals>
   <string name="add_to_favorite_label">Zu Favoriten hinzufügen</string>
   <string name="remove_from_favorite_label">Aus Favoriten entfernen</string>
@@ -340,8 +336,8 @@
   <string name="no_all_episodes_head_label">Keine Episoden</string>
   <string name="no_all_episodes_label">Wenn du einen Podcast hinzufügst, werden die Episoden hier angezeigt.</string>
   <string name="no_all_episodes_filtered_label">Versuche den Filter zu deaktivieren, um mehr Episoden zu sehen.</string>
-  <string name="no_inbox_head_label">Keine Episoden im Posteingang</string>
-  <string name="no_inbox_label">Wenn neue Episoden erscheinen, werden sie hier angezeigt. Du kannst dann entscheiden, ob du daran interessiert bist oder nicht.</string>
+
+
   <string name="no_subscriptions_head_label">Keine Abonnements</string>
   <string name="no_subscriptions_label">Um einen Podcast zu abonnieren, tippe auf das Plus-Symbol.</string>
   <!--Preferences-->
@@ -589,7 +585,7 @@
     <item quantity="other">%d Tage</item>
   </plurals>
   <string name="auto_enable_label">Schlummerfunktion automatisch aktivieren, wenn auf Play gedrückt wird</string>
-  <string name="auto_enable_label_with_times">Schlummerfunktion automatisch aktivieren, wenn zwischen %s und %s auf Play gedrückt wird</string>
+  <string name="auto_enable_label_with_times" formatted="false">Schlummerfunktion automatisch aktivieren, wenn zwischen %s und %s auf Play gedrückt wird</string>
   <string name="auto_enable_change_times">Zeitbereich ändern</string>
   <string name="sleep_timer_enabled_label">Schlummerfunktion aktiviert</string>
   <!--Synchronisation-->
@@ -650,7 +646,6 @@
   <string name="status_downloading_label">Episode wird heruntergeladen</string>
   <string name="in_queue_label">In der Warteschlange</string>
   <string name="is_favorite_label">Als Favorit markiert</string>
-  <string name="is_inbox_label">Im Posteingang</string>
   <string name="is_played">Gespielt</string>
   <string name="load_next_page_label">Nächste Seite laden</string>
   <string name="position">Position: %1$s</string>

@@ -116,7 +116,7 @@ object PreferenceUpgrader {
         if (oldVersion < 2080000) {
             // Migrate drawer feed counter setting to reflect removal of
             // "unplayed and in inbox" (0), by changing it to "unplayed" (2)
-            val feedCounterSetting = prefs!!.getString(UserPreferences.PREF_DRAWER_FEED_COUNTER, "1")
+            val feedCounterSetting = prefs!!.getString(UserPreferences.PREF_DRAWER_FEED_COUNTER, "2")
             if (feedCounterSetting == "0") {
                 prefs!!.edit().putString(UserPreferences.PREF_DRAWER_FEED_COUNTER, "2").apply()
             }

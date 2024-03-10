@@ -8,7 +8,7 @@
   <string name="episodes_label">Episoder</string>
   <string name="home_label">Hem</string>
   <string name="queue_label">Kö</string>
-  <string name="inbox_label">Inkorg</string>
+
   <string name="favorite_episodes_label">Favoriter</string>
   <string name="settings_label">Inställningar</string>
   <string name="downloads_label">Nedladdningar</string>
@@ -62,7 +62,7 @@
   <string name="drawer_feed_order_alphabetical">Sortera alfabetiskt</string>
   <string name="drawer_feed_order_last_update">Sortera efter publiceringsdatum</string>
   <string name="drawer_feed_order_most_played">Sortera efter antal spelade episoder</string>
-  <string name="drawer_feed_counter_inbox">Antal episoder i inkorgen</string>
+
   <string name="drawer_feed_counter_unplayed">Antal ospelade episoder</string>
   <string name="drawer_feed_counter_downloaded">Antal nedladdade episoder</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Antal nedladdade och ospelade avsnitt</string>
@@ -115,7 +115,7 @@
   <string name="feed_volume_boost_heavy">Stor höjning</string>
   <string name="feed_auto_download_always">Alltid</string>
   <string name="feed_auto_download_never">Aldrig</string>
-  <string name="feed_new_episodes_action_add_to_inbox">Lägg till i inkorg</string>
+
   <string name="feed_new_episodes_action_nothing">Ingenting</string>
   <string name="episode_cleanup_never">Aldrig</string>
   <string name="episode_cleanup_except_favorite_removal">När ej favorit</string>
@@ -149,9 +149,9 @@
   </plurals>
   <string name="new_episode_notification_group_text">Dina prenumerationer har nya episoder.</string>
   <!--Actions on feeds-->
-  <string name="remove_all_inbox_label">Töm allt i inkorg</string>
-  <string name="removed_all_inbox_msg">Tömde allt i inkorg</string>
-  <string name="remove_all_inbox_confirmation_msg">Bekräfta att du vill ta bort allt i inkorgen.</string>
+
+
+
   <string name="multi_select_mark_played_confirmation">Bekräfta att du vill markera alla valda avsnitt som spelade.</string>
   <string name="multi_select_mark_unplayed_confirmation">Bekräfta att du vill markera alla valda avsnitt som ospelade.</string>
   <string name="show_info_label">Visa information</string>
@@ -201,7 +201,7 @@
     <item quantity="one">1 nedladdad episod borttagen.</item>
     <item quantity="other">%d nedladdade episoder borttagna.</item>
   </plurals>
-  <string name="remove_inbox_label">Ta bort från inkorg</string>
+
   <string name="removed_inbox_label">Tog bort från inkorg</string>
   <string name="mark_read_label">Markera som spelad</string>
   <string name="toggle_played_label">Växla spelläge</string>
@@ -228,10 +228,6 @@
   <plurals name="removed_from_queue_batch_label">
     <item quantity="one">%d episod borttagen från kön.</item>
     <item quantity="other">%d episoder borttagna från kön.</item>
-  </plurals>
-  <plurals name="removed_from_inbox_batch_label">
-    <item quantity="one">%d episod har tagits bort från inkorg.</item>
-    <item quantity="other">%d episoder har tagits bort från inkorgen.</item>
   </plurals>
   <string name="add_to_favorite_label">Lägg till i favoriter</string>
   <string name="remove_from_favorite_label">Ta bort från favoriter</string>
@@ -340,8 +336,8 @@
   <string name="no_all_episodes_head_label">Inga episoder</string>
   <string name="no_all_episodes_label">När du lagt till en episod visas den här.</string>
   <string name="no_all_episodes_filtered_label">Testa att nollställa filtret för att se fler episoder.</string>
-  <string name="no_inbox_head_label">Inga avsnitt i inkorgen</string>
-  <string name="no_inbox_label">När nya avsnitt hämtas visas de här. Du kan sedan avgöra ifall de är intressanta eller ej.</string>
+
+
   <string name="no_subscriptions_head_label">Inga prenumerationer</string>
   <string name="no_subscriptions_label">Tryck på plus-ikonen nedan för att prenumerera på en podcast.</string>
   <!--Preferences-->
@@ -585,7 +581,7 @@
     <item quantity="other">%d timmar</item>
   </plurals>
   <string name="auto_enable_label">Aktivera insomningstimern automatiskt när du trycker på play</string>
-  <string name="auto_enable_label_with_times">Aktivera automatiskt insomningstimern när du trycker på spela mellan %s och %s</string>
+  <string name="auto_enable_label_with_times" formatted="false">Aktivera automatiskt insomningstimern när du trycker på spela mellan %s och %s</string>
   <string name="auto_enable_change_times">Ändra tidsspann</string>
   <string name="sleep_timer_enabled_label">Insomningstimer aktiverad</string>
   <!--Synchronisation-->
@@ -646,7 +642,6 @@
   <string name="status_downloading_label">Episoden laddas ner</string>
   <string name="in_queue_label">I kön</string>
   <string name="is_favorite_label">Markerad som favorit</string>
-  <string name="is_inbox_label">I inkorgen</string>
   <string name="is_played">Spelad</string>
   <string name="load_next_page_label">Ladda nästa sida</string>
   <string name="position">Position: %1$s</string>

@@ -7,7 +7,7 @@
   <string name="episodes_label">Episode</string>
   <string name="home_label">Layar Utama</string>
   <string name="queue_label">Antrean</string>
-  <string name="inbox_label">Kotak Masuk</string>
+
   <string name="favorite_episodes_label">Favorit</string>
   <string name="settings_label">Pengaturan</string>
   <string name="downloads_label">Unduhan</string>
@@ -55,7 +55,7 @@
   <string name="drawer_feed_order_alphabetical">Urutkan menurut abjad</string>
   <string name="drawer_feed_order_last_update">Urutkan menurut tanggal publikasi</string>
   <string name="drawer_feed_order_most_played">Urutkan menurut jumlah episode yang diputar</string>
-  <string name="drawer_feed_counter_inbox">Jumlah episode dalam kotak masuk</string>
+
   <string name="drawer_feed_counter_unplayed">Jumlah episode yang belum diputar</string>
   <string name="drawer_feed_counter_downloaded">Jumlah episode yang diunduh</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Jumlah episode yang terunduh dan belum terputar</string>
@@ -115,9 +115,9 @@
   </plurals>
   <string name="new_episode_notification_group_text">Podcast Langganan Anda memiliki episode baru!</string>
   <!--Actions on feeds-->
-  <string name="remove_all_inbox_label">Hapus semua dari kotak masuk</string>
-  <string name="removed_all_inbox_msg">Semua telah dihapus dari kotak masuk</string>
-  <string name="remove_all_inbox_confirmation_msg">Mohon konfirmasikan bahwa Anda ingin menghapus semua dari kotak masuk.</string>
+
+
+
   <string name="multi_select_mark_played_confirmation">Mohon konfirmasikan bahwa Anda ingin menandakan semua item sebagai \'diputar\'.</string>
   <string name="multi_select_mark_unplayed_confirmation">Mohon konfirmasikan bahwa Anda ingin menandakan semua item sebagai \'belum diputar\'.</string>
   <string name="show_info_label">Tampilkan informasi</string>
@@ -156,7 +156,7 @@
   <plurals name="deleted_multi_episode_batch_label">
     <item quantity="other">%depisode terunduh dihapus.</item>
   </plurals>
-  <string name="remove_inbox_label">Hapus dari kotak masuk</string>
+
   <string name="removed_inbox_label">Dihapus dari kotak masuk</string>
   <string name="mark_read_label">Tandai diputar</string>
   <string name="toggle_played_label">Aktifkan status diputar</string>
@@ -177,9 +177,6 @@
   </plurals>
   <plurals name="removed_from_queue_batch_label">
     <item quantity="other">%d episode dihapus dari antrian,</item>
-  </plurals>
-  <plurals name="removed_from_inbox_batch_label">
-    <item quantity="other">%depisode dihapus dari kotak masuk.</item>
   </plurals>
   <string name="visit_website_label">Lihat situs</string>
   <string name="skip_episode_label">Lewati episode</string>
@@ -261,8 +258,8 @@
   <string name="no_history_label">Setelah Anda mendengarkan sebuah episode, dia akan tampil disini.</string>
   <string name="no_all_episodes_label">Ketika Anda menambahkan podcast, episodenya akan ditampilkan di sini.</string>
   <string name="no_all_episodes_filtered_label">Coba bersihkan filter untuk melihat lebih banyak episode.</string>
-  <string name="no_inbox_head_label">Tidak ada episode di kotak masuk</string>
-  <string name="no_inbox_label">Episode yang baru akan ditampilkan di sini. Anda lalu dapat menentukan jikalau episode baru yang terbit menarik atau tidak.</string>
+
+
   <string name="no_subscriptions_head_label">~Tiada Langganan~</string>
   <string name="no_subscriptions_label">Untuk berlangganan podcast, tekan ikon plus dibawah.</string>
   <!--Preferences-->
@@ -463,7 +460,7 @@
     <item quantity="other">%d jam</item>
   </plurals>
   <string name="auto_enable_label">Aktifkan timer tidur secara otomatis saat menekan \'putar\'</string>
-  <string name="auto_enable_label_with_times">Aktifkan timer tidur secara otomatis saat menekan \'putar\' antara waktu %s dan %s</string>
+  <string name="auto_enable_label_with_times" formatted="false">Aktifkan timer tidur secara otomatis saat menekan \'putar\' antara waktu %s dan %s</string>
   <string name="auto_enable_change_times">Ubah jangka waktu</string>
   <string name="sleep_timer_enabled_label">Timer tidur diaktifkan</string>
   <!--Synchronisation-->

@@ -8,7 +8,7 @@
   <string name="episodes_label">Odcinki</string>
   <string name="home_label">Strona główna</string>
   <string name="queue_label">Kolejka</string>
-  <string name="inbox_label">Skrzynka odbiorcza</string>
+
   <string name="favorite_episodes_label">Ulubione</string>
   <string name="settings_label">Ustawienia</string>
   <string name="downloads_label">Pobrane</string>
@@ -65,7 +65,7 @@
   <string name="drawer_feed_order_alphabetical">Sortuj alfabetycznie</string>
   <string name="drawer_feed_order_last_update">Sortuj wg daty publikacji</string>
   <string name="drawer_feed_order_most_played">Sortuj wg liczby odtworzonych odcinków</string>
-  <string name="drawer_feed_counter_inbox">Liczba odcinków w skrzynce odbiorczej</string>
+
   <string name="drawer_feed_counter_unplayed">Liczba nieodtworzonych odcinków</string>
   <string name="drawer_feed_counter_downloaded">Liczba pobranych odcinków</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Liczba pobranych i nieodtworzonych odcinków</string>
@@ -110,7 +110,7 @@
   <string name="auto_delete_label">Automatyczne usuwanie odcinków</string>
   <string name="feed_auto_download_always">Zawsze</string>
   <string name="feed_auto_download_never">Nigdy</string>
-  <string name="feed_new_episodes_action_add_to_inbox">Dodaj do skrzynki odbiorczej</string>
+
   <string name="feed_new_episodes_action_nothing">Nic</string>
   <string name="episode_cleanup_never">Nigdy</string>
   <string name="episode_cleanup_except_favorite_removal">Gdy nie oznaczone jako ulubione</string>
@@ -155,9 +155,9 @@
   </plurals>
   <string name="new_episode_notification_group_text">Twoje subskrypcje mają nowe odcinki</string>
   <!--Actions on feeds-->
-  <string name="remove_all_inbox_label">Usuń wszystkie ze skrzynki odbiorczej</string>
-  <string name="removed_all_inbox_msg">Usunięto wszystkie ze skrzynki odbiorczej</string>
-  <string name="remove_all_inbox_confirmation_msg">Potwierdź, że chcesz usunąć wszystkie ze skrzynki odbiorczej</string>
+
+
+
   <string name="multi_select_mark_played_confirmation">Potwierdź, że chcesz oznaczyć wszystkie zaznaczone elementy jako odtworzone</string>
   <string name="multi_select_mark_unplayed_confirmation">Potwierdź, że chcesz oznaczyć wszystkie zaznaczone elementy jako nieodtworzone</string>
   <string name="show_info_label">Pokaż informacje</string>
@@ -207,7 +207,7 @@
     <item quantity="many">Usunięto wiele pobranych odcinków.</item>
     <item quantity="other">Usunięto %d pobranych odcinków.</item>
   </plurals>
-  <string name="remove_inbox_label">Usuń ze skrzynki odbiorczej</string>
+
   <string name="removed_inbox_label">Usunięto ze skrzynki odbiorczej</string>
   <string name="mark_read_label">Oznacz jako odtworzone</string>
   <string name="toggle_played_label">Pokaż status odtworzenia</string>
@@ -242,12 +242,6 @@
     <item quantity="few">%d odcinki(ów) usunięto z kolejki.</item>
     <item quantity="many">%d odcinki(ów) usunięto z kolejki.</item>
     <item quantity="other">%d odcinki(ów) usunięto z kolejki.</item>
-  </plurals>
-  <plurals name="removed_from_inbox_batch_label">
-    <item quantity="one">%d odcinek został usunięty ze skrzynki odbiorczej.</item>
-    <item quantity="few">%d odcinki zostały usunięte ze skrzynki odbiorczej.</item>
-    <item quantity="many">%d odcinków zostało usuniętych ze skrzynki odbiorczej.</item>
-    <item quantity="other">%d odcinków zostało usuniętych ze skrzynki odbiorczej.</item>
   </plurals>
   <string name="add_to_favorite_label">Dodaj do ulubionych</string>
   <string name="remove_from_favorite_label">Usuń z ulubionych</string>
@@ -352,8 +346,8 @@
   <string name="no_all_episodes_head_label">Brak odcinków</string>
   <string name="no_all_episodes_label">Tutaj pojawi się lista odcinków, gdy dodasz podcast.</string>
   <string name="no_all_episodes_filtered_label">Spróbuj wyczyścić filtr, aby zobaczyć więcej odcinków</string>
-  <string name="no_inbox_head_label">Brak odcinków w skrzynce odbiorczej</string>
-  <string name="no_inbox_label">Gdy pojawią się nowe odcinki, zobaczysz je tutaj. Możesz wtedy zdecydować, czy są dla Ciebie interesujące czy nie.</string>
+
+
   <string name="no_subscriptions_head_label">Brak subskrypcji</string>
   <string name="no_subscriptions_label">Aby subskrybować podcast naciśnij znak plus poniżej</string>
   <!--Preferences-->

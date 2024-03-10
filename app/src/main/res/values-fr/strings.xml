@@ -8,7 +8,7 @@
   <string name="episodes_label">Épisodes</string>
   <string name="home_label">Accueil</string>
   <string name="queue_label">Liste de lecture</string>
-  <string name="inbox_label">Boîte de réception</string>
+
   <string name="favorite_episodes_label">Favoris</string>
   <string name="settings_label">Préférences</string>
   <string name="downloads_label">Téléchargements</string>
@@ -62,7 +62,7 @@
   <string name="drawer_feed_order_alphabetical">Trier par ordre alphabétique</string>
   <string name="drawer_feed_order_last_update">Trier par date de publication</string>
   <string name="drawer_feed_order_most_played">Trier par nombre lus</string>
-  <string name="drawer_feed_counter_inbox">Épisodes dans la boîte de réception</string>
+
   <string name="drawer_feed_counter_unplayed">Épisodes non lus</string>
   <string name="drawer_feed_counter_downloaded">Épisodes téléchargés</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Épisodes téléchargés et non lus</string>
@@ -115,7 +115,7 @@
   <string name="feed_volume_boost_heavy">Forte amplification</string>
   <string name="feed_auto_download_always">Toujours</string>
   <string name="feed_auto_download_never">Jamais</string>
-  <string name="feed_new_episodes_action_add_to_inbox">Ajouter à la boîte de réception</string>
+
   <string name="feed_new_episodes_action_nothing">Ne rien faire</string>
   <string name="episode_cleanup_never">Jamais</string>
   <string name="episode_cleanup_except_favorite_removal">Quand pas un favori</string>
@@ -155,9 +155,9 @@
   </plurals>
   <string name="new_episode_notification_group_text">Vos abonnements disposent de nouveaux épisodes.</string>
   <!--Actions on feeds-->
-  <string name="remove_all_inbox_label">Vider la boîte de réception</string>
-  <string name="removed_all_inbox_msg">Boîte de réception vidée </string>
-  <string name="remove_all_inbox_confirmation_msg">Merci de confirmer que vous voulez vider la boîte de réception.</string>
+
+
+
   <string name="multi_select_mark_played_confirmation">Merci de confirmer le marquage de tous les éléments sélectionnés comme lus.</string>
   <string name="multi_select_mark_unplayed_confirmation">Merci de confirmer le marquage de tous les éléments sélectionnés comme non lus.</string>
   <string name="show_info_label">Voir les détails</string>
@@ -210,7 +210,7 @@
     <item quantity="many">%d épisodes téléchargés supprimés.</item>
     <item quantity="other">%d épisodes téléchargés supprimés.</item>
   </plurals>
-  <string name="remove_inbox_label">Supprimer de la boîte de réception</string>
+
   <string name="removed_inbox_label">Supprimé de la boîte de réception</string>
   <string name="mark_read_label">Marquer comme lu</string>
   <string name="toggle_played_label">Modifier l\'état de lecture</string>
@@ -241,11 +241,6 @@
     <item quantity="one">%d épisode supprimé de la liste de lecture.</item>
     <item quantity="many">%d épisodes supprimés de la liste de lecture.</item>
     <item quantity="other">%d épisodes supprimés de la liste de lecture.</item>
-  </plurals>
-  <plurals name="removed_from_inbox_batch_label">
-    <item quantity="one">%d épisode supprimé de la boîte de réception.</item>
-    <item quantity="many">%d épisodes supprimés de la boîte de réception.</item>
-    <item quantity="other">%d épisodes supprimés de la boîte de réception.</item>
   </plurals>
   <string name="add_to_favorite_label">Ajouter aux favoris</string>
   <string name="remove_from_favorite_label">Supprimer des favoris</string>
@@ -355,8 +350,8 @@
   <string name="no_all_episodes_head_label">Aucun épisode</string>
   <string name="no_all_episodes_label">Quand vous ajouterez un podcast ses épisodes seront montrés ici.</string>
   <string name="no_all_episodes_filtered_label">Pour voir plus d\'épisodes supprimer le filtre.</string>
-  <string name="no_inbox_head_label">Aucun épisode dans la boîte de réception</string>
-  <string name="no_inbox_label">Les nouveaux épisodes seront affichés ici. Vous pourrez décider si ils vous intéressent ou pas.</string>
+
+
   <string name="no_subscriptions_head_label">Aucun abonnement</string>
   <string name="no_subscriptions_label">Pour vous abonner à un podcast appuyer sur le bouton +.</string>
   <!--Preferences-->
@@ -607,7 +602,7 @@
     <item quantity="other">%d jours</item>
   </plurals>
   <string name="auto_enable_label">Activation automatique lorsque la lecture commence</string>
-  <string name="auto_enable_label_with_times">Activer automatiquement lorsque la lecture commence entre %s et %s</string>
+  <string name="auto_enable_label_with_times" formatted="false">Activer automatiquement lorsque la lecture commence entre %s et %s</string>
   <string name="auto_enable_change_times">Changer la plage horaire</string>
   <string name="sleep_timer_enabled_label">Arrêt automatique activé</string>
   <!--Synchronisation-->
@@ -668,7 +663,6 @@
   <string name="status_downloading_label">L\'épisode est en train d\'être téléchargé</string>
   <string name="in_queue_label">Dans la liste de lecture</string>
   <string name="is_favorite_label">Dans les favoris</string>
-  <string name="is_inbox_label">Dans la boîte de réception</string>
   <string name="is_played">Lu</string>
   <string name="load_next_page_label">Charger la page suivante</string>
   <string name="position">Position : %1$s</string>

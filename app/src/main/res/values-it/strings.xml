@@ -8,7 +8,7 @@
   <string name="episodes_label">Episodi</string>
   <string name="home_label">Home</string>
   <string name="queue_label">Coda</string>
-  <string name="inbox_label">Inbox</string>
+
   <string name="favorite_episodes_label">Preferiti</string>
   <string name="settings_label">Impostazioni</string>
   <string name="downloads_label">Download</string>
@@ -62,7 +62,7 @@
   <string name="drawer_feed_order_alphabetical">Ordina alfabeticamente</string>
   <string name="drawer_feed_order_last_update">Ordina per data di pubblicazione</string>
   <string name="drawer_feed_order_most_played">Ordina per numero di episodi riprodotti</string>
-  <string name="drawer_feed_counter_inbox">Numero di episodi nell\'inbox</string>
+
   <string name="drawer_feed_counter_unplayed">Numero di episodi non riprodotti</string>
   <string name="drawer_feed_counter_downloaded">Numero di episodi scaricati</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Numero di episodi scaricati e non riprodotti</string>
@@ -115,7 +115,7 @@
   <string name="feed_volume_boost_heavy">Incremento marcato</string>
   <string name="feed_auto_download_always">Sempre</string>
   <string name="feed_auto_download_never">Mai</string>
-  <string name="feed_new_episodes_action_add_to_inbox">Aggiungi all\'inbox</string>
+
   <string name="feed_new_episodes_action_nothing">Niente</string>
   <string name="episode_cleanup_never">Mai</string>
   <string name="episode_cleanup_except_favorite_removal">Quando non preferito</string>
@@ -155,9 +155,9 @@
   </plurals>
   <string name="new_episode_notification_group_text">Le tue iscrizioni hanno nuovi episodi.</string>
   <!--Actions on feeds-->
-  <string name="remove_all_inbox_label">Svuota l\'inbox</string>
-  <string name="removed_all_inbox_msg">Inbox svuotata</string>
-  <string name="remove_all_inbox_confirmation_msg">Confermi di voler rimuovere tutti gli episodi dall\'inbox\?</string>
+
+
+
   <string name="multi_select_mark_played_confirmation">Conferma di voler segnare tutti gli episodi selezionati come riprodotti</string>
   <string name="multi_select_mark_unplayed_confirmation">Conferma di voler segnare tutti gli episodi selezionati come non riprodotti</string>
   <string name="show_info_label">Informazioni</string>
@@ -210,7 +210,7 @@
     <item quantity="many">%d di episodi scaricati eliminati.</item>
     <item quantity="other">%d episodi scaricati eliminati.</item>
   </plurals>
-  <string name="remove_inbox_label">Rimuovi dall\'inbox</string>
+
   <string name="removed_inbox_label">Rimosso dall\'inbox</string>
   <string name="mark_read_label">Segna come riprodotto</string>
   <string name="toggle_played_label">Cambia stato di riproduzione</string>
@@ -241,11 +241,6 @@
     <item quantity="one">%d episodio rimosso dalla coda.</item>
     <item quantity="many">%d di episodi rimossi dalla coda.</item>
     <item quantity="other">%d episodi rimossi dalla coda.</item>
-  </plurals>
-  <plurals name="removed_from_inbox_batch_label">
-    <item quantity="one">%d episodio rimosso dall\'inbox</item>
-    <item quantity="many">%d di episodi rimossi dall\'inbox.</item>
-    <item quantity="other">%d episodi rimossi dall\'inbox.</item>
   </plurals>
   <string name="add_to_favorite_label">Aggiungi ai preferiti</string>
   <string name="remove_from_favorite_label">Rimuovi dai preferiti</string>
@@ -355,8 +350,8 @@
   <string name="no_all_episodes_head_label">Nessun episodio</string>
   <string name="no_all_episodes_label">Quando aggiungi un podcast, gli episodi vengono mostrati qui.</string>
   <string name="no_all_episodes_filtered_label">Prova a rimuovere i filtri per visualizzare più episodi</string>
-  <string name="no_inbox_head_label">Nessun episodio nell\'inbox</string>
-  <string name="no_inbox_label">Quando verranno pubblicati nuovi episodi, appariranno qui. Puoi decidere se ti interessano o meno.</string>
+
+
   <string name="no_subscriptions_head_label">Nessuna iscrizione</string>
   <string name="no_subscriptions_label">Per aggiungere un podcast, premi il tasto + in basso.</string>
   <!--Preferences-->
@@ -608,7 +603,7 @@
     <item quantity="other">%d giorni</item>
   </plurals>
   <string name="auto_enable_label">Attivazione automatica timer di spegnimento</string>
-  <string name="auto_enable_label_with_times">Attiva automaticamente il timer di spegnimento premendo riproduci tra le %s e le %s</string>
+  <string name="auto_enable_label_with_times" formatted="false">Attiva automaticamente il timer di spegnimento premendo riproduci tra le %s e le %s</string>
   <string name="auto_enable_change_times">Modifica fascia oraria</string>
   <string name="sleep_timer_enabled_label">Timer spegnimento abilitato</string>
   <!--Synchronisation-->
@@ -669,7 +664,6 @@
   <string name="status_downloading_label">L\'episodio è in download</string>
   <string name="in_queue_label">Nella coda</string>
   <string name="is_favorite_label">Segnato come preferito</string>
-  <string name="is_inbox_label">Nell\'inbox</string>
   <string name="is_played">Riprodotti</string>
   <string name="load_next_page_label">Carica la pagina successiva</string>
   <string name="position">Posizione: %1$s</string>

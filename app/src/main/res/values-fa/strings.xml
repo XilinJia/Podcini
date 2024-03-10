@@ -8,7 +8,7 @@
   <string name="episodes_label">قسمت‌ها</string>
   <string name="home_label">خانه</string>
   <string name="queue_label">صف</string>
-  <string name="inbox_label">صندوق ورودی</string>
+
   <string name="favorite_episodes_label">محبوب‌ها</string>
   <string name="settings_label">تنظیمات</string>
   <string name="downloads_label">بارگیری‌ها</string>
@@ -66,7 +66,7 @@
   <string name="drawer_feed_order_alphabetical">مرتب‌سازی بر اساس حروف الفبا</string>
   <string name="drawer_feed_order_last_update">مرتب‌سازی بر اساس تاریخ انتشار</string>
   <string name="drawer_feed_order_most_played">چینش بر اساس تعداد قسمت‌های پخش شده</string>
-  <string name="drawer_feed_counter_inbox">تعداد قسمت‌ها در صندوق ورودی</string>
+
   <string name="drawer_feed_counter_unplayed">تعداد قسمت‌های پخش‌نشده</string>
   <string name="drawer_feed_counter_downloaded">تعداد قسمت‌های بار گرفته</string>
   <string name="drawer_feed_counter_downloaded_unplayed">تعداد قسمت‌های بار گرفته و پخش نشده</string>
@@ -111,7 +111,7 @@
   <string name="auto_delete_label">حذف خودکار قسمت</string>
   <string name="feed_auto_download_always">همیشه</string>
   <string name="feed_auto_download_never">هیچگاه</string>
-  <string name="feed_new_episodes_action_add_to_inbox">افزودن به صندوق ورودی</string>
+
   <string name="feed_new_episodes_action_nothing">هیچ</string>
   <string name="episode_cleanup_never">هرگز</string>
   <string name="episode_cleanup_except_favorite_removal">وقتی که جزو علاقه‌مندی‌ها نباشد</string>
@@ -145,9 +145,9 @@
   </plurals>
   <string name="new_episode_notification_group_text">اشتراک‌هایتان قسمت‌های جدیدی دارند.</string>
   <!--Actions on feeds-->
-  <string name="remove_all_inbox_label">همه موارد را از صندوق ورودی حذف کن</string>
-  <string name="removed_all_inbox_msg">موارد حذف شده از صندوق ورودی </string>
-  <string name="remove_all_inbox_confirmation_msg">لطفاً تأیید کنید که می‌خواهید همه را از صندوق ورودی حذف کنید.</string>
+
+
+
   <string name="multi_select_mark_played_confirmation">لطفاً تأیید کنید که می‌خواهید همه موارد انتخابی را به‌عنوان پخش شده علامت‌گذاری کنید.</string>
   <string name="multi_select_mark_unplayed_confirmation">لطفاً تأیید کنید که می‌خواهید همه موارد انتخابی را به‌عنوان پخش‌نشده علامت‌گذاری کنید.</string>
   <string name="show_info_label">نمایش اطلاعات</string>
@@ -195,7 +195,7 @@
     <item quantity="one">۱ قسمت بارگرفته حذف شد.</item>
     <item quantity="other">%dقسمت بار گرفته حذف شد.</item>
   </plurals>
-  <string name="remove_inbox_label">حذف از صندوق ورودی</string>
+
   <string name="removed_inbox_label">حذف شده از صندوق ورودی</string>
   <string name="mark_read_label">علامت‌گذاری به‌عنوان پخش‌شده</string>
   <string name="toggle_played_label">وضعیت پخش را تغییر دهید</string>
@@ -222,10 +222,6 @@
   <plurals name="removed_from_queue_batch_label">
     <item quantity="one">%d قسمت از صف حذف شد.</item>
     <item quantity="other">%d قسمت از صف حذف شد.</item>
-  </plurals>
-  <plurals name="removed_from_inbox_batch_label">
-    <item quantity="one">%d قسمت از صف برداشته شد.</item>
-    <item quantity="other">%d قسمت از صف برداشته شد.</item>
   </plurals>
   <string name="add_to_favorite_label">افزودن به محبوب‌ها</string>
   <string name="remove_from_favorite_label">برداشتن از محبوب‌ها</string>
@@ -330,8 +326,8 @@
   <string name="no_all_episodes_head_label">بدون قسمت</string>
   <string name="no_all_episodes_label">هنگامی که پادکستی می‌افزایید، قسمت‌ها اینجا نمایش داده می‌شود.</string>
   <string name="no_all_episodes_filtered_label">برای دیدن قسمت‌های بیش‌تر، پالایه را بردارید.</string>
-  <string name="no_inbox_head_label">هیچ قسمتی در صندوق ورودی نیست</string>
-  <string name="no_inbox_label">هنگام رسیدن قسمت‌های جدید  این‌جا نشان داده خواهند شد. سپس می‌توانید تصمیم بگیرید که به آن‌ها علاقه‌مندید یا نه.</string>
+
+
   <string name="no_subscriptions_head_label">بدون اشتراک</string>
   <string name="no_subscriptions_label">برای اشتراک در یک پادکست، آیکون بعلاوه را زیر را فشار دهید.</string>
   <!--Preferences-->
@@ -563,7 +559,7 @@
     <item quantity="other">%d ساعت</item>
   </plurals>
   <string name="auto_enable_label">فعّال سازی خودکار شمارشگر معکوس خواب هنگام زدن پخش</string>
-  <string name="auto_enable_label_with_times">فعّال سازی خودکار شمارشگر معکوس خواب هنگام زدن پخش بین %s و %s</string>
+  <string name="auto_enable_label_with_times" formatted="false">فعّال سازی خودکار شمارشگر معکوس خواب هنگام زدن پخش بین %s و %s</string>
   <string name="sleep_timer_enabled_label">زمان‌سنج خواب به کار افتاد</string>
   <!--Synchronisation-->
   <string name="synchronization_choose_title">گزینش فراهمگر همگام سازی</string>

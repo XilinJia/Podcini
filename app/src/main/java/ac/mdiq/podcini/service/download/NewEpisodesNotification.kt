@@ -1,7 +1,10 @@
 package ac.mdiq.podcini.service.download
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.service.FeedUpdateWorker
+import ac.mdiq.podcini.storage.database.PodDBAdapter
+import ac.mdiq.podcini.storage.model.feed.Feed
+import ac.mdiq.podcini.storage.model.feed.FeedCounter
+import ac.mdiq.podcini.ui.gui.NotificationUtils
 import android.Manifest
 import android.app.PendingIntent
 import android.content.ComponentName
@@ -11,25 +14,21 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import ac.mdiq.podcini.ui.gui.NotificationUtils
-import ac.mdiq.podcini.storage.model.feed.Feed
-import ac.mdiq.podcini.storage.model.feed.FeedCounter
-import ac.mdiq.podcini.storage.database.PodDBAdapter
-import android.widget.Toast
 
 class NewEpisodesNotification {
     private var countersBefore: Map<Long, Int>? = null
 
     fun loadCountersBeforeRefresh() {
         val adapter = PodDBAdapter.getInstance()
-        adapter?.open()
-        if (adapter != null) countersBefore = adapter.getFeedCounters(FeedCounter.SHOW_NEW)
-        adapter?.close()
+        adapter.open()
+        countersBefore = adapter.getFeedCounters(FeedCounter.SHOW_NEW)
+        adapter.close()
     }
 
     fun showIfNeeded(context: Context, feed: Feed) {
@@ -152,7 +151,7 @@ class NewEpisodesNotification {
         }
 
         private fun getNewEpisodeCount(feedId: Long): Int {
-            val adapter = PodDBAdapter.getInstance() ?: return 0
+            val adapter = PodDBAdapter.getInstance()
             adapter.open()
             val counters = adapter.getFeedCounters(FeedCounter.SHOW_NEW, feedId)
             val episodeCount = if (counters.containsKey(feedId)) counters[feedId]!! else 0

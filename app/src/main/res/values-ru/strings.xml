@@ -8,7 +8,7 @@
   <string name="episodes_label">Выпуски</string>
   <string name="home_label">Главная</string>
   <string name="queue_label">Очередь</string>
-  <string name="inbox_label">Входящие</string>
+
   <string name="favorite_episodes_label">Избранное</string>
   <string name="settings_label">Настройки</string>
   <string name="downloads_label">Загрузки</string>
@@ -59,7 +59,7 @@
   <string name="drawer_feed_order_alphabetical">По алфавиту</string>
   <string name="drawer_feed_order_last_update">По дате выхода</string>
   <string name="drawer_feed_order_most_played">По количеству прослушанных</string>
-  <string name="drawer_feed_counter_inbox">Количество непрослушанных во входящих</string>
+
   <string name="drawer_feed_counter_unplayed">Количество непрослушанных выпусков</string>
   <string name="drawer_feed_counter_downloaded">Количество загруженных выпусков</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Количество загруженных и непрослушанных выпусков</string>
@@ -104,7 +104,7 @@
   <string name="auto_delete_label">Автоматическое удаление выпусков</string>
   <string name="feed_auto_download_always">всегда</string>
   <string name="feed_auto_download_never">никогда</string>
-  <string name="feed_new_episodes_action_add_to_inbox">Во входящие</string>
+
   <string name="feed_new_episodes_action_nothing">ничего</string>
   <string name="episode_cleanup_never">никогда</string>
   <string name="episode_cleanup_except_favorite_removal">Когда не в избранном</string>
@@ -150,9 +150,9 @@
   </plurals>
   <string name="new_episode_notification_group_text">Появились новые выпуски.</string>
   <!--Actions on feeds-->
-  <string name="remove_all_inbox_label">Убрать всё из входящих</string>
-  <string name="removed_all_inbox_msg">Всё убрано из входящих</string>
-  <string name="remove_all_inbox_confirmation_msg">Убрать всё из входящих\?</string>
+
+
+
   <string name="multi_select_mark_played_confirmation">Подтвердите, что хотите отметить все выбранные выпуски как прослушанные.</string>
   <string name="multi_select_mark_unplayed_confirmation">Подтвердите, что хотите отметить все выбранные выпуски как непрослушанные.</string>
   <string name="show_info_label">Показать информацию</string>
@@ -206,7 +206,7 @@
     <item quantity="many">%d загруженных выпусков удалёно.</item>
     <item quantity="other">%d загруженных выпусков удалёно.</item>
   </plurals>
-  <string name="remove_inbox_label">Убрать из входящих</string>
+
   <string name="removed_inbox_label">Убрано из входящих</string>
   <string name="mark_read_label">Отметить как прослушанное</string>
   <string name="toggle_played_label">Переключить состояние \"прослушано\"</string>
@@ -241,12 +241,6 @@
     <item quantity="few">%d выпуска удалены из очереди.</item>
     <item quantity="many">%d выпусков удалены из очереди.</item>
     <item quantity="other">%d выпусков удалено из очереди.</item>
-  </plurals>
-  <plurals name="removed_from_inbox_batch_label">
-    <item quantity="one">%d выпуск удален из входящих.</item>
-    <item quantity="few">%d выпуска удалены из входящих.</item>
-    <item quantity="many">%d выпусков удалены из входящих.</item>
-    <item quantity="other">%d выпусков удалено из входящих.</item>
   </plurals>
   <string name="add_to_favorite_label">Добавить в избранное</string>
   <string name="remove_from_favorite_label">Убрать из избранного</string>
@@ -353,8 +347,8 @@
   <string name="no_all_episodes_head_label">Нет выпусков</string>
   <string name="no_all_episodes_label">Когда вы добавите подкаст, выпуски будут показаны здесь.</string>
   <string name="no_all_episodes_filtered_label">Попробуйте сбросить фильтр, чтобы увидеть больше выпусков.</string>
-  <string name="no_inbox_head_label">Во входящих нет выпусков</string>
-  <string name="no_inbox_label">Когда появятся новые выпуски, они будут показаны здесь. Вы сможете решить, интересны они вам или нет.</string>
+
+
   <string name="no_subscriptions_head_label">Подписки не оформлены</string>
   <string name="no_subscriptions_label">Чтобы подписаться на подкаст, нажмите значок «плюс» внизу.</string>
   <!--Preferences-->
@@ -592,7 +586,7 @@
     <item quantity="other">%d часов</item>
   </plurals>
   <string name="auto_enable_label">Запускать таймер сна вместе с началом воспроизведения</string>
-  <string name="auto_enable_label_with_times">Автоматически запускать таймер сна при пуске воспроизведения в интервале с%s до %s</string>
+  <string name="auto_enable_label_with_times" formatted="false">Автоматически запускать таймер сна при пуске воспроизведения в интервале с%s до %s</string>
   <string name="sleep_timer_enabled_label">Таймер сна включен</string>
   <!--Synchronisation-->
   <string name="synchronization_choose_title">Выберите провайдера синхронизации</string>

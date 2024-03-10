@@ -25,9 +25,9 @@ class EpisodeMultiSelectActionHandler(private val activity: MainActivity, privat
             R.id.remove_from_queue_batch -> {
                 removeFromQueueChecked(items)
             }
-            R.id.remove_from_inbox_batch -> {
-                removeFromInboxChecked(items)
-            }
+//            R.id.remove_from_inbox_batch -> {
+//                removeFromInboxChecked(items)
+//            }
             R.id.mark_read_batch -> {
                 markedCheckedPlayed(items)
             }
@@ -64,16 +64,16 @@ class EpisodeMultiSelectActionHandler(private val activity: MainActivity, privat
         showMessage(R.plurals.removed_from_queue_batch_label, checkedIds.size)
     }
 
-    private fun removeFromInboxChecked(items: List<FeedItem>) {
-        val markUnplayed = LongList()
-        for (episode in items) {
-            if (episode.isNew) {
-                markUnplayed.add(episode.id)
-            }
-        }
-        DBWriter.markItemPlayed(FeedItem.UNPLAYED, *markUnplayed.toArray())
-        showMessage(R.plurals.removed_from_inbox_batch_label, markUnplayed.size())
-    }
+//    private fun removeFromInboxChecked(items: List<FeedItem>) {
+//        val markUnplayed = LongList()
+//        for (episode in items) {
+//            if (episode.isNew) {
+//                markUnplayed.add(episode.id)
+//            }
+//        }
+//        DBWriter.markItemPlayed(FeedItem.UNPLAYED, *markUnplayed.toArray())
+//        showMessage(R.plurals.removed_from_inbox_batch_label, markUnplayed.size())
+//    }
 
     private fun markedCheckedPlayed(items: List<FeedItem>) {
         val checkedIds = getSelectedIds(items)

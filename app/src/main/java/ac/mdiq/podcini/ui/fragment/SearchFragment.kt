@@ -370,7 +370,7 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
 
     override fun onStartSelectMode() {
         searchViewFocusOff()
-        speedDialBinding.fabSD.removeActionItemById(R.id.remove_from_inbox_batch)
+//        speedDialBinding.fabSD.removeActionItemById(R.id.remove_from_inbox_batch)
         speedDialBinding.fabSD.removeActionItemById(R.id.remove_from_queue_batch)
         speedDialBinding.fabSD.removeActionItemById(R.id.delete_batch)
         speedDialBinding.fabSD.visibility = View.VISIBLE

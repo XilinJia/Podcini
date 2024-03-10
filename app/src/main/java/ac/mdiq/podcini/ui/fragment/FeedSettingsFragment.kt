@@ -149,7 +149,7 @@ class FeedSettingsFragment : Fragment() {
                     setupKeepUpdatedPreference()
                     setupAutoDeletePreference()
                     setupVolumeAdaptationPreferences()
-                    setupNewEpisodesAction()
+//                    setupNewEpisodesAction()
                     setupAuthentificationPreference()
                     setupEpisodeFilterPreference()
                     setupPlaybackSpeedPreference()
@@ -160,7 +160,7 @@ class FeedSettingsFragment : Fragment() {
                     updateAutoDeleteSummary()
                     updateVolumeAdaptationValue()
                     updateAutoDownloadEnabled()
-                    updateNewEpisodesAction()
+//                    updateNewEpisodesAction()
 
                     if (feed!!.isLocalFeed) {
                         findPreference<Preference>(PREF_AUTHENTICATION)!!.isVisible = false
@@ -349,31 +349,31 @@ class FeedSettingsFragment : Fragment() {
             }
         }
 
-        @OptIn(UnstableApi::class) private fun setupNewEpisodesAction() {
-            if (feedPreferences == null) return
+//        @OptIn(UnstableApi::class) private fun setupNewEpisodesAction() {
+//            if (feedPreferences == null) return
+//
+//            findPreference<Preference>(PREF_NEW_EPISODES_ACTION)!!.onPreferenceChangeListener =
+//                Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any ->
+//                    val code = (newValue as String).toInt()
+//                    feedPreferences!!.newEpisodesAction = NewEpisodesAction.fromCode(code)
+//                    DBWriter.setFeedPreferences(feedPreferences!!)
+//                    updateNewEpisodesAction()
+//                    false
+//                }
+//        }
 
-            findPreference<Preference>(PREF_NEW_EPISODES_ACTION)!!.onPreferenceChangeListener =
-                Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any ->
-                    val code = (newValue as String).toInt()
-                    feedPreferences!!.newEpisodesAction = NewEpisodesAction.fromCode(code)
-                    DBWriter.setFeedPreferences(feedPreferences!!)
-                    updateNewEpisodesAction()
-                    false
-                }
-        }
-
-        private fun updateNewEpisodesAction() {
-            if (feedPreferences == null || feedPreferences!!.newEpisodesAction == null) return
-            val newEpisodesAction = findPreference<ListPreference>(PREF_NEW_EPISODES_ACTION)
-            newEpisodesAction!!.value = "" + feedPreferences!!.newEpisodesAction!!.code
-
-            when (feedPreferences!!.newEpisodesAction) {
-                NewEpisodesAction.GLOBAL -> newEpisodesAction.setSummary(R.string.global_default)
-//                NewEpisodesAction.ADD_TO_INBOX -> newEpisodesAction.setSummary(R.string.feed_new_episodes_action_add_to_inbox)
-                NewEpisodesAction.NOTHING -> newEpisodesAction.setSummary(R.string.feed_new_episodes_action_nothing)
-                else -> {}
-            }
-        }
+//        private fun updateNewEpisodesAction() {
+//            if (feedPreferences == null || feedPreferences!!.newEpisodesAction == null) return
+//            val newEpisodesAction = findPreference<ListPreference>(PREF_NEW_EPISODES_ACTION)
+//            newEpisodesAction!!.value = "" + feedPreferences!!.newEpisodesAction!!.code
+//
+//            when (feedPreferences!!.newEpisodesAction) {
+//                NewEpisodesAction.GLOBAL -> newEpisodesAction.setSummary(R.string.global_default)
+////                NewEpisodesAction.ADD_TO_INBOX -> newEpisodesAction.setSummary(R.string.feed_new_episodes_action_add_to_inbox)
+//                NewEpisodesAction.NOTHING -> newEpisodesAction.setSummary(R.string.feed_new_episodes_action_nothing)
+//                else -> {}
+//            }
+//        }
 
         @OptIn(UnstableApi::class) private fun setupKeepUpdatedPreference() {
             if (feedPreferences == null) return
@@ -466,7 +466,7 @@ class FeedSettingsFragment : Fragment() {
             private val PREF_AUTHENTICATION: CharSequence = "authentication"
             private val PREF_AUTO_DELETE: CharSequence = "autoDelete"
             private val PREF_CATEGORY_AUTO_DOWNLOAD: CharSequence = "autoDownloadCategory"
-            private val PREF_NEW_EPISODES_ACTION: CharSequence = "feedNewEpisodesAction"
+//            private val PREF_NEW_EPISODES_ACTION: CharSequence = "feedNewEpisodesAction"
             private const val PREF_FEED_PLAYBACK_SPEED = "feedPlaybackSpeed"
             private const val PREF_AUTO_SKIP = "feedAutoSkip"
             private const val PREF_TAGS = "tags"

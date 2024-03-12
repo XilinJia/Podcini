@@ -1,0 +1,7 @@
+android.useAndroidX=true
+android.enableJetifier=true
+android.jetifier.ignorelist=bcprov-jdk15on
+android.nonTransitiveRClass=false
+android.nonFinalResIds=false
+
+org.gradle.jvmargs=-Xmx2048m

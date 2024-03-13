@@ -15,9 +15,9 @@ import java.util.concurrent.TimeUnit
 class Media : Namespace() {
     override fun handleElementStart(localName: String, state: HandlerState, attributes: Attributes): SyndElement {
         if (CONTENT == localName) {
-            val url = attributes.getValue(DOWNLOAD_URL)
-            val defaultStr = attributes.getValue(DEFAULT)
-            val medium = attributes.getValue(MEDIUM)
+            val url: String? = attributes.getValue(DOWNLOAD_URL)
+            val defaultStr: String? = attributes.getValue(DEFAULT)
+            val medium: String? = attributes.getValue(MEDIUM)
             var validTypeMedia = false
             var validTypeImage = false
             val isDefault = "true" == defaultStr
@@ -44,7 +44,7 @@ class Media : Namespace() {
 
             if (state.currentItem != null && (state.currentItem!!.media == null || isDefault) && url != null && validTypeMedia) {
                 var size: Long = 0
-                val sizeStr = attributes.getValue(SIZE)
+                val sizeStr: String? = attributes.getValue(SIZE)
                 if (!sizeStr.isNullOrEmpty()) {
                     try {
                         size = sizeStr.toLong()
@@ -53,7 +53,7 @@ class Media : Namespace() {
                     }
                 }
                 var durationMs = 0
-                val durationStr = attributes.getValue(DURATION)
+                val durationStr: String? = attributes.getValue(DURATION)
                 if (!durationStr.isNullOrEmpty()) {
                     try {
                         val duration = durationStr.toLong()
@@ -71,7 +71,7 @@ class Media : Namespace() {
                 state.currentItem!!.imageUrl = url
             }
         } else if (IMAGE == localName) {
-            val url = attributes.getValue(IMAGE_URL)
+            val url: String? = attributes.getValue(IMAGE_URL)
             if (url != null) {
                 if (state.currentItem != null) {
                     state.currentItem!!.imageUrl = url
@@ -82,7 +82,7 @@ class Media : Namespace() {
                 }
             }
         } else if (DESCRIPTION == localName) {
-            val type = attributes.getValue(DESCRIPTION_TYPE)
+            val type: String? = attributes.getValue(DESCRIPTION_TYPE)
             return AtomText(localName, this, type)
         }
         return SyndElement(localName, this)

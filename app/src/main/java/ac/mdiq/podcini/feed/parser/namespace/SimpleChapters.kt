@@ -12,13 +12,13 @@ class SimpleChapters : Namespace() {
         if (currentItem != null) {
             if (localName == CHAPTERS) {
                 currentItem.chapters = mutableListOf()
-            } else if (localName == CHAPTER && attributes.getValue(START).isNotEmpty()) {
+            } else if (localName == CHAPTER && !attributes.getValue(START).isNullOrEmpty()) {
                 // if the chapter's START is empty, we don't need to do anything
                 try {
-                    val start = parseTimeString(attributes.getValue(START))
-                    val title = attributes.getValue(TITLE)
-                    val link = attributes.getValue(HREF)
-                    val imageUrl = attributes.getValue(IMAGE)
+                    val start= parseTimeString(attributes.getValue(START))
+                    val title: String? = attributes.getValue(TITLE)
+                    val link: String? = attributes.getValue(HREF)
+                    val imageUrl: String? = attributes.getValue(IMAGE)
                     val chapter = Chapter(start, title, link, imageUrl)
                     currentItem.chapters?.add(chapter)
                 } catch (e: NumberFormatException) {

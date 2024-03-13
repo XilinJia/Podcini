@@ -10,14 +10,14 @@ class Itunes : Namespace() {
     override fun handleElementStart(localName: String, state: ac.mdiq.podcini.feed.parser.HandlerState,
                                     attributes: Attributes): SyndElement {
         if (IMAGE == localName) {
-            val url = attributes.getValue(IMAGE_HREF)
+            val url: String? = attributes.getValue(IMAGE_HREF)
 
             if (state.currentItem != null) {
                 state.currentItem!!.imageUrl = url
             } else {
                 // this is the feed image
                 // prefer to all other images
-                if (url.isNotEmpty()) {
+                if (!url.isNullOrEmpty()) {
                     state.feed.imageUrl = url
                 }
             }

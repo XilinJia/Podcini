@@ -19,17 +19,17 @@ class Atom : Namespace() {
             state.items.add(state.currentItem!!)
             state.currentItem!!.feed = state.feed
         } else if (localName.matches(isText.toRegex())) {
-            val type = attributes.getValue(TEXT_TYPE)
+            val type: String? = attributes.getValue(TEXT_TYPE)
             return AtomText(localName, this, type)
         } else if (LINK == localName) {
-            val href = attributes.getValue(LINK_HREF)
-            val rel = attributes.getValue(LINK_REL)
+            val href: String? = attributes.getValue(LINK_HREF)
+            val rel: String? = attributes.getValue(LINK_REL)
             val parent = state.tagstack.peek()
             if (parent.name.matches(isFeedItem.toRegex())) {
                 if (rel == null || LINK_REL_ALTERNATE == rel) {
                     state.currentItem!!.link = href
                 } else if (LINK_REL_ENCLOSURE == rel) {
-                    val strSize = attributes.getValue(LINK_LENGTH)
+                    val strSize: String? = attributes.getValue(LINK_LENGTH)
                     var size: Long = 0
                     try {
                         if (strSize != null) {
@@ -38,7 +38,7 @@ class Atom : Namespace() {
                     } catch (e: NumberFormatException) {
                         Log.d(TAG, "Length attribute could not be parsed.")
                     }
-                    val mimeType = getMimeType(attributes.getValue(LINK_TYPE), href)
+                    val mimeType: String? = getMimeType(attributes.getValue(LINK_TYPE), href)
 
                     val currItem = state.currentItem
                     if (isMediaFile(mimeType) && currItem != null && !currItem.hasMedia()) {
@@ -49,7 +49,7 @@ class Atom : Namespace() {
                 }
             } else if (parent.name.matches(isFeed.toRegex())) {
                 if (rel == null || LINK_REL_ALTERNATE == rel) {
-                    val type = attributes.getValue(LINK_TYPE)
+                    val type: String? = attributes.getValue(LINK_TYPE)
                     /*
                      * Use as link if a) no type-attribute is given and
                      * feed-object has no link yet b) type of link is
@@ -60,20 +60,20 @@ class Atom : Namespace() {
                         state.feed.link = href
                     } else if (LINK_TYPE_ATOM == type || LINK_TYPE_RSS == type) {
                         // treat as podlove alternate feed
-                        var title = attributes.getValue(LINK_TITLE)
-                        if (title.isEmpty()) {
-                            title = href
+                        var title: String? = attributes.getValue(LINK_TITLE)
+                        if (title.isNullOrEmpty()) {
+                            title = href?:""
                         }
-                        state.addAlternateFeedUrl(title!!, href)
+                        if (!href.isNullOrEmpty()) state.addAlternateFeedUrl(title, href)
                     }
                 } else if (LINK_REL_ARCHIVES == rel) {
-                    val type = attributes.getValue(LINK_TYPE)
+                    val type: String? = attributes.getValue(LINK_TYPE)
                     if (LINK_TYPE_ATOM == type || LINK_TYPE_RSS == type) {
-                        var title = attributes.getValue(LINK_TITLE)
-                        if (title.isEmpty()) {
-                            title = href
+                        var title: String? = attributes.getValue(LINK_TITLE)
+                        if (title.isNullOrEmpty()) {
+                            title = href?:""
                         }
-                        state.addAlternateFeedUrl(title!!, href)
+                        if (!href.isNullOrEmpty()) state.addAlternateFeedUrl(title, href)
                     } else if (LINK_TYPE_HTML == type || LINK_TYPE_XHTML == type) {
                         //A Link such as to a directory such as iTunes
                     }
@@ -205,7 +205,7 @@ class Atom : Namespace() {
          */
         private const val isText = ("$TITLE|$CONTENT|$SUBTITLE|$SUMMARY")
 
-        private const val isFeed = FEED + "|" + ac.mdiq.podcini.feed.parser.namespace.Rss20.CHANNEL
-        private const val isFeedItem = ENTRY + "|" + ac.mdiq.podcini.feed.parser.namespace.Rss20.ITEM
+        private const val isFeed = FEED + "|" + Rss20.CHANNEL
+        private const val isFeedItem = ENTRY + "|" + Rss20.ITEM
     }
 }

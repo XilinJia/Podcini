@@ -9,13 +9,13 @@ class PodcastIndex : Namespace() {
     override fun handleElementStart(localName: String, state: HandlerState,
                                     attributes: Attributes): SyndElement {
         if (FUNDING == localName) {
-            val href = attributes.getValue(URL)
+            val href: String? = attributes.getValue(URL)
             val funding = FeedFunding(href, "")
             state.currentFunding = funding
             state.feed.addPayment(state.currentFunding!!)
         } else if (CHAPTERS == localName) {
-            val href = attributes.getValue(URL)
-            if (href.isNotEmpty()) {
+            val href: String? = attributes.getValue(URL)
+            if (!href.isNullOrEmpty()) {
                 state.currentItem!!.podcastIndexChapterUrl = href
             }
         }

@@ -63,3 +63,9 @@
 * added items count in FeedItemList header
 * fixed bug in FeedItemList when filtered list has no items
 * buildConfig is set in build.gradle instead of gradle.properties
+
+## 4.2.4
+
+* fixed the "getValue() can not be null" bug
+* enabled ksp for Kotlin builds
+* cleaned up build.gradle files

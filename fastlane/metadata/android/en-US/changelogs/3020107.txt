@@ -1,0 +1,6 @@
+ 
+Version 4.2.4 brings several changes:
+
+* fixed the "getValue() can not be null" bug
+* enabled ksp for Kotlin builds
+* cleaned up build.gradle files

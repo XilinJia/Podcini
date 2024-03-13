@@ -22,14 +22,14 @@ class Rss20 : Namespace() {
             state.items.add(state.currentItem!!)
             state.currentItem!!.feed = state.feed
         } else if (ENCLOSURE == localName && ITEM == state.tagstack.peek()?.name) {
-            val url = attributes.getValue(ENC_URL)
-            val mimeType = getMimeType(attributes.getValue(ENC_TYPE), url)
+            val url: String? = attributes.getValue(ENC_URL)
+            val mimeType: String? = getMimeType(attributes.getValue(ENC_TYPE), url)
 
-            val validUrl = url.isNotEmpty()
+            val validUrl = !url.isNullOrBlank()
             if (state.currentItem?.media == null && isMediaFile(mimeType) && validUrl) {
                 var size: Long = 0
                 try {
-                    size = attributes.getValue(ENC_LEN).toLong()
+                    size = attributes.getValue(ENC_LEN)?.toLong() ?: 0
                     if (size < 16384) {
                         // less than 16kb is suspicious, check manually
                         size = 0

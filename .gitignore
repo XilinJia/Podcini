@@ -39,6 +39,7 @@ contributers.py
 # View hierarchy captures
 captures
 # other
+.directory
 *.odg#
 proguard
 libs

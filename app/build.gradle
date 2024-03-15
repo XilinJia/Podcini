@@ -6,20 +6,8 @@ plugins {
     id('com.github.triplet.play') version '3.8.3' apply false
 }
 
+// from common.gradle
 android {
-    namespace "ac.mdiq.podcini"
-    lintOptions {
-        disable 'ObsoleteLintCustomCheck', 'CheckResult', 'UnusedAttribute', 'BatteryLife', 'InflateParams',
-                'RestrictedApi', 'TrustAllX509TrustManager', 'ExportedReceiver', 'AllowBackup', 'VectorDrawableCompat',
-                'StaticFieldLeak', 'UseCompoundDrawables', 'NestedWeights', 'Overdraw', 'UselessParent', 'TextFields',
-                'AlwaysShowAction', 'Autofill', 'ClickableViewAccessibility', 'ContentDescription',
-                'KeyboardInaccessibleWidget', 'LabelFor', 'SetTextI18n', 'HardcodedText', 'RelativeOverlap',
-                'RtlCompat', 'RtlHardcoded', 'MissingMediaBrowserServiceIntentFilter', 'VectorPath',
-                'InvalidPeriodicWorkRequestInterval', 'NotifyDataSetChanged', 'RtlEnabled'
-    }
-    buildFeatures {
-        buildConfig true
-    }
     defaultConfig {
         minSdk 21
         compileSdk 34
@@ -34,81 +22,15 @@ android {
 
         testApplicationId "ac.mdiq.podcini.tests"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
-        // Version code schema (not used):
-        // "1.2.3-beta4"    -> 1020304
-        // "1.2.3"          -> 1020395
-        versionCode 3020107
-        versionName "4.2.4"
-
-        def commit = ""
-        try {
-            def hashStdOut = new ByteArrayOutputStream()
-            exec {
-                commandLine "git", "rev-parse", "--short", "HEAD"
-                standardOutput = hashStdOut
-            }
-            commit = hashStdOut.toString().trim()
-        } catch (Exception ignore) {
-        }
-        buildConfigField "String", "COMMIT_HASH", ('"' + (commit.isEmpty() ? "Unknown commit" : commit) + '"')
-
-//        javaCompileOptions {
-//            annotationProcessorOptions {
-//                arguments = [eventBusIndex: 'ac.mdiq.podcini.ApEventBusIndex']
-//            }
-//        }
-
-        if (project.hasProperty("podcastindexApiKey")) {
-            buildConfigField "String", "PODCASTINDEX_API_KEY", '"' + podcastindexApiKey + '"'
-            buildConfigField "String", "PODCASTINDEX_API_SECRET", '"' + podcastindexApiSecret + '"'
-        } else {
-            buildConfigField "String", "PODCASTINDEX_API_KEY", '"XTMMQGA2YZ4WJUBYY4HK"'
-            buildConfigField "String", "PODCASTINDEX_API_SECRET", '"XAaAhk4^2YBsTE33vdbwbZNj82ZRLABDDqFdKe7x"'
-        }
-
-    }
-    signingConfigs {
-        releaseConfig {
-            enableV1Signing true
-            enableV2Signing true
-            storeFile file(project.getProperties().getOrDefault("releaseStoreFile", "keystore"))
-            storePassword project.getProperties().getOrDefault("releaseStorePassword", "password")
-            keyAlias project.getProperties().getOrDefault("releaseKeyAlias", "alias")
-            keyPassword project.getProperties().getOrDefault("releaseKeyPassword", "password")
-        }
     }
 
     buildTypes {
-        debug {
-            applicationIdSuffix ".debug"
-            resValue "string", "app_name", "Podcini Debug"
-            resValue "string", "provider_authority", "ac.mdiq.podcini.debug.provider"
-        }
         release {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard.cfg"
             resValue "string", "app_name", "Podcini"
-            resValue "string", "provider_authority", "ac.mdiq.podcini.provider"
-            minifyEnabled true
-            shrinkResources true
-            signingConfig signingConfigs.releaseConfig
         }
-    }
-
-    flavorDimensions += ["market"]
-    productFlavors {
-        free {
-            dimension "market"
-        }
-        play {
-            dimension "market"
-        }
-    }
-
-    applicationVariants.configureEach { variant ->
-        variant.outputs.configureEach { output ->
-            def applicationName = "Podcini"
-            outputFileName = "${applicationName}_${variant.buildType.name}_${defaultConfig.versionName}.apk"
+        debug {
+            resValue "string", "app_name", "Podcini Debug"
         }
     }
 
@@ -143,10 +65,6 @@ android {
 
     buildFeatures {
         viewBinding true
-    }
-
-    androidResources {
-        additionalParameters "--no-version-vectors"
     }
 }
 
@@ -196,6 +114,103 @@ gradle.taskGraph.beforeTask { task ->
                         new Exception("SpotBugs violations were found. See output above for details."))
             }
         }
+    }
+}
+
+// from playFlavor.gradle
+android {
+    flavorDimensions += ["market"]
+    productFlavors {
+        free {
+            dimension "market"
+        }
+        play {
+            dimension "market"
+        }
+    }
+}
+
+// start of the app build.gradle
+android {
+    namespace "ac.mdiq.podcini"
+    lintOptions {
+        disable 'ObsoleteLintCustomCheck', 'CheckResult', 'UnusedAttribute', 'BatteryLife', 'InflateParams',
+                'RestrictedApi', 'TrustAllX509TrustManager', 'ExportedReceiver', 'AllowBackup', 'VectorDrawableCompat',
+                'StaticFieldLeak', 'UseCompoundDrawables', 'NestedWeights', 'Overdraw', 'UselessParent', 'TextFields',
+                'AlwaysShowAction', 'Autofill', 'ClickableViewAccessibility', 'ContentDescription',
+                'KeyboardInaccessibleWidget', 'LabelFor', 'SetTextI18n', 'HardcodedText', 'RelativeOverlap',
+                'RtlCompat', 'RtlHardcoded', 'MissingMediaBrowserServiceIntentFilter', 'VectorPath',
+                'InvalidPeriodicWorkRequestInterval', 'NotifyDataSetChanged', 'RtlEnabled'
+    }
+    buildFeatures {
+        buildConfig true
+    }
+    defaultConfig {
+        // Version code schema (not used):
+        // "1.2.3-beta4"    -> 1020304
+        // "1.2.3"          -> 1020395
+        versionCode 3020107
+        versionName "4.2.4"
+
+        def commit = ""
+        try {
+            def hashStdOut = new ByteArrayOutputStream()
+            exec {
+                commandLine "git", "rev-parse", "--short", "HEAD"
+                standardOutput = hashStdOut
+            }
+            commit = hashStdOut.toString().trim()
+        } catch (Exception ignore) {
+        }
+        buildConfigField "String", "COMMIT_HASH", ('"' + (commit.isEmpty() ? "Unknown commit" : commit) + '"')
+
+//        javaCompileOptions {
+//            annotationProcessorOptions {
+//                arguments = [eventBusIndex: 'ac.mdiq.podcini.ApEventBusIndex']
+//            }
+//        }
+
+        if (project.hasProperty("podcastindexApiKey")) {
+            buildConfigField "String", "PODCASTINDEX_API_KEY", '"' + podcastindexApiKey + '"'
+            buildConfigField "String", "PODCASTINDEX_API_SECRET", '"' + podcastindexApiSecret + '"'
+        } else {
+            buildConfigField "String", "PODCASTINDEX_API_KEY", '"XTMMQGA2YZ4WJUBYY4HK"'
+            buildConfigField "String", "PODCASTINDEX_API_SECRET", '"XAaAhk4^2YBsTE33vdbwbZNj82ZRLABDDqFdKe7x"'
+        }
+
+    }
+    signingConfigs {
+        releaseConfig {
+            enableV1Signing true
+            enableV2Signing true
+            storeFile file(project.getProperties().getOrDefault("releaseStoreFile", "keystore"))
+            storePassword project.getProperties().getOrDefault("releaseStorePassword", "password")
+            keyAlias project.getProperties().getOrDefault("releaseKeyAlias", "alias")
+            keyPassword project.getProperties().getOrDefault("releaseKeyPassword", "password")
+        }
+    }
+    buildTypes {
+        debug {
+            applicationIdSuffix ".debug"
+            resValue "string", "provider_authority", "ac.mdiq.podcini.debug.provider"
+        }
+        release {
+            resValue "string", "provider_authority", "ac.mdiq.podcini.provider"
+            minifyEnabled true
+            shrinkResources true
+            signingConfig signingConfigs.releaseConfig
+        }
+    }
+    applicationVariants.configureEach { variant ->
+        variant.outputs.configureEach { output ->
+            def applicationName = "Podcini"
+            outputFileName = "${applicationName}_${variant.buildType.name}_${defaultConfig.versionName}.apk"
+        }
+    }
+
+
+    androidResources {
+        additionalParameters "--no-version-vectors"
     }
 }
 

@@ -15,8 +15,7 @@
             android:id="@+id/collapsing_toolbar"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:scrimAnimationDuration="200"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed">
+            app:scrimAnimationDuration="200">
 
             <ImageView
                 android:id="@+id/imgvBackground"

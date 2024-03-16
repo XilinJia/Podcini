@@ -25,7 +25,6 @@ interface SwipeAction {
 
     companion object {
         const val ADD_TO_QUEUE: String = "ADD_TO_QUEUE"
-//        const val REMOVE_FROM_INBOX: String = "REMOVE_FROM_INBOX"
         const val START_DOWNLOAD: String = "START_DOWNLOAD"
         const val MARK_FAV: String = "MARK_FAV"
         const val TOGGLE_PLAYED: String = "MARK_PLAYED"

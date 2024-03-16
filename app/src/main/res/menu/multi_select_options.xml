@@ -2,6 +2,16 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/select_all_above"
+        android:title="@string/select_all_above"
+        android:icon="@drawable/baseline_arrow_upward_24"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/select_all_below"
+        android:title="@string/select_all_below"
+        android:icon="@drawable/baseline_arrow_downward_24"
+        app:showAsAction="always"/>
+    <item
         android:id="@+id/select_toggle"
         android:title="@string/select_all_label"
         app:showAsAction="always"/>

@@ -71,22 +71,33 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) :
         val item: FeedItem = episodes[pos]
         holder.bind(item)
 
-        holder.infoCard.setOnCreateContextMenuListener(this)
+//        holder.infoCard.setOnCreateContextMenuListener(this)
         holder.infoCard.setOnLongClickListener {
             longPressedItem = item
             longPressedPosition = holder.bindingAdapterPosition
             startSelectMode(longPressedPosition)
-            false
+            true
         }
         holder.infoCard.setOnClickListener {
-            if (inActionMode()) {
-                toggleSelection(holder.bindingAdapterPosition)
+            val activity: MainActivity? = mainActivityRef.get()
+            if (!inActionMode()) {
+                val ids: LongArray = FeedItemUtil.getIds(episodes)
+                val position = ArrayUtils.indexOf(ids, item.id)
+                activity?.loadChildFragment(ItemPagerFragment.newInstance(ids, position))
             } else {
-                longPressedItem = item
-                longPressedPosition = holder.bindingAdapterPosition
-                it.showContextMenu()
+                toggleSelection(holder.bindingAdapterPosition)
             }
         }
+
+//        holder.infoCard.setOnClickListener {
+//            if (inActionMode()) {
+//                toggleSelection(holder.bindingAdapterPosition)
+//            } else {
+//                longPressedItem = item
+//                longPressedPosition = holder.bindingAdapterPosition
+//                it.showContextMenu()
+//            }
+//        }
 
 //        holder.infoCard.setOnCreateContextMenuListener(this)
 //        holder.infoCard.setOnLongClickListener {
@@ -180,11 +191,10 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) :
     @UnstableApi override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
         val inflater: MenuInflater = activity!!.menuInflater
         if (inActionMode()) {
-            inflater.inflate(R.menu.multi_select_context_popup, menu)
+//            inflater.inflate(R.menu.multi_select_context_popup, menu)
         } else {
-            if (longPressedItem == null) {
-                return
-            }
+            if (longPressedItem == null) return
+
             inflater.inflate(R.menu.feeditemlist_context, menu)
             menu.setHeaderTitle(longPressedItem!!.title)
             FeedItemMenuHandler.onPrepareMenu(menu, longPressedItem, R.id.skip_episode_item)

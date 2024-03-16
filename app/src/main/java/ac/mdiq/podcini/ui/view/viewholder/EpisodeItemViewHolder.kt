@@ -164,22 +164,22 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
             secondaryActionProgress.setIndeterminate(false)
         }
 
-        duration.text = ac.mdiq.podcini.util.Converter.getDurationStringLong(media.getDuration())
+        duration.text = Converter.getDurationStringLong(media.getDuration())
         duration.setContentDescription(activity.getString(R.string.chapter_duration,
-            ac.mdiq.podcini.util.Converter.getDurationStringLocalized(activity, media.getDuration().toLong())))
+            Converter.getDurationStringLocalized(activity, media.getDuration().toLong())))
         if (PlaybackStatus.isPlaying(item?.media) || item?.isInProgress == true) {
             val progress: Int = (100.0 * media.getPosition() / media.getDuration()).toInt()
             val remainingTime = max((media.getDuration() - media.getPosition()).toDouble(), 0.0).toInt()
             progressBar.progress = progress
-            position.text = ac.mdiq.podcini.util.Converter.getDurationStringLong(media.getPosition())
+            position.text = Converter.getDurationStringLong(media.getPosition())
             position.setContentDescription(activity.getString(R.string.position,
-                ac.mdiq.podcini.util.Converter.getDurationStringLocalized(activity, media.getPosition().toLong())))
+                Converter.getDurationStringLocalized(activity, media.getPosition().toLong())))
             progressBar.visibility = View.VISIBLE
             position.visibility = View.VISIBLE
             if (UserPreferences.shouldShowRemainingTime()) {
-                duration.text = (if ((remainingTime > 0)) "-" else "") + ac.mdiq.podcini.util.Converter.getDurationStringLong(remainingTime)
+                duration.text = (if ((remainingTime > 0)) "-" else "") + Converter.getDurationStringLong(remainingTime)
                 duration.setContentDescription(activity.getString(R.string.chapter_duration,
-                    ac.mdiq.podcini.util.Converter.getDurationStringLocalized(activity, (media.getDuration() - media.getPosition()).toLong())))
+                    Converter.getDurationStringLocalized(activity, (media.getDuration() - media.getPosition()).toLong())))
             }
         } else {
             progressBar.visibility = View.GONE
@@ -264,7 +264,7 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
 
     fun notifyPlaybackPositionUpdated(event: PlaybackPositionEvent) {
         progressBar.progress = (100.0 * event.position / event.duration).toInt()
-        position.text = ac.mdiq.podcini.util.Converter.getDurationStringLong(event.position)
+        position.text = Converter.getDurationStringLong(event.position)
         updateDuration(event)
         duration.visibility = View.VISIBLE // Even if the duration was previously unknown, it is now known
     }

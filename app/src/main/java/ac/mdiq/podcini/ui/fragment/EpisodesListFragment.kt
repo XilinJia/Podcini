@@ -106,18 +106,24 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
         Log.d(TAG, "onContextItemSelected() called with: item = [$item]")
-        if (!userVisibleHint || !isVisible || !isMenuVisible) {
-            // The method is called on all fragments in a ViewPager, so this needs to be ignored in invisible ones.
-            // Apparently, none of the visibility check method works reliably on its own, so we just use all.
-            return false
-        } else if (listAdapter.longPressedItem == null) {
-            Log.i(TAG, "Selected item or listAdapter was null, ignoring selection")
-            return super.onContextItemSelected(item)
-        } else if (listAdapter.onContextItemSelected(item)) {
-            return true
+        when {
+            !userVisibleHint || !isVisible || !isMenuVisible -> {
+                // The method is called on all fragments in a ViewPager, so this needs to be ignored in invisible ones.
+                // Apparently, none of the visibility check method works reliably on its own, so we just use all.
+                return false
+            }
+            listAdapter.longPressedItem == null -> {
+                Log.i(TAG, "Selected item or listAdapter was null, ignoring selection")
+                return super.onContextItemSelected(item)
+            }
+            listAdapter.onContextItemSelected(item) -> {
+                return true
+            }
+            else -> {
+                val selectedItem: FeedItem = listAdapter.longPressedItem ?: return false
+                return FeedItemMenuHandler.onMenuItemClicked(this, item.itemId, selectedItem)
+            }
         }
-        val selectedItem: FeedItem = listAdapter.longPressedItem ?: return false
-        return FeedItemMenuHandler.onMenuItemClicked(this, item.itemId, selectedItem)
     }
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {

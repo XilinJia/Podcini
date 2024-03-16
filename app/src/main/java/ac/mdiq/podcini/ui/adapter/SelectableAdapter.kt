@@ -44,15 +44,27 @@ abstract class SelectableAdapter<T : RecyclerView.ViewHolder?>(private val activ
             }
 
             override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
-                if (item.itemId == R.id.select_toggle) {
-                    val selectAll = selectedIds.size != itemCount
-                    shouldSelectLazyLoadedItems = selectAll
-                    setSelected(0, itemCount, selectAll)
-                    toggleSelectAllIcon(item, selectAll)
-                    updateTitle()
-                    return true
+                when (item.itemId) {
+                    R.id.select_toggle -> {
+                        val selectAll = selectedIds.size != itemCount
+                        shouldSelectLazyLoadedItems = selectAll
+                        setSelected(0, itemCount, selectAll)
+                        toggleSelectAllIcon(item, selectAll)
+                        updateTitle()
+                        return true
+                    }
+                    R.id.select_all_above -> {
+                        shouldSelectLazyLoadedItems = true
+                        toggleSelected(0, pos)
+                        return true
+                    }
+                    R.id.select_all_below -> {
+                        shouldSelectLazyLoadedItems = true
+                        toggleSelected(pos + 1, itemCount)
+                        return true
+                    }
+                    else -> return false
                 }
-                return false
             }
 
             override fun onDestroyActionMode(mode: ActionMode) {
@@ -108,6 +120,15 @@ abstract class SelectableAdapter<T : RecyclerView.ViewHolder?>(private val activ
         var i = startPos
         while (i < endPos && i < itemCount) {
             setSelected(i, selected)
+            i++
+        }
+        notifyItemRangeChanged(startPos, (endPos - startPos))
+    }
+
+    fun toggleSelected(startPos: Int, endPos: Int) {
+        var i = startPos
+        while (i < endPos && i < itemCount) {
+            toggleSelection(i)
             i++
         }
         notifyItemRangeChanged(startPos, (endPos - startPos))

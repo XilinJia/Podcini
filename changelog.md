@@ -69,3 +69,13 @@
 * fixed the "getValue() can not be null" bug
 * enabled ksp for Kotlin builds
 * cleaned up build.gradle files
+
+## 4.2.5
+
+* change in click operation
+	* click on title area opens the podcast/episode
+	* long-press on title area automatically enters in selection mode
+	* select all above or below are put to action bar together with select all
+	* operations are only on the selected (single or multiple)
+	* popup menus for single item operation are disabled
+* in podcast view, the title bar no longer scrolls off screen

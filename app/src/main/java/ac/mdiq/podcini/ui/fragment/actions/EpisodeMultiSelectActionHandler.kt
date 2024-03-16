@@ -19,15 +19,15 @@ class EpisodeMultiSelectActionHandler(private val activity: MainActivity, privat
 
     fun handleAction(items: List<FeedItem>) {
         when (actionId) {
+            R.id.add_to_favorite_batch -> {
+                markFavorite(items)
+            }
             R.id.add_to_queue_batch -> {
                 queueChecked(items)
             }
             R.id.remove_from_queue_batch -> {
                 removeFromQueueChecked(items)
             }
-//            R.id.remove_from_inbox_batch -> {
-//                removeFromInboxChecked(items)
-//            }
             R.id.mark_read_batch -> {
                 markedCheckedPlayed(items)
             }
@@ -64,17 +64,6 @@ class EpisodeMultiSelectActionHandler(private val activity: MainActivity, privat
         showMessage(R.plurals.removed_from_queue_batch_label, checkedIds.size)
     }
 
-//    private fun removeFromInboxChecked(items: List<FeedItem>) {
-//        val markUnplayed = LongList()
-//        for (episode in items) {
-//            if (episode.isNew) {
-//                markUnplayed.add(episode.id)
-//            }
-//        }
-//        DBWriter.markItemPlayed(FeedItem.UNPLAYED, *markUnplayed.toArray())
-//        showMessage(R.plurals.removed_from_inbox_batch_label, markUnplayed.size())
-//    }
-
     private fun markedCheckedPlayed(items: List<FeedItem>) {
         val checkedIds = getSelectedIds(items)
         DBWriter.markItemPlayed(FeedItem.PLAYED, *checkedIds)
@@ -85,6 +74,13 @@ class EpisodeMultiSelectActionHandler(private val activity: MainActivity, privat
         val checkedIds = getSelectedIds(items)
         DBWriter.markItemPlayed(FeedItem.UNPLAYED, *checkedIds)
         showMessage(R.plurals.marked_unread_batch_label, checkedIds.size)
+    }
+
+    private fun markFavorite(items: List<FeedItem>) {
+        for (item in items) {
+            DBWriter.addFavoriteItem(item)
+        }
+        showMessage(R.plurals.marked_favorite_batch_label, items.size)
     }
 
     private fun downloadChecked(items: List<FeedItem>) {

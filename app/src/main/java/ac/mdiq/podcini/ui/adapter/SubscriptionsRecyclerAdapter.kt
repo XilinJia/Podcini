@@ -69,22 +69,31 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
             holder.coverImage.alpha = 1.0f
         }
 
-        holder.infoCard.setOnCreateContextMenuListener(this)
-        holder.infoCard.setOnLongClickListener {
-            longPressedPosition = holder.bindingAdapterPosition
-            selectedItem = drawerItem
-            startSelectMode(longPressedPosition)
-            false
-        }
         holder.infoCard.setOnClickListener {
             if (inActionMode()) {
                 holder.selectCheckbox.setChecked(!isSelected(holder.bindingAdapterPosition))
             } else {
-                longPressedPosition = holder.bindingAdapterPosition
-                selectedItem = drawerItem
-                it.showContextMenu()
+                val fragment: Fragment = FeedItemlistFragment.newInstance(drawerItem.feed.id)
+                mainActivityRef.get()?.loadChildFragment(fragment)
             }
         }
+//        holder.infoCard.setOnCreateContextMenuListener(this)
+        holder.infoCard.setOnLongClickListener {
+            longPressedPosition = holder.bindingAdapterPosition
+            selectedItem = drawerItem
+            startSelectMode(longPressedPosition)
+            true
+        }
+
+//        holder.infoCard.setOnClickListener {
+//            if (inActionMode()) {
+//                holder.selectCheckbox.setChecked(!isSelected(holder.bindingAdapterPosition))
+//            } else {
+//                longPressedPosition = holder.bindingAdapterPosition
+//                selectedItem = drawerItem
+//                it.showContextMenu()
+//            }
+//        }
 //        holder.infoCard.setOnCreateContextMenuListener(this)
 //        holder.infoCard.setOnLongClickListener {
 //            if (!inActionMode()) {
@@ -128,12 +137,11 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
     }
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
-        if (selectedItem == null) {
-            return
-        }
-        val inflater: MenuInflater = mainActivityRef.get()!!.menuInflater
+        if (selectedItem == null) return
+        val mainActRef = mainActivityRef.get() ?: return
+        val inflater: MenuInflater = mainActRef.menuInflater
         if (inActionMode()) {
-            inflater.inflate(R.menu.multi_select_context_popup, menu)
+//            inflater.inflate(R.menu.multi_select_context_popup, menu)
 //            menu.findItem(R.id.multi_select).setVisible(true)
         } else {
             inflater.inflate(R.menu.nav_feed_context, menu)
@@ -197,7 +205,9 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
                 count.visibility = View.GONE
             }
 
-            val coverLoader = CoverLoader(mainActivityRef.get()!!)
+            val mainActRef = mainActivityRef.get() ?: return
+
+            val coverLoader = CoverLoader(mainActRef)
             val feed: Feed = drawerItem.feed
             coverLoader.withUri(feed.imageUrl)
             errorIcon.visibility = if (feed.hasLastUpdateFailed()) View.VISIBLE else View.GONE
@@ -205,8 +215,8 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
             coverLoader.withCoverView(coverImage)
             coverLoader.load()
 
-            val density: Float = mainActivityRef.get()!!.resources.displayMetrics.density
-            card.setCardBackgroundColor(SurfaceColors.getColorForElevation(mainActivityRef.get()!!, 1 * density))
+            val density: Float = mainActRef.resources.displayMetrics.density
+            card.setCardBackgroundColor(SurfaceColors.getColorForElevation(mainActRef, 1 * density))
 
             val textHPadding = 20
             val textVPadding = 5

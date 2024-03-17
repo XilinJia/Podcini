@@ -10,23 +10,27 @@ Made by podcast-enthusiasts, Podcini is free in all senses of the word: open sou
 Podcini emphasizes on efficient battery usage, streamlined podcast management and convenient player control while listening.
 
 <b>Import, organize and play</b>
-• Manage playback from anywhere: homescreen widget, system notification and earplug and bluetooth controls
-• Add and import feeds via the Apple Podcasts, gPodder.net, fyyd or Podcast Index directories, OPML files and RSS or Atom links
-• Enjoy listening your way with adjustable playback speed, chapter support, remembered playback position and an advanced sleep timer (shake to reset, lower volume)
-• Access password-protected feeds and episodes
+
+* Manage playback from anywhere: homescreen widget, system notification and earplug and bluetooth controls
+* Add and import feeds via the Apple Podcasts, gPodder.net, fyyd or Podcast Index directories, OPML files and RSS or Atom links
+* Enjoy listening your way with adjustable playback speed, chapter support, remembered playback position and an advanced sleep timer (shake to reset, lower volume)
+* Access password-protected feeds and episodes
 
 <b>Keep track, share & appreciate</b>
-• Keep track of the best of the best by marking episodes as favourites
-• Find that one episode through the playback history or by searching titles and shownotes
-• Share episodes and feeds through advanced social media and email options, the gPodder.net services and via OPML export
+
+* Keep track of the best of the best by marking episodes as favourites
+* Find that one episode through the playback history or by searching titles and shownotes
+* Share episodes and feeds through advanced social media and email options, the gPodder.net services and via OPML export
 
 <b>Control the system</b>
-• Take control over automated downloading: choose feeds, exclude mobile networks, select specific WiFi networks, require the phone to be charging and set times or intervals
-• Manage storage by setting the amount of cached episodes, smart deletion and selecting your preferred location
-• Adapt to your environment using the light and dark theme
-• Back-up your subscriptions with the gPodder.net integration and OPML export
+
+* Take control over automated downloading: choose feeds, exclude mobile networks, select specific WiFi networks, require the phone to be charging and set times or intervals
+* Manage storage by setting the amount of cached episodes, smart deletion and selecting your preferred location
+* Adapt to your environment using the light and dark theme
+* Back-up your subscriptions with the gPodder.net integration and OPML export
 
 <b>Join the Podcini community!</b>
+
 Podcini is under active development by volunteers. You can contribute too, with code or with comment!
 https://github.com/XilinJia/Podcini
 

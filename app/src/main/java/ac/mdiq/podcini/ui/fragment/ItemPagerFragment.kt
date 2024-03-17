@@ -6,6 +6,7 @@ import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.menuhandler.FeedItemMenuHandler
+import ac.mdiq.podcini.util.event.FeedItemEvent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -128,7 +129,7 @@ class ItemPagerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: ac.mdiq.podcini.util.event.FeedItemEvent) {
+    fun onEventMainThread(event: FeedItemEvent) {
         for (item in event.items) {
             if (this.item != null && this.item!!.id == item.id) {
                 this.item = item

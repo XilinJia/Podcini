@@ -49,6 +49,7 @@ import ac.mdiq.podcini.ui.view.EmptyViewHandler
 import ac.mdiq.podcini.ui.view.EpisodeItemListRecyclerView
 import ac.mdiq.podcini.ui.view.LiftOnScrollListener
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
+import ac.mdiq.podcini.util.Converter
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -456,7 +457,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
             }
             info += " • "
             info += getString(R.string.time_left_label)
-            info += ac.mdiq.podcini.util.Converter.getDurationStringLocalized(requireActivity(), timeLeft)
+            info += Converter.getDurationStringLocalized(requireActivity(), timeLeft)
         }
         infoBar.text = info
     }

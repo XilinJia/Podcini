@@ -19,6 +19,8 @@ import ac.mdiq.podcini.ui.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.view.EmptyViewHandler
 import ac.mdiq.podcini.ui.view.LiftOnScrollListener
 import ac.mdiq.podcini.util.event.FeedListUpdateEvent
+import ac.mdiq.podcini.util.event.FeedTagsChangedEvent
+import ac.mdiq.podcini.util.event.FeedUpdateRunningEvent
 import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
 import android.content.Context
 import android.content.SharedPreferences
@@ -26,10 +28,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.view.inputmethod.EditorInfo
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.LinearLayout
-import android.widget.ProgressBar
+import android.widget.*
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.media3.common.util.UnstableApi
@@ -53,17 +52,19 @@ import java.util.*
  * Fragment for displaying feed subscriptions
  */
 class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAdapter.OnSelectModeListener {
+
     private lateinit var subscriptionRecycler: RecyclerView
     private lateinit var subscriptionAdapter: SubscriptionsRecyclerAdapter
     private lateinit var emptyView: EmptyViewHandler
-    private lateinit var feedsFilteredMsg: LinearLayout
+    private lateinit var feedsInfoMsg: LinearLayout
+    private lateinit var feedsFilteredMsg: TextView
+    private lateinit var feedCount: TextView
     private lateinit var toolbar: MaterialToolbar
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var progressBar: ProgressBar
     private lateinit var prefs: SharedPreferences
     private lateinit var speedDialView: SpeedDialView
 
-    private val tags: MutableList<String> = mutableListOf()
     private var tagFilterIndex = 1
     private var displayedFolder: String = ""
     private var displayUpArrow = false
@@ -81,10 +82,10 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                                            savedInstanceState: Bundle?): View {
-        val viewBinding = FragmentSubscriptionsBinding.inflate(inflater)
+        val binding = FragmentSubscriptionsBinding.inflate(inflater)
 
         Log.d(TAG, "fragment onCreateView")
-        toolbar = viewBinding.toolbar
+        toolbar = binding.toolbar
         toolbar.setOnMenuItemClickListener(this)
         toolbar.setOnLongClickListener {
             subscriptionRecycler.scrollToPosition(5)
@@ -103,10 +104,10 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
             toolbar.title = displayedFolder
         }
 
-        subscriptionRecycler = viewBinding.subscriptionsGrid
+        subscriptionRecycler = binding.subscriptionsGrid
         subscriptionRecycler.addItemDecoration(SubscriptionsRecyclerAdapter.GridDividerItemDecorator())
         registerForContextMenu(subscriptionRecycler)
-        subscriptionRecycler.addOnScrollListener(LiftOnScrollListener(viewBinding.appbar))
+        subscriptionRecycler.addOnScrollListener(LiftOnScrollListener(binding.appbar))
         subscriptionAdapter = object : SubscriptionsRecyclerAdapter(activity as MainActivity) {
             override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
                 super.onCreateContextMenu(menu, v, menuInfo)
@@ -123,14 +124,13 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
         subscriptionRecycler.adapter = subscriptionAdapter
         setupEmptyView()
 
-        tags.add("Untagged")
-        tags.add("All")
-        tags.addAll(DBReader.getTags())
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, tags)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        val catSpinner = viewBinding.categorySpinner
-        catSpinner.setAdapter(adapter)
-        catSpinner.setSelection(adapter.getPosition("All"))
+        resetTags()
+
+        val catAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, tags)
+        catAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        val catSpinner = binding.categorySpinner
+        catSpinner.setAdapter(catAdapter)
+        catSpinner.setSelection(catAdapter.getPosition("All"))
         catSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
                 tagFilterIndex = position
@@ -140,7 +140,7 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        val searchBox = viewBinding.searchBox
+        val searchBox = binding.searchBox
         searchBox.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 val text = searchBox.text.toString().lowercase(Locale.getDefault())
@@ -155,29 +155,32 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
             }
         }
 
-        progressBar = viewBinding.progressBar
+        progressBar = binding.progressBar
         progressBar.visibility = View.VISIBLE
 
-        val subscriptionAddButton: FloatingActionButton = viewBinding.subscriptionsAdd
+        val subscriptionAddButton: FloatingActionButton = binding.subscriptionsAdd
         subscriptionAddButton.setOnClickListener {
             if (activity is MainActivity) {
                 (activity as MainActivity).loadChildFragment(AddFeedFragment())
             }
         }
 
-        feedsFilteredMsg = viewBinding.feedsFilteredMessage
-        feedsFilteredMsg.setOnClickListener {
-            SubscriptionsFilterDialog().show(
-                childFragmentManager, "filter")
-        }
+        feedsInfoMsg = binding.feedsInfoMessage
+//        feedsInfoMsg.setOnClickListener {
+//            SubscriptionsFilterDialog().show(
+//                childFragmentManager, "filter")
+//        }
+        feedsFilteredMsg = binding.feedsFilteredMessage
+        feedCount = binding.count
+        feedCount.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
 
-        swipeRefreshLayout = viewBinding.swipeRefresh
+        swipeRefreshLayout = binding.swipeRefresh
         swipeRefreshLayout.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
         swipeRefreshLayout.setOnRefreshListener {
             FeedUpdateManager.runOnceOrAsk(requireContext())
         }
 
-        val speedDialBinding = MultiSelectSpeedDialBinding.bind(viewBinding.root)
+        val speedDialBinding = MultiSelectSpeedDialBinding.bind(binding.root)
 
         speedDialView = speedDialBinding.fabSD
         speedDialView.overlayLayout = speedDialBinding.fabSDOverlay
@@ -199,7 +202,7 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
         EventBus.getDefault().register(this)
         loadSubscriptions()
 
-        return viewBinding.root
+        return binding.root
     }
 
     override fun onDestroyView() {
@@ -215,29 +218,31 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
 
     fun filterOnTag() {
         when (tagFilterIndex) {
-//            All feeds
             1 -> {
+//            All feeds
                 feedListFiltered = feedList
             }
-//            feeds without tag
             0 -> {
+//            feeds without tag
                 feedListFiltered = feedList.filter {
                     val tags = it.feed.preferences?.getTags()
                     tags.isNullOrEmpty() || (tags.size == 1 && tags.toList()[0] == "#root")
                 }
             }
-//            feeds with the chosen tag
             else -> {
+//            feeds with the chosen tag
                 val tag = tags[tagFilterIndex]
                 feedListFiltered = feedList.filter {
                     it.feed.preferences?.getTags()?.contains(tag) ?: false
                 }
             }
         }
+        feedCount.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
         subscriptionAdapter.setItems(feedListFiltered)
     }
+
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: ac.mdiq.podcini.util.event.FeedUpdateRunningEvent) {
+    fun onEventMainThread(event: FeedUpdateRunningEvent) {
         swipeRefreshLayout.isRefreshing = event.isFeedUpdateRunning
     }
 
@@ -297,6 +302,7 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
                     filterOnTag()
                     progressBar.visibility = View.GONE
                     subscriptionAdapter.setItems(feedListFiltered)
+                    feedCount.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
                     emptyView.updateVisibility()
                 }, { error: Throwable? ->
                     Log.e(TAG, Log.getStackTraceString(error))
@@ -332,6 +338,11 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
         loadSubscriptions()
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onFeedTagsChanged(event: FeedTagsChangedEvent?) {
+        resetTags()
+    }
+
     override fun onEndSelectMode() {
         speedDialView.close()
         speedDialView.visibility = View.GONE
@@ -353,12 +364,21 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
         private const val KEY_UP_ARROW = "up_arrow"
         private const val ARGUMENT_FOLDER = "folder"
 
+        private val tags: MutableList<String> = mutableListOf()
+
         fun newInstance(folderTitle: String?): SubscriptionFragment {
             val fragment = SubscriptionFragment()
             val args = Bundle()
             args.putString(ARGUMENT_FOLDER, folderTitle)
             fragment.arguments = args
             return fragment
+        }
+
+        fun resetTags() {
+            tags.clear()
+            tags.add("Untagged")
+            tags.add("All")
+            tags.addAll(DBReader.getTags())
         }
     }
 }

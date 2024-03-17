@@ -1,0 +1,7 @@
+ 
+Version 4.2.6 brings several changes:
+
+* corrected action icons for themes
+* revealed info bar in Downloads view
+* revealed info bar in Subscriptions view
+* reset tags list in Subscriptions when new tag is added

@@ -89,22 +89,6 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) :
             }
         }
 
-//        holder.infoCard.setOnClickListener {
-//            if (inActionMode()) {
-//                toggleSelection(holder.bindingAdapterPosition)
-//            } else {
-//                longPressedItem = item
-//                longPressedPosition = holder.bindingAdapterPosition
-//                it.showContextMenu()
-//            }
-//        }
-
-//        holder.infoCard.setOnCreateContextMenuListener(this)
-//        holder.infoCard.setOnLongClickListener {
-//            longPressedItem = item
-//            longPressedPosition = holder.bindingAdapterPosition
-//            false
-//        }
         holder.coverHolder.setOnClickListener {
             val activity: MainActivity? = mainActivityRef.get()
             if (!inActionMode()) {

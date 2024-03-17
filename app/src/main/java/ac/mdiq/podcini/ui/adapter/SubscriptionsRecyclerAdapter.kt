@@ -85,24 +85,6 @@ open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
             true
         }
 
-//        holder.infoCard.setOnClickListener {
-//            if (inActionMode()) {
-//                holder.selectCheckbox.setChecked(!isSelected(holder.bindingAdapterPosition))
-//            } else {
-//                longPressedPosition = holder.bindingAdapterPosition
-//                selectedItem = drawerItem
-//                it.showContextMenu()
-//            }
-//        }
-//        holder.infoCard.setOnCreateContextMenuListener(this)
-//        holder.infoCard.setOnLongClickListener {
-//            if (!inActionMode()) {
-//                longPressedPosition = holder.bindingAdapterPosition
-//                selectedItem = drawerItem
-//            }
-//            false
-//        }
-
         holder.itemView.setOnTouchListener { _: View?, e: MotionEvent ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if (e.isFromSource(InputDevice.SOURCE_MOUSE)

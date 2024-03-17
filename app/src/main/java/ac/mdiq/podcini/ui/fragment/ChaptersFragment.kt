@@ -64,7 +64,6 @@ class ChaptersFragment : AppCompatDialogFragment() {
 
     fun onCreateView(inflater: LayoutInflater): View {
         val viewBinding = SimpleListFragmentBinding.inflate(inflater)
-//        val root = inflater.inflate(R.layout.simple_list_fragment, null, false)
         viewBinding.toolbar.visibility = View.GONE
 
         Log.d(TAG, "fragment onCreateView")

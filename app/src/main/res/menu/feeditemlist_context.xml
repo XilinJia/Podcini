@@ -5,11 +5,6 @@
         android:menuCategory="container"
         android:title="@string/skip_episode_label" />
 
-<!--    <item-->
-<!--        android:id="@+id/remove_inbox_item"-->
-<!--        android:menuCategory="container"-->
-<!--        android:title="@string/remove_inbox_label" />-->
-
     <item
         android:id="@+id/mark_read_item"
         android:menuCategory="container"

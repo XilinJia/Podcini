@@ -17,9 +17,11 @@ import ac.mdiq.podcini.ui.common.CircularProgressBar
 import ac.mdiq.podcini.ui.common.ThemeUtils
 import ac.mdiq.podcini.ui.gui.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
+import ac.mdiq.podcini.util.Converter
 import ac.mdiq.podcini.util.DateFormatter
 import ac.mdiq.podcini.util.PlaybackStatus
 import ac.mdiq.podcini.util.event.EpisodeDownloadEvent
+import ac.mdiq.podcini.util.event.FeedItemEvent
 import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
 import android.os.Build
 import android.os.Bundle
@@ -277,9 +279,9 @@ class ItemFragment : Fragment() {
         } else {
             noMediaLabel.visibility = View.GONE
             if (media.getDuration() > 0) {
-                txtvDuration.text = ac.mdiq.podcini.util.Converter.getDurationStringLong(media.getDuration())
+                txtvDuration.text = Converter.getDurationStringLong(media.getDuration())
                 txtvDuration.setContentDescription(
-                    ac.mdiq.podcini.util.Converter.getDurationStringLocalized(requireContext(), media.getDuration().toLong()))
+                    Converter.getDurationStringLocalized(requireContext(), media.getDuration().toLong()))
             }
             if (item != null) {
                 actionButton1 = if (PlaybackStatus.isCurrentlyPlaying(media)) {
@@ -329,7 +331,7 @@ class ItemFragment : Fragment() {
     }
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: ac.mdiq.podcini.util.event.FeedItemEvent) {
+    fun onEventMainThread(event: FeedItemEvent) {
         Log.d(TAG, "onEventMainThread() called with: event = [$event]")
         if (this.item == null) return
         for (item in event.items) {

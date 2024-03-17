@@ -79,3 +79,10 @@
 	* operations are only on the selected (single or multiple)
 	* popup menus for single item operation are disabled
 * in podcast view, the title bar no longer scrolls off screen
+
+## 4.2.6
+
+* corrected action icons for themes
+* revealed info bar in Downloads view
+* revealed info bar in Subscriptions view
+* reset tags list in Subscriptions when new tag is added

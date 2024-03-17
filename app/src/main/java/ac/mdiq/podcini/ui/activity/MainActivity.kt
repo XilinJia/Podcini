@@ -24,6 +24,7 @@ import ac.mdiq.podcini.ui.fragment.*
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.ui.view.LockableBottomSheetBehavior
 import ac.mdiq.podcini.util.event.EpisodeDownloadEvent
+import ac.mdiq.podcini.util.event.FeedUpdateRunningEvent
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
@@ -73,7 +74,6 @@ import kotlin.math.min
  */
 @UnstableApi
 class MainActivity : CastEnabledActivity() {
-//    some device doesn't have a drawer
     private var drawerLayout: DrawerLayout? = null
 
     private lateinit var binding: MainActivityBinding
@@ -183,7 +183,7 @@ class MainActivity : CastEnabledActivity() {
                         }
                     }
                 }
-                EventBus.getDefault().postSticky(ac.mdiq.podcini.util.event.FeedUpdateRunningEvent(isRefreshingFeeds))
+                EventBus.getDefault().postSticky(FeedUpdateRunningEvent(isRefreshingFeeds))
             }
         WorkManager.getInstance(this)
             .getWorkInfosByTagLiveData(DownloadServiceInterface.WORK_TAG)

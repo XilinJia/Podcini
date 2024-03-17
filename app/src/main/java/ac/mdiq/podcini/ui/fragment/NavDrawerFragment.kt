@@ -15,6 +15,7 @@ import ac.mdiq.podcini.ui.common.ThemeUtils
 import ac.mdiq.podcini.ui.dialog.*
 import ac.mdiq.podcini.ui.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
+import ac.mdiq.podcini.util.event.FeedListUpdateEvent
 import android.R.attr
 import android.app.Activity
 import android.content.Context
@@ -197,7 +198,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
 
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onFeedListChanged(event: ac.mdiq.podcini.util.event.FeedListUpdateEvent?) {
+    fun onFeedListChanged(event: FeedListUpdateEvent?) {
         loadData()
     }
 

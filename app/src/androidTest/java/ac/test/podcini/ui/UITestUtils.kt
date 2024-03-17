@@ -193,7 +193,7 @@ class UITestUtils(private val context: Context) {
         adapter.setCompleteFeed(*hostedFeeds.toTypedArray<Feed>())
         adapter.setQueue(queue)
         adapter.close()
-        EventBus.getDefault().post(ac.mdiq.podcini.util.event.FeedListUpdateEvent(hostedFeeds))
+        EventBus.getDefault().post(FeedListUpdateEvent(hostedFeeds))
         EventBus.getDefault().post(setQueue(queue))
     }
 

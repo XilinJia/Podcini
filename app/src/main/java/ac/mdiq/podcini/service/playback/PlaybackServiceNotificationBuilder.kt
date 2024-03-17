@@ -25,6 +25,7 @@ import ac.mdiq.podcini.ui.gui.NotificationUtils
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.util.Converter
 import org.apache.commons.lang3.ArrayUtils
 import java.util.concurrent.ExecutionException
 
@@ -52,7 +53,7 @@ class PlaybackServiceNotificationBuilder(private val context: Context) {
 
     fun updatePosition(position: Int, speed: Float) {
         val converter = TimeSpeedConverter(speed)
-        this.position = ac.mdiq.podcini.util.Converter.getDurationStringLong(converter.convert(position))
+        this.position = Converter.getDurationStringLong(converter.convert(position))
     }
 
     val isIconCached: Boolean

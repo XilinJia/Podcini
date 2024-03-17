@@ -10,14 +10,14 @@ import org.greenrobot.eventbus.Subscribe
  *
  */
 class FeedItemEventListener {
-    private val events: MutableList<ac.mdiq.podcini.util.event.FeedItemEvent> = ArrayList()
+    private val events: MutableList<FeedItemEvent> = ArrayList()
 
     @Subscribe
-    fun onEvent(event: ac.mdiq.podcini.util.event.FeedItemEvent) {
+    fun onEvent(event: FeedItemEvent) {
         events.add(event)
     }
 
-    fun getEvents(): List<ac.mdiq.podcini.util.event.FeedItemEvent> {
+    fun getEvents(): List<FeedItemEvent> {
         return events
     }
 

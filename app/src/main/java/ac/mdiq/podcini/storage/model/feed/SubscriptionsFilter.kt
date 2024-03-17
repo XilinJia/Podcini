@@ -74,8 +74,7 @@ class SubscriptionsFilter(private val properties: Array<String>) {
 
         if (showIfCounterGreaterZero) {
             for (i in result.indices.reversed()) {
-                if (!feedCounters.containsKey(result[i].id)
-                        || feedCounters[result[i].id]!! <= 0) {
+                if (!feedCounters.containsKey(result[i].id) || feedCounters[result[i].id]!! <= 0) {
                     result.removeAt(i)
                 }
             }

@@ -35,8 +35,7 @@ class SubscriptionsFilterDialog : BottomSheetDialogFragment() {
         for (item in SubscriptionsFilterGroup.entries) {
             val binding = FilterDialogRowBinding.inflate(inflater)
             binding.root.addOnButtonCheckedListener { _: MaterialButtonToggleGroup?, _: Int, _: Boolean ->
-                updateFilter(
-                    filterValues)
+                updateFilter(filterValues)
             }
             binding.buttonGroup.weightSum = item.values.size.toFloat()
             binding.filterButton1.setText(item.values[0].displayName)

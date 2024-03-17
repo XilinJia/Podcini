@@ -25,6 +25,7 @@ import ac.mdiq.podcini.storage.database.PodDBAdapter
 import ac.mdiq.podcini.storage.database.PodDBAdapter.Companion.getInstance
 import ac.mdiq.podcini.storage.database.mapper.FeedCursorMapper.convert
 import ac.mdiq.podcini.preferences.UserPreferences.newEpisodesAction
+import ac.mdiq.podcini.util.event.FeedListUpdateEvent
 import org.greenrobot.eventbus.EventBus
 import java.util.*
 import java.util.concurrent.*
@@ -352,9 +353,9 @@ import java.util.concurrent.*
         adapter.close()
 
         if (savedFeed != null) {
-            EventBus.getDefault().post(ac.mdiq.podcini.util.event.FeedListUpdateEvent(savedFeed))
+            EventBus.getDefault().post(FeedListUpdateEvent(savedFeed))
         } else {
-            EventBus.getDefault().post(ac.mdiq.podcini.util.event.FeedListUpdateEvent(emptyList()))
+            EventBus.getDefault().post(FeedListUpdateEvent(emptyList()))
         }
 
         return resultFeed

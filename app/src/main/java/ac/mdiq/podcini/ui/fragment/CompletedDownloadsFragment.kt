@@ -15,6 +15,7 @@ import com.leinardi.android.speeddial.SpeedDialView
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.databinding.SimpleListFragmentBinding
+import ac.mdiq.podcini.feed.util.PlaybackSpeedUtils
 import ac.mdiq.podcini.ui.adapter.EpisodeItemListAdapter
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.adapter.actionbutton.DeleteActionButton
@@ -37,6 +38,9 @@ import ac.mdiq.podcini.ui.view.EmptyViewHandler
 import ac.mdiq.podcini.ui.view.EpisodeItemListRecyclerView
 import ac.mdiq.podcini.ui.view.LiftOnScrollListener
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
+import ac.mdiq.podcini.util.Converter
+import ac.mdiq.podcini.util.event.FeedItemEvent
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import io.reactivex.Observable
@@ -46,6 +50,9 @@ import io.reactivex.schedulers.Schedulers
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashSet
 
 /**
  * Displays all completed downloads and provides a button to delete them.
@@ -53,7 +60,8 @@ import org.greenrobot.eventbus.ThreadMode
 class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, Toolbar.OnMenuItemClickListener {
     private var runningDownloads: Set<String>? = HashSet()
     private var items: MutableList<FeedItem> = mutableListOf()
-    
+
+    private lateinit var infoBar: TextView
     private lateinit var adapter: CompletedDownloadsListAdapter
     private lateinit var toolbar: MaterialToolbar
     private lateinit var recyclerView: EpisodeItemListRecyclerView
@@ -69,11 +77,10 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                                            savedInstanceState: Bundle?
     ): View {
-        val viewBinding = SimpleListFragmentBinding.inflate(inflater)
-//        val root: View = inflater.inflate(R.layout.simple_list_fragment, container, false)
+        val binding = SimpleListFragmentBinding.inflate(inflater)
 
         Log.d(TAG, "fragment onCreateView")
-        toolbar = viewBinding.toolbar
+        toolbar = binding.toolbar
         toolbar.setTitle(R.string.downloads_label)
         toolbar.inflateMenu(R.menu.downloads_completed)
         toolbar.setOnMenuItemClickListener(this)
@@ -88,12 +95,12 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
         }
         (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
 
-        recyclerView = viewBinding.recyclerView
+        recyclerView = binding.recyclerView
         recyclerView.setRecycledViewPool((activity as MainActivity).recycledViewPool)
         adapter = CompletedDownloadsListAdapter(activity as MainActivity)
         adapter.setOnSelectModeListener(this)
         recyclerView.adapter = adapter
-        recyclerView.addOnScrollListener(LiftOnScrollListener(viewBinding.appbar))
+        recyclerView.addOnScrollListener(LiftOnScrollListener(binding.appbar))
         swipeActions = SwipeActions(this, TAG).attachTo(recyclerView)
         swipeActions.setFilter(FeedItemFilter(FeedItemFilter.DOWNLOADED))
 
@@ -102,10 +109,12 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
             animator.supportsChangeAnimations = false
         }
 
-        progressBar = viewBinding.progLoading
+        progressBar = binding.progLoading
         progressBar.visibility = View.VISIBLE
 
-        val multiSelectDial = MultiSelectSpeedDialBinding.bind(viewBinding.root)
+        infoBar = binding.infoBar
+
+        val multiSelectDial = MultiSelectSpeedDialBinding.bind(binding.root)
         speedDialView = multiSelectDial.fabSD
         speedDialView.overlayLayout = multiSelectDial.fabSDOverlay
         speedDialView.inflate(R.menu.episodes_apply_action_speeddial)
@@ -113,7 +122,6 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
         speedDialView.removeActionItemById(R.id.mark_read_batch)
         speedDialView.removeActionItemById(R.id.mark_unread_batch)
         speedDialView.removeActionItemById(R.id.remove_from_queue_batch)
-//        speedDialView.removeActionItemById(R.id.remove_all_inbox_item)
         speedDialView.setOnChangeListener(object : SpeedDialView.OnChangeListener {
             override fun onMainActionSelected(): Boolean {
                 return false
@@ -144,7 +152,7 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
 
         loadItems()
 
-        return viewBinding.root
+        return binding.root
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -227,7 +235,7 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: ac.mdiq.podcini.util.event.FeedItemEvent) {
+    fun onEventMainThread(event: FeedItemEvent) {
         Log.d(TAG, "onEventMainThread() called with: event = [$event]")
 
         var i = 0
@@ -252,6 +260,7 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
             adapter.setDummyViews(0)
             adapter.updateItems(items)
         }
+        refreshInfoBar()
     }
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
@@ -264,6 +273,7 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
                 break
             }
         }
+        refreshInfoBar()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -312,11 +322,24 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
                     adapter.setDummyViews(0)
                     progressBar.visibility = View.GONE
                     adapter.updateItems(result)
+                    refreshInfoBar()
                 }, { error: Throwable? ->
                     adapter.setDummyViews(0)
                     adapter.updateItems(emptyList())
                     Log.e(TAG, Log.getStackTraceString(error))
                 })
+    }
+
+    private fun refreshInfoBar() {
+        var info = String.format(Locale.getDefault(), "%d%s", items.size, getString(R.string.episodes_suffix))
+        if (items.isNotEmpty()) {
+            var sizeMB: Long = 0
+            for (item in items) {
+                sizeMB += item.media?.size?:0
+            }
+            info += " • " + getString(R.string.size) + " : " + (sizeMB / 1000000) + " MB"
+        }
+        infoBar.text = info
     }
 
     override fun onStartSelectMode() {

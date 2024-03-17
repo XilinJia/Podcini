@@ -26,6 +26,7 @@ import ac.mdiq.podcini.util.IntentUtils
 import ac.mdiq.podcini.util.NetworkUtils
 import ac.mdiq.podcini.util.ShareUtils
 import ac.mdiq.podcini.ui.gui.ShownotesCleaner
+import ac.mdiq.podcini.util.Converter
 import androidx.media3.common.util.UnstableApi
 import kotlin.math.max
 
@@ -151,7 +152,7 @@ class ShownotesWebView : WebView, View.OnLongClickListener {
 
         if (ShownotesCleaner.isTimecodeLink(selectedUrl)) {
             menu.add(Menu.NONE, R.id.go_to_position_item, Menu.NONE, R.string.go_to_position_label)
-            menu.setHeaderTitle(ac.mdiq.podcini.util.Converter.getDurationStringLong(ShownotesCleaner.getTimecodeLinkTime(selectedUrl)))
+            menu.setHeaderTitle(Converter.getDurationStringLong(ShownotesCleaner.getTimecodeLinkTime(selectedUrl)))
         } else {
             val uri = Uri.parse(selectedUrl)
             val intent = Intent(Intent.ACTION_VIEW, uri)

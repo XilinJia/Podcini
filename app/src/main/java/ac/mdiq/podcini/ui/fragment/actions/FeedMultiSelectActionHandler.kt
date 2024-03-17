@@ -17,7 +17,10 @@ import ac.mdiq.podcini.ui.fragment.preferences.dialog.PreferenceListDialog
 import ac.mdiq.podcini.ui.fragment.preferences.dialog.PreferenceSwitchDialog
 import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.storage.model.feed.FeedPreferences
+import ac.mdiq.podcini.ui.fragment.SubscriptionFragment
+import ac.mdiq.podcini.util.event.FeedTagsChangedEvent
 import androidx.media3.common.util.UnstableApi
+import org.greenrobot.eventbus.EventBus
 import java.util.*
 
 @UnstableApi

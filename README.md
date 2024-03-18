@@ -14,7 +14,11 @@ Compared to AntennaPod this project:
 
 ## Version 4
 
-Some drastic changes are made in the project since version 4.0.  There is now a whole new interface of the Subscriptions page showing only the feeds with tags as filters, no longer having tags as folders in the page.  And the default page of the app is changed to the Subscriptions page.  Alongside, the Home and Echo pages are removed from the project.  Also, the project becomes mono-module, with only the app module.
+Some drastic changes are made in the project since version 4.0.
+There is now a whole new interface of the Subscriptions page showing only the feeds with tags as filters, no longer having tags as folders in the page.
+And the default page of the app is changed to the Subscriptions page. 
+Alongside, the Home and Echo pages are removed from the project.
+Also, the project becomes mono-module, with only the app module.
 
 Version 4.1 brings a more convenient player control and tags enhancements, while also enables view binding for most views in the codebase.
 
@@ -38,7 +42,8 @@ Version 4.1 brings a more convenient player control and tags enhancements, while
 
 ## License
 
-Podcini, same as its forked project AntennaPod, is licensed under the GNU General Public License (GPL-3.0). You can find the license text in the LICENSE file.
+Podcini, same as its forked project AntennaPod, is licensed under the GNU General Public License (GPL-3.0).
+You can find the license text in the LICENSE file.
 
 ## Copyright
 

@@ -10,7 +10,7 @@ Compared to AntennaPod this project:
 3. Relies on the most recent dependencies,
 4. Is __purely__ Kotlin based,
 4. Targets Android 14,
-5. Aims to be as effective as possible <!-- NOTE: wording of this can be improved -->
+5. Aims to be as effective as possible. <!-- NOTE: wording of this can be improved -->
 
 ## Version 4
 

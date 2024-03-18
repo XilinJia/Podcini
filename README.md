@@ -32,13 +32,12 @@ Version 4.1 brings a more convenient player control and tags enhancements, while
 
 <img src="./images/9_speed.jpg" width="238" /> <img src="./images/10_player.jpg" width="238" />
 
-## Changelogs
 
-[Here](changelog.md)
+## Links
 
-## Privacy Policy
-
-[Privacy Policy](PrivacyPolicy.md)
+- [Changelog](changelog.md)
+- [Privacy Policy](PrivacyPolicy.md)
+- [Translation (Transifex)](https://app.transifex.com/xilinjia/podcini/dashboard/)
 
 ## License
 
@@ -50,7 +49,3 @@ You can find the license text in the LICENSE file.
 New files and modifications in the project is copyrighted in 2024 by Xilin Jia.
 
 Original contents from the forked project maintains copyrights of the AntennaPod team.
-
-## Translation
-
-[At Transifex](https://app.transifex.com/xilinjia/podcini/dashboard/)

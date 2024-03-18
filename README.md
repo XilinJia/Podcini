@@ -2,9 +2,15 @@
 
 <img width="100" src="https://raw.githubusercontent.com/xilinjia/podcini/main/images/icon 256x256.png" align="left" style="margin-right:15px"/>Podcini is an open source podcast manager/player project.
 
-This is based on a fork from the popular project [AntennaPod](<https://github.com/AntennaPod/AntennaPod>) as of Feb 5 2024.
+This app is a fork of [AntennaPod](<https://github.com/AntennaPod/AntennaPod>) as of Feb 5 2024.
 
-Differing from the forked project, this project is purely Kotlin based, relies on the most recent dependencies, and most importantly has migrated the media player to androidx.media3, and added mechanism of AudioOffloadMode which is supposed to be kind to device battery.  Efficiencies are also sought on running the app.  App build is also upgraded to target Android 14.
+Compared to AntennaPod this project:
+1. Migrated the media player to `androidx.media3`,
+2. Added `AudioOffloadMode` support, which is supposed to be kind to device battery,
+3. Relies on the most recent dependencies,
+4. Is __purely__ Kotlin based,
+4. Targets Android 14,
+5. Aims to be as effective as possible <!-- NOTE: wording of this can be improved -->
 
 ## Version 4
 

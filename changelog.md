@@ -86,3 +86,11 @@
 * revealed info bar in Downloads view
 * revealed info bar in Subscriptions view
 * reset tags list in Subscriptions when new tag is added
+
+## 4.2.7
+
+* disabled drag actions when in multi-select mode (fixed crash bug)
+* renewed PodcastIndex API keys
+* added share notes menu option in episode view
+* press on title area of an episode now opens the episode info faster and more economically - without horizontal swipe
+* press on the icon of an episode opens the episode info the original way - with horizontal swipe

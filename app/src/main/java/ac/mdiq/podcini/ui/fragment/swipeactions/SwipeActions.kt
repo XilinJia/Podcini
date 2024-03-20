@@ -68,7 +68,7 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
     }
 
     @UnstableApi override fun onSwiped(viewHolder: RecyclerView.ViewHolder, swipeDir: Int) {
-        if (!actions!!.hasActions()) {
+        if (actions != null && !actions!!.hasActions()) {
             //open settings dialog if no prefs are set
             SwipeActionsDialog(fragment.requireContext(), tag).show(object : SwipeActionsDialog.Callback {
                 override fun onCall() {
@@ -80,7 +80,7 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
 
         val item = (viewHolder as EpisodeItemViewHolder).feedItem
 
-        if (item != null && filter != null)
+        if (actions != null && item != null && filter != null)
                 (if (swipeDir == ItemTouchHelper.RIGHT) actions!!.right else actions!!.left)?.performAction(item, fragment, filter!!)
     }
 
@@ -91,7 +91,7 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
         var dx = dx
         val right: SwipeAction
         val left: SwipeAction
-        if (actions!!.hasActions()) {
+        if (actions != null && actions!!.hasActions()) {
             right = actions!!.right!!
             left = actions!!.left!!
         } else {
@@ -182,7 +182,7 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
     }
 
     fun startDrag(holder: EpisodeItemViewHolder?) {
-        itemTouchHelper.startDrag(holder!!)
+        if (holder != null) itemTouchHelper.startDrag(holder)
     }
 
     class Actions(prefs: String?) {

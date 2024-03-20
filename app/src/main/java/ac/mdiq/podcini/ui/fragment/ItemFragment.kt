@@ -16,6 +16,7 @@ import ac.mdiq.podcini.ui.adapter.actionbutton.*
 import ac.mdiq.podcini.ui.common.CircularProgressBar
 import ac.mdiq.podcini.ui.common.ThemeUtils
 import ac.mdiq.podcini.ui.gui.ShownotesCleaner
+import ac.mdiq.podcini.ui.menuhandler.FeedItemMenuHandler
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.Converter
 import ac.mdiq.podcini.util.DateFormatter
@@ -25,6 +26,7 @@ import ac.mdiq.podcini.util.event.FeedItemEvent
 import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
 import android.os.Build
 import android.os.Bundle
+import android.text.Html
 import android.text.Layout
 import android.text.TextUtils
 import android.util.Log
@@ -32,11 +34,12 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.annotation.OptIn
+import androidx.appcompat.widget.Toolbar
+import androidx.core.app.ShareCompat
 import androidx.fragment.app.Fragment
 import androidx.media3.common.util.UnstableApi
 import com.bumptech.glide.Glide
@@ -98,20 +101,20 @@ class ItemFragment : Fragment() {
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
-        val viewBinding = FeeditemFragmentBinding.inflate(inflater)
-        root = viewBinding.root
+        val binding = FeeditemFragmentBinding.inflate(inflater)
+        root = binding.root
 
         Log.d(TAG, "fragment onCreateView")
-        txtvPodcast = viewBinding.txtvPodcast
+        txtvPodcast = binding.txtvPodcast
         txtvPodcast.setOnClickListener { openPodcast() }
-        txtvTitle = viewBinding.txtvTitle
+        txtvTitle = binding.txtvTitle
         if (Build.VERSION.SDK_INT >= 23) {
             txtvTitle.setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_FULL)
         }
-        txtvDuration = viewBinding.txtvDuration
-        txtvPublished = viewBinding.txtvPublished
+        txtvDuration = binding.txtvDuration
+        txtvPublished = binding.txtvPublished
         txtvTitle.ellipsize = TextUtils.TruncateAt.END
-        webvDescription = viewBinding.webvDescription
+        webvDescription = binding.webvDescription
         webvDescription.setTimecodeSelectedListener { time: Int? ->
             val cMedia = controller?.getMedia()
             if (item?.media?.getIdentifier() == cMedia?.getIdentifier()) {
@@ -123,17 +126,17 @@ class ItemFragment : Fragment() {
         }
         registerForContextMenu(webvDescription)
 
-        imgvCover = viewBinding.imgvCover
+        imgvCover = binding.imgvCover
         imgvCover.setOnClickListener { openPodcast() }
-        progbarDownload = viewBinding.circularProgressBar
-        progbarLoading = viewBinding.progbarLoading
-        butAction1 = viewBinding.butAction1
-        butAction2 = viewBinding.butAction2
-        butAction1Icon = viewBinding.butAction1Icon
-        butAction2Icon = viewBinding.butAction2Icon
-        butAction1Text = viewBinding.butAction1Text
-        butAction2Text = viewBinding.butAction2Text
-        noMediaLabel = viewBinding.noMediaLabel
+        progbarDownload = binding.circularProgressBar
+        progbarLoading = binding.progbarLoading
+        butAction1 = binding.butAction1
+        butAction2 = binding.butAction2
+        butAction1Icon = binding.butAction1Icon
+        butAction2Icon = binding.butAction2Icon
+        butAction1Text = binding.butAction1Text
+        butAction2Text = binding.butAction2Text
+        noMediaLabel = binding.noMediaLabel
 
         butAction1.setOnClickListener(View.OnClickListener {
             if (actionButton1 is StreamActionButton && !UserPreferences.isStreamOverDownload
@@ -165,7 +168,7 @@ class ItemFragment : Fragment() {
         controller?.init()
         load()
 
-        return viewBinding.root
+        return binding.root
     }
 
     @OptIn(UnstableApi::class) private fun showOnDemandConfigBalloon(offerStreaming: Boolean) {
@@ -393,6 +396,9 @@ class ItemFragment : Fragment() {
             DBReader.loadDescriptionOfFeedItem(feedItem)
             val t = ShownotesCleaner(context, feedItem.description?:"", duration)
             webviewData = t.processShownotes()
+            val bundle = Bundle()
+            bundle.putString("description", feedItem.description?:"")
+            this.arguments = bundle
         }
         return feedItem
     }

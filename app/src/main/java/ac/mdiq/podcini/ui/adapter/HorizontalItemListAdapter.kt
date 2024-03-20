@@ -12,6 +12,7 @@ import ac.mdiq.podcini.util.FeedItemUtil
 import ac.mdiq.podcini.ui.fragment.ItemPagerFragment
 import ac.mdiq.podcini.ui.menuhandler.FeedItemMenuHandler
 import ac.mdiq.podcini.storage.model.feed.FeedItem
+import ac.mdiq.podcini.ui.fragment.ItemPageFragment
 import ac.mdiq.podcini.ui.view.viewholder.HorizontalItemViewHolder
 import org.apache.commons.lang3.ArrayUtils
 import java.lang.ref.WeakReference
@@ -65,7 +66,7 @@ open class HorizontalItemListAdapter(mainActivity: MainActivity) : RecyclerView.
             if (activity != null) {
                 val ids: LongArray = FeedItemUtil.getIds(data)
                 val clickPosition = ArrayUtils.indexOf(ids, item.id)
-                activity.loadChildFragment(ItemPagerFragment.newInstance(ids, clickPosition))
+                activity.loadChildFragment(ItemPageFragment.newInstance(ids, clickPosition))
             }
         }
     }

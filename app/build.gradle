@@ -149,8 +149,8 @@ android {
         // Version code schema (not used):
         // "1.2.3-beta4"    -> 1020304
         // "1.2.3"          -> 1020395
-        versionCode 3020109
-        versionName "4.2.6"
+        versionCode 3020110
+        versionName "4.2.7"
 
         def commit = ""
         try {
@@ -168,10 +168,9 @@ android {
             buildConfigField "String", "PODCASTINDEX_API_KEY", '"' + podcastindexApiKey + '"'
             buildConfigField "String", "PODCASTINDEX_API_SECRET", '"' + podcastindexApiSecret + '"'
         } else {
-            buildConfigField "String", "PODCASTINDEX_API_KEY", '"XTMMQGA2YZ4WJUBYY4HK"'
-            buildConfigField "String", "PODCASTINDEX_API_SECRET", '"XAaAhk4^2YBsTE33vdbwbZNj82ZRLABDDqFdKe7x"'
+            buildConfigField "String", "PODCASTINDEX_API_KEY", '"QT2RYHSUZ3UC9GDJ5MFY"'
+            buildConfigField "String", "PODCASTINDEX_API_SECRET", '"Zw2NL74ht5aCtx5zFL$#MY$##qdVCX7x37jq95Sz"'
         }
-
     }
     signingConfigs {
         releaseConfig {
@@ -294,7 +293,6 @@ dependencies {
     testImplementation 'org.mockito:mockito-inline:5.2.0'
     testImplementation "org.robolectric:robolectric:4.11.1"
     testImplementation 'javax.inject:javax.inject:1'
-
 
     playImplementation 'com.google.android.gms:play-services-base:18.3.0'
     freeImplementation 'org.conscrypt:conscrypt-android:2.5.2'

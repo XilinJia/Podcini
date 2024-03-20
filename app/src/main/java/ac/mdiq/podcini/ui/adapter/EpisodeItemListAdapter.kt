@@ -7,6 +7,7 @@ import ac.mdiq.podcini.ui.fragment.ItemPagerFragment
 import ac.mdiq.podcini.ui.menuhandler.FeedItemMenuHandler
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.ui.common.ThemeUtils
+import ac.mdiq.podcini.ui.fragment.ItemPageFragment
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
 import android.R.color
 import android.app.Activity
@@ -83,7 +84,7 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) :
             if (!inActionMode()) {
                 val ids: LongArray = FeedItemUtil.getIds(episodes)
                 val position = ArrayUtils.indexOf(ids, item.id)
-                activity?.loadChildFragment(ItemPagerFragment.newInstance(ids, position))
+                activity?.loadChildFragment(ItemPageFragment.newInstance(ids, position))
             } else {
                 toggleSelection(holder.bindingAdapterPosition)
             }

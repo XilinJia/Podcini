@@ -28,19 +28,6 @@
                 android:layout_width="148dp"
                 android:layout_height="match_parent" />
 
-<!--            <ImageButton-->
-<!--                android:id="@+id/butShowInfo"-->
-<!--                android:layout_width="40dp"-->
-<!--                android:layout_height="40dp"-->
-<!--                android:background="?attr/selectableItemBackground"-->
-<!--                android:contentDescription="@string/show_info_label"-->
-<!--                android:layout_marginLeft="-8dp"-->
-<!--                android:layout_marginStart="-8dp"-->
-<!--                android:scaleType="fitXY"-->
-<!--                android:padding="8dp"-->
-<!--                app:srcCompat="@drawable/ic_info_white"-->
-<!--                tools:visibility="visible" />-->
-
             <ImageButton
                 android:id="@+id/butFilter"
                 android:layout_width="40dp"

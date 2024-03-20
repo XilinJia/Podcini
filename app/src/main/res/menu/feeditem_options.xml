@@ -56,7 +56,11 @@
         android:menuCategory="container"
         android:title="@string/share_label">
     </item>
-
+    <item
+        android:id="@+id/share_notes"
+        android:menuCategory="container"
+        android:title="@string/share_notes_label">
+    </item>
     <item
         android:id="@+id/open_podcast"
         custom:showAsAction="collapseActionView"

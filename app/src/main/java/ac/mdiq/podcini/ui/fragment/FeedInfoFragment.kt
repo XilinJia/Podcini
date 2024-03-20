@@ -90,19 +90,18 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
-        val viewBinding = FeedinfoBinding.inflate(inflater)
-//        val root: View = inflater.inflate(R.layout.feedinfo, null)
+        val binding = FeedinfoBinding.inflate(inflater)
 
         Log.d(TAG, "fragment onCreateView")
-        toolbar = viewBinding.toolbar
+        toolbar = binding.toolbar
         toolbar.title = ""
         toolbar.inflateMenu(R.menu.feedinfo)
         toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
         toolbar.setOnMenuItemClickListener(this)
         refreshToolbarState()
 
-        val appBar: AppBarLayout = viewBinding.appBar
-        val collapsingToolbar: CollapsingToolbarLayout = viewBinding.collapsingToolbar
+        val appBar: AppBarLayout = binding.appBar
+        val collapsingToolbar: CollapsingToolbarLayout = binding.collapsingToolbar
         val iconTintManager: ToolbarIconTintManager =
             object : ToolbarIconTintManager(requireContext(), toolbar, collapsingToolbar) {
                 override fun doTint(themedContext: Context) {
@@ -115,22 +114,22 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         iconTintManager.updateTint()
         appBar.addOnOffsetChangedListener(iconTintManager)
 
-        imgvCover = viewBinding.header.imgvCover
-        txtvTitle = viewBinding.header.txtvTitle
-        txtvAuthorHeader = viewBinding.header.txtvAuthor
-        imgvBackground = viewBinding.imgvBackground
-        header = viewBinding.header.root
-        infoContainer = viewBinding.infoContainer
-//        viewBinding.header.butShowInfo.visibility = View.INVISIBLE
-        viewBinding.header.butShowSettings.visibility = View.INVISIBLE
-        viewBinding.header.butFilter.visibility = View.INVISIBLE
+        imgvCover = binding.header.imgvCover
+        txtvTitle = binding.header.txtvTitle
+        txtvAuthorHeader = binding.header.txtvAuthor
+        imgvBackground = binding.imgvBackground
+        header = binding.header.root
+        infoContainer = binding.infoContainer
+//        binding.header.butShowInfo.visibility = View.INVISIBLE
+        binding.header.butShowSettings.visibility = View.INVISIBLE
+        binding.header.butFilter.visibility = View.INVISIBLE
         // https://github.com/bumptech/glide/issues/529
         imgvBackground.colorFilter = LightingColorFilter(-0x7d7d7e, 0x000000)
 
-        txtvDescription = viewBinding.txtvDescription
-        txtvUrl = viewBinding.txtvUrl
-        lblSupport = viewBinding.lblSupport
-        txtvFundingUrl = viewBinding.txtvFundingUrl
+        txtvDescription = binding.txtvDescription
+        txtvUrl = binding.txtvUrl
+        lblSupport = binding.lblSupport
+        txtvFundingUrl = binding.txtvFundingUrl
 
         txtvUrl.setOnClickListener(copyUrlToClipboard)
 
@@ -139,12 +138,12 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             FeedStatisticsFragment.newInstance(feedId, false), "feed_statistics_fragment")
             .commitAllowingStateLoss()
 
-        viewBinding.btnvOpenStatistics.setOnClickListener {
+        binding.btnvOpenStatistics.setOnClickListener {
             val fragment = StatisticsFragment()
             (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
         }
 
-        return viewBinding.root
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

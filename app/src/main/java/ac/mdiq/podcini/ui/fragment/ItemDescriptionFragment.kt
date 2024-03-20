@@ -35,7 +35,6 @@ class ItemDescriptionFragment : Fragment() {
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Log.d(TAG, "Creating view")
         val binding = ItemDescriptionFragmentBinding.inflate(inflater)
-//        val root = inflater.inflate(R.layout.item_description_fragment, container, false)
 
         Log.d(TAG, "fragment onCreateView")
         webvDescription = binding.webview

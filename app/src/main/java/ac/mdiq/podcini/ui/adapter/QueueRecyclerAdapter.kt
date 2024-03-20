@@ -30,7 +30,7 @@ open class QueueRecyclerAdapter(mainActivity: MainActivity, private val swipeAct
 
     @UnstableApi @SuppressLint("ClickableViewAccessibility")
     override fun afterBindViewHolder(holder: EpisodeItemViewHolder, pos: Int) {
-        if (!dragDropEnabled) {
+        if (inActionMode() || !dragDropEnabled) {
             holder.dragHandle.setVisibility(View.GONE)
             holder.dragHandle.setOnTouchListener(null)
 //            holder.coverHolder.setOnTouchListener(null)
@@ -38,17 +38,15 @@ open class QueueRecyclerAdapter(mainActivity: MainActivity, private val swipeAct
             holder.dragHandle.setVisibility(View.VISIBLE)
             holder.dragHandle.setOnTouchListener { _: View?, event: MotionEvent ->
                 if (event.actionMasked == MotionEvent.ACTION_DOWN) {
-                    Log.d(TAG, "startDrag()")
                     swipeActions.startDrag(holder)
                 }
                 false
             }
             holder.coverHolder.setOnTouchListener { v1, event ->
-                if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+                if (!inActionMode() && event.actionMasked == MotionEvent.ACTION_DOWN) {
                     val isLtr = holder.itemView.getLayoutDirection() == View.LAYOUT_DIRECTION_LTR
                     val factor = (if (isLtr) 1 else -1).toFloat()
                     if (factor * event.x < factor * 0.5 * v1.width) {
-                        Log.d(TAG, "startDrag()")
                         swipeActions.startDrag(holder)
                     } else {
                         Log.d(TAG, "Ignoring drag in right half of the image")

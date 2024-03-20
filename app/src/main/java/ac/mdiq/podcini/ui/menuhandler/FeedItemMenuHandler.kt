@@ -1,28 +1,29 @@
 package ac.mdiq.podcini.ui.menuhandler
 
-import ac.mdiq.podcini.ui.activity.MainActivity
-import android.os.Handler
-import android.util.Log
-import android.view.KeyEvent
-import android.view.Menu
-import androidx.fragment.app.Fragment
-import androidx.media3.common.util.UnstableApi
-import com.google.android.material.snackbar.Snackbar
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.net.sync.SynchronizationSettings
+import ac.mdiq.podcini.net.sync.model.EpisodeAction
+import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.preferences.PlaybackPreferences
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
 import ac.mdiq.podcini.service.playback.PlaybackServiceInterface
 import ac.mdiq.podcini.storage.DBWriter
-import ac.mdiq.podcini.net.sync.SynchronizationSettings
-import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
-import ac.mdiq.podcini.util.*
-import ac.mdiq.podcini.ui.dialog.ShareDialog
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
-import ac.mdiq.podcini.net.sync.model.EpisodeAction
+import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.dialog.ShareDialog
 import ac.mdiq.podcini.ui.view.LocalDeleteModal
+import ac.mdiq.podcini.util.*
+import android.os.Handler
+import android.util.Log
+import android.view.KeyEvent
+import android.view.Menu
 import androidx.annotation.OptIn
+import androidx.fragment.app.Fragment
+import androidx.media3.common.util.UnstableApi
+import com.google.android.material.snackbar.Snackbar
 import kotlin.math.ceil
+
 
 /**
  * Handles interactions with the FeedItemMenu.
@@ -57,7 +58,6 @@ object FeedItemMenuHandler {
         setItemVisibility(menu, R.id.visit_website_item, !(selectedItem.feed?.isLocalFeed?:false)
                 && ShareUtils.hasLinkToShare(selectedItem))
         setItemVisibility(menu, R.id.share_item, !(selectedItem.feed?.isLocalFeed?:false))
-//        setItemVisibility(menu, R.id.remove_inbox_item, selectedItem.isNew)
         setItemVisibility(menu, R.id.mark_read_item, !selectedItem.isPlayed())
         setItemVisibility(menu, R.id.mark_unread_item, selectedItem.isPlayed())
         setItemVisibility(menu, R.id.reset_position, hasMedia && selectedItem.media?.getPosition() != 0)
@@ -144,9 +144,6 @@ object FeedItemMenuHandler {
                         selectedItem.media!!.id)
                 }
             }
-//            R.id.remove_inbox_item -> {
-//                removeNewFlagWithUndo(fragment, selectedItem)
-//            }
             R.id.mark_read_item -> {
                 selectedItem.setPlayed(true)
                 DBWriter.markItemPlayed(selectedItem, FeedItem.PLAYED, true)
@@ -258,7 +255,7 @@ object FeedItemMenuHandler {
         if (showSnackbar) {
             (fragment.activity as MainActivity).showSnackbarAbovePlayer(
                 playStateStringRes, duration)
-                .setAction(fragment.getString(R.string.undo)) { v ->
+                .setAction(fragment.getString(R.string.undo)) {
                     DBWriter.markItemPlayed(item.playState, item.id)
                     // don't forget to cancel the thing that's going to remove the media
                     h.removeCallbacks(r)

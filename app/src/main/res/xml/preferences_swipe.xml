@@ -21,8 +21,8 @@
 <!--        android:key="prefSwipeStatistics"-->
 <!--        android:title="@string/statistics_label"/>-->
 
-<!--    <Preference-->
-<!--        android:key="prefSwipeFeed"-->
-<!--        android:title="@string/individual_subscription"/>-->
+    <Preference
+        android:key="prefSwipeFeed"
+        android:title="@string/individual_subscription"/>
 
 </PreferenceScreen>

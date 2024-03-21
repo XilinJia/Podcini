@@ -104,4 +104,4 @@
 * added swipe action telltales in all episode lists
 * added NO_ACTION swipe action
 * all default swipe actions are set to NO_ACTION
-* cleaned up swipe preferences ui: statistics and individual subs removed
+* cleaned up swipe preferences ui: statistics removed

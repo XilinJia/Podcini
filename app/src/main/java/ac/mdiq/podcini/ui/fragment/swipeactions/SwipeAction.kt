@@ -24,6 +24,8 @@ interface SwipeAction {
     fun willRemove(filter: FeedItemFilter, item: FeedItem): Boolean
 
     companion object {
+        const val NO_ACTION: String = "NO_ACTION"
+
         const val ADD_TO_QUEUE: String = "ADD_TO_QUEUE"
         const val START_DOWNLOAD: String = "START_DOWNLOAD"
         const val MARK_FAV: String = "MARK_FAV"

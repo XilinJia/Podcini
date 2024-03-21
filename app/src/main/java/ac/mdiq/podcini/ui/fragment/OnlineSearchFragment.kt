@@ -18,21 +18,17 @@ import com.google.android.material.appbar.MaterialToolbar
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.FragmentItunesSearchBinding
 import ac.mdiq.podcini.ui.activity.OnlineFeedViewActivity
-import ac.mdiq.podcini.ui.adapter.itunes.ItunesAdapter
+import ac.mdiq.podcini.ui.adapter.OnlineFeedsAdapter
 import ac.mdiq.podcini.net.discovery.PodcastSearchResult
 import ac.mdiq.podcini.net.discovery.PodcastSearcher
 import ac.mdiq.podcini.net.discovery.PodcastSearcherRegistry
 import io.reactivex.disposables.Disposable
 
-class OnlineSearchFragment
-/**
- * Constructor
- */
-    : Fragment() {
+class OnlineSearchFragment : Fragment() {
     /**
      * Adapter responsible with the search results
      */
-    private var adapter: ItunesAdapter? = null
+    private var adapter: OnlineFeedsAdapter? = null
     private var searchProvider: PodcastSearcher? = null
     
     private lateinit var gridView: GridView
@@ -63,13 +59,11 @@ class OnlineSearchFragment
     }
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        // Inflate the layout for this fragment
         val binding = FragmentItunesSearchBinding.inflate(inflater)
-//        val root: View = inflater.inflate(R.layout.fragment_itunes_search, container, false)
 
         Log.d(TAG, "fragment onCreateView")
         gridView = binding.gridView
-        adapter = ItunesAdapter(requireContext(), ArrayList())
+        adapter = OnlineFeedsAdapter(requireContext(), ArrayList())
         gridView.setAdapter(adapter)
 
         //Show information about the podcast when the list item is clicked
@@ -121,24 +115,26 @@ class OnlineSearchFragment
         toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
 
         val searchItem: MenuItem = toolbar.menu.findItem(R.id.action_search)
-        val sv = searchItem.actionView as SearchView?
-        sv!!.queryHint = getString(R.string.search_podcast_hint)
-        sv.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(s: String): Boolean {
-                sv.clearFocus()
-                search(s)
-                return true
-            }
+        val sv = searchItem.actionView as? SearchView
+        if (sv != null) {
+            sv.queryHint = getString(R.string.search_podcast_hint)
+            sv.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(s: String): Boolean {
+                    sv.clearFocus()
+                    search(s)
+                    return true
+                }
 
-            override fun onQueryTextChange(s: String): Boolean {
-                return false
-            }
-        })
-        sv.setOnQueryTextFocusChangeListener(View.OnFocusChangeListener { view: View, hasFocus: Boolean ->
-            if (hasFocus) {
-                showInputMethod(view.findFocus())
-            }
-        })
+                override fun onQueryTextChange(s: String): Boolean {
+                    return false
+                }
+            })
+            sv.setOnQueryTextFocusChangeListener(View.OnFocusChangeListener { view: View, hasFocus: Boolean ->
+                if (hasFocus) {
+                    showInputMethod(view.findFocus())
+                }
+            })
+        }
         searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
             override fun onMenuItemActionExpand(item: MenuItem): Boolean {
                 return true
@@ -152,7 +148,7 @@ class OnlineSearchFragment
         searchItem.expandActionView()
 
         if (requireArguments().getString(ARG_QUERY, null) != null) {
-            sv.setQuery(requireArguments().getString(ARG_QUERY, null), true)
+            sv?.setQuery(requireArguments().getString(ARG_QUERY, null), true)
         }
     }
 
@@ -167,8 +163,8 @@ class OnlineSearchFragment
                 adapter?.clear()
                 if (searchResults != null) adapter?.addAll(searchResults!!)
                 adapter?.notifyDataSetInvalidated()
-                gridView.visibility = if (searchResults!!.isNotEmpty()) View.VISIBLE else View.GONE
-                txtvEmpty.visibility = if (searchResults!!.isEmpty()) View.VISIBLE else View.GONE
+                gridView.visibility = if (!searchResults.isNullOrEmpty()) View.VISIBLE else View.GONE
+                txtvEmpty.visibility = if (searchResults.isNullOrEmpty()) View.VISIBLE else View.GONE
                 txtvEmpty.text = getString(R.string.no_results_for_query) + query
             }, { error: Throwable ->
                 Log.e(TAG, Log.getStackTraceString(error))
@@ -194,7 +190,7 @@ class OnlineSearchFragment
     }
 
     companion object {
-        private const val TAG = "FyydSearchFragment"
+        private const val TAG = "OnlineSearchFragment"
         private const val ARG_SEARCHER = "searcher"
         private const val ARG_QUERY = "query"
 

@@ -18,19 +18,19 @@ import ac.mdiq.podcini.databinding.SortDialogItemBinding
 import ac.mdiq.podcini.storage.model.feed.SortOrder
 
 open class ItemSortDialog : BottomSheetDialogFragment() {
-    protected lateinit var viewBinding: SortDialogBinding
+    protected lateinit var binding: SortDialogBinding
 
     protected var sortOrder: SortOrder? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        viewBinding = SortDialogBinding.inflate(inflater)
+        binding = SortDialogBinding.inflate(inflater)
         populateList()
-        viewBinding.keepSortedCheckbox.setOnCheckedChangeListener { _: CompoundButton?, _: Boolean -> this@ItemSortDialog.onSelectionChanged() }
-        return viewBinding.root
+        binding.keepSortedCheckbox.setOnCheckedChangeListener { _: CompoundButton?, _: Boolean -> this@ItemSortDialog.onSelectionChanged() }
+        return binding.root
     }
 
     private fun populateList() {
-        viewBinding.gridLayout.removeAllViews()
+        binding.gridLayout.removeAllViews()
         onAddItem(R.string.episode_title, SortOrder.EPISODE_TITLE_A_Z, SortOrder.EPISODE_TITLE_Z_A, true)
         onAddItem(R.string.feed_title, SortOrder.FEED_TITLE_A_Z, SortOrder.FEED_TITLE_Z_A, true)
         onAddItem(R.string.duration, SortOrder.DURATION_SHORT_LONG, SortOrder.DURATION_LONG_SHORT, true)
@@ -43,7 +43,7 @@ open class ItemSortDialog : BottomSheetDialogFragment() {
 
     protected open fun onAddItem(title: Int, ascending: SortOrder, descending: SortOrder, ascendingIsDefault: Boolean) {
         if (sortOrder == ascending || sortOrder == descending) {
-            val item = SortDialogItemActiveBinding.inflate(layoutInflater, viewBinding.gridLayout, false)
+            val item = SortDialogItemActiveBinding.inflate(layoutInflater, binding.gridLayout, false)
             val other: SortOrder
             when {
                 ascending == descending -> {
@@ -64,17 +64,17 @@ open class ItemSortDialog : BottomSheetDialogFragment() {
                 populateList()
                 onSelectionChanged()
             }
-            viewBinding.gridLayout.addView(item.root)
+            binding.gridLayout.addView(item.root)
         } else {
             val item = SortDialogItemBinding.inflate(
-                layoutInflater, viewBinding.gridLayout, false)
+                layoutInflater, binding.gridLayout, false)
             item.button.setText(title)
             item.button.setOnClickListener {
                 sortOrder = if (ascendingIsDefault) ascending else descending
                 populateList()
                 onSelectionChanged()
             }
-            viewBinding.gridLayout.addView(item.root)
+            binding.gridLayout.addView(item.root)
         }
     }
 

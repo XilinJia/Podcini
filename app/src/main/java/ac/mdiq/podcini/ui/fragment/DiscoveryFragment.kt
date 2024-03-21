@@ -8,7 +8,7 @@ import ac.mdiq.podcini.net.discovery.ItunesTopListLoader
 import ac.mdiq.podcini.net.discovery.PodcastSearchResult
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.ui.activity.OnlineFeedViewActivity
-import ac.mdiq.podcini.ui.adapter.itunes.ItunesAdapter
+import ac.mdiq.podcini.ui.adapter.OnlineFeedsAdapter
 import ac.mdiq.podcini.util.event.DiscoveryDefaultUpdateEvent
 import android.content.Context
 import android.content.DialogInterface
@@ -50,7 +50,7 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     /**
      * Adapter responsible with the search results.
      */
-    private var adapter: ItunesAdapter? = null
+    private var adapter: OnlineFeedsAdapter? = null
 
     /**
      * List of podcasts retreived from the search.
@@ -99,7 +99,7 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
         Log.d(TAG, "fragment onCreateView")
         gridView = viewBinding.gridView
-        adapter = ItunesAdapter(requireActivity(), ArrayList())
+        adapter = OnlineFeedsAdapter(requireActivity(), ArrayList())
         gridView.setAdapter(adapter)
 
         toolbar = viewBinding.toolbar

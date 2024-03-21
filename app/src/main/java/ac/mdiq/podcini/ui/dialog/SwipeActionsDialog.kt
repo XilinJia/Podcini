@@ -68,22 +68,22 @@ class SwipeActionsDialog(private val context: Context, private val tag: String) 
         }
 
         builder.setTitle(context.getString(R.string.swipeactions_label) + " - " + forFragment)
-        val viewBinding = SwipeactionsDialogBinding.inflate(LayoutInflater.from(context))
-        builder.setView(viewBinding.root)
+        val binding = SwipeactionsDialogBinding.inflate(LayoutInflater.from(context))
+        builder.setView(binding.root)
 
-        viewBinding.enableSwitch.setOnCheckedChangeListener { _: CompoundButton?, b: Boolean ->
-            viewBinding.actionLeftContainer.root.alpha = if (b) 1.0f else 0.4f
-            viewBinding.actionRightContainer.root.alpha = if (b) 1.0f else 0.4f
+        binding.enableSwitch.setOnCheckedChangeListener { _: CompoundButton?, b: Boolean ->
+            binding.actionLeftContainer.root.alpha = if (b) 1.0f else 0.4f
+            binding.actionRightContainer.root.alpha = if (b) 1.0f else 0.4f
         }
 
-        viewBinding.enableSwitch.isChecked = isSwipeActionEnabled(context, tag)
+        binding.enableSwitch.isChecked = isSwipeActionEnabled(context, tag)
 
-        setupSwipeDirectionView(viewBinding.actionLeftContainer, LEFT)
-        setupSwipeDirectionView(viewBinding.actionRightContainer, RIGHT)
+        setupSwipeDirectionView(binding.actionLeftContainer, LEFT)
+        setupSwipeDirectionView(binding.actionRightContainer, RIGHT)
 
         builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
             savePrefs(tag, rightAction!!.getId(), leftAction!!.getId())
-            saveActionsEnabledPrefs(viewBinding.enableSwitch.isChecked)
+            saveActionsEnabledPrefs(binding.enableSwitch.isChecked)
             prefsChanged.onCall()
         }
 

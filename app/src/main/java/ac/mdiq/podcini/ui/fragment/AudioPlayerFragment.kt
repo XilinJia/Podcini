@@ -227,9 +227,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onUnreadItemsUpdate(event: UnreadItemsUpdateEvent?) {
-        if (controller == null) {
-            return
-        }
+        if (controller == null) return
         updatePosition(PlaybackPositionEvent(controller!!.position, controller!!.duration))
     }
 
@@ -243,13 +241,11 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     private fun setupLengthTextView() {
         showTimeLeft = UserPreferences.shouldShowRemainingTime()
         txtvLength.setOnClickListener(View.OnClickListener {
-            if (controller == null) {
-                return@OnClickListener
-            }
+            if (controller == null) return@OnClickListener
+
             showTimeLeft = !showTimeLeft
             UserPreferences.setShowRemainTimeSetting(showTimeLeft)
-            updatePosition(PlaybackPositionEvent(controller!!.position,
-                controller!!.duration))
+            updatePosition(PlaybackPositionEvent(controller!!.position, controller!!.duration))
         })
     }
 
@@ -302,9 +298,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
     private fun updateUi(media: Playable?) {
         if (controller != null) duration = controller!!.duration
-        if (media == null) {
-            return
-        }
+        if (media == null) return
+
         episodeTitle.text = media.getEpisodeTitle()
         updatePosition(PlaybackPositionEvent(media.getPosition(), media.getDuration()))
         updatePlaybackSpeedButton(SpeedChangedEvent(PlaybackSpeedUtils.getCurrentPlaybackSpeed(media)))
@@ -340,14 +335,19 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     @Subscribe(threadMode = ThreadMode.MAIN)
     @Suppress("unused")
     fun bufferUpdate(event: BufferUpdateEvent) {
-        if (event.hasStarted()) {
-            progressIndicator.visibility = View.VISIBLE
-        } else if (event.hasEnded()) {
-            progressIndicator.visibility = View.GONE
-        } else if (controller != null && controller!!.isStreaming) {
-            sbPosition.setSecondaryProgress((event.progress * sbPosition.max).toInt())
-        } else {
-            sbPosition.setSecondaryProgress(0)
+        when {
+            event.hasStarted() -> {
+                progressIndicator.visibility = View.VISIBLE
+            }
+            event.hasEnded() -> {
+                progressIndicator.visibility = View.GONE
+            }
+            controller != null && controller!!.isStreaming -> {
+                sbPosition.setSecondaryProgress((event.progress * sbPosition.max).toInt())
+            }
+            else -> {
+                sbPosition.setSecondaryProgress(0)
+            }
         }
     }
 
@@ -363,7 +363,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         currentChapterIndex = ChapterUtils.getCurrentChapterIndex(controller!!.getMedia(), currentPosition)
         //        Log.d(TAG, "currentPosition " + Converter.getDurationStringLong(currentPosition));
         if (currentPosition == Playable.INVALID_TIME || duration == Playable.INVALID_TIME) {
-            Log.w(TAG, "Could not react to position observer update because of invalid time")
+            Log.w(TAG, "Could not react to position observer update because of invalid time $currentPosition $duration")
             return
         }
         txtvPosition.text = Converter.getDurationStringLong(currentPosition)
@@ -373,14 +373,14 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         if (showTimeLeft) {
             txtvLength.setContentDescription(getString(R.string.remaining_time,
                 Converter.getDurationStringLocalized(requireContext(), remainingTime.toLong())))
-            txtvLength.text = (if ((remainingTime > 0)) "-" else "") + Converter.getDurationStringLong(remainingTime)
+            txtvLength.text = (if (remainingTime > 0) "-" else "") + Converter.getDurationStringLong(remainingTime)
         } else {
             txtvLength.setContentDescription(getString(R.string.chapter_duration,
                 Converter.getDurationStringLocalized(requireContext(), duration.toLong())))
             txtvLength.text = Converter.getDurationStringLong(duration)
         }
 
-        if (!sbPosition.isPressed) {
+        if (!sbPosition.isPressed && event.duration > 0) {
             val progress: Float = (event.position.toFloat()) / event.duration
             sbPosition.progress = (progress * sbPosition.max).toInt()
         }
@@ -508,7 +508,6 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             Log.d(TAG, "getItem($position)")
 
             return when (position) {
-//                TODO: cover page is not very useful
                 FIRST_PAGE -> ItemDescriptionFragment()
                 SECOND_PAGE -> CoverFragment()
                 else -> ItemDescriptionFragment()

@@ -19,13 +19,6 @@ class SwipePreferencesFragment : PreferenceFragmentCompat() {
                 })
                 true
             }
-//        findPreference<Preference>(PREF_SWIPE_INBOX)?.onPreferenceClickListener =
-//            Preference.OnPreferenceClickListener {
-//                SwipeActionsDialog(requireContext(), InboxFragment.TAG).show (object : SwipeActionsDialog.Callback {
-//                    override fun onCall() {}
-//                })
-//                true
-//            }
         findPreference<Preference>(PREF_SWIPE_EPISODES)?.onPreferenceClickListener =
             Preference.OnPreferenceClickListener {
                 SwipeActionsDialog(requireContext(), AllEpisodesFragment.TAG).show (object : SwipeActionsDialog.Callback {
@@ -63,7 +56,6 @@ class SwipePreferencesFragment : PreferenceFragmentCompat() {
 
     companion object {
         private const val PREF_SWIPE_QUEUE = "prefSwipeQueue"
-//        private const val PREF_SWIPE_INBOX = "prefSwipeInbox"
 //        private const val PREF_SWIPE_STATISTICS = "prefSwipeStatistics"
         private const val PREF_SWIPE_EPISODES = "prefSwipeEpisodes"
         private const val PREF_SWIPE_DOWNLOADS = "prefSwipeDownloads"

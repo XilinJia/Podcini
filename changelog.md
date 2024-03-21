@@ -94,3 +94,14 @@
 * added share notes menu option in episode view
 * press on title area of an episode now opens the episode info faster and more economically - without horizontal swipe
 * press on the icon of an episode opens the episode info the original way - with horizontal swipe
+
+## 4.3.0
+
+* added more info about feeds in the online search view
+* fixed bug of preview not playing
+* disabled feed filters setting in preference
+* "open feed" is an action item on audio player top bar
+* added swipe action telltales in all episode lists
+* added NO_ACTION swipe action
+* all default swipe actions are set to NO_ACTION
+* cleaned up swipe preferences ui: statistics and individual subs removed

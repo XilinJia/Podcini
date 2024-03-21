@@ -18,6 +18,8 @@ import ac.mdiq.podcini.databinding.FilterDialogBinding
 import ac.mdiq.podcini.feed.FeedItemFilterGroup
 import ac.mdiq.podcini.databinding.FilterDialogRowBinding
 import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
+import ac.mdiq.podcini.ui.fragment.ItemDescriptionFragment
+import android.util.Log
 
 abstract class ItemFilterDialog : BottomSheetDialogFragment() {
     private lateinit var rows: LinearLayout
@@ -27,6 +29,7 @@ abstract class ItemFilterDialog : BottomSheetDialogFragment() {
         val binding = FilterDialogBinding.bind(layout)
         rows = binding.filterRows
         val filter = requireArguments().getSerializable(ARGUMENT_FILTER) as FeedItemFilter?
+        Log.d("ItemFilterDialog", "fragment onCreateView")
 
         //add filter rows
         for (item in FeedItemFilterGroup.entries) {

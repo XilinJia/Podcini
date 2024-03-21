@@ -65,12 +65,16 @@ class PlaybackServiceNotificationBuilder(private val context: Context) {
         try {
             cachedIcon = Glide.with(context)
                 .asBitmap()
-                .load(playable!!.getImageLocation())
+                .load(playable?.getImageLocation())
                 .apply(options)
                 .submit(iconSize, iconSize)
                 .get()
         } catch (e: ExecutionException) {
             try {
+                if (playable == null) {
+                    Log.e(TAG, "playable is null")
+                    return
+                }
                 cachedIcon = Glide.with(context)
                     .asBitmap()
                     .load(ImageResourceUtils.getFallbackImageLocation(playable!!))

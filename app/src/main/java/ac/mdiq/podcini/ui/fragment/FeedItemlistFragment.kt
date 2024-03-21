@@ -115,7 +115,15 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         adapter = FeedItemListAdapter(activity as MainActivity)
         adapter.setOnSelectModeListener(this)
         binding.recyclerView.adapter = adapter
+
         swipeActions = SwipeActions(this, TAG).attachTo(binding.recyclerView)
+        if (swipeActions.actions?.left != null) {
+            binding.header.leftActionIcon.setImageResource(swipeActions.actions!!.left!!.getActionIcon())
+        }
+        if (swipeActions.actions?.right != null) {
+            binding.header.rightActionIcon.setImageResource(swipeActions.actions!!.right!!.getActionIcon())
+        }
+
         binding.progressBar.visibility = View.VISIBLE
 
         val iconTintManager: ToolbarIconTintManager = object : ToolbarIconTintManager(
@@ -396,6 +404,16 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         if (feed != null && event.contains(feed!!)) {
             Log.d(TAG, "onFeedListChanged called")
             updateUi()
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onSwipeActionsChanged(event: SwipeActionsChangedEvent?) {
+        if (swipeActions.actions?.left != null) {
+            binding.header.leftActionIcon.setImageResource(swipeActions.actions!!.left!!.getActionIcon())
+        }
+        if (swipeActions.actions?.right != null) {
+            binding.header.rightActionIcon.setImageResource(swipeActions.actions!!.right!!.getActionIcon())
         }
     }
 

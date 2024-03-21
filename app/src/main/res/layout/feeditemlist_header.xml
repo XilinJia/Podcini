@@ -152,18 +152,61 @@
         tools:visibility="visible"
         tools:text="(!) Last refresh failed" />
 
-    <TextView
-        android:id="@+id/txtvInformation"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="2dp"
-        android:background="?android:attr/colorBackground"
-        android:foreground="?android:attr/selectableItemBackground"
-        android:visibility="gone"
-        android:gravity="center"
-        android:textColor="?attr/colorAccent"
-        tools:visibility="visible"
-        tools:text="(i) Information" />
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:id="@+id/left_action_icon"
+            android:scaleType="fitXY"
+            app:srcCompat="@drawable/ic_questionmark" />
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:scaleType="fitXY"
+            app:srcCompat="@drawable/baseline_arrow_left_alt_24" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"/>
+
+        <TextView
+            android:id="@+id/txtvInformation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="2dp"
+            android:background="?android:attr/colorBackground"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:visibility="gone"
+            android:gravity="center"
+            android:textColor="?attr/colorAccent"
+            tools:visibility="visible"
+            tools:text="(i) Information" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"/>
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:scaleType="fitXY"
+            app:srcCompat="@drawable/baseline_arrow_right_alt_24" />
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:id="@+id/right_action_icon"
+            android:scaleType="fitXY"
+            app:srcCompat="@drawable/ic_questionmark" />
+
+    </LinearLayout>
 
     <TextView
         android:id="@+id/txtvUpdatesDisabled"

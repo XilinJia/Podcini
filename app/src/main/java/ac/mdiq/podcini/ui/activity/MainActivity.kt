@@ -1,6 +1,5 @@
 package ac.mdiq.podcini.ui.activity
 
-//import ac.mdiq.podcini.ui.home.HomeFragment
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.MainActivityBinding
 import ac.mdiq.podcini.net.download.FeedUpdateManager
@@ -43,7 +42,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import android.widget.EditText
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.graphics.Insets

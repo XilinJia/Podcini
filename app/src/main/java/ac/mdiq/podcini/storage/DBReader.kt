@@ -867,7 +867,7 @@ object DBReader {
 //        getFeedList(adapter)
 
 //        TODO:
-        if (false || subscriptionsFilter != null) {
+        if (false && subscriptionsFilter != null) {
             feeds = subscriptionsFilter.filter(feeds, feedCounters as Map<Long?, Int>).toMutableList()
         }
 

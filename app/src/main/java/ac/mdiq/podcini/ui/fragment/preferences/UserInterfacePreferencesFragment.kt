@@ -64,11 +64,11 @@ class UserInterfacePreferencesFragment : PreferenceFragmentCompat() {
                 showFullNotificationButtonsDialog()
                 true
             }
-        findPreference<Preference>(UserPreferences.PREF_FILTER_FEED)?.onPreferenceClickListener =
-            (Preference.OnPreferenceClickListener {
-                SubscriptionsFilterDialog().show(childFragmentManager, "filter")
-                true
-            })
+//        findPreference<Preference>(UserPreferences.PREF_FILTER_FEED)?.onPreferenceClickListener =
+//            (Preference.OnPreferenceClickListener {
+//                SubscriptionsFilterDialog().show(childFragmentManager, "filter")
+//                true
+//            })
 
         findPreference<Preference>(UserPreferences.PREF_DRAWER_FEED_ORDER)?.onPreferenceClickListener =
             (Preference.OnPreferenceClickListener {

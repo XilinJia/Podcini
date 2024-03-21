@@ -14,13 +14,15 @@ Version 4.1 brings a more convenient player control and tags enhancements, while
 
 ## Screenshots
 
-<img src="./images/1_drawer1.jpg" width="238" /> <img src="./images/2_setting.jpg" width="238" /> <img src="./images/3_setting.jpg" width="238" />
+<img src="./images/1_drawer.jpg" width="238" /> <img src="./images/2_setting.jpg" width="238" /> <img src="./images/2_setting1.jpg" width="238" />
 
-<img src="./images/4_subscriptions.jpg" width="238" /> <img src="./images/5_queue.jpg" width="238" />  
+<img src="./images/3_subscriptions.jpg" width="238" /> <img src="./images/4_queue.jpg" width="238" />  
 
-<img src="./images/6_podcast.jpg" width="238" /> <img src="./images/7_podcast.jpg" width="238" /> <img src="./images/8_episode.jpg" width="238" />   
+<img src="./images/5_podcast.jpg" width="238" /> <img src="./images/5_podcast1.jpg" width="238" /> <img src="./images/6_episode.jpg" width="238" />   
 
-<img src="./images/9_speed.jpg" width="238" /> <img src="./images/10_player.jpg" width="238" />
+<img src="./images/7_speed.jpg" width="238" /> <img src="./images/8_player.jpg" width="238" />
+
+<img src="./images/9_swipe_setting.jpg" width="238" /> <img src="./images/9_swipe_setting1.jpg" width="238" /> <img src="./images/91_feed_search.jpg" width="238" />
 
 ## Changelogs
 

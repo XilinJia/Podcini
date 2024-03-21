@@ -161,7 +161,6 @@
                         android:text="@string/stop_preview"
                         android:visibility="gone"
                         tools:visibility="visible" />
-
                 </LinearLayout>
 
                 <ListView

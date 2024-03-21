@@ -33,7 +33,7 @@ class ItemDescriptionFragment : Fragment() {
     private var controller: PlaybackController? = null
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        Log.d(TAG, "Creating view")
+        Log.d(TAG, "fragment onCreateView")
         val binding = ItemDescriptionFragmentBinding.inflate(inflater)
 
         Log.d(TAG, "fragment onCreateView")

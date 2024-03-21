@@ -155,6 +155,7 @@ class ExoPlayerWrapper internal constructor(private val context: Context) {
 
     @Throws(IllegalStateException::class)
     fun prepare() {
+        if (mediaSource == null) return
         exoPlayer.setMediaSource(mediaSource!!, false)
         exoPlayer.prepare()
     }
@@ -320,18 +321,12 @@ class ExoPlayerWrapper internal constructor(private val context: Context) {
 
     val videoWidth: Int
         get() {
-            if (exoPlayer.videoFormat == null) {
-                return 0
-            }
-            return exoPlayer.videoFormat!!.width
+            return exoPlayer.videoFormat?.width ?: 0
         }
 
     val videoHeight: Int
         get() {
-            if (exoPlayer.videoFormat == null) {
-                return 0
-            }
-            return exoPlayer.videoFormat!!.height
+            return exoPlayer.videoFormat?.height ?: 0
         }
 
     fun setOnBufferingUpdateListener(bufferingUpdateListener: Consumer<Int>?) {

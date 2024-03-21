@@ -5,10 +5,6 @@
         android:key="prefSwipeQueue"
         android:title="@string/queue_label"/>
 
-<!--    <Preference-->
-<!--        android:key="prefSwipeInbox"-->
-<!--        android:title="@string/inbox_label"/>-->
-
     <Preference
         android:key="prefSwipeEpisodes"
         android:title="@string/episodes_label"/>
@@ -21,12 +17,12 @@
         android:key="prefSwipeHistory"
         android:title="@string/playback_history_label"/>
 
-    <Preference
-        android:key="prefSwipeStatistics"
-        android:title="@string/statistics_label"/>
+<!--    <Preference-->
+<!--        android:key="prefSwipeStatistics"-->
+<!--        android:title="@string/statistics_label"/>-->
 
-    <Preference
-        android:key="prefSwipeFeed"
-        android:title="@string/individual_subscription"/>
+<!--    <Preference-->
+<!--        android:key="prefSwipeFeed"-->
+<!--        android:title="@string/individual_subscription"/>-->
 
 </PreferenceScreen>

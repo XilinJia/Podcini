@@ -22,17 +22,58 @@
             app:navigationIcon="?homeAsUpIndicator"
             app:title="@string/queue_label" />
 
-        <TextView
-            android:id="@+id/info_bar"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/toolbar"
-            android:textSize="12sp"
             android:layout_marginTop="-12dp"
-            android:layout_marginLeft="60dp"
-            android:layout_marginStart="60dp"
-            android:layout_marginBottom="8dp"
-            tools:text="12 Episodes - Time remaining: 12 hours" />
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:id="@+id/left_action_icon"
+                android:scaleType="fitXY"
+                app:srcCompat="@drawable/ic_questionmark" />
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:scaleType="fitXY"
+                app:srcCompat="@drawable/baseline_arrow_left_alt_24" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"/>
+
+            <TextView
+                android:id="@+id/info_bar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:layout_gravity="center_vertical"
+                tools:text="12 Episodes - 12 hours" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"/>
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:scaleType="fitXY"
+                app:srcCompat="@drawable/baseline_arrow_right_alt_24" />
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:id="@+id/right_action_icon"
+                android:scaleType="fitXY"
+                app:srcCompat="@drawable/ic_questionmark" />
+
+        </LinearLayout>
 
     </com.google.android.material.appbar.AppBarLayout>
 

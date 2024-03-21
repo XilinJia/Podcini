@@ -1,5 +1,11 @@
 package ac.mdiq.podcini.preferences
 
+import ac.mdiq.podcini.storage.model.download.ProxyConfig
+import ac.mdiq.podcini.storage.model.feed.FeedCounter
+import ac.mdiq.podcini.storage.model.feed.FeedPreferences.NewEpisodesAction
+import ac.mdiq.podcini.storage.model.feed.SortOrder
+import ac.mdiq.podcini.storage.model.feed.SubscriptionsFilter
+import ac.mdiq.podcini.storage.model.playback.MediaType
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
@@ -9,12 +15,6 @@ import android.view.KeyEvent
 import androidx.annotation.VisibleForTesting
 import androidx.core.app.NotificationCompat
 import androidx.preference.PreferenceManager
-import ac.mdiq.podcini.storage.model.download.ProxyConfig
-import ac.mdiq.podcini.storage.model.feed.FeedCounter
-import ac.mdiq.podcini.storage.model.feed.FeedPreferences.NewEpisodesAction
-import ac.mdiq.podcini.storage.model.feed.SortOrder
-import ac.mdiq.podcini.storage.model.feed.SubscriptionsFilter
-import ac.mdiq.podcini.storage.model.playback.MediaType
 import org.json.JSONArray
 import org.json.JSONException
 import java.io.File
@@ -847,7 +847,7 @@ object UserPreferences {
 //            prefs.edit().putString(PREF_INBOX_SORTED_ORDER, "" + sortOrder!!.code).apply()
 //        }
 
-    @JvmStatic
+//    @JvmStatic
     var subscriptionsFilter: SubscriptionsFilter
         get() {
             val value = prefs.getString(PREF_FILTER_FEED, "")

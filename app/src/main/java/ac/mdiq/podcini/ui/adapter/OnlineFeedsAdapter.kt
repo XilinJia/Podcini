@@ -1,5 +1,8 @@
-package ac.mdiq.podcini.ui.adapter.itunes
+package ac.mdiq.podcini.ui.adapter
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.OnlinePodcastListitemBinding
+import ac.mdiq.podcini.net.discovery.PodcastSearchResult
 import ac.mdiq.podcini.ui.activity.MainActivity
 import android.content.Context
 import android.view.View
@@ -7,40 +10,27 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.media3.common.util.UnstableApi
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.bitmap.FitCenter
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.ItunesPodcastListitemBinding
-import ac.mdiq.podcini.net.discovery.PodcastSearchResult
-import androidx.media3.common.util.UnstableApi
 
-class ItunesAdapter(
-        /**
-         * Related Context
-         */
-        private val context: Context, objects: List<PodcastSearchResult>
-) : ArrayAdapter<PodcastSearchResult?>(context, 0, objects) {
-    /**
-     * List holding the podcasts found in the search
-     */
+class OnlineFeedsAdapter(private val context: Context, objects: List<PodcastSearchResult>) :
+    ArrayAdapter<PodcastSearchResult?>(context, 0, objects) {
+
+//    List holding the podcasts found in the search
     private val data: List<PodcastSearchResult> = objects
 
     @UnstableApi override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        //Current podcast
         val podcast: PodcastSearchResult = data[position]
-
-        //ViewHolder
         val viewHolder: PodcastViewHolder
-
-        //Resulting view
         val view: View
 
         //Handle view holder stuff
         if (convertView == null) {
-            view = (context as MainActivity).layoutInflater.inflate(R.layout.itunes_podcast_listitem, parent, false)
+            view = (context as MainActivity).layoutInflater.inflate(R.layout.online_podcast_listitem, parent, false)
             viewHolder = PodcastViewHolder(view)
             view.tag = viewHolder
         } else {
@@ -50,15 +40,28 @@ class ItunesAdapter(
 
         // Set the title
         viewHolder.titleView.text = podcast.title
-        if (podcast.author != null && podcast.author.trim { it <= ' ' }.isNotEmpty()) {
-            viewHolder.authorView.text = podcast.author
-            viewHolder.authorView.visibility = View.VISIBLE
-        } else if (podcast.feedUrl != null && !podcast.feedUrl.contains("itunes.apple.com")) {
-            viewHolder.authorView.text = podcast.feedUrl
-            viewHolder.authorView.visibility = View.VISIBLE
-        } else {
-            viewHolder.authorView.visibility = View.GONE
+        when {
+            !podcast.author.isNullOrBlank() -> {
+                viewHolder.authorView.text = podcast.author.trim { it <= ' ' }
+                viewHolder.authorView.visibility = View.VISIBLE
+            }
+            podcast.feedUrl != null && !podcast.feedUrl.contains("itunes.apple.com") -> {
+                viewHolder.authorView.text = podcast.feedUrl
+                viewHolder.authorView.visibility = View.VISIBLE
+            }
+            else -> {
+                viewHolder.authorView.visibility = View.INVISIBLE
+            }
         }
+        viewHolder.source.text = podcast.source + ": " + podcast.feedUrl
+        if (podcast.count != null) {
+            viewHolder.countView.text = podcast.count.toString() + " episodes"
+            viewHolder.countView.visibility = View.VISIBLE
+        } else viewHolder.countView.visibility = View.INVISIBLE
+        if (podcast.update != null) {
+            viewHolder.updateView.text = podcast.update
+            viewHolder.updateView.visibility = View.VISIBLE
+        } else viewHolder.updateView.visibility = View.INVISIBLE
 
         //Update the empty imageView with the image from the feed
         Glide.with(context)
@@ -71,25 +74,22 @@ class ItunesAdapter(
                 .dontAnimate())
             .into(viewHolder.coverView)
 
-        //Feed the grid view
         return view
     }
 
-    /**
-     * View holder object for the GridView
-     */
     internal class PodcastViewHolder(view: View) {
-        val binding = ItunesPodcastListitemBinding.bind(view)
-        /**
-         * ImageView holding the Podcast image
-         */
+        val binding = OnlinePodcastListitemBinding.bind(view)
+
         val coverView: ImageView = binding.imgvCover
 
-        /**
-         * TextView holding the Podcast title
-         */
         val titleView: TextView = binding.txtvTitle
 
         val authorView: TextView = binding.txtvAuthor
+
+        val countView: TextView = binding.count
+
+        val updateView: TextView = binding.update
+
+        val source: TextView = binding.source
     }
 }

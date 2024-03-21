@@ -240,7 +240,7 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
         if (showTimeLeft) {
             txtvLength.setContentDescription(getString(R.string.remaining_time,
                 Converter.getDurationStringLocalized(requireContext(), remainingTime.toLong())))
-            txtvLength.text = (if ((remainingTime > 0)) "-" else "") + Converter.getDurationStringLong(remainingTime)
+            txtvLength.text = (if (remainingTime > 0) "-" else "") + Converter.getDurationStringLong(remainingTime)
         } else {
             txtvLength.setContentDescription(getString(R.string.chapter_duration,
                 Converter.getDurationStringLocalized(requireContext(), duration.toLong())))
@@ -289,9 +289,7 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
         }
 
         disposable?.dispose()
-        disposable = Maybe.fromCallable<Playable?> {
-            controller?.getMedia()
-        }
+        disposable = Maybe.fromCallable<Playable?> { controller?.getMedia() }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ media: Playable? -> this.updateUi(media) },

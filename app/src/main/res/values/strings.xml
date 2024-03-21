@@ -217,6 +217,8 @@
         <item quantity="other">%d downloaded episodes deleted.</item>
     </plurals>
 
+    <string name="no_action_label">No action</string>
+
     <string name="removed_inbox_label">Removed from inbox</string>
     <string name="mark_read_label">Mark as played</string>
     <string name="toggle_played_label">Toggle played state</string>

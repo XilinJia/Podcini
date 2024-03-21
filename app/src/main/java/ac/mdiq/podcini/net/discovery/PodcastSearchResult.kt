@@ -4,28 +4,21 @@ import ac.mdiq.podcini.net.sync.gpoddernet.model.GpodnetPodcast
 import de.mfietz.fyydlin.SearchHit
 import org.json.JSONException
 import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.*
 
 class PodcastSearchResult private constructor(
-        /**
-         * The name of the podcast
-         */
         val title: String,
-        /**
-         * URL of the podcast image
-         */
         val imageUrl: String?,
-        /**
-         * URL of the podcast feed
-         */
         val feedUrl: String?,
-        /**
-         * artistName of the podcast feed
-         */
-        val author: String?
+        val author: String?,
+        val count: Int?,
+        val update: String?,
+        val source: String
 ) {
     companion object {
         fun dummy(): PodcastSearchResult {
-            return PodcastSearchResult("", "", "", "")
+            return PodcastSearchResult("", "", "", "", 0, "", "dummy")
         }
 
         /**
@@ -39,7 +32,7 @@ class PodcastSearchResult private constructor(
             val imageUrl: String? = json.optString("artworkUrl100").takeIf { it.isNotEmpty() }
             val feedUrl: String? = json.optString("feedUrl").takeIf { it.isNotEmpty() }
             val author: String? = json.optString("artistName").takeIf { it.isNotEmpty() }
-            return PodcastSearchResult(title, imageUrl, feedUrl, author)
+            return PodcastSearchResult(title, imageUrl, feedUrl, author, null, null, "Itunes")
         }
 
         /**
@@ -71,21 +64,15 @@ class PodcastSearchResult private constructor(
             } catch (e: Exception) {
                 // Some feeds have empty artist
             }
-            return PodcastSearchResult(title, imageUrl, feedUrl, author)
+            return PodcastSearchResult(title, imageUrl, feedUrl, author, null, null, "Toplist")
         }
 
         fun fromFyyd(searchHit: SearchHit): PodcastSearchResult {
-            return PodcastSearchResult(searchHit.title,
-                searchHit.thumbImageURL,
-                searchHit.xmlUrl,
-                searchHit.author)
+            return PodcastSearchResult(searchHit.title, searchHit.thumbImageURL, searchHit.xmlUrl, searchHit.author, null, null, "Fyyd")
         }
 
         fun fromGpodder(searchHit: GpodnetPodcast): PodcastSearchResult {
-            return PodcastSearchResult(searchHit.title,
-                searchHit.logoUrl,
-                searchHit.url,
-                searchHit.author)
+            return PodcastSearchResult(searchHit.title, searchHit.logoUrl, searchHit.url, searchHit.author, null, null, "GPodder")
         }
 
         fun fromPodcastIndex(json: JSONObject): PodcastSearchResult {
@@ -93,7 +80,15 @@ class PodcastSearchResult private constructor(
             val imageUrl: String? = json.optString("image").takeIf { it.isNotEmpty() }
             val feedUrl: String? = json.optString("url").takeIf { it.isNotEmpty() }
             val author: String? = json.optString("author").takeIf { it.isNotEmpty() }
-            return PodcastSearchResult(title, imageUrl, feedUrl, author)
+            var count: Int? = json.optInt("episodeCount", -1)
+            if (count != null && count < 0) count = null
+            val updateInt: Int = json.optInt("lastUpdateTime", -1)
+            var update: String? = null
+            if (updateInt > 0) {
+                val format = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+                update = format.format(updateInt.toLong() * 1000)
+            }
+            return PodcastSearchResult(title, imageUrl, feedUrl, author, count, update, "PodcastIndex")
         }
     }
 }

@@ -1,48 +1,47 @@
 package ac.mdiq.podcini.ui.fragment
 
-import ac.mdiq.podcini.ui.activity.MainActivity
-import android.os.Bundle
-import android.util.Log
-import android.view.*
-import android.widget.ProgressBar
-import androidx.appcompat.widget.Toolbar
-import androidx.fragment.app.Fragment
-import androidx.media3.common.util.UnstableApi
-import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.snackbar.Snackbar
-import com.leinardi.android.speeddial.SpeedDialActionItem
-import com.leinardi.android.speeddial.SpeedDialView
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.databinding.SimpleListFragmentBinding
-import ac.mdiq.podcini.feed.util.PlaybackSpeedUtils
-import ac.mdiq.podcini.ui.adapter.EpisodeItemListAdapter
-import ac.mdiq.podcini.ui.adapter.SelectableAdapter
-import ac.mdiq.podcini.ui.adapter.actionbutton.DeleteActionButton
-import ac.mdiq.podcini.ui.menuhandler.MenuItemUtils
-import ac.mdiq.podcini.storage.DBReader
-import ac.mdiq.podcini.util.FeedItemUtil
 import ac.mdiq.podcini.net.download.FeedUpdateManager
-import ac.mdiq.podcini.ui.dialog.ItemSortDialog
-import ac.mdiq.podcini.util.event.EpisodeDownloadEvent
+import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.playback.event.PlaybackPositionEvent
-import ac.mdiq.podcini.ui.fragment.actions.EpisodeMultiSelectActionHandler
-import ac.mdiq.podcini.ui.fragment.swipeactions.SwipeActions
-import ac.mdiq.podcini.ui.menuhandler.FeedItemMenuHandler
+import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
 import ac.mdiq.podcini.storage.model.feed.SortOrder
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
-import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.adapter.EpisodeItemListAdapter
+import ac.mdiq.podcini.ui.adapter.SelectableAdapter
+import ac.mdiq.podcini.ui.adapter.actionbutton.DeleteActionButton
+import ac.mdiq.podcini.ui.dialog.ItemSortDialog
+import ac.mdiq.podcini.ui.fragment.actions.EpisodeMultiSelectActionHandler
+import ac.mdiq.podcini.ui.fragment.swipeactions.SwipeActions
+import ac.mdiq.podcini.ui.menuhandler.FeedItemMenuHandler
+import ac.mdiq.podcini.ui.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.view.EmptyViewHandler
 import ac.mdiq.podcini.ui.view.EpisodeItemListRecyclerView
 import ac.mdiq.podcini.ui.view.LiftOnScrollListener
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
-import ac.mdiq.podcini.util.Converter
+import ac.mdiq.podcini.util.FeedItemUtil
+import ac.mdiq.podcini.util.event.EpisodeDownloadEvent
 import ac.mdiq.podcini.util.event.FeedItemEvent
+import ac.mdiq.podcini.util.event.SwipeActionsChangedEvent
+import android.os.Bundle
+import android.util.Log
+import android.view.*
+import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.appcompat.widget.Toolbar
+import androidx.fragment.app.Fragment
+import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
+import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.snackbar.Snackbar
+import com.leinardi.android.speeddial.SpeedDialActionItem
+import com.leinardi.android.speeddial.SpeedDialView
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -51,8 +50,6 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashSet
 
 /**
  * Displays all completed downloads and provides a button to delete them.
@@ -61,6 +58,7 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
     private var runningDownloads: Set<String>? = HashSet()
     private var items: MutableList<FeedItem> = mutableListOf()
 
+    private lateinit var binding: SimpleListFragmentBinding
     private lateinit var infoBar: TextView
     private lateinit var adapter: CompletedDownloadsListAdapter
     private lateinit var toolbar: MaterialToolbar
@@ -77,7 +75,7 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                                            savedInstanceState: Bundle?
     ): View {
-        val binding = SimpleListFragmentBinding.inflate(inflater)
+        binding = SimpleListFragmentBinding.inflate(inflater)
 
         Log.d(TAG, "fragment onCreateView")
         toolbar = binding.toolbar
@@ -101,8 +99,16 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
         adapter.setOnSelectModeListener(this)
         recyclerView.adapter = adapter
         recyclerView.addOnScrollListener(LiftOnScrollListener(binding.appbar))
+
         swipeActions = SwipeActions(this, TAG).attachTo(recyclerView)
         swipeActions.setFilter(FeedItemFilter(FeedItemFilter.DOWNLOADED))
+
+        if (swipeActions.actions?.left != null) {
+            binding.leftActionIcon.setImageResource(swipeActions.actions!!.left!!.getActionIcon())
+        }
+        if (swipeActions.actions?.right != null) {
+            binding.rightActionIcon.setImageResource(swipeActions.actions!!.right!!.getActionIcon())
+        }
 
         val animator: RecyclerView.ItemAnimator? = recyclerView.itemAnimator
         if (animator is SimpleItemAnimator) {
@@ -291,6 +297,16 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
         loadItems()
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onSwipeActionsChanged(event: SwipeActionsChangedEvent?) {
+        if (swipeActions.actions?.left != null) {
+            binding.leftActionIcon.setImageResource(swipeActions.actions!!.left!!.getActionIcon())
+        }
+        if (swipeActions.actions?.right != null) {
+            binding.rightActionIcon.setImageResource(swipeActions.actions!!.right!!.getActionIcon())
+        }
+    }
+
     private fun loadItems() {
         disposable?.dispose()
 
@@ -337,7 +353,7 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
             for (item in items) {
                 sizeMB += item.media?.size?:0
             }
-            info += " • " + getString(R.string.size) + " : " + (sizeMB / 1000000) + " MB"
+            info += " • " + (sizeMB / 1000000) + " MB"
         }
         infoBar.text = info
     }

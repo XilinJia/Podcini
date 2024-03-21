@@ -58,6 +58,7 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
     protected var hasMoreItems: Boolean = false
     private var displayUpArrow = false
 
+    lateinit var binding: EpisodesListFragmentBinding
     lateinit var recyclerView: EpisodeItemListRecyclerView
     lateinit var emptyView: EmptyViewHandler
     lateinit var speedDialView: SpeedDialView
@@ -72,6 +73,122 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
 
     protected var disposable: Disposable? = null
     protected lateinit var txtvInformation: TextView
+
+    @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        super.onCreateView(inflater, container, savedInstanceState)
+
+        binding = EpisodesListFragmentBinding.inflate(inflater)
+        Log.d(TAG, "fragment onCreateView")
+
+        txtvInformation = binding.txtvInformation
+        toolbar = binding.toolbar
+        toolbar.setOnMenuItemClickListener(this)
+        toolbar.setOnLongClickListener {
+            recyclerView.scrollToPosition(5)
+            recyclerView.post { recyclerView.smoothScrollToPosition(0) }
+            false
+        }
+        displayUpArrow = parentFragmentManager.backStackEntryCount != 0
+        if (savedInstanceState != null) {
+            displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
+        }
+        (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
+
+        recyclerView = binding.recyclerView
+        recyclerView.setRecycledViewPool((activity as MainActivity).recycledViewPool)
+        setupLoadMoreScrollListener()
+        recyclerView.addOnScrollListener(LiftOnScrollListener(binding.appbar))
+
+        swipeActions = SwipeActions(this, getFragmentTag()).attachTo(recyclerView)
+        swipeActions.setFilter(getFilter())
+
+        if (swipeActions.actions?.left != null) {
+            binding.leftActionIcon.setImageResource(swipeActions.actions!!.left!!.getActionIcon())
+        }
+        if (swipeActions.actions?.right != null) {
+            binding.rightActionIcon.setImageResource(swipeActions.actions!!.right!!.getActionIcon())
+        }
+
+        val animator: RecyclerView.ItemAnimator? = recyclerView.itemAnimator
+        if (animator is SimpleItemAnimator) {
+            animator.supportsChangeAnimations = false
+        }
+
+        swipeRefreshLayout = binding.swipeRefresh
+        swipeRefreshLayout.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
+        swipeRefreshLayout.setOnRefreshListener {
+            FeedUpdateManager.runOnceOrAsk(requireContext())
+        }
+
+        listAdapter = object : EpisodeItemListAdapter(activity as MainActivity) {
+            override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
+                super.onCreateContextMenu(menu, v, menuInfo)
+//                if (!inActionMode()) {
+//                    menu.findItem(R.id.multi_select).setVisible(true)
+//                }
+                MenuItemUtils.setOnClickListeners(menu
+                ) { item: MenuItem ->
+                    this@EpisodesListFragment.onContextItemSelected(item)
+                }
+            }
+        }
+        listAdapter.setOnSelectModeListener(this)
+        recyclerView.adapter = listAdapter
+        progressBar = binding.progressBar
+        progressBar.visibility = View.VISIBLE
+
+        emptyView = EmptyViewHandler(requireContext())
+        emptyView.attachToRecyclerView(recyclerView)
+        emptyView.setIcon(R.drawable.ic_feed)
+        emptyView.setTitle(R.string.no_all_episodes_head_label)
+        emptyView.setMessage(R.string.no_all_episodes_label)
+        emptyView.updateAdapter(listAdapter)
+        emptyView.hide()
+
+        val multiSelectDial = MultiSelectSpeedDialBinding.bind(binding.root)
+        speedDialView = multiSelectDial.fabSD
+        speedDialView.overlayLayout = multiSelectDial.fabSDOverlay
+        speedDialView.inflate(R.menu.episodes_apply_action_speeddial)
+        speedDialView.setOnChangeListener(object : SpeedDialView.OnChangeListener {
+            override fun onMainActionSelected(): Boolean {
+                return false
+            }
+
+            override fun onToggleChanged(open: Boolean) {
+                if (open && listAdapter.selectedCount == 0) {
+                    (activity as MainActivity).showSnackbarAbovePlayer(R.string.no_items_selected,
+                        Snackbar.LENGTH_SHORT)
+                    speedDialView.close()
+                }
+            }
+        })
+        speedDialView.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
+            var confirmationString = 0
+            if (listAdapter.selectedItems.size >= 25 || listAdapter.shouldSelectLazyLoadedItems()) {
+                // Should ask for confirmation
+                if (actionItem.id == R.id.mark_read_batch) {
+                    confirmationString = R.string.multi_select_mark_played_confirmation
+                } else if (actionItem.id == R.id.mark_unread_batch) {
+                    confirmationString = R.string.multi_select_mark_unplayed_confirmation
+                }
+            }
+            if (confirmationString == 0) {
+                performMultiSelectAction(actionItem.id)
+            } else {
+                object : ConfirmationDialog(activity as MainActivity, R.string.multi_select, confirmationString) {
+                    override fun onConfirmButtonPressed(dialog: DialogInterface) {
+                        performMultiSelectAction(actionItem.id)
+                    }
+                }.createNewDialog().show()
+            }
+            true
+        }
+
+        EventBus.getDefault().register(this)
+        loadItems()
+
+        return binding.root
+    }
 
     override fun onResume() {
         super.onResume()
@@ -124,115 +241,6 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
                 return FeedItemMenuHandler.onMenuItemClicked(this, item.itemId, selectedItem)
             }
         }
-    }
-
-    @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        super.onCreateView(inflater, container, savedInstanceState)
-
-        val viewBinding = EpisodesListFragmentBinding.inflate(inflater)
-        Log.d(TAG, "fragment onCreateView")
-
-        txtvInformation = viewBinding.txtvInformation
-        toolbar = viewBinding.toolbar
-        toolbar.setOnMenuItemClickListener(this)
-        toolbar.setOnLongClickListener {
-            recyclerView.scrollToPosition(5)
-            recyclerView.post { recyclerView.smoothScrollToPosition(0) }
-            false
-        }
-        displayUpArrow = parentFragmentManager.backStackEntryCount != 0
-        if (savedInstanceState != null) {
-            displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
-        }
-        (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
-
-        recyclerView = viewBinding.recyclerView
-        recyclerView.setRecycledViewPool((activity as MainActivity).recycledViewPool)
-        setupLoadMoreScrollListener()
-        recyclerView.addOnScrollListener(LiftOnScrollListener(viewBinding.appbar))
-
-        swipeActions = SwipeActions(this, getFragmentTag()).attachTo(recyclerView)
-        swipeActions.setFilter(getFilter())
-        
-        val animator: RecyclerView.ItemAnimator? = recyclerView.itemAnimator
-        if (animator is SimpleItemAnimator) {
-            animator.supportsChangeAnimations = false
-        }
-
-        swipeRefreshLayout = viewBinding.swipeRefresh
-        swipeRefreshLayout.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
-        swipeRefreshLayout.setOnRefreshListener {
-            FeedUpdateManager.runOnceOrAsk(requireContext())
-        }
-
-        listAdapter = object : EpisodeItemListAdapter(activity as MainActivity) {
-            override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
-                super.onCreateContextMenu(menu, v, menuInfo)
-//                if (!inActionMode()) {
-//                    menu.findItem(R.id.multi_select).setVisible(true)
-//                }
-                MenuItemUtils.setOnClickListeners(menu
-                ) { item: MenuItem ->
-                    this@EpisodesListFragment.onContextItemSelected(item)
-                }
-            }
-        }
-        listAdapter.setOnSelectModeListener(this)
-        recyclerView.adapter = listAdapter
-        progressBar = viewBinding.progressBar
-        progressBar.visibility = View.VISIBLE
-
-        emptyView = EmptyViewHandler(requireContext())
-        emptyView.attachToRecyclerView(recyclerView)
-        emptyView.setIcon(R.drawable.ic_feed)
-        emptyView.setTitle(R.string.no_all_episodes_head_label)
-        emptyView.setMessage(R.string.no_all_episodes_label)
-        emptyView.updateAdapter(listAdapter)
-        emptyView.hide()
-
-        val multiSelectDial = MultiSelectSpeedDialBinding.bind(viewBinding.root)
-        speedDialView = multiSelectDial.fabSD
-        speedDialView.overlayLayout = multiSelectDial.fabSDOverlay
-        speedDialView.inflate(R.menu.episodes_apply_action_speeddial)
-        speedDialView.setOnChangeListener(object : SpeedDialView.OnChangeListener {
-            override fun onMainActionSelected(): Boolean {
-                return false
-            }
-
-            override fun onToggleChanged(open: Boolean) {
-                if (open && listAdapter.selectedCount == 0) {
-                    (activity as MainActivity).showSnackbarAbovePlayer(R.string.no_items_selected,
-                        Snackbar.LENGTH_SHORT)
-                    speedDialView.close()
-                }
-            }
-        })
-        speedDialView.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
-            var confirmationString = 0
-            if (listAdapter.selectedItems.size >= 25 || listAdapter.shouldSelectLazyLoadedItems()) {
-                // Should ask for confirmation
-                if (actionItem.id == R.id.mark_read_batch) {
-                    confirmationString = R.string.multi_select_mark_played_confirmation
-                } else if (actionItem.id == R.id.mark_unread_batch) {
-                    confirmationString = R.string.multi_select_mark_unplayed_confirmation
-                }
-            }
-            if (confirmationString == 0) {
-                performMultiSelectAction(actionItem.id)
-            } else {
-                object : ConfirmationDialog(activity as MainActivity, R.string.multi_select, confirmationString) {
-                    override fun onConfirmButtonPressed(dialog: DialogInterface) {
-                        performMultiSelectAction(actionItem.id)
-                    }
-                }.createNewDialog().show()
-            }
-            true
-        }
-
-        EventBus.getDefault().register(this)
-        loadItems()
-
-        return viewBinding.root
     }
 
     @UnstableApi private fun performMultiSelectAction(actionItemId: Int) {
@@ -377,6 +385,16 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onFeedListChanged(event: FeedListUpdateEvent?) {
         loadItems()
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onSwipeActionsChanged(event: SwipeActionsChangedEvent?) {
+        if (swipeActions.actions?.left != null) {
+            binding.leftActionIcon.setImageResource(swipeActions.actions!!.left!!.getActionIcon())
+        }
+        if (swipeActions.actions?.right != null) {
+            binding.rightActionIcon.setImageResource(swipeActions.actions!!.right!!.getActionIcon())
+        }
     }
 
     fun loadItems() {

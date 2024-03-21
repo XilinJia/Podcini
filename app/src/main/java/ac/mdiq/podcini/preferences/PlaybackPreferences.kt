@@ -92,8 +92,7 @@ class PlaybackPreferences private constructor() : OnSharedPreferenceChangeListen
         @JvmStatic
         fun init(context: Context) {
             instance = PlaybackPreferences()
-            prefs = PreferenceManager.getDefaultSharedPreferences(
-                context!!)
+            prefs = PreferenceManager.getDefaultSharedPreferences(context)
             prefs?.registerOnSharedPreferenceChangeListener(instance)
         }
 
@@ -143,10 +142,9 @@ class PlaybackPreferences private constructor() : OnSharedPreferenceChangeListen
                 editor.putLong(PREF_CURRENTLY_PLAYING_MEDIA_TYPE, playable.getPlayableType().toLong())
                 editor.putBoolean(PREF_CURRENT_EPISODE_IS_VIDEO, playable.getMediaType() == MediaType.VIDEO)
                 if (playable is FeedMedia) {
-                    val feedMedia = playable
-                    val itemId = feedMedia.getItem()?.feed?.id
+                    val itemId = playable.getItem()?.feed?.id
                     if (itemId != null) editor.putLong(PREF_CURRENTLY_PLAYING_FEED_ID, itemId)
-                    editor.putLong(PREF_CURRENTLY_PLAYING_FEEDMEDIA_ID, feedMedia.id)
+                    editor.putLong(PREF_CURRENTLY_PLAYING_FEEDMEDIA_ID, playable.id)
                 } else {
                     editor.putLong(PREF_CURRENTLY_PLAYING_FEED_ID, NO_MEDIA_PLAYING)
                     editor.putLong(PREF_CURRENTLY_PLAYING_FEEDMEDIA_ID, NO_MEDIA_PLAYING)

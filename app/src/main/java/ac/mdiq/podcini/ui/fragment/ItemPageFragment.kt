@@ -145,9 +145,8 @@ class ItemPageFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     @UnstableApi private fun openPodcast() {
-        if (item == null) {
-            return
-        }
+        if (item == null) return
+
         val fragment: Fragment = FeedItemlistFragment.newInstance(item!!.feedId)
         (activity as MainActivity).loadChildFragment(fragment)
     }

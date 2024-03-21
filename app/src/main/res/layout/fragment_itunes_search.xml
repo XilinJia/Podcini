@@ -41,7 +41,7 @@
         android:paddingTop="@dimen/list_vertical_padding"
         android:stretchMode="columnWidth"
         android:verticalSpacing="8dp"
-        tools:listitem="@layout/itunes_podcast_listitem" />
+        tools:listitem="@layout/online_podcast_listitem" />
 
     <TextView
         android:id="@android:id/empty"

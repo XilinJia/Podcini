@@ -118,21 +118,23 @@ object ChapterUtils {
             if (playable.getLocalMediaUrl() == null) {
                 throw IOException("No local url")
             }
-            val source = File(playable.getLocalMediaUrl()?:"")
+            val source = File(playable.getLocalMediaUrl() ?: "")
             if (!source.exists()) {
                 throw IOException("Local file does not exist")
             }
             return CountingInputStream(BufferedInputStream(FileInputStream(source)))
-        } else if (playable.getStreamUrl() != null && playable.getStreamUrl()!!.startsWith(ContentResolver.SCHEME_CONTENT)) {
-            val uri = Uri.parse(playable.getStreamUrl())
-            return CountingInputStream(BufferedInputStream(context.contentResolver.openInputStream(uri)))
         } else {
-            val request: Request = Builder().url(playable.getStreamUrl()?:"").build()
-            val response = getHttpClient().newCall(request).execute()
-            if (response.body == null) {
-                throw IOException("Body is null")
+            val streamurl = playable.getStreamUrl()
+            if (streamurl != null && streamurl.startsWith(ContentResolver.SCHEME_CONTENT)) {
+                val uri = Uri.parse(streamurl)
+                return CountingInputStream(BufferedInputStream(context.contentResolver.openInputStream(uri)))
+            } else {
+                if (streamurl.isNullOrEmpty()) throw IOException("stream url is null of empty")
+                val request: Request = Builder().url(streamurl).build()
+                val response = getHttpClient().newCall(request).execute()
+                if (response.body == null) throw IOException("Body is null")
+                return CountingInputStream(BufferedInputStream(response.body!!.byteStream()))
             }
-            return CountingInputStream(BufferedInputStream(response.body!!.byteStream()))
         }
     }
 

@@ -58,9 +58,9 @@ class PodDBAdapter private constructor() {
      *
      * @return the id of the entry
      */
-    private fun setFeed(feed: Feed?): Long {
+    private fun setFeed(feed: Feed): Long {
         val values = ContentValues()
-        values.put(KEY_TITLE, feed!!.feedTitle)
+        values.put(KEY_TITLE, feed.feedTitle)
         values.put(KEY_LINK, feed.link)
         values.put(KEY_DESCRIPTION, feed.description)
         values.put(KEY_PAYMENT_LINK, FeedFunding.getPaymentLinksAsString(feed.paymentLinks))
@@ -77,7 +77,7 @@ class PodDBAdapter private constructor() {
 
         values.put(KEY_IS_PAGED, feed.isPaged)
         values.put(KEY_NEXT_PAGE_LINK, feed.nextPageLink)
-        if (feed.itemFilter != null && feed.itemFilter!!.values.isNotEmpty()) {
+        if (!feed.itemFilter?.values.isNullOrEmpty()) {
             values.put(KEY_HIDE, TextUtils.join(",", feed.itemFilter!!.values))
         } else {
             values.put(KEY_HIDE, "")
@@ -97,8 +97,9 @@ class PodDBAdapter private constructor() {
         return feed.id
     }
 
-    fun setFeedPreferences(prefs: FeedPreferences?) {
-        require(prefs!!.feedID != 0L) { "Feed ID of preference must not be null" }
+    fun setFeedPreferences(prefs: FeedPreferences) {
+        require(prefs.feedID != 0L) { "Feed ID of preference must not be null" }
+
         val values = ContentValues()
         values.put(KEY_AUTO_DOWNLOAD_ENABLED, prefs.autoDownload)
         values.put(KEY_KEEP_UPDATED, prefs.keepUpdated)
@@ -223,7 +224,7 @@ class PodDBAdapter private constructor() {
                     }
                 }
                 if (feed.preferences != null) {
-                    setFeedPreferences(feed.preferences)
+                    setFeedPreferences(feed.preferences!!)
                 }
             }
             db.setTransactionSuccessful()
@@ -293,10 +294,10 @@ class PodDBAdapter private constructor() {
         }
         values.put(KEY_PUBDATE, item.getPubDate()!!.time)
         values.put(KEY_PAYMENT_LINK, item.paymentLink)
-        if (saveFeed && item.feed != null) {
-            setFeed(item.feed)
+        if (item.feed != null) {
+            if (saveFeed) setFeed(item.feed!!)
+            values.put(KEY_FEED, item.feed!!.id)
         }
-        values.put(KEY_FEED, item.feed!!.id)
         if (item.isNew) {
             values.put(KEY_READ, FeedItem.NEW)
         } else if (item.isPlayed()) {
@@ -1091,7 +1092,7 @@ class PodDBAdapter private constructor() {
             Log.e(TAG, "Database corrupted: " + db.path)
 
             val dbPath = File(db.path)
-            val backupFolder = context!!.getExternalFilesDir(null)
+            val backupFolder = context.getExternalFilesDir(null)
             val backupFile = File(backupFolder, "CorruptedDatabaseBackup.db")
             try {
                 FileUtils.copyFile(dbPath, backupFile)

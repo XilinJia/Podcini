@@ -1,39 +1,19 @@
 package ac.mdiq.podcini.service.playback
 
 import ac.mdiq.podcini.R
-import android.Manifest
-import android.annotation.SuppressLint
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.app.UiModeManager
-import android.bluetooth.BluetoothA2dp
-import android.content.*
-import android.content.pm.PackageManager
-import android.content.res.Configuration
-import android.media.AudioManager
-import android.net.Uri
-import android.os.*
-import android.service.quicksettings.TileService
-import android.support.v4.media.MediaBrowserCompat
-import android.support.v4.media.MediaDescriptionCompat
-import android.support.v4.media.MediaMetadataCompat
-import android.support.v4.media.session.MediaSessionCompat
-import android.support.v4.media.session.PlaybackStateCompat
-import android.text.TextUtils
-import android.util.Log
-import android.util.Pair
-import android.view.KeyEvent
-import android.view.SurfaceHolder
-import android.view.ViewConfiguration
-import android.webkit.URLUtil
-import android.widget.Toast
-import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
-import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
-import androidx.media.MediaBrowserServiceCompat
-import androidx.media3.common.util.UnstableApi
+import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
+import ac.mdiq.podcini.playback.PlayableUtils.saveCurrentPosition
+import ac.mdiq.podcini.playback.PlaybackServiceStarter
+import ac.mdiq.podcini.playback.base.PlaybackServiceMediaPlayer
+import ac.mdiq.podcini.playback.base.PlaybackServiceMediaPlayer.PSMPCallback
+import ac.mdiq.podcini.playback.base.PlaybackServiceMediaPlayer.PSMPInfo
+import ac.mdiq.podcini.playback.base.PlayerStatus
+import ac.mdiq.podcini.playback.cast.CastPsmp
+import ac.mdiq.podcini.playback.cast.CastStateListener
+import ac.mdiq.podcini.playback.event.BufferUpdateEvent
+import ac.mdiq.podcini.playback.event.PlaybackPositionEvent
+import ac.mdiq.podcini.playback.event.PlaybackServiceEvent
+import ac.mdiq.podcini.playback.event.SleepTimerUpdatedEvent
 import ac.mdiq.podcini.preferences.PlaybackPreferences
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.clearCurrentlyPlayingTemporaryPlaybackSpeed
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.createInstanceFromPreferences
@@ -49,38 +29,6 @@ import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnableFrom
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnableTo
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.isInTimeRange
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.timerMillis
-import ac.mdiq.podcini.receiver.MediaButtonReceiver
-import ac.mdiq.podcini.service.QuickSettingsTileService
-import ac.mdiq.podcini.service.playback.PlaybackServiceTaskManager.PSTMCallback
-import ac.mdiq.podcini.storage.DBReader
-import ac.mdiq.podcini.storage.DBWriter
-import ac.mdiq.podcini.storage.FeedSearcher
-import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
-import ac.mdiq.podcini.util.ChapterUtils.getCurrentChapterIndex
-import ac.mdiq.podcini.util.FeedItemUtil.hasAlmostEnded
-import ac.mdiq.podcini.util.FeedUtil.shouldAutoDeleteItemsOnThatFeed
-import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
-import ac.mdiq.podcini.util.NetworkUtils.isStreamingAllowed
-import ac.mdiq.podcini.ui.gui.NotificationUtils
-import ac.mdiq.podcini.playback.PlayableUtils.saveCurrentPosition
-import ac.mdiq.podcini.playback.PlaybackServiceStarter
-import ac.mdiq.podcini.ui.widget.WidgetUpdater.WidgetState
-import ac.mdiq.podcini.playback.event.BufferUpdateEvent
-import ac.mdiq.podcini.playback.event.PlaybackPositionEvent
-import ac.mdiq.podcini.playback.event.PlaybackServiceEvent
-import ac.mdiq.podcini.playback.event.SleepTimerUpdatedEvent
-import ac.mdiq.podcini.util.event.settings.SpeedPresetChangedEvent
-import ac.mdiq.podcini.util.event.settings.VolumeAdaptionChangedEvent
-import ac.mdiq.podcini.storage.model.feed.*
-import ac.mdiq.podcini.storage.model.feed.FeedPreferences.AutoDeleteAction
-import ac.mdiq.podcini.storage.model.playback.MediaType
-import ac.mdiq.podcini.storage.model.playback.Playable
-import ac.mdiq.podcini.playback.base.PlaybackServiceMediaPlayer
-import ac.mdiq.podcini.playback.base.PlaybackServiceMediaPlayer.PSMPCallback
-import ac.mdiq.podcini.playback.base.PlaybackServiceMediaPlayer.PSMPInfo
-import ac.mdiq.podcini.playback.base.PlayerStatus
-import ac.mdiq.podcini.playback.cast.CastPsmp
-import ac.mdiq.podcini.playback.cast.CastStateListener
 import ac.mdiq.podcini.preferences.UserPreferences.allEpisodesSortOrder
 import ac.mdiq.podcini.preferences.UserPreferences.downloadsSortedOrder
 import ac.mdiq.podcini.preferences.UserPreferences.fastForwardSecs
@@ -103,10 +51,61 @@ import ac.mdiq.podcini.preferences.UserPreferences.showNextChapterOnFullNotifica
 import ac.mdiq.podcini.preferences.UserPreferences.showPlaybackSpeedOnFullNotification
 import ac.mdiq.podcini.preferences.UserPreferences.showSkipOnFullNotification
 import ac.mdiq.podcini.preferences.UserPreferences.videoPlaybackSpeed
-import ac.mdiq.podcini.service.download.NewEpisodesNotification
+import ac.mdiq.podcini.receiver.MediaButtonReceiver
+import ac.mdiq.podcini.service.QuickSettingsTileService
+import ac.mdiq.podcini.service.playback.PlaybackServiceTaskManager.PSTMCallback
+import ac.mdiq.podcini.storage.DBReader
+import ac.mdiq.podcini.storage.DBWriter
+import ac.mdiq.podcini.storage.FeedSearcher
+import ac.mdiq.podcini.storage.model.feed.*
+import ac.mdiq.podcini.storage.model.feed.FeedPreferences.AutoDeleteAction
+import ac.mdiq.podcini.storage.model.playback.MediaType
+import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.ui.appstartintent.MainActivityStarter
 import ac.mdiq.podcini.ui.appstartintent.VideoPlayerActivityStarter
+import ac.mdiq.podcini.ui.gui.NotificationUtils
+import ac.mdiq.podcini.ui.widget.WidgetUpdater.WidgetState
+import ac.mdiq.podcini.util.ChapterUtils.getCurrentChapterIndex
+import ac.mdiq.podcini.util.FeedItemUtil.hasAlmostEnded
+import ac.mdiq.podcini.util.FeedUtil.shouldAutoDeleteItemsOnThatFeed
+import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
+import ac.mdiq.podcini.util.NetworkUtils.isStreamingAllowed
+import ac.mdiq.podcini.util.event.settings.SpeedPresetChangedEvent
+import ac.mdiq.podcini.util.event.settings.VolumeAdaptionChangedEvent
+import android.Manifest
+import android.annotation.SuppressLint
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.UiModeManager
+import android.bluetooth.BluetoothA2dp
+import android.content.*
+import android.content.pm.PackageManager
+import android.content.res.Configuration
+import android.media.AudioManager
+import android.net.Uri
+import android.os.*
 import android.os.Build.VERSION_CODES
+import android.service.quicksettings.TileService
+import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaDescriptionCompat
+import android.support.v4.media.MediaMetadataCompat
+import android.support.v4.media.session.MediaSessionCompat
+import android.support.v4.media.session.PlaybackStateCompat
+import android.text.TextUtils
+import android.util.Log
+import android.util.Pair
+import android.view.KeyEvent
+import android.view.SurfaceHolder
+import android.view.ViewConfiguration
+import android.webkit.URLUtil
+import android.widget.Toast
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.media.MediaBrowserServiceCompat
+import androidx.media3.common.util.UnstableApi
 import io.reactivex.*
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -389,28 +388,35 @@ class PlaybackService : MediaBrowserServiceCompat() {
         }
 
         val feedItems: List<FeedItem?>
-        if (parentId == resources.getString(R.string.queue_label)) {
-            feedItems = DBReader.getQueue()
-        } else if (parentId == resources.getString(R.string.downloads_label)) {
-            feedItems = DBReader.getEpisodes(0, MAX_ANDROID_AUTO_EPISODES_PER_FEED,
-                FeedItemFilter(FeedItemFilter.DOWNLOADED), downloadsSortedOrder)
-        } else if (parentId == resources.getString(R.string.episodes_label)) {
-            feedItems = DBReader.getEpisodes(0, MAX_ANDROID_AUTO_EPISODES_PER_FEED,
-                FeedItemFilter(FeedItemFilter.UNPLAYED), allEpisodesSortOrder)
-        } else if (parentId.startsWith("FeedId:")) {
-            val feedId = parentId.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1].toLong()
-            val feed = DBReader.getFeed(feedId)
-            feedItems = DBReader.getFeedItemList(feed, FeedItemFilter.unfiltered(), feed!!.sortOrder)
-        } else if (parentId == getString(R.string.current_playing_episode)) {
-            val playable = createInstanceFromPreferences(this)
-            if (playable is FeedMedia) {
-                feedItems = listOf(playable.getItem())
-            } else {
+        when {
+            parentId == resources.getString(R.string.queue_label) -> {
+                feedItems = DBReader.getQueue()
+            }
+            parentId == resources.getString(R.string.downloads_label) -> {
+                feedItems = DBReader.getEpisodes(0, MAX_ANDROID_AUTO_EPISODES_PER_FEED,
+                    FeedItemFilter(FeedItemFilter.DOWNLOADED), downloadsSortedOrder)
+            }
+            parentId == resources.getString(R.string.episodes_label) -> {
+                feedItems = DBReader.getEpisodes(0, MAX_ANDROID_AUTO_EPISODES_PER_FEED,
+                    FeedItemFilter(FeedItemFilter.UNPLAYED), allEpisodesSortOrder)
+            }
+            parentId.startsWith("FeedId:") -> {
+                val feedId = parentId.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1].toLong()
+                val feed = DBReader.getFeed(feedId)
+                feedItems = if (feed != null) DBReader.getFeedItemList(feed, FeedItemFilter.unfiltered(), feed.sortOrder) else listOf()
+            }
+            parentId == getString(R.string.current_playing_episode) -> {
+                val playable = createInstanceFromPreferences(this)
+                if (playable is FeedMedia) {
+                    feedItems = listOf(playable.getItem())
+                } else {
+                    return null
+                }
+            }
+            else -> {
+                Log.e(TAG, "Parent ID not found: $parentId")
                 return null
             }
-        } else {
-            Log.e(TAG, "Parent ID not found: $parentId")
-            return null
         }
         var count = 0
         for (feedItem in feedItems) {
@@ -510,7 +516,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
             return
         }
 
-        val preferences = playable.getItem()!!.feed?.preferences
+        val preferences = playable.getItem()?.feed?.preferences
         val skipIntro = preferences?.feedSkipIntro ?: 0
 
         val context = applicationContext
@@ -725,12 +731,12 @@ class PlaybackService : MediaBrowserServiceCompat() {
     }
 
     private fun startPlaying(playable: Playable?, allowStreamThisTime: Boolean) {
-        val localFeed = URLUtil.isContentUrl(playable!!.getStreamUrl())
+        if (playable == null) return
+
+        val localFeed = URLUtil.isContentUrl(playable.getStreamUrl())
         val stream = !playable.localFileAvailable() || localFeed
         if (stream && !localFeed && !isStreamingAllowed && !allowStreamThisTime) {
-            displayStreamingNotAllowedNotification(
-                PlaybackServiceStarter(this, playable)
-                    .intent)
+            displayStreamingNotAllowedNotification(PlaybackServiceStarter(this, playable).intent)
             writeNoMediaPlaying()
             stateManager.stopService()
             return
@@ -784,60 +790,63 @@ class PlaybackService : MediaBrowserServiceCompat() {
         override fun statusChanged(newInfo: PSMPInfo?) {
             currentMediaType = mediaPlayer?.getCurrentMediaType() ?: MediaType.UNKNOWN
 
-            updateMediaSession(newInfo!!.playerStatus)
-            when (newInfo.playerStatus) {
-                PlayerStatus.INITIALIZED -> {
-                    if (mediaPlayer != null) {
-                        writeMediaPlaying(mediaPlayer!!.pSMPInfo.playable, mediaPlayer!!.pSMPInfo.playerStatus)
+            updateMediaSession(newInfo?.playerStatus)
+            if (newInfo != null) {
+                when (newInfo.playerStatus) {
+                    PlayerStatus.INITIALIZED -> {
+                        if (mediaPlayer != null) {
+                            writeMediaPlaying(mediaPlayer!!.pSMPInfo.playable, mediaPlayer!!.pSMPInfo.playerStatus)
+                        }
+                        updateNotificationAndMediaSession(newInfo.playable)
                     }
-                    updateNotificationAndMediaSession(newInfo.playable)
-                }
-                PlayerStatus.PREPARED -> {
-                    if (mediaPlayer != null) {
-                        writeMediaPlaying(mediaPlayer!!.pSMPInfo.playable, mediaPlayer!!.pSMPInfo.playerStatus)
+                    PlayerStatus.PREPARED -> {
+                        if (mediaPlayer != null) {
+                            writeMediaPlaying(mediaPlayer!!.pSMPInfo.playable, mediaPlayer!!.pSMPInfo.playerStatus)
+                        }
+                        taskManager.startChapterLoader(newInfo.playable!!)
                     }
-                    taskManager.startChapterLoader(newInfo.playable!!)
-                }
-                PlayerStatus.PAUSED -> {
-                    updateNotificationAndMediaSession(newInfo.playable)
-                    if (!isCasting) {
-                        stateManager.stopForeground(!isPersistNotify)
+                    PlayerStatus.PAUSED -> {
+                        updateNotificationAndMediaSession(newInfo.playable)
+                        if (!isCasting) {
+                            stateManager.stopForeground(!isPersistNotify)
+                        }
+                        cancelPositionObserver()
+                        if (mediaPlayer != null) writePlayerStatus(mediaPlayer!!.playerStatus)
                     }
-                    cancelPositionObserver()
-                    if (mediaPlayer != null) writePlayerStatus(mediaPlayer!!.playerStatus)
-                }
-                PlayerStatus.STOPPED -> {}
-                PlayerStatus.PLAYING -> {
-                    if (mediaPlayer != null) writePlayerStatus(mediaPlayer!!.playerStatus)
-                    saveCurrentPosition(true, null, Playable.INVALID_TIME)
-                    recreateMediaSessionIfNeeded()
-                    updateNotificationAndMediaSession(newInfo.playable)
-                    setupPositionObserver()
-                    stateManager.validStartCommandWasReceived()
-                    stateManager.startForeground(R.id.notification_playing, notificationBuilder.build())
-                    // set sleep timer if auto-enabled
-                    var autoEnableByTime = true
-                    val fromSetting = autoEnableFrom()
-                    val toSetting = autoEnableTo()
-                    if (fromSetting != toSetting) {
-                        val now: Calendar = GregorianCalendar()
-                        now.timeInMillis = System.currentTimeMillis()
-                        val currentHour = now[Calendar.HOUR_OF_DAY]
-                        autoEnableByTime = isInTimeRange(fromSetting, toSetting, currentHour)
-                    }
+                    PlayerStatus.STOPPED -> {}
+                    PlayerStatus.PLAYING -> {
+                        if (mediaPlayer != null) writePlayerStatus(mediaPlayer!!.playerStatus)
+                        saveCurrentPosition(true, null, Playable.INVALID_TIME)
+                        recreateMediaSessionIfNeeded()
+                        updateNotificationAndMediaSession(newInfo.playable)
+                        setupPositionObserver()
+                        stateManager.validStartCommandWasReceived()
+                        stateManager.startForeground(R.id.notification_playing, notificationBuilder.build())
+                        // set sleep timer if auto-enabled
+                        var autoEnableByTime = true
+                        val fromSetting = autoEnableFrom()
+                        val toSetting = autoEnableTo()
+                        if (fromSetting != toSetting) {
+                            val now: Calendar = GregorianCalendar()
+                            now.timeInMillis = System.currentTimeMillis()
+                            val currentHour = now[Calendar.HOUR_OF_DAY]
+                            autoEnableByTime = isInTimeRange(fromSetting, toSetting, currentHour)
+                        }
 
-                    if (newInfo.oldPlayerStatus != null && newInfo.oldPlayerStatus != PlayerStatus.SEEKING && autoEnable() && autoEnableByTime && !sleepTimerActive()) {
-                        setSleepTimer(timerMillis())
-                        EventBus.getDefault().post(ac.mdiq.podcini.util.event.MessageEvent(getString(R.string.sleep_timer_enabled_label),
-                            { disableSleepTimer() }, getString(R.string.undo)))
+                        if (newInfo.oldPlayerStatus != null && newInfo.oldPlayerStatus != PlayerStatus.SEEKING && autoEnable() && autoEnableByTime && !sleepTimerActive()) {
+                            setSleepTimer(timerMillis())
+                            EventBus.getDefault()
+                                .post(ac.mdiq.podcini.util.event.MessageEvent(getString(R.string.sleep_timer_enabled_label),
+                                    { disableSleepTimer() }, getString(R.string.undo)))
+                        }
+                        loadQueueForMediaSession()
                     }
-                    loadQueueForMediaSession()
+                    PlayerStatus.ERROR -> {
+                        writeNoMediaPlaying()
+                        stateManager.stopService()
+                    }
+                    else -> {}
                 }
-                PlayerStatus.ERROR -> {
-                    writeNoMediaPlaying()
-                    stateManager.stopService()
-                }
-                else -> {}
             }
             if (Build.VERSION.SDK_INT >= VERSION_CODES.N) {
                 TileService.requestListeningState(applicationContext,
@@ -1059,7 +1068,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
         }
 
         var autoSkipped = false
-        if (autoSkippedFeedMediaId != null && autoSkippedFeedMediaId == item!!.identifyingValue) {
+        if (autoSkippedFeedMediaId != null && autoSkippedFeedMediaId == item?.identifyingValue) {
             autoSkippedFeedMediaId = null
             autoSkipped = true
         }
@@ -1136,7 +1145,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
             toast.show()
 
             this.autoSkippedFeedMediaId = feedMedia.getItem()!!.identifyingValue
-            mediaPlayer!!.skip()
+            mediaPlayer?.skip()
         }
     }
 
@@ -1201,7 +1210,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
         }
 
         if (showNextChapterOnFullNotification()) {
-            if (playable != null && playable!!.getChapters().isNotEmpty()) {
+            if (!playable?.getChapters().isNullOrEmpty()) {
                 sessionState.addCustomAction(
                     PlaybackStateCompat.CustomAction.Builder(
                         CUSTOM_ACTION_NEXT_CHAPTER,
@@ -1220,9 +1229,10 @@ class PlaybackService : MediaBrowserServiceCompat() {
             )
         }
 
-        WearMediaSession.mediaSessionSetExtraForWear(mediaSession!!)
-
-        mediaSession!!.setPlaybackState(sessionState.build())
+        if (mediaSession != null) {
+            WearMediaSession.mediaSessionSetExtraForWear(mediaSession!!)
+            mediaSession!!.setPlaybackState(sessionState.build())
+        }
     }
 
     private fun updateNotificationAndMediaSession(p: Playable?) {
@@ -1252,9 +1262,9 @@ class PlaybackService : MediaBrowserServiceCompat() {
                 val m = p
                 if (m.getItem() != null) {
                     val item = m.getItem()
-                    if (item!!.imageUrl != null) {
+                    if (item?.imageUrl != null) {
                         iconUri = item.imageUrl
-                    } else if (item.feed != null) {
+                    } else if (item?.feed != null) {
                         iconUri = item.feed!!.imageUrl
                     }
                 }
@@ -1289,9 +1299,8 @@ class PlaybackService : MediaBrowserServiceCompat() {
     @Synchronized
     private fun setupNotification(playable: Playable?) {
         Log.d(TAG, "setupNotification")
-        if (playableIconLoaderThread != null) {
-            playableIconLoaderThread!!.interrupt()
-        }
+        playableIconLoaderThread?.interrupt()
+
         if (playable == null || mediaPlayer == null) {
             Log.d(TAG, "setupNotification: playable=$playable")
             Log.d(TAG, "setupNotification: mediaPlayer=$mediaPlayer")
@@ -1303,7 +1312,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
 
         val playerStatus = mediaPlayer!!.playerStatus
         notificationBuilder.setPlayable(playable)
-        notificationBuilder.setMediaSessionToken(mediaSession!!.sessionToken)
+        if (mediaSession != null) notificationBuilder.setMediaSessionToken(mediaSession!!.sessionToken)
         notificationBuilder.playerStatus = playerStatus
         notificationBuilder.updatePosition(currentPosition, currentPlaybackSpeed)
 
@@ -1332,7 +1341,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
                     updateMediaSessionMetadata(playable)
                 }
             }
-            playableIconLoaderThread!!.start()
+            playableIconLoaderThread?.start()
         }
     }
 
@@ -1358,7 +1367,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
             duration = playable?.getDuration() ?: Playable.INVALID_TIME
         }
         if (position != Playable.INVALID_TIME && duration != Playable.INVALID_TIME && playable != null) {
-            Log.d(TAG, "Saving current position to $position")
+            Log.d(TAG, "Saving current position to $position $duration")
             saveCurrentPosition(playable, position, System.currentTimeMillis())
         }
     }
@@ -1373,11 +1382,11 @@ class PlaybackService : MediaBrowserServiceCompat() {
     private fun bluetoothNotifyChange(info: PSMPInfo?, whatChanged: String) {
         var isPlaying = false
 
-        if (info!!.playerStatus == PlayerStatus.PLAYING) {
+        if (info?.playerStatus == PlayerStatus.PLAYING) {
             isPlaying = true
         }
 
-        if (info.playable != null) {
+        if (info?.playable != null) {
             val i = Intent(whatChanged)
             i.putExtra("id", 1L)
             i.putExtra("artist", "")
@@ -1476,7 +1485,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
         Log.d(TAG, "pauseIfPauseOnDisconnect()")
         transientPause = (mediaPlayer?.playerStatus == PlayerStatus.PLAYING)
         if (isPauseOnHeadsetDisconnect && !isCasting) {
-            mediaPlayer!!.pause(!isPersistNotify, false)
+            mediaPlayer?.pause(!isPersistNotify, false)
         }
     }
 
@@ -1598,7 +1607,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
     var isStartWhenPrepared: Boolean
         get() = mediaPlayer?.isStartWhenPrepared() ?: false
         set(s) {
-            if (mediaPlayer != null) mediaPlayer!!.setStartWhenPrepared(s)
+            mediaPlayer?.setStartWhenPrepared(s)
         }
 
     fun seekTo(t: Int) {
@@ -1646,7 +1655,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
         get() = mediaPlayer?.isStreaming() ?: false
 
     val videoSize: Pair<Int, Int>?
-        get() = mediaPlayer!!.getVideoSize()
+        get() = mediaPlayer?.getVideoSize()
 
     private fun setupPositionObserver() {
         positionEventTimer?.dispose()
@@ -1656,8 +1665,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
                 Log.d(TAG, "notificationBuilder.updatePosition currentPosition: $currentPosition, currentPlaybackSpeed: $currentPlaybackSpeed")
-                EventBus.getDefault().post(PlaybackPositionEvent(currentPosition,
-                    duration))
+                EventBus.getDefault().post(PlaybackPositionEvent(currentPosition, duration))
 //                TODO: why set SDK_INT < 29
                 if (Build.VERSION.SDK_INT < 29) {
                     notificationBuilder.updatePosition(currentPosition, currentPlaybackSpeed)
@@ -1674,7 +1682,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
 
     private fun addPlayableToQueue(playable: Playable?) {
         if (playable is FeedMedia) {
-            val itemId = playable.getItem()!!.id
+            val itemId = playable.getItem()?.id ?: return
             DBWriter.addQueueItem(this, false, true, itemId)
             notifyChildrenChanged(getString(R.string.queue_label))
         }
@@ -1857,9 +1865,6 @@ class PlaybackService : MediaBrowserServiceCompat() {
     }
 
     companion object {
-        /**
-         * Logging tag
-         */
         private const val TAG = "PlaybackService"
 
 //        TODO: need to experiment this value

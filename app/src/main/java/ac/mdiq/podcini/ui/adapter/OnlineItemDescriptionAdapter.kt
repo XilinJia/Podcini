@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.ui.adapter
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.ItemdescriptionListitemBinding
+import ac.mdiq.podcini.databinding.OnlineItemDescriptionBinding
 import ac.mdiq.podcini.service.playback.PlaybackService.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.util.DateFormatter.formatAbbrev
 import ac.mdiq.podcini.util.NetworkUtils.isStreamingAllowed
@@ -24,8 +24,8 @@ import androidx.media3.common.util.UnstableApi
 /**
  * List adapter for showing a list of FeedItems with their title and description.
  */
-class FeedItemlistDescriptionAdapter(context: Context, resource: Int, objects: List<FeedItem?>?) :
-    ArrayAdapter<FeedItem?>(context, resource, objects!!) {
+class OnlineItemDescriptionAdapter(context: Context, resource: Int, items: List<FeedItem>) :
+    ArrayAdapter<FeedItem>(context, resource, items) {
     @UnstableApi override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         var convertView = convertView
         val holder: Holder
@@ -36,8 +36,8 @@ class FeedItemlistDescriptionAdapter(context: Context, resource: Int, objects: L
         if (convertView == null) {
             holder = Holder()
             val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-            convertView = inflater.inflate(R.layout.itemdescription_listitem, parent, false)
-            val binding = ItemdescriptionListitemBinding.bind(convertView)
+            convertView = inflater.inflate(R.layout.online_item_description, parent, false)
+            val binding = OnlineItemDescriptionBinding.bind(convertView)
             holder.title = binding.txtvTitle
             holder.pubDate = binding.txtvPubDate
             holder.description = binding.txtvDescription
@@ -48,22 +48,21 @@ class FeedItemlistDescriptionAdapter(context: Context, resource: Int, objects: L
             holder = convertView.tag as Holder
         }
 
-        holder.title!!.text = item!!.title
-        holder.pubDate!!.text = formatAbbrev(context, item.pubDate)
+        holder.title.text = item!!.title
+        holder.pubDate.text = formatAbbrev(context, item.pubDate)
         if (item.description != null) {
             val description = HtmlToPlainText.getPlainText(item.description!!)
                 .replace("\n".toRegex(), " ")
                 .replace("\\s+".toRegex(), " ")
                 .trim { it <= ' ' }
-            holder.description!!.text = description
-            holder.description!!.maxLines = MAX_LINES_COLLAPSED
+            holder.description.text = description
+            holder.description.maxLines = MAX_LINES_COLLAPSED
         }
-        holder.description!!.tag = false
-        holder.preview!!.visibility = View.GONE
-        holder.preview!!.setOnClickListener {
-            if (item.media == null) {
-                return@setOnClickListener
-            }
+        holder.description.tag = false
+        holder.preview.visibility = View.GONE
+        holder.preview.setOnClickListener {
+            if (item.media == null) return@setOnClickListener
+
             val playable: Playable = RemoteMedia(item)
             if (!isStreamingAllowed) {
                 StreamingConfirmationDialog(context, playable).show()
@@ -78,26 +77,26 @@ class FeedItemlistDescriptionAdapter(context: Context, resource: Int, objects: L
             }
         }
         convertView!!.setOnClickListener {
-            if (holder.description!!.tag == true) {
-                holder.description!!.maxLines = MAX_LINES_COLLAPSED
-                holder.preview!!.visibility = View.GONE
-                holder.description!!.tag = false
+            if (holder.description.tag == true) {
+                holder.description.maxLines = MAX_LINES_COLLAPSED
+                holder.preview.visibility = View.GONE
+                holder.description.tag = false
             } else {
-                holder.description!!.maxLines = 30
-                holder.description!!.tag = true
+                holder.description.maxLines = 30
+                holder.description.tag = true
 
-                holder.preview!!.visibility = if (item.media != null) View.VISIBLE else View.GONE
-                holder.preview!!.setText(R.string.preview_episode)
+                holder.preview.visibility = if (item.media != null) View.VISIBLE else View.GONE
+                holder.preview.setText(R.string.preview_episode)
             }
         }
         return convertView
     }
 
     internal class Holder {
-        var title: TextView? = null
-        var pubDate: TextView? = null
-        var description: TextView? = null
-        var preview: Button? = null
+        lateinit var title: TextView
+        lateinit var pubDate: TextView
+        lateinit var description: TextView
+        lateinit var preview: Button
     }
 
     companion object {

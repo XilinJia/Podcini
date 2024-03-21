@@ -17,7 +17,10 @@ import ac.mdiq.podcini.ui.fragment.*
 import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
 import ac.mdiq.podcini.ui.common.ThemeUtils.getColorFromAttr
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
+import ac.mdiq.podcini.util.event.PlayerStatusEvent
+import ac.mdiq.podcini.util.event.SwipeActionsChangedEvent
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
+import org.greenrobot.eventbus.EventBus
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
@@ -25,6 +28,7 @@ import kotlin.math.sin
 
 open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private val tag: String) :
     ItemTouchHelper.SimpleCallback(dragDirs, ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT), LifecycleObserver {
+
     private var filter: FeedItemFilter? = null
 
     var actions: Actions? = null
@@ -73,6 +77,7 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
             SwipeActionsDialog(fragment.requireContext(), tag).show(object : SwipeActionsDialog.Callback {
                 override fun onCall() {
                     this@SwipeActions.reloadPreference()
+                    EventBus.getDefault().post(SwipeActionsChangedEvent())
                 }
             })
             return
@@ -147,7 +152,6 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
                     max(0.5, displacementPercentage.toDouble()).toFloat()))
         builder.create().decorate()
 
-
         super.onChildDraw(c, recyclerView, viewHolder, dx, dy, actionState, isCurrentlyActive)
     }
 
@@ -202,7 +206,7 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
         }
 
         fun hasActions(): Boolean {
-            return right != null && left != null
+            return right != null && left != null && right!!.getId() != SwipeAction.NO_ACTION && left!!.getId() != SwipeAction.NO_ACTION
         }
     }
 
@@ -213,7 +217,7 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
 
         @JvmField
         val swipeActions: List<SwipeAction> = Collections.unmodifiableList(
-            listOf(AddToQueueSwipeAction(), StartDownloadSwipeAction(), MarkFavoriteSwipeAction(),
+            listOf(NoActionSwipeAction(), AddToQueueSwipeAction(), StartDownloadSwipeAction(), MarkFavoriteSwipeAction(),
                 TogglePlaybackStateSwipeAction(), RemoveFromQueueSwipeAction(),
                 DeleteSwipeAction(), RemoveFromHistorySwipeAction())
         )
@@ -225,19 +229,18 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
             return Actions(prefsString)
         }
 
-        private fun getPrefs(context: Context, tag: String): Actions {
+        fun getPrefs(context: Context, tag: String): Actions {
             return getPrefs(context, tag, "")
         }
 
         @JvmStatic
         fun getPrefsWithDefaults(context: Context, tag: String): Actions {
             val defaultActions = when (tag) {
-//                InboxFragment.TAG -> SwipeAction.ADD_TO_QUEUE + "," + SwipeAction.REMOVE_FROM_INBOX
-                QueueFragment.TAG -> SwipeAction.REMOVE_FROM_QUEUE + "," + SwipeAction.REMOVE_FROM_QUEUE
-                CompletedDownloadsFragment.TAG -> SwipeAction.DELETE + "," + SwipeAction.DELETE
-                PlaybackHistoryFragment.TAG -> SwipeAction.REMOVE_FROM_HISTORY + "," + SwipeAction.REMOVE_FROM_HISTORY
-                AllEpisodesFragment.TAG -> SwipeAction.MARK_FAV + "," + SwipeAction.START_DOWNLOAD
-                else -> SwipeAction.MARK_FAV + "," + SwipeAction.START_DOWNLOAD
+                QueueFragment.TAG -> SwipeAction.NO_ACTION + "," + SwipeAction.NO_ACTION
+                CompletedDownloadsFragment.TAG -> SwipeAction.NO_ACTION + "," + SwipeAction.NO_ACTION
+                PlaybackHistoryFragment.TAG -> SwipeAction.NO_ACTION + "," + SwipeAction.NO_ACTION
+                AllEpisodesFragment.TAG -> SwipeAction.NO_ACTION + "," + SwipeAction.NO_ACTION
+                else -> SwipeAction.NO_ACTION + "," + SwipeAction.NO_ACTION
             }
             return getPrefs(context, tag, defaultActions)
         }

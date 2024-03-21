@@ -64,6 +64,7 @@ import java.util.*
  */
 class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAdapter.OnSelectModeListener {
 
+    private lateinit var binding: QueueFragmentBinding
     private lateinit var infoBar: TextView
     private lateinit var recyclerView: EpisodeItemListRecyclerView
     private lateinit var emptyView: EmptyViewHandler
@@ -88,7 +89,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
-        val binding = QueueFragmentBinding.inflate(inflater)
+        binding = QueueFragmentBinding.inflate(inflater)
 
         Log.d(TAG, "fragment onCreateView")
         toolbar = binding.toolbar
@@ -121,6 +122,13 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
         swipeActions = QueueSwipeActions()
         swipeActions.setFilter(FeedItemFilter(FeedItemFilter.QUEUED))
         swipeActions.attachTo(recyclerView)
+
+        if (swipeActions.actions?.left != null) {
+            binding.leftActionIcon.setImageResource(swipeActions.actions!!.left!!.getActionIcon())
+        }
+        if (swipeActions.actions?.right != null) {
+            binding.rightActionIcon.setImageResource(swipeActions.actions!!.right!!.getActionIcon())
+        }
 
         recyclerAdapter = object : QueueRecyclerAdapter(activity as MainActivity, swipeActions) {
             override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
@@ -286,6 +294,16 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
         // Sent when playback position is reset
         loadItems(false)
         refreshToolbarState()
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onSwipeActionsChanged(event: SwipeActionsChangedEvent?) {
+        if (swipeActions.actions?.left != null) {
+            binding.leftActionIcon.setImageResource(swipeActions.actions!!.left!!.getActionIcon())
+        }
+        if (swipeActions.actions?.right != null) {
+            binding.rightActionIcon.setImageResource(swipeActions.actions!!.right!!.getActionIcon())
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -456,7 +474,6 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
                 }
             }
             info += " • "
-            info += getString(R.string.time_left_label)
             info += Converter.getDurationStringLocalized(requireActivity(), timeLeft)
         }
         infoBar.text = info
@@ -503,10 +520,10 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
                 sortOrder = UserPreferences.queueKeepSortedOrder
             }
             val view: View = super.onCreateView(inflater, container, savedInstanceState)!!
-            viewBinding.keepSortedCheckbox.visibility = View.VISIBLE
-            viewBinding.keepSortedCheckbox.setChecked(UserPreferences.isQueueKeepSorted)
+            binding.keepSortedCheckbox.visibility = View.VISIBLE
+            binding.keepSortedCheckbox.setChecked(UserPreferences.isQueueKeepSorted)
             // Disable until something gets selected
-            viewBinding.keepSortedCheckbox.setEnabled(UserPreferences.isQueueKeepSorted)
+            binding.keepSortedCheckbox.setEnabled(UserPreferences.isQueueKeepSorted)
             return view
         }
 
@@ -518,11 +535,11 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
 
         @UnstableApi override fun onSelectionChanged() {
             super.onSelectionChanged()
-            viewBinding.keepSortedCheckbox.setEnabled(sortOrder != SortOrder.RANDOM)
+            binding.keepSortedCheckbox.setEnabled(sortOrder != SortOrder.RANDOM)
             if (sortOrder == SortOrder.RANDOM) {
-                viewBinding.keepSortedCheckbox.setChecked(false)
+                binding.keepSortedCheckbox.setChecked(false)
             }
-            UserPreferences.isQueueKeepSorted = viewBinding.keepSortedCheckbox.isChecked
+            UserPreferences.isQueueKeepSorted = binding.keepSortedCheckbox.isChecked
             UserPreferences.queueKeepSortedOrder = sortOrder
             DBWriter.reorderQueue(sortOrder, true)
         }

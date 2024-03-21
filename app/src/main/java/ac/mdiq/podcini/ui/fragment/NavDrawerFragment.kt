@@ -65,7 +65,6 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
     ): View {
         super.onCreateView(inflater, container, savedInstanceState)
         val binding = NavListBinding.inflate(inflater)
-//        val root: View = inflater.inflate(R.layout.nav_list, container, false)
 
         Log.d(TAG, "fragment onCreateView")
         setupDrawerRoundBackground(binding.root)

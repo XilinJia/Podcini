@@ -26,7 +26,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.adapter.FeedItemlistDescriptionAdapter
+import ac.mdiq.podcini.ui.adapter.OnlineItemDescriptionAdapter
 import ac.mdiq.podcini.feed.FeedUrlNotFoundException
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.currentlyPlayingMediaType
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.writeNoMediaPlaying
@@ -103,29 +103,33 @@ class OnlineFeedViewActivity : AppCompatActivity() {
     private var parser: Disposable? = null
     private var updater: Disposable? = null
 
-    private lateinit var headerBinding: OnlinefeedviewHeaderBinding
-    private lateinit var viewBinding: OnlinefeedviewActivityBinding
+    private lateinit var hBinding: OnlinefeedviewHeaderBinding
+    private lateinit var binding: OnlinefeedviewActivityBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(getTranslucentTheme(this))
         super.onCreate(savedInstanceState)
 
-        viewBinding = OnlinefeedviewActivityBinding.inflate(layoutInflater)
-        setContentView(viewBinding.root)
+        binding = OnlinefeedviewActivityBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        viewBinding.transparentBackground.setOnClickListener { finish() }
-        viewBinding.closeButton.setOnClickListener { finish() }
-        viewBinding.card.setOnClickListener(null)
-        viewBinding.card.setCardBackgroundColor(getColorFromAttr(this, R.attr.colorSurface))
-        headerBinding = OnlinefeedviewHeaderBinding.inflate(layoutInflater)
+        binding.transparentBackground.setOnClickListener { finish() }
+        binding.closeButton.setOnClickListener { finish() }
+        binding.card.setOnClickListener(null)
+        binding.card.setCardBackgroundColor(getColorFromAttr(this, R.attr.colorSurface))
+        hBinding = OnlinefeedviewHeaderBinding.inflate(layoutInflater)
 
         var feedUrl: String? = null
-        if (intent.hasExtra(ARG_FEEDURL)) {
-            feedUrl = intent.getStringExtra(ARG_FEEDURL)
-        } else if (TextUtils.equals(intent.action, Intent.ACTION_SEND)) {
-            feedUrl = intent.getStringExtra(Intent.EXTRA_TEXT)
-        } else if (TextUtils.equals(intent.action, Intent.ACTION_VIEW)) {
-            feedUrl = intent.dataString
+        when {
+            intent.hasExtra(ARG_FEEDURL) -> {
+                feedUrl = intent.getStringExtra(ARG_FEEDURL)
+            }
+            TextUtils.equals(intent.action, Intent.ACTION_SEND) -> {
+                feedUrl = intent.getStringExtra(Intent.EXTRA_TEXT)
+            }
+            TextUtils.equals(intent.action, Intent.ACTION_VIEW) -> {
+                feedUrl = intent.dataString
+            }
         }
 
         if (feedUrl == null) {
@@ -164,8 +168,8 @@ class OnlineFeedViewActivity : AppCompatActivity() {
      * Displays a progress indicator.
      */
     private fun setLoadingLayout() {
-        viewBinding.progressBar.visibility = View.VISIBLE
-        viewBinding.feedDisplayContainer.visibility = View.GONE
+        binding.progressBar.visibility = View.VISIBLE
+        binding.feedDisplayContainer.visibility = View.GONE
     }
 
     override fun onStart() {
@@ -388,18 +392,18 @@ class OnlineFeedViewActivity : AppCompatActivity() {
      * This method is executed on the GUI thread.
      */
     @UnstableApi private fun showFeedInformation(feed: Feed, alternateFeedUrls: Map<String, String>) {
-        viewBinding.progressBar.visibility = View.GONE
-        viewBinding.feedDisplayContainer.visibility = View.VISIBLE
+        binding.progressBar.visibility = View.GONE
+        binding.feedDisplayContainer.visibility = View.VISIBLE
         if (isFeedFoundBySearch) {
             val resId = R.string.no_feed_url_podcast_found_by_search
-            Snackbar.make(viewBinding.root, resId, Snackbar.LENGTH_LONG).show()
+            Snackbar.make(binding.root, resId, Snackbar.LENGTH_LONG).show()
         }
 
-        viewBinding.backgroundImage.colorFilter = LightingColorFilter(-0x7d7d7e, 0x000000)
+        binding.backgroundImage.colorFilter = LightingColorFilter(-0x7d7d7e, 0x000000)
 
-        viewBinding.listView.addHeaderView(headerBinding.root)
-        viewBinding.listView.setSelector(android.R.color.transparent)
-        viewBinding.listView.adapter = FeedItemlistDescriptionAdapter(this, 0, feed.items)
+        binding.listView.addHeaderView(hBinding.root)
+        binding.listView.setSelector(android.R.color.transparent)
+        binding.listView.adapter = OnlineItemDescriptionAdapter(this, 0, feed.items)
 
         if (StringUtils.isNotBlank(feed.imageUrl)) {
             Glide.with(this)
@@ -409,7 +413,7 @@ class OnlineFeedViewActivity : AppCompatActivity() {
                     .error(R.color.light_gray)
                     .fitCenter()
                     .dontAnimate())
-                .into(viewBinding.coverImage)
+                .into(binding.coverImage)
             Glide.with(this)
                 .load(feed.imageUrl)
                 .apply(RequestOptions()
@@ -417,14 +421,14 @@ class OnlineFeedViewActivity : AppCompatActivity() {
                     .error(R.color.image_readability_tint)
                     .transform(FastBlurTransformation())
                     .dontAnimate())
-                .into(viewBinding.backgroundImage)
+                .into(binding.backgroundImage)
         }
 
-        viewBinding.titleLabel.text = feed.title
-        viewBinding.authorLabel.text = feed.author
-        headerBinding.txtvDescription.text = HtmlToPlainText.getPlainText(feed.description?:"")
+        binding.titleLabel.text = feed.title
+        binding.authorLabel.text = feed.author
+        hBinding.txtvDescription.text = HtmlToPlainText.getPlainText(feed.description?:"")
 
-        viewBinding.subscribeButton.setOnClickListener {
+        binding.subscribeButton.setOnClickListener {
             if (feedInFeedlist()) {
                 openFeed()
             } else {
@@ -434,29 +438,29 @@ class OnlineFeedViewActivity : AppCompatActivity() {
             }
         }
 
-        viewBinding.stopPreviewButton.setOnClickListener {
+        binding.stopPreviewButton.setOnClickListener {
             writeNoMediaPlaying()
             sendLocalBroadcast(this, PlaybackServiceInterface.ACTION_SHUTDOWN_PLAYBACK_SERVICE)
         }
 
         if (isEnableAutodownload) {
             val preferences = getSharedPreferences(PREFS, MODE_PRIVATE)
-            viewBinding.autoDownloadCheckBox.isChecked = preferences.getBoolean(PREF_LAST_AUTO_DOWNLOAD, true)
+            binding.autoDownloadCheckBox.isChecked = preferences.getBoolean(PREF_LAST_AUTO_DOWNLOAD, true)
         }
 
-        headerBinding.txtvDescription.maxLines = DESCRIPTION_MAX_LINES_COLLAPSED
-        headerBinding.txtvDescription.setOnClickListener {
-            if (headerBinding.txtvDescription.maxLines > DESCRIPTION_MAX_LINES_COLLAPSED) {
-                headerBinding.txtvDescription.maxLines = DESCRIPTION_MAX_LINES_COLLAPSED
+        hBinding.txtvDescription.maxLines = DESCRIPTION_MAX_LINES_COLLAPSED
+        hBinding.txtvDescription.setOnClickListener {
+            if (hBinding.txtvDescription.maxLines > DESCRIPTION_MAX_LINES_COLLAPSED) {
+                hBinding.txtvDescription.maxLines = DESCRIPTION_MAX_LINES_COLLAPSED
             } else {
-                headerBinding.txtvDescription.maxLines = 2000
+                hBinding.txtvDescription.maxLines = 2000
             }
         }
 
         if (alternateFeedUrls.isEmpty()) {
-            viewBinding.alternateUrlsSpinner.visibility = View.GONE
+            binding.alternateUrlsSpinner.visibility = View.GONE
         } else {
-            viewBinding.alternateUrlsSpinner.visibility = View.VISIBLE
+            binding.alternateUrlsSpinner.visibility = View.VISIBLE
 
             val alternateUrlsList: MutableList<String> = ArrayList()
             val alternateUrlsTitleList: MutableList<String?> = ArrayList()
@@ -479,8 +483,8 @@ class OnlineFeedViewActivity : AppCompatActivity() {
             }
 
             adapter.setDropDownViewResource(R.layout.alternate_urls_dropdown_item)
-            viewBinding.alternateUrlsSpinner.adapter = adapter
-            viewBinding.alternateUrlsSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            binding.alternateUrlsSpinner.adapter = adapter
+            binding.alternateUrlsSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
                     selectedDownloadUrl = alternateUrlsList[position]
                 }
@@ -507,11 +511,11 @@ class OnlineFeedViewActivity : AppCompatActivity() {
         if (dli == null || selectedDownloadUrl == null) return
 
         if (dli.isDownloadingEpisode(selectedDownloadUrl!!)) {
-            viewBinding.subscribeButton.isEnabled = false
-            viewBinding.subscribeButton.setText(R.string.subscribing_label)
+            binding.subscribeButton.isEnabled = false
+            binding.subscribeButton.setText(R.string.subscribing_label)
         } else if (feedInFeedlist()) {
-            viewBinding.subscribeButton.isEnabled = true
-            viewBinding.subscribeButton.setText(R.string.open_podcast)
+            binding.subscribeButton.isEnabled = true
+            binding.subscribeButton.setText(R.string.open_podcast)
             if (didPressSubscribe) {
                 didPressSubscribe = false
 
@@ -519,7 +523,7 @@ class OnlineFeedViewActivity : AppCompatActivity() {
                 val feedPreferences = feed1.preferences
                 if (feedPreferences != null) {
                     if (isEnableAutodownload) {
-                        val autoDownload = viewBinding.autoDownloadCheckBox.isChecked
+                        val autoDownload = binding.autoDownloadCheckBox.isChecked
                         feedPreferences.autoDownload = autoDownload
 
                         val preferences = getSharedPreferences(PREFS, MODE_PRIVATE)
@@ -536,10 +540,10 @@ class OnlineFeedViewActivity : AppCompatActivity() {
                 openFeed()
             }
         } else {
-            viewBinding.subscribeButton.isEnabled = true
-            viewBinding.subscribeButton.setText(R.string.subscribe_label)
+            binding.subscribeButton.isEnabled = true
+            binding.subscribeButton.setText(R.string.subscribe_label)
             if (isEnableAutodownload) {
-                viewBinding.autoDownloadCheckBox.visibility = View.VISIBLE
+                binding.autoDownloadCheckBox.visibility = View.VISIBLE
             }
         }
     }
@@ -617,7 +621,7 @@ class OnlineFeedViewActivity : AppCompatActivity() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun playbackStateChanged(event: PlayerStatusEvent?) {
         val isPlayingPreview = currentlyPlayingMediaType == RemoteMedia.PLAYABLE_TYPE_REMOTE_MEDIA.toLong()
-        viewBinding.stopPreviewButton.visibility = if (isPlayingPreview) View.VISIBLE else View.GONE
+        binding.stopPreviewButton.visibility = if (isPlayingPreview) View.VISIBLE else View.GONE
     }
 
     /**

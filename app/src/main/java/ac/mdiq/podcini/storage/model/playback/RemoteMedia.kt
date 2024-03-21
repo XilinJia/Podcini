@@ -74,6 +74,8 @@ class RemoteMedia : Playable {
         this.mimeType = item.media!!.mime_type
         this.pubDate = item.pubDate
         this.description = item.description
+
+        this.duration = item.media?.getDuration() ?: 0
     }
 
     fun getEpisodeIdentifier(): String? {
@@ -159,7 +161,7 @@ class RemoteMedia : Playable {
     }
 
     override fun getStreamUrl(): String? {
-        return downloadUrl
+        return streamUrl
     }
 
     override fun getLocalMediaUrl(): String? {

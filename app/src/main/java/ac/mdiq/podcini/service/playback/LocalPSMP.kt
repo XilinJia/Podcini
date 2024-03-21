@@ -162,22 +162,27 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
             callback.onMediaChanged(false)
 //            TODO: speed
             setPlaybackParams(PlaybackSpeedUtils.getCurrentPlaybackSpeed(media), UserPreferences.isSkipSilence)
-            if (stream) {
-                if (media!!.getStreamUrl() != null) {
-                    if (playable is FeedMedia && playable.getItem()?.feed?.preferences != null) {
-                        val preferences = playable.getItem()!!.feed!!.preferences!!
-                        mediaPlayer?.setDataSource(
-                            media!!.getStreamUrl()!!,
-                            preferences.username,
-                            preferences.password)
-                    } else {
-                        mediaPlayer?.setDataSource(media!!.getStreamUrl()!!)
+            when {
+                stream -> {
+                    val streamurl = media!!.getStreamUrl()
+                    if (streamurl != null) {
+                        if (playable is FeedMedia && playable.getItem()?.feed?.preferences != null) {
+                            val preferences = playable.getItem()!!.feed!!.preferences!!
+                            mediaPlayer?.setDataSource(
+                                streamurl,
+                                preferences.username,
+                                preferences.password)
+                        } else {
+                            mediaPlayer?.setDataSource(streamurl)
+                        }
                     }
                 }
-            } else if (media!!.getLocalMediaUrl() != null && File(media!!.getLocalMediaUrl()!!).canRead()) {
-                mediaPlayer?.setDataSource(media!!.getLocalMediaUrl()!!)
-            } else {
-                throw IOException("Unable to read local file " + media!!.getLocalMediaUrl())
+                else -> {
+                    val localMediaurl = media!!.getLocalMediaUrl()
+                    if (localMediaurl != null && File(localMediaurl).canRead()) {
+                        mediaPlayer?.setDataSource(localMediaurl)
+                    } else throw IOException("Unable to read local file $localMediaurl")
+                }
             }
             val uiModeManager = context.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
             if (uiModeManager.currentModeType != Configuration.UI_MODE_TYPE_CAR) {

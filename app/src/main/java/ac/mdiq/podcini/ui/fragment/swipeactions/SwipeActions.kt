@@ -74,12 +74,13 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
     @UnstableApi override fun onSwiped(viewHolder: RecyclerView.ViewHolder, swipeDir: Int) {
         if (actions != null && !actions!!.hasActions()) {
             //open settings dialog if no prefs are set
-            SwipeActionsDialog(fragment.requireContext(), tag).show(object : SwipeActionsDialog.Callback {
-                override fun onCall() {
-                    this@SwipeActions.reloadPreference()
-                    EventBus.getDefault().post(SwipeActionsChangedEvent())
-                }
-            })
+            showDialog()
+//            SwipeActionsDialog(fragment.requireContext(), tag).show(object : SwipeActionsDialog.Callback {
+//                override fun onCall() {
+//                    this@SwipeActions.reloadPreference()
+//                    EventBus.getDefault().post(SwipeActionsChangedEvent())
+//                }
+//            })
             return
         }
 
@@ -87,6 +88,15 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
 
         if (actions != null && item != null && filter != null)
                 (if (swipeDir == ItemTouchHelper.RIGHT) actions!!.right else actions!!.left)?.performAction(item, fragment, filter!!)
+    }
+
+    fun showDialog() {
+        SwipeActionsDialog(fragment.requireContext(), tag).show(object : SwipeActionsDialog.Callback {
+            override fun onCall() {
+                this@SwipeActions.reloadPreference()
+                EventBus.getDefault().post(SwipeActionsChangedEvent())
+            }
+        })
     }
 
     @UnstableApi override fun onChildDraw(c: Canvas, recyclerView: RecyclerView,
@@ -206,7 +216,7 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
         }
 
         fun hasActions(): Boolean {
-            return right != null && left != null && right!!.getId() != SwipeAction.NO_ACTION && left!!.getId() != SwipeAction.NO_ACTION
+            return right != null && left != null
         }
     }
 

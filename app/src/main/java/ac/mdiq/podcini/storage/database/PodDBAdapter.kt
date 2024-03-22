@@ -157,8 +157,8 @@ class PodDBAdapter private constructor() {
         } else {
             values.put(KEY_PLAYBACK_COMPLETION_DATE, 0)
         }
-        if (media.getItem() != null) {
-            values.put(KEY_FEEDITEM, media.getItem()!!.id)
+        if (media.item != null) {
+            values.put(KEY_FEEDITEM, media.item!!.id)
         }
         if (media.id == 0L) {
             media.id = db.insert(TABLE_NAME_FEED_MEDIA, null, values)

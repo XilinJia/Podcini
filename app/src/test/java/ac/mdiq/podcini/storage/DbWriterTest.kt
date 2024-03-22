@@ -60,7 +60,7 @@ class DbWriterTest {
     @Before
     fun setUp() {
         context = InstrumentationRegistry.getInstrumentation().targetContext
-        UserPreferences.init(context!!)
+        UserPreferences.init(context)
         init(context)
 
         val app = context as Application?
@@ -69,14 +69,14 @@ class DbWriterTest {
         DownloadServiceInterface.setImpl(DownloadServiceInterfaceStub())
 
         // create new database
-        PodDBAdapter.init(context!!)
+        PodDBAdapter.init(context)
         deleteDatabase()
         val adapter = getInstance()
         adapter.open()
         adapter.close()
 
         val prefEdit = PreferenceManager.getDefaultSharedPreferences(
-            context!!.applicationContext).edit()
+            context.applicationContext).edit()
         prefEdit.putBoolean(UserPreferences.PREF_DELETE_REMOVES_FROM_QUEUE, true).commit()
     }
 
@@ -85,7 +85,7 @@ class DbWriterTest {
         PodDBAdapter.tearDownTests()
         DBWriter.tearDownTests()
 
-        val testDir = context!!.getExternalFilesDir(TEST_FOLDER)
+        val testDir = context.getExternalFilesDir(TEST_FOLDER)
         Assert.assertNotNull(testDir)
         for (f in testDir!!.listFiles()) {
             f.delete()
@@ -129,7 +129,7 @@ class DbWriterTest {
     @Test
     @Throws(Exception::class)
     fun testDeleteFeedMediaOfItemFileExists() {
-        val dest = File(context!!.getExternalFilesDir(TEST_FOLDER), "testFile")
+        val dest = File(context.getExternalFilesDir(TEST_FOLDER), "testFile")
 
         Assert.assertTrue(dest.createNewFile())
 
@@ -151,7 +151,7 @@ class DbWriterTest {
         Assert.assertTrue(media!!.id != 0L)
         Assert.assertTrue(item.id != 0L)
 
-        deleteFeedMediaOfItem(context!!, media.id)[TIMEOUT, TimeUnit.SECONDS]
+        deleteFeedMediaOfItem(context, media.id)[TIMEOUT, TimeUnit.SECONDS]
         media = getFeedMedia(media.id)
         Assert.assertNotNull(media)
         Assert.assertFalse(dest.exists())
@@ -164,7 +164,7 @@ class DbWriterTest {
     fun testDeleteFeedMediaOfItemRemoveFromQueue() {
         Assert.assertTrue(shouldDeleteRemoveFromQueue())
 
-        val dest = File(context!!.getExternalFilesDir(TEST_FOLDER), "testFile")
+        val dest = File(context.getExternalFilesDir(TEST_FOLDER), "testFile")
 
         Assert.assertTrue(dest.createNewFile())
 
@@ -191,7 +191,7 @@ class DbWriterTest {
         queue = getQueue().toMutableList()
         Assert.assertTrue(queue.size != 0)
 
-        deleteFeedMediaOfItem(context!!, media.id)
+        deleteFeedMediaOfItem(context, media.id)
         Awaitility.await().timeout(2, TimeUnit.SECONDS).until { !dest.exists() }
         media = getFeedMedia(media.id)
         Assert.assertNotNull(media)
@@ -204,7 +204,7 @@ class DbWriterTest {
     @Test
     @Throws(Exception::class)
     fun testDeleteFeed() {
-        val destFolder = context!!.getExternalFilesDir(TEST_FOLDER)
+        val destFolder = context.getExternalFilesDir(TEST_FOLDER)
         Assert.assertNotNull(destFolder)
 
         val feed = Feed("url", null, "title")
@@ -236,7 +236,7 @@ class DbWriterTest {
             Assert.assertTrue(item.media!!.id != 0L)
         }
 
-        deleteFeed(context!!, feed.id)[TIMEOUT, TimeUnit.SECONDS]
+        deleteFeed(context, feed.id)[TIMEOUT, TimeUnit.SECONDS]
 
         // check if files still exist
         for (f in itemFiles) {
@@ -262,7 +262,7 @@ class DbWriterTest {
     @Test
     @Throws(Exception::class)
     fun testDeleteFeedNoItems() {
-        val destFolder = context!!.getExternalFilesDir(TEST_FOLDER)
+        val destFolder = context.getExternalFilesDir(TEST_FOLDER)
         Assert.assertNotNull(destFolder)
 
         val feed = Feed("url", null, "title")
@@ -276,7 +276,7 @@ class DbWriterTest {
 
         Assert.assertTrue(feed.id != 0L)
 
-        deleteFeed(context!!, feed.id)[TIMEOUT, TimeUnit.SECONDS]
+        deleteFeed(context, feed.id)[TIMEOUT, TimeUnit.SECONDS]
 
         adapter = getInstance()
         adapter.open()
@@ -289,7 +289,7 @@ class DbWriterTest {
     @Test
     @Throws(Exception::class)
     fun testDeleteFeedNoFeedMedia() {
-        val destFolder = context!!.getExternalFilesDir(TEST_FOLDER)
+        val destFolder = context.getExternalFilesDir(TEST_FOLDER)
         Assert.assertNotNull(destFolder)
 
         val feed = Feed("url", null, "title")
@@ -313,7 +313,7 @@ class DbWriterTest {
             Assert.assertTrue(item.id != 0L)
         }
 
-        deleteFeed(context!!, feed.id)[TIMEOUT, TimeUnit.SECONDS]
+        deleteFeed(context, feed.id)[TIMEOUT, TimeUnit.SECONDS]
 
         adapter = getInstance()
         adapter.open()
@@ -331,7 +331,7 @@ class DbWriterTest {
     @Test
     @Throws(Exception::class)
     fun testDeleteFeedWithQueueItems() {
-        val destFolder = context!!.getExternalFilesDir(TEST_FOLDER)
+        val destFolder = context.getExternalFilesDir(TEST_FOLDER)
         Assert.assertNotNull(destFolder)
 
         val feed = Feed("url", null, "title")
@@ -369,7 +369,7 @@ class DbWriterTest {
         queueCursor.close()
 
         adapter.close()
-        deleteFeed(context!!, feed.id)[TIMEOUT, TimeUnit.SECONDS]
+        deleteFeed(context, feed.id)[TIMEOUT, TimeUnit.SECONDS]
         adapter.open()
 
         var c = adapter.getFeedCursor(feed.id)
@@ -392,7 +392,7 @@ class DbWriterTest {
     @Test
     @Throws(Exception::class)
     fun testDeleteFeedNoDownloadedFiles() {
-        val destFolder = context!!.getExternalFilesDir(TEST_FOLDER)
+        val destFolder = context.getExternalFilesDir(TEST_FOLDER)
         Assert.assertNotNull(destFolder)
 
         val feed = Feed("url", null, "title")
@@ -421,7 +421,7 @@ class DbWriterTest {
             Assert.assertTrue(item.media!!.id != 0L)
         }
 
-        deleteFeed(context!!, feed.id)[TIMEOUT, TimeUnit.SECONDS]
+        deleteFeed(context, feed.id)[TIMEOUT, TimeUnit.SECONDS]
 
         adapter = getInstance()
         adapter.open()
@@ -459,7 +459,7 @@ class DbWriterTest {
         adapter.close()
 
         val itemsToDelete: List<FeedItem> = feed.items.subList(0, 2)
-        deleteFeedItems(context!!, itemsToDelete)[TIMEOUT, TimeUnit.SECONDS]
+        deleteFeedItems(context, itemsToDelete)[TIMEOUT, TimeUnit.SECONDS]
 
         adapter = getInstance()
         adapter.open()
@@ -664,7 +664,7 @@ class DbWriterTest {
             adapter.setQueue(feed.items.toList())
             adapter.close()
 
-            removeQueueItem(context!!, false, item)[TIMEOUT, TimeUnit.SECONDS]
+            removeQueueItem(context, false, item)[TIMEOUT, TimeUnit.SECONDS]
             adapter = getInstance()
             adapter.open()
             val queue = adapter.queueIDCursor
@@ -700,21 +700,21 @@ class DbWriterTest {
         // Use array rather than List to make codes more succinct
         val itemIds = toItemIds(feed.items).toTypedArray<Long>()
 
-        removeQueueItem(context!!, false,
+        removeQueueItem(context, false,
             itemIds[1], itemIds[3])[TIMEOUT, TimeUnit.SECONDS]
         assertQueueByItemIds("Average case - 2 items removed successfully",
             itemIds[0], itemIds[2])
 
-        removeQueueItem(context!!, false)[TIMEOUT, TimeUnit.SECONDS]
+        removeQueueItem(context, false)[TIMEOUT, TimeUnit.SECONDS]
         assertQueueByItemIds("Boundary case - no items supplied. queue should see no change",
             itemIds[0], itemIds[2])
 
-        removeQueueItem(context!!, false,
+        removeQueueItem(context, false,
             itemIds[0], itemIds[4], -1L)[TIMEOUT, TimeUnit.SECONDS]
         assertQueueByItemIds("Boundary case - items not in queue ignored",
             itemIds[2])
 
-        removeQueueItem(context!!, false,
+        removeQueueItem(context, false,
             itemIds[2], -1L)[TIMEOUT, TimeUnit.SECONDS]
         assertQueueByItemIds("Boundary case - invalid itemIds ignored") // the queue is empty
     }

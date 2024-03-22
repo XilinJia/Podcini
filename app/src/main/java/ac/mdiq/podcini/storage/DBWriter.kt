@@ -93,7 +93,7 @@ import java.util.concurrent.TimeUnit
             if (media != null) {
                 val result = deleteFeedMediaSynchronous(context, media)
 
-                val item = media.getItem()
+                val item = media.item
                 if (result && item != null && shouldDeleteRemoveFromQueue()) {
                     removeQueueItemSynchronous(context, false, item.id)
                 }
@@ -140,7 +140,7 @@ import java.util.concurrent.TimeUnit
             nm.cancel(R.id.notification_playing)
         }
 
-        val item = media.getItem()
+        val item = media.item
         if (item != null) {
             if (localDelete) {
                 // Do full update of this feed to get rid of the item

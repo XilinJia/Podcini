@@ -99,8 +99,8 @@ class FeedMultiSelectActionHandler(private val activity: MainActivity, private v
             .setTitle(R.string.playback_speed)
             .setView(viewBinding.root)
             .setPositiveButton("OK") { _: DialogInterface?, _: Int ->
-                val newSpeed = if (viewBinding.useGlobalCheckbox.isChecked
-                ) FeedPreferences.SPEED_USE_GLOBAL else viewBinding.seekBar.currentSpeed
+                val newSpeed = if (viewBinding.useGlobalCheckbox.isChecked) FeedPreferences.SPEED_USE_GLOBAL
+                else viewBinding.seekBar.currentSpeed
                 saveFeedPreferences { feedPreferences: FeedPreferences ->
                     feedPreferences.feedPlaybackSpeed = newSpeed
                 }

@@ -451,7 +451,7 @@ class DbReaderTest {
                 val m: FeedMedia = feed.items[i].media!!
                 m.setPlaybackCompletionDate(Date((i + 1).toLong()))
                 adapter.setFeedMediaPlaybackCompletionDate(m)
-                ids[ids.size - 1 - i] = m.getItem()!!.id
+                ids[ids.size - 1 - i] = m.item!!.id
             }
             adapter.close()
 

@@ -31,19 +31,19 @@ class MediaDownloadedHandler(private val context: Context, var updatedStatus: Do
             return
         }
         // media.setDownloaded modifies played state
-        val broadcastUnreadStateUpdate = media.getItem() != null && media.getItem()!!.isNew
+        val broadcastUnreadStateUpdate = media.item != null && media.item!!.isNew
         media.setDownloaded(true)
         media.file_url = request.destination
         if (request.destination != null) media.size = File(request.destination).length()
         media.checkEmbeddedPicture() // enforce check
 
         // check if file has chapters
-        if (media.getItem() != null && !media.getItem()!!.hasChapters()) {
+        if (media.item != null && !media.item!!.hasChapters()) {
             media.setChapters(ChapterUtils.loadChaptersFromMediaFile(media, context))
         }
 
-        if (media.getItem()?.podcastIndexChapterUrl != null) {
-            ChapterUtils.loadChaptersFromUrl(media.getItem()!!.podcastIndexChapterUrl!!, false)
+        if (media.item?.podcastIndexChapterUrl != null) {
+            ChapterUtils.loadChaptersFromUrl(media.item!!.podcastIndexChapterUrl!!, false)
         }
         // Get duration
         var durationStr: String? = null
@@ -60,7 +60,7 @@ class MediaDownloadedHandler(private val context: Context, var updatedStatus: Do
             Log.e(TAG, "Get duration failed", e)
         }
 
-        val item = media.getItem()
+        val item = media.item
 
         try {
             DBWriter.setFeedMedia(media).get()

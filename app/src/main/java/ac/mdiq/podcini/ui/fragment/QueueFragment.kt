@@ -45,6 +45,7 @@ import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
 import ac.mdiq.podcini.storage.model.feed.SortOrder
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.ui.dialog.SwipeActionsDialog
 import ac.mdiq.podcini.ui.view.EmptyViewHandler
 import ac.mdiq.podcini.ui.view.EpisodeItemListRecyclerView
 import ac.mdiq.podcini.ui.view.LiftOnScrollListener
@@ -122,13 +123,13 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
         swipeActions = QueueSwipeActions()
         swipeActions.setFilter(FeedItemFilter(FeedItemFilter.QUEUED))
         swipeActions.attachTo(recyclerView)
-
-        if (swipeActions.actions?.left != null) {
-            binding.leftActionIcon.setImageResource(swipeActions.actions!!.left!!.getActionIcon())
-        }
-        if (swipeActions.actions?.right != null) {
-            binding.rightActionIcon.setImageResource(swipeActions.actions!!.right!!.getActionIcon())
-        }
+        refreshSwipeTelltale()
+        binding.leftActionIcon.setOnClickListener({
+            swipeActions.showDialog()
+        })
+        binding.rightActionIcon.setOnClickListener({
+            swipeActions.showDialog()
+        })
 
         recyclerAdapter = object : QueueRecyclerAdapter(activity as MainActivity, swipeActions) {
             override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
@@ -298,6 +299,10 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onSwipeActionsChanged(event: SwipeActionsChangedEvent?) {
+        refreshSwipeTelltale()
+    }
+
+    private fun refreshSwipeTelltale() {
         if (swipeActions.actions?.left != null) {
             binding.leftActionIcon.setImageResource(swipeActions.actions!!.left!!.getActionIcon())
         }

@@ -24,6 +24,7 @@ import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.ui.view.LockableBottomSheetBehavior
 import ac.mdiq.podcini.util.event.EpisodeDownloadEvent
 import ac.mdiq.podcini.util.event.FeedUpdateRunningEvent
+import ac.mdiq.podcini.util.event.MessageEvent
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
@@ -553,7 +554,7 @@ class MainActivity : CastEnabledActivity() {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: ac.mdiq.podcini.util.event.MessageEvent) {
+    fun onEventMainThread(event: MessageEvent) {
         Log.d(TAG, "onEvent($event)")
 
         val snackbar = showSnackbarAbovePlayer(event.message, Snackbar.LENGTH_LONG)

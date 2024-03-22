@@ -117,12 +117,13 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         binding.recyclerView.adapter = adapter
 
         swipeActions = SwipeActions(this, TAG).attachTo(binding.recyclerView)
-        if (swipeActions.actions?.left != null) {
-            binding.header.leftActionIcon.setImageResource(swipeActions.actions!!.left!!.getActionIcon())
-        }
-        if (swipeActions.actions?.right != null) {
-            binding.header.rightActionIcon.setImageResource(swipeActions.actions!!.right!!.getActionIcon())
-        }
+        refreshSwipeTelltale()
+        binding.header.leftActionIcon.setOnClickListener({
+            swipeActions.showDialog()
+        })
+        binding.header.rightActionIcon.setOnClickListener({
+            swipeActions.showDialog()
+        })
 
         binding.progressBar.visibility = View.VISIBLE
 
@@ -409,12 +410,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onSwipeActionsChanged(event: SwipeActionsChangedEvent?) {
-        if (swipeActions.actions?.left != null) {
-            binding.header.leftActionIcon.setImageResource(swipeActions.actions!!.left!!.getActionIcon())
-        }
-        if (swipeActions.actions?.right != null) {
-            binding.header.rightActionIcon.setImageResource(swipeActions.actions!!.right!!.getActionIcon())
-        }
+        refreshSwipeTelltale()
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
@@ -424,6 +420,15 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
             nextPageLoader.root.visibility = View.GONE
         }
         binding.swipeRefresh.isRefreshing = event.isFeedUpdateRunning
+    }
+
+    private fun refreshSwipeTelltale() {
+        if (swipeActions.actions?.left != null) {
+            binding.header.leftActionIcon.setImageResource(swipeActions.actions!!.left!!.getActionIcon())
+        }
+        if (swipeActions.actions?.right != null) {
+            binding.header.rightActionIcon.setImageResource(swipeActions.actions!!.right!!.getActionIcon())
+        }
     }
 
     @UnstableApi private fun refreshHeaderView() {

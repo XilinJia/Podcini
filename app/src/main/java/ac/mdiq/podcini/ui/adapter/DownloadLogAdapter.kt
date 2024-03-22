@@ -109,7 +109,7 @@ class DownloadLogAdapter(private val context: Activity) : BaseAdapter() {
                             Log.e(TAG, "Could not find feed media for feed id: " + status.feedfileId)
                             return@OnClickListener
                         }
-                        if (media.getItem() != null) DownloadActionButton(media.getItem()!!).onClick(context)
+                        if (media.item != null) DownloadActionButton(media.item!!).onClick(context)
                         (context as MainActivity).showSnackbarAbovePlayer(
                             R.string.status_downloading_label, Toast.LENGTH_SHORT)
                     })

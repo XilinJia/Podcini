@@ -26,7 +26,9 @@ class FeedMedia : FeedFile, Playable {
         private set
 
     @Volatile
-    private var item: FeedItem?
+    var item: FeedItem?
+        private set
+
     private var playbackCompletionDate: Date? = null
     var startPosition: Int = -1
         private set
@@ -75,7 +77,7 @@ class FeedMedia : FeedFile, Playable {
     }
 
     override fun getHumanReadableIdentifier(): String? {
-        return if (item != null && item!!.title != null) {
+        return if (item?.title != null) {
             item!!.title
         } else {
             download_url
@@ -98,7 +100,7 @@ class FeedMedia : FeedFile, Playable {
                 // getImageLocation() also loads embedded images, which we can not send to external devices
                 if (item!!.imageUrl != null) {
                     builder.setIconUri(Uri.parse(item!!.imageUrl))
-                } else if (item!!.feed != null && item!!.feed!!.imageUrl != null) {
+                } else if (item!!.feed?.imageUrl != null) {
                     builder.setIconUri(Uri.parse(item!!.feed!!.imageUrl))
                 }
             }
@@ -109,7 +111,7 @@ class FeedMedia : FeedFile, Playable {
      * Uses mimetype to determine the type of media.
      */
     override fun getMediaType(): MediaType {
-        return MediaType.fromMimeType(mime_type!!)
+        return MediaType.fromMimeType(mime_type)
     }
 
     fun updateFromOther(other: FeedMedia) {
@@ -190,9 +192,9 @@ class FeedMedia : FeedFile, Playable {
         return (CHECKED_ON_SIZE_BUT_UNKNOWN.toLong() == this.size)
     }
 
-    fun getItem(): FeedItem? {
-        return item
-    }
+//    fun getItem(): FeedItem? {
+//        return item
+//    }
 
     /**
      * Sets the item object of this FeedMedia. If the given
@@ -241,24 +243,23 @@ class FeedMedia : FeedFile, Playable {
         dest.writeString(file_url)
         dest.writeString(download_url)
         dest.writeByte((if ((isDownloaded())) 1 else 0).toByte())
-        dest.writeLong(if ((playbackCompletionDate != null)) playbackCompletionDate!!.time else 0)
+        dest.writeLong(playbackCompletionDate?.time ?: 0)
         dest.writeInt(playedDuration)
         dest.writeLong(lastPlayedTime)
     }
 
-    override fun writeToPreferences(prefEditor: SharedPreferences.Editor?) {
-        if (item != null && item!!.feed != null) {
-            prefEditor!!.putLong(PREF_FEED_ID, item!!.feed!!.id)
+    override fun writeToPreferences(prefEditor: SharedPreferences.Editor) {
+        if (item?.feed != null) {
+            prefEditor.putLong(PREF_FEED_ID, item!!.feed!!.id)
         } else {
-            prefEditor!!.putLong(PREF_FEED_ID, 0L)
+            prefEditor.putLong(PREF_FEED_ID, 0L)
         }
         prefEditor.putLong(PREF_MEDIA_ID, id)
     }
 
     override fun getEpisodeTitle(): String {
-        if (item == null) {
-            return ""
-        }
+        if (item == null) return ""
+
         return if (item!!.title != null) {
             item!!.title!!
         } else {
@@ -295,11 +296,7 @@ class FeedMedia : FeedFile, Playable {
     }
 
     override fun getPubDate(): Date? {
-        return if (item?.getPubDate() != null) {
-            item!!.getPubDate()!!
-        } else {
-            null
-        }
+        return item?.getPubDate()
     }
 
     override fun localFileAvailable(): Boolean {
@@ -334,12 +331,16 @@ class FeedMedia : FeedFile, Playable {
     }
 
     override fun getImageLocation(): String? {
-        return if (item != null) {
-            item!!.imageLocation
-        } else if (hasEmbeddedPicture()) {
-            FILENAME_PREFIX_EMBEDDED_COVER + getLocalMediaUrl()
-        } else {
-            null
+        return when {
+            item != null -> {
+                item!!.imageLocation
+            }
+            hasEmbeddedPicture() -> {
+                FILENAME_PREFIX_EMBEDDED_COVER + getLocalMediaUrl()
+            }
+            else -> {
+                null
+            }
         }
     }
 

@@ -118,7 +118,7 @@ class RemoteMedia : Playable {
 //        return notes
 //    }
 
-    override fun writeToPreferences(prefEditor: SharedPreferences.Editor?) {
+    override fun writeToPreferences(prefEditor: SharedPreferences.Editor) {
         //it seems pointless to do it, since the session should be kept by the remote device.
     }
 
@@ -157,7 +157,7 @@ class RemoteMedia : Playable {
     }
 
     override fun getMediaType(): MediaType {
-        return MediaType.fromMimeType(mimeType!!)
+        return MediaType.fromMimeType(mimeType)
     }
 
     override fun getStreamUrl(): String? {
@@ -243,7 +243,7 @@ class RemoteMedia : Playable {
             if (!TextUtils.equals(streamUrl, other.getStreamUrl())) {
                 return false
             }
-            val fi = other.getItem()
+            val fi = other.item
             if (fi == null || !TextUtils.equals(itemIdentifier, fi.itemIdentifier)) {
                 return false
             }

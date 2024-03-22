@@ -71,8 +71,8 @@ object MediaInfoCreator {
             return null
         }
         val metadata = MediaMetadata(MediaMetadata.MEDIA_TYPE_GENERIC)
-        checkNotNull(media.getItem()) { "item is null" }
-        val feedItem = media.getItem()
+        checkNotNull(media.item) { "item is null" }
+        val feedItem = media.item
         if (feedItem != null) {
             metadata.putString(MediaMetadata.KEY_TITLE, media.getEpisodeTitle())
             val subtitle = media.getFeedTitle()
@@ -86,7 +86,7 @@ object MediaInfoCreator {
                 metadata.addImage(WebImage(Uri.parse(url)))
             }
             val calendar = Calendar.getInstance()
-            if (media.getItem()?.getPubDate() != null) calendar.time = media.getItem()!!.getPubDate()!!
+            if (media.item?.getPubDate() != null) calendar.time = media.item!!.getPubDate()!!
             metadata.putDate(MediaMetadata.KEY_RELEASE_DATE, calendar)
             if (feed != null) {
                 if (!feed.author.isNullOrEmpty()) {

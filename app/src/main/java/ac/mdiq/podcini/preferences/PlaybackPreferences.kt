@@ -87,43 +87,43 @@ class PlaybackPreferences private constructor() : OnSharedPreferenceChangeListen
         const val PLAYER_STATUS_OTHER: Int = 3
 
         private var instance: PlaybackPreferences? = null
-        private var prefs: SharedPreferences? = null
+        private lateinit var prefs: SharedPreferences
 
         @JvmStatic
         fun init(context: Context) {
             instance = PlaybackPreferences()
             prefs = PreferenceManager.getDefaultSharedPreferences(context)
-            prefs?.registerOnSharedPreferenceChangeListener(instance)
+            prefs.registerOnSharedPreferenceChangeListener(instance)
         }
 
         @JvmStatic
         val currentlyPlayingMediaType: Long
-            get() = prefs!!.getLong(PREF_CURRENTLY_PLAYING_MEDIA_TYPE, NO_MEDIA_PLAYING)
+            get() = prefs.getLong(PREF_CURRENTLY_PLAYING_MEDIA_TYPE, NO_MEDIA_PLAYING)
 
         @JvmStatic
         val currentlyPlayingFeedMediaId: Long
-            get() = prefs!!.getLong(PREF_CURRENTLY_PLAYING_FEEDMEDIA_ID, NO_MEDIA_PLAYING)
+            get() = prefs.getLong(PREF_CURRENTLY_PLAYING_FEEDMEDIA_ID, NO_MEDIA_PLAYING)
 
         @JvmStatic
         val currentEpisodeIsVideo: Boolean
-            get() = prefs!!.getBoolean(PREF_CURRENT_EPISODE_IS_VIDEO, false)
+            get() = prefs.getBoolean(PREF_CURRENT_EPISODE_IS_VIDEO, false)
 
         @JvmStatic
         val currentPlayerStatus: Int
-            get() = prefs!!.getInt(PREF_CURRENT_PLAYER_STATUS, PLAYER_STATUS_OTHER)
+            get() = prefs.getInt(PREF_CURRENT_PLAYER_STATUS, PLAYER_STATUS_OTHER)
 
         @JvmStatic
         var currentlyPlayingTemporaryPlaybackSpeed: Float
-            get() = prefs!!.getFloat(PREF_CURRENTLY_PLAYING_TEMPORARY_PLAYBACK_SPEED, FeedPreferences.SPEED_USE_GLOBAL)
+            get() = prefs.getFloat(PREF_CURRENTLY_PLAYING_TEMPORARY_PLAYBACK_SPEED, FeedPreferences.SPEED_USE_GLOBAL)
             set(speed) {
-                val editor = prefs!!.edit()
+                val editor = prefs.edit()
                 editor.putFloat(PREF_CURRENTLY_PLAYING_TEMPORARY_PLAYBACK_SPEED, speed)
                 editor.apply()
             }
 
         @JvmStatic
         fun writeNoMediaPlaying() {
-            val editor = prefs!!.edit()
+            val editor = prefs.edit()
             editor.putLong(PREF_CURRENTLY_PLAYING_MEDIA_TYPE, NO_MEDIA_PLAYING)
             editor.putLong(PREF_CURRENTLY_PLAYING_FEED_ID, NO_MEDIA_PLAYING)
             editor.putLong(PREF_CURRENTLY_PLAYING_FEEDMEDIA_ID, NO_MEDIA_PLAYING)
@@ -134,7 +134,7 @@ class PlaybackPreferences private constructor() : OnSharedPreferenceChangeListen
         @JvmStatic
         fun writeMediaPlaying(playable: Playable?, playerStatus: PlayerStatus) {
             Log.d(TAG, "Writing playback preferences")
-            val editor = prefs!!.edit()
+            val editor = prefs.edit()
 
             if (playable == null) {
                 writeNoMediaPlaying()
@@ -142,7 +142,7 @@ class PlaybackPreferences private constructor() : OnSharedPreferenceChangeListen
                 editor.putLong(PREF_CURRENTLY_PLAYING_MEDIA_TYPE, playable.getPlayableType().toLong())
                 editor.putBoolean(PREF_CURRENT_EPISODE_IS_VIDEO, playable.getMediaType() == MediaType.VIDEO)
                 if (playable is FeedMedia) {
-                    val itemId = playable.getItem()?.feed?.id
+                    val itemId = playable.item?.feed?.id
                     if (itemId != null) editor.putLong(PREF_CURRENTLY_PLAYING_FEED_ID, itemId)
                     editor.putLong(PREF_CURRENTLY_PLAYING_FEEDMEDIA_ID, playable.id)
                 } else {
@@ -160,14 +160,14 @@ class PlaybackPreferences private constructor() : OnSharedPreferenceChangeListen
         fun writePlayerStatus(playerStatus: PlayerStatus) {
             Log.d(TAG, "Writing player status playback preferences")
 
-            val editor = prefs!!.edit()
+            val editor = prefs.edit()
             editor.putInt(PREF_CURRENT_PLAYER_STATUS, getCurrentPlayerStatusAsInt(playerStatus))
             editor.apply()
         }
 
         @JvmStatic
         fun clearCurrentlyPlayingTemporaryPlaybackSpeed() {
-            val editor = prefs!!.edit()
+            val editor = prefs.edit()
             editor.remove(PREF_CURRENTLY_PLAYING_TEMPORARY_PLAYBACK_SPEED)
             editor.apply()
         }

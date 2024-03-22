@@ -17,7 +17,7 @@ interface Playable : Parcelable, Serializable {
      * Implementations must NOT call commit() after they have written the values
      * to the preferences file.
      */
-    fun writeToPreferences(prefEditor: SharedPreferences.Editor?)
+    fun writeToPreferences(prefEditor: SharedPreferences.Editor)
 
     /**
      * Returns the title of the episode that this playable represents

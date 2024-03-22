@@ -138,7 +138,7 @@ class CoverFragment : Fragment() {
                 + "\u00A0"
                 + StringUtils.replace(StringUtils.stripToEmpty(pubDateStr), " ", "\u00A0"))
         if (media is FeedMedia) {
-            val items = media.getItem()
+            val items = media.item
             if (items != null) {
                 val openFeed: Intent = MainActivity.getIntentToOpenFeed(requireContext(), items.feedId)
                 viewBinding.txtvPodcastTitle.setOnClickListener { startActivity(openFeed) }
@@ -189,7 +189,7 @@ class CoverFragment : Fragment() {
         } else if (media is FeedMedia) {
             val fm: FeedMedia? = (media as FeedMedia?)
             // If an item has chapters but they are not loaded yet, still display the button.
-            chapterControlVisible = fm?.getItem() != null && fm.getItem()!!.hasChapters()
+            chapterControlVisible = fm?.item != null && fm.item!!.hasChapters()
         }
         val newVisibility = if (chapterControlVisible) View.VISIBLE else View.GONE
         if (viewBinding.chapterButton.visibility != newVisibility) {

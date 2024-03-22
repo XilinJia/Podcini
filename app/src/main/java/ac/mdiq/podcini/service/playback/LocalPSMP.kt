@@ -166,8 +166,8 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
                 stream -> {
                     val streamurl = media!!.getStreamUrl()
                     if (streamurl != null) {
-                        if (playable is FeedMedia && playable.getItem()?.feed?.preferences != null) {
-                            val preferences = playable.getItem()!!.feed!!.preferences!!
+                        if (playable is FeedMedia && playable.item?.feed?.preferences != null) {
+                            val preferences = playable.item!!.feed!!.preferences!!
                             mediaPlayer?.setDataSource(
                                 streamurl,
                                 preferences.username,
@@ -465,8 +465,8 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
         var volumeLeft = volumeLeft
         var volumeRight = volumeRight
         val playable = getPlayable()
-        if (playable is FeedMedia && playable.getItem()?.feed?.preferences != null) {
-            val preferences = playable.getItem()!!.feed!!.preferences!!
+        if (playable is FeedMedia && playable.item?.feed?.preferences != null) {
+            val preferences = playable.item!!.feed!!.preferences!!
             val volumeAdaptionSetting = preferences.volumeAdaptionSetting
             if (volumeAdaptionSetting != null) {
                 val adaptionFactor = volumeAdaptionSetting.adaptionFactor

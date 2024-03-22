@@ -22,7 +22,7 @@ object PlayableUtils {
         playable.setLastPlayedTime(timestamp)
 
         if (playable is FeedMedia) {
-            val item = playable.getItem()
+            val item = playable.item
             if (item != null && item.isNew) {
                 DBWriter.markItemPlayed(FeedItem.UNPLAYED, item.id)
             }

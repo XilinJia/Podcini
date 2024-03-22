@@ -10,9 +10,9 @@ enum class MediaType {
             "application/x-flac"
         ))
 
-        fun fromMimeType(mimeType: String): MediaType {
+        fun fromMimeType(mimeType: String?): MediaType {
             return when {
-                mimeType.isEmpty() -> {
+                mimeType.isNullOrEmpty() -> {
                     UNKNOWN
                 }
                 mimeType.startsWith("audio") -> {

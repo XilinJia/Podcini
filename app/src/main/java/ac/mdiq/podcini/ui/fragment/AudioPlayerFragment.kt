@@ -461,7 +461,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         val isFeedMedia = media is FeedMedia
         toolbar.menu?.findItem(R.id.open_feed_item)?.setVisible(isFeedMedia)
         if (media != null && isFeedMedia) {
-            FeedItemMenuHandler.onPrepareMenu(toolbar.menu, (media as FeedMedia).getItem())
+            FeedItemMenuHandler.onPrepareMenu(toolbar.menu, (media as FeedMedia).item)
         }
 
         if (controller != null) {
@@ -474,7 +474,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     override fun onMenuItemClick(item: MenuItem): Boolean {
         val media: Playable = controller?.getMedia() ?: return false
 
-        val feedItem: FeedItem? = if ((media is FeedMedia)) media.getItem() else null
+        val feedItem: FeedItem? = if ((media is FeedMedia)) media.item else null
         if (feedItem != null && FeedItemMenuHandler.onMenuItemClicked(this, item.itemId, feedItem)) {
             return true
         }

@@ -197,11 +197,11 @@ class FeedItem : FeedComponent, Serializable {
          * try to return the title. If the title is not given, it will use the link
          * of the entry.
          */
-        get() = if (itemIdentifier != null && itemIdentifier!!.isNotEmpty()) {
+        get() = if (!itemIdentifier.isNullOrEmpty()) {
             itemIdentifier
-        } else if (title != null && title!!.isNotEmpty()) {
+        } else if (!title.isNullOrEmpty()) {
             title
-        } else if (hasMedia() && media!!.download_url != null) {
+        } else if (media?.download_url != null) {
             media!!.download_url
         } else {
             link
@@ -233,7 +233,7 @@ class FeedItem : FeedComponent, Serializable {
     @JvmName("setMediaFunction")
     fun setMedia(media: FeedMedia?) {
         this.media = media
-        if (media != null && media.getItem() !== this) {
+        if (media != null && media.item !== this) {
             media.setItem(this)
         }
     }

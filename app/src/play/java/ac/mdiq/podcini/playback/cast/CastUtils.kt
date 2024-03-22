@@ -118,7 +118,7 @@ object CastUtils {
             return false
         }
         val metadata = info.metadata
-        val fi = media.getItem()
+        val fi = media.item
         if (fi == null || metadata == null || !TextUtils.equals(metadata.getString(KEY_EPISODE_IDENTIFIER), fi.itemIdentifier)) {
             return false
         }

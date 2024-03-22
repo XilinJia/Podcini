@@ -102,13 +102,13 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
 
         swipeActions = SwipeActions(this, TAG).attachTo(recyclerView)
         swipeActions.setFilter(FeedItemFilter(FeedItemFilter.DOWNLOADED))
-
-        if (swipeActions.actions?.left != null) {
-            binding.leftActionIcon.setImageResource(swipeActions.actions!!.left!!.getActionIcon())
-        }
-        if (swipeActions.actions?.right != null) {
-            binding.rightActionIcon.setImageResource(swipeActions.actions!!.right!!.getActionIcon())
-        }
+        refreshSwipeTelltale()
+        binding.leftActionIcon.setOnClickListener({
+            swipeActions.showDialog()
+        })
+        binding.rightActionIcon.setOnClickListener({
+            swipeActions.showDialog()
+        })
 
         val animator: RecyclerView.ItemAnimator? = recyclerView.itemAnimator
         if (animator is SimpleItemAnimator) {
@@ -299,6 +299,10 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onSwipeActionsChanged(event: SwipeActionsChangedEvent?) {
+        refreshSwipeTelltale()
+    }
+
+    private fun refreshSwipeTelltale() {
         if (swipeActions.actions?.left != null) {
             binding.leftActionIcon.setImageResource(swipeActions.actions!!.left!!.getActionIcon())
         }

@@ -92,9 +92,10 @@
 * disabled drag actions when in multi-select mode (fixed crash bug)
 * renewed PodcastIndex API keys
 * added share notes menu option in episode view
-* press on title area of an episode now opens the episode info faster and more economically - without horizontal swipe
-* press on the icon of an episode opens the episode info the original way - with horizontal swipe
-
+* https://github.com/XilinJia/Podcini/issues/20
+	* press on title area of an episode now opens the episode info faster and more economically - without horizontal swipe
+	* press on the icon of an episode opens the episode info the original way - with horizontal swipe
+	
 ## 4.3.0
 
 * added more info about feeds in the online search view
@@ -105,3 +106,15 @@
 * added NO_ACTION swipe action
 * all default swipe actions are set to NO_ACTION
 * cleaned up swipe preferences ui: statistics removed
+
+## 4.3.1
+
+* titles of played episodes are made brighter
+* icons of played episodes are marked with a check
+* icons of swipe telltales are clickable for setting
+* Straightened up play speed setting
+	* three places to set the play speed:
+	* global setting at the preference
+	* setting for a feed: either use global or customize
+	* setting at the player: set for current playing and save for global
+	* feed setting takes precedence when playing an episode

@@ -54,26 +54,26 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
     private val placeholder: TextView = binding.txtvPlaceholder
     private val cover: ImageView = binding.imgvCover
     private val title: TextView = binding.txtvTitle
-    private val pubDate: TextView
-    private val position: TextView
-    private val duration: TextView
-    private val size: TextView
+    private val pubDate: TextView = binding.txtvPubDate
+    private val position: TextView = binding.txtvPosition
+    private val duration: TextView = binding.txtvDuration
+    private val size: TextView = binding.size
     @JvmField
-    val isInQueue: ImageView
-    private val isVideo: ImageView
-    val isFavorite: ImageView
-    private val progressBar: ProgressBar
+    val isInQueue: ImageView = binding.ivInPlaylist
+    private val isVideo: ImageView = binding.ivIsVideo
+    private val isFavorite: ImageView = binding.isFavorite
+    private val progressBar: ProgressBar = binding.progressBar
     @JvmField
-    val secondaryActionButton: View
+    val secondaryActionButton: View = binding.secondaryActionButton.root
     @JvmField
-    val secondaryActionIcon: ImageView
-    private val secondaryActionProgress: CircularProgressBar
-    private val separatorIcons: TextView
-    private val leftPadding: View
+    val secondaryActionIcon: ImageView = binding.secondaryActionButton.secondaryActionIcon
+    private val secondaryActionProgress: CircularProgressBar = binding.secondaryActionButton.secondaryActionProgress
+    private val separatorIcons: TextView = binding.separatorIcons
+    private val leftPadding: View = binding.leftPadding
     @JvmField
-    val coverHolder: CardView
+    val coverHolder: CardView = binding.coverHolder
     @JvmField
-    val infoCard: LinearLayout
+    val infoCard: LinearLayout = binding.infoCard
 
     private var item: FeedItem? = null
 
@@ -81,21 +81,6 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
         if (Build.VERSION.SDK_INT >= 23) {
             title.setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_FULL)
         }
-        pubDate = binding.txtvPubDate
-        position = binding.txtvPosition
-        duration = binding.txtvDuration
-        progressBar = binding.progressBar
-        isInQueue = binding.ivInPlaylist
-        isVideo = binding.ivIsVideo
-        isFavorite = binding.isFavorite
-        size = binding.size
-        separatorIcons = binding.separatorIcons
-        secondaryActionProgress = binding.secondaryActionButton.secondaryActionProgress
-        secondaryActionButton = binding.secondaryActionButton.root
-        secondaryActionIcon = binding.secondaryActionButton.secondaryActionIcon
-        coverHolder = binding.coverHolder
-        infoCard = binding.infoCard
-        leftPadding = binding.leftPadding
         itemView.tag = this
     }
 
@@ -103,16 +88,20 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
         this.item = item
         placeholder.text = item.feed?.title
         title.text = item.title
+        container.alpha = if (item.isPlayed()) 0.75f else 1.0f
         if (item.isPlayed()) {
             leftPadding.contentDescription = item.title + ". " + activity.getString(R.string.is_played)
+            binding.playedMark.visibility = View.VISIBLE
+            binding.playedMark.alpha = 1.0f
         } else {
             leftPadding.contentDescription = item.title
+            binding.playedMark.visibility = View.GONE
         }
         pubDate.text = DateFormatter.formatAbbrev(activity, item.getPubDate())
         pubDate.setContentDescription(DateFormatter.formatForAccessibility(item.getPubDate()))
         isFavorite.visibility = if (item.isTagged(FeedItem.TAG_FAVORITE)) View.VISIBLE else View.GONE
         isInQueue.visibility = if (item.isTagged(FeedItem.TAG_QUEUE)) View.VISIBLE else View.GONE
-        container.alpha = if (item.isPlayed()) 0.5f else 1.0f
+        container.alpha = if (item.isPlayed()) 0.75f else 1.0f
 
         val actionButton: ItemActionButton = ItemActionButton.forItem(item)
         actionButton.configure(secondaryActionButton, secondaryActionIcon, activity)

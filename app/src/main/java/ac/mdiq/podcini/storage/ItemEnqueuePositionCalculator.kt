@@ -65,7 +65,7 @@ class ItemEnqueuePositionCalculator(private val enqueueLocation: EnqueueLocation
             if (currentPlaying !is FeedMedia) {
                 return -1
             }
-            val curPlayingItemId = currentPlaying.getItem()!!.id
+            val curPlayingItemId = currentPlaying.item!!.id
             for (i in curQueue.indices) {
                 if (curPlayingItemId == curQueue[i].id) {
                     return i

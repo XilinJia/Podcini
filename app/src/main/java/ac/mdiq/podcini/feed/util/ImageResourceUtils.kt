@@ -36,7 +36,7 @@ object ImageResourceUtils {
     @JvmStatic
     fun getFallbackImageLocation(playable: Playable): String? {
         if (playable is FeedMedia) {
-            val item = playable.getItem()
+            val item = playable.item
             return if (item?.feed != null) {
                 item.feed!!.imageUrl
             } else {

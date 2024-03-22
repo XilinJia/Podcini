@@ -1,31 +1,30 @@
 package ac.mdiq.podcini.storage
 
 import ac.mdiq.podcini.R
-import android.content.Context
-import android.text.TextUtils
-import android.util.Log
-import androidx.annotation.VisibleForTesting
-import androidx.media3.common.util.UnstableApi
+import ac.mdiq.podcini.net.sync.model.EpisodeAction
+import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.storage.DBReader.extractItemlistFromCursor
 import ac.mdiq.podcini.storage.DBReader.getFeed
 import ac.mdiq.podcini.storage.DBReader.getFeedItemList
 import ac.mdiq.podcini.storage.DBReader.getFeedList
 import ac.mdiq.podcini.storage.DBReader.loadAdditionalFeedItemListData
-import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
-import ac.mdiq.podcini.util.comparator.FeedItemPubdateComparator
-import ac.mdiq.podcini.util.event.FeedItemEvent.Companion.updated
+import ac.mdiq.podcini.storage.database.PodDBAdapter
+import ac.mdiq.podcini.storage.database.PodDBAdapter.Companion.getInstance
+import ac.mdiq.podcini.storage.database.mapper.FeedCursorMapper.convert
 import ac.mdiq.podcini.storage.model.download.DownloadError
 import ac.mdiq.podcini.storage.model.download.DownloadResult
 import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
-import ac.mdiq.podcini.storage.model.feed.FeedPreferences.NewEpisodesAction
-import ac.mdiq.podcini.net.sync.model.EpisodeAction
-import ac.mdiq.podcini.storage.database.PodDBAdapter
-import ac.mdiq.podcini.storage.database.PodDBAdapter.Companion.getInstance
-import ac.mdiq.podcini.storage.database.mapper.FeedCursorMapper.convert
-import ac.mdiq.podcini.preferences.UserPreferences.newEpisodesAction
+import ac.mdiq.podcini.util.comparator.FeedItemPubdateComparator
+import ac.mdiq.podcini.util.event.FeedItemEvent.Companion.updated
 import ac.mdiq.podcini.util.event.FeedListUpdateEvent
+import ac.mdiq.podcini.util.event.MessageEvent
+import android.content.Context
+import android.text.TextUtils
+import android.util.Log
+import androidx.annotation.VisibleForTesting
+import androidx.media3.common.util.UnstableApi
 import org.greenrobot.eventbus.EventBus
 import java.util.*
 import java.util.concurrent.*
@@ -92,8 +91,8 @@ import java.util.concurrent.*
         media.setDownloaded(false)
         media.setFile_url(null)
         DBWriter.setFeedMedia(media)
-        if (media.getItem() != null) EventBus.getDefault().post(updated(media.getItem()!!))
-        EventBus.getDefault().post(ac.mdiq.podcini.util.event.MessageEvent(context.getString(R.string.error_file_not_found)))
+        if (media.item != null) EventBus.getDefault().post(updated(media.item!!))
+        EventBus.getDefault().post(MessageEvent(context.getString(R.string.error_file_not_found)))
     }
 
     /**
@@ -229,6 +228,7 @@ import java.util.concurrent.*
             }
 
             // get the most recent date now, before we start changing the list
+//            only used to add to IN_Box???
             val priorMostRecent = savedFeed.mostRecentItem
             var priorMostRecentDate: Date? = Date()
             if (priorMostRecent != null) {
@@ -275,11 +275,12 @@ import java.util.concurrent.*
                         oldItem.itemIdentifier = item.itemIdentifier
 
                         if (oldItem.isPlayed() && oldItem.media != null) {
+                            val durs = oldItem.media!!.getDuration() / 1000
                             val action = EpisodeAction.Builder(oldItem, EpisodeAction.PLAY)
                                 .currentTimestamp()
-                                .started(oldItem.media!!.getDuration() / 1000)
-                                .position(oldItem.media!!.getDuration() / 1000)
-                                .total(oldItem.media!!.getDuration() / 1000)
+                                .started(durs)
+                                .position(durs)
+                                .total(durs)
                                 .build()
                             SynchronizationQueueSink.enqueueEpisodeActionIfSynchronizationIsActive(context, action)
                         }

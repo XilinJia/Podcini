@@ -29,6 +29,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
 import ac.mdiq.podcini.preferences.UserPreferences.setShowRemainTimeSetting
 import ac.mdiq.podcini.preferences.UserPreferences.shouldShowRemainingTime
 import ac.mdiq.podcini.ui.appstartintent.MainActivityStarter
+import ac.mdiq.podcini.util.event.MessageEvent
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.PixelFormat
@@ -498,7 +499,7 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: ac.mdiq.podcini.util.event.MessageEvent) {
+    fun onEventMainThread(event: MessageEvent) {
         Log.d(TAG, "onEvent($event)")
         val errorDialog = MaterialAlertDialogBuilder(this)
         errorDialog.setMessage(event.message)
@@ -530,7 +531,7 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
         val hasWebsiteLink = getWebsiteLinkWithFallback(media) != null
         menu.findItem(R.id.visit_website_item).setVisible(hasWebsiteLink)
 
-        val isItemAndHasLink = isFeedMedia && hasLinkToShare((media as FeedMedia).getItem())
+        val isItemAndHasLink = isFeedMedia && hasLinkToShare((media as FeedMedia).item)
         val isItemHasDownloadLink = isFeedMedia && (media as FeedMedia?)?.download_url != null
         menu.findItem(R.id.share_item).setVisible(hasWebsiteLink || isItemAndHasLink || isItemHasDownloadLink)
 
@@ -780,7 +781,7 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
                     return media.getWebsiteLink()
                 }
                 media is FeedMedia -> {
-                    return getLinkWithFallback(media.getItem())
+                    return getLinkWithFallback(media.item)
                 }
                 else -> return null
             }
@@ -788,7 +789,7 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
 
         private fun getFeedItem(playable: Playable?): FeedItem? {
             return if (playable is FeedMedia) {
-                playable.getItem()
+                playable.item
             } else {
                 null
             }

@@ -93,7 +93,7 @@ class ItemDescriptionFragment : Fragment() {
                 return@create
             }
             if (media is FeedMedia) {
-                var item = media.getItem()
+                var item = media.item
                 if (item == null) {
                     item = DBReader.getFeedItem(media.itemId)
                     media.setItem(item)

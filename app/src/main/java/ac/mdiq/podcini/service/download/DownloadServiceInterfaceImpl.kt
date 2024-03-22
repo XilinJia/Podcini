@@ -8,6 +8,8 @@ import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.preferences.UserPreferences
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
 import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.Future
@@ -36,7 +38,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
             ExistingWorkPolicy.KEEP, workRequest.build())
     }
 
-    override fun cancel(context: Context, media: FeedMedia) {
+    @OptIn(UnstableApi::class) override fun cancel(context: Context, media: FeedMedia) {
         // This needs to be done here, not in the worker. Reason: The worker might or might not be running.
         DBWriter.deleteFeedMediaOfItem(context, media.id) // Remove partially downloaded file
         val tag = WORK_TAG_EPISODE_URL + media.download_url
@@ -48,7 +50,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 { workInfos: List<WorkInfo> ->
                     for (info in workInfos) {
                         if (info.tags.contains(WORK_DATA_WAS_QUEUED)) {
-                            if (media.getItem() != null) DBWriter.removeQueueItem(context, false, media.getItem()!!)
+                            if (media.item != null) DBWriter.removeQueueItem(context, false, media.item!!)
                         }
                     }
                     WorkManager.getInstance(context).cancelAllWorkByTag(tag)

@@ -330,7 +330,7 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
             val media = getMedia()
             if (media is FeedMedia) {
                 media.setPosition(time)
-                DBWriter.setFeedItem(media.getItem())
+                DBWriter.setFeedItem(media.item)
                 EventBus.getDefault().post(PlaybackPositionEvent(time, media.getDuration()))
             }
         }

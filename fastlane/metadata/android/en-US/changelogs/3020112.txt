@@ -1,0 +1,12 @@
+ 
+Version 4.3.1 brings several changes:
+
+* titles of played episodes are made brighter
+* icons of played episodes are marked with a check
+* icons of swipe telltales are clickable for setting
+* Straightened up play speed setting
+	* three places to set the play speed:
+	* global setting at the preference
+	* setting for a feed: either use global or customize
+	* setting at the player: set for current playing and save for global
+	* feed setting takes precedence when playing an episode

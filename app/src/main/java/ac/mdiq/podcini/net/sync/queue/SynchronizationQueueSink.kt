@@ -65,13 +65,13 @@ object SynchronizationQueueSink {
         if (!SynchronizationSettings.isProviderConnected) {
             return
         }
-        if (media.getItem()?.feed == null || media.getItem()!!.feed!!.isLocalFeed) {
+        if (media.item?.feed == null || media.item!!.feed!!.isLocalFeed) {
             return
         }
         if (media.startPosition < 0 || (!completed && media.startPosition >= media.getPosition())) {
             return
         }
-        val action = EpisodeAction.Builder(media.getItem()!!, EpisodeAction.PLAY)
+        val action = EpisodeAction.Builder(media.item!!, EpisodeAction.PLAY)
             .currentTimestamp()
             .started(media.startPosition / 1000)
             .position((if (completed) media.getDuration() else media.getPosition()) / 1000)

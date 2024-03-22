@@ -82,6 +82,17 @@
                     android:importantForAccessibility="no"
                     tools:src="@tools:sample/avatars" />
 
+                <ImageView
+                    android:id="@+id/played_mark"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:background="@color/background_green"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentBottom="true"
+                    android:contentDescription="@string/is_played"
+                    app:srcCompat="@drawable/ic_check"
+                    android:importantForAccessibility="yes"/>
+
             </RelativeLayout>
 
         </androidx.cardview.widget.CardView>

@@ -49,8 +49,8 @@ object DownloadRequestCreator {
         }
         Log.d(TAG, "Requesting download media from url " + media.download_url)
 
-        val username = if ((media.getItem()?.feed?.preferences != null)) media.getItem()!!.feed!!.preferences!!.username else null
-        val password = if ((media.getItem()?.feed?.preferences != null)) media.getItem()!!.feed!!.preferences!!.password else null
+        val username = if ((media.item?.feed?.preferences != null)) media.item!!.feed!!.preferences!!.username else null
+        val password = if ((media.item?.feed?.preferences != null)) media.item!!.feed!!.preferences!!.password else null
 
         return DownloadRequest.Builder(dest.toString(), media).withAuthentication(username, password)
     }
@@ -87,7 +87,7 @@ object DownloadRequestCreator {
     }
 
     private fun getMediafilePath(media: FeedMedia): String {
-        val title = media.getItem()?.feed?.title?:return ""
+        val title = media.item?.feed?.title?:return ""
         val mediaPath = (MEDIA_DOWNLOADPATH
                 + FileNameGenerator.generateFileName(title))
         return UserPreferences.getDataFolder(mediaPath).toString() + "/"
@@ -97,8 +97,8 @@ object DownloadRequestCreator {
         var titleBaseFilename = ""
 
         // Try to generate the filename by the item title
-        if (media.getItem()?.title != null) {
-            val title = media.getItem()!!.title!!
+        if (media.item?.title != null) {
+            val title = media.item!!.title!!
             titleBaseFilename = FileNameGenerator.generateFileName(title)
         }
 

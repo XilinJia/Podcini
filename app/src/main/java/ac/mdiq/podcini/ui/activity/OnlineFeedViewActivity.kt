@@ -60,6 +60,7 @@ import ac.mdiq.podcini.feed.parser.FeedHandler
 import ac.mdiq.podcini.feed.parser.FeedHandlerResult
 import ac.mdiq.podcini.feed.parser.UnsupportedFeedtypeException
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
+import ac.mdiq.podcini.service.download.Downloader
 import ac.mdiq.podcini.ui.common.ThemeUtils.getColorFromAttr
 import ac.mdiq.podcini.ui.glide.FastBlurTransformation
 import io.reactivex.Maybe
@@ -89,7 +90,7 @@ class OnlineFeedViewActivity : AppCompatActivity() {
     @Volatile
     private var feeds: List<Feed>? = null
     private var selectedDownloadUrl: String? = null
-    private var downloader: ac.mdiq.podcini.service.download.Downloader? = null
+    private var downloader: Downloader? = null
     private var username: String? = null
     private var password: String? = null
 
@@ -468,7 +469,6 @@ class OnlineFeedViewActivity : AppCompatActivity() {
             if (feed.download_url != null) alternateUrlsList.add(feed.download_url!!)
             alternateUrlsTitleList.add(feed.title)
 
-
             alternateUrlsList.addAll(alternateFeedUrls.keys)
             for (url in alternateFeedUrls.keys) {
                 alternateUrlsTitleList.add(alternateFeedUrls[url])
@@ -554,9 +554,8 @@ class OnlineFeedViewActivity : AppCompatActivity() {
 
     private val feedId: Long
         get() {
-            if (feeds == null) {
-                return 0
-            }
+            if (feeds == null) return 0
+
             for (f in feeds!!) {
                 if (f.download_url == selectedDownloadUrl) {
                     return f.id

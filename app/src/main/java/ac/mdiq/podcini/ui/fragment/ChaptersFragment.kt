@@ -157,7 +157,7 @@ class ChaptersFragment : AppCompatDialogFragment() {
         }
         adapter.setMedia(media)
         (dialog as AlertDialog).getButton(DialogInterface.BUTTON_NEUTRAL).visibility = View.INVISIBLE
-        if ((media is FeedMedia) && !media.getItem()?.podcastIndexChapterUrl.isNullOrEmpty()) {
+        if ((media is FeedMedia) && !media.item?.podcastIndexChapterUrl.isNullOrEmpty()) {
             (dialog as AlertDialog).getButton(DialogInterface.BUTTON_NEUTRAL).visibility = View.VISIBLE
         }
         val positionOfCurrentChapter = getCurrentChapter(media)

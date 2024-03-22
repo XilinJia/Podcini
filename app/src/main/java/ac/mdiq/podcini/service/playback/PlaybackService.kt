@@ -70,6 +70,7 @@ import ac.mdiq.podcini.util.FeedItemUtil.hasAlmostEnded
 import ac.mdiq.podcini.util.FeedUtil.shouldAutoDeleteItemsOnThatFeed
 import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
 import ac.mdiq.podcini.util.NetworkUtils.isStreamingAllowed
+import ac.mdiq.podcini.util.event.MessageEvent
 import ac.mdiq.podcini.util.event.settings.SpeedPresetChangedEvent
 import ac.mdiq.podcini.util.event.settings.VolumeAdaptionChangedEvent
 import android.Manifest
@@ -408,7 +409,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
             parentId == getString(R.string.current_playing_episode) -> {
                 val playable = createInstanceFromPreferences(this)
                 if (playable is FeedMedia) {
-                    feedItems = listOf(playable.getItem())
+                    feedItems = listOf(playable.item)
                 } else {
                     return null
                 }
@@ -516,7 +517,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
             return
         }
 
-        val preferences = playable.getItem()?.feed?.preferences
+        val preferences = playable.item?.feed?.preferences
         val skipIntro = preferences?.feedSkipIntro ?: 0
 
         val context = applicationContext
@@ -536,8 +537,8 @@ class PlaybackService : MediaBrowserServiceCompat() {
 
     @SuppressLint("LaunchActivityFromNotification")
     private fun displayStreamingNotAllowedNotification(originalIntent: Intent) {
-        if (EventBus.getDefault().hasSubscriberForEvent(ac.mdiq.podcini.util.event.MessageEvent::class.java)) {
-            EventBus.getDefault().post(ac.mdiq.podcini.util.event.MessageEvent(
+        if (EventBus.getDefault().hasSubscriberForEvent(MessageEvent::class.java)) {
+            EventBus.getDefault().post(MessageEvent(
                 getString(R.string.confirm_mobile_streaming_notification_message)))
             return
         }
@@ -836,7 +837,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
                         if (newInfo.oldPlayerStatus != null && newInfo.oldPlayerStatus != PlayerStatus.SEEKING && autoEnable() && autoEnableByTime && !sleepTimerActive()) {
                             setSleepTimer(timerMillis())
                             EventBus.getDefault()
-                                .post(ac.mdiq.podcini.util.event.MessageEvent(getString(R.string.sleep_timer_enabled_label),
+                                .post(MessageEvent(getString(R.string.sleep_timer_enabled_label),
                                     { disableSleepTimer() }, getString(R.string.undo)))
                         }
                         loadQueueForMediaSession()
@@ -915,7 +916,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
         }
 
         override fun ensureMediaInfoLoaded(media: Playable) {
-            if (media is FeedMedia && media.getItem() == null) {
+            if (media is FeedMedia && media.item == null) {
                 media.setItem(DBReader.getFeedItem(media.itemId))
             }
         }
@@ -968,10 +969,10 @@ class PlaybackService : MediaBrowserServiceCompat() {
             return null
         }
         Log.d(TAG, "getNextInQueue()")
-        if (currentMedia.getItem() == null) {
+        if (currentMedia.item == null) {
             currentMedia.setItem(DBReader.getFeedItem(currentMedia.itemId))
         }
-        val item = currentMedia.getItem()
+        val item = currentMedia.item
         if (item == null) {
             Log.w(TAG, "getNextInQueue() with FeedMedia object whose FeedItem is null")
             writeNoMediaPlaying()
@@ -1061,7 +1062,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
             return
         }
         val media = playable
-        val item = media.getItem()
+        val item = media.item
         val smartMarkAsPlayed = hasAlmostEnded(media)
         if (!ended && smartMarkAsPlayed) {
             Log.d(TAG, "smart mark as played")
@@ -1133,7 +1134,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
         val remainingTime = duration - currentPosition
 
         val feedMedia = playable
-        val preferences = feedMedia.getItem()?.feed?.preferences
+        val preferences = feedMedia.item?.feed?.preferences
         val skipEnd = preferences?.feedSkipEnding
         if (skipEnd != null && skipEnd > 0 && skipEnd * 1000 < this.duration && (remainingTime - (skipEnd * 1000) > 0)
                 && ((remainingTime - skipEnd * 1000) < (currentPlaybackSpeed * 1000))) {
@@ -1144,7 +1145,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
             val toast = Toast.makeText(context, skipMesg, Toast.LENGTH_LONG)
             toast.show()
 
-            this.autoSkippedFeedMediaId = feedMedia.getItem()!!.identifyingValue
+            this.autoSkippedFeedMediaId = feedMedia.item!!.identifyingValue
             mediaPlayer?.skip()
         }
     }
@@ -1260,11 +1261,11 @@ class PlaybackService : MediaBrowserServiceCompat() {
             var iconUri = p.getImageLocation()
             if (p is FeedMedia) { // Don't use embedded cover etc, which Android can't load
                 val m = p
-                if (m.getItem() != null) {
-                    val item = m.getItem()
-                    if (item?.imageUrl != null) {
+                if (m.item != null) {
+                    val item = m.item!!
+                    if (item.imageUrl != null) {
                         iconUri = item.imageUrl
-                    } else if (item?.feed != null) {
+                    } else if (item.feed != null) {
                         iconUri = item.feed!!.imageUrl
                     }
                 }
@@ -1535,7 +1536,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
     fun speedPresetChanged(event: SpeedPresetChangedEvent) {
 //        TODO: speed
         if (playable is FeedMedia) {
-            if ((playable as FeedMedia).getItem()?.feed?.id == event.feedId) {
+            if ((playable as FeedMedia).item?.feed?.id == event.feedId) {
                 if (event.speed == FeedPreferences.SPEED_USE_GLOBAL) {
                     setSpeed(getPlaybackSpeed(playable!!.getMediaType()))
                 } else {
@@ -1549,9 +1550,9 @@ class PlaybackService : MediaBrowserServiceCompat() {
     @Suppress("unused")
     fun skipIntroEndingPresetChanged(event: ac.mdiq.podcini.util.event.settings.SkipIntroEndingChangedEvent) {
         if (playable is FeedMedia) {
-            if ((playable as FeedMedia).getItem()?.feed?.id == event.feedId) {
+            if ((playable as FeedMedia).item?.feed?.id == event.feedId) {
                 if (event.skipEnding != 0) {
-                    val feedPreferences = (playable as FeedMedia).getItem()?.feed?.preferences
+                    val feedPreferences = (playable as FeedMedia).item?.feed?.preferences
                     if (feedPreferences != null) {
                         feedPreferences.feedSkipIntro = event.skipIntro
                         feedPreferences.feedSkipEnding = event.skipEnding
@@ -1682,7 +1683,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
 
     private fun addPlayableToQueue(playable: Playable?) {
         if (playable is FeedMedia) {
-            val itemId = playable.getItem()?.id ?: return
+            val itemId = playable.item?.id ?: return
             DBWriter.addQueueItem(this, false, true, itemId)
             notifyChildrenChanged(getString(R.string.queue_label))
         }

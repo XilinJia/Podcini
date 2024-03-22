@@ -1,6 +1,27 @@
 package ac.mdiq.podcini.ui.fragment
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.EpisodesListFragmentBinding
+import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
+import ac.mdiq.podcini.net.download.FeedUpdateManager
+import ac.mdiq.podcini.playback.event.PlaybackPositionEvent
+import ac.mdiq.podcini.storage.model.feed.FeedItem
+import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.adapter.EpisodeItemListAdapter
+import ac.mdiq.podcini.ui.adapter.SelectableAdapter
+import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
+import ac.mdiq.podcini.ui.dialog.SwipeActionsDialog
+import ac.mdiq.podcini.ui.fragment.actions.EpisodeMultiSelectActionHandler
+import ac.mdiq.podcini.ui.fragment.swipeactions.SwipeActions
+import ac.mdiq.podcini.ui.menuhandler.FeedItemMenuHandler
+import ac.mdiq.podcini.ui.menuhandler.MenuItemUtils
+import ac.mdiq.podcini.ui.view.EmptyViewHandler
+import ac.mdiq.podcini.ui.view.EpisodeItemListRecyclerView
+import ac.mdiq.podcini.ui.view.LiftOnScrollListener
+import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
+import ac.mdiq.podcini.util.FeedItemUtil
+import ac.mdiq.podcini.util.event.*
 import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
@@ -18,26 +39,6 @@ import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.snackbar.Snackbar
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.EpisodesListFragmentBinding
-import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
-import ac.mdiq.podcini.ui.adapter.EpisodeItemListAdapter
-import ac.mdiq.podcini.ui.adapter.SelectableAdapter
-import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
-import ac.mdiq.podcini.ui.menuhandler.MenuItemUtils
-import ac.mdiq.podcini.util.FeedItemUtil
-import ac.mdiq.podcini.net.download.FeedUpdateManager
-import ac.mdiq.podcini.util.event.*
-import ac.mdiq.podcini.playback.event.PlaybackPositionEvent
-import ac.mdiq.podcini.ui.fragment.actions.EpisodeMultiSelectActionHandler
-import ac.mdiq.podcini.ui.fragment.swipeactions.SwipeActions
-import ac.mdiq.podcini.ui.menuhandler.FeedItemMenuHandler
-import ac.mdiq.podcini.storage.model.feed.FeedItem
-import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
-import ac.mdiq.podcini.ui.view.EmptyViewHandler
-import ac.mdiq.podcini.ui.view.EpisodeItemListRecyclerView
-import ac.mdiq.podcini.ui.view.LiftOnScrollListener
-import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -101,13 +102,13 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
 
         swipeActions = SwipeActions(this, getFragmentTag()).attachTo(recyclerView)
         swipeActions.setFilter(getFilter())
-
-        if (swipeActions.actions?.left != null) {
-            binding.leftActionIcon.setImageResource(swipeActions.actions!!.left!!.getActionIcon())
-        }
-        if (swipeActions.actions?.right != null) {
-            binding.rightActionIcon.setImageResource(swipeActions.actions!!.right!!.getActionIcon())
-        }
+        refreshSwipeTelltale()
+        binding.leftActionIcon.setOnClickListener({
+            swipeActions.showDialog()
+        })
+        binding.rightActionIcon.setOnClickListener({
+            swipeActions.showDialog()
+        })
 
         val animator: RecyclerView.ItemAnimator? = recyclerView.itemAnimator
         if (animator is SimpleItemAnimator) {
@@ -389,6 +390,10 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onSwipeActionsChanged(event: SwipeActionsChangedEvent?) {
+        refreshSwipeTelltale()
+    }
+
+    private fun refreshSwipeTelltale() {
         if (swipeActions.actions?.left != null) {
             binding.leftActionIcon.setImageResource(swipeActions.actions!!.left!!.getActionIcon())
         }

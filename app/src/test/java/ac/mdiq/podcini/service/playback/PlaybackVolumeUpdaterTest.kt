@@ -83,7 +83,7 @@ class PlaybackVolumeUpdaterTest {
 
         val feedMedia = mockFeedMedia()
         Mockito.`when`(mediaPlayer!!.getPlayable()).thenReturn(feedMedia)
-        Mockito.`when`(feedMedia.getItem()?.feed?.id).thenReturn(FEED_ID + 1)
+        Mockito.`when`(feedMedia.item?.feed?.id).thenReturn(FEED_ID + 1)
 
         val playbackVolumeUpdater = PlaybackVolumeUpdater()
         playbackVolumeUpdater.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.OFF)
@@ -100,7 +100,7 @@ class PlaybackVolumeUpdaterTest {
 
         val feedMedia = mockFeedMedia()
         Mockito.`when`(mediaPlayer!!.getPlayable()).thenReturn(feedMedia)
-        val feedPreferences: FeedPreferences = feedMedia.getItem()!!.feed!!.preferences!!
+        val feedPreferences: FeedPreferences = feedMedia.item!!.feed!!.preferences!!
 
         playbackVolumeUpdater.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.LIGHT_REDUCTION)
 
@@ -119,7 +119,7 @@ class PlaybackVolumeUpdaterTest {
 
         val feedMedia = mockFeedMedia()
         Mockito.`when`(mediaPlayer!!.getPlayable()).thenReturn(feedMedia)
-        val feedPreferences: FeedPreferences = feedMedia.getItem()!!.feed!!.preferences!!
+        val feedPreferences: FeedPreferences = feedMedia.item!!.feed!!.preferences!!
 
         playbackVolumeUpdater.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.LIGHT_REDUCTION)
 
@@ -138,7 +138,7 @@ class PlaybackVolumeUpdaterTest {
 
         val feedMedia = mockFeedMedia()
         Mockito.`when`(mediaPlayer!!.getPlayable()).thenReturn(feedMedia)
-        val feedPreferences: FeedPreferences = feedMedia.getItem()!!.feed!!.preferences!!
+        val feedPreferences: FeedPreferences = feedMedia.item!!.feed!!.preferences!!
 
         playbackVolumeUpdater.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.LIGHT_REDUCTION)
 
@@ -157,7 +157,7 @@ class PlaybackVolumeUpdaterTest {
 
         val feedMedia = mockFeedMedia()
         Mockito.`when`(mediaPlayer!!.getPlayable()).thenReturn(feedMedia)
-        val feedPreferences: FeedPreferences = feedMedia.getItem()!!.feed!!.preferences!!
+        val feedPreferences: FeedPreferences = feedMedia.item!!.feed!!.preferences!!
 
         playbackVolumeUpdater.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.LIGHT_REDUCTION)
 
@@ -176,7 +176,7 @@ class PlaybackVolumeUpdaterTest {
 
         val feedMedia = mockFeedMedia()
         Mockito.`when`(mediaPlayer!!.getPlayable()).thenReturn(feedMedia)
-        val feedPreferences: FeedPreferences = feedMedia.getItem()!!.feed!!.preferences!!
+        val feedPreferences: FeedPreferences = feedMedia.item!!.feed!!.preferences!!
 
         playbackVolumeUpdater.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.LIGHT_REDUCTION)
 
@@ -195,7 +195,7 @@ class PlaybackVolumeUpdaterTest {
 
         val feedMedia = mockFeedMedia()
         Mockito.`when`(mediaPlayer!!.getPlayable()).thenReturn(feedMedia)
-        val feedPreferences: FeedPreferences = feedMedia.getItem()!!.feed!!.preferences!!
+        val feedPreferences: FeedPreferences = feedMedia.item!!.feed!!.preferences!!
 
         playbackVolumeUpdater.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.HEAVY_REDUCTION)
 
@@ -212,7 +212,7 @@ class PlaybackVolumeUpdaterTest {
         val feed = Mockito.mock(Feed::class.java)
         val feedPreferences = Mockito.mock(FeedPreferences::class.java)
 
-        Mockito.`when`(feedMedia.getItem()).thenReturn(feedItem)
+        Mockito.`when`(feedMedia.item).thenReturn(feedItem)
         Mockito.`when`(feedItem.feed).thenReturn(feed)
         Mockito.`when`(feed.id).thenReturn(FEED_ID)
         Mockito.`when`(feed.preferences).thenReturn(feedPreferences)

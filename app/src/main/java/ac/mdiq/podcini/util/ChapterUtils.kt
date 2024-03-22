@@ -54,10 +54,10 @@ object ChapterUtils {
         var chaptersFromDatabase: List<Chapter>? = null
         var chaptersFromPodcastIndex: List<Chapter>? = null
         if (playable is FeedMedia) {
-            if (playable.getItem() == null) {
+            if (playable.item == null) {
                 playable.setItem(DBReader.getFeedItem(playable.itemId))
             }
-            val item = playable.getItem()
+            val item = playable.item
             if (item != null) {
                 if (item.hasChapters()) {
                     chaptersFromDatabase = DBReader.loadChaptersOfFeedItem(item)

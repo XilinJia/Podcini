@@ -40,6 +40,7 @@ Version 4.1 brings a more convenient player control and tags enhancements, while
 
 - [Changelog](changelog.md)
 - [Privacy Policy](PrivacyPolicy.md)
+- [Contributing](CONTRIBUTING.md)
 - [Translation (Transifex)](https://app.transifex.com/xilinjia/podcini/dashboard/)
 
 ## License

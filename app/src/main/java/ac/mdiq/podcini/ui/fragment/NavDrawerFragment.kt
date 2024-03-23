@@ -51,6 +51,9 @@ import org.greenrobot.eventbus.ThreadMode
 import kotlin.math.max
 
 class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListener {
+    private var _binding: NavListBinding? = null
+    private val binding get() = _binding!!
+
     private var navDrawerData: NavDrawerData? = null
     private var flatItemList: List<NavDrawerData.FeedDrawerItem>? = null
     private var contextPressedItem: NavDrawerData.FeedDrawerItem? = null
@@ -64,7 +67,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         super.onCreateView(inflater, container, savedInstanceState)
-        val binding = NavListBinding.inflate(inflater)
+        _binding = NavListBinding.inflate(inflater)
 
         Log.d(TAG, "fragment onCreateView")
         setupDrawerRoundBackground(binding.root)
@@ -127,6 +130,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _binding = null
         EventBus.getDefault().unregister(this)
         disposable?.dispose()
 

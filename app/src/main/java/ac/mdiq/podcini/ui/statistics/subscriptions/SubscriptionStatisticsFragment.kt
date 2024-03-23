@@ -29,11 +29,15 @@ import kotlin.math.min
  * Displays the 'playback statistics' screen
  */
 class SubscriptionStatisticsFragment : Fragment() {
+    private var _binding: StatisticsFragmentBinding? = null
+    private val binding get() = _binding!!
+
     private var disposable: Disposable? = null
-    private var feedStatisticsList: RecyclerView? = null
-    private var progressBar: ProgressBar? = null
-    private var listAdapter: PlaybackStatisticsListAdapter? = null
     private var statisticsResult: StatisticsResult? = null
+
+    private lateinit var feedStatisticsList: RecyclerView
+    private lateinit var progressBar: ProgressBar
+    private lateinit var listAdapter: PlaybackStatisticsListAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,13 +47,12 @@ class SubscriptionStatisticsFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?
     ): View {
-        val binding = StatisticsFragmentBinding.inflate(inflater)
-//        val root = inflater.inflate(R.layout.statistics_fragment, container, false)
+        _binding = StatisticsFragmentBinding.inflate(inflater)
         feedStatisticsList = binding.statisticsList
         progressBar = binding.progressBar
         listAdapter = PlaybackStatisticsListAdapter(this)
-        feedStatisticsList?.setLayoutManager(LinearLayoutManager(context))
-        feedStatisticsList?.setAdapter(listAdapter)
+        feedStatisticsList.setLayoutManager(LinearLayoutManager(context))
+        feedStatisticsList.setAdapter(listAdapter)
         EventBus.getDefault().register(this)
         refreshStatistics()
 
@@ -58,6 +61,7 @@ class SubscriptionStatisticsFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _binding = null
         EventBus.getDefault().unregister(this)
         disposable?.dispose()
     }
@@ -84,8 +88,8 @@ class SubscriptionStatisticsFragment : Fragment() {
     }
 
     private fun refreshStatistics() {
-        progressBar!!.visibility = View.VISIBLE
-        feedStatisticsList!!.visibility = View.GONE
+        progressBar.visibility = View.VISIBLE
+        feedStatisticsList.visibility = View.GONE
         loadStatistics()
     }
 
@@ -110,13 +114,13 @@ class SubscriptionStatisticsFragment : Fragment() {
             .subscribe({ result: StatisticsResult ->
                 statisticsResult = result
                 // When "from" is "today", set it to today
-                listAdapter!!.setTimeFilter(includeMarkedAsPlayed, max(
+                listAdapter.setTimeFilter(includeMarkedAsPlayed, max(
                     min(timeFilterFrom.toDouble(), System.currentTimeMillis().toDouble()), result.oldestDate.toDouble())
                     .toLong(),
                     min(timeFilterTo.toDouble(), System.currentTimeMillis().toDouble()).toLong())
-                listAdapter!!.update(result.feedTime)
-                progressBar!!.visibility = View.GONE
-                feedStatisticsList!!.visibility = View.VISIBLE
+                listAdapter.update(result.feedTime)
+                progressBar.visibility = View.GONE
+                feedStatisticsList.visibility = View.VISIBLE
             }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
     }
 

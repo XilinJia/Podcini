@@ -45,7 +45,9 @@ import java.io.Reader
  */
 class OpmlImportActivity : AppCompatActivity() {
     private var uri: Uri? = null
-    private lateinit var viewBinding: OpmlSelectionBinding
+    private var _binding: OpmlSelectionBinding? = null
+    private val binding get() = _binding!!
+
     private lateinit var selectAll: MenuItem
     private lateinit var deselectAll: MenuItem
 
@@ -56,13 +58,13 @@ class OpmlImportActivity : AppCompatActivity() {
         setTheme(getTheme(this))
         super.onCreate(savedInstanceState)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        viewBinding = OpmlSelectionBinding.inflate(layoutInflater)
-        setContentView(viewBinding.root)
+        _binding = OpmlSelectionBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        viewBinding.feedlist.choiceMode = ListView.CHOICE_MODE_MULTIPLE
-        viewBinding.feedlist.onItemClickListener =
+        binding.feedlist.choiceMode = ListView.CHOICE_MODE_MULTIPLE
+        binding.feedlist.onItemClickListener =
             OnItemClickListener { _: AdapterView<*>?, _: View?, _: Int, _: Long ->
-                val checked = viewBinding.feedlist.checkedItemPositions
+                val checked = binding.feedlist.checkedItemPositions
                 var checkedCount = 0
                 for (i in 0 until checked.size()) {
                     if (checked.valueAt(i)) {
@@ -79,14 +81,14 @@ class OpmlImportActivity : AppCompatActivity() {
                     }
                 }
             }
-        viewBinding.butCancel.setOnClickListener {
+        binding.butCancel.setOnClickListener {
             setResult(RESULT_CANCELED)
             finish()
         }
-        viewBinding.butConfirm.setOnClickListener {
-            viewBinding.progressBar.visibility = View.VISIBLE
+        binding.butConfirm.setOnClickListener {
+            binding.progressBar.visibility = View.VISIBLE
             Completable.fromAction {
-                val checked = viewBinding.feedlist.checkedItemPositions
+                val checked = binding.feedlist.checkedItemPositions
                 for (i in 0 until checked.size()) {
                     if (!checked.valueAt(i)) {
                         continue
@@ -105,14 +107,14 @@ class OpmlImportActivity : AppCompatActivity() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                     {
-                        viewBinding.progressBar.visibility = View.GONE
+                        binding.progressBar.visibility = View.GONE
                         val intent = Intent(this@OpmlImportActivity, MainActivity::class.java)
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
                         startActivity(intent)
                         finish()
                     }, { e: Throwable ->
                         e.printStackTrace()
-                        viewBinding.progressBar.visibility = View.GONE
+                        binding.progressBar.visibility = View.GONE
                         Toast.makeText(this, e.message, Toast.LENGTH_LONG).show()
                     })
         }
@@ -185,8 +187,8 @@ class OpmlImportActivity : AppCompatActivity() {
     }
 
     private fun selectAllItems(b: Boolean) {
-        for (i in 0 until viewBinding.feedlist.count) {
-            viewBinding.feedlist.setItemChecked(i, b)
+        for (i in 0 until binding.feedlist.count) {
+            binding.feedlist.setItemChecked(i, b)
         }
     }
 
@@ -209,7 +211,7 @@ class OpmlImportActivity : AppCompatActivity() {
 
     /** Starts the import process.  */
     private fun startImport() {
-        viewBinding.progressBar.visibility = View.VISIBLE
+        binding.progressBar.visibility = View.VISIBLE
 
         Observable.fromCallable {
             val opmlFileStream = contentResolver.openInputStream(uri!!)
@@ -226,13 +228,13 @@ class OpmlImportActivity : AppCompatActivity() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { result: ArrayList<OpmlElement>? ->
-                    viewBinding.progressBar.visibility = View.GONE
+                    binding.progressBar.visibility = View.GONE
                     Log.d(TAG, "Parsing was successful")
                     readElements = result
                     listAdapter = ArrayAdapter(this@OpmlImportActivity,
                         android.R.layout.simple_list_item_multiple_choice,
                         titleList)
-                    viewBinding.feedlist.adapter = listAdapter
+                    binding.feedlist.adapter = listAdapter
                 }, { e: Throwable ->
                     Log.d(TAG, Log.getStackTraceString(e))
                     val message = if (e.message == null) "" else e.message!!
@@ -245,7 +247,7 @@ class OpmlImportActivity : AppCompatActivity() {
                             return@subscribe
                         }
                     }
-                    viewBinding.progressBar.visibility = View.GONE
+                    binding.progressBar.visibility = View.GONE
                     val alert = MaterialAlertDialogBuilder(this)
                     alert.setTitle(R.string.error_label)
                     val userReadable = getString(R.string.opml_reader_error)
@@ -262,6 +264,11 @@ class OpmlImportActivity : AppCompatActivity() {
                     alert.setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int -> finish() }
                     alert.show()
                 })
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
     }
 
     companion object {

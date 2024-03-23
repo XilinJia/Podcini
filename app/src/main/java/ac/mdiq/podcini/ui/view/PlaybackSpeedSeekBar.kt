@@ -10,9 +10,10 @@ import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.core.util.Consumer
 
 class PlaybackSpeedSeekBar : FrameLayout {
-    private lateinit var binding: PlaybackSpeedSeekBarBinding
-    private lateinit var seekBar: SeekBar
+    private var _binding: PlaybackSpeedSeekBarBinding? = null
+    private val binding get() = _binding!!
 
+    private lateinit var seekBar: SeekBar
     private var progressChangedListener: Consumer<Float>? = null
 
     constructor(context: Context) : super(context) {
@@ -28,7 +29,7 @@ class PlaybackSpeedSeekBar : FrameLayout {
     }
 
     private fun setup() {
-        binding = PlaybackSpeedSeekBarBinding.inflate(LayoutInflater.from(context), this, true)
+        _binding = PlaybackSpeedSeekBarBinding.inflate(LayoutInflater.from(context), this, true)
         seekBar = binding.playbackSpeed
         binding.butDecSpeed.setOnClickListener { seekBar.progress -= 2 }
         binding.butIncSpeed.setOnClickListener { seekBar.progress += 2 }

@@ -25,24 +25,34 @@ import io.reactivex.schedulers.Schedulers
  * Displays the 'download statistics' screen
  */
 class DownloadStatisticsFragment : Fragment() {
+
+    private var _binding: StatisticsFragmentBinding? = null
+    private val binding get() = _binding!!
+
     private var disposable: Disposable? = null
-    private var downloadStatisticsList: RecyclerView? = null
-    private var progressBar: ProgressBar? = null
-    private var listAdapter: DownloadStatisticsListAdapter? = null
+
+    private lateinit var downloadStatisticsList: RecyclerView
+    private lateinit var progressBar: ProgressBar
+    private lateinit var listAdapter: DownloadStatisticsListAdapter
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?
     ): View {
-        val binding = StatisticsFragmentBinding.inflate(inflater)
-//        val root = inflater.inflate(R.layout.statistics_fragment, container, false)
+        _binding = StatisticsFragmentBinding.inflate(inflater)
         downloadStatisticsList = binding.statisticsList
         progressBar = binding.progressBar
         listAdapter = DownloadStatisticsListAdapter(requireContext(), this)
-        downloadStatisticsList?.setLayoutManager(LinearLayoutManager(context))
-        downloadStatisticsList?.setAdapter(listAdapter)
+        downloadStatisticsList.layoutManager = LinearLayoutManager(context)
+        downloadStatisticsList.adapter = listAdapter
         refreshDownloadStatistics()
 
         return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
@@ -52,15 +62,13 @@ class DownloadStatisticsFragment : Fragment() {
     }
 
     private fun refreshDownloadStatistics() {
-        progressBar!!.visibility = View.VISIBLE
-        downloadStatisticsList!!.visibility = View.GONE
+        progressBar.visibility = View.VISIBLE
+        downloadStatisticsList.visibility = View.GONE
         loadStatistics()
     }
 
     private fun loadStatistics() {
-        if (disposable != null) {
-            disposable!!.dispose()
-        }
+        disposable?.dispose()
 
         disposable =
             Observable.fromCallable {
@@ -74,9 +82,9 @@ class DownloadStatisticsFragment : Fragment() {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ result: StatisticsResult ->
-                    listAdapter!!.update(result.feedTime)
-                    progressBar!!.visibility = View.GONE
-                    downloadStatisticsList!!.visibility = View.VISIBLE
+                    listAdapter.update(result.feedTime)
+                    progressBar.visibility = View.GONE
+                    downloadStatisticsList.visibility = View.VISIBLE
                 }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
     }
 

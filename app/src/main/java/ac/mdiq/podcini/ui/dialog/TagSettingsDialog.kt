@@ -26,8 +26,10 @@ import org.greenrobot.eventbus.EventBus
 import java.io.Serializable
 
 class TagSettingsDialog : DialogFragment() {
+    private var _binding: EditTagsDialogBinding? = null
+    private val binding get() = _binding!!
+
     private lateinit var displayedTags: MutableList<String>
-    private lateinit var viewBinding: EditTagsDialogBinding
     private lateinit var adapter: SimpleChipAdapter
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -42,9 +44,9 @@ class TagSettingsDialog : DialogFragment() {
         displayedTags = ArrayList(commonTags)
         displayedTags.remove(FeedPreferences.TAG_ROOT)
 
-        viewBinding = EditTagsDialogBinding.inflate(layoutInflater)
-        viewBinding.tagsRecycler.layoutManager = GridLayoutManager(context, 2)
-        viewBinding.tagsRecycler.addItemDecoration(ItemOffsetDecoration(requireContext(), 4))
+        _binding = EditTagsDialogBinding.inflate(layoutInflater)
+        binding.tagsRecycler.layoutManager = GridLayoutManager(context, 2)
+        binding.tagsRecycler.addItemDecoration(ItemOffsetDecoration(requireContext(), 4))
         adapter = object : SimpleChipAdapter(requireContext()) {
             override fun getChips(): List<String> {
                 return displayedTags
@@ -55,30 +57,30 @@ class TagSettingsDialog : DialogFragment() {
                 notifyDataSetChanged()
             }
         }
-        viewBinding.tagsRecycler.adapter = adapter
-//        viewBinding.rootFolderCheckbox.isChecked = commonTags.contains(FeedPreferences.TAG_ROOT)
+        binding.tagsRecycler.adapter = adapter
+//        binding.rootFolderCheckbox.isChecked = commonTags.contains(FeedPreferences.TAG_ROOT)
 
-        viewBinding.newTagTextInput.setEndIconOnClickListener {
-            addTag(viewBinding.newTagEditText.text.toString().trim { it <= ' ' })
+        binding.newTagTextInput.setEndIconOnClickListener {
+            addTag(binding.newTagEditText.text.toString().trim { it <= ' ' })
         }
 
         loadTags()
-        viewBinding.newTagEditText.threshold = 1
-        viewBinding.newTagEditText.setOnTouchListener { _, _ ->
-            viewBinding.newTagEditText.showDropDown()
-            viewBinding.newTagEditText.requestFocus()
+        binding.newTagEditText.threshold = 1
+        binding.newTagEditText.setOnTouchListener { _, _ ->
+            binding.newTagEditText.showDropDown()
+            binding.newTagEditText.requestFocus()
             false
         }
 
         if (feedPreferencesList.size > 1) {
-            viewBinding.commonTagsInfo.visibility = View.VISIBLE
+            binding.commonTagsInfo.visibility = View.VISIBLE
         }
 
         val dialog = MaterialAlertDialogBuilder(requireContext())
-        dialog.setView(viewBinding.root)
+        dialog.setView(binding.root)
         dialog.setTitle(R.string.feed_tags_label)
         dialog.setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
-            addTag(viewBinding.newTagEditText.text.toString().trim { it <= ' ' })
+            addTag(binding.newTagEditText.text.toString().trim { it <= ' ' })
             updatePreferencesTags(feedPreferencesList, commonTags)
             DBReader.buildTags()
             EventBus.getDefault().post(FeedTagsChangedEvent())
@@ -96,7 +98,7 @@ class TagSettingsDialog : DialogFragment() {
             .subscribe(
                 { result: List<String> ->
                     val acAdapter = ArrayAdapter(requireContext(), R.layout.single_tag_text_view, result)
-                    viewBinding.newTagEditText.setAdapter(acAdapter)
+                    binding.newTagEditText.setAdapter(acAdapter)
                 }, { error: Throwable? ->
                     Log.e(TAG, Log.getStackTraceString(error))
                 })
@@ -107,12 +109,16 @@ class TagSettingsDialog : DialogFragment() {
             return
         }
         displayedTags.add(name)
-        viewBinding.newTagEditText.setText("")
+        binding.newTagEditText.setText("")
         adapter.notifyDataSetChanged()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
     @OptIn(UnstableApi::class) private fun updatePreferencesTags(feedPreferencesList: List<FeedPreferences>, commonTags: Set<String>) {
-//        if (viewBinding.rootFolderCheckbox.isChecked) {
+//        if (binding.rootFolderCheckbox.isChecked) {
 //            displayedTags.add(FeedPreferences.TAG_ROOT)
 //        }
         for (preferences in feedPreferencesList) {

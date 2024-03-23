@@ -15,7 +15,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class PlaybackControlsDialog : DialogFragment() {
     private lateinit var dialog: AlertDialog
-    private lateinit var binding: AudioControlsBinding
+    private var _binding: AudioControlsBinding? = null
+    private val binding get() = _binding!!
 
     private var controller: PlaybackController? = null
 
@@ -36,12 +37,17 @@ class PlaybackControlsDialog : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        binding = AudioControlsBinding.inflate(layoutInflater)
+        _binding = AudioControlsBinding.inflate(layoutInflater)
         dialog = MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.audio_controls)
             .setView(R.layout.audio_controls)
             .setPositiveButton(R.string.close_label, null).create()
         return dialog
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     @UnstableApi private fun setupAudioTracks() {

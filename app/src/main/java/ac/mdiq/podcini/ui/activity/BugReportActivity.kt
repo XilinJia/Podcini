@@ -29,13 +29,14 @@ import java.nio.charset.Charset
  * Displays the 'crash report' screen
  */
 class BugReportActivity : AppCompatActivity() {
-    private lateinit var binding: BugReportBinding
+    private var _binding: BugReportBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(getTheme(this))
         super.onCreate(savedInstanceState)
         supportActionBar!!.setDisplayShowHomeEnabled(true)
-        binding = BugReportBinding.inflate(layoutInflater)
+        _binding = BugReportBinding.inflate(layoutInflater)
         setContentView(R.layout.bug_report)
 
         var stacktrace = "No crash report recorded"
@@ -70,6 +71,11 @@ class BugReportActivity : AppCompatActivity() {
                 Snackbar.make(binding.root, R.string.copied_to_clipboard, Snackbar.LENGTH_SHORT).show()
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

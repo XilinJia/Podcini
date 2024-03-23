@@ -54,7 +54,8 @@ import org.greenrobot.eventbus.ThreadMode
  * Displays the cover and the title of a FeedItem.
  */
 class CoverFragment : Fragment() {
-    private lateinit var viewBinding: CoverFragmentBinding
+    private var _binding: CoverFragmentBinding? = null
+    private val binding get() = _binding!!
 
     private var controller: PlaybackController? = null
     private var disposable: Disposable? = null
@@ -64,23 +65,23 @@ class CoverFragment : Fragment() {
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
 
         Log.d(TAG, "fragment onCreateView")
-        viewBinding = CoverFragmentBinding.inflate(inflater)
-        viewBinding.imgvCover.setOnClickListener { onPlayPause() }
-        viewBinding.openDescription.setOnClickListener {
+        _binding = CoverFragmentBinding.inflate(inflater)
+        binding.imgvCover.setOnClickListener { onPlayPause() }
+        binding.openDescription.setOnClickListener {
             (requireParentFragment() as AudioPlayerFragment)
                 .scrollToPage(AudioPlayerFragment.FIRST_PAGE, true)
         }
         val colorFilter: ColorFilter? = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(
-            viewBinding.txtvPodcastTitle.currentTextColor, BlendModeCompat.SRC_IN)
-        viewBinding.butNextChapter.colorFilter = colorFilter
-        viewBinding.butPrevChapter.colorFilter = colorFilter
-        viewBinding.descriptionIcon.colorFilter = colorFilter
-        viewBinding.chapterButton.setOnClickListener {
+            binding.txtvPodcastTitle.currentTextColor, BlendModeCompat.SRC_IN)
+        binding.butNextChapter.colorFilter = colorFilter
+        binding.butPrevChapter.colorFilter = colorFilter
+        binding.descriptionIcon.colorFilter = colorFilter
+        binding.chapterButton.setOnClickListener {
             ChaptersFragment().show(
                 childFragmentManager, ChaptersFragment.TAG)
         }
-        viewBinding.butPrevChapter.setOnClickListener { seekToPrevChapter() }
-        viewBinding.butNextChapter.setOnClickListener { seekToNextChapter() }
+        binding.butPrevChapter.setOnClickListener { seekToPrevChapter() }
+        binding.butNextChapter.setOnClickListener { seekToNextChapter() }
 
         controller = object : PlaybackController(requireActivity()) {
             override fun loadMediaInfo() {
@@ -91,11 +92,12 @@ class CoverFragment : Fragment() {
         loadMediaInfo(false)
         EventBus.getDefault().register(this)
 
-        return viewBinding.root
+        return binding.root
     }
 
     @OptIn(UnstableApi::class) override fun onDestroyView() {
         super.onDestroyView()
+        _binding = null
         controller?.release()
         controller = null
         EventBus.getDefault().unregister(this)
@@ -132,7 +134,7 @@ class CoverFragment : Fragment() {
 
     @UnstableApi private fun displayMediaInfo(media: Playable) {
         val pubDateStr = DateFormatter.formatAbbrev(context, media.getPubDate())
-        viewBinding.txtvPodcastTitle.text = (StringUtils.stripToEmpty(media.getFeedTitle())
+        binding.txtvPodcastTitle.text = (StringUtils.stripToEmpty(media.getFeedTitle())
                 + "\u00A0"
                 + "・"
                 + "\u00A0"
@@ -141,36 +143,36 @@ class CoverFragment : Fragment() {
             val items = media.item
             if (items != null) {
                 val openFeed: Intent = MainActivity.getIntentToOpenFeed(requireContext(), items.feedId)
-                viewBinding.txtvPodcastTitle.setOnClickListener { startActivity(openFeed) }
+                binding.txtvPodcastTitle.setOnClickListener { startActivity(openFeed) }
             }
         } else {
-            viewBinding.txtvPodcastTitle.setOnClickListener(null)
+            binding.txtvPodcastTitle.setOnClickListener(null)
         }
-        viewBinding.txtvPodcastTitle.setOnLongClickListener { copyText(media.getFeedTitle()) }
-        viewBinding.txtvEpisodeTitle.text = media.getEpisodeTitle()
-        viewBinding.txtvEpisodeTitle.setOnLongClickListener { copyText(media.getEpisodeTitle()) }
-        viewBinding.txtvEpisodeTitle.setOnClickListener {
-            val lines = viewBinding.txtvEpisodeTitle.lineCount
+        binding.txtvPodcastTitle.setOnLongClickListener { copyText(media.getFeedTitle()) }
+        binding.txtvEpisodeTitle.text = media.getEpisodeTitle()
+        binding.txtvEpisodeTitle.setOnLongClickListener { copyText(media.getEpisodeTitle()) }
+        binding.txtvEpisodeTitle.setOnClickListener {
+            val lines = binding.txtvEpisodeTitle.lineCount
             val animUnit = 1500
-            if (lines > viewBinding.txtvEpisodeTitle.maxLines) {
-                val titleHeight = (viewBinding.txtvEpisodeTitle.height
-                        - viewBinding.txtvEpisodeTitle.paddingTop
-                        - viewBinding.txtvEpisodeTitle.paddingBottom)
+            if (lines > binding.txtvEpisodeTitle.maxLines) {
+                val titleHeight = (binding.txtvEpisodeTitle.height
+                        - binding.txtvEpisodeTitle.paddingTop
+                        - binding.txtvEpisodeTitle.paddingBottom)
                 val verticalMarquee: ObjectAnimator = ObjectAnimator.ofInt(
-                    viewBinding.txtvEpisodeTitle, "scrollY", 0,
-                    (lines - viewBinding.txtvEpisodeTitle.maxLines)
-                            * (titleHeight / viewBinding.txtvEpisodeTitle.maxLines))
+                    binding.txtvEpisodeTitle, "scrollY", 0,
+                    (lines - binding.txtvEpisodeTitle.maxLines)
+                            * (titleHeight / binding.txtvEpisodeTitle.maxLines))
                     .setDuration((lines * animUnit).toLong())
                 val fadeOut: ObjectAnimator = ObjectAnimator.ofFloat(
-                    viewBinding.txtvEpisodeTitle, "alpha", 0f)
+                    binding.txtvEpisodeTitle, "alpha", 0f)
                 fadeOut.setStartDelay(animUnit.toLong())
                 fadeOut.addListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
-                        viewBinding.txtvEpisodeTitle.scrollTo(0, 0)
+                        binding.txtvEpisodeTitle.scrollTo(0, 0)
                     }
                 })
                 val fadeBackIn: ObjectAnimator = ObjectAnimator.ofFloat(
-                    viewBinding.txtvEpisodeTitle, "alpha", 1f)
+                    binding.txtvEpisodeTitle, "alpha", 1f)
                 val set = AnimatorSet()
                 set.playSequentially(verticalMarquee, fadeOut, fadeBackIn)
                 set.start()
@@ -192,9 +194,9 @@ class CoverFragment : Fragment() {
             chapterControlVisible = fm?.item != null && fm.item!!.hasChapters()
         }
         val newVisibility = if (chapterControlVisible) View.VISIBLE else View.GONE
-        if (viewBinding.chapterButton.visibility != newVisibility) {
-            viewBinding.chapterButton.visibility = newVisibility
-            ObjectAnimator.ofFloat(viewBinding.chapterButton,
+        if (binding.chapterButton.visibility != newVisibility) {
+            binding.chapterButton.visibility = newVisibility
+            ObjectAnimator.ofFloat(binding.chapterButton,
                 "alpha",
                 (if (chapterControlVisible) 0 else 1).toFloat(),
                 (if (chapterControlVisible) 1 else 0).toFloat())
@@ -206,10 +208,10 @@ class CoverFragment : Fragment() {
         if (media != null && chapterIndex > -1) {
             if (media!!.getPosition() > media!!.getDuration() || chapterIndex >= media!!.getChapters().size - 1) {
                 displayedChapterIndex = media!!.getChapters().size - 1
-                viewBinding.butNextChapter.visibility = View.INVISIBLE
+                binding.butNextChapter.visibility = View.INVISIBLE
             } else {
                 displayedChapterIndex = chapterIndex
-                viewBinding.butNextChapter.visibility = View.VISIBLE
+                binding.butNextChapter.visibility = View.VISIBLE
             }
         }
         displayCoverImage()
@@ -281,14 +283,14 @@ class CoverFragment : Fragment() {
             .apply(options)
 
         if (displayedChapterIndex == -1 || media!!.getChapters().isEmpty() || media!!.getChapters()[displayedChapterIndex].imageUrl.isNullOrEmpty()) {
-            cover.into(viewBinding.imgvCover)
+            cover.into(binding.imgvCover)
         } else {
             Glide.with(this)
                 .load(ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage.getModelFor(media!!, displayedChapterIndex))
                 .apply(options)
                 .thumbnail(cover)
                 .error(cover)
-                .into(viewBinding.imgvCover)
+                .into(binding.imgvCover)
         }
     }
 
@@ -300,25 +302,25 @@ class CoverFragment : Fragment() {
     private fun configureForOrientation(newConfig: Configuration) {
         val isPortrait = newConfig.orientation == Configuration.ORIENTATION_PORTRAIT
 
-        viewBinding.coverFragment.orientation = if (isPortrait) LinearLayout.VERTICAL else LinearLayout.HORIZONTAL
+        binding.coverFragment.orientation = if (isPortrait) LinearLayout.VERTICAL else LinearLayout.HORIZONTAL
 
         if (isPortrait) {
-            viewBinding.coverHolder.layoutParams =
+            binding.coverHolder.layoutParams =
                 LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f)
-            viewBinding.coverFragmentTextContainer.layoutParams =
+            binding.coverFragmentTextContainer.layoutParams =
                 LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
         } else {
-            viewBinding.coverHolder.layoutParams =
+            binding.coverHolder.layoutParams =
                 LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
-            viewBinding.coverFragmentTextContainer.layoutParams =
+            binding.coverFragmentTextContainer.layoutParams =
                 LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
         }
 
-        (viewBinding.episodeDetails.parent as ViewGroup).removeView(viewBinding.episodeDetails)
+        (binding.episodeDetails.parent as ViewGroup).removeView(binding.episodeDetails)
         if (isPortrait) {
-            viewBinding.coverFragment.addView(viewBinding.episodeDetails)
+            binding.coverFragment.addView(binding.episodeDetails)
         } else {
-            viewBinding.coverFragmentTextContainer.addView(viewBinding.episodeDetails)
+            binding.coverFragmentTextContainer.addView(binding.episodeDetails)
         }
     }
 

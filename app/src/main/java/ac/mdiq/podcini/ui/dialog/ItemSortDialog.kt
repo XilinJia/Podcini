@@ -18,12 +18,13 @@ import ac.mdiq.podcini.databinding.SortDialogItemBinding
 import ac.mdiq.podcini.storage.model.feed.SortOrder
 
 open class ItemSortDialog : BottomSheetDialogFragment() {
-    protected lateinit var binding: SortDialogBinding
+    protected var _binding: SortDialogBinding? = null
+    protected val binding get() = _binding!!
 
     protected var sortOrder: SortOrder? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = SortDialogBinding.inflate(inflater)
+        _binding = SortDialogBinding.inflate(inflater)
         populateList()
         binding.keepSortedCheckbox.setOnCheckedChangeListener { _: CompoundButton?, _: Boolean -> this@ItemSortDialog.onSelectionChanged() }
         return binding.root
@@ -88,6 +89,11 @@ open class ItemSortDialog : BottomSheetDialogFragment() {
             setupFullHeight(bottomSheetDialog)
         }
         return dialog
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     private fun setupFullHeight(bottomSheetDialog: BottomSheetDialog) {

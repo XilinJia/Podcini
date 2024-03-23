@@ -29,12 +29,15 @@ import io.reactivex.schedulers.Schedulers
 class ItemDescriptionFragment : Fragment() {
     private lateinit var webvDescription: ShownotesWebView
 
+    private var _binding: ItemDescriptionFragmentBinding? = null
+    private val binding get() = _binding!!
+
     private var webViewLoader: Disposable? = null
     private var controller: PlaybackController? = null
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Log.d(TAG, "fragment onCreateView")
-        val binding = ItemDescriptionFragmentBinding.inflate(inflater)
+        _binding = ItemDescriptionFragmentBinding.inflate(inflater)
 
         Log.d(TAG, "fragment onCreateView")
         webvDescription = binding.webview
@@ -70,6 +73,7 @@ class ItemDescriptionFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _binding = null
         controller?.release()
         controller = null
         Log.d(TAG, "Fragment destroyed")

@@ -37,6 +37,9 @@ import org.greenrobot.eventbus.ThreadMode
 import java.util.*
 
 class SleepTimerDialog : DialogFragment() {
+    private var _binding: TimeDialogBinding? = null
+    private val binding get() = _binding!!
+
     private lateinit var controller: PlaybackController
     private lateinit var etxtTime: EditText
     private lateinit var timeSetup: LinearLayout
@@ -61,7 +64,7 @@ class SleepTimerDialog : DialogFragment() {
     }
 
     @UnstableApi override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val binding = TimeDialogBinding.inflate(layoutInflater)
+        _binding = TimeDialogBinding.inflate(layoutInflater)
         val content = binding.root
 //        val content = View.inflate(context, R.layout.time_dialog, null)
         val builder = MaterialAlertDialogBuilder(requireContext())
@@ -151,6 +154,10 @@ class SleepTimerDialog : DialogFragment() {
         return builder.create()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
     private fun showTimeRangeDialog(context: Context, from: Int, to: Int) {
         val dialog = TimeRangeDialog(requireContext(), from, to)
         dialog.setOnDismissListener {

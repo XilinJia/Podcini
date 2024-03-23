@@ -118,3 +118,10 @@
 	* setting for a feed: either use global or customize
 	* setting at the player: set for current playing and save for global
 	* feed setting takes precedence when playing an episode
+	
+## 4.3.2
+
+* further optimized efficiencies of episode info view
+* episode info view opened from icon is now the same as that opened from title area, no long supports horizontal swipes (change from 4.2.7)
+* enhanced viewbingding GC
+* some code cleaning

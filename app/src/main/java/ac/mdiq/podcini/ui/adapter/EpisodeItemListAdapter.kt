@@ -1,17 +1,17 @@
 package ac.mdiq.podcini.ui.adapter
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.util.FeedItemUtil
-import ac.mdiq.podcini.ui.fragment.ItemPagerFragment
-import ac.mdiq.podcini.ui.menuhandler.FeedItemMenuHandler
 import ac.mdiq.podcini.storage.model.feed.FeedItem
+import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.common.ThemeUtils
-import ac.mdiq.podcini.ui.fragment.ItemPageFragment
+import ac.mdiq.podcini.ui.fragment.EpisodeInfoFragment
+import ac.mdiq.podcini.ui.menuhandler.FeedItemMenuHandler
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
+import ac.mdiq.podcini.util.FeedItemUtil
 import android.R.color
 import android.app.Activity
 import android.os.Build
+import android.util.Log
 import android.view.*
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.RecyclerView
@@ -82,9 +82,10 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) :
         holder.infoCard.setOnClickListener {
             val activity: MainActivity? = mainActivityRef.get()
             if (!inActionMode()) {
-                val ids: LongArray = FeedItemUtil.getIds(episodes)
-                val position = ArrayUtils.indexOf(ids, item.id)
-                activity?.loadChildFragment(ItemPageFragment.newInstance(ids, position))
+//                val ids: LongArray = FeedItemUtil.getIds(episodes)
+//                val position = ArrayUtils.indexOf(ids, item.id)
+                activity?.loadChildFragment(EpisodeInfoFragment.newInstance(episodes[pos]))
+                Log.d("infoCard", "setOnClickListener starting EpisodeInfoFragment")
             } else {
                 toggleSelection(holder.bindingAdapterPosition)
             }
@@ -93,9 +94,9 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) :
         holder.coverHolder.setOnClickListener {
             val activity: MainActivity? = mainActivityRef.get()
             if (!inActionMode()) {
-                val ids: LongArray = FeedItemUtil.getIds(episodes)
-                val position = ArrayUtils.indexOf(ids, item.id)
-                activity?.loadChildFragment(ItemPagerFragment.newInstance(ids, position))
+//                val ids: LongArray = FeedItemUtil.getIds(episodes)
+//                val position = ArrayUtils.indexOf(ids, item.id)
+                activity?.loadChildFragment(EpisodeInfoFragment.newInstance(episodes[pos]))
             } else {
                 toggleSelection(holder.bindingAdapterPosition)
             }

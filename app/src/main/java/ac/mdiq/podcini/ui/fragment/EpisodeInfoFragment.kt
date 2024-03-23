@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.FeeditemFragmentBinding
+import ac.mdiq.podcini.databinding.EpisodeInfoFragmentBinding
 import ac.mdiq.podcini.databinding.PopupBubbleViewBinding
 import ac.mdiq.podcini.feed.util.ImageResourceUtils
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
@@ -46,6 +46,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.FitCenter
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.snackbar.Snackbar
 import com.skydoves.balloon.ArrowOrientation
 import com.skydoves.balloon.ArrowOrientationRules
@@ -62,14 +63,14 @@ import java.util.*
 import kotlin.math.max
 
 /**
- * Displays information about a FeedItem and actions.
+ * Displays information about an Episode (FeedItem) and actions.
  */
-class ItemFragment : Fragment() {
+class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var itemsLoaded = false
-    private var itemId: Long = 0
     private var item: FeedItem? = null
     private var webviewData: String? = null
 
+    private lateinit var toolbar: MaterialToolbar
     private lateinit var root: ViewGroup
     private lateinit var webvDescription: ShownotesWebView
     private lateinit var txtvPodcast: TextView
@@ -87,6 +88,9 @@ class ItemFragment : Fragment() {
     private lateinit var butAction2: View
     private lateinit var noMediaLabel: View
 
+    private var _binding: EpisodeInfoFragmentBinding? = null
+    private val binding get() = _binding!!
+
     private var actionButton1: ItemActionButton? = null
     private var actionButton2: ItemActionButton? = null
 
@@ -96,15 +100,23 @@ class ItemFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        itemId = requireArguments().getLong(ARG_FEEDITEM)
+        item = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) requireArguments().getSerializable(ARG_FEEDITEM, FeedItem::class.java)
+        else requireArguments().getSerializable(ARG_FEEDITEM) as? FeedItem
     }
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
-        val binding = FeeditemFragmentBinding.inflate(inflater)
-        root = binding.root
 
+        _binding = EpisodeInfoFragmentBinding.inflate(inflater, container, false)
+        root = binding.root
         Log.d(TAG, "fragment onCreateView")
+
+        toolbar = binding.toolbar
+        toolbar.title = ""
+        toolbar.inflateMenu(R.menu.feeditem_options)
+        toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
+        toolbar.setOnMenuItemClickListener(this)
+
         txtvPodcast = binding.txtvPodcast
         txtvPodcast.setOnClickListener { openPodcast() }
         txtvTitle = binding.txtvTitle
@@ -186,10 +198,10 @@ class ItemFragment : Fragment() {
             .setDismissWhenTouchOutside(true)
             .setLifecycleOwner(this)
             .build()
-        val binding = PopupBubbleViewBinding.bind(balloon.getContentView())
-        val positiveButton = binding.balloonButtonPositive
-        val negativeButton = binding.balloonButtonNegative
-        val message: TextView = binding.balloonMessage
+        val binding_ = PopupBubbleViewBinding.bind(balloon.getContentView())
+        val positiveButton = binding_.balloonButtonPositive
+        val negativeButton = binding_.balloonButtonNegative
+        val message: TextView = binding_.balloonMessage
         message.setText(if (offerStreaming) R.string.on_demand_config_stream_text
         else R.string.on_demand_config_download_text)
         positiveButton.setOnClickListener {
@@ -206,6 +218,35 @@ class ItemFragment : Fragment() {
         balloon.showAlignBottom(butAction1, 0, (-12 * resources.displayMetrics.density).toInt())
     }
 
+    @UnstableApi override fun onMenuItemClick(menuItem: MenuItem): Boolean {
+        when (menuItem.itemId) {
+            R.id.open_podcast -> {
+                openPodcast()
+                return true
+            }
+            R.id.share_notes -> {
+                if (item == null) return false
+                val notes = item!!.description
+                if (!notes.isNullOrEmpty()) {
+                    val shareText = if (Build.VERSION.SDK_INT >= 24) Html.fromHtml(notes, Html.FROM_HTML_MODE_LEGACY).toString()
+                    else Html.fromHtml(notes).toString()
+                    val context = requireContext()
+                    val intent = ShareCompat.IntentBuilder(context)
+                        .setType("text/plain")
+                        .setText(shareText)
+                        .setChooserTitle(R.string.share_notes_label)
+                        .createChooserIntent()
+                    context.startActivity(intent)
+                }
+                return true
+            }
+            else -> {
+                if (item == null) return false
+                return FeedItemMenuHandler.onMenuItemClicked(this, menuItem.itemId, item!!)
+            }
+        }
+    }
+
     @UnstableApi override fun onResume() {
         super.onResume()
         if (itemsLoaded) {
@@ -216,6 +257,8 @@ class ItemFragment : Fragment() {
 
     @OptIn(UnstableApi::class) override fun onDestroyView() {
         super.onDestroyView()
+        Log.d(TAG, "onDestroyView")
+        _binding = null
         EventBus.getDefault().unregister(this)
         controller?.release()
         disposable?.dispose()
@@ -234,6 +277,13 @@ class ItemFragment : Fragment() {
         if (item == null) {
             Log.d(TAG, "updateAppearance item is null")
             return
+        }
+        if (item!!.hasMedia()) {
+            FeedItemMenuHandler.onPrepareMenu(toolbar.menu, item)
+        } else {
+            // these are already available via button1 and button2
+            FeedItemMenuHandler.onPrepareMenu(toolbar.menu, item,
+                R.id.mark_read_item, R.id.visit_website_item)
         }
         if (item!!.feed != null) txtvPodcast.text = item!!.feed!!.title
         txtvTitle.text = item!!.title
@@ -388,35 +438,24 @@ class ItemFragment : Fragment() {
     }
 
     private fun loadInBackground(): FeedItem? {
-        val feedItem: FeedItem? = DBReader.getFeedItem(itemId)
-        val context = context
-        if (feedItem != null && context != null) {
+        val feedItem = item
+        if (feedItem != null) {
             val duration = feedItem.media?.getDuration()?: Int.MAX_VALUE
             DBReader.loadDescriptionOfFeedItem(feedItem)
-            val t = ShownotesCleaner(context, feedItem.description?:"", duration)
-            webviewData = t.processShownotes()
-            val bundle = Bundle()
-            bundle.putString("description", feedItem.description?:"")
-            this.arguments = bundle
+            webviewData = ShownotesCleaner(requireContext(), feedItem.description?:"", duration).processShownotes()
         }
         return feedItem
     }
 
     companion object {
-        private const val TAG = "ItemFragment"
+        private const val TAG = "EpisodeInfoFragment"
         private const val ARG_FEEDITEM = "feeditem"
 
-        /**
-         * Creates a new instance of an ItemFragment
-         *
-         * @param feeditem The ID of the FeedItem to show
-         * @return The ItemFragment instance
-         */
         @JvmStatic
-        fun newInstance(feeditem: Long): ItemFragment {
-            val fragment = ItemFragment()
+        fun newInstance(item: FeedItem): EpisodeInfoFragment {
+            val fragment = EpisodeInfoFragment()
             val args = Bundle()
-            args.putLong(ARG_FEEDITEM, feeditem)
+            args.putSerializable(ARG_FEEDITEM, item)
             fragment.arguments = args
             return fragment
         }

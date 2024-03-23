@@ -22,7 +22,6 @@ class ContributorsPagerFragment : Fragment() {
         super.onCreateView(inflater, container, savedInstanceState)
         setHasOptionsMenu(true)
         val binding = PagerFragmentBinding.inflate(inflater)
-//        val rootView = inflater.inflate(R.layout.pager_fragment, container, false)
         val viewPager = binding.viewpager
         viewPager.adapter = StatisticsPagerAdapter(
             this)

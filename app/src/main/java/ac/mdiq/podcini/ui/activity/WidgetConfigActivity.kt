@@ -19,6 +19,9 @@ import ac.mdiq.podcini.receiver.PlayerWidget
 import ac.mdiq.podcini.ui.widget.WidgetUpdaterWorker
 
 class WidgetConfigActivity : AppCompatActivity() {
+    private var _binding: ActivityWidgetConfigBinding? = null
+    private val binding get() = _binding!!
+
     private var appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
 
     private lateinit var widgetPreview: View
@@ -33,7 +36,7 @@ class WidgetConfigActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(getTheme(this))
         super.onCreate(savedInstanceState)
-        val binding = ActivityWidgetConfigBinding.inflate(layoutInflater)
+        _binding = ActivityWidgetConfigBinding.inflate(layoutInflater)
         setContentView(R.layout.activity_widget_config)
 
         val configIntent = intent
@@ -90,6 +93,10 @@ class WidgetConfigActivity : AppCompatActivity() {
         setInitialState()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
+    }
     private fun setInitialState() {
         val prefs = getSharedPreferences(PlayerWidget.PREFS_NAME, MODE_PRIVATE)
         ckPlaybackSpeed.isChecked = prefs.getBoolean(PlayerWidget.KEY_WIDGET_PLAYBACK_SPEED + appWidgetId, false)

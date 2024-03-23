@@ -61,6 +61,9 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private val addLocalFolderLauncher = registerForActivityResult<Uri?, Uri>(AddLocalFolder()
     ) { uri: Uri? -> this.addLocalFolderResult(uri) }
 
+    private var _binding: FeedinfoBinding? = null
+    private val binding get() = _binding!!
+
     private var feed: Feed? = null
     private var disposable: Disposable? = null
     
@@ -90,7 +93,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
-        val binding = FeedinfoBinding.inflate(inflater)
+        _binding = FeedinfoBinding.inflate(inflater)
 
         Log.d(TAG, "fragment onCreateView")
         toolbar = binding.toolbar
@@ -242,8 +245,9 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         refreshToolbarState()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
         disposable?.dispose()
     }
 

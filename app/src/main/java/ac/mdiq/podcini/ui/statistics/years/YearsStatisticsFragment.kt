@@ -27,21 +27,24 @@ import org.greenrobot.eventbus.ThreadMode
  * Displays the yearly statistics screen
  */
 class YearsStatisticsFragment : Fragment() {
+    private var _binding: StatisticsFragmentBinding? = null
+    private val binding get() = _binding!!
+
     private var disposable: Disposable? = null
-    private var yearStatisticsList: RecyclerView? = null
-    private var progressBar: ProgressBar? = null
-    private var listAdapter: YearStatisticsListAdapter? = null
+
+    private lateinit var yearStatisticsList: RecyclerView
+    private lateinit var progressBar: ProgressBar
+    private lateinit var listAdapter: YearStatisticsListAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?
     ): View {
-        val binding = StatisticsFragmentBinding.inflate(inflater)
-//        val root = inflater.inflate(R.layout.statistics_fragment, container, false)
+        _binding = StatisticsFragmentBinding.inflate(inflater)
         yearStatisticsList = binding.statisticsList
         progressBar = binding.progressBar
         listAdapter = YearStatisticsListAdapter(requireContext())
-        yearStatisticsList?.layoutManager = LinearLayoutManager(context)
-        yearStatisticsList?.adapter = listAdapter
+        yearStatisticsList.layoutManager = LinearLayoutManager(context)
+        yearStatisticsList.adapter = listAdapter
         EventBus.getDefault().register(this)
         refreshStatistics()
 
@@ -50,6 +53,7 @@ class YearsStatisticsFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _binding = null
         EventBus.getDefault().unregister(this)
         disposable?.dispose()
     }
@@ -67,22 +71,21 @@ class YearsStatisticsFragment : Fragment() {
     }
 
     private fun refreshStatistics() {
-        progressBar!!.visibility = View.VISIBLE
-        yearStatisticsList!!.visibility = View.GONE
+        progressBar.visibility = View.VISIBLE
+        yearStatisticsList.visibility = View.GONE
         loadStatistics()
     }
 
     private fun loadStatistics() {
-        if (disposable != null) {
-            disposable!!.dispose()
-        }
+        disposable?.dispose()
+
         disposable = Observable.fromCallable { DBReader.getMonthlyTimeStatistics() }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ result: List<MonthlyStatisticsItem> ->
-                listAdapter!!.update(result)
-                progressBar!!.visibility = View.GONE
-                yearStatisticsList!!.visibility = View.VISIBLE
+                listAdapter.update(result)
+                progressBar.visibility = View.GONE
+                yearStatisticsList.visibility = View.VISIBLE
             }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
     }
 

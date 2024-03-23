@@ -58,7 +58,9 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
     private var runningDownloads: Set<String>? = HashSet()
     private var items: MutableList<FeedItem> = mutableListOf()
 
-    private lateinit var binding: SimpleListFragmentBinding
+    private var _binding: SimpleListFragmentBinding? = null
+    private val binding get() = _binding!!
+
     private lateinit var infoBar: TextView
     private lateinit var adapter: CompletedDownloadsListAdapter
     private lateinit var toolbar: MaterialToolbar
@@ -75,7 +77,7 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                                            savedInstanceState: Bundle?
     ): View {
-        binding = SimpleListFragmentBinding.inflate(inflater)
+        _binding = SimpleListFragmentBinding.inflate(inflater)
 
         Log.d(TAG, "fragment onCreateView")
         toolbar = binding.toolbar
@@ -168,6 +170,7 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
 
     override fun onDestroyView() {
         EventBus.getDefault().unregister(this)
+        _binding = null
         adapter.endSelectMode()
         toolbar.setOnMenuItemClickListener(null)
         toolbar.setOnLongClickListener(null)

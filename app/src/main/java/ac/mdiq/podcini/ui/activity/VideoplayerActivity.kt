@@ -65,7 +65,8 @@ import org.greenrobot.eventbus.ThreadMode
 @UnstableApi
 class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
 
-    private lateinit var binding: VideoplayerActivityBinding
+    private var _binding: VideoplayerActivityBinding? = null
+    private val binding get() = _binding!!
 
     /**
      * True if video controls are currently visible.
@@ -91,7 +92,7 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
         super.onCreate(savedInstanceState)
 
         window.setFormat(PixelFormat.TRANSPARENT)
-        binding = VideoplayerActivityBinding.inflate(LayoutInflater.from(this))
+        _binding = VideoplayerActivityBinding.inflate(LayoutInflater.from(this))
         setContentView(binding.root)
         setupView()
         supportActionBar?.setBackgroundDrawable(ColorDrawable(-0x80000000))
@@ -119,6 +120,7 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
 
     override fun onDestroy() {
         super.onDestroy()
+        _binding = null
         controller?.release()
         controller = null // prevent leak
         disposable?.dispose()

@@ -65,7 +65,9 @@ import kotlin.math.min
  */
 @UnstableApi
 class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar.OnMenuItemClickListener {
-    lateinit var viewBinding: AudioplayerFragmentBinding
+    var _binding: AudioplayerFragmentBinding? = null
+    private val binding get() = _binding!!
+
     lateinit var butPlaybackSpeed: PlaybackSpeedIndicatorView
     lateinit var txtvPlaybackSpeed: TextView
 
@@ -100,12 +102,12 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                               savedInstanceState: Bundle?
     ): View {
         super.onCreateView(inflater, container, savedInstanceState)
-        viewBinding = AudioplayerFragmentBinding.inflate(inflater)
+        _binding = AudioplayerFragmentBinding.inflate(inflater)
 
-        viewBinding.root.setOnTouchListener { _: View?, _: MotionEvent? -> true } // Avoid clicks going through player to fragments below
+        binding.root.setOnTouchListener { _: View?, _: MotionEvent? -> true } // Avoid clicks going through player to fragments below
 
         Log.d(TAG, "fragment onCreateView")
-        toolbar = viewBinding.toolbar
+        toolbar = binding.toolbar
         toolbar.title = ""
         toolbar.setNavigationOnClickListener {
             (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_EXPANDED)
@@ -116,26 +118,26 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         childFragmentManager.beginTransaction()
             .replace(R.id.playerFragment, externalPlayerFragment, ExternalPlayerFragment.TAG)
             .commit()
-//        playerFragment = viewBinding.playerFragment
-        playerFragment = viewBinding.root.findViewById(R.id.playerFragment)
+//        playerFragment = binding.playerFragment
+        playerFragment = binding.root.findViewById(R.id.playerFragment)
         playerFragment.setBackgroundColor(
             SurfaceColors.getColorForElevation(requireContext(), 8 * resources.displayMetrics.density))
 
-        episodeTitle = viewBinding.titleView
-        butPlaybackSpeed = viewBinding.butPlaybackSpeed
-        txtvPlaybackSpeed = viewBinding.txtvPlaybackSpeed
-        sbPosition = viewBinding.sbPosition
-        txtvPosition = viewBinding.txtvPosition
-        txtvLength = viewBinding.txtvLength
-        butRev = viewBinding.butRev
-        txtvRev = viewBinding.txtvRev
-        butPlay = viewBinding.butPlay
-        butFF = viewBinding.butFF
-        txtvFF = viewBinding.txtvFF
-        butSkip = viewBinding.butSkip
-        progressIndicator = viewBinding.progLoading
-        cardViewSeek = viewBinding.cardViewSeek
-        txtvSeek = viewBinding.txtvSeek
+        episodeTitle = binding.titleView
+        butPlaybackSpeed = binding.butPlaybackSpeed
+        txtvPlaybackSpeed = binding.txtvPlaybackSpeed
+        sbPosition = binding.sbPosition
+        txtvPosition = binding.txtvPosition
+        txtvLength = binding.txtvLength
+        butRev = binding.butRev
+        txtvRev = binding.txtvRev
+        butPlay = binding.butPlay
+        butFF = binding.butFF
+        txtvFF = binding.txtvFF
+        butSkip = binding.butSkip
+        progressIndicator = binding.progLoading
+        cardViewSeek = binding.cardViewSeek
+        txtvSeek = binding.txtvSeek
 
         setupLengthTextView()
         setupControlButtons()
@@ -144,7 +146,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         }
         sbPosition.setOnSeekBarChangeListener(this)
 
-        pager = viewBinding.pager
+        pager = binding.pager
         pager.adapter = AudioPlayerPagerAdapter(this@AudioPlayerFragment)
         // Required for getChildAt(int) in ViewPagerBottomSheetBehavior to return the correct page
         pager.offscreenPageLimit = NUM_CONTENT_FRAGMENTS
@@ -164,11 +166,12 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         loadMediaInfo(false)
         EventBus.getDefault().register(this)
 
-        return viewBinding.root
+        return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _binding = null
         controller?.release()
         controller = null
         EventBus.getDefault().unregister(this)

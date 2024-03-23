@@ -104,21 +104,23 @@ class OnlineFeedViewActivity : AppCompatActivity() {
     private var parser: Disposable? = null
     private var updater: Disposable? = null
 
-    private lateinit var hBinding: OnlinefeedviewHeaderBinding
-    private lateinit var binding: OnlinefeedviewActivityBinding
+    private var _hBinding: OnlinefeedviewHeaderBinding? = null
+    private val hBinding get() = _hBinding!!
+    private var _binding: OnlinefeedviewActivityBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(getTranslucentTheme(this))
         super.onCreate(savedInstanceState)
 
-        binding = OnlinefeedviewActivityBinding.inflate(layoutInflater)
+        _binding = OnlinefeedviewActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         binding.transparentBackground.setOnClickListener { finish() }
         binding.closeButton.setOnClickListener { finish() }
         binding.card.setOnClickListener(null)
         binding.card.setCardBackgroundColor(getColorFromAttr(this, R.attr.colorSurface))
-        hBinding = OnlinefeedviewHeaderBinding.inflate(layoutInflater)
+        _hBinding = OnlinefeedviewHeaderBinding.inflate(layoutInflater)
 
         var feedUrl: String? = null
         when {
@@ -193,6 +195,8 @@ class OnlineFeedViewActivity : AppCompatActivity() {
 
     public override fun onDestroy() {
         super.onDestroy()
+        _binding = null
+        _hBinding = null
         updater?.dispose()
         download?.dispose()
         parser?.dispose()

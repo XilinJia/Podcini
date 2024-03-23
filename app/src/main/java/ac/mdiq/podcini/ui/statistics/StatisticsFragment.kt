@@ -39,12 +39,15 @@ class StatisticsFragment : PagedToolbarFragment() {
     private lateinit var viewPager: ViewPager2
     private lateinit var toolbar: MaterialToolbar
 
+    private var _binding: PagerFragmentBinding? = null
+    private val binding get() = _binding!!
+
     @OptIn(UnstableApi::class) override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                                                          savedInstanceState: Bundle?
     ): View {
         super.onCreateView(inflater, container, savedInstanceState)
         setHasOptionsMenu(true)
-        val binding = PagerFragmentBinding.inflate(inflater)
+        _binding = PagerFragmentBinding.inflate(inflater)
         viewPager = binding.viewpager
         toolbar = binding.toolbar
         toolbar.title = getString(R.string.statistics_label)
@@ -68,6 +71,10 @@ class StatisticsFragment : PagedToolbarFragment() {
         return binding.root
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
     @UnstableApi override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.statistics_reset) {
             confirmResetStatistics()

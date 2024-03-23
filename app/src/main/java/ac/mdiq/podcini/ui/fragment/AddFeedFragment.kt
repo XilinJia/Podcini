@@ -36,7 +36,9 @@ import io.reactivex.schedulers.Schedulers
  */
 @UnstableApi
 class AddFeedFragment : Fragment() {
-    private lateinit var viewBinding: AddfeedBinding
+    private var _binding: AddfeedBinding? = null
+    private val binding get() = _binding!!
+
     private var activity: MainActivity? = null
     private var displayUpArrow = false
 
@@ -50,7 +52,7 @@ class AddFeedFragment : Fragment() {
                               savedInstanceState: Bundle?
     ): View {
         super.onCreateView(inflater, container, savedInstanceState)
-        viewBinding = AddfeedBinding.inflate(inflater)
+        _binding = AddfeedBinding.inflate(inflater)
         activity = getActivity() as? MainActivity
 
         Log.d(TAG, "fragment onCreateView")
@@ -58,33 +60,33 @@ class AddFeedFragment : Fragment() {
         if (savedInstanceState != null) {
             displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
         }
-        (getActivity() as MainActivity).setupToolbarToggle(viewBinding.toolbar, displayUpArrow)
+        (getActivity() as MainActivity).setupToolbarToggle(binding.toolbar, displayUpArrow)
 
-        viewBinding.searchItunesButton.setOnClickListener {
+        binding.searchItunesButton.setOnClickListener {
             activity?.loadChildFragment(OnlineSearchFragment.newInstance(
                 ItunesPodcastSearcher::class.java))
         }
-        viewBinding.searchFyydButton.setOnClickListener {
+        binding.searchFyydButton.setOnClickListener {
             activity?.loadChildFragment(OnlineSearchFragment.newInstance(
                 FyydPodcastSearcher::class.java))
         }
-        viewBinding.searchGPodderButton.setOnClickListener {
+        binding.searchGPodderButton.setOnClickListener {
             activity?.loadChildFragment(OnlineSearchFragment.newInstance(
                 GpodnetPodcastSearcher::class.java))
         }
-        viewBinding.searchPodcastIndexButton.setOnClickListener {
+        binding.searchPodcastIndexButton.setOnClickListener {
             activity?.loadChildFragment(OnlineSearchFragment.newInstance(
                 PodcastIndexPodcastSearcher::class.java))
         }
 
-        viewBinding.combinedFeedSearchEditText.setOnEditorActionListener { _: TextView?, _: Int, _: KeyEvent? ->
+        binding.combinedFeedSearchEditText.setOnEditorActionListener { _: TextView?, _: Int, _: KeyEvent? ->
             performSearch()
             true
         }
 
-        viewBinding.addViaUrlButton.setOnClickListener { showAddViaUrlDialog() }
+        binding.addViaUrlButton.setOnClickListener { showAddViaUrlDialog() }
 
-        viewBinding.opmlImportButton.setOnClickListener {
+        binding.opmlImportButton.setOnClickListener {
             try {
                 chooseOpmlImportPathLauncher.launch("*/*")
             } catch (e: ActivityNotFoundException) {
@@ -93,7 +95,7 @@ class AddFeedFragment : Fragment() {
             }
         }
 
-        viewBinding.addLocalFolderButton.setOnClickListener {
+        binding.addLocalFolderButton.setOnClickListener {
             try {
                 addLocalFolderLauncher.launch(null)
             } catch (e: ActivityNotFoundException) {
@@ -101,9 +103,9 @@ class AddFeedFragment : Fragment() {
                 activity?.showSnackbarAbovePlayer(R.string.unable_to_start_system_file_manager, Snackbar.LENGTH_LONG)
             }
         }
-        viewBinding.searchButton.setOnClickListener { performSearch() }
+        binding.searchButton.setOnClickListener { performSearch() }
 
-        return viewBinding.root
+        return binding.root
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -139,21 +141,26 @@ class AddFeedFragment : Fragment() {
     }
 
     private fun performSearch() {
-        viewBinding.combinedFeedSearchEditText.clearFocus()
+        binding.combinedFeedSearchEditText.clearFocus()
         val inVal = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        inVal.hideSoftInputFromWindow(viewBinding.combinedFeedSearchEditText.windowToken, 0)
-        val query = viewBinding.combinedFeedSearchEditText.text.toString()
+        inVal.hideSoftInputFromWindow(binding.combinedFeedSearchEditText.windowToken, 0)
+        val query = binding.combinedFeedSearchEditText.text.toString()
         if (query.matches("http[s]?://.*".toRegex())) {
             addUrl(query)
             return
         }
         activity?.loadChildFragment(OnlineSearchFragment.newInstance(CombinedSearcher::class.java, query))
-        viewBinding.combinedFeedSearchEditText.post { viewBinding.combinedFeedSearchEditText.setText("") }
+        binding.combinedFeedSearchEditText.post { binding.combinedFeedSearchEditText.setText("") }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = true
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     private fun chooseOpmlImportPathResult(uri: Uri?) {

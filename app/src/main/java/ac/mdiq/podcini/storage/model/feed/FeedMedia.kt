@@ -192,10 +192,6 @@ class FeedMedia : FeedFile, Playable {
         return (CHECKED_ON_SIZE_BUT_UNKNOWN.toLong() == this.size)
     }
 
-//    fun getItem(): FeedItem? {
-//        return item
-//    }
-
     /**
      * Sets the item object of this FeedMedia. If the given
      * FeedItem object is not null, it's 'media'-attribute value

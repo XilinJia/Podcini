@@ -32,6 +32,9 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
     private lateinit var speedSeekBar: PlaybackSpeedSeekBar
     private lateinit var addCurrentSpeedChip: Chip
 
+    private var _binding: SpeedSelectDialogBinding? = null
+    private val binding get() = _binding!!
+
     private var controller: PlaybackController? = null
     private val selectedSpeeds: MutableList<Float>
 
@@ -69,7 +72,7 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                                            savedInstanceState: Bundle?
     ): View? {
-        val binding = SpeedSelectDialogBinding.inflate(inflater)
+        _binding = SpeedSelectDialogBinding.inflate(inflater)
         speedSeekBar = binding.speedSeekBar
         speedSeekBar.setProgressChangedListener { multiplier: Float ->
             controller?.setPlaybackSpeed(multiplier)
@@ -97,6 +100,10 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
         return binding.root
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
     private fun addCurrentSpeed() {
         val newSpeed = speedSeekBar.currentSpeed
         if (selectedSpeeds.contains(newSpeed)) {

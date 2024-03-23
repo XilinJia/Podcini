@@ -25,9 +25,10 @@ import ac.mdiq.podcini.net.discovery.PodcastSearcherRegistry
 import io.reactivex.disposables.Disposable
 
 class OnlineSearchFragment : Fragment() {
-    /**
-     * Adapter responsible with the search results
-     */
+
+    private var _binding: FragmentItunesSearchBinding? = null
+    private val binding get() = _binding!!
+
     private var adapter: OnlineFeedsAdapter? = null
     private var searchProvider: PodcastSearcher? = null
     
@@ -59,7 +60,7 @@ class OnlineSearchFragment : Fragment() {
     }
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        val binding = FragmentItunesSearchBinding.inflate(inflater)
+        _binding = FragmentItunesSearchBinding.inflate(inflater)
 
         Log.d(TAG, "fragment onCreateView")
         gridView = binding.gridView
@@ -105,6 +106,7 @@ class OnlineSearchFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
+        _binding = null
         disposable?.dispose()
 
         adapter = null

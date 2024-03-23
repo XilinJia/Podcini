@@ -295,8 +295,10 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
         get() = playbackService?.duration ?: getMedia()?.getDuration()?:Playable.INVALID_TIME
 
     fun getMedia(): Playable? {
-        if (media == null && playbackService != null) media = playbackService!!.pSMPInfo.playable
-        if (media == null) media = PlaybackPreferences.createInstanceFromPreferences(activity)
+        if (media == null) {
+            media = if (playbackService != null) playbackService!!.pSMPInfo.playable
+            else PlaybackPreferences.createInstanceFromPreferences(activity)
+        }
 
         return media
     }

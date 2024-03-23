@@ -39,29 +39,30 @@ class SelectSubscriptionActivity : AppCompatActivity() {
     @Volatile
     private var listItems: List<Feed>? = null
 
-    private lateinit var viewBinding: SubscriptionSelectionActivityBinding
+    private var _binding: SubscriptionSelectionActivityBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(ThemeSwitcher.getTranslucentTheme(this))
         super.onCreate(savedInstanceState)
 
-        viewBinding = SubscriptionSelectionActivityBinding.inflate(layoutInflater)
-        setContentView(viewBinding.root)
-        setSupportActionBar(viewBinding.toolbar)
+        _binding = SubscriptionSelectionActivityBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
         setTitle(R.string.shortcut_select_subscription)
 
-        viewBinding.transparentBackground.setOnClickListener { finish() }
-        viewBinding.card.setOnClickListener(null)
+        binding.transparentBackground.setOnClickListener { finish() }
+        binding.card.setOnClickListener(null)
 
         loadSubscriptions()
 
         val checkedPosition = arrayOfNulls<Int>(1)
-        viewBinding.list.choiceMode = ListView.CHOICE_MODE_SINGLE
-        viewBinding.list.onItemClickListener =
+        binding.list.choiceMode = ListView.CHOICE_MODE_SINGLE
+        binding.list.onItemClickListener =
             AdapterView.OnItemClickListener { _: AdapterView<*>?, _: View?, position: Int, _: Long ->
                 checkedPosition[0] = position
             }
-        viewBinding.shortcutBtn.setOnClickListener {
+        binding.shortcutBtn.setOnClickListener {
             if (checkedPosition[0] != null && Intent.ACTION_CREATE_SHORTCUT == intent.action) {
                 getBitmapFromUrl(listItems!![checkedPosition[0]!!])
             }
@@ -144,8 +145,13 @@ class SelectSubscriptionActivity : AppCompatActivity() {
                     }
                     val adapter: ArrayAdapter<String> = ArrayAdapter<String>(this,
                         R.layout.simple_list_item_multiple_choice_on_start, titles)
-                    viewBinding.list.adapter = adapter
+                    binding.list.adapter = adapter
                 }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
     }
 
     companion object {

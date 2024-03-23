@@ -24,8 +24,8 @@ import java.text.NumberFormat
 /**
  * Adapter for subscriptions
  */
-open class SubscriptionsRecyclerAdapter(mainActivity: MainActivity) :
-    SelectableAdapter<SubscriptionsRecyclerAdapter.SubscriptionViewHolder?>(mainActivity),
+open class SubscriptionsAdapter(mainActivity: MainActivity) :
+    SelectableAdapter<SubscriptionsAdapter.SubscriptionViewHolder?>(mainActivity),
     View.OnCreateContextMenuListener {
 
     private val mainActivityRef: WeakReference<MainActivity> = WeakReference<MainActivity>(mainActivity)

@@ -65,7 +65,9 @@ import java.util.*
  */
 class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAdapter.OnSelectModeListener {
 
-    private lateinit var binding: QueueFragmentBinding
+    private var _binding: QueueFragmentBinding? = null
+    private val binding get() = _binding!!
+
     private lateinit var infoBar: TextView
     private lateinit var recyclerView: EpisodeItemListRecyclerView
     private lateinit var emptyView: EmptyViewHandler
@@ -90,7 +92,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
-        binding = QueueFragmentBinding.inflate(inflater)
+        _binding = QueueFragmentBinding.inflate(inflater)
 
         Log.d(TAG, "fragment onCreateView")
         toolbar = binding.toolbar
@@ -325,6 +327,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _binding = null
         recyclerAdapter?.endSelectMode()
         recyclerAdapter = null
         EventBus.getDefault().unregister(this)
@@ -394,8 +397,8 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
                 builder.setMessage(R.string.queue_lock_warning)
 
                 val view = View.inflate(context, R.layout.checkbox_do_not_show_again, null)
-                val binding = CheckboxDoNotShowAgainBinding.bind(view)
-                val checkDoNotShowAgain: CheckBox = binding.checkboxDoNotShowAgain
+                val binding_ = CheckboxDoNotShowAgainBinding.bind(view)
+                val checkDoNotShowAgain: CheckBox = binding_.checkboxDoNotShowAgain
                 builder.setView(view)
 
                 builder.setPositiveButton(R.string.lock_queue

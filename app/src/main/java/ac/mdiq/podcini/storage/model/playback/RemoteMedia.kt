@@ -82,29 +82,9 @@ class RemoteMedia : Playable {
         return itemIdentifier
     }
 
-//    fun getFeedUrl(): String {
-//        return feedUrl!!
-//    }
-
-//    fun getDownloadUrl(): String? {
-//        return downloadUrl
-//    }
-
-//    fun getEpisodeLink(): String {
-//        return episodeLink!!
-//    }
-
     fun getFeedAuthor(): String {
         return feedAuthor!!
     }
-
-//    fun getImageUrl(): String {
-//        return imageUrl
-//    }
-
-//    fun getFeedLink(): String {
-//        return feedLink!!
-//    }
 
     fun getMimeType(): String {
         return mimeType!!
@@ -113,10 +93,6 @@ class RemoteMedia : Playable {
     override fun getPubDate(): Date {
         return pubDate!!
     }
-
-//    fun getNotes(): String {
-//        return notes
-//    }
 
     override fun writeToPreferences(prefEditor: SharedPreferences.Editor) {
         //it seems pointless to do it, since the session should be kept by the remote device.

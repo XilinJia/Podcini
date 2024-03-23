@@ -10,7 +10,7 @@ import ac.mdiq.podcini.storage.NavDrawerData
 import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
-import ac.mdiq.podcini.ui.adapter.SubscriptionsRecyclerAdapter
+import ac.mdiq.podcini.ui.adapter.SubscriptionsAdapter
 import ac.mdiq.podcini.ui.dialog.FeedSortDialog
 import ac.mdiq.podcini.ui.dialog.SubscriptionsFilterDialog
 import ac.mdiq.podcini.ui.fragment.actions.FeedMultiSelectActionHandler
@@ -53,8 +53,11 @@ import java.util.*
  */
 class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAdapter.OnSelectModeListener {
 
+    private var _binding: FragmentSubscriptionsBinding? = null
+    private val binding get() = _binding!!
+
     private lateinit var subscriptionRecycler: RecyclerView
-    private lateinit var subscriptionAdapter: SubscriptionsRecyclerAdapter
+    private lateinit var subscriptionAdapter: SubscriptionsAdapter
     private lateinit var emptyView: EmptyViewHandler
     private lateinit var feedsInfoMsg: LinearLayout
     private lateinit var feedsFilteredMsg: TextView
@@ -82,7 +85,7 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                                            savedInstanceState: Bundle?): View {
-        val binding = FragmentSubscriptionsBinding.inflate(inflater)
+        _binding = FragmentSubscriptionsBinding.inflate(inflater)
 
         Log.d(TAG, "fragment onCreateView")
         toolbar = binding.toolbar
@@ -105,10 +108,10 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
         }
 
         subscriptionRecycler = binding.subscriptionsGrid
-        subscriptionRecycler.addItemDecoration(SubscriptionsRecyclerAdapter.GridDividerItemDecorator())
+        subscriptionRecycler.addItemDecoration(SubscriptionsAdapter.GridDividerItemDecorator())
         registerForContextMenu(subscriptionRecycler)
         subscriptionRecycler.addOnScrollListener(LiftOnScrollListener(binding.appbar))
-        subscriptionAdapter = object : SubscriptionsRecyclerAdapter(activity as MainActivity) {
+        subscriptionAdapter = object : SubscriptionsAdapter(activity as MainActivity) {
             override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
                 super.onCreateContextMenu(menu, v, menuInfo)
                 MenuItemUtils.setOnClickListeners(menu
@@ -207,6 +210,7 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _binding = null
         EventBus.getDefault().unregister(this)
         disposable?.dispose()
     }

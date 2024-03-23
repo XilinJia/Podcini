@@ -23,10 +23,12 @@ import android.util.Log
 
 abstract class ItemFilterDialog : BottomSheetDialogFragment() {
     private lateinit var rows: LinearLayout
+    private var _binding: FilterDialogBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val layout = inflater.inflate(R.layout.filter_dialog, null, false)
-        val binding = FilterDialogBinding.bind(layout)
+        _binding = FilterDialogBinding.bind(layout)
         rows = binding.filterRows
         val filter = requireArguments().getSerializable(ARGUMENT_FILTER) as FeedItemFilter?
         Log.d("ItemFilterDialog", "fragment onCreateView")
@@ -78,6 +80,11 @@ abstract class ItemFilterDialog : BottomSheetDialogFragment() {
             setupFullHeight(bottomSheetDialog)
         }
         return dialog
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     private fun setupFullHeight(bottomSheetDialog: BottomSheetDialog) {

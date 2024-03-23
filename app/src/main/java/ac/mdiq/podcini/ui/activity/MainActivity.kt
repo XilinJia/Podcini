@@ -75,7 +75,9 @@ import kotlin.math.min
 class MainActivity : CastEnabledActivity() {
     private var drawerLayout: DrawerLayout? = null
 
-    private lateinit var binding: MainActivityBinding
+    private var _binding: MainActivityBinding? = null
+    private val binding get() = _binding!!
+
     private lateinit var mainView: View
     private lateinit var audioPlayerFragmentView: View
     private lateinit var navDrawer: View
@@ -101,7 +103,7 @@ class MainActivity : CastEnabledActivity() {
         }
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
-        binding = MainActivityBinding.inflate(layoutInflater)
+        _binding = MainActivityBinding.inflate(layoutInflater)
         setContentView(R.layout.main_activity)
         recycledViewPool.setMaxRecycledViews(R.id.view_type_episode_item, 25)
 
@@ -308,6 +310,7 @@ class MainActivity : CastEnabledActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        _binding = null
         drawerLayout?.removeDrawerListener(drawerToggle!!)
     }
 

@@ -59,7 +59,9 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
     protected var hasMoreItems: Boolean = false
     private var displayUpArrow = false
 
-    lateinit var binding: EpisodesListFragmentBinding
+    var _binding: EpisodesListFragmentBinding? = null
+    private val binding get() = _binding!!
+
     lateinit var recyclerView: EpisodeItemListRecyclerView
     lateinit var emptyView: EmptyViewHandler
     lateinit var speedDialView: SpeedDialView
@@ -78,7 +80,7 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
 
-        binding = EpisodesListFragmentBinding.inflate(inflater)
+        _binding = EpisodesListFragmentBinding.inflate(inflater)
         Log.d(TAG, "fragment onCreateView")
 
         txtvInformation = binding.txtvInformation
@@ -310,6 +312,7 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _binding = null
         EventBus.getDefault().unregister(this)
         listAdapter.endSelectMode()
     }

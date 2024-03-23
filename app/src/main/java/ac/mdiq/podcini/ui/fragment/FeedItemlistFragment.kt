@@ -69,9 +69,11 @@ import java.util.concurrent.ExecutionException
 class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolbar.OnMenuItemClickListener,
     SelectableAdapter.OnSelectModeListener {
 
+    private var _binding: FeedItemListFragmentBinding? = null
+    private val binding get() = _binding!!
+
     private lateinit var adapter: FeedItemListAdapter
     private lateinit var swipeActions: SwipeActions
-    private lateinit var binding: FeedItemListFragmentBinding
     private lateinit var speedDialBinding: MultiSelectSpeedDialBinding
     private lateinit var nextPageLoader: MoreContentListFooterUtil
     
@@ -93,7 +95,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
     ): View {
         Log.d(TAG, "fragment onCreateView")
 
-        binding = FeedItemListFragmentBinding.inflate(inflater)
+        _binding = FeedItemListFragmentBinding.inflate(inflater)
         speedDialBinding = MultiSelectSpeedDialBinding.bind(binding.root)
 
         binding.toolbar.inflateMenu(R.menu.feedlist)
@@ -195,7 +197,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 
     override fun onDestroyView() {
         super.onDestroyView()
-
+        _binding = null
         EventBus.getDefault().unregister(this)
         disposable?.dispose()
         adapter.endSelectMode()
@@ -296,8 +298,8 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
     @UnstableApi override fun onItemClick(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
         val activity: MainActivity = activity as MainActivity
         if (feed != null) {
-            val ids: LongArray = FeedItemUtil.getIds(feed!!.items)
-            activity.loadChildFragment(ItemPageFragment.newInstance(ids, position))
+//            val ids: LongArray = FeedItemUtil.getIds(feed!!.items)
+            activity.loadChildFragment(EpisodeInfoFragment.newInstance(feed!!.items[position]))
         }
     }
 

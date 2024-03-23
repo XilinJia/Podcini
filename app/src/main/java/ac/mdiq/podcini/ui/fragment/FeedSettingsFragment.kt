@@ -55,11 +55,14 @@ import java.util.*
 import java.util.concurrent.ExecutionException
 
 class FeedSettingsFragment : Fragment() {
+    private var _binding: FeedsettingsBinding? = null
+    private val binding get() = _binding!!
+
     private var disposable: Disposable? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        val binding = FeedsettingsBinding.inflate(inflater)
-//        val root = inflater.inflate(R.layout.feedsettings, container, false)
+        _binding = FeedsettingsBinding.inflate(inflater)
+
         val feedId = requireArguments().getLong(EXTRA_FEED_ID)
         Log.d(TAG, "fragment onCreateView")
 
@@ -89,8 +92,9 @@ class FeedSettingsFragment : Fragment() {
         return binding.root
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
         disposable?.dispose()
     }
 

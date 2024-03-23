@@ -17,7 +17,8 @@ import ac.mdiq.podcini.storage.model.feed.FeedItem
 class ShareDialog : BottomSheetDialogFragment() {
     private lateinit var ctx: Context
     private lateinit var prefs: SharedPreferences
-    private lateinit var viewBinding: ShareEpisodeDialogBinding
+    private var _binding: ShareEpisodeDialogBinding? = null
+    private val binding get() = _binding!!
 
     private var item: FeedItem? = null
 
@@ -27,23 +28,23 @@ class ShareDialog : BottomSheetDialogFragment() {
         item = requireArguments().getSerializable(ARGUMENT_FEED_ITEM) as FeedItem?
         prefs = requireActivity().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
 
-        viewBinding = ShareEpisodeDialogBinding.inflate(inflater)
-        viewBinding.shareDialogRadioGroup.setOnCheckedChangeListener { _: RadioGroup?, checkedId: Int ->
-            viewBinding.sharePositionCheckbox.isEnabled = checkedId == viewBinding.shareSocialRadio.id
+        _binding = ShareEpisodeDialogBinding.inflate(inflater)
+        binding.shareDialogRadioGroup.setOnCheckedChangeListener { _: RadioGroup?, checkedId: Int ->
+            binding.sharePositionCheckbox.isEnabled = checkedId == binding.shareSocialRadio.id
         }
 
         setupOptions()
 
-        viewBinding.shareButton.setOnClickListener {
-            val includePlaybackPosition = viewBinding.sharePositionCheckbox.isChecked
+        binding.shareButton.setOnClickListener {
+            val includePlaybackPosition = binding.sharePositionCheckbox.isChecked
             val position: Int
-            if (viewBinding.shareSocialRadio.isChecked) {
+            if (binding.shareSocialRadio.isChecked) {
                 shareFeedItemLinkWithDownloadLink(ctx, item!!, includePlaybackPosition)
                 position = 1
-            } else if (viewBinding.shareMediaReceiverRadio.isChecked) {
+            } else if (binding.shareMediaReceiverRadio.isChecked) {
                 shareMediaDownloadLink(ctx, item!!.media!!)
                 position = 2
-            } else if (viewBinding.shareMediaFileRadio.isChecked) {
+            } else if (binding.shareMediaFileRadio.isChecked) {
                 shareFeedItemFile(ctx, item!!.media!!)
                 position = 3
             } else {
@@ -55,28 +56,33 @@ class ShareDialog : BottomSheetDialogFragment() {
                 .apply()
             dismiss()
         }
-        return viewBinding.root
+        return binding.root
     }
 
     private fun setupOptions() {
         val hasMedia = item!!.media != null
         val downloaded = hasMedia && item!!.media!!.isDownloaded()
-        viewBinding.shareMediaFileRadio.visibility = if (downloaded) View.VISIBLE else View.GONE
+        binding.shareMediaFileRadio.visibility = if (downloaded) View.VISIBLE else View.GONE
 
         val hasDownloadUrl = hasMedia && item!!.media!!.download_url != null
         if (!hasDownloadUrl) {
-            viewBinding.shareMediaReceiverRadio.visibility = View.GONE
+            binding.shareMediaReceiverRadio.visibility = View.GONE
         }
         var type = prefs.getInt(PREF_SHARE_EPISODE_TYPE, 1)
         if ((type == 2 && !hasDownloadUrl) || (type == 3 && !downloaded)) {
             type = 1
         }
-        viewBinding.shareSocialRadio.isChecked = type == 1
-        viewBinding.shareMediaReceiverRadio.isChecked = type == 2
-        viewBinding.shareMediaFileRadio.isChecked = type == 3
+        binding.shareSocialRadio.isChecked = type == 1
+        binding.shareMediaReceiverRadio.isChecked = type == 2
+        binding.shareMediaFileRadio.isChecked = type == 3
 
         val switchIsChecked = prefs.getBoolean(PREF_SHARE_EPISODE_START_AT, false)
-        viewBinding.sharePositionCheckbox.isChecked = switchIsChecked
+        binding.sharePositionCheckbox.isChecked = switchIsChecked
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     companion object {

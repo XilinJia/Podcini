@@ -28,7 +28,9 @@ import org.greenrobot.eventbus.Subscribe
  * Shows the download log
  */
 class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, Toolbar.OnMenuItemClickListener {
-    private lateinit var viewBinding: DownloadLogFragmentBinding
+    private var _binding: DownloadLogFragmentBinding? = null
+    private val binding get() = _binding!!
+
     private lateinit var adapter: DownloadLogAdapter
 
     private var downloadLog: List<DownloadResult> = ArrayList()
@@ -43,29 +45,30 @@ class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, To
                               container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         Log.d(TAG, "fragment onCreateView")
-        viewBinding = DownloadLogFragmentBinding.inflate(inflater)
-        viewBinding.toolbar.inflateMenu(R.menu.download_log)
-        viewBinding.toolbar.setOnMenuItemClickListener(this)
+        _binding = DownloadLogFragmentBinding.inflate(inflater)
+        binding.toolbar.inflateMenu(R.menu.download_log)
+        binding.toolbar.setOnMenuItemClickListener(this)
 
         val emptyView = EmptyViewHandler(requireContext())
         emptyView.setIcon(R.drawable.ic_download)
         emptyView.setTitle(R.string.no_log_downloads_head_label)
         emptyView.setMessage(R.string.no_log_downloads_label)
-        emptyView.attachToListView(viewBinding.list)
+        emptyView.attachToListView(binding.list)
 
         adapter = DownloadLogAdapter(requireActivity())
-        viewBinding.list.adapter = adapter
-        viewBinding.list.onItemClickListener = this
-        viewBinding.list.isNestedScrollingEnabled = true
+        binding.list.adapter = adapter
+        binding.list.onItemClickListener = this
+        binding.list.isNestedScrollingEnabled = true
         EventBus.getDefault().register(this)
         loadDownloadLog()
 
-        return viewBinding.root
+        return binding.root
     }
 
     override fun onDestroyView() {
         EventBus.getDefault().unregister(this)
         super.onDestroyView()
+        _binding = null
     }
 
     override fun onItemClick(parent: AdapterView<*>?, view: View, position: Int, id: Long) {

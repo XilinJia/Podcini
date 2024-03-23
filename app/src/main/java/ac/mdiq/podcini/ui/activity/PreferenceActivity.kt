@@ -30,7 +30,8 @@ import org.greenrobot.eventbus.ThreadMode
  * PreferenceController.
  */
 class PreferenceActivity : AppCompatActivity(), SearchPreferenceResultListener {
-    private lateinit var binding: SettingsActivityBinding
+    private var _binding: SettingsActivityBinding? = null
+    private val binding get() = _binding!!
 
     @SuppressLint("CommitTransaction")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,7 +41,7 @@ class PreferenceActivity : AppCompatActivity(), SearchPreferenceResultListener {
         val ab = supportActionBar
         ab?.setDisplayHomeAsUpEnabled(true)
 
-        binding = SettingsActivityBinding.inflate(layoutInflater)
+        _binding = SettingsActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         if (supportFragmentManager.findFragmentByTag(FRAGMENT_TAG) == null) {
@@ -150,6 +151,11 @@ class PreferenceActivity : AppCompatActivity(), SearchPreferenceResultListener {
     override fun onStop() {
         super.onStop()
         EventBus.getDefault().unregister(this)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

@@ -42,7 +42,7 @@ class WidgetUpdaterWorker(context: Context,
 
         fun enqueueWork(context: Context) {
             val workRequest: OneTimeWorkRequest = OneTimeWorkRequest.Builder(WidgetUpdaterWorker::class.java).build()
-            WorkManager.getInstance(context!!).enqueueUniqueWork(TAG, ExistingWorkPolicy.REPLACE, workRequest)
+            WorkManager.getInstance(context).enqueueUniqueWork(TAG, ExistingWorkPolicy.REPLACE, workRequest)
         }
     }
 }

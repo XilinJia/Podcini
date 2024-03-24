@@ -1,10 +1,38 @@
 package ac.mdiq.podcini.ui.fragment
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.AudioplayerFragmentBinding
+import ac.mdiq.podcini.feed.util.PlaybackSpeedUtils
+import ac.mdiq.podcini.playback.PlaybackController
+import ac.mdiq.podcini.playback.cast.CastEnabledActivity
+import ac.mdiq.podcini.playback.event.*
+import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.receiver.MediaButtonReceiver
+import ac.mdiq.podcini.storage.model.feed.Chapter
+import ac.mdiq.podcini.storage.model.feed.FeedItem
+import ac.mdiq.podcini.storage.model.feed.FeedMedia
+import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.common.PlaybackSpeedIndicatorView
+import ac.mdiq.podcini.ui.dialog.MediaPlayerErrorDialog
+import ac.mdiq.podcini.ui.dialog.SkipPreferenceDialog
+import ac.mdiq.podcini.ui.dialog.SleepTimerDialog
+import ac.mdiq.podcini.ui.dialog.VariableSpeedDialog
+import ac.mdiq.podcini.ui.menuhandler.FeedItemMenuHandler
+import ac.mdiq.podcini.ui.view.ChapterSeekBar
+import ac.mdiq.podcini.ui.view.PlayButton
+import ac.mdiq.podcini.util.ChapterUtils
+import ac.mdiq.podcini.util.Converter
+import ac.mdiq.podcini.util.TimeSpeedConverter
+import ac.mdiq.podcini.util.event.FavoritesEvent
+import ac.mdiq.podcini.util.event.PlayerErrorEvent
+import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.text.Html
 import android.util.Log
 import android.view.*
 import android.widget.ImageButton
@@ -13,40 +41,13 @@ import android.widget.SeekBar
 import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import androidx.cardview.widget.CardView
+import androidx.core.app.ShareCompat
 import androidx.fragment.app.Fragment
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.media3.common.util.UnstableApi
-import androidx.viewpager2.adapter.FragmentStateAdapter
-import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.elevation.SurfaceColors
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.AudioplayerFragmentBinding
-import ac.mdiq.podcini.feed.util.PlaybackSpeedUtils
-import ac.mdiq.podcini.receiver.MediaButtonReceiver
-import ac.mdiq.podcini.util.ChapterUtils
-import ac.mdiq.podcini.util.TimeSpeedConverter
-import ac.mdiq.podcini.playback.PlaybackController
-import ac.mdiq.podcini.ui.dialog.MediaPlayerErrorDialog
-import ac.mdiq.podcini.ui.dialog.SkipPreferenceDialog
-import ac.mdiq.podcini.ui.dialog.SleepTimerDialog
-import ac.mdiq.podcini.ui.dialog.VariableSpeedDialog
-import ac.mdiq.podcini.util.event.FavoritesEvent
-import ac.mdiq.podcini.ui.menuhandler.FeedItemMenuHandler
-import ac.mdiq.podcini.storage.model.feed.Chapter
-import ac.mdiq.podcini.storage.model.feed.FeedItem
-import ac.mdiq.podcini.storage.model.feed.FeedMedia
-import ac.mdiq.podcini.storage.model.playback.Playable
-import ac.mdiq.podcini.playback.cast.CastEnabledActivity
-import ac.mdiq.podcini.playback.event.*
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.ui.common.PlaybackSpeedIndicatorView
-import ac.mdiq.podcini.ui.view.ChapterSeekBar
-import ac.mdiq.podcini.ui.view.PlayButton
-import ac.mdiq.podcini.util.Converter
-import ac.mdiq.podcini.util.event.PlayerErrorEvent
-import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
 import io.reactivex.Maybe
 import io.reactivex.MaybeEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -72,7 +73,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     lateinit var txtvPlaybackSpeed: TextView
 
     private lateinit var episodeTitle: TextView
-    private lateinit var pager: ViewPager2
+    private lateinit var itemDesrView: View
     private lateinit var txtvPosition: TextView
     private lateinit var txtvLength: TextView
     private lateinit var sbPosition: ChapterSeekBar
@@ -110,7 +111,10 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         toolbar = binding.toolbar
         toolbar.title = ""
         toolbar.setNavigationOnClickListener {
-            (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_EXPANDED)
+            val bottomSheet = (activity as MainActivity).bottomSheet
+            if (bottomSheet.state == BottomSheetBehavior.STATE_EXPANDED)
+                bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
+            else bottomSheet.state = BottomSheetBehavior.STATE_EXPANDED
         }
         toolbar.setOnMenuItemClickListener(this)
 
@@ -123,6 +127,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         playerFragment.setBackgroundColor(
             SurfaceColors.getColorForElevation(requireContext(), 8 * resources.displayMetrics.density))
 
+        itemDesrView = binding.itemDescription
         episodeTitle = binding.titleView
         butPlaybackSpeed = binding.butPlaybackSpeed
         txtvPlaybackSpeed = binding.txtvPlaybackSpeed
@@ -146,20 +151,10 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         }
         sbPosition.setOnSeekBarChangeListener(this)
 
-        pager = binding.pager
-        pager.adapter = AudioPlayerPagerAdapter(this@AudioPlayerFragment)
-        // Required for getChildAt(int) in ViewPagerBottomSheetBehavior to return the correct page
-        pager.offscreenPageLimit = NUM_CONTENT_FRAGMENTS
-        pager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                pager.post {
-                    if (activity != null) {
-                        // By the time this is posted, the activity might be closed again.
-                        (activity as MainActivity).bottomSheet.updateScrollingChild()
-                    }
-                }
-            }
-        })
+        val fm = requireActivity().supportFragmentManager
+        val transaction = fm.beginTransaction()
+        val itemDescFrag = PlayerDetailsFragment()
+        transaction.replace(R.id.itemDescription, itemDescFrag).commit()
 
         controller = newPlaybackController()
         controller?.init()
@@ -474,26 +469,45 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         (activity as? CastEnabledActivity)?.requestCastButton(toolbar.menu)
     }
 
-    override fun onMenuItemClick(item: MenuItem): Boolean {
+    override fun onMenuItemClick(menuItem: MenuItem): Boolean {
         val media: Playable = controller?.getMedia() ?: return false
 
-        val feedItem: FeedItem? = if ((media is FeedMedia)) media.item else null
-        if (feedItem != null && FeedItemMenuHandler.onMenuItemClicked(this, item.itemId, feedItem)) {
+        val feedItem: FeedItem? = if (media is FeedMedia) media.item else null
+        if (feedItem != null && FeedItemMenuHandler.onMenuItemClicked(this, menuItem.itemId, feedItem)) {
             return true
         }
 
-        val itemId = item.itemId
-        if (itemId == R.id.disable_sleeptimer_item || itemId == R.id.set_sleeptimer_item) {
-            SleepTimerDialog().show(childFragmentManager, "SleepTimerDialog")
-            return true
-        } else if (itemId == R.id.open_feed_item) {
-            if (feedItem != null) {
-                val intent: Intent = MainActivity.getIntentToOpenFeed(requireContext(), feedItem.feedId)
-                startActivity(intent)
+        val itemId = menuItem.itemId
+        when (itemId) {
+            R.id.disable_sleeptimer_item, R.id.set_sleeptimer_item -> {
+                SleepTimerDialog().show(childFragmentManager, "SleepTimerDialog")
+                return true
             }
-            return true
+            R.id.open_feed_item -> {
+                if (feedItem != null) {
+                    val intent: Intent = MainActivity.getIntentToOpenFeed(requireContext(), feedItem.feedId)
+                    startActivity(intent)
+                }
+                return true
+            }
+            R.id.share_notes -> {
+                if (feedItem == null) return false
+                val notes = feedItem.description
+                if (!notes.isNullOrEmpty()) {
+                    val shareText = if (Build.VERSION.SDK_INT >= 24) Html.fromHtml(notes, Html.FROM_HTML_MODE_LEGACY).toString()
+                    else Html.fromHtml(notes).toString()
+                    val context = requireContext()
+                    val intent = ShareCompat.IntentBuilder(context)
+                        .setType("text/plain")
+                        .setText(shareText)
+                        .setChooserTitle(R.string.share_notes_label)
+                        .createChooserIntent()
+                    context.startActivity(intent)
+                }
+                return true
+            }
+            else -> return false
         }
-        return false
     }
 
     fun fadePlayerToToolbar(slideOffset: Float) {
@@ -506,39 +520,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         toolbar.visibility = if (toolbarFadeProgress < 0.01f) View.INVISIBLE else View.VISIBLE
     }
 
-    private class AudioPlayerPagerAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) {
-        override fun createFragment(position: Int): Fragment {
-            Log.d(TAG, "getItem($position)")
-
-            return when (position) {
-                FIRST_PAGE -> ItemDescriptionFragment()
-                SECOND_PAGE -> CoverFragment()
-                else -> ItemDescriptionFragment()
-            }
-        }
-
-        override fun getItemCount(): Int {
-            return NUM_CONTENT_FRAGMENTS
-        }
-        companion object {
-            private const val TAG = "AudioPlayerPagerAdapter"
-        }
-    }
-
-    @JvmOverloads
-    fun scrollToPage(page: Int, smoothScroll: Boolean = false) {
-        pager.setCurrentItem(page, smoothScroll)
-
-        val visibleChild = childFragmentManager.findFragmentByTag("f$FIRST_PAGE")
-        if (visibleChild is ItemDescriptionFragment) {
-            visibleChild.scrollToTop()
-        }
-    }
-
     companion object {
         const val TAG: String = "AudioPlayerFragment"
-        const val FIRST_PAGE: Int = 0
-        const val SECOND_PAGE: Int = 1
-        private const val NUM_CONTENT_FRAGMENTS = 2
     }
 }

@@ -101,7 +101,6 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
         controller = newPlaybackController()
         controller!!.init()
         loadMediaInfo()
-//        EventBus.getDefault().register(this)
     }
 
     @UnstableApi
@@ -124,16 +123,10 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
         controller?.release()
         controller = null // prevent leak
         disposable?.dispose()
-
-//        EventBus.getDefault().unregister(this)
     }
 
     @UnstableApi
     override fun onStop() {
-//        controller?.release()
-//        controller = null // prevent leak
-//        disposable?.dispose()
-
         EventBus.getDefault().unregister(this)
         super.onStop()
         if (!PictureInPictureUtil.isInPictureInPictureMode(this)) {

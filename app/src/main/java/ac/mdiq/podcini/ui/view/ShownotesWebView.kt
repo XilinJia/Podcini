@@ -62,6 +62,7 @@ class ShownotesWebView : WebView, View.OnLongClickListener {
         setOnLongClickListener(this)
 
         setWebViewClient(object : WebViewClient() {
+            @Deprecated("Deprecated in Java")
             override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
                 if (ShownotesCleaner.isTimecodeLink(url) && timecodeSelectedListener != null) {
                     timecodeSelectedListener!!.accept(ShownotesCleaner.getTimecodeLinkTime(url))
@@ -173,6 +174,7 @@ class ShownotesWebView : WebView, View.OnLongClickListener {
         this.pageFinishedListener = pageFinishedListener
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         setMeasuredDimension(max(measuredWidth, minimumWidth), max(measuredHeight, minimumHeight))

@@ -104,7 +104,8 @@ class MainActivity : CastEnabledActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
         _binding = MainActivityBinding.inflate(layoutInflater)
-        setContentView(R.layout.main_activity)
+//        setContentView(R.layout.main_activity)
+        setContentView(binding.root)
         recycledViewPool.setMaxRecycledViews(R.id.view_type_episode_item, 25)
 
         dummyView = object : View(this) {}
@@ -162,6 +163,7 @@ class MainActivity : CastEnabledActivity() {
         checkFirstLaunch()
         this.bottomSheet = BottomSheetBehavior.from(audioPlayerFragmentView) as LockableBottomSheetBehavior<*>
         this.bottomSheet.isHideable = false
+        this.bottomSheet.isDraggable = false
         this.bottomSheet.setBottomSheetCallback(bottomSheetCallback)
 
         restartUpdateAlarm(this, false)
@@ -272,18 +274,22 @@ class MainActivity : CastEnabledActivity() {
 
     private val bottomSheetCallback: BottomSheetCallback = @UnstableApi object : BottomSheetCallback() {
          override fun onStateChanged(view: View, state: Int) {
-             if (state == BottomSheetBehavior.STATE_COLLAPSED) {
-                 onSlide(view,0.0f)
-             } else if (state == BottomSheetBehavior.STATE_EXPANDED) {
-                 onSlide(view, 1.0f)
+             when (state) {
+                 BottomSheetBehavior.STATE_COLLAPSED -> {
+                     onSlide(view,0.0f)
+                 }
+                 BottomSheetBehavior.STATE_EXPANDED -> {
+                     onSlide(view, 1.0f)
+                 }
+                 else -> {}
              }
          }
         override fun onSlide(view: View, slideOffset: Float) {
             val audioPlayer = supportFragmentManager.findFragmentByTag(AudioPlayerFragment.TAG) as? AudioPlayerFragment ?: return
 
-            if (slideOffset == 0.0f) { //STATE_COLLAPSED
-                audioPlayer.scrollToPage(AudioPlayerFragment.FIRST_PAGE)
-            }
+//            if (slideOffset == 0.0f) { //STATE_COLLAPSED
+//                audioPlayer.scrollToPage(AudioPlayerFragment.FIRST_PAGE)
+//            }
             audioPlayer.fadePlayerToToolbar(slideOffset)
         }
     }

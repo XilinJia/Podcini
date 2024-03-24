@@ -19,13 +19,15 @@ import ac.mdiq.podcini.receiver.PlayerWidget
 import ac.mdiq.podcini.ui.widget.WidgetUpdaterWorker
 
 class WidgetConfigActivity : AppCompatActivity() {
+
     private var _binding: ActivityWidgetConfigBinding? = null
     private val binding get() = _binding!!
+    private var _wpBinding: PlayerWidgetBinding? = null
+    private val wpBinding get() = _wpBinding!!
 
     private var appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
 
     private lateinit var widgetPreview: View
-    private lateinit var wpBinding: PlayerWidgetBinding
     private lateinit var opacitySeekBar: SeekBar
     private lateinit var opacityTextView: TextView
     private lateinit var ckPlaybackSpeed: CheckBox
@@ -37,7 +39,7 @@ class WidgetConfigActivity : AppCompatActivity() {
         setTheme(getTheme(this))
         super.onCreate(savedInstanceState)
         _binding = ActivityWidgetConfigBinding.inflate(layoutInflater)
-        setContentView(R.layout.activity_widget_config)
+        setContentView(binding.root)
 
         val configIntent = intent
         val extras = configIntent.extras
@@ -55,10 +57,10 @@ class WidgetConfigActivity : AppCompatActivity() {
 
         opacityTextView = binding.widgetOpacityTextView
         opacitySeekBar = binding.widgetOpacitySeekBar
-        widgetPreview = binding.widgetConfigPreview.widgetLayout
-        wpBinding = PlayerWidgetBinding.bind(widgetPreview)
+        widgetPreview = binding.widgetConfigPreview.playerWidget
+        _wpBinding = PlayerWidgetBinding.bind(widgetPreview)
 
-        binding.butConfirm.setOnClickListener { confirmCreateWidget() }
+        binding.butConfirm.setOnClickListener{ confirmCreateWidget() }
         opacitySeekBar.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, i: Int, b: Boolean) {
                 opacityTextView.text = seekBar.progress.toString() + "%"
@@ -96,7 +98,9 @@ class WidgetConfigActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
+        _wpBinding = null
     }
+
     private fun setInitialState() {
         val prefs = getSharedPreferences(PlayerWidget.PREFS_NAME, MODE_PRIVATE)
         ckPlaybackSpeed.isChecked = prefs.getBoolean(PlayerWidget.KEY_WIDGET_PLAYBACK_SPEED + appWidgetId, false)

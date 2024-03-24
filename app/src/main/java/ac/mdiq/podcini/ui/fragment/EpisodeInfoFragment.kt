@@ -220,10 +220,6 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     @UnstableApi override fun onMenuItemClick(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
-            R.id.open_podcast -> {
-                openPodcast()
-                return true
-            }
             R.id.share_notes -> {
                 if (item == null) return false
                 val notes = item!!.description
@@ -279,11 +275,11 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             return
         }
         if (item!!.hasMedia()) {
-            FeedItemMenuHandler.onPrepareMenu(toolbar.menu, item)
+            FeedItemMenuHandler.onPrepareMenu(toolbar.menu, item, R.id.open_podcast)
         } else {
             // these are already available via button1 and button2
             FeedItemMenuHandler.onPrepareMenu(toolbar.menu, item,
-                R.id.mark_read_item, R.id.visit_website_item)
+                R.id.open_podcast, R.id.mark_read_item, R.id.visit_website_item)
         }
         if (item!!.feed != null) txtvPodcast.text = item!!.feed!!.title
         txtvTitle.text = item!!.title
@@ -337,14 +333,19 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     Converter.getDurationStringLocalized(requireContext(), media.getDuration().toLong()))
             }
             if (item != null) {
-                actionButton1 = if (PlaybackStatus.isCurrentlyPlaying(media)) {
-                    PauseActionButton(item!!)
-                } else if (item!!.feed != null && item!!.feed!!.isLocalFeed) {
-                    PlayLocalActionButton(item)
-                } else if (media.isDownloaded()) {
-                    PlayActionButton(item!!)
-                } else {
-                    StreamActionButton(item!!)
+                actionButton1 = when {
+                    PlaybackStatus.isCurrentlyPlaying(media) -> {
+                        PauseActionButton(item!!)
+                    }
+                    item!!.feed != null && item!!.feed!!.isLocalFeed -> {
+                        PlayLocalActionButton(item)
+                    }
+                    media.isDownloaded() -> {
+                        PlayActionButton(item!!)
+                    }
+                    else -> {
+                        StreamActionButton(item!!)
+                    }
                 }
                 actionButton2 = if (dls != null && media.download_url != null && dls.isDownloadingEpisode(media.download_url!!)) {
                     CancelDownloadActionButton(item!!)

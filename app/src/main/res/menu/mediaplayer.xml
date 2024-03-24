@@ -29,6 +29,14 @@
     </item>
 
     <item
+        android:id="@+id/player_switch_to_audio_only"
+        custom:showAsAction="always"
+        android:icon="@drawable/baseline_audiotrack_24"
+        android:title="@string/player_switch_to_audio_only"
+        android:visible="false">
+    </item>
+
+    <item
         android:id="@+id/audio_controls"
         android:title="@string/audio_controls"
         android:visible="false"
@@ -59,13 +67,6 @@
     </item>
 
     <item
-        android:id="@+id/player_switch_to_audio_only"
-        custom:showAsAction="collapseActionView"
-        android:title="@string/player_switch_to_audio_only"
-        android:visible="false">
-    </item>
-
-    <item
         android:id="@+id/player_show_chapters"
         custom:showAsAction="never"
         android:title="@string/chapters_label"
@@ -76,7 +77,12 @@
         android:id="@+id/share_item"
         android:icon="@drawable/ic_share"
         android:menuCategory="container"
-        custom:showAsAction="always"
+        custom:showAsAction="ifRoom"
         android:title="@string/share_label">
+    </item>
+
+    <item
+        android:id="@+id/share_notes"
+        android:title="@string/share_notes_label">
     </item>
 </menu>

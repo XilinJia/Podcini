@@ -1,34 +1,37 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.databinding.PlayerDetailsFragmentBinding
 import ac.mdiq.podcini.feed.util.ImageResourceUtils
-import ac.mdiq.podcini.util.ChapterUtils
-import ac.mdiq.podcini.util.DateFormatter
 import ac.mdiq.podcini.playback.PlaybackController
-import ac.mdiq.podcini.databinding.CoverFragmentBinding
 import ac.mdiq.podcini.playback.event.PlaybackPositionEvent
+import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.model.feed.Chapter
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.storage.model.playback.Playable
+import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.gui.ShownotesCleaner
+import ac.mdiq.podcini.ui.view.ShownotesWebView
+import ac.mdiq.podcini.util.ChapterUtils
+import ac.mdiq.podcini.util.DateFormatter
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
+import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
-import android.content.res.Configuration
 import android.graphics.ColorFilter
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
+import android.view.View.OnLayoutChangeListener
 import android.view.ViewGroup
-import android.widget.LinearLayout
-import androidx.annotation.OptIn
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.BlendModeColorFilterCompat
 import androidx.core.graphics.BlendModeCompat
@@ -46,36 +49,36 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import org.apache.commons.lang3.StringUtils
-import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
 /**
- * Displays the cover and the title of a FeedItem.
+ * Displays the description of a Playable object in a Webview.
  */
-class CoverFragment : Fragment() {
-    private var _binding: CoverFragmentBinding? = null
+@UnstableApi
+class PlayerDetailsFragment : Fragment() {
+    private lateinit var webvDescription: ShownotesWebView
+
+    private var _binding: PlayerDetailsFragmentBinding? = null
     private val binding get() = _binding!!
 
-    private var controller: PlaybackController? = null
-    private var disposable: Disposable? = null
-    private var displayedChapterIndex = -1
     private var media: Playable? = null
+    private var displayedChapterIndex = -1
+
+    private var disposable: Disposable? = null
+    private var webViewLoader: Disposable? = null
+    private var controller: PlaybackController? = null
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-
         Log.d(TAG, "fragment onCreateView")
-        _binding = CoverFragmentBinding.inflate(inflater)
+        _binding = PlayerDetailsFragmentBinding.inflate(inflater)
+
         binding.imgvCover.setOnClickListener { onPlayPause() }
-        binding.openDescription.setOnClickListener {
-            (requireParentFragment() as AudioPlayerFragment)
-                .scrollToPage(AudioPlayerFragment.FIRST_PAGE, true)
-        }
+
         val colorFilter: ColorFilter? = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(
             binding.txtvPodcastTitle.currentTextColor, BlendModeCompat.SRC_IN)
         binding.butNextChapter.colorFilter = colorFilter
         binding.butPrevChapter.colorFilter = colorFilter
-        binding.descriptionIcon.colorFilter = colorFilter
         binding.chapterButton.setOnClickListener {
             ChaptersFragment().show(
                 childFragmentManager, ChaptersFragment.TAG)
@@ -83,41 +86,88 @@ class CoverFragment : Fragment() {
         binding.butPrevChapter.setOnClickListener { seekToPrevChapter() }
         binding.butNextChapter.setOnClickListener { seekToNextChapter() }
 
+        Log.d(TAG, "fragment onCreateView")
+        webvDescription = binding.webview
+        webvDescription.setTimecodeSelectedListener { time: Int? ->
+            controller?.seekTo(time!!)
+        }
+        webvDescription.setPageFinishedListener {
+            // Restoring the scroll position might not always work
+            webvDescription.postDelayed({ this@PlayerDetailsFragment.restoreFromPreference() }, 50)
+        }
+
+        binding.root.addOnLayoutChangeListener(object : OnLayoutChangeListener {
+            override fun onLayoutChange(v: View, left: Int, top: Int, right: Int,
+                                        bottom: Int, oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int
+            ) {
+                if (binding.root.measuredHeight != webvDescription.minimumHeight) {
+                    webvDescription.setMinimumHeight(binding.root.measuredHeight)
+                }
+                binding.root.removeOnLayoutChangeListener(this)
+            }
+        })
+        registerForContextMenu(webvDescription)
         controller = object : PlaybackController(requireActivity()) {
             override fun loadMediaInfo() {
-                this@CoverFragment.loadMediaInfo(false)
+                load()
+                loadMediaInfo(false)
             }
         }
         controller?.init()
+        load()
         loadMediaInfo(false)
-        EventBus.getDefault().register(this)
-
         return binding.root
     }
 
-    @OptIn(UnstableApi::class) override fun onDestroyView() {
+    override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
         controller?.release()
         controller = null
-        EventBus.getDefault().unregister(this)
         Log.d(TAG, "Fragment destroyed")
+        webvDescription.removeAllViews()
+        webvDescription.destroy()
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        configureForOrientation(resources.configuration)
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        return webvDescription.onContextItemSelected(item)
+    }
+
+    @UnstableApi private fun load() {
+        Log.d(TAG, "load() called")
+        webViewLoader?.dispose()
+
+        val context = context ?: return
+        webViewLoader = Maybe.create { emitter: MaybeEmitter<String?> ->
+            media = controller?.getMedia()
+            if (media == null) {
+                emitter.onComplete()
+                return@create
+            }
+            if (media is FeedMedia) {
+                val feedMedia = media as FeedMedia
+                val item = feedMedia.item
+                if (item != null && item.description == null) DBReader.loadDescriptionOfFeedItem(item)
+            }
+            val shownotesCleaner = ShownotesCleaner(context, media!!.getDescription()?:"", media!!.getDuration())
+            emitter.onSuccess(shownotesCleaner.processShownotes())
+        }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ data: String? ->
+                webvDescription.loadDataWithBaseURL("https://127.0.0.1", data!!, "text/html",
+                    "utf-8", "about:blank")
+                Log.d(TAG, "Webview loaded")
+            }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
     }
 
     @UnstableApi private fun loadMediaInfo(includingChapters: Boolean) {
         disposable?.dispose()
 
         disposable = Maybe.create<Playable> { emitter: MaybeEmitter<Playable?> ->
-            val media: Playable? = controller?.getMedia()
+            media = controller?.getMedia()
             if (media != null) {
-                if (includingChapters) {
-                    ChapterUtils.loadChapters(media, requireContext(), false)
-                }
-                emitter.onSuccess(media)
+                emitter.onSuccess(media!!)
             } else {
                 emitter.onComplete()
             }
@@ -126,19 +176,12 @@ class CoverFragment : Fragment() {
             .subscribe({ media: Playable ->
                 this.media = media
                 displayMediaInfo(media)
-                if (!includingChapters) {
-                    loadMediaInfo(true)
-                }
             }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
     }
 
     @UnstableApi private fun displayMediaInfo(media: Playable) {
         val pubDateStr = DateFormatter.formatAbbrev(context, media.getPubDate())
-        binding.txtvPodcastTitle.text = (StringUtils.stripToEmpty(media.getFeedTitle())
-                + "\u00A0"
-                + "・"
-                + "\u00A0"
-                + StringUtils.replace(StringUtils.stripToEmpty(pubDateStr), " ", "\u00A0"))
+        binding.txtvPodcastTitle.text = StringUtils.stripToEmpty(media.getFeedTitle())
         if (media is FeedMedia) {
             val items = media.item
             if (items != null) {
@@ -149,6 +192,7 @@ class CoverFragment : Fragment() {
             binding.txtvPodcastTitle.setOnClickListener(null)
         }
         binding.txtvPodcastTitle.setOnLongClickListener { copyText(media.getFeedTitle()) }
+        binding.episodeDate.text = StringUtils.stripToEmpty(pubDateStr)
         binding.txtvEpisodeTitle.text = media.getEpisodeTitle()
         binding.txtvEpisodeTitle.setOnLongClickListener { copyText(media.getEpisodeTitle()) }
         binding.txtvEpisodeTitle.setOnClickListener {
@@ -217,6 +261,36 @@ class CoverFragment : Fragment() {
         displayCoverImage()
     }
 
+    private fun displayCoverImage() {
+        if (media == null) return
+        val options: RequestOptions = RequestOptions()
+            .dontAnimate()
+            .transform(FitCenter(),
+                RoundedCorners((16 * resources.displayMetrics.density).toInt()))
+
+        val cover: RequestBuilder<Drawable> = Glide.with(this)
+            .load(media!!.getImageLocation())
+            .error(Glide.with(this)
+                .load(ImageResourceUtils.getFallbackImageLocation(media!!))
+                .apply(options))
+            .apply(options)
+
+        if (displayedChapterIndex == -1 || media!!.getChapters().isEmpty() || media!!.getChapters()[displayedChapterIndex].imageUrl.isNullOrEmpty()) {
+            cover.into(binding.imgvCover)
+        } else {
+            Glide.with(this)
+                .load(ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage.getModelFor(media!!, displayedChapterIndex))
+                .apply(options)
+                .thumbnail(cover)
+                .error(cover)
+                .into(binding.imgvCover)
+        }
+    }
+
+    @UnstableApi fun onPlayPause() {
+        controller?.playPause()
+    }
+
     private val currentChapter: Chapter?
         get() {
             if (media == null || media!!.getChapters().isEmpty() || displayedChapterIndex == -1) {
@@ -251,13 +325,47 @@ class CoverFragment : Fragment() {
         controller!!.seekTo(media!!.getChapters()[displayedChapterIndex].start.toInt())
     }
 
-    @UnstableApi override fun onStart() {
-        super.onStart()
+
+    @UnstableApi override fun onPause() {
+        super.onPause()
+        savePreference()
     }
 
-    @UnstableApi override fun onStop() {
-        super.onStop()
-        disposable?.dispose()
+    @UnstableApi private fun savePreference() {
+        Log.d(TAG, "Saving preferences")
+        val prefs = requireActivity().getSharedPreferences(PREF, Activity.MODE_PRIVATE)
+        val editor = prefs.edit()
+        if (controller?.getMedia() != null) {
+            Log.d(TAG, "Saving scroll position: " + webvDescription.scrollY)
+            editor.putInt(PREF_SCROLL_Y, webvDescription.scrollY)
+            editor.putString(PREF_PLAYABLE_ID, controller!!.getMedia()!!.getIdentifier().toString())
+        } else {
+            Log.d(TAG, "savePreferences was called while media or webview was null")
+            editor.putInt(PREF_SCROLL_Y, -1)
+            editor.putString(PREF_PLAYABLE_ID, "")
+        }
+        editor.apply()
+    }
+
+    @UnstableApi private fun restoreFromPreference(): Boolean {
+        Log.d(TAG, "Restoring from preferences")
+        val activity: Activity? = activity
+        if (activity != null) {
+            val prefs = activity.getSharedPreferences(PREF, Activity.MODE_PRIVATE)
+            val id = prefs.getString(PREF_PLAYABLE_ID, "")
+            val scrollY = prefs.getInt(PREF_SCROLL_Y, -1)
+            if (controller != null && scrollY != -1 && controller!!.getMedia() != null && id == controller!!.getMedia()!!.getIdentifier().toString()) {
+                Log.d(TAG, "Restored scroll Position: $scrollY")
+                webvDescription.scrollTo(webvDescription.scrollX, scrollY)
+                return true
+            }
+        }
+        return false
+    }
+
+    fun scrollToTop() {
+        webvDescription.scrollTo(0, 0)
+        savePreference()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -268,64 +376,39 @@ class CoverFragment : Fragment() {
         }
     }
 
-    private fun displayCoverImage() {
-        if (media == null) return
-        val options: RequestOptions = RequestOptions()
-            .dontAnimate()
-            .transform(FitCenter(),
-                RoundedCorners((16 * resources.displayMetrics.density).toInt()))
+//    override fun onConfigurationChanged(newConfig: Configuration) {
+//        super.onConfigurationChanged(newConfig)
+//        configureForOrientation(newConfig)
+//    }
+//
+//    private fun configureForOrientation(newConfig: Configuration) {
+//        val isPortrait = newConfig.orientation == Configuration.ORIENTATION_PORTRAIT
+//
+//        binding.coverFragment.orientation = if (isPortrait) LinearLayout.VERTICAL else LinearLayout.HORIZONTAL
+//
+//        if (isPortrait) {
+//            binding.coverHolder.layoutParams =
+//                LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f)
+//            binding.coverFragmentTextContainer.layoutParams =
+//                LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+//        } else {
+//            binding.coverHolder.layoutParams =
+//                LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
+//            binding.coverFragmentTextContainer.layoutParams =
+//                LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
+//        }
+//
+//        (binding.episodeDetails.parent as ViewGroup).removeView(binding.episodeDetails)
+//        if (isPortrait) {
+//            binding.coverFragment.addView(binding.episodeDetails)
+//        } else {
+//            binding.coverFragmentTextContainer.addView(binding.episodeDetails)
+//        }
+//    }
 
-        val cover: RequestBuilder<Drawable> = Glide.with(this)
-            .load(media!!.getImageLocation())
-            .error(Glide.with(this)
-                .load(ImageResourceUtils.getFallbackImageLocation(media!!))
-                .apply(options))
-            .apply(options)
-
-        if (displayedChapterIndex == -1 || media!!.getChapters().isEmpty() || media!!.getChapters()[displayedChapterIndex].imageUrl.isNullOrEmpty()) {
-            cover.into(binding.imgvCover)
-        } else {
-            Glide.with(this)
-                .load(ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage.getModelFor(media!!, displayedChapterIndex))
-                .apply(options)
-                .thumbnail(cover)
-                .error(cover)
-                .into(binding.imgvCover)
-        }
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        configureForOrientation(newConfig)
-    }
-
-    private fun configureForOrientation(newConfig: Configuration) {
-        val isPortrait = newConfig.orientation == Configuration.ORIENTATION_PORTRAIT
-
-        binding.coverFragment.orientation = if (isPortrait) LinearLayout.VERTICAL else LinearLayout.HORIZONTAL
-
-        if (isPortrait) {
-            binding.coverHolder.layoutParams =
-                LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f)
-            binding.coverFragmentTextContainer.layoutParams =
-                LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        } else {
-            binding.coverHolder.layoutParams =
-                LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
-            binding.coverFragmentTextContainer.layoutParams =
-                LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
-        }
-
-        (binding.episodeDetails.parent as ViewGroup).removeView(binding.episodeDetails)
-        if (isPortrait) {
-            binding.coverFragment.addView(binding.episodeDetails)
-        } else {
-            binding.coverFragmentTextContainer.addView(binding.episodeDetails)
-        }
-    }
-
-    @UnstableApi fun onPlayPause() {
-        controller?.playPause()
+    override fun onStop() {
+        super.onStop()
+        webViewLoader?.dispose()
     }
 
     @UnstableApi private fun copyText(text: String): Boolean {
@@ -339,6 +422,10 @@ class CoverFragment : Fragment() {
     }
 
     companion object {
-        private const val TAG = "CoverFragment"
+        private const val TAG = "ItemDescriptionFragment"
+
+        private const val PREF = "ItemDescriptionFragmentPrefs"
+        private const val PREF_SCROLL_Y = "prefScrollY"
+        private const val PREF_PLAYABLE_ID = "prefPlayableId"
     }
 }

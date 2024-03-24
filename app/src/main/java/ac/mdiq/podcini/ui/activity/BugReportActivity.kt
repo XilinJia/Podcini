@@ -37,7 +37,7 @@ class BugReportActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         supportActionBar!!.setDisplayShowHomeEnabled(true)
         _binding = BugReportBinding.inflate(layoutInflater)
-        setContentView(R.layout.bug_report)
+        setContentView(binding.root)
 
         var stacktrace = "No crash report recorded"
         try {

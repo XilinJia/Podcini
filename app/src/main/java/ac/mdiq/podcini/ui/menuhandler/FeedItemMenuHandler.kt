@@ -42,9 +42,8 @@ object FeedItemMenuHandler {
      */
     @UnstableApi
     fun onPrepareMenu(menu: Menu?, selectedItem: FeedItem?): Boolean {
-        if (menu == null || selectedItem == null) {
-            return false
-        }
+        if (menu == null || selectedItem == null) return false
+
         val hasMedia = selectedItem.media != null
         val isPlaying = hasMedia && PlaybackStatus.isPlaying(selectedItem.media)
         val isInQueue: Boolean = selectedItem.isTagged(FeedItem.TAG_QUEUE)

@@ -1,0 +1,12 @@
+ 
+Version 4.3.3 brings several changes:
+
+* fixed bug in adding widget to home screen
+* minor adjustment of widget layout
+* added "audio only" to action bar in video player
+* added "mark favorite" to action bar in episode view
+* revamped and enhanced expanded view of the player
+* vertical swipe no longer collapses the expanded view
+* only the down arrow on top left page collapses the expanded view
+* share notes directly from expanded view of the player
+* in episode info, changed rendering of description, removed nested scroll

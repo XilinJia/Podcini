@@ -125,3 +125,15 @@
 * episode info view opened from icon is now the same as that opened from title area, no long supports horizontal swipes (change from 4.2.7)
 * enhanced viewbingding GC
 * some code cleaning
+
+## 4.3.3
+
+* fixed bug in adding widget to home screen
+* minor adjustment of widget layout
+* added "audio only" to action bar in video player
+* added "mark favorite" to action bar in episode view
+* revamped and enhanced expanded view of the player
+* vertical swipe no longer collapses the expanded view
+* only the down arrow on top left page collapses the expanded view
+* share notes directly from expanded view of the player
+* in episode info, changed rendering of description, removed nested scroll

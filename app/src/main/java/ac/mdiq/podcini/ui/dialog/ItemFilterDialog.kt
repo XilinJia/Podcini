@@ -1,8 +1,14 @@
 package ac.mdiq.podcini.ui.dialog
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.FilterDialogBinding
+import ac.mdiq.podcini.databinding.FilterDialogRowBinding
+import ac.mdiq.podcini.feed.FeedItemFilterGroup
+import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,13 +19,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButtonToggleGroup
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.FilterDialogBinding
-import ac.mdiq.podcini.feed.FeedItemFilterGroup
-import ac.mdiq.podcini.databinding.FilterDialogRowBinding
-import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
-import ac.mdiq.podcini.ui.fragment.ItemDescriptionFragment
-import android.util.Log
 
 abstract class ItemFilterDialog : BottomSheetDialogFragment() {
     private lateinit var rows: LinearLayout

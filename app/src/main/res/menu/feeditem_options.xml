@@ -32,12 +32,14 @@
 
     <item
         android:id="@+id/add_to_favorites_item"
-        android:menuCategory="container"
+        android:icon="@drawable/ic_star_border"
+        custom:showAsAction="ifRoom|collapseActionView"
         android:title="@string/add_to_favorite_label" />
 
     <item
         android:id="@+id/remove_from_favorites_item"
-        android:menuCategory="container"
+        android:icon="@drawable/ic_star"
+        custom:showAsAction="ifRoom|collapseActionView"
         android:title="@string/remove_from_favorite_label" />
 
     <item
@@ -53,12 +55,11 @@
     </item>
     <item
         android:id="@+id/share_item"
-        android:menuCategory="container"
+        android:icon="@drawable/ic_share"
         android:title="@string/share_label">
     </item>
     <item
         android:id="@+id/share_notes"
-        android:menuCategory="container"
         android:title="@string/share_notes_label">
     </item>
     <item

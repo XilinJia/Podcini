@@ -1,6 +1,7 @@
 package ac.mdiq.podcini.ui.glide
 
 import ac.mdiq.podcini.service.download.PodciniHttpClient.getHttpClient
+import ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage
 import com.bumptech.glide.Priority
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.Options
@@ -17,9 +18,9 @@ import java.io.FileInputStream
 import java.io.IOException
 import java.nio.ByteBuffer
 
-class ChapterImageModelLoader : ModelLoader<ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage?, ByteBuffer?> {
-    class Factory : ModelLoaderFactory<ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage?, ByteBuffer?> {
-        override fun build(unused: MultiModelLoaderFactory): ModelLoader<ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage?, ByteBuffer?> {
+class ChapterImageModelLoader : ModelLoader<EmbeddedChapterImage?, ByteBuffer?> {
+    class Factory : ModelLoaderFactory<EmbeddedChapterImage?, ByteBuffer?> {
+        override fun build(unused: MultiModelLoaderFactory): ModelLoader<EmbeddedChapterImage?, ByteBuffer?> {
             return ChapterImageModelLoader()
         }
 
@@ -28,7 +29,7 @@ class ChapterImageModelLoader : ModelLoader<ac.mdiq.podcini.storage.model.feed.E
         }
     }
 
-    override fun buildLoadData(model: ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage,
+    override fun buildLoadData(model: EmbeddedChapterImage,
                                width: Int,
                                height: Int,
                                options: Options
@@ -36,11 +37,11 @@ class ChapterImageModelLoader : ModelLoader<ac.mdiq.podcini.storage.model.feed.E
         return ModelLoader.LoadData(ObjectKey(model), EmbeddedImageFetcher(model))
     }
 
-    override fun handles(model: ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage): Boolean {
+    override fun handles(model: EmbeddedChapterImage): Boolean {
         return true
     }
 
-    internal class EmbeddedImageFetcher(private val image: ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage) : DataFetcher<ByteBuffer?> {
+    internal class EmbeddedImageFetcher(private val image: EmbeddedChapterImage) : DataFetcher<ByteBuffer?> {
         override fun loadData(priority: Priority, callback: DataFetcher.DataCallback<in ByteBuffer?>) {
             var stream: BufferedInputStream? = null
             try {

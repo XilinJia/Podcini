@@ -267,17 +267,20 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
     fun playPause() {
         if (media == null) return
         if (playbackService == null) {
-            PlaybackServiceStarter(activity, media!!).start()
+//            PlaybackServiceStarter(activity, media!!).start()
+            PlaybackServiceStarter(activity, media!!)
+                .callEvenIfRunning(true)
+                .start()
             Log.w(TAG, "Play/Pause button was pressed, but playbackservice was null!")
-            return
+//            return
         }
         when (status) {
-            PlayerStatus.PLAYING -> playbackService!!.pause(true, false)
-            PlayerStatus.PAUSED, PlayerStatus.PREPARED -> playbackService!!.resume()
+            PlayerStatus.PLAYING -> playbackService?.pause(true, false)
+            PlayerStatus.PAUSED, PlayerStatus.PREPARED -> playbackService?.resume()
             PlayerStatus.PREPARING -> playbackService!!.isStartWhenPrepared = !playbackService!!.isStartWhenPrepared
             PlayerStatus.INITIALIZED -> {
-                playbackService!!.isStartWhenPrepared = true
-                playbackService!!.prepare()
+                if (playbackService != null) playbackService!!.isStartWhenPrepared = true
+                playbackService?.prepare()
             }
             else -> {
                 PlaybackServiceStarter(activity, media!!)

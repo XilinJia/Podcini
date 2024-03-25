@@ -36,6 +36,9 @@ import org.greenrobot.eventbus.ThreadMode
 
 @UnstableApi
 class ChaptersFragment : AppCompatDialogFragment() {
+    private var _binding: SimpleListFragmentBinding? = null
+    private val binding get() = _binding!!
+
     private lateinit var layoutManager: LinearLayoutManager
     private lateinit var progressBar: ProgressBar
     private lateinit var adapter: ChaptersListAdapter
@@ -63,12 +66,12 @@ class ChaptersFragment : AppCompatDialogFragment() {
     }
 
     fun onCreateView(inflater: LayoutInflater): View {
-        val viewBinding = SimpleListFragmentBinding.inflate(inflater)
-        viewBinding.toolbar.visibility = View.GONE
+        _binding = SimpleListFragmentBinding.inflate(inflater)
+        binding.toolbar.visibility = View.GONE
 
         Log.d(TAG, "fragment onCreateView")
-        val recyclerView = viewBinding.recyclerView
-        progressBar = viewBinding.progLoading
+        val recyclerView = binding.recyclerView
+        progressBar = binding.progLoading
         layoutManager = LinearLayoutManager(activity)
         recyclerView.layoutManager = layoutManager
         recyclerView.addItemDecoration(DividerItemDecoration(recyclerView.context, layoutManager.orientation))
@@ -100,11 +103,12 @@ class ChaptersFragment : AppCompatDialogFragment() {
         EventBus.getDefault().register(this)
         loadMediaInfo(false)
 
-        return viewBinding.root
+        return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _binding = null
         controller?.release()
         controller = null
         EventBus.getDefault().unregister(this)

@@ -62,12 +62,12 @@ class HttpDownloaderTest {
 
     private fun download(url: String?, title: String, expectedResult: Boolean, deleteExisting: Boolean = true,
                          username: String? = null, password: String? = null
-    ): ac.mdiq.podcini.service.download.Downloader {
+    ): Downloader {
         val feedFile: FeedFile = setupFeedFile(url, title, deleteExisting)
         val request = DownloadRequest(
             feedFile.getFile_url()!!, url!!, title, 0, feedFile.getTypeAsInt(),
             username, password, null, false)
-        val downloader: ac.mdiq.podcini.service.download.Downloader = HttpDownloader(request)
+        val downloader: Downloader = HttpDownloader(request)
         downloader.call()
         val status = downloader.result
         Assert.assertNotNull(status)
@@ -101,7 +101,7 @@ class HttpDownloaderTest {
     fun testCancel() {
         val url = httpServer!!.baseUrl + "/delay/3"
         val feedFile = setupFeedFile(url, "delay", true)
-        val downloader: ac.mdiq.podcini.service.download.Downloader = HttpDownloader(DownloadRequest(
+        val downloader: Downloader = HttpDownloader(DownloadRequest(
             feedFile.getFile_url()!!, url, "delay", 0,
             feedFile.getTypeAsInt(), null, null, null, false))
         val t: Thread = object : Thread() {

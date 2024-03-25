@@ -71,10 +71,11 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 
     private var _binding: FeedItemListFragmentBinding? = null
     private val binding get() = _binding!!
+    private var _speedDialBinding: MultiSelectSpeedDialBinding? = null
+    private val speedDialBinding get() = _speedDialBinding!!
 
     private lateinit var adapter: FeedItemListAdapter
     private lateinit var swipeActions: SwipeActions
-    private lateinit var speedDialBinding: MultiSelectSpeedDialBinding
     private lateinit var nextPageLoader: MoreContentListFooterUtil
     
     private var displayUpArrow = false
@@ -96,7 +97,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         Log.d(TAG, "fragment onCreateView")
 
         _binding = FeedItemListFragmentBinding.inflate(inflater)
-        speedDialBinding = MultiSelectSpeedDialBinding.bind(binding.root)
+        _speedDialBinding = MultiSelectSpeedDialBinding.bind(binding.root)
 
         binding.toolbar.inflateMenu(R.menu.feedlist)
         binding.toolbar.setOnMenuItemClickListener(this)
@@ -198,6 +199,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        _speedDialBinding
         EventBus.getDefault().unregister(this)
         disposable?.dispose()
         adapter.endSelectMode()
@@ -209,9 +211,8 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
     }
 
     private fun updateToolbar() {
-        if (feed == null) {
-            return
-        }
+        if (feed == null) return
+
         binding.toolbar.menu.findItem(R.id.visit_website_item).setVisible(feed!!.link != null)
         binding.toolbar.menu.findItem(R.id.refresh_complete_item).setVisible(feed!!.isPaged)
         if (StringUtils.isBlank(feed!!.link)) {
@@ -620,8 +621,11 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
                                          descending: SortOrder,
                                          ascendingIsDefault: Boolean
         ) {
-            if (ascending == SortOrder.DATE_OLD_NEW || ascending == SortOrder.DURATION_SHORT_LONG || ascending == SortOrder.EPISODE_TITLE_A_Z || (requireArguments().getBoolean(
-                        ARG_FEED_IS_LOCAL) && ascending == SortOrder.EPISODE_FILENAME_A_Z)) {
+            if (ascending == SortOrder.DATE_OLD_NEW ||
+                    ascending == SortOrder.DURATION_SHORT_LONG ||
+                    ascending == SortOrder.RANDOM ||
+                    ascending == SortOrder.EPISODE_TITLE_A_Z ||
+                    (requireArguments().getBoolean(ARG_FEED_IS_LOCAL) && ascending == SortOrder.EPISODE_FILENAME_A_Z)) {
                 super.onAddItem(title, ascending, descending, ascendingIsDefault)
             }
         }

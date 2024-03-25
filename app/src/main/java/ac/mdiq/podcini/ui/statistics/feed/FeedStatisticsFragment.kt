@@ -17,19 +17,21 @@ import io.reactivex.schedulers.Schedulers
 import java.util.*
 
 class FeedStatisticsFragment : Fragment() {
+    private var _binding: FeedStatisticsBinding? = null
+    private val binding get() = _binding!!
+
     private var feedId: Long = 0
     private var disposable: Disposable? = null
-    private var viewBinding: FeedStatisticsBinding? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?
     ): View {
         feedId = requireArguments().getLong(EXTRA_FEED_ID)
-        viewBinding = FeedStatisticsBinding.inflate(inflater)
+        _binding = FeedStatisticsBinding.inflate(inflater)
 
         if (!requireArguments().getBoolean(EXTRA_DETAILED)) {
-            for (i in 0 until viewBinding!!.root.childCount) {
-                val child = viewBinding!!.root.getChildAt(i)
+            for (i in 0 until binding.root.childCount) {
+                val child = binding.root.getChildAt(i)
                 if ("detailed" == child.tag) {
                     child.visibility = View.GONE
                 }
@@ -37,7 +39,7 @@ class FeedStatisticsFragment : Fragment() {
         }
 
         loadStatistics()
-        return viewBinding!!.root
+        return binding.root
     }
 
     private fun loadStatistics() {
@@ -62,21 +64,20 @@ class FeedStatisticsFragment : Fragment() {
     }
 
     private fun showStats(s: StatisticsItem?) {
-        viewBinding!!.startedTotalLabel.text = String.format(Locale.getDefault(), "%d / %d",
+        binding.startedTotalLabel.text = String.format(Locale.getDefault(), "%d / %d",
             s!!.episodesStarted, s.episodes)
-        viewBinding!!.timePlayedLabel.text =
+        binding.timePlayedLabel.text =
             shortLocalizedDuration(requireContext(), s.timePlayed)
-        viewBinding!!.totalDurationLabel.text =
+        binding.totalDurationLabel.text =
             shortLocalizedDuration(requireContext(), s.time)
-        viewBinding!!.onDeviceLabel.text = String.format(Locale.getDefault(), "%d", s.episodesDownloadCount)
-        viewBinding!!.spaceUsedLabel.text = Formatter.formatShortFileSize(context, s.totalDownloadSize)
+        binding.onDeviceLabel.text = String.format(Locale.getDefault(), "%d", s.episodesDownloadCount)
+        binding.spaceUsedLabel.text = Formatter.formatShortFileSize(context, s.totalDownloadSize)
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        if (disposable != null) {
-            disposable!!.dispose()
-        }
+        _binding = null
+        disposable?.dispose()
     }
 
     companion object {

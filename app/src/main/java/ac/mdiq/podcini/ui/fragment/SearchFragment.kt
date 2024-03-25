@@ -56,6 +56,9 @@ import org.greenrobot.eventbus.ThreadMode
  * Performs a search operation on all feeds or one specific feed and displays the search result.
  */
 class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
+    private var _binding: SearchFragmentBinding? = null
+    private val binding get() = _binding!!
+
     private lateinit var adapter: EpisodeItemListAdapter
     private lateinit var adapterFeeds: HorizontalFeedListAdapter
     private lateinit var progressBar: ProgressBar
@@ -87,14 +90,13 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                                            savedInstanceState: Bundle?
     ): View {
-        val viewBinding = SearchFragmentBinding.inflate(inflater)
-//        val layout: View = inflater.inflate(R.layout.search_fragment, container, false)
+        _binding = SearchFragmentBinding.inflate(inflater)
 
         Log.d(TAG, "fragment onCreateView")
-        setupToolbar(viewBinding.toolbar)
-        speedDialBinding = MultiSelectSpeedDialBinding.bind(viewBinding.root)
-        progressBar = viewBinding.progressBar
-        recyclerView = viewBinding.recyclerView
+        setupToolbar(binding.toolbar)
+        speedDialBinding = MultiSelectSpeedDialBinding.bind(binding.root)
+        progressBar = binding.progressBar
+        recyclerView = binding.recyclerView
         recyclerView.setRecycledViewPool((activity as MainActivity).recycledViewPool)
         registerForContextMenu(recyclerView)
         adapter = object : EpisodeItemListAdapter(activity as MainActivity) {
@@ -109,9 +111,9 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
         }
         adapter.setOnSelectModeListener(this)
         recyclerView.adapter = adapter
-        recyclerView.addOnScrollListener(LiftOnScrollListener(viewBinding.appbar))
+        recyclerView.addOnScrollListener(LiftOnScrollListener(binding.appbar))
 
-        val recyclerViewFeeds = viewBinding.recyclerViewFeeds
+        val recyclerViewFeeds = binding.recyclerViewFeeds
         val layoutManagerFeeds = LinearLayoutManager(activity)
         layoutManagerFeeds.orientation = RecyclerView.HORIZONTAL
         recyclerViewFeeds.layoutManager = layoutManagerFeeds
@@ -133,7 +135,7 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
         emptyViewHandler.setMessage(R.string.type_to_search)
         EventBus.getDefault().register(this)
 
-        chip = viewBinding.feedTitleChip
+        chip = binding.feedTitleChip
         chip.setOnCloseIconClickListener {
             requireArguments().putLong(ARG_FEED, 0)
             searchWithProgressBar()
@@ -178,11 +180,12 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
             true
         }
 
-        return viewBinding.root
+        return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _binding = null
         EventBus.getDefault().unregister(this)
     }
 

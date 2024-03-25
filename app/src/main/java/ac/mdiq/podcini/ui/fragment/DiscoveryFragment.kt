@@ -39,6 +39,9 @@ import java.util.*
  * Searches iTunes store for top podcasts and displays results in a list.
  */
 class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
+    private var _binding: FragmentItunesSearchBinding? = null
+    private val binding get() = _binding!!
+
     private lateinit var prefs: SharedPreferences
     private lateinit var gridView: GridView
     private lateinit var progressBar: ProgressBar
@@ -94,15 +97,15 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         // Inflate the layout for this fragment
-        val viewBinding = FragmentItunesSearchBinding.inflate(inflater)
+        _binding = FragmentItunesSearchBinding.inflate(inflater)
 //        val root = inflater.inflate(R.layout.fragment_itunes_search, container, false)
 
         Log.d(TAG, "fragment onCreateView")
-        gridView = viewBinding.gridView
+        gridView = binding.gridView
         adapter = OnlineFeedsAdapter(requireActivity(), ArrayList())
         gridView.setAdapter(adapter)
 
-        toolbar = viewBinding.toolbar
+        toolbar = binding.toolbar
         toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
         toolbar.inflateMenu(R.menu.countries_menu)
         val discoverHideItem = toolbar.menu.findItem(R.id.discover_hide_item)
@@ -121,17 +124,18 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             startActivity(intent)
         }
 
-        progressBar = viewBinding.progressBar
-        txtvError = viewBinding.txtvError
-        butRetry = viewBinding.butRetry
-        txtvEmpty = viewBinding.empty
+        progressBar = binding.progressBar
+        txtvError = binding.txtvError
+        butRetry = binding.butRetry
+        txtvEmpty = binding.empty
 
         loadToplist(countryCode)
-        return viewBinding.root
+        return binding.root
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        _binding = null
         disposable?.dispose()
 
         adapter = null

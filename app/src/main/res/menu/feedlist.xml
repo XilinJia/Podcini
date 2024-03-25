@@ -4,9 +4,10 @@
 
     <item
         android:id="@+id/sort_items"
+        android:icon="@drawable/arrows_sort"
         android:menuCategory="container"
         android:title="@string/sort"
-        custom:showAsAction="never">
+        custom:showAsAction="always">
     </item>
     <item
         android:id="@+id/refresh_item"
@@ -31,7 +32,7 @@
         android:id="@+id/visit_website_item"
         android:icon="@drawable/ic_web"
         android:menuCategory="container"
-        custom:showAsAction="collapseActionView"
+        custom:showAsAction="ifRoom|collapseActionView"
         android:title="@string/visit_website_label"
         android:visible="true">
     </item>

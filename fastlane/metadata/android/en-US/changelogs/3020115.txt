@@ -1,0 +1,10 @@
+ 
+Version 4.3.4 brings several changes:
+
+* fixed bug player disappear on first play
+* more viewbinding GC enhancements
+* added sort by feed title in downloads view
+* more items on action bar in feed item list view
+* some cleaning of redundant qualifiers
+* sort dialog no longer dims the main view
+* added random sort to feed items view

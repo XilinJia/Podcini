@@ -7,6 +7,7 @@ import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.DBReader.StatisticsResult
 import ac.mdiq.podcini.storage.StatisticsItem
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
+import ac.mdiq.podcini.util.event.StatisticsEvent
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -67,7 +68,7 @@ class SubscriptionStatisticsFragment : Fragment() {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun statisticsEvent(event: ac.mdiq.podcini.util.event.StatisticsEvent?) {
+    fun statisticsEvent(event: StatisticsEvent?) {
         refreshStatistics()
     }
 

@@ -105,12 +105,12 @@ abstract class EpisodesListFragment : Fragment(), SelectableAdapter.OnSelectMode
         swipeActions = SwipeActions(this, getFragmentTag()).attachTo(recyclerView)
         swipeActions.setFilter(getFilter())
         refreshSwipeTelltale()
-        binding.leftActionIcon.setOnClickListener({
+        binding.leftActionIcon.setOnClickListener {
             swipeActions.showDialog()
-        })
-        binding.rightActionIcon.setOnClickListener({
+        }
+        binding.rightActionIcon.setOnClickListener {
             swipeActions.showDialog()
-        })
+        }
 
         val animator: RecyclerView.ItemAnimator? = recyclerView.itemAnimator
         if (animator is SimpleItemAnimator) {

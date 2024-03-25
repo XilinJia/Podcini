@@ -7,6 +7,7 @@ import ac.mdiq.podcini.playback.PlaybackController
 import ac.mdiq.podcini.playback.event.PlaybackPositionEvent
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.model.feed.Chapter
+import ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.ui.activity.MainActivity
@@ -279,7 +280,7 @@ class PlayerDetailsFragment : Fragment() {
             cover.into(binding.imgvCover)
         } else {
             Glide.with(this)
-                .load(ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage.getModelFor(media!!, displayedChapterIndex))
+                .load(EmbeddedChapterImage.getModelFor(media!!, displayedChapterIndex))
                 .apply(options)
                 .thumbnail(cover)
                 .error(cover)

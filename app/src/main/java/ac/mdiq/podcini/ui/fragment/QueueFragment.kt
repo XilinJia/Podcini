@@ -1,6 +1,34 @@
 package ac.mdiq.podcini.ui.fragment
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.CheckboxDoNotShowAgainBinding
+import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
+import ac.mdiq.podcini.databinding.QueueFragmentBinding
+import ac.mdiq.podcini.feed.util.PlaybackSpeedUtils
+import ac.mdiq.podcini.net.download.FeedUpdateManager
+import ac.mdiq.podcini.playback.event.PlaybackPositionEvent
+import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.storage.DBReader
+import ac.mdiq.podcini.storage.DBWriter
+import ac.mdiq.podcini.storage.model.feed.FeedItem
+import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
+import ac.mdiq.podcini.storage.model.feed.SortOrder
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.adapter.QueueRecyclerAdapter
+import ac.mdiq.podcini.ui.adapter.SelectableAdapter
+import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
+import ac.mdiq.podcini.ui.dialog.ItemSortDialog
+import ac.mdiq.podcini.ui.fragment.actions.EpisodeMultiSelectActionHandler
+import ac.mdiq.podcini.ui.fragment.swipeactions.SwipeActions
+import ac.mdiq.podcini.ui.menuhandler.FeedItemMenuHandler
+import ac.mdiq.podcini.ui.menuhandler.MenuItemUtils
+import ac.mdiq.podcini.ui.view.EmptyViewHandler
+import ac.mdiq.podcini.ui.view.EpisodeItemListRecyclerView
+import ac.mdiq.podcini.ui.view.LiftOnScrollListener
+import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
+import ac.mdiq.podcini.util.Converter
+import ac.mdiq.podcini.util.FeedItemUtil
+import ac.mdiq.podcini.util.event.*
 import android.content.Context
 import android.content.DialogInterface
 import android.content.SharedPreferences
@@ -22,35 +50,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.CheckboxDoNotShowAgainBinding
-import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
-import ac.mdiq.podcini.databinding.QueueFragmentBinding
-import ac.mdiq.podcini.ui.adapter.QueueRecyclerAdapter
-import ac.mdiq.podcini.ui.adapter.SelectableAdapter
-import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
-import ac.mdiq.podcini.feed.util.PlaybackSpeedUtils
-import ac.mdiq.podcini.ui.menuhandler.MenuItemUtils
-import ac.mdiq.podcini.storage.DBReader
-import ac.mdiq.podcini.storage.DBWriter
-import ac.mdiq.podcini.util.FeedItemUtil
-import ac.mdiq.podcini.net.download.FeedUpdateManager
-import ac.mdiq.podcini.ui.dialog.ItemSortDialog
-import ac.mdiq.podcini.util.event.*
-import ac.mdiq.podcini.playback.event.PlaybackPositionEvent
-import ac.mdiq.podcini.ui.fragment.actions.EpisodeMultiSelectActionHandler
-import ac.mdiq.podcini.ui.fragment.swipeactions.SwipeActions
-import ac.mdiq.podcini.ui.menuhandler.FeedItemMenuHandler
-import ac.mdiq.podcini.storage.model.feed.FeedItem
-import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
-import ac.mdiq.podcini.storage.model.feed.SortOrder
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.ui.dialog.SwipeActionsDialog
-import ac.mdiq.podcini.ui.view.EmptyViewHandler
-import ac.mdiq.podcini.ui.view.EpisodeItemListRecyclerView
-import ac.mdiq.podcini.ui.view.LiftOnScrollListener
-import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
-import ac.mdiq.podcini.util.Converter
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -126,12 +125,12 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
         swipeActions.setFilter(FeedItemFilter(FeedItemFilter.QUEUED))
         swipeActions.attachTo(recyclerView)
         refreshSwipeTelltale()
-        binding.leftActionIcon.setOnClickListener({
+        binding.leftActionIcon.setOnClickListener {
             swipeActions.showDialog()
-        })
-        binding.rightActionIcon.setOnClickListener({
+        }
+        binding.rightActionIcon.setOnClickListener {
             swipeActions.showDialog()
-        })
+        }
 
         recyclerAdapter = object : QueueRecyclerAdapter(activity as MainActivity, swipeActions) {
             override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {

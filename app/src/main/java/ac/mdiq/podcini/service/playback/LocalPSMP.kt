@@ -25,6 +25,7 @@ import ac.mdiq.podcini.playback.base.PlaybackServiceMediaPlayer
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.base.RewindAfterPauseUtils
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.util.event.PlayerErrorEvent
 import org.greenrobot.eventbus.EventBus
 import java.io.File
 import java.io.IOException
@@ -197,11 +198,11 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
         } catch (e: IOException) {
             e.printStackTrace()
             setPlayerStatus(PlayerStatus.ERROR, null)
-            EventBus.getDefault().postSticky(ac.mdiq.podcini.util.event.PlayerErrorEvent(e.localizedMessage ?: ""))
+            EventBus.getDefault().postSticky(PlayerErrorEvent(e.localizedMessage ?: ""))
         } catch (e: IllegalStateException) {
             e.printStackTrace()
             setPlayerStatus(PlayerStatus.ERROR, null)
-            EventBus.getDefault().postSticky(ac.mdiq.podcini.util.event.PlayerErrorEvent(e.localizedMessage ?: ""))
+            EventBus.getDefault().postSticky(PlayerErrorEvent(e.localizedMessage ?: ""))
         }
     }
 
@@ -727,7 +728,7 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
             }
         })
         mp.setOnErrorListener(Consumer { message: String ->
-            EventBus.getDefault().postSticky(ac.mdiq.podcini.util.event.PlayerErrorEvent(message))
+            EventBus.getDefault().postSticky(PlayerErrorEvent(message))
         })
     }
 

@@ -25,9 +25,7 @@ import ac.mdiq.podcini.ui.view.EpisodeItemListRecyclerView
 import ac.mdiq.podcini.ui.view.LiftOnScrollListener
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
 import ac.mdiq.podcini.util.FeedItemUtil
-import ac.mdiq.podcini.util.event.EpisodeDownloadEvent
-import ac.mdiq.podcini.util.event.FeedItemEvent
-import ac.mdiq.podcini.util.event.SwipeActionsChangedEvent
+import ac.mdiq.podcini.util.event.*
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -55,11 +53,11 @@ import java.util.*
  * Displays all completed downloads and provides a button to delete them.
  */
 class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, Toolbar.OnMenuItemClickListener {
-    private var runningDownloads: Set<String>? = HashSet()
-    private var items: MutableList<FeedItem> = mutableListOf()
-
     private var _binding: SimpleListFragmentBinding? = null
     private val binding get() = _binding!!
+
+    private var runningDownloads: Set<String> = HashSet()
+    private var items: MutableList<FeedItem> = mutableListOf()
 
     private lateinit var infoBar: TextView
     private lateinit var adapter: CompletedDownloadsListAdapter
@@ -105,12 +103,12 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
         swipeActions = SwipeActions(this, TAG).attachTo(recyclerView)
         swipeActions.setFilter(FeedItemFilter(FeedItemFilter.DOWNLOADED))
         refreshSwipeTelltale()
-        binding.leftActionIcon.setOnClickListener({
+        binding.leftActionIcon.setOnClickListener {
             swipeActions.showDialog()
-        })
-        binding.rightActionIcon.setOnClickListener({
+        }
+        binding.rightActionIcon.setOnClickListener {
             swipeActions.showDialog()
-        })
+        }
 
         val animator: RecyclerView.ItemAnimator? = recyclerView.itemAnimator
         if (animator is SimpleItemAnimator) {
@@ -127,8 +125,8 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
         speedDialView.overlayLayout = multiSelectDial.fabSDOverlay
         speedDialView.inflate(R.menu.episodes_apply_action_speeddial)
         speedDialView.removeActionItemById(R.id.download_batch)
-        speedDialView.removeActionItemById(R.id.mark_read_batch)
-        speedDialView.removeActionItemById(R.id.mark_unread_batch)
+//        speedDialView.removeActionItemById(R.id.mark_read_batch)
+//        speedDialView.removeActionItemById(R.id.mark_unread_batch)
         speedDialView.removeActionItemById(R.id.remove_from_queue_batch)
         speedDialView.setOnChangeListener(object : SpeedDialView.OnChangeListener {
             override fun onMainActionSelected(): Boolean {
@@ -286,17 +284,17 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onPlayerStatusChanged(event: ac.mdiq.podcini.util.event.PlayerStatusEvent?) {
+    fun onPlayerStatusChanged(event: PlayerStatusEvent?) {
         loadItems()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onDownloadLogChanged(event: ac.mdiq.podcini.util.event.DownloadLogEvent?) {
+    fun onDownloadLogChanged(event: DownloadLogEvent?) {
         loadItems()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onUnreadItemsChanged(event: ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent?) {
+    fun onUnreadItemsChanged(event: UnreadItemsUpdateEvent?) {
         loadItems()
     }
 
@@ -324,10 +322,10 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
                 FeedItemFilter(FeedItemFilter.DOWNLOADED), sortOrder)
 
             val mediaUrls: MutableList<String> = ArrayList()
-            if (runningDownloads == null) {
+            if (runningDownloads.isEmpty()) {
                 return@fromCallable downloadedItems
             }
-            for (url in runningDownloads!!) {
+            for (url in runningDownloads) {
                 if (FeedItemUtil.indexOfItemWithDownloadUrl(downloadedItems, url) != -1) {
                     continue  // Already in list
                 }
@@ -409,7 +407,11 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
                                          descending: SortOrder,
                                          ascendingIsDefault: Boolean
         ) {
-            if (ascending == SortOrder.DATE_OLD_NEW || ascending == SortOrder.DURATION_SHORT_LONG || ascending == SortOrder.EPISODE_TITLE_A_Z || ascending == SortOrder.SIZE_SMALL_LARGE) {
+            if (ascending == SortOrder.DATE_OLD_NEW ||
+                    ascending == SortOrder.DURATION_SHORT_LONG ||
+                    ascending == SortOrder.EPISODE_TITLE_A_Z ||
+                    ascending == SortOrder.SIZE_SMALL_LARGE ||
+                    ascending == SortOrder.FEED_TITLE_A_Z) {
                 super.onAddItem(title, ascending, descending, ascendingIsDefault)
             }
         }
@@ -417,7 +419,7 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
         override fun onSelectionChanged() {
             super.onSelectionChanged()
             UserPreferences.downloadsSortedOrder = sortOrder
-            EventBus.getDefault().post(ac.mdiq.podcini.util.event.DownloadLogEvent.listUpdated())
+            EventBus.getDefault().post(DownloadLogEvent.listUpdated())
         }
     }
 

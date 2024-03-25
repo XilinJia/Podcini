@@ -10,6 +10,7 @@ import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.statistics.downloads.DownloadStatisticsFragment
 import ac.mdiq.podcini.ui.statistics.subscriptions.SubscriptionStatisticsFragment
 import ac.mdiq.podcini.ui.statistics.years.YearsStatisticsFragment
+import ac.mdiq.podcini.util.event.StatisticsEvent
 import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
@@ -106,7 +107,7 @@ class StatisticsFragment : PagedToolbarFragment() {
         val disposable = Completable.fromFuture(DBWriter.resetStatistics())
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ EventBus.getDefault().post(ac.mdiq.podcini.util.event.StatisticsEvent()) },
+            .subscribe({ EventBus.getDefault().post(StatisticsEvent()) },
                 { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
     }
 

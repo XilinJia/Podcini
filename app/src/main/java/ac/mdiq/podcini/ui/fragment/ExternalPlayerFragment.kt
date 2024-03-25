@@ -54,6 +54,9 @@ import kotlin.math.max
  * Fragment which is supposed to be displayed outside of the MediaplayerActivity.
  */
 class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
+    private var _binding: ExternalPlayerFragmentBinding? = null
+    private val binding get() = _binding!!
+
     private lateinit var imgvCover: ImageView
     private lateinit var butPlay: PlayButton
 
@@ -79,22 +82,22 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
     @UnstableApi
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
-        val viewBinding = ExternalPlayerFragmentBinding.inflate(inflater)
+        _binding = ExternalPlayerFragmentBinding.inflate(inflater)
         Log.d(TAG, "fragment onCreateView")
 
-        episodeTitle = viewBinding.titleView
-        butPlaybackSpeed = viewBinding.butPlaybackSpeed
-        txtvPlaybackSpeed = viewBinding.txtvPlaybackSpeed
-        imgvCover = viewBinding.imgvCover
-        butPlay = viewBinding.butPlay
-        butRev = viewBinding.butRev
-        txtvRev = viewBinding.txtvRev
-        butFF = viewBinding.butFF
-        txtvFF = viewBinding.txtvFF
-        butSkip = viewBinding.butSkip
-        sbPosition = viewBinding.sbPosition
-        txtvPosition = viewBinding.txtvPosition
-        txtvLength = viewBinding.txtvLength
+        episodeTitle = binding.titleView
+        butPlaybackSpeed = binding.butPlaybackSpeed
+        txtvPlaybackSpeed = binding.txtvPlaybackSpeed
+        imgvCover = binding.imgvCover
+        butPlay = binding.butPlay
+        butRev = binding.butRev
+        txtvRev = binding.txtvRev
+        butFF = binding.butFF
+        txtvFF = binding.txtvFF
+        butSkip = binding.butSkip
+        sbPosition = binding.sbPosition
+        txtvPosition = binding.txtvPosition
+        txtvLength = binding.txtvLength
 
         setupLengthTextView()
         setupControlButtons()
@@ -103,7 +106,7 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
         }
         sbPosition.setOnSeekBarChangeListener(this)
 
-        viewBinding.externalPlayerFragment.setOnClickListener {
+        binding.externalPlayerFragment.setOnClickListener {
             Log.d(TAG, "externalPlayerFragment was clicked")
             val media = controller?.getMedia()
             if (media != null) {
@@ -118,13 +121,14 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
 
         controller = setupPlaybackController()
         controller!!.init()
-        loadMediaInfo()
+//        loadMediaInfo()
         EventBus.getDefault().register(this)
-        return viewBinding.root
+        return binding.root
     }
 
     @OptIn(UnstableApi::class) override fun onDestroyView() {
         super.onDestroyView()
+        _binding = null
         controller?.release()
         controller = null
         EventBus.getDefault().unregister(this)
@@ -134,11 +138,9 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         butPlay.setOnClickListener {
-            if (controller == null) {
-                return@setOnClickListener
-            }
-            val media = controller!!.getMedia()
+            if (controller == null) return@setOnClickListener
 
+            val media = controller!!.getMedia()
             if (media?.getMediaType() == MediaType.VIDEO && controller!!.status != PlayerStatus.PLAYING) {
                 controller!!.playPause()
                 requireContext().startActivity(getPlayerActivityIntent(requireContext(), media))
@@ -161,10 +163,10 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
                 SkipPreferenceDialog.SkipDirection.SKIP_REWIND, txtvRev)
             true
         }
-        butPlay.setOnClickListener {
-            controller?.init()
-            controller?.playPause()
-        }
+//        butPlay.setOnClickListener {
+//            controller?.init()
+//            controller?.playPause()
+//        }
         butFF.setOnClickListener {
             if (controller != null) {
                 val curr: Int = controller!!.position

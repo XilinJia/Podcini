@@ -15,8 +15,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 /**
  * Displays a dialog with a text box for filtering episodes and two radio buttons for exclusion/inclusion
  */
-abstract class EpisodeFilterDialog(context: Context, filter: FeedFilter) : MaterialAlertDialogBuilder(
-    context) {
+abstract class EpisodeFilterDialog(context: Context, filter: FeedFilter) :
+    MaterialAlertDialogBuilder(context) {
+
     private val viewBinding = EpisodeFilterDialogBinding.inflate(LayoutInflater.from(context))
     private val termList: MutableList<String>
 

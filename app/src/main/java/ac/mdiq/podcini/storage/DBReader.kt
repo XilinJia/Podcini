@@ -310,7 +310,7 @@ object DBReader {
      */
     @JvmStatic
     fun getEpisodes(offset: Int, limit: Int, filter: FeedItemFilter?, sortOrder: SortOrder?): List<FeedItem> {
-        Log.d(TAG, "getRecentlyPublishedEpisodes() called with: offset=$offset, limit=$limit")
+        Log.d(TAG, "getEpisodes called with: offset=$offset, limit=$limit")
         val adapter = getInstance()
         adapter.open()
         try {

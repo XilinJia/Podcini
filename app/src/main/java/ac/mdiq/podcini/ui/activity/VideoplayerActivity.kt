@@ -30,6 +30,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.setShowRemainTimeSetting
 import ac.mdiq.podcini.preferences.UserPreferences.shouldShowRemainingTime
 import ac.mdiq.podcini.ui.appstartintent.MainActivityStarter
 import ac.mdiq.podcini.util.event.MessageEvent
+import ac.mdiq.podcini.util.event.PlayerErrorEvent
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.PixelFormat
@@ -489,7 +490,7 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onMediaPlayerError(event: ac.mdiq.podcini.util.event.PlayerErrorEvent) {
+    fun onMediaPlayerError(event: PlayerErrorEvent) {
         MediaPlayerErrorDialog.show(this, event)
     }
 

@@ -38,7 +38,7 @@ class ApGlideModule : AppGlideModule() {
         registry.append(String::class.java, InputStream::class.java, ApOkHttpUrlLoader.Factory())
         registry.append(String::class.java, InputStream::class.java, NoHttpStringLoader.StreamFactory())
 
-        registry.append(ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage::class.java, ByteBuffer::class.java, ChapterImageModelLoader.Factory())
+        registry.append(EmbeddedChapterImage::class.java, ByteBuffer::class.java, ChapterImageModelLoader.Factory())
     }
 
     companion object {

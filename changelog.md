@@ -137,3 +137,13 @@
 * only the down arrow on top left page collapses the expanded view
 * share notes directly from expanded view of the player
 * in episode info, changed rendering of description, removed nested scroll
+
+# 4.3.4
+
+* fixed bug player disappear on first play
+* more viewbinding GC enhancements
+* added sort by feed title in downloads view
+* more items on action bar in feed item list view
+* some cleaning of redundant qualifiers
+* sort dialog no longer dims the main view
+* added random sort to feed items view

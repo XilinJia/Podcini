@@ -5,6 +5,7 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.StatisticsFragmentBinding
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.DBReader.MonthlyStatisticsItem
+import ac.mdiq.podcini.util.event.StatisticsEvent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -59,7 +60,7 @@ class YearsStatisticsFragment : Fragment() {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun statisticsEvent(event: ac.mdiq.podcini.util.event.StatisticsEvent?) {
+    fun statisticsEvent(event: StatisticsEvent?) {
         refreshStatistics()
     }
 

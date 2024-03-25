@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.feed.parser.namespace
 
+import ac.mdiq.podcini.feed.parser.HandlerState
 import android.util.Log
 import androidx.core.text.HtmlCompat
 import ac.mdiq.podcini.feed.parser.element.SyndElement
@@ -7,7 +8,7 @@ import ac.mdiq.podcini.feed.parser.util.DurationParser.inMillis
 import org.xml.sax.Attributes
 
 class Itunes : Namespace() {
-    override fun handleElementStart(localName: String, state: ac.mdiq.podcini.feed.parser.HandlerState,
+    override fun handleElementStart(localName: String, state: HandlerState,
                                     attributes: Attributes): SyndElement {
         if (IMAGE == localName) {
             val url: String? = attributes.getValue(IMAGE_HREF)
@@ -25,7 +26,7 @@ class Itunes : Namespace() {
         return SyndElement(localName, this)
     }
 
-    override fun handleElementEnd(localName: String, state: ac.mdiq.podcini.feed.parser.HandlerState) {
+    override fun handleElementEnd(localName: String, state: HandlerState) {
         if (state.contentBuf == null) {
             return
         }

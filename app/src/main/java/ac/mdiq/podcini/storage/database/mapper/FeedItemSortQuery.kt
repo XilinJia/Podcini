@@ -8,6 +8,8 @@ object FeedItemSortQuery {
     fun generateFrom(sortOrder: SortOrder?): String {
         var sortQuery = ""
         sortQuery = when (sortOrder) {
+            SortOrder.FEED_TITLE_A_Z -> PodDBAdapter.TABLE_NAME_FEED_ITEMS + "." + PodDBAdapter.KEY_FEED + " " + "ASC"
+            SortOrder.FEED_TITLE_Z_A -> PodDBAdapter.TABLE_NAME_FEED_ITEMS + "." + PodDBAdapter.KEY_FEED + " " + "DESC"
             SortOrder.EPISODE_TITLE_A_Z -> PodDBAdapter.TABLE_NAME_FEED_ITEMS + "." + PodDBAdapter.KEY_TITLE + " " + "ASC"
             SortOrder.EPISODE_TITLE_Z_A -> PodDBAdapter.TABLE_NAME_FEED_ITEMS + "." + PodDBAdapter.KEY_TITLE + " " + "DESC"
             SortOrder.DATE_OLD_NEW -> PodDBAdapter.TABLE_NAME_FEED_ITEMS + "." + PodDBAdapter.KEY_PUBDATE + " " + "ASC"

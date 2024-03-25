@@ -33,6 +33,9 @@ import org.greenrobot.eventbus.ThreadMode
 import java.util.*
 
 class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
+    private var _binding: QuickFeedDiscoveryBinding? = null
+    private val binding get() = _binding!!
+
     private var disposable: Disposable? = null
     
     private lateinit var adapter: FeedDiscoverAdapter
@@ -44,18 +47,17 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
 
     @OptIn(UnstableApi::class) override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
-        val viewBinding = QuickFeedDiscoveryBinding.inflate(inflater)
-//        val root: View = inflater.inflate(R.layout.quick_feed_discovery, container, false)
+        _binding = QuickFeedDiscoveryBinding.inflate(inflater)
 
         Log.d(TAG, "fragment onCreateView")
-        val discoverMore = viewBinding.discoverMore
+        val discoverMore = binding.discoverMore
         discoverMore.setOnClickListener { (activity as MainActivity).loadChildFragment(DiscoveryFragment()) }
 
-        discoverGridLayout = viewBinding.discoverGrid
-        errorView = viewBinding.discoverError
-        errorTextView = viewBinding.discoverErrorTxtV
-        errorRetry = viewBinding.discoverErrorRetryBtn
-        poweredByTextView = viewBinding.discoverPoweredByItunes
+        discoverGridLayout = binding.discoverGrid
+        errorView = binding.discoverError
+        errorTextView = binding.discoverErrorTxtV
+        errorRetry = binding.discoverErrorRetryBtn
+        poweredByTextView = binding.discoverPoweredByItunes
 
         adapter = FeedDiscoverAdapter(activity as MainActivity)
         discoverGridLayout.setAdapter(adapter)
@@ -80,11 +82,12 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
         loadToplist()
 
         EventBus.getDefault().register(this)
-        return viewBinding.root
+        return binding.root
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        _binding = null
         EventBus.getDefault().unregister(this)
         disposable?.dispose()
     }

@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.feed.parser.namespace
 
+import ac.mdiq.podcini.feed.parser.HandlerState
 import android.util.Log
 import ac.mdiq.podcini.storage.model.feed.FeedFunding
 import ac.mdiq.podcini.storage.model.feed.FeedItem
@@ -13,7 +14,7 @@ import ac.mdiq.podcini.feed.parser.util.SyndStringUtils.trimAllWhitespace
 import org.xml.sax.Attributes
 
 class Atom : Namespace() {
-    override fun handleElementStart(localName: String, state: ac.mdiq.podcini.feed.parser.HandlerState, attributes: Attributes): SyndElement {
+    override fun handleElementStart(localName: String, state: HandlerState, attributes: Attributes): SyndElement {
         if (ENTRY == localName) {
             state.currentItem = FeedItem()
             state.items.add(state.currentItem!!)
@@ -88,7 +89,7 @@ class Atom : Namespace() {
         return SyndElement(localName, this)
     }
 
-    override fun handleElementEnd(localName: String, state: ac.mdiq.podcini.feed.parser.HandlerState) {
+    override fun handleElementEnd(localName: String, state: HandlerState) {
         if (ENTRY == localName) {
             if (state.currentItem != null &&
                     state.tempObjects.containsKey(Itunes.DURATION)) {

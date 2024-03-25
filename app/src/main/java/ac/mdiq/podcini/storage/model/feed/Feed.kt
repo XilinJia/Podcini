@@ -2,6 +2,7 @@ package ac.mdiq.podcini.storage.model.feed
 
 import android.text.TextUtils
 import ac.mdiq.podcini.storage.model.feed.FeedFunding.Companion.extractPaymentLinks
+import android.util.Log
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -107,10 +108,15 @@ class Feed : FeedFile {
      */
     var sortOrder: SortOrder? = null
         set(sortOrder) {
-            require(!(sortOrder != null && sortOrder.scope != SortOrder.Scope.INTRA_FEED)) {
-                ("The specified sortOrder " + sortOrder
+            if (!(sortOrder != null && sortOrder.scope != SortOrder.Scope.INTRA_FEED)) {
+                Log.w("Feed sortOrder", "The specified sortOrder " + sortOrder
                         + " is invalid. Only those with INTRA_FEED scope are allowed.")
             }
+//            This looks suicidal:
+//            require(!(sortOrder != null && sortOrder.scope != SortOrder.Scope.INTRA_FEED)) {
+//                ("The specified sortOrder " + sortOrder
+//                        + " is invalid. Only those with INTRA_FEED scope are allowed.")
+//            }
             field = sortOrder
         }
 

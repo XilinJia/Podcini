@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.service.download.handler
 
+import ac.mdiq.podcini.feed.parser.FeedHandlerResult
 import android.util.Log
 import ac.mdiq.podcini.util.InvalidFeedException
 import ac.mdiq.podcini.storage.model.download.DownloadError
@@ -16,7 +17,7 @@ import java.util.*
 import java.util.concurrent.Callable
 import javax.xml.parsers.ParserConfigurationException
 
-class FeedParserTask(private val request: DownloadRequest) : Callable<ac.mdiq.podcini.feed.parser.FeedHandlerResult?> {
+class FeedParserTask(private val request: DownloadRequest) : Callable<FeedHandlerResult?> {
     var downloadStatus: DownloadResult
         private set
     var isSuccessful: Boolean = true
@@ -29,7 +30,7 @@ class FeedParserTask(private val request: DownloadRequest) : Callable<ac.mdiq.po
             "Unknown error: Status not set")
     }
 
-    override fun call(): ac.mdiq.podcini.feed.parser.FeedHandlerResult? {
+    override fun call(): FeedHandlerResult? {
         val feed = Feed(request.source, request.lastModified)
         feed.file_url = request.destination
         feed.id = request.feedfileId
@@ -42,7 +43,7 @@ class FeedParserTask(private val request: DownloadRequest) : Callable<ac.mdiq.po
         var reasonDetailed: String? = null
         val feedHandler = ac.mdiq.podcini.feed.parser.FeedHandler()
 
-        var result: ac.mdiq.podcini.feed.parser.FeedHandlerResult? = null
+        var result: FeedHandlerResult? = null
         try {
             result = feedHandler.parseFeed(feed)
             Log.d(TAG, feed.title + " parsed")

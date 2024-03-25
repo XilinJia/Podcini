@@ -16,6 +16,8 @@ import ac.mdiq.podcini.ui.dialog.*
 import ac.mdiq.podcini.ui.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.util.event.FeedListUpdateEvent
+import ac.mdiq.podcini.util.event.QueueEvent
+import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
 import android.R.attr
 import android.app.Activity
 import android.content.Context
@@ -195,7 +197,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onUnreadItemsChanged(event: ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent?) {
+    fun onUnreadItemsChanged(event: UnreadItemsUpdateEvent?) {
         loadData()
     }
 
@@ -206,7 +208,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onQueueChanged(event: ac.mdiq.podcini.util.event.QueueEvent) {
+    fun onQueueChanged(event: QueueEvent) {
         Log.d(TAG, "onQueueChanged($event)")
         // we are only interested in the number of queue items, not download status or position
         if (event.action == ac.mdiq.podcini.util.event.QueueEvent.Action.DELETED_MEDIA || event.action == ac.mdiq.podcini.util.event.QueueEvent.Action.SORTED || event.action == ac.mdiq.podcini.util.event.QueueEvent.Action.MOVED) {

@@ -20,6 +20,7 @@ import ac.mdiq.podcini.util.Converter.getDurationStringLocalized
 import ac.mdiq.podcini.util.Converter.getDurationStringLong
 import ac.mdiq.podcini.util.IntentUtils.openInBrowser
 import ac.mdiq.podcini.storage.model.feed.Chapter
+import ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.ui.common.CircularProgressBar
 import kotlin.math.max
@@ -89,7 +90,7 @@ class ChaptersListAdapter(private val context: Context, private val callback: Ca
                 Glide.with(context).clear(holder.image)
             } else {
                 if (media != null) Glide.with(context)
-                    .load(ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage.getModelFor(media!!, position))
+                    .load(EmbeddedChapterImage.getModelFor(media!!, position))
                     .apply(RequestOptions()
                         .dontAnimate()
                         .transform(FitCenter(), RoundedCorners((4 * context.resources.displayMetrics.density).toInt())))

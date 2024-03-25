@@ -23,6 +23,7 @@ import ac.mdiq.podcini.util.DateFormatter
 import ac.mdiq.podcini.util.PlaybackStatus
 import ac.mdiq.podcini.util.event.EpisodeDownloadEvent
 import ac.mdiq.podcini.util.event.FeedItemEvent
+import ac.mdiq.podcini.util.event.PlayerStatusEvent
 import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
 import android.os.Build
 import android.os.Bundle
@@ -409,7 +410,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onPlayerStatusChanged(event: ac.mdiq.podcini.util.event.PlayerStatusEvent?) {
+    fun onPlayerStatusChanged(event: PlayerStatusEvent?) {
         updateButtons()
     }
 

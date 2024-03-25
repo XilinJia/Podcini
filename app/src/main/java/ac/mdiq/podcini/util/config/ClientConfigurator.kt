@@ -17,6 +17,7 @@ import ac.mdiq.podcini.net.ssl.SslProviderInstaller
 import ac.mdiq.podcini.storage.database.PodDBAdapter
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.proxyConfig
+import ac.mdiq.podcini.service.download.DownloadServiceInterfaceImpl
 import java.io.File
 
 @UnstableApi
@@ -35,7 +36,7 @@ object ClientConfigurator {
         SslProviderInstaller.install(context)
         NetworkUtils.init(context)
         NetworkConnectionChangeHandler.init(context)
-        DownloadServiceInterface.setImpl(ac.mdiq.podcini.service.download.DownloadServiceInterfaceImpl())
+        DownloadServiceInterface.setImpl(DownloadServiceInterfaceImpl())
         SynchronizationQueueSink.setServiceStarterImpl { SyncService.sync(context) }
         setCacheDirectory(File(context.cacheDir, "okhttp"))
         setProxyConfig(proxyConfig)

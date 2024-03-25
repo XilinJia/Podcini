@@ -1,29 +1,28 @@
 package ac.mdiq.podcini.preferences
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.ThemePreferenceBinding
 import android.content.Context
 import android.util.AttributeSet
-import android.view.View
 import androidx.cardview.widget.CardView
 import androidx.preference.Preference
 import androidx.preference.PreferenceViewHolder
 import com.google.android.material.elevation.SurfaceColors
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.ThemePreferenceBinding
 
 class ThemePreference : Preference {
-    var viewBinding: ThemePreferenceBinding? = null
+    var binding: ThemePreferenceBinding? = null
 
-    constructor(context: Context) : super(context!!) {
+    constructor(context: Context) : super(context) {
         layoutResource = R.layout.theme_preference
     }
 
-    constructor(context: Context, attrs: AttributeSet?) : super(context!!, attrs) {
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
         layoutResource = R.layout.theme_preference
     }
 
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
         super.onBindViewHolder(holder)
-        viewBinding = ThemePreferenceBinding.bind(holder.itemView)
+        binding = ThemePreferenceBinding.bind(holder.itemView)
         updateUi()
     }
 
@@ -33,7 +32,7 @@ class ThemePreference : Preference {
         val surfaceColorActive = SurfaceColors.getColorForElevation(context, 32 * density)
         val activeTheme = UserPreferences.theme
         card.setCardBackgroundColor(if (theme == activeTheme) surfaceColorActive else surfaceColor)
-        card.setOnClickListener { v: View? ->
+        card.setOnClickListener {
             UserPreferences.theme = theme
             if (onPreferenceChangeListener != null) {
                 onPreferenceChangeListener!!.onPreferenceChange(this, UserPreferences.theme)
@@ -43,8 +42,8 @@ class ThemePreference : Preference {
     }
 
     fun updateUi() {
-        updateThemeCard(viewBinding!!.themeSystemCard, UserPreferences.ThemePreference.SYSTEM)
-        updateThemeCard(viewBinding!!.themeLightCard, UserPreferences.ThemePreference.LIGHT)
-        updateThemeCard(viewBinding!!.themeDarkCard, UserPreferences.ThemePreference.DARK)
+        updateThemeCard(binding!!.themeSystemCard, UserPreferences.ThemePreference.SYSTEM)
+        updateThemeCard(binding!!.themeLightCard, UserPreferences.ThemePreference.LIGHT)
+        updateThemeCard(binding!!.themeDarkCard, UserPreferences.ThemePreference.DARK)
     }
 }

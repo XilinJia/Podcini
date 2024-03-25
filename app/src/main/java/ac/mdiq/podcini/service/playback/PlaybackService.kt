@@ -71,6 +71,8 @@ import ac.mdiq.podcini.util.FeedUtil.shouldAutoDeleteItemsOnThatFeed
 import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
 import ac.mdiq.podcini.util.NetworkUtils.isStreamingAllowed
 import ac.mdiq.podcini.util.event.MessageEvent
+import ac.mdiq.podcini.util.event.PlayerErrorEvent
+import ac.mdiq.podcini.util.event.settings.SkipIntroEndingChangedEvent
 import ac.mdiq.podcini.util.event.settings.SpeedPresetChangedEvent
 import ac.mdiq.podcini.util.event.settings.VolumeAdaptionChangedEvent
 import android.Manifest
@@ -924,7 +926,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     @Suppress("unused")
-    fun playerError(event: ac.mdiq.podcini.util.event.PlayerErrorEvent?) {
+    fun playerError(event: PlayerErrorEvent?) {
         if (mediaPlayer?.playerStatus == PlayerStatus.PLAYING) {
             mediaPlayer!!.pause(true, false)
         }
@@ -1548,7 +1550,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     @Suppress("unused")
-    fun skipIntroEndingPresetChanged(event: ac.mdiq.podcini.util.event.settings.SkipIntroEndingChangedEvent) {
+    fun skipIntroEndingPresetChanged(event: SkipIntroEndingChangedEvent) {
         if (playable is FeedMedia) {
             if ((playable as FeedMedia).item?.feed?.id == event.feedId) {
                 if (event.skipEnding != 0) {

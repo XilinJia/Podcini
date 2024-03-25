@@ -64,8 +64,8 @@ class DbWriterTest {
         init(context)
 
         val app = context as Application?
-        ac.mdiq.podcini.util.config.ClientConfig.applicationCallbacks = Mockito.mock(ac.mdiq.podcini.util.config.ApplicationCallbacks::class.java)
-        Mockito.`when`(ac.mdiq.podcini.util.config.ClientConfig.applicationCallbacks?.getApplicationInstance()).thenReturn(app)
+        ClientConfig.applicationCallbacks = Mockito.mock(ApplicationCallbacks::class.java)
+        Mockito.`when`(ClientConfig.applicationCallbacks?.getApplicationInstance()).thenReturn(app)
         DownloadServiceInterface.setImpl(DownloadServiceInterfaceStub())
 
         // create new database

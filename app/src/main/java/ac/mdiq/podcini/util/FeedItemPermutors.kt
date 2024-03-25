@@ -2,6 +2,7 @@ package ac.mdiq.podcini.util
 
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.SortOrder
+import android.util.Log
 import java.util.*
 
 /**
@@ -96,7 +97,8 @@ object FeedItemPermutors {
     }
 
     private fun feedTitle(item: FeedItem?): String {
-        return if (item?.feed != null && item.feed!!.title != null) item.feed!!.title!!.lowercase(Locale.getDefault()) else ""
+        Log.d("permutors", "feedTitle ${item?.feed?.title}")
+        return if (item?.feed?.title != null) item.feed!!.title!!.lowercase(Locale.getDefault()) else ""
     }
 
     /**

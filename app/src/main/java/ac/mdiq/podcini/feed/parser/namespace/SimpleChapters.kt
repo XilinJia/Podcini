@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.feed.parser.namespace
 
+import ac.mdiq.podcini.feed.parser.HandlerState
 import android.util.Log
 import ac.mdiq.podcini.storage.model.feed.Chapter
 import ac.mdiq.podcini.feed.parser.element.SyndElement
@@ -7,7 +8,7 @@ import ac.mdiq.podcini.feed.parser.util.DateUtils.parseTimeString
 import org.xml.sax.Attributes
 
 class SimpleChapters : Namespace() {
-    override fun handleElementStart(localName: String, state: ac.mdiq.podcini.feed.parser.HandlerState, attributes: Attributes): SyndElement {
+    override fun handleElementStart(localName: String, state: HandlerState, attributes: Attributes): SyndElement {
         val currentItem = state.currentItem
         if (currentItem != null) {
             if (localName == CHAPTERS) {
@@ -29,7 +30,7 @@ class SimpleChapters : Namespace() {
         return SyndElement(localName, this)
     }
 
-    override fun handleElementEnd(localName: String, state: ac.mdiq.podcini.feed.parser.HandlerState) {
+    override fun handleElementEnd(localName: String, state: HandlerState) {
     }
 
     companion object {

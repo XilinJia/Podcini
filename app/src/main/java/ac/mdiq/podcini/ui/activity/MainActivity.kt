@@ -16,6 +16,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
 import ac.mdiq.podcini.receiver.MediaButtonReceiver.Companion.createIntent
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.model.download.DownloadStatus
+import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.ui.appstartintent.MainActivityStarter
 import ac.mdiq.podcini.ui.common.ThemeUtils.getDrawableFromAttr
 import ac.mdiq.podcini.ui.dialog.RatingDialog
@@ -586,6 +587,11 @@ class MainActivity : CastEnabledActivity() {
                 }
                 bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
             }
+            intent.hasExtra(EXTRA_EPISODES) -> {
+                val episodes = (if (Build.VERSION.SDK_INT >= 33) intent.getSerializableExtra(EXTRA_EPISODES)
+                else intent.getSerializableExtra(EXTRA_EPISODES)) as ArrayList<FeedItem>
+                loadChildFragment(EpisodesListFragment.newInstance(episodes))
+            }
             intent.hasExtra(MainActivityStarter.EXTRA_FRAGMENT_TAG) -> {
                 val tag = intent.getStringExtra(MainActivityStarter.EXTRA_FRAGMENT_TAG)
                 val args = intent.getBundleExtra(MainActivityStarter.EXTRA_FRAGMENT_ARGS)
@@ -729,6 +735,7 @@ class MainActivity : CastEnabledActivity() {
         const val EXTRA_STARTED_FROM_SEARCH: String = "started_from_search"
         const val EXTRA_ADD_TO_BACK_STACK: String = "add_to_back_stack"
         const val KEY_GENERATED_VIEW_ID: String = "generated_view_id"
+        const val EXTRA_EPISODES: String = "episodes_list"
 
         @JvmStatic
         fun getIntentToOpenFeed(context: Context, feedId: Long): Intent {
@@ -737,5 +744,13 @@ class MainActivity : CastEnabledActivity() {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             return intent
         }
+
+        fun openEpisodesList(context: Context, episodes: ArrayList<FeedItem>): Intent {
+            val intent = Intent(context.applicationContext, MainActivity::class.java)
+            intent.putExtra(EXTRA_EPISODES, episodes)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            return intent
+        }
+
     }
 }

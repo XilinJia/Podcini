@@ -2,6 +2,7 @@ package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.FeedinfoBinding
+import ac.mdiq.podcini.net.discovery.CombinedSearcher
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.DBTasks
 import ac.mdiq.podcini.storage.model.feed.Feed
@@ -133,6 +134,11 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         txtvUrl = binding.txtvUrl
         lblSupport = binding.lblSupport
         txtvFundingUrl = binding.txtvFundingUrl
+
+        binding.btnvRelatedFeeds.setOnClickListener {
+            val fragment = OnlineSearchFragment.newInstance(CombinedSearcher::class.java, "${txtvAuthorHeader.text} podcasts")
+            (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
+        }
 
         txtvUrl.setOnClickListener(copyUrlToClipboard)
 

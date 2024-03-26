@@ -8,15 +8,18 @@ import org.xml.sax.Attributes
 class PodcastIndex : Namespace() {
     override fun handleElementStart(localName: String, state: HandlerState,
                                     attributes: Attributes): SyndElement {
-        if (FUNDING == localName) {
-            val href: String? = attributes.getValue(URL)
-            val funding = FeedFunding(href, "")
-            state.currentFunding = funding
-            state.feed.addPayment(state.currentFunding!!)
-        } else if (CHAPTERS == localName) {
-            val href: String? = attributes.getValue(URL)
-            if (!href.isNullOrEmpty()) {
-                state.currentItem!!.podcastIndexChapterUrl = href
+        when {
+            FUNDING == localName -> {
+                val href: String? = attributes.getValue(URL)
+                val funding = FeedFunding(href, "")
+                state.currentFunding = funding
+                state.feed.addPayment(state.currentFunding!!)
+            }
+            CHAPTERS == localName -> {
+                val href: String? = attributes.getValue(URL)
+                if (state.currentItem != null && !href.isNullOrEmpty()) {
+                    state.currentItem!!.podcastIndexChapterUrl = href
+                }
             }
         }
         return SyndElement(localName, this)

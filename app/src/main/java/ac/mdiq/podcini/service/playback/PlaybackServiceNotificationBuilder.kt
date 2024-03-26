@@ -63,28 +63,24 @@ class PlaybackServiceNotificationBuilder(private val context: Context) {
         val iconSize = (128 * context.resources.displayMetrics.density).toInt()
         val options = RequestOptions().centerCrop()
         try {
-            cachedIcon = Glide.with(context)
-                .asBitmap()
-                .load(playable?.getImageLocation())
-                .apply(options)
-                .submit(iconSize, iconSize)
-                .get()
-        } catch (e: ExecutionException) {
-            try {
-                if (playable == null) {
-                    Log.e(TAG, "playable is null")
-                    return
-                }
+            var imgLoc = playable?.getImageLocation()
+            if (imgLoc != null) {
                 cachedIcon = Glide.with(context)
                     .asBitmap()
-                    .load(ImageResourceUtils.getFallbackImageLocation(playable!!))
+                    .load(imgLoc)
                     .apply(options)
                     .submit(iconSize, iconSize)
                     .get()
-            } catch (ignore: InterruptedException) {
-                Log.e(TAG, "Media icon loader was interrupted")
-            } catch (tr: Throwable) {
-                Log.e(TAG, "Error loading the media icon for the notification", tr)
+            } else if (playable != null) {
+                imgLoc = ImageResourceUtils.getFallbackImageLocation(playable!!)
+                if (imgLoc != null) {
+                    cachedIcon = Glide.with(context)
+                        .asBitmap()
+                        .load(imgLoc)
+                        .apply(options)
+                        .submit(iconSize, iconSize)
+                        .get()
+                }
             }
         } catch (ignore: InterruptedException) {
             Log.e(TAG, "Media icon loader was interrupted")

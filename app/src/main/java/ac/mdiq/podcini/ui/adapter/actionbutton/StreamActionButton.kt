@@ -11,6 +11,7 @@ import ac.mdiq.podcini.playback.PlaybackServiceStarter
 import ac.mdiq.podcini.ui.dialog.StreamingConfirmationDialog
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.playback.MediaType
+import ac.mdiq.podcini.storage.model.playback.RemoteMedia
 
 class StreamActionButton(item: FeedItem) : ItemActionButton(item) {
     override fun getLabel(): Int {
@@ -20,7 +21,10 @@ class StreamActionButton(item: FeedItem) : ItemActionButton(item) {
         return R.drawable.ic_stream
     }
     @UnstableApi override fun onClick(context: Context) {
-        val media = item.media ?: return
+//        TODO: test
+        if (item.media == null) return
+
+        val media = RemoteMedia(item)
         logAction(UsageStatistics.ACTION_STREAM)
 
         if (!isStreamingAllowed) {
@@ -28,6 +32,7 @@ class StreamActionButton(item: FeedItem) : ItemActionButton(item) {
             return
         }
         PlaybackServiceStarter(context, media)
+            .shouldStreamThisTime(true)
             .callEvenIfRunning(true)
             .start()
 

@@ -1,5 +1,36 @@
 package ac.mdiq.podcini.ui.activity
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.EditTextDialogBinding
+import ac.mdiq.podcini.databinding.OnlinefeedviewActivityBinding
+import ac.mdiq.podcini.feed.FeedUrlNotFoundException
+import ac.mdiq.podcini.feed.parser.FeedHandler
+import ac.mdiq.podcini.feed.parser.FeedHandlerResult
+import ac.mdiq.podcini.feed.parser.UnsupportedFeedtypeException
+import ac.mdiq.podcini.net.common.UrlChecker.prepareUrl
+import ac.mdiq.podcini.net.discovery.CombinedSearcher
+import ac.mdiq.podcini.net.discovery.PodcastSearcherRegistry
+import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.preferences.ThemeSwitcher.getTranslucentTheme
+import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
+import ac.mdiq.podcini.service.download.DownloadRequestCreator.create
+import ac.mdiq.podcini.service.download.Downloader
+import ac.mdiq.podcini.service.download.HttpDownloader
+import ac.mdiq.podcini.storage.DBReader
+import ac.mdiq.podcini.storage.DBTasks
+import ac.mdiq.podcini.storage.DBWriter
+import ac.mdiq.podcini.storage.model.download.DownloadError
+import ac.mdiq.podcini.storage.model.download.DownloadResult
+import ac.mdiq.podcini.storage.model.feed.Feed
+import ac.mdiq.podcini.storage.model.feed.FeedItem
+import ac.mdiq.podcini.ui.common.ThemeUtils.getColorFromAttr
+import ac.mdiq.podcini.ui.dialog.AuthenticationDialog
+import ac.mdiq.podcini.ui.glide.FastBlurTransformation
+import ac.mdiq.podcini.util.DownloadErrorLabel.from
+import ac.mdiq.podcini.util.event.EpisodeDownloadEvent
+import ac.mdiq.podcini.util.event.FeedListUpdateEvent
+import ac.mdiq.podcini.util.syndication.FeedDiscoverer
+import ac.mdiq.podcini.util.syndication.HtmlToPlainText
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
@@ -25,44 +56,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.adapter.OnlineItemDescriptionAdapter
-import ac.mdiq.podcini.feed.FeedUrlNotFoundException
-import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.currentlyPlayingMediaType
-import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.writeNoMediaPlaying
-import ac.mdiq.podcini.preferences.ThemeSwitcher.getTranslucentTheme
-import ac.mdiq.podcini.service.download.DownloadRequestCreator.create
-import ac.mdiq.podcini.service.download.HttpDownloader
-import ac.mdiq.podcini.service.playback.PlaybackServiceInterface
-import ac.mdiq.podcini.storage.DBReader
-import ac.mdiq.podcini.storage.DBTasks
-import ac.mdiq.podcini.storage.DBWriter
-import ac.mdiq.podcini.util.DownloadErrorLabel.from
-import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
-import ac.mdiq.podcini.util.syndication.FeedDiscoverer
-import ac.mdiq.podcini.util.syndication.HtmlToPlainText
-import ac.mdiq.podcini.databinding.EditTextDialogBinding
-import ac.mdiq.podcini.databinding.OnlinefeedviewActivityBinding
-import ac.mdiq.podcini.databinding.OnlinefeedviewHeaderBinding
-import ac.mdiq.podcini.ui.dialog.AuthenticationDialog
-import ac.mdiq.podcini.util.event.EpisodeDownloadEvent
-import ac.mdiq.podcini.util.event.FeedListUpdateEvent
-import ac.mdiq.podcini.util.event.PlayerStatusEvent
-import ac.mdiq.podcini.storage.model.download.DownloadError
-import ac.mdiq.podcini.storage.model.download.DownloadResult
-import ac.mdiq.podcini.storage.model.feed.Feed
-import ac.mdiq.podcini.storage.model.playback.RemoteMedia
-import ac.mdiq.podcini.net.common.UrlChecker.prepareUrl
-import ac.mdiq.podcini.net.discovery.CombinedSearcher
-import ac.mdiq.podcini.net.discovery.PodcastSearcherRegistry
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
-import ac.mdiq.podcini.feed.parser.FeedHandler
-import ac.mdiq.podcini.feed.parser.FeedHandlerResult
-import ac.mdiq.podcini.feed.parser.UnsupportedFeedtypeException
-import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
-import ac.mdiq.podcini.service.download.Downloader
-import ac.mdiq.podcini.ui.common.ThemeUtils.getColorFromAttr
-import ac.mdiq.podcini.ui.glide.FastBlurTransformation
 import io.reactivex.Maybe
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -76,6 +69,7 @@ import org.greenrobot.eventbus.ThreadMode
 import java.io.File
 import java.io.IOException
 import kotlin.concurrent.Volatile
+import kotlin.math.min
 
 /**
  * Downloads a feed from a feed URL and parses it. Subclasses can display the
@@ -87,6 +81,9 @@ import kotlin.concurrent.Volatile
  * and the activity will finish as soon as the error dialog is closed.
  */
 class OnlineFeedViewActivity : AppCompatActivity() {
+    private var _binding: OnlinefeedviewActivityBinding? = null
+    private val binding get() = _binding!!
+
     @Volatile
     private var feeds: List<Feed>? = null
     private var selectedDownloadUrl: String? = null
@@ -104,11 +101,6 @@ class OnlineFeedViewActivity : AppCompatActivity() {
     private var parser: Disposable? = null
     private var updater: Disposable? = null
 
-    private var _hBinding: OnlinefeedviewHeaderBinding? = null
-    private val hBinding get() = _hBinding!!
-    private var _binding: OnlinefeedviewActivityBinding? = null
-    private val binding get() = _binding!!
-
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(getTranslucentTheme(this))
         super.onCreate(savedInstanceState)
@@ -120,7 +112,6 @@ class OnlineFeedViewActivity : AppCompatActivity() {
         binding.closeButton.setOnClickListener { finish() }
         binding.card.setOnClickListener(null)
         binding.card.setCardBackgroundColor(getColorFromAttr(this, R.attr.colorSurface))
-        _hBinding = OnlinefeedviewHeaderBinding.inflate(layoutInflater)
 
         var feedUrl: String? = null
         when {
@@ -196,7 +187,6 @@ class OnlineFeedViewActivity : AppCompatActivity() {
     public override fun onDestroy() {
         super.onDestroy()
         _binding = null
-        _hBinding = null
         updater?.dispose()
         download?.dispose()
         parser?.dispose()
@@ -406,9 +396,7 @@ class OnlineFeedViewActivity : AppCompatActivity() {
 
         binding.backgroundImage.colorFilter = LightingColorFilter(-0x7d7d7e, 0x000000)
 
-        binding.listView.addHeaderView(hBinding.root)
-        binding.listView.setSelector(android.R.color.transparent)
-        binding.listView.adapter = OnlineItemDescriptionAdapter(this, 0, feed.items)
+        binding.episodeLabel.setOnClickListener { showEpisodes(feed.items)}
 
         if (StringUtils.isNotBlank(feed.imageUrl)) {
             Glide.with(this)
@@ -431,7 +419,8 @@ class OnlineFeedViewActivity : AppCompatActivity() {
 
         binding.titleLabel.text = feed.title
         binding.authorLabel.text = feed.author
-        hBinding.txtvDescription.text = HtmlToPlainText.getPlainText(feed.description?:"")
+
+        binding.txtvDescription.text = HtmlToPlainText.getPlainText(feed.description?:"")
 
         binding.subscribeButton.setOnClickListener {
             if (feedInFeedlist()) {
@@ -443,23 +432,9 @@ class OnlineFeedViewActivity : AppCompatActivity() {
             }
         }
 
-        binding.stopPreviewButton.setOnClickListener {
-            writeNoMediaPlaying()
-            sendLocalBroadcast(this, PlaybackServiceInterface.ACTION_SHUTDOWN_PLAYBACK_SERVICE)
-        }
-
         if (isEnableAutodownload) {
             val preferences = getSharedPreferences(PREFS, MODE_PRIVATE)
             binding.autoDownloadCheckBox.isChecked = preferences.getBoolean(PREF_LAST_AUTO_DOWNLOAD, true)
-        }
-
-        hBinding.txtvDescription.maxLines = DESCRIPTION_MAX_LINES_COLLAPSED
-        hBinding.txtvDescription.setOnClickListener {
-            if (hBinding.txtvDescription.maxLines > DESCRIPTION_MAX_LINES_COLLAPSED) {
-                hBinding.txtvDescription.maxLines = DESCRIPTION_MAX_LINES_COLLAPSED
-            } else {
-                hBinding.txtvDescription.maxLines = 2000
-            }
         }
 
         if (alternateFeedUrls.isEmpty()) {
@@ -504,6 +479,16 @@ class OnlineFeedViewActivity : AppCompatActivity() {
         // feed.getId() is always 0, we have to retrieve the id from the feed list from
         // the database
         val intent = MainActivity.getIntentToOpenFeed(this, feedId)
+        intent.putExtra(MainActivity.EXTRA_STARTED_FROM_SEARCH,
+            getIntent().getBooleanExtra(MainActivity.EXTRA_STARTED_FROM_SEARCH, false))
+        finish()
+        startActivity(intent)
+    }
+
+    @UnstableApi private fun showEpisodes(episodes: List<FeedItem>) {
+        Log.d(TAG, "showEpisodes ${episodes.size}")
+        if (episodes.isNullOrEmpty()) return
+        val intent = MainActivity.openEpisodesList(this, ArrayList(episodes.subList(0, min(50, episodes.size-1))))
         intent.putExtra(MainActivity.EXTRA_STARTED_FROM_SEARCH,
             getIntent().getBooleanExtra(MainActivity.EXTRA_STARTED_FROM_SEARCH, false))
         finish()
@@ -621,12 +606,6 @@ class OnlineFeedViewActivity : AppCompatActivity() {
         builder.show()
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun playbackStateChanged(event: PlayerStatusEvent?) {
-        val isPlayingPreview = currentlyPlayingMediaType == RemoteMedia.PLAYABLE_TYPE_REMOTE_MEDIA.toLong()
-        binding.stopPreviewButton.visibility = if (isPlayingPreview) View.VISIBLE else View.GONE
-    }
-
     /**
      *
      * @return true if a FeedDiscoveryDialog is shown, false otherwise (e.g., due to no feed found).
@@ -707,6 +686,6 @@ class OnlineFeedViewActivity : AppCompatActivity() {
         private const val TAG = "OnlineFeedViewActivity"
         private const val PREFS = "OnlineFeedViewActivityPreferences"
         private const val PREF_LAST_AUTO_DOWNLOAD = "lastAutoDownload"
-        private const val DESCRIPTION_MAX_LINES_COLLAPSED = 4
+        private const val DESCRIPTION_MAX_LINES_COLLAPSED = 20
     }
 }

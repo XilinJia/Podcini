@@ -53,7 +53,7 @@ object WidgetUpdater {
         val views = RemoteViews(context.packageName, R.layout.player_widget)
 
         if (widgetState.media != null) {
-            var icon: Bitmap?
+            val icon: Bitmap?
             val iconSize = context.resources.getDimensionPixelSize(android.R.dimen.app_icon_size)
             views.setOnClickPendingIntent(R.id.layout_left, startMediaPlayer)
             views.setOnClickPendingIntent(R.id.imgvCover, startMediaPlayer)
@@ -65,25 +65,28 @@ object WidgetUpdater {
                 .transform(FitCenter(), RoundedCorners(radius))
 
             try {
-                icon = Glide.with(context)
-                    .asBitmap()
-                    .load(widgetState.media.getImageLocation())
-                    .apply(options)
-                    .submit(iconSize, iconSize)
-                    .get(500, TimeUnit.MILLISECONDS)
-                views.setImageViewBitmap(R.id.imgvCover, icon)
-            } catch (tr1: Throwable) {
-                try {
+                var imgLoc = widgetState.media.getImageLocation()
+                if (imgLoc != null) {
                     icon = Glide.with(context)
                         .asBitmap()
-                        .load(getFallbackImageLocation(widgetState.media))
+                        .load(imgLoc)
                         .apply(options)
-                        .submit(iconSize, iconSize)[500, TimeUnit.MILLISECONDS]
+                        .submit(iconSize, iconSize)
+                        .get(500, TimeUnit.MILLISECONDS)
                     views.setImageViewBitmap(R.id.imgvCover, icon)
-                } catch (tr2: Throwable) {
-                    Log.e(TAG, "Error loading the media icon for the widget", tr2)
-                    views.setImageViewResource(R.id.imgvCover, R.mipmap.ic_launcher)
+                } else {
+                    imgLoc = getFallbackImageLocation(widgetState.media)
+                    if (imgLoc != null) {
+                        icon = Glide.with(context)
+                            .asBitmap()
+                            .load(imgLoc)
+                            .apply(options)
+                            .submit(iconSize, iconSize)[500, TimeUnit.MILLISECONDS]
+                        views.setImageViewBitmap(R.id.imgvCover, icon)
+                    } else views.setImageViewResource(R.id.imgvCover, R.mipmap.ic_launcher)
                 }
+            } catch (tr1: Throwable) {
+                Log.e(TAG, "Error loading the media icon for the widget", tr1)
             }
 
             views.setTextViewText(R.id.txtvTitle, widgetState.media.getEpisodeTitle())

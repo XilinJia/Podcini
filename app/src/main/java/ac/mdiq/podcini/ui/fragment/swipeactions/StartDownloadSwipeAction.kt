@@ -25,7 +25,7 @@ class StartDownloadSwipeAction : SwipeAction {
     }
 
     override fun performAction(item: FeedItem, fragment: Fragment, filter: FeedItemFilter) {
-        if (!item.isDownloaded && !item.feed!!.isLocalFeed) {
+        if (!item.isDownloaded && item.feed != null && !item.feed!!.isLocalFeed) {
             DownloadActionButton(item)
                 .onClick(fragment.requireContext())
         }

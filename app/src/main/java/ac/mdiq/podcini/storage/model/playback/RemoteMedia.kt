@@ -9,6 +9,7 @@ import ac.mdiq.podcini.storage.model.feed.Chapter
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import org.apache.commons.lang3.builder.HashCodeBuilder
+import java.time.LocalDate
 import java.util.*
 
 /**
@@ -58,7 +59,7 @@ class RemoteMedia : Playable {
     }
 
     constructor(item: FeedItem) {
-        this.streamUrl = item.media!!.download_url
+        this.streamUrl = item.media?.download_url
         this.itemIdentifier = item.itemIdentifier
         this.feedUrl = item.feed?.download_url
         this.feedTitle = item.feed?.title
@@ -71,7 +72,7 @@ class RemoteMedia : Playable {
             this.imageLocation = item.feed?.imageUrl
         }
         this.feedLink = item.feed?.link
-        this.mimeType = item.media!!.mime_type
+        this.mimeType = item.media?.mime_type
         this.pubDate = item.pubDate
         this.description = item.description
 
@@ -83,15 +84,15 @@ class RemoteMedia : Playable {
     }
 
     fun getFeedAuthor(): String {
-        return feedAuthor!!
+        return feedAuthor ?:"No author"
     }
 
     fun getMimeType(): String {
-        return mimeType!!
+        return mimeType?:"Unknown"
     }
 
     override fun getPubDate(): Date {
-        return pubDate!!
+        return pubDate ?: Date()
     }
 
     override fun writeToPreferences(prefEditor: SharedPreferences.Editor) {
@@ -107,11 +108,11 @@ class RemoteMedia : Playable {
     }
 
     override fun getEpisodeTitle(): String {
-        return episodeTitle!!
+        return episodeTitle ?: "No title"
     }
 
     override fun getFeedTitle(): String {
-        return feedTitle!!
+        return feedTitle ?: "No title"
     }
 
     override fun getWebsiteLink(): String {

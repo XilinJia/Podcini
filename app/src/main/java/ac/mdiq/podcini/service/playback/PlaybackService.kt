@@ -465,49 +465,53 @@ class PlaybackService : MediaBrowserServiceCompat() {
             Log.d(TAG, "onStartCommand is a redelivered intent, calling stopForeground now.")
             stateManager.stopForeground(true)
         } else {
-            if (keycode != -1) {
-                val notificationButton: Boolean
-                if (hardwareButton) {
-                    Log.d(TAG, "Received hardware button event")
-                    notificationButton = false
-                } else {
-                    Log.d(TAG, "Received media button event")
-                    notificationButton = true
-                }
-                val handled = handleKeycode(keycode, notificationButton)
-                if (!handled && !stateManager.hasReceivedValidStartCommand()) {
-                    stateManager.stopService()
-                    return START_NOT_STICKY
-                }
-            } else if (playable != null) {
-                stateManager.validStartCommandWasReceived()
-                val allowStreamThisTime = intent.getBooleanExtra(
-                    PlaybackServiceInterface.EXTRA_ALLOW_STREAM_THIS_TIME, false)
-                val allowStreamAlways = intent.getBooleanExtra(
-                    PlaybackServiceInterface.EXTRA_ALLOW_STREAM_ALWAYS, false)
-                sendNotificationBroadcast(PlaybackServiceInterface.NOTIFICATION_TYPE_RELOAD, 0)
-                if (allowStreamAlways) {
-                    isAllowMobileStreaming = true
-                }
-                Observable.fromCallable {
-                    if (playable is FeedMedia) {
-                        return@fromCallable DBReader.getFeedMedia(playable.id)
+            when {
+                keycode != -1 -> {
+                    val notificationButton: Boolean
+                    if (hardwareButton) {
+                        Log.d(TAG, "Received hardware button event")
+                        notificationButton = false
                     } else {
-                        return@fromCallable playable
+                        Log.d(TAG, "Received media button event")
+                        notificationButton = true
+                    }
+                    val handled = handleKeycode(keycode, notificationButton)
+                    if (!handled && !stateManager.hasReceivedValidStartCommand()) {
+                        stateManager.stopService()
+                        return START_NOT_STICKY
                     }
                 }
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(
-                        { loadedPlayable: Playable? -> startPlaying(loadedPlayable, allowStreamThisTime) },
-                        { error: Throwable ->
-                            Log.d(TAG, "Playable was not found. Stopping service.")
-                            error.printStackTrace()
-                            stateManager.stopService()
-                        })
-                return START_NOT_STICKY
-            } else {
-                mediaSession?.controller?.transportControls?.sendCustomAction(customAction, null)
+                playable != null -> {
+                    stateManager.validStartCommandWasReceived()
+                    val allowStreamThisTime = intent.getBooleanExtra(
+                        PlaybackServiceInterface.EXTRA_ALLOW_STREAM_THIS_TIME, false)
+                    val allowStreamAlways = intent.getBooleanExtra(
+                        PlaybackServiceInterface.EXTRA_ALLOW_STREAM_ALWAYS, false)
+                    sendNotificationBroadcast(PlaybackServiceInterface.NOTIFICATION_TYPE_RELOAD, 0)
+                    if (allowStreamAlways) {
+                        isAllowMobileStreaming = true
+                    }
+                    Observable.fromCallable {
+                        if (playable is FeedMedia) {
+                            return@fromCallable DBReader.getFeedMedia(playable.id)
+                        } else {
+                            return@fromCallable playable
+                        }
+                    }
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                            { loadedPlayable: Playable? -> startPlaying(loadedPlayable, allowStreamThisTime) },
+                            { error: Throwable ->
+                                Log.d(TAG, "Playable was not found. Stopping service.")
+                                error.printStackTrace()
+                                stateManager.stopService()
+                            })
+                    return START_NOT_STICKY
+                }
+                else -> {
+                    mediaSession?.controller?.transportControls?.sendCustomAction(customAction, null)
+                }
             }
         }
 
@@ -1305,8 +1309,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
         playableIconLoaderThread?.interrupt()
 
         if (playable == null || mediaPlayer == null) {
-            Log.d(TAG, "setupNotification: playable=$playable")
-            Log.d(TAG, "setupNotification: mediaPlayer=$mediaPlayer")
+            Log.d(TAG, "setupNotification: playable=$playable mediaPlayer=$mediaPlayer")
             if (!stateManager.hasReceivedValidStartCommand()) {
                 stateManager.stopService()
             }

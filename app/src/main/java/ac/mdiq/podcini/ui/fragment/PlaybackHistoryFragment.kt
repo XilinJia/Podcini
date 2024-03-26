@@ -19,7 +19,7 @@ import androidx.annotation.OptIn
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
-class PlaybackHistoryFragment : EpisodesListFragment() {
+class PlaybackHistoryFragment : BaseEpisodesListFragment() {
     override fun getFragmentTag(): String {
         return "PlaybackHistoryFragment"
     }

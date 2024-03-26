@@ -75,7 +75,6 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
     private var lastQueryChange: Long = 0
     private var isOtherViewInFoucus = false
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = true

@@ -37,29 +37,41 @@ class Itunes : Namespace() {
             return
         }
 
-        if (AUTHOR == localName && state.tagstack.size <= 3) {
-            state.feed.author = contentFromHtml
-        } else if (DURATION == localName) {
-            try {
-                val durationMs = inMillis(content)
-                state.tempObjects[DURATION] = durationMs.toInt()
-            } catch (e: NumberFormatException) {
-                Log.e(NSTAG, String.format("Duration '%s' could not be parsed", content))
+        when {
+            AUTHOR == localName && state.tagstack.size <= 3 -> {
+                state.feed.author = contentFromHtml
             }
-        } else if (SUBTITLE == localName) {
-            if (state.currentItem != null && state.currentItem?.description.isNullOrEmpty()) {
-                state.currentItem!!.setDescriptionIfLonger(content)
-            } else if (state.feed.description.isNullOrEmpty()) {
-                state.feed.description = content
+            DURATION == localName -> {
+                try {
+                    val durationMs = inMillis(content)
+                    state.tempObjects[DURATION] = durationMs.toInt()
+                } catch (e: NumberFormatException) {
+                    Log.e(NSTAG, String.format("Duration '%s' could not be parsed", content))
+                }
             }
-        } else if (SUMMARY == localName) {
-            if (state.currentItem != null) {
-                state.currentItem!!.setDescriptionIfLonger(content)
-            } else if (Rss20.CHANNEL == state.secondTag.name) {
-                state.feed.description = content
+            SUBTITLE == localName -> {
+                when {
+                    state.currentItem != null && state.currentItem?.description.isNullOrEmpty() -> {
+                        state.currentItem!!.setDescriptionIfLonger(content)
+                    }
+                    state.feed.description.isNullOrEmpty() -> {
+                        state.feed.description = content
+                    }
+                }
             }
-        } else if (NEW_FEED_URL == localName && content.trim { it <= ' ' }.startsWith("http")) {
-            state.redirectUrl = content.trim { it <= ' ' }
+            SUMMARY == localName -> {
+                when {
+                    state.currentItem != null -> {
+                        state.currentItem!!.setDescriptionIfLonger(content)
+                    }
+                    Rss20.CHANNEL == state.secondTag.name -> {
+                        state.feed.description = content
+                    }
+                }
+            }
+            NEW_FEED_URL == localName && content.trim { it <= ' ' }.startsWith("http") -> {
+                state.redirectUrl = content.trim { it <= ' ' }
+            }
         }
     }
 

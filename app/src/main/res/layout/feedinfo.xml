@@ -132,6 +132,15 @@
                 android:textIsSelectable="true"
                 tools:background="@android:color/holo_green_dark" />
 
+            <Button
+                android:id="@+id/btnvRelatedFeeds"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:text="@string/feeds_related_to_author"
+                style="@style/Widget.MaterialComponents.Button.TextButton" />
+
             <TextView
                 android:id="@+id/lblStatistics"
                 android:layout_width="wrap_content"

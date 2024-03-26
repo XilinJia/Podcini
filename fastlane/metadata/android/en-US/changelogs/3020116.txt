@@ -1,0 +1,9 @@
+ 
+Version 4.4.0 brings several changes:
+
+* added direct search of feeds related to author in feed info view
+* added a new episodes list fragment for arbitrary list
+* revamped online feed view activity
+* episodes (50 most recent) of any online feed can be viewed and played (streamed) directly without subscribing to the feed
+* bug fixes on passing Glide with null addresses
+* null safety enhancements in code

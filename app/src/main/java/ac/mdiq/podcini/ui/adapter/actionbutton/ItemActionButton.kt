@@ -38,6 +38,9 @@ abstract class ItemActionButton internal constructor(@JvmField var item: FeedIte
                 isCurrentlyPlaying(media) -> {
                     PauseActionButton(item)
                 }
+                item.feed == null -> {
+                    StreamActionButton(item)
+                }
                 item.feed != null && item.feed!!.isLocalFeed -> {
                     PlayLocalActionButton(item)
                 }
@@ -47,7 +50,7 @@ abstract class ItemActionButton internal constructor(@JvmField var item: FeedIte
                 isDownloadingMedia -> {
                     CancelDownloadActionButton(item)
                 }
-                isStreamOverDownload -> {
+                isStreamOverDownload || item.feed == null -> {
                     StreamActionButton(item)
                 }
                 else -> {

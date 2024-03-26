@@ -2,6 +2,7 @@ package ac.mdiq.podcini.storage.model.feed
 
 import android.text.TextUtils
 import java.io.File
+import java.io.Serializable
 
 /**
  * Represents a component of a Feed that has to be downloaded
@@ -9,7 +10,7 @@ import java.io.File
 abstract class FeedFile @JvmOverloads constructor(@JvmField var file_url: String? = null,
                                                   @JvmField var download_url: String? = null,
                                                   private var downloaded: Boolean = false
-) : FeedComponent() {
+) : FeedComponent(), Serializable {
 
     /**
      * Creates a new FeedFile object.

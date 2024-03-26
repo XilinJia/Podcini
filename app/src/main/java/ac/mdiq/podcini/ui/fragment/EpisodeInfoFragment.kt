@@ -67,6 +67,9 @@ import kotlin.math.max
  * Displays information about an Episode (FeedItem) and actions.
  */
 class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
+    private var _binding: EpisodeInfoFragmentBinding? = null
+    private val binding get() = _binding!!
+
     private var itemsLoaded = false
     private var item: FeedItem? = null
     private var webviewData: String? = null
@@ -88,9 +91,6 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private lateinit var butAction1: View
     private lateinit var butAction2: View
     private lateinit var noMediaLabel: View
-
-    private var _binding: EpisodeInfoFragmentBinding? = null
-    private val binding get() = _binding!!
 
     private var actionButton1: ItemActionButton? = null
     private var actionButton2: ItemActionButton? = null

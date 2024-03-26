@@ -141,16 +141,20 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
         }
 
         val dls = DownloadServiceInterface.get()
-        if (media.download_url != null && dls?.isDownloadingEpisode(media.download_url!!) == true) {
-            val percent: Float = 0.01f * dls.getProgress(media.download_url!!)
-            secondaryActionProgress.setPercentage(max(percent.toDouble(), 0.01).toFloat(), item)
-            secondaryActionProgress.setIndeterminate(dls.isEpisodeQueued(media.download_url!!))
-        } else if (media.isDownloaded()) {
-            secondaryActionProgress.setPercentage(1f, item) // Do not animate 100% -> 0%
-            secondaryActionProgress.setIndeterminate(false)
-        } else {
-            secondaryActionProgress.setPercentage(0f, item) // Animate X% -> 0%
-            secondaryActionProgress.setIndeterminate(false)
+        when {
+            media.download_url != null && dls?.isDownloadingEpisode(media.download_url!!) == true -> {
+                val percent: Float = 0.01f * dls.getProgress(media.download_url!!)
+                secondaryActionProgress.setPercentage(max(percent.toDouble(), 0.01).toFloat(), item)
+                secondaryActionProgress.setIndeterminate(dls.isEpisodeQueued(media.download_url!!))
+            }
+            media.isDownloaded() -> {
+                secondaryActionProgress.setPercentage(1f, item) // Do not animate 100% -> 0%
+                secondaryActionProgress.setIndeterminate(false)
+            }
+            else -> {
+                secondaryActionProgress.setPercentage(0f, item) // Animate X% -> 0%
+                secondaryActionProgress.setIndeterminate(false)
+            }
         }
 
         duration.text = Converter.getDurationStringLong(media.getDuration())
@@ -175,25 +179,29 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
             position.visibility = View.GONE
         }
 
-        if (media.size > 0) {
-            size.text = Formatter.formatShortFileSize(activity, media.size)
-        } else if (NetworkUtils.isEpisodeHeadDownloadAllowed && !media.checkedOnSizeButUnknown()) {
-            size.text = "{fa-spinner}"
-            Iconify.addIcons(size)
-            MediaSizeLoader.getFeedMediaSizeObservable(media).subscribe(
-                Consumer<Long?> { sizeValue: Long? ->
-                    if (sizeValue == null) return@Consumer
-                    if (sizeValue > 0) {
-                        size.text = Formatter.formatShortFileSize(activity, sizeValue)
-                    } else {
-                        size.text = ""
-                    }
-                }) { error: Throwable? ->
-                size.text = ""
-                Log.e(TAG, Log.getStackTraceString(error))
+        when {
+            media.size > 0 -> {
+                size.text = Formatter.formatShortFileSize(activity, media.size)
             }
-        } else {
-            size.text = ""
+            NetworkUtils.isEpisodeHeadDownloadAllowed && !media.checkedOnSizeButUnknown() -> {
+                size.text = "{fa-spinner}"
+                Iconify.addIcons(size)
+                MediaSizeLoader.getFeedMediaSizeObservable(media).subscribe(
+                    Consumer<Long?> { sizeValue: Long? ->
+                        if (sizeValue == null) return@Consumer
+                        if (sizeValue > 0) {
+                            size.text = Formatter.formatShortFileSize(activity, sizeValue)
+                        } else {
+                            size.text = ""
+                        }
+                    }) { error: Throwable? ->
+                    size.text = ""
+                    Log.e(TAG, Log.getStackTraceString(error))
+                }
+            }
+            else -> {
+                size.text = ""
+            }
         }
     }
 

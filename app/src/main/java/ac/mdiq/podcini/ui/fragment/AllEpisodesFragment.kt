@@ -26,7 +26,7 @@ import org.greenrobot.eventbus.Subscribe
 /**
  * Shows all episodes (possibly filtered by user).
  */
-class AllEpisodesFragment : EpisodesListFragment() {
+class AllEpisodesFragment : BaseEpisodesListFragment() {
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val root = super.onCreateView(inflater, container, savedInstanceState)
         Log.d(TAG, "fragment onCreateView")

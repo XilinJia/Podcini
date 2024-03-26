@@ -15,74 +15,95 @@ import org.xml.sax.Attributes
 
 class Atom : Namespace() {
     override fun handleElementStart(localName: String, state: HandlerState, attributes: Attributes): SyndElement {
-        if (ENTRY == localName) {
-            state.currentItem = FeedItem()
-            state.items.add(state.currentItem!!)
-            state.currentItem!!.feed = state.feed
-        } else if (localName.matches(isText.toRegex())) {
-            val type: String? = attributes.getValue(TEXT_TYPE)
-            return AtomText(localName, this, type)
-        } else if (LINK == localName) {
-            val href: String? = attributes.getValue(LINK_HREF)
-            val rel: String? = attributes.getValue(LINK_REL)
-            val parent = state.tagstack.peek()
-            if (parent.name.matches(isFeedItem.toRegex())) {
-                if (rel == null || LINK_REL_ALTERNATE == rel) {
-                    state.currentItem!!.link = href
-                } else if (LINK_REL_ENCLOSURE == rel) {
-                    val strSize: String? = attributes.getValue(LINK_LENGTH)
-                    var size: Long = 0
-                    try {
-                        if (strSize != null) {
-                            size = strSize.toLong()
-                        }
-                    } catch (e: NumberFormatException) {
-                        Log.d(TAG, "Length attribute could not be parsed.")
-                    }
-                    val mimeType: String? = getMimeType(attributes.getValue(LINK_TYPE), href)
+        when {
+            ENTRY == localName -> {
+                state.currentItem = FeedItem()
+                state.items.add(state.currentItem!!)
+                state.currentItem!!.feed = state.feed
+            }
+            localName.matches(isText.toRegex()) -> {
+                val type: String? = attributes.getValue(TEXT_TYPE)
+                return AtomText(localName, this, type)
+            }
+            LINK == localName -> {
+                val href: String? = attributes.getValue(LINK_HREF)
+                val rel: String? = attributes.getValue(LINK_REL)
+                val parent = state.tagstack.peek()
+                when {
+                    parent.name.matches(isFeedItem.toRegex()) -> {
+                        when {
+                            rel == null || LINK_REL_ALTERNATE == rel -> {
+                                if (state.currentItem != null) state.currentItem!!.link = href
+                            }
+                            LINK_REL_ENCLOSURE == rel -> {
+                                val strSize: String? = attributes.getValue(LINK_LENGTH)
+                                var size: Long = 0
+                                try {
+                                    if (strSize != null) {
+                                        size = strSize.toLong()
+                                    }
+                                } catch (e: NumberFormatException) {
+                                    Log.d(TAG, "Length attribute could not be parsed.")
+                                }
+                                val mimeType: String? = getMimeType(attributes.getValue(LINK_TYPE), href)
 
-                    val currItem = state.currentItem
-                    if (isMediaFile(mimeType) && currItem != null && !currItem.hasMedia()) {
-                        currItem.media = FeedMedia(currItem, href, size, mimeType)
-                    }
-                } else if (LINK_REL_PAYMENT == rel) {
-                    state.currentItem!!.paymentLink = href
-                }
-            } else if (parent.name.matches(isFeed.toRegex())) {
-                if (rel == null || LINK_REL_ALTERNATE == rel) {
-                    val type: String? = attributes.getValue(LINK_TYPE)
-                    /*
-                     * Use as link if a) no type-attribute is given and
-                     * feed-object has no link yet b) type of link is
-                     * LINK_TYPE_HTML or LINK_TYPE_XHTML
-                     */
-                    if ((type == null && state.feed.link == null) ||
-                                    (LINK_TYPE_HTML == type || LINK_TYPE_XHTML == type)) {
-                        state.feed.link = href
-                    } else if (LINK_TYPE_ATOM == type || LINK_TYPE_RSS == type) {
-                        // treat as podlove alternate feed
-                        var title: String? = attributes.getValue(LINK_TITLE)
-                        if (title.isNullOrEmpty()) {
-                            title = href?:""
+                                val currItem = state.currentItem
+                                if (isMediaFile(mimeType) && currItem != null && !currItem.hasMedia()) {
+                                    currItem.media = FeedMedia(currItem, href, size, mimeType)
+                                }
+                            }
+                            LINK_REL_PAYMENT == rel -> {
+                                if (state.currentItem != null) state.currentItem!!.paymentLink = href
+                            }
                         }
-                        if (!href.isNullOrEmpty()) state.addAlternateFeedUrl(title, href)
                     }
-                } else if (LINK_REL_ARCHIVES == rel) {
-                    val type: String? = attributes.getValue(LINK_TYPE)
-                    if (LINK_TYPE_ATOM == type || LINK_TYPE_RSS == type) {
-                        var title: String? = attributes.getValue(LINK_TITLE)
-                        if (title.isNullOrEmpty()) {
-                            title = href?:""
+                    parent.name.matches(isFeed.toRegex()) -> {
+                        when {
+                            rel == null || LINK_REL_ALTERNATE == rel -> {
+                                val type: String? = attributes.getValue(LINK_TYPE)
+                                /*
+                                                         * Use as link if a) no type-attribute is given and
+                                                         * feed-object has no link yet b) type of link is
+                                                         * LINK_TYPE_HTML or LINK_TYPE_XHTML
+                                                         */
+                                when {
+                                    type == null && state.feed.link == null || LINK_TYPE_HTML == type || LINK_TYPE_XHTML == type -> {
+                                        state.feed.link = href
+                                    }
+                                    LINK_TYPE_ATOM == type || LINK_TYPE_RSS == type -> {
+                                        // treat as podlove alternate feed
+                                        var title: String? = attributes.getValue(LINK_TITLE)
+                                        if (title.isNullOrEmpty()) {
+                                            title = href?:""
+                                        }
+                                        if (!href.isNullOrEmpty()) state.addAlternateFeedUrl(title, href)
+                                    }
+                                }
+                            }
+                            LINK_REL_ARCHIVES == rel -> {
+                                val type: String? = attributes.getValue(LINK_TYPE)
+                                when {
+                                    LINK_TYPE_ATOM == type || LINK_TYPE_RSS == type -> {
+                                        var title: String? = attributes.getValue(LINK_TITLE)
+                                        if (title.isNullOrEmpty()) {
+                                            title = href?:""
+                                        }
+                                        if (!href.isNullOrEmpty()) state.addAlternateFeedUrl(title, href)
+                                    }
+                                    LINK_TYPE_HTML == type || LINK_TYPE_XHTML == type -> {
+                                        //A Link such as to a directory such as iTunes
+                                    }
+                                }
+                            }
+                            LINK_REL_PAYMENT == rel -> {
+                                state.feed.addPayment(FeedFunding(href, ""))
+                            }
+                            LINK_REL_NEXT == rel -> {
+                                state.feed.isPaged = true
+                                state.feed.nextPageLink = href
+                            }
                         }
-                        if (!href.isNullOrEmpty()) state.addAlternateFeedUrl(title, href)
-                    } else if (LINK_TYPE_HTML == type || LINK_TYPE_XHTML == type) {
-                        //A Link such as to a directory such as iTunes
                     }
-                } else if (LINK_REL_PAYMENT == rel) {
-                    state.feed.addPayment(FeedFunding(href, ""))
-                } else if (LINK_REL_NEXT == rel) {
-                    state.feed.isPaged = true
-                    state.feed.nextPageLink = href
                 }
             }
         }
@@ -96,7 +117,7 @@ class Atom : Namespace() {
                 val currentItem = state.currentItem
                 if (currentItem!!.hasMedia()) {
                     val duration = state.tempObjects[Itunes.DURATION] as Int?
-                    currentItem.media!!.setDuration(duration!!)
+                    if (duration != null) currentItem.media!!.setDuration(duration!!)
                 }
                 state.tempObjects.remove(Itunes.DURATION)
             }
@@ -121,38 +142,49 @@ class Atom : Namespace() {
                 textElement.setContent(content)
             }
 
-            if (ID == top) {
-                if (FEED == second) {
-                    state.feed.feedIdentifier = contentRaw
-                } else if (ENTRY == second && state.currentItem != null) {
-                    state.currentItem!!.itemIdentifier = contentRaw
+            when {
+                ID == top -> {
+                    if (FEED == second) {
+                        state.feed.feedIdentifier = contentRaw
+                    } else if (ENTRY == second && state.currentItem != null) {
+                        state.currentItem!!.itemIdentifier = contentRaw
+                    }
                 }
-            } else if (TITLE == top && textElement != null) {
-                if (FEED == second ) {
-                    state.feed.title = textElement.processedContent
-                } else if (ENTRY == second && state.currentItem != null) {
-                    state.currentItem!!.title = textElement.processedContent
+                TITLE == top && textElement != null -> {
+                    if (FEED == second ) {
+                        state.feed.title = textElement.processedContent
+                    } else if (ENTRY == second && state.currentItem != null) {
+                        state.currentItem!!.title = textElement.processedContent
+                    }
                 }
-            } else if (SUBTITLE == top && FEED == second && textElement != null) {
-                state.feed.description = textElement.processedContent
-            } else if (CONTENT == top && ENTRY == second && textElement != null && state.currentItem != null) {
-                state.currentItem!!.setDescriptionIfLonger(textElement.processedContent)
-            } else if (SUMMARY == top && ENTRY == second && textElement != null && state.currentItem != null) {
-                state.currentItem!!.setDescriptionIfLonger(textElement.processedContent)
-            } else if (UPDATED == top && ENTRY == second && state.currentItem != null && state.currentItem!!.pubDate == null) {
-                state.currentItem!!.pubDate = parseOrNullIfFuture(content)
-            } else if (PUBLISHED == top && ENTRY == second && state.currentItem != null) {
-                state.currentItem!!.pubDate = parseOrNullIfFuture(content)
-            } else if (IMAGE_LOGO == top && state.feed.imageUrl == null) {
-                state.feed.imageUrl = content
-            } else if (IMAGE_ICON == top) {
-                state.feed.imageUrl = content
-            } else if (AUTHOR_NAME == top && AUTHOR == second && state.currentItem == null) {
-                val currentName = state.feed.author
-                if (currentName == null) {
-                    state.feed.author = content
-                } else {
-                    state.feed.author = "$currentName, $content"
+                SUBTITLE == top && FEED == second && textElement != null -> {
+                    state.feed.description = textElement.processedContent
+                }
+                CONTENT == top && ENTRY == second && textElement != null && state.currentItem != null -> {
+                    state.currentItem!!.setDescriptionIfLonger(textElement.processedContent)
+                }
+                SUMMARY == top && ENTRY == second && textElement != null && state.currentItem != null -> {
+                    state.currentItem!!.setDescriptionIfLonger(textElement.processedContent)
+                }
+                UPDATED == top && ENTRY == second && state.currentItem != null && state.currentItem!!.pubDate == null -> {
+                    state.currentItem!!.pubDate = parseOrNullIfFuture(content)
+                }
+                PUBLISHED == top && ENTRY == second && state.currentItem != null -> {
+                    state.currentItem!!.pubDate = parseOrNullIfFuture(content)
+                }
+                IMAGE_LOGO == top && state.feed.imageUrl == null -> {
+                    state.feed.imageUrl = content
+                }
+                IMAGE_ICON == top -> {
+                    state.feed.imageUrl = content
+                }
+                AUTHOR_NAME == top && AUTHOR == second && state.currentItem == null -> {
+                    val currentName = state.feed.author
+                    if (currentName == null) {
+                        state.feed.author = content
+                    } else {
+                        state.feed.author = "$currentName, $content"
+                    }
                 }
             }
         }

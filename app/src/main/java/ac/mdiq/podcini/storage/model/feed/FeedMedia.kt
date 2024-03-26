@@ -254,12 +254,12 @@ class FeedMedia : FeedFile, Playable {
     }
 
     override fun getEpisodeTitle(): String {
-        if (item == null) return ""
+        if (item == null) return "No title"
 
         return if (item!!.title != null) {
             item!!.title!!
         } else {
-            item!!.identifyingValue?:""
+            item!!.identifyingValue?:"No title"
         }
     }
 

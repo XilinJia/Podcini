@@ -108,7 +108,6 @@ class OnlineSearchFragment : Fragment() {
         super.onDestroy()
         _binding = null
         disposable?.dispose()
-
         adapter = null
     }
 
@@ -143,7 +142,7 @@ class OnlineSearchFragment : Fragment() {
             }
 
             override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
-                activity!!.supportFragmentManager.popBackStack()
+                requireActivity().supportFragmentManager.popBackStack()
                 return true
             }
         })

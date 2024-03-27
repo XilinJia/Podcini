@@ -64,7 +64,7 @@ class PlaybackServiceNotificationBuilder(private val context: Context) {
         val options = RequestOptions().centerCrop()
         try {
             var imgLoc = playable?.getImageLocation()
-            if (imgLoc != null) {
+            if (!imgLoc.isNullOrBlank()) {
                 cachedIcon = Glide.with(context)
                     .asBitmap()
                     .load(imgLoc)
@@ -73,7 +73,7 @@ class PlaybackServiceNotificationBuilder(private val context: Context) {
                     .get()
             } else if (playable != null) {
                 imgLoc = ImageResourceUtils.getFallbackImageLocation(playable!!)
-                if (imgLoc != null) {
+                if (!imgLoc.isNullOrBlank()) {
                     cachedIcon = Glide.with(context)
                         .asBitmap()
                         .load(imgLoc)
@@ -92,8 +92,7 @@ class PlaybackServiceNotificationBuilder(private val context: Context) {
     private val defaultIcon: Bitmap?
         get() {
             if (Companion.defaultIcon == null) {
-                Companion.defaultIcon = getBitmap(
-                    context, R.mipmap.ic_launcher)
+                Companion.defaultIcon = getBitmap(context, R.mipmap.ic_launcher)
             }
             return Companion.defaultIcon
         }

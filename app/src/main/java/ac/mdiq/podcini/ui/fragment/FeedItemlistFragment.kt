@@ -77,7 +77,9 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
     private lateinit var adapter: FeedItemListAdapter
     private lateinit var swipeActions: SwipeActions
     private lateinit var nextPageLoader: MoreContentListFooterUtil
-    
+
+    private var currentPlaying: EpisodeItemViewHolder? = null
+
     private var displayUpArrow = false
     private var headerCreated = false
     private var feedID: Long = 0
@@ -314,7 +316,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: FeedItemEvent) {
-        Log.d(TAG, "onEventMainThread() called with: event = [$event]")
+        Log.d(TAG, "onEventMainThread() called with FeedItemEvent event = [$event]")
         if (feed == null || feed!!.items.isEmpty()) {
             return
         }
@@ -334,7 +336,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: EpisodeDownloadEvent) {
-        Log.d(TAG, "onEventMainThread() called with: event = [$event]")
+        Log.d(TAG, "onEventMainThread() called with EpisodeDownloadEvent event = [$event]")
         if (feed == null || feed!!.items.isEmpty()) {
             return
         }
@@ -348,13 +350,19 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: PlaybackPositionEvent) {
-        Log.d(TAG, "onEventMainThread() called with: event = [$event]")
-        for (i in 0 until adapter.itemCount) {
-            val holder: EpisodeItemViewHolder? =
-                binding.recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
-            if (holder != null && holder.isCurrentlyPlayingItem) {
-                holder.notifyPlaybackPositionUpdated(event)
-                break
+//        Log.d(TAG, "onEventMainThread() called with PlaybackPositionEvent event = [$event]")
+        if (currentPlaying != null && currentPlaying!!.isCurrentlyPlayingItem)
+            currentPlaying!!.notifyPlaybackPositionUpdated(event)
+        else {
+            Log.d(TAG, "onEventMainThread() search list")
+            for (i in 0 until adapter.itemCount) {
+                val holder: EpisodeItemViewHolder? =
+                    binding.recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
+                if (holder != null && holder.isCurrentlyPlayingItem) {
+                    currentPlaying = holder
+                    holder.notifyPlaybackPositionUpdated(event)
+                    break
+                }
             }
         }
     }
@@ -521,24 +529,25 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
     }
 
     private fun loadFeedImage() {
-        if (feed == null) return
-        Glide.with(this)
-            .load(feed!!.imageUrl)
-            .apply(RequestOptions()
-                .placeholder(R.color.image_readability_tint)
-                .error(R.color.image_readability_tint)
-                .transform(FastBlurTransformation())
-                .dontAnimate())
-            .into(binding.imgvBackground)
+        if (!feed?.imageUrl.isNullOrBlank()) {
+            Glide.with(this)
+                .load(feed!!.imageUrl)
+                .apply(RequestOptions()
+                    .placeholder(R.color.image_readability_tint)
+                    .error(R.color.image_readability_tint)
+                    .transform(FastBlurTransformation())
+                    .dontAnimate())
+                .into(binding.imgvBackground)
 
-        Glide.with(this)
-            .load(feed!!.imageUrl)
-            .apply(RequestOptions()
-                .placeholder(R.color.light_gray)
-                .error(R.color.light_gray)
-                .fitCenter()
-                .dontAnimate())
-            .into(binding.header.imgvCover)
+            Glide.with(this)
+                .load(feed!!.imageUrl)
+                .apply(RequestOptions()
+                    .placeholder(R.color.light_gray)
+                    .error(R.color.light_gray)
+                    .fitCenter()
+                    .dontAnimate())
+                .into(binding.header.imgvCover)
+        }
     }
 
     @UnstableApi private fun loadItems() {
@@ -657,7 +666,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
     }
 
     companion object {
-        const val TAG: String = "ItemlistFragment"
+        const val TAG: String = "FeedItemlistFragment"
         private const val ARGUMENT_FEED_ID = "argument.ac.mdiq.podcini.feed_id"
         private const val KEY_UP_ARROW = "up_arrow"
 

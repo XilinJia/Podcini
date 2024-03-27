@@ -156,3 +156,12 @@
 * episodes (50 most recent) of any online feed can be viewed and played (streamed) directly without subscribing to the feed
 * bug fixes on passing Glide with null addresses
 * null safety enhancements in code
+
+## 4.4.1
+
+* fixed bug of app crash on stream episode customization
+* disabled usesCleartextTraffic, connection to http sites appear OK, report if you find an issue
+* enforced non-null load location for most Glide calls
+* avoided redundant media loadings and ui updates when a new audio starts
+* eliminated frequent list search during audio play, a serious energy waste
+* icons in online episode list, when unavailable, are set to app logo 

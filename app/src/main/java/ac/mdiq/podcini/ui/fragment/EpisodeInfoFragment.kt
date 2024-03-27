@@ -35,6 +35,7 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -189,7 +190,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         val balloon: Balloon = Balloon.Builder(requireContext())
             .setArrowOrientation(ArrowOrientation.TOP)
             .setArrowOrientationRules(ArrowOrientationRules.ALIGN_FIXED)
-            .setArrowPosition(0.25f + (if ((isLocaleRtl xor offerStreaming)) 0f else 0.5f))
+            .setArrowPosition(0.25f + (if (isLocaleRtl xor offerStreaming) 0f else 0.5f))
             .setWidthRatio(1.0f)
             .setMarginLeft(8)
             .setMarginRight(8)
@@ -199,10 +200,10 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             .setDismissWhenTouchOutside(true)
             .setLifecycleOwner(this)
             .build()
-        val binding_ = PopupBubbleViewBinding.bind(balloon.getContentView())
-        val positiveButton = binding_.balloonButtonPositive
-        val negativeButton = binding_.balloonButtonNegative
-        val message: TextView = binding_.balloonMessage
+        val ballonView = balloon.getContentView()
+        val positiveButton = ballonView.findViewById(R.id.balloon_button_positive) as Button
+        val negativeButton = ballonView.findViewById(R.id.balloon_button_negative) as Button
+        val message: TextView = ballonView.findViewById(R.id.balloon_message) as TextView
         message.setText(if (offerStreaming) R.string.on_demand_config_stream_text
         else R.string.on_demand_config_download_text)
         positiveButton.setOnClickListener {
@@ -297,13 +298,15 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 RoundedCorners((8 * resources.displayMetrics.density).toInt()))
             .dontAnimate()
 
-        Glide.with(this)
-            .load(item!!.imageLocation)
-            .error(Glide.with(this)
-                .load(ImageResourceUtils.getFallbackImageLocation(item!!))
-                .apply(options))
-            .apply(options)
-            .into(imgvCover)
+        val imgLocFB = ImageResourceUtils.getFallbackImageLocation(item!!)
+        if (!item!!.imageLocation.isNullOrBlank() || !imgLocFB.isNullOrBlank())
+            Glide.with(this)
+                .load(item!!.imageLocation)
+                .error(Glide.with(this)
+                    .load(imgLocFB)
+                    .apply(options))
+                .apply(options)
+                .into(imgvCover)
         updateButtons()
     }
 
@@ -398,15 +401,9 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     @UnstableApi @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: EpisodeDownloadEvent) {
-        if (item == null || item!!.media == null) {
-            return
-        }
-        if (!event.urls.contains(item!!.media!!.download_url)) {
-            return
-        }
-        if (itemsLoaded && activity != null) {
-            updateButtons()
-        }
+        if (item == null || item!!.media == null) return
+        if (!event.urls.contains(item!!.media!!.download_url)) return
+        if (itemsLoaded && activity != null) updateButtons()
     }
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)

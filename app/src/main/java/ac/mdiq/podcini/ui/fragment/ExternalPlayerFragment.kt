@@ -76,6 +76,8 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
 
     private var showTimeLeft = false
 
+    private var currentMedia: Playable? = null
+
     private var controller: PlaybackController? = null
     private var disposable: Disposable? = null
 
@@ -192,6 +194,7 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
             }
 
             override fun loadMediaInfo() {
+                Log.d(TAG, "setupPlaybackController loadMediaInfo called")
                 this@ExternalPlayerFragment.loadMediaInfo()
             }
 
@@ -284,19 +287,24 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
 
     @UnstableApi
     private fun loadMediaInfo() {
-        Log.d(TAG, "Loading media info")
+        Log.d(TAG, "loadMediaInfo called")
         if (controller == null) {
             Log.w(TAG, "loadMediaInfo was called while PlaybackController was null!")
             return
         }
-
-        disposable?.dispose()
-        disposable = Maybe.fromCallable<Playable?> { controller?.getMedia() }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ media: Playable? -> this.updateUi(media) },
-                { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) },
-                { (activity as MainActivity).setPlayerVisible(false) })
+        val theMedia = controller?.getMedia()
+        if (currentMedia == null || theMedia?.getIdentifier() != currentMedia?.getIdentifier()) {
+            Log.d(TAG, "reloading media info")
+            disposable?.dispose()
+            disposable = Maybe.fromCallable<Playable?> { theMedia }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ media: Playable? ->
+                    currentMedia = media
+                    this.updateUi(media) },
+                    { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) },
+                    { (activity as MainActivity).setPlayerVisible(false) })
+        }
     }
 
     @OptIn(UnstableApi::class) override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
@@ -354,9 +362,8 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
 
     @UnstableApi
     private fun updateUi(media: Playable?) {
-        if (media == null) {
-            return
-        }
+        if (media == null) return
+
         episodeTitle.text = media.getEpisodeTitle()
         (activity as MainActivity).setPlayerVisible(true)
         onPositionObserverUpdate(PlaybackPositionEvent(media.getPosition(), media.getDuration()))
@@ -367,13 +374,19 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
             .fitCenter()
             .dontAnimate()
 
-        Glide.with(this)
-            .load(getEpisodeListImageLocation(media))
-            .error(Glide.with(this)
-                .load(getFallbackImageLocation(media))
-                .apply(options))
-            .apply(options)
-            .into(imgvCover)
+        val imgLoc = getEpisodeListImageLocation(media)
+        val imgLocFB = getFallbackImageLocation(media)
+        if (!imgLoc.isNullOrBlank())
+            Glide.with(this)
+                .load(imgLoc)
+                .apply(options)
+                .into(imgvCover)
+        else if (!imgLocFB.isNullOrBlank())
+            Glide.with(this)
+                .load(imgLocFB)
+                .apply(options)
+                .into(imgvCover)
+        else imgvCover.setImageResource(R.mipmap.ic_launcher)
 
         if (controller?.isPlayingVideoLocally == true) {
             (activity as MainActivity).bottomSheet.setLocked(true)

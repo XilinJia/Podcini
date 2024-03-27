@@ -64,7 +64,7 @@ class OnlineFeedsAdapter(private val context: Context, objects: List<PodcastSear
         } else viewHolder.updateView.visibility = View.INVISIBLE
 
         //Update the empty imageView with the image from the feed
-        Glide.with(context)
+        if (!podcast.imageUrl.isNullOrBlank()) Glide.with(context)
             .load(podcast.imageUrl)
             .apply(RequestOptions()
                 .placeholder(R.color.light_gray)

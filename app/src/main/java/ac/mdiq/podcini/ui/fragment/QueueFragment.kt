@@ -81,6 +81,8 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
     private var queue: MutableList<FeedItem> = mutableListOf()
 
     private var recyclerAdapter: QueueRecyclerAdapter? = null
+    private var currentPlaying: EpisodeItemViewHolder? = null
+
     private var disposable: Disposable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -205,7 +207,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: QueueEvent) {
-        Log.d(TAG, "onEventMainThread() called with: event = [$event]")
+        Log.d(TAG, "onEventMainThread() called with QueueEvent event = [$event]")
         if (recyclerAdapter == null) {
             loadItems(true)
             return
@@ -242,7 +244,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: FeedItemEvent) {
-        Log.d(TAG, "onEventMainThread() called with: event = [$event]")
+        Log.d(TAG, "onEventMainThread() called with FeedItemEvent event = [$event]")
         if (recyclerAdapter == null) {
             loadItems(true)
             return
@@ -264,6 +266,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: EpisodeDownloadEvent) {
+        Log.d(TAG, "onEventMainThread() called with EpisodeDownloadEvent event = [$event]")
         for (downloadUrl in event.urls) {
             val pos: Int = FeedItemUtil.indexOfItemWithDownloadUrl(queue.toList(), downloadUrl)
             if (pos >= 0) {
@@ -274,12 +277,20 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: PlaybackPositionEvent) {
+//        Log.d(TAG, "onEventMainThread() called with PlaybackPositionEvent event = [$event]")
         if (recyclerAdapter != null) {
-            for (i in 0 until recyclerAdapter!!.itemCount) {
-                val holder: EpisodeItemViewHolder? = recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
-                if (holder != null && holder.isCurrentlyPlayingItem) {
-                    holder.notifyPlaybackPositionUpdated(event)
-                    break
+            if (currentPlaying != null && currentPlaying!!.isCurrentlyPlayingItem)
+                currentPlaying!!.notifyPlaybackPositionUpdated(event)
+            else {
+                Log.d(TAG, "onEventMainThread() search list")
+                for (i in 0 until recyclerAdapter!!.itemCount) {
+                    val holder: EpisodeItemViewHolder? =
+                        recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
+                    if (holder != null && holder.isCurrentlyPlayingItem) {
+                        currentPlaying = holder
+                        holder.notifyPlaybackPositionUpdated(event)
+                        break
+                    }
                 }
             }
         }
@@ -287,6 +298,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onPlayerStatusChanged(event: PlayerStatusEvent?) {
+        Log.d(TAG, "onPlayerStatusChanged() called with event = [$event]")
         loadItems(false)
         refreshToolbarState()
     }

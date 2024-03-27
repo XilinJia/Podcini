@@ -106,7 +106,7 @@ class SelectSubscriptionActivity : AppCompatActivity() {
 
     private fun getBitmapFromUrl(feed: Feed) {
         val iconSize = (128 * resources.displayMetrics.density).toInt()
-        Glide.with(this)
+        if (!feed.imageUrl.isNullOrBlank()) Glide.with(this)
             .asBitmap()
             .load(feed.imageUrl)
             .apply(RequestOptions.overrideOf(iconSize, iconSize))

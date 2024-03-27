@@ -8,6 +8,7 @@ import ac.mdiq.podcini.storage.DBTasks
 import ac.mdiq.podcini.playback.PlaybackServiceStarter
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.playback.MediaType
+import android.util.Log
 
 class PlayActionButton(item: FeedItem) : ItemActionButton(item) {
     override fun getLabel(): Int {
@@ -18,6 +19,7 @@ class PlayActionButton(item: FeedItem) : ItemActionButton(item) {
     }
     @UnstableApi override fun onClick(context: Context) {
         val media = item.media ?: return
+        Log.d("PlayActionButton", "onClick called")
         if (!media.fileExists()) {
             DBTasks.notifyMissingFeedMediaFile(context, media)
             return

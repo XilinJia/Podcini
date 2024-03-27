@@ -120,12 +120,14 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
         }
 
         if (coverHolder.visibility == View.VISIBLE) {
-            CoverLoader(activity)
-                .withUri(ImageResourceUtils.getEpisodeListImageLocation(item))
+            val imgLoc = ImageResourceUtils.getEpisodeListImageLocation(item)
+            if (!imgLoc.isNullOrBlank()) CoverLoader(activity)
+                .withUri(imgLoc)
                 .withFallbackUri(item.feed?.imageUrl)
                 .withPlaceholderView(placeholder)
                 .withCoverView(cover)
                 .load()
+            else cover.setImageResource(R.mipmap.ic_launcher)
         }
     }
 

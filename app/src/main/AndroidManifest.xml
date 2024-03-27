@@ -30,6 +30,9 @@
         android:name="android.hardware.touchscreen"
         android:required="false"/>
 
+<!--    this is now taken out from application -->
+<!--    android:usesCleartextTraffic="true"-->
+
     <application
         android:name="ac.mdiq.podcini.PodciniApp"
         android:icon="@mipmap/ic_launcher"
@@ -38,7 +41,6 @@
         android:backupAgent=".storage.backup.OpmlBackupAgent"
         android:restoreAnyVersion="true"
         android:theme="@style/Theme.Podcini.Splash"
-        android:usesCleartextTraffic="true"
         android:supportsRtl="true"
         android:logo="@mipmap/ic_launcher"
         android:resizeableActivity="true"

@@ -53,7 +53,7 @@ class FeedDiscoverAdapter(mainActivity: MainActivity) : BaseAdapter() {
         val podcast: PodcastSearchResult? = getItem(position)
         holder.imageView!!.contentDescription = podcast?.title
 
-        Glide.with(mainActivityRef.get()!!)
+        if (!podcast?.imageUrl.isNullOrBlank()) Glide.with(mainActivityRef.get()!!)
             .load(podcast?.imageUrl)
             .apply(RequestOptions()
                 .placeholder(R.color.light_gray)

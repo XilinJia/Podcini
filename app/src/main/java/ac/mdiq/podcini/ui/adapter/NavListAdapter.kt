@@ -287,7 +287,7 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
         val feed = drawerItem.feed
         val context = activity.get() ?: return
 
-        Glide.with(context)
+        if (!feed.imageUrl.isNullOrBlank()) Glide.with(context)
             .load(feed.imageUrl)
             .apply(RequestOptions()
                 .placeholder(R.color.light_gray)

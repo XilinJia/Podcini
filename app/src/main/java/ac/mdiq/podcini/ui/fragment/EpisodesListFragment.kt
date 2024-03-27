@@ -1,15 +1,9 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.preferences.UserPreferences.allEpisodesSortOrder
-import ac.mdiq.podcini.preferences.UserPreferences.prefFilterAllEpisodes
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
-import ac.mdiq.podcini.storage.model.feed.SortOrder
-import ac.mdiq.podcini.ui.dialog.AllEpisodesFilterDialog
 import ac.mdiq.podcini.ui.dialog.AllEpisodesFilterDialog.AllEpisodesFilterChangedEvent
-import ac.mdiq.podcini.ui.dialog.ItemSortDialog
-import ac.mdiq.podcini.util.event.FeedListUpdateEvent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -18,8 +12,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
-import org.apache.commons.lang3.StringUtils
-import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import kotlin.math.min
 
@@ -49,6 +41,7 @@ class EpisodesListFragment : BaseEpisodesListFragment() {
     }
 
     override fun loadData(): List<FeedItem> {
+        if (episodeList.isEmpty()) return listOf()
         return episodeList.subList(0, min(episodeList.size-1, page * EPISODES_PER_PAGE))
     }
 

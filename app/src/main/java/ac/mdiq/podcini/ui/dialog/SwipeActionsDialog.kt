@@ -121,8 +121,7 @@ class SwipeActionsDialog(private val context: Context, private val tag: String) 
 
         for (i in keys.indices) {
             val action = keys[i]
-            val item = SwipeactionsPickerItemBinding.inflate(LayoutInflater.from(
-                context))
+            val item = SwipeactionsPickerItemBinding.inflate(LayoutInflater.from(context))
             item.swipeActionLabel.text = action.getTitle(context)
 
             val icon = DrawableCompat.wrap(AppCompatResources.getDrawable(context, action.getActionIcon())!!)

@@ -67,9 +67,7 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
 
     @Synchronized
     private fun initServiceRunning() {
-        if (initialized) {
-            return
-        }
+        if (initialized) return
         initialized = true
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -171,7 +169,7 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
 
     private val statusUpdate: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-//            Log.d(TAG, "Received statusUpdate Intent.")
+            Log.d(TAG, "Received statusUpdate Intent.")
             if (playbackService != null) {
                 val info = playbackService!!.pSMPInfo
                 status = info.playerStatus
@@ -271,7 +269,7 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
             PlaybackServiceStarter(activity, media!!)
                 .callEvenIfRunning(true)
                 .start()
-            Log.w(TAG, "Play/Pause button was pressed, but playbackservice was null!")
+            Log.w(TAG, "playbackservice was null, restarted!")
 //            return
         }
         when (status) {

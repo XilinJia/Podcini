@@ -84,88 +84,101 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
                 isGzip = TextUtils.equals(contentEncodingHeader.lowercase(Locale.getDefault()), "gzip")
             }
 
-            Log.d(TAG, "Response code is " + response.code)
-            if (!response.isSuccessful && response.code == HttpURLConnection.HTTP_NOT_MODIFIED) {
-                Log.d(TAG, "Feed '" + downloadRequest.source + "' not modified since last update, Download canceled")
-                onCancelled()
-                return
-            } else if (!response.isSuccessful || response.body == null) {
-                callOnFailByResponseCode(response)
-                return
-            } else if (downloadRequest.feedfileType == FeedMedia.FEEDFILETYPE_FEEDMEDIA && isContentTypeTextAndSmallerThan100kb(response)) {
-                onFail(DownloadError.ERROR_FILE_TYPE, null)
-                return
-            }
-            checkIfRedirect(response)
-
-            connection = BufferedInputStream(responseBody!!.byteStream())
-
-            val contentRangeHeader = if ((fileExists)) response.header("Content-Range") else null
-            if (fileExists && response.code == HttpURLConnection.HTTP_PARTIAL && !contentRangeHeader.isNullOrEmpty()) {
-                val start = contentRangeHeader.substring("bytes ".length, contentRangeHeader.indexOf("-"))
-                downloadRequest.soFar = start.toLong()
-                Log.d(TAG, "Starting download at position " + downloadRequest.soFar)
-
-                out = RandomAccessFile(destination, "rw")
-                out.seek(downloadRequest.soFar)
-            } else {
-                var success = destination.delete()
-                success = success or destination.createNewFile()
-                if (!success) {
-                    throw IOException("Unable to recreate partially downloaded file")
-                }
-                out = RandomAccessFile(destination, "rw")
-            }
-
-            val buffer = ByteArray(BUFFER_SIZE)
-            var count = 0
-            downloadRequest.setStatusMsg(R.string.download_running)
-            Log.d(TAG, "Getting size of download")
-            downloadRequest.size = responseBody.contentLength() + downloadRequest.soFar
-            Log.d(TAG, "Size is " + downloadRequest.size)
-            if (downloadRequest.size < 0) {
-                downloadRequest.size = DownloadResult.SIZE_UNKNOWN.toLong()
-            }
-
-            val freeSpace = freeSpaceAvailable
-            Log.d(TAG, "Free space is $freeSpace")
-            if (downloadRequest.size != DownloadResult.SIZE_UNKNOWN.toLong() && downloadRequest.size > freeSpace) {
-                onFail(DownloadError.ERROR_NOT_ENOUGH_SPACE, null)
-                return
-            }
-
-            Log.d(TAG, "Starting download")
-            try {
-                while (!cancelled && (connection.read(buffer).also { count = it }) != -1) {
-//                    Log.d(TAG,"buffer: $buffer")
-                    out.write(buffer, 0, count)
-                    downloadRequest.soFar += count
-                    val progressPercent = (100.0 * downloadRequest.soFar / downloadRequest.size).toInt()
-                    downloadRequest.progressPercent = progressPercent
-                }
-            } catch (e: IOException) {
-                Log.e(TAG, Log.getStackTraceString(e))
-            }
-            if (cancelled) {
-                onCancelled()
-            } else {
-                // check if size specified in the response header is the same as the size of the
-                // written file. This check cannot be made if compression was used
-                if (!isGzip && downloadRequest.size != DownloadResult.SIZE_UNKNOWN.toLong() && downloadRequest.soFar != downloadRequest.size) {
-                    onFail(DownloadError.ERROR_IO_WRONG_SIZE, "Download completed but size: "
-                            + downloadRequest.soFar + " does not equal expected size " + downloadRequest.size)
-                    return
-                } else if (downloadRequest.size > 0 && downloadRequest.soFar == 0L) {
-                    onFail(DownloadError.ERROR_IO_ERROR, "Download completed, but nothing was read")
+            Log.d(TAG, "Response code is " + response.code)// check if size specified in the response header is the same as the size of the
+            // written file. This check cannot be made if compression was used
+            //                    Log.d(TAG,"buffer: $buffer")
+            when {
+                !response.isSuccessful && response.code == HttpURLConnection.HTTP_NOT_MODIFIED -> {
+                    Log.d(TAG, "Feed '" + downloadRequest.source + "' not modified since last update, Download canceled")
+                    onCancelled()
                     return
                 }
-                val lastModified = response.header("Last-Modified")
-                if (lastModified != null) {
-                    downloadRequest.setLastModified(lastModified)
-                } else {
-                    downloadRequest.setLastModified(response.header("ETag"))
+                !response.isSuccessful || response.body == null -> {
+                    callOnFailByResponseCode(response)
+                    return
                 }
-                onSuccess()
+                downloadRequest.feedfileType == FeedMedia.FEEDFILETYPE_FEEDMEDIA && isContentTypeTextAndSmallerThan100kb(response) -> {
+                    onFail(DownloadError.ERROR_FILE_TYPE, null)
+                    return
+                }
+                else -> {
+                    checkIfRedirect(response)
+
+                    connection = BufferedInputStream(responseBody!!.byteStream())
+
+                    val contentRangeHeader = if ((fileExists)) response.header("Content-Range") else null
+                    if (fileExists && response.code == HttpURLConnection.HTTP_PARTIAL && !contentRangeHeader.isNullOrEmpty()) {
+                        val start = contentRangeHeader.substring("bytes ".length, contentRangeHeader.indexOf("-"))
+                        downloadRequest.soFar = start.toLong()
+                        Log.d(TAG, "Starting download at position " + downloadRequest.soFar)
+
+                        out = RandomAccessFile(destination, "rw")
+                        out.seek(downloadRequest.soFar)
+                    } else {
+                        var success = destination.delete()
+                        success = success or destination.createNewFile()
+                        if (!success) {
+                            throw IOException("Unable to recreate partially downloaded file")
+                        }
+                        out = RandomAccessFile(destination, "rw")
+                    }
+
+                    val buffer = ByteArray(BUFFER_SIZE)
+                    var count = 0
+                    downloadRequest.setStatusMsg(R.string.download_running)
+                    Log.d(TAG, "Getting size of download")
+                    downloadRequest.size = responseBody.contentLength() + downloadRequest.soFar
+                    Log.d(TAG, "Size is " + downloadRequest.size)
+                    if (downloadRequest.size < 0) {
+                        downloadRequest.size = DownloadResult.SIZE_UNKNOWN.toLong()
+                    }
+
+                    val freeSpace = freeSpaceAvailable
+                    Log.d(TAG, "Free space is $freeSpace")
+                    if (downloadRequest.size != DownloadResult.SIZE_UNKNOWN.toLong() && downloadRequest.size > freeSpace) {
+                        onFail(DownloadError.ERROR_NOT_ENOUGH_SPACE, null)
+                        return
+                    }
+
+                    Log.d(TAG, "Starting download")
+                    try {
+                        while (!cancelled && (connection.read(buffer).also { count = it }) != -1) {
+                            //                    Log.d(TAG,"buffer: $buffer")
+                            out.write(buffer, 0, count)
+                            downloadRequest.soFar += count
+                            val progressPercent = (100.0 * downloadRequest.soFar / downloadRequest.size).toInt()
+                            downloadRequest.progressPercent = progressPercent
+                        }
+                    } catch (e: IOException) {
+                        Log.e(TAG, Log.getStackTraceString(e))
+                    }
+                    if (cancelled) {
+                        onCancelled()
+                    } else {
+                        // check if size specified in the response header is the same as the size of the
+                        // written file. This check cannot be made if compression was used
+                        when {
+                            !isGzip && downloadRequest.size != DownloadResult.SIZE_UNKNOWN.toLong() && downloadRequest.soFar != downloadRequest.size -> {
+                                onFail(DownloadError.ERROR_IO_WRONG_SIZE, "Download completed but size: "
+                                        + downloadRequest.soFar + " does not equal expected size " + downloadRequest.size)
+                                return
+                            }
+                            downloadRequest.size > 0 && downloadRequest.soFar == 0L -> {
+                                onFail(DownloadError.ERROR_IO_ERROR, "Download completed, but nothing was read")
+                                return
+                            }
+                            else -> {
+                                val lastModified = response.header("Last-Modified")
+                                if (lastModified != null) {
+                                    downloadRequest.setLastModified(lastModified)
+                                } else {
+                                    downloadRequest.setLastModified(response.header("ETag"))
+                                }
+                                onSuccess()
+                            }
+                        }
+                    }
+                }
             }
         } catch (e: IllegalArgumentException) {
             e.printStackTrace()

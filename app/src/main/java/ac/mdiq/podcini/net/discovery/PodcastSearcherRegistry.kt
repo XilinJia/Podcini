@@ -3,17 +3,16 @@ package ac.mdiq.podcini.net.discovery
 import io.reactivex.Single
 
 object PodcastSearcherRegistry {
-    @Suppress("UNNECESSARY_SAFE_CALL")
     @get:Synchronized
     var searchProviders: MutableList<SearcherInfo> = mutableListOf()
         get() {
             if (field.isEmpty()) {
                 field = ArrayList()
-                field?.add(SearcherInfo(CombinedSearcher(), 1.0f))
-                field?.add(SearcherInfo(GpodnetPodcastSearcher(), 0.0f))
-                field?.add(SearcherInfo(FyydPodcastSearcher(), 1.0f))
-                field?.add(SearcherInfo(ItunesPodcastSearcher(), 1.0f))
-                field?.add(SearcherInfo(PodcastIndexPodcastSearcher(), 1.0f))
+                field.add(SearcherInfo(CombinedSearcher(), 1.0f))
+                field.add(SearcherInfo(GpodnetPodcastSearcher(), 0.0f))
+                field.add(SearcherInfo(FyydPodcastSearcher(), 1.0f))
+                field.add(SearcherInfo(ItunesPodcastSearcher(), 1.0f))
+                field.add(SearcherInfo(PodcastIndexPodcastSearcher(), 1.0f))
             }
             return field
         }

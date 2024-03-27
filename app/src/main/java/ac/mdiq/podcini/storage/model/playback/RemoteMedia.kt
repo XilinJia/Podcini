@@ -20,7 +20,7 @@ import java.util.*
 class RemoteMedia : Playable {
     private var itemIdentifier: String? = null
     private val downloadUrl: String? = null
-    private val imageUrl: String? = null
+    private val imageUrl: String?
     private val notes: String? = null
 
     private val streamUrl: String?
@@ -52,6 +52,7 @@ class RemoteMedia : Playable {
         this.episodeLink = episodeLink
         this.feedAuthor = feedAuthor
         this.imageLocation = imageUrl
+        this.imageUrl = imageUrl
         this.feedLink = feedLink
         this.mimeType = mimeType
         this.pubDate = pubDate
@@ -67,9 +68,11 @@ class RemoteMedia : Playable {
         this.episodeLink = item.link
         this.feedAuthor = item.feed?.author
         if (!item.imageUrl.isNullOrEmpty()) {
-            this.imageLocation = item.imageUrl
+            this.imageLocation = item.imageLocation
+            this.imageUrl = item.imageUrl
         } else {
             this.imageLocation = item.feed?.imageUrl
+            this.imageUrl = item.feed?.imageUrl
         }
         this.feedLink = item.feed?.link
         this.mimeType = item.media?.mime_type
@@ -181,7 +184,7 @@ class RemoteMedia : Playable {
     }
 
     override fun getImageLocation(): String? {
-        return imageUrl
+        return imageLocation
     }
 
     override fun describeContents(): Int {

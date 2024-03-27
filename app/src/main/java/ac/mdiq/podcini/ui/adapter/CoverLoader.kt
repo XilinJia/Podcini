@@ -77,7 +77,7 @@ class CoverLoader(activity: MainActivity) {
             .load(uri)
             .apply(options)
 
-        if (fallbackUri != null) {
+        if (!fallbackUri.isNullOrBlank()) {
             builder = builder.error(Glide.with(imgvCover!!)
                 .`as`(Drawable::class.java)
                 .load(fallbackUri)

@@ -176,12 +176,9 @@ class OnlineFeedViewActivity : AppCompatActivity() {
         super.onStop()
         isPaused = true
         EventBus.getDefault().unregister(this)
-        if (downloader != null && !downloader!!.isFinished) {
-            downloader!!.cancel()
-        }
-        if (dialog != null && dialog!!.isShowing) {
-            dialog!!.dismiss()
-        }
+        if (downloader != null && !downloader!!.isFinished) downloader!!.cancel()
+
+        if (dialog != null && dialog!!.isShowing) dialog!!.dismiss()
     }
 
     public override fun onDestroy() {
@@ -329,7 +326,6 @@ class OnlineFeedViewActivity : AppCompatActivity() {
             .subscribeOn(Schedulers.computation())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeWith(object : DisposableMaybeObserver<FeedHandlerResult?>() {
-
                 @UnstableApi override fun onSuccess(result: FeedHandlerResult) {
                     showFeedInformation(result.feed, result.alternateFeedUrls)
                 }
@@ -398,7 +394,7 @@ class OnlineFeedViewActivity : AppCompatActivity() {
 
         binding.episodeLabel.setOnClickListener { showEpisodes(feed.items)}
 
-        if (StringUtils.isNotBlank(feed.imageUrl)) {
+        if (!feed.imageUrl.isNullOrBlank()) {
             Glide.with(this)
                 .load(feed.imageUrl)
                 .apply(RequestOptions()
@@ -499,40 +495,44 @@ class OnlineFeedViewActivity : AppCompatActivity() {
         val dli = DownloadServiceInterface.get()
         if (dli == null || selectedDownloadUrl == null) return
 
-        if (dli.isDownloadingEpisode(selectedDownloadUrl!!)) {
-            binding.subscribeButton.isEnabled = false
-            binding.subscribeButton.setText(R.string.subscribing_label)
-        } else if (feedInFeedlist()) {
-            binding.subscribeButton.isEnabled = true
-            binding.subscribeButton.setText(R.string.open_podcast)
-            if (didPressSubscribe) {
-                didPressSubscribe = false
-
-                val feed1 = DBReader.getFeed(feedId)?: return
-                val feedPreferences = feed1.preferences
-                if (feedPreferences != null) {
-                    if (isEnableAutodownload) {
-                        val autoDownload = binding.autoDownloadCheckBox.isChecked
-                        feedPreferences.autoDownload = autoDownload
-
-                        val preferences = getSharedPreferences(PREFS, MODE_PRIVATE)
-                        val editor = preferences.edit()
-                        editor.putBoolean(PREF_LAST_AUTO_DOWNLOAD, autoDownload)
-                        editor.apply()
-                    }
-                    if (username != null) {
-                        feedPreferences.username = username
-                        feedPreferences.password = password
-                    }
-                    DBWriter.setFeedPreferences(feedPreferences)
-                }
-                openFeed()
+        when {
+            dli.isDownloadingEpisode(selectedDownloadUrl!!) -> {
+                binding.subscribeButton.isEnabled = false
+                binding.subscribeButton.setText(R.string.subscribing_label)
             }
-        } else {
-            binding.subscribeButton.isEnabled = true
-            binding.subscribeButton.setText(R.string.subscribe_label)
-            if (isEnableAutodownload) {
-                binding.autoDownloadCheckBox.visibility = View.VISIBLE
+            feedInFeedlist() -> {
+                binding.subscribeButton.isEnabled = true
+                binding.subscribeButton.setText(R.string.open)
+                if (didPressSubscribe) {
+                    didPressSubscribe = false
+
+                    val feed1 = DBReader.getFeed(feedId)?: return
+                    val feedPreferences = feed1.preferences
+                    if (feedPreferences != null) {
+                        if (isEnableAutodownload) {
+                            val autoDownload = binding.autoDownloadCheckBox.isChecked
+                            feedPreferences.autoDownload = autoDownload
+
+                            val preferences = getSharedPreferences(PREFS, MODE_PRIVATE)
+                            val editor = preferences.edit()
+                            editor.putBoolean(PREF_LAST_AUTO_DOWNLOAD, autoDownload)
+                            editor.apply()
+                        }
+                        if (username != null) {
+                            feedPreferences.username = username
+                            feedPreferences.password = password
+                        }
+                        DBWriter.setFeedPreferences(feedPreferences)
+                    }
+                    openFeed()
+                }
+            }
+            else -> {
+                binding.subscribeButton.isEnabled = true
+                binding.subscribeButton.setText(R.string.subscribe_label)
+                if (isEnableAutodownload) {
+                    binding.autoDownloadCheckBox.visibility = View.VISIBLE
+                }
             }
         }
     }
@@ -579,9 +579,7 @@ class OnlineFeedViewActivity : AppCompatActivity() {
                 setResult(RESULT_ERROR)
                 finish()
             }
-            if (dialog != null && dialog!!.isShowing) {
-                dialog!!.dismiss()
-            }
+            if (dialog != null && dialog!!.isShowing) dialog!!.dismiss()
             dialog = builder.show()
         }
     }
@@ -615,17 +613,13 @@ class OnlineFeedViewActivity : AppCompatActivity() {
         val urlsMap: Map<String, String>
         try {
             urlsMap = fd.findLinks(feedFile, baseUrl)
-            if (urlsMap.isEmpty()) {
-                return false
-            }
+            if (urlsMap.isEmpty()) return false
         } catch (e: IOException) {
             e.printStackTrace()
             return false
         }
 
-        if (isPaused || isFinishing) {
-            return false
-        }
+        if (isPaused || isFinishing) return false
 
         val titles: MutableList<String?> = ArrayList()
 
@@ -657,9 +651,7 @@ class OnlineFeedViewActivity : AppCompatActivity() {
             .setAdapter(adapter, onClickListener)
 
         runOnUiThread {
-            if (dialog != null && dialog!!.isShowing) {
-                dialog!!.dismiss()
-            }
+            if (dialog != null && dialog!!.isShowing) dialog!!.dismiss()
             dialog = ab.show()
         }
         return true

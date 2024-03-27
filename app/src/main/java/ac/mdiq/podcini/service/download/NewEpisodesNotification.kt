@@ -139,12 +139,13 @@ class NewEpisodesNotification {
         private fun loadIcon(context: Context, feed: Feed): Bitmap? {
             val iconSize = (128 * context.resources.displayMetrics.density).toInt()
             return try {
-                Glide.with(context)
+                if (!feed.imageUrl.isNullOrBlank()) Glide.with(context)
                     .asBitmap()
                     .load(feed.imageUrl)
                     .apply(RequestOptions().centerCrop())
                     .submit(iconSize, iconSize)
                     .get()
+                else null
             } catch (tr: Throwable) {
                 null
             }

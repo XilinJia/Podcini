@@ -77,7 +77,7 @@ open class HorizontalFeedListAdapter(mainActivity: MainActivity) :
             false
         }
 
-        Glide.with(mainActivityRef.get()!!)
+        if (!podcast.imageUrl.isNullOrBlank()) Glide.with(mainActivityRef.get()!!)
             .load(podcast.imageUrl)
             .apply(RequestOptions()
                 .placeholder(R.color.light_gray)

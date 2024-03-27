@@ -1,0 +1,9 @@
+ 
+Version 4.4.1 brings several changes:
+
+* fixed bug of app crash on stream episode customization
+* disabled usesCleartextTraffic, connection to http sites appear OK, report if you find an issue
+* enforced non-null load location for most Glide calls
+* avoided redundant media loadings and ui updates when a new audio starts
+* eliminated frequent list search during audio play, a serious energy waste
+* icons in online episode list, when unavailable, are set to app logo

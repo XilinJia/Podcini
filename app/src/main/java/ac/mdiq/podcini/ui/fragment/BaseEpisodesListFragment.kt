@@ -71,6 +71,8 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
     lateinit var listAdapter: EpisodeItemListAdapter
     protected lateinit var txtvInformation: TextView
 
+    private var currentPlaying: EpisodeItemViewHolder? = null
+
     @JvmField
     var episodes: MutableList<FeedItem> = ArrayList()
 
@@ -327,7 +329,7 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: FeedItemEvent) {
-        Log.d(TAG, "onEventMainThread() called with: event = [$event]")
+        Log.d(TAG, "onEventMainThread() called with FeedItemEvent event = [$event]")
         for (item in event.items) {
             val pos: Int = FeedItemUtil.indexOfItemWithId(episodes, item.id)
             if (pos >= 0) {
@@ -344,11 +346,19 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: PlaybackPositionEvent) {
-        for (i in 0 until listAdapter.itemCount) {
-            val holder: EpisodeItemViewHolder? = recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
-            if (holder != null && holder.isCurrentlyPlayingItem) {
-                holder.notifyPlaybackPositionUpdated(event)
-                break
+//        Log.d(TAG, "onEventMainThread() called with PlaybackPositionEvent event = [$event]")
+        if (currentPlaying != null && currentPlaying!!.isCurrentlyPlayingItem)
+            currentPlaying!!.notifyPlaybackPositionUpdated(event)
+        else {
+            Log.d(TAG, "onEventMainThread() search list")
+            for (i in 0 until listAdapter.itemCount) {
+                val holder: EpisodeItemViewHolder? =
+                    recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
+                if (holder != null && holder.isCurrentlyPlayingItem) {
+                    currentPlaying = holder
+                    holder.notifyPlaybackPositionUpdated(event)
+                    break
+                }
             }
         }
     }

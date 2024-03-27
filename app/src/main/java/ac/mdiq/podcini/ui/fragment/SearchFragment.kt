@@ -70,6 +70,7 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
     private lateinit var automaticSearchDebouncer: Handler
 
     private var results: MutableList<FeedItem> = mutableListOf()
+    private var currentPlaying: EpisodeItemViewHolder? = null
 
     private var disposable: Disposable? = null
     private var lastQueryChange: Long = 0
@@ -291,12 +292,18 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: PlaybackPositionEvent) {
-        for (i in 0 until adapter.itemCount) {
-            val holder: EpisodeItemViewHolder? =
-                recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
-            if (holder != null && holder.isCurrentlyPlayingItem) {
-                holder.notifyPlaybackPositionUpdated(event)
-                break
+        if (currentPlaying != null && currentPlaying!!.isCurrentlyPlayingItem)
+            currentPlaying!!.notifyPlaybackPositionUpdated(event)
+        else {
+            Log.d(FeedItemlistFragment.TAG, "onEventMainThread() search list")
+            for (i in 0 until adapter.itemCount) {
+                val holder: EpisodeItemViewHolder? =
+                    recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
+                if (holder != null && holder.isCurrentlyPlayingItem) {
+                    currentPlaying = holder
+                    holder.notifyPlaybackPositionUpdated(event)
+                    break
+                }
             }
         }
     }

@@ -98,8 +98,7 @@ class OnlineSearchFragment : Fragment() {
                                   firstVisibleItem: Int,
                                   visibleItemCount: Int,
                                   totalItemCount: Int
-            ) {
-            }
+            ) {}
         })
         return binding.root
     }

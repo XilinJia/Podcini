@@ -187,6 +187,7 @@
     <string name="filtered_label">Filtered</string>
     <string name="refresh_failed_msg">{fa-exclamation-circle} Last refresh failed. Tap to view details.</string>
     <string name="open_podcast">Open podcast</string>
+    <string name="open">Open</string>
     <string name="please_wait_for_data">Please wait until the data is loaded</string>
     <string name="updates_disabled_label">Updates disabled</string>
     <plurals name="updated_feeds_batch_label">

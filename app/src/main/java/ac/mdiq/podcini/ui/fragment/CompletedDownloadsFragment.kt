@@ -70,7 +70,7 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
     
     private var disposable: Disposable? = null
     private var displayUpArrow = false
-    
+    private var currentPlaying: EpisodeItemViewHolder? = null
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                                            savedInstanceState: Bundle?
@@ -272,12 +272,19 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: PlaybackPositionEvent) {
-//        if (event == null) return
-        for (i in 0 until adapter.itemCount) {
-            val holder: EpisodeItemViewHolder? = recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
-            if (holder != null && holder.isCurrentlyPlayingItem) {
-                holder.notifyPlaybackPositionUpdated(event)
-                break
+//        Log.d(TAG, "onEventMainThread() called with PlaybackPositionEvent event = [$event]")
+        if (currentPlaying != null && currentPlaying!!.isCurrentlyPlayingItem)
+            currentPlaying!!.notifyPlaybackPositionUpdated(event)
+        else {
+            Log.d(TAG, "onEventMainThread() search list")
+            for (i in 0 until adapter.itemCount) {
+                val holder: EpisodeItemViewHolder? =
+                    recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
+                if (holder != null && holder.isCurrentlyPlayingItem) {
+                    currentPlaying = holder
+                    holder.notifyPlaybackPositionUpdated(event)
+                    break
+                }
             }
         }
         refreshInfoBar()

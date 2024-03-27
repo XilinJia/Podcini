@@ -89,12 +89,15 @@ class ChaptersListAdapter(private val context: Context, private val callback: Ca
             if (sc.imageUrl.isNullOrEmpty()) {
                 Glide.with(context).clear(holder.image)
             } else {
-                if (media != null) Glide.with(context)
-                    .load(EmbeddedChapterImage.getModelFor(media!!, position))
-                    .apply(RequestOptions()
-                        .dontAnimate()
-                        .transform(FitCenter(), RoundedCorners((4 * context.resources.displayMetrics.density).toInt())))
-                    .into(holder.image)
+                if (media != null) {
+                    val imgUrl = EmbeddedChapterImage.getModelFor(media!!,position)
+                    if (imgUrl != null) Glide.with(context)
+                        .load(imgUrl)
+                        .apply(RequestOptions()
+                            .dontAnimate()
+                            .transform(FitCenter(), RoundedCorners((4 * context.resources.displayMetrics.density).toInt())))
+                        .into(holder.image)
+                }
             }
         } else {
             holder.image.visibility = View.GONE

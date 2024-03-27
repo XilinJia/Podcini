@@ -279,8 +279,9 @@ class PlayerDetailsFragment : Fragment() {
         if (displayedChapterIndex == -1 || media!!.getChapters().isEmpty() || media!!.getChapters()[displayedChapterIndex].imageUrl.isNullOrEmpty()) {
             cover.into(binding.imgvCover)
         } else {
-            Glide.with(this)
-                .load(EmbeddedChapterImage.getModelFor(media!!, displayedChapterIndex))
+            val imgLoc = EmbeddedChapterImage.getModelFor(media!!, displayedChapterIndex)
+            if (imgLoc != null) Glide.with(this)
+                .load(imgLoc)
                 .apply(options)
                 .thumbnail(cover)
                 .error(cover)

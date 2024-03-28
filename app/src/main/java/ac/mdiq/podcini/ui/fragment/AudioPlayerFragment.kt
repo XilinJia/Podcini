@@ -255,6 +255,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     }
 
     private fun loadMediaInfo(includingChapters: Boolean) {
+        Log.d(TAG, "loadMediaInfo called")
         disposable?.dispose()
         disposable = Maybe.create<Playable> { emitter: MaybeEmitter<Playable?> ->
             val media: Playable? = controller?.getMedia()
@@ -297,6 +298,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     private fun updateUi(media: Playable?) {
         if (controller != null) duration = controller!!.duration
         if (media == null) return
+        Log.d(TAG, "updateUi called")
 
         episodeTitle.text = media.getEpisodeTitle()
         updatePosition(PlaybackPositionEvent(media.getPosition(), media.getDuration()))
@@ -397,28 +399,31 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
         if (controller == null) return
 
-        if (fromUser) {
-            val prog: Float = progress / (seekBar.max.toFloat())
-            val converter = TimeSpeedConverter(controller!!.currentPlaybackSpeedMultiplier)
-            var position: Int = converter.convert((prog * controller!!.duration).toInt())
-            val newChapterIndex: Int = ChapterUtils.getCurrentChapterIndex(controller!!.getMedia(), position)
-            if (newChapterIndex > -1) {
-                if (!sbPosition.isPressed && currentChapterIndex != newChapterIndex) {
-                    currentChapterIndex = newChapterIndex
-                    val media = controller!!.getMedia()
-                    position = media?.getChapters()?.get(currentChapterIndex)?.start?.toInt() ?: 0
-                    seekedToChapterStart = true
-                    controller!!.seekTo(position)
-                    updateUi(controller!!.getMedia())
-                    sbPosition.highlightCurrentChapter()
+        when {
+            fromUser -> {
+                val prog: Float = progress / (seekBar.max.toFloat())
+                val converter = TimeSpeedConverter(controller!!.currentPlaybackSpeedMultiplier)
+                var position: Int = converter.convert((prog * controller!!.duration).toInt())
+                val newChapterIndex: Int = ChapterUtils.getCurrentChapterIndex(controller!!.getMedia(), position)
+                if (newChapterIndex > -1) {
+                    if (!sbPosition.isPressed && currentChapterIndex != newChapterIndex) {
+                        currentChapterIndex = newChapterIndex
+                        val media = controller!!.getMedia()
+                        position = media?.getChapters()?.get(currentChapterIndex)?.start?.toInt() ?: 0
+                        seekedToChapterStart = true
+                        controller!!.seekTo(position)
+                        updateUi(controller!!.getMedia())
+                        sbPosition.highlightCurrentChapter()
+                    }
+                    txtvSeek.text = controller!!.getMedia()?.getChapters()?.get(newChapterIndex)?.title ?: (""
+                            + "\n" + Converter.getDurationStringLong(position))
+                } else {
+                    txtvSeek.text = Converter.getDurationStringLong(position)
                 }
-                txtvSeek.text = controller!!.getMedia()?.getChapters()?.get(newChapterIndex)?.title ?: (""
-                        + "\n" + Converter.getDurationStringLong(position))
-            } else {
-                txtvSeek.text = Converter.getDurationStringLong(position)
             }
-        } else if (duration != controller!!.duration) {
-            updateUi(controller!!.getMedia())
+            duration != controller!!.duration -> {
+                updateUi(controller!!.getMedia())
+            }
         }
     }
 

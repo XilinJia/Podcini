@@ -165,3 +165,10 @@
 * avoided redundant media loadings and ui updates when a new audio starts
 * eliminated frequent list search during audio play, a serious energy waste
 * icons in online episode list, when unavailable, are set to app logo 
+
+## 4.4.2
+
+* converted ksp back to kapt
+* unrestricted the titles to 2 lines in player details view
+* fixed once again the bug of player disappear on first play
+* some code refactoring

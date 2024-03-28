@@ -68,16 +68,15 @@ class OnlineSearchFragment : Fragment() {
         gridView.setAdapter(adapter)
 
         //Show information about the podcast when the list item is clicked
-        gridView.onItemClickListener =
-            AdapterView.OnItemClickListener { _: AdapterView<*>?, _: View?, position: Int, _: Long ->
-                val podcast = searchResults!![position]
-                if (podcast != null) {
-                    val intent = Intent(activity, OnlineFeedViewActivity::class.java)
-                    intent.putExtra(OnlineFeedViewActivity.ARG_FEEDURL, podcast.feedUrl)
-                    intent.putExtra(MainActivity.EXTRA_STARTED_FROM_SEARCH, true)
-                    startActivity(intent)
-                }
+        gridView.onItemClickListener = AdapterView.OnItemClickListener { _: AdapterView<*>?, _: View?, position: Int, _: Long ->
+            val podcast = searchResults!![position]
+            if (podcast != null) {
+                val intent = Intent(activity, OnlineFeedViewActivity::class.java)
+                intent.putExtra(OnlineFeedViewActivity.ARG_FEEDURL, podcast.feedUrl)
+                intent.putExtra(MainActivity.EXTRA_STARTED_FROM_SEARCH, true)
+                startActivity(intent)
             }
+        }
         progressBar = binding.progressBar
         txtvError = binding.txtvError
         butRetry = binding.butRetry

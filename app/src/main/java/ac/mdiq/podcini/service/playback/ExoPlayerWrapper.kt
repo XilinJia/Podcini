@@ -89,12 +89,16 @@ class ExoPlayerWrapper internal constructor(private val context: Context) {
             .build()
         exoPlayer.addListener(object : Player.Listener {
             override fun onPlaybackStateChanged(playbackState: @Player.State Int) {
-                if (audioCompletionListener != null && playbackState == Player.STATE_ENDED) {
-                    audioCompletionListener?.run()
-                } else if (playbackState == Player.STATE_BUFFERING) {
-                    bufferingUpdateListener?.accept(BUFFERING_STARTED)
-                } else {
-                    bufferingUpdateListener?.accept(BUFFERING_ENDED)
+                when {
+                    audioCompletionListener != null && playbackState == Player.STATE_ENDED -> {
+                        audioCompletionListener?.run()
+                    }
+                    playbackState == Player.STATE_BUFFERING -> {
+                        bufferingUpdateListener?.accept(BUFFERING_STARTED)
+                    }
+                    else -> {
+                        bufferingUpdateListener?.accept(BUFFERING_ENDED)
+                    }
                 }
             }
 

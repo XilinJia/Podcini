@@ -10,7 +10,7 @@ import ac.mdiq.podcini.storage.DBWriter
 import ac.mdiq.podcini.storage.model.download.DownloadError
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.ui.appstartintent.MainActivityStarter
-import ac.mdiq.podcini.ui.gui.NotificationUtils
+import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.util.config.ClientConfigurator
 import ac.mdiq.podcini.util.event.MessageEvent
 import android.app.Notification

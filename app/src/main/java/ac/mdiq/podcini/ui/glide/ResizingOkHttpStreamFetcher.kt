@@ -53,11 +53,14 @@ class ResizingOkHttpStreamFetcher(client: Call.Factory?, url: GlideUrl?) : OkHtt
                     BitmapFactory.decodeStream(inVal, null, options)
                     IOUtils.closeQuietly(inVal)
 
-                    if (options.outWidth == -1 || options.outHeight == -1) {
-                        throw IOException("Not a valid image")
-                    } else if (max(options.outHeight.toDouble(), options.outWidth.toDouble()) >= MAX_DIMENSIONS) {
-                        val sampleSize = max(options.outHeight.toDouble(), options.outWidth.toDouble()) / MAX_DIMENSIONS
-                        options.inSampleSize = 2.0.pow(floor(ln(sampleSize) / ln(2.0))).toInt()
+                    when {
+                        options.outWidth == -1 || options.outHeight == -1 -> {
+                            throw IOException("Not a valid image")
+                        }
+                        max(options.outHeight.toDouble(), options.outWidth.toDouble()) >= MAX_DIMENSIONS -> {
+                            val sampleSize = max(options.outHeight.toDouble(), options.outWidth.toDouble()) / MAX_DIMENSIONS
+                            options.inSampleSize = 2.0.pow(floor(ln(sampleSize) / ln(2.0))).toInt()
+                        }
                     }
 
                     options.inJustDecodeBounds = false
@@ -74,16 +77,22 @@ class ResizingOkHttpStreamFetcher(client: Call.Factory?, url: GlideUrl?) : OkHtt
                         bitmap!!.compress(format, quality, out)
                         IOUtils.closeQuietly(out)
 
-                        quality -= if (tempOut!!.length() > 3 * MAX_FILE_SIZE && quality >= 45) {
-                            40
-                        } else if (tempOut!!.length() > 2 * MAX_FILE_SIZE && quality >= 25) {
-                            20
-                        } else if (tempOut!!.length() > MAX_FILE_SIZE && quality >= 15) {
-                            10
-                        } else if (tempOut!!.length() > MAX_FILE_SIZE && quality >= 10) {
-                            5
-                        } else {
-                            break
+                        quality -= when {
+                            tempOut!!.length() > 3 * MAX_FILE_SIZE && quality >= 45 -> {
+                                40
+                            }
+                            tempOut!!.length() > 2 * MAX_FILE_SIZE && quality >= 25 -> {
+                                20
+                            }
+                            tempOut!!.length() > MAX_FILE_SIZE && quality >= 15 -> {
+                                10
+                            }
+                            tempOut!!.length() > MAX_FILE_SIZE && quality >= 10 -> {
+                                5
+                            }
+                            else -> {
+                                break
+                            }
                         }
                     }
                     bitmap?.recycle()

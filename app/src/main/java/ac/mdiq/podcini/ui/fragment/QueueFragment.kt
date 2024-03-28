@@ -458,19 +458,21 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
         }
 
         val itemId = item.itemId
-        if (itemId == R.id.move_to_top_item) {
-            queue.add(0, queue.removeAt(position))
-            recyclerAdapter?.notifyItemMoved(position, 0)
-            DBWriter.moveQueueItemToTop(selectedItem.id, true)
-            return true
-        } else if (itemId == R.id.move_to_bottom_item) {
-            queue.add(queue.size - 1, queue.removeAt(position))
-            recyclerAdapter?.notifyItemMoved(position, queue.size - 1)
-            DBWriter.moveQueueItemToBottom(selectedItem.id, true)
-            return true
+        when (itemId) {
+            R.id.move_to_top_item -> {
+                queue.add(0, queue.removeAt(position))
+                recyclerAdapter?.notifyItemMoved(position, 0)
+                DBWriter.moveQueueItemToTop(selectedItem.id, true)
+                return true
+            }
+            R.id.move_to_bottom_item -> {
+                queue.add(queue.size - 1, queue.removeAt(position))
+                recyclerAdapter?.notifyItemMoved(position, queue.size - 1)
+                DBWriter.moveQueueItemToBottom(selectedItem.id, true)
+                return true
+            }
+            else -> return FeedItemMenuHandler.onMenuItemClicked(this, item.itemId, selectedItem)
         }
-
-        return FeedItemMenuHandler.onMenuItemClicked(this, item.itemId, selectedItem)
     }
     
     override fun onSaveInstanceState(outState: Bundle) {

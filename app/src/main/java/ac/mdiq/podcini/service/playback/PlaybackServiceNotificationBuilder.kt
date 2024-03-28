@@ -21,13 +21,12 @@ import com.bumptech.glide.request.RequestOptions
 import ac.mdiq.podcini.feed.util.ImageResourceUtils
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
 import ac.mdiq.podcini.util.TimeSpeedConverter
-import ac.mdiq.podcini.ui.gui.NotificationUtils
+import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.util.Converter
 import org.apache.commons.lang3.ArrayUtils
-import java.util.concurrent.ExecutionException
 
 @UnstableApi
 class PlaybackServiceNotificationBuilder(private val context: Context) {
@@ -64,22 +63,25 @@ class PlaybackServiceNotificationBuilder(private val context: Context) {
         val options = RequestOptions().centerCrop()
         try {
             var imgLoc = playable?.getImageLocation()
-            if (!imgLoc.isNullOrBlank()) {
-                cachedIcon = Glide.with(context)
-                    .asBitmap()
-                    .load(imgLoc)
-                    .apply(options)
-                    .submit(iconSize, iconSize)
-                    .get()
-            } else if (playable != null) {
-                imgLoc = ImageResourceUtils.getFallbackImageLocation(playable!!)
-                if (!imgLoc.isNullOrBlank()) {
+            when {
+                !imgLoc.isNullOrBlank() -> {
                     cachedIcon = Glide.with(context)
                         .asBitmap()
                         .load(imgLoc)
                         .apply(options)
                         .submit(iconSize, iconSize)
                         .get()
+                }
+                playable != null -> {
+                    imgLoc = ImageResourceUtils.getFallbackImageLocation(playable!!)
+                    if (!imgLoc.isNullOrBlank()) {
+                        cachedIcon = Glide.with(context)
+                            .asBitmap()
+                            .load(imgLoc)
+                            .apply(options)
+                            .submit(iconSize, iconSize)
+                            .get()
+                    }
                 }
             }
         } catch (ignore: InterruptedException) {

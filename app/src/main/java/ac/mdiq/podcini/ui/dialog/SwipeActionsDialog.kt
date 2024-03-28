@@ -41,7 +41,7 @@ class SwipeActionsDialog(private val context: Context, private val tag: String) 
                 forFragment = context.getString(R.string.episodes_label)
                 keys = Stream.of(keys).filter { a: SwipeAction -> !a.getId().equals(SwipeAction.REMOVE_FROM_HISTORY) }.toList()
             }
-            CompletedDownloadsFragment.TAG -> {
+            DownloadsFragment.TAG -> {
                 forFragment = context.getString(R.string.downloads_label)
                 keys = Stream.of(keys).filter { a: SwipeAction ->
                     (!a.getId().equals(SwipeAction.REMOVE_FROM_HISTORY)

@@ -28,7 +28,7 @@ class SwipePreferencesFragment : PreferenceFragmentCompat() {
             }
         findPreference<Preference>(PREF_SWIPE_DOWNLOADS)?.onPreferenceClickListener =
             Preference.OnPreferenceClickListener {
-                SwipeActionsDialog(requireContext(), CompletedDownloadsFragment.TAG).show (object : SwipeActionsDialog.Callback {
+                SwipeActionsDialog(requireContext(), DownloadsFragment.TAG).show (object : SwipeActionsDialog.Callback {
                     override fun onCall() {}
                 })
                 true

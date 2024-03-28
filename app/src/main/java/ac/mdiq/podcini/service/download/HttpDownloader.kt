@@ -285,12 +285,15 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
         val firstCode = responses[0]!!.code
         val firstUrl = responses[0]!!.request.url.toString()
         val secondUrl = responses[1]!!.request.url.toString()
-        if (firstCode == HttpURLConnection.HTTP_MOVED_PERM || firstCode == StatusLine.HTTP_PERM_REDIRECT) {
-            Log.d(TAG, "Detected permanent redirect from " + downloadRequest.source + " to " + secondUrl)
-            permanentRedirectUrl = secondUrl
-        } else if (secondUrl == firstUrl.replace("http://", "https://")) {
-            Log.d(TAG, "Treating http->https non-permanent redirect as permanent: $firstUrl")
-            permanentRedirectUrl = secondUrl
+        when {
+            firstCode == HttpURLConnection.HTTP_MOVED_PERM || firstCode == StatusLine.HTTP_PERM_REDIRECT -> {
+                Log.d(TAG, "Detected permanent redirect from " + downloadRequest.source + " to " + secondUrl)
+                permanentRedirectUrl = secondUrl
+            }
+            secondUrl == firstUrl.replace("http://", "https://") -> {
+                Log.d(TAG, "Treating http->https non-permanent redirect as permanent: $firstUrl")
+                permanentRedirectUrl = secondUrl
+            }
         }
     }
 

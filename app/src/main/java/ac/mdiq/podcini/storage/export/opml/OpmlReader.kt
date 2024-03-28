@@ -34,33 +34,36 @@ class OpmlReader {
         while (eventType != XmlPullParser.END_DOCUMENT) {
             when (eventType) {
                 XmlPullParser.START_DOCUMENT -> if (BuildConfig.DEBUG) Log.d(TAG, "Reached beginning of document")
-                XmlPullParser.START_TAG -> if (xpp.name == OpmlSymbols.OPML) {
-                    isInOpml = true
-                    if (BuildConfig.DEBUG) Log.d(TAG, "Reached beginning of OPML tree.")
-                } else if (isInOpml && xpp.name == OpmlSymbols.OUTLINE) {
-                    if (BuildConfig.DEBUG) Log.d(TAG, "Found new Opml element")
-                    val element = OpmlElement()
-
-                    val title = xpp.getAttributeValue(null, CommonSymbols.TITLE)
-                    if (title != null) {
-                        Log.i(TAG, "Using title: $title")
-                        element.text = title
-                    } else {
-                        Log.i(TAG, "Title not found, using text")
-                        element.text = xpp.getAttributeValue(null, OpmlSymbols.TEXT)
+                XmlPullParser.START_TAG -> when {
+                    xpp.name == OpmlSymbols.OPML -> {
+                        isInOpml = true
+                        if (BuildConfig.DEBUG) Log.d(TAG, "Reached beginning of OPML tree.")
                     }
-                    element.xmlUrl = xpp.getAttributeValue(null, OpmlSymbols.XMLURL)
-                    element.htmlUrl = xpp.getAttributeValue(null, OpmlSymbols.HTMLURL)
-                    element.type = xpp.getAttributeValue(null, OpmlSymbols.TYPE)
-                    if (element.xmlUrl != null) {
-                        if (element.text == null) {
-                            Log.i(TAG, "Opml element has no text attribute.")
-                            element.text = element.xmlUrl
+                    isInOpml && xpp.name == OpmlSymbols.OUTLINE -> {
+                        if (BuildConfig.DEBUG) Log.d(TAG, "Found new Opml element")
+                        val element = OpmlElement()
+
+                        val title = xpp.getAttributeValue(null, CommonSymbols.TITLE)
+                        if (title != null) {
+                            Log.i(TAG, "Using title: $title")
+                            element.text = title
+                        } else {
+                            Log.i(TAG, "Title not found, using text")
+                            element.text = xpp.getAttributeValue(null, OpmlSymbols.TEXT)
                         }
-                        elementList!!.add(element)
-                    } else {
-                        if (BuildConfig.DEBUG) Log.d(TAG,
-                            "Skipping element because of missing xml url")
+                        element.xmlUrl = xpp.getAttributeValue(null, OpmlSymbols.XMLURL)
+                        element.htmlUrl = xpp.getAttributeValue(null, OpmlSymbols.HTMLURL)
+                        element.type = xpp.getAttributeValue(null, OpmlSymbols.TYPE)
+                        if (element.xmlUrl != null) {
+                            if (element.text == null) {
+                                Log.i(TAG, "Opml element has no text attribute.")
+                                element.text = element.xmlUrl
+                            }
+                            elementList!!.add(element)
+                        } else {
+                            if (BuildConfig.DEBUG) Log.d(TAG,
+                                "Skipping element because of missing xml url")
+                        }
                     }
                 }
             }

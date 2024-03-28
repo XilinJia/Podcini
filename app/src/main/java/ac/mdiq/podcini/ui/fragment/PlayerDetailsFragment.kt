@@ -11,7 +11,7 @@ import ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.gui.ShownotesCleaner
+import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.ChapterUtils
 import ac.mdiq.podcini.util.DateFormatter
@@ -231,12 +231,15 @@ class PlayerDetailsFragment : Fragment() {
 
     private fun updateChapterControlVisibility() {
         var chapterControlVisible = false
-        if (media?.getChapters() != null) {
-            chapterControlVisible = media!!.getChapters().isNotEmpty()
-        } else if (media is FeedMedia) {
-            val fm: FeedMedia? = (media as FeedMedia?)
-            // If an item has chapters but they are not loaded yet, still display the button.
-            chapterControlVisible = fm?.item != null && fm.item!!.hasChapters()
+        when {
+            media?.getChapters() != null -> {
+                chapterControlVisible = media!!.getChapters().isNotEmpty()
+            }
+            media is FeedMedia -> {
+                val fm: FeedMedia? = (media as FeedMedia?)
+                // If an item has chapters but they are not loaded yet, still display the button.
+                chapterControlVisible = fm?.item != null && fm.item!!.hasChapters()
+            }
         }
         val newVisibility = if (chapterControlVisible) View.VISIBLE else View.GONE
         if (binding.chapterButton.visibility != newVisibility) {
@@ -308,13 +311,17 @@ class PlayerDetailsFragment : Fragment() {
             return
         }
 
-        if (displayedChapterIndex < 1) {
-            controller!!.seekTo(0)
-        } else if ((controller!!.position - 10000 * controller!!.currentPlaybackSpeedMultiplier) < curr.start) {
-            refreshChapterData(displayedChapterIndex - 1)
-            if (media != null) controller!!.seekTo(media!!.getChapters()[displayedChapterIndex].start.toInt())
-        } else {
-            controller!!.seekTo(curr.start.toInt())
+        when {
+            displayedChapterIndex < 1 -> {
+                controller!!.seekTo(0)
+            }
+            (controller!!.position - 10000 * controller!!.currentPlaybackSpeedMultiplier) < curr.start -> {
+                refreshChapterData(displayedChapterIndex - 1)
+                if (media != null) controller!!.seekTo(media!!.getChapters()[displayedChapterIndex].start.toInt())
+            }
+            else -> {
+                controller!!.seekTo(curr.start.toInt())
+            }
         }
     }
 

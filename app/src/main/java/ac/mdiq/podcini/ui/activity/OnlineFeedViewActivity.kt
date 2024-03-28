@@ -62,7 +62,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.observers.DisposableMaybeObserver
 import io.reactivex.schedulers.Schedulers
-import org.apache.commons.lang3.StringUtils
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -284,21 +283,25 @@ class OnlineFeedViewActivity : AppCompatActivity() {
 
     private fun checkDownloadResult(status: DownloadResult?, destination: String) {
         if (status == null) return
-        if (status.isSuccessful) {
-            parseFeed(destination)
-        } else if (status.reason == DownloadError.ERROR_UNAUTHORIZED) {
-            if (!isFinishing && !isPaused) {
-                if (username != null && password != null) {
-                    Toast.makeText(this, R.string.download_error_unauthorized, Toast.LENGTH_LONG).show()
-                }
-                if (downloader?.downloadRequest?.source != null) {
-                    dialog = FeedViewAuthenticationDialog(this@OnlineFeedViewActivity,
-                        R.string.authentication_notification_title, downloader!!.downloadRequest.source!!).create()
-                    dialog?.show()
+        when {
+            status.isSuccessful -> {
+                parseFeed(destination)
+            }
+            status.reason == DownloadError.ERROR_UNAUTHORIZED -> {
+                if (!isFinishing && !isPaused) {
+                    if (username != null && password != null) {
+                        Toast.makeText(this, R.string.download_error_unauthorized, Toast.LENGTH_LONG).show()
+                    }
+                    if (downloader?.downloadRequest?.source != null) {
+                        dialog = FeedViewAuthenticationDialog(this@OnlineFeedViewActivity,
+                            R.string.authentication_notification_title, downloader!!.downloadRequest.source!!).create()
+                        dialog?.show()
+                    }
                 }
             }
-        } else {
-            showErrorDialog(getString(from(status.reason)), status.reasonDetailed)
+            else -> {
+                showErrorDialog(getString(from(status.reason)), status.reasonDetailed)
+            }
         }
     }
 

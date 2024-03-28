@@ -36,16 +36,22 @@ class HostnameParser(hosturl: String?) {
             port = 443
         }
 
-        if (scheme == null && port == 80) {
-            scheme = "http"
-        } else if (scheme == null) {
-            scheme = "https" // assume https
+        when {
+            scheme == null && port == 80 -> {
+                scheme = "http"
+            }
+            scheme == null -> {
+                scheme = "https" // assume https
+            }
         }
 
-        if (scheme == "https" && port == -1) {
-            port = 443
-        } else if (scheme == "http" && port == -1) {
-            port = 80
+        when {
+            scheme == "https" && port == -1 -> {
+                port = 443
+            }
+            scheme == "http" && port == -1 -> {
+                port = 80
+            }
         }
     }
 

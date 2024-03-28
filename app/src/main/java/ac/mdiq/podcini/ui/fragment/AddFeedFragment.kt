@@ -42,10 +42,11 @@ class AddFeedFragment : Fragment() {
     private var activity: MainActivity? = null
     private var displayUpArrow = false
 
-    private val chooseOpmlImportPathLauncher =
-        registerForActivityResult<String, Uri>(ActivityResultContracts.GetContent()) { uri: Uri? -> this.chooseOpmlImportPathResult(uri) }
-    private val addLocalFolderLauncher = registerForActivityResult<Uri?, Uri>(AddLocalFolder()
-    ) { uri: Uri? -> this.addLocalFolderResult(uri) }
+    private val chooseOpmlImportPathLauncher = registerForActivityResult<String, Uri>(ActivityResultContracts.GetContent())
+    { uri: Uri? -> this.chooseOpmlImportPathResult(uri) }
+
+    private val addLocalFolderLauncher = registerForActivityResult<Uri?, Uri>(AddLocalFolder())
+    { uri: Uri? -> this.addLocalFolderResult(uri) }
 
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?,

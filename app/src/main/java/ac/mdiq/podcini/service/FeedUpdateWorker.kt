@@ -26,12 +26,11 @@ import ac.mdiq.podcini.storage.DBTasks
 import ac.mdiq.podcini.storage.DBWriter
 import ac.mdiq.podcini.util.NetworkUtils
 import ac.mdiq.podcini.net.download.FeedUpdateManager
-import ac.mdiq.podcini.ui.gui.NotificationUtils
+import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.storage.model.download.DownloadError
 import ac.mdiq.podcini.storage.model.download.DownloadResult
 import ac.mdiq.podcini.storage.model.feed.Feed
 import android.os.Build
-import android.widget.Toast
 import java.util.*
 
 class FeedUpdateWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
@@ -191,10 +190,13 @@ class FeedUpdateWorker(context: Context, params: WorkerParameters) : Worker(cont
         }
         newEpisodesNotification.showIfNeeded(applicationContext, feedSyncTask.savedFeed!!)
         if (!request.source.isNullOrEmpty()) {
-            if (!downloader.permanentRedirectUrl.isNullOrEmpty()) {
-                DBWriter.updateFeedDownloadURL(request.source, downloader.permanentRedirectUrl!!)
-            } else if (feedSyncTask.redirectUrl.isNotEmpty() && feedSyncTask.redirectUrl != request.source) {
-                DBWriter.updateFeedDownloadURL(request.source, feedSyncTask.redirectUrl)
+            when {
+                !downloader.permanentRedirectUrl.isNullOrEmpty() -> {
+                    DBWriter.updateFeedDownloadURL(request.source, downloader.permanentRedirectUrl!!)
+                }
+                feedSyncTask.redirectUrl.isNotEmpty() && feedSyncTask.redirectUrl != request.source -> {
+                    DBWriter.updateFeedDownloadURL(request.source, feedSyncTask.redirectUrl)
+                }
             }
         }
     }

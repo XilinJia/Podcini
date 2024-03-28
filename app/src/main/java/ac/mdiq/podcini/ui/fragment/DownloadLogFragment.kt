@@ -88,13 +88,16 @@ class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, To
     }
 
     @UnstableApi override fun onMenuItemClick(item: MenuItem): Boolean {
-        if (super.onOptionsItemSelected(item)) {
-            return true
-        } else if (item.itemId == R.id.clear_logs_item) {
-            DBWriter.clearDownloadLog()
-            return true
+        when {
+            super.onOptionsItemSelected(item) -> {
+                return true
+            }
+            item.itemId == R.id.clear_logs_item -> {
+                DBWriter.clearDownloadLog()
+                return true
+            }
+            else -> return false
         }
-        return false
     }
 
     private fun loadDownloadLog() {

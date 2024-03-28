@@ -75,94 +75,101 @@ class HTTPBin : NanoHTTPD(0) {
         val param = segments[2]
         val headers = session.headers
 
-        if (func.equals("status", ignoreCase = true)) {
-            try {
-                val code = param.toInt()
-                return Response(getStatus(code), MIME_HTML, "")
-            } catch (e: NumberFormatException) {
-                e.printStackTrace()
-                return internalError
-            }
-        } else if (func.equals("redirect", ignoreCase = true)) {
-            try {
-                val times = param.toInt()
-                if (times < 0) {
-                    throw NumberFormatException("times <= 0: $times")
-                }
-
-                return getRedirectResponse(times - 1)
-            } catch (e: NumberFormatException) {
-                e.printStackTrace()
-                return internalError
-            }
-        } else if (func.equals("delay", ignoreCase = true)) {
-            try {
-                val sec = param.toInt()
-                if (sec <= 0) {
-                    throw NumberFormatException("sec <= 0: $sec")
-                }
-
-                Thread.sleep(sec * 1000L)
-                return oKResponse
-            } catch (e: NumberFormatException) {
-                e.printStackTrace()
-                return internalError
-            } catch (e: InterruptedException) {
-                e.printStackTrace()
-                return internalError
-            }
-        } else if (func.equals("basic-auth", ignoreCase = true)) {
-            if (!headers.containsKey("authorization")) {
-                Log.w(TAG, "No credentials provided")
-                return unauthorizedResponse
-            }
-            try {
-                val credentials = String(Base64.decode(headers["authorization"]!!
-                    .split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1], 0), charset("UTF-8"))
-                val credentialParts = credentials.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-                if (credentialParts.size != 2) {
-                    Log.w(TAG, "Unable to split credentials: " + credentialParts.contentToString())
+        when {
+            func.equals("status", ignoreCase = true) -> {
+                try {
+                    val code = param.toInt()
+                    return Response(getStatus(code), MIME_HTML, "")
+                } catch (e: NumberFormatException) {
+                    e.printStackTrace()
                     return internalError
                 }
-                if (credentialParts[0] == segments[2] && credentialParts[1] == segments[3]) {
-                    Log.i(TAG, "Credentials accepted")
+            }
+            func.equals("redirect", ignoreCase = true) -> {
+                try {
+                    val times = param.toInt()
+                    if (times < 0) {
+                        throw NumberFormatException("times <= 0: $times")
+                    }
+
+                    return getRedirectResponse(times - 1)
+                } catch (e: NumberFormatException) {
+                    e.printStackTrace()
+                    return internalError
+                }
+            }
+            func.equals("delay", ignoreCase = true) -> {
+                try {
+                    val sec = param.toInt()
+                    if (sec <= 0) {
+                        throw NumberFormatException("sec <= 0: $sec")
+                    }
+
+                    Thread.sleep(sec * 1000L)
                     return oKResponse
-                } else {
-                    Log.w(TAG, String.format("Invalid credentials. Expected %s, %s, but was %s, %s",
-                        segments[2], segments[3], credentialParts[0], credentialParts[1]))
+                } catch (e: NumberFormatException) {
+                    e.printStackTrace()
+                    return internalError
+                } catch (e: InterruptedException) {
+                    e.printStackTrace()
+                    return internalError
+                }
+            }
+            func.equals("basic-auth", ignoreCase = true) -> {
+                if (!headers.containsKey("authorization")) {
+                    Log.w(TAG, "No credentials provided")
                     return unauthorizedResponse
                 }
-            } catch (e: UnsupportedEncodingException) {
-                e.printStackTrace()
-                return internalError
-            }
-        } else if (func.equals("gzip", ignoreCase = true)) {
-            try {
-                val size = param.toInt()
-                if (size <= 0) {
-                    Log.w(TAG, "Invalid size for gzipped data: $size")
-                    throw NumberFormatException()
+                try {
+                    val credentials = String(Base64.decode(headers["authorization"]!!
+                        .split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1], 0), charset("UTF-8"))
+                    val credentialParts = credentials.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+                    if (credentialParts.size != 2) {
+                        Log.w(TAG, "Unable to split credentials: " + credentialParts.contentToString())
+                        return internalError
+                    }
+                    if (credentialParts[0] == segments[2] && credentialParts[1] == segments[3]) {
+                        Log.i(TAG, "Credentials accepted")
+                        return oKResponse
+                    } else {
+                        Log.w(TAG, String.format("Invalid credentials. Expected %s, %s, but was %s, %s",
+                            segments[2], segments[3], credentialParts[0], credentialParts[1]))
+                        return unauthorizedResponse
+                    }
+                } catch (e: UnsupportedEncodingException) {
+                    e.printStackTrace()
+                    return internalError
                 }
+            }
+            func.equals("gzip", ignoreCase = true) -> {
+                try {
+                    val size = param.toInt()
+                    if (size <= 0) {
+                        Log.w(TAG, "Invalid size for gzipped data: $size")
+                        throw NumberFormatException()
+                    }
 
-                return getGzippedResponse(size)
-            } catch (e: NumberFormatException) {
-                e.printStackTrace()
-                return internalError
-            } catch (e: IOException) {
-                e.printStackTrace()
-                return internalError
-            }
-        } else if (func.equals("files", ignoreCase = true)) {
-            try {
-                val id = param.toInt()
-                if (id < 0) {
-                    Log.w(TAG, "Invalid ID: $id")
-                    throw NumberFormatException()
+                    return getGzippedResponse(size)
+                } catch (e: NumberFormatException) {
+                    e.printStackTrace()
+                    return internalError
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                    return internalError
                 }
-                return getFileAccessResponse(id, headers)
-            } catch (e: NumberFormatException) {
-                e.printStackTrace()
-                return internalError
+            }
+            func.equals("files", ignoreCase = true) -> {
+                try {
+                    val id = param.toInt()
+                    if (id < 0) {
+                        Log.w(TAG, "Invalid ID: $id")
+                        throw NumberFormatException()
+                    }
+                    return getFileAccessResponse(id, headers)
+                } catch (e: NumberFormatException) {
+                    e.printStackTrace()
+                    return internalError
+                }
             }
         }
 
@@ -288,14 +295,18 @@ class HTTPBin : NanoHTTPD(0) {
     }
 
     private fun getRedirectResponse(times: Int): Response {
-        if (times > 0) {
-            val response = Response(Response.Status.REDIRECT, MIME_HTML, "This resource has been moved permanently")
-            response.addHeader("Location", "/redirect/$times")
-            return response
-        } else if (times == 0) {
-            return oKResponse
-        } else {
-            return internalError
+        when {
+            times > 0 -> {
+                val response = Response(Response.Status.REDIRECT, MIME_HTML, "This resource has been moved permanently")
+                response.addHeader("Location", "/redirect/$times")
+                return response
+            }
+            times == 0 -> {
+                return oKResponse
+            }
+            else -> {
+                return internalError
+            }
         }
     }
 

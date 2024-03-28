@@ -48,10 +48,13 @@ object EpisodeActionFilter {
             if (action.podcast == null || action.episode == null) continue
             val key = Pair(action.podcast!!, action.episode!!)
             val mostRecent = localMostRecentPlayAction[key]
-            if (mostRecent?.timestamp == null) {
-                localMostRecentPlayAction[key] = action
-            } else if (mostRecent.timestamp!!.before(action.timestamp)) {
-                localMostRecentPlayAction[key] = action
+            when {
+                mostRecent?.timestamp == null -> {
+                    localMostRecentPlayAction[key] = action
+                }
+                mostRecent.timestamp!!.before(action.timestamp) -> {
+                    localMostRecentPlayAction[key] = action
+                }
             }
         }
         return localMostRecentPlayAction

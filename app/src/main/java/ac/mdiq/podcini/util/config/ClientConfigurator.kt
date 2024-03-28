@@ -11,7 +11,7 @@ import ac.mdiq.podcini.net.sync.SyncService
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.util.NetworkUtils
 import ac.mdiq.podcini.net.download.NetworkConnectionChangeHandler
-import ac.mdiq.podcini.ui.gui.NotificationUtils
+import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.net.ssl.SslProviderInstaller
 import ac.mdiq.podcini.storage.database.PodDBAdapter

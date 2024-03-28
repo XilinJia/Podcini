@@ -70,10 +70,13 @@ class LicensesFragment : ListFragment() {
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(item.title)
             .setItems(items) { dialog: DialogInterface?, which: Int ->
-                if (which == 0) {
-                    openInBrowser(requireContext(), item.licenseUrl)
-                } else if (which == 1) {
-                    showLicenseText(item.licenseTextFile)
+                when (which) {
+                    0 -> {
+                        openInBrowser(requireContext(), item.licenseUrl)
+                    }
+                    1 -> {
+                        showLicenseText(item.licenseTextFile)
+                    }
                 }
             }.show()
     }

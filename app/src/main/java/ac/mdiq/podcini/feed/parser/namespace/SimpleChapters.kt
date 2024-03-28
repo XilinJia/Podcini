@@ -11,19 +11,22 @@ class SimpleChapters : Namespace() {
     override fun handleElementStart(localName: String, state: HandlerState, attributes: Attributes): SyndElement {
         val currentItem = state.currentItem
         if (currentItem != null) {
-            if (localName == CHAPTERS) {
-                currentItem.chapters = mutableListOf()
-            } else if (localName == CHAPTER && !attributes.getValue(START).isNullOrEmpty()) {
-                // if the chapter's START is empty, we don't need to do anything
-                try {
-                    val start= parseTimeString(attributes.getValue(START))
-                    val title: String? = attributes.getValue(TITLE)
-                    val link: String? = attributes.getValue(HREF)
-                    val imageUrl: String? = attributes.getValue(IMAGE)
-                    val chapter = Chapter(start, title, link, imageUrl)
-                    currentItem.chapters?.add(chapter)
-                } catch (e: NumberFormatException) {
-                    Log.e(TAG, "Unable to read chapter", e)
+            when {
+                localName == CHAPTERS -> {
+                    currentItem.chapters = mutableListOf()
+                }
+                localName == CHAPTER && !attributes.getValue(START).isNullOrEmpty() -> {
+                    // if the chapter's START is empty, we don't need to do anything
+                    try {
+                        val start= parseTimeString(attributes.getValue(START))
+                        val title: String? = attributes.getValue(TITLE)
+                        val link: String? = attributes.getValue(HREF)
+                        val imageUrl: String? = attributes.getValue(IMAGE)
+                        val chapter = Chapter(start, title, link, imageUrl)
+                        currentItem.chapters?.add(chapter)
+                    } catch (e: NumberFormatException) {
+                        Log.e(TAG, "Unable to read chapter", e)
+                    }
                 }
             }
         }

@@ -332,12 +332,16 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
     override fun reinit() {
         Log.d(TAG, "reinit()")
         releaseWifiLockIfNecessary()
-        if (media != null) {
-            playMediaObject(media!!, true, stream, startWhenPrepared.get(), false)
-        } else if (mediaPlayer != null) {
-            mediaPlayer!!.reset()
-        } else {
-            Log.d(TAG, "Call to reinit was ignored: media and mediaPlayer were null")
+        when {
+            media != null -> {
+                playMediaObject(media!!, true, stream, startWhenPrepared.get(), false)
+            }
+            mediaPlayer != null -> {
+                mediaPlayer!!.reset()
+            }
+            else -> {
+                Log.d(TAG, "Call to reinit was ignored: media and mediaPlayer were null")
+            }
         }
     }
 
@@ -360,30 +364,34 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
             return
         }
 
-        if (playerStatus == PlayerStatus.PLAYING || playerStatus == PlayerStatus.PAUSED || playerStatus == PlayerStatus.PREPARED) {
-            if (seekLatch != null && seekLatch!!.count > 0) {
+        when (playerStatus) {
+            PlayerStatus.PLAYING, PlayerStatus.PAUSED, PlayerStatus.PREPARED -> {
+                if (seekLatch != null && seekLatch!!.count > 0) {
+                    try {
+                        seekLatch!!.await(3, TimeUnit.SECONDS)
+                    } catch (e: InterruptedException) {
+                        Log.e(TAG, Log.getStackTraceString(e))
+                    }
+                }
+                seekLatch = CountDownLatch(1)
+                statusBeforeSeeking = playerStatus
+                setPlayerStatus(PlayerStatus.SEEKING, media, getPosition())
+                mediaPlayer?.seekTo(t)
+                if (statusBeforeSeeking == PlayerStatus.PREPARED) {
+                    media?.setPosition(t)
+                }
                 try {
                     seekLatch!!.await(3, TimeUnit.SECONDS)
                 } catch (e: InterruptedException) {
                     Log.e(TAG, Log.getStackTraceString(e))
                 }
             }
-            seekLatch = CountDownLatch(1)
-            statusBeforeSeeking = playerStatus
-            setPlayerStatus(PlayerStatus.SEEKING, media, getPosition())
-            mediaPlayer?.seekTo(t)
-            if (statusBeforeSeeking == PlayerStatus.PREPARED) {
+            PlayerStatus.INITIALIZED -> {
                 media?.setPosition(t)
+                startWhenPrepared.set(false)
+                prepare()
             }
-            try {
-                seekLatch!!.await(3, TimeUnit.SECONDS)
-            } catch (e: InterruptedException) {
-                Log.e(TAG, Log.getStackTraceString(e))
-            }
-        } else if (playerStatus == PlayerStatus.INITIALIZED) {
-            media?.setPosition(t)
-            startWhenPrepared.set(false)
-            prepare()
+            else -> {}
         }
     }
 
@@ -675,16 +683,19 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
                 playMediaObject(nextMedia, false, !nextMedia.localFileAvailable(), isPlaying, isPlaying)
             }
         }
-        if (shouldContinue || toStoppedState) {
-            if (nextMedia == null) {
-                callback.onPlaybackEnded(null, true)
-                stop()
-            }
-            val hasNext = nextMedia != null
+        when {
+            shouldContinue || toStoppedState -> {
+                if (nextMedia == null) {
+                    callback.onPlaybackEnded(null, true)
+                    stop()
+                }
+                val hasNext = nextMedia != null
 
-            callback.onPostPlayback(currentMedia!!, hasEnded, wasSkipped, hasNext)
-        } else if (isPlaying) {
-            callback.onPlaybackPause(currentMedia, currentMedia!!.getPosition())
+                callback.onPostPlayback(currentMedia!!, hasEnded, wasSkipped, hasNext)
+            }
+            isPlaying -> {
+                callback.onPlaybackPause(currentMedia, currentMedia!!.getPosition())
+            }
         }
     }
 

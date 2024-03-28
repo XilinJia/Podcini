@@ -165,10 +165,10 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
                 SkipPreferenceDialog.SkipDirection.SKIP_REWIND, txtvRev)
             true
         }
-//        butPlay.setOnClickListener {
-//            controller?.init()
-//            controller?.playPause()
-//        }
+        butPlay.setOnClickListener {
+            controller?.init()
+            controller?.playPause()
+        }
         butFF.setOnClickListener {
             if (controller != null) {
                 val curr: Int = controller!!.position
@@ -260,8 +260,13 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onPlaybackServiceChanged(event: PlaybackServiceEvent) {
-        if (event.action == PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN) {
-            (activity as MainActivity).setPlayerVisible(false)
+        when (event.action) {
+            PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN -> {
+                (activity as MainActivity).setPlayerVisible(false)
+            }
+            PlaybackServiceEvent.Action.SERVICE_STARTED -> {
+                (activity as MainActivity).setPlayerVisible(true)
+            }
         }
     }
 
@@ -303,66 +308,27 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
                     currentMedia = media
                     this.updateUi(media) },
                     { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) },
-                    { (activity as MainActivity).setPlayerVisible(false) })
+                    {
+//                        (activity as MainActivity).setPlayerVisible(false)
+                    })
         }
     }
 
-    @OptIn(UnstableApi::class) override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-        if (controller == null) return
+    @OptIn(UnstableApi::class) override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {}
 
-//        if (fromUser) {
-//            val prog: Float = progress / (seekBar.max.toFloat())
-//            val converter = TimeSpeedConverter(controller!!.currentPlaybackSpeedMultiplier)
-//            var position: Int = converter.convert((prog * controller!!.duration).toInt())
-//            val newChapterIndex: Int = ChapterUtils.getCurrentChapterIndex(controller!!.getMedia(), position)
-//            if (newChapterIndex > -1) {
-//                if (!sbPosition.isPressed && currentChapterIndex != newChapterIndex) {
-//                    currentChapterIndex = newChapterIndex
-//                    val media = controller!!.getMedia()
-//                    position = media?.getChapters()?.get(currentChapterIndex)?.start?.toInt() ?: 0
-//                    seekedToChapterStart = true
-//                    controller!!.seekTo(position)
-//                    updateUi(controller!!.getMedia())
-//                    sbPosition.highlightCurrentChapter()
-//                }
-////                txtvSeek.text = controller!!.getMedia()?.getChapters()?.get(newChapterIndex)?.title ?: (""
-////                        + "\n" + Converter.getDurationStringLong(position))
-//            } else {
-////                txtvSeek.text = Converter.getDurationStringLong(position)
-//            }
-//        } else if (duration != controller!!.duration) {
-//            updateUi(controller!!.getMedia())
-//        }
-    }
-
-    override fun onStartTrackingTouch(seekBar: SeekBar) {
-        // interrupt position Observer, restart later
-//        cardViewSeek.scaleX = .8f
-//        cardViewSeek.scaleY = .8f
-//        cardViewSeek.animate()
-//            ?.setInterpolator(FastOutSlowInInterpolator())
-//            ?.alpha(1f)?.scaleX(1f)?.scaleY(1f)
-//            ?.setDuration(200)
-//            ?.start()
-    }
+    override fun onStartTrackingTouch(seekBar: SeekBar) {}
 
     @OptIn(UnstableApi::class) override fun onStopTrackingTouch(seekBar: SeekBar) {
         if (controller != null) {
             val prog: Float = seekBar.progress / (seekBar.max.toFloat())
             controller!!.seekTo((prog * controller!!.duration).toInt())
         }
-//        cardViewSeek.scaleX = 1f
-//        cardViewSeek.scaleY = 1f
-//        cardViewSeek.animate()
-//            ?.setInterpolator(FastOutSlowInInterpolator())
-//            ?.alpha(0f)?.scaleX(.8f)?.scaleY(.8f)
-//            ?.setDuration(200)
-//            ?.start()
     }
 
     @UnstableApi
     private fun updateUi(media: Playable?) {
         if (media == null) return
+        Log.d(TAG, "updateUi called")
 
         episodeTitle.text = media.getEpisodeTitle()
         (activity as MainActivity).setPlayerVisible(true)
@@ -376,17 +342,17 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
 
         val imgLoc = getEpisodeListImageLocation(media)
         val imgLocFB = getFallbackImageLocation(media)
-        if (!imgLoc.isNullOrBlank())
-            Glide.with(this)
+        when {
+            !imgLoc.isNullOrBlank() -> Glide.with(this)
                 .load(imgLoc)
                 .apply(options)
                 .into(imgvCover)
-        else if (!imgLocFB.isNullOrBlank())
-            Glide.with(this)
+            !imgLocFB.isNullOrBlank() -> Glide.with(this)
                 .load(imgLocFB)
                 .apply(options)
                 .into(imgvCover)
-        else imgvCover.setImageResource(R.mipmap.ic_launcher)
+            else -> imgvCover.setImageResource(R.mipmap.ic_launcher)
+        }
 
         if (controller?.isPlayingVideoLocally == true) {
             (activity as MainActivity).bottomSheet.setLocked(true)

@@ -111,11 +111,14 @@ class AutoDownloadPreferencesFragment : PreferenceFragmentCompat() {
                 Log.d(TAG, "Selected network $key. New state: $newValue")
 
                 val index = prefValuesList.indexOf(key)
-                if (index >= 0 && !newValue) {
-                    // remove network
-                    prefValuesList.removeAt(index)
-                } else if (index < 0 && newValue) {
-                    prefValuesList.add(key)
+                when {
+                    index >= 0 && !newValue -> {
+                        // remove network
+                        prefValuesList.removeAt(index)
+                    }
+                    index < 0 && newValue -> {
+                        prefValuesList.add(key)
+                    }
                 }
 
                 setAutodownloadSelectedNetworks(prefValuesList.toTypedArray<String?>())

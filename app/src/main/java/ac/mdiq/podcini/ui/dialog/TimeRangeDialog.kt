@@ -65,17 +65,23 @@ class TimeRangeDialog(context: Context, from: Int, to: Int) : MaterialAlertDialo
         }
 
         override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-            if (MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.EXACTLY
-                    && MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.EXACTLY) {
-                super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-            } else if (MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.EXACTLY) {
-                super.onMeasure(widthMeasureSpec, widthMeasureSpec)
-            } else if (MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.EXACTLY) {
-                super.onMeasure(heightMeasureSpec, heightMeasureSpec)
-            } else if (MeasureSpec.getSize(widthMeasureSpec) < MeasureSpec.getSize(heightMeasureSpec)) {
-                super.onMeasure(widthMeasureSpec, widthMeasureSpec)
-            } else {
-                super.onMeasure(heightMeasureSpec, heightMeasureSpec)
+            when {
+                MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.EXACTLY
+                        && MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.EXACTLY -> {
+                    super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+                }
+                MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.EXACTLY -> {
+                    super.onMeasure(widthMeasureSpec, widthMeasureSpec)
+                }
+                MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.EXACTLY -> {
+                    super.onMeasure(heightMeasureSpec, heightMeasureSpec)
+                }
+                MeasureSpec.getSize(widthMeasureSpec) < MeasureSpec.getSize(heightMeasureSpec) -> {
+                    super.onMeasure(widthMeasureSpec, widthMeasureSpec)
+                }
+                else -> {
+                    super.onMeasure(heightMeasureSpec, heightMeasureSpec)
+                }
             }
         }
 
@@ -116,13 +122,17 @@ class TimeRangeDialog(context: Context, from: Int, to: Int) : MaterialAlertDialo
             canvas.drawCircle(p2.x.toFloat(), p2.y.toFloat(), padding / 2, paintSelected)
 
             paintText.textSize = 0.6f * padding
-            val timeRange = if (from == to) {
-                context.getString(R.string.sleep_timer_always)
-            } else if (DateFormat.is24HourFormat(context)) {
-                String.format(Locale.getDefault(), "%02d:00 - %02d:00", from, to)
-            } else {
-                String.format(Locale.getDefault(), "%02d:00 %s - %02d:00 %s", from % 12,
-                    if (from >= 12) "PM" else "AM", to % 12, if (to >= 12) "PM" else "AM")
+            val timeRange = when {
+                from == to -> {
+                    context.getString(R.string.sleep_timer_always)
+                }
+                DateFormat.is24HourFormat(context) -> {
+                    String.format(Locale.getDefault(), "%02d:00 - %02d:00", from, to)
+                }
+                else -> {
+                    String.format(Locale.getDefault(), "%02d:00 %s - %02d:00 %s", from % 12,
+                        if (from >= 12) "PM" else "AM", to % 12, if (to >= 12) "PM" else "AM")
+                }
             }
             canvas.drawText(timeRange, size / 2, (size - paintText.descent() - paintText.ascent()) / 2, paintText)
         }
@@ -140,34 +150,44 @@ class TimeRangeDialog(context: Context, from: Int, to: Int) : MaterialAlertDialo
             angle += (360 + 360 - 90).toFloat()
             angle %= 360f
 
-            if (event.action == MotionEvent.ACTION_DOWN) {
-                val fromDistance = abs((angle - from.toFloat() / 24 * 360).toDouble()).toFloat()
-                val toDistance = abs((angle - to.toFloat() / 24 * 360).toDouble()).toFloat()
-                if (fromDistance < 15 || fromDistance > (360 - 15)) {
-                    touching = 1
-                    return true
-                } else if (toDistance < 15 || toDistance > (360 - 15)) {
-                    touching = 2
+            when {
+                event.action == MotionEvent.ACTION_DOWN -> {
+                    val fromDistance = abs((angle - from.toFloat() / 24 * 360).toDouble()).toFloat()
+                    val toDistance = abs((angle - to.toFloat() / 24 * 360).toDouble()).toFloat()
+                    when {
+                        fromDistance < 15 || fromDistance > (360 - 15) -> {
+                            touching = 1
+                            return true
+                        }
+                        toDistance < 15 || toDistance > (360 - 15) -> {
+                            touching = 2
+                            return true
+                        }
+                    }
+                }
+                event.action == MotionEvent.ACTION_MOVE -> {
+                    val newTime = (24 * (angle / 360.0)).toInt()
+                    if (from == to && touching != 0) {
+                        // Switch which handle is focussed such that selection is the smaller arc
+                        touching = if ((((newTime - to + 24) % 24) < 12)) 2 else 1
+                    }
+                    when (touching) {
+                        1 -> {
+                            from = newTime
+                            invalidate()
+                            return true
+                        }
+                        2 -> {
+                            to = newTime
+                            invalidate()
+                            return true
+                        }
+                    }
+                }
+                touching != 0 -> {
+                    touching = 0
                     return true
                 }
-            } else if (event.action == MotionEvent.ACTION_MOVE) {
-                val newTime = (24 * (angle / 360.0)).toInt()
-                if (from == to && touching != 0) {
-                    // Switch which handle is focussed such that selection is the smaller arc
-                    touching = if ((((newTime - to + 24) % 24) < 12)) 2 else 1
-                }
-                if (touching == 1) {
-                    from = newTime
-                    invalidate()
-                    return true
-                } else if (touching == 2) {
-                    to = newTime
-                    invalidate()
-                    return true
-                }
-            } else if (touching != 0) {
-                touching = 0
-                return true
             }
             return super.onTouchEvent(event)
         }

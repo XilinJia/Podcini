@@ -232,10 +232,13 @@ class PlaybackServiceTaskManagerTest {
         val timerReceiver: Any = object : Any() {
             @Subscribe
             fun sleepTimerUpdate(event: SleepTimerUpdatedEvent) {
-                if (event.isOver) {
-                    countDownLatch.countDown()
-                } else if (event.getTimeLeft() == 1L) {
-                    Assert.fail("Arrived at 1 but should have been cancelled")
+                when {
+                    event.isOver -> {
+                        countDownLatch.countDown()
+                    }
+                    event.getTimeLeft() == 1L -> {
+                        Assert.fail("Arrived at 1 but should have been cancelled")
+                    }
                 }
             }
         }

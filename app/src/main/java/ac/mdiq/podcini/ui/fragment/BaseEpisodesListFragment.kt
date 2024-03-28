@@ -170,10 +170,13 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
             var confirmationString = 0
             if (listAdapter.selectedItems.size >= 25 || listAdapter.shouldSelectLazyLoadedItems()) {
                 // Should ask for confirmation
-                if (actionItem.id == R.id.mark_read_batch) {
-                    confirmationString = R.string.multi_select_mark_played_confirmation
-                } else if (actionItem.id == R.id.mark_unread_batch) {
-                    confirmationString = R.string.multi_select_mark_unplayed_confirmation
+                when (actionItem.id) {
+                    R.id.mark_read_batch -> {
+                        confirmationString = R.string.multi_select_mark_played_confirmation
+                    }
+                    R.id.mark_unread_batch -> {
+                        confirmationString = R.string.multi_select_mark_unplayed_confirmation
+                    }
                 }
             }
             if (confirmationString == 0) {
@@ -215,14 +218,17 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
             return true
         }
         val itemId = item.itemId
-        if (itemId == R.id.refresh_item) {
-            FeedUpdateManager.runOnceOrAsk(requireContext())
-            return true
-        } else if (itemId == R.id.action_search) {
-            (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
-            return true
+        when (itemId) {
+            R.id.refresh_item -> {
+                FeedUpdateManager.runOnceOrAsk(requireContext())
+                return true
+            }
+            R.id.action_search -> {
+                (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
+                return true
+            }
+            else -> return false
         }
-        return false
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {

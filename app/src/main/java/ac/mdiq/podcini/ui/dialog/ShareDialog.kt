@@ -38,17 +38,22 @@ class ShareDialog : BottomSheetDialogFragment() {
         binding.shareButton.setOnClickListener {
             val includePlaybackPosition = binding.sharePositionCheckbox.isChecked
             val position: Int
-            if (binding.shareSocialRadio.isChecked) {
-                shareFeedItemLinkWithDownloadLink(ctx, item!!, includePlaybackPosition)
-                position = 1
-            } else if (binding.shareMediaReceiverRadio.isChecked) {
-                shareMediaDownloadLink(ctx, item!!.media!!)
-                position = 2
-            } else if (binding.shareMediaFileRadio.isChecked) {
-                shareFeedItemFile(ctx, item!!.media!!)
-                position = 3
-            } else {
-                throw IllegalStateException("Unknown share method")
+            when {
+                binding.shareSocialRadio.isChecked -> {
+                    shareFeedItemLinkWithDownloadLink(ctx, item!!, includePlaybackPosition)
+                    position = 1
+                }
+                binding.shareMediaReceiverRadio.isChecked -> {
+                    shareMediaDownloadLink(ctx, item!!.media!!)
+                    position = 2
+                }
+                binding.shareMediaFileRadio.isChecked -> {
+                    shareFeedItemFile(ctx, item!!.media!!)
+                    position = 3
+                }
+                else -> {
+                    throw IllegalStateException("Unknown share method")
+                }
             }
             prefs.edit()
                 .putBoolean(PREF_SHARE_EPISODE_START_AT, includePlaybackPosition)

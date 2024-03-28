@@ -70,10 +70,13 @@ class HtmlToPlainText {
         // hit when all of the node's children (if any) have been visited
         override fun tail(node: Node, depth: Int) {
             val name = node.nodeName()
-            if (StringUtil.`in`(name, "br", "dd", "dt", "p", "h1", "h2", "h3", "h4", "h5")) {
-                append("\n")
-            } else if (name == "a") {
-                append(String.format(" <%s>", node.absUrl("href")))
+            when {
+                StringUtil.`in`(name, "br", "dd", "dt", "p", "h1", "h2", "h3", "h4", "h5") -> {
+                    append("\n")
+                }
+                name == "a" -> {
+                    append(String.format(" <%s>", node.absUrl("href")))
+                }
             }
         }
 
@@ -101,12 +104,15 @@ class HtmlToPlainText {
          */
         fun getPlainText(str: String): String {
             var str = str
-            if (str.isNotEmpty() && isHtml(str)) {
-                val formatter = HtmlToPlainText()
-                val feedDescription = Jsoup.parse(str)
-                str = StringUtils.trim(formatter.getPlainText(feedDescription))
-            } else if (str.isEmpty()) {
-                str = ""
+            when {
+                str.isNotEmpty() && isHtml(str) -> {
+                    val formatter = HtmlToPlainText()
+                    val feedDescription = Jsoup.parse(str)
+                    str = StringUtils.trim(formatter.getPlainText(feedDescription))
+                }
+                str.isEmpty() -> {
+                    str = ""
+                }
             }
 
             return str

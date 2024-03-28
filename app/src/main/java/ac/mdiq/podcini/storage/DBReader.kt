@@ -878,13 +878,17 @@ object DBReader {
                 comparator = Comparator { lhs: Feed, rhs: Feed ->
                     val counterLhs = (if (feedCounters.containsKey(lhs.id)) feedCounters[lhs.id] else 0)!!.toLong()
                     val counterRhs = (if (feedCounters.containsKey(rhs.id)) feedCounters[rhs.id] else 0)!!.toLong()
-                    if (counterLhs > counterRhs) {
-                        // reverse natural order: podcast with most unplayed episodes first
-                        return@Comparator -1
-                    } else if (counterLhs == counterRhs) {
-                        return@Comparator lhs.title?.compareTo(rhs.title!!, ignoreCase = true) ?: -1
-                    } else {
-                        return@Comparator 1
+                    when {
+                        counterLhs > counterRhs -> {
+                            // reverse natural order: podcast with most unplayed episodes first
+                            return@Comparator -1
+                        }
+                        counterLhs == counterRhs -> {
+                            return@Comparator lhs.title?.compareTo(rhs.title!!, ignoreCase = true) ?: -1
+                        }
+                        else -> {
+                            return@Comparator 1
+                        }
                     }
                 }
             }
@@ -892,12 +896,16 @@ object DBReader {
                 comparator = Comparator { lhs: Feed, rhs: Feed ->
                     val t1 = lhs.title
                     val t2 = rhs.title
-                    if (t1 == null) {
-                        return@Comparator 1
-                    } else if (t2 == null) {
-                        return@Comparator -1
-                    } else {
-                        return@Comparator t1.compareTo(t2, ignoreCase = true)
+                    when {
+                        t1 == null -> {
+                            return@Comparator 1
+                        }
+                        t2 == null -> {
+                            return@Comparator -1
+                        }
+                        else -> {
+                            return@Comparator t1.compareTo(t2, ignoreCase = true)
+                        }
                     }
                 }
             }
@@ -907,13 +915,17 @@ object DBReader {
                 comparator = Comparator { lhs: Feed, rhs: Feed ->
                     val counterLhs = (if (playedCounters.containsKey(lhs.id)) playedCounters[lhs.id] else 0)!!.toLong()
                     val counterRhs = (if (playedCounters.containsKey(rhs.id)) playedCounters[rhs.id] else 0)!!.toLong()
-                    if (counterLhs > counterRhs) {
-                        // podcast with most played episodes first
-                        return@Comparator -1
-                    } else if (counterLhs == counterRhs) {
-                        return@Comparator lhs.title!!.compareTo(rhs.title!!, ignoreCase = true)
-                    } else {
-                        return@Comparator 1
+                    when {
+                        counterLhs > counterRhs -> {
+                            // podcast with most played episodes first
+                            return@Comparator -1
+                        }
+                        counterLhs == counterRhs -> {
+                            return@Comparator lhs.title!!.compareTo(rhs.title!!, ignoreCase = true)
+                        }
+                        else -> {
+                            return@Comparator 1
+                        }
                     }
                 }
             }

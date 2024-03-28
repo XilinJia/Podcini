@@ -79,8 +79,6 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
             activity.registerReceiver(statusUpdate, IntentFilter(PlaybackService.ACTION_PLAYER_STATUS_CHANGED))
             activity.registerReceiver(notificationReceiver, IntentFilter(PlaybackServiceInterface.ACTION_PLAYER_NOTIFICATION))
         }
-//        activity.registerReceiver(statusUpdate, IntentFilter(PlaybackService.ACTION_PLAYER_STATUS_CHANGED))
-//        activity.registerReceiver(notificationReceiver, IntentFilter(PlaybackServiceInterface.ACTION_PLAYER_NOTIFICATION))
 
         if (!released) {
             bindToService()
@@ -237,8 +235,7 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
         mediaInfoLoaded = true
     }
 
-    protected open fun updatePlayButtonShowsPlay(showPlay: Boolean) {
-    }
+    protected open fun updatePlayButtonShowsPlay(showPlay: Boolean) {}
 
     abstract fun loadMediaInfo()
 
@@ -265,12 +262,9 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
     fun playPause() {
         if (media == null) return
         if (playbackService == null) {
-//            PlaybackServiceStarter(activity, media!!).start()
-            PlaybackServiceStarter(activity, media!!)
-                .callEvenIfRunning(true)
-                .start()
+            PlaybackServiceStarter(activity, media!!).start()
             Log.w(TAG, "playbackservice was null, restarted!")
-//            return
+            return
         }
         when (status) {
             PlayerStatus.PLAYING -> playbackService?.pause(true, false)
@@ -376,12 +370,16 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
     }
 
     val isPlayingVideoLocally: Boolean
-        get() = if (PlaybackService.isCasting) {
-            false
-        } else if (playbackService != null) {
-            PlaybackService.currentMediaType == MediaType.VIDEO
-        } else {
-            getMedia()?.getMediaType() == MediaType.VIDEO
+        get() = when {
+            PlaybackService.isCasting -> {
+                false
+            }
+            playbackService != null -> {
+                PlaybackService.currentMediaType == MediaType.VIDEO
+            }
+            else -> {
+                getMedia()?.getMediaType() == MediaType.VIDEO
+            }
         }
 
     val videoSize: Pair<Int, Int>?

@@ -40,41 +40,47 @@ class Media : Namespace() {
                         mimeType = "image/*"
                     }
                     else -> {
-                        if (isMediaFile(mimeType)) {
-                            validTypeMedia = true
-                        } else if (isImageFile(mimeType)) {
-                            validTypeImage = true
+                        when {
+                            isMediaFile(mimeType) -> {
+                                validTypeMedia = true
+                            }
+                            isImageFile(mimeType) -> {
+                                validTypeImage = true
+                            }
                         }
                     }
                 }
 
-                if (state.currentItem != null && (state.currentItem!!.media == null || isDefault) && url != null && validTypeMedia) {
-                    var size: Long = 0
-                    val sizeStr: String? = attributes.getValue(SIZE)
-                    if (!sizeStr.isNullOrEmpty()) {
-                        try {
-                            size = sizeStr.toLong()
-                        } catch (e: NumberFormatException) {
-                            Log.e(TAG, "Size \"$sizeStr\" could not be parsed.")
+                when {
+                    state.currentItem != null && (state.currentItem!!.media == null || isDefault) && url != null && validTypeMedia -> {
+                        var size: Long = 0
+                        val sizeStr: String? = attributes.getValue(SIZE)
+                        if (!sizeStr.isNullOrEmpty()) {
+                            try {
+                                size = sizeStr.toLong()
+                            } catch (e: NumberFormatException) {
+                                Log.e(TAG, "Size \"$sizeStr\" could not be parsed.")
+                            }
                         }
-                    }
-                    var durationMs = 0
-                    val durationStr: String? = attributes.getValue(DURATION)
-                    if (!durationStr.isNullOrEmpty()) {
-                        try {
-                            val duration = durationStr.toLong()
-                            durationMs = TimeUnit.MILLISECONDS.convert(duration, TimeUnit.SECONDS).toInt()
-                        } catch (e: NumberFormatException) {
-                            Log.e(TAG, "Duration \"$durationStr\" could not be parsed")
+                        var durationMs = 0
+                        val durationStr: String? = attributes.getValue(DURATION)
+                        if (!durationStr.isNullOrEmpty()) {
+                            try {
+                                val duration = durationStr.toLong()
+                                durationMs = TimeUnit.MILLISECONDS.convert(duration, TimeUnit.SECONDS).toInt()
+                            } catch (e: NumberFormatException) {
+                                Log.e(TAG, "Duration \"$durationStr\" could not be parsed")
+                            }
                         }
+                        val media = FeedMedia(state.currentItem, url, size, mimeType)
+                        if (durationMs > 0) {
+                            media.setDuration( durationMs)
+                        }
+                        state.currentItem!!.media = media
                     }
-                    val media = FeedMedia(state.currentItem, url, size, mimeType)
-                    if (durationMs > 0) {
-                        media.setDuration( durationMs)
+                    state.currentItem != null && url != null && validTypeImage -> {
+                        state.currentItem!!.imageUrl = url
                     }
-                    state.currentItem!!.media = media
-                } else if (state.currentItem != null && url != null && validTypeImage) {
-                    state.currentItem!!.imageUrl = url
                 }
             }
             IMAGE == localName -> {

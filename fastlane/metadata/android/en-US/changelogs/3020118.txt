@@ -1,0 +1,7 @@
+ 
+Version 4.4.2 brings several changes:
+
+* converted ksp back to kapt
+* unrestricted the titles to 2 lines in player details view
+* fixed once again the bug of player disappear on first play
+* some code refactoring

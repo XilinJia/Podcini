@@ -55,14 +55,18 @@ object FeedItemUtil {
      */
     @JvmStatic
     fun getLinkWithFallback(item: FeedItem?): String? {
-        if (item == null) {
-            return null
-        } else if (StringUtils.isNotBlank(item.link)) {
-            return item.link
-        } else if (item.feed != null && !item.feed!!.link.isNullOrEmpty()) {
-            return item.feed!!.link
+        when {
+            item == null -> {
+                return null
+            }
+            StringUtils.isNotBlank(item.link) -> {
+                return item.link
+            }
+            item.feed != null && !item.feed!!.link.isNullOrEmpty() -> {
+                return item.feed!!.link
+            }
+            else -> return null
         }
-        return null
     }
 
     @JvmStatic

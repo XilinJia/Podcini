@@ -60,11 +60,14 @@ object MimeTypeUtils {
             return mapResult
         }
 
-        if (AUDIO_FILE_EXTENSIONS.contains(extension)) {
-            return "audio/*"
-        } else if (VIDEO_FILE_EXTENSIONS.contains(extension)) {
-            return "video/*"
+        when {
+            AUDIO_FILE_EXTENSIONS.contains(extension) -> {
+                return "audio/*"
+            }
+            VIDEO_FILE_EXTENSIONS.contains(extension) -> {
+                return "video/*"
+            }
+            else -> return null
         }
-        return null
     }
 }

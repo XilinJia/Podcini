@@ -98,7 +98,7 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
         return when (tag) {
             QueueFragment.TAG -> R.drawable.ic_playlist_play
             AllEpisodesFragment.TAG -> R.drawable.ic_feed
-            CompletedDownloadsFragment.TAG -> R.drawable.ic_download
+            DownloadsFragment.TAG -> R.drawable.ic_download
             PlaybackHistoryFragment.TAG -> R.drawable.ic_history
             SubscriptionFragment.TAG -> R.drawable.ic_subscriptions
             StatisticsFragment.TAG -> R.drawable.ic_chart_box
@@ -135,12 +135,16 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (0 <= position && position < fragmentTags.size) {
-            VIEW_TYPE_NAV
-        } else if (position < subscriptionOffset) {
-            VIEW_TYPE_SECTION_DIVIDER
-        } else {
-            VIEW_TYPE_SUBSCRIPTION
+        return when {
+            0 <= position && position < fragmentTags.size -> {
+                VIEW_TYPE_NAV
+            }
+            position < subscriptionOffset -> {
+                VIEW_TYPE_SECTION_DIVIDER
+            }
+            else -> {
+                VIEW_TYPE_SUBSCRIPTION
+            }
         }
     }
 
@@ -232,7 +236,7 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
                     holder.count.visibility = View.VISIBLE
                 }
             }
-            tag == CompletedDownloadsFragment.TAG && isEnableAutodownload -> {
+            tag == DownloadsFragment.TAG && isEnableAutodownload -> {
                 val epCacheSize = episodeCacheSize
                 // don't count episodes that can be reclaimed
                 val spaceUsed = (itemAccess.numberOfDownloadedItems

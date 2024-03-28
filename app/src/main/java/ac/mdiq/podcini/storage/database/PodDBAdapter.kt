@@ -298,12 +298,16 @@ class PodDBAdapter private constructor() {
             if (saveFeed) setFeed(item.feed!!)
             values.put(KEY_FEED, item.feed!!.id)
         }
-        if (item.isNew) {
-            values.put(KEY_READ, FeedItem.NEW)
-        } else if (item.isPlayed()) {
-            values.put(KEY_READ, FeedItem.PLAYED)
-        } else {
-            values.put(KEY_READ, FeedItem.UNPLAYED)
+        when {
+            item.isNew -> {
+                values.put(KEY_READ, FeedItem.NEW)
+            }
+            item.isPlayed() -> {
+                values.put(KEY_READ, FeedItem.PLAYED)
+            }
+            else -> {
+                values.put(KEY_READ, FeedItem.UNPLAYED)
+            }
         }
         values.put(KEY_HAS_CHAPTERS, item.chapters != null || item.hasChapters())
         values.put(KEY_ITEM_IDENTIFIER, item.itemIdentifier)

@@ -294,20 +294,24 @@ class MainActivity : CastEnabledActivity() {
     fun setupToolbarToggle(toolbar: MaterialToolbar, displayUpArrow: Boolean) {
         Log.d(TAG, "setupToolbarToggle ${drawerLayout?.id} $displayUpArrow")
         // Tablet layout does not have a drawer
-        if (drawerLayout != null) {
-            if (drawerToggle != null) {
-                drawerLayout!!.removeDrawerListener(drawerToggle!!)
+        when {
+            drawerLayout != null -> {
+                if (drawerToggle != null) {
+                    drawerLayout!!.removeDrawerListener(drawerToggle!!)
+                }
+                drawerToggle = ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close)
+                drawerLayout!!.addDrawerListener(drawerToggle!!)
+                drawerToggle!!.syncState()
+                drawerToggle!!.isDrawerIndicatorEnabled = !displayUpArrow
+                drawerToggle!!.toolbarNavigationClickListener = View.OnClickListener { supportFragmentManager.popBackStack() }
             }
-            drawerToggle = ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close)
-            drawerLayout!!.addDrawerListener(drawerToggle!!)
-            drawerToggle!!.syncState()
-            drawerToggle!!.isDrawerIndicatorEnabled = !displayUpArrow
-            drawerToggle!!.toolbarNavigationClickListener = View.OnClickListener { supportFragmentManager.popBackStack() }
-        } else if (!displayUpArrow) {
-            toolbar.navigationIcon = null
-        } else {
-            toolbar.setNavigationIcon(getDrawableFromAttr(this, R.attr.homeAsUpIndicator))
-            toolbar.setNavigationOnClickListener { supportFragmentManager.popBackStack() }
+            !displayUpArrow -> {
+                toolbar.navigationIcon = null
+            }
+            else -> {
+                toolbar.setNavigationIcon(getDrawableFromAttr(this, R.attr.homeAsUpIndicator))
+                toolbar.setNavigationOnClickListener { supportFragmentManager.popBackStack() }
+            }
         }
     }
 
@@ -365,7 +369,7 @@ class MainActivity : CastEnabledActivity() {
         when (tag) {
             QueueFragment.TAG -> fragment = QueueFragment()
             AllEpisodesFragment.TAG -> fragment = AllEpisodesFragment()
-            CompletedDownloadsFragment.TAG -> fragment = CompletedDownloadsFragment()
+            DownloadsFragment.TAG -> fragment = DownloadsFragment()
             PlaybackHistoryFragment.TAG -> fragment = PlaybackHistoryFragment()
             AddFeedFragment.TAG -> fragment = AddFeedFragment()
             SubscriptionFragment.TAG -> fragment = SubscriptionFragment()
@@ -520,7 +524,8 @@ class MainActivity : CastEnabledActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         Log.d(TAG, "onOptionsItemSelected ${item.title}")
-        if (drawerToggle != null && drawerToggle!!.onOptionsItemSelected(item)) { // Tablet layout does not have a drawer
+        if (drawerToggle != null && drawerToggle!!.onOptionsItemSelected(item)) {
+            // Tablet layout does not have a drawer
             return true
         } else if (item.itemId == android.R.id.home) {
             if (supportFragmentManager.backStackEntryCount > 0) {
@@ -667,7 +672,7 @@ class MainActivity : CastEnabledActivity() {
             "/deeplink/main" -> {
                 val feature = uri.getQueryParameter("page") ?: return
                 when (feature) {
-                    "DOWNLOADS" -> loadFragment(CompletedDownloadsFragment.TAG, null)
+                    "DOWNLOADS" -> loadFragment(DownloadsFragment.TAG, null)
                     "HISTORY" -> loadFragment(PlaybackHistoryFragment.TAG, null)
                     "EPISODES" -> loadFragment(AllEpisodesFragment.TAG, null)
                     "QUEUE" -> loadFragment(QueueFragment.TAG, null)

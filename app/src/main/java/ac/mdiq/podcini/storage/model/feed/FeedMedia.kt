@@ -98,10 +98,13 @@ class FeedMedia : FeedFile, Playable {
                 .setSubtitle(p.getFeedTitle())
             if (item != null) {
                 // getImageLocation() also loads embedded images, which we can not send to external devices
-                if (item!!.imageUrl != null) {
-                    builder.setIconUri(Uri.parse(item!!.imageUrl))
-                } else if (item!!.feed?.imageUrl != null) {
-                    builder.setIconUri(Uri.parse(item!!.feed!!.imageUrl))
+                when {
+                    item!!.imageUrl != null -> {
+                        builder.setIconUri(Uri.parse(item!!.imageUrl))
+                    }
+                    item!!.feed?.imageUrl != null -> {
+                        builder.setIconUri(Uri.parse(item!!.feed!!.imageUrl))
+                    }
                 }
             }
             return MediaBrowserCompat.MediaItem(builder.build(), MediaBrowserCompat.MediaItem.FLAG_PLAYABLE)

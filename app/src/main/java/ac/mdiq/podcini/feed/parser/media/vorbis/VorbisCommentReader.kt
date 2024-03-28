@@ -94,11 +94,14 @@ abstract class VorbisCommentReader internal constructor(private val input: Input
             'i'.code.toByte(),
             's'.code.toByte())
         for (i in 6 until buffer.size) {
-            if (bufferMatches(buffer, oggIdentificationHeader, i)) {
-                IOUtils.skip(input, (FIRST_OGG_PAGE_LENGTH - FIRST_OPUS_PAGE_LENGTH).toLong())
-                return
-            } else if (bufferMatches(buffer, "OpusHead".toByteArray(), i)) {
-                return
+            when {
+                bufferMatches(buffer, oggIdentificationHeader, i) -> {
+                    IOUtils.skip(input, (FIRST_OGG_PAGE_LENGTH - FIRST_OPUS_PAGE_LENGTH).toLong())
+                    return
+                }
+                bufferMatches(buffer, "OpusHead".toByteArray(), i) -> {
+                    return
+                }
             }
         }
         throw IOException("No vorbis identification header found")
@@ -116,10 +119,13 @@ abstract class VorbisCommentReader internal constructor(private val input: Input
             's'.code.toByte())
         for (bytesRead in 0 until SECOND_PAGE_MAX_LENGTH) {
             buffer[bytesRead % buffer.size] = input.read().toByte()
-            if (bufferMatches(buffer, oggCommentHeader, bytesRead)) {
-                return
-            } else if (bufferMatches(buffer, "OpusTags".toByteArray(), bytesRead)) {
-                return
+            when {
+                bufferMatches(buffer, oggCommentHeader, bytesRead) -> {
+                    return
+                }
+                bufferMatches(buffer, "OpusTags".toByteArray(), bytesRead) -> {
+                    return
+                }
             }
         }
         throw IOException("No comment header found")

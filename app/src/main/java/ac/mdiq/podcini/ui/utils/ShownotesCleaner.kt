@@ -1,4 +1,4 @@
-package ac.mdiq.podcini.ui.gui
+package ac.mdiq.podcini.ui.utils
 
 import ac.mdiq.podcini.R
 import android.content.Context
@@ -121,7 +121,7 @@ class ShownotesCleaner(context: Context, private val rawShownotes: String, priva
             val buffer = StringBuffer()
 
             while (matcherForElement.find()) {
-                val group = matcherForElement.group(0)
+                val group = matcherForElement.group(0) ?: continue
 
                 val time = if (matcherForElement.group(1) != null) durationStringLongToMs(group)
                 else durationStringShortToMs(group, useHourFormat)
@@ -141,10 +141,13 @@ class ShownotesCleaner(context: Context, private val rawShownotes: String, priva
 
     private fun cleanCss(document: Document) {
         for (element in document.allElements) {
-            if (element.hasAttr("style")) {
-                element.attr("style", element.attr("style").replace(CSS_COLOR.toRegex(), ""))
-            } else if (element.tagName() == "style") {
-                element.html(cleanStyleTag(element.html()))
+            when {
+                element.hasAttr("style") -> {
+                    element.attr("style", element.attr("style").replace(CSS_COLOR.toRegex(), ""))
+                }
+                element.tagName() == "style" -> {
+                    element.html(cleanStyleTag(element.html()))
+                }
             }
         }
     }

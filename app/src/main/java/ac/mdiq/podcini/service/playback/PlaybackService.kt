@@ -63,7 +63,7 @@ import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.ui.appstartintent.MainActivityStarter
 import ac.mdiq.podcini.ui.appstartintent.VideoPlayerActivityStarter
-import ac.mdiq.podcini.ui.gui.NotificationUtils
+import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.ui.widget.WidgetUpdater.WidgetState
 import ac.mdiq.podcini.util.ChapterUtils.getCurrentChapterIndex
 import ac.mdiq.podcini.util.FeedItemUtil.hasAlmostEnded
@@ -77,7 +77,6 @@ import ac.mdiq.podcini.util.event.settings.SpeedPresetChangedEvent
 import ac.mdiq.podcini.util.event.settings.VolumeAdaptionChangedEvent
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.UiModeManager
 import android.bluetooth.BluetoothA2dp
@@ -171,9 +170,6 @@ class PlaybackService : MediaBrowserServiceCompat() {
             registerReceiver(autoStateUpdated, IntentFilter("com.google.android.gms.car.media.STATUS"))
             registerReceiver(shutdownReceiver, IntentFilter(PlaybackServiceInterface.ACTION_SHUTDOWN_PLAYBACK_SERVICE))
         }
-
-//        registerReceiver(autoStateUpdated, IntentFilter("com.google.android.gms.car.media.STATUS"))
-//        registerReceiver(shutdownReceiver, IntentFilter(PlaybackServiceInterface.ACTION_SHUTDOWN_PLAYBACK_SERVICE))
 
         registerReceiver(headsetDisconnected, IntentFilter(Intent.ACTION_HEADSET_PLUG))
         registerReceiver(bluetoothStateUpdated, IntentFilter(BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED))
@@ -669,14 +665,17 @@ class PlaybackService : MediaBrowserServiceCompat() {
                 return false
             }
             KeyEvent.KEYCODE_MEDIA_NEXT -> {
-                if (!notificationButton) {
-                    // Handle remapped button as notification button which is not remapped again.
-                    return handleKeycode(hardwareForwardButton, true)
-                } else if (this.status == PlayerStatus.PLAYING || this.status == PlayerStatus.PAUSED) {
-                    mediaPlayer?.skip()
-                    return true
+                when {
+                    !notificationButton -> {
+                        // Handle remapped button as notification button which is not remapped again.
+                        return handleKeycode(hardwareForwardButton, true)
+                    }
+                    this.status == PlayerStatus.PLAYING || this.status == PlayerStatus.PAUSED -> {
+                        mediaPlayer?.skip()
+                        return true
+                    }
+                    else -> return false
                 }
-                return false
             }
             KeyEvent.KEYCODE_MEDIA_FAST_FORWARD -> {
                 if (this.status == PlayerStatus.PLAYING || this.status == PlayerStatus.PAUSED) {
@@ -686,14 +685,17 @@ class PlaybackService : MediaBrowserServiceCompat() {
                 return false
             }
             KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
-                if (!notificationButton) {
-                    // Handle remapped button as notification button which is not remapped again.
-                    return handleKeycode(hardwarePreviousButton, true)
-                } else if (this.status == PlayerStatus.PLAYING || this.status == PlayerStatus.PAUSED) {
-                    mediaPlayer?.seekTo(0)
-                    return true
+                when {
+                    !notificationButton -> {
+                        // Handle remapped button as notification button which is not remapped again.
+                        return handleKeycode(hardwarePreviousButton, true)
+                    }
+                    this.status == PlayerStatus.PLAYING || this.status == PlayerStatus.PAUSED -> {
+                        mediaPlayer?.seekTo(0)
+                        return true
+                    }
+                    else -> return false
                 }
-                return false
             }
             KeyEvent.KEYCODE_MEDIA_REWIND -> {
                 if (this.status == PlayerStatus.PLAYING || this.status == PlayerStatus.PAUSED) {
@@ -796,7 +798,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
     private val mediaPlayerCallback: PSMPCallback = object : PSMPCallback {
         override fun statusChanged(newInfo: PSMPInfo?) {
             currentMediaType = mediaPlayer?.getCurrentMediaType() ?: MediaType.UNKNOWN
-
+            Log.d(TAG, "statusChanged called")
             updateMediaSession(newInfo?.playerStatus)
             if (newInfo != null) {
                 when (newInfo.playerStatus) {
@@ -954,17 +956,21 @@ class PlaybackService : MediaBrowserServiceCompat() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     @Suppress("unused")
     fun sleepTimerUpdate(event: SleepTimerUpdatedEvent) {
-        if (event.isOver) {
-            mediaPlayer?.pause(true, true)
-            mediaPlayer?.setVolume(1.0f, 1.0f)
-        } else if (event.getTimeLeft() < PlaybackServiceTaskManager.NOTIFICATION_THRESHOLD) {
-            val multiplicators = floatArrayOf(0.1f, 0.2f, 0.3f, 0.3f, 0.3f, 0.4f, 0.4f, 0.4f, 0.6f, 0.8f)
-            val multiplicator = multiplicators[max(0.0, (event.getTimeLeft().toInt() / 1000).toDouble())
-                .toInt()]
-            Log.d(TAG, "onSleepTimerAlmostExpired: $multiplicator")
-            mediaPlayer?.setVolume(multiplicator, multiplicator)
-        } else if (event.isCancelled) {
-            mediaPlayer?.setVolume(1.0f, 1.0f)
+        when {
+            event.isOver -> {
+                mediaPlayer?.pause(true, true)
+                mediaPlayer?.setVolume(1.0f, 1.0f)
+            }
+            event.getTimeLeft() < PlaybackServiceTaskManager.NOTIFICATION_THRESHOLD -> {
+                val multiplicators = floatArrayOf(0.1f, 0.2f, 0.3f, 0.3f, 0.3f, 0.4f, 0.4f, 0.4f, 0.6f, 0.8f)
+                val multiplicator = multiplicators[max(0.0, (event.getTimeLeft().toInt() / 1000).toDouble())
+                    .toInt()]
+                Log.d(TAG, "onSleepTimerAlmostExpired: $multiplicator")
+                mediaPlayer?.setVolume(multiplicator, multiplicator)
+            }
+            event.isCancelled -> {
+                mediaPlayer?.setVolume(1.0f, 1.0f)
+            }
         }
     }
 
@@ -1025,7 +1031,11 @@ class PlaybackService : MediaBrowserServiceCompat() {
             sendNotificationBroadcast(PlaybackServiceInterface.NOTIFICATION_TYPE_PLAYBACK_END, 0)
         } else {
             sendNotificationBroadcast(PlaybackServiceInterface.NOTIFICATION_TYPE_RELOAD,
-                if (isCasting) PlaybackServiceInterface.EXTRA_CODE_CAST else if ((mediaType == MediaType.VIDEO)) PlaybackServiceInterface.EXTRA_CODE_VIDEO else PlaybackServiceInterface.EXTRA_CODE_AUDIO)
+                when {
+                    isCasting -> PlaybackServiceInterface.EXTRA_CODE_CAST
+                    mediaType == MediaType.VIDEO -> PlaybackServiceInterface.EXTRA_CODE_VIDEO
+                    else -> PlaybackServiceInterface.EXTRA_CODE_AUDIO
+                })
         }
     }
 
@@ -1269,10 +1279,13 @@ class PlaybackService : MediaBrowserServiceCompat() {
                 val m = p
                 if (m.item != null) {
                     val item = m.item!!
-                    if (item.imageUrl != null) {
-                        iconUri = item.imageUrl
-                    } else if (item.feed != null) {
-                        iconUri = item.feed!!.imageUrl
+                    when {
+                        item.imageUrl != null -> {
+                            iconUri = item.imageUrl
+                        }
+                        item.feed != null -> {
+                            iconUri = item.feed!!.imageUrl
+                        }
                     }
                 }
             }
@@ -1373,7 +1386,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
             duration = playable?.getDuration() ?: Playable.INVALID_TIME
         }
         if (position != Playable.INVALID_TIME && duration != Playable.INVALID_TIME && playable != null) {
-            Log.d(TAG, "Saving current position to $position $duration")
+//            Log.d(TAG, "Saving current position to $position $duration")
             saveCurrentPosition(playable, position, System.currentTimeMillis())
         }
     }
@@ -1451,11 +1464,14 @@ class PlaybackService : MediaBrowserServiceCompat() {
                 val state = intent.getIntExtra("state", -1)
                 Log.d(TAG, "Headset plug event. State is $state")
                 if (state != -1) {
-                    if (state == UNPLUGGED) {
-                        Log.d(TAG, "Headset was unplugged during playback.")
-                    } else if (state == PLUGGED) {
-                        Log.d(TAG, "Headset was plugged in during playback.")
-                        unpauseIfPauseOnDisconnect(false)
+                    when (state) {
+                        UNPLUGGED -> {
+                            Log.d(TAG, "Headset was unplugged during playback.")
+                        }
+                        PLUGGED -> {
+                            Log.d(TAG, "Headset was plugged in during playback.")
+                            unpauseIfPauseOnDisconnect(false)
+                        }
                     }
                 } else {
                     Log.e(TAG, "Received invalid ACTION_HEADSET_PLUG intent")
@@ -1509,13 +1525,16 @@ class PlaybackService : MediaBrowserServiceCompat() {
                 stateManager.stopService()
                 return
             }
-            if (!bluetooth && isUnpauseOnHeadsetReconnect) {
-                mediaPlayer?.resume()
-            } else if (bluetooth && isUnpauseOnBluetoothReconnect) {
-                // let the user know we've started playback again...
-                val v = applicationContext.getSystemService(VIBRATOR_SERVICE) as? Vibrator
-                v?.vibrate(500)
-                mediaPlayer?.resume()
+            when {
+                !bluetooth && isUnpauseOnHeadsetReconnect -> {
+                    mediaPlayer?.resume()
+                }
+                bluetooth && isUnpauseOnBluetoothReconnect -> {
+                    // let the user know we've started playback again...
+                    val v = applicationContext.getSystemService(VIBRATOR_SERVICE) as? Vibrator
+                    v?.vibrate(500)
+                    mediaPlayer?.resume()
+                }
             }
         }
     }
@@ -1673,11 +1692,11 @@ class PlaybackService : MediaBrowserServiceCompat() {
                 Log.d(TAG, "notificationBuilder.updatePosition currentPosition: $currentPosition, currentPlaybackSpeed: $currentPlaybackSpeed")
                 EventBus.getDefault().post(PlaybackPositionEvent(currentPosition, duration))
 //                TODO: why set SDK_INT < 29
-                if (Build.VERSION.SDK_INT < 29) {
-                    notificationBuilder.updatePosition(currentPosition, currentPlaybackSpeed)
-                    val notificationManager = getSystemService(NOTIFICATION_SERVICE) as? NotificationManager
-                    notificationManager?.notify(R.id.notification_playing, notificationBuilder.build())
-                }
+//                if (Build.VERSION.SDK_INT < 29) {
+//                    notificationBuilder.updatePosition(currentPosition, currentPlaybackSpeed)
+//                    val notificationManager = getSystemService(NOTIFICATION_SERVICE) as? NotificationManager
+//                    notificationManager?.notify(R.id.notification_playing, notificationBuilder.build())
+//                }
                 skipEndingIfNecessary()
             }
     }
@@ -1700,11 +1719,15 @@ class PlaybackService : MediaBrowserServiceCompat() {
         override fun onPlay() {
             Log.d(TAG, "onPlay()")
             val status: PlayerStatus = this@PlaybackService.status
-            if (status == PlayerStatus.PAUSED || status == PlayerStatus.PREPARED) {
-                resume()
-            } else if (status == PlayerStatus.INITIALIZED) {
-                this@PlaybackService.isStartWhenPrepared = true
-                prepare()
+            when (status) {
+                PlayerStatus.PAUSED, PlayerStatus.PREPARED -> {
+                    resume()
+                }
+                PlayerStatus.INITIALIZED -> {
+                    this@PlaybackService.isStartWhenPrepared = true
+                    prepare()
+                }
+                else -> {}
             }
         }
 

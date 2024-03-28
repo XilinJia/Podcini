@@ -114,21 +114,28 @@ class ChapterSeekBar : AppCompatSeekBar {
                 canvas.drawRect(left, top, right, bottom, paintBackground)
 
                 if (progressSecondary > 0 && progressSecondary < width) {
-                    if (right < progressSecondary) {
-                        canvas.drawRect(left, top, right, bottom, paintBackground)
-                    } else if (progressSecondary > left) {
-                        canvas.drawRect(left, top, progressSecondary, bottom, paintBackground)
+                    when {
+                        right < progressSecondary -> {
+                            canvas.drawRect(left, top, right, bottom, paintBackground)
+                        }
+                        progressSecondary > left -> {
+                            canvas.drawRect(left, top, progressSecondary, bottom, paintBackground)
+                        }
                     }
                 }
 
-                if (right < progressPrimary) {
-                    currChapter = i + 1
-                    canvas.drawRect(left, top, right, bottom, paintProgressPrimary)
-                } else if (isHighlighted || isPressed) {
-                    canvas.drawRect(leftCurr, topExpanded, rightCurr, bottomExpanded, paintBackground)
-                    canvas.drawRect(leftCurr, topExpanded, progressPrimary, bottomExpanded, paintProgressPrimary)
-                } else {
-                    canvas.drawRect(leftCurr, top, progressPrimary, bottom, paintProgressPrimary)
+                when {
+                    right < progressPrimary -> {
+                        currChapter = i + 1
+                        canvas.drawRect(left, top, right, bottom, paintProgressPrimary)
+                    }
+                    isHighlighted || isPressed -> {
+                        canvas.drawRect(leftCurr, topExpanded, rightCurr, bottomExpanded, paintBackground)
+                        canvas.drawRect(leftCurr, topExpanded, progressPrimary, bottomExpanded, paintProgressPrimary)
+                    }
+                    else -> {
+                        canvas.drawRect(leftCurr, top, progressPrimary, bottom, paintProgressPrimary)
+                    }
                 }
             }
         }

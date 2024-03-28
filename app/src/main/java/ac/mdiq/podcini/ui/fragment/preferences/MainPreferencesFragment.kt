@@ -32,23 +32,26 @@ class MainPreferencesFragment : PreferenceFragmentCompat() {
         // This means that your application needs to be open-source under the GPL, too.
         // It must also include a prominent copyright notice.
         val packageHash = requireContext().packageName.hashCode()
-        if (packageHash != -418727741 && packageHash != 296705384) {
-            findPreference<Preference>(PREF_CATEGORY_PROJECT)!!.isVisible = false
-            val copyrightNotice = Preference(requireContext())
-            copyrightNotice.setIcon(R.drawable.ic_info_white)
-            copyrightNotice.icon!!.mutate().colorFilter = PorterDuffColorFilter(-0x340000, PorterDuff.Mode.MULTIPLY)
-            copyrightNotice.summary = ("This application is based on Podcini."
-                    + " The Podcini team does NOT provide support for this unofficial version."
-                    + " If you can read this message, the developers of this modification"
-                    + " violate the GNU General Public License (GPL).")
-            findPreference<Preference>(PREF_CATEGORY_PROJECT)!!.parent!!.addPreference(copyrightNotice)
-        } else if (packageHash == 296705384) {
-            val debugNotice = Preference(requireContext())
-            debugNotice.setIcon(R.drawable.ic_info_white)
-            debugNotice.icon!!.mutate().colorFilter = PorterDuffColorFilter(-0x340000, PorterDuff.Mode.MULTIPLY)
-            debugNotice.order = -1
-            debugNotice.summary = "This is a development version of Podcini and not meant for daily use"
-            findPreference<Preference>(PREF_CATEGORY_PROJECT)!!.parent!!.addPreference(debugNotice)
+        when {
+            packageHash != -418727741 && packageHash != 296705384 -> {
+                findPreference<Preference>(PREF_CATEGORY_PROJECT)!!.isVisible = false
+                val copyrightNotice = Preference(requireContext())
+                copyrightNotice.setIcon(R.drawable.ic_info_white)
+                copyrightNotice.icon!!.mutate().colorFilter = PorterDuffColorFilter(-0x340000, PorterDuff.Mode.MULTIPLY)
+                copyrightNotice.summary = ("This application is based on Podcini."
+                        + " The Podcini team does NOT provide support for this unofficial version."
+                        + " If you can read this message, the developers of this modification"
+                        + " violate the GNU General Public License (GPL).")
+                findPreference<Preference>(PREF_CATEGORY_PROJECT)!!.parent!!.addPreference(copyrightNotice)
+            }
+            packageHash == 296705384 -> {
+                val debugNotice = Preference(requireContext())
+                debugNotice.setIcon(R.drawable.ic_info_white)
+                debugNotice.icon!!.mutate().colorFilter = PorterDuffColorFilter(-0x340000, PorterDuff.Mode.MULTIPLY)
+                debugNotice.order = -1
+                debugNotice.summary = "This is a development version of Podcini and not meant for daily use"
+                findPreference<Preference>(PREF_CATEGORY_PROJECT)!!.parent!!.addPreference(debugNotice)
+            }
         }
     }
 

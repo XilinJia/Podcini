@@ -1,11 +1,11 @@
 package ac.mdiq.podcini.util.gui
 
-import ac.mdiq.podcini.ui.gui.ShownotesCleaner
+import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import android.content.Context
 import androidx.test.platform.app.InstrumentationRegistry
-import ac.mdiq.podcini.ui.gui.ShownotesCleaner.Companion.cleanStyleTag
-import ac.mdiq.podcini.ui.gui.ShownotesCleaner.Companion.getTimecodeLinkTime
-import ac.mdiq.podcini.ui.gui.ShownotesCleaner.Companion.isTimecodeLink
+import ac.mdiq.podcini.ui.utils.ShownotesCleaner.Companion.cleanStyleTag
+import ac.mdiq.podcini.ui.utils.ShownotesCleaner.Companion.getTimecodeLinkTime
+import ac.mdiq.podcini.ui.utils.ShownotesCleaner.Companion.isTimecodeLink
 import org.jsoup.Jsoup
 import org.junit.Assert
 import org.junit.Before

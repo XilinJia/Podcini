@@ -25,7 +25,7 @@ import ac.mdiq.podcini.ui.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.util.IntentUtils
 import ac.mdiq.podcini.util.NetworkUtils
 import ac.mdiq.podcini.util.ShareUtils
-import ac.mdiq.podcini.ui.gui.ShownotesCleaner
+import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.util.Converter
 import androidx.media3.common.util.UnstableApi
 import kotlin.math.max

@@ -20,15 +20,18 @@ import org.greenrobot.eventbus.EventBus
 class DownloadLogDetailsDialog(context: Context, status: DownloadResult) : MaterialAlertDialogBuilder(context) {
     init {
         var url = "unknown"
-        if (status.feedfileType == FeedMedia.FEEDFILETYPE_FEEDMEDIA) {
-            val media = DBReader.getFeedMedia(status.feedfileId)
-            if (media != null) {
-                url = media.download_url?:""
+        when (status.feedfileType) {
+            FeedMedia.FEEDFILETYPE_FEEDMEDIA -> {
+                val media = DBReader.getFeedMedia(status.feedfileId)
+                if (media != null) {
+                    url = media.download_url?:""
+                }
             }
-        } else if (status.feedfileType == Feed.FEEDFILETYPE_FEED) {
-            val feed = DBReader.getFeed(status.feedfileId)
-            if (feed != null) {
-                url = feed.download_url?:""
+            Feed.FEEDFILETYPE_FEED -> {
+                val feed = DBReader.getFeed(status.feedfileId)
+                if (feed != null) {
+                    url = feed.download_url?:""
+                }
             }
         }
 

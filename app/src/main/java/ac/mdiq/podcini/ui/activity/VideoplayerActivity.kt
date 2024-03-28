@@ -10,7 +10,7 @@ import ac.mdiq.podcini.util.FeedItemUtil.getLinkWithFallback
 import ac.mdiq.podcini.util.IntentUtils.openInBrowser
 import ac.mdiq.podcini.util.ShareUtils.hasLinkToShare
 import ac.mdiq.podcini.util.TimeSpeedConverter
-import ac.mdiq.podcini.ui.gui.PictureInPictureUtil
+import ac.mdiq.podcini.ui.utils.PictureInPictureUtil
 import ac.mdiq.podcini.playback.PlaybackController
 import ac.mdiq.podcini.databinding.VideoplayerActivityBinding
 import ac.mdiq.podcini.ui.dialog.*
@@ -200,12 +200,16 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
     @Subscribe(threadMode = ThreadMode.MAIN)
     @Suppress("unused")
     fun bufferUpdate(event: BufferUpdateEvent) {
-        if (event.hasStarted()) {
-            binding.progressBar.visibility = View.VISIBLE
-        } else if (event.hasEnded()) {
-            binding.progressBar.visibility = View.INVISIBLE
-        } else {
-            binding.sbPosition.secondaryProgress = (event.progress * binding.sbPosition.max).toInt()
+        when {
+            event.hasStarted() -> {
+                binding.progressBar.visibility = View.VISIBLE
+            }
+            event.hasEnded() -> {
+                binding.progressBar.visibility = View.INVISIBLE
+            }
+            else -> {
+                binding.sbPosition.secondaryProgress = (event.progress * binding.sbPosition.max).toInt()
+            }
         }
     }
 

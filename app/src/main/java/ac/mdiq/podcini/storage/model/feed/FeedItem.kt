@@ -169,12 +169,15 @@ class FeedItem : FeedComponent, Serializable {
             pubDate = other.pubDate
         }
         if (other.media != null) {
-            if (media == null) {
-                setMedia(other.media)
-                // reset to new if feed item did link to a file before
-                setNew()
-            } else if (media!!.compareWithOther(other.media)) {
-                media!!.updateFromOther(other.media)
+            when {
+                media == null -> {
+                    setMedia(other.media)
+                    // reset to new if feed item did link to a file before
+                    setNew()
+                }
+                media!!.compareWithOther(other.media) -> {
+                    media!!.updateFromOther(other.media)
+                }
             }
         }
         if (other.paymentLink != null) {
@@ -197,14 +200,19 @@ class FeedItem : FeedComponent, Serializable {
          * try to return the title. If the title is not given, it will use the link
          * of the entry.
          */
-        get() = if (!itemIdentifier.isNullOrEmpty()) {
-            itemIdentifier
-        } else if (!title.isNullOrEmpty()) {
-            title
-        } else if (media?.download_url != null) {
-            media!!.download_url
-        } else {
-            link
+        get() = when {
+            !itemIdentifier.isNullOrEmpty() -> {
+                itemIdentifier
+            }
+            !title.isNullOrEmpty() -> {
+                title
+            }
+            media?.download_url != null -> {
+                media!!.download_url
+            }
+            else -> {
+                link
+            }
         }
 
     @JvmName("getPubDateFunction")
@@ -268,10 +276,13 @@ class FeedItem : FeedComponent, Serializable {
         if (newDescription == null) {
             return
         }
-        if (this.description == null) {
-            this.description = newDescription
-        } else if (description!!.length < newDescription.length) {
-            this.description = newDescription
+        when {
+            this.description == null -> {
+                this.description = newDescription
+            }
+            description!!.length < newDescription.length -> {
+                this.description = newDescription
+            }
         }
     }
 
@@ -280,14 +291,19 @@ class FeedItem : FeedComponent, Serializable {
     }
 
     val imageLocation: String?
-        get() = if (imageUrl != null) {
-            imageUrl
-        } else if (media != null && media!!.hasEmbeddedPicture()) {
-            FeedMedia.FILENAME_PREFIX_EMBEDDED_COVER + media!!.getLocalMediaUrl()
-        } else if (feed != null) {
-            feed!!.imageUrl
-        } else {
-            null
+        get() = when {
+            imageUrl != null -> {
+                imageUrl
+            }
+            media != null && media!!.hasEmbeddedPicture() -> {
+                FeedMedia.FILENAME_PREFIX_EMBEDDED_COVER + media!!.getLocalMediaUrl()
+            }
+            feed != null -> {
+                feed!!.imageUrl
+            }
+            else -> {
+                null
+            }
         }
 
     enum class State {

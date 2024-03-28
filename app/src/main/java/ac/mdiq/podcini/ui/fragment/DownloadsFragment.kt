@@ -52,7 +52,7 @@ import java.util.*
 /**
  * Displays all completed downloads and provides a button to delete them.
  */
-class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, Toolbar.OnMenuItemClickListener {
+class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, Toolbar.OnMenuItemClickListener {
     private var _binding: SimpleListFragmentBinding? = null
     private val binding get() = _binding!!
 
@@ -398,7 +398,7 @@ class CompletedDownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeLis
 //                menu.findItem(R.id.multi_select).setVisible(true)
 //            }
             MenuItemUtils.setOnClickListeners(menu) { item: MenuItem ->
-                this@CompletedDownloadsFragment.onContextItemSelected(item)
+                this@DownloadsFragment.onContextItemSelected(item)
             }
         }
     }

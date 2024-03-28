@@ -149,7 +149,11 @@ class DownloadRequest private constructor(@JvmField val destination: String?,
 
         constructor(destination: String, feed: Feed) {
             this.destination = destination
-            this.source = if (feed.isLocalFeed) feed.download_url else if (feed.download_url != null) prepareUrl(feed.download_url!!) else null
+            this.source = when {
+                feed.isLocalFeed -> feed.download_url
+                feed.download_url != null -> prepareUrl(feed.download_url!!)
+                else -> null
+            }
             this.title = feed.getHumanReadableIdentifier()
             this.feedfileId = feed.id
             this.feedfileType = feed.getTypeAsInt()

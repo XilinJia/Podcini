@@ -2,7 +2,6 @@ package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.EpisodeInfoFragmentBinding
-import ac.mdiq.podcini.databinding.PopupBubbleViewBinding
 import ac.mdiq.podcini.feed.util.ImageResourceUtils
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.playback.PlaybackController
@@ -15,7 +14,7 @@ import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.actionbutton.*
 import ac.mdiq.podcini.ui.common.CircularProgressBar
 import ac.mdiq.podcini.ui.common.ThemeUtils
-import ac.mdiq.podcini.ui.gui.ShownotesCleaner
+import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.menuhandler.FeedItemMenuHandler
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.Converter
@@ -153,24 +152,30 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         noMediaLabel = binding.noMediaLabel
 
         butAction1.setOnClickListener(View.OnClickListener {
-            if (actionButton1 is StreamActionButton && !UserPreferences.isStreamOverDownload
-                    && UsageStatistics.hasSignificantBiasTo(UsageStatistics.ACTION_STREAM)) {
-                showOnDemandConfigBalloon(true)
-                return@OnClickListener
-            } else if (actionButton1 == null) {
-                return@OnClickListener  // Not loaded yet
+            when {
+                actionButton1 is StreamActionButton && !UserPreferences.isStreamOverDownload
+                        && UsageStatistics.hasSignificantBiasTo(UsageStatistics.ACTION_STREAM) -> {
+                    showOnDemandConfigBalloon(true)
+                    return@OnClickListener
+                }
+                actionButton1 == null -> {
+                    return@OnClickListener  // Not loaded yet
+                }
+                else -> actionButton1?.onClick(requireContext())
             }
-            actionButton1?.onClick(requireContext())
         })
         butAction2.setOnClickListener(View.OnClickListener {
-            if (actionButton2 is DownloadActionButton && UserPreferences.isStreamOverDownload
-                    && UsageStatistics.hasSignificantBiasTo(UsageStatistics.ACTION_DOWNLOAD)) {
-                showOnDemandConfigBalloon(false)
-                return@OnClickListener
-            } else if (actionButton2 == null) {
-                return@OnClickListener  // Not loaded yet
+            when {
+                actionButton2 is DownloadActionButton && UserPreferences.isStreamOverDownload
+                        && UsageStatistics.hasSignificantBiasTo(UsageStatistics.ACTION_DOWNLOAD) -> {
+                    showOnDemandConfigBalloon(false)
+                    return@OnClickListener
+                }
+                actionButton2 == null -> {
+                    return@OnClickListener  // Not loaded yet
+                }
+                else -> actionButton2?.onClick(requireContext())
             }
-            actionButton2?.onClick(requireContext())
         })
 
         EventBus.getDefault().register(this)
@@ -351,12 +356,16 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         StreamActionButton(item!!)
                     }
                 }
-                actionButton2 = if (dls != null && media.download_url != null && dls.isDownloadingEpisode(media.download_url!!)) {
-                    CancelDownloadActionButton(item!!)
-                } else if (!media.isDownloaded()) {
-                    DownloadActionButton(item!!)
-                } else {
-                    DeleteActionButton(item!!)
+                actionButton2 = when {
+                    dls != null && media.download_url != null && dls.isDownloadingEpisode(media.download_url!!) -> {
+                        CancelDownloadActionButton(item!!)
+                    }
+                    !media.isDownloaded() -> {
+                        DownloadActionButton(item!!)
+                    }
+                    else -> {
+                        DeleteActionButton(item!!)
+                    }
                 }
             }
         }

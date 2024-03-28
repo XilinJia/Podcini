@@ -33,7 +33,7 @@ import ac.mdiq.podcini.util.FeedItemUtil
 import ac.mdiq.podcini.util.IntentUtils
 import ac.mdiq.podcini.util.ShareUtils
 import ac.mdiq.podcini.net.download.FeedUpdateManager
-import ac.mdiq.podcini.ui.gui.MoreContentListFooterUtil
+import ac.mdiq.podcini.ui.utils.MoreContentListFooterUtil
 import ac.mdiq.podcini.databinding.FeedItemListFragmentBinding
 import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.ui.dialog.*

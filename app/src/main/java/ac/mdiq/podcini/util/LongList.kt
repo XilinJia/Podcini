@@ -76,12 +76,15 @@ class LongList @JvmOverloads constructor(initialCapacity: Int = 4) {
      * @return the indicated element's value
      */
     fun get(n: Int): Long {
-        if (n >= size) {
-            throw IndexOutOfBoundsException("n >= size()")
-        } else if (n < 0) {
-            throw IndexOutOfBoundsException("n < 0")
+        when {
+            n >= size -> {
+                throw IndexOutOfBoundsException("n >= size()")
+            }
+            n < 0 -> {
+                throw IndexOutOfBoundsException("n < 0")
+            }
+            else -> return values[n]
         }
-        return values[n]
     }
 
     /**
@@ -92,14 +95,19 @@ class LongList @JvmOverloads constructor(initialCapacity: Int = 4) {
      * @return the previous element at the index.
      */
     fun set(index: Int, value: Long): Long {
-        if (index >= size) {
-            throw IndexOutOfBoundsException("n >= size()")
-        } else if (index < 0) {
-            throw IndexOutOfBoundsException("n < 0")
+        when {
+            index >= size -> {
+                throw IndexOutOfBoundsException("n >= size()")
+            }
+            index < 0 -> {
+                throw IndexOutOfBoundsException("n < 0")
+            }
+            else -> {
+                val result = values[index]
+                values[index] = value
+                return result
+            }
         }
-        val result = values[index]
-        values[index] = value
-        return result
     }
 
     /**
@@ -123,17 +131,21 @@ class LongList @JvmOverloads constructor(initialCapacity: Int = 4) {
      * @param value value to insert
      */
     fun insert(n: Int, value: Int) {
-        if (n > size) {
-            throw IndexOutOfBoundsException("n > size()")
-        } else if (n < 0) {
-            throw IndexOutOfBoundsException("n < 0")
+        when {
+            n > size -> {
+                throw IndexOutOfBoundsException("n > size()")
+            }
+            n < 0 -> {
+                throw IndexOutOfBoundsException("n < 0")
+            }
+            else -> {
+                growIfNeeded()
+
+                System.arraycopy(values, n, values, n + 1, size - n)
+                values[n] = value.toLong()
+                size++
+            }
         }
-
-        growIfNeeded()
-
-        System.arraycopy(values, n, values, n + 1, size - n)
-        values[n] = value.toLong()
-        size++
     }
 
     /**
@@ -182,13 +194,18 @@ class LongList @JvmOverloads constructor(initialCapacity: Int = 4) {
      * @param index index of element to remove
      */
     fun removeIndex(index: Int) {
-        if (index >= size) {
-            throw IndexOutOfBoundsException("n >= size()")
-        } else if (index < 0) {
-            throw IndexOutOfBoundsException("n < 0")
+        when {
+            index >= size -> {
+                throw IndexOutOfBoundsException("n >= size()")
+            }
+            index < 0 -> {
+                throw IndexOutOfBoundsException("n < 0")
+            }
+            else -> {
+                size--
+                System.arraycopy(values, index + 1, values, index, size - index)
+            }
         }
-        size--
-        System.arraycopy(values, index + 1, values, index, size - index)
     }
 
     /**

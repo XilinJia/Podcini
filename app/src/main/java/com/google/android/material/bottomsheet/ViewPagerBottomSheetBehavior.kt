@@ -24,21 +24,24 @@ open class ViewPagerBottomSheetBehavior<V : View?> : BottomSheetBehavior<V> {
             return view
         }
 
-        if (view is ViewPager2) {
-            val recycler = view.getChildAt(0) as RecyclerView
-            val currentViewPagerChild = recycler.getChildAt(view.currentItem)
-            if (currentViewPagerChild != null) {
-                return findScrollingChild(currentViewPagerChild)
-            }
-        } else if (view is ViewGroup) {
-            var i = 0
-            val count = view.childCount
-            while (i < count) {
-                val scrollingChild = findScrollingChild(view.getChildAt(i))
-                if (scrollingChild != null) {
-                    return scrollingChild
+        when (view) {
+            is ViewPager2 -> {
+                val recycler = view.getChildAt(0) as RecyclerView
+                val currentViewPagerChild = recycler.getChildAt(view.currentItem)
+                if (currentViewPagerChild != null) {
+                    return findScrollingChild(currentViewPagerChild)
                 }
-                i++
+            }
+            is ViewGroup -> {
+                var i = 0
+                val count = view.childCount
+                while (i < count) {
+                    val scrollingChild = findScrollingChild(view.getChildAt(i))
+                    if (scrollingChild != null) {
+                        return scrollingChild
+                    }
+                    i++
+                }
             }
         }
         return null

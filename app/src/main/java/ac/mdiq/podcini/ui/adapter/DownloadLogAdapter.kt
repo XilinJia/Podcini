@@ -47,10 +47,13 @@ class DownloadLogAdapter(private val context: Activity) : BaseAdapter() {
 
     @UnstableApi private fun bind(holder: DownloadLogItemViewHolder, status: DownloadResult, position: Int) {
         var statusText: String? = ""
-        if (status.feedfileType == Feed.FEEDFILETYPE_FEED) {
-            statusText += context.getString(R.string.download_type_feed)
-        } else if (status.feedfileType == FeedMedia.FEEDFILETYPE_FEEDMEDIA) {
-            statusText += context.getString(R.string.download_type_media)
+        when (status.feedfileType) {
+            Feed.FEEDFILETYPE_FEED -> {
+                statusText += context.getString(R.string.download_type_feed)
+            }
+            FeedMedia.FEEDFILETYPE_FEEDMEDIA -> {
+                statusText += context.getString(R.string.download_type_media)
+            }
         }
         statusText += " · "
         statusText += DateUtils.getRelativeTimeSpanString(status.getCompletionDate().time,
@@ -91,28 +94,31 @@ class DownloadLogAdapter(private val context: Activity) : BaseAdapter() {
                 holder.secondaryActionIcon.setImageResource(R.drawable.ic_refresh)
                 holder.secondaryActionButton.visibility = View.VISIBLE
 
-                if (status.feedfileType == Feed.FEEDFILETYPE_FEED) {
-                    holder.secondaryActionButton.setOnClickListener(View.OnClickListener setOnClickListener@{
-                        holder.secondaryActionButton.visibility = View.INVISIBLE
-                        val feed: Feed? = DBReader.getFeed(status.feedfileId)
-                        if (feed == null) {
-                            Log.e(TAG, "Could not find feed for feed id: " + status.feedfileId)
-                            return@setOnClickListener
-                        }
-                        FeedUpdateManager.runOnce(context, feed)
-                    })
-                } else if (status.feedfileType == FeedMedia.FEEDFILETYPE_FEEDMEDIA) {
-                    holder.secondaryActionButton.setOnClickListener(View.OnClickListener {
-                        holder.secondaryActionButton.visibility = View.INVISIBLE
-                        val media: FeedMedia? = DBReader.getFeedMedia(status.feedfileId)
-                        if (media == null) {
-                            Log.e(TAG, "Could not find feed media for feed id: " + status.feedfileId)
-                            return@OnClickListener
-                        }
-                        if (media.item != null) DownloadActionButton(media.item!!).onClick(context)
-                        (context as MainActivity).showSnackbarAbovePlayer(
-                            R.string.status_downloading_label, Toast.LENGTH_SHORT)
-                    })
+                when (status.feedfileType) {
+                    Feed.FEEDFILETYPE_FEED -> {
+                        holder.secondaryActionButton.setOnClickListener(View.OnClickListener setOnClickListener@{
+                            holder.secondaryActionButton.visibility = View.INVISIBLE
+                            val feed: Feed? = DBReader.getFeed(status.feedfileId)
+                            if (feed == null) {
+                                Log.e(TAG, "Could not find feed for feed id: " + status.feedfileId)
+                                return@setOnClickListener
+                            }
+                            FeedUpdateManager.runOnce(context, feed)
+                        })
+                    }
+                    FeedMedia.FEEDFILETYPE_FEEDMEDIA -> {
+                        holder.secondaryActionButton.setOnClickListener(View.OnClickListener {
+                            holder.secondaryActionButton.visibility = View.INVISIBLE
+                            val media: FeedMedia? = DBReader.getFeedMedia(status.feedfileId)
+                            if (media == null) {
+                                Log.e(TAG, "Could not find feed media for feed id: " + status.feedfileId)
+                                return@OnClickListener
+                            }
+                            if (media.item != null) DownloadActionButton(media.item!!).onClick(context)
+                            (context as MainActivity).showSnackbarAbovePlayer(
+                                R.string.status_downloading_label, Toast.LENGTH_SHORT)
+                        })
+                    }
                 }
             }
         }

@@ -240,14 +240,17 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
 
         override fun isSelected(position: Int): Boolean {
             val lastNavFragment = getLastNavFragment(requireContext())
-            if (position < navAdapter.subscriptionOffset) {
-                return navAdapter.getFragmentTags()[position] == lastNavFragment
-            } else if (StringUtils.isNumeric(lastNavFragment)) { // last fragment was not a list, but a feed
-                val feedId = lastNavFragment.toLong()
-                if (navDrawerData != null) {
-                    val itemToCheck: NavDrawerData.FeedDrawerItem = flatItemList!![position - navAdapter.subscriptionOffset]
-                    // When the same feed is displayed multiple times, it should be highlighted multiple times.
-                    return itemToCheck.feed.id == feedId
+            when {
+                position < navAdapter.subscriptionOffset -> {
+                    return navAdapter.getFragmentTags()[position] == lastNavFragment
+                }
+                StringUtils.isNumeric(lastNavFragment) -> { // last fragment was not a list, but a feed
+                    val feedId = lastNavFragment.toLong()
+                    if (navDrawerData != null) {
+                        val itemToCheck: NavDrawerData.FeedDrawerItem = flatItemList!![position - navAdapter.subscriptionOffset]
+                        // When the same feed is displayed multiple times, it should be highlighted multiple times.
+                        return itemToCheck.feed.id == feedId
+                    }
                 }
             }
             return false
@@ -279,21 +282,24 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
 
         @OptIn(UnstableApi::class) override fun onItemClick(position: Int) {
             val viewType: Int = navAdapter.getItemViewType(position)
-            if (viewType != NavListAdapter.VIEW_TYPE_SECTION_DIVIDER) {
-                if (position < navAdapter.subscriptionOffset) {
-                    val tag: String = navAdapter.getFragmentTags()[position] ?:""
-                    (activity as MainActivity).loadFragment(tag, null)
-                    (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
-                } else {
-                    val pos: Int = position - navAdapter.subscriptionOffset
-                    val clickedItem: NavDrawerData.FeedDrawerItem = flatItemList!![pos]
-                    val feedId: Long = clickedItem.feed.id
-                    (activity as MainActivity).loadFeedFragmentById(feedId, null)
-                    (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
+            when {
+                viewType != NavListAdapter.VIEW_TYPE_SECTION_DIVIDER -> {
+                    if (position < navAdapter.subscriptionOffset) {
+                        val tag: String = navAdapter.getFragmentTags()[position] ?:""
+                        (activity as MainActivity).loadFragment(tag, null)
+                        (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
+                    } else {
+                        val pos: Int = position - navAdapter.subscriptionOffset
+                        val clickedItem: NavDrawerData.FeedDrawerItem = flatItemList!![pos]
+                        val feedId: Long = clickedItem.feed.id
+                        (activity as MainActivity).loadFeedFragmentById(feedId, null)
+                        (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
+                    }
                 }
-            } else if (UserPreferences.subscriptionsFilter.isEnabled
-                    && navAdapter.showSubscriptionList) {
-                SubscriptionsFilterDialog().show(childFragmentManager, "filter")
+                UserPreferences.subscriptionsFilter.isEnabled
+                        && navAdapter.showSubscriptionList -> {
+                    SubscriptionsFilterDialog().show(childFragmentManager, "filter")
+                }
             }
         }
 
@@ -370,7 +376,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
             SubscriptionFragment.TAG,
             QueueFragment.TAG,
             AllEpisodesFragment.TAG,
-            CompletedDownloadsFragment.TAG,
+            DownloadsFragment.TAG,
             PlaybackHistoryFragment.TAG,
             StatisticsFragment.TAG,
             AddFeedFragment.TAG,

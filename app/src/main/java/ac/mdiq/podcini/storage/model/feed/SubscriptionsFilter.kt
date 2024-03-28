@@ -50,22 +50,31 @@ class SubscriptionsFilter(private val properties: Array<String>) {
             val itemPreferences = item.preferences
 
             // If the item does not meet a requirement, skip it.
-            if (showAutoDownloadEnabled && itemPreferences?.autoDownload != true) {
-                continue
-            } else if (showAutoDownloadDisabled && itemPreferences?.autoDownload == true) {
-                continue
+            when {
+                showAutoDownloadEnabled && itemPreferences?.autoDownload != true -> {
+                    continue
+                }
+                showAutoDownloadDisabled && itemPreferences?.autoDownload == true -> {
+                    continue
+                }
             }
 
-            if (showUpdatedEnabled && itemPreferences?.keepUpdated != true) {
-                continue
-            } else if (showUpdatedDisabled && itemPreferences?.keepUpdated == true) {
-                continue
+            when {
+                showUpdatedEnabled && itemPreferences?.keepUpdated != true -> {
+                    continue
+                }
+                showUpdatedDisabled && itemPreferences?.keepUpdated == true -> {
+                    continue
+                }
             }
 
-            if (showEpisodeNotificationEnabled && itemPreferences?.showEpisodeNotification != true) {
-                continue
-            } else if (showEpisodeNotificationDisabled && itemPreferences?.showEpisodeNotification == true) {
-                continue
+            when {
+                showEpisodeNotificationEnabled && itemPreferences?.showEpisodeNotification != true -> {
+                    continue
+                }
+                showEpisodeNotificationDisabled && itemPreferences?.showEpisodeNotification == true -> {
+                    continue
+                }
             }
 
             // If the item reaches here, it meets all criteria (except counter > 0)

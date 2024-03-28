@@ -36,12 +36,16 @@ object RewindAfterPauseUtils {
             val elapsedTime = System.currentTimeMillis() - lastPlayedTime
             var rewindTime: Long = 0
 
-            if (elapsedTime > ELAPSED_TIME_FOR_LONG_REWIND) {
-                rewindTime = LONG_REWIND
-            } else if (elapsedTime > ELAPSED_TIME_FOR_MEDIUM_REWIND) {
-                rewindTime = MEDIUM_REWIND
-            } else if (elapsedTime > ELAPSED_TIME_FOR_SHORT_REWIND) {
-                rewindTime = SHORT_REWIND
+            when {
+                elapsedTime > ELAPSED_TIME_FOR_LONG_REWIND -> {
+                    rewindTime = LONG_REWIND
+                }
+                elapsedTime > ELAPSED_TIME_FOR_MEDIUM_REWIND -> {
+                    rewindTime = MEDIUM_REWIND
+                }
+                elapsedTime > ELAPSED_TIME_FOR_SHORT_REWIND -> {
+                    rewindTime = SHORT_REWIND
+                }
             }
 
             val newPosition = currentPosition - rewindTime.toInt()

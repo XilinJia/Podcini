@@ -36,19 +36,22 @@ object DateUtils {
                 current++
             }
             // even more precise than microseconds: discard further decimal places
-            if (current - start > 4) {
-                date = if (current < date.length - 1) {
-                    date.substring(0, start + 4) + date.substring(current)
-                } else {
-                    date.substring(0, start + 4)
+            when {
+                current - start > 4 -> {
+                    date = if (current < date.length - 1) {
+                        date.substring(0, start + 4) + date.substring(current)
+                    } else {
+                        date.substring(0, start + 4)
+                    }
+                    // less than 4 decimal places: pad to have a consistent format for the parser
                 }
-                // less than 4 decimal places: pad to have a consistent format for the parser
-            } else if (current - start < 4) {
-                date = if (current < date.length - 1) {
-                    (date.substring(0, current) + StringUtils.repeat("0", 4 - (current - start))
-                            + date.substring(current))
-                } else {
-                    date.substring(0, current) + StringUtils.repeat("0", 4 - (current - start))
+                current - start < 4 -> {
+                    date = if (current < date.length - 1) {
+                        (date.substring(0, current) + StringUtils.repeat("0", 4 - (current - start))
+                                + date.substring(current))
+                    } else {
+                        date.substring(0, current) + StringUtils.repeat("0", 4 - (current - start))
+                    }
                 }
             }
         }

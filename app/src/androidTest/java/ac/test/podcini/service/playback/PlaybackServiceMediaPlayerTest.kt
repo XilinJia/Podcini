@@ -488,22 +488,29 @@ class PlaybackServiceMediaPlayerTest {
         val callback = CancelablePSMPCallback(object : DefaultPSMPCallback() {
             override fun statusChanged(newInfo: PSMPInfo?) {
                 checkPSMPInfo(newInfo)
-                if (newInfo!!.playerStatus == PlayerStatus.ERROR) {
-                    if (assertionError == null) assertionError = UnexpectedStateChange(newInfo.playerStatus)
-                } else if (initialState != PlayerStatus.PLAYING) {
-                    if (assertionError == null) assertionError = UnexpectedStateChange(newInfo.playerStatus)
-                } else {
-                    when (newInfo.playerStatus) {
-                        PlayerStatus.PAUSED -> if (latchCount.toLong() == countDownLatch.count) countDownLatch.countDown()
-                        else {
-                            if (assertionError == null) assertionError = UnexpectedStateChange(newInfo.playerStatus)
+                when {
+                    newInfo!!.playerStatus == PlayerStatus.ERROR -> {
+                        if (assertionError == null) assertionError = UnexpectedStateChange(newInfo.playerStatus)
+                    }
+                    initialState != PlayerStatus.PLAYING -> {
+                        if (assertionError == null) assertionError = UnexpectedStateChange(newInfo.playerStatus)
+                    }
+                    else -> {
+                        when (newInfo.playerStatus) {
+                            PlayerStatus.PAUSED -> if (latchCount.toLong() == countDownLatch.count) countDownLatch.countDown()
+                            else {
+                                if (assertionError == null) assertionError = UnexpectedStateChange(newInfo.playerStatus)
+                            }
+                            PlayerStatus.INITIALIZED -> when {
+                                stream && reinit && countDownLatch.count < latchCount -> {
+                                    countDownLatch.countDown()
+                                }
+                                countDownLatch.count < latchCount -> {
+                                    if (assertionError == null) assertionError = UnexpectedStateChange(newInfo.playerStatus)
+                                }
+                            }
+                            else -> {}
                         }
-                        PlayerStatus.INITIALIZED -> if (stream && reinit && countDownLatch.count < latchCount) {
-                            countDownLatch.countDown()
-                        } else if (countDownLatch.count < latchCount) {
-                            if (assertionError == null) assertionError = UnexpectedStateChange(newInfo.playerStatus)
-                        }
-                        else -> {}
                     }
                 }
             }
@@ -592,19 +599,26 @@ class PlaybackServiceMediaPlayerTest {
     private fun resumeTestSkeleton(initialState: PlayerStatus, timeoutSeconds: Long) {
         val c = InstrumentationRegistry.getInstrumentation().targetContext
         val latchCount =
-            if ((initialState == PlayerStatus.PAUSED || initialState == PlayerStatus.PLAYING)) 2 else if ((initialState == PlayerStatus.PREPARED)) 1 else 0
+            when (initialState) {
+                PlayerStatus.PAUSED, PlayerStatus.PLAYING -> 2
+                PlayerStatus.PREPARED -> 1
+                else -> 0
+            }
         val countDownLatch = CountDownLatch(latchCount)
 
         val callback = CancelablePSMPCallback(object : DefaultPSMPCallback() {
             override fun statusChanged(newInfo: PSMPInfo?) {
                 checkPSMPInfo(newInfo)
-                if (newInfo!!.playerStatus == PlayerStatus.ERROR) {
-                    if (assertionError == null) assertionError = UnexpectedStateChange(newInfo.playerStatus)
-                } else if (newInfo.playerStatus == PlayerStatus.PLAYING) {
-                    if (countDownLatch.count == 0L) {
+                when {
+                    newInfo!!.playerStatus == PlayerStatus.ERROR -> {
                         if (assertionError == null) assertionError = UnexpectedStateChange(newInfo.playerStatus)
-                    } else {
-                        countDownLatch.countDown()
+                    }
+                    newInfo.playerStatus == PlayerStatus.PLAYING -> {
+                        if (countDownLatch.count == 0L) {
+                            if (assertionError == null) assertionError = UnexpectedStateChange(newInfo.playerStatus)
+                        } else {
+                            countDownLatch.countDown()
+                        }
                     }
                 }
             }
@@ -657,10 +671,13 @@ class PlaybackServiceMediaPlayerTest {
                 if (newInfo!!.playerStatus == PlayerStatus.ERROR) {
                     if (assertionError == null) assertionError = UnexpectedStateChange(newInfo.playerStatus)
                 } else {
-                    if (initialState == PlayerStatus.INITIALIZED && newInfo.playerStatus == PlayerStatus.PREPARED) {
-                        countDownLatch.countDown()
-                    } else if (initialState != PlayerStatus.INITIALIZED && initialState == newInfo.playerStatus) {
-                        countDownLatch.countDown()
+                    when {
+                        initialState == PlayerStatus.INITIALIZED && newInfo.playerStatus == PlayerStatus.PREPARED -> {
+                            countDownLatch.countDown()
+                        }
+                        initialState != PlayerStatus.INITIALIZED && initialState == newInfo.playerStatus -> {
+                            countDownLatch.countDown()
+                        }
                     }
                 }
             }
@@ -727,10 +744,13 @@ class PlaybackServiceMediaPlayerTest {
                 if (newInfo!!.playerStatus == PlayerStatus.ERROR) {
                     if (assertionError == null) assertionError = UnexpectedStateChange(newInfo.playerStatus)
                 } else {
-                    if (newInfo.playerStatus == initialState) {
-                        countDownLatch.countDown()
-                    } else if (countDownLatch.count < latchCount && newInfo.playerStatus == PlayerStatus.INITIALIZED) {
-                        countDownLatch.countDown()
+                    when {
+                        newInfo.playerStatus == initialState -> {
+                            countDownLatch.countDown()
+                        }
+                        countDownLatch.count < latchCount && newInfo.playerStatus == PlayerStatus.INITIALIZED -> {
+                            countDownLatch.countDown()
+                        }
                     }
                 }
             }

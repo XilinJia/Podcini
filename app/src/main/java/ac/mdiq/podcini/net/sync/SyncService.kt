@@ -29,7 +29,7 @@ import ac.mdiq.podcini.storage.DBTasks.updateFeed
 import ac.mdiq.podcini.storage.DBWriter.removeQueueItem
 import ac.mdiq.podcini.storage.DBWriter.setItemList
 import ac.mdiq.podcini.storage.model.feed.*
-import ac.mdiq.podcini.ui.gui.NotificationUtils
+import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.util.FeedItemUtil.hasAlmostEnded
 import ac.mdiq.podcini.util.LongList
 import ac.mdiq.podcini.util.event.FeedUpdateRunningEvent

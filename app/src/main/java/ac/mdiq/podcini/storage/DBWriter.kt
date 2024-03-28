@@ -106,30 +106,33 @@ import java.util.concurrent.TimeUnit
             media.id, media.getEpisodeTitle(), media.isDownloaded()))
         var localDelete = false
         val url = media.getFile_url()
-        if (url != null && url.startsWith("content://")) {
-            // Local feed
-            val documentFile = DocumentFile.fromSingleUri(context, Uri.parse(media.getFile_url()))
-            if (documentFile == null || !documentFile.exists() || !documentFile.delete()) {
-                EventBus.getDefault().post(MessageEvent(context.getString(R.string.delete_local_failed)))
-                return false
+        when {
+            url != null && url.startsWith("content://") -> {
+                // Local feed
+                val documentFile = DocumentFile.fromSingleUri(context, Uri.parse(media.getFile_url()))
+                if (documentFile == null || !documentFile.exists() || !documentFile.delete()) {
+                    EventBus.getDefault().post(MessageEvent(context.getString(R.string.delete_local_failed)))
+                    return false
+                }
+                media.setFile_url(null)
+                localDelete = true
             }
-            media.setFile_url(null)
-            localDelete = true
-        } else if (url != null) {
-            // delete downloaded media file
-            val mediaFile = File(url)
-            if (mediaFile.exists() && !mediaFile.delete()) {
-                val evt = MessageEvent(context.getString(R.string.delete_failed))
-                EventBus.getDefault().post(evt)
-                return false
+            url != null -> {
+                // delete downloaded media file
+                val mediaFile = File(url)
+                if (mediaFile.exists() && !mediaFile.delete()) {
+                    val evt = MessageEvent(context.getString(R.string.delete_failed))
+                    EventBus.getDefault().post(evt)
+                    return false
+                }
+                media.setDownloaded(false)
+                media.setFile_url(null)
+                media.setHasEmbeddedPicture(false)
+                val adapter = getInstance()
+                adapter.open()
+                adapter.setMedia(media)
+                adapter.close()
             }
-            media.setDownloaded(false)
-            media.setFile_url(null)
-            media.setHasEmbeddedPicture(false)
-            val adapter = getInstance()
-            adapter.open()
-            adapter.setMedia(media)
-            adapter.close()
         }
 
         if (media.id == currentlyPlayingFeedMediaId) {

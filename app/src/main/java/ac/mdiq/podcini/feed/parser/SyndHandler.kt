@@ -59,11 +59,14 @@ class SyndHandler(feed: Feed, type: TypeGetter.Type) : DefaultHandler() {
         if (!state.namespaces.containsKey(uri)) {
             when {
                 uri == Atom.NSURI -> {
-                    if (prefix == DEFAULT_PREFIX) {
-                        state.defaultNamespaces.push(Atom())
-                    } else if (prefix == Atom.NSTAG) {
-                        state.namespaces[uri] = Atom()
-                        Log.d(TAG, "Recognized Atom namespace")
+                    when (prefix) {
+                        DEFAULT_PREFIX -> {
+                            state.defaultNamespaces.push(Atom())
+                        }
+                        Atom.NSTAG -> {
+                            state.namespaces[uri] = Atom()
+                            Log.d(TAG, "Recognized Atom namespace")
+                        }
                     }
                 }
                 uri == Content.NSURI && prefix == Content.NSTAG -> {

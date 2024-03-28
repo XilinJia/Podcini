@@ -26,39 +26,42 @@ object MediaSizeLoader {
                 return@SingleOnSubscribe
             }
             var size = Int.MIN_VALUE.toLong()
-            if (media.isDownloaded()) {
-                val mediaFile = File(media.getLocalMediaUrl())
-                if (mediaFile.exists()) {
-                    size = mediaFile.length()
-                }
-            } else if (!media.checkedOnSizeButUnknown()) {
-                // only query the network if we haven't already checked
-
-                val url = media.download_url
-                if (url.isNullOrEmpty()) {
-                    emitter.onSuccess(0L)
-                    return@SingleOnSubscribe
-                }
-
-                val client = getHttpClient()
-                val httpReq: Builder = Builder()
-                    .url(url)
-                    .header("Accept-Encoding", "identity")
-                    .head()
-                try {
-                    val response = client.newCall(httpReq.build()).execute()
-                    if (response.isSuccessful) {
-                        val contentLength = response.header("Content-Length")?:"0"
-                        try {
-                            size = contentLength.toInt().toLong()
-                        } catch (e: NumberFormatException) {
-                            Log.e(TAG, Log.getStackTraceString(e))
-                        }
+            when {
+                media.isDownloaded() -> {
+                    val mediaFile = File(media.getLocalMediaUrl())
+                    if (mediaFile.exists()) {
+                        size = mediaFile.length()
                     }
-                } catch (e: IOException) {
-                    emitter.onSuccess(0L)
-                    Log.e(TAG, Log.getStackTraceString(e))
-                    return@SingleOnSubscribe  // better luck next time
+                }
+                !media.checkedOnSizeButUnknown() -> {
+                    // only query the network if we haven't already checked
+
+                    val url = media.download_url
+                    if (url.isNullOrEmpty()) {
+                        emitter.onSuccess(0L)
+                        return@SingleOnSubscribe
+                    }
+
+                    val client = getHttpClient()
+                    val httpReq: Builder = Builder()
+                        .url(url)
+                        .header("Accept-Encoding", "identity")
+                        .head()
+                    try {
+                        val response = client.newCall(httpReq.build()).execute()
+                        if (response.isSuccessful) {
+                            val contentLength = response.header("Content-Length")?:"0"
+                            try {
+                                size = contentLength.toInt().toLong()
+                            } catch (e: NumberFormatException) {
+                                Log.e(TAG, Log.getStackTraceString(e))
+                            }
+                        }
+                    } catch (e: IOException) {
+                        emitter.onSuccess(0L)
+                        Log.e(TAG, Log.getStackTraceString(e))
+                        return@SingleOnSubscribe  // better luck next time
+                    }
                 }
             }
             Log.d(TAG, "new size: $size")

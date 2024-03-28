@@ -201,72 +201,75 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             return true
         }
         val itemId = item.itemId
-        if (itemId == R.id.discover_hide_item) {
-            item.setChecked(!item.isChecked)
-            hidden = item.isChecked
-            prefs.edit().putBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, hidden).apply()
-
-            EventBus.getDefault().post(DiscoveryDefaultUpdateEvent())
-            loadToplist(countryCode)
-            return true
-        } else if (itemId == R.id.discover_countries_item) {
-            val inflater = layoutInflater
-            val selectCountryDialogView = inflater.inflate(R.layout.select_country_dialog, null)
-            val builder = MaterialAlertDialogBuilder(requireContext())
-            builder.setView(selectCountryDialogView)
-
-            val countryCodeArray: List<String> = listOf(*Locale.getISOCountries())
-            val countryCodeNames: MutableMap<String?, String> = HashMap()
-            val countryNameCodes: MutableMap<String, String> = HashMap()
-            for (code in countryCodeArray) {
-                val locale = Locale("", code)
-                val countryName = locale.displayCountry
-                countryCodeNames[code] = countryName
-                countryNameCodes[countryName] = code
-            }
-
-            val countryNamesSort: MutableList<String> = ArrayList(countryCodeNames.values)
-            countryNamesSort.sort()
-
-            val dataAdapter = ArrayAdapter(this.requireContext(), android.R.layout.simple_list_item_1, countryNamesSort)
-            val scBinding = SelectCountryDialogBinding.bind(selectCountryDialogView)
-            val textInput = scBinding.countryTextInput
-            val editText = textInput.editText as? MaterialAutoCompleteTextView
-            editText!!.setAdapter(dataAdapter)
-            editText.setText(countryCodeNames[countryCode])
-            editText.setOnClickListener {
-                if (editText.text.isNotEmpty()) {
-                    editText.setText("")
-                    editText.postDelayed({ editText.showDropDown() }, 100)
-                }
-            }
-            editText.onFocusChangeListener = OnFocusChangeListener { _: View?, hasFocus: Boolean ->
-                if (hasFocus) {
-                    editText.setText("")
-                    editText.postDelayed({ editText.showDropDown() }, 100)
-                }
-            }
-
-            builder.setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
-                val countryName = editText.text.toString()
-                if (countryNameCodes.containsKey(countryName)) {
-                    countryCode = countryNameCodes[countryName]
-                    val discoverHideItem = toolbar.menu.findItem(R.id.discover_hide_item)
-                    discoverHideItem.setChecked(false)
-                    hidden = false
-                }
-
+        when (itemId) {
+            R.id.discover_hide_item -> {
+                item.setChecked(!item.isChecked)
+                hidden = item.isChecked
                 prefs.edit().putBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, hidden).apply()
-                prefs.edit().putString(ItunesTopListLoader.PREF_KEY_COUNTRY_CODE, countryCode).apply()
 
                 EventBus.getDefault().post(DiscoveryDefaultUpdateEvent())
                 loadToplist(countryCode)
+                return true
             }
-            builder.setNegativeButton(R.string.cancel_label, null)
-            builder.show()
-            return true
+            R.id.discover_countries_item -> {
+                val inflater = layoutInflater
+                val selectCountryDialogView = inflater.inflate(R.layout.select_country_dialog, null)
+                val builder = MaterialAlertDialogBuilder(requireContext())
+                builder.setView(selectCountryDialogView)
+
+                val countryCodeArray: List<String> = listOf(*Locale.getISOCountries())
+                val countryCodeNames: MutableMap<String?, String> = HashMap()
+                val countryNameCodes: MutableMap<String, String> = HashMap()
+                for (code in countryCodeArray) {
+                    val locale = Locale("", code)
+                    val countryName = locale.displayCountry
+                    countryCodeNames[code] = countryName
+                    countryNameCodes[countryName] = code
+                }
+
+                val countryNamesSort: MutableList<String> = ArrayList(countryCodeNames.values)
+                countryNamesSort.sort()
+
+                val dataAdapter = ArrayAdapter(this.requireContext(), android.R.layout.simple_list_item_1, countryNamesSort)
+                val scBinding = SelectCountryDialogBinding.bind(selectCountryDialogView)
+                val textInput = scBinding.countryTextInput
+                val editText = textInput.editText as? MaterialAutoCompleteTextView
+                editText!!.setAdapter(dataAdapter)
+                editText.setText(countryCodeNames[countryCode])
+                editText.setOnClickListener {
+                    if (editText.text.isNotEmpty()) {
+                        editText.setText("")
+                        editText.postDelayed({ editText.showDropDown() }, 100)
+                    }
+                }
+                editText.onFocusChangeListener = OnFocusChangeListener { _: View?, hasFocus: Boolean ->
+                    if (hasFocus) {
+                        editText.setText("")
+                        editText.postDelayed({ editText.showDropDown() }, 100)
+                    }
+                }
+
+                builder.setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
+                    val countryName = editText.text.toString()
+                    if (countryNameCodes.containsKey(countryName)) {
+                        countryCode = countryNameCodes[countryName]
+                        val discoverHideItem = toolbar.menu.findItem(R.id.discover_hide_item)
+                        discoverHideItem.setChecked(false)
+                        hidden = false
+                    }
+
+                    prefs.edit().putBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, hidden).apply()
+                    prefs.edit().putString(ItunesTopListLoader.PREF_KEY_COUNTRY_CODE, countryCode).apply()
+
+                    EventBus.getDefault().post(DiscoveryDefaultUpdateEvent())
+                    loadToplist(countryCode)
+                }
+                builder.setNegativeButton(R.string.cancel_label, null)
+                builder.show()
+                return true
+            }
+            else -> return false
         }
-        return false
     }
 
     companion object {

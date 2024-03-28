@@ -23,16 +23,20 @@ object NetworkUtils {
         get() {
             val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val networkInfo = cm.activeNetworkInfo ?: return false
-            return if (networkInfo.type == ConnectivityManager.TYPE_WIFI) {
-                if (UserPreferences.isEnableAutodownloadWifiFilter) {
-                    isInAllowedWifiNetwork
-                } else {
-                    !isNetworkMetered
+            return when (networkInfo.type) {
+                ConnectivityManager.TYPE_WIFI -> {
+                    if (UserPreferences.isEnableAutodownloadWifiFilter) {
+                        isInAllowedWifiNetwork
+                    } else {
+                        !isNetworkMetered
+                    }
                 }
-            } else if (networkInfo.type == ConnectivityManager.TYPE_ETHERNET) {
-                true
-            } else {
-                UserPreferences.isAllowMobileAutoDownload || !isNetworkRestricted
+                ConnectivityManager.TYPE_ETHERNET -> {
+                    true
+                }
+                else -> {
+                    UserPreferences.isAllowMobileAutoDownload || !isNetworkRestricted
+                }
             }
         }
 

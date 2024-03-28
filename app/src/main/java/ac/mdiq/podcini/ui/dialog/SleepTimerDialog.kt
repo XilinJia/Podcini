@@ -173,18 +173,22 @@ class SleepTimerDialog : DialogFragment() {
         val from = autoEnableFrom()
         val to = autoEnableTo()
 
-        if (from == to) {
-            text = getString(R.string.auto_enable_label)
-        } else if (DateFormat.is24HourFormat(context)) {
-            val formattedFrom = String.format(Locale.getDefault(), "%02d:00", from)
-            val formattedTo = String.format(Locale.getDefault(), "%02d:00", to)
-            text = getString(R.string.auto_enable_label_with_times, formattedFrom, formattedTo)
-        } else {
-            val formattedFrom = String.format(Locale.getDefault(), "%02d:00 %s",
-                from % 12, if (from >= 12) "PM" else "AM")
-            val formattedTo = String.format(Locale.getDefault(), "%02d:00 %s",
-                to % 12, if (to >= 12) "PM" else "AM")
-            text = getString(R.string.auto_enable_label_with_times, formattedFrom, formattedTo)
+        when {
+            from == to -> {
+                text = getString(R.string.auto_enable_label)
+            }
+            DateFormat.is24HourFormat(context) -> {
+                val formattedFrom = String.format(Locale.getDefault(), "%02d:00", from)
+                val formattedTo = String.format(Locale.getDefault(), "%02d:00", to)
+                text = getString(R.string.auto_enable_label_with_times, formattedFrom, formattedTo)
+            }
+            else -> {
+                val formattedFrom = String.format(Locale.getDefault(), "%02d:00 %s",
+                    from % 12, if (from >= 12) "PM" else "AM")
+                val formattedTo = String.format(Locale.getDefault(), "%02d:00 %s",
+                    to % 12, if (to >= 12) "PM" else "AM")
+                text = getString(R.string.auto_enable_label_with_times, formattedFrom, formattedTo)
+            }
         }
         chAutoEnable.text = text
     }

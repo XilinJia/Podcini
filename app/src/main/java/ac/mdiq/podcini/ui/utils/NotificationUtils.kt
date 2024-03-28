@@ -1,4 +1,4 @@
-package ac.mdiq.podcini.ui.gui
+package ac.mdiq.podcini.ui.utils
 
 import ac.mdiq.podcini.R
 import android.content.Context

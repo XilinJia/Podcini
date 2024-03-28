@@ -144,17 +144,23 @@ class Atom : Namespace() {
 
             when {
                 ID == top -> {
-                    if (FEED == second) {
-                        state.feed.feedIdentifier = contentRaw
-                    } else if (ENTRY == second && state.currentItem != null) {
-                        state.currentItem!!.itemIdentifier = contentRaw
+                    when {
+                        FEED == second -> {
+                            state.feed.feedIdentifier = contentRaw
+                        }
+                        ENTRY == second && state.currentItem != null -> {
+                            state.currentItem!!.itemIdentifier = contentRaw
+                        }
                     }
                 }
                 TITLE == top && textElement != null -> {
-                    if (FEED == second ) {
-                        state.feed.title = textElement.processedContent
-                    } else if (ENTRY == second && state.currentItem != null) {
-                        state.currentItem!!.title = textElement.processedContent
+                    when {
+                        FEED == second -> {
+                            state.feed.title = textElement.processedContent
+                        }
+                        ENTRY == second && state.currentItem != null -> {
+                            state.currentItem!!.title = textElement.processedContent
+                        }
                     }
                 }
                 SUBTITLE == top && FEED == second && textElement != null -> {

@@ -36,14 +36,18 @@ object FileNameGenerator {
             }
         }
         val filename = buf.toString().trim { it <= ' ' }
-        return if (filename.isEmpty()) {
-            randomString(8)
-        } else if (filename.length >= MAX_FILENAME_LENGTH) {
-            filename.substring(0,
-                MAX_FILENAME_LENGTH - MD5_HEX_LENGTH - 1) + "_" + md5(
-                filename)
-        } else {
-            filename
+        return when {
+            filename.isEmpty() -> {
+                randomString(8)
+            }
+            filename.length >= MAX_FILENAME_LENGTH -> {
+                filename.substring(0,
+                    MAX_FILENAME_LENGTH - MD5_HEX_LENGTH - 1) + "_" + md5(
+                    filename)
+            }
+            else -> {
+                filename
+            }
         }
     }
 

@@ -24,37 +24,56 @@ object FeedItemFilterQuery {
         val tableFavorites = PodDBAdapter.TABLE_NAME_FAVORITES
 
         val statements: MutableList<String> = ArrayList()
-        if (filter.showPlayed) {
-            statements.add("$keyRead = 1 ")
-        } else if (filter.showUnplayed) {
-            statements.add(" NOT $keyRead = 1 ") // Match "New" items (read = -1) as well
-        } else if (filter.showNew) {
-            statements.add("$keyRead = -1 ")
+        when {
+            filter.showPlayed -> {
+                statements.add("$keyRead = 1 ")
+            }
+            filter.showUnplayed -> {
+                statements.add(" NOT $keyRead = 1 ") // Match "New" items (read = -1) as well
+            }
+            filter.showNew -> {
+                statements.add("$keyRead = -1 ")
+            }
         }
-        if (filter.showPaused) {
-            statements.add(" ($keyPosition NOT NULL AND $keyPosition > 0 ) ")
-        } else if (filter.showNotPaused) {
-            statements.add(" ($keyPosition IS NULL OR $keyPosition = 0 ) ")
+        when {
+            filter.showPaused -> {
+                statements.add(" ($keyPosition NOT NULL AND $keyPosition > 0 ) ")
+            }
+            filter.showNotPaused -> {
+                statements.add(" ($keyPosition IS NULL OR $keyPosition = 0 ) ")
+            }
         }
-        if (filter.showQueued) {
-            statements.add("$keyItemId IN (SELECT $keyFeedItem FROM $tableQueue) ")
-        } else if (filter.showNotQueued) {
-            statements.add("$keyItemId NOT IN (SELECT $keyFeedItem FROM $tableQueue) ")
+        when {
+            filter.showQueued -> {
+                statements.add("$keyItemId IN (SELECT $keyFeedItem FROM $tableQueue) ")
+            }
+            filter.showNotQueued -> {
+                statements.add("$keyItemId NOT IN (SELECT $keyFeedItem FROM $tableQueue) ")
+            }
         }
-        if (filter.showDownloaded) {
-            statements.add("$keyDownloaded = 1 ")
-        } else if (filter.showNotDownloaded) {
-            statements.add("$keyDownloaded = 0 ")
+        when {
+            filter.showDownloaded -> {
+                statements.add("$keyDownloaded = 1 ")
+            }
+            filter.showNotDownloaded -> {
+                statements.add("$keyDownloaded = 0 ")
+            }
         }
-        if (filter.showHasMedia) {
-            statements.add("$keyMediaId NOT NULL ")
-        } else if (filter.showNoMedia) {
-            statements.add("$keyMediaId IS NULL ")
+        when {
+            filter.showHasMedia -> {
+                statements.add("$keyMediaId NOT NULL ")
+            }
+            filter.showNoMedia -> {
+                statements.add("$keyMediaId IS NULL ")
+            }
         }
-        if (filter.showIsFavorite) {
-            statements.add("$keyItemId IN (SELECT $keyFeedItem FROM $tableFavorites) ")
-        } else if (filter.showNotFavorite) {
-            statements.add("$keyItemId NOT IN (SELECT $keyFeedItem FROM $tableFavorites) ")
+        when {
+            filter.showIsFavorite -> {
+                statements.add("$keyItemId IN (SELECT $keyFeedItem FROM $tableFavorites) ")
+            }
+            filter.showNotFavorite -> {
+                statements.add("$keyItemId NOT IN (SELECT $keyFeedItem FROM $tableFavorites) ")
+            }
         }
 
         if (statements.isEmpty()) {

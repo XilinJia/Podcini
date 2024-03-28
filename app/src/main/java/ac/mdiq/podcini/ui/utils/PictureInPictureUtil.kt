@@ -1,4 +1,4 @@
-package ac.mdiq.podcini.ui.gui
+package ac.mdiq.podcini.ui.utils
 
 import android.app.Activity
 import android.content.pm.PackageManager

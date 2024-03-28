@@ -17,7 +17,6 @@ import ac.mdiq.podcini.ui.fragment.*
 import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
 import ac.mdiq.podcini.ui.common.ThemeUtils.getColorFromAttr
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
-import ac.mdiq.podcini.util.event.PlayerStatusEvent
 import ac.mdiq.podcini.util.event.SwipeActionsChangedEvent
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
 import org.greenrobot.eventbus.EventBus
@@ -247,7 +246,7 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
         fun getPrefsWithDefaults(context: Context, tag: String): Actions {
             val defaultActions = when (tag) {
                 QueueFragment.TAG -> SwipeAction.NO_ACTION + "," + SwipeAction.NO_ACTION
-                CompletedDownloadsFragment.TAG -> SwipeAction.NO_ACTION + "," + SwipeAction.NO_ACTION
+                DownloadsFragment.TAG -> SwipeAction.NO_ACTION + "," + SwipeAction.NO_ACTION
                 PlaybackHistoryFragment.TAG -> SwipeAction.NO_ACTION + "," + SwipeAction.NO_ACTION
                 AllEpisodesFragment.TAG -> SwipeAction.NO_ACTION + "," + SwipeAction.NO_ACTION
                 else -> SwipeAction.NO_ACTION + "," + SwipeAction.NO_ACTION

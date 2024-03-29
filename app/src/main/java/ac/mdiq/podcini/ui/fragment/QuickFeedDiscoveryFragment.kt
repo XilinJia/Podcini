@@ -3,15 +3,13 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.QuickFeedDiscoveryBinding
-import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.activity.OnlineFeedViewActivity
-import ac.mdiq.podcini.ui.adapter.FeedDiscoverAdapter
-import ac.mdiq.podcini.storage.DBReader
-import ac.mdiq.podcini.util.event.DiscoveryDefaultUpdateEvent
 import ac.mdiq.podcini.net.discovery.ItunesTopListLoader
 import ac.mdiq.podcini.net.discovery.PodcastSearchResult
+import ac.mdiq.podcini.storage.DBReader
+import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.adapter.FeedDiscoverAdapter
+import ac.mdiq.podcini.util.event.DiscoveryDefaultUpdateEvent
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.DisplayMetrics
@@ -158,14 +156,12 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
                 })
     }
 
-    override fun onItemClick(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
+    @OptIn(UnstableApi::class) override fun onItemClick(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
         val podcast: PodcastSearchResult? = adapter.getItem(position)
-        if (podcast?.feedUrl.isNullOrEmpty()) {
-            return
-        }
-        val intent = Intent(activity, OnlineFeedViewActivity::class.java)
-        intent.putExtra(OnlineFeedViewActivity.ARG_FEEDURL, podcast!!.feedUrl)
-        startActivity(intent)
+        if (podcast?.feedUrl.isNullOrEmpty()) return
+
+        val fragment: Fragment = OnlineFeedViewFragment.newInstance(podcast!!.feedUrl!!)
+        (activity as MainActivity).loadChildFragment(fragment)
     }
 
     companion object {

@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import ac.mdiq.podcini.preferences.ThemeSwitcher.getTranslucentTheme
 import ac.mdiq.podcini.ui.dialog.VariableSpeedDialog
 
+// This is for widget
 class PlaybackSpeedDialogActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(getTranslucentTheme(this))

@@ -1,6 +1,15 @@
 package ac.mdiq.podcini.ui.fragment
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.AddfeedBinding
+import ac.mdiq.podcini.databinding.EditTextDialogBinding
+import ac.mdiq.podcini.net.discovery.*
+import ac.mdiq.podcini.net.download.FeedUpdateManager
+import ac.mdiq.podcini.storage.DBTasks
+import ac.mdiq.podcini.storage.model.feed.Feed
+import ac.mdiq.podcini.storage.model.feed.SortOrder
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.activity.OpmlImportActivity
 import android.content.*
 import android.net.Uri
 import android.os.Bundle
@@ -17,16 +26,6 @@ import androidx.fragment.app.Fragment
 import androidx.media3.common.util.UnstableApi
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.activity.OnlineFeedViewActivity
-import ac.mdiq.podcini.ui.activity.OpmlImportActivity
-import ac.mdiq.podcini.storage.DBTasks
-import ac.mdiq.podcini.net.download.FeedUpdateManager
-import ac.mdiq.podcini.databinding.AddfeedBinding
-import ac.mdiq.podcini.databinding.EditTextDialogBinding
-import ac.mdiq.podcini.storage.model.feed.Feed
-import ac.mdiq.podcini.storage.model.feed.SortOrder
-import ac.mdiq.podcini.net.discovery.*
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -135,10 +134,8 @@ class AddFeedFragment : Fragment() {
     }
 
     private fun addUrl(url: String) {
-        val intent = Intent(getActivity(), OnlineFeedViewActivity::class.java)
-        intent.putExtra(OnlineFeedViewActivity.ARG_FEEDURL, url)
-        intent.putExtra(OnlineFeedViewActivity.ARG_WAS_MANUAL_URL, true)
-        startActivity(intent)
+        val fragment: Fragment = OnlineFeedViewFragment.newInstance(url)
+        (activity as MainActivity).loadChildFragment(fragment)
     }
 
     private fun performSearch() {

@@ -1,8 +1,13 @@
 package ac.mdiq.podcini.ui.fragment
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.FragmentItunesSearchBinding
+import ac.mdiq.podcini.net.discovery.PodcastSearchResult
+import ac.mdiq.podcini.net.discovery.PodcastSearcher
+import ac.mdiq.podcini.net.discovery.PodcastSearcherRegistry
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.adapter.OnlineFeedsAdapter
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -15,13 +20,6 @@ import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.media3.common.util.UnstableApi
 import com.google.android.material.appbar.MaterialToolbar
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.FragmentItunesSearchBinding
-import ac.mdiq.podcini.ui.activity.OnlineFeedViewActivity
-import ac.mdiq.podcini.ui.adapter.OnlineFeedsAdapter
-import ac.mdiq.podcini.net.discovery.PodcastSearchResult
-import ac.mdiq.podcini.net.discovery.PodcastSearcher
-import ac.mdiq.podcini.net.discovery.PodcastSearcherRegistry
 import io.reactivex.disposables.Disposable
 
 class OnlineSearchFragment : Fragment() {
@@ -70,11 +68,9 @@ class OnlineSearchFragment : Fragment() {
         //Show information about the podcast when the list item is clicked
         gridView.onItemClickListener = AdapterView.OnItemClickListener { _: AdapterView<*>?, _: View?, position: Int, _: Long ->
             val podcast = searchResults!![position]
-            if (podcast != null) {
-                val intent = Intent(activity, OnlineFeedViewActivity::class.java)
-                intent.putExtra(OnlineFeedViewActivity.ARG_FEEDURL, podcast.feedUrl)
-                intent.putExtra(MainActivity.EXTRA_STARTED_FROM_SEARCH, true)
-                startActivity(intent)
+            if (podcast?.feedUrl != null) {
+                val fragment: Fragment = OnlineFeedViewFragment.newInstance(podcast.feedUrl)
+                (activity as MainActivity).loadChildFragment(fragment)
             }
         }
         progressBar = binding.progressBar

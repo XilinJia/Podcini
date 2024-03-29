@@ -33,14 +33,15 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 
+// TODO: need to enable
 class SelectSubscriptionActivity : AppCompatActivity() {
-    private var disposable: Disposable? = null
-
-    @Volatile
-    private var listItems: List<Feed>? = null
-
     private var _binding: SubscriptionSelectionActivityBinding? = null
     private val binding get() = _binding!!
+
+    @Volatile
+    private var listItems: List<Feed> = listOf()
+
+    private var disposable: Disposable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(ThemeSwitcher.getTranslucentTheme(this))
@@ -64,7 +65,7 @@ class SelectSubscriptionActivity : AppCompatActivity() {
             }
         binding.shortcutBtn.setOnClickListener {
             if (checkedPosition[0] != null && Intent.ACTION_CREATE_SHORTCUT == intent.action) {
-                getBitmapFromUrl(listItems!![checkedPosition[0]!!])
+                getBitmapFromUrl(listItems[checkedPosition[0]!!])
             }
         }
     }
@@ -72,10 +73,10 @@ class SelectSubscriptionActivity : AppCompatActivity() {
     fun getFeedItems(items: List<NavDrawerData.FeedDrawerItem?>, result: MutableList<Feed>): List<Feed> {
         for (item in items) {
             if (item == null) continue
-                val feed: Feed = item.feed
-                if (!result.contains(feed)) {
-                    result.add(feed)
-                }
+            val feed: Feed = item.feed
+            if (!result.contains(feed)) {
+                result.add(feed)
+            }
         }
         return result
     }

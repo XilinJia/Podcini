@@ -234,7 +234,7 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
         val duration: Int = converter.convert(event.duration)
         val remainingTime: Int = converter.convert(max((event.duration - event.position).toDouble(), 0.0).toInt())
         if (currentPosition == Playable.INVALID_TIME || duration == Playable.INVALID_TIME) {
-            Log.w(AudioPlayerFragment.TAG, "Could not react to position observer update because of invalid time")
+            Log.w(TAG, "Could not react to position observer update because of invalid time")
             return
         }
 

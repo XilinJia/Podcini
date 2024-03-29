@@ -1,9 +1,29 @@
 package ac.mdiq.podcini.ui.fragment
 
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
+import ac.mdiq.podcini.databinding.SearchFragmentBinding
+import ac.mdiq.podcini.net.discovery.CombinedSearcher
+import ac.mdiq.podcini.playback.event.PlaybackPositionEvent
+import ac.mdiq.podcini.storage.FeedSearcher
+import ac.mdiq.podcini.storage.model.feed.Feed
+import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.adapter.EpisodeItemListAdapter
+import ac.mdiq.podcini.ui.adapter.HorizontalFeedListAdapter
+import ac.mdiq.podcini.ui.adapter.SelectableAdapter
+import ac.mdiq.podcini.ui.fragment.actions.EpisodeMultiSelectActionHandler
+import ac.mdiq.podcini.ui.menuhandler.FeedItemMenuHandler
+import ac.mdiq.podcini.ui.menuhandler.FeedMenuHandler
+import ac.mdiq.podcini.ui.menuhandler.MenuItemUtils
+import ac.mdiq.podcini.ui.view.EmptyViewHandler
+import ac.mdiq.podcini.ui.view.EpisodeItemListRecyclerView
+import ac.mdiq.podcini.ui.view.LiftOnScrollListener
+import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
+import ac.mdiq.podcini.util.FeedItemUtil
+import ac.mdiq.podcini.util.event.*
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -22,28 +42,6 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.snackbar.Snackbar
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.activity.OnlineFeedViewActivity
-import ac.mdiq.podcini.ui.adapter.EpisodeItemListAdapter
-import ac.mdiq.podcini.ui.adapter.HorizontalFeedListAdapter
-import ac.mdiq.podcini.ui.adapter.SelectableAdapter
-import ac.mdiq.podcini.ui.menuhandler.MenuItemUtils
-import ac.mdiq.podcini.storage.FeedSearcher
-import ac.mdiq.podcini.util.FeedItemUtil
-import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
-import ac.mdiq.podcini.databinding.SearchFragmentBinding
-import ac.mdiq.podcini.util.event.*
-import ac.mdiq.podcini.playback.event.PlaybackPositionEvent
-import ac.mdiq.podcini.ui.fragment.actions.EpisodeMultiSelectActionHandler
-import ac.mdiq.podcini.ui.menuhandler.FeedItemMenuHandler
-import ac.mdiq.podcini.ui.menuhandler.FeedMenuHandler
-import ac.mdiq.podcini.storage.model.feed.Feed
-import ac.mdiq.podcini.storage.model.feed.FeedItem
-import ac.mdiq.podcini.net.discovery.CombinedSearcher
-import ac.mdiq.podcini.ui.view.EmptyViewHandler
-import ac.mdiq.podcini.ui.view.EpisodeItemListRecyclerView
-import ac.mdiq.podcini.ui.view.LiftOnScrollListener
-import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -140,7 +138,7 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
             requireArguments().putLong(ARG_FEED, 0)
             searchWithProgressBar()
         }
-        chip.visibility = if ((requireArguments().getLong(ARG_FEED, 0) == 0L)) View.GONE else View.VISIBLE
+        chip.visibility = if (requireArguments().getLong(ARG_FEED, 0) == 0L) View.GONE else View.VISIBLE
         chip.text = requireArguments().getString(ARG_FEED_NAME, "")
         if (requireArguments().getString(ARG_QUERY, null) != null) {
             search()
@@ -295,7 +293,7 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
         if (currentPlaying != null && currentPlaying!!.isCurrentlyPlayingItem)
             currentPlaying!!.notifyPlaybackPositionUpdated(event)
         else {
-            Log.d(FeedItemlistFragment.TAG, "onEventMainThread() search list")
+            Log.d(TAG, "onEventMainThread() search list")
             for (i in 0 until adapter.itemCount) {
                 val holder: EpisodeItemViewHolder? =
                     recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
@@ -368,9 +366,8 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
         inVal.hideSoftInputFromWindow(searchView.windowToken, 0)
         val query = searchView.query.toString()
         if (query.matches("http[s]?://.*".toRegex())) {
-            val intent = Intent(activity, OnlineFeedViewActivity::class.java)
-            intent.putExtra(OnlineFeedViewActivity.ARG_FEEDURL, query)
-            startActivity(intent)
+            val fragment: Fragment = OnlineFeedViewFragment.newInstance(query)
+            (activity as MainActivity).loadChildFragment(fragment)
             return
         }
         (activity as MainActivity).loadChildFragment(

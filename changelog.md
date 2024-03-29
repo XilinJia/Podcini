@@ -172,3 +172,12 @@
 * unrestricted the titles to 2 lines in player details view
 * fixed once again the bug of player disappear on first play
 * some code refactoring
+
+## 4.4.3
+
+* created online feed view fragment
+* online episodes list view is no longer restricted to 50 episodes
+* online episodes list view now better handles icons
+* online episodes list view goes back to the online feed view
+* the original online feed view activity is only preserved for receiving shared feed
+* externally shared feed opens in the online feed view fragment

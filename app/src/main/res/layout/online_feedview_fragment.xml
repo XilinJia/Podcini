@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true"
+        android:elevation="0dp">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="?attr/actionBarSize"
+            android:theme="?attr/actionBarTheme"
+            app:title="@string/online_feed"
+            app:navigationContentDescription="@string/toolbar_back_button_content_description"
+            app:navigationIcon="?homeAsUpIndicator" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <LinearLayout
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/transparentBackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:cardCornerRadius="8dp">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    style="?android:attr/progressBarStyle" />
+
+                <LinearLayout
+                    android:id="@+id/feed_display_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/feeditemlist_header_height"
+                        android:layout_marginBottom="12dp"
+                        android:background="@color/feed_image_bg">
+
+                        <ImageView
+                            android:id="@+id/backgroundImage"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="centerCrop" />
+
+                        <ImageView
+                            android:id="@+id/coverImage"
+                            android:layout_width="@dimen/thumbnail_length_onlinefeedview"
+                            android:layout_height="@dimen/thumbnail_length_onlinefeedview"
+                            android:layout_alignParentLeft="true"
+                            android:layout_alignParentStart="true"
+                            android:layout_alignParentTop="true"
+                            android:layout_centerVertical="true"
+                            android:layout_marginBottom="12dp"
+                            android:layout_marginLeft="16dp"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginTop="20dp"
+                            android:background="@drawable/bg_rounded_corners"
+                            android:clipToOutline="true"
+                            android:importantForAccessibility="no"
+                            tools:src="@tools:sample/avatars" />
+
+                        <TextView
+                            android:id="@+id/titleLabel"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentTop="true"
+                            android:layout_marginBottom="5dp"
+                            android:layout_marginLeft="16dp"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginTop="10dp"
+                            android:layout_marginRight="24dp"
+                            android:layout_marginEnd="24dp"
+                            android:layout_alignParentEnd="true"
+                            android:layout_alignParentRight="true"
+                            android:layout_toRightOf="@id/coverImage"
+                            android:layout_toEndOf="@id/coverImage"
+                            android:ellipsize="end"
+                            android:maxLines="2"
+                            android:shadowColor="@color/black"
+                            android:shadowRadius="3"
+                            android:textColor="@color/white"
+                            android:textSize="18sp"
+                            android:textFontWeight="800"
+                            tools:text="Podcast title" />
+
+                        <TextView
+                            android:id="@+id/author_label"
+                            android:layout_width="0dip"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@id/titleLabel"
+                            android:layout_marginBottom="8dp"
+                            android:layout_marginLeft="16dp"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginRight="16dp"
+                            android:layout_marginEnd="16dp"
+                            android:layout_alignParentEnd="true"
+                            android:layout_alignParentRight="true"
+                            android:layout_toRightOf="@id/coverImage"
+                            android:layout_toEndOf="@id/coverImage"
+                            android:ellipsize="end"
+                            android:lines="1"
+                            android:shadowColor="@color/black"
+                            android:shadowRadius="3"
+                            android:textColor="@color/white"
+                            android:textSize="@dimen/text_size_small"
+                            tools:text="Podcast author" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@id/author_label"
+                            android:layout_toRightOf="@id/coverImage"
+                            android:layout_toEndOf="@id/coverImage"
+                            android:orientation="horizontal"
+                            android:gravity="center">
+
+                            <Button
+                                android:id="@+id/subscribeButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginLeft="10dp"
+                                android:layout_marginStart="10dp"
+                                android:layout_marginRight="16dp"
+                                android:layout_marginEnd="16dp"
+                                android:text="@string/subscribe_label" />
+
+                            <Button
+                                android:id="@+id/episodeLabel"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginLeft="16dp"
+                                android:layout_marginStart="16dp"
+                                android:layout_marginRight="10dp"
+                                android:layout_marginEnd="10dp"
+                                android:text="@string/episodes_label"/>
+
+                        </LinearLayout>
+
+                        <ImageButton
+                            android:id="@+id/closeButton"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:layout_alignParentRight="true"
+                            android:layout_marginTop="12dp"
+                            android:layout_marginRight="12dp"
+                            android:background="@android:color/transparent"
+                            android:src="@drawable/ic_close_white" />
+
+                    </RelativeLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingHorizontal="16dp"
+                        android:orientation="vertical">
+
+                        <Spinner
+                            android:id="@+id/alternate_urls_spinner"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:dropDownWidth="match_parent"
+                            android:padding="8dp"
+                            android:textColor="?android:attr/textColorPrimary"
+                            android:textSize="@dimen/text_size_micro" />
+
+                        <CheckBox
+                            android:id="@+id/autoDownloadCheckBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="left"
+                            android:checked="true"
+                            android:layout_marginTop="8dp"
+                            android:text="@string/auto_download_label"
+                            android:visibility="gone"
+                            tools:visibility="visible" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/online_feed_description"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingTop="16dp"
+                        android:paddingLeft="20dp"
+                        android:paddingRight="20dp"
+                        android:layout_marginBottom="8dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:text="@string/description_label"
+                            style="@style/TextAppearance.Material3.TitleMedium" />
+
+                        <TextView
+                            android:id="@+id/txtvDescription"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="16dp"
+                            android:ellipsize="end"
+                            android:lineHeight="20dp"
+                            style="@style/Podcini.TextView.ListItemBody"
+                            tools:text="@string/design_time_lorem_ipsum" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </FrameLayout>
+
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+</LinearLayout>

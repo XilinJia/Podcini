@@ -8,6 +8,7 @@ import ac.mdiq.podcini.util.PlaybackStatus.isCurrentlyPlaying
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.preferences.UserPreferences.isStreamOverDownload
+import ac.mdiq.podcini.storage.model.playback.RemoteMedia
 
 abstract class ItemActionButton internal constructor(@JvmField var item: FeedItem) {
     abstract fun getLabel(): Int
@@ -38,9 +39,6 @@ abstract class ItemActionButton internal constructor(@JvmField var item: FeedIte
                 isCurrentlyPlaying(media) -> {
                     PauseActionButton(item)
                 }
-                item.feed == null -> {
-                    StreamActionButton(item)
-                }
                 item.feed != null && item.feed!!.isLocalFeed -> {
                     PlayLocalActionButton(item)
                 }
@@ -50,7 +48,7 @@ abstract class ItemActionButton internal constructor(@JvmField var item: FeedIte
                 isDownloadingMedia -> {
                     CancelDownloadActionButton(item)
                 }
-                isStreamOverDownload || item.feed == null -> {
+                isStreamOverDownload || item.feed == null || item.feedId == 0L -> {
                     StreamActionButton(item)
                 }
                 else -> {

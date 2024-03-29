@@ -670,6 +670,7 @@
     <string name="pref_pausePlaybackForFocusLoss_title">Pause for interruptions</string>
 
     <!-- Online feed view -->
+    <string name="online_feed">Online feed</string>
     <string name="subscribe_label">Subscribe</string>
     <string name="subscribing_label">Subscribing&#8230;</string>
     <string name="preview_episode">Preview</string>

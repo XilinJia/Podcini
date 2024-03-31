@@ -179,5 +179,5 @@
 * online episodes list view is no longer restricted to 50 episodes
 * online episodes list view now better handles icons
 * online episodes list view goes back to the online feed view
-* the original online feed view activity is only preserved for receiving shared feed
+* the original online feed view activity is stripped and now only preserved for receiving shared feed
 * externally shared feed opens in the online feed view fragment

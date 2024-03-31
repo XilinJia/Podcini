@@ -15,13 +15,38 @@ Compared to AntennaPod this project:
 
 ## Version 4
 
-Some drastic changes are made in the project since version 4.0.
-There is now a whole new interface of the Subscriptions page showing only the feeds with tags as filters, no longer having tags as folders in the page.
-And the default page of the app is changed to the Subscriptions page. 
-Alongside, the Home and Echo pages are removed from the project.
-Also, the project becomes mono-module, with only the app module.
+Some drastic changes are made in the project since version 4.0. There is now a whole new interface of the Subscriptions page showing only the feeds with tags as filters, no longer having tags as folders in the page. And the default page of the app is changed to the Subscriptions page.  Feed list are no longer shown in the drawer.  Access to statistics is in the drawer.  Alongside, the Home, Echo and Inbox pages are removed from the project. Also, viewbindings are enabled for most views, the project becomes mono-modular, containing only the app module.
 
-Version 4.1 brings a more convenient player control and tags enhancements, while also enables view binding for most views in the codebase.
+Other notable features and changes include:
+
+* A more convenient player control displayed on all pages
+* A revamped and more efficient expanded player view showing episode description on the front
+* New and efficient ways of click and long-click operations on lists:
+	* click on title area opens the podcast/episode
+	* long-press on title area automatically enters in selection mode
+	* options to select all above or below are shown action bar together with Select All
+	* operations are only on the selected (single or multiple)
+* A new share notes menu option on various episode views
+* List info is shown in Queue and Downloads views
+* Left and right swipe actions on lists now have telltales and can be configured on the spot
+* Played episodes has a clearer marking
+* Sort dialog no longer dims the main view
+* Play speed setting has been straightened up, three places to set the play speed:
+	* global setting at the preference
+	* setting for a feed: either use global or customized
+	* setting at the player: set for current playing and save for global
+	* customized feed setting takes precedence when playing an episode
+* Feed info view offers a link for direct search of feeds related to author 
+* more info about feeds are shown in the online search view
+* Online feed info display is handled in similar ways as local feed, and offers options to subscribe or view episodes
+* Online feed episodes can be freely played (streamed) without a subscription
+* usesCleartextTraffic (for non-secure content transmission) is now disabled in the project
+* Various efficiency improvements, including removal of
+	* redundant media loadings and ui updates
+	* frequent list search during audio play
+* externally shared feed opens in the new online feed view fragment
+
+For more details of the changes, see the [Changelog](changelog.md)
 
 ## Screenshots
 

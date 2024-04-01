@@ -4,6 +4,7 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.AudioplayerFragmentBinding
 import ac.mdiq.podcini.feed.util.PlaybackSpeedUtils
 import ac.mdiq.podcini.playback.PlaybackController
+import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.cast.CastEnabledActivity
 import ac.mdiq.podcini.playback.event.*
 import ac.mdiq.podcini.preferences.UserPreferences
@@ -83,6 +84,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     private lateinit  var butFF: ImageButton
     private lateinit  var txtvFF: TextView
     private lateinit  var butSkip: ImageButton
+    private lateinit  var txtvSkip: TextView
     private lateinit var toolbar: MaterialToolbar
     private lateinit var playerFragment: View
     
@@ -140,6 +142,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         butFF = binding.butFF
         txtvFF = binding.txtvFF
         butSkip = binding.butSkip
+        txtvSkip = binding.txtvSkip
         progressIndicator = binding.progLoading
         cardViewSeek = binding.cardViewSeek
         txtvSeek = binding.txtvSeek
@@ -206,6 +209,13 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             controller?.init()
             controller?.playPause()
         }
+        butPlay.setOnLongClickListener {
+            if (controller != null && controller!!.status == PlayerStatus.PLAYING) {
+                val fallbackSpeed = UserPreferences.fallbackSpeed
+                if (fallbackSpeed > 0.1f) controller!!.fallbackSpeed(fallbackSpeed)
+            }
+            true
+        }
         butFF.setOnClickListener {
             if (controller != null) {
                 val curr: Int = controller!!.position
@@ -215,11 +225,18 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         butFF.setOnLongClickListener {
             SkipPreferenceDialog.showSkipPreference(requireContext(),
                 SkipPreferenceDialog.SkipDirection.SKIP_FORWARD, txtvFF)
-            false
+            true
         }
         butSkip.setOnClickListener {
+            if (controller != null && controller!!.status == PlayerStatus.PLAYING) {
+                val speedForward = UserPreferences.speedforwardSpeed
+                if (speedForward > 0.1f) controller!!.speedForward(speedForward)
+            }
+        }
+        butSkip.setOnLongClickListener {
             activity?.sendBroadcast(
                 MediaButtonReceiver.createIntent(requireContext(), KeyEvent.KEYCODE_MEDIA_NEXT))
+            true
         }
     }
 
@@ -323,7 +340,11 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     override fun onStart() {
         super.onStart()
         txtvRev.text = NumberFormat.getInstance().format(UserPreferences.rewindSecs.toLong())
+        txtvRev.text = NumberFormat.getInstance().format(UserPreferences.rewindSecs.toLong())
         txtvFF.text = NumberFormat.getInstance().format(UserPreferences.fastForwardSecs.toLong())
+        if (UserPreferences.speedforwardSpeed > 0.1f) {
+            txtvSkip.text = NumberFormat.getInstance().format(UserPreferences.speedforwardSpeed)
+        } else txtvSkip.visibility = View.GONE
     }
 
     override fun onStop() {

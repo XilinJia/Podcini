@@ -25,12 +25,12 @@ import java.util.concurrent.ExecutionException
 
         val binding = EditTextDialogBinding.inflate(LayoutInflater.from(activity))
 
-        binding.urlEditText.setText(feed.download_url)
+        binding.editText.setText(feed.download_url)
 
         MaterialAlertDialogBuilder(activity)
             .setView(binding.root)
             .setTitle(R.string.edit_url_menu)
-            .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int -> showConfirmAlertDialog(binding.urlEditText.text.toString()) }
+            .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int -> showConfirmAlertDialog(binding.editText.text.toString()) }
             .setNegativeButton(R.string.cancel_label, null)
             .show()
     }

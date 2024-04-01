@@ -991,6 +991,27 @@ class PodDBAdapter private constructor() {
             return result
         }
 
+    val mostRecentUnreadItemDates: Map<Long, Long>
+        get() {
+            val query = ("SELECT " + KEY_FEED + ","
+                    + " MAX(" + TABLE_NAME_FEED_ITEMS + "." + KEY_PUBDATE + ") AS most_recent_pubdate"
+                    + " FROM " + TABLE_NAME_FEED_ITEMS
+                    + " WHERE " + KEY_READ + " = 0"
+                    + " GROUP BY " + KEY_FEED)
+
+            val c = db.rawQuery(query, null)
+            val result: MutableMap<Long, Long> = HashMap()
+            if (c.moveToFirst()) {
+                do {
+                    val feedId = c.getLong(0)
+                    val date = c.getLong(1)
+                    result[feedId] = date
+                } while (c.moveToNext())
+            }
+            c.close()
+            return result
+        }
+
     /**
      * Uses DatabaseUtils to escape a search query and removes ' at the
      * beginning and the end of the string returned by the escape method.

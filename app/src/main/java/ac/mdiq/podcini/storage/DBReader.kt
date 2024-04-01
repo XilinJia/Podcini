@@ -867,17 +867,17 @@ object DBReader {
 //        getFeedList(adapter)
 
 //        TODO:
-        if (false && subscriptionsFilter != null) {
-            feeds = subscriptionsFilter.filter(feeds, feedCounters as Map<Long?, Int>).toMutableList()
-        }
+//        if (false && subscriptionsFilter != null) {
+//            feeds = subscriptionsFilter.filter(feeds, feedCounters as Map<Long?, Int>).toMutableList()
+//        }
 
         val comparator: Comparator<Feed>
         val feedOrder = feedOrder
         when (feedOrder) {
             UserPreferences.FEED_ORDER_COUNTER -> {
                 comparator = Comparator { lhs: Feed, rhs: Feed ->
-                    val counterLhs = (if (feedCounters.containsKey(lhs.id)) feedCounters[lhs.id] else 0)!!.toLong()
-                    val counterRhs = (if (feedCounters.containsKey(rhs.id)) feedCounters[rhs.id] else 0)!!.toLong()
+                    val counterLhs = (if (feedCounters.containsKey(lhs.id)) feedCounters[lhs.id]!! else 0).toLong()
+                    val counterRhs = (if (feedCounters.containsKey(rhs.id)) feedCounters[rhs.id]!! else 0).toLong()
                     when {
                         counterLhs > counterRhs -> {
                             // reverse natural order: podcast with most unplayed episodes first
@@ -929,11 +929,19 @@ object DBReader {
                     }
                 }
             }
-            else -> {
+            UserPreferences.FEED_ORDER_LAST_UPDATED -> {
                 val recentPubDates = adapter.mostRecentItemDates
                 comparator = Comparator { lhs: Feed, rhs: Feed ->
                     val dateLhs = if (recentPubDates.containsKey(lhs.id)) recentPubDates[lhs.id]!! else 0
                     val dateRhs = if (recentPubDates.containsKey(rhs.id)) recentPubDates[rhs.id]!! else 0
+                    dateRhs.compareTo(dateLhs)
+                }
+            }
+            else -> {
+                val recentUnreadPubDates = adapter.mostRecentUnreadItemDates
+                comparator = Comparator { lhs: Feed, rhs: Feed ->
+                    val dateLhs = if (recentUnreadPubDates.containsKey(lhs.id)) recentUnreadPubDates[lhs.id]!! else 0
+                    val dateRhs = if (recentUnreadPubDates.containsKey(rhs.id)) recentUnreadPubDates[rhs.id]!! else 0
                     dateRhs.compareTo(dateLhs)
                 }
             }

@@ -5,13 +5,17 @@ import ac.mdiq.podcini.preferences.UsageStatistics
 import ac.mdiq.podcini.preferences.UsageStatistics.doNotAskAgain
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
+import ac.mdiq.podcini.ui.dialog.EditFallbackSpeedDialog
+import ac.mdiq.podcini.ui.dialog.EditForwardSpeedDialog
 import ac.mdiq.podcini.ui.dialog.SkipPreferenceDialog
 import ac.mdiq.podcini.ui.dialog.VariableSpeedDialog
 import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
 import android.app.Activity
 import android.os.Build
 import android.os.Bundle
+import androidx.annotation.OptIn
 import androidx.collection.ArrayMap
+import androidx.media3.common.util.UnstableApi
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
@@ -30,7 +34,7 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
         (activity as PreferenceActivity).supportActionBar!!.setTitle(R.string.playback_pref)
     }
 
-    private fun setupPlaybackScreen() {
+    @OptIn(UnstableApi::class) private fun setupPlaybackScreen() {
         val activity: Activity? = activity
 
         findPreference<Preference>(PREF_PLAYBACK_SPEED_LAUNCHER)!!.onPreferenceClickListener =
@@ -41,6 +45,16 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
         findPreference<Preference>(PREF_PLAYBACK_REWIND_DELTA_LAUNCHER)!!.onPreferenceClickListener =
             Preference.OnPreferenceClickListener {
                 SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_REWIND, null)
+                true
+            }
+        findPreference<Preference>(PREF_PLAYBACK_SPEED_FORWARD_LAUNCHER)!!.onPreferenceClickListener =
+            Preference.OnPreferenceClickListener {
+                EditForwardSpeedDialog(requireActivity()).show()
+                true
+            }
+        findPreference<Preference>(PREF_PLAYBACK_FALLBACK_SPEED_LAUNCHER)!!.onPreferenceClickListener =
+            Preference.OnPreferenceClickListener {
+                EditFallbackSpeedDialog(requireActivity()).show()
                 true
             }
         findPreference<Preference>(PREF_PLAYBACK_FAST_FORWARD_DELTA_LAUNCHER)!!.onPreferenceClickListener =
@@ -120,6 +134,8 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
     companion object {
         private const val PREF_PLAYBACK_SPEED_LAUNCHER = "prefPlaybackSpeedLauncher"
         private const val PREF_PLAYBACK_REWIND_DELTA_LAUNCHER = "prefPlaybackRewindDeltaLauncher"
+        private const val PREF_PLAYBACK_FALLBACK_SPEED_LAUNCHER = "prefPlaybackFallbackSpeedLauncher"
+        private const val PREF_PLAYBACK_SPEED_FORWARD_LAUNCHER = "prefPlaybackSpeedForwardLauncher"
         private const val PREF_PLAYBACK_FAST_FORWARD_DELTA_LAUNCHER = "prefPlaybackFastForwardDeltaLauncher"
         private const val PREF_PLAYBACK_PREFER_STREAMING = "prefStreamOverDownload"
     }

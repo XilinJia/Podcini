@@ -208,6 +208,20 @@
                 tools:srcCompat="@drawable/ic_skip_48dp"
                 app:tint="@color/medium_gray"/>
 
+            <TextView
+                android:id="@+id/txtvSkip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/butSkip"
+                android:layout_alignStart="@id/butSkip"
+                android:layout_alignLeft="@id/butSkip"
+                android:layout_alignEnd="@id/butSkip"
+                android:layout_alignRight="@id/butSkip"
+                android:clickable="false"
+                android:gravity="center"
+                android:textColor="?android:attr/textColorSecondary"
+                android:textSize="12sp" />
+
         </RelativeLayout>
 
     </LinearLayout>

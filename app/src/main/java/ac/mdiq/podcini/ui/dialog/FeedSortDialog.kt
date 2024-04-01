@@ -16,8 +16,7 @@ object FeedSortDialog {
         dialog.setNegativeButton(android.R.string.cancel) { d: DialogInterface, _: Int -> d.dismiss() }
 
         val selected = feedOrder
-        val entryValues =
-            listOf(*context.resources.getStringArray(R.array.nav_drawer_feed_order_values))
+        val entryValues = listOf(*context.resources.getStringArray(R.array.nav_drawer_feed_order_values))
         val selectedIndex = entryValues.indexOf("" + selected)
 
         val items = context.resources.getStringArray(R.array.nav_drawer_feed_order_options)

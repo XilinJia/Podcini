@@ -69,10 +69,11 @@
     <string name="drawer_open">Open menu</string>
     <string name="drawer_close">Close menu</string>
     <string name="drawer_preferences">Drawer preferences</string>
-    <string name="drawer_feed_order_unplayed_episodes">Sort by counter</string>
-    <string name="drawer_feed_order_alphabetical">Sort alphabetically</string>
-    <string name="drawer_feed_order_last_update">Sort by publication date</string>
-    <string name="drawer_feed_order_most_played">Sort by number of played episodes</string>
+    <string name="drawer_feed_order_unplayed_episodes">Counter</string>
+    <string name="drawer_feed_order_alphabetical">Title</string>
+    <string name="drawer_feed_order_last_update">Publication date</string>
+    <string name="drawer_feed_order_last_unread_update">Unread publication date</string>
+    <string name="drawer_feed_order_most_played">Number of played episodes</string>
 
     <string name="drawer_feed_counter_unplayed">Number of unplayed episodes</string>
     <string name="drawer_feed_counter_downloaded">Number of downloaded episodes</string>
@@ -445,7 +446,7 @@
     <string name="pref_tinted_theme_message">Adapt app colors based on the wallpaper</string>
     <string name="pref_nav_drawer_items_title">Set navigation drawer items</string>
     <string name="pref_nav_drawer_items_sum">Change which items appear in the navigation drawer</string>
-    <string name="pref_nav_drawer_feed_order_title">Set subscription order</string>
+    <string name="pref_nav_drawer_feed_order_title">Set subscription order by</string>
     <string name="pref_nav_drawer_feed_order_sum">Change the order of your subscriptions</string>
     <string name="pref_nav_drawer_feed_counter_title">Set subscription counter</string>
     <string name="pref_nav_drawer_feed_counter_sum">Change the information displayed by the subscription counter. Also affects the sorting of subscriptions if \'Subscription Order\' is set to \'Counter\'.</string>
@@ -475,6 +476,10 @@
     <string name="pref_feed_skip_intro_toast">Skipped first %d seconds</string>
     <string name="pref_playback_time_respects_speed_title">Adjust media info to playback speed</string>
     <string name="pref_playback_time_respects_speed_sum">Displayed position and duration are adapted to playback speed</string>
+    <string name="pref_fallback_speed">Fallback speed</string>
+    <string name="pref_speed_forward">Fast forward speed</string>
+    <string name="pref_speed_forward_sum">Customize the speed to speed forward when the skip button is clicked</string>
+    <string name="pref_fallback_speed_sum">Customize the speed when the play button is long pressed</string>
     <string name="pref_fast_forward">Fast forward skip time</string>
     <string name="pref_fast_forward_sum">Customize the number of seconds to jump forward when the fast forward button is clicked</string>
     <string name="pref_rewind">Rewind skip time</string>
@@ -724,6 +729,7 @@
     <string name="wait_icon" translatable="false">{fa-spinner}</string>
     <string name="edit_url_menu">Edit feed URL</string>
     <string name="edit_url_confirmation_msg">Changing the RSS address can easily break the playback state and episode listings of the podcast. We do NOT recommend changing it and will NOT provide support if anything goes wrong. This cannot be undone. The broken subscription CANNOT be repaired by simply changing the address back. We suggest creating a backup before continuing.</string>
+    <string name="edit_fast_forward_speed">Edit fast forward speed</string>
 
     <!-- PodciniSP -->
     <string name="sp_apps_importing_feeds_msg">Importing subscriptions from single-purpose apps&#8230;</string>

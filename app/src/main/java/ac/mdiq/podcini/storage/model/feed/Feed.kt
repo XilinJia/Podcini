@@ -102,21 +102,12 @@ class Feed : FeedFile {
     var itemFilter: FeedItemFilter? = null
         private set
 
-    /**
-     * User-preferred sortOrder for display.
-     * Only those of scope [SortOrder.Scope.INTRA_FEED] is allowed.
-     */
     var sortOrder: SortOrder? = null
         set(sortOrder) {
-            if (!(sortOrder != null && sortOrder.scope != SortOrder.Scope.INTRA_FEED)) {
-                Log.w("Feed sortOrder", "The specified sortOrder " + sortOrder
-                        + " is invalid. Only those with INTRA_FEED scope are allowed.")
+            if (sortOrder == null) {
+                Log.w("Feed sortOrder", "The specified sortOrder $sortOrder is invalid.")
+                return
             }
-//            This looks suicidal:
-//            require(!(sortOrder != null && sortOrder.scope != SortOrder.Scope.INTRA_FEED)) {
-//                ("The specified sortOrder " + sortOrder
-//                        + " is invalid. Only those with INTRA_FEED scope are allowed.")
-//            }
             field = sortOrder
         }
 

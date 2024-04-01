@@ -36,6 +36,19 @@ Other notable features and changes include:
 	* setting for a feed: either use global or customized
 	* setting at the player: set for current playing and save for global
 	* customized feed setting takes precedence when playing an episode
+* Added preference "Fast Forward Speed" under "Playback" in settings with default value of 0.0, dialog allows setting a float number (capped between 0.0 and 10.0)
+* The "Skip to next episode" button on the player
+	* long-press moves to the next episode
+	* by default, single tap does nothing
+	* if the user customize "Fast Forward Speed" to a value greater than 0.1, it behaves in the following way:
+		* single tap during play, the set speed is used to play the current audio
+		* single tap again, the original play speed resumes
+		* single tap not during play has no effect
+* Added preference "Fallback Speed" under "Playback" in settings with default value of 0.0, dialog allows setting a float number (capped between 0.0 and 1.5)
+* the Play button on the player
+	* by default, it behaves the same as usual
+	* if the user customize "Fallback speed" to a value greater than 0.1, long-press the button during play enters the fallback mode and plays at the set fallback speed, single tap exits the fallback mode
+* Subscriptions view has sorting by "Unread publication date"
 * Feed info view offers a link for direct search of feeds related to author 
 * More info about feeds are shown in the online search view
 * Online feed info display is handled in similar ways as any local feed, and offers options to subscribe or view episodes

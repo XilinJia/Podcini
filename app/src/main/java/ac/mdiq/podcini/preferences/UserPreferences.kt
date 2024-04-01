@@ -74,9 +74,11 @@ object UserPreferences {
     private const val PREF_AUTO_DELETE_LOCAL = "prefAutoDeleteLocal"
     const val PREF_SMART_MARK_AS_PLAYED_SECS: String = "prefSmartMarkAsPlayedSecs"
     private const val PREF_PLAYBACK_SPEED_ARRAY = "prefPlaybackSpeedArray"
+    private const val PREF_FALLBACK_SPEED = "prefFallbackSpeed"
     const val PREF_PAUSE_PLAYBACK_FOR_FOCUS_LOSS: String = "prefPauseForFocusLoss"
     private const val PREF_TIME_RESPECTS_SPEED = "prefPlaybackTimeRespectsSpeed"
     const val PREF_STREAM_OVER_DOWNLOAD: String = "prefStreamOverDownload"
+    private const val PREF_SPEEDFORWRD_SPEED = "prefSpeedforwardSpeed"
 
     // Network
     private const val PREF_ENQUEUE_DOWNLOADED = "prefEnqueueDownloaded"
@@ -127,6 +129,8 @@ object UserPreferences {
     const val FEED_ORDER_COUNTER: Int = 0
     const val FEED_ORDER_ALPHABETICAL: Int = 1
     const val FEED_ORDER_MOST_PLAYED: Int = 3
+    const val FEED_ORDER_LAST_UPDATED: Int = 4
+    const val FEED_ORDER_LAST_UNREAD_UPDATED: Int = 5
     const val DEFAULT_PAGE_REMEMBER: String = "remember"
 
     private lateinit var context: Context
@@ -175,7 +179,7 @@ object UserPreferences {
             return ArrayList(listOf(*TextUtils.split(hiddenItems, ",")))
         }
         set(items) {
-            val str = TextUtils.join(",", items!!)
+            val str = TextUtils.join(",", items)
             prefs.edit()
                 .putString(PREF_HIDDEN_DRAWER_ITEMS, str)
                 .apply()
@@ -544,6 +548,40 @@ object UserPreferences {
     @JvmStatic
     val isEnableAutodownloadWifiFilter: Boolean
         get() = Build.VERSION.SDK_INT < 29 && prefs.getBoolean(PREF_ENABLE_AUTODL_WIFI_FILTER, false)
+
+    @JvmStatic
+    var speedforwardSpeed: Float
+        get() {
+            try {
+                return prefs.getString(PREF_SPEEDFORWRD_SPEED, "0.00")!!.toFloat()
+            } catch (e: NumberFormatException) {
+                Log.e(TAG, Log.getStackTraceString(e))
+                speedforwardSpeed = 0.0f
+                return 0.0f
+            }
+        }
+        set(speed) {
+            prefs.edit()
+                .putString(PREF_SPEEDFORWRD_SPEED, speed.toString())
+                .apply()
+        }
+
+    @JvmStatic
+    var fallbackSpeed: Float
+        get() {
+            try {
+                return prefs.getString(PREF_FALLBACK_SPEED, "0.00")!!.toFloat()
+            } catch (e: NumberFormatException) {
+                Log.e(TAG, Log.getStackTraceString(e))
+                fallbackSpeed = 0.0f
+                return 0.0f
+            }
+        }
+        set(speed) {
+            prefs.edit()
+                .putString(PREF_FALLBACK_SPEED, speed.toString())
+                .apply()
+        }
 
     @JvmStatic
     var fastForwardSecs: Int

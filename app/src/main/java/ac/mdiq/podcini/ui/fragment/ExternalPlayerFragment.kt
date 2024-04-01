@@ -69,6 +69,7 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
     private lateinit  var butFF: ImageButton
     private lateinit  var txtvFF: TextView
     private lateinit  var butSkip: ImageButton
+    private lateinit  var txtvSkip: TextView
 
     private lateinit var txtvPosition: TextView
     private lateinit var txtvLength: TextView
@@ -97,6 +98,7 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
         butFF = binding.butFF
         txtvFF = binding.txtvFF
         butSkip = binding.butSkip
+        txtvSkip = binding.txtvSkip
         sbPosition = binding.sbPosition
         txtvPosition = binding.txtvPosition
         txtvLength = binding.txtvLength
@@ -123,7 +125,6 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
 
         controller = setupPlaybackController()
         controller!!.init()
-//        loadMediaInfo()
         EventBus.getDefault().register(this)
         return binding.root
     }
@@ -169,6 +170,13 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
             controller?.init()
             controller?.playPause()
         }
+        butPlay.setOnLongClickListener {
+            if (controller != null && controller!!.status == PlayerStatus.PLAYING) {
+                val fallbackSpeed = UserPreferences.fallbackSpeed
+                if (fallbackSpeed > 0.1f) controller!!.fallbackSpeed(fallbackSpeed)
+            }
+            true
+        }
         butFF.setOnClickListener {
             if (controller != null) {
                 val curr: Int = controller!!.position
@@ -178,11 +186,18 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
         butFF.setOnLongClickListener {
             SkipPreferenceDialog.showSkipPreference(requireContext(),
                 SkipPreferenceDialog.SkipDirection.SKIP_FORWARD, txtvFF)
-            false
+            true
         }
         butSkip.setOnClickListener {
+            if (controller != null && controller!!.status == PlayerStatus.PLAYING) {
+                val speedForward = UserPreferences.speedforwardSpeed
+                if (speedForward > 0.1f) controller!!.speedForward(speedForward)
+            }
+        }
+        butSkip.setOnLongClickListener {
             activity?.sendBroadcast(
                 MediaButtonReceiver.createIntent(requireContext(), KeyEvent.KEYCODE_MEDIA_NEXT))
+            true
         }
     }
 
@@ -280,6 +295,9 @@ class ExternalPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener {
         super.onStart()
         txtvRev.text = NumberFormat.getInstance().format(UserPreferences.rewindSecs.toLong())
         txtvFF.text = NumberFormat.getInstance().format(UserPreferences.fastForwardSecs.toLong())
+        if (UserPreferences.speedforwardSpeed > 0.1f) {
+            txtvSkip.text = NumberFormat.getInstance().format(UserPreferences.speedforwardSpeed)
+        } else txtvSkip.visibility = View.GONE
         val media = controller?.getMedia() ?: return
         updatePlaybackSpeedButton(SpeedChangedEvent(PlaybackSpeedUtils.getCurrentPlaybackSpeed(media)))
     }

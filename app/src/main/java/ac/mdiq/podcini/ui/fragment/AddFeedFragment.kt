@@ -117,18 +117,18 @@ class AddFeedFragment : Fragment() {
         val builder = MaterialAlertDialogBuilder(requireContext())
         builder.setTitle(R.string.add_podcast_by_url)
         val dialogBinding = EditTextDialogBinding.inflate(layoutInflater)
-        dialogBinding.urlEditText.setHint(R.string.add_podcast_by_url_hint)
+        dialogBinding.editText.setHint(R.string.add_podcast_by_url_hint)
 
         val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clipData: ClipData? = clipboard.primaryClip
         if (clipData != null && clipData.itemCount > 0 && clipData.getItemAt(0).text != null) {
             val clipboardContent: String = clipData.getItemAt(0).text.toString()
             if (clipboardContent.trim { it <= ' ' }.startsWith("http")) {
-                dialogBinding.urlEditText.setText(clipboardContent.trim { it <= ' ' })
+                dialogBinding.editText.setText(clipboardContent.trim { it <= ' ' })
             }
         }
         builder.setView(dialogBinding.root)
-        builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int -> addUrl(dialogBinding.urlEditText.text.toString()) }
+        builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int -> addUrl(dialogBinding.editText.text.toString()) }
         builder.setNegativeButton(R.string.cancel_label, null)
         builder.show()
     }

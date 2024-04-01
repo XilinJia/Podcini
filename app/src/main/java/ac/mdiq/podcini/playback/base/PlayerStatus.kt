@@ -5,6 +5,7 @@ enum class PlayerStatus(private val statusValue: Int) {
     ERROR(-1),
     PREPARING(19),
     PAUSED(30),
+    FALLBACK(35),
     PLAYING(40),
     STOPPED(5),
     PREPARED(20),

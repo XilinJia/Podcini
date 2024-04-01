@@ -138,6 +138,10 @@ class PlaybackService : MediaBrowserServiceCompat() {
     private var clickCount = 0
     private val clickHandler = Handler(Looper.getMainLooper())
 
+    private var isSpeedForward = false
+    private var normalSpeed = 1.0f
+    private var isFallbackSpeed = false
+
     /**
      * Used for Lollipop notifications, Android Wear, and Android Auto.
      */
@@ -224,7 +228,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
         var wasPlaying = false
         if (mediaPlayer != null) {
             media = mediaPlayer!!.getPlayable()
-            wasPlaying = mediaPlayer!!.playerStatus == PlayerStatus.PLAYING
+            wasPlaying = mediaPlayer!!.playerStatus == PlayerStatus.PLAYING || mediaPlayer!!.playerStatus == PlayerStatus.FALLBACK
             mediaPlayer!!.pause(true, false)
             mediaPlayer!!.shutdown()
         }
@@ -242,7 +246,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
         super.onDestroy()
         Log.d(TAG, "Service is about to be destroyed")
 
-        if (notificationBuilder.playerStatus == PlayerStatus.PLAYING) {
+        if (notificationBuilder.playerStatus == PlayerStatus.PLAYING || notificationBuilder.playerStatus == PlayerStatus.FALLBACK) {
             notificationBuilder.playerStatus = PlayerStatus.STOPPED
             val notificationManager = NotificationManagerCompat.from(this)
             if (Build.VERSION.SDK_INT >= 33 && ActivityCompat.checkSelfPermission(this,
@@ -618,7 +622,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
                     status == PlayerStatus.PLAYING -> {
                         mediaPlayer?.pause(!isPersistNotify, false)
                     }
-                    status == PlayerStatus.PAUSED || status == PlayerStatus.PREPARED -> {
+                    status == PlayerStatus.FALLBACK || status == PlayerStatus.PAUSED || status == PlayerStatus.PREPARED -> {
                         mediaPlayer?.resume()
                     }
                     status == PlayerStatus.PREPARING -> {
@@ -678,7 +682,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
                 }
             }
             KeyEvent.KEYCODE_MEDIA_FAST_FORWARD -> {
-                if (this.status == PlayerStatus.PLAYING || this.status == PlayerStatus.PAUSED) {
+                if (this.status == PlayerStatus.FALLBACK || this.status == PlayerStatus.PLAYING || this.status == PlayerStatus.PAUSED) {
                     mediaPlayer?.seekDelta(fastForwardSecs * 1000)
                     return true
                 }
@@ -690,7 +694,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
                         // Handle remapped button as notification button which is not remapped again.
                         return handleKeycode(hardwarePreviousButton, true)
                     }
-                    this.status == PlayerStatus.PLAYING || this.status == PlayerStatus.PAUSED -> {
+                    this.status == PlayerStatus.FALLBACK || this.status == PlayerStatus.PLAYING || this.status == PlayerStatus.PAUSED -> {
                         mediaPlayer?.seekTo(0)
                         return true
                     }
@@ -698,14 +702,14 @@ class PlaybackService : MediaBrowserServiceCompat() {
                 }
             }
             KeyEvent.KEYCODE_MEDIA_REWIND -> {
-                if (this.status == PlayerStatus.PLAYING || this.status == PlayerStatus.PAUSED) {
+                if (this.status == PlayerStatus.FALLBACK || this.status == PlayerStatus.PLAYING || this.status == PlayerStatus.PAUSED) {
                     mediaPlayer?.seekDelta(-rewindSecs * 1000)
                     return true
                 }
                 return false
             }
             KeyEvent.KEYCODE_MEDIA_STOP -> {
-                if (status == PlayerStatus.PLAYING) {
+                if (this.status == PlayerStatus.FALLBACK || status == PlayerStatus.PLAYING) {
                     mediaPlayer?.pause(true, true)
                 }
 
@@ -714,7 +718,8 @@ class PlaybackService : MediaBrowserServiceCompat() {
             }
             else -> {
                 Log.d(TAG, "Unhandled key code: $keycode")
-                if (info?.playable != null && info.playerStatus == PlayerStatus.PLAYING) {   // only notify the user about an unknown key event if it is actually doing something
+                if (info?.playable != null && info.playerStatus == PlayerStatus.PLAYING) {
+                    // only notify the user about an unknown key event if it is actually doing something
                     val message = String.format(resources.getString(R.string.unknown_media_key), keycode)
                     Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
                 }
@@ -933,7 +938,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     @Suppress("unused")
     fun playerError(event: PlayerErrorEvent?) {
-        if (mediaPlayer?.playerStatus == PlayerStatus.PLAYING) {
+        if (mediaPlayer?.playerStatus == PlayerStatus.PLAYING || mediaPlayer?.playerStatus == PlayerStatus.FALLBACK) {
             mediaPlayer!!.pause(true, false)
         }
         stateManager.stopService()
@@ -1176,6 +1181,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
         val state = if (playerStatus != null) {
             when (playerStatus) {
                 PlayerStatus.PLAYING -> PlaybackStateCompat.STATE_PLAYING
+                PlayerStatus.FALLBACK -> PlaybackStateCompat.STATE_PLAYING
                 PlayerStatus.PREPARED, PlayerStatus.PAUSED -> PlaybackStateCompat.STATE_PAUSED
                 PlayerStatus.STOPPED -> PlaybackStateCompat.STATE_STOPPED
                 PlayerStatus.SEEKING -> PlaybackStateCompat.STATE_FAST_FORWARDING
@@ -1401,7 +1407,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
     private fun bluetoothNotifyChange(info: PSMPInfo?, whatChanged: String) {
         var isPlaying = false
 
-        if (info?.playerStatus == PlayerStatus.PLAYING) {
+        if (info?.playerStatus == PlayerStatus.PLAYING || info?.playerStatus == PlayerStatus.FALLBACK) {
             isPlaying = true
         }
 
@@ -1505,7 +1511,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
      */
     private fun pauseIfPauseOnDisconnect() {
         Log.d(TAG, "pauseIfPauseOnDisconnect()")
-        transientPause = (mediaPlayer?.playerStatus == PlayerStatus.PLAYING)
+        transientPause = (mediaPlayer?.playerStatus == PlayerStatus.PLAYING || mediaPlayer?.playerStatus == PlayerStatus.FALLBACK)
         if (isPauseOnHeadsetDisconnect && !isCasting) {
             mediaPlayer?.pause(!isPersistNotify, false)
         }
@@ -1598,6 +1604,8 @@ class PlaybackService : MediaBrowserServiceCompat() {
 
     fun pause(abandonAudioFocus: Boolean, reinit: Boolean) {
         mediaPlayer?.pause(abandonAudioFocus, reinit)
+        isSpeedForward =  false
+        isFallbackSpeed = false
     }
 
     val pSMPInfo: PSMPInfo
@@ -1610,6 +1618,9 @@ class PlaybackService : MediaBrowserServiceCompat() {
         get() = mediaPlayer?.getPlayable()
 
     fun setSpeed(speed: Float) {
+        isSpeedForward =  false
+        isFallbackSpeed = false
+
         currentlyPlayingTemporaryPlaybackSpeed = speed
         if (currentMediaType == MediaType.VIDEO) {
             videoPlaybackSpeed = speed
@@ -1618,6 +1629,30 @@ class PlaybackService : MediaBrowserServiceCompat() {
         }
 
         mediaPlayer?.setPlaybackParams(speed, isSkipSilence)
+    }
+
+    fun speedForward(speed: Float) {
+        if (mediaPlayer == null || isFallbackSpeed) return
+
+        if (!isSpeedForward) {
+            normalSpeed = mediaPlayer!!.getPlaybackSpeed()
+            mediaPlayer!!.setPlaybackParams(speed, isSkipSilence)
+        } else {
+            mediaPlayer!!.setPlaybackParams(normalSpeed, isSkipSilence)
+        }
+        isSpeedForward = !isSpeedForward
+    }
+
+    fun fallbackSpeed(speed: Float) {
+        if (mediaPlayer == null || isSpeedForward) return
+
+        if (!isFallbackSpeed) {
+            normalSpeed = mediaPlayer!!.getPlaybackSpeed()
+            mediaPlayer!!.setPlaybackParams(speed, isSkipSilence)
+        } else {
+            mediaPlayer!!.setPlaybackParams(normalSpeed, isSkipSilence)
+        }
+        isFallbackSpeed = !isFallbackSpeed
     }
 
     fun skipSilence(skipSilence: Boolean) {
@@ -1800,13 +1835,13 @@ class PlaybackService : MediaBrowserServiceCompat() {
 
         override fun onFastForward() {
             Log.d(TAG, "onFastForward()")
+//            speedForward(2.5f)
             seekDelta(fastForwardSecs * 1000)
         }
 
         override fun onSkipToNext() {
             Log.d(TAG, "onSkipToNext()")
-            val uiModeManager = applicationContext
-                .getSystemService(UI_MODE_SERVICE) as UiModeManager
+            val uiModeManager = applicationContext.getSystemService(UI_MODE_SERVICE) as UiModeManager
             if (hardwareForwardButton == KeyEvent.KEYCODE_MEDIA_NEXT
                     || uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_CAR) {
                 mediaPlayer?.skip()

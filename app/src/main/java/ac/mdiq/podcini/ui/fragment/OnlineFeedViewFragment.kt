@@ -552,12 +552,12 @@ class OnlineFeedViewFragment : Fragment() {
         builder.setTitle(R.string.edit_url_menu)
         val dialogBinding = EditTextDialogBinding.inflate(layoutInflater)
         if (downloader != null) {
-            dialogBinding.urlEditText.setText(downloader!!.downloadRequest.source)
+            dialogBinding.editText.setText(downloader!!.downloadRequest.source)
         }
         builder.setView(dialogBinding.root)
         builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
             setLoadingLayout()
-            lookupUrlAndDownload(dialogBinding.urlEditText.text.toString())
+            lookupUrlAndDownload(dialogBinding.editText.text.toString())
         }
         builder.setNegativeButton(R.string.cancel_label) { dialog1: DialogInterface, _: Int -> dialog1.cancel() }
         builder.setOnCancelListener {}

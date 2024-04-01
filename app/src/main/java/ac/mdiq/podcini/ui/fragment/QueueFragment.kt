@@ -306,6 +306,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onUnreadItemsChanged(event: UnreadItemsUpdateEvent?) {
         // Sent when playback position is reset
+        Log.d(TAG, "onUnreadItemsChanged() called with event = [$event]")
         loadItems(false)
         refreshToolbarState()
     }

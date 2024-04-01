@@ -16,12 +16,14 @@ enum class SortOrder(@JvmField val code: Int, @JvmField val scope: Scope) {
     SIZE_LARGE_SMALL(10, Scope.INTRA_FEED),
     FEED_TITLE_A_Z(101, Scope.INTER_FEED),
     FEED_TITLE_Z_A(102, Scope.INTER_FEED),
+
     RANDOM(103, Scope.INTER_FEED),
     SMART_SHUFFLE_OLD_NEW(104, Scope.INTER_FEED),
     SMART_SHUFFLE_NEW_OLD(105, Scope.INTER_FEED);
 
     enum class Scope {
-        INTRA_FEED, INTER_FEED
+        INTRA_FEED,
+        INTER_FEED
     }
 
     companion object {

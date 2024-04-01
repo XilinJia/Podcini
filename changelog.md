@@ -181,3 +181,21 @@
 * online episodes list view goes back to the online feed view
 * the original online feed view activity is stripped and now only preserved for receiving shared feed
 * externally shared feed opens in the online feed view fragment
+
+## 4.5.0
+
+* fixed bug of sort order not stable in feed item list
+* in Subscriptions view added sorting of "Unread publication date"
+* added preference "Fast Forward Speed" under "Playback" in settings with default value of 0.0, dialog allows setting a float number (capped between 0.0 and 10.0)
+* added preference "Fallback Speed" under "Playback" in settings with default value of 0.0, dialog allows setting a float number (capped between 0.0 and 1.5)
+* added new ways to manipulate play speed
+* the "Skip to next episode" button
+	* long-press moves to the next episode
+	* by default, single tap does nothing
+	* if the user customize "Fast Forward Speed" to a value greater than 0.1, it behaves in the following way:
+		* single tap during play, the set speed is used to play the current audio
+		* single tap again, the original play speed resumes
+		* single tap not during play has no effect
+* the Play button
+	* by default, it behaves the same as usual
+	* if the user customize "Fallback speed" to a value greater than 0.1, long-press the button during play enters the fallback mode and plays at the set fallback speed, single tap exits the fallback mode

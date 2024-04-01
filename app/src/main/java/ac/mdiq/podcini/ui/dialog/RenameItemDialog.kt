@@ -37,12 +37,12 @@ class RenameItemDialog {
         val binding = EditTextDialogBinding.inflate(LayoutInflater.from(activity))
         val title = if (feed != null) feed!!.title else drawerItem!!.title
 
-        binding.urlEditText.setText(title)
+        binding.editText.setText(title)
         val dialog = MaterialAlertDialogBuilder(activity)
             .setView(binding.root)
             .setTitle(if (feed != null) R.string.rename_feed_label else R.string.rename_tag_label)
             .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
-                val newTitle = binding.urlEditText.text.toString()
+                val newTitle = binding.editText.text.toString()
                 if (feed != null) {
                     feed!!.setCustomTitle(newTitle)
                     DBWriter.setFeedCustomTitle(feed!!)
@@ -56,7 +56,7 @@ class RenameItemDialog {
 
         // To prevent cancelling the dialog on button click
         dialog.getButton(AlertDialog.BUTTON_NEUTRAL)
-            .setOnClickListener { binding.urlEditText.setText(title) }
+            .setOnClickListener { binding.editText.setText(title) }
     }
 
     private fun renameTag(title: String) {

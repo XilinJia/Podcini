@@ -43,11 +43,19 @@
                 android:key="prefPlaybackSpeedLauncher"
                 android:summary="@string/pref_playback_speed_sum"
                 android:title="@string/playback_speed"/>
+        <Preference
+            android:key="prefPlaybackFallbackSpeedLauncher"
+            android:summary="@string/pref_fallback_speed_sum"
+            android:title="@string/pref_fallback_speed"/>
         <SwitchPreferenceCompat
                 android:defaultValue="false"
                 android:key="prefPlaybackTimeRespectsSpeed"
                 android:summary="@string/pref_playback_time_respects_speed_sum"
                 android:title="@string/pref_playback_time_respects_speed_title"/>
+        <Preference
+            android:key="prefPlaybackSpeedForwardLauncher"
+            android:summary="@string/pref_speed_forward_sum"
+            android:title="@string/pref_speed_forward"/>
         <SwitchPreferenceCompat
                 android:defaultValue="false"
                 android:key="prefStreamOverDownload"

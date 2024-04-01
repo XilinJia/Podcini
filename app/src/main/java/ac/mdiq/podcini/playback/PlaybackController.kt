@@ -221,8 +221,8 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
             PlayerStatus.PREPARING -> if (playbackService != null) {
                 updatePlayButtonShowsPlay(!playbackService!!.isStartWhenPrepared)
             }
-            PlayerStatus.PAUSED, PlayerStatus.PREPARED, PlayerStatus.STOPPED, PlayerStatus.INITIALIZED -> updatePlayButtonShowsPlay(
-                true)
+            PlayerStatus.FALLBACK, PlayerStatus.PAUSED, PlayerStatus.PREPARED, PlayerStatus.STOPPED, PlayerStatus.INITIALIZED ->
+                updatePlayButtonShowsPlay(true)
             else -> {}
         }
     }
@@ -267,7 +267,8 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
             return
         }
         when (status) {
-            PlayerStatus.PLAYING -> playbackService?.pause(true, false)
+            PlayerStatus.FALLBACK -> fallbackSpeed(1.0f)
+            PlayerStatus.PLAYING -> playbackService?.pause(abandonAudioFocus = true, reinit = false)
             PlayerStatus.PAUSED, PlayerStatus.PREPARED -> playbackService?.resume()
             PlayerStatus.PREPARING -> playbackService!!.isStartWhenPrepared = !playbackService!!.isStartWhenPrepared
             PlayerStatus.INITIALIZED -> {
@@ -342,6 +343,28 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
             playbackService!!.setSpeed(speed)
         } else {
             EventBus.getDefault().post(SpeedChangedEvent(speed))
+        }
+    }
+
+    fun speedForward(speed: Float) {
+        if (playbackService != null) {
+            playbackService!!.speedForward(speed)
+        }
+    }
+
+    fun fallbackSpeed(speed: Float) {
+        if (playbackService != null) {
+            when (status) {
+                PlayerStatus.PLAYING -> {
+                    status = PlayerStatus.FALLBACK
+                    playbackService!!.fallbackSpeed(speed)
+                }
+                PlayerStatus.FALLBACK -> {
+                    status = PlayerStatus.PLAYING
+                    playbackService!!.fallbackSpeed(speed)
+                }
+                else -> {}
+            }
         }
     }
 

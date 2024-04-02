@@ -199,3 +199,7 @@
 * the Play button
 	* by default, it behaves the same as usual
 	* if the user customize "Fallback speed" to a value greater than 0.1, long-press the button during play enters the fallback mode and plays at the set fallback speed, single tap exits the fallback mode
+	
+## 4.5.1
+
+* fixed bug in subscription sorting

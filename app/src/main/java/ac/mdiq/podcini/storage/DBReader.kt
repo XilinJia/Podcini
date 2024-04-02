@@ -19,6 +19,7 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.feedCounterSetting
 import ac.mdiq.podcini.preferences.UserPreferences.feedOrder
 import ac.mdiq.podcini.storage.model.feed.FeedPreferences.Companion.TAG_ROOT
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.min
 
@@ -934,6 +935,7 @@ object DBReader {
                 comparator = Comparator { lhs: Feed, rhs: Feed ->
                     val dateLhs = if (recentPubDates.containsKey(lhs.id)) recentPubDates[lhs.id]!! else 0
                     val dateRhs = if (recentPubDates.containsKey(rhs.id)) recentPubDates[rhs.id]!! else 0
+//                    Log.d(TAG, "FEED_ORDER_LAST_UPDATED ${lhs.title} ${SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(dateLhs))}")
                     dateRhs.compareTo(dateLhs)
                 }
             }
@@ -956,7 +958,6 @@ object DBReader {
         for (feed in feeds) {
             val counter = if (feedCounters.containsKey(feed.id)) feedCounters[feed.id]!! else 0
             val drawerItem = FeedDrawerItem(feed, feed.id, counter)
-
             items.add(drawerItem)
         }
         val result = NavDrawerData(items, queueSize, numNewItems, numDownloadedItems,

@@ -126,11 +126,12 @@ object UserPreferences {
     const val NOTIFICATION_BUTTON_NEXT_CHAPTER: Int = 3
     const val NOTIFICATION_BUTTON_PLAYBACK_SPEED: Int = 4
     const val EPISODE_CACHE_SIZE_UNLIMITED: Int = -1
+//    should match those defined in arrays
     const val FEED_ORDER_COUNTER: Int = 0
     const val FEED_ORDER_ALPHABETICAL: Int = 1
-    const val FEED_ORDER_MOST_PLAYED: Int = 3
-    const val FEED_ORDER_LAST_UPDATED: Int = 4
-    const val FEED_ORDER_LAST_UNREAD_UPDATED: Int = 5
+    const val FEED_ORDER_LAST_UPDATED: Int = 2
+    const val FEED_ORDER_LAST_UNREAD_UPDATED: Int = 3
+    const val FEED_ORDER_MOST_PLAYED: Int = 4
     const val DEFAULT_PAGE_REMEMBER: String = "remember"
 
     private lateinit var context: Context

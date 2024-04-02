@@ -1,0 +1,4 @@
+ 
+Version 4.5.1 brings several changes:
+
+* fixed bug in subscription sorting

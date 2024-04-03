@@ -1,0 +1,7 @@
+ 
+Version 4.5.3 brings several changes:
+
+* corrected wrong caption of "Edit fallback speed"
+* adjusted layout and button dimension and alignments in the bottom player control
+* fallback speed setting is now capped at 0.0 and 3.0 and allows for 2-digit precision
+* corrected episode count display in subscriptions list when the feed has 0 episodes

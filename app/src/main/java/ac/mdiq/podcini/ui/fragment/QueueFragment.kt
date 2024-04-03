@@ -10,9 +10,7 @@ import ac.mdiq.podcini.playback.event.PlaybackPositionEvent
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.DBWriter
-import ac.mdiq.podcini.storage.model.feed.FeedItem
-import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
-import ac.mdiq.podcini.storage.model.feed.SortOrder
+import ac.mdiq.podcini.storage.model.feed.*
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.QueueRecyclerAdapter
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
@@ -29,6 +27,7 @@ import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
 import ac.mdiq.podcini.util.Converter
 import ac.mdiq.podcini.util.FeedItemUtil
 import ac.mdiq.podcini.util.event.*
+import ac.mdiq.podcini.util.event.settings.SpeedPresetChangedEvent
 import android.content.Context
 import android.content.DialogInterface
 import android.content.SharedPreferences
@@ -310,6 +309,18 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
         loadItems(false)
         refreshToolbarState()
     }
+
+//    @Subscribe(threadMode = ThreadMode.MAIN)
+//    @Suppress("unused")
+//    fun speedPresetChanged(event: SpeedPresetChangedEvent) {
+////        Log.d(TAG,"speedPresetChanged called")
+////        for (item in queue) {
+////            if (item.feed?.id == event.feedId && item.feed!!.preferences != null) {
+////                Log.d(TAG, "speedPresetChanged ${item.feed!!.title} ${event.speed}")
+////                item.feed!!.preferences!!.feedPlaybackSpeed = event.speed
+////            }
+////        }
+//    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onSwipeActionsChanged(event: SwipeActionsChangedEvent?) {

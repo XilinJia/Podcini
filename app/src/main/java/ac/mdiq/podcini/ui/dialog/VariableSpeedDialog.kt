@@ -15,6 +15,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CompoundButton
+import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -28,6 +29,7 @@ import java.text.DecimalFormatSymbols
 import java.util.*
 
 open class VariableSpeedDialog : BottomSheetDialogFragment() {
+
     private lateinit var adapter: SpeedSelectionAdapter
     private lateinit var speedSeekBar: PlaybackSpeedSeekBar
     private lateinit var addCurrentSpeedChip: Chip
@@ -38,6 +40,8 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
     private var controller: PlaybackController? = null
     private val selectedSpeeds: MutableList<Float>
 
+    private val settingCode: Array<Int> = Array(3) { 0 }
+
     init {
         val format = DecimalFormatSymbols(Locale.US)
         format.decimalSeparator = '.'
@@ -46,12 +50,14 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
 
     @UnstableApi override fun onStart() {
         super.onStart()
-        controller = object : PlaybackController(requireActivity()) {
-            override fun loadMediaInfo() {
-                if (controller != null) updateSpeed(SpeedChangedEvent(controller!!.currentPlaybackSpeedMultiplier))
+        if (controller == null) {
+            controller = object : PlaybackController(requireActivity()) {
+                override fun loadMediaInfo() {
+                    if (controller != null) updateSpeed(SpeedChangedEvent(controller!!.currentPlaybackSpeedMultiplier))
+                }
             }
+            controller?.init()
         }
-        controller?.init()
         EventBus.getDefault().register(this)
         if (controller != null) updateSpeed(SpeedChangedEvent(controller!!.currentPlaybackSpeedMultiplier))
     }
@@ -73,6 +79,21 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
                                            savedInstanceState: Bundle?
     ): View? {
         _binding = SpeedSelectDialogBinding.inflate(inflater)
+
+        val argument = arguments?.getString("default_setting")
+
+        when (argument) {
+            null, "Current" -> {
+                binding.currentAudio.isChecked = true
+            }
+            "Feed" -> {
+                binding.currentPodcast.isChecked = true
+            }
+            else -> {
+                binding.global.isChecked = true
+            }
+        }
+
         speedSeekBar = binding.speedSeekBar
         speedSeekBar.setProgressChangedListener { multiplier: Float ->
             controller?.setPlaybackSpeed(multiplier)
@@ -95,15 +116,24 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
         skipSilence.isChecked = isSkipSilence
         skipSilence.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
             isSkipSilence = isChecked
-            controller!!.setSkipSilence(isChecked)
+            controller?.setSkipSilence(isChecked)
         }
+
         return binding.root
+    }
+
+    @OptIn(UnstableApi::class) override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+//        if (controller == null || !controller!!.isPlaybackServiceReady()) {
+//            binding.currentPodcast.visibility = View.INVISIBLE
+//        } else binding.currentPodcast.visibility = View.VISIBLE
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
+
     private fun addCurrentSpeed() {
         val newSpeed = speedSeekBar.currentSpeed
         if (selectedSpeeds.contains(newSpeed)) {
@@ -134,15 +164,16 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
                 notifyDataSetChanged()
                 true
             }
-            holder.chip.setOnClickListener {
-                Handler(Looper.getMainLooper()).postDelayed(
-                    {
-                        if (controller != null) {
-                            dismiss()
-                            controller!!.setPlaybackSpeed(speed)
-                        }
-                    }, 200)
-            }
+            holder.chip.setOnClickListener { Handler(Looper.getMainLooper()).postDelayed({
+                if (binding.currentAudio.isChecked) settingCode[0] = 1
+                if (binding.currentPodcast.isChecked) settingCode[1] = 1
+                if (binding.global.isChecked) settingCode[2] = 1
+
+                if (controller != null) {
+                    dismiss()
+                    controller!!.setPlaybackSpeed(speed, settingCode)
+                }
+            }, 200) }
         }
 
         override fun getItemCount(): Int {
@@ -155,5 +186,17 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
 
         inner class ViewHolder internal constructor(var chip: Chip) : RecyclerView.ViewHolder(
             chip)
+    }
+
+    companion object {
+        fun newInstance(argument: String? = null): VariableSpeedDialog {
+            val dialog = VariableSpeedDialog()
+            if (argument != null) {
+                val args = Bundle()
+                args.putString("default_setting", argument)
+                dialog.arguments = args
+            }
+            return dialog
+        }
     }
 }

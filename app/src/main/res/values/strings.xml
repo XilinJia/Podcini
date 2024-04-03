@@ -27,6 +27,9 @@
     <string name="years_statistics_label">Years</string>
     <string name="notification_pref_fragment">Notifications</string>
     <string name="current_playing_episode">Current</string>
+    <string name="current_episode">Current</string>
+    <string name="current_podcast">Podcast</string>
+    <string name="global">Global</string>
     <string name="podcini_echo" translatable="false">Podcini Echo</string>
     <string name="podcini_echo_year" translatable="false">Podcini Echo %d</string>
 

@@ -1617,15 +1617,41 @@ class PlaybackService : MediaBrowserServiceCompat() {
     val playable: Playable?
         get() = mediaPlayer?.getPlayable()
 
-    fun setSpeed(speed: Float) {
+    fun setSpeed(speed: Float, codeArray: Array<Int>? = null) {
         isSpeedForward =  false
         isFallbackSpeed = false
 
         currentlyPlayingTemporaryPlaybackSpeed = speed
+
         if (currentMediaType == MediaType.VIDEO) {
             videoPlaybackSpeed = speed
         } else {
-            setPlaybackSpeed(speed)
+            if (codeArray != null && codeArray.size == 3) {
+                if (codeArray[2] == 1) setPlaybackSpeed(speed)
+                if (codeArray[1] == 1 && playable is FeedMedia) {
+                    var item = (playable as FeedMedia).item
+                    if (item == null) {
+                        val itemId = (playable as FeedMedia).itemId
+                        item = DBReader.getFeedItem(itemId)
+                    }
+                    if (item != null) {
+                        var feed = item.feed
+                        if (feed == null) {
+                            feed = DBReader.getFeed(item.feedId)
+                        }
+                        if (feed != null) {
+                            val feedPreferences = feed.preferences
+                            if (feedPreferences != null) {
+                                feedPreferences.feedPlaybackSpeed = speed
+                                Log.d(TAG, "setSpeed ${feed.title} $speed")
+                                DBWriter.setFeedPreferences(feedPreferences)
+                                EventBus.getDefault().post(
+                                    SpeedPresetChangedEvent(feedPreferences.feedPlaybackSpeed, feed.id))
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         mediaPlayer?.setPlaybackParams(speed, isSkipSilence)

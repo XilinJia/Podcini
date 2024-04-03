@@ -33,6 +33,7 @@ object PlaybackSpeedUtils {
                     val feed = item.feed
                     if (feed?.preferences != null) {
                         playbackSpeed = feed.preferences!!.feedPlaybackSpeed
+                        Log.d(TAG, "using feed speed $playbackSpeed")
                     } else {
                         Log.d(TAG, "Can not get feed specific playback speed: $feed")
                     }

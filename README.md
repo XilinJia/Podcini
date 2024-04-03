@@ -21,6 +21,7 @@ Other notable features and changes include:
 
 * A more convenient player control displayed on all pages
 * A revamped and more efficient expanded player view showing episode description on the front
+* External player class is merged into the player
 * New and efficient ways of click and long-click operations on lists:
 	* click on title area opens the podcast/episode
 	* long-press on title area automatically enters in selection mode
@@ -31,11 +32,8 @@ Other notable features and changes include:
 * Left and right swipe actions on lists now have telltales and can be configured on the spot
 * Played episodes have clearer markings
 * Sort dialog no longer dims the main view
-* Play speed setting has been straightened up, three places to set the play speed:
-	* global setting at the preference
-	* setting for a feed: either use global or customized
-	* setting at the player: set for current playing and save for global
-	* customized feed setting takes precedence when playing an episode
+* Play speed setting has been straightened up, three speed can be set separately or combined: current audio, podcast, and global
+	* customized podcast speed takes precedence when playing an episode
 * Added preference "Fast Forward Speed" under "Playback" in settings with default value of 0.0, dialog allows setting a float number (capped between 0.0 and 10.0)
 * The "Skip to next episode" button on the player
 	* long-press moves to the next episode

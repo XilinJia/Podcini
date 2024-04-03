@@ -204,11 +204,9 @@ class FeedSettingsFragment : Fragment() {
             val feedPlaybackSpeedPreference = findPreference<Preference>(PREF_FEED_PLAYBACK_SPEED)
             feedPlaybackSpeedPreference!!.onPreferenceClickListener =
                 Preference.OnPreferenceClickListener {
-                    val viewBinding =
-                        PlaybackSpeedFeedSettingDialogBinding.inflate(layoutInflater)
+                    val viewBinding = PlaybackSpeedFeedSettingDialogBinding.inflate(layoutInflater)
                     viewBinding.seekBar.setProgressChangedListener { speed: Float? ->
-                        viewBinding.currentSpeedLabel.text = String.format(
-                            Locale.getDefault(), "%.2fx", speed)
+                        viewBinding.currentSpeedLabel.text = String.format(Locale.getDefault(), "%.2fx", speed)
                     }
                     viewBinding.useGlobalCheckbox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
                         viewBinding.seekBar.isEnabled = !isChecked
@@ -224,8 +222,8 @@ class FeedSettingsFragment : Fragment() {
                         .setTitle(R.string.playback_speed)
                         .setView(viewBinding.root)
                         .setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int ->
-                            val newSpeed = if (viewBinding.useGlobalCheckbox.isChecked
-                            ) FeedPreferences.SPEED_USE_GLOBAL else viewBinding.seekBar.currentSpeed
+                            val newSpeed = if (viewBinding.useGlobalCheckbox.isChecked) FeedPreferences.SPEED_USE_GLOBAL
+                            else viewBinding.seekBar.currentSpeed
                             feedPreferences!!.feedPlaybackSpeed = newSpeed
                             if (feedPreferences != null) DBWriter.setFeedPreferences(feedPreferences!!)
                             EventBus.getDefault().post(

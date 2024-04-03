@@ -340,7 +340,9 @@ class MainActivity : CastEnabledActivity() {
         bottomSheet.peekHeight = playerHeight + navigationBarInsets.bottom
     }
 
-    fun setPlayerVisible(visible: Boolean) {
+    fun setPlayerVisible(visible_: Boolean?) {
+        val visible = if (visible_ != null) visible_ else if (bottomSheet.state == BottomSheetBehavior.STATE_COLLAPSED) false else true
+
         bottomSheet.setLocked(!visible)
         if (visible) {
             bottomSheetCallback.onStateChanged(dummyView, bottomSheet.state) // Update toolbar visibility
@@ -353,7 +355,7 @@ class MainActivity : CastEnabledActivity() {
         params.setMargins(navigationBarInsets.left, 0, navigationBarInsets.right,
             navigationBarInsets.bottom + (if (visible) externalPlayerHeight else 0))
         mainView.layoutParams = params
-        val playerView = findViewById<FragmentContainerView>(R.id.playerFragment)
+        val playerView = findViewById<FragmentContainerView>(R.id.playerFragment1)
         val playerParams = playerView.layoutParams as MarginLayoutParams
         playerParams.setMargins(navigationBarInsets.left, 0, navigationBarInsets.right, 0)
         playerView.layoutParams = playerParams

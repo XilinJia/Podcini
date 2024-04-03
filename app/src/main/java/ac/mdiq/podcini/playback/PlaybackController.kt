@@ -116,6 +116,10 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
         }
     }
 
+    fun isPlaybackServiceReady() : Boolean {
+        return playbackService != null
+    }
+
     private fun unbind() {
         try {
             activity.unbindService(mConnection)
@@ -338,9 +342,9 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
         playbackService?.setVideoSurface(holder)
     }
 
-    fun setPlaybackSpeed(speed: Float) {
+    fun setPlaybackSpeed(speed: Float, codeArray: Array<Int>? = null) {
         if (playbackService != null) {
-            playbackService!!.setSpeed(speed)
+            playbackService!!.setSpeed(speed, codeArray)
         } else {
             EventBus.getDefault().post(SpeedChangedEvent(speed))
         }

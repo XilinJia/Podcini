@@ -203,3 +203,9 @@
 ## 4.5.1
 
 * fixed bug in subscription sorting
+
+## 4.5.2
+
+* revamped audio player class, merged external player in
+* speed setting now allows setting with three options: current audio, podcast, and global.
+* added a bit bottom margin for the numbers in player

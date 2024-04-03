@@ -5,7 +5,7 @@
     <dimen name="drawer_corner_size">16dp</dimen>
     <dimen name="widget_margin">0dp</dimen>
     <dimen name="widget_inner_radius">4dp</dimen>
-    <dimen name="external_player_height">125dp</dimen>
+    <dimen name="external_player_height">130dp</dimen>
     <dimen name="text_size_micro">12sp</dimen>
     <dimen name="text_size_small">14sp</dimen>
     <dimen name="text_size_navdrawer">16sp</dimen>

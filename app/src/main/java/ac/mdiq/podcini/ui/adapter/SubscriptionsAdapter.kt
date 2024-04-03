@@ -179,7 +179,7 @@ open class SubscriptionsAdapter(mainActivity: MainActivity) :
             producer.text = drawerItem.producer
             coverImage.contentDescription = drawerItem.title
 
-            if (drawerItem.counter > 0) {
+            if (drawerItem.counter >= 0) {
 //                TODO: need to use more specific number
                 count.text = NumberFormat.getInstance().format(drawerItem.counter.toLong()) + " episodes"
 //                count.text = NumberFormat.getInstance().format(drawerItem.feed.items.size.toLong()) + " episodes"

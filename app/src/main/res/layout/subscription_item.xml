@@ -63,7 +63,7 @@
                     android:layout_height="wrap_content"
                     android:textColor="?android:attr/textColorSecondary"
                     android:lines="1"
-                    android:text="number episodes" />
+                    android:text="0 episodes" />
             </LinearLayout>
 
             <ImageView

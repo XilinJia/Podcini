@@ -25,14 +25,14 @@ import java.lang.ref.WeakReference
         binding.editText.text = Editable.Factory.getInstance().newEditable(fallbackSpeed.toString())
         MaterialAlertDialogBuilder(activity)
             .setView(binding.root)
-            .setTitle(R.string.edit_fast_forward_speed)
+            .setTitle(R.string.edit_fallback_speed)
             .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
                 var speed = binding.editText.text.toString().toFloatOrNull() ?: 0.0f
                 when {
                     speed < 0.0f -> speed = 0.0f
-                    speed > 1.5f -> speed = 1.5f
+                    speed > 3.0f -> speed = 3.0f
                 }
-                fallbackSpeed = String.format("%.1f", speed).toFloat()
+                fallbackSpeed = String.format("%.2f", speed).toFloat()
             }
             .setNegativeButton(R.string.cancel_label, null)
             .show()

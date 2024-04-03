@@ -64,13 +64,12 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="75dp"
         android:orientation="horizontal">
 
         <ImageView
             android:id="@+id/imgvCover"
-            android:layout_width="70dp"
+            android:layout_width="75dp"
             android:layout_height="match_parent"
             android:cropToPadding="true"
             android:scaleType="fitCenter"
@@ -89,6 +88,7 @@
                 android:layout_height="@dimen/audioplayer_playercontrols_length_big"
                 android:layout_centerHorizontal="true"
                 android:layout_centerVertical="false"
+                android:layout_alignParentTop="true"
                 android:layout_marginStart="@dimen/audioplayer_playercontrols_margin"
                 android:layout_marginLeft="@dimen/audioplayer_playercontrols_margin"
                 android:layout_marginEnd="@dimen/audioplayer_playercontrols_margin"
@@ -106,6 +106,7 @@
                 android:layout_width="@dimen/audioplayer_playercontrols_length"
                 android:layout_height="@dimen/audioplayer_playercontrols_length"
                 android:layout_centerVertical="false"
+                android:layout_alignParentTop="true"
                 android:layout_marginStart="@dimen/audioplayer_playercontrols_margin"
                 android:layout_marginLeft="@dimen/audioplayer_playercontrols_margin"
                 android:layout_toStartOf="@id/butPlay"
@@ -138,6 +139,7 @@
                 android:layout_width="@dimen/audioplayer_playercontrols_length"
                 android:layout_height="@dimen/audioplayer_playercontrols_length"
                 android:layout_centerVertical="false"
+                android:layout_alignParentTop="true"
                 android:layout_marginEnd="@dimen/audioplayer_playercontrols_margin"
                 android:layout_marginRight="@dimen/audioplayer_playercontrols_margin"
                 android:layout_toStartOf="@id/butRev"
@@ -168,6 +170,7 @@
                 android:layout_width="@dimen/audioplayer_playercontrols_length"
                 android:layout_height="@dimen/audioplayer_playercontrols_length"
                 android:layout_centerVertical="false"
+                android:layout_alignParentTop="true"
                 android:layout_marginEnd="@dimen/audioplayer_playercontrols_margin"
                 android:layout_marginRight="@dimen/audioplayer_playercontrols_margin"
                 android:layout_toEndOf="@id/butPlay"
@@ -200,6 +203,7 @@
                 android:layout_width="@dimen/audioplayer_playercontrols_length"
                 android:layout_height="@dimen/audioplayer_playercontrols_length"
                 android:layout_centerVertical="false"
+                android:layout_alignParentTop="true"
                 android:layout_marginStart="@dimen/audioplayer_playercontrols_margin"
                 android:layout_marginLeft="@dimen/audioplayer_playercontrols_margin"
                 android:layout_toEndOf="@id/butFF"

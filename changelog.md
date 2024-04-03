@@ -209,3 +209,10 @@
 * revamped audio player class, merged external player in
 * speed setting now allows setting with three options: current audio, podcast, and global.
 * added a bit bottom margin for the numbers in player
+
+## 4.5.3
+
+* corrected wrong caption of "Edit fallback speed"
+* adjusted layout and button dimension and alignments in the bottom player control
+* fallback speed setting is now capped at 0.0 and 3.0 and allows for 2-digit precision
+* corrected episode count display in subscriptions list when the feed has 0 episodes

@@ -10,7 +10,7 @@
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/playerFragment1"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/external_player_height"
         android:layout_gravity="top"
         android:elevation="8dp"
         android:outlineProvider="none"
@@ -78,7 +78,7 @@
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/playerFragment2"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/external_player_height"
             android:layout_gravity="bottom"
             android:layout_alignParentBottom="true"
             tools:layout_height="@dimen/external_player_height" />

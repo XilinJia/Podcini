@@ -500,7 +500,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             setupLengthTextView()
             setupControlButtons()
             butPlaybackSpeed.setOnClickListener {
-                VariableSpeedDialog.newInstance(null).show(childFragmentManager, null)
+                VariableSpeedDialog.newInstance(booleanArrayOf(true, true, true), null)?.show(childFragmentManager, null)
             }
             sbPosition.setOnSeekBarChangeListener(this)
 

@@ -64,12 +64,12 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="75dp"
+        android:layout_height="80dp"
         android:orientation="horizontal">
 
         <ImageView
             android:id="@+id/imgvCover"
-            android:layout_width="75dp"
+            android:layout_width="80dp"
             android:layout_height="match_parent"
             android:cropToPadding="true"
             android:scaleType="fitCenter"
@@ -127,9 +127,8 @@
                 android:layout_alignLeft="@id/butRev"
                 android:layout_alignEnd="@id/butRev"
                 android:layout_alignRight="@id/butRev"
-                android:layout_marginBottom="5dp"
                 android:clickable="false"
-                android:gravity="center"
+                android:gravity="center_horizontal"
                 android:text="30"
                 android:textColor="?android:attr/textColorSecondary"
                 android:textSize="12sp" />
@@ -158,7 +157,6 @@
                 android:layout_alignLeft="@id/butPlaybackSpeed"
                 android:layout_alignEnd="@id/butPlaybackSpeed"
                 android:layout_alignRight="@id/butPlaybackSpeed"
-                android:layout_marginBottom="5dp"
                 android:clickable="false"
                 android:gravity="center"
                 android:text="1.00"
@@ -191,7 +189,6 @@
                 android:layout_alignLeft="@id/butFF"
                 android:layout_alignEnd="@id/butFF"
                 android:layout_alignRight="@id/butFF"
-                android:layout_marginBottom="5dp"
                 android:clickable="false"
                 android:gravity="center"
                 android:text="30"
@@ -224,7 +221,6 @@
                 android:layout_alignLeft="@id/butSkip"
                 android:layout_alignEnd="@id/butSkip"
                 android:layout_alignRight="@id/butSkip"
-                android:layout_marginBottom="5dp"
                 android:clickable="false"
                 android:gravity="center"
                 android:textColor="?android:attr/textColorSecondary"

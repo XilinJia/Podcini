@@ -11,6 +11,7 @@ import ac.mdiq.podcini.ui.view.PlaybackSpeedSeekBar
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -40,7 +41,7 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
     private var controller: PlaybackController? = null
     private val selectedSpeeds: MutableList<Float>
 
-    private val settingCode: Array<Int> = Array(3) { 0 }
+    private lateinit var settingCode: BooleanArray
 
     init {
         val format = DecimalFormatSymbols(Locale.US)
@@ -50,14 +51,23 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
 
     @UnstableApi override fun onStart() {
         super.onStart()
-        if (controller == null) {
-            controller = object : PlaybackController(requireActivity()) {
-                override fun loadMediaInfo() {
-                    if (controller != null) updateSpeed(SpeedChangedEvent(controller!!.currentPlaybackSpeedMultiplier))
-                }
+        controller = object : PlaybackController(requireActivity()) {
+            override fun loadMediaInfo() {
+                if (controller != null) updateSpeed(SpeedChangedEvent(controller!!.currentPlaybackSpeedMultiplier))
             }
-            controller?.init()
+
+            override fun onPlaybackServiceConnected() {
+                super.onPlaybackServiceConnected()
+                binding.currentAudio.visibility = View.VISIBLE
+                binding.currentPodcast.visibility = View.VISIBLE
+
+                if (!settingCode[0]) binding.currentAudio.visibility = View.INVISIBLE
+                if (!settingCode[1]) binding.currentPodcast.visibility = View.INVISIBLE
+                if (!settingCode[2]) binding.global.visibility = View.INVISIBLE
+            }
         }
+        controller?.init()
+
         EventBus.getDefault().register(this)
         if (controller != null) updateSpeed(SpeedChangedEvent(controller!!.currentPlaybackSpeedMultiplier))
     }
@@ -80,23 +90,28 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
     ): View? {
         _binding = SpeedSelectDialogBinding.inflate(inflater)
 
-        val argument = arguments?.getString("default_setting")
+        settingCode = (arguments?.getBooleanArray("settingCode") ?: BooleanArray(3) {true})
+        val index_default = arguments?.getInt("index_default")
 
-        when (argument) {
-            null, "Current" -> {
+        when (index_default) {
+            null, 0 -> {
                 binding.currentAudio.isChecked = true
             }
-            "Feed" -> {
+            1 -> {
                 binding.currentPodcast.isChecked = true
             }
             else -> {
                 binding.global.isChecked = true
             }
         }
+//        if (!settingCode[0]) binding.currentAudio.visibility = View.INVISIBLE
+//        if (!settingCode[1]) binding.currentPodcast.visibility = View.INVISIBLE
+//        if (!settingCode[2]) binding.global.visibility = View.INVISIBLE
 
         speedSeekBar = binding.speedSeekBar
         speedSeekBar.setProgressChangedListener { multiplier: Float ->
-            controller?.setPlaybackSpeed(multiplier)
+            addCurrentSpeedChip.text = String.format(Locale.getDefault(), "%1$.2f", multiplier)
+//            controller?.setPlaybackSpeed(multiplier)
         }
         val selectedSpeedsGrid = binding.selectedSpeedsGrid
         selectedSpeedsGrid.layoutManager = GridLayoutManager(context, 3)
@@ -124,9 +139,13 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
 
     @OptIn(UnstableApi::class) override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-//        if (controller == null || !controller!!.isPlaybackServiceReady()) {
-//            binding.currentPodcast.visibility = View.INVISIBLE
-//        } else binding.currentPodcast.visibility = View.VISIBLE
+        if (controller == null || !controller!!.isPlaybackServiceReady()) {
+            binding.currentAudio.visibility = View.INVISIBLE
+            binding.currentPodcast.visibility = View.INVISIBLE
+        } else {
+            binding.currentAudio.visibility = View.VISIBLE
+            binding.currentPodcast.visibility = View.VISIBLE
+        }
     }
 
     override fun onDestroyView() {
@@ -165,9 +184,9 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
                 true
             }
             holder.chip.setOnClickListener { Handler(Looper.getMainLooper()).postDelayed({
-                if (binding.currentAudio.isChecked) settingCode[0] = 1
-                if (binding.currentPodcast.isChecked) settingCode[1] = 1
-                if (binding.global.isChecked) settingCode[2] = 1
+                if (binding.currentAudio.isChecked) settingCode[0] = true
+                if (binding.currentPodcast.isChecked) settingCode[1] = true
+                if (binding.global.isChecked) settingCode[2] = true
 
                 if (controller != null) {
                     dismiss()
@@ -189,13 +208,18 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
     }
 
     companion object {
-        fun newInstance(argument: String? = null): VariableSpeedDialog {
-            val dialog = VariableSpeedDialog()
-            if (argument != null) {
-                val args = Bundle()
-                args.putString("default_setting", argument)
-                dialog.arguments = args
+        fun newInstance(settingCode_: BooleanArray? = null, index_default: Int? = null): VariableSpeedDialog? {
+            val settingCode = settingCode_ ?: BooleanArray(3){false}
+            if (settingCode.size != 3) {
+                Log.e("VariableSpeedDialog", "wrong settingCode dimension")
+                return null
             }
+            val dialog = VariableSpeedDialog()
+            val args = Bundle()
+            args.putBooleanArray("settingCode", settingCode)
+            if (index_default != null) args.putInt("index_default", index_default)
+            dialog.arguments = args
+
             return dialog
         }
     }

@@ -216,3 +216,12 @@
 * adjusted layout and button dimension and alignments in the bottom player control
 * fallback speed setting is now capped at 0.0 and 3.0 and allows for 2-digit precision
 * corrected episode count display in subscriptions list when the feed has 0 episodes
+
+## 4.5.4
+
+* fixed crash bug when setting fallback or fast-forward speeds with some Locales
+* further enlarged height of the bottom player control to improve on missing pixels at the bottom
+* on speed setting dialog, only tap on a preset chip sets the speed, only selected options will be set
+* corrected the handling of current audio speed:
+	* when speed for current audio is not set, podcast speed takes precedence
+	* when speed for current audio is set, it takes precedence for the current audio (episode), even with pause/re-play

@@ -39,7 +39,7 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
 
         findPreference<Preference>(PREF_PLAYBACK_SPEED_LAUNCHER)!!.onPreferenceClickListener =
             Preference.OnPreferenceClickListener {
-                VariableSpeedDialog.newInstance("Global").show(childFragmentManager, null)
+                VariableSpeedDialog.newInstance(booleanArrayOf(false, false, true),2)?.show(childFragmentManager, null)
                 true
             }
         findPreference<Preference>(PREF_PLAYBACK_REWIND_DELTA_LAUNCHER)!!.onPreferenceClickListener =

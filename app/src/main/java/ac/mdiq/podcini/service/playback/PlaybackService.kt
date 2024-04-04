@@ -1617,18 +1617,18 @@ class PlaybackService : MediaBrowserServiceCompat() {
     val playable: Playable?
         get() = mediaPlayer?.getPlayable()
 
-    fun setSpeed(speed: Float, codeArray: Array<Int>? = null) {
+    fun setSpeed(speed: Float, codeArray: BooleanArray? = null) {
         isSpeedForward =  false
         isFallbackSpeed = false
 
-        currentlyPlayingTemporaryPlaybackSpeed = speed
-
         if (currentMediaType == MediaType.VIDEO) {
+            currentlyPlayingTemporaryPlaybackSpeed = speed
             videoPlaybackSpeed = speed
+            mediaPlayer?.setPlaybackParams(speed, isSkipSilence)
         } else {
             if (codeArray != null && codeArray.size == 3) {
-                if (codeArray[2] == 1) setPlaybackSpeed(speed)
-                if (codeArray[1] == 1 && playable is FeedMedia) {
+                if (codeArray[2]) setPlaybackSpeed(speed)
+                if (codeArray[1] && playable is FeedMedia) {
                     var item = (playable as FeedMedia).item
                     if (item == null) {
                         val itemId = (playable as FeedMedia).itemId
@@ -1651,10 +1651,15 @@ class PlaybackService : MediaBrowserServiceCompat() {
                         }
                     }
                 }
+                if (codeArray[0]) {
+                    currentlyPlayingTemporaryPlaybackSpeed = speed
+                    mediaPlayer?.setPlaybackParams(speed, isSkipSilence)
+                }
+            } else {
+                currentlyPlayingTemporaryPlaybackSpeed = speed
+                mediaPlayer?.setPlaybackParams(speed, isSkipSilence)
             }
         }
-
-        mediaPlayer?.setPlaybackParams(speed, isSkipSilence)
     }
 
     fun speedForward(speed: Float) {

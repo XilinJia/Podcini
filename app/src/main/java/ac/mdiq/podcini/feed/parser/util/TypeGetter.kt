@@ -31,6 +31,8 @@ class TypeGetter {
                 reader = createReader(feed)
                 xpp.setInput(reader)
                 var eventType = xpp.eventType
+//                TODO: need to check about handling webpage
+//                return return Type.ATOM
 
                 while (eventType != XmlPullParser.END_DOCUMENT) {
                     if (eventType == XmlPullParser.START_TAG) {
@@ -63,7 +65,9 @@ class TypeGetter {
                                         Log.d(TAG, "Recognized type RSS 0.91/0.92")
                                         return Type.RSS091
                                     }
-                                    else -> throw UnsupportedFeedtypeException("Unsupported rss version")
+                                    else -> {
+                                        throw UnsupportedFeedtypeException("Unsupported rss version")
+                                    }
                                 }
                             }
                             else -> {

@@ -609,7 +609,7 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
                         shareDialog.show(supportFragmentManager, "ShareEpisodeDialog")
                     }
                     item.itemId == R.id.playback_speed -> {
-                        VariableSpeedDialog().show(supportFragmentManager, null)
+                        VariableSpeedDialog.newInstance(booleanArrayOf(true, false, true))?.show(supportFragmentManager, null)
                     }
                     else -> {
                         return false

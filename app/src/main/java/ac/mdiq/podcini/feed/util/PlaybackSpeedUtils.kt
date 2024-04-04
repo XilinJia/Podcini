@@ -26,8 +26,7 @@ object PlaybackSpeedUtils {
             mediaType = media.getMediaType()
             playbackSpeed = PlaybackPreferences.currentlyPlayingTemporaryPlaybackSpeed
 
-//            if (playbackSpeed == FeedPreferences.SPEED_USE_GLOBAL && media is FeedMedia) {
-            if (media is FeedMedia) {
+            if (playbackSpeed == FeedPreferences.SPEED_USE_GLOBAL && media is FeedMedia) {
                 val item = media.item
                 if (item != null) {
                     val feed = item.feed

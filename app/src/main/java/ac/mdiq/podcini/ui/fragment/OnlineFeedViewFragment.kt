@@ -64,6 +64,7 @@ import io.reactivex.schedulers.Schedulers
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import org.jsoup.Jsoup
 import java.io.File
 import java.io.IOException
 import kotlin.concurrent.Volatile
@@ -330,6 +331,16 @@ class OnlineFeedViewFragment : Fragment() {
             Log.d(TAG, "Unsupported feed type detected")
             if ("html".equals(e.rootElement, ignoreCase = true)) {
                 if (selectedDownloadUrl != null) {
+                    val doc = Jsoup.connect(selectedDownloadUrl).get()
+                    val linkElements = doc.select("link[type=application/rss+xml]")
+                    for (element in linkElements) {
+                        val rssUrl = element.attr("href")
+                        Log.d(TAG, "RSS URL: $rssUrl")
+                        val rc = destinationFile.delete()
+                        Log.d(TAG, "Deleted feed source file. Result: $rc")
+                        startFeedDownload(rssUrl)
+                        return null
+                    }
                     val dialogShown = showFeedDiscoveryDialog(destinationFile, selectedDownloadUrl!!)
                     if (dialogShown) {
                         null // Should not display an error message

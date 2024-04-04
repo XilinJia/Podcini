@@ -13,6 +13,7 @@ import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.playback.base.PlayerStatus
+import ac.mdiq.podcini.preferences.UserPreferences
 import android.content.*
 import android.os.Build
 import android.os.IBinder
@@ -152,6 +153,7 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
             if (service is LocalBinder) {
                 playbackService = service.service
+                onPlaybackServiceConnected()
                 if (!released) {
                     queryService()
                     Log.d(TAG, "Connection to Service established")
@@ -242,6 +244,8 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
     protected open fun updatePlayButtonShowsPlay(showPlay: Boolean) {}
 
     abstract fun loadMediaInfo()
+
+    open fun onPlaybackServiceConnected() { }
 
     /**
      * Called when connection to playback service has been established or
@@ -342,10 +346,11 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
         playbackService?.setVideoSurface(holder)
     }
 
-    fun setPlaybackSpeed(speed: Float, codeArray: Array<Int>? = null) {
+    fun setPlaybackSpeed(speed: Float, codeArray: BooleanArray? = null) {
         if (playbackService != null) {
             playbackService!!.setSpeed(speed, codeArray)
         } else {
+            UserPreferences.setPlaybackSpeed(speed)
             EventBus.getDefault().post(SpeedChangedEvent(speed))
         }
     }

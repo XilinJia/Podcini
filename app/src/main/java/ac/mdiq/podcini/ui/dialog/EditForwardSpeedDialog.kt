@@ -12,6 +12,7 @@ import android.view.LayoutInflater
 import androidx.media3.common.util.UnstableApi
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.lang.ref.WeakReference
+import kotlin.math.round
 
 @UnstableApi
  class EditForwardSpeedDialog(activity: Activity) {
@@ -33,7 +34,7 @@ import java.lang.ref.WeakReference
                     speed < 0.0f -> speed = 0.0f
                     speed > 10.0f -> speed = 10.0f
                 }
-                speedforwardSpeed = String.format("%.1f", speed).toFloat()
+                speedforwardSpeed = round(10 * speed) / 10
             }
             .setNegativeButton(R.string.cancel_label, null)
             .show()

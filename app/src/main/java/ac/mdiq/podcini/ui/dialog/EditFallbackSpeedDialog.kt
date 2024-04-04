@@ -12,6 +12,7 @@ import android.view.LayoutInflater
 import androidx.media3.common.util.UnstableApi
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.lang.ref.WeakReference
+import kotlin.math.round
 
 @UnstableApi
  class EditFallbackSpeedDialog(activity: Activity) {
@@ -32,7 +33,7 @@ import java.lang.ref.WeakReference
                     speed < 0.0f -> speed = 0.0f
                     speed > 3.0f -> speed = 3.0f
                 }
-                fallbackSpeed = String.format("%.2f", speed).toFloat()
+                fallbackSpeed = round(100 * speed) / 100
             }
             .setNegativeButton(R.string.cancel_label, null)
             .show()

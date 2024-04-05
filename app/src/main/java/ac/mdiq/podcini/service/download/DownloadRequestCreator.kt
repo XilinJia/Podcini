@@ -26,8 +26,8 @@ object DownloadRequestCreator {
         }
         Log.d(TAG, "Requesting download feed from url " + feed.download_url)
 
-        val username = if ((feed.preferences != null)) feed.preferences!!.username else null
-        val password = if ((feed.preferences != null)) feed.preferences!!.password else null
+        val username = feed.preferences?.username
+        val password = feed.preferences?.password
 
         return DownloadRequest.Builder(dest.toString(), feed)
             .withAuthentication(username, password)
@@ -36,10 +36,11 @@ object DownloadRequestCreator {
 
     @JvmStatic
     fun create(media: FeedMedia): DownloadRequest.Builder {
-        val partiallyDownloadedFileExists = media.file_url != null && File(media.file_url!!).exists()
+        val pdFile = if (media.file_url != null) File(media.file_url!!) else null
+        val partiallyDownloadedFileExists = pdFile?.exists() ?: false
         var dest: File
         dest = if (partiallyDownloadedFileExists) {
-            File(media.file_url!!)
+            pdFile!!
         } else {
             File(getMediafilePath(media), getMediafilename(media))
         }
@@ -49,8 +50,8 @@ object DownloadRequestCreator {
         }
         Log.d(TAG, "Requesting download media from url " + media.download_url)
 
-        val username = if ((media.item?.feed?.preferences != null)) media.item!!.feed!!.preferences!!.username else null
-        val password = if ((media.item?.feed?.preferences != null)) media.item!!.feed!!.preferences!!.password else null
+        val username = media.item?.feed?.preferences?.username
+        val password = media.item?.feed?.preferences?.password
 
         return DownloadRequest.Builder(dest.toString(), media).withAuthentication(username, password)
     }

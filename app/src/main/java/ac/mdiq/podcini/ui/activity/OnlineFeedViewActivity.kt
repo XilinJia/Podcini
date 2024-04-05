@@ -34,7 +34,8 @@ class OnlineFeedViewActivity : AppCompatActivity() {
 
         if (!feedUrl.isNullOrBlank() && !feedUrl.startsWith("http")) {
             val uri = Uri.parse(feedUrl)
-            feedUrl = URLDecoder.decode(uri.getQueryParameter("url"), "UTF-8")
+            val urlString = uri?.getQueryParameter("url")
+            if (urlString != null) feedUrl = URLDecoder.decode(urlString, "UTF-8")
         }
 
         if (feedUrl == null) {

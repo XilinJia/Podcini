@@ -201,7 +201,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        _speedDialBinding
+        _speedDialBinding = null
         EventBus.getDefault().unregister(this)
         disposable?.dispose()
         adapter.endSelectMode()
@@ -384,7 +384,12 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         if (feed != null && feed!!.isLocalFeed) {
             speedDialBinding.fabSD.removeActionItemById(R.id.download_batch)
         }
-//        speedDialBinding.fabSD.removeActionItemById(R.id.remove_all_inbox_item)
+        if (feed?.link?.contains("youtube.com") == true) {
+            speedDialBinding.fabSD.removeActionItemById(R.id.download_batch)
+            speedDialBinding.fabSD.removeActionItemById(R.id.delete_batch)
+            speedDialBinding.fabSD.removeActionItemById(R.id.add_to_queue_batch)
+            speedDialBinding.fabSD.removeActionItemById(R.id.remove_from_queue_batch)
+        }
         speedDialBinding.fabSD.visibility = View.VISIBLE
         updateToolbar()
     }
@@ -610,9 +615,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 
         @UnstableApi override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
             super.onCreateContextMenu(menu, v, menuInfo)
-//            if (!inActionMode()) {
-//                menu.findItem(R.id.multi_select).setVisible(true)
-//            }
+
             MenuItemUtils.setOnClickListeners(menu) { item: MenuItem ->
                 this@FeedItemlistFragment.onContextItemSelected(item)
             }

@@ -201,35 +201,51 @@
 
                     </LinearLayout>
 
-                    <LinearLayout
-                        android:id="@+id/online_feed_description"
+                    <ScrollView
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:paddingTop="16dp"
-                        android:paddingLeft="20dp"
-                        android:paddingRight="20dp"
-                        android:layout_marginBottom="8dp">
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:scrollbars="vertical">
 
-                        <TextView
-                            android:layout_width="wrap_content"
+                        <LinearLayout
+                            android:id="@+id/online_feed_description"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginBottom="8dp"
-                            android:text="@string/description_label"
-                            style="@style/TextAppearance.Material3.TitleMedium" />
+                            android:orientation="vertical"
+                            android:paddingTop="16dp"
+                            android:paddingLeft="20dp"
+                            android:paddingRight="20dp"
+                            android:layout_marginBottom="8dp">
 
-                        <TextView
-                            android:id="@+id/txtvDescription"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="16dp"
-                            android:ellipsize="end"
-                            android:lineHeight="20dp"
-                            style="@style/Podcini.TextView.ListItemBody"
-                            tools:text="@string/design_time_lorem_ipsum" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="8dp"
+                                android:text="@string/description_label"
+                                style="@style/TextAppearance.Material3.TitleMedium" />
 
-                    </LinearLayout>
+                            <TextView
+                                android:id="@+id/txtvDescription"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="15dp"
+                                android:ellipsize="end"
+                                android:lineHeight="20dp"
+                                style="@style/Podcini.TextView.ListItemBody"
+                                tools:text="@string/design_time_lorem_ipsum" />
 
+                            <TextView
+                                android:id="@+id/txtvTechInfo"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="16dp"
+                                android:ellipsize="end"
+                                style="@style/Podcini.TextView.ListItemBody"
+                                tools:text="@string/design_time_lorem_ipsum" />
+
+                        </LinearLayout>
+
+                    </ScrollView>
                 </LinearLayout>
 
             </FrameLayout>

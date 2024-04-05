@@ -166,7 +166,7 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
             return retry3times()
         }
 
-        Log.e(TAG, "Download failed")
+        Log.e(TAG, "Download failed ${request.title} ${status.reason}")
         DBWriter.addDownloadStatus(status)
         if (status.reason == DownloadError.ERROR_FORBIDDEN || status.reason == DownloadError.ERROR_NOT_FOUND || status.reason == DownloadError.ERROR_UNAUTHORIZED || status.reason == DownloadError.ERROR_IO_BLOCKED) {
             // Fail fast, these are probably unrecoverable

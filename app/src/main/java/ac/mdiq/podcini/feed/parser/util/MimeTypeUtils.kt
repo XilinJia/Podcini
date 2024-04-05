@@ -16,7 +16,7 @@ object MimeTypeUtils {
     ))
 
     val VIDEO_FILE_EXTENSIONS: Set<String> = HashSet(mutableListOf(
-        "3gp", "mkv", "mp4", "ogg", "ogv", "ogx", "webm"
+        "3gp", "mkv", "mp4", "ogg", "ogv", "ogx", "webm", "swf"
     ))
 
     @JvmStatic
@@ -36,8 +36,8 @@ object MimeTypeUtils {
         return if (type == null) {
             false
         } else {
-            (type.startsWith("audio/")
-                    || type.startsWith("video/")) || type == "application/ogg" || type == "application/octet-stream"
+            type.startsWith("audio/") || type.startsWith("video/") ||
+                    type == "application/ogg" || type == "application/octet-stream" || type == "application/x-shockwave-flash"
         }
     }
 

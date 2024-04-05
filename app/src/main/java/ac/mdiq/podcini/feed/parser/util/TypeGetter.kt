@@ -31,9 +31,6 @@ class TypeGetter {
                 reader = createReader(feed)
                 xpp.setInput(reader)
                 var eventType = xpp.eventType
-//                TODO: need to check about handling webpage
-//                return return Type.ATOM
-
                 while (eventType != XmlPullParser.END_DOCUMENT) {
                     if (eventType == XmlPullParser.START_TAG) {
                         when (val tag = xpp.name) {

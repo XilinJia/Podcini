@@ -1,13 +1,16 @@
 package ac.mdiq.podcini.storage.model.playback
 
 enum class MediaType {
-    AUDIO, VIDEO, UNKNOWN;
+    AUDIO, VIDEO, FLASH, UNKNOWN;
 
     companion object {
         private val AUDIO_APPLICATION_MIME_STRINGS: Set<String> = HashSet(mutableListOf(
             "application/ogg",
             "application/opus",
             "application/x-flac"
+        ))
+        private val VIDEO_APPLICATION_MIME_STRINGS: Set<String> = HashSet(mutableListOf(
+            "application/x-shockwave-flash"
         ))
 
         fun fromMimeType(mimeType: String?): MediaType {
@@ -23,6 +26,9 @@ enum class MediaType {
                 }
                 AUDIO_APPLICATION_MIME_STRINGS.contains(mimeType) -> {
                     AUDIO
+                }
+                VIDEO_APPLICATION_MIME_STRINGS.contains(mimeType) -> {
+                    FLASH
                 }
                 else -> UNKNOWN
             }

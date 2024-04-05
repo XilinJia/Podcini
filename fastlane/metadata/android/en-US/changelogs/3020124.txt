@@ -1,5 +1,5 @@
  
-Version 4.5.3 brings several changes:
+Version 4.5.4 brings several changes:
 
 * fixed crash bug when setting fallback or fast-forward speeds with some Locales
 * further enlarged height of the bottom player control to improve on missing pixels at the bottom

@@ -67,6 +67,8 @@ import org.greenrobot.eventbus.ThreadMode
 import org.jsoup.Jsoup
 import java.io.File
 import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
 import kotlin.concurrent.Volatile
 
 /**
@@ -230,8 +232,38 @@ class OnlineFeedViewFragment : Fragment() {
         return null
     }
 
+    private fun htmlOrXml(url: String): String? {
+        val connection = URL(url).openConnection() as HttpURLConnection
+        val type = connection.contentType
+        Log.d(TAG, "connection type: $type")
+        return when {
+            type.contains("html", ignoreCase = true) -> "HTML"
+            type.contains("xml", ignoreCase = true) -> "XML"
+            else -> type
+        }
+    }
+
     private fun startFeedDownload(url: String) {
         Log.d(TAG, "Starting feed download")
+        val urlType = htmlOrXml(url)
+        when (urlType) {
+            "HTML" -> {
+                val doc = Jsoup.connect(url).get()
+                val linkElements = doc.select("link[type=application/rss+xml]")
+//                TODO: should show them all as options
+                for (element in linkElements) {
+                    val rssUrl = element.attr("href")
+                    Log.d(TAG, "RSS URL: $rssUrl")
+                    startFeedDownload(rssUrl)
+                    return
+                }
+            }
+            "XML" -> {}
+            else -> {
+                Log.e(TAG, "unknown url type $urlType")
+                return
+            }
+        }
         selectedDownloadUrl = prepareUrl(url)
         val request = create(Feed(selectedDownloadUrl, null))
             .withAuthentication(username, password)
@@ -331,16 +363,16 @@ class OnlineFeedViewFragment : Fragment() {
             Log.d(TAG, "Unsupported feed type detected")
             if ("html".equals(e.rootElement, ignoreCase = true)) {
                 if (selectedDownloadUrl != null) {
-                    val doc = Jsoup.connect(selectedDownloadUrl).get()
-                    val linkElements = doc.select("link[type=application/rss+xml]")
-                    for (element in linkElements) {
-                        val rssUrl = element.attr("href")
-                        Log.d(TAG, "RSS URL: $rssUrl")
-                        val rc = destinationFile.delete()
-                        Log.d(TAG, "Deleted feed source file. Result: $rc")
-                        startFeedDownload(rssUrl)
-                        return null
-                    }
+//                    val doc = Jsoup.connect(selectedDownloadUrl).get()
+//                    val linkElements = doc.select("link[type=application/rss+xml]")
+//                    for (element in linkElements) {
+//                        val rssUrl = element.attr("href")
+//                        Log.d(TAG, "RSS URL: $rssUrl")
+//                        val rc = destinationFile.delete()
+//                        Log.d(TAG, "Deleted feed source file. Result: $rc")
+//                        startFeedDownload(rssUrl)
+//                        return null
+//                    }
                     val dialogShown = showFeedDiscoveryDialog(destinationFile, selectedDownloadUrl!!)
                     if (dialogShown) {
                         null // Should not display an error message
@@ -398,6 +430,12 @@ class OnlineFeedViewFragment : Fragment() {
         binding.authorLabel.text = feed.author
 
         binding.txtvDescription.text = HtmlToPlainText.getPlainText(feed.description?:"")
+
+        binding.txtvTechInfo.text = feed.items.size.toString() + " episodes" + "\n" +
+                (feed.mostRecentItem?.title?:"") + "\n\n" +
+                feed.language + " " + (feed.type?:"") + " " + (feed.lastUpdate?:"") + "\n" +
+                feed.link + "\n" +
+                feed.download_url
 
         binding.subscribeButton.setOnClickListener {
             if (feedInFeedlist()) {

@@ -1,14 +1,14 @@
 package ac.mdiq.podcini.ui.adapter.actionbutton
 
+import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.preferences.UserPreferences.isStreamOverDownload
+import ac.mdiq.podcini.storage.model.feed.FeedItem
+import ac.mdiq.podcini.storage.model.playback.MediaType
+import ac.mdiq.podcini.util.PlaybackStatus.isCurrentlyPlaying
 import android.content.Context
 import android.view.View
 import android.widget.ImageView
 import androidx.media3.common.util.UnstableApi
-import ac.mdiq.podcini.util.PlaybackStatus.isCurrentlyPlaying
-import ac.mdiq.podcini.storage.model.feed.FeedItem
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
-import ac.mdiq.podcini.preferences.UserPreferences.isStreamOverDownload
-import ac.mdiq.podcini.storage.model.playback.RemoteMedia
 
 abstract class ItemActionButton internal constructor(@JvmField var item: FeedItem) {
     abstract fun getLabel(): Int
@@ -36,6 +36,9 @@ abstract class ItemActionButton internal constructor(@JvmField var item: FeedIte
                 else -> DownloadServiceInterface.get()?.isDownloadingEpisode(media.download_url!!)?:false
             }
             return when {
+                media.getMediaType() == MediaType.FLASH -> {
+                    VisitWebsiteActionButton(item)
+                }
                 isCurrentlyPlaying(media) -> {
                     PauseActionButton(item)
                 }

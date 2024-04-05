@@ -77,6 +77,10 @@ class SyndHandler(feed: Feed, type: TypeGetter.Type) : DefaultHandler() {
                     state.namespaces[uri] = Itunes()
                     Log.d(TAG, "Recognized ITunes namespace")
                 }
+                uri == YouTube.NSURI && prefix == YouTube.NSTAG -> {
+                    state.namespaces[uri] = YouTube()
+                    Log.d(TAG, "Recognized YouTube namespace")
+                }
                 uri == SimpleChapters.NSURI && prefix.matches(SimpleChapters.NSTAG.toRegex()) -> {
                     state.namespaces[uri] = SimpleChapters()
                     Log.d(TAG, "Recognized SimpleChapters namespace")

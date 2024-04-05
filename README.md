@@ -17,6 +17,8 @@ Compared to AntennaPod this project:
 
 Some drastic changes are made in the project since version 4.0. There is now a whole new interface of the Subscriptions page showing only the feeds with tags as filters, no longer having tags as folders in the page. And the default page of the app is changed to the Subscriptions page.  Feed list are no longer shown in the drawer.  Access to statistics is in the drawer.  Alongside, the Home, Echo and Inbox pages are removed from the project. OnlineFeedView activity is stripped down to only receive externally shared feeds. Also, viewbindings are enabled for most views, the project becomes mono-modular, containing only the app module.
 
+Even so, the database remains backward compatible, and AntennaPod's db can be easily imported.
+
 Other notable features and changes include:
 
 * A more convenient player control displayed on all pages
@@ -48,8 +50,10 @@ Other notable features and changes include:
 * Subscriptions view has sorting by "Unread publication date"
 * Feed info view offers a link for direct search of feeds related to author 
 * More info about feeds are shown in the online search view
+* Ability to open podcast from webpage address
 * Online feed info display is handled in similar ways as any local feed, and offers options to subscribe or view episodes
 * Online feed episodes can be freely played (streamed) without a subscription
+* Youtube channels are accepted from external share or paste of address in podcast search view, and can be subscribed as a normal podcast, though video play is handled externally
 * usesCleartextTraffic (for non-secure content transmission) is now disabled in the project
 * Various efficiency improvements, including removal of
 	* redundant media loadings and ui updates

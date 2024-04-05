@@ -14,8 +14,9 @@ import java.util.concurrent.TimeUnit
 /** Processes tags from the http://search.yahoo.com/mrss/ namespace.  */
 class Media : Namespace() {
     override fun handleElementStart(localName: String, state: HandlerState, attributes: Attributes): SyndElement {
-        when {
-            CONTENT == localName -> {
+        Log.d(TAG, "handleElementStart $localName")
+        when (localName) {
+            CONTENT -> {
                 val url: String? = attributes.getValue(DOWNLOAD_URL)
                 val defaultStr: String? = attributes.getValue(DEFAULT)
                 val medium: String? = attributes.getValue(MEDIUM)
@@ -72,6 +73,7 @@ class Media : Namespace() {
                                 Log.e(TAG, "Duration \"$durationStr\" could not be parsed")
                             }
                         }
+                        Log.d(TAG, "handleElementStart creating media: ${state.currentItem?.title} $url $size $mimeType")
                         val media = FeedMedia(state.currentItem, url, size, mimeType)
                         if (durationMs > 0) {
                             media.setDuration( durationMs)
@@ -83,7 +85,7 @@ class Media : Namespace() {
                     }
                 }
             }
-            IMAGE == localName -> {
+            IMAGE -> {
                 val url: String? = attributes.getValue(IMAGE_URL)
                 if (url != null) {
                     when {
@@ -98,7 +100,7 @@ class Media : Namespace() {
                     }
                 }
             }
-            DESCRIPTION == localName -> {
+            DESCRIPTION -> {
                 val type: String? = attributes.getValue(DESCRIPTION_TYPE)
                 return AtomText(localName, this, type)
             }
@@ -107,6 +109,7 @@ class Media : Namespace() {
     }
 
     override fun handleElementEnd(localName: String, state: HandlerState) {
+        Log.d(TAG, "handleElementEnd $localName")
         if (DESCRIPTION == localName) {
             val content = state.contentBuf.toString()
             state.currentItem?.setDescriptionIfLonger(content)

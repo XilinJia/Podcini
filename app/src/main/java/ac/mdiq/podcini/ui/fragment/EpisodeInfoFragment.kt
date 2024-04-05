@@ -10,6 +10,7 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
+import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.actionbutton.*
 import ac.mdiq.podcini.ui.common.CircularProgressBar
@@ -343,6 +344,9 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             }
             if (item != null) {
                 actionButton1 = when {
+                    media.getMediaType() == MediaType.FLASH -> {
+                        VisitWebsiteActionButton(item!!)
+                    }
                     PlaybackStatus.isCurrentlyPlaying(media) -> {
                         PauseActionButton(item!!)
                     }
@@ -357,6 +361,9 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     }
                 }
                 actionButton2 = when {
+                    media.getMediaType() == MediaType.FLASH -> {
+                        VisitWebsiteActionButton(item!!)
+                    }
                     dls != null && media.download_url != null && dls.isDownloadingEpisode(media.download_url!!) -> {
                         CancelDownloadActionButton(item!!)
                     }
@@ -367,6 +374,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         DeleteActionButton(item!!)
                     }
                 }
+//                if (actionButton2 != null && media.getMediaType() == MediaType.FLASH) actionButton2!!.visibility = View.GONE
             }
         }
 

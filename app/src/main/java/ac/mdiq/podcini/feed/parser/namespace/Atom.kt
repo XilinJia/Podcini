@@ -15,6 +15,7 @@ import org.xml.sax.Attributes
 
 class Atom : Namespace() {
     override fun handleElementStart(localName: String, state: HandlerState, attributes: Attributes): SyndElement {
+        Log.d(TAG, "handleElementStart $localName")
         when {
             ENTRY == localName -> {
                 state.currentItem = FeedItem()
@@ -111,6 +112,7 @@ class Atom : Namespace() {
     }
 
     override fun handleElementEnd(localName: String, state: HandlerState) {
+        Log.d(TAG, "handleElementEnd $localName")
         if (ENTRY == localName) {
             if (state.currentItem != null &&
                     state.tempObjects.containsKey(Itunes.DURATION)) {

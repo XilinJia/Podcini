@@ -58,6 +58,7 @@ class MediaDownloadedHandler(private val context: Context, var updatedStatus: Do
             Log.d(TAG, "Invalid file duration: $durationStr")
         } catch (e: Exception) {
             Log.e(TAG, "Get duration failed", e)
+            media.setDuration(30000)
         }
 
         val item = media.item

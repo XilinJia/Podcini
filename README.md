@@ -53,12 +53,12 @@ Other notable features and changes include:
 * Ability to open podcast from webpage address
 * Online feed info display is handled in similar ways as any local feed, and offers options to subscribe or view episodes
 * Online feed episodes can be freely played (streamed) without a subscription
-* Youtube channels are accepted from external share or paste of address in podcast search view, and can be subscribed as a normal podcast, though video play is handled externally
 * usesCleartextTraffic (for non-secure content transmission) is now disabled in the project
 * Various efficiency improvements, including removal of
 	* redundant media loadings and ui updates
 	* frequent list search during audio play
 * externally shared feed opens in the new online feed view fragment
+* Youtube channels are accepted from external share or paste of address in podcast search view, and can be subscribed as a normal podcast, though video play is handled externally
 
 For more details of the changes, see the [Changelog](changelog.md)
 

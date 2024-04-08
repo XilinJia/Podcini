@@ -46,8 +46,10 @@
   <string name="statistics_counting_range">Reproduzidos entre %1$s e %2$s</string>
   <string name="statistics_counting_total">Total</string>
   <!--Home fragment-->
-  <string name="notification_permission_text">Podcini precisa de sua permissão para mostrar notificações. Por definição, a aplicação apenas mostra notificações se estiver a descarregar ficheiros ou se algo errado acontecer.</string>
-  <string name="notification_permission_denied">Permissões recusadas</string>
+    <string name="notification_permission_text">Desde o Android 13, a notificação de nível superior é necessária para
+        atualização e reprodução normais. Você pode proibir notificações de subcategorias conforme desejar.
+    </string>
+    <string name="notification_permission_denied">Permissões recusadas</string>
   <string name="notification_permission_deny_warning">Se desativar as notificações e ocorrer algum erro, não receberá quaisquer informações acerca desse erro</string>
   <string name="deny_label">Recusar</string>
   <string name="open_settings">Abrir definições</string>

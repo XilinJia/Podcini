@@ -232,3 +232,8 @@
 * added ability to open podcast from webpage address, reduced the error of "The podcast host\'s server sent a website, not a podcast"
 * allows importing podcast from a web address, either through copy/paste or share.
 * Youtube channels are accepted from external share or paste of address in podcast search view, and can be subscribed as a normal podcast. A channel is handled as a podcast feed, and videos in the channel are as episodes. Drawbacks now are playing of the video is not handled inside Podcini, but in Youtube app or the browser, and the play speed is not controlled by Podcini.
+
+## 4.6.1
+
+* fixed bug on intro- and end- skipping
+* new notice on need of notifications for Android 13 and newer (in selected languages only )

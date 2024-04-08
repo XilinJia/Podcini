@@ -10,11 +10,12 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 /**
  * Displays a dialog with a username and password text field and an optional checkbox to save username and preferences.
  */
-abstract class FeedPreferenceSkipDialog(context: Context, skipIntroInitialValue: Int, skipEndInitialValue: Int) : MaterialAlertDialogBuilder(context) {
+abstract class FeedPreferenceSkipDialog(context: Context, skipIntroInitialValue: Int, skipEndInitialValue: Int)
+    : MaterialAlertDialogBuilder(context) {
+
     init {
         setTitle(R.string.pref_feed_skip)
         val binding = FeedPrefSkipDialogBinding.bind(View.inflate(context, R.layout.feed_pref_skip_dialog, null))
-//        val rootView = View.inflate(context, R.layout.feed_pref_skip_dialog, null)
         setView(binding.root)
 
         val etxtSkipIntro = binding.etxtSkipIntro

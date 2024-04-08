@@ -1,0 +1,5 @@
+ 
+Version 4.6.1 brings several changes:
+
+* fixed bug on intro- and end- skipping
+* new notice on need of notifications for Android 13 and newer (in selected languages only )

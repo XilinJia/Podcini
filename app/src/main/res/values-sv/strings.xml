@@ -46,7 +46,6 @@
   <string name="statistics_counting_range">Spelat mellan %1$s och %2$s</string>
   <string name="statistics_counting_total">Spelat totalt</string>
 
-  <string name="notification_permission_text">Podcini behöver ditt tillstånd att visa notiser. Som standard visar Podcini bara notiser när något laddas ner eller när något går fel.</string>
   <string name="notification_permission_denied">Du nekade behörigheten.</string>
   <string name="notification_permission_deny_warning">Om du stänger av notiser och något går fel kan det vara svårt att få reda på varför.</string>
   <string name="deny_label">Neka</string>

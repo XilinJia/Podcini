@@ -58,7 +58,7 @@
     <string name="statistics_counting_range">Played between %1$s and %2$s</string>
     <string name="statistics_counting_total">Played in total</string>
 
-    <string name="notification_permission_text">Podcini needs your permission to show notifications. By default, Podcini only shows notifications while something is being downloaded or when something goes wrong.</string>
+    <string name="notification_permission_text">Since Android 13, top level notification is needed for normal refresh and playback. You may disallow notifications of sub-catergories at your wish.</string>
     <string name="notification_permission_denied">You denied the permission.</string>
     <string name="notification_permission_deny_warning">If you disable notifications and something goes wrong, you might be unable to find out why it went wrong.</string>
     <string name="deny_label">Deny</string>

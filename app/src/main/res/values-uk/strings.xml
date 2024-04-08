@@ -46,7 +46,6 @@
   <string name="statistics_counting_range">Прослухано між %1$sта%2$s </string>
   <string name="statistics_counting_total">Прослухано взагалі</string>
 
-  <string name="notification_permission_text">Podcini потрібен ваш дозвіл, щоб показувати сповіщення. За замовчуванням Podcini показує сповіщення лише під час завантаження або коли щось йде не так.</string>
   <string name="notification_permission_denied">Ви відмовили у дозволі.</string>
   <string name="notification_permission_deny_warning">Якщо ви вимкнете сповіщення і щось піде не так, то, можливо, ви не зможете з\'ясувати, чому це сталося.</string>
   <string name="deny_label">Блокувати</string>

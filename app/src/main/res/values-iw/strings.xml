@@ -46,14 +46,6 @@
   <string name="statistics_counting_range">התנגן בין %1$s לבין %2$s</string>
   <string name="statistics_counting_total">התנגן בסך הכול</string>
   <!--Home fragment-->
-
-
-
-
-
-
-
-  <string name="notification_permission_text">לאנטנה־פּוֹד דרושה ההרשאה שלך להציג התראות. כברירת מחדל, אנטנה־פּוֹד תציג הורדות רק כשמשהו יורד או משהו השתבש.</string>
   <string name="notification_permission_denied">דחית את בקשת ההרשאה.</string>
   <string name="notification_permission_deny_warning">אם בחרת להשבית את ההתראות ומשהו משתבש, יכול להיות שהתקלה תחמוק מעיניך.</string>
   <string name="deny_label">דחייה</string>

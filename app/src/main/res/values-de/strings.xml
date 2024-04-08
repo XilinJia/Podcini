@@ -46,8 +46,11 @@
   <string name="statistics_counting_range">Abgespielt zwischen %1$s und %2$s</string>
   <string name="statistics_counting_total">Insgesamt abgespielt</string>
   <!--Home fragment-->
-  <string name="notification_permission_text">Podcini benötigt deine Erlaubnis, um Benachrichtigungen anzuzeigen. Standardmäßig zeigt Podcini nur Benachrichtigungen an, wenn etwas heruntergeladen wird oder wenn etwas schief läuft.</string>
-  <string name="notification_permission_denied">Du hast die Berechtigung abgelehnt.</string>
+    <string name="notification_permission_text">Seit Android 13 ist für die normale Aktualisierung und Wiedergabe eine
+        Benachrichtigung der obersten Ebene erforderlich. Sie können die Benachrichtigung von Unterkategorien auf Wunsch
+        verbieten.
+    </string>
+    <string name="notification_permission_denied">Du hast die Berechtigung abgelehnt.</string>
   <string name="notification_permission_deny_warning">Wenn die Benachrichtigungen deaktiviert werden und etwas schief geht, kannst du möglicherweise nicht herausfinden, warum dies passiert ist.</string>
   <string name="deny_label">Ablehnen</string>
   <string name="open_settings">Einstellungen öffnen</string>

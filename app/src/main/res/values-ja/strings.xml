@@ -35,12 +35,10 @@
   <!--Home fragment-->
 
 
-
-
-
-
-
-  <string name="configure_home">ホーム画面の設定</string>
+    <string name="notification_permission_text">Android 13 以降、通常の更新と再生にはトップレベルの通知が必要です。
+        ご希望に応じて、サブカテゴリの通知を禁止することができます。
+    </string>
+    <string name="configure_home">ホーム画面の設定</string>
   <!--Download Statistics fragment-->
   <string name="total_size_downloaded_podcasts">デバイス上のエピソードの合計サイズ</string>
   <!--Main activity-->

@@ -46,13 +46,6 @@
   <string name="statistics_counting_range">%1$s eta %2$s bitartean joa</string>
   <string name="statistics_counting_total">Joa guztira</string>
   <!--Home fragment-->
-
-
-
-
-
-
-  <string name="notification_permission_text">Podciniek zure baimena behar du jakinarazpenak bistaratzeko. Modu lehenetsian Podciniek bi kasutan soilik erakusten ditu jakinarazpenak: zerbait deskargatu bitartean edo zerbait oker doanean.</string>
   <string name="notification_permission_denied">Baimena ukatu duzu.</string>
   <string name="deny_label">Ukatu</string>
   <string name="open_settings">Ireki ezarpenak</string>

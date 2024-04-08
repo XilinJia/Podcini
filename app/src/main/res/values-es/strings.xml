@@ -46,8 +46,10 @@
   <string name="statistics_counting_range">Reproducido entre%1$s y %2$s</string>
   <string name="statistics_counting_total">Reproducido en total</string>
   <!--Home fragment-->
-  <string name="notification_permission_text">Podcini necesita </string>
-  <string name="notification_permission_denied">Denegaste el permiso.</string>
+    <string name="notification_permission_text">Desde Android 13, se necesita una notificación de nivel superior para la
+        actualización y reproducción normales. Puede no permitir notificaciones de subcategorías si lo desea.
+    </string>
+    <string name="notification_permission_denied">Denegaste el permiso.</string>
   <string name="notification_permission_deny_warning">Si deshabilita las notificaciones y se produce un error, puede no encontrarlo posteriormente.</string>
   <string name="deny_label">Denegar</string>
   <string name="open_settings">Abrir ajustes</string>

@@ -519,23 +519,18 @@ class PlaybackService : MediaBrowserServiceCompat() {
     }
 
     private fun skipIntro(playable: Playable) {
-        if (playable !is FeedMedia) {
-            return
-        }
+        if (playable !is FeedMedia) return
 
         val preferences = playable.item?.feed?.preferences
         val skipIntro = preferences?.feedSkipIntro ?: 0
-
-        val context = applicationContext
-        if (skipIntro > 0 && playable.getPosition() < skipIntro * 1000) {
+        val skipIntroMS = skipIntro * 1000
+        if (skipIntro > 0 && playable.getPosition() < skipIntroMS) {
             val duration = duration
-            if (skipIntro * 1000 < duration || duration <= 0) {
+            if (skipIntroMS < duration || duration <= 0) {
                 Log.d(TAG, "skipIntro " + playable.getEpisodeTitle())
-                mediaPlayer?.seekTo(skipIntro * 1000)
-                val skipIntroMesg = context.getString(R.string.pref_feed_skip_intro_toast,
-                    skipIntro)
-                val toast = Toast.makeText(context, skipIntroMesg,
-                    Toast.LENGTH_LONG)
+                mediaPlayer?.seekTo(skipIntroMS)
+                val skipIntroMesg = applicationContext.getString(R.string.pref_feed_skip_intro_toast, skipIntro)
+                val toast = Toast.makeText(applicationContext, skipIntroMesg, Toast.LENGTH_LONG)
                 toast.show()
             }
         }
@@ -1156,11 +1151,13 @@ class PlaybackService : MediaBrowserServiceCompat() {
 
         val feedMedia = playable
         val preferences = feedMedia.item?.feed?.preferences
-        val skipEnd = preferences?.feedSkipEnding
-        if (skipEnd != null && skipEnd > 0 && skipEnd * 1000 < this.duration && (remainingTime - (skipEnd * 1000) > 0)
-                && ((remainingTime - skipEnd * 1000) < (currentPlaybackSpeed * 1000))) {
-            Log.d(TAG,
-                "skipEndingIfNecessary: Skipping the remaining " + remainingTime + " " + skipEnd * 1000 + " speed " + currentPlaybackSpeed)
+        val skipEnd = preferences?.feedSkipEnding?:0
+        val skipEndMS = skipEnd * 1000
+//        Log.d(TAG, "skipEndingIfNecessary: checking " + remainingTime + " " + skipEndMS + " speed " + currentPlaybackSpeed)
+//        if (skipEnd > 0 && skipEndMS < this.duration && (remainingTime - skipEndMS > 0)
+//                && ((remainingTime - skipEndMS) < currentPlaybackSpeed * 1000)) {
+        if (skipEnd > 0 && skipEndMS < this.duration && (remainingTime - skipEndMS < 0)) {
+            Log.d(TAG, "skipEndingIfNecessary: Skipping the remaining " + remainingTime + " " + skipEndMS + " speed " + currentPlaybackSpeed)
             val context = applicationContext
             val skipMesg = context.getString(R.string.pref_feed_skip_ending_toast, skipEnd)
             val toast = Toast.makeText(context, skipMesg, Toast.LENGTH_LONG)

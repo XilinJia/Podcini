@@ -46,7 +46,6 @@
   <string name="statistics_counting_range">Reproduït entre entre %1$s i %2$s</string>
   <string name="statistics_counting_total">Reproduït en total</string>
 
-  <string name="notification_permission_text">Podcini necessita el vostre permís per mostrar notificacions. Per defecte, Podcini només mostra notificacions mentre alguna cosa s\'està baixant o quan alguna cosa surt malament.</string>
   <string name="notification_permission_denied">S\'ha denegat el permís per a les notificacions</string>
   <string name="deny_label">Denega</string>
   <string name="open_settings">Obre la configuració</string>

@@ -192,8 +192,7 @@ class FeedSettingsFragment : Fragment() {
                             DBWriter.setFeedPreferences(feedPreferences!!)
                             EventBus.getDefault().post(
                                 ac.mdiq.podcini.util.event.settings.SkipIntroEndingChangedEvent(feedPreferences!!.feedSkipIntro,
-                                    feedPreferences!!.feedSkipEnding,
-                                    feed!!.id))
+                                    feedPreferences!!.feedSkipEnding, feed!!.id))
                         }
                     }.show()
                     false

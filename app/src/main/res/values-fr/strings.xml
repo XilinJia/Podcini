@@ -46,8 +46,11 @@
   <string name="statistics_counting_range">Lu entre %1$s et %2$s</string>
   <string name="statistics_counting_total">De durée de lecture</string>
   <!--Home fragment-->
-  <string name="notification_permission_text">Podcini a besoin de votre autorisation pour afficher les notifications. Par défaut, Podcini, ne notifie que si quelque chose est en cours de téléchargement ou pose problème.</string>
-  <string name="notification_permission_denied">Vous avez refusé l\'autorisation.</string>
+    <string name="notification_permission_text">Depuis Android 13, une notification de niveau supérieur est nécessaire
+        pour l’actualisation et la lecture normales. Vous pouvez refuser les notifications de sous-catégories à votre
+        guise.
+    </string>
+    <string name="notification_permission_denied">Vous avez refusé l\'autorisation.</string>
   <string name="notification_permission_deny_warning">Si vous désactivez les notifications et que quelque chose pose problème vous risquez de ne pas comprendre pourquoi.</string>
   <string name="deny_label">Refuser</string>
   <string name="open_settings">Ouvrir les préférences</string>

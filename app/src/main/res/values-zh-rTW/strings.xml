@@ -29,7 +29,10 @@
   <!--Home fragment-->
   <!--Download Statistics fragment-->
   <!--Main activity-->
-  <string name="drawer_open">打開選單</string>
+    <string name="notification_permission_text">從 Android 13 開始，正常刷新和播放需要頂級通知。
+        您可以根據自己的意願禁止子類別的通知。
+    </string>
+    <string name="drawer_open">打開選單</string>
   <string name="drawer_close">關閉選單</string>
   <string name="drawer_feed_order_unplayed_episodes">按計數器排序</string>
   <string name="drawer_feed_order_alphabetical">按字母排序</string>

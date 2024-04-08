@@ -46,7 +46,10 @@
   <string name="statistics_counting_range">Reproduzidos entre %1$s e %2$s</string>
   <string name="statistics_counting_total">Reproduzidos no total</string>
 
-  <string name="notification_permission_denied">Você negou a permissão.</string>
+    <string name="notification_permission_text">Desde o Android 13, a notificação de nível superior é necessária para
+        atualização e reprodução normais. Você pode proibir notificações de subcategorias conforme desejar.
+    </string>
+    <string name="notification_permission_denied">Você negou a permissão.</string>
   <string name="open_settings">Abrir as configurações</string>
   <string name="configure_home">Configurar Página Principal</string>
   <!--Download Statistics fragment-->

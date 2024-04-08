@@ -48,12 +48,10 @@
   <!--Home fragment-->
 
 
-
-
-
-
-
-  <string name="notification_permission_denied">لقد رفضت السماح بلإشعارات</string>
+    <string name="notification_permission_text">منذ Android 13، هناك حاجة إلى إشعار المستوى الأعلى للتحديث والتشغيل
+        العادي. يمكنك عدم السماح بإشعارات الفئات الفرعية حسب رغبتك.
+    </string>
+    <string name="notification_permission_denied">لقد رفضت السماح بلإشعارات</string>
   <string name="open_settings">افتح الإعدادات</string>
   <string name="configure_home">أضبط شاشة المنزل</string>
   <!--Download Statistics fragment-->

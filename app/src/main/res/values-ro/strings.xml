@@ -46,7 +46,6 @@
   <string name="statistics_counting_range">Redat între %1$s și %2$s</string>
   <string name="statistics_counting_total">Redat în total</string>
   <!--Home fragment-->
-  <string name="notification_permission_text">Podcini necesită permisiunea ta pentru a afișa notificări. În mod implicit Podcini afișează notificări doar în momentul în care un podcast este descărcat sau în momentul în care apare o eroare.</string>
   <string name="notification_permission_denied">Ați refuzat permisiunea.</string>
   <string name="notification_permission_deny_warning">Dacă dezactivezi notificările și ceva nu funcționează corect, există posibilitatea de a nu putea să afli ce a mers greșit.</string>
   <string name="deny_label">Refuză</string>

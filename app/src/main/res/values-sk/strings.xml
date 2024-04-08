@@ -46,7 +46,6 @@
   <string name="statistics_counting_range">Prehrané medzi %1$s a %2$s</string>
   <string name="statistics_counting_total">Prehrané celkom</string>
   <!--Home fragment-->
-  <string name="notification_permission_text">Podcini potrebuje vaše povolenie na zobrazovanie upozornení. V predvolenom nastavení Podcini zobrazuje upozornenia iba vtedy, keď sa niečo sťahuje alebo keď sa niečo nepodarí.</string>
   <string name="notification_permission_denied">Odmietli ste povolenie.</string>
   <string name="notification_permission_deny_warning">Ak vypnete upozornenia a niečo sa nepodarí, možno nebudete môcť zistiť, prečo sa to nepodarilo.</string>
   <string name="deny_label">Odmietnuť</string>

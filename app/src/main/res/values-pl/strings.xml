@@ -47,12 +47,10 @@
   <!--Home fragment-->
 
 
-
-
-
-
-
-  <string name="notification_permission_denied">Nie udzielono zgody.</string>
+    <string name="notification_permission_text">Od wersji Androida 13 do normalnego odświeżania i odtwarzania potrzebne
+        są powiadomienia najwyższego poziomu. Na własne życzenie możesz wyłączyć powiadomienia o podkategoriach.
+    </string>
+    <string name="notification_permission_denied">Nie udzielono zgody.</string>
   <string name="open_settings">Otwórz ustawienia</string>
   <string name="configure_home">Konfiguruj stronę główną</string>
   <!--Download Statistics fragment-->

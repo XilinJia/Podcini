@@ -46,7 +46,6 @@
   <string name="statistics_counting_range">Afspillet mellem %1$s og %2$s</string>
   <string name="statistics_counting_total">Afspillet i alt</string>
   <!--Home fragment-->
-  <string name="notification_permission_text">Podcini har brug for din tilladelse til at vise notifikationer. Som udgangspunkt viser Podcini kun notifikationer, mens noget hentes, eller når noget går galt.</string>
   <string name="notification_permission_denied">Du afviste tilladelsen.</string>
   <string name="notification_permission_deny_warning">Hvis du deaktiverer notifikationer, og noget går galt, kan du måske ikke finde ud af, hvorfor det gik galt.</string>
   <string name="deny_label">Nægt</string>

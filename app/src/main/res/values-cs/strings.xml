@@ -46,8 +46,7 @@
   <string name="statistics_counting_range">Přehráno mezi 1%1$s a 2%2$s</string>
   <string name="statistics_counting_total">Celkem přehnáno</string>
   <!--Home fragment-->
-  <string name="notification_permission_text">Podcini potřebuje vaše povolení k zobrazování oznámení. Ve výchozím nastavení Podcini zobrazuje oznámení pouze během stahování nebo když se něco pokazí.</string>
-  <string name="notification_permission_denied">Zamítli jste oprávnění.</string>
+\  <string name="notification_permission_denied">Zamítli jste oprávnění.</string>
   <string name="notification_permission_deny_warning">Pokud oznámení zakážete a něco se pokazí, nemusí se vám podařit zjistit proč.</string>
   <string name="deny_label">Zakázat</string>
   <string name="open_settings">Otevřít nastavení</string>

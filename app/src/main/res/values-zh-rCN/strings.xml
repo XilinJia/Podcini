@@ -47,14 +47,10 @@
   <string name="statistics_counting_total">总播放</string>
   <!--Home fragment-->
 
-
-
-
-
-
-
-  <string name="notification_permission_text">Podcini 需要你的许可方能显示通知。默认情况下，Podcini 只显示和进行中的下载或错误相关的通知</string>
-  <string name="notification_permission_denied">你拒绝授予该权限</string>
+    <string name="notification_permission_text">从 Android 13 开始，正常刷新和播放需要顶级通知。
+        您可以根据自己的意愿禁止子类别的通知。
+    </string>
+    <string name="notification_permission_denied">你拒绝授予该权限</string>
   <string name="notification_permission_deny_warning">如果你禁用了通知，且出现了错误，你可能无法找出出错的原因</string>
   <string name="deny_label">拒绝</string>
   <string name="open_settings">打开设置</string>

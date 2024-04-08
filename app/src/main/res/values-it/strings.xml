@@ -46,8 +46,11 @@
   <string name="statistics_counting_range">Riprodotto fra %1$s e %2$s</string>
   <string name="statistics_counting_total">Riprodotto in totale</string>
   <!--Home fragment-->
-  <string name="notification_permission_text">Podcini ha bisogno del tuo permesso per mostrarti le notifiche. Per impostazione predefinita, Podcini ti mostra notifiche solo quando stai scaricando qualcosa o quando qualcosa va storto.</string>
-  <string name="notification_permission_denied">Hai negato l\'autorizzazione.</string>
+    <string name="notification_permission_text">A partire da Android 13, è necessaria una notifica di livello superiore
+        per il normale aggiornamento e riproduzione. Puoi non consentire le notifiche delle sottocategorie come
+        desideri.
+    </string>
+    <string name="notification_permission_denied">Hai negato l\'autorizzazione.</string>
   <string name="notification_permission_deny_warning">Se disabiliti le notifiche e qualcosa va storto, potresti non essere in grado di individuare la causa del problema.</string>
   <string name="deny_label">Nega</string>
   <string name="open_settings">Apri le impostazioni</string>

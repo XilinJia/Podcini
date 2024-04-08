@@ -46,15 +46,7 @@
   <string name="statistics_counting_range">Reproducido entre %1$s e %2$s</string>
   <string name="statistics_counting_total">Total reproducido</string>
   <!--Home fragment-->
-
-
-
-
-
-
-
-  <string name="notification_permission_text">Podcini precisa permiso para mostrar notificacións. Por defecto Podcini só mostra notificacións cando se está descargando algo ou cando algo non vai ben.</string>
-  <string name="notification_permission_denied">Non outorgaches o permiso</string>
+    <string name="notification_permission_denied">Non outorgaches o permiso</string>
   <string name="notification_permission_deny_warning">Se desactivas as notificacións e algo vai fall, é posible que non coñezas a razón do fallo.</string>
   <string name="deny_label">Rexeitar</string>
   <string name="open_settings">Ir aos axustes</string>

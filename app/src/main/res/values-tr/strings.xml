@@ -48,12 +48,10 @@
   <!--Home fragment-->
 
 
-
-
-
-
-
-  <string name="notification_permission_denied">İzni reddettiniz</string>
+    <string name="notification_permission_text">Android 13\'ten bu yana normal yenileme ve oynatma için üst düzey
+        bildirime ihtiyaç duyulmaktadır. Dilediğiniz takdirde alt kategorilerin bildirimlerine izin vermeyebilirsiniz.
+    </string>
+    <string name="notification_permission_denied">İzni reddettiniz</string>
   <string name="open_settings">Ayarları aç</string>
   <string name="configure_home">Ana Ekranı Özelleştir</string>
   <!--Download Statistics fragment-->

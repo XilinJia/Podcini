@@ -17,6 +17,7 @@ import ac.mdiq.podcini.ui.dialog.AuthenticationDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeFilterDialog
 import ac.mdiq.podcini.ui.dialog.FeedPreferenceSkipDialog
 import ac.mdiq.podcini.ui.dialog.TagSettingsDialog
+import ac.mdiq.podcini.util.event.settings.SkipIntroEndingChangedEvent
 import ac.mdiq.podcini.util.event.settings.SpeedPresetChangedEvent
 import ac.mdiq.podcini.util.event.settings.VolumeAdaptionChangedEvent
 import android.Manifest
@@ -190,9 +191,7 @@ class FeedSettingsFragment : Fragment() {
                             feedPreferences!!.feedSkipIntro = skipIntro
                             feedPreferences!!.feedSkipEnding = skipEnding
                             DBWriter.setFeedPreferences(feedPreferences!!)
-                            EventBus.getDefault().post(
-                                ac.mdiq.podcini.util.event.settings.SkipIntroEndingChangedEvent(feedPreferences!!.feedSkipIntro,
-                                    feedPreferences!!.feedSkipEnding, feed!!.id))
+                            EventBus.getDefault().post(SkipIntroEndingChangedEvent(feedPreferences!!.feedSkipIntro, feedPreferences!!.feedSkipEnding, feed!!.id))
                         }
                     }.show()
                     false

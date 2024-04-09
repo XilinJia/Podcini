@@ -237,3 +237,7 @@
 
 * fixed bug on intro- and end- skipping
 * new notice on need of notifications for Android 13 and newer (in selected languages only )
+
+## 4.6.2
+
+* it should now work on Android Auto

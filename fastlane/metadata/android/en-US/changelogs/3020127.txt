@@ -1,0 +1,4 @@
+ 
+Version 4.6.2 brings several changes:
+
+* it should now work on Android Auto

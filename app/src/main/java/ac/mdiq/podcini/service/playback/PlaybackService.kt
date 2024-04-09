@@ -1578,14 +1578,12 @@ class PlaybackService : MediaBrowserServiceCompat() {
     fun skipIntroEndingPresetChanged(event: SkipIntroEndingChangedEvent) {
         if (playable is FeedMedia) {
             if ((playable as FeedMedia).item?.feed?.id == event.feedId) {
-//                if (event.skipEnding != 0) {
-                    val feedPreferences = (playable as FeedMedia).item?.feed?.preferences
-                    if (feedPreferences != null) {
-                        Log.d(TAG, "skipIntroEndingPresetChanged ${event.skipIntro} ${event.skipEnding}")
-                        feedPreferences.feedSkipIntro = event.skipIntro
-                        feedPreferences.feedSkipEnding = event.skipEnding
-                    }
-//                }
+                val feedPreferences = (playable as FeedMedia).item?.feed?.preferences
+                if (feedPreferences != null) {
+                    Log.d(TAG, "skipIntroEndingPresetChanged ${event.skipIntro} ${event.skipEnding}")
+                    feedPreferences.feedSkipIntro = event.skipIntro
+                    feedPreferences.feedSkipEnding = event.skipEnding
+                }
             }
         }
     }

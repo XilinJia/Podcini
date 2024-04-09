@@ -1,4 +1,5 @@
  
 Version 4.6.2 brings several changes:
 
+* min SDK version bumped to 23 for Android Auto support
 * it should now work on Android Auto

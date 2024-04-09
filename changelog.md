@@ -240,4 +240,5 @@
 
 ## 4.6.2
 
+* min SDK version bumped to 23 for Android Auto support
 * it should now work on Android Auto

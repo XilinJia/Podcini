@@ -12,12 +12,12 @@ import androidx.appcompat.app.AlertDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.ProxySettingsBinding
-import ac.mdiq.podcini.service.download.PodciniHttpClient.newBuilder
-import ac.mdiq.podcini.service.download.PodciniHttpClient.reinit
-import ac.mdiq.podcini.service.download.PodciniHttpClient.setProxyConfig
+import ac.mdiq.podcini.net.download.service.PodciniHttpClient.newBuilder
+import ac.mdiq.podcini.net.download.service.PodciniHttpClient.reinit
+import ac.mdiq.podcini.net.download.service.PodciniHttpClient.setProxyConfig
 import ac.mdiq.podcini.storage.model.download.ProxyConfig
 import ac.mdiq.podcini.preferences.UserPreferences.proxyConfig
-import ac.mdiq.podcini.ui.common.ThemeUtils.getColorFromAttr
+import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import io.reactivex.Completable
 import io.reactivex.CompletableEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers

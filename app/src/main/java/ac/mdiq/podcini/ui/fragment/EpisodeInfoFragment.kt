@@ -11,12 +11,12 @@ import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.storage.model.playback.MediaType
+import ac.mdiq.podcini.ui.actions.actionbutton.*
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.adapter.actionbutton.*
-import ac.mdiq.podcini.ui.common.CircularProgressBar
-import ac.mdiq.podcini.ui.common.ThemeUtils
+import ac.mdiq.podcini.ui.view.CircularProgressBar
+import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
-import ac.mdiq.podcini.ui.menuhandler.FeedItemMenuHandler
+import ac.mdiq.podcini.ui.actions.menuhandler.FeedItemMenuHandler
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.Converter
 import ac.mdiq.podcini.util.DateFormatter
@@ -122,9 +122,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         txtvPodcast = binding.txtvPodcast
         txtvPodcast.setOnClickListener { openPodcast() }
         txtvTitle = binding.txtvTitle
-        if (Build.VERSION.SDK_INT >= 23) {
-            txtvTitle.setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_FULL)
-        }
+        txtvTitle.setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_FULL)
         txtvDuration = binding.txtvDuration
         txtvPublished = binding.txtvPublished
         txtvTitle.ellipsize = TextUtils.TruncateAt.END

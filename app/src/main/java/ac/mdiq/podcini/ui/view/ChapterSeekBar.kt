@@ -8,7 +8,7 @@ import android.os.Looper
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatSeekBar
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.common.ThemeUtils.getColorFromAttr
+import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 
 class ChapterSeekBar : AppCompatSeekBar {
     private var top = 0f

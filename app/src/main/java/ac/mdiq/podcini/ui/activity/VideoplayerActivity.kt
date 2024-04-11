@@ -1,8 +1,8 @@
 package ac.mdiq.podcini.ui.activity
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.service.playback.PlaybackService.Companion.getPlayerActivityIntent
-import ac.mdiq.podcini.service.playback.PlaybackService.Companion.isCasting
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.getPlayerActivityIntent
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isCasting
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.DBWriter
 import ac.mdiq.podcini.util.Converter.getDurationStringLong
@@ -14,10 +14,10 @@ import ac.mdiq.podcini.ui.utils.PictureInPictureUtil
 import ac.mdiq.podcini.playback.PlaybackController
 import ac.mdiq.podcini.databinding.VideoplayerActivityBinding
 import ac.mdiq.podcini.ui.dialog.*
-import ac.mdiq.podcini.playback.event.BufferUpdateEvent
-import ac.mdiq.podcini.playback.event.PlaybackPositionEvent
-import ac.mdiq.podcini.playback.event.PlaybackServiceEvent
-import ac.mdiq.podcini.playback.event.SleepTimerUpdatedEvent
+import ac.mdiq.podcini.util.event.playback.BufferUpdateEvent
+import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
+import ac.mdiq.podcini.util.event.playback.PlaybackServiceEvent
+import ac.mdiq.podcini.util.event.playback.SleepTimerUpdatedEvent
 import ac.mdiq.podcini.ui.fragment.ChaptersFragment
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
@@ -28,7 +28,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.fastForwardSecs
 import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
 import ac.mdiq.podcini.preferences.UserPreferences.setShowRemainTimeSetting
 import ac.mdiq.podcini.preferences.UserPreferences.shouldShowRemainingTime
-import ac.mdiq.podcini.ui.appstartintent.MainActivityStarter
+import ac.mdiq.podcini.ui.activity.appstartintent.MainActivityStarter
 import ac.mdiq.podcini.util.event.MessageEvent
 import ac.mdiq.podcini.util.event.PlayerErrorEvent
 import android.content.DialogInterface
@@ -755,7 +755,7 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
                     AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI)
                 return true
             }
-            KeyEvent.KEYCODE_M -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            KeyEvent.KEYCODE_M -> {
                 audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC,
                     AudioManager.ADJUST_TOGGLE_MUTE, AudioManager.FLAG_SHOW_UI)
                 return true

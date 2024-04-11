@@ -18,7 +18,7 @@ import androidx.test.espresso.util.TreeIterables
 import androidx.test.platform.app.InstrumentationRegistry
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.service.playback.PlaybackService
+import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.ui.dialog.RatingDialog
 import ac.mdiq.podcini.ui.dialog.RatingDialog.saveRated
 import ac.mdiq.podcini.ui.fragment.NavDrawerFragment

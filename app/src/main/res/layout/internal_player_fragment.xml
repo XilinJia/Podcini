@@ -133,7 +133,7 @@
                 android:textColor="?android:attr/textColorSecondary"
                 android:textSize="12sp" />
 
-            <ac.mdiq.podcini.ui.common.PlaybackSpeedIndicatorView
+            <ac.mdiq.podcini.ui.view.PlaybackSpeedIndicatorView
                 android:id="@+id/butPlaybackSpeed"
                 android:layout_width="@dimen/audioplayer_playercontrols_length"
                 android:layout_height="@dimen/audioplayer_playercontrols_length"

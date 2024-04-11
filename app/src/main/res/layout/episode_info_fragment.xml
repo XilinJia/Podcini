@@ -162,7 +162,7 @@
                         android:layout_marginBottom="4dp"
                         android:layout_gravity="bottom|end">
 
-                        <ac.mdiq.podcini.ui.common.CircularProgressBar
+                        <ac.mdiq.podcini.ui.view.CircularProgressBar
                             android:id="@+id/circularProgressBar"
                             android:layout_width="36dp"
                             android:layout_height="36dp"

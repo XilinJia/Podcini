@@ -20,7 +20,7 @@
         app:cardPreventCornerOverlap="false"
         app:cardElevation="2dp">
 
-        <ac.mdiq.podcini.ui.common.SquareImageView
+        <ac.mdiq.podcini.ui.view.SquareImageView
             android:id="@+id/discovery_cover"
             android:layout_width="match_parent"
             android:layout_height="96dp"

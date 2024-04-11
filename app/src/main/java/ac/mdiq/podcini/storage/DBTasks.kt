@@ -229,11 +229,11 @@ import java.util.concurrent.*
 
             // get the most recent date now, before we start changing the list
 //            only used to add to IN_Box???
-            val priorMostRecent = savedFeed.mostRecentItem
-            var priorMostRecentDate: Date? = Date()
-            if (priorMostRecent != null) {
-                priorMostRecentDate = priorMostRecent.getPubDate()
-            }
+//            val priorMostRecent = savedFeed.mostRecentItem
+//            var priorMostRecentDate: Date? = Date()
+//            if (priorMostRecent != null) {
+//                priorMostRecentDate = priorMostRecent.getPubDate()
+//            }
 
             // Look for new or updated Items
             for (idx in newFeed.items.indices) {

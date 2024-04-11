@@ -12,8 +12,8 @@ import ac.mdiq.podcini.preferences.SleepTimerPreferences.setLastTimer
 import ac.mdiq.podcini.util.error.CrashReportWriter.Companion.file
 import ac.mdiq.podcini.ui.fragment.AllEpisodesFragment
 import ac.mdiq.podcini.ui.fragment.QueueFragment
-import ac.mdiq.podcini.ui.fragment.swipeactions.SwipeAction
-import ac.mdiq.podcini.ui.fragment.swipeactions.SwipeActions
+import ac.mdiq.podcini.ui.actions.swipeactions.SwipeAction
+import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
 import ac.mdiq.podcini.preferences.UserPreferences.EnqueueLocation
 import ac.mdiq.podcini.preferences.UserPreferences.episodeCleanupValue
 import ac.mdiq.podcini.preferences.UserPreferences.isAllowMobileAutoDownload

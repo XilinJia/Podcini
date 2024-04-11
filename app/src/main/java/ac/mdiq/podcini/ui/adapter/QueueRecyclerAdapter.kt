@@ -9,7 +9,7 @@ import android.view.MotionEvent
 import android.view.View
 import androidx.media3.common.util.UnstableApi
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.fragment.swipeactions.SwipeActions
+import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
 

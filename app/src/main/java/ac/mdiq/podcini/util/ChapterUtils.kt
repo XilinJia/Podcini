@@ -5,7 +5,7 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import ac.mdiq.podcini.feed.ChapterMerger.merge
-import ac.mdiq.podcini.service.download.PodciniHttpClient.getHttpClient
+import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.util.comparator.ChapterStartTimeComparator
 import ac.mdiq.podcini.storage.model.feed.Chapter

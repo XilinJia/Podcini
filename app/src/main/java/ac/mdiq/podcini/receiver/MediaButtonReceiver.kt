@@ -59,8 +59,7 @@ class MediaButtonReceiver : BroadcastReceiver() {
 
         @JvmStatic
         fun createPendingIntent(context: Context, eventCode: Int): PendingIntent {
-            return PendingIntent.getBroadcast(context, eventCode, createIntent(context, eventCode),
-                (if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_IMMUTABLE else 0))
+            return PendingIntent.getBroadcast(context, eventCode, createIntent(context, eventCode), PendingIntent.FLAG_IMMUTABLE)
         }
     }
 }

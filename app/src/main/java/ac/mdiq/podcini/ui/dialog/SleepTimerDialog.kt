@@ -2,7 +2,7 @@ package ac.mdiq.podcini.ui.dialog
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.TimeDialogBinding
-import ac.mdiq.podcini.playback.event.SleepTimerUpdatedEvent
+import ac.mdiq.podcini.util.event.playback.SleepTimerUpdatedEvent
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnable
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnableFrom
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnableTo
@@ -16,7 +16,7 @@ import ac.mdiq.podcini.preferences.SleepTimerPreferences.setVibrate
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.shakeToReset
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.timerMillis
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.vibrate
-import ac.mdiq.podcini.service.playback.PlaybackService
+import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.util.Converter.getDurationStringLong
 import ac.mdiq.podcini.playback.PlaybackController
 import android.app.Activity

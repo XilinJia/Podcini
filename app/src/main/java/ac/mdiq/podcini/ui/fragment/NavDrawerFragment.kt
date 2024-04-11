@@ -10,10 +10,10 @@ import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.ui.adapter.NavListAdapter
-import ac.mdiq.podcini.ui.appstartintent.MainActivityStarter
-import ac.mdiq.podcini.ui.common.ThemeUtils
+import ac.mdiq.podcini.ui.activity.appstartintent.MainActivityStarter
+import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.ui.dialog.*
-import ac.mdiq.podcini.ui.menuhandler.MenuItemUtils
+import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.util.event.FeedListUpdateEvent
 import ac.mdiq.podcini.util.event.QueueEvent
@@ -83,8 +83,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
                 navigationBarHeight = if (requireActivity().window.navigationBarDividerColor == Color.TRANSPARENT
                 ) 0f else 1 * resources.displayMetrics.density // Assuming the divider is 1dp in height
             }
-            val bottomInset = max(0.0, Math.round(bars.bottom - navigationBarHeight).toDouble())
-                .toFloat()
+            val bottomInset = max(0.0, Math.round(bars.bottom - navigationBarHeight).toDouble()).toFloat()
             (view.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin = bottomInset.toInt()
             insets
         }
@@ -155,9 +154,8 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
     override fun onContextItemSelected(item: MenuItem): Boolean {
         val pressedItem: NavDrawerData.FeedDrawerItem? = contextPressedItem
         contextPressedItem = null
-        if (pressedItem == null) {
-            return false
-        }
+        if (pressedItem == null) return false
+
         return onFeedContextMenuClicked(pressedItem.feed, item)
     }
 
@@ -211,7 +209,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
     fun onQueueChanged(event: QueueEvent) {
         Log.d(TAG, "onQueueChanged($event)")
         // we are only interested in the number of queue items, not download status or position
-        if (event.action == ac.mdiq.podcini.util.event.QueueEvent.Action.DELETED_MEDIA || event.action == ac.mdiq.podcini.util.event.QueueEvent.Action.SORTED || event.action == ac.mdiq.podcini.util.event.QueueEvent.Action.MOVED) {
+        if (event.action == QueueEvent.Action.DELETED_MEDIA || event.action == QueueEvent.Action.SORTED || event.action == QueueEvent.Action.MOVED) {
             return
         }
         loadData()
@@ -224,11 +222,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
 
     private val itemAccess: NavListAdapter.ItemAccess = object : NavListAdapter.ItemAccess {
         override val count: Int
-            get() = if (flatItemList != null) {
-                flatItemList!!.size
-            } else {
-                0
-            }
+            get() =  flatItemList?.size ?: 0
 
         override fun getItem(position: Int): NavDrawerData.FeedDrawerItem? {
             return if (flatItemList != null && 0 <= position && position < flatItemList!!.size) {
@@ -257,22 +251,21 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
         }
 
         override val queueSize: Int
-            get() = if ((navDrawerData != null)) navDrawerData!!.queueSize else 0
+            get() = navDrawerData?.queueSize ?: 0
 
         override val numberOfNewItems: Int
-            get() = if ((navDrawerData != null)) navDrawerData!!.numNewItems else 0
+            get() = navDrawerData?.numNewItems ?: 0
 
         override val numberOfDownloadedItems: Int
-            get() = if ((navDrawerData != null)) navDrawerData!!.numDownloadedItems else 0
+            get() = navDrawerData?.numDownloadedItems ?: 0
 
         override val reclaimableItems: Int
-            get() = if ((navDrawerData != null)) navDrawerData!!.reclaimableSpace else 0
+            get() = navDrawerData?.reclaimableSpace ?: 0
 
         override val feedCounterSum: Int
             get() {
-                if (navDrawerData == null) {
-                    return 0
-                }
+                if (navDrawerData == null) return 0
+
                 var sum = 0
                 for (counter in navDrawerData!!.feedCounters.values) {
                     sum += counter

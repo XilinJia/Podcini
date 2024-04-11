@@ -4,10 +4,11 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.PlayerDetailsFragmentBinding
 import ac.mdiq.podcini.feed.util.ImageResourceUtils
 import ac.mdiq.podcini.playback.PlaybackController
-import ac.mdiq.podcini.playback.event.PlaybackPositionEvent
+import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.model.feed.Chapter
 import ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage
+import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.ui.activity.MainActivity
@@ -64,8 +65,11 @@ class PlayerDetailsFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var media: Playable? = null
+    private var item: FeedItem? = null
+    private var loadedMediaId: Any? = null
     private var displayedChapterIndex = -1
 
+    private var cleanedNotes: String? = null
     private var disposable: Disposable? = null
     private var webViewLoader: Disposable? = null
     private var controller: PlaybackController? = null
@@ -81,8 +85,7 @@ class PlayerDetailsFragment : Fragment() {
         binding.butNextChapter.colorFilter = colorFilter
         binding.butPrevChapter.colorFilter = colorFilter
         binding.chapterButton.setOnClickListener {
-            ChaptersFragment().show(
-                childFragmentManager, ChaptersFragment.TAG)
+            ChaptersFragment().show(childFragmentManager, ChaptersFragment.TAG)
         }
         binding.butPrevChapter.setOnClickListener { seekToPrevChapter() }
         binding.butNextChapter.setOnClickListener { seekToNextChapter() }
@@ -111,12 +114,9 @@ class PlayerDetailsFragment : Fragment() {
         controller = object : PlaybackController(requireActivity()) {
             override fun loadMediaInfo() {
                 load()
-                loadMediaInfo(false)
             }
         }
         controller?.init()
-        load()
-        loadMediaInfo(false)
         return binding.root
     }
 
@@ -147,11 +147,20 @@ class PlayerDetailsFragment : Fragment() {
             }
             if (media is FeedMedia) {
                 val feedMedia = media as FeedMedia
-                val item = feedMedia.item
-                if (item != null && item.description == null) DBReader.loadDescriptionOfFeedItem(item)
+                item = feedMedia.item
             }
-            val shownotesCleaner = ShownotesCleaner(context, media!!.getDescription()?:"", media!!.getDuration())
-            emitter.onSuccess(shownotesCleaner.processShownotes())
+//            Log.d(TAG, "webViewLoader ${item?.id} ${cleanedNotes==null} ${item!!.description==null} ${loadedMediaId == null} ${item?.media?.getIdentifier()} ${media?.getIdentifier()}")
+            if (item != null) {
+                if (cleanedNotes == null || item!!.description == null || loadedMediaId != media?.getIdentifier()) {
+                    Log.d(TAG, "calling load description ${cleanedNotes==null} ${item!!.description==null} ${item!!.media?.getIdentifier()} ${media?.getIdentifier()}")
+//                    printStackTrce()
+                    DBReader.loadDescriptionOfFeedItem(item!!)
+                    loadedMediaId = media?.getIdentifier()
+                    val shownotesCleaner = ShownotesCleaner(context, item?.description ?: "", media?.getDuration()?:0)
+                    cleanedNotes = shownotesCleaner.processShownotes()
+                }
+            }
+            emitter.onSuccess(cleanedNotes?:"")
         }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -160,9 +169,10 @@ class PlayerDetailsFragment : Fragment() {
                     "utf-8", "about:blank")
                 Log.d(TAG, "Webview loaded")
             }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
+        loadMediaInfo()
     }
 
-    @UnstableApi private fun loadMediaInfo(includingChapters: Boolean) {
+    @UnstableApi private fun loadMediaInfo() {
         disposable?.dispose()
 
         disposable = Maybe.create<Playable> { emitter: MaybeEmitter<Playable?> ->
@@ -183,14 +193,16 @@ class PlayerDetailsFragment : Fragment() {
     @UnstableApi private fun displayMediaInfo(media: Playable) {
         val pubDateStr = DateFormatter.formatAbbrev(context, media.getPubDate())
         binding.txtvPodcastTitle.text = StringUtils.stripToEmpty(media.getFeedTitle())
-        if (media is FeedMedia) {
-            val items = media.item
-            if (items != null) {
-                val openFeed: Intent = MainActivity.getIntentToOpenFeed(requireContext(), items.feedId)
-                binding.txtvPodcastTitle.setOnClickListener { startActivity(openFeed) }
+        if (item == null || item!!.media?.getIdentifier() != media.getIdentifier()) {
+            if (media is FeedMedia) {
+                item = media.item
+                if (item != null) {
+                    val openFeed: Intent = MainActivity.getIntentToOpenFeed(requireContext(), item!!.feedId)
+                    binding.txtvPodcastTitle.setOnClickListener { startActivity(openFeed) }
+                }
+            } else {
+                binding.txtvPodcastTitle.setOnClickListener(null)
             }
-        } else {
-            binding.txtvPodcastTitle.setOnClickListener(null)
         }
         binding.txtvPodcastTitle.setOnLongClickListener { copyText(media.getFeedTitle()) }
         binding.episodeDate.text = StringUtils.stripToEmpty(pubDateStr)
@@ -205,11 +217,9 @@ class PlayerDetailsFragment : Fragment() {
                         - binding.txtvEpisodeTitle.paddingBottom)
                 val verticalMarquee: ObjectAnimator = ObjectAnimator.ofInt(
                     binding.txtvEpisodeTitle, "scrollY", 0,
-                    (lines - binding.txtvEpisodeTitle.maxLines)
-                            * (titleHeight / binding.txtvEpisodeTitle.maxLines))
+                    (lines - binding.txtvEpisodeTitle.maxLines) * (titleHeight / binding.txtvEpisodeTitle.maxLines))
                     .setDuration((lines * animUnit).toLong())
-                val fadeOut: ObjectAnimator = ObjectAnimator.ofFloat(
-                    binding.txtvEpisodeTitle, "alpha", 0f)
+                val fadeOut: ObjectAnimator = ObjectAnimator.ofFloat(binding.txtvEpisodeTitle, "alpha", 0f)
                 fadeOut.setStartDelay(animUnit.toLong())
                 fadeOut.addListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
@@ -307,9 +317,7 @@ class PlayerDetailsFragment : Fragment() {
     @UnstableApi private fun seekToPrevChapter() {
         val curr: Chapter? = currentChapter
 
-        if (controller == null || curr == null || displayedChapterIndex == -1) {
-            return
-        }
+        if (controller == null || curr == null || displayedChapterIndex == -1) return
 
         when {
             displayedChapterIndex < 1 -> {
@@ -363,9 +371,14 @@ class PlayerDetailsFragment : Fragment() {
             val prefs = activity.getSharedPreferences(PREF, Activity.MODE_PRIVATE)
             val id = prefs.getString(PREF_PLAYABLE_ID, "")
             val scrollY = prefs.getInt(PREF_SCROLL_Y, -1)
-            if (controller != null && scrollY != -1 && controller!!.getMedia() != null && id == controller!!.getMedia()!!.getIdentifier().toString()) {
-                Log.d(TAG, "Restored scroll Position: $scrollY")
-                webvDescription.scrollTo(webvDescription.scrollX, scrollY)
+            if (scrollY != -1) {
+                if (id == controller?.getMedia()?.getIdentifier()?.toString()) {
+                    Log.d(TAG, "Restored scroll Position: $scrollY")
+                    webvDescription.scrollTo(webvDescription.scrollX, scrollY)
+                    return true
+                }
+                Log.d(TAG, "reset scroll Position: 0")
+                webvDescription.scrollTo(webvDescription.scrollX, 0)
                 return true
             }
         }
@@ -383,6 +396,11 @@ class PlayerDetailsFragment : Fragment() {
         if (newChapterIndex > -1 && newChapterIndex != displayedChapterIndex) {
             refreshChapterData(newChapterIndex)
         }
+    }
+
+    fun setItem(item_: FeedItem) {
+        Log.d(TAG, "setItem ${item_.title}")
+        item = item_
     }
 
 //    override fun onConfigurationChanged(newConfig: Configuration) {

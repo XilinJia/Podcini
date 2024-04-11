@@ -11,7 +11,7 @@ open class CastStateListener(context: Context) : SessionManagerListener<CastSess
     private var castContext: CastContext?
 
     init {
-        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context!!) != ConnectionResult.SUCCESS) {
+        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context) != ConnectionResult.SUCCESS) {
             castContext = null
         } else {
             var castCtx: CastContext?

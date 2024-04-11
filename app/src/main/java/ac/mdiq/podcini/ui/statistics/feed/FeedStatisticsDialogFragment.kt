@@ -7,7 +7,7 @@ import android.content.DialogInterface
 import android.os.Bundle
 import androidx.fragment.app.DialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import ac.mdiq.podcini.ui.appstartintent.MainActivityStarter
+import ac.mdiq.podcini.ui.activity.appstartintent.MainActivityStarter
 
 class FeedStatisticsDialogFragment : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

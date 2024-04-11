@@ -33,9 +33,7 @@ class DownloadLogItemViewHolder(context: Context, parent: ViewGroup?) :
     val tapForDetails: TextView = binding.txtvTapForDetails
 
     init {
-        if (Build.VERSION.SDK_INT >= 23) {
-            title.hyphenationFrequency = Layout.HYPHENATION_FREQUENCY_FULL
-        }
+        title.hyphenationFrequency = Layout.HYPHENATION_FREQUENCY_FULL
         itemView.tag = this
     }
 }

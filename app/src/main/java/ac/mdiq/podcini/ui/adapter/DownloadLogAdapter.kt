@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.Toast
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.adapter.actionbutton.DownloadActionButton
+import ac.mdiq.podcini.ui.actions.actionbutton.DownloadActionButton
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.util.DownloadErrorLabel
 import ac.mdiq.podcini.net.download.FeedUpdateManager
@@ -17,7 +17,7 @@ import ac.mdiq.podcini.storage.model.download.DownloadError
 import ac.mdiq.podcini.storage.model.download.DownloadResult
 import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
-import ac.mdiq.podcini.ui.common.ThemeUtils
+import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.ui.view.viewholder.DownloadLogItemViewHolder
 import androidx.media3.common.util.UnstableApi
 

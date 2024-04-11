@@ -16,8 +16,8 @@ import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
 import ac.mdiq.podcini.receiver.MediaButtonReceiver.Companion.createIntent
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.model.download.DownloadStatus
-import ac.mdiq.podcini.ui.appstartintent.MainActivityStarter
-import ac.mdiq.podcini.ui.common.ThemeUtils.getDrawableFromAttr
+import ac.mdiq.podcini.ui.activity.appstartintent.MainActivityStarter
+import ac.mdiq.podcini.ui.utils.ThemeUtils.getDrawableFromAttr
 import ac.mdiq.podcini.ui.dialog.RatingDialog
 import ac.mdiq.podcini.ui.fragment.*
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
@@ -345,7 +345,8 @@ class MainActivity : CastEnabledActivity() {
 
         bottomSheet.setLocked(!visible)
         if (visible) {
-            bottomSheetCallback.onStateChanged(dummyView, bottomSheet.state) // Update toolbar visibility
+            // Update toolbar visibility
+            bottomSheetCallback.onStateChanged(dummyView, bottomSheet.state)
         } else {
             bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
         }
@@ -359,6 +360,7 @@ class MainActivity : CastEnabledActivity() {
         val playerParams = playerView.layoutParams as MarginLayoutParams
         playerParams.setMargins(navigationBarInsets.left, 0, navigationBarInsets.right, 0)
         playerView.layoutParams = playerParams
+
         audioPlayerFragmentView.visibility = if (visible) View.VISIBLE else View.GONE
     }
 
@@ -659,9 +661,8 @@ class MainActivity : CastEnabledActivity() {
      * @param uri incoming deep link
      */
     private fun handleDeeplink(uri: Uri?) {
-        if (uri?.path == null) {
-            return
-        }
+        if (uri?.path == null) return
+
         Log.d(TAG, "Handling deeplink: $uri")
         when (uri.path) {
             "/deeplink/search" -> {
@@ -715,7 +716,7 @@ class MainActivity : CastEnabledActivity() {
                     AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI)
                 return true
             }
-            KeyEvent.KEYCODE_M -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            KeyEvent.KEYCODE_M -> {
                 audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC,
                     AudioManager.ADJUST_TOGGLE_MUTE, AudioManager.FLAG_SHOW_UI)
                 return true

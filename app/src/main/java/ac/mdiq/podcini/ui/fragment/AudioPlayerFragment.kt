@@ -8,25 +8,21 @@ import ac.mdiq.podcini.feed.util.PlaybackSpeedUtils
 import ac.mdiq.podcini.playback.PlaybackController
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.cast.CastEnabledActivity
-import ac.mdiq.podcini.playback.event.PlaybackPositionEvent
-import ac.mdiq.podcini.playback.event.PlaybackServiceEvent
-import ac.mdiq.podcini.playback.event.SleepTimerUpdatedEvent
-import ac.mdiq.podcini.playback.event.SpeedChangedEvent
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
-import ac.mdiq.podcini.service.playback.PlaybackService
+import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.storage.model.feed.Chapter
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.common.PlaybackSpeedIndicatorView
+import ac.mdiq.podcini.ui.view.PlaybackSpeedIndicatorView
 import ac.mdiq.podcini.ui.dialog.MediaPlayerErrorDialog
 import ac.mdiq.podcini.ui.dialog.SkipPreferenceDialog
 import ac.mdiq.podcini.ui.dialog.SleepTimerDialog
 import ac.mdiq.podcini.ui.dialog.VariableSpeedDialog
-import ac.mdiq.podcini.ui.menuhandler.FeedItemMenuHandler
+import ac.mdiq.podcini.ui.actions.menuhandler.FeedItemMenuHandler
 import ac.mdiq.podcini.ui.view.ChapterSeekBar
 import ac.mdiq.podcini.ui.view.PlayButton
 import ac.mdiq.podcini.util.ChapterUtils
@@ -34,6 +30,7 @@ import ac.mdiq.podcini.util.Converter
 import ac.mdiq.podcini.util.TimeSpeedConverter
 import ac.mdiq.podcini.util.event.FavoritesEvent
 import ac.mdiq.podcini.util.event.PlayerErrorEvent
+import ac.mdiq.podcini.util.event.playback.*
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
@@ -79,7 +76,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     var _binding: AudioplayerFragmentBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var itemDesrView: View
+//    private lateinit var itemDesrView: View
+    private lateinit var itemDescFrag: PlayerDetailsFragment
 
     private lateinit var toolbar: MaterialToolbar
     private var playerFragment1: InternalPlayerFragment? = null
@@ -97,6 +95,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     private var duration = 0
 
     private var currentMedia: Playable? = null
+    private var currentitem: FeedItem? = null
 
     @SuppressLint("WrongConstant")
     override fun onCreateView(inflater: LayoutInflater,
@@ -138,13 +137,13 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         playerView2.setBackgroundColor(
             SurfaceColors.getColorForElevation(requireContext(), 8 * resources.displayMetrics.density))
 
-        itemDesrView = binding.itemDescription
+//        itemDesrView = binding.itemDescription
         cardViewSeek = binding.cardViewSeek
         txtvSeek = binding.txtvSeek
 
         val fm = requireActivity().supportFragmentManager
         val transaction = fm.beginTransaction()
-        val itemDescFrag = PlayerDetailsFragment()
+        itemDescFrag = PlayerDetailsFragment()
         transaction.replace(R.id.itemDescription, itemDescFrag).commit()
 
 //        controller = externalPlayerFragment1.controller
@@ -167,11 +166,9 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     private fun setChapterDividers(media: Playable?) {
         if (media == null) return
 
-        var dividerPos: FloatArray? = null
-
         if (media.getChapters().isNotEmpty()) {
             val chapters: List<Chapter> = media.getChapters()
-            dividerPos = FloatArray(chapters.size)
+            val dividerPos = FloatArray(chapters.size)
 
             for (i in chapters.indices) {
                 dividerPos[i] = chapters[i].start / duration.toFloat()
@@ -214,6 +211,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         Log.d(TAG, "loadMediaInfo called")
 
         val theMedia = controller?.getMedia() ?: return
+        Log.d(TAG, "loadMediaInfo $theMedia")
+
         if (currentMedia == null || theMedia?.getIdentifier() != currentMedia?.getIdentifier()) {
             Log.d(TAG, "loadMediaInfo loading details")
             disposable?.dispose()
@@ -239,7 +238,9 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                         loadMediaInfo(true)
                     }
                 }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) },
-                    { updateUi(null) })
+                    {
+                        updateUi(null)
+                    })
         }
     }
 
@@ -257,7 +258,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             override fun onPlaybackEnd() {
                 playerFragment1?.butPlay?.setIsShowPlay(true)
                 playerFragment2?.butPlay?.setIsShowPlay(true)
-                (activity as MainActivity).setPlayerVisible(null)
+                (activity as MainActivity).setPlayerVisible(false)
             }
         }
     }
@@ -319,6 +320,15 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun mediaPlayerError(event: PlayerErrorEvent) {
         MediaPlayerErrorDialog.show(activity as Activity, event)
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onEvenStartPlay(event: StartPlayEvent) {
+        Log.d(TAG, "onEvenStartPlay ${event.item.title}")
+        currentitem = event.item
+        if (currentMedia?.getIdentifier() == null || currentitem!!.media!!.getIdentifier() != currentMedia?.getIdentifier()) {
+            itemDescFrag.setItem(currentitem!!)
+        }
     }
 
     override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
@@ -388,9 +398,9 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
         val isFeedMedia = media is FeedMedia
         toolbar.menu?.findItem(R.id.open_feed_item)?.setVisible(isFeedMedia)
-        if (media != null && isFeedMedia) {
-            FeedItemMenuHandler.onPrepareMenu(toolbar.menu, (media as FeedMedia).item)
-        }
+        var item = currentitem
+        if (item == null && isFeedMedia) item = (media as FeedMedia).item
+        FeedItemMenuHandler.onPrepareMenu(toolbar.menu, item)
 
         if (controller != null) {
             toolbar.menu.findItem(R.id.set_sleeptimer_item).setVisible(!controller!!.sleepTimerActive())
@@ -402,7 +412,9 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     override fun onMenuItemClick(menuItem: MenuItem): Boolean {
         val media: Playable = controller?.getMedia() ?: return false
 
-        val feedItem: FeedItem? = if (media is FeedMedia) media.item else null
+        var feedItem = currentitem
+        if (feedItem == null && media is FeedMedia) feedItem = media.item
+//        feedItem: FeedItem? = if (media is FeedMedia) media.item else null
         if (feedItem != null && FeedItemMenuHandler.onMenuItemClicked(this, menuItem.itemId, feedItem)) {
             return true
         }
@@ -692,8 +704,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
         @UnstableApi
         fun updateUi(media: Playable?) {
+            Log.d(TAG, "updateUi called $media")
             if (media == null) return
-            Log.d(TAG, "updateUi called")
 
             episodeTitle.text = media.getEpisodeTitle()
             (activity as MainActivity).setPlayerVisible(true)

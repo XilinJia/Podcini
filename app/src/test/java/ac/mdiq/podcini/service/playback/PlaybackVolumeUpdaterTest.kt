@@ -4,6 +4,7 @@ import ac.mdiq.podcini.storage.model.feed.*
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.playback.base.PlaybackServiceMediaPlayer
 import ac.mdiq.podcini.playback.base.PlayerStatus
+import ac.mdiq.podcini.playback.service.PlaybackVolumeUpdater
 import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers

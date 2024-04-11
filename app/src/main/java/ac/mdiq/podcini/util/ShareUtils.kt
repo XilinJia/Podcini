@@ -27,14 +27,23 @@ object ShareUtils {
         context.startActivity(intent)
     }
 
+//    fun shareFeedLink(context: Context, feed: Feed) {
+//        val text = """
+//             ${feed.title}
+//
+//             https://podcini.org/deeplink/subscribe/?url=${URLEncoder.encode(feed.download_url)}&title=${
+//            URLEncoder.encode(feed.title)
+//        }
+//             """.trimIndent()
+//        shareLink(context, text)
+//    }
+
     @JvmStatic
     fun shareFeedLink(context: Context, feed: Feed) {
         val text = """
              ${feed.title}
              
-             https://podcini.org/deeplink/subscribe/?url=${URLEncoder.encode(feed.download_url)}&title=${
-            URLEncoder.encode(feed.title)
-        }
+             ${URLEncoder.encode(feed.download_url)}&title=${URLEncoder.encode(feed.title)}
              """.trimIndent()
         shareLink(context, text)
     }

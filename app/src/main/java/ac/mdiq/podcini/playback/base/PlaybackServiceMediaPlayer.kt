@@ -21,8 +21,7 @@ import kotlin.concurrent.Volatile
  * and remote (cast devices) playback.
  */
 abstract class PlaybackServiceMediaPlayer protected constructor(protected val context: Context,
-                                                                protected val callback: PSMPCallback
-) {
+                                                                protected val callback: PSMPCallback) {
     @Volatile
     private var oldPlayerStatus: PlayerStatus? = null
 

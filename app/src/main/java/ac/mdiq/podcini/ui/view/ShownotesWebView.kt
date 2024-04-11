@@ -21,7 +21,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.util.Consumer
 import com.google.android.material.snackbar.Snackbar
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.menuhandler.MenuItemUtils
+import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.util.IntentUtils
 import ac.mdiq.podcini.util.NetworkUtils
 import ac.mdiq.podcini.util.ShareUtils
@@ -105,9 +105,7 @@ class ShownotesWebView : WebView, View.OnLongClickListener {
     }
 
     fun onContextItemSelected(item: MenuItem): Boolean {
-        if (selectedUrl == null) {
-            return false
-        }
+        if (selectedUrl == null) return false
 
         val itemId = item.itemId
         when (itemId) {
@@ -145,9 +143,7 @@ class ShownotesWebView : WebView, View.OnLongClickListener {
 
     override fun onCreateContextMenu(menu: ContextMenu) {
         super.onCreateContextMenu(menu)
-        if (selectedUrl == null) {
-            return
-        }
+        if (selectedUrl == null) return
 
         if (ShownotesCleaner.isTimecodeLink(selectedUrl)) {
             menu.add(Menu.NONE, R.id.go_to_position_item, Menu.NONE, R.string.go_to_position_label)

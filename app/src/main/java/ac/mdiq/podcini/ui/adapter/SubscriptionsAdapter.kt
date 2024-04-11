@@ -86,13 +86,11 @@ open class SubscriptionsAdapter(mainActivity: MainActivity) :
         }
 
         holder.itemView.setOnTouchListener { _: View?, e: MotionEvent ->
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (e.isFromSource(InputDevice.SOURCE_MOUSE)
-                        && e.buttonState == MotionEvent.BUTTON_SECONDARY) {
-                    if (!inActionMode()) {
-                        longPressedPosition = holder.bindingAdapterPosition
-                        selectedItem = drawerItem
-                    }
+            if (e.isFromSource(InputDevice.SOURCE_MOUSE)
+                    && e.buttonState == MotionEvent.BUTTON_SECONDARY) {
+                if (!inActionMode()) {
+                    longPressedPosition = holder.bindingAdapterPosition
+                    selectedItem = drawerItem
                 }
             }
             false

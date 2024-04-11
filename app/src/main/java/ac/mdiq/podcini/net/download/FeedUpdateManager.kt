@@ -7,7 +7,7 @@ import android.util.Log
 import androidx.work.*
 import androidx.work.Constraints.Builder
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import ac.mdiq.podcini.service.FeedUpdateWorker
+import ac.mdiq.podcini.net.download.service.FeedUpdateWorker
 import ac.mdiq.podcini.util.NetworkUtils.isFeedRefreshAllowed
 import ac.mdiq.podcini.util.NetworkUtils.isNetworkRestricted
 import ac.mdiq.podcini.util.NetworkUtils.isVpnOverWifi
@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit
 
 object FeedUpdateManager {
     const val WORK_TAG_FEED_UPDATE: String = "feedUpdate"
-    private const val WORK_ID_FEED_UPDATE = "ac.mdiq.podcini.service.FeedUpdateWorker"
+    private const val WORK_ID_FEED_UPDATE = "ac.mdiq.podcini.service.download.FeedUpdateWorker"
     private const val WORK_ID_FEED_UPDATE_MANUAL = "feedUpdateManual"
     const val EXTRA_FEED_ID: String = "feed_id"
     const val EXTRA_NEXT_PAGE: String = "next_page"

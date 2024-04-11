@@ -5,8 +5,8 @@ import androidx.media3.common.util.UnstableApi
 import ac.mdiq.podcini.preferences.PlaybackPreferences
 import ac.mdiq.podcini.preferences.SleepTimerPreferences
 import ac.mdiq.podcini.preferences.UsageStatistics
-import ac.mdiq.podcini.service.download.PodciniHttpClient.setCacheDirectory
-import ac.mdiq.podcini.service.download.PodciniHttpClient.setProxyConfig
+import ac.mdiq.podcini.net.download.service.PodciniHttpClient.setCacheDirectory
+import ac.mdiq.podcini.net.download.service.PodciniHttpClient.setProxyConfig
 import ac.mdiq.podcini.net.sync.SyncService
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.util.NetworkUtils
@@ -17,7 +17,7 @@ import ac.mdiq.podcini.net.ssl.SslProviderInstaller
 import ac.mdiq.podcini.storage.database.PodDBAdapter
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.proxyConfig
-import ac.mdiq.podcini.service.download.DownloadServiceInterfaceImpl
+import ac.mdiq.podcini.net.download.service.DownloadServiceInterfaceImpl
 import java.io.File
 
 @UnstableApi

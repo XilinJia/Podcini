@@ -20,21 +20,13 @@ Some drastic changes are made in the project since version 4.0. There is now a w
 
 Even so, the database remains backward compatible, and AntennaPod's db can be easily imported.
 
-Other notable features and changes include:
+## Notable new features/enhancements
+
+### Player
 
 * A more convenient player control displayed on all pages
 * A revamped and more efficient expanded player view showing episode description on the front
 * External player class is merged into the player
-* New and efficient ways of click and long-click operations on lists:
-  * click on title area opens the podcast/episode
-  * long-press on title area automatically enters in selection mode
-  * options to select all above or below are shown action bar together with Select All
-  * operations are only on the selected (single or multiple)
-* A new share notes menu option on various episode views
-* List info is shown in Queue and Downloads views
-* Left and right swipe actions on lists now have telltales and can be configured on the spot
-* Played episodes have clearer markings
-* Sort dialog no longer dims the main view
 * Play speed setting has been straightened up, three speed can be set separately or combined: current audio, podcast, and global.  The order of precedence is in that same order.
 * Added preference "Fast Forward Speed" under "Playback" in settings with default value of 0.0, dialog allows setting a float number (capped between 0.0 and 10.0)
 * The "Skip to next episode" button on the player
@@ -48,18 +40,45 @@ Other notable features and changes include:
 * the Play button on the player
   * by default, it behaves the same as usual
   * if the user customize "Fallback speed" to a value greater than 0.1, long-press the button during play enters the fallback mode and plays at the set fallback speed, single tap exits the fallback mode
+* Various efficiency improvements, including removal of
+  * redundant media loadings and ui updates
+  * frequent list search during audio play
+* streamed media somewhat equivalent to downloaded media
+	* enabled episode description on player detailed view
+	* enabled intro- and end- skipping
+	* mark as played when finished
+	* streamed media is added to queue and is resumed after restart
+
+### Podcast/Episode list
+
+* New and efficient ways of click and long-click operations on lists:
+  * click on title area opens the podcast/episode
+  * long-press on title area automatically enters in selection mode
+  * options to select all above or below are shown action bar together with Select All
+  * operations are only on the selected (single or multiple)
+* List info is shown in Queue and Downloads views
+* Left and right swipe actions on lists now have telltales and can be configured on the spot
+* Played episodes have clearer markings
+* Sort dialog no longer dims the main view
 * Subscriptions view has sorting by "Unread publication date"
+
+### Podcast/Episode
+
+* A new share notes menu option on various episode views
 * Feed info view offers a link for direct search of feeds related to author
+
+### Online feed
+
 * More info about feeds are shown in the online search view
 * Ability to open podcast from webpage address
 * Online feed info display is handled in similar ways as any local feed, and offers options to subscribe or view episodes
 * Online feed episodes can be freely played (streamed) without a subscription
-* usesCleartextTraffic (for non-secure content transmission) is now disabled in the project
-* Various efficiency improvements, including removal of
-  * redundant media loadings and ui updates
-  * frequent list search during audio play
 * externally shared feed opens in the new online feed view fragment
 * Youtube channels are accepted from external share or paste of address in podcast search view, and can be subscribed as a normal podcast, though video play is handled externally
+
+### Security
+
+* usesCleartextTraffic (for non-secure content transmission) is now disabled in the project
 
 For more details of the changes, see the [Changelog](changelog.md)
 

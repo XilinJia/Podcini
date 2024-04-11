@@ -5,8 +5,8 @@ import android.content.Intent
 import android.os.Parcelable
 import androidx.core.content.ContextCompat
 import androidx.media3.common.util.UnstableApi
-import ac.mdiq.podcini.service.playback.PlaybackService
-import ac.mdiq.podcini.service.playback.PlaybackServiceInterface
+import ac.mdiq.podcini.playback.service.PlaybackService
+import ac.mdiq.podcini.playback.service.PlaybackServiceInterface
 import ac.mdiq.podcini.storage.model.playback.Playable
 
 @UnstableApi
@@ -37,9 +37,7 @@ class PlaybackServiceStarter(private val context: Context, private val media: Pl
         }
 
     fun start() {
-        if (PlaybackService.isRunning && !callEvenIfRunning) {
-            return
-        }
+        if (PlaybackService.isRunning && !callEvenIfRunning) return
         ContextCompat.startForegroundService(context, intent)
     }
 }

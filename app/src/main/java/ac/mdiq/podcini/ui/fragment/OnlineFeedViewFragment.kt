@@ -12,9 +12,9 @@ import ac.mdiq.podcini.net.discovery.CombinedSearcher
 import ac.mdiq.podcini.net.discovery.PodcastSearcherRegistry
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
-import ac.mdiq.podcini.service.download.DownloadRequestCreator.create
-import ac.mdiq.podcini.service.download.Downloader
-import ac.mdiq.podcini.service.download.HttpDownloader
+import ac.mdiq.podcini.net.download.service.DownloadRequestCreator.create
+import ac.mdiq.podcini.net.download.service.Downloader
+import ac.mdiq.podcini.net.download.service.HttpDownloader
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.DBTasks
 import ac.mdiq.podcini.storage.DBWriter
@@ -23,9 +23,9 @@ import ac.mdiq.podcini.storage.model.download.DownloadResult
 import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.common.ThemeUtils.getColorFromAttr
+import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import ac.mdiq.podcini.ui.dialog.AuthenticationDialog
-import ac.mdiq.podcini.ui.glide.FastBlurTransformation
+import ac.mdiq.podcini.glide.FastBlurTransformation
 import ac.mdiq.podcini.util.DownloadErrorLabel.from
 import ac.mdiq.podcini.util.event.EpisodeDownloadEvent
 import ac.mdiq.podcini.util.event.FeedListUpdateEvent

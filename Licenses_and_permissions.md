@@ -5,7 +5,7 @@
 
 [Androidx](https://github.com/androidx/androidx/blob/androidx-main/LICENSE.txt) Apache License 2.0
 
-[](https://github.com/material-components/material-components-android/blob/master/LICENSE)
+[com.google.android.material](https://github.com/material-components/material-components-android/blob/master/LICENSE)
 Apache License 2.0
 
 [JetBrains Kotlin](https://github.com/JetBrains/kotlin/blob/master/license/LICENSE.txt) Apache License Version 2.0
@@ -20,8 +20,9 @@ Apache License 2.0
 
 [com.squareup.okhttp3](https://github.com/square/okhttp/blob/master/LICENSE.txt) Apache License 2.0
 
-[com.squareup.okio](https://github.com/square/okio/blob/master/LICENSE.txt) Apache License 2.0
-
+<!-- [com.squareup.okio](https://github.com/square/okio/blob/master/LICENSE.txt) Apache License 2.0
+ -->
+ 
 [org.greenrobot:eventbus](https://github.com/greenrobot/EventBus/blob/master/LICENSE) Apache License 2.0
 
 [io.reactivex.rxjava2](https://github.com/ReactiveX/RxJava/blob/3.x/LICENSE) Apache License 2.0

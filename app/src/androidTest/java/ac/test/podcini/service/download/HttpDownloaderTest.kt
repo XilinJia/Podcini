@@ -3,8 +3,8 @@ package de.test.podcini.service.download
 import android.util.Log
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
-import ac.mdiq.podcini.service.download.Downloader
-import ac.mdiq.podcini.service.download.HttpDownloader
+import ac.mdiq.podcini.net.download.service.Downloader
+import ac.mdiq.podcini.net.download.service.HttpDownloader
 import ac.mdiq.podcini.storage.model.download.DownloadError
 import ac.mdiq.podcini.storage.model.feed.FeedFile
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest

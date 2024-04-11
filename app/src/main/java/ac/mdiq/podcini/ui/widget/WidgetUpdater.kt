@@ -24,9 +24,9 @@ import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.preferences.UserPreferences.shouldShowRemainingTime
-import ac.mdiq.podcini.ui.appstartintent.MainActivityStarter
-import ac.mdiq.podcini.ui.appstartintent.PlaybackSpeedActivityStarter
-import ac.mdiq.podcini.ui.appstartintent.VideoPlayerActivityStarter
+import ac.mdiq.podcini.ui.activity.appstartintent.MainActivityStarter
+import ac.mdiq.podcini.ui.activity.appstartintent.PlaybackSpeedActivityStarter
+import ac.mdiq.podcini.ui.activity.appstartintent.VideoPlayerActivityStarter
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
 

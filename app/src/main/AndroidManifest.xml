@@ -49,7 +49,7 @@
         android:allowAudioPlaybackCapture="true"
         android:networkSecurityConfig="@xml/network_security_config">
 
-        <service android:name=".service.playback.PlaybackService"
+        <service android:name=".playback.service.PlaybackService"
                  android:foregroundServiceType="mediaPlayback"
                  android:label="@string/app_name"
                  android:enabled="true"
@@ -79,7 +79,7 @@
             tools:ignore="ExportedReceiver" /> <!-- allow feeds update to be triggered by external apps -->
 
         <service
-            android:name=".service.QuickSettingsTileService"
+            android:name=".playback.service.QuickSettingsTileService"
             android:enabled="true"
             android:exported="true"
             android:label="@string/app_name"
@@ -148,28 +148,28 @@
             android:windowSoftInputMode="stateAlwaysHidden"
             android:launchMode="singleTask"
             android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.VIEW" />-->
 
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
+<!--                <category android:name="android.intent.category.DEFAULT" />-->
+<!--                <category android:name="android.intent.category.BROWSABLE" />-->
 
-                <data
-                    android:host="podcini.org"
-                    android:pathPrefix="/deeplink/main"
-                    android:scheme="https" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
+<!--                <data-->
+<!--                    android:host="podcini.org"-->
+<!--                    android:pathPrefix="/deeplink/main"-->
+<!--                    android:scheme="https" />-->
+<!--            </intent-filter>-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.VIEW" />-->
 
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
+<!--                <category android:name="android.intent.category.DEFAULT" />-->
+<!--                <category android:name="android.intent.category.BROWSABLE" />-->
 
-                <data
-                    android:host="podcini.org"
-                    android:pathPrefix="/deeplink/search"
-                    android:scheme="https" />
-            </intent-filter>
+<!--                <data-->
+<!--                    android:host="podcini.org"-->
+<!--                    android:pathPrefix="/deeplink/search"-->
+<!--                    android:scheme="https" />-->
+<!--            </intent-filter>-->
             <intent-filter>
                 <category android:name="android.intent.category.DEFAULT" />
                 <action android:name="ac.mdiq.podcini.intents.MAIN_ACTIVITY" />
@@ -272,39 +272,36 @@
                 android:value="ac.mdiq.podcini.ui.activity.MainActivity"/>
 
             <!-- URLs ending with '.xml' or '.rss' -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.VIEW"/>-->
+<!--                <category android:name="android.intent.category.DEFAULT"/>-->
+<!--                <category android:name="android.intent.category.BROWSABLE"/>-->
 
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-
-                <data android:scheme="http"/>
-                <data android:scheme="https"/>
-                <data android:host="*"/>
-                <data android:pathPattern=".*\\.xml"/>
-                <data android:pathPattern=".*\\.rss"/>
-                <data android:pathPattern=".*\\.atom"/>
-            </intent-filter>
+<!--                <data android:scheme="http"/>-->
+<!--                <data android:scheme="https"/>-->
+<!--                <data android:host="*"/>-->
+<!--                <data android:pathPattern=".*\\.xml"/>-->
+<!--                <data android:pathPattern=".*\\.rss"/>-->
+<!--                <data android:pathPattern=".*\\.atom"/>-->
+<!--            </intent-filter>-->
 
             <!-- Feedburner URLs -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.VIEW"/>-->
+<!--                <category android:name="android.intent.category.DEFAULT"/>-->
+<!--                <category android:name="android.intent.category.BROWSABLE"/>-->
 
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-
-                <data android:scheme="http"/>
-                <data android:scheme="https"/>
-                <data android:host="feeds.feedburner.com"/>
-                <data android:host="feedproxy.google.com"/>
-                <data android:host="feeds2.feedburner.com"/>
-                <data android:host="feedsproxy.google.com"/>
-            </intent-filter>
+<!--                <data android:scheme="http"/>-->
+<!--                <data android:scheme="https"/>-->
+<!--                <data android:host="feeds.feedburner.com"/>-->
+<!--                <data android:host="feedproxy.google.com"/>-->
+<!--                <data android:host="feeds2.feedburner.com"/>-->
+<!--                <data android:host="feedsproxy.google.com"/>-->
+<!--            </intent-filter>-->
 
             <!-- Files with mimeType rss/xml/atom -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
-
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
 
@@ -319,7 +316,6 @@
             <!-- Podcast protocols -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
-
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
 
@@ -330,50 +326,46 @@
             </intent-filter>
 
             <!-- Support for subscribeonandroid.com URLS -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.VIEW" />-->
+<!--                <category android:name="android.intent.category.DEFAULT" />-->
+<!--                <category android:name="android.intent.category.BROWSABLE" />-->
 
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
+<!--                <data android:pathPattern=".*\\..*/.*" />-->
+<!--                <data android:host="subscribeonandroid.com" />-->
+<!--                <data android:host="www.subscribeonandroid.com" />-->
+<!--                <data android:host="*subscribeonandroid.com" />-->
+<!--                <data android:scheme="http" />-->
+<!--                <data android:scheme="https" />-->
+<!--            </intent-filter>-->
 
-                <data android:pathPattern=".*\\..*/.*" />
-                <data android:host="subscribeonandroid.com" />
-                <data android:host="www.subscribeonandroid.com" />
-                <data android:host="*subscribeonandroid.com" />
-                <data android:scheme="http" />
-                <data android:scheme="https" />
-            </intent-filter>
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.VIEW" />-->
 
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
+<!--                <category android:name="android.intent.category.DEFAULT" />-->
+<!--                <category android:name="android.intent.category.BROWSABLE" />-->
 
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
+<!--                <data android:host="podcini.org" />-->
+<!--                <data android:host="www.podcini.org" />-->
+<!--                <data android:pathPrefix="/deeplink/subscribe" />-->
+<!--                <data android:scheme="http" />-->
+<!--                <data android:scheme="https" />-->
+<!--            </intent-filter>-->
 
-                <data android:host="podcini.org" />
-                <data android:host="www.podcini.org" />
-                <data android:pathPrefix="/deeplink/subscribe" />
-                <data android:scheme="http" />
-                <data android:scheme="https" />
-            </intent-filter>
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.VIEW" />-->
+<!--                <category android:name="android.intent.category.DEFAULT" />-->
+<!--                <category android:name="android.intent.category.BROWSABLE" />-->
 
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data android:pathPattern="/.*/podcast/.*" />
-                <data android:host="podcasts.apple.com" />
-                <data android:scheme="http" />
-                <data android:scheme="https" />
-            </intent-filter>
+<!--                <data android:pathPattern="/.*/podcast/.*" />-->
+<!--                <data android:host="podcasts.apple.com" />-->
+<!--                <data android:scheme="http" />-->
+<!--                <data android:scheme="https" />-->
+<!--            </intent-filter>-->
 
             <intent-filter>
                 <action android:name="android.intent.action.SEND"/>
-
                 <category android:name="android.intent.category.DEFAULT"/>
-
                 <data android:mimeType="text/plain"/>
             </intent-filter>
 

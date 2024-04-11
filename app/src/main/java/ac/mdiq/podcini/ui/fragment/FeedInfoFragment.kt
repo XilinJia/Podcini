@@ -9,7 +9,7 @@ import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.storage.model.feed.FeedFunding
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.dialog.EditUrlSettingsDialog
-import ac.mdiq.podcini.ui.glide.FastBlurTransformation
+import ac.mdiq.podcini.glide.FastBlurTransformation
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.ui.statistics.feed.FeedStatisticsFragment
 import ac.mdiq.podcini.ui.view.ToolbarIconTintManager

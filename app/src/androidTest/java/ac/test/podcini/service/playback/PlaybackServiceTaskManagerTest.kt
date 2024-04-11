@@ -5,10 +5,10 @@ import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.setShakeToReset
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.setVibrate
-import ac.mdiq.podcini.service.playback.PlaybackServiceTaskManager
-import ac.mdiq.podcini.service.playback.PlaybackServiceTaskManager.PSTMCallback
+import ac.mdiq.podcini.playback.service.PlaybackServiceTaskManager
+import ac.mdiq.podcini.playback.service.PlaybackServiceTaskManager.PSTMCallback
 import ac.mdiq.podcini.ui.widget.WidgetUpdater.WidgetState
-import ac.mdiq.podcini.playback.event.SleepTimerUpdatedEvent
+import ac.mdiq.podcini.util.event.playback.SleepTimerUpdatedEvent
 import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.playback.Playable

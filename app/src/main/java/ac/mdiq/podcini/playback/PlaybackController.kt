@@ -2,13 +2,13 @@ package ac.mdiq.podcini.playback
 
 import ac.mdiq.podcini.feed.util.PlaybackSpeedUtils.getCurrentPlaybackSpeed
 import ac.mdiq.podcini.preferences.PlaybackPreferences
-import ac.mdiq.podcini.service.playback.PlaybackService
-import ac.mdiq.podcini.service.playback.PlaybackService.LocalBinder
-import ac.mdiq.podcini.service.playback.PlaybackServiceInterface
+import ac.mdiq.podcini.playback.service.PlaybackService
+import ac.mdiq.podcini.playback.service.PlaybackService.LocalBinder
+import ac.mdiq.podcini.playback.service.PlaybackServiceInterface
 import ac.mdiq.podcini.storage.DBWriter
-import ac.mdiq.podcini.playback.event.PlaybackPositionEvent
-import ac.mdiq.podcini.playback.event.PlaybackServiceEvent
-import ac.mdiq.podcini.playback.event.SpeedChangedEvent
+import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
+import ac.mdiq.podcini.util.event.playback.PlaybackServiceEvent
+import ac.mdiq.podcini.util.event.playback.SpeedChangedEvent
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.storage.model.playback.Playable
@@ -299,10 +299,8 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
         get() = playbackService?.duration ?: getMedia()?.getDuration()?:Playable.INVALID_TIME
 
     fun getMedia(): Playable? {
-        if (media == null) {
-            media = if (playbackService != null) playbackService!!.pSMPInfo.playable
-            else PlaybackPreferences.createInstanceFromPreferences(activity)
-        }
+        if (media == null && playbackService != null) media = playbackService!!.pSMPInfo.playable
+        if (media == null) media = PlaybackPreferences.createInstanceFromPreferences(activity)
 
         return media
     }

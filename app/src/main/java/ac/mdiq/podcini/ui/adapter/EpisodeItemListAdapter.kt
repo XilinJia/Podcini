@@ -3,11 +3,10 @@ package ac.mdiq.podcini.ui.adapter
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.common.ThemeUtils
+import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.ui.fragment.EpisodeInfoFragment
-import ac.mdiq.podcini.ui.menuhandler.FeedItemMenuHandler
+import ac.mdiq.podcini.ui.actions.menuhandler.FeedItemMenuHandler
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
-import ac.mdiq.podcini.util.FeedItemUtil
 import android.R.color
 import android.app.Activity
 import android.os.Build
@@ -15,7 +14,6 @@ import android.util.Log
 import android.view.*
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.RecyclerView
-import org.apache.commons.lang3.ArrayUtils
 import java.lang.ref.WeakReference
 
 
@@ -102,12 +100,10 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) :
             }
         }
         holder.itemView.setOnTouchListener(View.OnTouchListener { _: View?, e: MotionEvent ->
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (e.isFromSource(InputDevice.SOURCE_MOUSE) && e.buttonState == MotionEvent.BUTTON_SECONDARY) {
-                    longPressedItem = item
-                    longPressedPosition = holder.bindingAdapterPosition
-                    return@OnTouchListener false
-                }
+            if (e.isFromSource(InputDevice.SOURCE_MOUSE) && e.buttonState == MotionEvent.BUTTON_SECONDARY) {
+                longPressedItem = item
+                longPressedPosition = holder.bindingAdapterPosition
+                return@OnTouchListener false
             }
             false
         })

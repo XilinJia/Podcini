@@ -238,8 +238,7 @@ class OpmlImportActivity : AppCompatActivity() {
                 }, { e: Throwable ->
                     Log.d(TAG, Log.getStackTraceString(e))
                     val message = if (e.message == null) "" else e.message!!
-                    if (message.lowercase().contains("permission")
-                            && Build.VERSION.SDK_INT >= 23) {
+                    if (message.lowercase().contains("permission")) {
                         val permission = ActivityCompat.checkSelfPermission(this,
                             Manifest.permission.READ_EXTERNAL_STORAGE)
                         if (permission != PackageManager.PERMISSION_GRANTED) {

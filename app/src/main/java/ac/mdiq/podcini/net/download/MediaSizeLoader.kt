@@ -2,7 +2,7 @@ package ac.mdiq.podcini.net.download
 
 import android.util.Log
 import androidx.media3.common.util.UnstableApi
-import ac.mdiq.podcini.service.download.PodciniHttpClient.getHttpClient
+import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
 import ac.mdiq.podcini.storage.DBWriter
 import ac.mdiq.podcini.util.NetworkUtils.isEpisodeHeadDownloadAllowed
 import ac.mdiq.podcini.storage.model.feed.FeedMedia

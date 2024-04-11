@@ -240,5 +240,17 @@
 
 ## 4.6.2
 
-* min SDK version bumped to 23 for Android Auto support
+* min SDK version bumped to 23 for Android Auto support: : devices with Android 5.1 or lower are not supported, sorry.
 * it should now work on Android Auto
+
+## 4.7.0
+
+* large code and directory refactoring
+* removed all checks of SDK_INT vs Build.VERSION_CODES.M or 23: devices with Android 5.1 or lower are not supported, sorry.
+* made streamed media somewhat equivalent to downloaded media
+	* enabled episode description on player detailed view
+	* enabled intro- and end- skipping
+	* mark as played when finished
+	* streamed media is added to queue and is resumed after restart
+* changes in text of share feed link
+* disabled some undesired deep links

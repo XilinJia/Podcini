@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.playback.cast
 
 import ac.mdiq.podcini.util.event.PlayerErrorEvent
-import ac.mdiq.podcini.playback.event.BufferUpdateEvent
+import ac.mdiq.podcini.util.event.playback.BufferUpdateEvent
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.storage.model.playback.Playable
@@ -180,7 +180,7 @@ class CastPsmp(context: Context, callback: PSMPCallback) : PlaybackServiceMediaP
                             if (position >= 0) {
                                 oldMedia.setPosition(position)
                             }
-                            callback.onPostPlayback(oldMedia, false, false, false)
+                            callback.onPostPlayback(oldMedia, ended = false, skipped = false, playingNext = false)
                         }
                         // onPlaybackEnded pretty much takes care of updating the UI
                         return
@@ -201,14 +201,14 @@ class CastPsmp(context: Context, callback: PSMPCallback) : PlaybackServiceMediaP
                         if (mediaChanged && currentMedia != null) {
                             media = currentMedia
                         }
-                        endPlayback(true, false, true, true)
+                        endPlayback(true, wasSkipped = false, shouldContinue = true, toStoppedState = true)
                         return
                     }
                     MediaStatus.IDLE_REASON_ERROR -> {
                         Log.w(TAG, "Got an error status from the Chromecast. "
                                 + "Skipping, if possible, to the next episode...")
                         EventBus.getDefault().post(PlayerErrorEvent("Chromecast error code 1"))
-                        endPlayback(false, false, true, true)
+                        endPlayback(false, wasSkipped = false, shouldContinue = true, toStoppedState = true)
                         return
                     }
                     else -> return
@@ -222,7 +222,7 @@ class CastPsmp(context: Context, callback: PSMPCallback) : PlaybackServiceMediaP
         if (mediaChanged) {
             callback.onMediaChanged(true)
             if (oldMedia != null) {
-                callback.onPostPlayback(oldMedia, false, false, currentMedia != null)
+                callback.onPostPlayback(oldMedia, ended = false, skipped = false, playingNext = currentMedia != null)
             }
         }
     }
@@ -272,7 +272,7 @@ class CastPsmp(context: Context, callback: PSMPCallback) : PlaybackServiceMediaP
                 }
                 if (media != null && media?.getIdentifier() != playable.getIdentifier()) {
                     val oldMedia: Playable = media!!
-                    callback.onPostPlayback(oldMedia, false, false, true)
+                    callback.onPostPlayback(oldMedia, false, skipped = false, playingNext = true)
                 }
                 setPlayerStatus(PlayerStatus.INDETERMINATE, null)
             }
@@ -323,7 +323,10 @@ class CastPsmp(context: Context, callback: PSMPCallback) : PlaybackServiceMediaP
     override fun reinit() {
         Log.d(TAG, "reinit() called")
         if (media != null) {
-            playMediaObject(media!!, true, false, startWhenPrepared.get(), false)
+            playMediaObject(media!!, true,
+                stream = false,
+                startWhenPrepared = startWhenPrepared.get(),
+                prepareImmediately = false)
         } else {
             Log.d(TAG, "Call to reinit was ignored: media was null")
         }
@@ -420,7 +423,7 @@ class CastPsmp(context: Context, callback: PSMPCallback) : PlaybackServiceMediaP
     }
 
     override fun getAudioTracks(): List<String> {
-        return emptyList<String>()
+        return emptyList()
     }
 
     override fun setAudioTrack(track: Int) {
@@ -463,7 +466,11 @@ class CastPsmp(context: Context, callback: PSMPCallback) : PlaybackServiceMediaP
                 callback.onPlaybackEnded(nextMedia.getMediaType(), !playNextEpisode)
                 // setting media to null signals to playMediaObject() that we're taking care of post-playback processing
                 media = null
-                playMediaObject(nextMedia, false, true, playNextEpisode, playNextEpisode)
+                playMediaObject(nextMedia,
+                    forceReset = false,
+                    stream = true,
+                    startWhenPrepared = playNextEpisode,
+                    prepareImmediately = playNextEpisode)
             }
         }
         if (shouldContinue || toStoppedState) {

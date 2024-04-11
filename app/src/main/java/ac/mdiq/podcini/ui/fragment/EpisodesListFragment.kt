@@ -82,16 +82,6 @@ class EpisodesListFragment : BaseEpisodesListFragment() {
 //                AllEpisodesFilterDialog.newInstance(getFilter()).show(childFragmentManager, null)
 //                return true
 //            }
-//            R.id.action_favorites -> {
-//                val filter = ArrayList(getFilter().valuesList)
-//                if (filter.contains(FeedItemFilter.IS_FAVORITE)) {
-//                    filter.remove(FeedItemFilter.IS_FAVORITE)
-//                } else {
-//                    filter.add(FeedItemFilter.IS_FAVORITE)
-//                }
-//                onFilterChanged(AllEpisodesFilterChangedEvent(HashSet(filter)))
-//                return true
-//            }
 //            R.id.episodes_sort -> {
 //                AllEpisodesSortDialog().show(childFragmentManager.beginTransaction(), "SortDialog")
 //                return true

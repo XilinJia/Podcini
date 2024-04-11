@@ -188,8 +188,7 @@ class PodDBAdapter private constructor() {
             val values = ContentValues()
             values.put(KEY_PLAYBACK_COMPLETION_DATE, media.getPlaybackCompletionDate()!!.time)
             values.put(KEY_PLAYED_DURATION, media.playedDuration)
-            db.update(TABLE_NAME_FEED_MEDIA, values, "$KEY_ID=?",
-                arrayOf(media.id.toString()))
+            db.update(TABLE_NAME_FEED_MEDIA, values, "$KEY_ID=?", arrayOf(media.id.toString()))
         } else {
             Log.e(TAG, "setFeedMediaPlaybackCompletionDate: ID of media was 0")
         }

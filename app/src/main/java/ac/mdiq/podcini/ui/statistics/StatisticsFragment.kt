@@ -5,7 +5,7 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.PagerFragmentBinding
 import ac.mdiq.podcini.storage.DBWriter
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.common.PagedToolbarFragment
+import ac.mdiq.podcini.ui.fragment.PagedToolbarFragment
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.statistics.downloads.DownloadStatisticsFragment
 import ac.mdiq.podcini.ui.statistics.subscriptions.SubscriptionStatisticsFragment

@@ -34,8 +34,6 @@ class FeedHandler {
             saxParser.parse(inputSource, handler)
             inputStreamReader.close()
         }
-        return FeedHandlerResult(handler.state.feed,
-            handler.state.alternateUrls,
-            handler.state.redirectUrl ?: "")
+        return FeedHandlerResult(handler.state.feed, handler.state.alternateUrls, handler.state.redirectUrl ?: "")
     }
 }

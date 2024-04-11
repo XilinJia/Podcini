@@ -9,7 +9,7 @@ import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatImageView
 import ac.mdiq.podcini.storage.DBReader.MonthlyStatisticsItem
-import ac.mdiq.podcini.ui.common.ThemeUtils.getColorFromAttr
+import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import kotlin.math.floor
 import kotlin.math.max
 

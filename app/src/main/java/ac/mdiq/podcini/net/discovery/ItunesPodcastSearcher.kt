@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.net.discovery
 
 import ac.mdiq.podcini.feed.FeedUrlNotFoundException
-import ac.mdiq.podcini.service.download.PodciniHttpClient.getHttpClient
+import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
 import io.reactivex.Single
 import io.reactivex.SingleEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers

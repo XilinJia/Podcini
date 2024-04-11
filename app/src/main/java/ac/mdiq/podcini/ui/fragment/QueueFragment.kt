@@ -6,7 +6,7 @@ import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.databinding.QueueFragmentBinding
 import ac.mdiq.podcini.feed.util.PlaybackSpeedUtils
 import ac.mdiq.podcini.net.download.FeedUpdateManager
-import ac.mdiq.podcini.playback.event.PlaybackPositionEvent
+import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.DBWriter
@@ -16,10 +16,10 @@ import ac.mdiq.podcini.ui.adapter.QueueRecyclerAdapter
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.dialog.ItemSortDialog
-import ac.mdiq.podcini.ui.fragment.actions.EpisodeMultiSelectActionHandler
-import ac.mdiq.podcini.ui.fragment.swipeactions.SwipeActions
-import ac.mdiq.podcini.ui.menuhandler.FeedItemMenuHandler
-import ac.mdiq.podcini.ui.menuhandler.MenuItemUtils
+import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectActionHandler
+import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
+import ac.mdiq.podcini.ui.actions.menuhandler.FeedItemMenuHandler
+import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.view.EmptyViewHandler
 import ac.mdiq.podcini.ui.view.EpisodeItemListRecyclerView
 import ac.mdiq.podcini.ui.view.LiftOnScrollListener
@@ -27,7 +27,6 @@ import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
 import ac.mdiq.podcini.util.Converter
 import ac.mdiq.podcini.util.FeedItemUtil
 import ac.mdiq.podcini.util.event.*
-import ac.mdiq.podcini.util.event.settings.SpeedPresetChangedEvent
 import android.content.Context
 import android.content.DialogInterface
 import android.content.SharedPreferences

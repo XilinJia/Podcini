@@ -3,8 +3,8 @@ package ac.mdiq.podcini.ui.activity
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.SettingsActivityBinding
 import ac.mdiq.podcini.preferences.ThemeSwitcher.getTheme
-import ac.mdiq.podcini.ui.fragment.preferences.*
-import ac.mdiq.podcini.ui.fragment.preferences.synchronization.SynchronizationPreferencesFragment
+import ac.mdiq.podcini.preferences.fragments.*
+import ac.mdiq.podcini.preferences.fragments.synchronization.SynchronizationPreferencesFragment
 import ac.mdiq.podcini.util.event.MessageEvent
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -78,7 +78,7 @@ class PreferenceActivity : AppCompatActivity(), SearchPreferenceResultListener {
                 prefFragment = PlaybackPreferencesFragment()
             }
             R.xml.preferences_notifications -> {
-                prefFragment = NotificationPreferencesFragment()
+                prefFragment = ac.mdiq.podcini.preferences.fragments.NotificationPreferencesFragment()
             }
             R.xml.preferences_swipe -> {
                 prefFragment = SwipePreferencesFragment()

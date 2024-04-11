@@ -13,9 +13,9 @@ import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.adapter.SubscriptionsAdapter
 import ac.mdiq.podcini.ui.dialog.FeedSortDialog
 import ac.mdiq.podcini.ui.dialog.SubscriptionsFilterDialog
-import ac.mdiq.podcini.ui.fragment.actions.FeedMultiSelectActionHandler
-import ac.mdiq.podcini.ui.menuhandler.FeedMenuHandler
-import ac.mdiq.podcini.ui.menuhandler.MenuItemUtils
+import ac.mdiq.podcini.ui.actions.FeedMultiSelectActionHandler
+import ac.mdiq.podcini.ui.actions.menuhandler.FeedMenuHandler
+import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.view.EmptyViewHandler
 import ac.mdiq.podcini.ui.view.LiftOnScrollListener
 import ac.mdiq.podcini.util.event.FeedListUpdateEvent

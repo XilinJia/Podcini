@@ -24,16 +24,16 @@ import ac.mdiq.podcini.util.DateFormatter
 import ac.mdiq.podcini.util.NetworkUtils
 import ac.mdiq.podcini.util.PlaybackStatus
 import ac.mdiq.podcini.net.download.MediaSizeLoader
-import ac.mdiq.podcini.playback.event.PlaybackPositionEvent
+import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.ui.adapter.actionbutton.ItemActionButton
-import ac.mdiq.podcini.ui.common.CircularProgressBar
-import ac.mdiq.podcini.ui.common.ThemeUtils
+import ac.mdiq.podcini.ui.actions.actionbutton.ItemActionButton
+import ac.mdiq.podcini.ui.view.CircularProgressBar
+import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.util.Converter
 import android.widget.LinearLayout
 import io.reactivex.functions.Consumer
@@ -78,9 +78,7 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
     private var item: FeedItem? = null
 
     init {
-        if (Build.VERSION.SDK_INT >= 23) {
-            title.setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_FULL)
-        }
+        title.setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_FULL)
         itemView.tag = this
     }
 

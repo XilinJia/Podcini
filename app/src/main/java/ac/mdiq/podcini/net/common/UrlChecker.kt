@@ -3,8 +3,6 @@ package ac.mdiq.podcini.net.common
 import android.net.Uri
 import android.util.Log
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-import java.io.UnsupportedEncodingException
-import java.net.URLDecoder
 
 /**
  * Provides methods for checking and editing a URL.
@@ -16,7 +14,7 @@ object UrlChecker {
     private const val TAG = "UrlChecker"
 
     private const val AP_SUBSCRIBE = "podcini-subscribe://"
-    private const val AP_SUBSCRIBE_DEEPLINK = "podcini.org/deeplink/subscribe"
+//    private const val AP_SUBSCRIBE_DEEPLINK = "podcini.org/deeplink/subscribe"
 
     /**
      * Checks if URL is valid and modifies it if necessary.
@@ -50,15 +48,15 @@ object UrlChecker {
                 Log.d(TAG, "Removing podcini-subscribe://")
                 return prepareUrl(url.substring(AP_SUBSCRIBE.length))
             }
-            lowerCaseUrl.contains(AP_SUBSCRIBE_DEEPLINK) -> {
-                Log.d(TAG, "Removing $AP_SUBSCRIBE_DEEPLINK")
-                val removedWebsite = url.substring(url.indexOf("?url=") + "?url=".length)
-                return try {
-                    prepareUrl(URLDecoder.decode(removedWebsite, "UTF-8"))
-                } catch (e: UnsupportedEncodingException) {
-                    prepareUrl(removedWebsite)
-                }
-            }
+//            lowerCaseUrl.contains(AP_SUBSCRIBE_DEEPLINK) -> {
+//                Log.d(TAG, "Removing $AP_SUBSCRIBE_DEEPLINK")
+//                val removedWebsite = url.substring(url.indexOf("?url=") + "?url=".length)
+//                return try {
+//                    prepareUrl(URLDecoder.decode(removedWebsite, "UTF-8"))
+//                } catch (e: UnsupportedEncodingException) {
+//                    prepareUrl(removedWebsite)
+//                }
+//            }
             !(lowerCaseUrl.startsWith("http://") || lowerCaseUrl.startsWith("https://")) -> {
                 Log.d(TAG, "Adding http:// at the beginning of the URL")
                 return "http://$url"

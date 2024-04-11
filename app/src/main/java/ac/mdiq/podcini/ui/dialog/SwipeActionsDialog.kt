@@ -14,11 +14,11 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.*
 import ac.mdiq.podcini.ui.fragment.*
-import ac.mdiq.podcini.ui.fragment.swipeactions.SwipeAction
-import ac.mdiq.podcini.ui.fragment.swipeactions.SwipeActions
-import ac.mdiq.podcini.ui.fragment.swipeactions.SwipeActions.Companion.getPrefsWithDefaults
-import ac.mdiq.podcini.ui.fragment.swipeactions.SwipeActions.Companion.isSwipeActionEnabled
-import ac.mdiq.podcini.ui.common.ThemeUtils.getColorFromAttr
+import ac.mdiq.podcini.ui.actions.swipeactions.SwipeAction
+import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
+import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions.Companion.getPrefsWithDefaults
+import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions.Companion.isSwipeActionEnabled
+import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 
 class SwipeActionsDialog(private val context: Context, private val tag: String) {
     private lateinit var keys: List<SwipeAction>

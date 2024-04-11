@@ -22,7 +22,7 @@ import ac.mdiq.podcini.util.IntentUtils.openInBrowser
 import ac.mdiq.podcini.storage.model.feed.Chapter
 import ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage
 import ac.mdiq.podcini.storage.model.playback.Playable
-import ac.mdiq.podcini.ui.common.CircularProgressBar
+import ac.mdiq.podcini.ui.view.CircularProgressBar
 import kotlin.math.max
 import kotlin.math.min
 

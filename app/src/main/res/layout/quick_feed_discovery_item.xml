@@ -9,7 +9,7 @@
     android:padding="4dp"
     android:clipToPadding="false">
 
-    <ac.mdiq.podcini.ui.common.SquareImageView
+    <ac.mdiq.podcini.ui.view.SquareImageView
         android:id="@+id/discovery_cover"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

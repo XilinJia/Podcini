@@ -14,7 +14,7 @@ import ac.mdiq.podcini.feed.LocalFeedUpdater.updateFeed
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.createInstanceFromPreferences
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.currentlyPlayingFeedMediaId
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.writeNoMediaPlaying
-import ac.mdiq.podcini.service.playback.PlaybackServiceInterface
+import ac.mdiq.podcini.playback.service.PlaybackServiceInterface
 import ac.mdiq.podcini.storage.DBReader.getFeed
 import ac.mdiq.podcini.storage.DBReader.getFeedItem
 import ac.mdiq.podcini.storage.DBReader.getFeedItemList
@@ -33,7 +33,7 @@ import ac.mdiq.podcini.util.event.QueueEvent.Companion.cleared
 import ac.mdiq.podcini.util.event.QueueEvent.Companion.irreversibleRemoved
 import ac.mdiq.podcini.util.event.QueueEvent.Companion.moved
 import ac.mdiq.podcini.util.event.QueueEvent.Companion.removed
-import ac.mdiq.podcini.playback.event.PlaybackHistoryEvent
+import ac.mdiq.podcini.util.event.playback.PlaybackHistoryEvent
 import ac.mdiq.podcini.storage.model.download.DownloadResult
 import ac.mdiq.podcini.storage.model.feed.*
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface

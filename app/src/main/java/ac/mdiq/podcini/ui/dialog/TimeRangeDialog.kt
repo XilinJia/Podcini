@@ -10,7 +10,7 @@ import android.view.MotionEvent
 import android.view.View
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.common.ThemeUtils.getColorFromAttr
+import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.atan2

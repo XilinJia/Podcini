@@ -3,7 +3,7 @@ package ac.mdiq.podcini.ui.dialog
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.SpeedSelectDialogBinding
 import ac.mdiq.podcini.playback.PlaybackController
-import ac.mdiq.podcini.playback.event.SpeedChangedEvent
+import ac.mdiq.podcini.util.event.playback.SpeedChangedEvent
 import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.preferences.UserPreferences.playbackSpeedArray
 import ac.mdiq.podcini.ui.view.ItemOffsetDecoration

@@ -4,7 +4,7 @@ package ac.mdiq.podcini.net.discovery
 import ac.mdiq.podcini.R
 import android.content.Context
 import android.util.Log
-import ac.mdiq.podcini.service.download.PodciniHttpClient.getHttpClient
+import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
 import ac.mdiq.podcini.storage.model.feed.Feed
 import okhttp3.CacheControl
 import okhttp3.OkHttpClient

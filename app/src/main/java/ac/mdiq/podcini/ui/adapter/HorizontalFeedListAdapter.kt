@@ -16,7 +16,7 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.HorizontalFeedItemBinding
 import ac.mdiq.podcini.ui.fragment.FeedItemlistFragment
 import ac.mdiq.podcini.storage.model.feed.Feed
-import ac.mdiq.podcini.ui.common.SquareImageView
+import ac.mdiq.podcini.ui.view.SquareImageView
 import java.lang.ref.WeakReference
 
 open class HorizontalFeedListAdapter(mainActivity: MainActivity) :

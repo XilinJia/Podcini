@@ -82,9 +82,6 @@ object NetworkUtils {
     @JvmStatic
     val isVpnOverWifi: Boolean
         get() {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-                return false
-            }
             val connManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val capabilities = connManager.getNetworkCapabilities(connManager.activeNetwork)
             return (capabilities != null && capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
@@ -94,17 +91,17 @@ object NetworkUtils {
     private val isNetworkCellular: Boolean
         get() {
             val connManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            if (Build.VERSION.SDK_INT >= 23) {
-                val network = connManager.activeNetwork ?: return false // Nothing connected
-                val info = connManager.getNetworkInfo(network) ?: return true // Better be safe than sorry
-                val capabilities = connManager.getNetworkCapabilities(network) ?: return true // Better be safe than sorry
-                return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
-            } else {
-                // if the default network is a VPN,
-                // this method will return the NetworkInfo for one of its underlying networks
-                val info = connManager.activeNetworkInfo ?: return false // Nothing connected
-                return info.type == ConnectivityManager.TYPE_MOBILE
-            }
+//            if (Build.VERSION.SDK_INT >= 23) {
+            val network = connManager.activeNetwork ?: return false // Nothing connected
+            val info = connManager.getNetworkInfo(network) ?: return true // Better be safe than sorry
+            val capabilities = connManager.getNetworkCapabilities(network) ?: return true // Better be safe than sorry
+            return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
+//            } else {
+//                // if the default network is a VPN,
+//                // this method will return the NetworkInfo for one of its underlying networks
+//                val info = connManager.activeNetworkInfo ?: return false // Nothing connected
+//                return info.type == ConnectivityManager.TYPE_MOBILE
+//            }
         }
 
     private val isInAllowedWifiNetwork: Boolean

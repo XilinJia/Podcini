@@ -11,7 +11,7 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.DBWriter
-import ac.mdiq.podcini.playback.event.PlaybackHistoryEvent
+import ac.mdiq.podcini.util.event.playback.PlaybackHistoryEvent
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
 import android.util.Log

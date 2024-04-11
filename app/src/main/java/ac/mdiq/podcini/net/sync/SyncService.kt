@@ -19,7 +19,7 @@ import ac.mdiq.podcini.net.sync.nextcloud.NextcloudSyncService
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueStorage
 import ac.mdiq.podcini.preferences.UserPreferences.gpodnetNotificationsEnabled
 import ac.mdiq.podcini.preferences.UserPreferences.isAllowMobileSync
-import ac.mdiq.podcini.service.download.PodciniHttpClient.getHttpClient
+import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
 import ac.mdiq.podcini.storage.DBReader.getEpisodes
 import ac.mdiq.podcini.storage.DBReader.getFeedItemByGuidOrEpisodeUrl
 import ac.mdiq.podcini.storage.DBReader.getFeedListDownloadUrls
@@ -266,7 +266,7 @@ class SyncService(context: Context, params: WorkerParameters) : Worker(context, 
             applicationContext.packageName)
         val pendingIntent = PendingIntent.getActivity(applicationContext,
             R.id.pending_intent_sync_error, intent, PendingIntent.FLAG_UPDATE_CURRENT
-                    or (if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_IMMUTABLE else 0))
+                    or PendingIntent.FLAG_IMMUTABLE)
         val notification = NotificationCompat.Builder(applicationContext,
             NotificationUtils.CHANNEL_ID_SYNC_ERROR)
             .setContentTitle(applicationContext.getString(R.string.gpodnetsync_error_title))

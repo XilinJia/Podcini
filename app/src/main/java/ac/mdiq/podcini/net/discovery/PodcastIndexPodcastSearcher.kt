@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.net.discovery
 
 import ac.mdiq.podcini.BuildConfig
-import ac.mdiq.podcini.service.download.PodciniHttpClient.getHttpClient
+import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
 import ac.mdiq.podcini.util.config.ClientConfig
 import io.reactivex.Single
 import io.reactivex.SingleEmitter

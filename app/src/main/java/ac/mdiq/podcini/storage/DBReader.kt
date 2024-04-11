@@ -19,7 +19,6 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.feedCounterSetting
 import ac.mdiq.podcini.preferences.UserPreferences.feedOrder
 import ac.mdiq.podcini.storage.model.feed.FeedPreferences.Companion.TAG_ROOT
-import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.min
 
@@ -247,10 +246,7 @@ object DBReader {
     @JvmStatic
     fun getQueueIDList(): LongList {
         Log.d(TAG, "getQueueIDList() called")
-//        val stackTraceElements = Thread.currentThread().stackTrace
-//        stackTraceElements.forEach { element ->
-//            println(element)
-//        }
+//        printStackTrce()
 
         val adapter = getInstance()
         adapter.open()
@@ -668,10 +664,7 @@ object DBReader {
     fun loadDescriptionOfFeedItem(item: FeedItem) {
         Log.d(TAG, "loadDescriptionOfFeedItem() called with: item = [$item]")
         //        TODO: need to find out who are often calling this
-//        val stackTraceElements = Thread.currentThread().stackTrace
-//        stackTraceElements.forEach { element ->
-//            println(element)
-//        }
+//        printStackTrce()
         val adapter = getInstance()
         adapter.open()
         try {

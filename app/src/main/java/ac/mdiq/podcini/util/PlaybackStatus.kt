@@ -2,7 +2,7 @@ package ac.mdiq.podcini.util
 
 import androidx.media3.common.util.UnstableApi
 import ac.mdiq.podcini.preferences.PlaybackPreferences
-import ac.mdiq.podcini.service.playback.PlaybackService
+import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 
 @UnstableApi

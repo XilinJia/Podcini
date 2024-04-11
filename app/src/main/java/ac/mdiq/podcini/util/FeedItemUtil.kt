@@ -3,6 +3,7 @@ package ac.mdiq.podcini.util
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.storage.model.playback.Playable
 import org.apache.commons.lang3.StringUtils
 
 object FeedItemUtil {
@@ -70,7 +71,7 @@ object FeedItemUtil {
     }
 
     @JvmStatic
-    fun hasAlmostEnded(media: FeedMedia): Boolean {
+    fun hasAlmostEnded(media: Playable): Boolean {
         val smartMarkAsPlayedSecs = UserPreferences.smartMarkAsPlayedSecs
         return media.getDuration() > 0 && media.getPosition() >= media.getDuration() - smartMarkAsPlayedSecs * 1000
     }

@@ -24,7 +24,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <ac.mdiq.podcini.ui.common.SquareImageView
+            <ac.mdiq.podcini.ui.view.SquareImageView
                 android:id="@+id/coverImage"
                 android:layout_width="80dp"
                 android:layout_height="80dp"

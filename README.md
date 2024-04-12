@@ -14,6 +14,12 @@ Compared to AntennaPod this project:
 4. Targets Android 14,
 5. Aims to improve efficiency and provide more user-friendly features
 
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+     alt="Get it on F-Droid"
+     height="80">](https://f-droid.org/packages/ac.mdiq.podcini/)
+
+Or download the latest APK from the [Releases Section](https://github.com/XilinJia/Podcini/releases/latest).
+
 ## Version 4
 
 Some drastic changes are made in the project since version 4.0. There is now a whole new interface of the Subscriptions page showing only the feeds with tags as filters, no longer having tags as folders in the page. And the default page of the app is changed to the Subscriptions page.  Feed list are no longer shown in the drawer.  Access to statistics is in the drawer.  Alongside, the Home, Echo and Inbox pages are removed from the project. OnlineFeedView activity is stripped down to only receive externally shared feeds. Also, viewbindings are enabled for most views, the project becomes mono-modular, containing only the app module.

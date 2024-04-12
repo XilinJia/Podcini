@@ -88,7 +88,7 @@ Even so, the database remains backward compatible, and AntennaPod's db can be ea
 
 ### Security
 
-* disabled `usesCleartextTraffic` (for non-secure content transmission)
+* Disabled `usesCleartextTraffic`, so that all content transmission is more private and secure
 
 For more details of the changes, see the [Changelog](changelog.md)
 

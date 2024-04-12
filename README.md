@@ -32,7 +32,7 @@ Also, viewbindings are enabled for most views, the project becomes mono-modular,
 
 Even so, the database remains backward compatible, and AntennaPod's db can be easily imported.
 
-## Notable new features/enhancements
+## Notable new features & enhancements
 
 ### Player
 
@@ -115,7 +115,7 @@ For more details of the changes, see the [Changelog](changelog.md)
 
 ## License
 
-Podcini, same as its forked project AntennaPod, is licensed under the GNU General Public License (GPL-3.0).
+Podcini, same as the project it was forked for, is licensed under the GNU General Public License (GPL-3.0).
 You can find the license text in the LICENSE file.
 
 ## Copyright

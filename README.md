@@ -122,7 +122,7 @@ You can find the license text in the LICENSE file.
 
 ## Copyright
 
-New files and modifications in the project is copyrighted in 2024 by Xilin Jia.
+New files and modifications in the project is copyrighted in 2024 by Xilin Jia and related contributors.
 
 Original contents from the forked project maintains copyrights of the AntennaPod team.
 

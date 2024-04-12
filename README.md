@@ -36,11 +36,11 @@ Even so, the database remains backward compatible, and AntennaPod's db can be ea
 
 ### Player
 
-* A more convenient player control displayed on all pages
-* A revamped and more efficient expanded player view showing episode description on the front
+* More convenient player control displayed on all pages
+* Revamped and more efficient expanded player view showing episode description on the front
 * External player class is merged into the player
-* Play speed setting has been straightened up, three speed can be set separately or combined: current audio, podcast, and global.  The order of precedence is in that same order.
-* Added preference "Fast Forward Speed" under "Playback" in settings with default value of 0.0, dialog allows setting a float number (capped between 0.0 and 10.0)
+* Playback speed setting has been straightened up, three speed can be set separately or combined: current audio, podcast, and global
+* Added preference "Fast Forward Speed" under "Playback" in settings with default value of 0.0, dialog allows setting a number between 0.0 and 10.0
 * The "Skip to next episode" button on the player
   * long-press moves to the next episode
   * by default, single tap does nothing
@@ -49,17 +49,15 @@ Even so, the database remains backward compatible, and AntennaPod's db can be ea
     * single tap again, the original play speed resumes
     * single tap not during play has no effect
 * Added preference "Fallback Speed" under "Playback" in settings with default value of 0.0, dialog allows setting a float number (capped between 0.0 and 1.5)
-* the Play button on the player
-  * by default, it behaves the same as usual
-  * if the user customize "Fallback speed" to a value greater than 0.1, long-press the button during play enters the fallback mode and plays at the set fallback speed, single tap exits the fallback mode
-* Various efficiency improvements, including removal of
+* if the user customizes "Fallback speed" to a value greater than 0.1, long-press the Play button during play enters the fallback mode and plays at the set fallback speed, single tap exits the fallback mode
+* Various efficiency improvements, including removal of:
   * redundant media loadings and ui updates
   * frequent list search during audio play
 * streamed media somewhat equivalent to downloaded media
-	* enabled episode description on player detailed view
-	* enabled intro- and end- skipping
-	* mark as played when finished
-	* streamed media is added to queue and is resumed after restart
+  * enabled episode description on player detailed view
+  * enabled intro- and end- skipping
+  * mark as played when finished
+  * streamed media is added to queue and is resumed after restart
 
 ### Podcast/Episode list
 
@@ -76,7 +74,7 @@ Even so, the database remains backward compatible, and AntennaPod's db can be ea
 
 ### Podcast/Episode
 
-* A new share notes menu option on various episode views
+* New share notes menu option on various episode views
 * Feed info view offers a link for direct search of feeds related to author
 
 ### Online feed
@@ -90,7 +88,7 @@ Even so, the database remains backward compatible, and AntennaPod's db can be ea
 
 ### Security
 
-* usesCleartextTraffic (for non-secure content transmission) is now disabled in the project
+* disabled `usesCleartextTraffic` (for non-secure content transmission)
 
 For more details of the changes, see the [Changelog](changelog.md)
 

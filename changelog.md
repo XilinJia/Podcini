@@ -254,3 +254,10 @@
 	* streamed media is added to queue and is resumed after restart
 * changes in text of share feed link
 * disabled some undesired deep links
+
+## 4.7.1
+
+* enabled speed setting for podcast in video player
+* fixed bug of receiving null view in function requiring non-null in subscriptions page
+* set Counter default to number of SHOW_UNPLAYED
+* removed FeedCounter.SHOW_NEW, NewEpisodesNotification, and associated notifications settings

@@ -23,8 +23,9 @@ object NotificationUtils {
         val mNotificationManager = NotificationManagerCompat.from(context)
 
         val channelGroups = listOf(
-            createGroupErrors(context),
-            createGroupNews(context))
+            createGroupErrors(context)
+//            createGroupNews(context)
+        )
         mNotificationManager.createNotificationChannelGroupsCompat(channelGroups)
 
         val channels = listOf(
@@ -32,10 +33,13 @@ object NotificationUtils {
             createChannelDownloading(context),
             createChannelPlaying(context),
             createChannelError(context),
-            createChannelSyncError(context),
-            createChannelEpisodeNotification(context))
-
+            createChannelSyncError(context)
+//            createChannelEpisodeNotification(context)
+        )
         mNotificationManager.createNotificationChannelsCompat(channels)
+
+        mNotificationManager.deleteNotificationChannelGroup(GROUP_ID_NEWS)
+        mNotificationManager.deleteNotificationChannel(CHANNEL_ID_EPISODE_NOTIFICATIONS)
     }
 
     private fun createChannelUserAction(c: Context): NotificationChannelCompat {
@@ -93,14 +97,14 @@ object NotificationUtils {
         return notificationChannel.build()
     }
 
-    private fun createChannelEpisodeNotification(c: Context): NotificationChannelCompat {
-        return NotificationChannelCompat.Builder(
-            CHANNEL_ID_EPISODE_NOTIFICATIONS, NotificationManagerCompat.IMPORTANCE_DEFAULT)
-            .setName(c.getString(R.string.notification_channel_new_episode))
-            .setDescription(c.getString(R.string.notification_channel_new_episode_description))
-            .setGroup(GROUP_ID_NEWS)
-            .build()
-    }
+//    private fun createChannelEpisodeNotification(c: Context): NotificationChannelCompat {
+//        return NotificationChannelCompat.Builder(
+//            CHANNEL_ID_EPISODE_NOTIFICATIONS, NotificationManagerCompat.IMPORTANCE_DEFAULT)
+//            .setName(c.getString(R.string.notification_channel_new_episode))
+//            .setDescription(c.getString(R.string.notification_channel_new_episode_description))
+//            .setGroup(GROUP_ID_NEWS)
+//            .build()
+//    }
 
     private fun createGroupErrors(c: Context): NotificationChannelGroupCompat {
         return NotificationChannelGroupCompat.Builder(GROUP_ID_ERRORS)
@@ -108,9 +112,9 @@ object NotificationUtils {
             .build()
     }
 
-    private fun createGroupNews(c: Context): NotificationChannelGroupCompat {
-        return NotificationChannelGroupCompat.Builder(GROUP_ID_NEWS)
-            .setName(c.getString(R.string.notification_group_news))
-            .build()
-    }
+//    private fun createGroupNews(c: Context): NotificationChannelGroupCompat {
+//        return NotificationChannelGroupCompat.Builder(GROUP_ID_NEWS)
+//            .setName(c.getString(R.string.notification_group_news))
+//            .build()
+//    }
 }

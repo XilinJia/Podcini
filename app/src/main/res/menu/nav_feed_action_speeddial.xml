@@ -10,11 +10,11 @@
         android:menuCategory="container"
         android:title="@string/keep_updated"
         android:icon="@drawable/ic_refresh"/>
-    <item
-        android:id="@+id/notify_new_episodes"
-        android:menuCategory="container"
-        android:title="@string/episode_notification"
-        android:icon="@drawable/ic_notifications"/>
+<!--    <item-->
+<!--        android:id="@+id/notify_new_episodes"-->
+<!--        android:menuCategory="container"-->
+<!--        android:title="@string/episode_notification"-->
+<!--        android:icon="@drawable/ic_notifications"/>-->
     <item
         android:id="@+id/autodownload"
         android:menuCategory="container"

@@ -19,8 +19,7 @@ class NotificationPreferencesFragment : PreferenceFragmentCompat() {
     }
 
     private fun setUpScreen() {
-        findPreference<Preference>(ac.mdiq.podcini.preferences.fragments.NotificationPreferencesFragment.Companion.PREF_GPODNET_NOTIFICATIONS)!!.isEnabled =
-            SynchronizationSettings.isProviderConnected
+        findPreference<Preference>(PREF_GPODNET_NOTIFICATIONS)!!.isEnabled = SynchronizationSettings.isProviderConnected
     }
 
     companion object {

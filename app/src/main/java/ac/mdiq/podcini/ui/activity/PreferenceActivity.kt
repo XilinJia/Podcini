@@ -78,7 +78,7 @@ class PreferenceActivity : AppCompatActivity(), SearchPreferenceResultListener {
                 prefFragment = PlaybackPreferencesFragment()
             }
             R.xml.preferences_notifications -> {
-                prefFragment = ac.mdiq.podcini.preferences.fragments.NotificationPreferencesFragment()
+                prefFragment = NotificationPreferencesFragment()
             }
             R.xml.preferences_swipe -> {
                 prefFragment = SwipePreferencesFragment()

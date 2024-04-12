@@ -253,6 +253,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
                         Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
                 //    ActivityCompat#requestPermissions
+//                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 // here to request the missing permissions, and then overriding
                 //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
                 //                                          int[] grantResults)
@@ -590,6 +591,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
                     Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
+//            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             // here to request the missing permissions, and then overriding
             //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
             //                                          int[] grantResults)
@@ -1334,6 +1336,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
                     Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
+//            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             // here to request the missing permissions, and then overriding
             //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
             //                                          int[] grantResults)

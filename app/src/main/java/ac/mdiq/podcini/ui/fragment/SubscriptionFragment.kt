@@ -135,7 +135,7 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
         catSpinner.setAdapter(catAdapter)
         catSpinner.setSelection(catAdapter.getPosition("All"))
         catSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 tagFilterIndex = position
                 filterOnTag()
             }

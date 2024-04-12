@@ -88,6 +88,7 @@ import java.util.concurrent.TimeUnit
      */
     @JvmStatic
     fun deleteFeedMediaOfItem(context: Context, mediaId: Long): Future<*> {
+        Log.d(TAG, "deleteFeedMediaOfItem called")
         return runOnDbThread {
             val media = getFeedMedia(mediaId)
             if (media != null) {
@@ -194,6 +195,7 @@ import java.util.concurrent.TimeUnit
      * Deleting media also removes the download log entries.
      */
     fun deleteFeedItems(context: Context, items: List<FeedItem>): Future<*> {
+        Log.d(TAG, "deleteFeedItems called")
         return runOnDbThread { deleteFeedItemsSynchronous(context, items) }
     }
 
@@ -282,13 +284,6 @@ import java.util.concurrent.TimeUnit
      * @param media FeedMedia that should be added to the playback history.
      * @param date PlaybackCompletionDate for `media`
      */
-    /**
-     * Adds a FeedMedia object to the playback history. A FeedMedia object is in the playback history if
-     * its playback completion date is set to a non-null value. This method will set the playback completion date to the
-     * current date regardless of the current value.
-     *
-     * @param media FeedMedia that should be added to the playback history.
-     */
     @JvmOverloads
     fun addItemToPlaybackHistory(media: FeedMedia?, date: Date? = Date()): Future<*> {
         return runOnDbThread {
@@ -311,6 +306,7 @@ import java.util.concurrent.TimeUnit
      * @param status The DownloadStatus object.
      */
     fun addDownloadStatus(status: DownloadResult?): Future<*> {
+        Log.d(TAG, "addDownloadStatus called")
         return runOnDbThread {
             if (status != null) {
                 val adapter = getInstance()
@@ -335,6 +331,7 @@ import java.util.concurrent.TimeUnit
     @UnstableApi fun addQueueItemAt(context: Context, itemId: Long,
                        index: Int, performAutoDownload: Boolean
     ): Future<*> {
+        Log.d(TAG, "addQueueItemAt called")
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -368,6 +365,7 @@ import java.util.concurrent.TimeUnit
     }
 
     fun addQueueItem(context: Context, markAsUnplayed: Boolean, vararg items: FeedItem): Future<*> {
+        Log.d(TAG, "addQueueItem called")
         val itemIds = LongList(items.size)
         for (item in items) {
             if (!item.hasMedia()) {
@@ -403,8 +401,8 @@ import java.util.concurrent.TimeUnit
      * @param itemIds             IDs of the FeedItem objects that should be added to the queue.
      */
     @UnstableApi fun addQueueItem(context: Context, performAutoDownload: Boolean,
-                     markAsUnplayed: Boolean, vararg itemIds: Long
-    ): Future<*> {
+                     markAsUnplayed: Boolean, vararg itemIds: Long): Future<*> {
+        Log.d(TAG, "addQueueItem(context ...) called")
         return runOnDbThread {
             if (itemIds.isEmpty()) {
                 return@runOnDbThread
@@ -506,26 +504,20 @@ import java.util.concurrent.TimeUnit
      * @param item                FeedItem that should be removed.
      */
     @JvmStatic
-    fun removeQueueItem(context: Context,
-                        performAutoDownload: Boolean, item: FeedItem
-    ): Future<*> {
+    fun removeQueueItem(context: Context, performAutoDownload: Boolean, item: FeedItem): Future<*> {
         return runOnDbThread { removeQueueItemSynchronous(context, performAutoDownload, item.id) }
     }
 
     @JvmStatic
-    fun removeQueueItem(context: Context, performAutoDownload: Boolean,
-                        vararg itemIds: Long
-    ): Future<*> {
+    fun removeQueueItem(context: Context, performAutoDownload: Boolean, vararg itemIds: Long): Future<*> {
         return runOnDbThread { removeQueueItemSynchronous(context, performAutoDownload, *itemIds) }
     }
 
     @UnstableApi private fun removeQueueItemSynchronous(context: Context,
-                                           performAutoDownload: Boolean,
-                                           vararg itemIds: Long
-    ) {
-        if (itemIds.isEmpty()) {
-            return
-        }
+                                           performAutoDownload: Boolean, vararg itemIds: Long) {
+        Log.d(TAG, "removeQueueItemSynchronous called")
+        if (itemIds.isEmpty()) return
+
         val adapter = getInstance()
         adapter.open()
         val queue = getQueue(adapter).toMutableList()
@@ -643,9 +635,7 @@ import java.util.concurrent.TimeUnit
      * @throws IndexOutOfBoundsException if (to < 0 || to >= queue.size()) || (from < 0 || from >= queue.size())
      */
     @JvmStatic
-    fun moveQueueItem(from: Int,
-                      to: Int, broadcastUpdate: Boolean
-    ): Future<*> {
+    fun moveQueueItem(from: Int, to: Int, broadcastUpdate: Boolean): Future<*> {
         return runOnDbThread { moveQueueItemHelper(from, to, broadcastUpdate) }
     }
 
@@ -661,9 +651,7 @@ import java.util.concurrent.TimeUnit
      * false if the caller wants to avoid unexpected updates of the GUI.
      * @throws IndexOutOfBoundsException if (to < 0 || to >= queue.size()) || (from < 0 || from >= queue.size())
      */
-    private fun moveQueueItemHelper(from: Int,
-                                    to: Int, broadcastUpdate: Boolean
-    ) {
+    private fun moveQueueItemHelper(from: Int, to: Int, broadcastUpdate: Boolean) {
         val adapter = getInstance()
         adapter.open()
         val queue = getQueue(adapter).toMutableList()
@@ -743,13 +731,11 @@ import java.util.concurrent.TimeUnit
     private fun markItemPlayed(itemId: Long,
                                played: Int,
                                mediaId: Long,
-                               resetMediaPosition: Boolean
-    ): Future<*> {
+                               resetMediaPosition: Boolean): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
-            adapter.setFeedItemRead(played, itemId, mediaId,
-                resetMediaPosition)
+            adapter.setFeedItemRead(played, itemId, mediaId, resetMediaPosition)
             adapter.close()
             EventBus.getDefault().post(UnreadItemsUpdateEvent())
         }
@@ -828,6 +814,7 @@ import java.util.concurrent.TimeUnit
      * @param media The FeedMedia object.
      */
     fun setFeedMedia(media: FeedMedia?): Future<*> {
+        Log.d(TAG, "setFeedMedia called")
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -843,6 +830,7 @@ import java.util.concurrent.TimeUnit
      */
     @JvmStatic
     fun setFeedMediaPlaybackInformation(media: FeedMedia?): Future<*> {
+        Log.d(TAG, "setFeedMediaPlaybackInformation called")
         return runOnDbThread {
             if (media != null) {
                 val adapter = getInstance()
@@ -861,6 +849,7 @@ import java.util.concurrent.TimeUnit
      */
     @JvmStatic
     fun setFeedItem(item: FeedItem?): Future<*> {
+        Log.d(TAG, "setFeedItem called")
         return runOnDbThread {
             if (item != null) {
                 val adapter = getInstance()
@@ -905,6 +894,7 @@ import java.util.concurrent.TimeUnit
     }
 
     private fun indexInItemList(items: List<FeedItem?>, itemId: Long): Int {
+        Log.d(TAG, "indexInItemList called")
         for (i in items.indices) {
             val item = items[i]
             if (item?.id == itemId) {
@@ -919,9 +909,7 @@ import java.util.concurrent.TimeUnit
      *
      * @param lastUpdateFailed true if last update failed
      */
-    fun setFeedLastUpdateFailed(feedId: Long,
-                                lastUpdateFailed: Boolean
-    ): Future<*> {
+    fun setFeedLastUpdateFailed(feedId: Long, lastUpdateFailed: Boolean): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -974,9 +962,7 @@ import java.util.concurrent.TimeUnit
      * @param feedId       The feed's ID
      * @param filterValues Values that represent properties to filter by
      */
-    fun setFeedItemsFilter(feedId: Long,
-                           filterValues: Set<String>
-    ): Future<*> {
+    fun setFeedItemsFilter(feedId: Long, filterValues: Set<String>): Future<*> {
         Log.d(TAG, "setFeedItemsFilter() called with: feedId = [$feedId], filterValues = [$filterValues]")
         return runOnDbThread {
             val adapter = getInstance()

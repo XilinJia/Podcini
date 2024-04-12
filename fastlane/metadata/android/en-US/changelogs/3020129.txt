@@ -1,0 +1,7 @@
+ 
+Version 4.7.1 brings several changes:
+
+* enabled speed setting for podcast in video player
+* fixed bug of receiving null view in function requiring non-null in subscriptions page
+* set Counter default to number of SHOW_UNPLAYED
+* removed FeedCounter.SHOW_NEW, NewEpisodesNotification, and associated notifications settings

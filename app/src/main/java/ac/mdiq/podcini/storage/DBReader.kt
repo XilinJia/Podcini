@@ -141,6 +141,7 @@ object DBReader {
      * @param items The FeedItems whose Feed-objects should be loaded.
      */
     private fun loadFeedDataOfFeedItemList(items: List<FeedItem>) {
+        Log.d(TAG, "loadFeedDataOfFeedItemList called")
         val feedIndex: MutableMap<Long, Feed> = ArrayMap(feeds.size)
         val feedsCopy = ArrayList(feeds)
         for (feed in feedsCopy) {
@@ -235,7 +236,7 @@ object DBReader {
 
     @JvmStatic
     fun getQueue(adapter: PodDBAdapter?): List<FeedItem> {
-//        Log.d(TAG, "getQueue()")
+        Log.d(TAG, "getQueue(adapter)")
         adapter?.queueCursor.use { cursor ->
             val items = extractItemlistFromCursor(adapter, cursor)
             loadAdditionalFeedItemListData(items)
@@ -323,6 +324,7 @@ object DBReader {
 
     @JvmStatic
     fun getTotalEpisodeCount(filter: FeedItemFilter?): Int {
+        Log.d(TAG, "getTotalEpisodeCount called")
         val adapter = getInstance()
         adapter.open()
         try {
@@ -506,7 +508,7 @@ object DBReader {
             }
             return item
         }
-        return item
+        return null
     }
 
     /**
@@ -582,19 +584,16 @@ object DBReader {
      * Does NOT load additional attributes like feed or queue state.
      */
     private fun getFeedItemByGuidOrEpisodeUrl(guid: String?, episodeUrl: String,
-                                              adapter: PodDBAdapter?
-    ): FeedItem? {
-        if (adapter != null) {
-            adapter.getFeedItemCursor(guid, episodeUrl).use { cursor ->
-                if (!cursor.moveToNext()) {
-                    return null
-                }
-                val list = extractItemlistFromCursor(adapter, cursor)
-                if (list.isNotEmpty()) {
-                    return list[0]
-                }
+                                              adapter: PodDBAdapter?): FeedItem? {
+        adapter?.getFeedItemCursor(guid, episodeUrl)?.use { cursor ->
+            if (!cursor.moveToNext()) {
                 return null
             }
+            val list = extractItemlistFromCursor(adapter, cursor)
+            if (list.isNotEmpty()) {
+                return list[0]
+            }
+            return null
         }
         return null
     }
@@ -618,20 +617,18 @@ object DBReader {
     }
 
     private fun getImageAuthentication(imageUrl: String, adapter: PodDBAdapter?): String {
-        var credentials: String = ""
-        if (adapter != null) {
-            adapter.getImageAuthenticationCursor(imageUrl).use { cursor ->
-                if (cursor.moveToFirst()) {
-                    val username = cursor.getString(0)
-                    val password = cursor.getString(1)
-                    credentials = if (!username.isNullOrEmpty() && password != null) {
-                        "$username:$password"
-                    } else {
-                        ""
-                    }
+        var credentials = ""
+        adapter?.getImageAuthenticationCursor(imageUrl)?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                val username = cursor.getString(0)
+                val password = cursor.getString(1)
+                credentials = if (!username.isNullOrEmpty() && password != null) {
+                    "$username:$password"
                 } else {
-                    credentials = ""
+                    ""
                 }
+            } else {
+                credentials = ""
             }
         }
         return credentials
@@ -647,6 +644,7 @@ object DBReader {
      */
     @JvmStatic
     fun getFeedItemByGuidOrEpisodeUrl(guid: String?, episodeUrl: String): FeedItem? {
+        Log.d(TAG, "getFeedItemByGuidOrEpisodeUrl called")
         val adapter = getInstance()
         adapter.open()
         try {
@@ -705,19 +703,17 @@ object DBReader {
     }
 
     private fun loadChaptersOfFeedItem(adapter: PodDBAdapter?, item: FeedItem): List<Chapter>? {
-        if (adapter != null) {
-            adapter.getSimpleChaptersOfFeedItemCursor(item).use { cursor ->
-                val chaptersCount = cursor.count
-                if (chaptersCount == 0) {
-                    item.chapters = null
-                    return null
-                }
-                val chapters = ArrayList<Chapter>()
-                while (cursor.moveToNext()) {
-                    chapters.add(ChapterCursorMapper.convert(cursor))
-                }
-                return chapters
+        adapter?.getSimpleChaptersOfFeedItemCursor(item)?.use { cursor ->
+            val chaptersCount = cursor.count
+            if (chaptersCount == 0) {
+                item.chapters = null
+                return null
             }
+            val chapters = ArrayList<Chapter>()
+            while (cursor.moveToNext()) {
+                chapters.add(ChapterCursorMapper.convert(cursor))
+            }
+            return chapters
         }
         return null
     }
@@ -730,9 +726,9 @@ object DBReader {
      */
     @JvmStatic
     fun getFeedMedia(mediaId: Long): FeedMedia? {
+        Log.d(TAG, "getFeedMedia called")
         val adapter = getInstance()
         adapter.open()
-
         try {
             adapter.getSingleFeedMediaCursor(mediaId).use { mediaCursor ->
                 if (!mediaCursor.moveToFirst()) {
@@ -798,8 +794,7 @@ object DBReader {
      * @return The list of statistics objects
      */
     fun getStatistics(includeMarkedAsPlayed: Boolean,
-                      timeFilterFrom: Long, timeFilterTo: Long
-    ): StatisticsResult {
+                      timeFilterFrom: Long, timeFilterTo: Long): StatisticsResult {
         val adapter = getInstance()
         adapter.open()
 

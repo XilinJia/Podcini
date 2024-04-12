@@ -251,7 +251,7 @@ object UserPreferences {
     @JvmStatic
     val feedCounterSetting: FeedCounter
         get() {
-            val value = prefs.getString(PREF_DRAWER_FEED_COUNTER, "" + FeedCounter.SHOW_NEW.id)
+            val value = prefs.getString(PREF_DRAWER_FEED_COUNTER, "" + FeedCounter.SHOW_UNPLAYED.id)
             return FeedCounter.fromOrdinal(value!!.toInt())
         }
 

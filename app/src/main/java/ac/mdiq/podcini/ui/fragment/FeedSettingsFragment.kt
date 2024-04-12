@@ -11,7 +11,6 @@ import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.storage.model.feed.FeedFilter
 import ac.mdiq.podcini.storage.model.feed.FeedPreferences
 import ac.mdiq.podcini.storage.model.feed.FeedPreferences.AutoDeleteAction
-import ac.mdiq.podcini.storage.model.feed.FeedPreferences.NewEpisodesAction
 import ac.mdiq.podcini.storage.model.feed.VolumeAdaptionSetting
 import ac.mdiq.podcini.ui.dialog.AuthenticationDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeFilterDialog
@@ -20,12 +19,9 @@ import ac.mdiq.podcini.ui.dialog.TagSettingsDialog
 import ac.mdiq.podcini.util.event.settings.SkipIntroEndingChangedEvent
 import ac.mdiq.podcini.util.event.settings.SpeedPresetChangedEvent
 import ac.mdiq.podcini.util.event.settings.VolumeAdaptionChangedEvent
-import android.Manifest
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
@@ -36,7 +32,6 @@ import android.widget.CompoundButton
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.OptIn
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.media3.common.util.UnstableApi
 import androidx.preference.ListPreference
@@ -159,7 +154,7 @@ class FeedSettingsFragment : Fragment() {
                     setupEpisodeFilterPreference()
                     setupPlaybackSpeedPreference()
                     setupFeedAutoSkipPreference()
-                    setupEpisodeNotificationPreference()
+//                    setupEpisodeNotificationPreference()
                     setupTags()
 
                     updateAutoDeleteSummary()
@@ -440,25 +435,25 @@ class FeedSettingsFragment : Fragment() {
                 }
         }
 
-        @OptIn(UnstableApi::class) private fun setupEpisodeNotificationPreference() {
-            val pref = findPreference<SwitchPreferenceCompat>("episodeNotification")
-
-            pref!!.isChecked = feedPreferences!!.showEpisodeNotification
-            pref.onPreferenceChangeListener =
-                Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any ->
-                    if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(
-                                requireContext(),
-                                Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                        requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                        return@OnPreferenceChangeListener false
-                    }
-                    val checked = newValue == true
-                    feedPreferences!!.showEpisodeNotification = checked
-                    if (feedPreferences != null) DBWriter.setFeedPreferences(feedPreferences!!)
-                    pref.isChecked = checked
-                    false
-                }
-        }
+//        @OptIn(UnstableApi::class) private fun setupEpisodeNotificationPreference() {
+//            val pref = findPreference<SwitchPreferenceCompat>("episodeNotification")
+//
+//            pref!!.isChecked = feedPreferences!!.showEpisodeNotification
+//            pref.onPreferenceChangeListener =
+//                Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any ->
+//                    if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(
+//                                requireContext(),
+//                                Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+//                        requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+//                        return@OnPreferenceChangeListener false
+//                    }
+//                    val checked = newValue == true
+//                    feedPreferences!!.showEpisodeNotification = checked
+//                    if (feedPreferences != null) DBWriter.setFeedPreferences(feedPreferences!!)
+//                    pref.isChecked = checked
+//                    false
+//                }
+//        }
 
         companion object {
             private val PREF_EPISODE_FILTER: CharSequence = "episodeFilter"

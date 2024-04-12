@@ -196,6 +196,7 @@ import java.util.concurrent.*
     @JvmStatic
     @Synchronized
     fun updateFeed(context: Context, newFeed: Feed, removeUnlistedItems: Boolean): Feed? {
+        Log.d(TAG, "updateFeed called")
         var resultFeed: Feed?
         val unlistedItems: MutableList<FeedItem> = ArrayList()
 
@@ -226,14 +227,6 @@ import java.util.concurrent.*
                 Log.d(TAG, "Feed has updated preferences. Updating old feed's preferences")
                 savedFeed.preferences!!.updateFromOther(newFeed.preferences)
             }
-
-            // get the most recent date now, before we start changing the list
-//            only used to add to IN_Box???
-//            val priorMostRecent = savedFeed.mostRecentItem
-//            var priorMostRecentDate: Date? = Date()
-//            if (priorMostRecent != null) {
-//                priorMostRecentDate = priorMostRecent.getPubDate()
-//            }
 
             // Look for new or updated Items
             for (idx in newFeed.items.indices) {
@@ -298,18 +291,6 @@ import java.util.concurrent.*
                     } else {
                         savedFeed.items.add(idx, item)
                     }
-
-//                    var action = savedFeed.preferences!!.newEpisodesAction
-//                    if (action == NewEpisodesAction.GLOBAL) {
-//                        action = newEpisodesAction
-//                    }
-//                    if (action == NewEpisodesAction.ADD_TO_INBOX
-//                            && (item.getPubDate() == null || priorMostRecentDate == null || priorMostRecentDate.before(
-//                                item.getPubDate()) || priorMostRecentDate == item.getPubDate())) {
-//                        Log.d(TAG, "Marking item published on " + item.getPubDate()
-//                                + " new, prior most recent date = " + priorMostRecentDate)
-//                        item.setNew()
-//                    }
                 }
             }
 
@@ -383,6 +364,7 @@ import java.util.concurrent.*
      */
     @JvmStatic
     fun searchFeedItems(feedID: Long, query: String): FutureTask<List<FeedItem>> {
+        Log.d(TAG, "searchFeedItems called")
         return FutureTask(object : QueryTask<List<FeedItem>>() {
             override fun execute(adapter: PodDBAdapter?) {
                 val searchResult = adapter?.searchItems(feedID, query)

@@ -917,7 +917,7 @@ class PodDBAdapter private constructor() {
 
     fun getFeedCounters(setting: FeedCounter?, vararg feedIds: Long): Map<Long, Int> {
         val whereRead = when (setting) {
-            FeedCounter.SHOW_NEW -> KEY_READ + "=" + FeedItem.NEW
+//            FeedCounter.SHOW_NEW -> KEY_READ + "=" + FeedItem.NEW
             FeedCounter.SHOW_UNPLAYED -> ("(" + KEY_READ + "=" + FeedItem.NEW
                     + " OR " + KEY_READ + "=" + FeedItem.UNPLAYED + ")")
             FeedCounter.SHOW_DOWNLOADED -> "$KEY_DOWNLOADED=1"

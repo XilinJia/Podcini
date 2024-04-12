@@ -28,9 +28,9 @@ class FeedMultiSelectActionHandler(private val activity: MainActivity, private v
             R.id.remove_feed -> {
                 RemoveFeedDialog.show(activity, selectedItems)
             }
-            R.id.notify_new_episodes -> {
-                notifyNewEpisodesPrefHandler()
-            }
+//            R.id.notify_new_episodes -> {
+//                notifyNewEpisodesPrefHandler()
+//            }
             R.id.keep_updated -> {
                 keepUpdatedPrefHandler()
             }
@@ -52,20 +52,20 @@ class FeedMultiSelectActionHandler(private val activity: MainActivity, private v
         }
     }
 
-    private fun notifyNewEpisodesPrefHandler() {
-        val preferenceSwitchDialog = PreferenceSwitchDialog(activity,
-            activity.getString(R.string.episode_notification),
-            activity.getString(R.string.episode_notification_summary))
-
-        preferenceSwitchDialog.setOnPreferenceChangedListener(object: PreferenceSwitchDialog.OnPreferenceChangedListener {
-            @UnstableApi override fun preferenceChanged(enabled: Boolean) {
-                saveFeedPreferences { feedPreferences: FeedPreferences ->
-                    feedPreferences.showEpisodeNotification = enabled
-                }
-            }
-        })
-        preferenceSwitchDialog.openDialog()
-    }
+//    private fun notifyNewEpisodesPrefHandler() {
+//        val preferenceSwitchDialog = PreferenceSwitchDialog(activity,
+//            activity.getString(R.string.episode_notification),
+//            activity.getString(R.string.episode_notification_summary))
+//
+//        preferenceSwitchDialog.setOnPreferenceChangedListener(object: PreferenceSwitchDialog.OnPreferenceChangedListener {
+//            @UnstableApi override fun preferenceChanged(enabled: Boolean) {
+//                saveFeedPreferences { feedPreferences: FeedPreferences ->
+//                    feedPreferences.showEpisodeNotification = enabled
+//                }
+//            }
+//        })
+//        preferenceSwitchDialog.openDialog()
+//    }
 
     private fun autoDownloadPrefHandler() {
         val preferenceSwitchDialog = PreferenceSwitchDialog(activity,

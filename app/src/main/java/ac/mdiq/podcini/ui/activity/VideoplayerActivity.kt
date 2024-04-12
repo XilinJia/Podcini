@@ -288,8 +288,7 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
         binding.videoView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
 
         setupVideoControlsToggler()
-        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-            WindowManager.LayoutParams.FLAG_FULLSCREEN)
+        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
 
         binding.videoPlayerContainer.setOnTouchListener(onVideoviewTouched)
         binding.videoPlayerContainer.viewTreeObserver.addOnGlobalLayoutListener {
@@ -308,12 +307,10 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
     }
 
     private val onVideoviewTouched = OnTouchListener { v: View, event: MotionEvent ->
-        if (event.action != MotionEvent.ACTION_DOWN) {
-            return@OnTouchListener false
-        }
-        if (PictureInPictureUtil.isInPictureInPictureMode(this)) {
-            return@OnTouchListener true
-        }
+        if (event.action != MotionEvent.ACTION_DOWN) return@OnTouchListener false
+
+        if (PictureInPictureUtil.isInPictureInPictureMode(this)) return@OnTouchListener true
+
         videoControlsHider.removeCallbacks(hideVideoControls)
 
         if (System.currentTimeMillis() - lastScreenTap < 300) {
@@ -333,9 +330,7 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
         }
 
         toggleVideoControlsVisibility()
-        if (videoControlsShowing) {
-            setupVideoControlsToggler()
-        }
+        if (videoControlsShowing) setupVideoControlsToggler()
 
         lastScreenTap = System.currentTimeMillis()
         true
@@ -609,7 +604,7 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
                         shareDialog.show(supportFragmentManager, "ShareEpisodeDialog")
                     }
                     item.itemId == R.id.playback_speed -> {
-                        VariableSpeedDialog.newInstance(booleanArrayOf(true, false, true))?.show(supportFragmentManager, null)
+                        VariableSpeedDialog.newInstance(booleanArrayOf(true, true, true))?.show(supportFragmentManager, null)
                     }
                     else -> {
                         return false
@@ -714,9 +709,7 @@ class VideoplayerActivity : CastEnabledActivity(), OnSeekBarChangeListener {
     //Hardware keyboard support
     override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
         val currentFocus = currentFocus
-        if (currentFocus is EditText) {
-            return super.onKeyUp(keyCode, event)
-        }
+        if (currentFocus is EditText) return super.onKeyUp(keyCode, event)
 
         val audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
 

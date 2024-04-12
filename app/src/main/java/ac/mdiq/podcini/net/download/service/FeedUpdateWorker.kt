@@ -32,12 +32,12 @@ import android.os.Build
 import java.util.*
 
 class FeedUpdateWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
-    private val newEpisodesNotification = NewEpisodesNotification()
+//    private val newEpisodesNotification = NewEpisodesNotification()
     private val notificationManager = NotificationManagerCompat.from(context)
 
     @UnstableApi override fun doWork(): Result {
         ClientConfigurator.initialize(applicationContext)
-        newEpisodesNotification.loadCountersBeforeRefresh()
+//        newEpisodesNotification.loadCountersBeforeRefresh()
 
         val toUpdate: MutableList<Feed>
         val feedId = inputData.getLong(FeedUpdateManager.EXTRA_FEED_ID, -1)
@@ -110,6 +110,7 @@ class FeedUpdateWorker(context: Context, params: WorkerParameters) : Worker(cont
                     Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
+//            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             // here to request the missing permissions, and then overriding
             //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
             //                                          int[] grantResults)
@@ -186,7 +187,7 @@ class FeedUpdateWorker(context: Context, params: WorkerParameters) : Worker(cont
         if (log.isNotEmpty() && !log[0].isSuccessful) {
             DBWriter.addDownloadStatus(feedSyncTask.downloadStatus)
         }
-        newEpisodesNotification.showIfNeeded(applicationContext, feedSyncTask.savedFeed!!)
+//        newEpisodesNotification.showIfNeeded(applicationContext, feedSyncTask.savedFeed!!)
         if (!request.source.isNullOrEmpty()) {
             when {
                 !downloader.permanentRedirectUrl.isNullOrEmpty() -> {

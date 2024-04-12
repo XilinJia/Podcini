@@ -137,7 +137,6 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         playerView2.setBackgroundColor(
             SurfaceColors.getColorForElevation(requireContext(), 8 * resources.displayMetrics.density))
 
-//        itemDesrView = binding.itemDescription
         cardViewSeek = binding.cardViewSeek
         txtvSeek = binding.txtvSeek
 
@@ -146,11 +145,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         itemDescFrag = PlayerDetailsFragment()
         transaction.replace(R.id.itemDescription, itemDescFrag).commit()
 
-//        controller = externalPlayerFragment1.controller
-//        loadMediaInfo(false)
         EventBus.getDefault().register(this)
-
-//        updateUi(controller?.getMedia())
         return binding.root
     }
 

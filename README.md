@@ -22,7 +22,13 @@ Or download the latest APK from the [Releases Section](https://github.com/XilinJ
 
 ## Version 4
 
-Some drastic changes are made in the project since version 4.0. There is now a whole new interface of the Subscriptions page showing only the feeds with tags as filters, no longer having tags as folders in the page. And the default page of the app is changed to the Subscriptions page.  Feed list are no longer shown in the drawer.  Access to statistics is in the drawer.  Alongside, the Home, Echo and Inbox pages are removed from the project. OnlineFeedView activity is stripped down to only receive externally shared feeds. Also, viewbindings are enabled for most views, the project becomes mono-modular, containing only the app module.
+Some drastic changes are made in the project since version 4.0.
+There is now a whole new interface of the Subscriptions page showing only the feeds with tags as filters, no longer having tags as folders in the page.
+And the default page of the app is changed to the Subscriptions page.
+Feed list are no longer shown in the drawer.  Access to statistics is in the drawer.
+Alongside, the Home, Echo and Inbox pages are removed from the project. 
+OnlineFeedView activity is stripped down to only receive externally shared feeds. 
+Also, viewbindings are enabled for most views, the project becomes mono-modular, containing only the app module.
 
 Even so, the database remains backward compatible, and AntennaPod's db can be easily imported.
 

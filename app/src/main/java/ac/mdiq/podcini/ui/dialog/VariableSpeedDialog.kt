@@ -104,9 +104,6 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
                 binding.global.isChecked = true
             }
         }
-//        if (!settingCode[0]) binding.currentAudio.visibility = View.INVISIBLE
-//        if (!settingCode[1]) binding.currentPodcast.visibility = View.INVISIBLE
-//        if (!settingCode[2]) binding.global.visibility = View.INVISIBLE
 
         speedSeekBar = binding.speedSeekBar
         speedSeekBar.setProgressChangedListener { multiplier: Float ->
@@ -184,9 +181,11 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
                 true
             }
             holder.chip.setOnClickListener { Handler(Looper.getMainLooper()).postDelayed({
-                if (binding.currentAudio.isChecked) settingCode[0] = true
-                if (binding.currentPodcast.isChecked) settingCode[1] = true
-                if (binding.global.isChecked) settingCode[2] = true
+                Log.d("VariableSpeedDialog", "holder.chip settingCode0: ${settingCode[0]} ${settingCode[1]} ${settingCode[2]}")
+                settingCode[0] = binding.currentAudio.isChecked
+                settingCode[1] = binding.currentPodcast.isChecked
+                settingCode[2] = binding.global.isChecked
+                Log.d("VariableSpeedDialog", "holder.chip settingCode: ${settingCode[0]} ${settingCode[1]} ${settingCode[2]}")
 
                 if (controller != null) {
                     dismiss()
@@ -203,13 +202,17 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
             return selectedSpeeds[position].hashCode().toLong()
         }
 
-        inner class ViewHolder internal constructor(var chip: Chip) : RecyclerView.ViewHolder(
-            chip)
+        inner class ViewHolder internal constructor(var chip: Chip) : RecyclerView.ViewHolder(chip)
     }
 
     companion object {
+        /**
+         *  @param settingCode_ array at input indicate which categories can be set, at output which categories are changed
+        * @param index_default indicates which category is checked by default
+         */
         fun newInstance(settingCode_: BooleanArray? = null, index_default: Int? = null): VariableSpeedDialog? {
-            val settingCode = settingCode_ ?: BooleanArray(3){false}
+            val settingCode = settingCode_ ?: BooleanArray(3){true}
+            Log.d("VariableSpeedDialog", "newInstance settingCode: ${settingCode[0]} ${settingCode[1]} ${settingCode[2]}")
             if (settingCode.size != 3) {
                 Log.e("VariableSpeedDialog", "wrong settingCode dimension")
                 return null

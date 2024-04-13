@@ -5,10 +5,7 @@ import ac.mdiq.podcini.preferences.UsageStatistics
 import ac.mdiq.podcini.preferences.UsageStatistics.doNotAskAgain
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
-import ac.mdiq.podcini.ui.dialog.EditFallbackSpeedDialog
-import ac.mdiq.podcini.ui.dialog.EditForwardSpeedDialog
-import ac.mdiq.podcini.ui.dialog.SkipPreferenceDialog
-import ac.mdiq.podcini.ui.dialog.VariableSpeedDialog
+import ac.mdiq.podcini.ui.dialog.*
 import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
 import android.app.Activity
 import android.os.Build
@@ -47,6 +44,12 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
                 SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_REWIND, null)
                 true
             }
+        findPreference<Preference>(PREF_PLAYBACK_VIDEO_MODE_LAUNCHER)?.onPreferenceClickListener =
+            Preference.OnPreferenceClickListener {
+                VideoModeDialog.showDialog(requireContext())
+                true
+            }
+
         findPreference<Preference>(PREF_PLAYBACK_SPEED_FORWARD_LAUNCHER)!!.onPreferenceClickListener =
             Preference.OnPreferenceClickListener {
                 EditForwardSpeedDialog(requireActivity()).show()
@@ -138,5 +141,6 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
         private const val PREF_PLAYBACK_SPEED_FORWARD_LAUNCHER = "prefPlaybackSpeedForwardLauncher"
         private const val PREF_PLAYBACK_FAST_FORWARD_DELTA_LAUNCHER = "prefPlaybackFastForwardDeltaLauncher"
         private const val PREF_PLAYBACK_PREFER_STREAMING = "prefStreamOverDownload"
+        private const val PREF_PLAYBACK_VIDEO_MODE_LAUNCHER = "prefPlaybackVideoModeLauncher"
     }
 }

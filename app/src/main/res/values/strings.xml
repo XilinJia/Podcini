@@ -487,6 +487,11 @@
     <string name="pref_fast_forward_sum">Customize the number of seconds to jump forward when the fast forward button is clicked</string>
     <string name="pref_rewind">Rewind skip time</string>
     <string name="pref_rewind_sum">Customize the number of seconds to jump backwards when the rewind button is clicked</string>
+    <string name="pref_playback_video_mode">Video play mode</string>
+    <string name="pref_playback_video_mode_sum">Choose how video episode is played by default</string>
+    <string name="pref_video_mode_full_screen">Full screen</string>
+    <string name="pref_video_mode_small_window">Small window</string>
+    <string name="pref_video_mode_audio_only">Audio only</string>
     <string name="pref_expandNotify_title">High notification priority</string>
     <string name="pref_expandNotify_sum">This usually expands the notification to show playback buttons.</string>
     <string name="pref_persistNotify_title">Persistent playback controls</string>
@@ -688,6 +693,7 @@
     <string name="toolbar_back_button_content_description">Back</string>
     <string name="rewind_label">Rewind</string>
     <string name="fast_forward_label">Fast forward</string>
+    <string name="toggle_video_views">Toggle video views</string>
     <string name="increase_speed">Increase speed</string>
     <string name="decrease_speed">Decrease speed</string>
     <string name="media_type_video_label">Video</string>

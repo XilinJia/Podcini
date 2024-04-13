@@ -111,6 +111,7 @@ object UserPreferences {
     private const val PREF_FAST_FORWARD_SECS = "prefFastForwardSecs"
     private const val PREF_REWIND_SECS = "prefRewindSecs"
     private const val PREF_QUEUE_LOCKED = "prefQueueLocked"
+    private const val PREF_VIDEO_MODE = "prefVideoPlaybackMode"
 
     // Experimental
     const val EPISODE_CLEANUP_QUEUE: Int = -1
@@ -410,6 +411,17 @@ object UserPreferences {
             }
         }
 
+    val videoPlayMode: Int
+        get() {
+            try {
+                return prefs.getString(PREF_VIDEO_MODE, "1")!!.toInt()
+            } catch (e: NumberFormatException) {
+                Log.e(TAG, Log.getStackTraceString(e))
+                setVideoMode(1)
+                return 1
+            }
+        }
+
     @JvmStatic
     var videoPlaybackSpeed: Float
         get() {
@@ -658,6 +670,13 @@ object UserPreferences {
     fun setPlaybackSpeed(speed: Float) {
         prefs.edit()
             .putString(PREF_PLAYBACK_SPEED, speed.toString())
+            .apply()
+    }
+
+    @JvmStatic
+    fun setVideoMode(mode: Int) {
+        prefs.edit()
+            .putString(PREF_VIDEO_MODE, mode.toString())
             .apply()
     }
 

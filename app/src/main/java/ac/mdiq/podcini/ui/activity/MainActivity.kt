@@ -286,6 +286,9 @@ class MainActivity : CastEnabledActivity() {
          }
         override fun onSlide(view: View, slideOffset: Float) {
             val audioPlayer = supportFragmentManager.findFragmentByTag(AudioPlayerFragment.TAG) as? AudioPlayerFragment ?: return
+//            if (slideOffset == 0.0f) { //STATE_COLLAPSED
+//                audioPlayer.scrollToTop()
+//            }
             audioPlayer.fadePlayerToToolbar(slideOffset)
         }
     }

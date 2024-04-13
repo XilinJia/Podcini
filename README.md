@@ -60,6 +60,10 @@ Even so, the database remains backward compatible, and AntennaPod's db can be ea
   * enabled intro- and end- skipping
   * mark as played when finished
   * streamed media is added to queue and is resumed after restart
+* new video episode view, with video player on top and episode descriptions in portrait mode
+* easy switches on video player to other video mode or audio only
+* default video player mode setting in preferences
+* when video mode is set to audio only, click on image on audio player on a video episode brings up the normal player detailed view
 
 ### Podcast/Episode list
 

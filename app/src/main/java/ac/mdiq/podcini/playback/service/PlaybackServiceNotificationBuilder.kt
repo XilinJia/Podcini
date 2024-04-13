@@ -62,28 +62,21 @@ class PlaybackServiceNotificationBuilder(private val context: Context) {
         val iconSize = (128 * context.resources.displayMetrics.density).toInt()
         val options = RequestOptions().centerCrop()
         try {
-            var imgLoc = playable?.getImageLocation()
-            when {
-                !imgLoc.isNullOrBlank() -> {
-                    cachedIcon = Glide.with(context)
-                        .asBitmap()
-                        .load(imgLoc)
-                        .apply(options)
-                        .submit(iconSize, iconSize)
-                        .get()
-                }
-                playable != null -> {
-                    imgLoc = ImageResourceUtils.getFallbackImageLocation(playable!!)
-                    if (!imgLoc.isNullOrBlank()) {
-                        cachedIcon = Glide.with(context)
-                            .asBitmap()
-                            .load(imgLoc)
-                            .apply(options)
-                            .submit(iconSize, iconSize)
-                            .get()
-                    }
-                }
-            }
+            val imgLoc = playable?.getImageLocation()
+            val imgLoc1 = ImageResourceUtils.getFallbackImageLocation(playable!!)
+            Log.d(TAG, "loadIcon imgLoc $imgLoc $imgLoc1")
+            cachedIcon = Glide.with(context)
+                .asBitmap()
+                .load(imgLoc)
+                .error(Glide.with(context)
+                    .asBitmap()
+                    .load(imgLoc1)
+                    .apply(options)
+                    .submit(iconSize, iconSize)
+                    .get())
+                .apply(options)
+                .submit(iconSize, iconSize)
+                .get()
         } catch (ignore: InterruptedException) {
             Log.e(TAG, "Media icon loader was interrupted")
         } catch (tr: Throwable) {

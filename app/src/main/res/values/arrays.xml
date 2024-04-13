@@ -177,6 +177,17 @@
         <item>@string/add_feed_label</item>
     </string-array>
 
+    <string-array name="video_mode_options">
+        <item>@string/pref_video_mode_small_window</item>
+        <item>@string/pref_video_mode_full_screen</item>
+        <item>@string/pref_video_mode_audio_only</item>
+    </string-array>
+    <string-array name="video_mode_options_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+
     <string-array name="nav_drawer_feed_order_options">
         <item>@string/drawer_feed_order_unplayed_episodes</item>
         <item>@string/drawer_feed_order_alphabetical</item>

@@ -261,3 +261,15 @@
 * fixed bug of receiving null view in function requiring non-null in subscriptions page
 * set Counter default to number of SHOW_UNPLAYED
 * removed FeedCounter.SHOW_NEW, NewEpisodesNotification, and associated notifications settings
+
+## 4.8.0
+
+* fixed empty player detailed view on first start
+* player detailed view scrolls to the top on a new episode
+* created video episode view, with video player on top and episode descriptions in portrait mode
+* added video player mode setting in preferences, set to small window by default
+* added on video controller easy switches to other video mode or audio only
+* when video mode is set to audio only, click on image on audio player on a video episode brings up the normal player detailed view
+* webkit updated to Androidx
+* fixed bug in setting speed to wrong categories
+* improved fetching of episode images when invalid addresses are given

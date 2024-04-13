@@ -11,7 +11,7 @@ class PlaybackSpeedDialogActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(getTranslucentTheme(this))
         super.onCreate(savedInstanceState)
-        val speedDialog: VariableSpeedDialog? = VariableSpeedDialog.newInstance(booleanArrayOf(false, false, true), 2)
+        val speedDialog: VariableSpeedDialog? = VariableSpeedDialog.newInstance(booleanArrayOf(true, true, true), 2)
         speedDialog?.show(supportFragmentManager, null)
     }
 

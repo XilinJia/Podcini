@@ -316,7 +316,6 @@ class PlayerDetailsFragment : Fragment() {
 
     @UnstableApi private fun seekToPrevChapter() {
         val curr: Chapter? = currentChapter
-
         if (controller == null || curr == null || displayedChapterIndex == -1) return
 
         when {
@@ -353,8 +352,8 @@ class PlayerDetailsFragment : Fragment() {
         val prefs = requireActivity().getSharedPreferences(PREF, Activity.MODE_PRIVATE)
         val editor = prefs.edit()
         if (controller?.getMedia() != null) {
-            Log.d(TAG, "Saving scroll position: " + webvDescription.scrollY)
-            editor.putInt(PREF_SCROLL_Y, webvDescription.scrollY)
+            Log.d(TAG, "Saving scroll position: " + binding.itemDescriptionFragment.scrollY)
+            editor.putInt(PREF_SCROLL_Y, binding.itemDescriptionFragment.scrollY)
             editor.putString(PREF_PLAYABLE_ID, controller!!.getMedia()!!.getIdentifier().toString())
         } else {
             Log.d(TAG, "savePreferences was called while media or webview was null")
@@ -374,11 +373,12 @@ class PlayerDetailsFragment : Fragment() {
             if (scrollY != -1) {
                 if (id == controller?.getMedia()?.getIdentifier()?.toString()) {
                     Log.d(TAG, "Restored scroll Position: $scrollY")
-                    webvDescription.scrollTo(webvDescription.scrollX, scrollY)
+                    binding.itemDescriptionFragment.scrollTo(binding.itemDescriptionFragment.scrollX, scrollY)
                     return true
                 }
                 Log.d(TAG, "reset scroll Position: 0")
-                webvDescription.scrollTo(webvDescription.scrollX, 0)
+                binding.itemDescriptionFragment.scrollTo(0, 0)
+
                 return true
             }
         }
@@ -386,7 +386,7 @@ class PlayerDetailsFragment : Fragment() {
     }
 
     fun scrollToTop() {
-        webvDescription.scrollTo(0, 0)
+        binding.itemDescriptionFragment.scrollTo(0, 0)
         savePreference()
     }
 

@@ -246,11 +246,12 @@
                     android:value="ac.mdiq.podcini.ui.activity.PreferenceActivity"/>
         </activity>
 
+        <!--            android:screenOrientation="sensorLandscape"-->
+
         <activity
             android:name=".ui.activity.VideoplayerActivity"
             android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize"
             android:supportsPictureInPicture="true"
-            android:screenOrientation="sensorLandscape"
             android:exported="false">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

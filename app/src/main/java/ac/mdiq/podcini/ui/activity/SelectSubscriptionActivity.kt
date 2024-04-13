@@ -113,15 +113,13 @@ class SelectSubscriptionActivity : AppCompatActivity() {
             .apply(RequestOptions.overrideOf(iconSize, iconSize))
             .listener(object : RequestListener<Bitmap?> {
                 @UnstableApi override fun onLoadFailed(e: GlideException?, model: Any?,
-                                                       target: Target<Bitmap?>, isFirstResource: Boolean
-                ): Boolean {
+                                                       target: Target<Bitmap?>, isFirstResource: Boolean): Boolean {
                     addShortcut(feed, null)
                     return true
                 }
 
                 @UnstableApi override fun onResourceReady(resource: Bitmap, model: Any,
-                                                          target: Target<Bitmap?>, dataSource: DataSource, isFirstResource: Boolean
-                ): Boolean {
+                                                          target: Target<Bitmap?>, dataSource: DataSource, isFirstResource: Boolean): Boolean {
                     addShortcut(feed, resource)
                     return true
                 }

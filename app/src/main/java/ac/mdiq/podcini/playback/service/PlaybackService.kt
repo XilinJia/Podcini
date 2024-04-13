@@ -1626,6 +1626,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
             mediaPlayer?.setPlaybackParams(speed, isSkipSilence)
         } else {
             if (codeArray != null && codeArray.size == 3) {
+                Log.d(TAG, "setSpeed codeArray: ${codeArray[0]} ${codeArray[1]} ${codeArray[2]}")
                 if (codeArray[2]) setPlaybackSpeed(speed)
                 if (codeArray[1]) {
                     var item = (playable as? FeedMedia)?.item ?: currentitem

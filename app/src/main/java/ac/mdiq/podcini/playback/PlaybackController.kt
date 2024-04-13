@@ -267,6 +267,14 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
         }
     }
 
+    fun ensureService() {
+        if (media == null) return
+        if (playbackService == null) {
+            PlaybackServiceStarter(activity, media!!).start()
+            Log.w(TAG, "playbackservice was null, restarted!")
+        }
+    }
+
     fun playPause() {
         if (media == null) return
         if (playbackService == null) {

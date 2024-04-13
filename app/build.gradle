@@ -149,8 +149,8 @@ android {
         // Version code schema (not used):
         // "1.2.3-beta4"    -> 1020304
         // "1.2.3"          -> 1020395
-        versionCode 3020129
-        versionName "4.7.1"
+        versionCode 3020130
+        versionName "4.8.0"
 
         def commit = ""
         try {
@@ -238,6 +238,7 @@ dependencies {
     implementation "androidx.work:work-runtime:2.9.0"
     implementation "androidx.core:core-splashscreen:1.0.1"
     implementation 'androidx.documentfile:documentfile:1.0.1'
+    implementation 'androidx.webkit:webkit:1.9.0'
 
     implementation "com.google.android.material:material:1.11.0"
 

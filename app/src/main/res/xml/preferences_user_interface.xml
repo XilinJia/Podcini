@@ -44,7 +44,7 @@
             android:title="@string/pref_nav_drawer_feed_counter_title"
             android:key="prefDrawerFeedIndicator"
             android:summary="@string/pref_nav_drawer_feed_counter_sum"
-            android:defaultValue="1"/>
+            android:defaultValue="2"/>
 <!--        <Preference-->
 <!--            android:title="@string/pref_filter_feed_title"-->
 <!--            android:key="prefSubscriptionsFilter"-->

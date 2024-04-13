@@ -2,13 +2,14 @@ package ac.mdiq.podcini.ui.view
 
 import android.content.Context
 import android.util.AttributeSet
+import android.util.Log
 import android.widget.VideoView
 import kotlin.math.ceil
 
 class AspectRatioVideoView @JvmOverloads constructor(context: Context,
                                                      attrs: AttributeSet? = null,
-                                                     defStyle: Int = 0
-) : VideoView(context, attrs, defStyle) {
+                                                     defStyle: Int = 0)
+    : VideoView(context, attrs, defStyle) {
 
     private var mVideoWidth = 0
     private var mVideoHeight = 0
@@ -20,7 +21,7 @@ class AspectRatioVideoView @JvmOverloads constructor(context: Context,
             super.onMeasure(widthMeasureSpec, heightMeasureSpec)
             return
         }
-
+        Log.d(TAG, "onMeasure $mAvailableWidth $mAvailableHeight")
         if (mAvailableWidth < 0 || mAvailableHeight < 0) {
             mAvailableWidth = width.toFloat()
             mAvailableHeight = height.toFloat()
@@ -54,6 +55,7 @@ class AspectRatioVideoView @JvmOverloads constructor(context: Context,
         // Set the new video size
         mVideoWidth = videoWidth
         mVideoHeight = videoHeight
+        Log.d(TAG, "setVideoSize $mVideoWidth $mVideoHeight")
 
         /*
          * If this isn't set the video is stretched across the
@@ -64,8 +66,8 @@ class AspectRatioVideoView @JvmOverloads constructor(context: Context,
          */
         holder.setFixedSize(videoWidth, videoHeight)
 
-        requestLayout()
-        invalidate()
+//        requestLayout()
+//        invalidate()
     }
 
     /**
@@ -76,6 +78,11 @@ class AspectRatioVideoView @JvmOverloads constructor(context: Context,
     fun setAvailableSize(width: Float, height: Float) {
         mAvailableWidth = width
         mAvailableHeight = height
-        requestLayout()
+        Log.d(TAG, "setAvailableSize $mAvailableWidth $mAvailableHeight")
+//        requestLayout()
+    }
+
+    companion object {
+        private const val TAG = "AspectRatioVideoView"
     }
 }

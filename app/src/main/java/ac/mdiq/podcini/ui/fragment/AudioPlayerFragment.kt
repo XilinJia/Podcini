@@ -6,11 +6,14 @@ import ac.mdiq.podcini.databinding.InternalPlayerFragmentBinding
 import ac.mdiq.podcini.feed.util.ImageResourceUtils
 import ac.mdiq.podcini.feed.util.PlaybackSpeedUtils
 import ac.mdiq.podcini.playback.PlaybackController
+import ac.mdiq.podcini.playback.PlaybackController.Companion
+import ac.mdiq.podcini.playback.PlaybackServiceStarter
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.cast.CastEnabledActivity
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
 import ac.mdiq.podcini.playback.service.PlaybackService
+import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
 import ac.mdiq.podcini.storage.model.feed.Chapter
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
@@ -23,6 +26,7 @@ import ac.mdiq.podcini.ui.dialog.SkipPreferenceDialog
 import ac.mdiq.podcini.ui.dialog.SleepTimerDialog
 import ac.mdiq.podcini.ui.dialog.VariableSpeedDialog
 import ac.mdiq.podcini.ui.actions.menuhandler.FeedItemMenuHandler
+import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.AUDIO_ONLY
 import ac.mdiq.podcini.ui.view.ChapterSeekBar
 import ac.mdiq.podcini.ui.view.PlayButton
 import ac.mdiq.podcini.util.ChapterUtils
@@ -97,7 +101,6 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     private var currentMedia: Playable? = null
     private var currentitem: FeedItem? = null
 
-    @SuppressLint("WrongConstant")
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?,
                               savedInstanceState: Bundle?
@@ -447,6 +450,11 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         }
     }
 
+    @JvmOverloads
+    fun scrollToTop() {
+        itemDescFrag.scrollToTop()
+    }
+
     fun fadePlayerToToolbar(slideOffset: Float) {
         val playerFadeProgress = (max(0.0, min(0.2, (slideOffset - 0.2f).toDouble())) / 0.2f).toFloat()
         val player = playerView1
@@ -515,9 +523,12 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 Log.d(TAG, "internalPlayerFragment was clicked")
                 val media = controller?.getMedia()
                 if (media != null) {
-                    if (media.getMediaType() == MediaType.AUDIO) {
+                    if (media.getMediaType() == MediaType.AUDIO || videoPlayMode == AUDIO_ONLY) {
+                        controller!!.ensureService()
                         (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_EXPANDED)
                     } else {
+                        controller?.playPause()
+//                        controller!!.ensureService()
                         val intent = PlaybackService.getPlayerActivityIntent(requireContext(), media)
                         startActivity(intent)
                     }
@@ -712,19 +723,17 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 .fitCenter()
                 .dontAnimate()
 
-            val imgLoc = ImageResourceUtils.getEpisodeListImageLocation(media)
+            val imgLoc = ImageResourceUtils.getEpisodeListImageLocation(media) + "sdfsdf"
             val imgLocFB = ImageResourceUtils.getFallbackImageLocation(media)
-            when {
-                !imgLoc.isNullOrBlank() -> Glide.with(this)
-                    .load(imgLoc)
-                    .apply(options)
-                    .into(imgvCover)
-                !imgLocFB.isNullOrBlank() -> Glide.with(this)
+
+            Glide.with(this)
+                .load(imgLoc)
+                .error(Glide.with(this)
                     .load(imgLocFB)
-                    .apply(options)
-                    .into(imgvCover)
-                else -> imgvCover.setImageResource(R.mipmap.ic_launcher)
-            }
+                    .error(R.mipmap.ic_launcher)
+                    .apply(options))
+                .apply(options)
+                .into(imgvCover)
 
             if (controller?.isPlayingVideoLocally == true) {
                 (activity as MainActivity).bottomSheet.setLocked(true)
@@ -746,7 +755,6 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             }
         }
     }
-
 
     companion object {
         const val TAG: String = "AudioPlayerFragment"

@@ -227,6 +227,16 @@
         <item name="windowSplashScreenAnimatedIcon">@drawable/launcher_animate</item>
     </style>
 
+    <style name="Theme.Podcini.VideoEpisode" parent="@style/Theme.Podcini.Dark">
+        <item name="android:fitsSystemWindows">true</item>
+<!--        <item name="android:windowActionModeOverlay">true</item>-->
+<!--        <item name="android:windowActionBarOverlay">true</item>-->
+<!--        <item name="android:windowActionBar">true</item>-->
+<!--        <item name="windowActionModeOverlay">true</item>-->
+<!--        <item name="windowActionBar">true</item>-->
+        <item name="windowActionBarOverlay">true</item>
+    </style>
+
     <style name="Theme.Podcini.VideoPlayer" parent="@style/Theme.Podcini.Dark">
         <item name="windowActionBarOverlay">true</item>
     </style>

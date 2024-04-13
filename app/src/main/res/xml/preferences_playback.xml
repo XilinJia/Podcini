@@ -61,6 +61,11 @@
                 android:key="prefStreamOverDownload"
                 android:summary="@string/pref_stream_over_download_sum"
                 android:title="@string/pref_stream_over_download_title"/>
+        <Preference
+            android:title="@string/pref_playback_video_mode"
+            android:key="prefPlaybackVideoModeLauncher"
+            android:summary="@string/pref_playback_video_mode_sum"/>
+
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/reassign_hardware_buttons">

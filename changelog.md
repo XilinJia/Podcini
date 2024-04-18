@@ -278,7 +278,8 @@
 
 * fixed bug of player always expands when changing audio
 * migrated to media3's MediaSession and MediaLibraryService thought no new features added with this. some behavior might change or issues might arise, need to be mindful
-* when video mode is temporarily audio only, click on image on audio player on a video episode also brings up the normal player detailed view* added a menu action item in player detailed view to turn to fullscreen video for video episode
+* when video mode is temporarily audio only, click on image on audio player on a video episode also brings up the normal player detailed view
+* added a menu action item in player detailed view to turn to fullscreen video for video episode
 * added episode home view accessible right from episode info view. episode home view has two display modes: webpage or reader. 
 * added text-to-speech function in the reader mode. there is a play/pause button on the top action bar, when play is pressed, text-to-speech will be used to play the text.  play features now are controlled by system setting of the TTS engine. Advanced operations in Podcini are expected to come later.
 * RSS feeds with no playable media can be subscribed and read/listened via the above two ways

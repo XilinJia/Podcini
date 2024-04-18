@@ -9,8 +9,10 @@ import ac.mdiq.podcini.storage.model.playback.RemoteMedia
 import ac.mdiq.podcini.playback.base.PlaybackServiceMediaPlayer
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.base.RewindAfterPauseUtils.calculatePositionWithRewind
+import ac.mdiq.podcini.playback.service.ExoPlayerWrapper
 import android.annotation.SuppressLint
 import android.content.Context
+import android.media.AudioManager
 import android.util.Log
 import android.util.Pair
 import android.view.SurfaceHolder
@@ -225,6 +227,20 @@ class CastPsmp(context: Context, callback: PSMPCallback) : PlaybackServiceMediaP
                 callback.onPostPlayback(oldMedia, ended = false, skipped = false, playingNext = currentMedia != null)
             }
         }
+    }
+
+    override fun createMediaPlayer() {
+//        mediaPlayer?.release()
+//
+//        if (media == null) {
+//            mediaPlayer = null
+//            playerStatus = PlayerStatus.STOPPED
+//            return
+//        }
+//
+//        mediaPlayer = ExoPlayerWrapper(context)
+//        mediaPlayer!!.setAudioStreamType(AudioManager.STREAM_MUSIC)
+//        setMediaPlayerListeners(mediaPlayer)
     }
 
     override fun playMediaObject(playable: Playable, stream: Boolean,

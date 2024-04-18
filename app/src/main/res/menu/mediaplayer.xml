@@ -3,6 +3,14 @@
       xmlns:custom="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/show_video"
+        android:icon="@drawable/baseline_fullscreen_24"
+        android:title="@string/add_to_favorite_label"
+        android:visible="false"
+        custom:showAsAction="always">
+    </item>
+
+    <item
         android:id="@+id/add_to_favorites_item"
         android:icon="@drawable/ic_star_border"
         android:title="@string/add_to_favorite_label"

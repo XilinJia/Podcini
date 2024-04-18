@@ -11,11 +11,9 @@ import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.cast.CastPsmp
 import ac.mdiq.podcini.playback.cast.CastStateListener
 import ac.mdiq.podcini.playback.service.PlaybackServiceTaskManager.PSTMCallback
-import ac.mdiq.podcini.preferences.PlaybackPreferences
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.clearCurrentlyPlayingTemporaryPlaybackSpeed
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.createInstanceFromPreferences
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.currentEpisodeIsVideo
-import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.currentPlayerStatus
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.currentlyPlayingFeedMediaId
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.currentlyPlayingTemporaryPlaybackSpeed
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.writeMediaPlaying
@@ -26,8 +24,6 @@ import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnableFrom
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnableTo
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.isInTimeRange
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.timerMillis
-import ac.mdiq.podcini.preferences.UserPreferences.allEpisodesSortOrder
-import ac.mdiq.podcini.preferences.UserPreferences.downloadsSortedOrder
 import ac.mdiq.podcini.preferences.UserPreferences.fastForwardSecs
 import ac.mdiq.podcini.preferences.UserPreferences.getPlaybackSpeed
 import ac.mdiq.podcini.preferences.UserPreferences.hardwareForwardButton
@@ -39,7 +35,6 @@ import ac.mdiq.podcini.preferences.UserPreferences.isPersistNotify
 import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.preferences.UserPreferences.isUnpauseOnBluetoothReconnect
 import ac.mdiq.podcini.preferences.UserPreferences.isUnpauseOnHeadsetReconnect
-import ac.mdiq.podcini.preferences.UserPreferences.playbackSpeedArray
 import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
 import ac.mdiq.podcini.preferences.UserPreferences.setPlaybackSpeed
 import ac.mdiq.podcini.preferences.UserPreferences.shouldFavoriteKeepEpisode
@@ -52,8 +47,10 @@ import ac.mdiq.podcini.receiver.MediaButtonReceiver
 import ac.mdiq.podcini.service.playback.WearMediaSession
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.DBWriter
-import ac.mdiq.podcini.storage.FeedSearcher
-import ac.mdiq.podcini.storage.model.feed.*
+import ac.mdiq.podcini.storage.model.feed.Feed
+import ac.mdiq.podcini.storage.model.feed.FeedItem
+import ac.mdiq.podcini.storage.model.feed.FeedMedia
+import ac.mdiq.podcini.storage.model.feed.FeedPreferences
 import ac.mdiq.podcini.storage.model.feed.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.storage.model.playback.Playable
@@ -61,7 +58,6 @@ import ac.mdiq.podcini.ui.activity.appstartintent.MainActivityStarter
 import ac.mdiq.podcini.ui.activity.appstartintent.VideoPlayerActivityStarter
 import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.ui.widget.WidgetUpdater.WidgetState
-import ac.mdiq.podcini.util.ChapterUtils.getCurrentChapterIndex
 import ac.mdiq.podcini.util.FeedItemUtil.hasAlmostEnded
 import ac.mdiq.podcini.util.FeedUtil.shouldAutoDeleteItemsOnThatFeed
 import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
@@ -76,15 +72,16 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.app.UiModeManager
 import android.bluetooth.BluetoothA2dp
 import android.content.*
 import android.content.pm.PackageManager
-import android.content.res.Configuration
 import android.media.AudioManager
 import android.net.Uri
-import android.os.*
+import android.os.Binder
+import android.os.Build
 import android.os.Build.VERSION_CODES
+import android.os.IBinder
+import android.os.Vibrator
 import android.service.quicksettings.TileService
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
@@ -96,7 +93,6 @@ import android.util.Log
 import android.util.Pair
 import android.view.KeyEvent
 import android.view.SurfaceHolder
-import android.view.ViewConfiguration
 import android.webkit.URLUtil
 import android.widget.Toast
 import androidx.annotation.DrawableRes
@@ -104,10 +100,13 @@ import androidx.annotation.StringRes
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.media.MediaBrowserServiceCompat
 import androidx.media3.common.util.UnstableApi
-import io.reactivex.*
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.MediaLibraryService
+import androidx.media3.session.MediaSession
 import io.reactivex.Observable
+import io.reactivex.Single
+import io.reactivex.SingleEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
@@ -123,7 +122,7 @@ import kotlin.math.max
  * Controls the MediaPlayer that plays a FeedMedia-file
  */
 @UnstableApi
-class PlaybackService : MediaBrowserServiceCompat() {
+class PlaybackService : MediaLibraryService() {
     private var mediaPlayer: PlaybackServiceMediaPlayer? = null
     private var positionEventTimer: Disposable? = null
 
@@ -133,8 +132,8 @@ class PlaybackService : MediaBrowserServiceCompat() {
     private lateinit var castStateListener: CastStateListener
 
     private var autoSkippedFeedMediaId: String? = null
-    private var clickCount = 0
-    private val clickHandler = Handler(Looper.getMainLooper())
+//    private var clickCount = 0
+//    private val clickHandler = Handler(Looper.getMainLooper())
 
     private var isSpeedForward = false
     private var normalSpeed = 1.0f
@@ -145,7 +144,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
     /**
      * Used for Lollipop notifications, Android Wear, and Android Auto.
      */
-    private var mediaSession: MediaSessionCompat? = null
+    private var mediaSession: MediaSession? = null
 
     private val mBinder: IBinder = LocalBinder()
 
@@ -191,36 +190,14 @@ class PlaybackService : MediaBrowserServiceCompat() {
     }
 
     fun recreateMediaSessionIfNeeded() {
-        if (mediaSession != null) {
-            // Media session was not destroyed, so we can re-use it.
-            if (!mediaSession!!.isActive) {
-                mediaSession!!.isActive = true
-            }
-            return
-        }
-        val eventReceiver = ComponentName(applicationContext, MediaButtonReceiver::class.java)
-        val mediaButtonIntent = Intent(Intent.ACTION_MEDIA_BUTTON)
-        mediaButtonIntent.setComponent(eventReceiver)
-        val buttonReceiverIntent = PendingIntent.getBroadcast(this, 0, mediaButtonIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or (if (Build.VERSION.SDK_INT >= 31) PendingIntent.FLAG_MUTABLE else 0))
+        if (mediaSession != null) return
 
-        mediaSession = MediaSessionCompat(applicationContext, TAG, eventReceiver, buttonReceiverIntent)
-        sessionToken = mediaSession!!.sessionToken
-
-        try {
-            mediaSession!!.setCallback(sessionCallback)
-            mediaSession!!.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
-        } catch (npe: NullPointerException) {
-            // on some devices (Huawei) setting active can cause a NullPointerException
-            // even with correct use of the api.
-            // See http://stackoverflow.com/questions/31556679/android-huawei-mediassessioncompat
-            // and https://plus.google.com/+IanLake/posts/YgdTkKFxz7d
-            Log.e(TAG, "NullPointerException while setting up MediaSession")
-            npe.printStackTrace()
-        }
+        if (ExoPlayerWrapper.exoPlayer == null) ExoPlayerWrapper.createStaticPlayer(applicationContext)
+        mediaSession = MediaSession.Builder(applicationContext, ExoPlayerWrapper.exoPlayer!!)
+            .setCallback(sessionCallback)
+            .build()
 
         recreateMediaPlayer()
-        mediaSession!!.isActive = true
     }
 
     fun recreateMediaPlayer() {
@@ -234,7 +211,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
         }
         mediaPlayer = CastPsmp.getInstanceIfConnected(this, mediaPlayerCallback)
         if (mediaPlayer == null) {
-            mediaPlayer = LocalPSMP(this, mediaPlayerCallback) // Cast not supported or not connected
+            mediaPlayer = LocalPSMP(applicationContext, mediaPlayerCallback) // Cast not supported or not connected
         }
         if (media != null) {
             mediaPlayer!!.playMediaObject(media, !media.localFileAvailable(), wasPlaying, true)
@@ -271,8 +248,13 @@ class PlaybackService : MediaBrowserServiceCompat() {
         castStateListener.destroy()
 
         cancelPositionObserver()
-        mediaSession?.release()
-        mediaSession = null
+        mediaSession?.run {
+            player.release()
+            release()
+            mediaSession = null
+        }
+        ExoPlayerWrapper.exoPlayer?.release()
+        ExoPlayerWrapper.exoPlayer =  null
         mediaPlayer?.shutdown()
 
         unregisterReceiver(autoStateUpdated)
@@ -284,18 +266,8 @@ class PlaybackService : MediaBrowserServiceCompat() {
         EventBus.getDefault().unregister(this)
     }
 
-    override fun onGetRoot(clientPackageName: String, clientUid: Int, rootHints: Bundle?): BrowserRoot {
-        Log.d(TAG, "OnGetRoot: clientPackageName=" + clientPackageName +
-                "; clientUid=" + clientUid + " ; rootHints=" + rootHints)
-        if (rootHints != null && rootHints.getBoolean(BrowserRoot.EXTRA_RECENT)) {
-            val extras = Bundle()
-            extras.putBoolean(BrowserRoot.EXTRA_RECENT, true)
-            Log.d(TAG, "OnGetRoot: Returning BrowserRoot " + R.string.current_playing_episode)
-            return BrowserRoot(resources.getString(R.string.current_playing_episode), extras)
-        }
-
-        // Name visible in Android Auto
-        return BrowserRoot(resources.getString(R.string.app_name), null)
+    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? {
+        return null
     }
 
     private fun loadQueueForMediaSession() {
@@ -311,139 +283,141 @@ class PlaybackService : MediaBrowserServiceCompat() {
         }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ queueItems: List<MediaSessionCompat.QueueItem>? -> mediaSession?.setQueue(queueItems) },
+            .subscribe({ queueItems: List<MediaSessionCompat.QueueItem>? ->
+//                mediaSession?.setQueue(queueItems)
+                       },
                 { obj: Throwable -> obj.printStackTrace() })
     }
 
-    private fun createBrowsableMediaItem(
-            @StringRes title: Int, @DrawableRes icon: Int, numEpisodes: Int
-    ): MediaBrowserCompat.MediaItem {
-        val uri = Uri.Builder()
-            .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
-            .authority(resources.getResourcePackageName(icon))
-            .appendPath(resources.getResourceTypeName(icon))
-            .appendPath(resources.getResourceEntryName(icon))
-            .build()
+//    private fun createBrowsableMediaItem(
+//            @StringRes title: Int, @DrawableRes icon: Int, numEpisodes: Int
+//    ): MediaBrowserCompat.MediaItem {
+//        val uri = Uri.Builder()
+//            .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
+//            .authority(resources.getResourcePackageName(icon))
+//            .appendPath(resources.getResourceTypeName(icon))
+//            .appendPath(resources.getResourceEntryName(icon))
+//            .build()
+//
+//        val description = MediaDescriptionCompat.Builder()
+//            .setIconUri(uri)
+//            .setMediaId(resources.getString(title))
+//            .setTitle(resources.getString(title))
+//            .setSubtitle(resources.getQuantityString(R.plurals.num_episodes, numEpisodes, numEpisodes))
+//            .build()
+//        return MediaBrowserCompat.MediaItem(description, MediaBrowserCompat.MediaItem.FLAG_BROWSABLE)
+//    }
 
-        val description = MediaDescriptionCompat.Builder()
-            .setIconUri(uri)
-            .setMediaId(resources.getString(title))
-            .setTitle(resources.getString(title))
-            .setSubtitle(resources.getQuantityString(R.plurals.num_episodes, numEpisodes, numEpisodes))
-            .build()
-        return MediaBrowserCompat.MediaItem(description, MediaBrowserCompat.MediaItem.FLAG_BROWSABLE)
-    }
+//    private fun createBrowsableMediaItemForFeed(feed: Feed): MediaBrowserCompat.MediaItem {
+//        val builder = MediaDescriptionCompat.Builder()
+//            .setMediaId("FeedId:" + feed.id)
+//            .setTitle(feed.title)
+//            .setDescription(feed.description)
+//            .setSubtitle(feed.getCustomTitle())
+//        if (feed.imageUrl != null) {
+//            builder.setIconUri(Uri.parse(feed.imageUrl))
+//        }
+//        if (feed.link != null) {
+//            builder.setMediaUri(Uri.parse(feed.link))
+//        }
+//        val description = builder.build()
+//        return MediaBrowserCompat.MediaItem(description,
+//            MediaBrowserCompat.MediaItem.FLAG_BROWSABLE)
+//    }
 
-    private fun createBrowsableMediaItemForFeed(feed: Feed): MediaBrowserCompat.MediaItem {
-        val builder = MediaDescriptionCompat.Builder()
-            .setMediaId("FeedId:" + feed.id)
-            .setTitle(feed.title)
-            .setDescription(feed.description)
-            .setSubtitle(feed.getCustomTitle())
-        if (feed.imageUrl != null) {
-            builder.setIconUri(Uri.parse(feed.imageUrl))
-        }
-        if (feed.link != null) {
-            builder.setMediaUri(Uri.parse(feed.link))
-        }
-        val description = builder.build()
-        return MediaBrowserCompat.MediaItem(description,
-            MediaBrowserCompat.MediaItem.FLAG_BROWSABLE)
-    }
+//    override fun onLoadChildren(parentId: String,
+//                                result: Result<List<MediaBrowserCompat.MediaItem>>
+//    ) {
+//        Log.d(TAG, "OnLoadChildren: parentMediaId=$parentId")
+//        result.detach()
+//
+//        Completable.create { emitter: CompletableEmitter ->
+//            result.sendResult(loadChildrenSynchronous(parentId))
+//            emitter.onComplete()
+//        }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe(
+//                {}, { e: Throwable ->
+//                    e.printStackTrace()
+//                    result.sendResult(null)
+//                })
+//    }
 
-    override fun onLoadChildren(parentId: String,
-                                result: Result<List<MediaBrowserCompat.MediaItem>>
-    ) {
-        Log.d(TAG, "OnLoadChildren: parentMediaId=$parentId")
-        result.detach()
+//    private fun loadChildrenSynchronous(parentId: String): List<MediaBrowserCompat.MediaItem>? {
+//        val mediaItems: MutableList<MediaBrowserCompat.MediaItem> = ArrayList()
+//        if (parentId == resources.getString(R.string.app_name)) {
+//            val currentlyPlaying = currentPlayerStatus.toLong()
+//            if (currentlyPlaying == PlaybackPreferences.PLAYER_STATUS_PLAYING.toLong()
+//                    || currentlyPlaying == PlaybackPreferences.PLAYER_STATUS_PAUSED.toLong()) {
+//                mediaItems.add(createBrowsableMediaItem(R.string.current_playing_episode, R.drawable.ic_play_48dp, 1))
+//            }
+//            mediaItems.add(createBrowsableMediaItem(R.string.queue_label, R.drawable.ic_playlist_play_black,
+//                DBReader.getTotalEpisodeCount(FeedItemFilter(FeedItemFilter.QUEUED))))
+//            mediaItems.add(createBrowsableMediaItem(R.string.downloads_label, R.drawable.ic_download_black,
+//                DBReader.getTotalEpisodeCount(FeedItemFilter(FeedItemFilter.DOWNLOADED))))
+//            mediaItems.add(createBrowsableMediaItem(R.string.episodes_label, R.drawable.ic_feed_black,
+//                DBReader.getTotalEpisodeCount(FeedItemFilter(FeedItemFilter.UNPLAYED))))
+//            val feeds = DBReader.getFeedList()
+//            for (feed in feeds) {
+//                mediaItems.add(createBrowsableMediaItemForFeed(feed))
+//            }
+//            return mediaItems
+//        }
+//
+//        val feedItems: List<FeedItem?>
+//        when {
+//            parentId == resources.getString(R.string.queue_label) -> {
+//                feedItems = DBReader.getQueue()
+//            }
+//            parentId == resources.getString(R.string.downloads_label) -> {
+//                feedItems = DBReader.getEpisodes(0, MAX_ANDROID_AUTO_EPISODES_PER_FEED,
+//                    FeedItemFilter(FeedItemFilter.DOWNLOADED), downloadsSortedOrder)
+//            }
+//            parentId == resources.getString(R.string.episodes_label) -> {
+//                feedItems = DBReader.getEpisodes(0, MAX_ANDROID_AUTO_EPISODES_PER_FEED,
+//                    FeedItemFilter(FeedItemFilter.UNPLAYED), allEpisodesSortOrder)
+//            }
+//            parentId.startsWith("FeedId:") -> {
+//                val feedId = parentId.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1].toLong()
+//                val feed = DBReader.getFeed(feedId)
+//                feedItems = if (feed != null) DBReader.getFeedItemList(feed, FeedItemFilter.unfiltered(), feed.sortOrder) else listOf()
+//            }
+//            parentId == getString(R.string.current_playing_episode) -> {
+//                val playable = createInstanceFromPreferences(this)
+//                if (playable is FeedMedia) {
+//                    feedItems = listOf(playable.item)
+//                } else {
+//                    return null
+//                }
+//            }
+//            else -> {
+//                Log.e(TAG, "Parent ID not found: $parentId")
+//                return null
+//            }
+//        }
+//        var count = 0
+//        for (feedItem in feedItems) {
+//            if (feedItem?.media != null) {
+//                mediaItems.add(feedItem.media!!.mediaItem)
+//                if (++count >= MAX_ANDROID_AUTO_EPISODES_PER_FEED) {
+//                    break
+//                }
+//            }
+//        }
+//        return mediaItems
+//    }
 
-        Completable.create { emitter: CompletableEmitter ->
-            result.sendResult(loadChildrenSynchronous(parentId))
-            emitter.onComplete()
-        }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                {}, { e: Throwable ->
-                    e.printStackTrace()
-                    result.sendResult(null)
-                })
-    }
-
-    private fun loadChildrenSynchronous(parentId: String): List<MediaBrowserCompat.MediaItem>? {
-        val mediaItems: MutableList<MediaBrowserCompat.MediaItem> = ArrayList()
-        if (parentId == resources.getString(R.string.app_name)) {
-            val currentlyPlaying = currentPlayerStatus.toLong()
-            if (currentlyPlaying == PlaybackPreferences.PLAYER_STATUS_PLAYING.toLong()
-                    || currentlyPlaying == PlaybackPreferences.PLAYER_STATUS_PAUSED.toLong()) {
-                mediaItems.add(createBrowsableMediaItem(R.string.current_playing_episode, R.drawable.ic_play_48dp, 1))
-            }
-            mediaItems.add(createBrowsableMediaItem(R.string.queue_label, R.drawable.ic_playlist_play_black,
-                DBReader.getTotalEpisodeCount(FeedItemFilter(FeedItemFilter.QUEUED))))
-            mediaItems.add(createBrowsableMediaItem(R.string.downloads_label, R.drawable.ic_download_black,
-                DBReader.getTotalEpisodeCount(FeedItemFilter(FeedItemFilter.DOWNLOADED))))
-            mediaItems.add(createBrowsableMediaItem(R.string.episodes_label, R.drawable.ic_feed_black,
-                DBReader.getTotalEpisodeCount(FeedItemFilter(FeedItemFilter.UNPLAYED))))
-            val feeds = DBReader.getFeedList()
-            for (feed in feeds) {
-                mediaItems.add(createBrowsableMediaItemForFeed(feed))
-            }
-            return mediaItems
-        }
-
-        val feedItems: List<FeedItem?>
-        when {
-            parentId == resources.getString(R.string.queue_label) -> {
-                feedItems = DBReader.getQueue()
-            }
-            parentId == resources.getString(R.string.downloads_label) -> {
-                feedItems = DBReader.getEpisodes(0, MAX_ANDROID_AUTO_EPISODES_PER_FEED,
-                    FeedItemFilter(FeedItemFilter.DOWNLOADED), downloadsSortedOrder)
-            }
-            parentId == resources.getString(R.string.episodes_label) -> {
-                feedItems = DBReader.getEpisodes(0, MAX_ANDROID_AUTO_EPISODES_PER_FEED,
-                    FeedItemFilter(FeedItemFilter.UNPLAYED), allEpisodesSortOrder)
-            }
-            parentId.startsWith("FeedId:") -> {
-                val feedId = parentId.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1].toLong()
-                val feed = DBReader.getFeed(feedId)
-                feedItems = if (feed != null) DBReader.getFeedItemList(feed, FeedItemFilter.unfiltered(), feed.sortOrder) else listOf()
-            }
-            parentId == getString(R.string.current_playing_episode) -> {
-                val playable = createInstanceFromPreferences(this)
-                if (playable is FeedMedia) {
-                    feedItems = listOf(playable.item)
-                } else {
-                    return null
-                }
-            }
-            else -> {
-                Log.e(TAG, "Parent ID not found: $parentId")
-                return null
-            }
-        }
-        var count = 0
-        for (feedItem in feedItems) {
-            if (feedItem?.media != null) {
-                mediaItems.add(feedItem.media!!.mediaItem)
-                if (++count >= MAX_ANDROID_AUTO_EPISODES_PER_FEED) {
-                    break
-                }
-            }
-        }
-        return mediaItems
-    }
-
-    override fun onBind(intent: Intent): IBinder? {
+    override fun onBind(intent: Intent?): IBinder? {
         Log.d(TAG, "Received onBind event")
-        return if (intent.action != null && TextUtils.equals(intent.action, SERVICE_INTERFACE)) {
+        return if (intent?.action != null && TextUtils.equals(intent.action, SERVICE_INTERFACE)) {
             super.onBind(intent)
         } else {
             mBinder
         }
     }
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
         Log.d(TAG, "OnStartCommand called")
 
@@ -451,10 +425,10 @@ class PlaybackService : MediaBrowserServiceCompat() {
         val notificationManager = NotificationManagerCompat.from(this)
         notificationManager.cancel(R.id.notification_streaming_confirmation)
 
-        val keycode = intent.getIntExtra(MediaButtonReceiver.EXTRA_KEYCODE, -1)
-        val customAction = intent.getStringExtra(MediaButtonReceiver.EXTRA_CUSTOM_ACTION)
-        val hardwareButton = intent.getBooleanExtra(MediaButtonReceiver.EXTRA_HARDWAREBUTTON, false)
-        val playable = intent.getParcelableExtra<Playable>(PlaybackServiceInterface.EXTRA_PLAYABLE)
+        val keycode = intent?.getIntExtra(MediaButtonReceiver.EXTRA_KEYCODE, -1) ?: -1
+        val customAction = intent?.getStringExtra(MediaButtonReceiver.EXTRA_CUSTOM_ACTION)
+        val hardwareButton = intent?.getBooleanExtra(MediaButtonReceiver.EXTRA_HARDWAREBUTTON, false) ?: false
+        val playable = intent?.getParcelableExtra<Playable>(PlaybackServiceInterface.EXTRA_PLAYABLE)
         if (keycode == -1 && playable == null && customAction == null) {
             Log.e(TAG, "PlaybackService was started with no arguments")
             stateManager.stopService()
@@ -483,10 +457,8 @@ class PlaybackService : MediaBrowserServiceCompat() {
                 }
                 playable != null -> {
                     stateManager.validStartCommandWasReceived()
-                    val allowStreamThisTime = intent.getBooleanExtra(
-                        PlaybackServiceInterface.EXTRA_ALLOW_STREAM_THIS_TIME, false)
-                    val allowStreamAlways = intent.getBooleanExtra(
-                        PlaybackServiceInterface.EXTRA_ALLOW_STREAM_ALWAYS, false)
+                    val allowStreamThisTime = intent.getBooleanExtra(PlaybackServiceInterface.EXTRA_ALLOW_STREAM_THIS_TIME, false)
+                    val allowStreamAlways = intent.getBooleanExtra(PlaybackServiceInterface.EXTRA_ALLOW_STREAM_ALWAYS, false)
                     sendNotificationBroadcast(PlaybackServiceInterface.NOTIFICATION_TYPE_RELOAD, 0)
                     if (allowStreamAlways) {
                         isAllowMobileStreaming = true
@@ -510,7 +482,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
                     return START_NOT_STICKY
                 }
                 else -> {
-                    mediaSession?.controller?.transportControls?.sendCustomAction(customAction, null)
+//                    mediaSession?.controller?.transportControls?.sendCustomAction(customAction, null)
                 }
             }
         }
@@ -541,8 +513,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
     @SuppressLint("LaunchActivityFromNotification")
     private fun displayStreamingNotAllowedNotification(originalIntent: Intent) {
         if (EventBus.getDefault().hasSubscriberForEvent(MessageEvent::class.java)) {
-            EventBus.getDefault().post(MessageEvent(
-                getString(R.string.confirm_mobile_streaming_notification_message)))
+            EventBus.getDefault().post(MessageEvent(getString(R.string.confirm_mobile_streaming_notification_message)))
             return
         }
 
@@ -550,24 +521,22 @@ class PlaybackService : MediaBrowserServiceCompat() {
         intentAllowThisTime.setAction(PlaybackServiceInterface.EXTRA_ALLOW_STREAM_THIS_TIME)
         intentAllowThisTime.putExtra(PlaybackServiceInterface.EXTRA_ALLOW_STREAM_THIS_TIME, true)
         val pendingIntentAllowThisTime = if (Build.VERSION.SDK_INT >= VERSION_CODES.O) {
-            PendingIntent.getForegroundService(this,
-                R.id.pending_intent_allow_stream_this_time, intentAllowThisTime,
+            PendingIntent.getForegroundService(this, R.id.pending_intent_allow_stream_this_time, intentAllowThisTime,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         } else {
-            PendingIntent.getService(this,
-                R.id.pending_intent_allow_stream_this_time, intentAllowThisTime, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            PendingIntent.getService(this, R.id.pending_intent_allow_stream_this_time, intentAllowThisTime,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         }
 
         val intentAlwaysAllow = Intent(intentAllowThisTime)
         intentAlwaysAllow.setAction(PlaybackServiceInterface.EXTRA_ALLOW_STREAM_ALWAYS)
         intentAlwaysAllow.putExtra(PlaybackServiceInterface.EXTRA_ALLOW_STREAM_ALWAYS, true)
         val pendingIntentAlwaysAllow = if (Build.VERSION.SDK_INT >= VERSION_CODES.O) {
-            PendingIntent.getForegroundService(this,
-                R.id.pending_intent_allow_stream_always, intentAlwaysAllow,
+            PendingIntent.getForegroundService(this, R.id.pending_intent_allow_stream_always, intentAlwaysAllow,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         } else {
-            PendingIntent.getService(this,
-                R.id.pending_intent_allow_stream_always, intentAlwaysAllow, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            PendingIntent.getService(this, R.id.pending_intent_allow_stream_always, intentAlwaysAllow,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         }
 
         val builder = NotificationCompat.Builder(this,
@@ -579,12 +548,8 @@ class PlaybackService : MediaBrowserServiceCompat() {
                 .bigText(getString(R.string.confirm_mobile_streaming_notification_message)))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntentAllowThisTime)
-            .addAction(R.drawable.ic_notification_stream,
-                getString(R.string.confirm_mobile_streaming_button_once),
-                pendingIntentAllowThisTime)
-            .addAction(R.drawable.ic_notification_stream,
-                getString(R.string.confirm_mobile_streaming_button_always),
-                pendingIntentAlwaysAllow)
+            .addAction(R.drawable.ic_notification_stream, getString(R.string.confirm_mobile_streaming_button_once), pendingIntentAllowThisTime)
+            .addAction(R.drawable.ic_notification_stream, getString(R.string.confirm_mobile_streaming_button_always), pendingIntentAlwaysAllow)
             .setAutoCancel(true)
         val notificationManager = NotificationManagerCompat.from(this)
         if (Build.VERSION.SDK_INT >= 33 && ActivityCompat.checkSelfPermission(this,
@@ -725,8 +690,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
 
     private fun startPlayingFromPreferences() {
         Observable.fromCallable {
-            createInstanceFromPreferences(
-                applicationContext)
+            createInstanceFromPreferences(applicationContext)
         }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -856,8 +820,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
                 }
             }
             if (Build.VERSION.SDK_INT >= VERSION_CODES.N) {
-                TileService.requestListeningState(applicationContext,
-                    ComponentName(applicationContext, QuickSettingsTileService::class.java))
+                TileService.requestListeningState(applicationContext, ComponentName(applicationContext, QuickSettingsTileService::class.java))
             }
 
             sendLocalBroadcast(applicationContext, ACTION_PLAYER_STATUS_CHANGED)
@@ -878,9 +841,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
             updateNotificationAndMediaSession(this@PlaybackService.playable)
         }
 
-        override fun onPostPlayback(media: Playable, ended: Boolean, skipped: Boolean,
-                                    playingNext: Boolean
-        ) {
+        override fun onPostPlayback(media: Playable, ended: Boolean, skipped: Boolean, playingNext: Boolean) {
             this@PlaybackService.onPostPlayback(media, ended, skipped, playingNext)
         }
 
@@ -1088,12 +1049,10 @@ class PlaybackService : MediaBrowserServiceCompat() {
 
         if (media is FeedMedia) {
             if (ended || smartMarkAsPlayed) {
-                SynchronizationQueueSink.enqueueEpisodePlayedIfSynchronizationIsActive(
-                    applicationContext, media, true)
+                SynchronizationQueueSink.enqueueEpisodePlayedIfSynchronizationIsActive(applicationContext, media, true)
                 media.onPlaybackCompleted(applicationContext)
             } else {
-                SynchronizationQueueSink.enqueueEpisodePlayedIfSynchronizationIsActive(
-                    applicationContext, media, false)
+                SynchronizationQueueSink.enqueueEpisodePlayedIfSynchronizationIsActive(applicationContext, media, false)
                 media.onPlaybackPause(applicationContext)
             }
         }
@@ -1108,12 +1067,11 @@ class PlaybackService : MediaBrowserServiceCompat() {
                 val action = item.feed?.preferences?.currentAutoDelete
                 val shouldAutoDelete = (action == AutoDeleteAction.ALWAYS
                         || (action == AutoDeleteAction.GLOBAL && item.feed != null && shouldAutoDeleteItemsOnThatFeed(item.feed!!)))
-                if (media is FeedMedia && shouldAutoDelete &&
-                        (!item.isTagged(FeedItem.TAG_FAVORITE) || !shouldFavoriteKeepEpisode())) {
+                if (media is FeedMedia && shouldAutoDelete && (!item.isTagged(FeedItem.TAG_FAVORITE) || !shouldFavoriteKeepEpisode())) {
                     DBWriter.deleteFeedMediaOfItem(this@PlaybackService, media.id)
                     Log.d(TAG, "Episode Deleted")
                 }
-                notifyChildrenChanged(getString(R.string.queue_label))
+//                notifyChildrenChanged(getString(R.string.queue_label))
             }
         }
 
@@ -1153,13 +1111,13 @@ class PlaybackService : MediaBrowserServiceCompat() {
         val skipEndMS = skipEnd * 1000
 //        Log.d(TAG, "skipEndingIfNecessary: checking " + remainingTime + " " + skipEndMS + " speed " + currentPlaybackSpeed)
         if (skipEnd > 0 && skipEndMS < this.duration && (remainingTime - skipEndMS < 0)) {
-            Log.d(TAG, "skipEndingIfNecessary: Skipping the remaining " + remainingTime + " " + skipEndMS + " speed " + currentPlaybackSpeed)
+            Log.d(TAG, "skipEndingIfNecessary: Skipping the remaining $remainingTime $skipEndMS speed $currentPlaybackSpeed")
             val context = applicationContext
             val skipMesg = context.getString(R.string.pref_feed_skip_ending_toast, skipEnd)
             val toast = Toast.makeText(context, skipMesg, Toast.LENGTH_LONG)
             toast.show()
 
-            this.autoSkippedFeedMediaId = item?.identifyingValue
+            this.autoSkippedFeedMediaId = item.identifyingValue
             mediaPlayer?.skip()
         }
     }
@@ -1199,51 +1157,35 @@ class PlaybackService : MediaBrowserServiceCompat() {
 
         // On Android Auto, custom actions are added in the following order around the play button, if no default
         // actions are present: Near left, near right, far left, far right, additional actions panel
-        val rewindBuilder = PlaybackStateCompat.CustomAction.Builder(
-            CUSTOM_ACTION_REWIND,
-            getString(R.string.rewind_label),
-            R.drawable.ic_notification_fast_rewind
-        )
+        val rewindBuilder = PlaybackStateCompat.CustomAction.Builder(CUSTOM_ACTION_REWIND, getString(R.string.rewind_label), R.drawable.ic_notification_fast_rewind)
         WearMediaSession.addWearExtrasToAction(rewindBuilder)
         sessionState.addCustomAction(rewindBuilder.build())
 
-        val fastForwardBuilder = PlaybackStateCompat.CustomAction.Builder(
-            CUSTOM_ACTION_FAST_FORWARD,
-            getString(R.string.fast_forward_label),
-            R.drawable.ic_notification_fast_forward
-        )
+        val fastForwardBuilder = PlaybackStateCompat.CustomAction.Builder(CUSTOM_ACTION_FAST_FORWARD, getString(R.string.fast_forward_label), R.drawable.ic_notification_fast_forward)
         WearMediaSession.addWearExtrasToAction(fastForwardBuilder)
         sessionState.addCustomAction(fastForwardBuilder.build())
 
         if (showPlaybackSpeedOnFullNotification()) {
-            sessionState.addCustomAction(
-                PlaybackStateCompat.CustomAction.Builder(
-                    CUSTOM_ACTION_CHANGE_PLAYBACK_SPEED,
-                    getString(R.string.playback_speed),
-                    R.drawable.ic_notification_playback_speed
-                ).build()
-            )
+            sessionState.addCustomAction(PlaybackStateCompat.CustomAction.Builder(CUSTOM_ACTION_CHANGE_PLAYBACK_SPEED,
+                getString(R.string.playback_speed), R.drawable.ic_notification_playback_speed).build())
         }
 
         if (showNextChapterOnFullNotification()) {
             if (!playable?.getChapters().isNullOrEmpty()) {
-                sessionState.addCustomAction(
-                    PlaybackStateCompat.CustomAction.Builder(
-                        CUSTOM_ACTION_NEXT_CHAPTER,
-                        getString(R.string.next_chapter), R.drawable.ic_notification_next_chapter)
-                        .build())
+                sessionState.addCustomAction(PlaybackStateCompat.CustomAction.Builder(CUSTOM_ACTION_NEXT_CHAPTER,
+                    getString(R.string.next_chapter), R.drawable.ic_notification_next_chapter).build())
             }
         }
 
         if (showSkipOnFullNotification()) {
-            sessionState.addCustomAction(
-                PlaybackStateCompat.CustomAction.Builder(CUSTOM_ACTION_SKIP_TO_NEXT, getString(R.string.skip_episode_label), R.drawable.ic_notification_skip).build()
+            sessionState.addCustomAction(PlaybackStateCompat.CustomAction.Builder(CUSTOM_ACTION_SKIP_TO_NEXT,
+                getString(R.string.skip_episode_label), R.drawable.ic_notification_skip).build()
             )
         }
 
         if (mediaSession != null) {
             WearMediaSession.mediaSessionSetExtraForWear(mediaSession!!)
-            mediaSession!!.setPlaybackState(sessionState.build())
+//            mediaSession!!.setPlaybackState(sessionState.build())
         }
     }
 
@@ -1253,9 +1195,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
     }
 
     private fun updateMediaSessionMetadata(p: Playable?) {
-        if (p == null || mediaSession == null) {
-            return
-        }
+        if (p == null || mediaSession == null) return
 
         val builder = MediaMetadataCompat.Builder()
         builder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST, p.getFeedTitle())
@@ -1294,13 +1234,13 @@ class PlaybackService : MediaBrowserServiceCompat() {
             mediaSession!!.setSessionActivity(PendingIntent.getActivity(this, R.id.pending_intent_player_activity,
                 getPlayerActivityIntent(this), PendingIntent.FLAG_UPDATE_CURRENT
                         or (if (Build.VERSION.SDK_INT >= 31) PendingIntent.FLAG_MUTABLE else 0)))
-            try {
-                mediaSession!!.setMetadata(builder.build())
-            } catch (e: OutOfMemoryError) {
-                Log.e(TAG, "Setting media session metadata", e)
-                builder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, null)
-                mediaSession!!.setMetadata(builder.build())
-            }
+//            try {
+//                mediaSession!!.setMetadata(builder.build())
+//            } catch (e: OutOfMemoryError) {
+//                Log.e(TAG, "Setting media session metadata", e)
+//                builder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, null)
+//                mediaSession!!.setMetadata(builder.build())
+//            }
         }
     }
 
@@ -1327,7 +1267,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
 
         val playerStatus = mediaPlayer!!.playerStatus
         notificationBuilder.setPlayable(playable)
-        if (mediaSession != null) notificationBuilder.setMediaSessionToken(mediaSession!!.sessionToken)
+        if (mediaSession != null) notificationBuilder.setMediaSessionToken(mediaSession!!.getSessionCompatToken())
         notificationBuilder.playerStatus = playerStatus
         notificationBuilder.updatePosition(currentPosition, currentPlaybackSpeed)
 
@@ -1646,8 +1586,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
                                 feedPreferences.feedPlaybackSpeed = speed
                                 Log.d(TAG, "setSpeed ${feed.title} $speed")
                                 DBWriter.setFeedPreferences(feedPreferences)
-                                EventBus.getDefault().post(
-                                    SpeedPresetChangedEvent(feedPreferences.feedPlaybackSpeed, feed.id))
+                                EventBus.getDefault().post(SpeedPresetChangedEvent(feedPreferences.feedPlaybackSpeed, feed.id))
                             }
                         }
                     }
@@ -1776,188 +1715,13 @@ class PlaybackService : MediaBrowserServiceCompat() {
         if (playable is FeedMedia) {
             val itemId = playable.item?.id ?: return
             DBWriter.addQueueItem(this, false, true, itemId)
-            notifyChildrenChanged(getString(R.string.queue_label))
+//            notifyChildrenChanged(getString(R.string.queue_label))
         }
     }
 
-    private val sessionCallback: MediaSessionCompat.Callback = object : MediaSessionCompat.Callback() {
+    private val sessionCallback: MediaSession.Callback = object : MediaSession.Callback {
         private val TAG = "MediaSessionCompat"
-
-        override fun onPlay() {
-            Log.d(TAG, "onPlay()")
-            val status: PlayerStatus = this@PlaybackService.status
-            when (status) {
-                PlayerStatus.PAUSED, PlayerStatus.PREPARED -> {
-                    resume()
-                }
-                PlayerStatus.INITIALIZED -> {
-                    this@PlaybackService.isStartWhenPrepared = true
-                    prepare()
-                }
-                else -> {}
-            }
-        }
-
-        override fun onPlayFromMediaId(mediaId: String, extras: Bundle) {
-            Log.d(TAG, "onPlayFromMediaId: mediaId: $mediaId extras: $extras")
-            val p = DBReader.getFeedMedia(mediaId.toLong())
-            if (p != null) {
-                startPlaying(p, false)
-            }
-        }
-
-        override fun onPlayFromSearch(query: String, extras: Bundle) {
-            Log.d(TAG, "onPlayFromSearch  query=$query extras=$extras")
-
-            if (query == "") {
-                Log.d(TAG, "onPlayFromSearch called with empty query, resuming from the last position")
-                startPlayingFromPreferences()
-                return
-            }
-
-            val results = FeedSearcher.searchFeedItems(query, 0)
-            if (results.isNotEmpty() && results[0].media != null) {
-                val media = results[0].media
-                startPlaying(media, false)
-                return
-            }
-            onPlay()
-        }
-
-        override fun onPause() {
-            Log.d(TAG, "onPause()")
-            if (this@PlaybackService.status == PlayerStatus.PLAYING) {
-                pause(!isPersistNotify, false)
-            }
-        }
-
-        override fun onStop() {
-            Log.d(TAG, "onStop()")
-            mediaPlayer?.stopPlayback(true)
-        }
-
-        override fun onSkipToPrevious() {
-            Log.d(TAG, "onSkipToPrevious()")
-            seekDelta(-rewindSecs * 1000)
-        }
-
-        override fun onRewind() {
-            Log.d(TAG, "onRewind()")
-            seekDelta(-rewindSecs * 1000)
-        }
-
-        fun onNextChapter() {
-            val chapters = mediaPlayer?.getPlayable()?.getChapters() ?: listOf()
-            if (chapters.isEmpty()) {
-                // No chapters, just fallback to next episode
-                mediaPlayer?.skip()
-                return
-            }
-
-            val nextChapter = getCurrentChapterIndex(mediaPlayer?.getPlayable(), (mediaPlayer?.getPosition()?:0)) + 1
-
-            if (chapters.size < nextChapter + 1) {
-                // We are on the last chapter, just fallback to the next episode
-                mediaPlayer?.skip()
-                return
-            }
-
-            mediaPlayer?.seekTo(chapters[nextChapter].start.toInt())
-        }
-
-        override fun onFastForward() {
-            Log.d(TAG, "onFastForward()")
-//            speedForward(2.5f)
-            seekDelta(fastForwardSecs * 1000)
-        }
-
-        override fun onSkipToNext() {
-            Log.d(TAG, "onSkipToNext()")
-            val uiModeManager = applicationContext.getSystemService(UI_MODE_SERVICE) as UiModeManager
-            if (hardwareForwardButton == KeyEvent.KEYCODE_MEDIA_NEXT
-                    || uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_CAR) {
-                mediaPlayer?.skip()
-            } else {
-                seekDelta(fastForwardSecs * 1000)
-            }
-        }
-
-
-        override fun onSeekTo(pos: Long) {
-            Log.d(TAG, "onSeekTo()")
-            seekTo(pos.toInt())
-        }
-
-        override fun onSetPlaybackSpeed(speed: Float) {
-            Log.d(TAG, "onSetPlaybackSpeed()")
-            setSpeed(speed)
-        }
-
-        override fun onMediaButtonEvent(mediaButton: Intent): Boolean {
-            Log.d(TAG, "onMediaButtonEvent($mediaButton)")
-            val keyEvent = mediaButton.getParcelableExtra<KeyEvent>(Intent.EXTRA_KEY_EVENT)
-            if (keyEvent != null && keyEvent.action == KeyEvent.ACTION_DOWN && keyEvent.repeatCount == 0) {
-                val keyCode = keyEvent.keyCode
-                if (keyCode == KeyEvent.KEYCODE_HEADSETHOOK || keyCode == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE) {
-                    clickCount++
-                    clickHandler.removeCallbacksAndMessages(null)
-                    clickHandler.postDelayed({
-                        when (clickCount) {
-                            1 -> {
-                                handleKeycode(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, false)
-                            }
-                            2 -> {
-                                onFastForward()
-                            }
-                            3 -> {
-                                onRewind()
-                            }
-                        }
-                        clickCount = 0
-                    }, ViewConfiguration.getDoubleTapTimeout().toLong())
-                    return true
-                } else {
-                    return handleKeycode(keyCode, false)
-                }
-            }
-            return false
-        }
-
-        override fun onCustomAction(action: String, extra: Bundle) {
-            Log.d(TAG, "onCustomAction($action)")
-            when (action) {
-                CUSTOM_ACTION_FAST_FORWARD -> {
-                    onFastForward()
-                }
-                CUSTOM_ACTION_REWIND -> {
-                    onRewind()
-                }
-                CUSTOM_ACTION_SKIP_TO_NEXT -> {
-                    mediaPlayer?.skip()
-                }
-                CUSTOM_ACTION_NEXT_CHAPTER -> {
-                    onNextChapter()
-                }
-                CUSTOM_ACTION_CHANGE_PLAYBACK_SPEED -> {
-                    val selectedSpeeds = playbackSpeedArray
-
-                    // If the list has zero or one element, there's nothing we can do to change the playback speed.
-                    if (selectedSpeeds.size > 1) {
-                        val speedPosition = selectedSpeeds.indexOf(mediaPlayer?.getPlaybackSpeed()?:0f)
-
-                        val newSpeed = if (speedPosition == selectedSpeeds.size - 1) {
-                            // This is the last element. Wrap instead of going over the size of the list.
-                            selectedSpeeds[0]
-                        } else {
-                            // If speedPosition is still -1 (the user isn't using a preset), use the first preset in the
-                            // list.
-                            selectedSpeeds[speedPosition + 1]
-                        }
-                        onSetPlaybackSpeed(newSpeed)
-                    }
-                }
-            }
-        }
+//        TODO: not used now with media3
     }
 
     companion object {
@@ -1976,8 +1740,7 @@ class PlaybackService : MediaBrowserServiceCompat() {
         private const val CUSTOM_ACTION_SKIP_TO_NEXT = "action.ac.mdiq.podcini.service.skipToNext"
         private const val CUSTOM_ACTION_FAST_FORWARD = "action.ac.mdiq.podcini.service.fastForward"
         private const val CUSTOM_ACTION_REWIND = "action.ac.mdiq.podcini.service.rewind"
-        private const val CUSTOM_ACTION_CHANGE_PLAYBACK_SPEED =
-            "action.ac.mdiq.podcini.service.changePlaybackSpeed"
+        private const val CUSTOM_ACTION_CHANGE_PLAYBACK_SPEED = "action.ac.mdiq.podcini.service.changePlaybackSpeed"
         const val CUSTOM_ACTION_NEXT_CHAPTER: String = "action.ac.mdiq.podcini.service.next_chapter"
 
         /**
@@ -2030,15 +1793,16 @@ class PlaybackService : MediaBrowserServiceCompat() {
 
         /**
          * Same as [.getPlayerActivityIntent], but here the type of activity
-         * depends on the FeedMedia that is provided as an argument.
+         * depends on the medaitype that is provided as an argument.
          */
         @JvmStatic
-        fun getPlayerActivityIntent(context: Context, media: Playable): Intent {
-            return if (media.getMediaType() == MediaType.VIDEO && !isCasting) {
+        fun getPlayerActivityIntent(context: Context, mediaType: MediaType?): Intent {
+            return if (mediaType == MediaType.VIDEO && !isCasting) {
                 VideoPlayerActivityStarter(context).intent
             } else {
                 MainActivityStarter(context).withOpenPlayer().getIntent()
             }
         }
+
     }
 }

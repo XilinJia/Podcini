@@ -6,36 +6,35 @@ import ac.mdiq.podcini.databinding.InternalPlayerFragmentBinding
 import ac.mdiq.podcini.feed.util.ImageResourceUtils
 import ac.mdiq.podcini.feed.util.PlaybackSpeedUtils
 import ac.mdiq.podcini.playback.PlaybackController
-import ac.mdiq.podcini.playback.PlaybackController.Companion
-import ac.mdiq.podcini.playback.PlaybackServiceStarter
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.cast.CastEnabledActivity
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.receiver.MediaButtonReceiver
 import ac.mdiq.podcini.playback.service.PlaybackService
+import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
+import ac.mdiq.podcini.receiver.MediaButtonReceiver
 import ac.mdiq.podcini.storage.model.feed.Chapter
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.storage.model.playback.Playable
+import ac.mdiq.podcini.ui.actions.menuhandler.FeedItemMenuHandler
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.view.PlaybackSpeedIndicatorView
+import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
+import ac.mdiq.podcini.ui.activity.VideoplayerActivity.VideoMode
+import ac.mdiq.podcini.ui.activity.appstartintent.VideoPlayerActivityStarter
 import ac.mdiq.podcini.ui.dialog.MediaPlayerErrorDialog
 import ac.mdiq.podcini.ui.dialog.SkipPreferenceDialog
 import ac.mdiq.podcini.ui.dialog.SleepTimerDialog
 import ac.mdiq.podcini.ui.dialog.VariableSpeedDialog
-import ac.mdiq.podcini.ui.actions.menuhandler.FeedItemMenuHandler
-import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.AUDIO_ONLY
 import ac.mdiq.podcini.ui.view.ChapterSeekBar
 import ac.mdiq.podcini.ui.view.PlayButton
+import ac.mdiq.podcini.ui.view.PlaybackSpeedIndicatorView
 import ac.mdiq.podcini.util.ChapterUtils
 import ac.mdiq.podcini.util.Converter
 import ac.mdiq.podcini.util.TimeSpeedConverter
 import ac.mdiq.podcini.util.event.FavoritesEvent
 import ac.mdiq.podcini.util.event.PlayerErrorEvent
 import ac.mdiq.podcini.util.event.playback.*
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.os.Build
@@ -114,10 +113,13 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         toolbar = binding.toolbar
         toolbar.title = ""
         toolbar.setNavigationOnClickListener {
-            val bottomSheet = (activity as MainActivity).bottomSheet
-            if (bottomSheet.state == BottomSheetBehavior.STATE_EXPANDED)
-                bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
-            else bottomSheet.state = BottomSheetBehavior.STATE_EXPANDED
+//            val mtype = controller?.getMedia()?.getMediaType()
+//            if (mtype == MediaType.AUDIO || (mtype == MediaType.VIDEO && videoPlayMode == VideoMode.AUDIO_ONLY)) {
+                val bottomSheet = (activity as MainActivity).bottomSheet
+//                if (bottomSheet.state == BottomSheetBehavior.STATE_EXPANDED)
+                    bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
+//                else bottomSheet.state = BottomSheetBehavior.STATE_EXPANDED
+//            }
         }
         toolbar.setOnMenuItemClickListener(this)
 
@@ -400,6 +402,9 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         if (item == null && isFeedMedia) item = (media as FeedMedia).item
         FeedItemMenuHandler.onPrepareMenu(toolbar.menu, item)
 
+        val mediaType = controller?.getMedia()?.getMediaType()
+        toolbar.menu?.findItem(R.id.show_video)?.setVisible(mediaType == MediaType.VIDEO)
+
         if (controller != null) {
             toolbar.menu.findItem(R.id.set_sleeptimer_item).setVisible(!controller!!.sleepTimerActive())
             toolbar.menu.findItem(R.id.disable_sleeptimer_item).setVisible(controller!!.sleepTimerActive())
@@ -419,6 +424,11 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
         val itemId = menuItem.itemId
         when (itemId) {
+            R.id.show_video -> {
+                controller!!.playPause()
+                VideoPlayerActivityStarter(requireContext(), VideoMode.FULL_SCREEN_VIEW).start()
+                return true
+            }
             R.id.disable_sleeptimer_item, R.id.set_sleeptimer_item -> {
                 SleepTimerDialog().show(childFragmentManager, "SleepTimerDialog")
                 return true
@@ -523,13 +533,15 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 Log.d(TAG, "internalPlayerFragment was clicked")
                 val media = controller?.getMedia()
                 if (media != null) {
-                    if (media.getMediaType() == MediaType.AUDIO || videoPlayMode == AUDIO_ONLY) {
+                    val mediaType = media.getMediaType()
+                    if (mediaType == MediaType.AUDIO ||
+                            (mediaType == MediaType.VIDEO && (videoPlayMode == VideoMode.AUDIO_ONLY.mode || videoMode == VideoMode.AUDIO_ONLY))) {
                         controller!!.ensureService()
                         (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_EXPANDED)
                     } else {
                         controller?.playPause()
 //                        controller!!.ensureService()
-                        val intent = PlaybackService.getPlayerActivityIntent(requireContext(), media)
+                        val intent = PlaybackService.getPlayerActivityIntent(requireContext(), mediaType)
                         startActivity(intent)
                     }
                 }
@@ -554,7 +566,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 val media = controller!!.getMedia()
                 if (media?.getMediaType() == MediaType.VIDEO && controller!!.status != PlayerStatus.PLAYING) {
                     controller!!.playPause()
-                    requireContext().startActivity(PlaybackService.getPlayerActivityIntent(requireContext(), media))
+                    requireContext().startActivity(PlaybackService.getPlayerActivityIntent(requireContext(), media?.getMediaType()))
                 } else {
                     controller!!.playPause()
                 }
@@ -569,8 +581,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 }
             }
             butRev.setOnLongClickListener {
-                SkipPreferenceDialog.showSkipPreference(requireContext(),
-                    SkipPreferenceDialog.SkipDirection.SKIP_REWIND, txtvRev)
+                SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_REWIND, txtvRev)
                 true
             }
             butPlay.setOnClickListener {

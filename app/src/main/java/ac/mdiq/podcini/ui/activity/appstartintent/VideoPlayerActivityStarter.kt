@@ -2,21 +2,25 @@ package ac.mdiq.podcini.ui.activity.appstartintent
 
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.VIDEO_MODE
+import ac.mdiq.podcini.ui.activity.VideoplayerActivity.VideoMode
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Build
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
 
 /**
  * Launches the video player activity of the app with specific arguments.
  * Does not require a dependency on the actual implementation of the activity.
  */
-class VideoPlayerActivityStarter(private val context: Context) {
+@OptIn(UnstableApi::class) class VideoPlayerActivityStarter(private val context: Context, mode: VideoMode = VideoMode.None) {
     val intent: Intent = Intent(INTENT)
 
     init {
         intent.setPackage(context.packageName)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
+        if (mode != VideoMode.None) intent.putExtra(VIDEO_MODE, mode)
     }
 
     val pendingIntent: PendingIntent

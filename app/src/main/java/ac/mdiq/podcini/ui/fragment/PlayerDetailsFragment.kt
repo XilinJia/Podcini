@@ -4,7 +4,6 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.PlayerDetailsFragmentBinding
 import ac.mdiq.podcini.feed.util.ImageResourceUtils
 import ac.mdiq.podcini.playback.PlaybackController
-import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.model.feed.Chapter
 import ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage
@@ -16,6 +15,7 @@ import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.ChapterUtils
 import ac.mdiq.podcini.util.DateFormatter
+import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
@@ -44,6 +44,7 @@ import com.bumptech.glide.RequestBuilder
 import com.bumptech.glide.load.resource.bitmap.FitCenter
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import io.reactivex.Maybe
 import io.reactivex.MaybeEmitter
@@ -212,13 +213,9 @@ class PlayerDetailsFragment : Fragment() {
             val lines = binding.txtvEpisodeTitle.lineCount
             val animUnit = 1500
             if (lines > binding.txtvEpisodeTitle.maxLines) {
-                val titleHeight = (binding.txtvEpisodeTitle.height
-                        - binding.txtvEpisodeTitle.paddingTop
-                        - binding.txtvEpisodeTitle.paddingBottom)
-                val verticalMarquee: ObjectAnimator = ObjectAnimator.ofInt(
-                    binding.txtvEpisodeTitle, "scrollY", 0,
-                    (lines - binding.txtvEpisodeTitle.maxLines) * (titleHeight / binding.txtvEpisodeTitle.maxLines))
-                    .setDuration((lines * animUnit).toLong())
+                val titleHeight = (binding.txtvEpisodeTitle.height - binding.txtvEpisodeTitle.paddingTop - binding.txtvEpisodeTitle.paddingBottom)
+                val verticalMarquee: ObjectAnimator = ObjectAnimator.ofInt(binding.txtvEpisodeTitle, "scrollY", 0,
+                    (lines - binding.txtvEpisodeTitle.maxLines) * (titleHeight / binding.txtvEpisodeTitle.maxLines)).setDuration((lines * animUnit).toLong())
                 val fadeOut: ObjectAnimator = ObjectAnimator.ofFloat(binding.txtvEpisodeTitle, "alpha", 0f)
                 fadeOut.setStartDelay(animUnit.toLong())
                 fadeOut.addListener(object : AnimatorListenerAdapter() {
@@ -254,11 +251,8 @@ class PlayerDetailsFragment : Fragment() {
         val newVisibility = if (chapterControlVisible) View.VISIBLE else View.GONE
         if (binding.chapterButton.visibility != newVisibility) {
             binding.chapterButton.visibility = newVisibility
-            ObjectAnimator.ofFloat(binding.chapterButton,
-                "alpha",
-                (if (chapterControlVisible) 0 else 1).toFloat(),
-                (if (chapterControlVisible) 1 else 0).toFloat())
-                .start()
+            ObjectAnimator.ofFloat(binding.chapterButton, "alpha",
+                (if (chapterControlVisible) 0 else 1).toFloat(), (if (chapterControlVisible) 1 else 0).toFloat()).start()
         }
     }
 
@@ -279,8 +273,7 @@ class PlayerDetailsFragment : Fragment() {
         if (media == null) return
         val options: RequestOptions = RequestOptions()
             .dontAnimate()
-            .transform(FitCenter(),
-                RoundedCorners((16 * resources.displayMetrics.density).toInt()))
+            .transform(FitCenter(), RoundedCorners((16 * resources.displayMetrics.density).toInt()))
 
         val cover: RequestBuilder<Drawable> = Glide.with(this)
             .load(media!!.getImageLocation())
@@ -308,9 +301,7 @@ class PlayerDetailsFragment : Fragment() {
 
     private val currentChapter: Chapter?
         get() {
-            if (media == null || media!!.getChapters().isEmpty() || displayedChapterIndex == -1) {
-                return null
-            }
+            if (media == null || media!!.getChapters().isEmpty() || displayedChapterIndex == -1) return null
             return media!!.getChapters()[displayedChapterIndex]
         }
 
@@ -364,6 +355,8 @@ class PlayerDetailsFragment : Fragment() {
     }
 
     @UnstableApi private fun restoreFromPreference(): Boolean {
+        if ((activity as MainActivity).bottomSheet.state != BottomSheetBehavior.STATE_EXPANDED) return false
+
         Log.d(TAG, "Restoring from preferences")
         val activity: Activity? = activity
         if (activity != null) {
@@ -411,18 +404,14 @@ class PlayerDetailsFragment : Fragment() {
 //    private fun configureForOrientation(newConfig: Configuration) {
 //        val isPortrait = newConfig.orientation == Configuration.ORIENTATION_PORTRAIT
 //
-//        binding.coverFragment.orientation = if (isPortrait) LinearLayout.VERTICAL else LinearLayout.HORIZONTAL
+////        binding.coverFragment.orientation = if (isPortrait) LinearLayout.VERTICAL else LinearLayout.HORIZONTAL
 //
 //        if (isPortrait) {
-//            binding.coverHolder.layoutParams =
-//                LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f)
-//            binding.coverFragmentTextContainer.layoutParams =
-//                LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+//            binding.coverHolder.layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f)
+////            binding.coverFragmentTextContainer.layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 //        } else {
-//            binding.coverHolder.layoutParams =
-//                LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
-//            binding.coverFragmentTextContainer.layoutParams =
-//                LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
+//            binding.coverHolder.layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
+////            binding.coverFragmentTextContainer.layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
 //        }
 //
 //        (binding.episodeDetails.parent as ViewGroup).removeView(binding.episodeDetails)
@@ -442,8 +431,7 @@ class PlayerDetailsFragment : Fragment() {
         val clipboardManager: ClipboardManager? = ContextCompat.getSystemService(requireContext(), ClipboardManager::class.java)
         clipboardManager?.setPrimaryClip(ClipData.newPlainText("Podcini", text))
         if (Build.VERSION.SDK_INT <= 32) {
-            (requireActivity() as MainActivity).showSnackbarAbovePlayer(
-                resources.getString(R.string.copied_to_clipboard), Snackbar.LENGTH_SHORT)
+            (requireActivity() as MainActivity).showSnackbarAbovePlayer(resources.getString(R.string.copied_to_clipboard), Snackbar.LENGTH_SHORT)
         }
         return true
     }

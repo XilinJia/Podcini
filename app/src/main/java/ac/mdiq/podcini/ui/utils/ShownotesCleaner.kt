@@ -27,8 +27,7 @@ class ShownotesCleaner(context: Context, private val rawShownotes: String, priva
     init {
         val colorPrimary = colorToHtml(context, android.R.attr.textColorPrimary)
         val colorAccent = colorToHtml(context, R.attr.colorAccent)
-        val margin = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f,
-            context.resources.displayMetrics).toInt()
+        val margin = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, context.resources.displayMetrics).toInt()
         var styleString: String? = ""
         try {
             val templateStream = context.assets.open("shownotes-style.css")
@@ -36,15 +35,13 @@ class ShownotesCleaner(context: Context, private val rawShownotes: String, priva
         } catch (e: IOException) {
             e.printStackTrace()
         }
-        webviewStyle = String.format(Locale.US, styleString!!, colorPrimary, colorAccent,
-            margin, margin, margin, margin)
+        webviewStyle = String.format(Locale.US, styleString!!, colorPrimary, colorAccent, margin, margin, margin, margin)
     }
 
     private fun colorToHtml(context: Context, colorAttr: Int): String {
         val res = context.theme.obtainStyledAttributes(intArrayOf(colorAttr))
         @ColorInt val col = res.getColor(0, 0)
-        val color = ("rgba(" + Color.red(col) + "," + Color.green(col) + ","
-                + Color.blue(col) + "," + (Color.alpha(col) / 255.0) + ")")
+        val color = ("rgba(" + Color.red(col) + "," + Color.green(col) + "," + Color.blue(col) + "," + (Color.alpha(col) / 255.0) + ")")
         res.recycle()
         return color
     }

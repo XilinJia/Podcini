@@ -91,8 +91,7 @@ class PodDBAdapter private constructor() {
             feed.id = db.insert(TABLE_NAME_FEEDS, null, values)
         } else {
             Log.d(this.toString(), "Updating existing Feed in db")
-            db.update(TABLE_NAME_FEEDS, values, "$KEY_ID=?",
-                arrayOf(feed.id.toString()))
+            db.update(TABLE_NAME_FEEDS, values, "$KEY_ID=?", arrayOf(feed.id.toString()))
         }
         return feed.id
     }
@@ -116,14 +115,12 @@ class PodDBAdapter private constructor() {
         values.put(KEY_FEED_SKIP_ENDING, prefs.feedSkipEnding)
         values.put(KEY_EPISODE_NOTIFICATION, prefs.showEpisodeNotification)
         values.put(KEY_NEW_EPISODES_ACTION, prefs.newEpisodesAction!!.code)
-        db.update(TABLE_NAME_FEEDS, values, "$KEY_ID=?", arrayOf(
-            prefs.feedID.toString()))
+        db.update(TABLE_NAME_FEEDS, values, "$KEY_ID=?", arrayOf(prefs.feedID.toString()))
     }
 
     fun setFeedItemFilter(feedId: Long, filterValues: Set<String?>?) {
         val valuesList = TextUtils.join(",", filterValues!!)
-        Log.d(TAG, String.format(Locale.US,
-            "setFeedItemFilter() called with: feedId = [%d], filterValues = [%s]", feedId, valuesList))
+        Log.d(TAG, String.format(Locale.US, "setFeedItemFilter() called with: feedId = [%d], filterValues = [%s]", feedId, valuesList))
         val values = ContentValues()
         values.put(KEY_HIDE, valuesList)
         db.update(TABLE_NAME_FEEDS, values, "$KEY_ID=?", arrayOf(feedId.toString()))
@@ -163,8 +160,7 @@ class PodDBAdapter private constructor() {
         if (media.id == 0L) {
             media.id = db.insert(TABLE_NAME_FEED_MEDIA, null, values)
         } else {
-            db.update(TABLE_NAME_FEED_MEDIA, values, "$KEY_ID=?",
-                arrayOf(media.id.toString()))
+            db.update(TABLE_NAME_FEED_MEDIA, values, "$KEY_ID=?", arrayOf(media.id.toString()))
         }
         return media.id
     }
@@ -176,8 +172,7 @@ class PodDBAdapter private constructor() {
             values.put(KEY_DURATION, media.getDuration())
             values.put(KEY_PLAYED_DURATION, media.playedDuration)
             values.put(KEY_LAST_PLAYED_TIME, media.getLastPlayedTime())
-            db.update(TABLE_NAME_FEED_MEDIA, values, "$KEY_ID=?",
-                arrayOf(media.id.toString()))
+            db.update(TABLE_NAME_FEED_MEDIA, values, "$KEY_ID=?", arrayOf(media.id.toString()))
         } else {
             Log.e(TAG, "setFeedMediaPlaybackInformation: ID of media was 0")
         }
@@ -317,8 +312,7 @@ class PodDBAdapter private constructor() {
         if (item.id == 0L) {
             item.id = db.insert(TABLE_NAME_FEED_ITEMS, null, values)
         } else {
-            db.update(TABLE_NAME_FEED_ITEMS, values, "$KEY_ID=?",
-                arrayOf(item.id.toString()))
+            db.update(TABLE_NAME_FEED_ITEMS, values, "$KEY_ID=?", arrayOf(item.id.toString()))
         }
         if (item.media != null) {
             setMedia(item.media)
@@ -329,9 +323,7 @@ class PodDBAdapter private constructor() {
         return item.id
     }
 
-    fun setFeedItemRead(played: Int, itemId: Long, mediaId: Long,
-                        resetMediaPosition: Boolean
-    ) {
+    fun setFeedItemRead(played: Int, itemId: Long, mediaId: Long, resetMediaPosition: Boolean) {
         try {
             db.beginTransactionNonExclusive()
             val values = ContentValues()
@@ -387,8 +379,7 @@ class PodDBAdapter private constructor() {
             if (chapter.id == 0L) {
                 chapter.id = db.insert(TABLE_NAME_SIMPLECHAPTERS, null, values)
             } else {
-                db.update(TABLE_NAME_SIMPLECHAPTERS, values, "$KEY_ID=?",
-                    arrayOf(chapter.id.toString()))
+                db.update(TABLE_NAME_SIMPLECHAPTERS, values, "$KEY_ID=?", arrayOf(chapter.id.toString()))
             }
         }
     }
@@ -428,8 +419,7 @@ class PodDBAdapter private constructor() {
         if (status.id == 0L) {
             status.id = db.insert(TABLE_NAME_DOWNLOAD_LOG, null, values)
         } else {
-            db.update(TABLE_NAME_DOWNLOAD_LOG, values, "$KEY_ID=?",
-                arrayOf(status.id.toString()))
+            db.update(TABLE_NAME_DOWNLOAD_LOG, values, "$KEY_ID=?", arrayOf(status.id.toString()))
         }
         return status.id
     }
@@ -470,16 +460,12 @@ class PodDBAdapter private constructor() {
     }
 
     fun removeFavoriteItem(item: FeedItem) {
-        val deleteClause = String.format("DELETE FROM %s WHERE %s=%s AND %s=%s",
-            TABLE_NAME_FAVORITES,
-            KEY_FEEDITEM, item.id,
-            KEY_FEED, item.feedId)
+        val deleteClause = String.format("DELETE FROM %s WHERE %s=%s AND %s=%s", TABLE_NAME_FAVORITES, KEY_FEEDITEM, item.id, KEY_FEED, item.feedId)
         db.execSQL(deleteClause)
     }
 
     private fun isItemInFavorites(item: FeedItem): Boolean {
-        val query = String.format(Locale.US, "SELECT %s from %s WHERE %s=%d",
-            KEY_ID, TABLE_NAME_FAVORITES, KEY_FEEDITEM, item.id)
+        val query = String.format(Locale.US, "SELECT %s from %s WHERE %s=%d", KEY_ID, TABLE_NAME_FAVORITES, KEY_FEEDITEM, item.id)
         val c = db.rawQuery(query, null)
         val count = c.count
         c.close()
@@ -557,8 +543,7 @@ class PodDBAdapter private constructor() {
             db.delete(TABLE_NAME_DOWNLOAD_LOG, "$KEY_FEEDFILE=? AND $KEY_FEEDFILETYPE=?",
                 arrayOf(feed.id.toString(), Feed.FEEDFILETYPE_FEED.toString()))
 
-            db.delete(TABLE_NAME_FEEDS, "$KEY_ID=?",
-                arrayOf(feed.id.toString()))
+            db.delete(TABLE_NAME_FEEDS, "$KEY_ID=?", arrayOf(feed.id.toString()))
             db.setTransactionSuccessful()
         } catch (e: SQLException) {
             Log.e(TAG, Log.getStackTraceString(e))
@@ -717,8 +702,7 @@ class PodDBAdapter private constructor() {
         val orderByQuery = generateFrom(sortOrder)
         val filterQuery = generateFrom(filter!!)
         val whereClause = if ("" == filterQuery) "" else " WHERE $filterQuery"
-        val query = (SELECT_FEED_ITEMS_AND_MEDIA + whereClause
-                + "ORDER BY " + orderByQuery + " LIMIT " + offset + ", " + limit)
+        val query = (SELECT_FEED_ITEMS_AND_MEDIA + whereClause + "ORDER BY " + orderByQuery + " LIMIT " + offset + ", " + limit)
         return db.rawQuery(query, null)
     }
 
@@ -771,8 +755,7 @@ class PodDBAdapter private constructor() {
         get() = DatabaseUtils.queryNumEntries(db, TABLE_NAME_FEED_MEDIA, "$KEY_PLAYBACK_COMPLETION_DATE> 0")
 
     fun getSingleFeedMediaCursor(id: Long): Cursor {
-        val query = ("SELECT " + KEYS_FEED_MEDIA + " FROM " + TABLE_NAME_FEED_MEDIA
-                + " WHERE " + KEY_ID + "=" + id)
+        val query = ("SELECT " + KEYS_FEED_MEDIA + " FROM " + TABLE_NAME_FEED_MEDIA + " WHERE " + KEY_ID + "=" + id)
         return db.rawQuery(query, null)
     }
 
@@ -918,8 +901,7 @@ class PodDBAdapter private constructor() {
     fun getFeedCounters(setting: FeedCounter?, vararg feedIds: Long): Map<Long, Int> {
         val whereRead = when (setting) {
 //            FeedCounter.SHOW_NEW -> KEY_READ + "=" + FeedItem.NEW
-            FeedCounter.SHOW_UNPLAYED -> ("(" + KEY_READ + "=" + FeedItem.NEW
-                    + " OR " + KEY_READ + "=" + FeedItem.UNPLAYED + ")")
+            FeedCounter.SHOW_UNPLAYED -> ("(" + KEY_READ + "=" + FeedItem.NEW + " OR " + KEY_READ + "=" + FeedItem.UNPLAYED + ")")
             FeedCounter.SHOW_DOWNLOADED -> "$KEY_DOWNLOADED=1"
             FeedCounter.SHOW_DOWNLOADED_UNPLAYED -> ("(" + KEY_READ + "=" + FeedItem.NEW
                     + " OR " + KEY_READ + "=" + FeedItem.UNPLAYED + ")"
@@ -1044,13 +1026,11 @@ class PodDBAdapter private constructor() {
             "1 = 1"
         }
 
-        val queryStart = (SELECT_FEED_ITEMS_AND_MEDIA_WITH_DESCRIPTION
-                + " WHERE " + queryFeedId + " AND (")
+        val queryStart = (SELECT_FEED_ITEMS_AND_MEDIA_WITH_DESCRIPTION + " WHERE " + queryFeedId + " AND (")
         val sb = StringBuilder(queryStart)
 
         for (i in queryWords.indices) {
-            sb
-                .append("(")
+            sb.append("(")
                 .append("$KEY_DESCRIPTION LIKE '%").append(queryWords[i])
                 .append("%' OR ")
                 .append(KEY_TITLE).append(" LIKE '%").append(queryWords[i])
@@ -1078,8 +1058,7 @@ class PodDBAdapter private constructor() {
         val sb = StringBuilder(queryStart)
 
         for (i in queryWords.indices) {
-            sb
-                .append("(")
+            sb.append("(")
                 .append(KEY_TITLE).append(" LIKE '%").append(queryWords[i])
                 .append("%' OR ")
                 .append(KEY_CUSTOM_TITLE).append(" LIKE '%").append(queryWords[i])

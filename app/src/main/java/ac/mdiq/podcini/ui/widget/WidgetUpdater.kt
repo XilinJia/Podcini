@@ -40,9 +40,8 @@ object WidgetUpdater {
      * Update the widgets with the given parameters. Must be called in a background thread.
      */
     fun updateWidget(context: Context, widgetState: WidgetState?) {
-        if (!isEnabled(context) || widgetState == null) {
-            return
-        }
+        if (!isEnabled(context) || widgetState == null) return
+
         val startMediaPlayer = if (widgetState.media != null && widgetState.media.getMediaType() === MediaType.VIDEO) {
             VideoPlayerActivityStarter(context).pendingIntent
         } else {
@@ -88,8 +87,7 @@ object WidgetUpdater {
             views.setViewVisibility(R.id.txtvTitle, View.VISIBLE)
             views.setViewVisibility(R.id.txtNoPlaying, View.GONE)
 
-            val progressString = getProgressString(widgetState.position,
-                widgetState.duration, widgetState.playbackSpeed)
+            val progressString = getProgressString(widgetState.position, widgetState.duration, widgetState.playbackSpeed)
             if (progressString != null) {
                 views.setViewVisibility(R.id.txtvProgress, View.VISIBLE)
                 views.setTextViewText(R.id.txtvProgress, progressString)
@@ -106,22 +104,16 @@ object WidgetUpdater {
                 views.setImageViewResource(R.id.butPlayExtended, R.drawable.ic_widget_play)
                 views.setContentDescription(R.id.butPlayExtended, context.getString(R.string.play_label))
             }
-            views.setOnClickPendingIntent(R.id.butPlay,
-                createPendingIntent(context, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE))
-            views.setOnClickPendingIntent(R.id.butPlayExtended,
-                createPendingIntent(context, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE))
-            views.setOnClickPendingIntent(R.id.butRew,
-                createPendingIntent(context, KeyEvent.KEYCODE_MEDIA_REWIND))
-            views.setOnClickPendingIntent(R.id.butFastForward,
-                createPendingIntent(context, KeyEvent.KEYCODE_MEDIA_FAST_FORWARD))
-            views.setOnClickPendingIntent(R.id.butSkip,
-                createPendingIntent(context, KeyEvent.KEYCODE_MEDIA_NEXT))
+            views.setOnClickPendingIntent(R.id.butPlay, createPendingIntent(context, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE))
+            views.setOnClickPendingIntent(R.id.butPlayExtended, createPendingIntent(context, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE))
+            views.setOnClickPendingIntent(R.id.butRew, createPendingIntent(context, KeyEvent.KEYCODE_MEDIA_REWIND))
+            views.setOnClickPendingIntent(R.id.butFastForward, createPendingIntent(context, KeyEvent.KEYCODE_MEDIA_FAST_FORWARD))
+            views.setOnClickPendingIntent(R.id.butSkip, createPendingIntent(context, KeyEvent.KEYCODE_MEDIA_NEXT))
         } else {
             // start the app if they click anything
             views.setOnClickPendingIntent(R.id.layout_left, startMediaPlayer)
             views.setOnClickPendingIntent(R.id.butPlay, startMediaPlayer)
-            views.setOnClickPendingIntent(R.id.butPlayExtended,
-                createPendingIntent(context, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE))
+            views.setOnClickPendingIntent(R.id.butPlayExtended, createPendingIntent(context, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE))
             views.setViewVisibility(R.id.txtvProgress, View.GONE)
             views.setViewVisibility(R.id.txtvTitle, View.GONE)
             views.setViewVisibility(R.id.txtNoPlaying, View.VISIBLE)
@@ -183,27 +175,18 @@ object WidgetUpdater {
     }
 
     private fun getProgressString(position: Int, duration: Int, speed: Float): String? {
-        if (position < 0 || duration <= 0) {
-            return null
-        }
+        if (position < 0 || duration <= 0) return null
+
         val converter = TimeSpeedConverter(speed)
         return if (shouldShowRemainingTime()) {
-            (getDurationStringLong(converter.convert(position)) + " / -"
-                    + getDurationStringLong(converter.convert(max(0.0,
-                (duration - position).toDouble())
-                .toInt())))
+            ("${getDurationStringLong(converter.convert(position))} / -${getDurationStringLong(converter.convert(max(0.0, (duration - position).toDouble()).toInt()))
+            }")
         } else {
-            (getDurationStringLong(converter.convert(position)) + " / "
-                    + getDurationStringLong(converter.convert(duration)))
+            (getDurationStringLong(converter.convert(position)) + " / " + getDurationStringLong(converter.convert(duration)))
         }
     }
 
-    class WidgetState(val media: Playable?,
-                      val status: PlayerStatus,
-                      val position: Int,
-                      val duration: Int,
-                      val playbackSpeed: Float
-    ) {
+    class WidgetState(val media: Playable?, val status: PlayerStatus, val position: Int, val duration: Int, val playbackSpeed: Float) {
         constructor(status: PlayerStatus) : this(null, status, Playable.INVALID_TIME, Playable.INVALID_TIME, 1.0f)
     }
 }

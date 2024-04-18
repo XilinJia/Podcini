@@ -274,6 +274,7 @@ class MainActivity : CastEnabledActivity() {
 
     private val bottomSheetCallback: BottomSheetCallback = @UnstableApi object : BottomSheetCallback() {
          override fun onStateChanged(view: View, state: Int) {
+             Log.d(TAG, "bottomSheet onStateChanged $state")
              when (state) {
                  BottomSheetBehavior.STATE_COLLAPSED -> {
                      onSlide(view,0.0f)
@@ -610,8 +611,8 @@ class MainActivity : CastEnabledActivity() {
                 bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
             }
             intent.getBooleanExtra(MainActivityStarter.EXTRA_OPEN_PLAYER, false) -> {
-                bottomSheet.state = BottomSheetBehavior.STATE_EXPANDED
-                bottomSheetCallback.onSlide(dummyView, 1.0f)
+//                bottomSheet.state = BottomSheetBehavior.STATE_EXPANDED
+//                bottomSheetCallback.onSlide(dummyView, 1.0f)
             }
             else -> {
                 handleDeeplink(intent.data)

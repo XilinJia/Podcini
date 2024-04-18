@@ -20,8 +20,8 @@ import kotlin.concurrent.Volatile
  * Abstract class that allows for different implementations of the PlaybackServiceMediaPlayer for local
  * and remote (cast devices) playback.
  */
-abstract class PlaybackServiceMediaPlayer protected constructor(protected val context: Context,
-                                                                protected val callback: PSMPCallback) {
+abstract class PlaybackServiceMediaPlayer protected constructor(protected val context: Context, protected val callback: PSMPCallback) {
+
     @Volatile
     private var oldPlayerStatus: PlayerStatus? = null
 
@@ -46,6 +46,7 @@ abstract class PlaybackServiceMediaPlayer protected constructor(protected val co
     }
 
     abstract fun isStartWhenPrepared(): Boolean
+
     abstract fun setStartWhenPrepared(startWhenPrepared: Boolean)
 
     abstract fun getPlayable(): Playable?
@@ -67,6 +68,8 @@ abstract class PlaybackServiceMediaPlayer protected constructor(protected val co
     abstract fun getAudioTracks(): List<String?>?
 
     abstract fun getSelectedAudioTrack(): Int
+
+    abstract fun createMediaPlayer()
 
     /**
      * Starts or prepares playback of the specified Playable object. If another Playable object is already being played, the currently playing
@@ -98,11 +101,7 @@ abstract class PlaybackServiceMediaPlayer protected constructor(protected val co
      * for playback immediately (see 'prepareImmediately' parameter for more details)
      * @param prepareImmediately Set to true if the method should also prepare the episode for playback.
      */
-    abstract fun playMediaObject(playable: Playable,
-                                 stream: Boolean,
-                                 startWhenPrepared: Boolean,
-                                 prepareImmediately: Boolean
-    )
+    abstract fun playMediaObject(playable: Playable, stream: Boolean, startWhenPrepared: Boolean, prepareImmediately: Boolean)
 
     /**
      * Resumes playback if the PSMP object is in PREPARED or PAUSED state. If the PSMP object is in an invalid state.
@@ -279,9 +278,7 @@ abstract class PlaybackServiceMediaPlayer protected constructor(protected val co
      *
      * @return a Future, just for the purpose of tracking its execution.
      */
-    protected abstract fun endPlayback(hasEnded: Boolean, wasSkipped: Boolean,
-                                       shouldContinue: Boolean, toStoppedState: Boolean
-    )
+    protected abstract fun endPlayback(hasEnded: Boolean, wasSkipped: Boolean, shouldContinue: Boolean, toStoppedState: Boolean)
 
     /**
      * @return `true` if the WifiLock feature should be used, `false` otherwise.
@@ -327,9 +324,7 @@ abstract class PlaybackServiceMediaPlayer protected constructor(protected val co
      * Will be ignored if given the value of [Playable.INVALID_TIME].
      */
     @Synchronized
-    protected fun setPlayerStatus(newStatus: PlayerStatus,
-                                  newMedia: Playable?, position: Int
-    ) {
+    protected fun setPlayerStatus(newStatus: PlayerStatus, newMedia: Playable?, position: Int) {
         Log.d(TAG, this.javaClass.simpleName + ": Setting player status to " + newStatus)
 
         this.oldPlayerStatus = playerStatus

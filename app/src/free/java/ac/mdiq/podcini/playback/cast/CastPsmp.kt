@@ -9,9 +9,7 @@ import ac.mdiq.podcini.playback.base.PlaybackServiceMediaPlayer.PSMPCallback
  */
 object CastPsmp {
     @JvmStatic
-    fun getInstanceIfConnected(context: Context,
-                               callback: PSMPCallback
-    ): PlaybackServiceMediaPlayer? {
+    fun getInstanceIfConnected(context: Context, callback: PSMPCallback): PlaybackServiceMediaPlayer? {
         return null
     }
 }

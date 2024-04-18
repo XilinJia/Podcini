@@ -130,43 +130,33 @@ class PlaybackServiceNotificationBuilder(private val context: Context) {
 
     private val playerActivityPendingIntent: PendingIntent
         get() = PendingIntent.getActivity(context, R.id.pending_intent_player_activity,
-            PlaybackService.getPlayerActivityIntent(context), PendingIntent.FLAG_UPDATE_CURRENT
-                    or PendingIntent.FLAG_IMMUTABLE)
+            PlaybackService.getPlayerActivityIntent(context), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
     private fun addActions(notification: NotificationCompat.Builder, mediaSessionToken: MediaSessionCompat.Token?,
-                           playerStatus: PlayerStatus?
-    ) {
+                           playerStatus: PlayerStatus?) {
         val compactActionList = ArrayList<Int>()
 
         var numActions = 0 // we start and 0 and then increment by 1 for each call to addAction
 
-        val rewindButtonPendingIntent = getPendingIntentForMediaAction(
-            KeyEvent.KEYCODE_MEDIA_REWIND, numActions)
-        notification.addAction(R.drawable.ic_notification_fast_rewind, context.getString(R.string.rewind_label),
-            rewindButtonPendingIntent)
+        val rewindButtonPendingIntent = getPendingIntentForMediaAction(KeyEvent.KEYCODE_MEDIA_REWIND, numActions)
+        notification.addAction(R.drawable.ic_notification_fast_rewind, context.getString(R.string.rewind_label), rewindButtonPendingIntent)
         compactActionList.add(numActions)
         numActions++
 
         if (playerStatus == PlayerStatus.PLAYING) {
-            val pauseButtonPendingIntent = getPendingIntentForMediaAction(
-                KeyEvent.KEYCODE_MEDIA_PAUSE, numActions)
-            notification.addAction(R.drawable.ic_notification_pause,  //pause action
-                context.getString(R.string.pause_label),
-                pauseButtonPendingIntent)
+            val pauseButtonPendingIntent = getPendingIntentForMediaAction(KeyEvent.KEYCODE_MEDIA_PAUSE, numActions)
+            //pause action
+            notification.addAction(R.drawable.ic_notification_pause, context.getString(R.string.pause_label), pauseButtonPendingIntent)
         } else {
-            val playButtonPendingIntent = getPendingIntentForMediaAction(
-                KeyEvent.KEYCODE_MEDIA_PLAY, numActions)
-            notification.addAction(R.drawable.ic_notification_play,  //play action
-                context.getString(R.string.play_label),
-                playButtonPendingIntent)
+            val playButtonPendingIntent = getPendingIntentForMediaAction(KeyEvent.KEYCODE_MEDIA_PLAY, numActions)
+            //play action
+            notification.addAction(R.drawable.ic_notification_play, context.getString(R.string.play_label), playButtonPendingIntent)
         }
         compactActionList.add(numActions++)
 
         // ff follows play, then we have skip (if it's present)
-        val ffButtonPendingIntent = getPendingIntentForMediaAction(
-            KeyEvent.KEYCODE_MEDIA_FAST_FORWARD, numActions)
-        notification.addAction(R.drawable.ic_notification_fast_forward, context.getString(R.string.fast_forward_label),
-            ffButtonPendingIntent)
+        val ffButtonPendingIntent = getPendingIntentForMediaAction(KeyEvent.KEYCODE_MEDIA_FAST_FORWARD, numActions)
+        notification.addAction(R.drawable.ic_notification_fast_forward, context.getString(R.string.fast_forward_label), ffButtonPendingIntent)
         compactActionList.add(numActions)
         numActions++
 
@@ -177,15 +167,12 @@ class PlaybackServiceNotificationBuilder(private val context: Context) {
         }
 
         if (UserPreferences.showSkipOnFullNotification()) {
-            val skipButtonPendingIntent = getPendingIntentForMediaAction(
-                KeyEvent.KEYCODE_MEDIA_NEXT, numActions)
-            notification.addAction(R.drawable.ic_notification_skip, context.getString(R.string.skip_episode_label),
-                skipButtonPendingIntent)
+            val skipButtonPendingIntent = getPendingIntentForMediaAction(KeyEvent.KEYCODE_MEDIA_NEXT, numActions)
+            notification.addAction(R.drawable.ic_notification_skip, context.getString(R.string.skip_episode_label), skipButtonPendingIntent)
             numActions++
         }
 
-        val stopButtonPendingIntent = getPendingIntentForMediaAction(
-            KeyEvent.KEYCODE_MEDIA_STOP, numActions)
+        val stopButtonPendingIntent = getPendingIntentForMediaAction(KeyEvent.KEYCODE_MEDIA_STOP, numActions)
         notification.setStyle(androidx.media.app.NotificationCompat.MediaStyle()
             .setMediaSession(mediaSessionToken)
             .setShowActionsInCompactView(*ArrayUtils.toPrimitive(compactActionList.toTypedArray<Int>()))
@@ -199,11 +186,9 @@ class PlaybackServiceNotificationBuilder(private val context: Context) {
         intent.putExtra(MediaButtonReceiver.EXTRA_KEYCODE, keycodeValue)
 
         return if (Build.VERSION.SDK_INT >= 26) {
-            PendingIntent.getForegroundService(context, requestCode, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            PendingIntent.getForegroundService(context, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         } else {
-            PendingIntent.getService(context, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT
-                    or PendingIntent.FLAG_IMMUTABLE)
+            PendingIntent.getService(context, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         }
     }
 
@@ -213,11 +198,9 @@ class PlaybackServiceNotificationBuilder(private val context: Context) {
         intent.putExtra(MediaButtonReceiver.EXTRA_CUSTOM_ACTION, action)
 
         return if (Build.VERSION.SDK_INT >= 26) {
-            PendingIntent.getForegroundService(context, requestCode, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            PendingIntent.getForegroundService(context, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         } else {
-            PendingIntent.getService(context, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT
-                    or PendingIntent.FLAG_IMMUTABLE)
+            PendingIntent.getService(context, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         }
     }
 
@@ -230,8 +213,7 @@ class PlaybackServiceNotificationBuilder(private val context: Context) {
         private var defaultIcon: Bitmap? = null
 
         private fun getBitmap(vectorDrawable: VectorDrawable): Bitmap {
-            val bitmap = Bitmap.createBitmap(vectorDrawable.intrinsicWidth,
-                vectorDrawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
+            val bitmap = Bitmap.createBitmap(vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap)
             vectorDrawable.setBounds(0, 0, canvas.width, canvas.height)
             vectorDrawable.draw(canvas)

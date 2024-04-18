@@ -82,6 +82,9 @@ Even so, the database remains backward compatible, and AntennaPod's db can be ea
 
 * New share notes menu option on various episode views
 * Feed info view offers a link for direct search of feeds related to author
+* New episode home view with two display modes: webpage or reader
+* Text-to-Speech is enabled in reader's mode
+* RSS feeds with no playable media can be subscribed and read/listened
 
 ### Online feed
 

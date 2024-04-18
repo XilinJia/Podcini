@@ -114,80 +114,53 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_vertical"
+                android:gravity="center"
                 android:baselineAligned="false">
 
-                <LinearLayout
+                <ImageView
                     android:id="@+id/butAction1"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="horizontal"
-                    android:background="?android:attr/selectableItemBackground"
-                    android:gravity="center">
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="12dp"
+                    tools:src="@drawable/ic_settings" />
+
+                <ImageView
+                    android:id="@+id/butAction0"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginLeft="40dp"
+                    android:layout_marginStart="40dp"
+                    android:layout_marginRight="30dp"
+                    android:layout_marginEnd="30dp"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="12dp"
+                    android:src="@drawable/baseline_home_work_24"
+                    tools:src="@drawable/ic_settings" />
+
+                <FrameLayout
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="4dp"
+                    android:layout_gravity="bottom|end">
+
+                    <ac.mdiq.podcini.ui.view.CircularProgressBar
+                        android:id="@+id/circularProgressBar"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:layout_gravity="center"
+                        android:visibility="gone"
+                        app:foregroundColor="?android:attr/textColorPrimary" />
 
                     <ImageView
-                        android:id="@+id/butAction1Icon"
+                        android:id="@+id/butAction2"
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:layout_marginRight="8dp"
-                        android:layout_marginEnd="8dp"
-                        android:layout_marginTop="12dp"
-                        android:layout_marginBottom="12dp"
+                        android:layout_gravity="center"
                         tools:src="@drawable/ic_settings" />
 
-                    <TextView
-                        android:id="@+id/butAction1Text"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Button"
-                        android:textColor="?android:attr/textColorPrimary"
-                        tools:text="Button 1" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/butAction2"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="horizontal"
-                    android:background="?android:attr/selectableItemBackground"
-                    android:gravity="center">
-
-                    <FrameLayout
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:layout_marginTop="4dp"
-                        android:layout_marginBottom="4dp"
-                        android:layout_gravity="bottom|end">
-
-                        <ac.mdiq.podcini.ui.view.CircularProgressBar
-                            android:id="@+id/circularProgressBar"
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
-                            android:layout_gravity="center"
-                            android:visibility="gone"
-                            app:foregroundColor="?android:attr/textColorPrimary" />
-
-                        <ImageView
-                            android:id="@+id/butAction2Icon"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:layout_gravity="center"
-                            tools:src="@drawable/ic_settings" />
-
-                    </FrameLayout>
-
-                    <TextView
-                        android:id="@+id/butAction2Text"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Button"
-                        android:textColor="?android:attr/textColorPrimary"
-                        tools:text="Button 2" />
-
-                </LinearLayout>
+                </FrameLayout>
 
             </LinearLayout>
 
@@ -210,9 +183,16 @@
         <ac.mdiq.podcini.ui.view.ShownotesWebView
             android:id="@+id/webvDescription"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_below="@id/header"
             android:foreground="?android:windowContentOverlay" />
+
+<!--        <WebView-->
+<!--            android:id="@+id/webView"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_below="@id/webvDescription"-->
+<!--        />-->
 
         <FrameLayout
             android:layout_width="match_parent"

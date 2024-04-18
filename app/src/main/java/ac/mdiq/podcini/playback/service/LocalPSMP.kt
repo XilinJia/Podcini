@@ -98,11 +98,7 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
      * for playback immediately (see 'prepareImmediately' parameter for more details)
      * @param prepareImmediately Set to true if the method should also prepare the episode for playback.
      */
-    override fun playMediaObject(playable: Playable,
-                                 stream: Boolean,
-                                 startWhenPrepared: Boolean,
-                                 prepareImmediately: Boolean
-    ) {
+    override fun playMediaObject(playable: Playable, stream: Boolean, startWhenPrepared: Boolean, prepareImmediately: Boolean) {
         Log.d(TAG, "playMediaObject(...)")
         try {
             playMediaObject(playable, false, stream, startWhenPrepared, prepareImmediately)
@@ -121,12 +117,7 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
      *
      * @see .playMediaObject
      */
-    private fun playMediaObject(playable: Playable,
-                                forceReset: Boolean,
-                                stream: Boolean,
-                                startWhenPrepared: Boolean,
-                                prepareImmediately: Boolean
-    ) {
+    private fun playMediaObject(playable: Playable, forceReset: Boolean, stream: Boolean, startWhenPrepared: Boolean, prepareImmediately: Boolean) {
         if (media != null) {
             if (!forceReset && media!!.getIdentifier() == playable.getIdentifier() && playerStatus == PlayerStatus.PLAYING) {
                 // episode is already playing -> ignore method call
@@ -161,7 +152,6 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
         try {
             callback.ensureMediaInfoLoaded(media!!)
             callback.onMediaChanged(false)
-//            TODO: speed
             setPlaybackParams(PlaybackSpeedUtils.getCurrentPlaybackSpeed(media), UserPreferences.isSkipSilence)
             when {
                 stream -> {
@@ -169,10 +159,7 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
                     if (streamurl != null) {
                         if (playable is FeedMedia && playable.item?.feed?.preferences != null) {
                             val preferences = playable.item!!.feed!!.preferences!!
-                            mediaPlayer?.setDataSource(
-                                streamurl,
-                                preferences.username,
-                                preferences.password)
+                            mediaPlayer?.setDataSource(streamurl, preferences.username, preferences.password)
                         } else {
                             mediaPlayer?.setDataSource(streamurl)
                         }
@@ -221,14 +208,11 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
                 Log.d(TAG, "Audiofocus successfully requested")
                 Log.d(TAG, "Resuming/Starting playback")
                 acquireWifiLockIfNecessary()
-//  TODO: speed
                 setPlaybackParams(PlaybackSpeedUtils.getCurrentPlaybackSpeed(media), UserPreferences.isSkipSilence)
                 setVolume(1.0f, 1.0f)
 
                 if (media != null && playerStatus == PlayerStatus.PREPARED && media!!.getPosition() > 0) {
-                    val newPosition = RewindAfterPauseUtils.calculatePositionWithRewind(
-                        media!!.getPosition(),
-                        media!!.getLastPlayedTime())
+                    val newPosition = RewindAfterPauseUtils.calculatePositionWithRewind(media!!.getPosition(), media!!.getLastPlayedTime())
                     seekTo(newPosition)
                 }
                 mediaPlayer?.start()
@@ -502,9 +486,7 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
         if (mediaPlayer != null) {
             try {
                 clearMediaPlayerListeners()
-                if (mediaPlayer!!.isPlaying) {
-                    mediaPlayer!!.stop()
-                }
+                if (mediaPlayer!!.isPlaying) mediaPlayer!!.stop()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -571,7 +553,7 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
         return mediaPlayer?.selectedAudioTrack?:0
     }
 
-    private fun createMediaPlayer() {
+    override fun createMediaPlayer() {
         mediaPlayer?.release()
 
         if (media == null) {
@@ -650,9 +632,7 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
             .build()
     }
 
-    override fun endPlayback(hasEnded: Boolean, wasSkipped: Boolean,
-                             shouldContinue: Boolean, toStoppedState: Boolean
-    ) {
+    override fun endPlayback(hasEnded: Boolean, wasSkipped: Boolean, shouldContinue: Boolean, toStoppedState: Boolean) {
         releaseWifiLockIfNecessary()
 
         val isPlaying = playerStatus == PlayerStatus.PLAYING
@@ -720,13 +700,9 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
     }
 
     private fun setMediaPlayerListeners(mp: ExoPlayerWrapper?) {
-        if (mp == null || media == null) {
-            return
-        }
-        mp.setOnCompletionListener(Runnable { endPlayback(hasEnded = true,
-            wasSkipped = false,
-            shouldContinue = true,
-            toStoppedState = true) })
+        if (mp == null || media == null) return
+
+        mp.setOnCompletionListener(Runnable { endPlayback(hasEnded = true, wasSkipped = false, shouldContinue = true, toStoppedState = true) })
         mp.setOnSeekCompleteListener(Runnable { this.genericSeekCompleteListener() })
         mp.setOnBufferingUpdateListener(Consumer { percent: Int ->
             when (percent) {

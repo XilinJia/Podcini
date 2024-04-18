@@ -43,7 +43,7 @@ class StreamActionButton(item: FeedItem) : ItemActionButton(item) {
             .start()
 
         if (media.getMediaType() == MediaType.VIDEO) {
-            context.startActivity(getPlayerActivityIntent(context, media))
+            context.startActivity(getPlayerActivityIntent(context, MediaType.VIDEO))
         }
     }
 }

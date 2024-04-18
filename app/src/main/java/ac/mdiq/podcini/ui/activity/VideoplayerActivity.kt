@@ -40,39 +40,45 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
-
 /**
  * Activity for playing video files.
  */
 @UnstableApi
 class VideoplayerActivity : CastEnabledActivity() {
 
+    enum class VideoMode(val mode: Int) {
+        None(0,),
+        WINDOW_VIEW(1),
+        FULL_SCREEN_VIEW(2),
+        AUDIO_ONLY(3)
+    }
+
     private var _binding: VideoplayerActivityBinding? = null
     private val binding get() = _binding!!
 
     lateinit var videoEpisodeFragment: VideoEpisodeFragment
 
-    var videoMode = 0
     var switchToAudioOnly = false
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        videoMode = intent.getIntExtra("fullScreenMode",0)
-        if (videoMode == 0) {
-            videoMode = videoPlayMode
-            if (videoMode == AUDIO_ONLY) {
+        videoMode = (intent.getSerializableExtra(VIDEO_MODE) as? VideoMode) ?: VideoMode.None
+        if (videoMode == VideoMode.None) {
+            videoMode = VideoMode.entries.toTypedArray().getOrElse(videoPlayMode) { VideoMode.WINDOW_VIEW }
+            if (videoMode == VideoMode.AUDIO_ONLY) {
                 switchToAudioOnly = true
                 finish()
             }
-            if (videoMode != FULL_SCREEN_VIEW && videoMode != WINDOW_VIEW) {
+            if (videoMode != VideoMode.FULL_SCREEN_VIEW && videoMode != VideoMode.WINDOW_VIEW) {
                 Log.i(TAG, "videoMode not selected, use window mode")
-                videoMode = WINDOW_VIEW
+                videoMode = VideoMode.WINDOW_VIEW
             }
         }
 
         when (videoMode) {
-            FULL_SCREEN_VIEW -> {
+            VideoMode.FULL_SCREEN_VIEW -> {
                 window.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN)
                 // has to be called before setting layout content
                 supportRequestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY)
@@ -81,13 +87,14 @@ class VideoplayerActivity : CastEnabledActivity() {
                 window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
                 window.setFormat(PixelFormat.TRANSPARENT)
             }
-            WINDOW_VIEW -> {
+            VideoMode.WINDOW_VIEW -> {
                 supportRequestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY)
                 setTheme(R.style.Theme_Podcini_VideoEpisode)
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
                 window.setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN, WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN)
                 window.setFormat(PixelFormat.TRANSPARENT)
             }
+            else -> {}
         }
         super.onCreate(savedInstanceState)
 
@@ -156,7 +163,7 @@ class VideoplayerActivity : CastEnabledActivity() {
 
     fun toggleViews() {
         val newIntent = Intent(this, VideoplayerActivity::class.java)
-        newIntent.putExtra("fullScreenMode", if (videoMode == FULL_SCREEN_VIEW) WINDOW_VIEW else FULL_SCREEN_VIEW)
+        newIntent.putExtra(VIDEO_MODE, if (videoMode == VideoMode.FULL_SCREEN_VIEW) VideoMode.WINDOW_VIEW else VideoMode.FULL_SCREEN_VIEW)
         finish()
         startActivity(newIntent)
     }
@@ -233,7 +240,7 @@ class VideoplayerActivity : CastEnabledActivity() {
         menu.findItem(R.id.playback_speed).setVisible(true)
         menu.findItem(R.id.player_show_chapters).setVisible(true)
 
-        if (videoMode == WINDOW_VIEW) {
+        if (videoMode == VideoMode.WINDOW_VIEW) {
             menu.findItem(R.id.add_to_favorites_item).setShowAsAction(SHOW_AS_ACTION_NEVER)
             menu.findItem(R.id.remove_from_favorites_item).setShowAsAction(SHOW_AS_ACTION_NEVER)
             menu.findItem(R.id.set_sleeptimer_item).setShowAsAction(SHOW_AS_ACTION_NEVER)
@@ -316,7 +323,7 @@ class VideoplayerActivity : CastEnabledActivity() {
 
     private fun compatEnterPictureInPicture() {
         if (PictureInPictureUtil.supportsPictureInPicture(this) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            if (videoMode == FULL_SCREEN_VIEW) supportActionBar?.hide()
+            if (videoMode == VideoMode.FULL_SCREEN_VIEW) supportActionBar?.hide()
             videoEpisodeFragment.hideVideoControls(false)
             enterPictureInPictureMode()
         }
@@ -381,9 +388,9 @@ class VideoplayerActivity : CastEnabledActivity() {
 
     companion object {
         private const val TAG = "VideoplayerActivity"
-        const val WINDOW_VIEW = 1
-        const val FULL_SCREEN_VIEW = 2
-        const val AUDIO_ONLY = 3
+        const val VIDEO_MODE = "Video_Mode"
+
+        var videoMode = VideoMode.None
 
         private fun getWebsiteLinkWithFallback(media: Playable?): String? {
             return when {

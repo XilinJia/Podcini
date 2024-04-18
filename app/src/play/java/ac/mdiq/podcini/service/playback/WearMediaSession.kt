@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.service.playback
 
 import android.os.Bundle
-import android.support.v4.media.session.MediaSessionCompat
+import androidx.media3.session.MediaSession
 import android.support.v4.media.session.PlaybackStateCompat
 import android.support.wearable.media.MediaControlConstants
 
@@ -16,10 +16,10 @@ object WearMediaSession {
         actionBuilder.setExtras(actionExtras)
     }
 
-    fun mediaSessionSetExtraForWear(mediaSession: MediaSessionCompat) {
+    fun mediaSessionSetExtraForWear(mediaSession: MediaSession) {
         val sessionExtras = Bundle()
         sessionExtras.putBoolean(MediaControlConstants.EXTRA_RESERVE_SLOT_SKIP_TO_PREVIOUS, false)
         sessionExtras.putBoolean(MediaControlConstants.EXTRA_RESERVE_SLOT_SKIP_TO_NEXT, false)
-        mediaSession.setExtras(sessionExtras)
+        mediaSession.setSessionExtras(sessionExtras)
     }
 }

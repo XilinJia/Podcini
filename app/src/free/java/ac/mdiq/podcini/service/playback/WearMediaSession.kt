@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.service.playback
 
-import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import androidx.media3.session.MediaSession
 
 internal object WearMediaSession {
     /**
@@ -11,7 +11,7 @@ internal object WearMediaSession {
         // no-op
     }
 
-    fun mediaSessionSetExtraForWear(mediaSession: MediaSessionCompat?) {
+    fun mediaSessionSetExtraForWear(mediaSession: MediaSession?) {
         // no-op
     }
 }

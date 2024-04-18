@@ -12,6 +12,7 @@ import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.ui.activity.VideoplayerActivity
+import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
 import ac.mdiq.podcini.ui.activity.appstartintent.MainActivityStarter
 import ac.mdiq.podcini.ui.dialog.SkipPreferenceDialog
 import ac.mdiq.podcini.ui.utils.PictureInPictureUtil
@@ -343,7 +344,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
             }
             if (videoControlsShowing) {
                 hideVideoControls(false)
-                if ((activity as VideoplayerActivity).videoMode == VideoplayerActivity.FULL_SCREEN_VIEW)
+                if (videoMode == VideoplayerActivity.VideoMode.FULL_SCREEN_VIEW)
                         (activity as AppCompatActivity).supportActionBar?.hide()
                 videoControlsShowing = false
             }
@@ -360,7 +361,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     fun toggleVideoControlsVisibility() {
         if (videoControlsShowing) {
             hideVideoControls(true)
-            if ((activity as VideoplayerActivity).videoMode == VideoplayerActivity.FULL_SCREEN_VIEW)
+            if (videoMode == VideoplayerActivity.VideoMode.FULL_SCREEN_VIEW)
                     (activity as AppCompatActivity).supportActionBar?.hide()
         } else {
             showVideoControls()
@@ -461,8 +462,8 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         if (videoControlsShowing) {
             Log.d(TAG, "Hiding video controls")
             hideVideoControls(true)
-            if ((activity as VideoplayerActivity).videoMode == VideoplayerActivity.FULL_SCREEN_VIEW)
-                    (activity as? AppCompatActivity)?.supportActionBar?.hide()
+            if (videoMode == VideoplayerActivity.VideoMode.FULL_SCREEN_VIEW)
+                (activity as? AppCompatActivity)?.supportActionBar?.hide()
             videoControlsShowing = false
         }
     }

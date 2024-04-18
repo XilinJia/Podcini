@@ -85,9 +85,8 @@ object FeedItemMenuHandler {
      * @param visibility The new visibility status of given menu item
      */
     private fun setItemVisibility(menu: Menu?, menuId: Int, visibility: Boolean) {
-        if (menu == null) {
-            return
-        }
+        if (menu == null) return
+
         val item = menu.findItem(menuId)
         item?.setVisible(visibility)
     }
@@ -112,9 +111,8 @@ object FeedItemMenuHandler {
      */
     @UnstableApi
     fun onPrepareMenu(menu: Menu?, selectedItem: FeedItem?, vararg excludeIds: Int): Boolean {
-        if (menu == null || selectedItem == null) {
-            return false
-        }
+        if (menu == null || selectedItem == null) return false
+
         val rc = onPrepareMenu(menu, selectedItem)
         if (rc && excludeIds.isNotEmpty()) {
             for (id in excludeIds) {

@@ -3,9 +3,9 @@ package ac.mdiq.podcini.ui.actions.actionbutton
 import android.content.Context
 import androidx.media3.common.util.UnstableApi
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.playback.service.PlaybackService.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.storage.DBTasks
 import ac.mdiq.podcini.playback.PlaybackServiceStarter
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.util.event.playback.StartPlayEvent
@@ -33,7 +33,7 @@ class PlayActionButton(item: FeedItem) : ItemActionButton(item) {
             .start()
 
         if (media.getMediaType() == MediaType.VIDEO) {
-            context.startActivity(getPlayerActivityIntent(context, media))
+            context.startActivity(getPlayerActivityIntent(context, MediaType.VIDEO))
         }
     }
 }

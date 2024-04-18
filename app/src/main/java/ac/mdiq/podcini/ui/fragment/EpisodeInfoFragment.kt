@@ -85,12 +85,9 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private lateinit var imgvCover: ImageView
     private lateinit var progbarDownload: CircularProgressBar
     private lateinit var progbarLoading: ProgressBar
-    private lateinit var butAction1Text: TextView
-    private lateinit var butAction2Text: TextView
-    private lateinit var butAction1Icon: ImageView
-    private lateinit var butAction2Icon: ImageView
-    private lateinit var butAction1: View
-    private lateinit var butAction2: View
+    private lateinit var butAction0: View
+    private lateinit var butAction1: ImageView
+    private lateinit var butAction2: ImageView
     private lateinit var noMediaLabel: View
 
     private var actionButton1: ItemActionButton? = null
@@ -142,13 +139,14 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         imgvCover.setOnClickListener { openPodcast() }
         progbarDownload = binding.circularProgressBar
         progbarLoading = binding.progbarLoading
+        butAction0 = binding.butAction0
         butAction1 = binding.butAction1
         butAction2 = binding.butAction2
-        butAction1Icon = binding.butAction1Icon
-        butAction2Icon = binding.butAction2Icon
-        butAction1Text = binding.butAction1Text
-        butAction2Text = binding.butAction2Text
         noMediaLabel = binding.noMediaLabel
+
+        butAction0.setOnClickListener(View.OnClickListener {
+            if (item?.link != null) (activity as MainActivity).loadChildFragment(EpisodeHomeFragment.newInstance(item!!))
+        })
 
         butAction1.setOnClickListener(View.OnClickListener {
             when {
@@ -272,6 +270,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         if (webviewData != null && !itemsLoaded) {
             webvDescription.loadDataWithBaseURL("https://127.0.0.1", webviewData!!, "text/html", "utf-8", "about:blank")
         }
+//        if (item?.link != null) binding.webView.loadUrl(item!!.link!!)
         updateAppearance()
     }
 
@@ -298,8 +297,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
         val options: RequestOptions = RequestOptions()
             .error(R.color.light_gray)
-            .transform(FitCenter(),
-                RoundedCorners((8 * resources.displayMetrics.density).toInt()))
+            .transform(FitCenter(), RoundedCorners((8 * resources.displayMetrics.density).toInt()))
             .dontAnimate()
 
         val imgLocFB = ImageResourceUtils.getFallbackImageLocation(item!!)
@@ -337,8 +335,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             noMediaLabel.visibility = View.GONE
             if (media.getDuration() > 0) {
                 txtvDuration.text = Converter.getDurationStringLong(media.getDuration())
-                txtvDuration.setContentDescription(
-                    Converter.getDurationStringLocalized(requireContext(), media.getDuration().toLong()))
+                txtvDuration.setContentDescription(Converter.getDurationStringLocalized(requireContext(), media.getDuration().toLong()))
             }
             if (item != null) {
                 actionButton1 = when {
@@ -377,17 +374,17 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
 
         if (actionButton1 != null) {
-            butAction1Text.setText(actionButton1!!.getLabel())
-            butAction1Icon.setImageResource(actionButton1!!.getDrawable())
+//            butAction1Text.setText(actionButton1!!.getLabel())
+            butAction1.setImageResource(actionButton1!!.getDrawable())
         }
-        butAction1Text.transformationMethod = null
+//        butAction1Text.transformationMethod = null
         if (actionButton1 != null) butAction1.visibility = actionButton1!!.visibility
 
         if (actionButton2 != null) {
-            butAction2Text.setText(actionButton2!!.getLabel())
-            butAction2Icon.setImageResource(actionButton2!!.getDrawable())
+//            butAction2Text.setText(actionButton2!!.getLabel())
+            butAction2.setImageResource(actionButton2!!.getDrawable())
         }
-        butAction2Text.transformationMethod = null
+//        butAction2Text.transformationMethod = null
         if (actionButton2 != null) butAction2.visibility = actionButton2!!.visibility
     }
 

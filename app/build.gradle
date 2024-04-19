@@ -36,10 +36,19 @@ android {
 
     packagingOptions {
         resources {
-            excludes += ["META-INF/LICENSE.txt",
-                         "META-INF/NOTICE.txt",
-                         "META-INF/CHANGES",
-                         "META-INF/README.md"]
+            exclude 'META-INF/DEPENDENCIES'
+            exclude 'META-INF/LICENSE'
+            exclude 'META-INF/NOTICE'
+            exclude 'META-INF/CHANGES'
+            exclude 'META-INF/README.md'
+            exclude 'META-INF/NOTICE.txt'
+            exclude 'META-INF/LICENSE.txt'
+            exclude 'META-INF/MANIFEST.MF'
+
+//            excludes += ["META-INF/LICENSE.txt",
+//                         "META-INF/NOTICE.txt",
+//                         "META-INF/CHANGES",
+//                         "META-INF/README.md"]
         }
     }
 

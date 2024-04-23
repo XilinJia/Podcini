@@ -129,8 +129,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             if (item?.media?.getIdentifier() == cMedia?.getIdentifier()) {
                 controller!!.seekTo(time ?: 0)
             } else {
-                (activity as MainActivity).showSnackbarAbovePlayer(R.string.play_this_to_seek_position,
-                    Snackbar.LENGTH_LONG)
+                (activity as MainActivity).showSnackbarAbovePlayer(R.string.play_this_to_seek_position, Snackbar.LENGTH_LONG)
             }
         }
         registerForContextMenu(webvDescription)
@@ -155,9 +154,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     showOnDemandConfigBalloon(true)
                     return@OnClickListener
                 }
-                actionButton1 == null -> {
-                    return@OnClickListener  // Not loaded yet
-                }
+                actionButton1 == null -> return@OnClickListener  // Not loaded yet
                 else -> actionButton1?.onClick(requireContext())
             }
         })
@@ -168,9 +165,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     showOnDemandConfigBalloon(false)
                     return@OnClickListener
                 }
-                actionButton2 == null -> {
-                    return@OnClickListener  // Not loaded yet
-                }
+                actionButton2 == null -> return@OnClickListener  // Not loaded yet
                 else -> actionButton2?.onClick(requireContext())
             }
         })
@@ -283,8 +278,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             FeedItemMenuHandler.onPrepareMenu(toolbar.menu, item, R.id.open_podcast)
         } else {
             // these are already available via button1 and button2
-            FeedItemMenuHandler.onPrepareMenu(toolbar.menu, item,
-                R.id.open_podcast, R.id.mark_read_item, R.id.visit_website_item)
+            FeedItemMenuHandler.onPrepareMenu(toolbar.menu, item, R.id.open_podcast, R.id.mark_read_item, R.id.visit_website_item)
         }
         if (item!!.feed != null) txtvPodcast.text = item!!.feed!!.title
         txtvTitle.text = item!!.title
@@ -339,53 +333,30 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             }
             if (item != null) {
                 actionButton1 = when {
-                    media.getMediaType() == MediaType.FLASH -> {
-                        VisitWebsiteActionButton(item!!)
-                    }
-                    PlaybackStatus.isCurrentlyPlaying(media) -> {
-                        PauseActionButton(item!!)
-                    }
-                    item!!.feed != null && item!!.feed!!.isLocalFeed -> {
-                        PlayLocalActionButton(item)
-                    }
-                    media.isDownloaded() -> {
-                        PlayActionButton(item!!)
-                    }
-                    else -> {
-                        StreamActionButton(item!!)
-                    }
+                    media.getMediaType() == MediaType.FLASH -> VisitWebsiteActionButton(item!!)
+                    PlaybackStatus.isCurrentlyPlaying(media) -> PauseActionButton(item!!)
+                    item!!.feed != null && item!!.feed!!.isLocalFeed -> PlayLocalActionButton(item)
+                    media.isDownloaded() -> PlayActionButton(item!!)
+                    else -> StreamActionButton(item!!)
                 }
                 actionButton2 = when {
-                    media.getMediaType() == MediaType.FLASH -> {
-                        VisitWebsiteActionButton(item!!)
-                    }
-                    dls != null && media.download_url != null && dls.isDownloadingEpisode(media.download_url!!) -> {
-                        CancelDownloadActionButton(item!!)
-                    }
-                    !media.isDownloaded() -> {
-                        DownloadActionButton(item!!)
-                    }
-                    else -> {
-                        DeleteActionButton(item!!)
-                    }
+                    media.getMediaType() == MediaType.FLASH -> VisitWebsiteActionButton(item!!)
+                    dls != null && media.download_url != null && dls.isDownloadingEpisode(media.download_url!!) -> CancelDownloadActionButton(item!!)
+                    !media.isDownloaded() -> DownloadActionButton(item!!)
+                    else -> DeleteActionButton(item!!)
                 }
 //                if (actionButton2 != null && media.getMediaType() == MediaType.FLASH) actionButton2!!.visibility = View.GONE
             }
         }
 
         if (actionButton1 != null) {
-//            butAction1Text.setText(actionButton1!!.getLabel())
             butAction1.setImageResource(actionButton1!!.getDrawable())
+            butAction1.visibility = actionButton1!!.visibility
         }
-//        butAction1Text.transformationMethod = null
-        if (actionButton1 != null) butAction1.visibility = actionButton1!!.visibility
-
         if (actionButton2 != null) {
-//            butAction2Text.setText(actionButton2!!.getLabel())
             butAction2.setImageResource(actionButton2!!.getDrawable())
+            butAction2.visibility = actionButton2!!.visibility
         }
-//        butAction2Text.transformationMethod = null
-        if (actionButton2 != null) butAction2.visibility = actionButton2!!.visibility
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
@@ -431,9 +402,8 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     @UnstableApi private fun load() {
         disposable?.dispose()
 
-        if (!itemsLoaded) {
-            progbarLoading.visibility = View.VISIBLE
-        }
+        if (!itemsLoaded) progbarLoading.visibility = View.VISIBLE
+
         disposable = Observable.fromCallable<FeedItem?> { this.loadInBackground() }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())

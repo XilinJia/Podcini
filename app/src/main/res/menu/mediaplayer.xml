@@ -3,6 +3,13 @@
       xmlns:custom="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/show_home_reader_view"
+        android:icon="@drawable/baseline_home_24"
+        android:title="@string/home_label"
+        custom:showAsAction="always">
+    </item>
+
+    <item
         android:id="@+id/show_video"
         android:icon="@drawable/baseline_fullscreen_24"
         android:title="@string/add_to_favorite_label"

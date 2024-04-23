@@ -21,8 +21,7 @@ class PlayerWidget : AppWidgetProvider() {
     }
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
-        Log.d(TAG, "onUpdate() called with: " + "context = [" + context + "], appWidgetManager = ["
-                + appWidgetManager + "], appWidgetIds = [" + appWidgetIds.contentToString() + "]")
+        Log.d(TAG, "onUpdate() called with: context = [$context], appWidgetManager = [$appWidgetManager], appWidgetIds = [${appWidgetIds.contentToString()}]")
         WidgetUpdaterWorker.enqueueWork(context)
 
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)

@@ -1,0 +1,6 @@
+ 
+Version 4.9.1 brings several changes:
+
+* reader mode of episode home view observes the theme of the app
+* reader mode content of episode home view is cached so that subsequent loading is quicker
+* episode home reader content can be switched on in player detailed view from the action bar

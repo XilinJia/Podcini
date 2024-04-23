@@ -98,9 +98,8 @@ class MainActivity : CastEnabledActivity() {
 
         DBReader.updateFeedList()
 
-        if (savedInstanceState != null) {
-            ensureGeneratedViewIdGreaterThan(savedInstanceState.getInt(KEY_GENERATED_VIEW_ID, 0))
-        }
+        if (savedInstanceState != null) ensureGeneratedViewIdGreaterThan(savedInstanceState.getInt(KEY_GENERATED_VIEW_ID, 0))
+
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
         _binding = MainActivityBinding.inflate(layoutInflater)
@@ -175,12 +174,8 @@ class MainActivity : CastEnabledActivity() {
                 var isRefreshingFeeds = false
                 for (workInfo in workInfos) {
                     when (workInfo.state) {
-                        WorkInfo.State.RUNNING -> {
-                            isRefreshingFeeds = true
-                        }
-                        WorkInfo.State.ENQUEUED -> {
-                            isRefreshingFeeds = true
-                        }
+                        WorkInfo.State.RUNNING -> isRefreshingFeeds = true
+                        WorkInfo.State.ENQUEUED -> isRefreshingFeeds = true
                         else -> {
                 //                        Log.d(TAG, "workInfo.state ${workInfo.state}")
                         }
@@ -199,20 +194,13 @@ class MainActivity : CastEnabledActivity() {
                             downloadUrl = tag.substring(DownloadServiceInterface.WORK_TAG_EPISODE_URL.length)
                         }
                     }
-                    if (downloadUrl == null) {
-                        continue
-                    }
+                    if (downloadUrl == null) continue
+
                     var status: Int
                     status = when (workInfo.state) {
-                        WorkInfo.State.RUNNING -> {
-                            DownloadStatus.STATE_RUNNING
-                        }
-                        WorkInfo.State.ENQUEUED, WorkInfo.State.BLOCKED -> {
-                            DownloadStatus.STATE_QUEUED
-                        }
-                        WorkInfo.State.SUCCEEDED -> {
-                            DownloadStatus.STATE_COMPLETED
-                        }
+                        WorkInfo.State.RUNNING -> DownloadStatus.STATE_RUNNING
+                        WorkInfo.State.ENQUEUED, WorkInfo.State.BLOCKED -> DownloadStatus.STATE_QUEUED
+                        WorkInfo.State.SUCCEEDED -> DownloadStatus.STATE_COMPLETED
                         WorkInfo.State.FAILED -> {
                             Log.e(TAG, "download failed $downloadUrl")
                             DownloadStatus.STATE_COMPLETED
@@ -240,9 +228,8 @@ class MainActivity : CastEnabledActivity() {
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-            if (isGranted) {
-                return@registerForActivityResult
-            }
+            if (isGranted) return@registerForActivityResult
+
             MaterialAlertDialogBuilder(this)
                 .setMessage(R.string.notification_permission_text)
                 .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int -> {} }
@@ -276,12 +263,8 @@ class MainActivity : CastEnabledActivity() {
          override fun onStateChanged(view: View, state: Int) {
              Log.d(TAG, "bottomSheet onStateChanged $state")
              when (state) {
-                 BottomSheetBehavior.STATE_COLLAPSED -> {
-                     onSlide(view,0.0f)
-                 }
-                 BottomSheetBehavior.STATE_EXPANDED -> {
-                     onSlide(view, 1.0f)
-                 }
+                 BottomSheetBehavior.STATE_COLLAPSED -> onSlide(view,0.0f)
+                 BottomSheetBehavior.STATE_EXPANDED -> onSlide(view, 1.0f)
                  else -> {}
              }
          }
@@ -299,18 +282,15 @@ class MainActivity : CastEnabledActivity() {
         // Tablet layout does not have a drawer
         when {
             drawerLayout != null -> {
-                if (drawerToggle != null) {
-                    drawerLayout!!.removeDrawerListener(drawerToggle!!)
-                }
+                if (drawerToggle != null) drawerLayout!!.removeDrawerListener(drawerToggle!!)
+
                 drawerToggle = ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close)
                 drawerLayout!!.addDrawerListener(drawerToggle!!)
                 drawerToggle!!.syncState()
                 drawerToggle!!.isDrawerIndicatorEnabled = !displayUpArrow
                 drawerToggle!!.toolbarNavigationClickListener = View.OnClickListener { supportFragmentManager.popBackStack() }
             }
-            !displayUpArrow -> {
-                toolbar.navigationIcon = null
-            }
+            !displayUpArrow -> toolbar.navigationIcon = null
             else -> {
                 toolbar.setNavigationIcon(getDrawableFromAttr(this, R.attr.homeAsUpIndicator))
                 toolbar.setNavigationOnClickListener { supportFragmentManager.popBackStack() }
@@ -348,12 +328,9 @@ class MainActivity : CastEnabledActivity() {
         val visible = if (visible_ != null) visible_ else if (bottomSheet.state == BottomSheetBehavior.STATE_COLLAPSED) false else true
 
         bottomSheet.setLocked(!visible)
-        if (visible) {
-            // Update toolbar visibility
-            bottomSheetCallback.onStateChanged(dummyView, bottomSheet.state)
-        } else {
-            bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
-        }
+        if (visible) bottomSheetCallback.onStateChanged(dummyView, bottomSheet.state)    // Update toolbar visibility
+        else bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
+
 //        val mainView = findViewById<FragmentContainerView>(R.id.main_view)
         val params = mainView.layoutParams as MarginLayoutParams
         val externalPlayerHeight = resources.getDimension(R.dimen.external_player_height).toInt()
@@ -388,18 +365,16 @@ class MainActivity : CastEnabledActivity() {
                 args = null
             }
         }
-        if (args != null) {
-            fragment.arguments = args
-        }
+        if (args != null) fragment.arguments = args
+
         NavDrawerFragment.saveLastNavFragment(this, tag)
         loadFragment(fragment)
     }
 
     fun loadFeedFragmentById(feedId: Long, args: Bundle?) {
         val fragment: Fragment = FeedItemlistFragment.newInstance(feedId)
-        if (args != null) {
-            fragment.arguments = args
-        }
+        if (args != null) fragment.arguments = args
+
         NavDrawerFragment.saveLastNavFragment(this, feedId.toString())
         loadFragment(fragment)
     }
@@ -461,9 +436,8 @@ class MainActivity : CastEnabledActivity() {
 
     private fun setNavDrawerSize() {
         // Tablet layout does not have a drawer
-        if (drawerLayout == null) {
-            return
-        }
+        if (drawerLayout == null) return
+
         val screenPercent = resources.getInteger(R.integer.nav_drawer_screen_size_percent) * 0.01f
         val width = (screenWidth * screenPercent).toInt()
         val maxWidth = resources.getDimension(R.dimen.nav_drawer_max_screen_size).toInt()
@@ -482,9 +456,7 @@ class MainActivity : CastEnabledActivity() {
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
 
-        if (bottomSheet.state == BottomSheetBehavior.STATE_EXPANDED) {
-            bottomSheetCallback.onSlide(dummyView, 1.0f)
-        }
+        if (bottomSheet.state == BottomSheetBehavior.STATE_EXPANDED) bottomSheetCallback.onSlide(dummyView, 1.0f)
     }
 
     public override fun onStart() {
@@ -503,9 +475,7 @@ class MainActivity : CastEnabledActivity() {
             finish()
             startActivity(Intent(this, MainActivity::class.java))
         }
-        if (hiddenDrawerItems.contains(NavDrawerFragment.getLastNavFragment(this))) {
-            loadFragment(defaultPage, null)
-        }
+        if (hiddenDrawerItems.contains(NavDrawerFragment.getLastNavFragment(this))) loadFragment(defaultPage, null)
     }
 
     @Deprecated("Deprecated in Java")
@@ -531,39 +501,27 @@ class MainActivity : CastEnabledActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         Log.d(TAG, "onOptionsItemSelected ${item.title}")
-        if (drawerToggle != null && drawerToggle!!.onOptionsItemSelected(item)) {
-            // Tablet layout does not have a drawer
-            return true
-        } else if (item.itemId == android.R.id.home) {
-            if (supportFragmentManager.backStackEntryCount > 0) {
-                supportFragmentManager.popBackStack()
+        when {
+            drawerToggle != null && drawerToggle!!.onOptionsItemSelected(item) -> return true // Tablet layout does not have a drawer
+            item.itemId == android.R.id.home -> {
+                if (supportFragmentManager.backStackEntryCount > 0) supportFragmentManager.popBackStack()
+                return true
             }
-            return true
-        } else {
-            return super.onOptionsItemSelected(item)
+            else -> return super.onOptionsItemSelected(item)
         }
     }
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         when {
-            isDrawerOpen -> {
-                drawerLayout?.closeDrawer(navDrawer)
-            }
-            bottomSheet.state == BottomSheetBehavior.STATE_EXPANDED -> {
-                bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
-            }
-            supportFragmentManager.backStackEntryCount != 0 -> {
-                super.onBackPressed()
-            }
+            isDrawerOpen -> drawerLayout?.closeDrawer(navDrawer)
+            bottomSheet.state == BottomSheetBehavior.STATE_EXPANDED -> bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
+            supportFragmentManager.backStackEntryCount != 0 -> super.onBackPressed()
             else -> {
                 val toPage = defaultPage
                 if (NavDrawerFragment.getLastNavFragment(this) == toPage || UserPreferences.DEFAULT_PAGE_REMEMBER == toPage) {
-                    if (backButtonOpensDrawer()) {
-                        drawerLayout?.openDrawer(navDrawer)
-                    } else {
-                        super.onBackPressed()
-                    }
+                    if (backButtonOpensDrawer()) drawerLayout?.openDrawer(navDrawer)
+                    else super.onBackPressed()
                 } else {
                     loadFragment(toPage, null)
                 }
@@ -576,9 +534,7 @@ class MainActivity : CastEnabledActivity() {
         Log.d(TAG, "onEvent($event)")
 
         val snackbar = showSnackbarAbovePlayer(event.message, Snackbar.LENGTH_LONG)
-        if (event.action != null) {
-            snackbar.setAction(event.actionText) { event.action.accept(this) }
-        }
+        if (event.action != null) snackbar.setAction(event.actionText) { event.action.accept(this) }
     }
 
     private fun handleNavIntent() {
@@ -591,11 +547,8 @@ class MainActivity : CastEnabledActivity() {
                 if (feedId > 0) {
                     val startedFromSearch = intent.getBooleanExtra(EXTRA_STARTED_FROM_SEARCH, false)
                     val addToBackStack = intent.getBooleanExtra(EXTRA_ADD_TO_BACK_STACK, false)
-                    if (startedFromSearch || addToBackStack) {
-                        loadChildFragment(FeedItemlistFragment.newInstance(feedId))
-                    } else {
-                        loadFeedFragmentById(feedId, args)
-                    }
+                    if (startedFromSearch || addToBackStack) loadChildFragment(FeedItemlistFragment.newInstance(feedId))
+                    else loadFeedFragmentById(feedId, args)
                 }
                 bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
             }
@@ -614,14 +567,11 @@ class MainActivity : CastEnabledActivity() {
 //                bottomSheet.state = BottomSheetBehavior.STATE_EXPANDED
 //                bottomSheetCallback.onSlide(dummyView, 1.0f)
             }
-            else -> {
-                handleDeeplink(intent.data)
-            }
+            else -> handleDeeplink(intent.data)
         }
 
-        if (intent.getBooleanExtra(MainActivityStarter.EXTRA_OPEN_DRAWER, false)) {
-            drawerLayout?.open()
-        }
+        if (intent.getBooleanExtra(MainActivityStarter.EXTRA_OPEN_DRAWER, false)) drawerLayout?.open()
+
         if (intent.getBooleanExtra(MainActivityStarter.EXTRA_OPEN_DOWNLOAD_LOGS, false)) {
             DownloadLogFragment().show(supportFragmentManager, null)
         }
@@ -643,9 +593,7 @@ class MainActivity : CastEnabledActivity() {
         val s: Snackbar
         if (bottomSheet.state == BottomSheetBehavior.STATE_COLLAPSED) {
             s = Snackbar.make(mainView, text!!, duration)
-            if (audioPlayerFragmentView.visibility == View.VISIBLE) {
-                s.setAnchorView(audioPlayerFragmentView)
-            }
+            if (audioPlayerFragmentView.visibility == View.VISIBLE) s.setAnchorView(audioPlayerFragmentView)
         } else {
             s = Snackbar.make(binding.root, text!!, duration)
         }
@@ -671,7 +619,6 @@ class MainActivity : CastEnabledActivity() {
         when (uri.path) {
             "/deeplink/search" -> {
                 val query = uri.getQueryParameter("query") ?: return
-
                 this.loadChildFragment(SearchFragment.newInstance(query))
             }
             "/deeplink/main" -> {
@@ -696,9 +643,7 @@ class MainActivity : CastEnabledActivity() {
     //Hardware keyboard support
     override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
         val currentFocus = currentFocus
-        if (currentFocus is EditText) {
-            return super.onKeyUp(keyCode, event)
-        }
+        if (currentFocus is EditText) return super.onKeyUp(keyCode, event)
 
         val audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
         var customKeyCode: Int? = null
@@ -706,23 +651,18 @@ class MainActivity : CastEnabledActivity() {
 
         when (keyCode) {
             KeyEvent.KEYCODE_P -> customKeyCode = KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE
-            KeyEvent.KEYCODE_J, KeyEvent.KEYCODE_A, KeyEvent.KEYCODE_COMMA -> customKeyCode =
-                KeyEvent.KEYCODE_MEDIA_REWIND
-            KeyEvent.KEYCODE_K, KeyEvent.KEYCODE_D, KeyEvent.KEYCODE_PERIOD -> customKeyCode =
-                KeyEvent.KEYCODE_MEDIA_FAST_FORWARD
+            KeyEvent.KEYCODE_J, KeyEvent.KEYCODE_A, KeyEvent.KEYCODE_COMMA -> customKeyCode = KeyEvent.KEYCODE_MEDIA_REWIND
+            KeyEvent.KEYCODE_K, KeyEvent.KEYCODE_D, KeyEvent.KEYCODE_PERIOD -> customKeyCode = KeyEvent.KEYCODE_MEDIA_FAST_FORWARD
             KeyEvent.KEYCODE_PLUS, KeyEvent.KEYCODE_W -> {
-                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC,
-                    AudioManager.ADJUST_RAISE, AudioManager.FLAG_SHOW_UI)
+                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, AudioManager.FLAG_SHOW_UI)
                 return true
             }
             KeyEvent.KEYCODE_MINUS, KeyEvent.KEYCODE_S -> {
-                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC,
-                    AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI)
+                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI)
                 return true
             }
             KeyEvent.KEYCODE_M -> {
-                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC,
-                    AudioManager.ADJUST_TOGGLE_MUTE, AudioManager.FLAG_SHOW_UI)
+                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_TOGGLE_MUTE, AudioManager.FLAG_SHOW_UI)
                 return true
             }
         }

@@ -11,6 +11,7 @@ import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.fragment.EpisodeHomeFragment.Companion.fetchHtmlSource
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.ChapterUtils
@@ -51,6 +52,8 @@ import io.reactivex.MaybeEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.runBlocking
+import net.dankito.readability4j.Readability4J
 import org.apache.commons.lang3.StringUtils
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -75,39 +78,33 @@ class PlayerDetailsFragment : Fragment() {
     private var webViewLoader: Disposable? = null
     private var controller: PlaybackController? = null
 
+    private var showHomeText = false
+    var homeText: String? = null
+
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Log.d(TAG, "fragment onCreateView")
         _binding = PlayerDetailsFragmentBinding.inflate(inflater)
 
         binding.imgvCover.setOnClickListener { onPlayPause() }
 
-        val colorFilter: ColorFilter? = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(
-            binding.txtvPodcastTitle.currentTextColor, BlendModeCompat.SRC_IN)
+        val colorFilter: ColorFilter? = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(binding.txtvPodcastTitle.currentTextColor, BlendModeCompat.SRC_IN)
         binding.butNextChapter.colorFilter = colorFilter
         binding.butPrevChapter.colorFilter = colorFilter
-        binding.chapterButton.setOnClickListener {
-            ChaptersFragment().show(childFragmentManager, ChaptersFragment.TAG)
-        }
+        binding.chapterButton.setOnClickListener { ChaptersFragment().show(childFragmentManager, ChaptersFragment.TAG) }
         binding.butPrevChapter.setOnClickListener { seekToPrevChapter() }
         binding.butNextChapter.setOnClickListener { seekToNextChapter() }
 
         Log.d(TAG, "fragment onCreateView")
         webvDescription = binding.webview
-        webvDescription.setTimecodeSelectedListener { time: Int? ->
-            controller?.seekTo(time!!)
-        }
+        webvDescription.setTimecodeSelectedListener { time: Int? -> controller?.seekTo(time!!) }
         webvDescription.setPageFinishedListener {
             // Restoring the scroll position might not always work
             webvDescription.postDelayed({ this@PlayerDetailsFragment.restoreFromPreference() }, 50)
         }
 
         binding.root.addOnLayoutChangeListener(object : OnLayoutChangeListener {
-            override fun onLayoutChange(v: View, left: Int, top: Int, right: Int,
-                                        bottom: Int, oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int
-            ) {
-                if (binding.root.measuredHeight != webvDescription.minimumHeight) {
-                    webvDescription.setMinimumHeight(binding.root.measuredHeight)
-                }
+            override fun onLayoutChange(v: View, left: Int, top: Int, right: Int, bottom: Int, oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int) {
+                if (binding.root.measuredHeight != webvDescription.minimumHeight) webvDescription.setMinimumHeight(binding.root.measuredHeight)
                 binding.root.removeOnLayoutChangeListener(this)
             }
         })
@@ -148,7 +145,11 @@ class PlayerDetailsFragment : Fragment() {
             }
             if (media is FeedMedia) {
                 val feedMedia = media as FeedMedia
-                item = feedMedia.item
+                if (item?.itemIdentifier != feedMedia.item?.itemIdentifier) {
+                    item = feedMedia.item
+                    showHomeText = false
+                    homeText = null
+                }
             }
 //            Log.d(TAG, "webViewLoader ${item?.id} ${cleanedNotes==null} ${item!!.description==null} ${loadedMediaId == null} ${item?.media?.getIdentifier()} ${media?.getIdentifier()}")
             if (item != null) {
@@ -166,8 +167,7 @@ class PlayerDetailsFragment : Fragment() {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ data: String? ->
-                webvDescription.loadDataWithBaseURL("https://127.0.0.1", data!!, "text/html",
-                    "utf-8", "about:blank")
+                webvDescription.loadDataWithBaseURL("https://127.0.0.1", data!!, "text/html", "utf-8", "about:blank")
                 Log.d(TAG, "Webview loaded")
             }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
         loadMediaInfo()
@@ -178,11 +178,8 @@ class PlayerDetailsFragment : Fragment() {
 
         disposable = Maybe.create<Playable> { emitter: MaybeEmitter<Playable?> ->
             media = controller?.getMedia()
-            if (media != null) {
-                emitter.onSuccess(media!!)
-            } else {
-                emitter.onComplete()
-            }
+            if (media != null) emitter.onSuccess(media!!)
+            else emitter.onComplete()
         }.subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ media: Playable ->
@@ -191,12 +188,41 @@ class PlayerDetailsFragment : Fragment() {
             }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
     }
 
+    fun buildHomeReaderText() {
+        showHomeText = !showHomeText
+        if (showHomeText) {
+            if (homeText == null && item?.link != null) {
+                runBlocking {
+                    val url = item!!.link!!
+                    val htmlSource = fetchHtmlSource(url)
+                    val readability4J = Readability4J(item!!.link!!, htmlSource)
+                    val article = readability4J.parse()
+                    val readerhtml = article.contentWithDocumentsCharsetOrUtf8
+                    if (readerhtml != null) {
+                        val shownotesCleaner = ShownotesCleaner(requireContext(), readerhtml, 0)
+                        homeText = shownotesCleaner.processShownotes()
+                    }
+                }
+            }
+            if (homeText != null)
+                binding.webview.loadDataWithBaseURL("https://127.0.0.1", homeText!!, "text/html", "UTF-8", null)
+        } else {
+            val shownotesCleaner = ShownotesCleaner(requireContext(), item?.description ?: "", media?.getDuration()?:0)
+            cleanedNotes = shownotesCleaner.processShownotes()
+            if (cleanedNotes != null) binding.webview.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes!!, "text/html", "UTF-8", null)
+        }
+    }
+
     @UnstableApi private fun displayMediaInfo(media: Playable) {
         val pubDateStr = DateFormatter.formatAbbrev(context, media.getPubDate())
         binding.txtvPodcastTitle.text = StringUtils.stripToEmpty(media.getFeedTitle())
         if (item == null || item!!.media?.getIdentifier() != media.getIdentifier()) {
             if (media is FeedMedia) {
-                item = media.item
+                if (item?.itemIdentifier != media.item?.itemIdentifier) {
+                    item = media.item
+                    showHomeText = false
+                    homeText = null
+                }
                 if (item != null) {
                     val openFeed: Intent = MainActivity.getIntentToOpenFeed(requireContext(), item!!.feedId)
                     binding.txtvPodcastTitle.setOnClickListener { startActivity(openFeed) }
@@ -223,8 +249,7 @@ class PlayerDetailsFragment : Fragment() {
                         binding.txtvEpisodeTitle.scrollTo(0, 0)
                     }
                 })
-                val fadeBackIn: ObjectAnimator = ObjectAnimator.ofFloat(
-                    binding.txtvEpisodeTitle, "alpha", 1f)
+                val fadeBackIn: ObjectAnimator = ObjectAnimator.ofFloat(binding.txtvEpisodeTitle, "alpha", 1f)
                 val set = AnimatorSet()
                 set.playSequentially(verticalMarquee, fadeOut, fadeBackIn)
                 set.start()
@@ -239,9 +264,7 @@ class PlayerDetailsFragment : Fragment() {
     private fun updateChapterControlVisibility() {
         var chapterControlVisible = false
         when {
-            media?.getChapters() != null -> {
-                chapterControlVisible = media!!.getChapters().isNotEmpty()
-            }
+            media?.getChapters() != null -> chapterControlVisible = media!!.getChapters().isNotEmpty()
             media is FeedMedia -> {
                 val fm: FeedMedia? = (media as FeedMedia?)
                 // If an item has chapters but they are not loaded yet, still display the button.
@@ -310,23 +333,18 @@ class PlayerDetailsFragment : Fragment() {
         if (controller == null || curr == null || displayedChapterIndex == -1) return
 
         when {
-            displayedChapterIndex < 1 -> {
-                controller!!.seekTo(0)
-            }
+            displayedChapterIndex < 1 -> controller!!.seekTo(0)
             (controller!!.position - 10000 * controller!!.currentPlaybackSpeedMultiplier) < curr.start -> {
                 refreshChapterData(displayedChapterIndex - 1)
                 if (media != null) controller!!.seekTo(media!!.getChapters()[displayedChapterIndex].start.toInt())
             }
-            else -> {
-                controller!!.seekTo(curr.start.toInt())
-            }
+            else -> controller!!.seekTo(curr.start.toInt())
         }
     }
 
     @UnstableApi private fun seekToNextChapter() {
-        if (controller == null || media == null || media!!.getChapters().isEmpty() || displayedChapterIndex == -1 || displayedChapterIndex + 1 >= media!!.getChapters().size) {
-            return
-        }
+        if (controller == null || media == null || media!!.getChapters().isEmpty() || displayedChapterIndex == -1
+                || displayedChapterIndex + 1 >= media!!.getChapters().size) return
 
         refreshChapterData(displayedChapterIndex + 1)
         controller!!.seekTo(media!!.getChapters()[displayedChapterIndex].start.toInt())
@@ -393,7 +411,11 @@ class PlayerDetailsFragment : Fragment() {
 
     fun setItem(item_: FeedItem) {
         Log.d(TAG, "setItem ${item_.title}")
-        item = item_
+        if (item?.itemIdentifier != item_.itemIdentifier) {
+            item = item_
+            showHomeText = false
+            homeText = null
+        }
     }
 
 //    override fun onConfigurationChanged(newConfig: Configuration) {

@@ -39,9 +39,8 @@ class PlaybackServiceNotificationBuilder(private val context: Context) {
     private var position: String? = null
 
     fun setPlayable(playable: Playable) {
-        if (playable !== this.playable) {
-            clearCache()
-        }
+        if (playable !== this.playable) clearCache()
+
         this.playable = playable
     }
 
@@ -86,31 +85,22 @@ class PlaybackServiceNotificationBuilder(private val context: Context) {
 
     private val defaultIcon: Bitmap?
         get() {
-            if (Companion.defaultIcon == null) {
-                Companion.defaultIcon = getBitmap(context, R.mipmap.ic_launcher)
-            }
+            if (Companion.defaultIcon == null) Companion.defaultIcon = getBitmap(context, R.mipmap.ic_launcher)
             return Companion.defaultIcon
         }
 
     fun build(): Notification {
-        val notification = NotificationCompat.Builder(
-            context,
-            NotificationUtils.CHANNEL_ID_PLAYING)
+        val notification = NotificationCompat.Builder(context, NotificationUtils.CHANNEL_ID_PLAYING)
 
         if (playable != null) {
             notification.setContentTitle(playable!!.getFeedTitle())
             notification.setContentText(playable!!.getEpisodeTitle())
             addActions(notification, mediaSessionToken, playerStatus)
 
-            if (cachedIcon != null) {
-                notification.setLargeIcon(cachedIcon)
-            } else {
-                notification.setLargeIcon(this.defaultIcon)
-            }
+            if (cachedIcon != null) notification.setLargeIcon(cachedIcon)
+            else notification.setLargeIcon(this.defaultIcon)
 
-            if (Build.VERSION.SDK_INT < 29) {
-                notification.setSubText(position)
-            }
+            if (Build.VERSION.SDK_INT < 29) notification.setSubText(position)
         } else {
             notification.setContentTitle(context.getString(R.string.app_name))
             notification.setContentText("Loading. If this does not go away, play any episode and contact us.")
@@ -129,11 +119,10 @@ class PlaybackServiceNotificationBuilder(private val context: Context) {
     }
 
     private val playerActivityPendingIntent: PendingIntent
-        get() = PendingIntent.getActivity(context, R.id.pending_intent_player_activity,
-            PlaybackService.getPlayerActivityIntent(context), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        get() = PendingIntent.getActivity(context, R.id.pending_intent_player_activity, PlaybackService.getPlayerActivityIntent(context),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
-    private fun addActions(notification: NotificationCompat.Builder, mediaSessionToken: MediaSessionCompat.Token?,
-                           playerStatus: PlayerStatus?) {
+    private fun addActions(notification: NotificationCompat.Builder, mediaSessionToken: MediaSessionCompat.Token?, playerStatus: PlayerStatus?) {
         val compactActionList = ArrayList<Int>()
 
         var numActions = 0 // we start and 0 and then increment by 1 for each call to addAction
@@ -173,11 +162,12 @@ class PlaybackServiceNotificationBuilder(private val context: Context) {
         }
 
         val stopButtonPendingIntent = getPendingIntentForMediaAction(KeyEvent.KEYCODE_MEDIA_STOP, numActions)
-        notification.setStyle(androidx.media.app.NotificationCompat.MediaStyle()
-            .setMediaSession(mediaSessionToken)
-            .setShowActionsInCompactView(*ArrayUtils.toPrimitive(compactActionList.toTypedArray<Int>()))
-            .setShowCancelButton(true)
-            .setCancelButtonIntent(stopButtonPendingIntent))
+        notification
+            .setStyle(androidx.media.app.NotificationCompat.MediaStyle()
+                .setMediaSession(mediaSessionToken)
+                .setShowActionsInCompactView(*ArrayUtils.toPrimitive(compactActionList.toTypedArray<Int>()))
+                .setShowCancelButton(true)
+                .setCancelButtonIntent(stopButtonPendingIntent))
     }
 
     private fun getPendingIntentForMediaAction(keycodeValue: Int, requestCode: Int): PendingIntent {
@@ -222,15 +212,9 @@ class PlaybackServiceNotificationBuilder(private val context: Context) {
 
         private fun getBitmap(context: Context, drawableId: Int): Bitmap? {
             return when (val drawable = AppCompatResources.getDrawable(context, drawableId)) {
-                is BitmapDrawable -> {
-                    drawable.bitmap
-                }
-                is VectorDrawable -> {
-                    getBitmap(drawable)
-                }
-                else -> {
-                    null
-                }
+                is BitmapDrawable -> drawable.bitmap
+                is VectorDrawable -> getBitmap(drawable)
+                else -> null
             }
         }
     }

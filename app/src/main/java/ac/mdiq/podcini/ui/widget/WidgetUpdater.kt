@@ -136,10 +136,10 @@ object WidgetUpdater {
             } else {
                 views.setViewVisibility(R.id.layout_center, View.VISIBLE)
             }
-            val showPlaybackSpeed = prefs.getBoolean(PlayerWidget.KEY_WIDGET_PLAYBACK_SPEED + id, false)
-            val showRewind = prefs.getBoolean(PlayerWidget.KEY_WIDGET_REWIND + id, false)
-            val showFastForward = prefs.getBoolean(PlayerWidget.KEY_WIDGET_FAST_FORWARD + id, false)
-            val showSkip = prefs.getBoolean(PlayerWidget.KEY_WIDGET_SKIP + id, false)
+            val showPlaybackSpeed = prefs.getBoolean(PlayerWidget.KEY_WIDGET_PLAYBACK_SPEED + id, true)
+            val showRewind = prefs.getBoolean(PlayerWidget.KEY_WIDGET_REWIND + id, true)
+            val showFastForward = prefs.getBoolean(PlayerWidget.KEY_WIDGET_FAST_FORWARD + id, true)
+            val showSkip = prefs.getBoolean(PlayerWidget.KEY_WIDGET_SKIP + id, true)
 
             if (showPlaybackSpeed || showRewind || showSkip || showFastForward) {
                 views.setInt(R.id.extendedButtonsContainer, "setVisibility", View.VISIBLE)

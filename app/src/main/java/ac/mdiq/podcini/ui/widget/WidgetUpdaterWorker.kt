@@ -8,9 +8,8 @@ import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.createInstanceF
 import ac.mdiq.podcini.ui.widget.WidgetUpdater.WidgetState
 import ac.mdiq.podcini.playback.base.PlayerStatus
 
-class WidgetUpdaterWorker(context: Context,
-                          workerParams: WorkerParameters
-) : Worker(context, workerParams) {
+class WidgetUpdaterWorker(context: Context, workerParams: WorkerParameters) : Worker(context, workerParams) {
+
     override fun doWork(): Result {
         try {
             updateWidget()
@@ -27,13 +26,9 @@ class WidgetUpdaterWorker(context: Context,
     private fun updateWidget() {
         val media = createInstanceFromPreferences(applicationContext)
         if (media != null) {
-            WidgetUpdater.updateWidget(applicationContext,
-                WidgetState(media, PlayerStatus.STOPPED,
-                    media.getPosition(), media.getDuration(),
-                    getCurrentPlaybackSpeed(media)))
+            WidgetUpdater.updateWidget(applicationContext, WidgetState(media, PlayerStatus.STOPPED, media.getPosition(), media.getDuration(), getCurrentPlaybackSpeed(media)))
         } else {
-            WidgetUpdater.updateWidget(applicationContext,
-                WidgetState(PlayerStatus.STOPPED))
+            WidgetUpdater.updateWidget(applicationContext, WidgetState(PlayerStatus.STOPPED))
         }
     }
 

@@ -26,6 +26,8 @@ import ac.mdiq.podcini.ui.dialog.MediaPlayerErrorDialog
 import ac.mdiq.podcini.ui.dialog.SkipPreferenceDialog
 import ac.mdiq.podcini.ui.dialog.SleepTimerDialog
 import ac.mdiq.podcini.ui.dialog.VariableSpeedDialog
+import ac.mdiq.podcini.ui.fragment.EpisodeHomeFragment.Companion.fetchHtmlSource
+import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ChapterSeekBar
 import ac.mdiq.podcini.ui.view.PlayButton
 import ac.mdiq.podcini.ui.view.PlaybackSpeedIndicatorView
@@ -63,6 +65,8 @@ import io.reactivex.MaybeEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.runBlocking
+import net.dankito.readability4j.Readability4J
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -424,6 +428,10 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
         val itemId = menuItem.itemId
         when (itemId) {
+            R.id.show_home_reader_view -> {
+                itemDescFrag.buildHomeReaderText()
+                return true
+            }
             R.id.show_video -> {
                 controller!!.playPause()
                 VideoPlayerActivityStarter(requireContext(), VideoMode.FULL_SCREEN_VIEW).start()

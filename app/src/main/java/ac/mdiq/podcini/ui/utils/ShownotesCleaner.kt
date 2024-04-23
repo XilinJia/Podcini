@@ -64,9 +64,8 @@ class ShownotesCleaner(context: Context, private val rawShownotes: String, priva
         }
 
         // replace ASCII line breaks with HTML ones if shownotes don't contain HTML line breaks already
-        if (!LINE_BREAK_REGEX.matcher(shownotes).find() && !shownotes.contains("<p>")) {
+        if (!LINE_BREAK_REGEX.matcher(shownotes).find() && !shownotes.contains("<p>"))
             shownotes = shownotes.replace("\n", "<br />")
-        }
 
         val document = Jsoup.parse(shownotes)
         cleanCss(document)
@@ -79,10 +78,8 @@ class ShownotesCleaner(context: Context, private val rawShownotes: String, priva
         val elementsWithTimeCodes = document.body().getElementsMatchingOwnText(TIMECODE_REGEX)
         Log.d(TAG, "Recognized " + elementsWithTimeCodes.size + " timecodes")
 
-        if (elementsWithTimeCodes.size == 0) {
-            // No elements with timecodes
-            return
-        }
+        if (elementsWithTimeCodes.size == 0) return  // No elements with timecodes
+
         var useHourFormat = true
 
         if (playableDuration != Int.MAX_VALUE) {
@@ -107,9 +104,7 @@ class ShownotesCleaner(context: Context, private val rawShownotes: String, priva
                     }
                 }
 
-                if (!useHourFormat) {
-                    break
-                }
+                if (!useHourFormat) break
             }
         }
 

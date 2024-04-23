@@ -103,10 +103,10 @@ class WidgetConfigActivity : AppCompatActivity() {
 
     private fun setInitialState() {
         val prefs = getSharedPreferences(PlayerWidget.PREFS_NAME, MODE_PRIVATE)
-        ckPlaybackSpeed.isChecked = prefs.getBoolean(PlayerWidget.KEY_WIDGET_PLAYBACK_SPEED + appWidgetId, false)
-        ckRewind.isChecked = prefs.getBoolean(PlayerWidget.KEY_WIDGET_REWIND + appWidgetId, false)
-        ckFastForward.isChecked = prefs.getBoolean(PlayerWidget.KEY_WIDGET_FAST_FORWARD + appWidgetId, false)
-        ckSkip.isChecked = prefs.getBoolean(PlayerWidget.KEY_WIDGET_SKIP + appWidgetId, false)
+        ckPlaybackSpeed.isChecked = prefs.getBoolean(PlayerWidget.KEY_WIDGET_PLAYBACK_SPEED + appWidgetId, true)
+        ckRewind.isChecked = prefs.getBoolean(PlayerWidget.KEY_WIDGET_REWIND + appWidgetId, true)
+        ckFastForward.isChecked = prefs.getBoolean(PlayerWidget.KEY_WIDGET_FAST_FORWARD + appWidgetId, true)
+        ckSkip.isChecked = prefs.getBoolean(PlayerWidget.KEY_WIDGET_SKIP + appWidgetId, true)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             val color = prefs.getInt(PlayerWidget.KEY_WIDGET_COLOR + appWidgetId, PlayerWidget.DEFAULT_COLOR)
             val opacity = Color.alpha(color) * 100 / 0xFF

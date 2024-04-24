@@ -21,9 +21,8 @@ internal class ShakeListener(private val mContext: Context, private val mSleepTi
         // only a precaution, the user should actually not be able to activate shake to reset
         // when the accelerometer is not available
         mSensorMgr = mContext.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        if (mSensorMgr == null) {
-            throw UnsupportedOperationException("Sensors not supported")
-        }
+        if (mSensorMgr == null) throw UnsupportedOperationException("Sensors not supported")
+
         mAccelerometer = mSensorMgr!!.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         if (!mSensorMgr!!.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_UI)) { // if not supported
             mSensorMgr!!.unregisterListener(this)

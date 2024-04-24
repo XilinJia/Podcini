@@ -333,12 +333,8 @@ abstract class PlaybackServiceMediaPlayer protected constructor(protected val co
 
         if (newMedia != null && newStatus != PlayerStatus.INDETERMINATE) {
             when {
-                oldPlayerStatus == PlayerStatus.PLAYING && newStatus != PlayerStatus.PLAYING -> {
-                    callback.onPlaybackPause(newMedia, position)
-                }
-                oldPlayerStatus != PlayerStatus.PLAYING && newStatus == PlayerStatus.PLAYING -> {
-                    callback.onPlaybackStart(newMedia, position)
-                }
+                oldPlayerStatus == PlayerStatus.PLAYING && newStatus != PlayerStatus.PLAYING -> callback.onPlaybackPause(newMedia, position)
+                oldPlayerStatus != PlayerStatus.PLAYING && newStatus == PlayerStatus.PLAYING -> callback.onPlaybackStart(newMedia, position)
             }
         }
 

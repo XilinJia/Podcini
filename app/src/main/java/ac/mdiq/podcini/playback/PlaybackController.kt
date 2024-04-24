@@ -52,18 +52,13 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
             EventBus.getDefault().register(this)
             eventsRegistered = true
         }
-        if (PlaybackService.isRunning) {
-            initServiceRunning()
-        } else {
-            updatePlayButtonShowsPlay(true)
-        }
+        if (PlaybackService.isRunning) initServiceRunning()
+        else updatePlayButtonShowsPlay(true)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: PlaybackServiceEvent) {
-        if (event.action == PlaybackServiceEvent.Action.SERVICE_STARTED) {
-            init()
-        }
+        if (event.action == PlaybackServiceEvent.Action.SERVICE_STARTED) init()
     }
 
     @Synchronized
@@ -72,20 +67,16 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
         initialized = true
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            activity.registerReceiver(statusUpdate, IntentFilter(
-                PlaybackService.ACTION_PLAYER_STATUS_CHANGED), Context.RECEIVER_NOT_EXPORTED)
-            activity.registerReceiver(notificationReceiver, IntentFilter(
-                PlaybackServiceInterface.ACTION_PLAYER_NOTIFICATION), Context.RECEIVER_NOT_EXPORTED)
+            activity.registerReceiver(statusUpdate, IntentFilter(PlaybackService.ACTION_PLAYER_STATUS_CHANGED), Context.RECEIVER_NOT_EXPORTED)
+            activity.registerReceiver(notificationReceiver, IntentFilter(PlaybackServiceInterface.ACTION_PLAYER_NOTIFICATION), Context.RECEIVER_NOT_EXPORTED)
         } else {
             activity.registerReceiver(statusUpdate, IntentFilter(PlaybackService.ACTION_PLAYER_STATUS_CHANGED))
             activity.registerReceiver(notificationReceiver, IntentFilter(PlaybackServiceInterface.ACTION_PLAYER_NOTIFICATION))
         }
 
-        if (!released) {
-            bindToService()
-        } else {
-            throw IllegalStateException("Can't call init() after release() has been called")
-        }
+        if (!released) bindToService()
+        else throw IllegalStateException("Can't call init() after release() has been called")
+
         checkMediaInfoLoaded()
     }
 
@@ -157,10 +148,7 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
                 if (!released) {
                     queryService()
                     Log.d(TAG, "Connection to Service established")
-                } else {
-                    Log.i(TAG, "Connection to playback service has been established, " +
-                            "but controller has already been released")
-                }
+                } else Log.i(TAG, "Connection to playback service has been established, but controller has already been released")
             }
         }
 
@@ -224,9 +212,7 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
         checkMediaInfoLoaded()
         when (status) {
             PlayerStatus.PLAYING -> updatePlayButtonShowsPlay(false)
-            PlayerStatus.PREPARING -> if (playbackService != null) {
-                updatePlayButtonShowsPlay(!playbackService!!.isStartWhenPrepared)
-            }
+            PlayerStatus.PREPARING -> if (playbackService != null) updatePlayButtonShowsPlay(!playbackService!!.isStartWhenPrepared)
             PlayerStatus.FALLBACK, PlayerStatus.PAUSED, PlayerStatus.PREPARED, PlayerStatus.STOPPED, PlayerStatus.INITIALIZED ->
                 updatePlayButtonShowsPlay(true)
             else -> {}
@@ -262,8 +248,7 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
             mediaInfoLoaded = false
             handleStatus()
         } else {
-            Log.e(TAG,
-                "queryService() was called without an existing connection to playbackservice")
+            Log.e(TAG, "queryService() was called without an existing connection to playbackservice")
         }
     }
 
@@ -362,9 +347,7 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
     }
 
     fun speedForward(speed: Float) {
-        if (playbackService != null) {
-            playbackService!!.speedForward(speed)
-        }
+        playbackService?.speedForward(speed)
     }
 
     fun fallbackSpeed(speed: Float) {
@@ -392,9 +375,7 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
 
     val audioTracks: List<String>
         get() {
-            if (playbackService?.audioTracks.isNullOrEmpty()) {
-                return emptyList()
-            }
+            if (playbackService?.audioTracks.isNullOrEmpty()) return emptyList()
             return playbackService!!.audioTracks.filterNotNull().map { it }
         }
 
@@ -409,15 +390,9 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
 
     val isPlayingVideoLocally: Boolean
         get() = when {
-            PlaybackService.isCasting -> {
-                false
-            }
-            playbackService != null -> {
-                PlaybackService.currentMediaType == MediaType.VIDEO
-            }
-            else -> {
-                getMedia()?.getMediaType() == MediaType.VIDEO
-            }
+            PlaybackService.isCasting -> false
+            playbackService != null -> PlaybackService.currentMediaType == MediaType.VIDEO
+            else -> getMedia()?.getMediaType() == MediaType.VIDEO
         }
 
     val videoSize: Pair<Int, Int>?

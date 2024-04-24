@@ -1,0 +1,5 @@
+ 
+Version 4.9.2 brings several changes:
+
+* fixed the action buttons on notification widget. bit strange with the order though as they appear different on my Android 9 and Android 14 devices
+* media3 requires quite some logic change, so be mindful with any issues

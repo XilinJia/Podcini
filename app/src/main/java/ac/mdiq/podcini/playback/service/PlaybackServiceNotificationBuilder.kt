@@ -28,6 +28,7 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.util.Converter
 import org.apache.commons.lang3.ArrayUtils
 
+// TODO: not needed with media3
 @UnstableApi
 class PlaybackServiceNotificationBuilder(private val context: Context) {
     private var playable: Playable? = null

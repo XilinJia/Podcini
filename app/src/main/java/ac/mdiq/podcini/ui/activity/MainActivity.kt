@@ -8,6 +8,7 @@ import ac.mdiq.podcini.net.download.FeedUpdateManager.runOnceOrAsk
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.playback.cast.CastEnabledActivity
+import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.preferences.ThemeSwitcher.getNoTitleTheme
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.backButtonOpensDrawer
@@ -27,6 +28,7 @@ import ac.mdiq.podcini.util.event.FeedUpdateRunningEvent
 import ac.mdiq.podcini.util.event.MessageEvent
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.ComponentName
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -53,6 +55,8 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.MediaController
+import androidx.media3.session.SessionToken
 import androidx.recyclerview.widget.RecyclerView
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
@@ -62,6 +66,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.google.common.util.concurrent.MoreExecutors
 import org.apache.commons.lang3.ArrayUtils
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -463,6 +468,17 @@ class MainActivity : CastEnabledActivity() {
         super.onStart()
         EventBus.getDefault().register(this)
         RatingDialog.init(this)
+
+        val sessionToken = SessionToken(this, ComponentName(this, PlaybackService::class.java))
+        val controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
+        controllerFuture.addListener({
+                // Call controllerFuture.get() to retrieve the MediaController.
+                // MediaController implements the Player interface, so it can be
+                // attached to the PlayerView UI component.
+//                playerView.setPlayer(controllerFuture.get())
+        },
+            MoreExecutors.directExecutor()
+        )
     }
 
     override fun onResume() {

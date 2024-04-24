@@ -69,15 +69,9 @@ class ExoPlayerWrapper internal constructor(private val context: Context) {
         exoPlayer?.addListener(object : Player.Listener {
             override fun onPlaybackStateChanged(playbackState: @Player.State Int) {
                 when {
-                    audioCompletionListener != null && playbackState == Player.STATE_ENDED -> {
-                        audioCompletionListener?.run()
-                    }
-                    playbackState == Player.STATE_BUFFERING -> {
-                        bufferingUpdateListener?.accept(BUFFERING_STARTED)
-                    }
-                    else -> {
-                        bufferingUpdateListener?.accept(BUFFERING_ENDED)
-                    }
+                    audioCompletionListener != null && playbackState == Player.STATE_ENDED -> audioCompletionListener?.run()
+                    playbackState == Player.STATE_BUFFERING -> bufferingUpdateListener?.accept(BUFFERING_STARTED)
+                    else -> bufferingUpdateListener?.accept(BUFFERING_ENDED)
                 }
             }
 
@@ -87,21 +81,15 @@ class ExoPlayerWrapper internal constructor(private val context: Context) {
                 } else {
                     var cause = error.cause
                     if (cause is HttpDataSourceException) {
-                        if (cause.cause != null) {
-                            cause = cause.cause
-                        }
+                        if (cause.cause != null) cause = cause.cause
                     }
-                    if (cause != null && "Source error" == cause.message) {
-                        cause = cause.cause
-                    }
+                    if (cause != null && "Source error" == cause.message) cause = cause.cause
                     audioErrorListener?.accept(if (cause != null) cause.message else error.message)
                 }
             }
 
             override fun onPositionDiscontinuity(oldPosition: PositionInfo, newPosition: PositionInfo, reason: @DiscontinuityReason Int) {
-                if (reason == Player.DISCONTINUITY_REASON_SEEK) {
-                    audioSeekCompleteListener?.run()
-                }
+                if (reason == Player.DISCONTINUITY_REASON_SEEK) audioSeekCompleteListener?.run()
             }
 
             override fun onAudioSessionIdChanged(audioSessionId: Int) {
@@ -218,6 +206,8 @@ class ExoPlayerWrapper internal constructor(private val context: Context) {
     }
 
     fun start() {
+        if (exoPlayer?.playbackState == Player.STATE_IDLE) prepare()
+
         exoPlayer?.play()
         // Can't set params when paused - so always set it on start in case they changed
         exoPlayer!!.playbackParameters = playbackParameters
@@ -271,9 +261,7 @@ class ExoPlayerWrapper internal constructor(private val context: Context) {
             val availableFormats = formats
             for (i in 0 until trackSelections.length) {
                 val track = trackSelections[i] as ExoTrackSelection? ?: continue
-                if (availableFormats.contains(track.selectedFormat)) {
-                    return availableFormats.indexOf(track.selectedFormat)
-                }
+                if (availableFormats.contains(track.selectedFormat)) return availableFormats.indexOf(track.selectedFormat)
             }
             return -1
         }
@@ -309,9 +297,7 @@ class ExoPlayerWrapper internal constructor(private val context: Context) {
         val oldEnhancer = this.loudnessEnhancer
         if (oldEnhancer != null) {
             newEnhancer.setEnabled(oldEnhancer.enabled)
-            if (oldEnhancer.enabled) {
-                newEnhancer.setTargetGain(oldEnhancer.targetGain.toInt())
-            }
+            if (oldEnhancer.enabled) newEnhancer.setTargetGain(oldEnhancer.targetGain.toInt())
             oldEnhancer.release()
         }
 

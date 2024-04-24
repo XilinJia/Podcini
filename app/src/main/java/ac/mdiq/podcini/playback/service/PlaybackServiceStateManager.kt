@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.core.app.ServiceCompat
 import kotlin.concurrent.Volatile
 
+// TODO: not needed with media3
 internal class PlaybackServiceStateManager(private val playbackService: PlaybackService) {
     @Volatile
     private var isInForeground = false

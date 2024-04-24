@@ -25,8 +25,7 @@ class QuickSettingsTileService : TileService() {
         super.onClick()
         val intent = Intent(this, MediaButtonReceiver::class.java)
         intent.setAction(MediaButtonReceiver.NOTIFY_BUTTON_RECEIVER)
-        intent.putExtra(Intent.EXTRA_KEY_EVENT,
-            KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE))
+        intent.putExtra(Intent.EXTRA_KEY_EVENT, KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE))
         sendBroadcast(intent)
     }
 
@@ -47,11 +46,8 @@ class QuickSettingsTileService : TileService() {
         if (qsTile == null) {
             Log.d(TAG, "Ignored call to update QS tile: getQsTile() returned null.")
         } else {
-            val isPlaying = (PlaybackService.isRunning
-                    && PlaybackPreferences.currentPlayerStatus
-                    == PlaybackPreferences.PLAYER_STATUS_PLAYING)
-            qsTile.state =
-                if (isPlaying) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
+            val isPlaying = (PlaybackService.isRunning && PlaybackPreferences.currentPlayerStatus == PlaybackPreferences.PLAYER_STATUS_PLAYING)
+            qsTile.state = if (isPlaying) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
             qsTile.updateTile()
         }
     }

@@ -289,3 +289,8 @@
 * reader mode of episode home view observes the theme of the app
 * reader mode content of episode home view is cached so that subsequent loading is quicker
 * episode home reader content can be switched on in player detailed view from the action bar
+
+## 4.9.2
+
+* fixed the action buttons on notification widget. bit strange with the order though as they appear different on my Android 9 and Android 14 devices
+* media3 requires quite some logic change, so be mindful with any issues

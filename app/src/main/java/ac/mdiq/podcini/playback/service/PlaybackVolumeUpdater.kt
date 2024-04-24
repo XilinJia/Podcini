@@ -10,9 +10,7 @@ internal class PlaybackVolumeUpdater {
                                 volumeAdaptionSetting: VolumeAdaptionSetting) {
         val playable = mediaPlayer.getPlayable()
 
-        if (playable is FeedMedia) {
-            updateFeedMediaVolumeIfNecessary(mediaPlayer, feedId, volumeAdaptionSetting, playable)
-        }
+        if (playable is FeedMedia) updateFeedMediaVolumeIfNecessary(mediaPlayer, feedId, volumeAdaptionSetting, playable)
     }
 
     private fun updateFeedMediaVolumeIfNecessary(mediaPlayer: PlaybackServiceMediaPlayer, feedId: Long,
@@ -21,9 +19,7 @@ internal class PlaybackVolumeUpdater {
             val preferences = feedMedia.item!!.feed!!.preferences
             if (preferences != null) preferences.volumeAdaptionSetting = volumeAdaptionSetting
 
-            if (mediaPlayer.playerStatus == PlayerStatus.PLAYING) {
-                forceUpdateVolume(mediaPlayer)
-            }
+            if (mediaPlayer.playerStatus == PlayerStatus.PLAYING) forceUpdateVolume(mediaPlayer)
         }
     }
 

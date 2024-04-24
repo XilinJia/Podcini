@@ -104,10 +104,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     private var currentMedia: Playable? = null
     private var currentitem: FeedItem? = null
 
-    override fun onCreateView(inflater: LayoutInflater,
-                              container: ViewGroup?,
-                              savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         _binding = AudioplayerFragmentBinding.inflate(inflater)
 
@@ -143,8 +140,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             .replace(R.id.playerFragment2, playerFragment2!!, InternalPlayerFragment.TAG)
             .commit()
         playerView2 = binding.root.findViewById(R.id.playerFragment2)
-        playerView2.setBackgroundColor(
-            SurfaceColors.getColorForElevation(requireContext(), 8 * resources.displayMetrics.density))
+        playerView2.setBackgroundColor(SurfaceColors.getColorForElevation(requireContext(), 8 * resources.displayMetrics.density))
 
         cardViewSeek = binding.cardViewSeek
         txtvSeek = binding.txtvSeek
@@ -188,9 +184,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onPlaybackServiceChanged(event: PlaybackServiceEvent) {
-        if (event.action == PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN) {
+        if (event.action == PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN)
             (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_EXPANDED
-        }
     }
 
 //    private fun setupLengthTextView() {
@@ -223,9 +218,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             disposable = Maybe.create<Playable> { emitter: MaybeEmitter<Playable?> ->
                 val media: Playable? = theMedia
                 if (media != null) {
-                    if (includingChapters) {
-                        ChapterUtils.loadChapters(media, requireContext(), false)
-                    }
+                    if (includingChapters) ChapterUtils.loadChapters(media, requireContext(), false)
                     emitter.onSuccess(media)
                 } else {
                     emitter.onComplete()
@@ -238,9 +231,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                     updateUi(media)
                     playerFragment1?.updateUi(media)
                     playerFragment2?.updateUi(media)
-                    if (!includingChapters) {
-                        loadMediaInfo(true)
-                    }
+                    if (!includingChapters) loadMediaInfo(true)
                 }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) },
                     {
                         updateUi(null)
@@ -276,9 +267,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     @Subscribe(threadMode = ThreadMode.MAIN)
     @Suppress("unused")
     fun sleepTimerUpdate(event: SleepTimerUpdatedEvent) {
-        if (event.isCancelled || event.wasJustEnabled()) {
-            this@AudioPlayerFragment.loadMediaInfo(false)
-        }
+        if (event.isCancelled || event.wasJustEnabled()) this@AudioPlayerFragment.loadMediaInfo(false)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -354,15 +343,12 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 //                        updateUi(controller!!.getMedia())
 //                        sbPosition.highlightCurrentChapter()
 //                    }
-                    txtvSeek.text = controller!!.getMedia()?.getChapters()?.get(newChapterIndex)?.title ?: (""
-                            + "\n" + Converter.getDurationStringLong(position))
+                    txtvSeek.text = controller!!.getMedia()?.getChapters()?.get(newChapterIndex)?.title ?: ("\n${Converter.getDurationStringLong(position)}")
                 } else {
                     txtvSeek.text = Converter.getDurationStringLong(position)
                 }
             }
-            duration != controller!!.duration -> {
-                updateUi(controller!!.getMedia())
-            }
+            duration != controller!!.duration -> updateUi(controller!!.getMedia())
         }
     }
 
@@ -396,9 +382,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     }
 
     fun setupOptionsMenu(media: Playable?) {
-        if (toolbar.menu.size() == 0) {
-            toolbar.inflateMenu(R.menu.mediaplayer)
-        }
+        if (toolbar.menu.size() == 0) toolbar.inflateMenu(R.menu.mediaplayer)
 
         val isFeedMedia = media is FeedMedia
         toolbar.menu?.findItem(R.id.open_feed_item)?.setVisible(isFeedMedia)
@@ -422,9 +406,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         var feedItem = currentitem
         if (feedItem == null && media is FeedMedia) feedItem = media.item
 //        feedItem: FeedItem? = if (media is FeedMedia) media.item else null
-        if (feedItem != null && FeedItemMenuHandler.onMenuItemClicked(this, menuItem.itemId, feedItem)) {
-            return true
-        }
+        if (feedItem != null && FeedItemMenuHandler.onMenuItemClicked(this, menuItem.itemId, feedItem)) return true
 
         val itemId = menuItem.itemId
         when (itemId) {
@@ -510,8 +492,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         private var disposable: Disposable? = null
 
         @UnstableApi
-        override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                                  savedInstanceState: Bundle?): View {
+        override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             _binding = InternalPlayerFragmentBinding.inflate(inflater)
             Log.d(TAG, "fragment onCreateView")
 
@@ -610,8 +591,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 }
             }
             butFF.setOnLongClickListener {
-                SkipPreferenceDialog.showSkipPreference(requireContext(),
-                    SkipPreferenceDialog.SkipDirection.SKIP_FORWARD, txtvFF)
+                SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_FORWARD, txtvFF)
                 true
             }
             butSkip.setOnClickListener {
@@ -630,9 +610,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         @OptIn(UnstableApi::class) private fun setupLengthTextView() {
             showTimeLeft = UserPreferences.shouldShowRemainingTime()
             txtvLength.setOnClickListener(View.OnClickListener {
-                if (controller == null) {
-                    return@OnClickListener
-                }
+                if (controller == null) return@OnClickListener
                 showTimeLeft = !showTimeLeft
                 UserPreferences.setShowRemainTimeSetting(showTimeLeft)
                 onPositionObserverUpdate(PlaybackPositionEvent(controller!!.position, controller!!.duration))
@@ -649,9 +627,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         @UnstableApi
         @Subscribe(threadMode = ThreadMode.MAIN)
         fun onPositionObserverUpdate(event: PlaybackPositionEvent) {
-            if (controller == null || controller!!.position == Playable.INVALID_TIME || controller!!.duration == Playable.INVALID_TIME) {
-                return
-            }
+            if (controller == null || controller!!.position == Playable.INVALID_TIME || controller!!.duration == Playable.INVALID_TIME) return
+
             val converter = TimeSpeedConverter(controller!!.currentPlaybackSpeedMultiplier)
             val currentPosition: Int = converter.convert(event.position)
             val duration: Int = converter.convert(event.duration)
@@ -684,12 +661,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
         fun onPlaybackServiceChanged(event: PlaybackServiceEvent) {
             when (event.action) {
-                PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN -> {
-                    (activity as MainActivity).setPlayerVisible(false)
-                }
-                PlaybackServiceEvent.Action.SERVICE_STARTED -> {
-                    (activity as MainActivity).setPlayerVisible(true)
-                }
+                PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN -> (activity as MainActivity).setPlayerVisible(false)
+                PlaybackServiceEvent.Action.SERVICE_STARTED -> (activity as MainActivity).setPlayerVisible(true)
             }
         }
 
@@ -703,9 +676,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             super.onStart()
             txtvRev.text = NumberFormat.getInstance().format(UserPreferences.rewindSecs.toLong())
             txtvFF.text = NumberFormat.getInstance().format(UserPreferences.fastForwardSecs.toLong())
-            if (UserPreferences.speedforwardSpeed > 0.1f) {
-                txtvSkip.text = NumberFormat.getInstance().format(UserPreferences.speedforwardSpeed)
-            } else txtvSkip.visibility = View.GONE
+            if (UserPreferences.speedforwardSpeed > 0.1f) txtvSkip.text = NumberFormat.getInstance().format(UserPreferences.speedforwardSpeed)
+            else txtvSkip.visibility = View.GONE
             val media = controller?.getMedia() ?: return
             updatePlaybackSpeedButton(SpeedChangedEvent(PlaybackSpeedUtils.getCurrentPlaybackSpeed(media)))
         }

@@ -31,9 +31,7 @@ import kotlin.concurrent.Volatile
  * The PlaybackServiceTaskManager(PSTM) uses a callback object (PSTMCallback)
  * to notify the PlaybackService about updates from the running tasks.
  */
-class PlaybackServiceTaskManager(private val context: Context,
-                                 private val callback: PSTMCallback
-) {
+class PlaybackServiceTaskManager(private val context: Context, private val callback: PSTMCallback) {
     private val schedExecutor: ScheduledThreadPoolExecutor
 
     private var positionSaverFuture: ScheduledFuture<*>? = null
@@ -67,10 +65,8 @@ class PlaybackServiceTaskManager(private val context: Context,
         if (!isPositionSaverActive) {
             var positionSaver = Runnable { callback.positionSaverTick() }
             positionSaver = useMainThreadIfNecessary(positionSaver)
-            positionSaverFuture =
-                schedExecutor.scheduleWithFixedDelay(positionSaver, POSITION_SAVER_WAITING_INTERVAL.toLong(),
-                    POSITION_SAVER_WAITING_INTERVAL.toLong(), TimeUnit.MILLISECONDS)
-
+            positionSaverFuture = schedExecutor.scheduleWithFixedDelay(positionSaver, POSITION_SAVER_WAITING_INTERVAL.toLong(),
+                POSITION_SAVER_WAITING_INTERVAL.toLong(), TimeUnit.MILLISECONDS)
             Log.d(TAG, "Started PositionSaver")
         } else {
             Log.d(TAG, "Call to startPositionSaver was ignored.")
@@ -103,10 +99,8 @@ class PlaybackServiceTaskManager(private val context: Context,
         if (!isWidgetUpdaterActive && !schedExecutor.isShutdown) {
             var widgetUpdater = Runnable { this.requestWidgetUpdate() }
             widgetUpdater = useMainThreadIfNecessary(widgetUpdater)
-            widgetUpdaterFuture = schedExecutor.scheduleWithFixedDelay(widgetUpdater,
-                WIDGET_UPDATER_NOTIFICATION_INTERVAL.toLong(),
-                WIDGET_UPDATER_NOTIFICATION_INTERVAL.toLong(),
-                TimeUnit.MILLISECONDS)
+            widgetUpdaterFuture = schedExecutor.scheduleWithFixedDelay(widgetUpdater, WIDGET_UPDATER_NOTIFICATION_INTERVAL.toLong(),
+                WIDGET_UPDATER_NOTIFICATION_INTERVAL.toLong(), TimeUnit.MILLISECONDS)
             Log.d(TAG, "Started WidgetUpdater")
         } else {
             Log.d(TAG, "Call to startWidgetUpdater was ignored.")
@@ -119,11 +113,8 @@ class PlaybackServiceTaskManager(private val context: Context,
     @Synchronized
     fun requestWidgetUpdate() {
         val state = callback.requestWidgetState()
-        if (!schedExecutor.isShutdown) {
-            schedExecutor.execute { WidgetUpdater.updateWidget(context, state) }
-        } else {
-            Log.d(TAG, "Call to requestWidgetUpdate was ignored.")
-        }
+        if (!schedExecutor.isShutdown) schedExecutor.execute { WidgetUpdater.updateWidget(context, state) }
+        else Log.d(TAG, "Call to requestWidgetUpdate was ignored.")
     }
 
     /**
@@ -138,9 +129,7 @@ class PlaybackServiceTaskManager(private val context: Context,
         require(waitingTime > 0) { "Waiting time <= 0" }
 
         Log.d(TAG, "Setting sleep timer to $waitingTime milliseconds")
-        if (isSleepTimerActive) {
-            sleepTimerFuture!!.cancel(true)
-        }
+        if (isSleepTimerActive) sleepTimerFuture!!.cancel(true)
         sleepTimer = SleepTimer(waitingTime)
         sleepTimerFuture = schedExecutor.schedule(sleepTimer, 0, TimeUnit.MILLISECONDS)
         EventBus.getDefault().post(SleepTimerUpdatedEvent.justEnabled(waitingTime))
@@ -181,11 +170,7 @@ class PlaybackServiceTaskManager(private val context: Context,
         /**
          * Returns the current sleep timer time or 0 if the sleep timer is not active.
          */
-        get() = if (isSleepTimerActive) {
-            sleepTimer!!.getWaitingTime()
-        } else {
-            0
-        }
+        get() = if (isSleepTimerActive) sleepTimer!!.getWaitingTime() else 0
 
     @get:Synchronized
     val isWidgetUpdaterActive: Boolean
@@ -224,8 +209,7 @@ class PlaybackServiceTaskManager(private val context: Context,
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ callback.onChapterLoaded(media) },
                     { throwable: Throwable? ->
-                        Log.d(TAG,
-                            "Error loading chapters: " + Log.getStackTraceString(throwable))
+                        Log.d(TAG, "Error loading chapters: " + Log.getStackTraceString(throwable))
                     })
         }
     }
@@ -299,9 +283,7 @@ class PlaybackServiceTaskManager(private val context: Context,
                             hasVibrated = true
                         }
                     }
-                    if (shakeListener == null && SleepTimerPreferences.shakeToReset()) {
-                        shakeListener = ShakeListener(context, this)
-                    }
+                    if (shakeListener == null && SleepTimerPreferences.shakeToReset()) shakeListener = ShakeListener(context, this)
                 }
                 if (timeLeft <= 0) {
                     Log.d(TAG, "Sleep timer expired")
@@ -329,9 +311,8 @@ class PlaybackServiceTaskManager(private val context: Context,
 
         fun cancel() {
             sleepTimerFuture!!.cancel(true)
-            if (shakeListener != null) {
-                shakeListener!!.pause()
-            }
+            shakeListener?.pause()
+
             EventBus.getDefault().post(SleepTimerUpdatedEvent.cancelled())
         }
 

@@ -25,18 +25,11 @@ object NetworkUtils {
             val networkInfo = cm.activeNetworkInfo ?: return false
             return when (networkInfo.type) {
                 ConnectivityManager.TYPE_WIFI -> {
-                    if (UserPreferences.isEnableAutodownloadWifiFilter) {
-                        isInAllowedWifiNetwork
-                    } else {
-                        !isNetworkMetered
-                    }
+                    if (UserPreferences.isEnableAutodownloadWifiFilter) isInAllowedWifiNetwork
+                    else !isNetworkMetered
                 }
-                ConnectivityManager.TYPE_ETHERNET -> {
-                    true
-                }
-                else -> {
-                    UserPreferences.isAllowMobileAutoDownload || !isNetworkRestricted
-                }
+                ConnectivityManager.TYPE_ETHERNET -> true
+                else -> UserPreferences.isAllowMobileAutoDownload || !isNetworkRestricted
             }
         }
 
@@ -53,9 +46,9 @@ object NetworkUtils {
 
     @JvmStatic
     val isEpisodeHeadDownloadAllowed: Boolean
-        get() =// It is not an image but it is a similarly tiny request
-            // that is probably not even considered a download by most users
-            isImageAllowed
+        // It is not an image but it is a similarly tiny request
+        // that is probably not even considered a download by most users
+        get() = isImageAllowed
 
     @JvmStatic
     val isImageAllowed: Boolean
@@ -122,9 +115,8 @@ object NetworkUtils {
                 return ip.startsWith("127.") || ip.startsWith("0.")
             }
         }
-        if (throwable.cause != null) {
-            return wasDownloadBlocked(throwable.cause)
-        }
+        if (throwable.cause != null) return wasDownloadBlocked(throwable.cause)
+
         return false
     }
 }

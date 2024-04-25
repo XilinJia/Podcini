@@ -87,9 +87,7 @@ open class HorizontalFeedListAdapter(mainActivity: MainActivity) :
     }
 
     override fun getItemId(position: Int): Long {
-        if (position >= data.size) {
-            return RecyclerView.NO_ID // Dummy views
-        }
+        if (position >= data.size) return RecyclerView.NO_ID // Dummy views
         return data[position].id
     }
 
@@ -99,9 +97,7 @@ open class HorizontalFeedListAdapter(mainActivity: MainActivity) :
 
     override fun onCreateContextMenu(contextMenu: ContextMenu, view: View, contextMenuInfo: ContextMenu.ContextMenuInfo?) {
         val inflater: MenuInflater = mainActivityRef.get()!!.menuInflater
-        if (longPressedItem == null) {
-            return
-        }
+        if (longPressedItem == null) return
         inflater.inflate(R.menu.nav_feed_context, contextMenu)
         contextMenu.setHeaderTitle(longPressedItem!!.title)
     }

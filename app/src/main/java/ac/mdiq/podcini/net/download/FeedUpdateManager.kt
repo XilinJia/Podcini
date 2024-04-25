@@ -39,8 +39,7 @@ object FeedUpdateManager {
             val workRequest: PeriodicWorkRequest = PeriodicWorkRequest.Builder(
                 FeedUpdateWorker::class.java, UserPreferences.updateInterval, TimeUnit.HOURS)
                 .setConstraints(Builder()
-                    .setRequiredNetworkType(if (UserPreferences.isAllowMobileFeedRefresh
-                    ) NetworkType.CONNECTED else NetworkType.UNMETERED).build())
+                    .setRequiredNetworkType(if (UserPreferences.isAllowMobileFeedRefresh) NetworkType.CONNECTED else NetworkType.UNMETERED).build())
                 .build()
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(WORK_ID_FEED_UPDATE,
                 if (replace) ExistingPeriodicWorkPolicy.REPLACE else ExistingPeriodicWorkPolicy.KEEP, workRequest)
@@ -54,10 +53,8 @@ object FeedUpdateManager {
             .setInitialDelay(0L, TimeUnit.MILLISECONDS)
             .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
             .addTag(WORK_TAG_FEED_UPDATE)
-        if (feed == null || !feed.isLocalFeed) {
-            workRequest.setConstraints(Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED).build())
-        }
+        if (feed == null || !feed.isLocalFeed) workRequest.setConstraints(Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+
         val builder = Data.Builder()
         builder.putBoolean(EXTRA_EVEN_ON_MOBILE, true)
         if (feed != null) {
@@ -65,8 +62,7 @@ object FeedUpdateManager {
             builder.putBoolean(EXTRA_NEXT_PAGE, nextPage)
         }
         workRequest.setInputData(builder.build())
-        WorkManager.getInstance(context).enqueueUniqueWork(WORK_ID_FEED_UPDATE_MANUAL,
-            ExistingWorkPolicy.REPLACE, workRequest.build())
+        WorkManager.getInstance(context).enqueueUniqueWork(WORK_ID_FEED_UPDATE_MANUAL, ExistingWorkPolicy.REPLACE, workRequest.build())
     }
 
     @JvmStatic
@@ -74,36 +70,25 @@ object FeedUpdateManager {
     fun runOnceOrAsk(context: Context, feed: Feed? = null) {
         Log.d(TAG, "Run auto update immediately in background.")
         when {
-            feed != null && feed.isLocalFeed -> {
-                runOnce(context, feed)
-            }
-            !networkAvailable() -> {
-                EventBus.getDefault().post(MessageEvent(context.getString(R.string.download_error_no_connection)))
-            }
-            isFeedRefreshAllowed -> {
-                runOnce(context, feed)
-            }
-            else -> {
-                confirmMobileRefresh(context, feed)
-            }
+            feed != null && feed.isLocalFeed -> runOnce(context, feed)
+            !networkAvailable() -> EventBus.getDefault().post(MessageEvent(context.getString(R.string.download_error_no_connection)))
+            isFeedRefreshAllowed -> runOnce(context, feed)
+            else -> confirmMobileRefresh(context, feed)
         }
     }
 
     private fun confirmMobileRefresh(context: Context, feed: Feed?) {
         val builder = MaterialAlertDialogBuilder(context)
             .setTitle(R.string.feed_refresh_title)
-            .setPositiveButton(R.string.confirm_mobile_streaming_button_once
-            ) { _: DialogInterface?, _: Int -> runOnce(context, feed) }
+            .setPositiveButton(R.string.confirm_mobile_streaming_button_once) { _: DialogInterface?, _: Int -> runOnce(context, feed) }
             .setNeutralButton(R.string.confirm_mobile_streaming_button_always) { _: DialogInterface?, _: Int ->
                 UserPreferences.isAllowMobileFeedRefresh = true
                 runOnce(context, feed)
             }
             .setNegativeButton(R.string.no, null)
-        if (isNetworkRestricted && isVpnOverWifi) {
-            builder.setMessage(R.string.confirm_mobile_feed_refresh_dialog_message_vpn)
-        } else {
-            builder.setMessage(R.string.confirm_mobile_feed_refresh_dialog_message)
-        }
+        if (isNetworkRestricted && isVpnOverWifi) builder.setMessage(R.string.confirm_mobile_feed_refresh_dialog_message_vpn)
+        else builder.setMessage(R.string.confirm_mobile_feed_refresh_dialog_message)
+
         builder.show()
     }
 }

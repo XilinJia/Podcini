@@ -26,8 +26,7 @@ class ItunesPodcastSearcher : PodcastSearcher {
             val formattedUrl = String.format(ITUNES_API_URL, encodedQuery)
 
             val client = getHttpClient()
-            val httpReq: Builder = Builder()
-                .url(formattedUrl)
+            val httpReq: Builder = Builder().url(formattedUrl)
             val podcasts: MutableList<PodcastSearchResult?> = ArrayList()
             try {
                 val response = client.newCall(httpReq.build()).execute()
@@ -40,9 +39,7 @@ class ItunesPodcastSearcher : PodcastSearcher {
                     for (i in 0 until j.length()) {
                         val podcastJson = j.getJSONObject(i)
                         val podcast = PodcastSearchResult.fromItunes(podcastJson)
-                        if (podcast.feedUrl != null) {
-                            podcasts.add(podcast)
-                        }
+                        if (podcast.feedUrl != null) podcasts.add(podcast)
                     }
                 } else {
                     subscriber.onError(IOException(response.toString()))
@@ -80,9 +77,8 @@ class ItunesPodcastSearcher : PodcastSearcher {
                     }
                     val feedUrl = results.getString(feedUrlName)
                     emitter.onSuccess(feedUrl)
-                } else {
-                    emitter.onError(IOException(response.toString()))
-                }
+                } else emitter.onError(IOException(response.toString()))
+
             } catch (e: IOException) {
                 emitter.onError(e)
             } catch (e: JSONException) {

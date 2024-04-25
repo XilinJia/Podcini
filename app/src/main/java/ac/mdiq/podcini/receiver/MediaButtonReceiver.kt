@@ -18,9 +18,8 @@ class MediaButtonReceiver : BroadcastReceiver() {
     @UnstableApi
     override fun onReceive(context: Context, intent: Intent) {
         Log.d(TAG, "Received intent")
-        if (intent.extras == null) {
-            return
-        }
+        if (intent.extras == null) return
+
         val event = intent.extras!![Intent.EXTRA_KEY_EVENT] as? KeyEvent
         if (event != null && event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
             ClientConfigurator.initialize(context)
@@ -40,11 +39,9 @@ class MediaButtonReceiver : BroadcastReceiver() {
     companion object {
         private const val TAG = "MediaButtonReceiver"
         const val EXTRA_KEYCODE: String = "ac.mdiq.podcini.service.extra.MediaButtonReceiver.KEYCODE"
-        const val EXTRA_CUSTOM_ACTION: String =
-            "ac.mdiq.podcini.service.extra.MediaButtonReceiver.CUSTOM_ACTION"
+        const val EXTRA_CUSTOM_ACTION: String = "ac.mdiq.podcini.service.extra.MediaButtonReceiver.CUSTOM_ACTION"
         const val EXTRA_SOURCE: String = "ac.mdiq.podcini.service.extra.MediaButtonReceiver.SOURCE"
-        const val EXTRA_HARDWAREBUTTON
-                : String = "ac.mdiq.podcini.service.extra.MediaButtonReceiver.HARDWAREBUTTON"
+        const val EXTRA_HARDWAREBUTTON: String = "ac.mdiq.podcini.service.extra.MediaButtonReceiver.HARDWAREBUTTON"
         const val NOTIFY_BUTTON_RECEIVER: String = "ac.mdiq.podcini.NOTIFY_BUTTON_RECEIVER"
         const val PLAYBACK_SERVICE_INTENT: String = "ac.mdiq.podcini.intents.PLAYBACK_SERVICE"
 

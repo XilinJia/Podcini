@@ -20,22 +20,15 @@ object PodcastSearcherRegistry {
 
     fun lookupUrl(url: String): Single<String> {
         for (searchProviderInfo in searchProviders) {
-            if (searchProviderInfo.searcher.javaClass != CombinedSearcher::class.java
-                    && searchProviderInfo.searcher.urlNeedsLookup(url)) {
-
+            if (searchProviderInfo.searcher.javaClass != CombinedSearcher::class.java && searchProviderInfo.searcher.urlNeedsLookup(url))
                 return searchProviderInfo.searcher.lookupUrl(url)
-            }
         }
         return Single.just(url)
     }
 
     fun urlNeedsLookup(url: String): Boolean {
         for (searchProviderInfo in searchProviders) {
-            if (searchProviderInfo.searcher.javaClass != CombinedSearcher::class.java
-                    && searchProviderInfo.searcher.urlNeedsLookup(url)) {
-
-                return true
-            }
+            if (searchProviderInfo.searcher.javaClass != CombinedSearcher::class.java && searchProviderInfo.searcher.urlNeedsLookup(url)) return true
         }
         return false
     }

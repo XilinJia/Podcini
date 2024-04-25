@@ -44,9 +44,7 @@ object ResponseMapper {
         for (i in 0 until jsonActions.length()) {
             val jsonAction = jsonActions.getJSONObject(i)
             val episodeAction = readFromJsonObject(jsonAction)
-            if (episodeAction != null) {
-                episodeActions.add(episodeAction)
-            }
+            if (episodeAction != null) episodeActions.add(episodeAction)
         }
         return EpisodeActionChanges(episodeActions, timestamp)
     }

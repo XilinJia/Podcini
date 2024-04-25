@@ -11,9 +11,7 @@ object FeedItemUtil {
     fun indexOfItemWithId(items: List<FeedItem?>, id: Long): Int {
         for (i in items.indices) {
             val item = items[i]
-            if (item?.id == id) {
-                return i
-            }
+            if (item?.id == id) return i
         }
         return -1
     }
@@ -22,18 +20,15 @@ object FeedItemUtil {
     fun indexOfItemWithDownloadUrl(items: List<FeedItem?>, downloadUrl: String): Int {
         for (i in items.indices) {
             val item = items[i]
-            if (item?.media?.download_url == downloadUrl) {
-                return i
-            }
+            if (item?.media?.download_url == downloadUrl) return i
         }
         return -1
     }
 
     @JvmStatic
     fun getIds(items: List<FeedItem>?): LongArray {
-        if (items.isNullOrEmpty()) {
-            return LongArray(0)
-        }
+        if (items.isNullOrEmpty()) return LongArray(0)
+
         val result = LongArray(items.size)
         for (i in items.indices) {
             result[i] = items[i].id
@@ -57,15 +52,9 @@ object FeedItemUtil {
     @JvmStatic
     fun getLinkWithFallback(item: FeedItem?): String? {
         when {
-            item == null -> {
-                return null
-            }
-            StringUtils.isNotBlank(item.link) -> {
-                return item.link
-            }
-            item.feed != null && !item.feed!!.link.isNullOrEmpty() -> {
-                return item.feed!!.link
-            }
+            item == null -> return null
+            StringUtils.isNotBlank(item.link) -> return item.link
+            item.feed != null && !item.feed!!.link.isNullOrEmpty() -> return item.feed!!.link
             else -> return null
         }
     }

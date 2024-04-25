@@ -22,9 +22,7 @@ import org.greenrobot.eventbus.EventBus
  */
 class PlaybackPreferences private constructor() : OnSharedPreferenceChangeListener {
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String?) {
-        if (PREF_CURRENT_PLAYER_STATUS == key) {
-            EventBus.getDefault().post(PlayerStatusEvent())
-        }
+        if (PREF_CURRENT_PLAYER_STATUS == key) EventBus.getDefault().post(PlayerStatusEvent())
     }
 
     companion object {
@@ -222,9 +220,7 @@ class PlaybackPreferences private constructor() : OnSharedPreferenceChangeListen
         private fun createFeedMediaInstance(pref: SharedPreferences): Playable? {
             var result: Playable? = null
             val mediaId = pref.getLong(FeedMedia.PREF_MEDIA_ID, -1)
-            if (mediaId != -1L) {
-                result = DBReader.getFeedMedia(mediaId)
-            }
+            if (mediaId != -1L) result = DBReader.getFeedMedia(mediaId)
             return result
         }
     }

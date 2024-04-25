@@ -69,13 +69,11 @@ class GpodderAuthenticationFragment : DialogFragment() {
         val selectHost = binding.chooseHostButton
         val serverUrlText = binding.serverUrlText
         selectHost.setOnClickListener {
-            if (serverUrlText.text.isNullOrEmpty()) {
-                return@setOnClickListener
-            }
+            if (serverUrlText.text.isNullOrEmpty()) return@setOnClickListener
+
             SynchronizationCredentials.clear(requireContext())
             SynchronizationCredentials.hosturl = serverUrlText.text.toString()
-            service = GpodnetService(getHttpClient(),
-                SynchronizationCredentials.hosturl, SynchronizationCredentials.deviceID?:"",
+            service = GpodnetService(getHttpClient(), SynchronizationCredentials.hosturl, SynchronizationCredentials.deviceID?:"",
                 SynchronizationCredentials.username?:"", SynchronizationCredentials.password?:"")
             dialog?.setTitle(SynchronizationCredentials.hosturl)
             advance()
@@ -91,9 +89,9 @@ class GpodderAuthenticationFragment : DialogFragment() {
         val progressBar = binding.progBarLogin
         val createAccountWarning = binding.createAccountWarning
 
-        if (SynchronizationCredentials.hosturl != null && SynchronizationCredentials.hosturl!!.startsWith("http://")) {
+        if (SynchronizationCredentials.hosturl != null && SynchronizationCredentials.hosturl!!.startsWith("http://"))
             createAccountWarning.visibility = View.VISIBLE
-        }
+
         password.setOnEditorActionListener { _: TextView?, actionID: Int, _: KeyEvent? -> actionID == EditorInfo.IME_ACTION_GO && login.performClick() }
 
         login.setOnClickListener {
@@ -162,9 +160,8 @@ class GpodderAuthenticationFragment : DialogFragment() {
         val progBarCreateDevice = binding.progbarCreateDevice
 
         val deviceNameStr = deviceName.text.toString()
-        if (isDeviceInList(deviceNameStr)) {
-            return
-        }
+        if (isDeviceInList(deviceNameStr)) return
+
         progBarCreateDevice.visibility = View.VISIBLE
         txtvError.visibility = View.GONE
         deviceName.isEnabled = false
@@ -206,14 +203,11 @@ class GpodderAuthenticationFragment : DialogFragment() {
     }
 
     private fun isDeviceInList(name: String): Boolean {
-        if (devices == null) {
-            return false
-        }
+        if (devices == null) return false
+
         val id = generateDeviceId(name)
         for (device in devices!!) {
-            if (device.id == id || device.caption == name) {
-                return true
-            }
+            if (device.id == id || device.caption == name) return true
         }
         return false
     }
@@ -232,12 +226,8 @@ class GpodderAuthenticationFragment : DialogFragment() {
         if (currentStep < STEP_FINISH) {
             val view = viewFlipper!!.getChildAt(currentStep + 1)
             when (currentStep) {
-                STEP_DEFAULT -> {
-                    setupHostView(view)
-                }
-                STEP_HOSTNAME -> {
-                    setupLoginView(view)
-                }
+                STEP_DEFAULT -> setupHostView(view)
+                STEP_HOSTNAME -> setupLoginView(view)
                 STEP_LOGIN -> {
                     check(!(username == null || password == null)) { "Username and password must not be null here" }
                     setupDeviceView(view)
@@ -251,13 +241,9 @@ class GpodderAuthenticationFragment : DialogFragment() {
                     setupFinishView(view)
                 }
             }
-            if (currentStep != STEP_DEFAULT) {
-                viewFlipper!!.showNext()
-            }
+            if (currentStep != STEP_DEFAULT) viewFlipper!!.showNext()
             currentStep++
-        } else {
-            dismiss()
-        }
+        } else dismiss()
     }
 
     private fun usernameHasUnwantedChars(username: String): Boolean {

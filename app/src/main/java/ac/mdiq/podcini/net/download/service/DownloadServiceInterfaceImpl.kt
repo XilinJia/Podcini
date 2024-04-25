@@ -18,24 +18,20 @@ import java.util.concurrent.TimeUnit
 
 class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
     override fun downloadNow(context: Context, item: FeedItem, ignoreConstraints: Boolean) {
-        val workRequest: OneTimeWorkRequest.Builder =
-            getRequest(context, item)
+        val workRequest: OneTimeWorkRequest.Builder = getRequest(context, item)
         workRequest.setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-        if (ignoreConstraints) {
-            workRequest.setConstraints(Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
-        } else {
-            workRequest.setConstraints(constraints)
-        }
-        if (item.media?.download_url != null) WorkManager.getInstance(context).enqueueUniqueWork(item.media!!.download_url!!,
-            ExistingWorkPolicy.KEEP, workRequest.build())
+        if (ignoreConstraints) workRequest.setConstraints(Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+        else workRequest.setConstraints(constraints)
+
+        if (item.media?.download_url != null)
+            WorkManager.getInstance(context).enqueueUniqueWork(item.media!!.download_url!!, ExistingWorkPolicy.KEEP, workRequest.build())
     }
 
     override fun download(context: Context, item: FeedItem) {
-        val workRequest: OneTimeWorkRequest.Builder =
-            getRequest(context, item)
+        val workRequest: OneTimeWorkRequest.Builder = getRequest(context, item)
         workRequest.setConstraints(constraints)
-        if (item.media?.download_url != null) WorkManager.getInstance(context).enqueueUniqueWork(item.media!!.download_url!!,
-            ExistingWorkPolicy.KEEP, workRequest.build())
+        if (item.media?.download_url != null)
+            WorkManager.getInstance(context).enqueueUniqueWork(item.media!!.download_url!!, ExistingWorkPolicy.KEEP, workRequest.build())
     }
 
     @OptIn(UnstableApi::class) override fun cancel(context: Context, media: FeedMedia) {
@@ -65,7 +61,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
     }
 
     companion object {
-        private fun getRequest(context: Context, item: FeedItem): OneTimeWorkRequest.Builder {
+        @OptIn(UnstableApi::class) private fun getRequest(context: Context, item: FeedItem): OneTimeWorkRequest.Builder {
             val workRequest: OneTimeWorkRequest.Builder = OneTimeWorkRequest.Builder(EpisodeDownloadWorker::class.java)
                 .setInitialDelay(0L, TimeUnit.MILLISECONDS)
                 .addTag(WORK_TAG)
@@ -74,19 +70,16 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 DBWriter.addQueueItem(context, false, item.id)
                 workRequest.addTag(WORK_DATA_WAS_QUEUED)
             }
-            workRequest.setInputData(Data.Builder().putLong(WORK_DATA_MEDIA_ID, item.media!!
-                .id).build())
+            workRequest.setInputData(Data.Builder().putLong(WORK_DATA_MEDIA_ID, item.media!!.id).build())
             return workRequest
         }
 
         private val constraints: Constraints
             get() {
                 val constraints = Builder()
-                if (UserPreferences.isAllowMobileEpisodeDownload) {
-                    constraints.setRequiredNetworkType(NetworkType.CONNECTED)
-                } else {
-                    constraints.setRequiredNetworkType(NetworkType.UNMETERED)
-                }
+                if (UserPreferences.isAllowMobileEpisodeDownload) constraints.setRequiredNetworkType(NetworkType.CONNECTED)
+                else constraints.setRequiredNetworkType(NetworkType.UNMETERED)
+
                 return constraints.build()
             }
     }

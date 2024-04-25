@@ -87,10 +87,8 @@ class CoverLoader(activity: MainActivity) {
         builder.into<CoverTarget>(coverTarget)
     }
 
-    internal class CoverTarget(fallbackTitle: TextView?,
-                               coverImage: ImageView,
-                               private val textAndImageCombined: Boolean
-    ) : CustomViewTarget<ImageView, Drawable>(coverImage) {
+    internal class CoverTarget(fallbackTitle: TextView?, coverImage: ImageView, private val textAndImageCombined: Boolean)
+        : CustomViewTarget<ImageView, Drawable>(coverImage) {
 
         private val fallbackTitle: WeakReference<TextView?> = WeakReference<TextView?>(fallbackTitle)
         private val cover: WeakReference<ImageView> = WeakReference(coverImage)
@@ -99,9 +97,7 @@ class CoverLoader(activity: MainActivity) {
             setTitleVisibility(fallbackTitle.get(), true)
         }
 
-        override fun onResourceReady(resource: Drawable,
-                                     transition: Transition<in Drawable?>?
-        ) {
+        override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable?>?) {
             val ivCover = cover.get()
             ivCover!!.setImageDrawable(resource)
             setTitleVisibility(fallbackTitle.get(), textAndImageCombined)

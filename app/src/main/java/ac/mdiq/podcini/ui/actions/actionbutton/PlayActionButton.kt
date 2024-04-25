@@ -32,8 +32,6 @@ class PlayActionButton(item: FeedItem) : ItemActionButton(item) {
             .callEvenIfRunning(true)
             .start()
 
-        if (media.getMediaType() == MediaType.VIDEO) {
-            context.startActivity(getPlayerActivityIntent(context, MediaType.VIDEO))
-        }
+        if (media.getMediaType() == MediaType.VIDEO) context.startActivity(getPlayerActivityIntent(context, MediaType.VIDEO))
     }
 }

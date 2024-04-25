@@ -42,13 +42,9 @@ class OpmlWriter : ExportWriter {
             xs.startTag(null, OpmlSymbols.OUTLINE)
             xs.attribute(null, OpmlSymbols.TEXT, feed!!.title)
             xs.attribute(null, CommonSymbols.TITLE, feed.title)
-            if (feed.type != null) {
-                xs.attribute(null, OpmlSymbols.TYPE, feed.type)
-            }
+            if (feed.type != null) xs.attribute(null, OpmlSymbols.TYPE, feed.type)
             xs.attribute(null, OpmlSymbols.XMLURL, feed.download_url)
-            if (feed.link != null) {
-                xs.attribute(null, OpmlSymbols.HTMLURL, feed.link)
-            }
+            if (feed.link != null) xs.attribute(null, OpmlSymbols.HTMLURL, feed.link)
             xs.endTag(null, OpmlSymbols.OUTLINE)
         }
         xs.endTag(null, CommonSymbols.BODY)

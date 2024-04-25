@@ -56,9 +56,8 @@ class PlaybackSpeedIndicatorView : View {
         // Speed values above 3 are probably not too common. Cap at 3 for better differentiation
         val normalizedValue = (min(2.5, (value - 0.5f).toDouble()) / 2.5f).toFloat() // Linear between 0 and 1
         val target = -maxAnglePerDirection + 2 * maxAnglePerDirection * normalizedValue
-        if (targetAngle == VALUE_UNSET) {
-            angle = target
-        }
+        if (targetAngle == VALUE_UNSET) angle = target
+
         targetAngle = target
         degreePerFrame = (abs((targetAngle - angle).toDouble()) / 20).toFloat()
         invalidate()

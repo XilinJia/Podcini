@@ -8,18 +8,14 @@ import org.json.JSONObject
 /**
  * Object returned by [GpodnetService] in uploadChanges method.
  */
-class GpodnetUploadChangesResponse(timestamp: Long,
-                                   /**
-                                    * URLs that should be updated. The key of the map is the original URL, the value of the map
-                                    * is the sanitized URL.
-                                    */
-                                   val updatedUrls: Map<String, String>
-) : UploadChangesResponse(timestamp) {
+/**
+ * URLs that should be updated. The key of the map is the original URL, the value of the map
+ * is the sanitized URL.
+ */
+class GpodnetUploadChangesResponse(timestamp: Long, val updatedUrls: Map<String, String>) : UploadChangesResponse(timestamp) {
+
     override fun toString(): String {
-        return "GpodnetUploadChangesResponse{" +
-                "timestamp=" + timestamp +
-                ", updatedUrls=" + updatedUrls +
-                '}'
+        return "GpodnetUploadChangesResponse{timestamp=$timestamp, updatedUrls=$updatedUrls}"
     }
 
     companion object {

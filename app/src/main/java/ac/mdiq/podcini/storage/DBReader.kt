@@ -95,9 +95,7 @@ object DBReader {
                 val result: MutableList<String> = ArrayList(cursor.count)
                 while (cursor.moveToNext()) {
                     val url = cursor.getString(1)
-                    if (url != null && !url.startsWith(Feed.PREFIX_LOCAL_FOLDER)) {
-                        result.add(url)
-                    }
+                    if (url != null && !url.startsWith(Feed.PREFIX_LOCAL_FOLDER)) result.add(url)
                 }
                 return result
             }
@@ -124,12 +122,8 @@ object DBReader {
         val queueIds = getQueueIDList()
 
         for (item in items) {
-            if (favoriteIds.contains(item.id)) {
-                item.addTag(FeedItem.TAG_FAVORITE)
-            }
-            if (queueIds.contains(item.id)) {
-                item.addTag(FeedItem.TAG_QUEUE)
-            }
+            if (favoriteIds.contains(item.id)) item.addTag(FeedItem.TAG_FAVORITE)
+            if (queueIds.contains(item.id)) item.addTag(FeedItem.TAG_QUEUE)
         }
     }
 
@@ -219,9 +213,7 @@ object DBReader {
             do {
                 val item = FeedItemCursorMapper.convert(cursor)
                 result.add(item)
-                if (!cursor.isNull(indexMediaId)) {
-                    item.setMedia(FeedMediaCursorMapper.convert(cursor))
-                }
+                if (!cursor.isNull(indexMediaId)) item.setMedia(FeedMediaCursorMapper.convert(cursor))
             } while (cursor.moveToNext())
         }
         return result
@@ -329,9 +321,7 @@ object DBReader {
         adapter.open()
         try {
             adapter.getEpisodeCountCursor(filter).use { cursor ->
-                if (cursor.moveToFirst()) {
-                    return cursor.getInt(0)
-                }
+                if (cursor.moveToFirst()) return cursor.getInt(0)
                 return -1
             }
         } finally {
@@ -411,8 +401,7 @@ object DBReader {
         adapter.open()
         try {
             adapter.getDownloadLogCursor(DOWNLOAD_LOG_SIZE).use { cursor ->
-                val downloadLog: MutableList<DownloadResult> =
-                    ArrayList(cursor.count)
+                val downloadLog: MutableList<DownloadResult> = ArrayList(cursor.count)
                 while (cursor.moveToNext()) {
                     downloadLog.add(convert(cursor))
                 }
@@ -479,11 +468,8 @@ object DBReader {
                 var feed: Feed? = null
                 if (cursor.moveToNext()) {
                     feed = extractFeedFromCursorRow(cursor)
-                    if (filtered) {
-                        feed.items = getFeedItemList(feed, feed.itemFilter).toMutableList()
-                    } else {
-                        feed.items = getFeedItemList(feed).toMutableList()
-                    }
+                    if (filtered) feed.items = getFeedItemList(feed, feed.itemFilter).toMutableList()
+                    else feed.items = getFeedItemList(feed).toMutableList()
                 } else {
                     Log.e(TAG, "getFeed could not find feed with id $feedId")
                 }
@@ -586,13 +572,9 @@ object DBReader {
     private fun getFeedItemByGuidOrEpisodeUrl(guid: String?, episodeUrl: String,
                                               adapter: PodDBAdapter?): FeedItem? {
         adapter?.getFeedItemCursor(guid, episodeUrl)?.use { cursor ->
-            if (!cursor.moveToNext()) {
-                return null
-            }
+            if (!cursor.moveToNext()) return null
             val list = extractItemlistFromCursor(adapter, cursor)
-            if (list.isNotEmpty()) {
-                return list[0]
-            }
+            if (list.isNotEmpty()) return list[0]
             return null
         }
         return null
@@ -622,11 +604,7 @@ object DBReader {
             if (cursor.moveToFirst()) {
                 val username = cursor.getString(0)
                 val password = cursor.getString(1)
-                credentials = if (!username.isNullOrEmpty() && password != null) {
-                    "$username:$password"
-                } else {
-                    ""
-                }
+                credentials = if (!username.isNullOrEmpty() && password != null) "$username:$password" else ""
             } else {
                 credentials = ""
             }
@@ -731,9 +709,8 @@ object DBReader {
         adapter.open()
         try {
             adapter.getSingleFeedMediaCursor(mediaId).use { mediaCursor ->
-                if (!mediaCursor.moveToFirst()) {
-                    return null
-                }
+                if (!mediaCursor.moveToFirst()) return null
+
                 val indexFeedItem = mediaCursor.getColumnIndex(PodDBAdapter.KEY_FEEDITEM)
                 val itemId = mediaCursor.getLong(indexFeedItem)
                 val media = FeedMediaCursorMapper.convert(mediaCursor)
@@ -818,12 +795,10 @@ object DBReader {
                 val episodesDownloadCount = cursor.getString(indexNumDownloaded).toLong()
                 val oldestDate = cursor.getString(indexOldestDate).toLong()
 
-                if (episodes > 0 && oldestDate < Long.MAX_VALUE) {
+                if (episodes > 0 && oldestDate < Long.MAX_VALUE)
                     result.oldestDate = min(result.oldestDate.toDouble(), oldestDate.toDouble()).toLong()
-                }
 
-                result.feedTime.add(StatisticsItem(feed, feedTotalTime, feedPlayedTime, episodes,
-                    episodesStarted, totalDownloadSize, episodesDownloadCount))
+                result.feedTime.add(StatisticsItem(feed, feedTotalTime, feedPlayedTime, episodes, episodesStarted, totalDownloadSize, episodesDownloadCount))
             }
         }
         adapter.close()
@@ -868,16 +843,10 @@ object DBReader {
                     val counterLhs = (if (feedCounters.containsKey(lhs.id)) feedCounters[lhs.id]!! else 0).toLong()
                     val counterRhs = (if (feedCounters.containsKey(rhs.id)) feedCounters[rhs.id]!! else 0).toLong()
                     when {
-                        counterLhs > counterRhs -> {
-                            // reverse natural order: podcast with most unplayed episodes first
-                            return@Comparator -1
-                        }
-                        counterLhs == counterRhs -> {
-                            return@Comparator lhs.title?.compareTo(rhs.title!!, ignoreCase = true) ?: -1
-                        }
-                        else -> {
-                            return@Comparator 1
-                        }
+                        // reverse natural order: podcast with most unplayed episodes first
+                        counterLhs > counterRhs -> return@Comparator -1
+                        counterLhs == counterRhs -> return@Comparator lhs.title?.compareTo(rhs.title!!, ignoreCase = true) ?: -1
+                        else -> return@Comparator 1
                     }
                 }
             }
@@ -886,15 +855,9 @@ object DBReader {
                     val t1 = lhs.title
                     val t2 = rhs.title
                     when {
-                        t1 == null -> {
-                            return@Comparator 1
-                        }
-                        t2 == null -> {
-                            return@Comparator -1
-                        }
-                        else -> {
-                            return@Comparator t1.compareTo(t2, ignoreCase = true)
-                        }
+                        t1 == null -> return@Comparator 1
+                        t2 == null -> return@Comparator -1
+                        else -> return@Comparator t1.compareTo(t2, ignoreCase = true)
                     }
                 }
             }
@@ -905,16 +868,10 @@ object DBReader {
                     val counterLhs = (if (playedCounters.containsKey(lhs.id)) playedCounters[lhs.id] else 0)!!.toLong()
                     val counterRhs = (if (playedCounters.containsKey(rhs.id)) playedCounters[rhs.id] else 0)!!.toLong()
                     when {
-                        counterLhs > counterRhs -> {
-                            // podcast with most played episodes first
-                            return@Comparator -1
-                        }
-                        counterLhs == counterRhs -> {
-                            return@Comparator lhs.title!!.compareTo(rhs.title!!, ignoreCase = true)
-                        }
-                        else -> {
-                            return@Comparator 1
-                        }
+                        // podcast with most played episodes first
+                        counterLhs > counterRhs -> return@Comparator -1
+                        counterLhs == counterRhs -> return@Comparator lhs.title!!.compareTo(rhs.title!!, ignoreCase = true)
+                        else -> return@Comparator 1
                     }
                 }
             }
@@ -948,8 +905,7 @@ object DBReader {
             val drawerItem = FeedDrawerItem(feed, feed.id, counter)
             items.add(drawerItem)
         }
-        val result = NavDrawerData(items, queueSize, numNewItems, numDownloadedItems,
-            feedCounters, EpisodeCleanupAlgorithmFactory.build().getReclaimableItems())
+        val result = NavDrawerData(items, queueSize, numNewItems, numDownloadedItems, feedCounters, EpisodeCleanupAlgorithmFactory.build().getReclaimableItems())
         adapter.close()
         return result
     }

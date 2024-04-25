@@ -40,8 +40,7 @@ object UsageStatistics {
         val movingAverage = prefs!!.getFloat(action.type, 0.5f)
         prefs!!.edit()
             .putInt(action.type + action.value, numExecutions + 1)
-            .putFloat(action.type, MOVING_AVERAGE_WEIGHT * movingAverage
-                    + (1 - MOVING_AVERAGE_WEIGHT) * action.value)
+            .putFloat(action.type, MOVING_AVERAGE_WEIGHT * movingAverage + (1 - MOVING_AVERAGE_WEIGHT) * action.value)
             .apply()
     }
 

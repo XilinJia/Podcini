@@ -49,15 +49,14 @@ class OnlineFeedsAdapter(private val context: Context, objects: List<PodcastSear
                 viewHolder.authorView.text = podcast.feedUrl
                 viewHolder.authorView.visibility = View.VISIBLE
             }
-            else -> {
-                viewHolder.authorView.visibility = View.INVISIBLE
-            }
+            else -> viewHolder.authorView.visibility = View.INVISIBLE
         }
         viewHolder.source.text = podcast.source + ": " + podcast.feedUrl
         if (podcast.count != null) {
             viewHolder.countView.text = podcast.count.toString() + " episodes"
             viewHolder.countView.visibility = View.VISIBLE
         } else viewHolder.countView.visibility = View.INVISIBLE
+
         if (podcast.update != null) {
             viewHolder.updateView.text = podcast.update
             viewHolder.updateView.visibility = View.VISIBLE

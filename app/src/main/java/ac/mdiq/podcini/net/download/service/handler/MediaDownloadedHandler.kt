@@ -21,9 +21,7 @@ import java.util.concurrent.ExecutionException
 /**
  * Handles a completed media download.
  */
-class MediaDownloadedHandler(private val context: Context, var updatedStatus: DownloadResult,
-                             private val request: DownloadRequest
-) : Runnable {
+class MediaDownloadedHandler(private val context: Context, var updatedStatus: DownloadResult, private val request: DownloadRequest) : Runnable {
     @UnstableApi override fun run() {
         val media = DBReader.getFeedMedia(request.feedfileId)
         if (media == null) {
@@ -38,13 +36,10 @@ class MediaDownloadedHandler(private val context: Context, var updatedStatus: Do
         media.checkEmbeddedPicture() // enforce check
 
         // check if file has chapters
-        if (media.item != null && !media.item!!.hasChapters()) {
-            media.setChapters(ChapterUtils.loadChaptersFromMediaFile(media, context))
-        }
+        if (media.item != null && !media.item!!.hasChapters()) media.setChapters(ChapterUtils.loadChaptersFromMediaFile(media, context))
 
-        if (media.item?.podcastIndexChapterUrl != null) {
-            ChapterUtils.loadChaptersFromUrl(media.item!!.podcastIndexChapterUrl!!, false)
-        }
+        if (media.item?.podcastIndexChapterUrl != null) ChapterUtils.loadChaptersFromUrl(media.item!!.podcastIndexChapterUrl!!, false)
+
         // Get duration
         var durationStr: String? = null
         try {
@@ -73,16 +68,13 @@ class MediaDownloadedHandler(private val context: Context, var updatedStatus: Do
                 // so we do it after the enclosing media has been updated above,
                 // to ensure subscribers will get the updated FeedMedia as well
                 DBWriter.setFeedItem(item).get()
-                if (broadcastUnreadStateUpdate) {
-                    EventBus.getDefault().post(UnreadItemsUpdateEvent())
-                }
+                if (broadcastUnreadStateUpdate) EventBus.getDefault().post(UnreadItemsUpdateEvent())
             }
         } catch (e: InterruptedException) {
             Log.e(TAG, "MediaHandlerThread was interrupted")
         } catch (e: ExecutionException) {
             Log.e(TAG, "ExecutionException in MediaHandlerThread: " + e.message)
-            updatedStatus = DownloadResult(media, media.getEpisodeTitle(),
-                DownloadError.ERROR_DB_ACCESS_ERROR, false, e.message?:"")
+            updatedStatus = DownloadResult(media, media.getEpisodeTitle(), DownloadError.ERROR_DB_ACCESS_ERROR, false, e.message?:"")
         }
 
         if (item != null) {

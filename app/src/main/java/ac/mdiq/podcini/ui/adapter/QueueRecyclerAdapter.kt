@@ -37,20 +37,15 @@ open class QueueRecyclerAdapter(mainActivity: MainActivity, private val swipeAct
         } else {
             holder.dragHandle.setVisibility(View.VISIBLE)
             holder.dragHandle.setOnTouchListener { _: View?, event: MotionEvent ->
-                if (event.actionMasked == MotionEvent.ACTION_DOWN) {
-                    swipeActions.startDrag(holder)
-                }
+                if (event.actionMasked == MotionEvent.ACTION_DOWN) swipeActions.startDrag(holder)
                 false
             }
             holder.coverHolder.setOnTouchListener { v1, event ->
                 if (!inActionMode() && event.actionMasked == MotionEvent.ACTION_DOWN) {
                     val isLtr = holder.itemView.getLayoutDirection() == View.LAYOUT_DIRECTION_LTR
                     val factor = (if (isLtr) 1 else -1).toFloat()
-                    if (factor * event.x < factor * 0.5 * v1.width) {
-                        swipeActions.startDrag(holder)
-                    } else {
-                        Log.d(TAG, "Ignoring drag in right half of the image")
-                    }
+                    if (factor * event.x < factor * 0.5 * v1.width) swipeActions.startDrag(holder)
+                    else Log.d(TAG, "Ignoring drag in right half of the image")
                 }
                 false
             }
@@ -71,12 +66,8 @@ open class QueueRecyclerAdapter(mainActivity: MainActivity, private val swipeAct
         if (!inActionMode()) {
 //            menu.findItem(R.id.multi_select).setVisible(true)
             val keepSorted: Boolean = UserPreferences.isQueueKeepSorted
-            if (getItem(0)?.id === longPressedItem?.id || keepSorted) {
-                menu.findItem(R.id.move_to_top_item).setVisible(false)
-            }
-            if (getItem(itemCount - 1)?.id === longPressedItem?.id || keepSorted) {
-                menu.findItem(R.id.move_to_bottom_item).setVisible(false)
-            }
+            if (getItem(0)?.id === longPressedItem?.id || keepSorted) menu.findItem(R.id.move_to_top_item).setVisible(false)
+            if (getItem(itemCount - 1)?.id === longPressedItem?.id || keepSorted) menu.findItem(R.id.move_to_bottom_item).setVisible(false)
         } else {
             menu.findItem(R.id.move_to_top_item).setVisible(false)
             menu.findItem(R.id.move_to_bottom_item).setVisible(false)

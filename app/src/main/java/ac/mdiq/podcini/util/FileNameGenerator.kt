@@ -27,27 +27,14 @@ object FileNameGenerator {
         var string = StringUtils.stripAccents(string)
         val buf = StringBuilder()
         for (c in string) {
-            if (Character.isSpaceChar(c)
-                    && (buf.isEmpty() || Character.isSpaceChar(buf[buf.length - 1]))) {
-                continue
-            }
-            if (ArrayUtils.contains(validChars, c)) {
-                buf.append(c)
-            }
+            if (Character.isSpaceChar(c) && (buf.isEmpty() || Character.isSpaceChar(buf[buf.length - 1]))) continue
+            if (ArrayUtils.contains(validChars, c)) buf.append(c)
         }
         val filename = buf.toString().trim { it <= ' ' }
         return when {
-            filename.isEmpty() -> {
-                randomString(8)
-            }
-            filename.length >= MAX_FILENAME_LENGTH -> {
-                filename.substring(0,
-                    MAX_FILENAME_LENGTH - MD5_HEX_LENGTH - 1) + "_" + md5(
-                    filename)
-            }
-            else -> {
-                filename
-            }
+            filename.isEmpty() -> randomString(8)
+            filename.length >= MAX_FILENAME_LENGTH -> filename.substring(0, MAX_FILENAME_LENGTH - MD5_HEX_LENGTH - 1) + "_" + md5(filename)
+            else -> filename
         }
     }
 

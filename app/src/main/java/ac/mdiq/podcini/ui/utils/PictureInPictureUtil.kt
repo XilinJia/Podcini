@@ -9,17 +9,11 @@ object PictureInPictureUtil {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             val packageManager = activity.packageManager
             return packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
-        } else {
-            return false
-        }
+        } else return false
     }
 
     fun isInPictureInPictureMode(activity: Activity): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && supportsPictureInPicture(
-                    activity)) {
-            activity.isInPictureInPictureMode
-        } else {
-            false
-        }
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && supportsPictureInPicture(activity)) activity.isInPictureInPictureMode
+        else false
     }
 }

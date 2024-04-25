@@ -57,8 +57,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
             this.restoreDatabaseResult(result)
         }
-    private val backupDatabaseLauncher = registerForActivityResult<String, Uri>(BackupDatabase()
-    ) { uri: Uri? -> this.backupDatabaseResult(uri) }
+    private val backupDatabaseLauncher = registerForActivityResult<String, Uri>(BackupDatabase()) { uri: Uri? -> this.backupDatabaseResult(uri) }
     private val chooseOpmlImportPathLauncher =
         registerForActivityResult<String, Uri>(ActivityResultContracts.GetContent()) { uri: Uri? -> this.chooseOpmlImportPathResult(uri) }
     private var disposable: Disposable? = null
@@ -79,9 +78,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
 
     override fun onStop() {
         super.onStop()
-        if (disposable != null) {
-            disposable!!.dispose()
-        }
+        disposable?.dispose()
     }
 
     private fun dateStampFilename(fname: String): String {
@@ -89,40 +86,34 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
     }
 
     private fun setupStorageScreen() {
-        findPreference<Preference>(PREF_OPML_EXPORT)!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                openExportPathPicker(Export.OPML, chooseOpmlExportPathLauncher, OpmlWriter())
-                true
+        findPreference<Preference>(PREF_OPML_EXPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            openExportPathPicker(Export.OPML, chooseOpmlExportPathLauncher, OpmlWriter())
+            true
+        }
+        findPreference<Preference>(PREF_HTML_EXPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            openExportPathPicker(Export.HTML, chooseHtmlExportPathLauncher, HtmlWriter())
+            true
+        }
+        findPreference<Preference>(PREF_OPML_IMPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            try {
+                chooseOpmlImportPathLauncher.launch("*/*")
+            } catch (e: ActivityNotFoundException) {
+                Log.e(TAG, "No activity found. Should never happen...")
             }
-        findPreference<Preference>(PREF_HTML_EXPORT)!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                openExportPathPicker(Export.HTML, chooseHtmlExportPathLauncher, HtmlWriter())
-                true
-            }
-        findPreference<Preference>(PREF_OPML_IMPORT)!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                try {
-                    chooseOpmlImportPathLauncher.launch("*/*")
-                } catch (e: ActivityNotFoundException) {
-                    Log.e(TAG, "No activity found. Should never happen...")
-                }
-                true
-            }
-        findPreference<Preference>(PREF_DATABASE_IMPORT)!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                importDatabase()
-                true
-            }
-        findPreference<Preference>(PREF_DATABASE_EXPORT)!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                exportDatabase()
-                true
-            }
-        findPreference<Preference>(PREF_FAVORITE_EXPORT)!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                openExportPathPicker(Export.FAVORITES, chooseFavoritesExportPathLauncher, FavoritesWriter())
-                true
-            }
+            true
+        }
+        findPreference<Preference>(PREF_DATABASE_IMPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            importDatabase()
+            true
+        }
+        findPreference<Preference>(PREF_DATABASE_EXPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            exportDatabase()
+            true
+        }
+        findPreference<Preference>(PREF_FAVORITE_EXPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            openExportPathPicker(Export.FAVORITES, chooseFavoritesExportPathLauncher, FavoritesWriter())
+            true
+        }
     }
 
     private fun exportWithWriter(exportWriter: ExportWriter, uri: Uri?, exportType: Export) {
@@ -133,8 +124,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
             disposable = observable.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ output: File? ->
-                    val fileUri = FileProvider.getUriForFile(context!!.applicationContext,
-                        context.getString(R.string.provider_authority), output!!)
+                    val fileUri = FileProvider.getUriForFile(context!!.applicationContext, context.getString(R.string.provider_authority), output!!)
                     showExportSuccessSnackbar(fileUri, exportType.contentType)
                 }, { error: Throwable -> this.showExportErrorDialog(error) }, { progressDialog!!.dismiss() })
         } else {
@@ -143,8 +133,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ output: DocumentFile? ->
-                    showExportSuccessSnackbar(output?.uri,
-                        exportType.contentType)
+                    showExportSuccessSnackbar(output?.uri, exportType.contentType)
                 },
                     { error: Throwable -> this.showExportErrorDialog(error) },
                     { progressDialog!!.dismiss() })
@@ -204,33 +193,25 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
     }
 
     private fun chooseOpmlExportPathResult(result: ActivityResult) {
-        if (result.resultCode != Activity.RESULT_OK || result.data == null) {
-            return
-        }
+        if (result.resultCode != Activity.RESULT_OK || result.data == null) return
         val uri = result.data!!.data
         exportWithWriter(OpmlWriter(), uri, Export.OPML)
     }
 
     private fun chooseHtmlExportPathResult(result: ActivityResult) {
-        if (result.resultCode != Activity.RESULT_OK || result.data == null) {
-            return
-        }
+        if (result.resultCode != Activity.RESULT_OK || result.data == null) return
         val uri = result.data!!.data
         exportWithWriter(HtmlWriter(), uri, Export.HTML)
     }
 
     private fun chooseFavoritesExportPathResult(result: ActivityResult) {
-        if (result.resultCode != Activity.RESULT_OK || result.data == null) {
-            return
-        }
+        if (result.resultCode != Activity.RESULT_OK || result.data == null) return
         val uri = result.data!!.data
         exportWithWriter(FavoritesWriter(), uri, Export.FAVORITES)
     }
 
     private fun restoreDatabaseResult(result: ActivityResult) {
-        if (result.resultCode != Activity.RESULT_OK || result.data == null) {
-            return
-        }
+        if (result.resultCode != Activity.RESULT_OK || result.data == null) return
         val uri = result.data!!.data
         progressDialog!!.show()
         disposable = Completable.fromAction { DatabaseTransporter.importBackup(uri, requireContext()) }
@@ -243,9 +224,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
     }
 
     private fun backupDatabaseResult(uri: Uri?) {
-        if (uri == null) {
-            return
-        }
+        if (uri == null) return
         progressDialog!!.show()
         disposable = Completable.fromAction { DatabaseTransporter.exportToDocument(uri, requireContext()) }
             .subscribeOn(Schedulers.io())
@@ -257,9 +236,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
     }
 
     private fun chooseOpmlImportPathResult(uri: Uri?) {
-        if (uri == null) {
-            return
-        }
+        if (uri == null) return
         val intent = Intent(context, OpmlImportActivity::class.java)
         intent.setData(uri)
         startActivity(intent)
@@ -295,10 +272,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         }
     }
 
-    private enum class Export(val contentType: String,
-                              val outputNameTemplate: String,
-                              @field:StringRes val labelResId: Int
-    ) {
+    private enum class Export(val contentType: String, val outputNameTemplate: String, @field:StringRes val labelResId: Int) {
         OPML(CONTENT_TYPE_OPML, DEFAULT_OPML_OUTPUT_NAME, R.string.opml_export_label),
         HTML(CONTENT_TYPE_HTML, DEFAULT_HTML_OUTPUT_NAME, R.string.html_export_label),
         FAVORITES(CONTENT_TYPE_HTML, DEFAULT_FAVORITES_OUTPUT_NAME, R.string.favorites_export_label)

@@ -190,10 +190,8 @@ object UserPreferences {
     @JvmStatic
     var fullNotificationButtons: List<Int>?
         get() {
-            val buttons = TextUtils.split(
-                prefs.getString(PREF_FULL_NOTIFICATION_BUTTONS,
-                    "$NOTIFICATION_BUTTON_SKIP,$NOTIFICATION_BUTTON_PLAYBACK_SPEED"), ",")
-
+            val buttons = TextUtils.split(prefs.getString(PREF_FULL_NOTIFICATION_BUTTONS,
+                "$NOTIFICATION_BUTTON_SKIP,$NOTIFICATION_BUTTON_PLAYBACK_SPEED"), ",")
             val notificationButtons: MutableList<Int> = ArrayList()
             for (button in buttons) {
                 notificationButtons.add(button.toInt())
@@ -287,11 +285,7 @@ object UserPreferences {
          *
          * @return NotificationCompat.PRIORITY_MAX or NotificationCompat.PRIORITY_DEFAULT
          */
-        get() = if (prefs.getBoolean(PREF_EXPANDED_NOTIFICATION, false)) {
-            NotificationCompat.PRIORITY_MAX
-        } else {
-            NotificationCompat.PRIORITY_DEFAULT
-        }
+        get() = if (prefs.getBoolean(PREF_EXPANDED_NOTIFICATION, false)) NotificationCompat.PRIORITY_MAX else NotificationCompat.PRIORITY_DEFAULT
 
     @JvmStatic
     val isPersistNotify: Boolean
@@ -326,9 +320,7 @@ object UserPreferences {
             }
         }
         set(location) {
-            prefs.edit()
-                .putString(PREF_ENQUEUE_LOCATION, location.name)
-                .apply()
+            prefs.edit().putString(PREF_ENQUEUE_LOCATION, location.name).apply()
         }
 
     @JvmStatic
@@ -345,14 +337,11 @@ object UserPreferences {
 
     @JvmStatic
     val hardwareForwardButton: Int
-        get() = prefs.getString(PREF_HARDWARE_FORWARD_BUTTON,
-            KeyEvent.KEYCODE_MEDIA_FAST_FORWARD.toString())!!.toInt()
+        get() = prefs.getString(PREF_HARDWARE_FORWARD_BUTTON, KeyEvent.KEYCODE_MEDIA_FAST_FORWARD.toString())!!.toInt()
 
     @JvmStatic
     val hardwarePreviousButton: Int
-        get() = prefs.getString(PREF_HARDWARE_PREVIOUS_BUTTON,
-            KeyEvent.KEYCODE_MEDIA_REWIND.toString())!!.toInt()
-
+        get() = prefs.getString(PREF_HARDWARE_PREVIOUS_BUTTON, KeyEvent.KEYCODE_MEDIA_REWIND.toString())!!.toInt()
 
     @JvmStatic
     @set:VisibleForTesting
@@ -393,11 +382,7 @@ object UserPreferences {
 
     @JvmStatic
     fun getPlaybackSpeed(mediaType: MediaType): Float {
-        return if (mediaType == MediaType.VIDEO) {
-            videoPlaybackSpeed
-        } else {
-            audioPlaybackSpeed
-        }
+        return if (mediaType == MediaType.VIDEO) videoPlaybackSpeed else audioPlaybackSpeed
     }
 
     private val audioPlaybackSpeed: Float
@@ -443,9 +428,7 @@ object UserPreferences {
     var isSkipSilence: Boolean
         get() = prefs.getBoolean(PREF_PLAYBACK_SKIP_SILENCE, false)
         set(skipSilence) {
-            prefs.edit()
-                .putBoolean(PREF_PLAYBACK_SKIP_SILENCE, skipSilence)
-                .apply()
+            prefs.edit().putBoolean(PREF_PLAYBACK_SKIP_SILENCE, skipSilence).apply()
         }
 
     @JvmStatic
@@ -459,9 +442,7 @@ object UserPreferences {
             for (speed in speeds) {
                 jsonArray.put(speedFormat.format(speed.toDouble()))
             }
-            prefs.edit()
-                .putString(PREF_PLAYBACK_SPEED_ARRAY, jsonArray.toString())
-                .apply()
+            prefs.edit().putString(PREF_PLAYBACK_SPEED_ARRAY, jsonArray.toString()).apply()
         }
 
     @JvmStatic
@@ -529,11 +510,9 @@ object UserPreferences {
         defaultValue.add("images")
         val getValueStringSet = prefs.getStringSet(PREF_MOBILE_UPDATE, defaultValue)
         val allowed: MutableSet<String> = HashSet(getValueStringSet)
-        if (allow) {
-            allowed.add(type)
-        } else {
-            allowed.remove(type)
-        }
+        if (allow) allowed.add(type)
+        else allowed.remove(type)
+
         prefs.edit().putStringSet(PREF_MOBILE_UPDATE, allowed).apply()
     }
 
@@ -574,9 +553,7 @@ object UserPreferences {
             }
         }
         set(speed) {
-            prefs.edit()
-                .putString(PREF_SPEEDFORWRD_SPEED, speed.toString())
-                .apply()
+            prefs.edit().putString(PREF_SPEEDFORWRD_SPEED, speed.toString()).apply()
         }
 
     @JvmStatic
@@ -591,27 +568,21 @@ object UserPreferences {
             }
         }
         set(speed) {
-            prefs.edit()
-                .putString(PREF_FALLBACK_SPEED, speed.toString())
-                .apply()
+            prefs.edit().putString(PREF_FALLBACK_SPEED, speed.toString()).apply()
         }
 
     @JvmStatic
     var fastForwardSecs: Int
         get() = prefs.getInt(PREF_FAST_FORWARD_SECS, 30)
         set(secs) {
-            prefs.edit()
-                .putInt(PREF_FAST_FORWARD_SECS, secs)
-                .apply()
+            prefs.edit().putInt(PREF_FAST_FORWARD_SECS, secs).apply()
         }
 
     @JvmStatic
     var rewindSecs: Int
         get() = prefs.getInt(PREF_REWIND_SECS, 10)
         set(secs) {
-            prefs.edit()
-                .putInt(PREF_REWIND_SECS, secs)
-                .apply()
+            prefs.edit().putInt(PREF_REWIND_SECS, secs).apply()
         }
 
     @JvmStatic
@@ -634,26 +605,18 @@ object UserPreferences {
         set(config) {
             val editor = prefs.edit()
             editor.putString(PREF_PROXY_TYPE, config.type.name)
-            if (config.host.isNullOrEmpty()) {
-                editor.remove(PREF_PROXY_HOST)
-            } else {
-                editor.putString(PREF_PROXY_HOST, config.host)
-            }
-            if (config.port <= 0 || config.port > 65535) {
-                editor.remove(PREF_PROXY_PORT)
-            } else {
-                editor.putInt(PREF_PROXY_PORT, config.port)
-            }
-            if (config.username.isNullOrEmpty()) {
-                editor.remove(PREF_PROXY_USER)
-            } else {
-                editor.putString(PREF_PROXY_USER, config.username)
-            }
-            if (config.password.isNullOrEmpty()) {
-                editor.remove(PREF_PROXY_PASSWORD)
-            } else {
-                editor.putString(PREF_PROXY_PASSWORD, config.password)
-            }
+            if (config.host.isNullOrEmpty()) editor.remove(PREF_PROXY_HOST)
+            else editor.putString(PREF_PROXY_HOST, config.host)
+
+            if (config.port <= 0 || config.port > 65535) editor.remove(PREF_PROXY_PORT)
+            else editor.putInt(PREF_PROXY_PORT, config.port)
+
+            if (config.username.isNullOrEmpty()) editor.remove(PREF_PROXY_USER)
+            else editor.putString(PREF_PROXY_USER, config.username)
+
+            if (config.password.isNullOrEmpty()) editor.remove(PREF_PROXY_PASSWORD)
+            else editor.putString(PREF_PROXY_PASSWORD, config.password)
+
             editor.apply()
         }
 
@@ -661,37 +624,28 @@ object UserPreferences {
     var isQueueLocked: Boolean
         get() = prefs.getBoolean(PREF_QUEUE_LOCKED, false)
         set(locked) {
-            prefs.edit()
-                .putBoolean(PREF_QUEUE_LOCKED, locked)
-                .apply()
+            prefs.edit().putBoolean(PREF_QUEUE_LOCKED, locked).apply()
         }
 
     @JvmStatic
     fun setPlaybackSpeed(speed: Float) {
-        prefs.edit()
-            .putString(PREF_PLAYBACK_SPEED, speed.toString())
-            .apply()
+        prefs.edit().putString(PREF_PLAYBACK_SPEED, speed.toString()).apply()
     }
 
     @JvmStatic
     fun setVideoMode(mode: Int) {
-        prefs.edit()
-            .putString(PREF_VIDEO_MODE, mode.toString())
-            .apply()
+        prefs.edit().putString(PREF_VIDEO_MODE, mode.toString()).apply()
     }
 
     @JvmStatic
     fun setAutodownloadSelectedNetworks(value: Array<String?>?) {
-        prefs.edit()
-            .putString(PREF_AUTODL_SELECTED_NETWORKS, TextUtils.join(",", value!!))
-            .apply()
+        prefs.edit().putString(PREF_AUTODL_SELECTED_NETWORKS, TextUtils.join(",", value!!)).apply()
     }
 
     @JvmStatic
     fun gpodnetNotificationsEnabled(): Boolean {
-        if (Build.VERSION.SDK_INT >= 26) {
-            return true // System handles notification preferences
-        }
+        if (Build.VERSION.SDK_INT >= 26) return true // System handles notification preferences
+
         return prefs.getBoolean(PREF_GPODNET_NOTIFICATIONS, true)
     }
 
@@ -704,9 +658,7 @@ object UserPreferences {
 
     @JvmStatic
     fun setGpodnetNotificationsEnabled() {
-        prefs.edit()
-            .putBoolean(PREF_GPODNET_NOTIFICATIONS, true)
-            .apply()
+        prefs.edit().putBoolean(PREF_GPODNET_NOTIFICATIONS, true).apply()
     }
 
     private fun readPlaybackSpeedArray(valueFromPrefs: String?): List<Float> {
@@ -729,12 +681,9 @@ object UserPreferences {
 
     @JvmStatic
     var episodeCleanupValue: Int
-        get() = prefs.getString(PREF_EPISODE_CLEANUP, "" + EPISODE_CLEANUP_NULL)!!
-            .toInt()
+        get() = prefs.getString(PREF_EPISODE_CLEANUP, "" + EPISODE_CLEANUP_NULL)!!.toInt()
         set(episodeCleanupValue) {
-            prefs.edit()
-                .putString(PREF_EPISODE_CLEANUP, episodeCleanupValue.toString())
-                .apply()
+            prefs.edit().putString(PREF_EPISODE_CLEANUP, episodeCleanupValue.toString()).apply()
         }
 
     /**
@@ -760,9 +709,8 @@ object UserPreferences {
     }
 
     private fun getTypeDir(baseDirPath: String?, type: String?): File? {
-        if (baseDirPath == null) {
-            return null
-        }
+        if (baseDirPath == null) return null
+
         val baseDir = File(baseDirPath)
         val typeDir = if (type == null) baseDir else File(baseDir, type)
         if (!typeDir.exists()) {
@@ -781,9 +729,7 @@ object UserPreferences {
     @JvmStatic
     fun setDataFolder(dir: String) {
         Log.d(TAG, "setDataFolder(dir: $dir)")
-        prefs.edit()
-            .putString(PREF_DATA_FOLDER, dir)
-            .apply()
+        prefs.edit().putString(PREF_DATA_FOLDER, dir).apply()
     }
 
     /**
@@ -840,9 +786,7 @@ object UserPreferences {
          * @see .setQueueKeepSortedOrder
          */
         set(keepSorted) {
-            prefs.edit()
-                .putBoolean(PREF_QUEUE_KEEP_SORTED, keepSorted)
-                .apply()
+            prefs.edit().putBoolean(PREF_QUEUE_KEEP_SORTED, keepSorted).apply()
         }
 
     @JvmStatic
@@ -863,19 +807,14 @@ object UserPreferences {
          * @see .setQueueKeepSorted
          */
         set(sortOrder) {
-            if (sortOrder == null) {
-                return
-            }
-            prefs.edit()
-                .putString(PREF_QUEUE_KEEP_SORTED_ORDER, sortOrder.name)
-                .apply()
+            if (sortOrder == null) return
+            prefs.edit().putString(PREF_QUEUE_KEEP_SORTED_ORDER, sortOrder.name).apply()
         }
 
     @JvmStatic
     val newEpisodesAction: NewEpisodesAction
         get() {
-            val str = prefs.getString(PREF_NEW_EPISODES_ACTION,
-                "" + NewEpisodesAction.GLOBAL.code)
+            val str = prefs.getString(PREF_NEW_EPISODES_ACTION, "" + NewEpisodesAction.GLOBAL.code)
             return NewEpisodesAction.fromCode(str!!.toInt())
         }
 
@@ -912,9 +851,7 @@ object UserPreferences {
             return SubscriptionsFilter(value)
         }
         set(value) {
-            prefs.edit()
-                .putString(PREF_FILTER_FEED, value.serialize())
-                .apply()
+            prefs.edit().putString(PREF_FILTER_FEED, value.serialize()).apply()
         }
 
     @JvmStatic
@@ -925,8 +862,7 @@ object UserPreferences {
 
     @JvmStatic
     var allEpisodesSortOrder: SortOrder?
-        get() = SortOrder.fromCodeString(prefs.getString(PREF_SORT_ALL_EPISODES,
-            "" + SortOrder.DATE_NEW_OLD.code))
+        get() = SortOrder.fromCodeString(prefs.getString(PREF_SORT_ALL_EPISODES, "" + SortOrder.DATE_NEW_OLD.code))
         set(s) {
             prefs.edit().putString(PREF_SORT_ALL_EPISODES, "" + s!!.code).apply()
         }

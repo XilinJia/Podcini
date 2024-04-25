@@ -9,8 +9,7 @@ import com.bumptech.glide.signature.ObjectKey
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import java.io.InputStream
 
-internal class MetadataRetrieverLoader private constructor(private val context: Context) :
-    ModelLoader<String, InputStream> {
+internal class MetadataRetrieverLoader private constructor(private val context: Context) : ModelLoader<String, InputStream> {
     /**
      * The default factory for [MetadataRetrieverLoader]s.
      */
@@ -24,11 +23,8 @@ internal class MetadataRetrieverLoader private constructor(private val context: 
         }
     }
 
-    override fun buildLoadData(model: String,
-                               width: Int, height: Int, options: Options
-    ): ModelLoader.LoadData<InputStream?> {
-        return ModelLoader.LoadData(ObjectKey(model),
-            AudioCoverFetcher(model.replace(FeedMedia.FILENAME_PREFIX_EMBEDDED_COVER, ""), context))
+    override fun buildLoadData(model: String, width: Int, height: Int, options: Options): ModelLoader.LoadData<InputStream?> {
+        return ModelLoader.LoadData(ObjectKey(model), AudioCoverFetcher(model.replace(FeedMedia.FILENAME_PREFIX_EMBEDDED_COVER, ""), context))
     }
 
     override fun handles(model: String): Boolean {

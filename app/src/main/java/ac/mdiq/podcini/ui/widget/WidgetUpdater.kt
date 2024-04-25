@@ -42,11 +42,9 @@ object WidgetUpdater {
     fun updateWidget(context: Context, widgetState: WidgetState?) {
         if (!isEnabled(context) || widgetState == null) return
 
-        val startMediaPlayer = if (widgetState.media != null && widgetState.media.getMediaType() === MediaType.VIDEO) {
+        val startMediaPlayer = if (widgetState.media != null && widgetState.media.getMediaType() === MediaType.VIDEO)
             VideoPlayerActivityStarter(context).pendingIntent
-        } else {
-            MainActivityStarter(context).withOpenPlayer().pendingIntent
-        }
+        else MainActivityStarter(context).withOpenPlayer().pendingIntent
 
         val startPlaybackSpeedDialog = PlaybackSpeedActivityStarter(context).pendingIntent
         val views = RemoteViews(context.packageName, R.layout.player_widget)
@@ -131,11 +129,9 @@ object WidgetUpdater {
             val prefs = context.getSharedPreferences(PlayerWidget.PREFS_NAME, Context.MODE_PRIVATE)
             val minWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
             val columns = getCellsForSize(minWidth)
-            if (columns < 3) {
-                views.setViewVisibility(R.id.layout_center, View.INVISIBLE)
-            } else {
-                views.setViewVisibility(R.id.layout_center, View.VISIBLE)
-            }
+            if (columns < 3) views.setViewVisibility(R.id.layout_center, View.INVISIBLE)
+            else views.setViewVisibility(R.id.layout_center, View.VISIBLE)
+
             val showPlaybackSpeed = prefs.getBoolean(PlayerWidget.KEY_WIDGET_PLAYBACK_SPEED + id, true)
             val showRewind = prefs.getBoolean(PlayerWidget.KEY_WIDGET_REWIND + id, true)
             val showFastForward = prefs.getBoolean(PlayerWidget.KEY_WIDGET_FAST_FORWARD + id, true)
@@ -178,12 +174,10 @@ object WidgetUpdater {
         if (position < 0 || duration <= 0) return null
 
         val converter = TimeSpeedConverter(speed)
-        return if (shouldShowRemainingTime()) {
-            ("${getDurationStringLong(converter.convert(position))} / -${getDurationStringLong(converter.convert(max(0.0, (duration - position).toDouble()).toInt()))
-            }")
-        } else {
-            (getDurationStringLong(converter.convert(position)) + " / " + getDurationStringLong(converter.convert(duration)))
-        }
+        return if (shouldShowRemainingTime())
+            ("${getDurationStringLong(converter.convert(position))} / -${getDurationStringLong(converter.convert(max(0.0, (duration - position).toDouble()).toInt()))}")
+        else (getDurationStringLong(converter.convert(position)) + " / " + getDurationStringLong(converter.convert(duration)))
+
     }
 
     class WidgetState(val media: Playable?, val status: PlayerStatus, val position: Int, val duration: Int, val playbackSpeed: Float) {

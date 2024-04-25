@@ -14,11 +14,7 @@ object StorageUtils {
          */
         get() {
             val dataFolder = UserPreferences.getDataFolder(null)
-            return if (dataFolder != null) {
-                getFreeSpaceAvailable(dataFolder.absolutePath)
-            } else {
-                0
-            }
+            return if (dataFolder != null) getFreeSpaceAvailable(dataFolder.absolutePath) else 0
         }
 
     /**

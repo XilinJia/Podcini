@@ -103,9 +103,7 @@ class OnlineFeedViewFragment : Fragment() {
     private var parser: Disposable? = null
     private var updater: Disposable? = null
 
-    @OptIn(UnstableApi::class) override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                                                         savedInstanceState: Bundle?
-    ): View {
+    @OptIn(UnstableApi::class) override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = OnlineFeedviewFragmentBinding.inflate(layoutInflater)
         binding.closeButton.visibility = View.INVISIBLE
         binding.card.setOnClickListener(null)
@@ -114,9 +112,8 @@ class OnlineFeedViewFragment : Fragment() {
         Log.d(TAG, "fragment onCreateView")
 
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
-        if (savedInstanceState != null) {
-            displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
-        }
+        if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
+
         (activity as MainActivity).setupToolbarToggle(binding.toolbar, displayUpArrow)
 
         var feedUrl = requireArguments().getString(ARG_FEEDURL)
@@ -128,9 +125,8 @@ class OnlineFeedViewFragment : Fragment() {
             Log.d(TAG, "Activity was started with url $feedUrl")
             setLoadingLayout()
             // Remove subscribeonandroid.com from feed URL in order to subscribe to the actual feed URL
-            if (feedUrl.contains("subscribeonandroid.com")) {
-                feedUrl = feedUrl.replaceFirst("((www.)?(subscribeonandroid.com/))".toRegex(), "")
-            }
+            if (feedUrl.contains("subscribeonandroid.com")) feedUrl = feedUrl.replaceFirst("((www.)?(subscribeonandroid.com/))".toRegex(), "")
+
             if (savedInstanceState != null) {
                 username = savedInstanceState.getString("username")
                 password = savedInstanceState.getString("password")
@@ -223,11 +219,8 @@ class OnlineFeedViewFragment : Fragment() {
         val results = searcher.search(query).blockingGet()
         if (results.isNullOrEmpty()) return null
         for (result in results) {
-            if (result?.feedUrl != null && result.author != null &&
-                    result.author.equals(artistName, ignoreCase = true) &&
-                    result.title.equals(trackName, ignoreCase = true)) {
-                return result.feedUrl
-            }
+            if (result?.feedUrl != null && result.author != null && result.author.equals(artistName, ignoreCase = true)
+                    && result.title.equals(trackName, ignoreCase = true)) return result.feedUrl
         }
         return null
     }
@@ -285,24 +278,18 @@ class OnlineFeedViewFragment : Fragment() {
     private fun checkDownloadResult(status: DownloadResult?, destination: String) {
         if (status == null) return
         when {
-            status.isSuccessful -> {
-                parseFeed(destination)
-            }
+            status.isSuccessful -> parseFeed(destination)
             status.reason == DownloadError.ERROR_UNAUTHORIZED -> {
                 if (!isRemoving && !isPaused) {
-                    if (username != null && password != null) {
+                    if (username != null && password != null)
                         Toast.makeText(requireContext(), R.string.download_error_unauthorized, Toast.LENGTH_LONG).show()
-                    }
                     if (downloader?.downloadRequest?.source != null) {
-                        dialog = FeedViewAuthenticationDialog(requireContext(),
-                            R.string.authentication_notification_title, downloader!!.downloadRequest.source!!).create()
+                        dialog = FeedViewAuthenticationDialog(requireContext(), R.string.authentication_notification_title, downloader!!.downloadRequest.source!!).create()
                         dialog?.show()
                     }
                 }
             }
-            else -> {
-                showErrorDialog(getString(from(status.reason)), status.reasonDetailed)
-            }
+            else -> showErrorDialog(getString(from(status.reason)), status.reasonDetailed)
         }
     }
 
@@ -374,15 +361,11 @@ class OnlineFeedViewFragment : Fragment() {
 //                        return null
 //                    }
                     val dialogShown = showFeedDiscoveryDialog(destinationFile, selectedDownloadUrl!!)
-                    if (dialogShown) {
-                        null // Should not display an error message
-                    } else {
-                        throw UnsupportedFeedtypeException(getString(R.string.download_error_unsupported_type_html))
-                    }
+                    if (dialogShown) null // Should not display an error message
+                    else throw UnsupportedFeedtypeException(getString(R.string.download_error_unsupported_type_html))
+
                 } else null
-            } else {
-                throw e
-            }
+            } else throw e
         } catch (e: Exception) {
             Log.e(TAG, Log.getStackTraceString(e))
             throw e
@@ -483,8 +466,7 @@ class OnlineFeedViewFragment : Fragment() {
                     selectedDownloadUrl = alternateUrlsList[position]
                 }
 
-                override fun onNothingSelected(parent: AdapterView<*>?) {
-                }
+                override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
         }
         handleUpdatedFeedStatus()
@@ -542,9 +524,7 @@ class OnlineFeedViewFragment : Fragment() {
             else -> {
                 binding.subscribeButton.isEnabled = true
                 binding.subscribeButton.setText(R.string.subscribe_label)
-                if (isEnableAutodownload) {
-                    binding.autoDownloadCheckBox.visibility = View.VISIBLE
-                }
+                if (isEnableAutodownload) binding.autoDownloadCheckBox.visibility = View.VISIBLE
             }
         }
     }
@@ -558,9 +538,7 @@ class OnlineFeedViewFragment : Fragment() {
             if (feeds == null) return 0
 
             for (f in feeds!!) {
-                if (f.download_url == selectedDownloadUrl) {
-                    return f.id
-                }
+                if (f.download_url == selectedDownloadUrl) return f.id
             }
             return 0
         }
@@ -577,12 +555,10 @@ class OnlineFeedViewFragment : Fragment() {
                     $details
                     """.trimIndent()
                 val errorMessage = SpannableString(total)
-                errorMessage.setSpan(ForegroundColorSpan(-0x77777778),
-                    errorMsg.length, total.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                errorMessage.setSpan(ForegroundColorSpan(-0x77777778), errorMsg.length, total.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                 builder.setMessage(errorMessage)
-            } else {
-                builder.setMessage(R.string.download_error_error_unknown)
-            }
+            } else builder.setMessage(R.string.download_error_error_unknown)
+
             builder.setPositiveButton(android.R.string.ok) { dialog: DialogInterface, _: Int -> dialog.cancel() }
 //            if (intent.getBooleanExtra(ARG_WAS_MANUAL_URL, false)) {
 //                builder.setNeutralButton(R.string.edit_url_menu) { _: DialogInterface?, _: Int -> editUrl() }
@@ -600,9 +576,8 @@ class OnlineFeedViewFragment : Fragment() {
         val builder = MaterialAlertDialogBuilder(requireContext())
         builder.setTitle(R.string.edit_url_menu)
         val dialogBinding = EditTextDialogBinding.inflate(layoutInflater)
-        if (downloader != null) {
-            dialogBinding.editText.setText(downloader!!.downloadRequest.source)
-        }
+        if (downloader != null) dialogBinding.editText.setText(downloader!!.downloadRequest.source)
+
         builder.setView(dialogBinding.root)
         builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
             setLoadingLayout()

@@ -34,20 +34,15 @@ class Media : Namespace() {
                         validTypeMedia = true
                         mimeType = "video/*"
                     }
-                    MEDIUM_IMAGE == medium && (mimeType == null
-                            || (!mimeType.startsWith("audio/") && !mimeType.startsWith("video/"))) -> {
+                    MEDIUM_IMAGE == medium && (mimeType == null || (!mimeType.startsWith("audio/") && !mimeType.startsWith("video/"))) -> {
                         // Apparently, some publishers explicitly specify the audio file as an image
                         validTypeImage = true
                         mimeType = "image/*"
                     }
                     else -> {
                         when {
-                            isMediaFile(mimeType) -> {
-                                validTypeMedia = true
-                            }
-                            isImageFile(mimeType) -> {
-                                validTypeImage = true
-                            }
+                            isMediaFile(mimeType) -> validTypeMedia = true
+                            isImageFile(mimeType) -> validTypeImage = true
                         }
                     }
                 }
@@ -75,9 +70,8 @@ class Media : Namespace() {
                         }
                         Log.d(TAG, "handleElementStart creating media: ${state.currentItem?.title} $url $size $mimeType")
                         val media = FeedMedia(state.currentItem, url, size, mimeType)
-                        if (durationMs > 0) {
-                            media.setDuration( durationMs)
-                        }
+                        if (durationMs > 0) media.setDuration( durationMs)
+
                         state.currentItem!!.media = media
                     }
                     state.currentItem != null && url != null && validTypeImage -> {
@@ -89,14 +83,8 @@ class Media : Namespace() {
                 val url: String? = attributes.getValue(IMAGE_URL)
                 if (url != null) {
                     when {
-                        state.currentItem != null -> {
-                            state.currentItem!!.imageUrl = url
-                        }
-                        else -> {
-                            if (state.feed.imageUrl == null) {
-                                state.feed.imageUrl = url
-                            }
-                        }
+                        state.currentItem != null -> state.currentItem!!.imageUrl = url
+                        else -> if (state.feed.imageUrl == null) state.feed.imageUrl = url
                     }
                 }
             }

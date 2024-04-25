@@ -37,9 +37,8 @@ class DownloadLogAdapter(private val context: Activity) : BaseAdapter() {
         if (convertView == null) {
             holder = DownloadLogItemViewHolder(context, parent)
             holder.itemView.tag = holder
-        } else {
-            holder = convertView.tag as DownloadLogItemViewHolder
-        }
+        } else holder = convertView.tag as DownloadLogItemViewHolder
+
         val item = getItem(position)
         if (item != null) bind(holder, item, position)
         return holder.itemView
@@ -48,23 +47,15 @@ class DownloadLogAdapter(private val context: Activity) : BaseAdapter() {
     @UnstableApi private fun bind(holder: DownloadLogItemViewHolder, status: DownloadResult, position: Int) {
         var statusText: String? = ""
         when (status.feedfileType) {
-            Feed.FEEDFILETYPE_FEED -> {
-                statusText += context.getString(R.string.download_type_feed)
-            }
-            FeedMedia.FEEDFILETYPE_FEEDMEDIA -> {
-                statusText += context.getString(R.string.download_type_media)
-            }
+            Feed.FEEDFILETYPE_FEED -> statusText += context.getString(R.string.download_type_feed)
+            FeedMedia.FEEDFILETYPE_FEEDMEDIA -> statusText += context.getString(R.string.download_type_media)
         }
         statusText += " · "
-        statusText += DateUtils.getRelativeTimeSpanString(status.getCompletionDate().time,
-            System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS, 0)
+        statusText += DateUtils.getRelativeTimeSpanString(status.getCompletionDate().time, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS, 0)
         holder.status.text = statusText
 
-        if (status.title.isNotEmpty()) {
-            holder.title.text = status.title
-        } else {
-            holder.title.setText(R.string.download_log_title_unknown)
-        }
+        if (status.title.isNotEmpty()) holder.title.text = status.title
+        else holder.title.setText(R.string.download_log_title_unknown)
 
         if (status.isSuccessful) {
             holder.icon.setTextColor(ThemeUtils.getColorFromAttr(context, R.attr.icon_green))
@@ -115,8 +106,7 @@ class DownloadLogAdapter(private val context: Activity) : BaseAdapter() {
                                 return@OnClickListener
                             }
                             if (media.item != null) DownloadActionButton(media.item!!).onClick(context)
-                            (context as MainActivity).showSnackbarAbovePlayer(
-                                R.string.status_downloading_label, Toast.LENGTH_SHORT)
+                            (context as MainActivity).showSnackbarAbovePlayer(R.string.status_downloading_label, Toast.LENGTH_SHORT)
                         })
                     }
                 }
@@ -127,9 +117,7 @@ class DownloadLogAdapter(private val context: Activity) : BaseAdapter() {
     private fun newerWasSuccessful(downloadStatusIndex: Int, feedTypeId: Int, id: Long): Boolean {
         for (i in 0 until downloadStatusIndex) {
             val status: DownloadResult = downloadLog[i]
-            if (status.feedfileType == feedTypeId && status.feedfileId == id && status.isSuccessful) {
-                return true
-            }
+            if (status.feedfileType == feedTypeId && status.feedfileId == id && status.isSuccessful) return true
         }
         return false
     }
@@ -139,9 +127,7 @@ class DownloadLogAdapter(private val context: Activity) : BaseAdapter() {
     }
 
     override fun getItem(position: Int): DownloadResult? {
-        if (position in downloadLog.indices) {
-            return downloadLog[position]
-        }
+        if (position in downloadLog.indices) return downloadLog[position]
         return null
     }
 

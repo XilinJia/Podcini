@@ -52,10 +52,9 @@ class ShownotesWebView : WebView, View.OnLongClickListener {
 
     private fun setup() {
         setBackgroundColor(Color.TRANSPARENT)
-        if (!NetworkUtils.networkAvailable()) {
-            getSettings().cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
-            // Use cached resources, even if they have expired
-        }
+        // Use cached resources, even if they have expired
+        if (!NetworkUtils.networkAvailable()) getSettings().cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
+
         getSettings().mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         getSettings().useWideViewPort = false
         getSettings().loadWithOverviewMode = true
@@ -64,11 +63,9 @@ class ShownotesWebView : WebView, View.OnLongClickListener {
         setWebViewClient(object : WebViewClient() {
             @Deprecated("Deprecated in Java")
             override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
-                if (ShownotesCleaner.isTimecodeLink(url) && timecodeSelectedListener != null) {
+                if (ShownotesCleaner.isTimecodeLink(url) && timecodeSelectedListener != null)
                     timecodeSelectedListener!!.accept(ShownotesCleaner.getTimecodeLinkTime(url))
-                } else {
-                    IntentUtils.openInBrowser(context, url)
-                }
+                else IntentUtils.openInBrowser(context, url)
                 return true
             }
 
@@ -109,12 +106,8 @@ class ShownotesWebView : WebView, View.OnLongClickListener {
 
         val itemId = item.itemId
         when (itemId) {
-            R.id.open_in_browser_item -> {
-                if (selectedUrl != null) IntentUtils.openInBrowser(context, selectedUrl!!)
-            }
-            R.id.share_url_item -> {
-                if (selectedUrl != null) ShareUtils.shareLink(context, selectedUrl!!)
-            }
+            R.id.open_in_browser_item -> if (selectedUrl != null) IntentUtils.openInBrowser(context, selectedUrl!!)
+            R.id.share_url_item -> if (selectedUrl != null) ShareUtils.shareLink(context, selectedUrl!!)
             R.id.copy_url_item -> {
                 val clipData: ClipData = ClipData.newPlainText(selectedUrl, selectedUrl)
                 val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -126,11 +119,9 @@ class ShownotesWebView : WebView, View.OnLongClickListener {
                 }
             }
             R.id.go_to_position_item -> {
-                if (ShownotesCleaner.isTimecodeLink(selectedUrl) && timecodeSelectedListener != null) {
+                if (ShownotesCleaner.isTimecodeLink(selectedUrl) && timecodeSelectedListener != null)
                     timecodeSelectedListener!!.accept(ShownotesCleaner.getTimecodeLinkTime(selectedUrl))
-                } else {
-                    Log.e(TAG, "Selected go_to_position_item, but URL was no timecode link: $selectedUrl")
-                }
+                else Log.e(TAG, "Selected go_to_position_item, but URL was no timecode link: $selectedUrl")
             }
             else -> {
                 selectedUrl = null
@@ -151,15 +142,12 @@ class ShownotesWebView : WebView, View.OnLongClickListener {
         } else {
             val uri = Uri.parse(selectedUrl)
             val intent = Intent(Intent.ACTION_VIEW, uri)
-            if (IntentUtils.isCallable(context, intent)) {
-                menu.add(Menu.NONE, R.id.open_in_browser_item, Menu.NONE, R.string.open_in_browser_label)
-            }
+            if (IntentUtils.isCallable(context, intent)) menu.add(Menu.NONE, R.id.open_in_browser_item, Menu.NONE, R.string.open_in_browser_label)
             menu.add(Menu.NONE, R.id.copy_url_item, Menu.NONE, R.string.copy_url_label)
             menu.add(Menu.NONE, R.id.share_url_item, Menu.NONE, R.string.share_url_label)
             menu.setHeaderTitle(selectedUrl)
         }
-        MenuItemUtils.setOnClickListeners(menu
-        ) { item: MenuItem -> this.onContextItemSelected(item) }
+        MenuItemUtils.setOnClickListeners(menu) { item: MenuItem -> this.onContextItemSelected(item) }
     }
 
     fun setTimecodeSelectedListener(timecodeSelectedListener: Consumer<Int>?) {

@@ -51,13 +51,9 @@ abstract class EpisodeCleanupAlgorithm {
      * @return the number of episodes to delete in order to make room
      */
     fun getNumEpisodesToCleanup(amountOfRoomNeeded: Int): Int {
-        if (amountOfRoomNeeded >= 0
-                && episodeCacheSize != UserPreferences.EPISODE_CACHE_SIZE_UNLIMITED) {
+        if (amountOfRoomNeeded >= 0 && episodeCacheSize != UserPreferences.EPISODE_CACHE_SIZE_UNLIMITED) {
             val downloadedEpisodes = getTotalEpisodeCount(FeedItemFilter(FeedItemFilter.DOWNLOADED))
-            if (downloadedEpisodes + amountOfRoomNeeded >= episodeCacheSize) {
-                return (downloadedEpisodes + amountOfRoomNeeded
-                        - episodeCacheSize)
-            }
+            if (downloadedEpisodes + amountOfRoomNeeded >= episodeCacheSize) return (downloadedEpisodes + amountOfRoomNeeded - episodeCacheSize)
         }
         return 0
     }

@@ -22,14 +22,11 @@ class MaterialMultiSelectListPreference : MultiSelectListPreference {
         for (i in values.indices) {
             selected[i] = getValues().contains(values[i].toString())
         }
-        builder.setMultiChoiceItems(entries, selected
-        ) { dialog: DialogInterface?, which: Int, isChecked: Boolean -> selected[which] = isChecked }
+        builder.setMultiChoiceItems(entries, selected) { dialog: DialogInterface?, which: Int, isChecked: Boolean -> selected[which] = isChecked }
         builder.setPositiveButton("OK") { dialog: DialogInterface?, which: Int ->
             val selectedValues: MutableSet<String> = HashSet()
             for (i in values.indices) {
-                if (selected[i]) {
-                    selectedValues.add(entryValues[i].toString())
-                }
+                if (selected[i]) selectedValues.add(entryValues[i].toString())
             }
             setValues(selectedValues)
         }

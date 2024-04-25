@@ -21,24 +21,19 @@ object MimeTypeUtils {
 
     @JvmStatic
     fun getMimeType(type: String?, filename: String?): String? {
-        if (isMediaFile(type) && OCTET_STREAM != type) {
-            return type
-        }
+        if (isMediaFile(type) && OCTET_STREAM != type) return type
+
         val filenameType = getMimeTypeFromUrl(filename)
-        if (isMediaFile(filenameType)) {
-            return filenameType
-        }
+        if (isMediaFile(filenameType)) return filenameType
+
         return type
     }
 
     @JvmStatic
     fun isMediaFile(type: String?): Boolean {
-        return if (type == null) {
-            false
-        } else {
-            type.startsWith("audio/") || type.startsWith("video/") ||
-                    type == "application/ogg" || type == "application/octet-stream" || type == "application/x-shockwave-flash"
-        }
+        return if (type == null) false
+        else type.startsWith("audio/") || type.startsWith("video/") || type == "application/ogg"
+                || type == "application/octet-stream" || type == "application/x-shockwave-flash"
     }
 
     @JvmStatic
@@ -51,23 +46,16 @@ object MimeTypeUtils {
      * method will return the mime-type of the file extension.
      */
     private fun getMimeTypeFromUrl(url: String?): String? {
-        if (url == null) {
-            return null
-        }
+        if (url == null) return null
+
         val extension = FilenameUtils.getExtension(url)
         val mapResult = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
-        if (mapResult != null) {
-            return mapResult
-        }
+        if (mapResult != null) return mapResult
 
-        when {
-            AUDIO_FILE_EXTENSIONS.contains(extension) -> {
-                return "audio/*"
-            }
-            VIDEO_FILE_EXTENSIONS.contains(extension) -> {
-                return "video/*"
-            }
-            else -> return null
+        return when {
+            AUDIO_FILE_EXTENSIONS.contains(extension) -> "audio/*"
+            VIDEO_FILE_EXTENSIONS.contains(extension) -> "video/*"
+            else -> null
         }
     }
 }

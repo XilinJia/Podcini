@@ -18,9 +18,8 @@ import ac.mdiq.podcini.storage.model.feed.Feed
  */
 class SPAReceiver : BroadcastReceiver() {
     @UnstableApi override fun onReceive(context: Context, intent: Intent) {
-        if (!TextUtils.equals(intent.action, ACTION_SP_APPS_QUERY_FEEDS_REPSONSE)) {
-            return
-        }
+        if (!TextUtils.equals(intent.action, ACTION_SP_APPS_QUERY_FEEDS_REPSONSE)) return
+
         Log.d(TAG, "Received SP_APPS_QUERY_RESPONSE")
         if (!intent.hasExtra(ACTION_SP_APPS_QUERY_FEEDS_REPSONSE_FEEDS_EXTRA)) {
             Log.e(TAG, "Received invalid SP_APPS_QUERY_RESPONSE: Contains no extra")
@@ -46,8 +45,7 @@ class SPAReceiver : BroadcastReceiver() {
         private const val TAG = "SPAReceiver"
 
         const val ACTION_SP_APPS_QUERY_FEEDS: String = "de.danoeh.antennapdsp.intent.SP_APPS_QUERY_FEEDS"
-        private const val ACTION_SP_APPS_QUERY_FEEDS_REPSONSE =
-            "de.danoeh.antennapdsp.intent.SP_APPS_QUERY_FEEDS_RESPONSE"
+        private const val ACTION_SP_APPS_QUERY_FEEDS_REPSONSE = "de.danoeh.antennapdsp.intent.SP_APPS_QUERY_FEEDS_RESPONSE"
         private const val ACTION_SP_APPS_QUERY_FEEDS_REPSONSE_FEEDS_EXTRA = "feeds"
     }
 }

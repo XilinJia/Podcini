@@ -65,48 +65,20 @@ class FeedItemFilter(vararg properties: String) : Serializable {
 
     fun matches(item: FeedItem): Boolean {
         when {
-            showNew && !item.isNew -> {
-                return false
-            }
-            showPlayed && !item.isPlayed() -> {
-                return false
-            }
-            showUnplayed && item.isPlayed() -> {
-                return false
-            }
-            showPaused && !item.isInProgress -> {
-                return false
-            }
-            showNotPaused && item.isInProgress -> {
-                return false
-            }
-            showNew && !item.isNew -> {
-                return false
-            }
-            showQueued && !item.isTagged(FeedItem.TAG_QUEUE) -> {
-                return false
-            }
-            showNotQueued && item.isTagged(FeedItem.TAG_QUEUE) -> {
-                return false
-            }
-            showDownloaded && !item.isDownloaded -> {
-                return false
-            }
-            showNotDownloaded && item.isDownloaded -> {
-                return false
-            }
-            showHasMedia && !item.hasMedia() -> {
-                return false
-            }
-            showNoMedia && item.hasMedia() -> {
-                return false
-            }
-            showIsFavorite && !item.isTagged(FeedItem.TAG_FAVORITE) -> {
-                return false
-            }
-            showNotFavorite && item.isTagged(FeedItem.TAG_FAVORITE) -> {
-                return false
-            }
+            showNew && !item.isNew -> return false
+            showPlayed && !item.isPlayed() -> return false
+            showUnplayed && item.isPlayed() -> return false
+            showPaused && !item.isInProgress -> return false
+            showNotPaused && item.isInProgress -> return false
+            showNew && !item.isNew -> return false
+            showQueued && !item.isTagged(FeedItem.TAG_QUEUE) -> return false
+            showNotQueued && item.isTagged(FeedItem.TAG_QUEUE) -> return false
+            showDownloaded && !item.isDownloaded -> return false
+            showNotDownloaded && item.isDownloaded -> return false
+            showHasMedia && !item.hasMedia() -> return false
+            showNoMedia && item.hasMedia() -> return false
+            showIsFavorite && !item.isTagged(FeedItem.TAG_FAVORITE) -> return false
+            showNotFavorite && item.isTagged(FeedItem.TAG_FAVORITE) -> return false
             else -> return true
         }
     }

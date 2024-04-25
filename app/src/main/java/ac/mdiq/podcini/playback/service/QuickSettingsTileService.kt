@@ -43,9 +43,8 @@ class QuickSettingsTileService : TileService() {
 
     fun updateTile() {
         val qsTile = qsTile
-        if (qsTile == null) {
-            Log.d(TAG, "Ignored call to update QS tile: getQsTile() returned null.")
-        } else {
+        if (qsTile == null) Log.d(TAG, "Ignored call to update QS tile: getQsTile() returned null.")
+        else {
             val isPlaying = (PlaybackService.isRunning && PlaybackPreferences.currentPlayerStatus == PlaybackPreferences.PLAYER_STATUS_PLAYING)
             qsTile.state = if (isPlaying) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
             qsTile.updateTile()

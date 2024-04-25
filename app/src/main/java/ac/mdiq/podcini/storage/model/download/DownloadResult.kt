@@ -40,15 +40,10 @@ class DownloadResult(
      * Constructor for creating new completed downloads.
      */
     constructor(feedfile: FeedFile, title: String, reason: DownloadError, successful: Boolean, reasonDetailed: String
-    ) : this(0, title, feedfile.id, FeedMedia.FEEDFILETYPE_FEEDMEDIA, successful, reason, Date(),
-        reasonDetailed)
+    ) : this(0, title, feedfile.id, FeedMedia.FEEDFILETYPE_FEEDMEDIA, successful, reason, Date(), reasonDetailed)
 
     override fun toString(): String {
-        return ("DownloadStatus [id=" + id + ", title=" + title + ", reason="
-                + reason + ", reasonDetailed=" + reasonDetailed
-                + ", successful=" + isSuccessful + ", completionDate="
-                + completionDate + ", feedfileId=" + feedfileId
-                + ", feedfileType=" + feedfileType + "]")
+        return ("DownloadStatus [id=$id, title=$title, reason=$reason, reasonDetailed=$reasonDetailed, successful=$isSuccessful, completionDate=$completionDate, feedfileId=$feedfileId, feedfileType=$feedfileType]")
     }
 
     fun getCompletionDate(): Date {

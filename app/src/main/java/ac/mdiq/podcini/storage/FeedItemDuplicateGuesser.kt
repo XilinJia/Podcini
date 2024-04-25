@@ -15,34 +15,25 @@ import kotlin.math.abs
 object FeedItemDuplicateGuesser {
     @JvmStatic
     fun seemDuplicates(item1: FeedItem, item2: FeedItem): Boolean {
-        if (sameAndNotEmpty(item1.itemIdentifier, item2.itemIdentifier)) {
-            return true
-        }
+        if (sameAndNotEmpty(item1.itemIdentifier, item2.itemIdentifier)) return true
+
         val media1 = item1.media
         val media2 = item2.media
-        if (media1 == null || media2 == null) {
-            return false
-        }
-        if (sameAndNotEmpty(media1.getStreamUrl(), media2.getStreamUrl())) {
-            return true
-        }
-        return (titlesLookSimilar(item1, item2)
-                && datesLookSimilar(item1, item2)
-                && durationsLookSimilar(media1, media2)
-                && mimeTypeLooksSimilar(media1, media2))
+        if (media1 == null || media2 == null) return false
+
+        if (sameAndNotEmpty(media1.getStreamUrl(), media2.getStreamUrl())) return true
+
+        return (titlesLookSimilar(item1, item2) && datesLookSimilar(item1, item2) && durationsLookSimilar(media1, media2) && mimeTypeLooksSimilar(media1, media2))
     }
 
     private fun sameAndNotEmpty(string1: String?, string2: String?): Boolean {
-        if (string1.isNullOrEmpty() || string2.isNullOrEmpty()) {
-            return false
-        }
+        if (string1.isNullOrEmpty() || string2.isNullOrEmpty()) return false
         return string1 == string2
     }
 
     private fun datesLookSimilar(item1: FeedItem, item2: FeedItem): Boolean {
-        if (item1.getPubDate() == null || item2.getPubDate() == null) {
-            return false
-        }
+        if (item1.getPubDate() == null || item2.getPubDate() == null) return false
+
         val dateFormat = DateFormat.getDateInstance(DateFormat.SHORT, Locale.US) // MM/DD/YY
         val dateOriginal = dateFormat.format(item2.getPubDate()!!)
         val dateNew = dateFormat.format(item1.getPubDate()!!)
@@ -56,9 +47,8 @@ object FeedItemDuplicateGuesser {
     private fun mimeTypeLooksSimilar(media1: FeedMedia, media2: FeedMedia): Boolean {
         var mimeType1 = media1.mime_type
         var mimeType2 = media2.mime_type
-        if (mimeType1 == null || mimeType2 == null) {
-            return true
-        }
+        if (mimeType1 == null || mimeType2 == null) return true
+
         if (mimeType1.contains("/") && mimeType2.contains("/")) {
             mimeType1 = mimeType1.substring(0, mimeType1.indexOf("/"))
             mimeType2 = mimeType2.substring(0, mimeType2.indexOf("/"))
@@ -71,9 +61,8 @@ object FeedItemDuplicateGuesser {
     }
 
     private fun canonicalizeTitle(title: String?): String {
-        if (title == null) {
-            return ""
-        }
+        if (title == null) return ""
+
         return title
             .trim { it <= ' ' }
             .replace('“', '"')

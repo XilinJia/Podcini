@@ -38,15 +38,11 @@ class TriangleLabelView : View {
     private var corner: Corner? = null
 
     @JvmOverloads
-    constructor(context: Context, attrs: AttributeSet? = null,
-                defStyleAttr: Int = 0
-    ) : super(context, attrs, defStyleAttr) {
+    constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : super(context, attrs, defStyleAttr) {
         init(context, attrs)
     }
 
-    constructor(context: Context, attrs: AttributeSet?,
-                defStyleAttr: Int, defStyleRes: Int
-    ) : super(context, attrs, defStyleAttr, defStyleRes) {
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int) : super(context, attrs, defStyleAttr, defStyleRes) {
         init(context, attrs)
     }
 
@@ -57,16 +53,13 @@ class TriangleLabelView : View {
         this.centerPadding = ta.getDimension(R.styleable.TriangleLabelView_labelCenterPadding, dp2px(3f).toFloat())
         this.bottomPadding = ta.getDimension(R.styleable.TriangleLabelView_labelBottomPadding, dp2px(3f).toFloat())
 
-        val backgroundColor = ta.getColor(R.styleable.TriangleLabelView_backgroundColor,
-            Color.parseColor("#66000000"))
+        val backgroundColor = ta.getColor(R.styleable.TriangleLabelView_backgroundColor, Color.parseColor("#66000000"))
         primary.color = ta.getColor(R.styleable.TriangleLabelView_primaryTextColor, Color.WHITE)
 
         primary.size = ta.getDimension(R.styleable.TriangleLabelView_primaryTextSize, sp2px(11f))
 
         val primary = ta.getString(R.styleable.TriangleLabelView_primaryText)
-        if (primary != null) {
-            this.primary.text = primary
-        }
+        if (primary != null) this.primary.text = primary
 
         this.corner = Corner.from(ta.getInt(R.styleable.TriangleLabelView_corner, 1))
 
@@ -103,11 +96,8 @@ class TriangleLabelView : View {
         canvas.translate(0f, ((height * sqrt(2.0)) - height).toFloat())
 
         // rotate
-        if (corner!!.left()) {
-            canvas.rotate(DEGREES_LEFT.toFloat(), 0f, height.toFloat())
-        } else {
-            canvas.rotate(DEGREES_RIGHT.toFloat(), width.toFloat(), height.toFloat())
-        }
+        if (corner!!.left()) canvas.rotate(DEGREES_LEFT.toFloat(), 0f, height.toFloat())
+        else canvas.rotate(DEGREES_RIGHT.toFloat(), width.toFloat(), height.toFloat())
 
         // draw triangle
         @SuppressLint("DrawAllocation") val path = Path()
@@ -118,8 +108,7 @@ class TriangleLabelView : View {
         canvas.drawPath(path, trianglePaint!!)
 
         // draw primaryText
-        canvas.drawText(primary.text, (width) / 2f,
-            (topPadding + centerPadding + primary.height), primary.paint!!)
+        canvas.drawText(primary.text, (width) / 2f, (topPadding + centerPadding + primary.height), primary.paint!!)
         canvas.restore()
     }
 
@@ -160,9 +149,7 @@ class TriangleLabelView : View {
         companion object {
             internal fun from(type: Int): Corner {
                 for (c in entries) {
-                    if (c.type == type) {
-                        return c
-                    }
+                    if (c.type == type) return c
                 }
                 return TOP_LEFT
             }

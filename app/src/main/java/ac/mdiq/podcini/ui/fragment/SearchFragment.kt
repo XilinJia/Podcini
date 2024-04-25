@@ -85,9 +85,7 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
         disposable?.dispose()
     }
 
-    @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                                           savedInstanceState: Bundle?
-    ): View {
+    @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = SearchFragmentBinding.inflate(inflater)
 
         Log.d(TAG, "fragment onCreateView")
@@ -100,11 +98,9 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
         adapter = object : EpisodeItemListAdapter(activity as MainActivity) {
             override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
                 super.onCreateContextMenu(menu, v, menuInfo)
-                if (!inActionMode()) {
-                    menu.findItem(R.id.multi_select).setVisible(true)
-                }
-                MenuItemUtils.setOnClickListeners(menu
-                ) { item: MenuItem -> this@SearchFragment.onContextItemSelected(item) }
+                if (!inActionMode()) menu.findItem(R.id.multi_select).setVisible(true)
+
+                MenuItemUtils.setOnClickListeners(menu) { item: MenuItem -> this@SearchFragment.onContextItemSelected(item) }
             }
         }
         adapter.setOnSelectModeListener(this)
@@ -116,9 +112,7 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
         layoutManagerFeeds.orientation = RecyclerView.HORIZONTAL
         recyclerViewFeeds.layoutManager = layoutManagerFeeds
         adapterFeeds = object : HorizontalFeedListAdapter(activity as MainActivity) {
-            override fun onCreateContextMenu(contextMenu: ContextMenu, view: View,
-                                             contextMenuInfo: ContextMenu.ContextMenuInfo?
-            ) {
+            override fun onCreateContextMenu(contextMenu: ContextMenu, view: View, contextMenuInfo: ContextMenu.ContextMenuInfo?) {
                 super.onCreateContextMenu(contextMenu, view, contextMenuInfo)
                 MenuItemUtils.setOnClickListeners(contextMenu
                 ) { item: MenuItem -> this@SearchFragment.onContextItemSelected(item) }
@@ -140,13 +134,10 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
         }
         chip.visibility = if (requireArguments().getLong(ARG_FEED, 0) == 0L) View.GONE else View.VISIBLE
         chip.text = requireArguments().getString(ARG_FEED_NAME, "")
-        if (requireArguments().getString(ARG_QUERY, null) != null) {
-            search()
-        }
+        if (requireArguments().getString(ARG_QUERY, null) != null) search()
+
         searchView.setOnQueryTextFocusChangeListener { view: View, hasFocus: Boolean ->
-            if (hasFocus && !isOtherViewInFoucus) {
-                showInputMethod(view.findFocus())
-            }
+            if (hasFocus && !isOtherViewInFoucus) showInputMethod(view.findFocus())
         }
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
@@ -207,14 +198,11 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
 
             @UnstableApi override fun onQueryTextChange(s: String): Boolean {
                 automaticSearchDebouncer.removeCallbacksAndMessages(null)
-                if (s.isEmpty() || s.endsWith(" ") || (lastQueryChange != 0L
-                                && System.currentTimeMillis() > lastQueryChange + SEARCH_DEBOUNCE_INTERVAL)) {
+                if (s.isEmpty() || s.endsWith(" ") || (lastQueryChange != 0L && System.currentTimeMillis() > lastQueryChange + SEARCH_DEBOUNCE_INTERVAL)) {
                     search()
                 } else {
-                    automaticSearchDebouncer.postDelayed({
-                        search()
-                        lastQueryChange = 0 // Don't search instantly with first symbol after some pause
-                    }, (SEARCH_DEBOUNCE_INTERVAL / 2).toLong())
+                    // Don't search instantly with first symbol after some pause
+                    automaticSearchDebouncer.postDelayed({ search(); lastQueryChange = 0 }, (SEARCH_DEBOUNCE_INTERVAL / 2).toLong())
                 }
                 lastQueryChange = System.currentTimeMillis()
                 return false
@@ -234,18 +222,12 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
         val selectedFeedItem: Feed? = adapterFeeds.longPressedItem
-        if (selectedFeedItem != null
-                && FeedMenuHandler.onMenuItemClicked(this, item.itemId, selectedFeedItem) {}) {
-            return true
-        }
+        if (selectedFeedItem != null && FeedMenuHandler.onMenuItemClicked(this, item.itemId, selectedFeedItem) {}) return true
+
         val selectedItem: FeedItem? = adapter.longPressedItem
         if (selectedItem != null) {
-            if (adapter.onContextItemSelected(item)) {
-                return true
-            }
-            if (FeedItemMenuHandler.onMenuItemClicked(this, item.itemId, selectedItem)) {
-                return true
-            }
+            if (adapter.onContextItemSelected(item)) return true
+            if (FeedItemMenuHandler.onMenuItemClicked(this, item.itemId, selectedItem)) return true
         }
         return super.onContextItemSelected(item)
     }
@@ -282,9 +264,7 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
     fun onEventMainThread(event: EpisodeDownloadEvent) {
         for (downloadUrl in event.urls) {
             val pos: Int = FeedItemUtil.indexOfItemWithDownloadUrl(results, downloadUrl)
-            if (pos >= 0) {
-                adapter.notifyItemChangedCompat(pos)
-            }
+            if (pos >= 0) adapter.notifyItemChangedCompat(pos)
         }
     }
 
@@ -295,8 +275,7 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
         else {
             Log.d(TAG, "onEventMainThread() search list")
             for (i in 0 until adapter.itemCount) {
-                val holder: EpisodeItemViewHolder? =
-                    recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
+                val holder: EpisodeItemViewHolder? = recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
                 if (holder != null && holder.isCurrentlyPlayingItem) {
                     currentPlaying = holder
                     holder.notifyPlaybackPositionUpdated(event)
@@ -333,22 +312,18 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
                 }
                 if (requireArguments().getLong(ARG_FEED, 0) == 0L) {
                     if (results.second != null) adapterFeeds.updateData(results.second!!.filterNotNull())
-                } else {
-                    adapterFeeds.updateData(emptyList())
-                }
-                if (searchView.query.toString().isEmpty()) {
-                    emptyViewHandler.setMessage(R.string.type_to_search)
-                } else {
-                    emptyViewHandler.setMessage(getString(R.string.no_results_for_query) + searchView.query)
-                }
+                } else adapterFeeds.updateData(emptyList())
+
+                if (searchView.query.toString().isEmpty()) emptyViewHandler.setMessage(R.string.type_to_search)
+                else emptyViewHandler.setMessage(getString(R.string.no_results_for_query) + searchView.query)
+
             }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
     }
 
     @UnstableApi private fun performSearch(): Pair<List<FeedItem>?, List<Feed?>?> {
         val query = searchView.query.toString()
-        if (query.isEmpty()) {
-            return Pair<List<FeedItem>?, List<Feed?>?>(emptyList(), emptyList<Feed>())
-        }
+        if (query.isEmpty()) return Pair<List<FeedItem>?, List<Feed?>?>(emptyList(), emptyList<Feed>())
+
         val feed = requireArguments().getLong(ARG_FEED)
         val items: List<FeedItem> = FeedSearcher.searchFeedItems(query, feed)
         val feeds: List<Feed?> = FeedSearcher.searchFeeds(query)
@@ -370,8 +345,7 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
             (activity as MainActivity).loadChildFragment(fragment)
             return
         }
-        (activity as MainActivity).loadChildFragment(
-            OnlineSearchFragment.newInstance(CombinedSearcher::class.java, query))
+        (activity as MainActivity).loadChildFragment(OnlineSearchFragment.newInstance(CombinedSearcher::class.java, query))
     }
 
     override fun onStartSelectMode() {

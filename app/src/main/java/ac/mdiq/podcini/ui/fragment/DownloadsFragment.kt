@@ -72,9 +72,7 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
     private var displayUpArrow = false
     private var currentPlaying: EpisodeItemViewHolder? = null
 
-    @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                                           savedInstanceState: Bundle?
-    ): View {
+    @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = SimpleListFragmentBinding.inflate(inflater)
 
         Log.d(TAG, "fragment onCreateView")
@@ -88,9 +86,8 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
             false
         }
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
-        if (savedInstanceState != null) {
-            displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
-        }
+        if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
+
         (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
 
         recyclerView = binding.recyclerView
@@ -111,9 +108,7 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
         }
 
         val animator: RecyclerView.ItemAnimator? = recyclerView.itemAnimator
-        if (animator is SimpleItemAnimator) {
-            animator.supportsChangeAnimations = false
-        }
+        if (animator is SimpleItemAnimator) animator.supportsChangeAnimations = false
 
         progressBar = binding.progLoading
         progressBar.visibility = View.VISIBLE
@@ -135,8 +130,7 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
 
             override fun onToggleChanged(open: Boolean) {
                 if (open && adapter.selectedCount == 0) {
-                    (activity as MainActivity).showSnackbarAbovePlayer(R.string.no_items_selected,
-                        Snackbar.LENGTH_SHORT)
+                    (activity as MainActivity).showSnackbarAbovePlayer(R.string.no_items_selected, Snackbar.LENGTH_SHORT)
                     speedDialView.close()
                 }
             }
@@ -149,9 +143,8 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
             adapter.endSelectMode()
             true
         }
-        if (arguments != null && requireArguments().getBoolean(ARG_SHOW_LOGS, false)) {
+        if (arguments != null && requireArguments().getBoolean(ARG_SHOW_LOGS, false))
             DownloadLogFragment().show(childFragmentManager, null)
-        }
 
         addEmptyView()
         EventBus.getDefault().register(this)
@@ -203,9 +196,7 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
     fun onEventMainThread(event: EpisodeDownloadEvent) {
         val newRunningDownloads: MutableSet<String> = HashSet()
         for (url in event.urls) {
-            if (DownloadServiceInterface.get()?.isDownloadingEpisode(url) == true) {
-                newRunningDownloads.add(url)
-            }
+            if (DownloadServiceInterface.get()?.isDownloadingEpisode(url) == true) newRunningDownloads.add(url)
         }
         if (newRunningDownloads != runningDownloads) {
             runningDownloads = newRunningDownloads
@@ -214,9 +205,7 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
         }
         for (downloadUrl in event.urls) {
             val pos = FeedItemUtil.indexOfItemWithDownloadUrl(items.toList(), downloadUrl)
-            if (pos >= 0) {
-                adapter.notifyItemChangedCompat(pos)
-            }
+            if (pos >= 0) adapter.notifyItemChangedCompat(pos)
         }
     }
 
@@ -226,9 +215,7 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
             Log.i(TAG, "Selected item at current position was null, ignoring selection")
             return super.onContextItemSelected(item)
         }
-        if (adapter.onContextItemSelected(item)) {
-            return true
-        }
+        if (adapter.onContextItemSelected(item)) return true
 
         return FeedItemMenuHandler.onMenuItemClicked(this, item.itemId, selectedItem)
     }
@@ -278,8 +265,7 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
         else {
             Log.d(TAG, "onEventMainThread() search list")
             for (i in 0 until adapter.itemCount) {
-                val holder: EpisodeItemViewHolder? =
-                    recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
+                val holder: EpisodeItemViewHolder? = recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
                 if (holder != null && holder.isCurrentlyPlayingItem) {
                     currentPlaying = holder
                     holder.notifyPlaybackPositionUpdated(event)
@@ -311,12 +297,8 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
     }
 
     private fun refreshSwipeTelltale() {
-        if (swipeActions.actions?.left != null) {
-            binding.leftActionIcon.setImageResource(swipeActions.actions!!.left!!.getActionIcon())
-        }
-        if (swipeActions.actions?.right != null) {
-            binding.rightActionIcon.setImageResource(swipeActions.actions!!.right!!.getActionIcon())
-        }
+        if (swipeActions.actions?.left != null) binding.leftActionIcon.setImageResource(swipeActions.actions!!.left!!.getActionIcon())
+        if (swipeActions.actions?.right != null) binding.rightActionIcon.setImageResource(swipeActions.actions!!.right!!.getActionIcon())
     }
 
     private fun loadItems() {
@@ -329,13 +311,10 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
                 FeedItemFilter(FeedItemFilter.DOWNLOADED), sortOrder)
 
             val mediaUrls: MutableList<String> = ArrayList()
-            if (runningDownloads.isEmpty()) {
-                return@fromCallable downloadedItems
-            }
+            if (runningDownloads.isEmpty()) return@fromCallable downloadedItems
+
             for (url in runningDownloads) {
-                if (FeedItemUtil.indexOfItemWithDownloadUrl(downloadedItems, url) != -1) {
-                    continue  // Already in list
-                }
+                if (FeedItemUtil.indexOfItemWithDownloadUrl(downloadedItems, url) != -1) continue  // Already in list
                 mediaUrls.add(url)
             }
             val currentDownloads: MutableList<FeedItem> = DBReader.getFeedItemsWithUrl(mediaUrls).toMutableList()
@@ -409,16 +388,9 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
             sortOrder = UserPreferences.downloadsSortedOrder
         }
 
-        override fun onAddItem(title: Int,
-                                         ascending: SortOrder,
-                                         descending: SortOrder,
-                                         ascendingIsDefault: Boolean
-        ) {
-            if (ascending == SortOrder.DATE_OLD_NEW ||
-                    ascending == SortOrder.DURATION_SHORT_LONG ||
-                    ascending == SortOrder.EPISODE_TITLE_A_Z ||
-                    ascending == SortOrder.SIZE_SMALL_LARGE ||
-                    ascending == SortOrder.FEED_TITLE_A_Z) {
+        override fun onAddItem(title: Int, ascending: SortOrder, descending: SortOrder, ascendingIsDefault: Boolean) {
+            if (ascending == SortOrder.DATE_OLD_NEW || ascending == SortOrder.DURATION_SHORT_LONG || ascending == SortOrder.EPISODE_TITLE_A_Z
+                    || ascending == SortOrder.SIZE_SMALL_LARGE || ascending == SortOrder.FEED_TITLE_A_Z) {
                 super.onAddItem(title, ascending, descending, ascendingIsDefault)
             }
         }

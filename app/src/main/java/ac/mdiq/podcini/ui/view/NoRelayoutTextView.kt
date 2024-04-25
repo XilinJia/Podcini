@@ -15,9 +15,7 @@ class NoRelayoutTextView : AppCompatTextView {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
     override fun requestLayout() {
-        if (requestLayoutEnabled) {
-            super.requestLayout()
-        }
+        if (requestLayoutEnabled) super.requestLayout()
         requestLayoutEnabled = false
     }
 

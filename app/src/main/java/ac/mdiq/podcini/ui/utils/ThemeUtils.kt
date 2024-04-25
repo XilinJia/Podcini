@@ -14,9 +14,7 @@ object ThemeUtils {
         val typedValue = TypedValue()
         context.theme.resolveAttribute(attr, typedValue, true)
 //        Log.d("ThemeUtils", "getColorFromAttr ${attr.toHexString()}, ${typedValue.resourceId.toHexString()} ${typedValue.data.toHexString()}")
-        if (typedValue.resourceId != 0) {
-            return ContextCompat.getColor(context, typedValue.resourceId)
-        }
+        if (typedValue.resourceId != 0) return ContextCompat.getColor(context, typedValue.resourceId)
         return typedValue.data
     }
 

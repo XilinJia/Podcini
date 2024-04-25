@@ -47,15 +47,12 @@ class DataFolderAdapter(context: Context, selectionHandler: Consumer<String>) : 
         holder.size.text = String.format(freeSpaceString, freeSpace, totalSpace)
         holder.progressBar.progress = storagePath.usagePercentage
         val selectListener = View.OnClickListener { _: View? ->
-            selectionHandler.accept(
-                storagePath.fullPath)
+            selectionHandler.accept(storagePath.fullPath)
         }
         holder.root.setOnClickListener(selectListener)
         holder.radioButton.setOnClickListener(selectListener)
 
-        if (storagePath.fullPath == currentPath) {
-            holder.radioButton.toggle()
-        }
+        if (storagePath.fullPath == currentPath) holder.radioButton.toggle()
     }
 
     override fun getItemCount(): Int {
@@ -71,14 +68,10 @@ class DataFolderAdapter(context: Context, selectionHandler: Consumer<String>) : 
         val mediaDirs = context.getExternalFilesDirs(null)
         val entries: MutableList<StoragePath> = ArrayList(mediaDirs.size)
         for (dir in mediaDirs) {
-            if (!isWritable(dir)) {
-                continue
-            }
+            if (!isWritable(dir)) continue
             entries.add(StoragePath(dir.absolutePath))
         }
-        if (entries.isEmpty() && isWritable(context.filesDir)) {
-            entries.add(StoragePath(context.filesDir.absolutePath))
-        }
+        if (entries.isEmpty() && isWritable(context.filesDir)) entries.add(StoragePath(context.filesDir.absolutePath))
         return entries
     }
 

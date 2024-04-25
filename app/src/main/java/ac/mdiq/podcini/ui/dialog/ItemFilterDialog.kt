@@ -53,9 +53,7 @@ abstract class ItemFilterDialog : BottomSheetDialogFragment() {
         binding.resetFiltermenu.setOnClickListener {
             onFilterChanged(emptySet())
             for (i in 0 until rows.childCount) {
-                if (rows.getChildAt(i) is MaterialButtonToggleGroup) {
-                    (rows.getChildAt(i) as MaterialButtonToggleGroup).clearChecked()
-                }
+                if (rows.getChildAt(i) is MaterialButtonToggleGroup) (rows.getChildAt(i) as MaterialButtonToggleGroup).clearChecked()
             }
         }
 
@@ -63,9 +61,7 @@ abstract class ItemFilterDialog : BottomSheetDialogFragment() {
             for (filterId in filter.values) {
                 if (filterId.isNotEmpty()) {
                     val button = layout.findViewWithTag<Button>(filterId)
-                    if (button != null) {
-                        (button.parent as MaterialButtonToggleGroup).check(button.id)
-                    }
+                    if (button != null) (button.parent as MaterialButtonToggleGroup).check(button.id)
                 }
             }
         }
@@ -100,13 +96,11 @@ abstract class ItemFilterDialog : BottomSheetDialogFragment() {
         get() {
             val newFilterValues: MutableSet<String> = HashSet()
             for (i in 0 until rows.childCount) {
-                if (rows.getChildAt(i) !is MaterialButtonToggleGroup) {
-                    continue
-                }
+                if (rows.getChildAt(i) !is MaterialButtonToggleGroup) continue
+
                 val group = rows.getChildAt(i) as MaterialButtonToggleGroup
-                if (group.checkedButtonId == View.NO_ID) {
-                    continue
-                }
+                if (group.checkedButtonId == View.NO_ID) continue
+
                 val tag = group.findViewById<View>(group.checkedButtonId).tag as? String ?: continue
                 newFilterValues.add(tag)
             }

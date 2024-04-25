@@ -30,9 +30,8 @@ object FeedMediaCursorMapper {
         val mediaId = cursor.getLong(indexId)
         var playbackCompletionDate: Date? = null
         val playbackCompletionTime = cursor.getLong(indexPlaybackCompletionDate)
-        if (playbackCompletionTime > 0) {
-            playbackCompletionDate = Date(playbackCompletionTime)
-        }
+        if (playbackCompletionTime > 0) playbackCompletionDate = Date(playbackCompletionTime)
+
         val hasEmbeddedPicture =
             when (cursor.getInt(cursor.getColumnIndexOrThrow(PodDBAdapter.KEY_HAS_EMBEDDED_PICTURE))) {
                 1 -> Boolean.TRUE

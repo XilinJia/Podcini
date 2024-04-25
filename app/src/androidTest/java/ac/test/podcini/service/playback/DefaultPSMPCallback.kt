@@ -15,7 +15,7 @@ open class DefaultPSMPCallback : PSMPCallback {
     override fun onMediaChanged(reloadUI: Boolean) {
     }
 
-    override fun onPostPlayback(media: Playable, ended: Boolean, skipped: Boolean, playingNext: Boolean) {
+    override fun onPostPlayback(media: Playable?, ended: Boolean, skipped: Boolean, playingNext: Boolean) {
     }
 
     override fun onPlaybackStart(playable: Playable, position: Int) {

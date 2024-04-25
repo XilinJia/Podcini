@@ -20,10 +20,9 @@ class CancelablePSMPCallback(private val originalCallback: PSMPCallback) : PSMPC
     }
 
     override fun shouldStop() {
-        if (isCancelled) {
-            return
-        }
-        originalCallback.shouldStop()
+        if (isCancelled) return
+
+//        originalCallback.shouldStop()
     }
 
     override fun onMediaChanged(reloadUI: Boolean) {
@@ -33,7 +32,7 @@ class CancelablePSMPCallback(private val originalCallback: PSMPCallback) : PSMPC
         originalCallback.onMediaChanged(reloadUI)
     }
 
-    override fun onPostPlayback(media: Playable, ended: Boolean, skipped: Boolean, playingNext: Boolean) {
+    override fun onPostPlayback(media: Playable?, ended: Boolean, skipped: Boolean, playingNext: Boolean) {
         if (isCancelled) {
             return
         }

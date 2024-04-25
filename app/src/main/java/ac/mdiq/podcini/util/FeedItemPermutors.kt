@@ -128,9 +128,7 @@ object FeedItemPermutors {
         for (item in queue) {
             if (item == null) continue
             val id = item.feedId
-            if (!map.containsKey(id)) {
-                map[id] = ArrayList()
-            }
+            if (!map.containsKey(id)) map[id] = ArrayList()
             map[id]!!.add(item)
         }
 
@@ -162,15 +160,11 @@ object FeedItemPermutors {
                 val nextEmptySlot = emptySlotIterator.next()
                 skipped++
                 if (skipped >= spread * (placed + 1)) {
-                    if (queue[nextEmptySlot] != null) {
-                        throw RuntimeException("Slot to be placed in not empty")
-                    }
+                    if (queue[nextEmptySlot] != null) throw RuntimeException("Slot to be placed in not empty")
                     queue[nextEmptySlot] = feedItems[placed]
                     emptySlotIterator.remove()
                     placed++
-                    if (placed == feedItems.size) {
-                        break
-                    }
+                    if (placed == feedItems.size) break
                 }
             }
         }

@@ -59,8 +59,7 @@ import org.apache.commons.lang3.StringUtils
  */
 @UnstableApi
 class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
-    private val addLocalFolderLauncher = registerForActivityResult<Uri?, Uri>(AddLocalFolder()
-    ) { uri: Uri? -> this.addLocalFolderResult(uri) }
+    private val addLocalFolderLauncher = registerForActivityResult<Uri?, Uri>(AddLocalFolder()) { uri: Uri? -> this.addLocalFolderResult(uri) }
 
     private var _binding: FeedinfoBinding? = null
     private val binding get() = _binding!!
@@ -86,14 +85,11 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             val clipData: ClipData = ClipData.newPlainText(url, url)
             val cm = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             cm.setPrimaryClip(clipData)
-            if (Build.VERSION.SDK_INT <= 32) {
-                (activity as MainActivity).showSnackbarAbovePlayer(R.string.copied_to_clipboard, Snackbar.LENGTH_SHORT)
-            }
+            if (Build.VERSION.SDK_INT <= 32) (activity as MainActivity).showSnackbarAbovePlayer(R.string.copied_to_clipboard, Snackbar.LENGTH_SHORT)
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FeedinfoBinding.inflate(inflater)
 
         Log.d(TAG, "fragment onCreateView")
@@ -109,10 +105,8 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         val iconTintManager: ToolbarIconTintManager =
             object : ToolbarIconTintManager(requireContext(), toolbar, collapsingToolbar) {
                 override fun doTint(themedContext: Context) {
-                    toolbar.menu.findItem(R.id.visit_website_item)
-                        .setIcon(AppCompatResources.getDrawable(themedContext, R.drawable.ic_web))
-                    toolbar.menu.findItem(R.id.share_item)
-                        .setIcon(AppCompatResources.getDrawable(themedContext, R.drawable.ic_share))
+                    toolbar.menu.findItem(R.id.visit_website_item).setIcon(AppCompatResources.getDrawable(themedContext, R.drawable.ic_web))
+                    toolbar.menu.findItem(R.id.share_item).setIcon(AppCompatResources.getDrawable(themedContext, R.drawable.ic_share))
                 }
             }
         iconTintManager.updateTint()
@@ -159,11 +153,8 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         val feedId = requireArguments().getLong(EXTRA_FEED_ID)
         disposable = Maybe.create { emitter: MaybeEmitter<Feed?> ->
             val feed: Feed? = DBReader.getFeed(feedId)
-            if (feed != null) {
-                emitter.onSuccess(feed)
-            } else {
-                emitter.onComplete()
-            }
+            if (feed != null) emitter.onSuccess(feed)
+            else emitter.onComplete()
         }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -177,8 +168,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         super.onConfigurationChanged(newConfig)
         val horizontalSpacing = resources.getDimension(R.dimen.additional_horizontal_spacing).toInt()
         header.setPadding(horizontalSpacing, header.paddingTop, horizontalSpacing, header.paddingBottom)
-        infoContainer.setPadding(horizontalSpacing, infoContainer.paddingTop,
-            horizontalSpacing, infoContainer.paddingBottom)
+        infoContainer.setPadding(horizontalSpacing, infoContainer.paddingTop, horizontalSpacing, infoContainer.paddingBottom)
     }
 
     private fun showFeed() {
@@ -212,9 +202,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
         txtvDescription.text = description
 
-        if (!feed!!.author.isNullOrEmpty()) {
-            txtvAuthorHeader.text = feed!!.author
-        }
+        if (!feed!!.author.isNullOrEmpty()) txtvAuthorHeader.text = feed!!.author
 
         txtvUrl.text = feed!!.download_url
         txtvUrl.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_paperclip, 0)
@@ -270,22 +258,16 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     override fun onMenuItemClick(item: MenuItem): Boolean {
         if (feed == null) {
-            (activity as MainActivity).showSnackbarAbovePlayer(
-                R.string.please_wait_for_data, Toast.LENGTH_LONG)
+            (activity as MainActivity).showSnackbarAbovePlayer(R.string.please_wait_for_data, Toast.LENGTH_LONG)
             return false
         }
         when (item.itemId) {
-            R.id.visit_website_item -> {
-                if (feed!!.link != null) IntentUtils.openInBrowser(requireContext(), feed!!.link!!)
-            }
-            R.id.share_item -> {
-                ShareUtils.shareFeedLink(requireContext(), feed!!)
-            }
+            R.id.visit_website_item -> if (feed!!.link != null) IntentUtils.openInBrowser(requireContext(), feed!!.link!!)
+            R.id.share_item -> ShareUtils.shareFeedLink(requireContext(), feed!!)
             R.id.reconnect_local_folder -> {
                 val alert = MaterialAlertDialogBuilder(requireContext())
                 alert.setMessage(R.string.reconnect_local_folder_warning)
-                alert.setPositiveButton(string.ok
-                ) { _: DialogInterface?, _: Int ->
+                alert.setPositiveButton(string.ok) { _: DialogInterface?, _: Int ->
                     try {
                         addLocalFolderLauncher.launch(null)
                     } catch (e: ActivityNotFoundException) {
@@ -304,17 +286,13 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     }
                 }.show()
             }
-            else -> {
-                return false
-            }
+            else -> return false
         }
         return true
     }
 
     @UnstableApi private fun addLocalFolderResult(uri: Uri?) {
-        if (uri == null) {
-            return
-        }
+        if (uri == null) return
         reconnectLocalFolder(uri)
     }
 
@@ -331,19 +309,13 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                {
-                    (activity as MainActivity).showSnackbarAbovePlayer(string.ok, Snackbar.LENGTH_SHORT)
-                },
-                { error: Throwable ->
-                    (activity as MainActivity).showSnackbarAbovePlayer(error.localizedMessage, Snackbar.LENGTH_LONG)
-                })
+            .subscribe({ (activity as MainActivity).showSnackbarAbovePlayer(string.ok, Snackbar.LENGTH_SHORT) },
+                { error: Throwable -> (activity as MainActivity).showSnackbarAbovePlayer(error.localizedMessage, Snackbar.LENGTH_LONG) })
     }
 
     private class AddLocalFolder : ActivityResultContracts.OpenDocumentTree() {
         override fun createIntent(context: Context, input: Uri?): Intent {
-            return super.createIntent(context, input)
-                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            return super.createIntent(context, input).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
     }
 

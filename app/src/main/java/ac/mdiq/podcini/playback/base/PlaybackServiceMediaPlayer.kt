@@ -291,8 +291,7 @@ abstract class PlaybackServiceMediaPlayer protected constructor(protected val co
     protected fun acquireWifiLockIfNecessary() {
         if (shouldLockWifi()) {
             if (wifiLock == null) {
-                wifiLock = (context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager)
-                    .createWifiLock(WifiManager.WIFI_MODE_FULL, TAG)
+                wifiLock = (context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager).createWifiLock(WifiManager.WIFI_MODE_FULL, TAG)
                 wifiLock?.setReferenceCounted(false)
             }
             wifiLock?.acquire()
@@ -301,9 +300,7 @@ abstract class PlaybackServiceMediaPlayer protected constructor(protected val co
 
     @Synchronized
     protected fun releaseWifiLockIfNecessary() {
-        if (wifiLock != null && wifiLock!!.isHeld) {
-            wifiLock!!.release()
-        }
+        if (wifiLock != null && wifiLock!!.isHeld) wifiLock!!.release()
     }
 
     /**
@@ -361,7 +358,7 @@ abstract class PlaybackServiceMediaPlayer protected constructor(protected val co
 
         fun onMediaChanged(reloadUI: Boolean)
 
-        fun onPostPlayback(media: Playable, ended: Boolean, skipped: Boolean, playingNext: Boolean)
+        fun onPostPlayback(media: Playable?, ended: Boolean, skipped: Boolean, playingNext: Boolean)
 
         fun onPlaybackStart(playable: Playable, position: Int)
 

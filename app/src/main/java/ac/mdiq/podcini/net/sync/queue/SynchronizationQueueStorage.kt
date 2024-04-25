@@ -14,8 +14,7 @@ class SynchronizationQueueStorage(context: Context) {
         get() {
             val actions = ArrayList<EpisodeAction>()
             try {
-                val json = sharedPreferences
-                    .getString(QUEUED_EPISODE_ACTIONS, "[]")
+                val json = sharedPreferences.getString(QUEUED_EPISODE_ACTIONS, "[]")
                 val queue = JSONArray(json)
                 for (i in 0 until queue.length()) {
                     val act = EpisodeAction.readFromJsonObject(queue.getJSONObject(i))?: continue
@@ -31,8 +30,7 @@ class SynchronizationQueueStorage(context: Context) {
         get() {
             val removedFeedUrls = ArrayList<String>()
             try {
-                val json = sharedPreferences
-                    .getString(QUEUED_FEEDS_REMOVED, "[]")
+                val json = sharedPreferences.getString(QUEUED_FEEDS_REMOVED, "[]")
                 val queue = JSONArray(json)
                 for (i in 0 until queue.length()) {
                     removedFeedUrls.add(queue.getString(i))
@@ -47,8 +45,7 @@ class SynchronizationQueueStorage(context: Context) {
         get() {
             val addedFeedUrls = ArrayList<String>()
             try {
-                val json = sharedPreferences
-                    .getString(QUEUED_FEEDS_ADDED, "[]")
+                val json = sharedPreferences.getString(QUEUED_FEEDS_ADDED, "[]")
                 val queue = JSONArray(json)
                 for (i in 0 until queue.length()) {
                     addedFeedUrls.add(queue.getString(i))
@@ -60,8 +57,7 @@ class SynchronizationQueueStorage(context: Context) {
         }
 
     fun clearEpisodeActionQueue() {
-        sharedPreferences.edit()
-            .putString(QUEUED_EPISODE_ACTIONS, "[]").apply()
+        sharedPreferences.edit().putString(QUEUED_EPISODE_ACTIONS, "[]").apply()
     }
 
     fun clearFeedQueues() {
@@ -115,9 +111,7 @@ class SynchronizationQueueStorage(context: Context) {
     private fun indexOf(string: String, array: JSONArray): Int {
         try {
             for (i in 0 until array.length()) {
-                if (array.getString(i) == string) {
-                    return i
-                }
+                if (array.getString(i) == string) return i
             }
         } catch (jsonException: JSONException) {
             jsonException.printStackTrace()
@@ -131,9 +125,7 @@ class SynchronizationQueueStorage(context: Context) {
         try {
             val queue = JSONArray(json)
             queue.put(action.writeToJsonObject())
-            sharedPreferences.edit().putString(
-                QUEUED_EPISODE_ACTIONS, queue.toString()
-            ).apply()
+            sharedPreferences.edit().putString(QUEUED_EPISODE_ACTIONS, queue.toString()).apply()
         } catch (jsonException: JSONException) {
             jsonException.printStackTrace()
         }

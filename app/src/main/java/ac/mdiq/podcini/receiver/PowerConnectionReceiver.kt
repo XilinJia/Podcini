@@ -35,10 +35,7 @@ class PowerConnectionReceiver : BroadcastReceiver() {
             if (!isEnableAutodownloadOnBattery) {
                 Log.d(TAG, "not charging anymore, canceling auto-download")
                 DownloadServiceInterface.get()?.cancelAll(context)
-            } else {
-                Log.d(TAG, "not charging anymore, but the user allows auto-download " +
-                        "when on battery so we'll keep going")
-            }
+            } else Log.d(TAG, "not charging anymore, but the user allows auto-download when on battery so we'll keep going")
         }
     }
 

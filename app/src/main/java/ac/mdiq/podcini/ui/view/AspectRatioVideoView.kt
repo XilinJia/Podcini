@@ -6,9 +6,7 @@ import android.util.Log
 import android.widget.VideoView
 import kotlin.math.ceil
 
-class AspectRatioVideoView @JvmOverloads constructor(context: Context,
-                                                     attrs: AttributeSet? = null,
-                                                     defStyle: Int = 0)
+class AspectRatioVideoView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0)
     : VideoView(context, attrs, defStyle) {
 
     private var mVideoWidth = 0

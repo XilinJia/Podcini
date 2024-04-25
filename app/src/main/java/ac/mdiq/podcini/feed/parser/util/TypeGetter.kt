@@ -39,9 +39,7 @@ class TypeGetter {
                                 Log.d(TAG, "Recognized type Atom")
 
                                 val strLang = xpp.getAttributeValue("http://www.w3.org/XML/1998/namespace", "lang")
-                                if (strLang != null) {
-                                    feed.language = strLang
-                                }
+                                if (strLang != null) feed.language = strLang
 
                                 return Type.ATOM
                             }
@@ -62,9 +60,7 @@ class TypeGetter {
                                         Log.d(TAG, "Recognized type RSS 0.91/0.92")
                                         return Type.RSS091
                                     }
-                                    else -> {
-                                        throw UnsupportedFeedtypeException("Unsupported rss version")
-                                    }
+                                    else -> throw UnsupportedFeedtypeException("Unsupported rss version")
                                 }
                             }
                             else -> {

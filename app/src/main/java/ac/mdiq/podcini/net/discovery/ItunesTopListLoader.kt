@@ -22,17 +22,13 @@ class ItunesTopListLoader(private val context: Context) {
         val client = getHttpClient()
         val feedString: String
         var loadCountry = country
-        if (COUNTRY_CODE_UNSET == country) {
-            loadCountry = Locale.getDefault().country
-        }
+        if (COUNTRY_CODE_UNSET == country) loadCountry = Locale.getDefault().country
+
         feedString = try {
             getTopListFeed(client, loadCountry)
         } catch (e: IOException) {
-            if (COUNTRY_CODE_UNSET == country) {
-                getTopListFeed(client, "US")
-            } else {
-                throw e
-            }
+            if (COUNTRY_CODE_UNSET == country) getTopListFeed(client, "US")
+            else throw e
         }
         return removeSubscribed(parseFeed(feedString), subscribed, limit)
     }
@@ -46,12 +42,9 @@ class ItunesTopListLoader(private val context: Context) {
             .url(String.format(url, country))
 
         client!!.newCall(httpReq.build()).execute().use { response ->
-            if (response.isSuccessful) {
-                return response.body!!.string()
-            }
-            if (response.code == 400) {
-                throw IOException("iTunes does not have data for the selected country.")
-            }
+            if (response.isSuccessful) return response.body!!.string()
+            if (response.code == 400) throw IOException("iTunes does not have data for the selected country.")
+
             val prefix = context.getString(R.string.error_msg_prefix)
             throw IOException(prefix + response)
         }
@@ -87,9 +80,7 @@ class ItunesTopListLoader(private val context: Context) {
         const val COUNTRY_CODE_UNSET: String = "99"
         private const val NUM_LOADED = 25
 
-        private fun removeSubscribed(
-                suggestedPodcasts: List<PodcastSearchResult>, subscribedFeeds: List<Feed>, limit: Int
-        ): List<PodcastSearchResult> {
+        private fun removeSubscribed(suggestedPodcasts: List<PodcastSearchResult>, subscribedFeeds: List<Feed>, limit: Int): List<PodcastSearchResult> {
             val subscribedPodcastsSet: MutableSet<String> = HashSet()
             for (subscribedFeed in subscribedFeeds) {
                 if (subscribedFeed.title != null && subscribedFeed.author != null) {
@@ -98,12 +89,8 @@ class ItunesTopListLoader(private val context: Context) {
             }
             val suggestedNotSubscribed: MutableList<PodcastSearchResult> = ArrayList()
             for (suggested in suggestedPodcasts) {
-                if (!subscribedPodcastsSet.contains(suggested.title.trim { it <= ' ' })) {
-                    suggestedNotSubscribed.add(suggested)
-                }
-                if (suggestedNotSubscribed.size == limit) {
-                    return suggestedNotSubscribed
-                }
+                if (!subscribedPodcastsSet.contains(suggested.title.trim { it <= ' ' })) suggestedNotSubscribed.add(suggested)
+                if (suggestedNotSubscribed.size == limit) return suggestedNotSubscribed
             }
             return suggestedNotSubscribed
         }

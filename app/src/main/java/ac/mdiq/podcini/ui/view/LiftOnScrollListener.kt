@@ -24,19 +24,11 @@ class LiftOnScrollListener(appBar: View) : RecyclerView.OnScrollListener(), Nest
     private fun isScrolled(recyclerView: RecyclerView): Boolean {
         val firstItem = (recyclerView.layoutManager as? LinearLayoutManager)?.findFirstVisibleItemPosition()?:-1
         when {
-            firstItem < 0 -> {
-                return false
-            }
-            firstItem > 0 -> {
-                return true
-            }
+            firstItem < 0 -> return false
+            firstItem > 0 -> return true
             else -> {
                 val firstItemView = recyclerView.layoutManager?.findViewByPosition(firstItem)
-                return if (firstItemView == null) {
-                    false
-                } else {
-                    firstItemView.top < 0
-                }
+                return if (firstItemView == null) false else firstItemView.top < 0
             }
         }
     }
@@ -46,14 +38,10 @@ class LiftOnScrollListener(appBar: View) : RecyclerView.OnScrollListener(), Nest
     }
 
     private fun elevate(isScrolled: Boolean) {
-        if (isScrolled == animatingToScrolled) {
-            return
-        }
+        if (isScrolled == animatingToScrolled) return
+
         animatingToScrolled = isScrolled
-        if (isScrolled) {
-            animator.start()
-        } else {
-            animator.reverse()
-        }
+        if (isScrolled) animator.start()
+        else animator.reverse()
     }
 }

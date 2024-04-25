@@ -64,9 +64,7 @@ class SelectSubscriptionActivity : AppCompatActivity() {
                 checkedPosition[0] = position
             }
         binding.shortcutBtn.setOnClickListener {
-            if (checkedPosition[0] != null && Intent.ACTION_CREATE_SHORTCUT == intent.action) {
-                getBitmapFromUrl(listItems[checkedPosition[0]!!])
-            }
+            if (checkedPosition[0] != null && Intent.ACTION_CREATE_SHORTCUT == intent.action) getBitmapFromUrl(listItems[checkedPosition[0]!!])
         }
     }
 
@@ -74,9 +72,7 @@ class SelectSubscriptionActivity : AppCompatActivity() {
         for (item in items) {
             if (item == null) continue
             val feed: Feed = item.feed
-            if (!result.contains(feed)) {
-                result.add(feed)
-            }
+            if (!result.contains(feed)) result.add(feed)
         }
         return result
     }
@@ -88,11 +84,8 @@ class SelectSubscriptionActivity : AppCompatActivity() {
         intent.putExtra(EXTRA_FEED_ID, feed.id)
         val id = "subscription-" + feed.id
 
-        val icon: IconCompat = if (bitmap != null) {
-            IconCompat.createWithAdaptiveBitmap(bitmap)
-        } else {
-            IconCompat.createWithResource(this, R.drawable.ic_subscriptions_shortcut)
-        }
+        val icon: IconCompat = if (bitmap != null) IconCompat.createWithAdaptiveBitmap(bitmap)
+        else IconCompat.createWithResource(this, R.drawable.ic_subscriptions_shortcut)
 
         val shortcut: ShortcutInfoCompat = ShortcutInfoCompat.Builder(this, id)
             .setShortLabel(feed.title?:"")
@@ -112,14 +105,12 @@ class SelectSubscriptionActivity : AppCompatActivity() {
             .load(feed.imageUrl)
             .apply(RequestOptions.overrideOf(iconSize, iconSize))
             .listener(object : RequestListener<Bitmap?> {
-                @UnstableApi override fun onLoadFailed(e: GlideException?, model: Any?,
-                                                       target: Target<Bitmap?>, isFirstResource: Boolean): Boolean {
+                @UnstableApi override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Bitmap?>, isFirstResource: Boolean): Boolean {
                     addShortcut(feed, null)
                     return true
                 }
 
-                @UnstableApi override fun onResourceReady(resource: Bitmap, model: Any,
-                                                          target: Target<Bitmap?>, dataSource: DataSource, isFirstResource: Boolean): Boolean {
+                @UnstableApi override fun onResourceReady(resource: Bitmap, model: Any, target: Target<Bitmap?>, dataSource: DataSource, isFirstResource: Boolean): Boolean {
                     addShortcut(feed, resource)
                     return true
                 }
@@ -142,8 +133,7 @@ class SelectSubscriptionActivity : AppCompatActivity() {
                     for (feed in result) {
                         if (feed.title != null) titles.add(feed.title!!)
                     }
-                    val adapter: ArrayAdapter<String> = ArrayAdapter<String>(this,
-                        R.layout.simple_list_item_multiple_choice_on_start, titles)
+                    val adapter: ArrayAdapter<String> = ArrayAdapter<String>(this, R.layout.simple_list_item_multiple_choice_on_start, titles)
                     binding.list.adapter = adapter
                 }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
     }

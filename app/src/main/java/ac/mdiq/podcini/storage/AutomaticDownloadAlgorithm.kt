@@ -54,22 +54,16 @@ open class AutomaticDownloadAlgorithm {
                 candidates.addAll(queue)
                 for (newItem in newItems) {
                     val feedPrefs = newItem.feed!!.preferences
-                    if (feedPrefs!!.autoDownload && !candidates.contains(newItem) && feedPrefs.filter.shouldAutoDownload(newItem)) {
+                    if (feedPrefs!!.autoDownload && !candidates.contains(newItem) && feedPrefs.filter.shouldAutoDownload(newItem))
                         candidates.add(newItem)
-                    }
                 }
 
                 // filter items that are not auto downloadable
                 val it = candidates.iterator()
                 while (it.hasNext()) {
                     val item = it.next()
-                    if (!item.isAutoDownloadEnabled
-                            || item.isDownloaded
-                            || !item.hasMedia()
-                            || isPlaying(item.media)
-                            || item.feed!!.isLocalFeed) {
+                    if (!item.isAutoDownloadEnabled || item.isDownloaded || !item.hasMedia() || isPlaying(item.media) || item.feed!!.isLocalFeed)
                         it.remove()
-                    }
                 }
 
                 val autoDownloadableEpisodes = candidates.size
@@ -78,11 +72,8 @@ open class AutomaticDownloadAlgorithm {
                 val cacheIsUnlimited = episodeCacheSize == UserPreferences.EPISODE_CACHE_SIZE_UNLIMITED
                 val episodeCacheSize = episodeCacheSize
                 val episodeSpaceLeft =
-                    if (cacheIsUnlimited || episodeCacheSize >= downloadedEpisodes + autoDownloadableEpisodes) {
-                        autoDownloadableEpisodes
-                    } else {
-                        episodeCacheSize - (downloadedEpisodes - deletedEpisodes)
-                    }
+                    if (cacheIsUnlimited || episodeCacheSize >= downloadedEpisodes + autoDownloadableEpisodes) autoDownloadableEpisodes
+                    else episodeCacheSize - (downloadedEpisodes - deletedEpisodes)
 
                 val itemsToDownload: List<FeedItem> = candidates.subList(0, episodeSpaceLeft)
                 if (itemsToDownload.isNotEmpty()) {

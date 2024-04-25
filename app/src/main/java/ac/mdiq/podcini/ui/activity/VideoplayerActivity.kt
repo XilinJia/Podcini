@@ -140,9 +140,7 @@ class VideoplayerActivity : CastEnabledActivity() {
     }
 
     public override fun onUserLeaveHint() {
-        if (!PictureInPictureUtil.isInPictureInPictureMode(this)) {
-            compatEnterPictureInPicture()
-        }
+        if (!PictureInPictureUtil.isInPictureInPictureMode(this)) compatEnterPictureInPicture()
     }
 
     @UnstableApi
@@ -171,16 +169,12 @@ class VideoplayerActivity : CastEnabledActivity() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     @Suppress("unused")
     fun sleepTimerUpdate(event: SleepTimerUpdatedEvent) {
-        if (event.isCancelled || event.wasJustEnabled()) {
-            supportInvalidateOptionsMenu()
-        }
+        if (event.isCancelled || event.wasJustEnabled()) supportInvalidateOptionsMenu()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onPlaybackServiceChanged(event: PlaybackServiceEvent) {
-        if (event.action == PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN) {
-            finish()
-        }
+        if (event.action == PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN) finish()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -196,7 +190,6 @@ class VideoplayerActivity : CastEnabledActivity() {
         errorDialog.setPositiveButton(event.actionText) { _: DialogInterface?, _: Int ->
             event.action?.accept(this)
         }
-
         errorDialog.show()
     }
 
@@ -216,6 +209,7 @@ class VideoplayerActivity : CastEnabledActivity() {
         val media = controller.getMedia()
         val isFeedMedia = (media is FeedMedia)
 
+        menu.findItem(R.id.show_home_reader_view).setVisible(false)
         menu.findItem(R.id.open_feed_item).setVisible(isFeedMedia) // FeedMedia implies it belongs to a Feed
 
         val hasWebsiteLink = getWebsiteLinkWithFallback(media) != null
@@ -273,21 +267,19 @@ class VideoplayerActivity : CastEnabledActivity() {
                 ChaptersFragment().show(supportFragmentManager, ChaptersFragment.TAG)
                 return true
             }
-            controller == null -> {
-                return false
-            }
+            controller == null -> return false
             else -> {
                 val media = controller.getMedia() ?: return false
                 val feedItem = getFeedItem(media) // some options option requires FeedItem
                 when {
                     item.itemId == R.id.add_to_favorites_item && feedItem != null -> {
                         DBWriter.addFavoriteItem(feedItem)
-                            videoEpisodeFragment.isFavorite = true
+                        videoEpisodeFragment.isFavorite = true
                         invalidateOptionsMenu()
                     }
                     item.itemId == R.id.remove_from_favorites_item && feedItem != null -> {
                         DBWriter.removeFavoriteItem(feedItem)
-                            videoEpisodeFragment.isFavorite = false
+                        videoEpisodeFragment.isFavorite = false
                         invalidateOptionsMenu()
                     }
                     item.itemId == R.id.disable_sleeptimer_item || item.itemId == R.id.set_sleeptimer_item -> {
@@ -309,12 +301,9 @@ class VideoplayerActivity : CastEnabledActivity() {
                         val shareDialog = ShareDialog.newInstance(feedItem)
                         shareDialog.show(supportFragmentManager, "ShareEpisodeDialog")
                     }
-                    item.itemId == R.id.playback_speed -> {
+                    item.itemId == R.id.playback_speed ->
                         VariableSpeedDialog.newInstance(booleanArrayOf(true, true, true))?.show(supportFragmentManager, null)
-                    }
-                    else -> {
-                        return false
-                    }
+                    else -> return false
                 }
                 return true
             }
@@ -362,18 +351,15 @@ class VideoplayerActivity : CastEnabledActivity() {
                 return true
             }
             KeyEvent.KEYCODE_PLUS, KeyEvent.KEYCODE_W -> {
-                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC,
-                    AudioManager.ADJUST_RAISE, AudioManager.FLAG_SHOW_UI)
+                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, AudioManager.FLAG_SHOW_UI)
                 return true
             }
             KeyEvent.KEYCODE_MINUS, KeyEvent.KEYCODE_S -> {
-                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC,
-                    AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI)
+                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI)
                 return true
             }
             KeyEvent.KEYCODE_M -> {
-                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC,
-                    AudioManager.ADJUST_TOGGLE_MUTE, AudioManager.FLAG_SHOW_UI)
+                audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_TOGGLE_MUTE, AudioManager.FLAG_SHOW_UI)
                 return true
             }
         }
@@ -394,25 +380,16 @@ class VideoplayerActivity : CastEnabledActivity() {
 
         private fun getWebsiteLinkWithFallback(media: Playable?): String? {
             return when {
-                media == null -> {
-                    null
-                }
-                !media.getWebsiteLink().isNullOrBlank() -> {
-                    media.getWebsiteLink()
-                }
-                media is FeedMedia -> {
-                    getLinkWithFallback(media.item)
-                }
+                media == null -> null
+                !media.getWebsiteLink().isNullOrBlank() -> media.getWebsiteLink()
+                media is FeedMedia -> getLinkWithFallback(media.item)
                 else -> null
             }
         }
 
         fun getFeedItem(playable: Playable?): FeedItem? {
-            return if (playable is FeedMedia) {
-                playable.item
-            } else {
-                null
-            }
+            return if (playable is FeedMedia) playable.item
+            else null
         }
     }
 }

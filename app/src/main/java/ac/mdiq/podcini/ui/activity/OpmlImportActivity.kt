@@ -67,9 +67,7 @@ class OpmlImportActivity : AppCompatActivity() {
                 val checked = binding.feedlist.checkedItemPositions
                 var checkedCount = 0
                 for (i in 0 until checked.size()) {
-                    if (checked.valueAt(i)) {
-                        checkedCount++
-                    }
+                    if (checked.valueAt(i)) checkedCount++
                 }
                 if (listAdapter != null) {
                     if (checkedCount == listAdapter!!.count) {
@@ -90,13 +88,11 @@ class OpmlImportActivity : AppCompatActivity() {
             Completable.fromAction {
                 val checked = binding.feedlist.checkedItemPositions
                 for (i in 0 until checked.size()) {
-                    if (!checked.valueAt(i)) {
-                        continue
-                    }
+                    if (!checked.valueAt(i)) continue
+
                     if (!readElements.isNullOrEmpty()) {
                         val element = readElements!![checked.keyAt(i)]
-                        val feed = Feed(element.xmlUrl, null,
-                            if (element.text != null) element.text else "Unknown podcast")
+                        val feed = Feed(element.xmlUrl, null, if (element.text != null) element.text else "Unknown podcast")
                         feed.items = mutableListOf()
                         DBTasks.updateFeed(this, feed, false)
                     }
@@ -124,9 +120,7 @@ class OpmlImportActivity : AppCompatActivity() {
             uri = Uri.parse("file://$uri")
         } else {
             val extraText = intent.getStringExtra(Intent.EXTRA_TEXT)
-            if (extraText != null) {
-                uri = Uri.parse(extraText)
-            }
+            if (extraText != null) uri = Uri.parse(extraText)
         }
         importUri(uri)
     }
@@ -179,9 +173,7 @@ class OpmlImportActivity : AppCompatActivity() {
                 selectAll.setVisible(true)
                 return true
             }
-            android.R.id.home -> {
-                finish()
-            }
+            android.R.id.home -> finish()
         }
         return false
     }
@@ -231,16 +223,13 @@ class OpmlImportActivity : AppCompatActivity() {
                     binding.progressBar.visibility = View.GONE
                     Log.d(TAG, "Parsing was successful")
                     readElements = result
-                    listAdapter = ArrayAdapter(this@OpmlImportActivity,
-                        android.R.layout.simple_list_item_multiple_choice,
-                        titleList)
+                    listAdapter = ArrayAdapter(this@OpmlImportActivity, android.R.layout.simple_list_item_multiple_choice, titleList)
                     binding.feedlist.adapter = listAdapter
                 }, { e: Throwable ->
                     Log.d(TAG, Log.getStackTraceString(e))
                     val message = if (e.message == null) "" else e.message!!
                     if (message.lowercase().contains("permission")) {
-                        val permission = ActivityCompat.checkSelfPermission(this,
-                            Manifest.permission.READ_EXTERNAL_STORAGE)
+                        val permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
                         if (permission != PackageManager.PERMISSION_GRANTED) {
                             requestPermission()
                             return@subscribe
@@ -257,8 +246,7 @@ class OpmlImportActivity : AppCompatActivity() {
                     $details
                     """.trimIndent()
                     val errorMessage = SpannableString(total)
-                    errorMessage.setSpan(ForegroundColorSpan(-0x77777778),
-                        userReadable.length, total.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    errorMessage.setSpan(ForegroundColorSpan(-0x77777778), userReadable.length, total.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                     alert.setMessage(errorMessage)
                     alert.setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int -> finish() }
                     alert.show()

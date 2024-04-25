@@ -40,7 +40,6 @@ import java.util.concurrent.TimeUnit
 
 @UnstableApi
 class ExoPlayerWrapper internal constructor(private val context: Context) {
-    //    TODO: need to experiment this, 5 seconds for now
     private val bufferUpdateInterval = 5L
 
     private val bufferingUpdateDisposable: Disposable

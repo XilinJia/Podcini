@@ -25,30 +25,16 @@ class FeedMultiSelectActionHandler(private val activity: MainActivity, private v
 
     fun handleAction(id: Int) {
         when (id) {
-            R.id.remove_feed -> {
-                RemoveFeedDialog.show(activity, selectedItems)
-            }
+            R.id.remove_feed -> RemoveFeedDialog.show(activity, selectedItems)
 //            R.id.notify_new_episodes -> {
 //                notifyNewEpisodesPrefHandler()
 //            }
-            R.id.keep_updated -> {
-                keepUpdatedPrefHandler()
-            }
-            R.id.autodownload -> {
-                autoDownloadPrefHandler()
-            }
-            R.id.autoDeleteDownload -> {
-                autoDeleteEpisodesPrefHandler()
-            }
-            R.id.playback_speed -> {
-                playbackSpeedPrefHandler()
-            }
-            R.id.edit_tags -> {
-                editFeedPrefTags()
-            }
-            else -> {
-                Log.e(TAG, "Unrecognized speed dial action item. Do nothing. id=$id")
-            }
+            R.id.keep_updated -> keepUpdatedPrefHandler()
+            R.id.autodownload -> autoDownloadPrefHandler()
+            R.id.autoDeleteDownload -> autoDeleteEpisodesPrefHandler()
+            R.id.playback_speed -> playbackSpeedPrefHandler()
+            R.id.edit_tags -> editFeedPrefTags()
+            else -> Log.e(TAG, "Unrecognized speed dial action item. Do nothing. id=$id")
         }
     }
 
@@ -68,9 +54,7 @@ class FeedMultiSelectActionHandler(private val activity: MainActivity, private v
 //    }
 
     private fun autoDownloadPrefHandler() {
-        val preferenceSwitchDialog = PreferenceSwitchDialog(activity,
-            activity.getString(R.string.auto_download_settings_label),
-            activity.getString(R.string.auto_download_label))
+        val preferenceSwitchDialog = PreferenceSwitchDialog(activity, activity.getString(R.string.auto_download_settings_label), activity.getString(R.string.auto_download_label))
         preferenceSwitchDialog.setOnPreferenceChangedListener(@UnstableApi object: PreferenceSwitchDialog.OnPreferenceChangedListener {
             override fun preferenceChanged(enabled: Boolean) {
                 saveFeedPreferences { feedPreferences: FeedPreferences -> feedPreferences.autoDownload = enabled }
@@ -80,11 +64,9 @@ class FeedMultiSelectActionHandler(private val activity: MainActivity, private v
     }
 
     @UnstableApi private fun playbackSpeedPrefHandler() {
-        val viewBinding =
-            PlaybackSpeedFeedSettingDialogBinding.inflate(activity.layoutInflater)
+        val viewBinding = PlaybackSpeedFeedSettingDialogBinding.inflate(activity.layoutInflater)
         viewBinding.seekBar.setProgressChangedListener { speed: Float? ->
-            viewBinding.currentSpeedLabel.text = String.format(
-                Locale.getDefault(), "%.2fx", speed)
+            viewBinding.currentSpeedLabel.text = String.format(Locale.getDefault(), "%.2fx", speed)
         }
         viewBinding.useGlobalCheckbox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
             viewBinding.seekBar.isEnabled = !isChecked
@@ -107,8 +89,7 @@ class FeedMultiSelectActionHandler(private val activity: MainActivity, private v
     }
 
     private fun autoDeleteEpisodesPrefHandler() {
-        val preferenceListDialog = PreferenceListDialog(activity,
-            activity.getString(R.string.auto_delete_label))
+        val preferenceListDialog = PreferenceListDialog(activity, activity.getString(R.string.auto_delete_label))
         val items: Array<String> = activity.resources.getStringArray(R.array.spnAutoDeleteItems)
         preferenceListDialog.openDialog(items)
         preferenceListDialog.setOnPreferenceChangedListener(object: PreferenceListDialog.OnPreferenceChangedListener {
@@ -122,9 +103,7 @@ class FeedMultiSelectActionHandler(private val activity: MainActivity, private v
     }
 
     private fun keepUpdatedPrefHandler() {
-        val preferenceSwitchDialog = PreferenceSwitchDialog(activity,
-            activity.getString(R.string.kept_updated),
-            activity.getString(R.string.keep_updated_summary))
+        val preferenceSwitchDialog = PreferenceSwitchDialog(activity, activity.getString(R.string.kept_updated), activity.getString(R.string.keep_updated_summary))
         preferenceSwitchDialog.setOnPreferenceChangedListener(object: PreferenceSwitchDialog.OnPreferenceChangedListener {
             @UnstableApi override fun preferenceChanged(keepUpdated: Boolean) {
                 saveFeedPreferences { feedPreferences: FeedPreferences ->
@@ -136,8 +115,7 @@ class FeedMultiSelectActionHandler(private val activity: MainActivity, private v
     }
 
     @UnstableApi private fun showMessage(@PluralsRes msgId: Int, numItems: Int) {
-        activity.showSnackbarAbovePlayer(activity.resources
-            .getQuantityString(msgId, numItems, numItems), Snackbar.LENGTH_LONG)
+        activity.showSnackbarAbovePlayer(activity.resources.getQuantityString(msgId, numItems, numItems), Snackbar.LENGTH_LONG)
     }
 
     @UnstableApi private fun saveFeedPreferences(preferencesConsumer: Consumer<FeedPreferences>) {
@@ -155,8 +133,7 @@ class FeedMultiSelectActionHandler(private val activity: MainActivity, private v
             if (feed.preferences == null) continue
             preferencesList.add(feed.preferences!!)
         }
-        TagSettingsDialog.newInstance(preferencesList).show(activity.supportFragmentManager,
-            TagSettingsDialog.TAG)
+        TagSettingsDialog.newInstance(preferencesList).show(activity.supportFragmentManager, TagSettingsDialog.TAG)
     }
 
     companion object {

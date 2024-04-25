@@ -61,9 +61,7 @@ object UrlChecker {
                 Log.d(TAG, "Adding http:// at the beginning of the URL")
                 return "http://$url"
             }
-            else -> {
-                return url
-            }
+            else -> return url
         }
     }
 
@@ -84,18 +82,12 @@ object UrlChecker {
         base = prepareUrl(base)
         val urlUri = Uri.parse(url)
         val baseUri = Uri.parse(base)
-        return if (urlUri.isRelative && baseUri.isAbsolute) {
-            urlUri.buildUpon().scheme(baseUri.scheme).build().toString()
-        } else {
-            prepareUrl(url)
-        }
+        return if (urlUri.isRelative && baseUri.isAbsolute) urlUri.buildUpon().scheme(baseUri.scheme).build().toString() else prepareUrl(url)
     }
 
     fun containsUrl(list: List<String?>, url: String?): Boolean {
         for (item in list) {
-            if (urlEquals(item, url)) {
-                return true
-            }
+            if (urlEquals(item, url)) return true
         }
         return false
     }
@@ -104,17 +96,14 @@ object UrlChecker {
     fun urlEquals(string1: String?, string2: String?): Boolean {
         val url1 = string1!!.toHttpUrlOrNull()
         val url2 = string2!!.toHttpUrlOrNull()
-        if (url1!!.host != url2!!.host) {
-            return false
-        }
+        if (url1!!.host != url2!!.host) return false
+
         val pathSegments1 = normalizePathSegments(url1.pathSegments)
         val pathSegments2 = normalizePathSegments(url2.pathSegments)
-        if (pathSegments1 != pathSegments2) {
-            return false
-        }
-        if (url1.query.isNullOrEmpty()) {
-            return url2.query.isNullOrEmpty()
-        }
+        if (pathSegments1 != pathSegments2) return false
+
+        if (url1.query.isNullOrEmpty()) return url2.query.isNullOrEmpty()
+
         return url1.query == url2.query
     }
 
@@ -126,9 +115,7 @@ object UrlChecker {
     private fun normalizePathSegments(input: List<String>): List<String> {
         val result: MutableList<String> = ArrayList()
         for (string in input) {
-            if (string.isNotEmpty()) {
-                result.add(string.lowercase())
-            }
+            if (string.isNotEmpty()) result.add(string.lowercase())
         }
         return result
     }

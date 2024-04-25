@@ -24,8 +24,7 @@ class NoActionSwipeAction : SwipeAction {
         return context.getString(R.string.no_action_label)
     }
 
-    @UnstableApi override fun performAction(item: FeedItem, fragment: Fragment, filter: FeedItemFilter) {
-    }
+    @UnstableApi override fun performAction(item: FeedItem, fragment: Fragment, filter: FeedItemFilter) {}
 
     override fun willRemove(filter: FeedItemFilter, item: FeedItem): Boolean {
         return false

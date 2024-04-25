@@ -66,22 +66,20 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
     
     private var openFolders: MutableSet<String> = HashSet()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         _binding = NavListBinding.inflate(inflater)
 
         Log.d(TAG, "fragment onCreateView")
         setupDrawerRoundBackground(binding.root)
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root
-        ) { view: View, insets: WindowInsetsCompat ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view: View, insets: WindowInsetsCompat ->
             val bars: Insets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.setPadding(bars.left, bars.top, bars.right, 0)
             var navigationBarHeight = 0f
             val activity: Activity? = activity
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && activity != null) {
-                navigationBarHeight = if (requireActivity().window.navigationBarDividerColor == Color.TRANSPARENT
-                ) 0f else 1 * resources.displayMetrics.density // Assuming the divider is 1dp in height
+                navigationBarHeight = if (requireActivity().window.navigationBarDividerColor == Color.TRANSPARENT) 0f
+                else 1 * resources.displayMetrics.density // Assuming the divider is 1dp in height
             }
             val bottomInset = max(0.0, Math.round(bars.bottom - navigationBarHeight).toDouble()).toFloat()
             (view.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin = bottomInset.toInt()
@@ -113,11 +111,9 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
         val shapeBuilder: ShapeAppearanceModel.Builder = ShapeAppearanceModel.builder()
         val cornerSize = resources.getDimension(R.dimen.drawer_corner_size)
         val isRtl = resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
-        if (isRtl) {
-            shapeBuilder.setTopLeftCornerSize(cornerSize).setBottomLeftCornerSize(cornerSize)
-        } else {
-            shapeBuilder.setTopRightCornerSize(cornerSize).setBottomRightCornerSize(cornerSize)
-        }
+        if (isRtl) shapeBuilder.setTopLeftCornerSize(cornerSize).setBottomLeftCornerSize(cornerSize)
+        else shapeBuilder.setTopRightCornerSize(cornerSize).setBottomRightCornerSize(cornerSize)
+
         val drawable = MaterialShapeDrawable(shapeBuilder.build())
         val themeColor = ThemeUtils.getColorFromAttr(root.context, attr.colorBackground)
         drawable.fillColor = ColorStateList.valueOf(themeColor)
@@ -163,8 +159,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
         val itemId = item.itemId
         when (itemId) {
             R.id.edit_tags -> {
-                if (feed.preferences != null)
-                    TagSettingsDialog.newInstance(listOf(feed.preferences!!)).show(childFragmentManager, TagSettingsDialog.TAG)
+                if (feed.preferences != null) TagSettingsDialog.newInstance(listOf(feed.preferences!!)).show(childFragmentManager, TagSettingsDialog.TAG)
                 return true
             }
             R.id.rename_item -> {
@@ -209,9 +204,8 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
     fun onQueueChanged(event: QueueEvent) {
         Log.d(TAG, "onQueueChanged($event)")
         // we are only interested in the number of queue items, not download status or position
-        if (event.action == QueueEvent.Action.DELETED_MEDIA || event.action == QueueEvent.Action.SORTED || event.action == QueueEvent.Action.MOVED) {
-            return
-        }
+        if (event.action == QueueEvent.Action.DELETED_MEDIA || event.action == QueueEvent.Action.SORTED || event.action == QueueEvent.Action.MOVED) return
+
         loadData()
     }
 
@@ -225,19 +219,14 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
             get() =  flatItemList?.size ?: 0
 
         override fun getItem(position: Int): NavDrawerData.FeedDrawerItem? {
-            return if (flatItemList != null && 0 <= position && position < flatItemList!!.size) {
-                flatItemList!![position]
-            } else {
-                null
-            }
+            return if (flatItemList != null && 0 <= position && position < flatItemList!!.size) flatItemList!![position]
+            else null
         }
 
         override fun isSelected(position: Int): Boolean {
             val lastNavFragment = getLastNavFragment(requireContext())
             when {
-                position < navAdapter.subscriptionOffset -> {
-                    return navAdapter.getFragmentTags()[position] == lastNavFragment
-                }
+                position < navAdapter.subscriptionOffset -> return navAdapter.getFragmentTags()[position] == lastNavFragment
                 StringUtils.isNumeric(lastNavFragment) -> { // last fragment was not a list, but a feed
                     val feedId = lastNavFragment.toLong()
                     if (navDrawerData != null) {
@@ -289,8 +278,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
                         (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
                     }
                 }
-                UserPreferences.subscriptionsFilter.isEnabled
-                        && navAdapter.showSubscriptionList -> {
+                UserPreferences.subscriptionsFilter.isEnabled && navAdapter.showSubscriptionList -> {
                     SubscriptionsFilterDialog().show(childFragmentManager, "filter")
                 }
             }
@@ -348,9 +336,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String?) {
-        if (PREF_LAST_FRAGMENT_TAG == key) {
-            navAdapter.notifyDataSetChanged() // Update selection
-        }
+        if (PREF_LAST_FRAGMENT_TAG == key) navAdapter.notifyDataSetChanged() // Update selection
     }
 
     companion object {
@@ -379,11 +365,9 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
             Log.d(TAG, "saveLastNavFragment(tag: $tag)")
             val prefs: SharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
             val edit: SharedPreferences.Editor = prefs.edit()
-            if (tag != null) {
-                edit.putString(PREF_LAST_FRAGMENT_TAG, tag)
-            } else {
-                edit.remove(PREF_LAST_FRAGMENT_TAG)
-            }
+            if (tag != null) edit.putString(PREF_LAST_FRAGMENT_TAG, tag)
+            else edit.remove(PREF_LAST_FRAGMENT_TAG)
+
             edit.apply()
         }
 

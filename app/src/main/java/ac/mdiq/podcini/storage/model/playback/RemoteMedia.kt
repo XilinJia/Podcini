@@ -214,19 +214,16 @@ class RemoteMedia : Playable {
     }
 
     override fun equals(other: Any?): Boolean {
-        if (other is RemoteMedia) {
-            return (TextUtils.equals(streamUrl, other.streamUrl)
-                    && TextUtils.equals(feedUrl, other.feedUrl)
+        if (other is RemoteMedia)
+            return (TextUtils.equals(streamUrl, other.streamUrl) && TextUtils.equals(feedUrl, other.feedUrl)
                     && TextUtils.equals(itemIdentifier, other.itemIdentifier))
-        }
+
         if (other is FeedMedia) {
-            if (!TextUtils.equals(streamUrl, other.getStreamUrl())) {
-                return false
-            }
+            if (!TextUtils.equals(streamUrl, other.getStreamUrl())) return false
+
             val fi = other.item
-            if (fi == null || !TextUtils.equals(itemIdentifier, fi.itemIdentifier)) {
-                return false
-            }
+            if (fi == null || !TextUtils.equals(itemIdentifier, fi.itemIdentifier)) return false
+
             val feed = fi.feed
             return feed != null && TextUtils.equals(feedUrl, feed.download_url)
         }

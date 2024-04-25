@@ -18,29 +18,21 @@ class Itunes : Namespace() {
             } else {
                 // this is the feed image
                 // prefer to all other images
-                if (!url.isNullOrEmpty()) {
-                    state.feed.imageUrl = url
-                }
+                if (!url.isNullOrEmpty()) state.feed.imageUrl = url
             }
         }
         return SyndElement(localName, this)
     }
 
     override fun handleElementEnd(localName: String, state: HandlerState) {
-        if (state.contentBuf == null) {
-            return
-        }
+        if (state.contentBuf == null) return
 
         val content = state.contentBuf.toString()
         val contentFromHtml = HtmlCompat.fromHtml(content, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
-        if (content.isEmpty()) {
-            return
-        }
+        if (content.isEmpty()) return
 
         when {
-            AUTHOR == localName && state.tagstack.size <= 3 -> {
-                state.feed.author = contentFromHtml
-            }
+            AUTHOR == localName && state.tagstack.size <= 3 -> state.feed.author = contentFromHtml
             DURATION == localName -> {
                 try {
                     val durationMs = inMillis(content)
@@ -51,27 +43,17 @@ class Itunes : Namespace() {
             }
             SUBTITLE == localName -> {
                 when {
-                    state.currentItem != null && state.currentItem?.description.isNullOrEmpty() -> {
-                        state.currentItem!!.setDescriptionIfLonger(content)
-                    }
-                    state.feed.description.isNullOrEmpty() -> {
-                        state.feed.description = content
-                    }
+                    state.currentItem != null && state.currentItem?.description.isNullOrEmpty() -> state.currentItem!!.setDescriptionIfLonger(content)
+                    state.feed.description.isNullOrEmpty() -> state.feed.description = content
                 }
             }
             SUMMARY == localName -> {
                 when {
-                    state.currentItem != null -> {
-                        state.currentItem!!.setDescriptionIfLonger(content)
-                    }
-                    Rss20.CHANNEL == state.secondTag.name -> {
-                        state.feed.description = content
-                    }
+                    state.currentItem != null -> state.currentItem!!.setDescriptionIfLonger(content)
+                    Rss20.CHANNEL == state.secondTag.name -> state.feed.description = content
                 }
             }
-            NEW_FEED_URL == localName && content.trim { it <= ' ' }.startsWith("http") -> {
-                state.redirectUrl = content.trim { it <= ' ' }
-            }
+            NEW_FEED_URL == localName && content.trim { it <= ' ' }.startsWith("http") -> state.redirectUrl = content.trim { it <= ' ' }
         }
     }
 

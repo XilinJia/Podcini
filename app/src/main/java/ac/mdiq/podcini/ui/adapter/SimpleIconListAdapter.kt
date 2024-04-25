@@ -13,15 +13,12 @@ import com.bumptech.glide.request.RequestOptions
 /**
  * Displays a list of items that have a subtitle and an icon.
  */
-class SimpleIconListAdapter<T : SimpleIconListAdapter.ListItem>(private val context: Context,
-                                                                private val listItems: List<T>
-) : ArrayAdapter<T>(context, R.layout.simple_icon_list_item, listItems) {
+class SimpleIconListAdapter<T : SimpleIconListAdapter.ListItem>(private val context: Context, private val listItems: List<T>)
+    : ArrayAdapter<T>(context, R.layout.simple_icon_list_item, listItems) {
 
     override fun getView(position: Int, view: View?, parent: ViewGroup): View {
         var view = view
-        if (view == null) {
-            view = View.inflate(context, R.layout.simple_icon_list_item, null)
-        }
+        if (view == null) view = View.inflate(context, R.layout.simple_icon_list_item, null)
 
         val item: ListItem = listItems[position]
         val binding = SimpleIconListItemBinding.bind(view!!)

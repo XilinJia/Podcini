@@ -135,11 +135,9 @@ class Feed : FeedFile {
         this.isPaged = paged
         this.nextPageLink = nextPageLink
         this.items = mutableListOf()
-        if (filter != null) {
-            this.itemFilter = FeedItemFilter(filter)
-        } else {
-            this.itemFilter = FeedItemFilter()
-        }
+        if (filter != null) this.itemFilter = FeedItemFilter(filter)
+        else this.itemFilter = FeedItemFilter()
+
         this.sortOrder = sortOrder
         this.lastUpdateFailed = lastUpdateFailed
     }
@@ -230,61 +228,32 @@ class Feed : FeedFile {
          * of the feed.
          */
         get() = when {
-            !feedIdentifier.isNullOrEmpty() -> {
-                feedIdentifier
-            }
-            !download_url.isNullOrEmpty() -> {
-                download_url
-            }
-            !feedTitle.isNullOrEmpty() -> {
-                feedTitle
-            }
-            else -> {
-                link
-            }
+            !feedIdentifier.isNullOrEmpty() -> feedIdentifier
+            !download_url.isNullOrEmpty() -> download_url
+            !feedTitle.isNullOrEmpty() -> feedTitle
+            else -> link
         }
 
     override fun getHumanReadableIdentifier(): String? {
         return when {
-            !customTitle.isNullOrEmpty() -> {
-                customTitle
-            }
-            !feedTitle.isNullOrEmpty() -> {
-                feedTitle
-            }
-            else -> {
-                download_url
-            }
+            !customTitle.isNullOrEmpty() -> customTitle
+            !feedTitle.isNullOrEmpty() -> feedTitle
+            else -> download_url
         }
     }
 
     fun updateFromOther(other: Feed) {
         // don't update feed's download_url, we do that manually if redirected
         // see PodciniHttpClient
-        if (other.imageUrl != null) {
-            this.imageUrl = other.imageUrl
-        }
-        if (other.feedTitle != null) {
-            feedTitle = other.feedTitle
-        }
-        if (other.feedIdentifier != null) {
-            feedIdentifier = other.feedIdentifier
-        }
-        if (other.link != null) {
-            link = other.link
-        }
-        if (other.description != null) {
-            description = other.description
-        }
-        if (other.language != null) {
-            language = other.language
-        }
-        if (other.author != null) {
-            author = other.author
-        }
-        if (other.paymentLinks.isNotEmpty()) {
-            paymentLinks = other.paymentLinks
-        }
+        if (other.imageUrl != null) this.imageUrl = other.imageUrl
+        if (other.feedTitle != null) feedTitle = other.feedTitle
+        if (other.feedIdentifier != null) feedIdentifier = other.feedIdentifier
+        if (other.link != null) link = other.link
+        if (other.description != null) description = other.description
+        if (other.language != null) language = other.language
+        if (other.author != null) author = other.author
+        if (other.paymentLinks.isNotEmpty()) paymentLinks = other.paymentLinks
+
         // this feed's nextPage might already point to a higher page, so we only update the nextPage value
         // if this feed is not paged and the other feed is.
         if (!this.isPaged && other.isPaged) {
@@ -294,53 +263,35 @@ class Feed : FeedFile {
     }
 
     fun compareWithOther(other: Feed): Boolean {
-        if (super.compareWithOther(other)) {
-            return true
-        }
+        if (super.compareWithOther(other)) return true
+
         if (other.imageUrl != null) {
-            if (imageUrl == null || !TextUtils.equals(imageUrl, other.imageUrl)) {
-                return true
-            }
+            if (imageUrl == null || !TextUtils.equals(imageUrl, other.imageUrl)) return true
         }
-        if (!TextUtils.equals(feedTitle, other.feedTitle)) {
-            return true
-        }
+        if (!TextUtils.equals(feedTitle, other.feedTitle)) return true
+
         if (other.feedIdentifier != null) {
-            if (feedIdentifier == null || feedIdentifier != other.feedIdentifier) {
-                return true
-            }
+            if (feedIdentifier == null || feedIdentifier != other.feedIdentifier) return true
         }
         if (other.link != null) {
-            if (link == null || link != other.link) {
-                return true
-            }
+            if (link == null || link != other.link) return true
         }
         if (other.description != null) {
-            if (description == null || description != other.description) {
-                return true
-            }
+            if (description == null || description != other.description) return true
         }
         if (other.language != null) {
-            if (language == null || language != other.language) {
-                return true
-            }
+            if (language == null || language != other.language) return true
         }
         if (other.author != null) {
-            if (author == null || author != other.author) {
-                return true
-            }
+            if (author == null || author != other.author) return true
         }
         if (other.paymentLinks.isNotEmpty()) {
-            if (paymentLinks.isEmpty() || paymentLinks != other.paymentLinks) {
-                return true
-            }
+            if (paymentLinks.isEmpty() || paymentLinks != other.paymentLinks) return true
         }
-        if (other.isPaged && !this.isPaged) {
-            return true
-        }
-        if (!TextUtils.equals(other.nextPageLink, this.nextPageLink)) {
-            return true
-        }
+        if (other.isPaged && !this.isPaged) return true
+
+        if (!TextUtils.equals(other.nextPageLink, this.nextPageLink)) return true
+
         return false
     }
 
@@ -374,11 +325,8 @@ class Feed : FeedFile {
     }
 
     fun setCustomTitle(customTitle: String?) {
-        if (customTitle == null || customTitle == feedTitle) {
-            this.customTitle = null
-        } else {
-            this.customTitle = customTitle
-        }
+        if (customTitle == null || customTitle == feedTitle) this.customTitle = null
+        else this.customTitle = customTitle
     }
 
     fun addPayment(funding: FeedFunding) {
@@ -389,9 +337,7 @@ class Feed : FeedFile {
         get() = super.id
         set(id) {
             super.id = id
-            if (preferences != null) {
-                preferences!!.feedID = id
-            }
+            if (preferences != null) preferences!!.feedID = id
         }
 
     fun setItemFilter(properties: Array<String?>?) {

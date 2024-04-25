@@ -46,9 +46,8 @@ open class ID3Reader(private val inputStream: CountingInputStream) {
      */
     @Throws(IOException::class, ID3ReaderException::class)
     fun skipBytes(number: Int) {
-        if (number < 0) {
-            throw ID3ReaderException("Trying to read a negative number of bytes")
-        }
+        if (number < 0) throw ID3ReaderException("Trying to read a negative number of bytes")
+
         IOUtils.skipFully(inputStream, number.toLong())
     }
 
@@ -76,9 +75,7 @@ open class ID3Reader(private val inputStream: CountingInputStream) {
     @Throws(ID3ReaderException::class, IOException::class)
     fun expectChar(expected: Char) {
         val read = inputStream.read().toChar()
-        if (read != expected) {
-            throw ID3ReaderException("Expected $expected and got $read")
-        }
+        if (read != expected) throw ID3ReaderException("Expected $expected and got $read")
     }
 
     @Throws(ID3ReaderException::class, IOException::class)
@@ -100,9 +97,8 @@ open class ID3Reader(private val inputStream: CountingInputStream) {
     fun readFrameHeader(): FrameHeader {
         val id = readPlainBytesToString(FRAME_ID_LENGTH)
         var size = readInt()
-        if (tagHeader != null && tagHeader!!.version >= 0x0400) {
-            size = unsynchsafe(size)
-        }
+        if (tagHeader != null && tagHeader!!.version >= 0x0400) size = unsynchsafe(size)
+
         val flags = readShort()
         return FrameHeader(id, size, flags)
     }
@@ -148,15 +144,9 @@ open class ID3Reader(private val inputStream: CountingInputStream) {
     @Throws(IOException::class)
     fun readEncodedString(encoding: Int, max: Int): String {
         return when (encoding) {
-            ENCODING_UTF16_WITH_BOM.toInt(), ENCODING_UTF16_WITHOUT_BOM.toInt() -> {
-                readEncodedString2(Charset.forName("UTF-16"), max)
-            }
-            ENCODING_UTF8.toInt() -> {
-                readEncodedString2(Charset.forName("UTF-8"), max)
-            }
-            else -> {
-                readEncodedString1(Charset.forName("ISO-8859-1"), max)
-            }
+            ENCODING_UTF16_WITH_BOM.toInt(), ENCODING_UTF16_WITHOUT_BOM.toInt() -> readEncodedString2(Charset.forName("UTF-16"), max)
+            ENCODING_UTF8.toInt() -> readEncodedString2(Charset.forName("UTF-8"), max)
+            else -> readEncodedString1(Charset.forName("ISO-8859-1"), max)
         }
     }
 
@@ -170,9 +160,8 @@ open class ID3Reader(private val inputStream: CountingInputStream) {
         while (bytesRead < max) {
             val c = readByte()
             bytesRead++
-            if (c.toInt() == 0) {
-                break
-            }
+            if (c.toInt() == 0) break
+
             bytes.write(c.toInt())
         }
         return charset.newDecoder().decode(ByteBuffer.wrap(bytes.toByteArray())).toString()
@@ -200,9 +189,7 @@ open class ID3Reader(private val inputStream: CountingInputStream) {
         if (!foundEnd && bytesRead < max) {
             // Last character
             val c = readByte()
-            if (c.toInt() != 0) {
-                bytes.write(c.toInt())
-            }
+            if (c.toInt() != 0) bytes.write(c.toInt())
         }
         return try {
             charset.newDecoder().decode(ByteBuffer.wrap(bytes.toByteArray())).toString()

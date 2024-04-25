@@ -90,16 +90,11 @@ class FavoritesWriter : ExportWriter {
     @Throws(IOException::class)
     private fun writeFavoriteItem(writer: Writer?, item: FeedItem, favoriteTemplate: String) {
         var favItem = favoriteTemplate.replace("{FAV_TITLE}", item.title!!.trim { it <= ' ' })
-        favItem = if (item.link != null) {
-            favItem.replace("{FAV_WEBSITE}", item.link!!)
-        } else {
-            favItem.replace("{FAV_WEBSITE}", "")
-        }
-        favItem = if (item.media != null && item.media!!.download_url != null) {
-            favItem.replace("{FAV_MEDIA}", item.media!!.download_url!!)
-        } else {
-            favItem.replace("{FAV_MEDIA}", "")
-        }
+        favItem = if (item.link != null) favItem.replace("{FAV_WEBSITE}", item.link!!)
+        else favItem.replace("{FAV_WEBSITE}", "")
+
+        favItem = if (item.media != null && item.media!!.download_url != null) favItem.replace("{FAV_MEDIA}", item.media!!.download_url!!)
+        else favItem.replace("{FAV_MEDIA}", "")
 
         writer!!.append(favItem)
     }

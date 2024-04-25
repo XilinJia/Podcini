@@ -38,8 +38,7 @@ object FeedPreferencesCursorMapper {
         val feedId = cursor.getLong(indexId)
         val autoDownload = cursor.getInt(indexAutoDownload) > 0
         val autoRefresh = cursor.getInt(indexAutoRefresh) > 0
-        val autoDeleteAction =
-            AutoDeleteAction.fromCode(cursor.getInt(indexAutoDeleteAction))
+        val autoDeleteAction = AutoDeleteAction.fromCode(cursor.getInt(indexAutoDeleteAction))
         val volumeAdaptionValue = cursor.getInt(indexVolumeAdaption)
         val volumeAdaptionSetting = fromInteger(volumeAdaptionValue)
         val username = cursor.getString(indexUsername)
@@ -50,13 +49,11 @@ object FeedPreferencesCursorMapper {
         val feedPlaybackSpeed = cursor.getFloat(indexFeedPlaybackSpeed)
         val feedAutoSkipIntro = cursor.getInt(indexAutoSkipIntro)
         val feedAutoSkipEnding = cursor.getInt(indexAutoSkipEnding)
-        val feedNewEpisodesAction =
-            NewEpisodesAction.fromCode(cursor.getInt(indexNewEpisodesAction))
+        val feedNewEpisodesAction = NewEpisodesAction.fromCode(cursor.getInt(indexNewEpisodesAction))
         val showNotification = cursor.getInt(indexEpisodeNotification) > 0
         var tagsString = cursor.getString(indexTags)
-        if (tagsString.isNullOrEmpty()) {
-            tagsString = FeedPreferences.TAG_ROOT
-        }
+        if (tagsString.isNullOrEmpty()) tagsString = FeedPreferences.TAG_ROOT
+
         return FeedPreferences(feedId,
             autoDownload,
             autoRefresh,

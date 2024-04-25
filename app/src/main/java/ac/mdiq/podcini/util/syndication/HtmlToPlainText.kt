@@ -52,18 +52,10 @@ class HtmlToPlainText {
         override fun head(node: Node, depth: Int) {
             val name = node.nodeName()
             when {
-                node is TextNode -> {
-                    append(node.text()) // TextNodes carry all user-readable text in the DOM.
-                }
-                name == "li" -> {
-                    append("\n * ")
-                }
-                name == "dt" -> {
-                    append("  ")
-                }
-                StringUtil.`in`(name, "p", "h1", "h2", "h3", "h4", "h5", "tr") -> {
-                    append("\n")
-                }
+                node is TextNode -> append(node.text()) // TextNodes carry all user-readable text in the DOM.
+                name == "li" -> append("\n * ")
+                name == "dt" -> append("  ")
+                StringUtil.`in`(name, "p", "h1", "h2", "h3", "h4", "h5", "tr") -> append("\n")
             }
         }
 
@@ -71,20 +63,15 @@ class HtmlToPlainText {
         override fun tail(node: Node, depth: Int) {
             val name = node.nodeName()
             when {
-                StringUtil.`in`(name, "br", "dd", "dt", "p", "h1", "h2", "h3", "h4", "h5") -> {
-                    append("\n")
-                }
-                name == "a" -> {
-                    append(String.format(" <%s>", node.absUrl("href")))
-                }
+                StringUtil.`in`(name, "br", "dd", "dt", "p", "h1", "h2", "h3", "h4", "h5") -> append("\n")
+                name == "a" -> append(String.format(" <%s>", node.absUrl("href")))
             }
         }
 
         // appends text to the string builder with a simple word wrap method
         private fun append(text: String) {
-            if (text == " " && (accum.isEmpty() || StringUtil.`in`(accum.substring(accum.length - 1), " ", "\n"))) {
+            if (text == " " && (accum.isEmpty() || StringUtil.`in`(accum.substring(accum.length - 1), " ", "\n")))
                 return  // don't accumulate long runs of empty spaces
-            }
 
             accum.append(text)
         }
@@ -110,9 +97,7 @@ class HtmlToPlainText {
                     val feedDescription = Jsoup.parse(str)
                     str = StringUtils.trim(formatter.getPlainText(feedDescription))
                 }
-                str.isEmpty() -> {
-                    str = ""
-                }
+                str.isEmpty() -> str = ""
             }
 
             return str

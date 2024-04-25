@@ -93,9 +93,8 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
             false
         }
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
-        if (savedInstanceState != null) {
-            displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
-        }
+        if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
+
         (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
 
         recyclerView = binding.recyclerView
@@ -114,9 +113,7 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
         }
 
         val animator: RecyclerView.ItemAnimator? = recyclerView.itemAnimator
-        if (animator is SimpleItemAnimator) {
-            animator.supportsChangeAnimations = false
-        }
+        if (animator is SimpleItemAnimator) animator.supportsChangeAnimations = false
 
         swipeRefreshLayout = binding.swipeRefresh
         swipeRefreshLayout.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
@@ -130,8 +127,7 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
 //                if (!inActionMode()) {
 //                    menu.findItem(R.id.multi_select).setVisible(true)
 //                }
-                MenuItemUtils.setOnClickListeners(menu
-                ) { item: MenuItem ->
+                MenuItemUtils.setOnClickListeners(menu) { item: MenuItem ->
                     this@BaseEpisodesListFragment.onContextItemSelected(item)
                 }
             }
@@ -160,8 +156,7 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
 
             override fun onToggleChanged(open: Boolean) {
                 if (open && listAdapter.selectedCount == 0) {
-                    (activity as MainActivity).showSnackbarAbovePlayer(R.string.no_items_selected,
-                        Snackbar.LENGTH_SHORT)
+                    (activity as MainActivity).showSnackbarAbovePlayer(R.string.no_items_selected, Snackbar.LENGTH_SHORT)
                     speedDialView.close()
                 }
             }
@@ -171,12 +166,8 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
             if (listAdapter.selectedItems.size >= 25 || listAdapter.shouldSelectLazyLoadedItems()) {
                 // Should ask for confirmation
                 when (actionItem.id) {
-                    R.id.mark_read_batch -> {
-                        confirmationString = R.string.multi_select_mark_played_confirmation
-                    }
-                    R.id.mark_unread_batch -> {
-                        confirmationString = R.string.multi_select_mark_unplayed_confirmation
-                    }
+                    R.id.mark_read_batch -> confirmationString = R.string.multi_select_mark_played_confirmation
+                    R.id.mark_unread_batch -> confirmationString = R.string.multi_select_mark_unplayed_confirmation
                 }
             }
             if (confirmationString == 0) {
@@ -214,9 +205,8 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
     }
 
     @UnstableApi override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (super.onOptionsItemSelected(item)) {
-            return true
-        }
+        if (super.onOptionsItemSelected(item)) return true
+
         val itemId = item.itemId
         when (itemId) {
             R.id.refresh_item -> {
@@ -234,18 +224,14 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
     override fun onContextItemSelected(item: MenuItem): Boolean {
         Log.d(TAG, "onContextItemSelected() called with: item = [$item]")
         when {
-            !userVisibleHint || !isVisible || !isMenuVisible -> {
-                // The method is called on all fragments in a ViewPager, so this needs to be ignored in invisible ones.
-                // Apparently, none of the visibility check method works reliably on its own, so we just use all.
-                return false
-            }
+            // The method is called on all fragments in a ViewPager, so this needs to be ignored in invisible ones.
+            // Apparently, none of the visibility check method works reliably on its own, so we just use all.
+            !userVisibleHint || !isVisible || !isMenuVisible -> return false
             listAdapter.longPressedItem == null -> {
                 Log.i(TAG, "Selected item or listAdapter was null, ignoring selection")
                 return super.onContextItemSelected(item)
             }
-            listAdapter.onContextItemSelected(item) -> {
-                return true
-            }
+            listAdapter.onContextItemSelected(item) -> return true
             else -> {
                 val selectedItem: FeedItem = listAdapter.longPressedItem ?: return false
                 return FeedItemMenuHandler.onMenuItemClicked(this, item.itemId, selectedItem)
@@ -296,25 +282,22 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
         disposable = Observable.fromCallable { loadMoreData(page) }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { data: List<FeedItem> ->
-                    if (data.size < EPISODES_PER_PAGE) {
-                        hasMoreItems = false
-                    }
-                    episodes.addAll(data)
-                    listAdapter.setDummyViews(0)
-                    listAdapter.updateItems(episodes)
-                    if (listAdapter.shouldSelectLazyLoadedItems()) {
-                        listAdapter.setSelected(episodes.size - data.size, episodes.size, true)
-                    }
-                }, { error: Throwable? ->
-                    listAdapter.setDummyViews(0)
-                    listAdapter.updateItems(emptyList())
-                    Log.e(TAG, Log.getStackTraceString(error))
-                }, {
-                    // Make sure to not always load 2 pages at once
-                    recyclerView.post { isLoadingMore = false }
-                })
+            .subscribe({ data: List<FeedItem> ->
+                if (data.size < EPISODES_PER_PAGE) hasMoreItems = false
+
+                episodes.addAll(data)
+                listAdapter.setDummyViews(0)
+                listAdapter.updateItems(episodes)
+                if (listAdapter.shouldSelectLazyLoadedItems()) listAdapter.setSelected(episodes.size - data.size, episodes.size, true)
+
+            }, { error: Throwable? ->
+                listAdapter.setDummyViews(0)
+                listAdapter.updateItems(emptyList())
+                Log.e(TAG, Log.getStackTraceString(error))
+            }, {
+                // Make sure to not always load 2 pages at once
+                recyclerView.post { isLoadingMore = false }
+            })
     }
 
     override fun onDestroyView() {
@@ -343,9 +326,7 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
                 if (getFilter().matches(item)) {
                     episodes.add(pos, item)
                     listAdapter.notifyItemChangedCompat(pos)
-                } else {
-                    listAdapter.notifyItemRemoved(pos)
-                }
+                } else listAdapter.notifyItemRemoved(pos)
             }
         }
     }
@@ -358,8 +339,7 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
         else {
             Log.d(TAG, "onEventMainThread() search list")
             for (i in 0 until listAdapter.itemCount) {
-                val holder: EpisodeItemViewHolder? =
-                    recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
+                val holder: EpisodeItemViewHolder? = recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
                 if (holder != null && holder.isCurrentlyPlayingItem) {
                     currentPlaying = holder
                     holder.notifyPlaybackPositionUpdated(event)
@@ -371,9 +351,8 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onKeyUp(event: KeyEvent) {
-        if (!isAdded || !isVisible || !isMenuVisible) {
-            return
-        }
+        if (!isAdded || !isVisible || !isMenuVisible) return
+
         when (event.keyCode) {
             KeyEvent.KEYCODE_T -> recyclerView.smoothScrollToPosition(0)
             KeyEvent.KEYCODE_B -> recyclerView.smoothScrollToPosition(listAdapter.itemCount)
@@ -385,9 +364,7 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
     fun onEventMainThread(event: EpisodeDownloadEvent) {
         for (downloadUrl in event.urls) {
             val pos: Int = FeedItemUtil.indexOfItemWithDownloadUrl(episodes, downloadUrl)
-            if (pos >= 0) {
-                listAdapter.notifyItemChangedCompat(pos)
-            }
+            if (pos >= 0) listAdapter.notifyItemChangedCompat(pos)
         }
     }
 
@@ -412,20 +389,15 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
     }
 
     private fun refreshSwipeTelltale() {
-        if (swipeActions.actions?.left != null) {
-            binding.leftActionIcon.setImageResource(swipeActions.actions!!.left!!.getActionIcon())
-        }
-        if (swipeActions.actions?.right != null) {
-            binding.rightActionIcon.setImageResource(swipeActions.actions!!.right!!.getActionIcon())
-        }
+        if (swipeActions.actions?.left != null) binding.leftActionIcon.setImageResource(swipeActions.actions!!.left!!.getActionIcon())
+        if (swipeActions.actions?.right != null) binding.rightActionIcon.setImageResource(swipeActions.actions!!.right!!.getActionIcon())
     }
 
     fun loadItems() {
         disposable?.dispose()
 
         disposable = Observable.fromCallable {
-            Pair(loadData().toMutableList(),
-                loadTotalItemCount())
+            Pair(loadData().toMutableList(), loadTotalItemCount())
         }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -438,9 +410,8 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
                     listAdapter.setDummyViews(0)
                     listAdapter.updateItems(episodes)
                     listAdapter.setTotalNumberOfItems(data.second)
-                    if (restoreScrollPosition) {
-                        recyclerView.restoreScrollPosition(getPrefName())
-                    }
+                    if (restoreScrollPosition) recyclerView.restoreScrollPosition(getPrefName())
+
                     updateToolbar()
                 }, { error: Throwable? ->
                     listAdapter.setDummyViews(0)

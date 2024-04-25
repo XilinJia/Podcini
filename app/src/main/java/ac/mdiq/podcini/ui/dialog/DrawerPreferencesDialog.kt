@@ -19,18 +19,13 @@ object DrawerPreferencesDialog {
         val checked = BooleanArray(NavDrawerFragment.NAV_DRAWER_TAGS.size)
         for (i in NavDrawerFragment.NAV_DRAWER_TAGS.indices) {
             val tag = NavDrawerFragment.NAV_DRAWER_TAGS[i]
-            if (!hiddenDrawerItems.contains(tag)) {
-                checked[i] = true
-            }
+            if (!hiddenDrawerItems.contains(tag)) checked[i] = true
         }
         val builder = MaterialAlertDialogBuilder(context)
         builder.setTitle(R.string.drawer_preferences)
         builder.setMultiChoiceItems(navTitles, checked) { _: DialogInterface?, which: Int, isChecked: Boolean ->
-            if (isChecked) {
-                hiddenDrawerItems.remove(NavDrawerFragment.NAV_DRAWER_TAGS[which])
-            } else {
-                hiddenDrawerItems.add(NavDrawerFragment.NAV_DRAWER_TAGS[which])
-            }
+            if (isChecked) hiddenDrawerItems.remove(NavDrawerFragment.NAV_DRAWER_TAGS[which])
+            else hiddenDrawerItems.add(NavDrawerFragment.NAV_DRAWER_TAGS[which])
         }
         builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
             UserPreferences.hiddenDrawerItems = hiddenDrawerItems

@@ -5,8 +5,6 @@ class SubscriptionChanges(val added: List<String>,
                           val timestamp: Long
 ) {
     override fun toString(): String {
-        return ("SubscriptionChange [added=" + added.toString()
-                + ", removed=" + removed.toString() + ", timestamp="
-                + timestamp + "]")
+        return ("SubscriptionChange [added=$added, removed=$removed, timestamp=$timestamp]")
     }
 }

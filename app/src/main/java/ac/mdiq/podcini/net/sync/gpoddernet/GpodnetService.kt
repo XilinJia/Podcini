@@ -29,8 +29,7 @@ import kotlin.math.min
  * Communicates with the gpodder.net service.
  */
 class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
-                     private val deviceId: String, private var username: String, private var password: String
-) : ISyncService {
+                     private val deviceId: String, private var username: String, private var password: String) : ISyncService {
     private val baseScheme: String?
     private val basePort: Int
     private val baseHost: String?
@@ -62,8 +61,7 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
             query,
             scaledLogoSize) else String.format("q=%s", query)
         try {
-            val url = URI(baseScheme, null, baseHost, basePort, "/search.json",
-                parameters, null).toURL()
+            val url = URI(baseScheme, null, baseHost, basePort, "/search.json", parameters, null).toURL()
             val request: Builder = Builder().url(url)
             val response = executeRequest(request)
 
@@ -94,8 +92,7 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
         get() {
             requireLoggedIn()
             try {
-                val url = URI(baseScheme, null, baseHost, basePort,
-                    String.format("/api/2/devices/%s.json", username), null, null).toURL()
+                val url = URI(baseScheme, null, baseHost, basePort, String.format("/api/2/devices/%s.json", username), null, null).toURL()
                 val request: Builder = Builder().url(url)
                 val response = executeRequest(request)
                 val devicesArray = JSONArray(response)

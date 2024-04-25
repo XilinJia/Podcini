@@ -21,15 +21,9 @@ class OnlineFeedViewActivity : AppCompatActivity() {
 
         var feedUrl: String? = null
         when {
-            intent.hasExtra(ARG_FEEDURL) -> {
-                feedUrl = intent.getStringExtra(ARG_FEEDURL)
-            }
-            TextUtils.equals(intent.action, Intent.ACTION_SEND) -> {
-                feedUrl = intent.getStringExtra(Intent.EXTRA_TEXT)
-            }
-            TextUtils.equals(intent.action, Intent.ACTION_VIEW) -> {
-                feedUrl = intent.dataString
-            }
+            intent.hasExtra(ARG_FEEDURL) -> feedUrl = intent.getStringExtra(ARG_FEEDURL)
+            TextUtils.equals(intent.action, Intent.ACTION_SEND) -> feedUrl = intent.getStringExtra(Intent.EXTRA_TEXT)
+            TextUtils.equals(intent.action, Intent.ACTION_VIEW) -> feedUrl = intent.dataString
         }
 
         if (!feedUrl.isNullOrBlank() && !feedUrl.startsWith("http")) {
@@ -45,8 +39,7 @@ class OnlineFeedViewActivity : AppCompatActivity() {
             Log.d(TAG, "Activity was started with url $feedUrl")
 
             val intent = MainActivity.showOnlineFeed(this, feedUrl)
-            intent.putExtra(MainActivity.EXTRA_STARTED_FROM_SEARCH,
-                getIntent().getBooleanExtra(MainActivity.EXTRA_STARTED_FROM_SEARCH, false))
+            intent.putExtra(MainActivity.EXTRA_STARTED_FROM_SEARCH, getIntent().getBooleanExtra(MainActivity.EXTRA_STARTED_FROM_SEARCH, false))
             startActivity(intent)
             finish()
         }

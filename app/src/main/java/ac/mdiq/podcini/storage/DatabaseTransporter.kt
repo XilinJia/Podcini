@@ -59,12 +59,8 @@ object DatabaseTransporter {
                 dst.transferFrom(src, 0, srcSize)
 
                 val newDstSize = dst.size()
-                if (newDstSize != srcSize) {
-                    throw IOException(String.format(
-                        "Unable to write entire database. Expected to write %s, but wrote %s.",
-                        Formatter.formatShortFileSize(context, srcSize),
-                        Formatter.formatShortFileSize(context, newDstSize)))
-                }
+                if (newDstSize != srcSize)
+                    throw IOException(String.format("Unable to write entire database. Expected to write %s, but wrote %s.", Formatter.formatShortFileSize(context, srcSize), Formatter.formatShortFileSize(context, newDstSize)))
             } else {
                 throw IOException("Can not access current database")
             }
@@ -85,18 +81,15 @@ object DatabaseTransporter {
             inputStream = context.contentResolver.openInputStream(inputUri!!)
             FileUtils.copyInputStreamToFile(inputStream, tempDB)
 
-            val db = SQLiteDatabase.openDatabase(tempDB.absolutePath,
-                null, SQLiteDatabase.OPEN_READONLY)
-            if (db.version > PodDBAdapter.VERSION) {
-                throw IOException(context.getString(R.string.import_no_downgrade))
-            }
+            val db = SQLiteDatabase.openDatabase(tempDB.absolutePath, null, SQLiteDatabase.OPEN_READONLY)
+            if (db.version > PodDBAdapter.VERSION) throw IOException(context.getString(R.string.import_no_downgrade))
+
             db.close()
 
             val currentDB = context.getDatabasePath(PodDBAdapter.DATABASE_NAME)
             val success = currentDB.delete()
-            if (!success) {
-                throw IOException("Unable to delete old database")
-            }
+            if (!success) throw IOException("Unable to delete old database")
+
             FileUtils.moveFile(tempDB, currentDB)
         } catch (e: IOException) {
             Log.e(TAG, Log.getStackTraceString(e))

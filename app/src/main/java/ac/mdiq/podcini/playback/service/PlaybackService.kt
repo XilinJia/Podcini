@@ -124,13 +124,9 @@ class PlaybackService : MediaSessionService() {
     private val notificationCustomButtons = NotificationCustomButton.entries.map { command -> command.commandButton }
 
     private lateinit var taskManager: PlaybackServiceTaskManager
-//    private lateinit var stateManager: PlaybackServiceStateManager
-//    private lateinit var notificationBuilder: PlaybackServiceNotificationBuilder
     private lateinit var castStateListener: CastStateListener
 
     private var autoSkippedFeedMediaId: String? = null
-//    private var clickCount = 0
-//    private val clickHandler = Handler(Looper.getMainLooper())
 
     private var isSpeedForward = false
     private var normalSpeed = 1.0f
@@ -159,11 +155,6 @@ class PlaybackService : MediaSessionService() {
         super.onCreate()
         Log.d(TAG, "Service created.")
         isRunning = true
-
-//        this.startForeground()
-
-//        stateManager = PlaybackServiceStateManager(this)
-//        notificationBuilder = PlaybackServiceNotificationBuilder(this)
 
         if (Build.VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
             registerReceiver(autoStateUpdated, IntentFilter("com.google.android.gms.car.media.STATUS"), RECEIVER_NOT_EXPORTED)
@@ -236,26 +227,6 @@ class PlaybackService : MediaSessionService() {
         super.onDestroy()
         Log.d(TAG, "Service is about to be destroyed")
 
-//        if (notificationBuilder.playerStatus == PlayerStatus.PLAYING || notificationBuilder.playerStatus == PlayerStatus.FALLBACK) {
-//            notificationBuilder.playerStatus = PlayerStatus.STOPPED
-//            val notificationManager = NotificationManagerCompat.from(this)
-//            if (Build.VERSION.SDK_INT >= 33 && ActivityCompat.checkSelfPermission(this,
-//                        Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-//                // TODO: Consider calling
-//                //    ActivityCompat#requestPermissions
-////                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-//                // here to request the missing permissions, and then overriding
-//                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-//                //                                          int[] grantResults)
-//                // to handle the case where the user grants the permission. See the documentation
-//                // for ActivityCompat#requestPermissions for more details.
-//                Log.e(TAG, "onDestroy: require POST_NOTIFICATIONS permission")
-//                Toast.makeText(applicationContext, R.string.notification_permission_text, Toast.LENGTH_LONG).show()
-//                return
-//            }
-//            notificationManager.notify(R.id.notification_playing, notificationBuilder.build())
-//        }
-//        stateManager.stopForeground(!isPersistNotify)
         isRunning = false
         currentMediaType = MediaType.UNKNOWN
         castStateListener.destroy()
@@ -277,6 +248,10 @@ class PlaybackService : MediaSessionService() {
         unregisterReceiver(audioBecomingNoisy)
         taskManager.shutdown()
         EventBus.getDefault().unregister(this)
+    }
+
+    fun isServiceReady(): Boolean {
+        return mediaSession?.player?.playbackState != STATE_IDLE
     }
 
     private inner class MyCallback : MediaSession.Callback {
@@ -304,13 +279,6 @@ class PlaybackService : MediaSessionService() {
 //                    .setAvailablePlayerCommands(playerCommands.build())
 //                    .setAvailableSessionCommands(sessionCommands.build())
 //                    .build()
-
-                val connectionResult = super.onConnect(session, controller)
-                val defaultPlayerCommands = connectionResult.availablePlayerCommands
-                Log.d(TAG, defaultPlayerCommands.toString())
-//                for (command in defaultPlayerCommands.toString()) {
-//                    Log.d(TAG, command.toString())
-//                }
 
 //                val availableSessionCommands = connectionResult.availableSessionCommands.buildUpon()
 
@@ -509,23 +477,17 @@ class PlaybackService : MediaSessionService() {
         super.onStartCommand(intent, flags, startId)
         Log.d(TAG, "OnStartCommand called")
 
-//        stateManager.startForeground(R.id.notification_playing, notificationBuilder.build())
-//        val notificationManager = NotificationManagerCompat.from(this)
-//        notificationManager.cancel(R.id.notification_streaming_confirmation)
-
         val keycode = intent?.getIntExtra(MediaButtonReceiver.EXTRA_KEYCODE, -1) ?: -1
         val customAction = intent?.getStringExtra(MediaButtonReceiver.EXTRA_CUSTOM_ACTION)
         val hardwareButton = intent?.getBooleanExtra(MediaButtonReceiver.EXTRA_HARDWAREBUTTON, false) ?: false
         val playable = intent?.getParcelableExtra<Playable>(PlaybackServiceInterface.EXTRA_PLAYABLE)
         if (keycode == -1 && playable == null && customAction == null) {
             Log.e(TAG, "PlaybackService was started with no arguments")
-//            stateManager.stopService()
             return START_NOT_STICKY
         }
 
         if ((flags and START_FLAG_REDELIVERY) != 0) {
             Log.d(TAG, "onStartCommand is a redelivered intent, calling stopForeground now.")
-//            stateManager.stopForeground(true)
         } else {
             when {
                 keycode != -1 -> {
@@ -537,14 +499,9 @@ class PlaybackService : MediaSessionService() {
                         Log.d(TAG, "Received media button event")
                         notificationButton = true
                     }
-                    val handled = handleKeycode(keycode, notificationButton)
-//                    if (!handled && !stateManager.hasReceivedValidStartCommand()) {
-//                        stateManager.stopService()
-//                        return START_NOT_STICKY
-//                    }
+//                    val handled = handleKeycode(keycode, notificationButton)
                 }
                 playable != null -> {
-//                    stateManager.validStartCommandWasReceived()
                     val allowStreamThisTime = intent.getBooleanExtra(PlaybackServiceInterface.EXTRA_ALLOW_STREAM_THIS_TIME, false)
                     val allowStreamAlways = intent.getBooleanExtra(PlaybackServiceInterface.EXTRA_ALLOW_STREAM_ALWAYS, false)
                     sendNotificationBroadcast(PlaybackServiceInterface.NOTIFICATION_TYPE_RELOAD, 0)
@@ -552,7 +509,6 @@ class PlaybackService : MediaSessionService() {
                     Observable.fromCallable {
                         if (playable is FeedMedia) return@fromCallable DBReader.getFeedMedia(playable.id)
                         else return@fromCallable playable
-
                     }
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -561,7 +517,6 @@ class PlaybackService : MediaSessionService() {
                             { error: Throwable ->
                                 Log.d(TAG, "Playable was not found. Stopping service.")
                                 error.printStackTrace()
-//                                stateManager.stopService()
                             })
                     return START_NOT_STICKY
                 }
@@ -601,56 +556,37 @@ class PlaybackService : MediaSessionService() {
             return
         }
 
-        val intentAllowThisTime = Intent(originalIntent)
-        intentAllowThisTime.setAction(PlaybackServiceInterface.EXTRA_ALLOW_STREAM_THIS_TIME)
-        intentAllowThisTime.putExtra(PlaybackServiceInterface.EXTRA_ALLOW_STREAM_THIS_TIME, true)
-        val pendingIntentAllowThisTime = if (Build.VERSION.SDK_INT >= VERSION_CODES.O) {
-            PendingIntent.getForegroundService(this, R.id.pending_intent_allow_stream_this_time, intentAllowThisTime,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        } else {
-            PendingIntent.getService(this, R.id.pending_intent_allow_stream_this_time, intentAllowThisTime,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        }
+//        val intentAllowThisTime = Intent(originalIntent)
+//        intentAllowThisTime.setAction(PlaybackServiceInterface.EXTRA_ALLOW_STREAM_THIS_TIME)
+//        intentAllowThisTime.putExtra(PlaybackServiceInterface.EXTRA_ALLOW_STREAM_THIS_TIME, true)
+//        val pendingIntentAllowThisTime = if (Build.VERSION.SDK_INT >= VERSION_CODES.O)
+//            PendingIntent.getForegroundService(this, R.id.pending_intent_allow_stream_this_time, intentAllowThisTime,
+//                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+//        else PendingIntent.getService(this, R.id.pending_intent_allow_stream_this_time, intentAllowThisTime,
+//            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
-        val intentAlwaysAllow = Intent(intentAllowThisTime)
-        intentAlwaysAllow.setAction(PlaybackServiceInterface.EXTRA_ALLOW_STREAM_ALWAYS)
-        intentAlwaysAllow.putExtra(PlaybackServiceInterface.EXTRA_ALLOW_STREAM_ALWAYS, true)
-        val pendingIntentAlwaysAllow = if (Build.VERSION.SDK_INT >= VERSION_CODES.O) {
-            PendingIntent.getForegroundService(this, R.id.pending_intent_allow_stream_always, intentAlwaysAllow,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        } else {
-            PendingIntent.getService(this, R.id.pending_intent_allow_stream_always, intentAlwaysAllow,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        }
+//        val intentAlwaysAllow = Intent(intentAllowThisTime)
+//        intentAlwaysAllow.setAction(PlaybackServiceInterface.EXTRA_ALLOW_STREAM_ALWAYS)
+//        intentAlwaysAllow.putExtra(PlaybackServiceInterface.EXTRA_ALLOW_STREAM_ALWAYS, true)
+//        val pendingIntentAlwaysAllow = if (Build.VERSION.SDK_INT >= VERSION_CODES.O)
+//            PendingIntent.getForegroundService(this, R.id.pending_intent_allow_stream_always, intentAlwaysAllow,
+//                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+//        else PendingIntent.getService(this, R.id.pending_intent_allow_stream_always, intentAlwaysAllow,
+//            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
-        val builder = NotificationCompat.Builder(this,
-            NotificationUtils.CHANNEL_ID_USER_ACTION)
-            .setSmallIcon(R.drawable.ic_notification_stream)
-            .setContentTitle(getString(R.string.confirm_mobile_streaming_notification_title))
-            .setContentText(getString(R.string.confirm_mobile_streaming_notification_message))
-            .setStyle(NotificationCompat.BigTextStyle()
-                .bigText(getString(R.string.confirm_mobile_streaming_notification_message)))
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setContentIntent(pendingIntentAllowThisTime)
-            .addAction(R.drawable.ic_notification_stream, getString(R.string.confirm_mobile_streaming_button_once), pendingIntentAllowThisTime)
-            .addAction(R.drawable.ic_notification_stream, getString(R.string.confirm_mobile_streaming_button_always), pendingIntentAlwaysAllow)
-            .setAutoCancel(true)
-//        val notificationManager = NotificationManagerCompat.from(this)
-        if (Build.VERSION.SDK_INT >= 33 && ActivityCompat.checkSelfPermission(this,
-                    Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-//            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            Log.e(TAG, "displayStreamingNotAllowedNotification: require POST_NOTIFICATIONS permission")
-            Toast.makeText(applicationContext, R.string.notification_permission_text, Toast.LENGTH_LONG).show()
-            return
-        }
-//        notificationManager.notify(R.id.notification_streaming_confirmation, builder.build())
+
+//        val builder = NotificationCompat.Builder(this,
+//            NotificationUtils.CHANNEL_ID_USER_ACTION)
+//            .setSmallIcon(R.drawable.ic_notification_stream)
+//            .setContentTitle(getString(R.string.confirm_mobile_streaming_notification_title))
+//            .setContentText(getString(R.string.confirm_mobile_streaming_notification_message))
+//            .setStyle(NotificationCompat.BigTextStyle()
+//                .bigText(getString(R.string.confirm_mobile_streaming_notification_message)))
+//            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+//            .setContentIntent(pendingIntentAllowThisTime)
+//            .addAction(R.drawable.ic_notification_stream, getString(R.string.confirm_mobile_streaming_button_once), pendingIntentAllowThisTime)
+//            .addAction(R.drawable.ic_notification_stream, getString(R.string.confirm_mobile_streaming_button_always), pendingIntentAlwaysAllow)
+//            .setAutoCancel(true)
     }
 
     /**
@@ -734,10 +670,7 @@ class PlaybackService : MediaSessionService() {
                 return false
             }
             KeyEvent.KEYCODE_MEDIA_STOP -> {
-                if (this.status == PlayerStatus.FALLBACK || status == PlayerStatus.PLAYING) {
-                    mediaPlayer?.pause(true, true)
-                }
-//                stateManager.stopForeground(true) // gets rid of persistent notification
+                if (this.status == PlayerStatus.FALLBACK || status == PlayerStatus.PLAYING) mediaPlayer?.pause(true, true)
                 return true
             }
             else -> {
@@ -763,7 +696,6 @@ class PlaybackService : MediaSessionService() {
                 { error: Throwable ->
                     Log.d(TAG, "Playable was not loaded from preferences. Stopping service.")
                     error.printStackTrace()
-//                    stateManager.stopService()
                 })
     }
 
@@ -773,9 +705,8 @@ class PlaybackService : MediaSessionService() {
         val localFeed = URLUtil.isContentUrl(playable.getStreamUrl())
         val stream = !playable.localFileAvailable() || localFeed
         if (stream && !localFeed && !isStreamingAllowed && !allowStreamThisTime) {
-            displayStreamingNotAllowedNotification(PlaybackServiceStarter(this, playable).intent)
+//            displayStreamingNotAllowedNotification(PlaybackServiceStarter(this, playable).intent)
             writeNoMediaPlaying()
-//            stateManager.stopService()
             return
         }
 
@@ -784,8 +715,6 @@ class PlaybackService : MediaSessionService() {
         }
 
         mediaPlayer?.playMediaObject(playable, stream, true, true)
-//        stateManager.validStartCommandWasReceived()
-//        stateManager.startForeground(R.id.notification_playing, notificationBuilder.build())
         recreateMediaSessionIfNeeded()
         updateNotificationAndMediaSession(playable)
         addPlayableToQueue(playable)
@@ -804,7 +733,6 @@ class PlaybackService : MediaSessionService() {
         mediaPlayer?.pause(true, false)
         mediaPlayer?.resetVideoSurface()
         updateNotificationAndMediaSession(playable)
-//        stateManager.stopForeground(!isPersistNotify)
     }
 
     private val taskManagerCallback: PSTMCallback = object : PSTMCallback {
@@ -840,9 +768,6 @@ class PlaybackService : MediaSessionService() {
                     }
                     PlayerStatus.PAUSED -> {
                         updateNotificationAndMediaSession(newInfo.playable)
-                        if (!isCasting) {
-//                            stateManager.stopForeground(!isPersistNotify)
-                        }
                         cancelPositionObserver()
                         if (mediaPlayer != null) writePlayerStatus(mediaPlayer!!.playerStatus)
                     }
@@ -853,8 +778,6 @@ class PlaybackService : MediaSessionService() {
                         recreateMediaSessionIfNeeded()
                         updateNotificationAndMediaSession(newInfo.playable)
                         setupPositionObserver()
-//                        stateManager.validStartCommandWasReceived()
-//                        stateManager.startForeground(R.id.notification_playing, notificationBuilder.build())
                         // set sleep timer if auto-enabled
                         var autoEnableByTime = true
                         val fromSetting = autoEnableFrom()
@@ -872,10 +795,7 @@ class PlaybackService : MediaSessionService() {
                         }
                         loadQueueForMediaSession()
                     }
-                    PlayerStatus.ERROR -> {
-                        writeNoMediaPlaying()
-//                        stateManager.stopService()
-                    }
+                    PlayerStatus.ERROR -> writeNoMediaPlaying()
                     else -> {}
                 }
             }
@@ -889,10 +809,8 @@ class PlaybackService : MediaSessionService() {
             taskManager.requestWidgetUpdate()
         }
 
-
-        override fun shouldStop() {
-//            stateManager.stopForeground(!isPersistNotify)
-        }
+        // TODO: not used
+        override fun shouldStop() {}
 
         override fun onMediaChanged(reloadUI: Boolean) {
             Log.d(TAG, "reloadUI callback reached")
@@ -900,7 +818,7 @@ class PlaybackService : MediaSessionService() {
             updateNotificationAndMediaSession(this@PlaybackService.playable)
         }
 
-        override fun onPostPlayback(media: Playable, ended: Boolean, skipped: Boolean, playingNext: Boolean) {
+        override fun onPostPlayback(media: Playable?, ended: Boolean, skipped: Boolean, playingNext: Boolean) {
             this@PlaybackService.onPostPlayback(media, ended, skipped, playingNext)
         }
 
@@ -947,7 +865,6 @@ class PlaybackService : MediaSessionService() {
     fun playerError(event: PlayerErrorEvent?) {
         if (mediaPlayer?.playerStatus == PlayerStatus.PLAYING || mediaPlayer?.playerStatus == PlayerStatus.FALLBACK)
             mediaPlayer!!.pause(true, false)
-//        stateManager.stopService()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -1012,9 +929,8 @@ class PlaybackService : MediaSessionService() {
         }
 
         if (!nextItem.media!!.localFileAvailable() && !isStreamingAllowed && isFollowQueue && nextItem.feed != null && !nextItem.feed!!.isLocalFeed) {
-            displayStreamingNotAllowedNotification(PlaybackServiceStarter(this, nextItem.media!!).intent)
+//            displayStreamingNotAllowedNotification(PlaybackServiceStarter(this, nextItem.media!!).intent)
             writeNoMediaPlaying()
-//            stateManager.stopService()
             return null
         }
         return nextItem.media
@@ -1029,10 +945,6 @@ class PlaybackService : MediaSessionService() {
         if (stopPlaying) {
             taskManager.cancelPositionSaver()
             cancelPositionObserver()
-//            if (!isCasting) {
-//                stateManager.stopForeground(true)
-//                stateManager.stopService()
-//            }
         }
         if (mediaType == null) {
             sendNotificationBroadcast(PlaybackServiceInterface.NOTIFICATION_TYPE_PLAYBACK_END, 0)
@@ -1228,59 +1140,32 @@ class PlaybackService : MediaSessionService() {
     }
 
     private fun updateNotificationAndMediaSession(p: Playable?) {
-        setupNotification(p)
+//        setupNotification(p)
         updateMediaSessionMetadata(p)
     }
 
     private fun updateMediaSessionMetadata(p: Playable?) {
         if (p == null || mediaSession == null) return
 
-        val builder = MediaMetadataCompat.Builder()
-        builder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST, p.getFeedTitle())
-        builder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, p.getEpisodeTitle())
-        builder.putString(MediaMetadataCompat.METADATA_KEY_ALBUM, p.getFeedTitle())
-        builder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, p.getDuration().toLong())
-        builder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, p.getEpisodeTitle())
-        builder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, p.getFeedTitle())
+        // TODO: what's this?
+//        val builder = MediaMetadataCompat.Builder()
+//        builder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST, p.getFeedTitle())
+//        builder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, p.getEpisodeTitle())
+//        builder.putString(MediaMetadataCompat.METADATA_KEY_ALBUM, p.getFeedTitle())
+//        builder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, p.getDuration().toLong())
+//        builder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, p.getEpisodeTitle())
+//        builder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, p.getFeedTitle())
 
+        // TODO: what's this?
+//        mediaSession!!.setSessionActivity(PendingIntent.getActivity(this, R.id.pending_intent_player_activity,
+//            getPlayerActivityIntent(this), FLAG_IMMUTABLE))
 
-//        if (notificationBuilder.isIconCached) {
-//            builder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, notificationBuilder.cachedIcon)
-//        } else {
-//            var iconUri = p.getImageLocation()
-//            // Don't use embedded cover etc, which Android can't load
-//            if (p is FeedMedia) {
-//                val m = p
-//                if (m.item != null) {
-//                    val item = m.item!!
-//                    when {
-//                        item.imageUrl != null -> {
-//                            iconUri = item.imageUrl
-//                        }
-//                        item.feed != null -> {
-//                            iconUri = item.feed!!.imageUrl
-//                        }
-//                    }
-//                }
-//            }
-//            if (!iconUri.isNullOrEmpty()) {
-//                builder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI, iconUri)
-//            }
-//        }
-
-//        if (stateManager.hasReceivedValidStartCommand()) {
-//            mediaSession!!.setSessionActivity(PendingIntent.getActivity(this, R.id.pending_intent_player_activity,
-//                getPlayerActivityIntent(this), PendingIntent.FLAG_UPDATE_CURRENT
-//                        or (if (Build.VERSION.SDK_INT >= 31) PendingIntent.FLAG_MUTABLE else 0)))
-        mediaSession!!.setSessionActivity(PendingIntent.getActivity(this, R.id.pending_intent_player_activity,
-            getPlayerActivityIntent(this), FLAG_IMMUTABLE))
-//            try {
-//                mediaSession!!.setMetadata(builder.build())
-//            } catch (e: OutOfMemoryError) {
-//                Log.e(TAG, "Setting media session metadata", e)
-//                builder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, null)
-//                mediaSession!!.setMetadata(builder.build())
-//            }
+//        try {
+//            mediaSession!!.setMetadata(builder.build())
+//        } catch (e: OutOfMemoryError) {
+//            Log.e(TAG, "Setting media session metadata", e)
+//            builder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, null)
+//            mediaSession!!.setMetadata(builder.build())
 //        }
     }
 
@@ -1292,6 +1177,7 @@ class PlaybackService : MediaSessionService() {
     /**
      * Prepares notification and starts the service in the foreground.
      */
+    // TODO: not needed?
     @Synchronized
     private fun setupNotification(playable: Playable?) {
         Log.d(TAG, "setupNotification")
@@ -1299,46 +1185,8 @@ class PlaybackService : MediaSessionService() {
 
         if (playable == null || mediaPlayer == null) {
             Log.d(TAG, "setupNotification: playable=$playable mediaPlayer=$mediaPlayer")
-//            if (!stateManager.hasReceivedValidStartCommand()) {
-//                stateManager.stopService()
-//            }
             return
         }
-
-        val playerStatus = mediaPlayer!!.playerStatus
-//        notificationBuilder.setPlayable(playable)
-//        if (mediaSession != null) notificationBuilder.setMediaSessionToken(mediaSession!!.getSessionCompatToken())
-//        notificationBuilder.playerStatus = playerStatus
-//        notificationBuilder.updatePosition(currentPosition, currentPlaybackSpeed)
-
-//        val notificationManager = NotificationManagerCompat.from(this)
-        if (Build.VERSION.SDK_INT >= 33 && ActivityCompat.checkSelfPermission(this,
-                    Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-//            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            Log.e(TAG, "setupNotification: require POST_NOTIFICATIONS permission")
-            Toast.makeText(applicationContext, R.string.notification_permission_text, Toast.LENGTH_LONG).show()
-            return
-        }
-//        notificationManager.notify(R.id.notification_playing, notificationBuilder.build())
-
-//        if (!notificationBuilder.isIconCached) {
-//            playableIconLoaderThread = Thread {
-//                Log.d(TAG, "Loading notification icon")
-//                notificationBuilder.loadIcon()
-//                if (!Thread.currentThread().isInterrupted) {
-//                    notificationManager.notify(R.id.notification_playing, notificationBuilder.build())
-//                    updateMediaSessionMetadata(playable)
-//                }
-//            }
-//            playableIconLoaderThread?.start()
-//        }
     }
 
     /**
@@ -1485,10 +1333,7 @@ class PlaybackService : MediaSessionService() {
         }
         if (transientPause) {
             transientPause = false
-            if (Build.VERSION.SDK_INT >= 31) {
-//                stateManager.stopService()
-                return
-            }
+            if (Build.VERSION.SDK_INT >= 31) return
             when {
                 !bluetooth && isUnpauseOnHeadsetReconnect -> mediaPlayer?.resume()
                 bluetooth && isUnpauseOnBluetoothReconnect -> {
@@ -1503,10 +1348,8 @@ class PlaybackService : MediaSessionService() {
 
     private val shutdownReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if (TextUtils.equals(intent.action, PlaybackServiceInterface.ACTION_SHUTDOWN_PLAYBACK_SERVICE)) {
+            if (TextUtils.equals(intent.action, PlaybackServiceInterface.ACTION_SHUTDOWN_PLAYBACK_SERVICE))
                 EventBus.getDefault().post(PlaybackServiceEvent(PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN))
-//                stateManager.stopService()
-            }
         }
     }
 
@@ -1520,7 +1363,6 @@ class PlaybackService : MediaSessionService() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     @Suppress("unused")
     fun speedPresetChanged(event: SpeedPresetChangedEvent) {
-//        TODO: speed
         val item = (playable as? FeedMedia)?.item ?: currentitem
 //        if (playable is FeedMedia) {
         if (item?.feed?.id == event.feedId) {
@@ -1715,12 +1557,6 @@ class PlaybackService : MediaSessionService() {
             .subscribe {
                 Log.d(TAG, "setupPositionObserver currentPosition: $currentPosition, currentPlaybackSpeed: $currentPlaybackSpeed")
                 EventBus.getDefault().post(PlaybackPositionEvent(currentPosition, duration))
-//                TODO: why set SDK_INT < 29
-                if (Build.VERSION.SDK_INT < 29) {
-//                    notificationBuilder.updatePosition(currentPosition, currentPlaybackSpeed)
-//                    val notificationManager = getSystemService(NOTIFICATION_SERVICE) as? NotificationManager
-//                    notificationManager?.notify(R.id.notification_playing, notificationBuilder.build())
-                }
                 skipEndingIfNecessary()
             }
     }
@@ -1737,15 +1573,9 @@ class PlaybackService : MediaSessionService() {
         }
     }
 
-//    private val sessionCallback: MediaSession.Callback = object : MediaSession.Callback {
-//        private val TAG = "MediaSessionCompat"
-////        TODO: not used now with media3
-//    }
-
     companion object {
         private const val TAG = "PlaybackService"
 
-//        TODO: need to experiment this value
         private const val POSITION_EVENT_INTERVAL = 5L
 
         const val ACTION_PLAYER_STATUS_CHANGED: String = "action.ac.mdiq.podcini.service.playerStatusChanged"

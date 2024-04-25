@@ -27,11 +27,8 @@ class AddToQueueSwipeAction : SwipeAction {
     }
 
     @OptIn(UnstableApi::class) override fun performAction(item: FeedItem, fragment: Fragment, filter: FeedItemFilter) {
-        if (!item.isTagged(FeedItem.TAG_QUEUE)) {
-            DBWriter.addQueueItem(fragment.requireContext(), item)
-        } else {
-            RemoveFromQueueSwipeAction().performAction(item, fragment, filter)
-        }
+        if (!item.isTagged(FeedItem.TAG_QUEUE)) DBWriter.addQueueItem(fragment.requireContext(), item)
+        else RemoveFromQueueSwipeAction().performAction(item, fragment, filter)
     }
 
     override fun willRemove(filter: FeedItemFilter, item: FeedItem): Boolean {

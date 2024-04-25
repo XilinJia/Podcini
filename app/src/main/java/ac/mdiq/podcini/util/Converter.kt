@@ -52,9 +52,8 @@ object Converter {
     @JvmStatic
     fun durationStringLongToMs(input: String): Int {
         val parts = input.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        if (parts.size != 3) {
-            return 0
-        }
+        if (parts.size != 3) return 0
+
         return parts[0].toInt() * 3600 * 1000 + parts[1].toInt() * 60 * 1000 + parts[2].toInt() * 1000
     }
 
@@ -65,14 +64,11 @@ object Converter {
     @JvmStatic
     fun durationStringShortToMs(input: String, durationIsInHours: Boolean): Int {
         val parts = input.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        if (parts.size != 2) {
-            return 0
-        }
+        if (parts.size != 2) return 0
 
         val modifier = if (durationIsInHours) 60 else 1
 
-        return (parts[0].toInt() * 60 * 1000 * modifier
-                + parts[1].toInt() * 1000 * modifier)
+        return (parts[0].toInt() * 60 * 1000 * modifier + parts[1].toInt() * 1000 * modifier)
     }
 
     /**
@@ -98,9 +94,7 @@ object Converter {
         if (h > 0) {
             val hours = resources.getQuantityString(R.plurals.time_hours_quantified, h, h)
             result += hours.replace(" ", "\u00A0")
-            if (d == 0) {
-                result += " "
-            }
+            if (d == 0) result += " "
         }
         if (d == 0) {
             val minutes = resources.getQuantityString(R.plurals.time_minutes_quantified, m, m)

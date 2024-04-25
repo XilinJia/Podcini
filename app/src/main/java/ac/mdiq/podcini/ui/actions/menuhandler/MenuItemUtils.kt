@@ -19,9 +19,7 @@ object MenuItemUtils {
      */
     fun setOnClickListeners(menu: Menu?, listener: MenuItem.OnMenuItemClickListener?) {
         for (i in 0 until menu!!.size()) {
-            if (menu.getItem(i).subMenu != null) {
-                setOnClickListeners(menu.getItem(i).subMenu, listener)
-            }
+            if (menu.getItem(i).subMenu != null) setOnClickListeners(menu.getItem(i).subMenu, listener)
             menu.getItem(i).setOnMenuItemClickListener(listener)
         }
     }

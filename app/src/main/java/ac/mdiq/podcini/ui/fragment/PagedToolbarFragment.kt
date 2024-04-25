@@ -20,9 +20,7 @@ abstract class PagedToolbarFragment : Fragment() {
      */
     fun invalidateOptionsMenuIfActive(child: Fragment) {
         val visibleChild = childFragmentManager.findFragmentByTag("f" + viewPager!!.currentItem)
-        if (visibleChild === child) {
-            visibleChild.onPrepareOptionsMenu(toolbar!!.menu)
-        }
+        if (visibleChild === child) visibleChild.onPrepareOptionsMenu(toolbar!!.menu)
     }
 
     protected fun setupPagedToolbar(toolbar: MaterialToolbar, viewPager: ViewPager2) {
@@ -30,13 +28,9 @@ abstract class PagedToolbarFragment : Fragment() {
         this.viewPager = viewPager
 
         toolbar.setOnMenuItemClickListener { item: MenuItem? ->
-            if (this.onOptionsItemSelected(item!!)) {
-                return@setOnMenuItemClickListener true
-            }
+            if (this.onOptionsItemSelected(item!!)) return@setOnMenuItemClickListener true
             val child = childFragmentManager.findFragmentByTag("f" + viewPager.currentItem)
-            if (child != null) {
-                return@setOnMenuItemClickListener child.onOptionsItemSelected(item)
-            }
+            if (child != null) return@setOnMenuItemClickListener child.onOptionsItemSelected(item)
             false
         }
         viewPager.registerOnPageChangeCallback(object : OnPageChangeCallback() {

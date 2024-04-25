@@ -30,10 +30,7 @@ class TogglePlaybackStateSwipeAction : SwipeAction {
     }
 
     override fun willRemove(filter: FeedItemFilter, item: FeedItem): Boolean {
-        return if (item.playState == FeedItem.NEW) {
-            filter.showPlayed || filter.showNew
-        } else {
-            filter.showUnplayed || filter.showPlayed || filter.showNew
-        }
+        return if (item.playState == FeedItem.NEW) filter.showPlayed || filter.showNew
+        else filter.showUnplayed || filter.showPlayed || filter.showNew
     }
 }

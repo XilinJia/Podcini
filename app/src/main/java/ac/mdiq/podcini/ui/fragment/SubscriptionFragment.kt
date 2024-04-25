@@ -83,8 +83,7 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
         prefs = requireActivity().getSharedPreferences(PREFS, Context.MODE_PRIVATE)
     }
 
-    @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                                           savedInstanceState: Bundle?): View {
+    @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentSubscriptionsBinding.inflate(inflater)
 
         Log.d(TAG, "fragment onCreateView")
@@ -96,9 +95,8 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
             false
         }
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
-        if (savedInstanceState != null) {
-            displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
-        }
+        if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
+
         (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
         toolbar.inflateMenu(R.menu.subscriptions)
 
@@ -148,14 +146,12 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 val text = searchBox.text.toString().lowercase(Locale.getDefault())
                 val resultList = feedListFiltered.filter {
-                    it.title?.lowercase(Locale.getDefault())?.contains(text)?:false ||
-                            it.feed.author?.lowercase(Locale.getDefault())?.contains(text)?:false
+                    it.title?.lowercase(Locale.getDefault())?.contains(text)?:false
+                            || it.feed.author?.lowercase(Locale.getDefault())?.contains(text)?:false
                 }
                 subscriptionAdapter.setItems(resultList)
                 true
-            } else {
-                false
-            }
+            } else false
         }
 
         progressBar = binding.progressBar
@@ -163,9 +159,7 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
 
         val subscriptionAddButton: FloatingActionButton = binding.subscriptionsAdd
         subscriptionAddButton.setOnClickListener {
-            if (activity is MainActivity) {
-                (activity as MainActivity).loadChildFragment(AddFeedFragment())
-            }
+            if (activity is MainActivity) (activity as MainActivity).loadChildFragment(AddFeedFragment())
         }
 
         feedsInfoMsg = binding.feedsInfoMessage
@@ -193,12 +187,10 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
                 return false
             }
 
-            override fun onToggleChanged(isOpen: Boolean) {
-            }
+            override fun onToggleChanged(isOpen: Boolean) {}
         })
         speedDialView.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
-            FeedMultiSelectActionHandler(activity as MainActivity,
-                subscriptionAdapter.selectedItems.filterIsInstance<Feed>()).handleAction(actionItem.id)
+            FeedMultiSelectActionHandler(activity as MainActivity, subscriptionAdapter.selectedItems.filterIsInstance<Feed>()).handleAction(actionItem.id)
             true
         }
 
@@ -222,19 +214,15 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
 
     fun filterOnTag() {
         when (tagFilterIndex) {
-            1 -> {
 //            All feeds
-                feedListFiltered = feedList
-            }
-            0 -> {
+            1 -> feedListFiltered = feedList
 //            feeds without tag
-                feedListFiltered = feedList.filter {
-                    val tags = it.feed.preferences?.getTags()
-                    tags.isNullOrEmpty() || (tags.size == 1 && tags.toList()[0] == "#root")
-                }
+            0 -> feedListFiltered = feedList.filter {
+                val tags = it.feed.preferences?.getTags()
+                tags.isNullOrEmpty() || (tags.size == 1 && tags.toList()[0] == "#root")
             }
-            else -> {
 //            feeds with the chosen tag
+            else -> {
                 val tag = tags[tagFilterIndex]
                 feedListFiltered = feedList.filter {
                     it.feed.preferences?.getTags()?.contains(tag) ?: false
@@ -298,10 +286,9 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { result: List<NavDrawerData.FeedDrawerItem> ->
-                    if ( feedListFiltered.size > result.size) {
-                        // We have fewer items. This can result in items being selected that are no longer visible.
-                        subscriptionAdapter.endSelectMode()
-                    }
+                    // We have fewer items. This can result in items being selected that are no longer visible.
+                    if ( feedListFiltered.size > result.size) subscriptionAdapter.endSelectMode()
+
                     feedList = result
                     filterOnTag()
                     progressBar.visibility = View.GONE
@@ -312,11 +299,8 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
                     Log.e(TAG, Log.getStackTraceString(error))
                 })
 
-        if (UserPreferences.subscriptionsFilter.isEnabled) {
-            feedsFilteredMsg.visibility = View.VISIBLE
-        } else {
-            feedsFilteredMsg.visibility = View.GONE
-        }
+        if (UserPreferences.subscriptionsFilter.isEnabled) feedsFilteredMsg.visibility = View.VISIBLE
+        else feedsFilteredMsg.visibility = View.GONE
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {

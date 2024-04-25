@@ -35,6 +35,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.View.OnLayoutChangeListener
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.BlendModeColorFilterCompat
 import androidx.core.graphics.BlendModeCompat
@@ -204,12 +205,14 @@ class PlayerDetailsFragment : Fragment() {
                     }
                 }
             }
-            if (homeText != null)
+            if (!homeText.isNullOrEmpty())
                 binding.webview.loadDataWithBaseURL("https://127.0.0.1", homeText!!, "text/html", "UTF-8", null)
+            else Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show()
         } else {
             val shownotesCleaner = ShownotesCleaner(requireContext(), item?.description ?: "", media?.getDuration()?:0)
             cleanedNotes = shownotesCleaner.processShownotes()
-            if (cleanedNotes != null) binding.webview.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes!!, "text/html", "UTF-8", null)
+            if (!cleanedNotes.isNullOrEmpty()) binding.webview.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes!!, "text/html", "UTF-8", null)
+            else Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show()
         }
     }
 

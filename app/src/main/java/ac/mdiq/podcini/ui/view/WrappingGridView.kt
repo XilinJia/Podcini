@@ -16,12 +16,11 @@ class WrappingGridView : GridView {
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         var heightSpec = heightMeasureSpec
-        if (layoutParams.height == LayoutParams.WRAP_CONTENT) {
-            // The great Android "hackatlon", the love, the magic.
-            // The two leftmost bits in the height measure spec have
-            // a special meaning, hence we can't use them to describe height.
-            heightSpec = MeasureSpec.makeMeasureSpec(Int.MAX_VALUE shr 2, MeasureSpec.AT_MOST)
-        }
+        // The great Android "hackatlon", the love, the magic.
+        // The two leftmost bits in the height measure spec have
+        // a special meaning, hence we can't use them to describe height.
+        if (layoutParams.height == LayoutParams.WRAP_CONTENT) heightSpec = MeasureSpec.makeMeasureSpec(Int.MAX_VALUE shr 2, MeasureSpec.AT_MOST)
+
         super.onMeasure(widthMeasureSpec, heightSpec)
     }
 }

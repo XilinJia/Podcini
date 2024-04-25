@@ -15,10 +15,8 @@ import java.nio.charset.Charset
 /**
  * Writes an OPML file into the user selected export directory in the background.
  */
-class DocumentFileExportWorker(private val exportWriter: ExportWriter,
-                               private val context: Context,
-                               private val outputFileUri: Uri
-) {
+class DocumentFileExportWorker(private val exportWriter: ExportWriter, private val context: Context, private val outputFileUri: Uri) {
+
     fun exportObservable(): Observable<DocumentFile?> {
         val output = DocumentFile.fromSingleUri(context, outputFileUri)
         return Observable.create { subscriber: ObservableEmitter<DocumentFile?> ->

@@ -44,8 +44,7 @@ class SwipeActionsDialog(private val context: Context, private val tag: String) 
             DownloadsFragment.TAG -> {
                 forFragment = context.getString(R.string.downloads_label)
                 keys = Stream.of(keys).filter { a: SwipeAction ->
-                    (!a.getId().equals(SwipeAction.REMOVE_FROM_HISTORY)
-                            && !a.getId().equals(SwipeAction.START_DOWNLOAD)) }.toList()
+                    (!a.getId().equals(SwipeAction.REMOVE_FROM_HISTORY) && !a.getId().equals(SwipeAction.START_DOWNLOAD)) }.toList()
             }
             FeedItemlistFragment.TAG -> {
                 forFragment = context.getString(R.string.individual_subscription)
@@ -54,8 +53,7 @@ class SwipeActionsDialog(private val context: Context, private val tag: String) 
             QueueFragment.TAG -> {
                 forFragment = context.getString(R.string.queue_label)
                 keys = Stream.of(keys).filter { a: SwipeAction ->
-                    (!a.getId().equals(SwipeAction.ADD_TO_QUEUE)
-                            && !a.getId().equals(SwipeAction.REMOVE_FROM_HISTORY)) }.toList()
+                    (!a.getId().equals(SwipeAction.ADD_TO_QUEUE) && !a.getId().equals(SwipeAction.REMOVE_FROM_HISTORY)) }.toList()
             }
             PlaybackHistoryFragment.TAG -> {
                 forFragment = context.getString(R.string.playback_history_label)
@@ -113,8 +111,7 @@ class SwipeActionsDialog(private val context: Context, private val tag: String) 
         val builder = MaterialAlertDialogBuilder(context)
         builder.setTitle(if (direction == LEFT) R.string.swipe_left else R.string.swipe_right)
 
-        val picker = SwipeactionsPickerBinding.inflate(LayoutInflater.from(
-            context))
+        val picker = SwipeactionsPickerBinding.inflate(LayoutInflater.from(context))
         builder.setView(picker.root)
         builder.setNegativeButton(R.string.cancel_label, null)
         val dialog = builder.show()
@@ -136,11 +133,9 @@ class SwipeActionsDialog(private val context: Context, private val tag: String) 
             item.swipeIcon.setImageDrawable(icon)
 
             item.root.setOnClickListener {
-                if (direction == LEFT) {
-                    leftAction = keys[i]
-                } else {
-                    rightAction = keys[i]
-                }
+                if (direction == LEFT) leftAction = keys[i]
+                else rightAction = keys[i]
+
                 setupSwipeDirectionView(view, direction)
                 dialog.dismiss()
             }

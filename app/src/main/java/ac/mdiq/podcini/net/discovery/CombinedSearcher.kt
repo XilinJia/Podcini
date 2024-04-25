@@ -58,9 +58,8 @@ class CombinedSearcher : PodcastSearcher {
                 urlToResult[result!!.feedUrl] = result
 
                 var ranking = 0f
-                if (resultRanking.containsKey(result.feedUrl)) {
-                    ranking = resultRanking[result.feedUrl]!!
-                }
+                if (resultRanking.containsKey(result.feedUrl)) ranking = resultRanking[result.feedUrl]!!
+
                 ranking += 1f / (position + 1f)
                 resultRanking[result.feedUrl] = ranking * providerPriority
             }
@@ -92,9 +91,7 @@ class CombinedSearcher : PodcastSearcher {
             for (i in PodcastSearcherRegistry.searchProviders.indices) {
                 val searchProviderInfo = PodcastSearcherRegistry.searchProviders[i]
                 val searcher = searchProviderInfo.searcher
-                if (searchProviderInfo.weight > 0.00001f && searcher.javaClass != CombinedSearcher::class.java) {
-                    names.add(searcher.name)
-                }
+                if (searchProviderInfo.weight > 0.00001f && searcher.javaClass != CombinedSearcher::class.java) names.add(searcher.name)
             }
             return TextUtils.join(", ", names)
         }

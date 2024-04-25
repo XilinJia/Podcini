@@ -47,36 +47,28 @@ class AddFeedFragment : Fragment() {
     private val addLocalFolderLauncher = registerForActivityResult<Uri?, Uri>(AddLocalFolder())
     { uri: Uri? -> this.addLocalFolderResult(uri) }
 
-    override fun onCreateView(inflater: LayoutInflater,
-                              container: ViewGroup?,
-                              savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         _binding = AddfeedBinding.inflate(inflater)
         activity = getActivity() as? MainActivity
 
         Log.d(TAG, "fragment onCreateView")
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
-        if (savedInstanceState != null) {
-            displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
-        }
+        if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
+
         (getActivity() as MainActivity).setupToolbarToggle(binding.toolbar, displayUpArrow)
 
         binding.searchItunesButton.setOnClickListener {
-            activity?.loadChildFragment(OnlineSearchFragment.newInstance(
-                ItunesPodcastSearcher::class.java))
+            activity?.loadChildFragment(OnlineSearchFragment.newInstance(ItunesPodcastSearcher::class.java))
         }
         binding.searchFyydButton.setOnClickListener {
-            activity?.loadChildFragment(OnlineSearchFragment.newInstance(
-                FyydPodcastSearcher::class.java))
+            activity?.loadChildFragment(OnlineSearchFragment.newInstance(FyydPodcastSearcher::class.java))
         }
         binding.searchGPodderButton.setOnClickListener {
-            activity?.loadChildFragment(OnlineSearchFragment.newInstance(
-                GpodnetPodcastSearcher::class.java))
+            activity?.loadChildFragment(OnlineSearchFragment.newInstance(GpodnetPodcastSearcher::class.java))
         }
         binding.searchPodcastIndexButton.setOnClickListener {
-            activity?.loadChildFragment(OnlineSearchFragment.newInstance(
-                PodcastIndexPodcastSearcher::class.java))
+            activity?.loadChildFragment(OnlineSearchFragment.newInstance(PodcastIndexPodcastSearcher::class.java))
         }
 
         binding.combinedFeedSearchEditText.setOnEditorActionListener { _: TextView?, _: Int, _: KeyEvent? ->
@@ -123,9 +115,7 @@ class AddFeedFragment : Fragment() {
         val clipData: ClipData? = clipboard.primaryClip
         if (clipData != null && clipData.itemCount > 0 && clipData.getItemAt(0).text != null) {
             val clipboardContent: String = clipData.getItemAt(0).text.toString()
-            if (clipboardContent.trim { it <= ' ' }.startsWith("http")) {
-                dialogBinding.editText.setText(clipboardContent.trim { it <= ' ' })
-            }
+            if (clipboardContent.trim { it <= ' ' }.startsWith("http")) dialogBinding.editText.setText(clipboardContent.trim { it <= ' ' })
         }
         builder.setView(dialogBinding.root)
         builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int -> addUrl(dialogBinding.editText.text.toString()) }
@@ -162,18 +152,16 @@ class AddFeedFragment : Fragment() {
     }
 
     private fun chooseOpmlImportPathResult(uri: Uri?) {
-        if (uri == null) {
-            return
-        }
+        if (uri == null) return
+
         val intent = Intent(context, OpmlImportActivity::class.java)
         intent.setData(uri)
         startActivity(intent)
     }
 
     @UnstableApi private fun addLocalFolderResult(uri: Uri?) {
-        if (uri == null) {
-            return
-        }
+        if (uri == null) return
+
         Observable.fromCallable<Feed> { addLocalFolder(uri) }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -189,15 +177,12 @@ class AddFeedFragment : Fragment() {
     }
 
     @UnstableApi private fun addLocalFolder(uri: Uri): Feed? {
-        requireActivity().contentResolver.takePersistableUriPermission(uri,
-            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-        val documentFile = DocumentFile.fromTreeUri(
-            requireContext(), uri)
+        requireActivity().contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        val documentFile = DocumentFile.fromTreeUri(requireContext(), uri)
         requireNotNull(documentFile) { "Unable to retrieve document tree" }
         var title = documentFile.name
-        if (title == null) {
-            title = getString(R.string.local_folder)
-        }
+        if (title == null) title = getString(R.string.local_folder)
+
         val dirFeed = Feed(Feed.PREFIX_LOCAL_FOLDER + uri.toString(), null, title)
         dirFeed.items = mutableListOf()
         dirFeed.sortOrder = SortOrder.EPISODE_TITLE_A_Z

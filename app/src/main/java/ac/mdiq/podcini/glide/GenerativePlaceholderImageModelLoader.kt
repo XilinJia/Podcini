@@ -26,11 +26,7 @@ class GenerativePlaceholderImageModelLoader : ModelLoader<String, InputStream> {
         }
     }
 
-    override fun buildLoadData(model: String,
-                               width: Int,
-                               height: Int,
-                               options: Options
-    ): ModelLoader.LoadData<InputStream?> {
+    override fun buildLoadData(model: String, width: Int, height: Int, options: Options): ModelLoader.LoadData<InputStream?> {
         return ModelLoader.LoadData(ObjectKey(model), EmbeddedImageFetcher(model, width, height))
     }
 
@@ -38,8 +34,8 @@ class GenerativePlaceholderImageModelLoader : ModelLoader<String, InputStream> {
         return model.startsWith(Feed.PREFIX_GENERATIVE_COVER)
     }
 
-    internal class EmbeddedImageFetcher(private val model: String, private val width: Int, private val height: Int) :
-        DataFetcher<InputStream?> {
+    internal class EmbeddedImageFetcher(private val model: String, private val width: Int, private val height: Int) : DataFetcher<InputStream?> {
+
         override fun loadData(priority: Priority, callback: DataFetcher.DataCallback<in InputStream?>) {
             val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap)
@@ -70,22 +66,14 @@ class GenerativePlaceholderImageModelLoader : ModelLoader<String, InputStream> {
                     }
                     color = newColor
                     paint.color = newColor
-                    canvas.drawLine(linePos + slope + shadowWidth, -slope.toFloat(),
-                        linePos - slope + shadowWidth, (height + slope).toFloat(), paintShadow)
+                    canvas.drawLine(linePos + slope + shadowWidth, -slope.toFloat(), linePos - slope + shadowWidth, (height + slope).toFloat(), paintShadow)
                 }
-                canvas.drawLine(linePos + slope, -slope.toFloat(),
-                    linePos - slope, (height + slope).toFloat(), paint)
+                canvas.drawLine(linePos + slope, -slope.toFloat(), linePos - slope, (height + slope).toFloat(), paint)
             }
 
             val gradientPaint = Paint()
             paint.isDither = true
-            gradientPaint.setShader(LinearGradient(0f,
-                0f,
-                0f,
-                height.toFloat(),
-                0x00000000,
-                0x55000000,
-                Shader.TileMode.CLAMP))
+            gradientPaint.setShader(LinearGradient(0f, 0f, 0f, height.toFloat(), 0x00000000, 0x55000000, Shader.TileMode.CLAMP))
             canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), gradientPaint)
 
             val baos = ByteArrayOutputStream()
@@ -111,8 +99,7 @@ class GenerativePlaceholderImageModelLoader : ModelLoader<String, InputStream> {
         }
 
         companion object {
-            private val PALETTES = intArrayOf(-0x876f64, -0x9100, -0xc771c4,
-                -0xff7c71, -0x84e05e, -0x48e3e4, -0xde690d)
+            private val PALETTES = intArrayOf(-0x876f64, -0x9100, -0xc771c4, -0xff7c71, -0x84e05e, -0x48e3e4, -0xde690d)
 
             private fun randomShadeOfGrey(generator: Random): Int {
                 return -0x888889 + 0x222222 * generator.nextInt(5)

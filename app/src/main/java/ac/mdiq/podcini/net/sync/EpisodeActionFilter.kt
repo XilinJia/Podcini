@@ -8,10 +8,7 @@ import ac.mdiq.podcini.net.sync.model.EpisodeAction
 object EpisodeActionFilter {
     const val TAG: String = "EpisodeActionFilter"
 
-    fun getRemoteActionsOverridingLocalActions(
-            remoteActions: List<EpisodeAction>,
-            queuedEpisodeActions: List<EpisodeAction>
-    ): Map<Pair<String, String>, EpisodeAction> {
+    fun getRemoteActionsOverridingLocalActions(remoteActions: List<EpisodeAction>, queuedEpisodeActions: List<EpisodeAction>): Map<Pair<String, String>, EpisodeAction> {
         // make sure more recent local actions are not overwritten by older remote actions
         val remoteActionsThatOverrideLocalActions: MutableMap<Pair<String, String>, EpisodeAction> = ArrayMap()
         val localMostRecentPlayActions = createUniqueLocalMostRecentPlayActions(queuedEpisodeActions)
@@ -22,13 +19,9 @@ object EpisodeActionFilter {
                 EpisodeAction.Action.NEW, EpisodeAction.Action.DOWNLOAD -> {}
                 EpisodeAction.Action.PLAY -> {
                     val localMostRecent = localMostRecentPlayActions[key]
-                    if (secondActionOverridesFirstAction(remoteAction, localMostRecent)) {
-                        break
-                    }
+                    if (secondActionOverridesFirstAction(remoteAction, localMostRecent)) break
                     val remoteMostRecentAction = remoteActionsThatOverrideLocalActions[key]
-                    if (secondActionOverridesFirstAction(remoteAction, remoteMostRecentAction)) {
-                        break
-                    }
+                    if (secondActionOverridesFirstAction(remoteAction, remoteMostRecentAction)) break
                     remoteActionsThatOverrideLocalActions[key] = remoteAction
                 }
                 EpisodeAction.Action.DELETE -> {}
@@ -39,9 +32,7 @@ object EpisodeActionFilter {
         return remoteActionsThatOverrideLocalActions
     }
 
-    private fun createUniqueLocalMostRecentPlayActions(
-            queuedEpisodeActions: List<EpisodeAction>
-    ): Map<Pair<String, String>, EpisodeAction> {
+    private fun createUniqueLocalMostRecentPlayActions(queuedEpisodeActions: List<EpisodeAction>): Map<Pair<String, String>, EpisodeAction> {
         val localMostRecentPlayAction: MutableMap<Pair<String, String>, EpisodeAction> =
             ArrayMap()
         for (action in queuedEpisodeActions) {
@@ -49,20 +40,14 @@ object EpisodeActionFilter {
             val key = Pair(action.podcast!!, action.episode!!)
             val mostRecent = localMostRecentPlayAction[key]
             when {
-                mostRecent?.timestamp == null -> {
-                    localMostRecentPlayAction[key] = action
-                }
-                mostRecent.timestamp!!.before(action.timestamp) -> {
-                    localMostRecentPlayAction[key] = action
-                }
+                mostRecent?.timestamp == null -> localMostRecentPlayAction[key] = action
+                mostRecent.timestamp!!.before(action.timestamp) -> localMostRecentPlayAction[key] = action
             }
         }
         return localMostRecentPlayAction
     }
 
-    private fun secondActionOverridesFirstAction(firstAction: EpisodeAction,
-                                                 secondAction: EpisodeAction?
-    ): Boolean {
+    private fun secondActionOverridesFirstAction(firstAction: EpisodeAction, secondAction: EpisodeAction?): Boolean {
         return secondAction?.timestamp != null && (firstAction.timestamp == null || secondAction.timestamp!!.after(firstAction.timestamp))
     }
 }

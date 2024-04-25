@@ -19,16 +19,9 @@ class HostnameParser(hosturl: String?) {
         if (m.matches()) {
             scheme = m.group(1)
             host = IDN.toASCII(m.group(2))
-            port = if (m.group(3) == null) {
-                -1
-            } else {
-                m.group(3).toInt() // regex -> can only be digits
-            }
-            subfolder = if (m.group(4) == null) {
-                ""
-            } else {
-                StringUtils.stripEnd(m.group(4), "/")
-            }
+            // regex -> can only be digits
+            port = if (m.group(3) == null) -1 else m.group(3).toInt()
+            subfolder = if (m.group(4) == null) "" else StringUtils.stripEnd(m.group(4), "/")
         } else {
             // URL does not match regex: use it anyway -> this will cause an exception on connect
             scheme = "https"
@@ -37,21 +30,12 @@ class HostnameParser(hosturl: String?) {
         }
 
         when {
-            scheme == null && port == 80 -> {
-                scheme = "http"
-            }
-            scheme == null -> {
-                scheme = "https" // assume https
-            }
+            scheme == null && port == 80 -> scheme = "http"
+            scheme == null -> scheme = "https" // assume https
         }
-
         when {
-            scheme == "https" && port == -1 -> {
-                port = 443
-            }
-            scheme == "http" && port == -1 -> {
-                port = 80
-            }
+            scheme == "https" && port == -1 -> port = 443
+            scheme == "http" && port == -1 -> port = 80
         }
     }
 

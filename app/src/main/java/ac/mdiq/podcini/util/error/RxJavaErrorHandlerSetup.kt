@@ -23,8 +23,7 @@ object RxJavaErrorHandlerSetup {
             Log.e(TAG, Log.getStackTraceString(exception))
             write(exception!!)
             if (BuildConfig.DEBUG) {
-                Thread.currentThread().uncaughtExceptionHandler
-                    ?.uncaughtException(Thread.currentThread(), exception)
+                Thread.currentThread().uncaughtExceptionHandler?.uncaughtException(Thread.currentThread(), exception)
             }
         }
     }

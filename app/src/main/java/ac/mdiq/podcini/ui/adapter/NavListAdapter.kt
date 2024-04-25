@@ -62,9 +62,7 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String?) {
-        if (UserPreferences.PREF_HIDDEN_DRAWER_ITEMS == key) {
-            loadItems()
-        }
+        if (UserPreferences.PREF_HIDDEN_DRAWER_ITEMS == key) loadItems()
     }
 
     @OptIn(UnstableApi::class) private fun loadItems() {
@@ -79,9 +77,7 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
             // nav drawer at all.
             showSubscriptionList = true
             newTags.remove(SUBSCRIPTION_LIST_TAG)
-        } else {
-            showSubscriptionList = false
-        }
+        } else showSubscriptionList = false
 
         fragmentTags.clear()
         fragmentTags.addAll(newTags)
@@ -113,38 +109,24 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
 
     override fun getItemCount(): Int {
         var baseCount = subscriptionOffset
-        if (showSubscriptionList) {
-            baseCount += itemAccess.count
-        }
+        if (showSubscriptionList) baseCount += itemAccess.count
         return baseCount
     }
 
     override fun getItemId(position: Int): Long {
         val viewType = getItemViewType(position)
         return when (viewType) {
-            VIEW_TYPE_SUBSCRIPTION -> {
-                itemAccess.getItem(position - subscriptionOffset)?.id?:0
-            }
-            VIEW_TYPE_NAV -> {
-                (-abs(fragmentTags[position].hashCode().toLong().toDouble()) - 1).toLong() // Folder IDs are >0
-            }
-            else -> {
-                0
-            }
+            VIEW_TYPE_SUBSCRIPTION -> itemAccess.getItem(position - subscriptionOffset)?.id?:0
+            VIEW_TYPE_NAV -> (-abs(fragmentTags[position].hashCode().toLong().toDouble()) - 1).toLong() // Folder IDs are >0
+            else -> 0
         }
     }
 
     override fun getItemViewType(position: Int): Int {
         return when {
-            0 <= position && position < fragmentTags.size -> {
-                VIEW_TYPE_NAV
-            }
-            position < subscriptionOffset -> {
-                VIEW_TYPE_SECTION_DIVIDER
-            }
-            else -> {
-                VIEW_TYPE_SUBSCRIPTION
-            }
+            0 <= position && position < fragmentTags.size -> VIEW_TYPE_NAV
+            position < subscriptionOffset -> VIEW_TYPE_SECTION_DIVIDER
+            else -> VIEW_TYPE_SUBSCRIPTION
         }
     }
 
@@ -154,15 +136,9 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         val inflater = LayoutInflater.from(activity.get())
         return when (viewType) {
-            VIEW_TYPE_NAV -> {
-                NavHolder(inflater.inflate(R.layout.nav_listitem, parent, false))
-            }
-            VIEW_TYPE_SECTION_DIVIDER -> {
-                DividerHolder(inflater.inflate(R.layout.nav_section_item, parent, false))
-            }
-            else -> {
-                FeedHolder(inflater.inflate(R.layout.nav_listitem, parent, false))
-            }
+            VIEW_TYPE_NAV -> NavHolder(inflater.inflate(R.layout.nav_listitem, parent, false))
+            VIEW_TYPE_SECTION_DIVIDER -> DividerHolder(inflater.inflate(R.layout.nav_section_item, parent, false))
+            else -> FeedHolder(inflater.inflate(R.layout.nav_listitem, parent, false))
         }
     }
 
@@ -171,12 +147,8 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
 
         holder.itemView.setOnCreateContextMenuListener(null)
         when (viewType) {
-            VIEW_TYPE_NAV -> {
-                bindNavView(getLabel(fragmentTags[position]), position, holder as NavHolder)
-            }
-            VIEW_TYPE_SECTION_DIVIDER -> {
-                bindSectionDivider(holder as DividerHolder)
-            }
+            VIEW_TYPE_NAV -> bindNavView(getLabel(fragmentTags[position]), position, holder as NavHolder)
+            VIEW_TYPE_SECTION_DIVIDER -> bindSectionDivider(holder as DividerHolder)
             else -> {
                 val itemPos = position - subscriptionOffset
                 val item = itemAccess.getItem(itemPos)
@@ -192,8 +164,7 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
             holder.itemView.setOnClickListener { itemAccess.onItemClick(position) }
             holder.itemView.setOnLongClickListener { itemAccess.onItemLongClick(position) }
             holder.itemView.setOnTouchListener { _: View?, e: MotionEvent ->
-                if (e.isFromSource(InputDevice.SOURCE_MOUSE)
-                        && e.buttonState == MotionEvent.BUTTON_SECONDARY) {
+                if (e.isFromSource(InputDevice.SOURCE_MOUSE) && e.buttonState == MotionEvent.BUTTON_SECONDARY) {
                     itemAccess.onItemLongClick(position)
                     return@setOnTouchListener false
                 }
@@ -237,8 +208,7 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
             tag == DownloadsFragment.TAG && isEnableAutodownload -> {
                 val epCacheSize = episodeCacheSize
                 // don't count episodes that can be reclaimed
-                val spaceUsed = (itemAccess.numberOfDownloadedItems
-                        - itemAccess.reclaimableItems)
+                val spaceUsed = (itemAccess.numberOfDownloadedItems - itemAccess.reclaimableItems)
                 if (epCacheSize in 1..spaceUsed) {
                     holder.count.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_disc_alert, 0)
                     holder.count.visibility = View.VISIBLE
@@ -277,9 +247,8 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
         if (item.counter > 0) {
             holder.count.visibility = View.VISIBLE
             holder.count.text = NumberFormat.getInstance().format(item.counter.toLong())
-        } else {
-            holder.count.visibility = View.GONE
-        }
+        } else holder.count.visibility = View.GONE
+
         holder.title.text = item.title
         val padding = (activity.get()!!.resources.getDimension(R.dimen.thumbnail_length_navlist) / 2).toInt()
         holder.itemView.setPadding(item.layer * padding, 0, 0, 0)

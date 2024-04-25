@@ -133,9 +133,7 @@ class PreferenceActivity : AppCompatActivity(), SearchPreferenceResultListener {
                 builder.setPositiveButton(android.R.string.ok, null)
                 builder.show()
             }
-            R.xml.preferences_notifications -> {
-                openScreen(screen)
-            }
+            R.xml.preferences_notifications -> openScreen(screen)
             else -> {
                 val fragment = openScreen(result.resourceFile)
                 result.highlight(fragment)

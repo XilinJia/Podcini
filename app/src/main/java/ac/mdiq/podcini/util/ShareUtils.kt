@@ -99,8 +99,7 @@ object ShareUtils {
         val lurl = media.getLocalMediaUrl()
         if (lurl.isNullOrEmpty()) return
 
-        val fileUri = FileProvider.getUriForFile(context, context.getString(R.string.provider_authority),
-            File(lurl))
+        val fileUri = FileProvider.getUriForFile(context, context.getString(R.string.provider_authority), File(lurl))
 
         IntentBuilder(context)
             .setType(media.mime_type)

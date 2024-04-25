@@ -27,8 +27,7 @@ class ItemEnqueuePositionCalculator(private val enqueueLocation: EnqueueLocation
                 return getPositionOfFirstNonDownloadingItem(0, curQueue)
             EnqueueLocation.AFTER_CURRENTLY_PLAYING -> {
                 val currentlyPlayingPosition = getCurrentlyPlayingPosition(curQueue, currentPlaying)
-                return getPositionOfFirstNonDownloadingItem(
-                    currentlyPlayingPosition + 1, curQueue)
+                return getPositionOfFirstNonDownloadingItem(currentlyPlayingPosition + 1, curQueue)
             }
             EnqueueLocation.RANDOM -> {
                 val random = Random()
@@ -41,9 +40,7 @@ class ItemEnqueuePositionCalculator(private val enqueueLocation: EnqueueLocation
     private fun getPositionOfFirstNonDownloadingItem(startPosition: Int, curQueue: List<FeedItem>): Int {
         val curQueueSize = curQueue.size
         for (i in startPosition until curQueueSize) {
-            if (!isItemAtPositionDownloading(i, curQueue)) {
-                return i
-            } // else continue to search;
+            if (!isItemAtPositionDownloading(i, curQueue)) return i
         }
         return curQueueSize
     }
@@ -59,17 +56,12 @@ class ItemEnqueuePositionCalculator(private val enqueueLocation: EnqueueLocation
     }
 
     companion object {
-        private fun getCurrentlyPlayingPosition(curQueue: List<FeedItem>,
-                                                currentPlaying: Playable?
-        ): Int {
-            if (currentPlaying !is FeedMedia) {
-                return -1
-            }
+        private fun getCurrentlyPlayingPosition(curQueue: List<FeedItem>, currentPlaying: Playable?): Int {
+            if (currentPlaying !is FeedMedia) return -1
+
             val curPlayingItemId = currentPlaying.item!!.id
             for (i in curQueue.indices) {
-                if (curPlayingItemId == curQueue[i].id) {
-                    return i
-                }
+                if (curPlayingItemId == curQueue[i].id) return i
             }
             return -1
         }

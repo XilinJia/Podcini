@@ -54,9 +54,7 @@ class ResizingOkHttpStreamFetcher(client: Call.Factory?, url: GlideUrl?) : OkHtt
                     IOUtils.closeQuietly(inVal)
 
                     when {
-                        options.outWidth == -1 || options.outHeight == -1 -> {
-                            throw IOException("Not a valid image")
-                        }
+                        options.outWidth == -1 || options.outHeight == -1 -> throw IOException("Not a valid image")
                         max(options.outHeight.toDouble(), options.outWidth.toDouble()) >= MAX_DIMENSIONS -> {
                             val sampleSize = max(options.outHeight.toDouble(), options.outWidth.toDouble()) / MAX_DIMENSIONS
                             options.inSampleSize = 2.0.pow(floor(ln(sampleSize) / ln(2.0))).toInt()
@@ -68,8 +66,7 @@ class ResizingOkHttpStreamFetcher(client: Call.Factory?, url: GlideUrl?) : OkHtt
                     val bitmap = BitmapFactory.decodeStream(inVal, null, options)
                     IOUtils.closeQuietly(inVal)
 
-                    val format = if (Build.VERSION.SDK_INT < 30
-                    ) CompressFormat.WEBP else CompressFormat.WEBP_LOSSY
+                    val format = if (Build.VERSION.SDK_INT < 30) CompressFormat.WEBP else CompressFormat.WEBP_LOSSY
 
                     var quality = 100
                     if (tempOut != null) while (true) {
@@ -78,29 +75,19 @@ class ResizingOkHttpStreamFetcher(client: Call.Factory?, url: GlideUrl?) : OkHtt
                         IOUtils.closeQuietly(out)
 
                         quality -= when {
-                            tempOut!!.length() > 3 * MAX_FILE_SIZE && quality >= 45 -> {
-                                40
-                            }
-                            tempOut!!.length() > 2 * MAX_FILE_SIZE && quality >= 25 -> {
-                                20
-                            }
-                            tempOut!!.length() > MAX_FILE_SIZE && quality >= 15 -> {
-                                10
-                            }
-                            tempOut!!.length() > MAX_FILE_SIZE && quality >= 10 -> {
-                                5
-                            }
-                            else -> {
-                                break
-                            }
+                            tempOut!!.length() > 3 * MAX_FILE_SIZE && quality >= 45 -> 40
+                            tempOut!!.length() > 2 * MAX_FILE_SIZE && quality >= 25 -> 20
+                            tempOut!!.length() > MAX_FILE_SIZE && quality >= 15 -> 10
+                            tempOut!!.length() > MAX_FILE_SIZE && quality >= 10 -> 5
+                            else -> break
                         }
                     }
                     bitmap?.recycle()
 
                     stream = FileInputStream(tempOut)
                     callback.onDataReady(stream)
-                    if (tempIn != null && tempOut != null) Log.d(TAG,
-                        "Compressed image from " + tempIn!!.length() / 1024 + " to " + tempOut!!.length() / 1024 + " kB (quality: " + quality + "%)")
+                    if (tempIn != null && tempOut != null)
+                        Log.d(TAG, "Compressed image from ${tempIn!!.length() / 1024} to ${tempOut!!.length() / 1024} kB (quality: $quality%)")
                 } catch (e: Throwable) {
                     e.printStackTrace()
 

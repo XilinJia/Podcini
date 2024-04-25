@@ -66,9 +66,8 @@ class AllEpisodesFragment : BaseEpisodesListFragment() {
     }
 
     @OptIn(UnstableApi::class) override fun onMenuItemClick(item: MenuItem): Boolean {
-        if (super.onOptionsItemSelected(item)) {
-            return true
-        }
+        if (super.onOptionsItemSelected(item)) return true
+
         when (item.itemId) {
             R.id.filter_items -> {
                 AllEpisodesFilterDialog.newInstance(getFilter()).show(childFragmentManager, null)
@@ -76,11 +75,9 @@ class AllEpisodesFragment : BaseEpisodesListFragment() {
             }
             R.id.action_favorites -> {
                 val filter = ArrayList(getFilter().valuesList)
-                if (filter.contains(FeedItemFilter.IS_FAVORITE)) {
-                    filter.remove(FeedItemFilter.IS_FAVORITE)
-                } else {
-                    filter.add(FeedItemFilter.IS_FAVORITE)
-                }
+                if (filter.contains(FeedItemFilter.IS_FAVORITE)) filter.remove(FeedItemFilter.IS_FAVORITE)
+                else filter.add(FeedItemFilter.IS_FAVORITE)
+
                 onFilterChanged(AllEpisodesFilterChangedEvent(HashSet(filter)))
                 return true
             }
@@ -109,8 +106,7 @@ class AllEpisodesFragment : BaseEpisodesListFragment() {
             txtvInformation.visibility = View.GONE
             emptyView.setMessage(R.string.no_all_episodes_label)
         }
-        toolbar.menu?.findItem(R.id.action_favorites)?.setIcon(
-            if (getFilter().showIsFavorite) R.drawable.ic_star else R.drawable.ic_star_border)
+        toolbar.menu?.findItem(R.id.action_favorites)?.setIcon(if (getFilter().showIsFavorite) R.drawable.ic_star else R.drawable.ic_star_border)
     }
 
     class AllEpisodesSortDialog : ItemSortDialog() {
@@ -120,9 +116,8 @@ class AllEpisodesFragment : BaseEpisodesListFragment() {
         }
 
         override fun onAddItem(title: Int, ascending: SortOrder, descending: SortOrder, ascendingIsDefault: Boolean) {
-            if (ascending == SortOrder.DATE_OLD_NEW || ascending == SortOrder.DURATION_SHORT_LONG) {
+            if (ascending == SortOrder.DATE_OLD_NEW || ascending == SortOrder.DURATION_SHORT_LONG)
                 super.onAddItem(title, ascending, descending, ascendingIsDefault)
-            }
         }
 
         override fun onSelectionChanged() {

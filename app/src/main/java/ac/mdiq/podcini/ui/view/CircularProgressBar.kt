@@ -71,17 +71,14 @@ class CircularProgressBar : View {
         bounds[padding, padding, width - padding] = height - padding
         canvas.drawArc(bounds, -90f, 360f, false, paintBackground)
 
-        if (percentage in MINIMUM_PERCENTAGE..MAXIMUM_PERCENTAGE) {
+        if (percentage in MINIMUM_PERCENTAGE..MAXIMUM_PERCENTAGE)
             canvas.drawArc(bounds, -90f, percentage * 360, false, paintProgress)
-        }
 
         if (abs((percentage - targetPercentage).toDouble()) > MINIMUM_PERCENTAGE) {
             var speed = 0.02f
-            if (abs((targetPercentage - percentage).toDouble()) < 0.1 && targetPercentage > percentage) {
-                speed = 0.006f
-            }
-            val delta = min(speed.toDouble(), abs((targetPercentage - percentage).toDouble()))
-                .toFloat()
+            if (abs((targetPercentage - percentage).toDouble()) < 0.1 && targetPercentage > percentage) speed = 0.006f
+
+            val delta = min(speed.toDouble(), abs((targetPercentage - percentage).toDouble())).toFloat()
             val direction = (if ((targetPercentage - percentage) > 0) 1f else -1f)
             percentage += delta * direction
             invalidate()

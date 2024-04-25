@@ -39,24 +39,17 @@ object LocalFeedUpdater {
     val PREFERRED_FEED_IMAGE_FILENAMES: Array<String> = arrayOf("folder.jpg", "Folder.jpg", "folder.png", "Folder.png")
 
     @UnstableApi @JvmStatic
-    fun updateFeed(feed: Feed, context: Context,
-                   updaterProgressListener: UpdaterProgressListener?
-    ) {
+    fun updateFeed(feed: Feed, context: Context, updaterProgressListener: UpdaterProgressListener?) {
         if (feed.download_url.isNullOrEmpty()) return
         try {
             val uriString = feed.download_url!!.replace(Feed.PREFIX_LOCAL_FOLDER, "")
             val documentFolder = DocumentFile.fromTreeUri(context, Uri.parse(uriString))
-                ?: throw IOException("Unable to retrieve document tree. "
-                        + "Try re-connecting the folder on the podcast info page.")
-            if (!documentFolder.exists() || !documentFolder.canRead()) {
-                throw IOException("Cannot read local directory. "
-                        + "Try re-connecting the folder on the podcast info page.")
-            }
-            tryUpdateFeed(feed, context, documentFolder.uri, updaterProgressListener)
+                ?: throw IOException("Unable to retrieve document tree. Try re-connecting the folder on the podcast info page.")
+            if (!documentFolder.exists() || !documentFolder.canRead())
+                throw IOException("Cannot read local directory. Try re-connecting the folder on the podcast info page.")
 
-            if (mustReportDownloadSuccessful(feed)) {
-                reportSuccess(feed)
-            }
+            tryUpdateFeed(feed, context, documentFolder.uri, updaterProgressListener)
+            if (mustReportDownloadSuccessful(feed)) reportSuccess(feed)
         } catch (e: Exception) {
             e.printStackTrace()
             reportError(feed, e.message)
@@ -66,9 +59,7 @@ object LocalFeedUpdater {
     @UnstableApi @JvmStatic
     @VisibleForTesting
     @Throws(IOException::class)
-    fun tryUpdateFeed(feed: Feed, context: Context, folderUri: Uri?,
-                      updaterProgressListener: UpdaterProgressListener?
-    ) {
+    fun tryUpdateFeed(feed: Feed, context: Context, folderUri: Uri?, updaterProgressListener: UpdaterProgressListener?) {
         var feed = feed
         //make sure it is the latest 'version' of this feed from the db (all items etc)
         feed = DBTasks.updateFeed(context, feed, false)?: feed
@@ -99,9 +90,7 @@ object LocalFeedUpdater {
         val it = newItems.iterator()
         while (it.hasNext()) {
             val feedItem = it.next()
-            if (!mediaFileNames.contains(feedItem.link)) {
-                it.remove()
-            }
+            if (!mediaFileNames.contains(feedItem.link)) it.remove()
         }
 
         if (folderUri != null) feed.imageUrl = getImageUrl(allFiles, folderUri)
@@ -120,18 +109,14 @@ object LocalFeedUpdater {
         // look for special file names
         for (iconLocation in PREFERRED_FEED_IMAGE_FILENAMES) {
             for (file in files) {
-                if (iconLocation == file.name) {
-                    return file.uri.toString()
-                }
+                if (iconLocation == file.name) return file.uri.toString()
             }
         }
 
         // use the first image in the folder if existing
         for (file in files) {
             val mime = file.type
-            if (mime.startsWith("image/jpeg") || mime.startsWith("image/png")) {
-                return file.uri.toString()
-            }
+            if (mime.startsWith("image/jpeg") || mime.startsWith("image/png")) return file.uri.toString()
         }
 
         // use default icon as fallback
@@ -141,16 +126,13 @@ object LocalFeedUpdater {
     private fun feedContainsFile(feed: Feed, filename: String): FeedItem? {
         val items = feed.items
         for (i in items) {
-            if (i.media != null && i.link == filename) {
-                return i
-            }
+            if (i.media != null && i.link == filename) return i
         }
         return null
     }
 
     private fun createFeedItem(feed: Feed, file: FastDocumentFile, context: Context): FeedItem {
-        val item = FeedItem(0, file.name, UUID.randomUUID().toString(),
-            file.name, Date(file.lastModified), FeedItem.UNPLAYED, feed)
+        val item = FeedItem(0, file.name, UUID.randomUUID().toString(), file.name, Date(file.lastModified), FeedItem.UNPLAYED, feed)
         item.disableAutoDownload()
 
         val size = file.length
@@ -159,9 +141,8 @@ object LocalFeedUpdater {
         item.media = media
 
         for (existingItem in feed.items) {
-            if (existingItem.media != null && existingItem.media!!
-                        .download_url == file.uri.toString() && file.length == existingItem.media!!
-                        .size) {
+            if (existingItem.media != null && existingItem.media!!.download_url == file.uri.toString()
+                    && file.length == existingItem.media!!.size) {
                 // We found an old file that we already scanned. Re-use metadata.
                 item.updateFromOther(existingItem)
                 return item
@@ -187,16 +168,12 @@ object LocalFeedUpdater {
                     item.pubDate = simpleDateFormat.parse(dateStr)
                 } catch (parseException: ParseException) {
                     val date = DateUtils.parse(dateStr)
-                    if (date != null) {
-                        item.pubDate = date
-                    }
+                    if (date != null) item.pubDate = date
                 }
             }
 
             val title = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
-            if (!title.isNullOrEmpty()) {
-                item.title = title
-            }
+            if (!title.isNullOrEmpty()) item.title = title
 
             val durationStr = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
             item.media!!.setDuration(durationStr!!.toLong().toInt())
@@ -204,8 +181,7 @@ object LocalFeedUpdater {
             item.media!!.setHasEmbeddedPicture(mediaMetadataRetriever.embeddedPicture != null)
             try {
                 context.contentResolver.openInputStream(file.uri).use { inputStream ->
-                    val reader = Id3MetadataReader(
-                        CountingInputStream(BufferedInputStream(inputStream)))
+                    val reader = Id3MetadataReader(CountingInputStream(BufferedInputStream(inputStream)))
                     reader.readInputStream()
                     item.setDescriptionIfLonger(reader.comment)
                 }
@@ -263,10 +239,8 @@ object LocalFeedUpdater {
     private fun mustReportDownloadSuccessful(feed: Feed): Boolean {
         val downloadResults = DBReader.getFeedDownloadLog(feed.id).toMutableList()
 
-        if (downloadResults.isEmpty()) {
-            // report success if never reported before
-            return true
-        }
+        // report success if never reported before
+        if (downloadResults.isEmpty()) return true
 
         downloadResults.sortWith { downloadStatus1: DownloadResult, downloadStatus2: DownloadResult ->
             downloadStatus1.getCompletionDate().compareTo(downloadStatus2.getCompletionDate())

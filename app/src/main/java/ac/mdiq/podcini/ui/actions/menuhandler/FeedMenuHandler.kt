@@ -20,22 +20,14 @@ object FeedMenuHandler {
     ): Boolean {
         val context = fragment.requireContext()
         when (menuItemId) {
-            R.id.rename_folder_item -> {
-                RenameItemDialog(fragment.activity as Activity, selectedFeed).show()
-            }
+            R.id.rename_folder_item -> RenameItemDialog(fragment.activity as Activity, selectedFeed).show()
             R.id.edit_tags -> {
                 if (selectedFeed.preferences != null) TagSettingsDialog.newInstance(listOf(selectedFeed.preferences!!))
                     .show(fragment.childFragmentManager, TagSettingsDialog.TAG)
             }
-            R.id.rename_item -> {
-                RenameItemDialog(fragment.activity as Activity, selectedFeed).show()
-            }
-            R.id.remove_feed -> {
-                RemoveFeedDialog.show(context, selectedFeed, null)
-            }
-            else -> {
-                return false
-            }
+            R.id.rename_item -> RenameItemDialog(fragment.activity as Activity, selectedFeed).show()
+            R.id.remove_feed -> RemoveFeedDialog.show(context, selectedFeed, null)
+            else -> return false
         }
         return true
     }

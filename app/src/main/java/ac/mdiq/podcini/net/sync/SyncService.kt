@@ -73,10 +73,8 @@ class SyncService(context: Context, params: WorkerParameters) : Worker(context, 
             Log.e(TAG, Log.getStackTraceString(e))
 
             if (e is SyncServiceException) {
-                if (runAttemptCount % 3 == 2) {
-                    // Do not spam users with notification and retry before notifying
-                    updateErrorNotification(e)
-                }
+                // Do not spam users with notification and retry before notifying
+                if (runAttemptCount % 3 == 2) updateErrorNotification(e)
                 return Result.retry()
             } else {
                 updateErrorNotification(e)
@@ -115,9 +113,7 @@ class SyncService(context: Context, params: WorkerParameters) : Worker(context, 
 
             // remove subscription if not just subscribed (again)
             for (downloadUrl in subscriptionChanges.removed) {
-                if (!queuedAddedFeeds.contains(downloadUrl)) {
-                    removeFeedWithDownloadUrl(applicationContext, downloadUrl)
-                }
+                if (!queuedAddedFeeds.contains(downloadUrl)) removeFeedWithDownloadUrl(applicationContext, downloadUrl)
             }
 
             if (lastSync == 0L) {
@@ -148,11 +144,8 @@ class SyncService(context: Context, params: WorkerParameters) : Worker(context, 
         try {
             while (true) {
                 Thread.sleep(1000)
-                val event = EventBus.getDefault().getStickyEvent(
-                    FeedUpdateRunningEvent::class.java)
-                if (event == null || !event.isFeedUpdateRunning) {
-                    return
-                }
+                val event = EventBus.getDefault().getStickyEvent(FeedUpdateRunningEvent::class.java)
+                if (event == null || !event.isFeedUpdateRunning) return
             }
         } catch (e: InterruptedException) {
             e.printStackTrace()
@@ -173,8 +166,7 @@ class SyncService(context: Context, params: WorkerParameters) : Worker(context, 
         val queuedEpisodeActions: MutableList<EpisodeAction> = synchronizationQueueStorage.queuedEpisodeActions
         if (lastSync == 0L) {
             EventBus.getDefault().postSticky(SyncServiceEvent(R.string.sync_status_upload_played))
-            val readItems = getEpisodes(0, Int.MAX_VALUE,
-                FeedItemFilter(FeedItemFilter.PLAYED), SortOrder.DATE_NEW_OLD)
+            val readItems = getEpisodes(0, Int.MAX_VALUE, FeedItemFilter(FeedItemFilter.PLAYED), SortOrder.DATE_NEW_OLD)
             Log.d(TAG, "First sync. Upload state for all " + readItems.size + " played episodes")
             for (item in readItems) {
                 val media = item.media ?: continue
@@ -190,8 +182,7 @@ class SyncService(context: Context, params: WorkerParameters) : Worker(context, 
         if (queuedEpisodeActions.size > 0) {
             LockingAsyncExecutor.lock.lock()
             try {
-                Log.d(TAG, "Uploading " + queuedEpisodeActions.size + " actions: "
-                        + StringUtils.join(queuedEpisodeActions, ", "))
+                Log.d(TAG, "Uploading ${queuedEpisodeActions.size} actions: ${StringUtils.join(queuedEpisodeActions, ", ")}")
                 val postResponse = syncServiceImpl.uploadEpisodeActions(queuedEpisodeActions)
                 newTimeStamp = postResponse?.timestamp?:0L
                 Log.d(TAG, "Upload episode response: $postResponse")
@@ -206,12 +197,9 @@ class SyncService(context: Context, params: WorkerParameters) : Worker(context, 
     @UnstableApi @Synchronized
     private fun processEpisodeActions(remoteActions: List<EpisodeAction>) {
         Log.d(TAG, "Processing " + remoteActions.size + " actions")
-        if (remoteActions.isEmpty()) {
-            return
-        }
+        if (remoteActions.isEmpty()) return
 
-        val playActionsToUpdate = getRemoteActionsOverridingLocalActions(remoteActions,
-            synchronizationQueueStorage.queuedEpisodeActions)
+        val playActionsToUpdate = getRemoteActionsOverridingLocalActions(remoteActions, synchronizationQueueStorage.queuedEpisodeActions)
         val queueToBeRemoved = LongList()
         val updatedItems: MutableList<FeedItem> = ArrayList()
         for (action in playActionsToUpdate.values) {
@@ -231,9 +219,8 @@ class SyncService(context: Context, params: WorkerParameters) : Worker(context, 
                 feedItem.setPlayed(true)
                 feedItem.media!!.setPosition(0)
                 queueToBeRemoved.add(feedItem.id)
-            } else {
-                Log.d(TAG, "Setting position: $action")
-            }
+            } else Log.d(TAG, "Setting position: $action")
+
             updatedItems.add(feedItem)
         }
         removeQueueItem(applicationContext, false, *queueToBeRemoved.toArray())
@@ -242,16 +229,14 @@ class SyncService(context: Context, params: WorkerParameters) : Worker(context, 
     }
 
     private fun clearErrorNotifications() {
-        val nm = applicationContext
-            .getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val nm = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         nm.cancel(R.id.notification_gpodnet_sync_error)
         nm.cancel(R.id.notification_gpodnet_sync_autherror)
     }
 
     private fun updateErrorNotification(exception: Exception) {
         Log.d(TAG, "Posting sync error notification")
-        val description = (applicationContext.getString(R.string.gpodnetsync_error_descr)
-                + exception.message)
+        val description = ("${applicationContext.getString(R.string.gpodnetsync_error_descr)}${exception.message}")
 
         if (!gpodnetNotificationsEnabled()) {
             Log.d(TAG, "Skipping sync error notification because of user setting")
@@ -265,8 +250,7 @@ class SyncService(context: Context, params: WorkerParameters) : Worker(context, 
         val intent = applicationContext.packageManager.getLaunchIntentForPackage(
             applicationContext.packageName)
         val pendingIntent = PendingIntent.getActivity(applicationContext,
-            R.id.pending_intent_sync_error, intent, PendingIntent.FLAG_UPDATE_CURRENT
-                    or PendingIntent.FLAG_IMMUTABLE)
+            R.id.pending_intent_sync_error, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         val notification = NotificationCompat.Builder(applicationContext,
             NotificationUtils.CHANNEL_ID_SYNC_ERROR)
             .setContentTitle(applicationContext.getString(R.string.gpodnetsync_error_title))
@@ -277,17 +261,15 @@ class SyncService(context: Context, params: WorkerParameters) : Worker(context, 
             .setAutoCancel(true)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .build()
-        val nm = applicationContext
-            .getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val nm = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         nm.notify(R.id.notification_gpodnet_sync_error, notification)
     }
 
     private fun getActiveSyncProvider(): ISyncService? {
         val selectedSyncProviderKey = SynchronizationSettings.selectedSyncProviderKey
         val selectedService = fromIdentifier(selectedSyncProviderKey?:"")
-        if (selectedService == null) {
-            return null
-        }
+        if (selectedService == null) return null
+
         return when (selectedService) {
             SynchronizationProviderViewData.GPODDER_NET -> GpodnetService(getHttpClient(),
                 hosturl, deviceID?:"", username?:"", password?:"")
@@ -307,11 +289,8 @@ class SyncService(context: Context, params: WorkerParameters) : Worker(context, 
 
         private fun getWorkRequest(): OneTimeWorkRequest.Builder {
             val constraints = Builder()
-            if (isAllowMobileSync) {
-                constraints.setRequiredNetworkType(NetworkType.CONNECTED)
-            } else {
-                constraints.setRequiredNetworkType(NetworkType.UNMETERED)
-            }
+            if (isAllowMobileSync) constraints.setRequiredNetworkType(NetworkType.CONNECTED)
+            else constraints.setRequiredNetworkType(NetworkType.UNMETERED)
 
             val builder: OneTimeWorkRequest.Builder = OneTimeWorkRequest.Builder(SyncService::class.java)
                 .setConstraints(constraints.build())
@@ -346,8 +325,7 @@ class SyncService(context: Context, params: WorkerParameters) : Worker(context, 
                 val workRequest: OneTimeWorkRequest = getWorkRequest()
                     .setInitialDelay(0L, TimeUnit.SECONDS)
                     .build()
-                WorkManager.getInstance(context!!)
-                    .enqueueUniqueWork(WORK_ID_SYNC, ExistingWorkPolicy.REPLACE, workRequest)
+                WorkManager.getInstance(context!!).enqueueUniqueWork(WORK_ID_SYNC, ExistingWorkPolicy.REPLACE, workRequest)
             }
         }
     }

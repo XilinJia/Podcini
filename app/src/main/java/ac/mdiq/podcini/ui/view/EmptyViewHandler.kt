@@ -125,15 +125,9 @@ class EmptyViewHandler(context: Context) {
 
     fun updateVisibility() {
         val empty = when {
-            recyclerAdapter != null -> {
-                recyclerAdapter!!.itemCount == 0
-            }
-            listAdapter != null -> {
-                listAdapter!!.isEmpty
-            }
-            else -> {
-                true
-            }
+            recyclerAdapter != null -> recyclerAdapter!!.itemCount == 0
+            listAdapter != null -> listAdapter!!.isEmpty
+            else -> true
         }
         emptyView.visibility = if (empty) View.VISIBLE else View.GONE
     }

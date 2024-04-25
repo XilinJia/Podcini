@@ -42,8 +42,6 @@ object SPAUtil {
             editor.apply()
 
             return true
-        } else {
-            return false
-        }
+        } else return false
     }
 }

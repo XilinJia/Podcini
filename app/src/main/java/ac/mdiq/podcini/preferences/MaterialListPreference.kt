@@ -20,17 +20,13 @@ class MaterialListPreference : ListPreference {
         val values = entryValues
         var selected = -1
         for (i in values.indices) {
-            if (values[i].toString() == value) {
-                selected = i
-            }
+            if (values[i].toString() == value) selected = i
         }
         builder.setSingleChoiceItems(entries, selected) { dialog: DialogInterface, which: Int ->
             dialog.dismiss()
             if (which >= 0 && entryValues != null) {
                 val value = entryValues[which].toString()
-                if (callChangeListener(value)) {
-                    setValue(value)
-                }
+                if (callChangeListener(value)) setValue(value)
             }
         }
         builder.show()

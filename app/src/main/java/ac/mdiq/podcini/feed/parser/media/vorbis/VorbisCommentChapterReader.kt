@@ -15,9 +15,8 @@ class VorbisCommentChapterReader(input: InputStream?) : VorbisCommentReader(inpu
 
     @Throws(VorbisCommentReaderException::class)
     public override fun onContentVectorValue(key: String?, value: String?) {
-        if (BuildConfig.DEBUG) {
-            Log.d(TAG, "Key: $key, value: $value")
-        }
+        if (BuildConfig.DEBUG) Log.d(TAG, "Key: $key, value: $value")
+
         val attribute = getAttributeTypeFromKey(key)
         val id = getIdFromKey(key)
         var chapter = getChapterById(id.toLong())
@@ -30,24 +29,16 @@ class VorbisCommentChapterReader(input: InputStream?) : VorbisCommentReader(inpu
                     chapter.chapterId = "" + id
                     chapter.start = start
                     chapters.add(chapter)
-                } else {
-                    throw VorbisCommentReaderException("Found chapter with duplicate ID ($key, $value)")
-                }
+                } else throw VorbisCommentReaderException("Found chapter with duplicate ID ($key, $value)")
             }
-            CHAPTER_ATTRIBUTE_TITLE -> {
-                if (chapter != null) chapter.title = value
-            }
-            CHAPTER_ATTRIBUTE_LINK -> {
-                if (chapter != null) chapter.link = value
-            }
+            CHAPTER_ATTRIBUTE_TITLE -> if (chapter != null) chapter.title = value
+            CHAPTER_ATTRIBUTE_LINK -> if (chapter != null) chapter.link = value
         }
     }
 
     private fun getChapterById(id: Long): Chapter? {
         for (c in chapters) {
-            if (("" + id) == c.chapterId) {
-                return c
-            }
+            if (("" + id) == c.chapterId) return c
         }
         return null
     }
@@ -73,11 +64,8 @@ class VorbisCommentChapterReader(input: InputStream?) : VorbisCommentReader(inpu
                         parts[0].toLong(), TimeUnit.HOURS)
                     val minutes = TimeUnit.MILLISECONDS.convert(
                         parts[1].toLong(), TimeUnit.MINUTES)
-                    if (parts[2].contains("-->")) {
-                        parts[2] = parts[2].substring(0, parts[2].indexOf("-->"))
-                    }
-                    val seconds = TimeUnit.MILLISECONDS.convert(
-                        (parts[2].toFloat().toLong()), TimeUnit.SECONDS)
+                    if (parts[2].contains("-->")) parts[2] = parts[2].substring(0, parts[2].indexOf("-->"))
+                    val seconds = TimeUnit.MILLISECONDS.convert((parts[2].toFloat().toLong()), TimeUnit.SECONDS)
                     return hours + minutes + seconds
                 } catch (e: NumberFormatException) {
                     throw VorbisCommentReaderException(e)
@@ -111,9 +99,8 @@ class VorbisCommentChapterReader(input: InputStream?) : VorbisCommentReader(inpu
          * 'url'.
          */
         private fun getAttributeTypeFromKey(key: String?): String? {
-            if (key!!.length > CHAPTERXXX_LENGTH) {
-                return key.substring(CHAPTERXXX_LENGTH)
-            }
+            if (key!!.length > CHAPTERXXX_LENGTH) return key.substring(CHAPTERXXX_LENGTH)
+
             return null
         }
     }

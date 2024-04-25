@@ -31,20 +31,15 @@ class LongList @JvmOverloads constructor(initialCapacity: Int = 4) {
     }
 
     override fun equals(other: Any?): Boolean {
-        if (other === this) {
-            return true
-        }
-        if (other !is LongList) {
-            return false
-        }
+        if (other === this) return true
+
+        if (other !is LongList) return false
+
         val otherList = other
-        if (size != otherList.size) {
-            return false
-        }
+        if (size != otherList.size) return false
+
         for (i in 0 until size) {
-            if (values[i] != otherList.values[i]) {
-                return false
-            }
+            if (values[i] != otherList.values[i]) return false
         }
         return true
     }
@@ -53,9 +48,7 @@ class LongList @JvmOverloads constructor(initialCapacity: Int = 4) {
         val sb = StringBuilder(size * 5 + 10)
         sb.append("LongList{")
         for (i in 0 until size) {
-            if (i != 0) {
-                sb.append(", ")
-            }
+            if (i != 0) sb.append(", ")
             sb.append(values[i])
         }
         sb.append("}")
@@ -77,12 +70,8 @@ class LongList @JvmOverloads constructor(initialCapacity: Int = 4) {
      */
     fun get(n: Int): Long {
         when {
-            n >= size -> {
-                throw IndexOutOfBoundsException("n >= size()")
-            }
-            n < 0 -> {
-                throw IndexOutOfBoundsException("n < 0")
-            }
+            n >= size -> throw IndexOutOfBoundsException("n >= size()")
+            n < 0 -> throw IndexOutOfBoundsException("n < 0")
             else -> return values[n]
         }
     }
@@ -96,12 +85,8 @@ class LongList @JvmOverloads constructor(initialCapacity: Int = 4) {
      */
     fun set(index: Int, value: Long): Long {
         when {
-            index >= size -> {
-                throw IndexOutOfBoundsException("n >= size()")
-            }
-            index < 0 -> {
-                throw IndexOutOfBoundsException("n < 0")
-            }
+            index >= size -> throw IndexOutOfBoundsException("n >= size()")
+            index < 0 -> throw IndexOutOfBoundsException("n < 0")
             else -> {
                 val result = values[index]
                 values[index] = value
@@ -132,15 +117,10 @@ class LongList @JvmOverloads constructor(initialCapacity: Int = 4) {
      */
     fun insert(n: Int, value: Int) {
         when {
-            n > size -> {
-                throw IndexOutOfBoundsException("n > size()")
-            }
-            n < 0 -> {
-                throw IndexOutOfBoundsException("n < 0")
-            }
+            n > size -> throw IndexOutOfBoundsException("n > size()")
+            n < 0 -> throw IndexOutOfBoundsException("n < 0")
             else -> {
                 growIfNeeded()
-
                 System.arraycopy(values, n, values, n + 1, size - n)
                 values[n] = value.toLong()
                 size++
@@ -195,12 +175,8 @@ class LongList @JvmOverloads constructor(initialCapacity: Int = 4) {
      */
     fun removeIndex(index: Int) {
         when {
-            index >= size -> {
-                throw IndexOutOfBoundsException("n >= size()")
-            }
-            index < 0 -> {
-                throw IndexOutOfBoundsException("n < 0")
-            }
+            index >= size -> throw IndexOutOfBoundsException("n >= size()")
+            index < 0 -> throw IndexOutOfBoundsException("n < 0")
             else -> {
                 size--
                 System.arraycopy(values, index + 1, values, index, size - index)
@@ -229,9 +205,7 @@ class LongList @JvmOverloads constructor(initialCapacity: Int = 4) {
      */
     fun indexOf(value: Long): Int {
         for (i in 0 until size) {
-            if (values[i] == value) {
-                return i
-            }
+            if (values[i] == value) return i
         }
         return -1
     }
@@ -266,9 +240,8 @@ class LongList @JvmOverloads constructor(initialCapacity: Int = 4) {
 
     companion object {
         fun of(vararg values: Long): LongList {
-            if (values == null || values.isEmpty()) {
-                return LongList(0)
-            }
+            if (values == null || values.isEmpty()) return LongList(0)
+
             val result = LongList(values.size)
             for (value in values) {
                 result.add(value)

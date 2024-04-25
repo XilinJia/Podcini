@@ -48,20 +48,14 @@ class FeedUpdateWorker(context: Context, params: WorkerParameters) : Worker(cont
             val itr = toUpdate.iterator()
             while (itr.hasNext()) {
                 val feed = itr.next()
-                if (feed.preferences?.keepUpdated == false) {
-                    itr.remove()
-                }
-                if (!feed.isLocalFeed) {
-                    allAreLocal = false
-                }
+                if (feed.preferences?.keepUpdated == false) itr.remove()
+                if (!feed.isLocalFeed) allAreLocal = false
             }
             toUpdate.shuffle() // If the worker gets cancelled early, every feed has a chance to be updated
         } else {
             val feed = DBReader.getFeed(feedId) ?: return Result.success()
             Log.d(TAG, "doWork feed.download_url: ${feed.download_url}")
-            if (!feed.isLocalFeed) {
-                allAreLocal = false
-            }
+            if (!feed.isLocalFeed) allAreLocal = false
             toUpdate = ArrayList()
             toUpdate.add(feed) // Needs to be updatable, so no singletonList
             force = true
@@ -87,8 +81,7 @@ class FeedUpdateWorker(context: Context, params: WorkerParameters) : Worker(cont
         if (toUpdate != null) {
             contentText = context.resources.getQuantityString(R.plurals.downloads_left,
                 toUpdate.size, toUpdate.size)
-            bigText = Stream.of(toUpdate).map { feed: Feed? -> "• " + feed!!.title }
-                .collect(Collectors.joining("\n"))
+            bigText = Stream.of(toUpdate).map { feed: Feed? -> "• " + feed!!.title }.collect(Collectors.joining("\n"))
         }
         return NotificationCompat.Builder(context, NotificationUtils.CHANNEL_ID_DOWNLOADING)
             .setContentTitle(context.getString(R.string.download_notification_title_feeds))
@@ -96,8 +89,7 @@ class FeedUpdateWorker(context: Context, params: WorkerParameters) : Worker(cont
             .setStyle(NotificationCompat.BigTextStyle().bigText(bigText))
             .setSmallIcon(R.drawable.ic_notification_sync)
             .setOngoing(true)
-            .addAction(R.drawable.ic_cancel, context.getString(R.string.cancel_label),
-                WorkManager.getInstance(context).createCancelPendingIntent(id))
+            .addAction(R.drawable.ic_cancel, context.getString(R.string.cancel_label), WorkManager.getInstance(context).createCancelPendingIntent(id))
             .build()
     }
 
@@ -122,21 +114,16 @@ class FeedUpdateWorker(context: Context, params: WorkerParameters) : Worker(cont
         }
 
         while (toUpdate.isNotEmpty()) {
-            if (isStopped) {
-                return
-            }
+            if (isStopped) return
+
             notificationManager.notify(R.id.notification_updating_feeds, createNotification(toUpdate))
             val feed = toUpdate[0]
             try {
-                if (feed.isLocalFeed) {
-                    LocalFeedUpdater.updateFeed(feed, applicationContext, null)
-                } else {
-                    refreshFeed(feed, force)
-                }
+                if (feed.isLocalFeed) LocalFeedUpdater.updateFeed(feed, applicationContext, null)
+                else refreshFeed(feed, force)
             } catch (e: Exception) {
                 DBWriter.setFeedLastUpdateFailed(feed.id, true)
-                val status = DownloadResult(feed, feed.title?:"",
-                    DownloadError.ERROR_IO_ERROR, false, e.message?:"")
+                val status = DownloadResult(feed, feed.title?:"", DownloadError.ERROR_IO_ERROR, false, e.message?:"")
                 DBWriter.addDownloadStatus(status)
             }
             toUpdate.removeAt(0)
@@ -145,16 +132,12 @@ class FeedUpdateWorker(context: Context, params: WorkerParameters) : Worker(cont
 
     @UnstableApi @Throws(Exception::class)
     fun refreshFeed(feed: Feed, force: Boolean) {
-        val nextPage = (inputData.getBoolean(FeedUpdateManager.EXTRA_NEXT_PAGE, false)
-                && feed.nextPageLink != null)
-        if (nextPage) {
-            feed.pageNr += 1
-        }
+        val nextPage = (inputData.getBoolean(FeedUpdateManager.EXTRA_NEXT_PAGE, false) && feed.nextPageLink != null)
+        if (nextPage) feed.pageNr += 1
+
         val builder = create(feed)
         builder.setForce(force || feed.hasLastUpdateFailed())
-        if (nextPage) {
-            builder.source = feed.nextPageLink
-        }
+        if (nextPage) builder.source = feed.nextPageLink
         val request = builder.build()
 
         val downloader = DefaultDownloaderFactory().create(request) ?: throw Exception("Unable to create downloader")
@@ -162,9 +145,8 @@ class FeedUpdateWorker(context: Context, params: WorkerParameters) : Worker(cont
         downloader.call()
 
         if (!downloader.result.isSuccessful) {
-            if (downloader.cancelled || downloader.result.reason == DownloadError.ERROR_DOWNLOAD_CANCELLED) {
-                return
-            }
+            if (downloader.cancelled || downloader.result.reason == DownloadError.ERROR_DOWNLOAD_CANCELLED) return
+
             DBWriter.setFeedLastUpdateFailed(request.feedfileId, true)
             DBWriter.addDownloadStatus(downloader.result)
             return
@@ -179,23 +161,18 @@ class FeedUpdateWorker(context: Context, params: WorkerParameters) : Worker(cont
             return
         }
 
-        if (request.feedfileId == 0L) {
-            return  // No download logs for new subscriptions
-        }
+        if (request.feedfileId == 0L) return  // No download logs for new subscriptions
+
         // we create a 'successful' download log if the feed's last refresh failed
         val log = DBReader.getFeedDownloadLog(request.feedfileId)
-        if (log.isNotEmpty() && !log[0].isSuccessful) {
-            DBWriter.addDownloadStatus(feedSyncTask.downloadStatus)
-        }
+        if (log.isNotEmpty() && !log[0].isSuccessful) DBWriter.addDownloadStatus(feedSyncTask.downloadStatus)
+
 //        newEpisodesNotification.showIfNeeded(applicationContext, feedSyncTask.savedFeed!!)
         if (!request.source.isNullOrEmpty()) {
             when {
-                !downloader.permanentRedirectUrl.isNullOrEmpty() -> {
-                    DBWriter.updateFeedDownloadURL(request.source, downloader.permanentRedirectUrl!!)
-                }
-                feedSyncTask.redirectUrl.isNotEmpty() && feedSyncTask.redirectUrl != request.source -> {
+                !downloader.permanentRedirectUrl.isNullOrEmpty() -> DBWriter.updateFeedDownloadURL(request.source, downloader.permanentRedirectUrl!!)
+                feedSyncTask.redirectUrl.isNotEmpty() && feedSyncTask.redirectUrl != request.source ->
                     DBWriter.updateFeedDownloadURL(request.source, feedSyncTask.redirectUrl)
-                }
             }
         }
     }

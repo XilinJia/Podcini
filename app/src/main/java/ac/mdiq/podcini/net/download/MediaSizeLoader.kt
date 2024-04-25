@@ -29,9 +29,7 @@ object MediaSizeLoader {
             when {
                 media.isDownloaded() -> {
                     val mediaFile = File(media.getLocalMediaUrl())
-                    if (mediaFile.exists()) {
-                        size = mediaFile.length()
-                    }
+                    if (mediaFile.exists()) size = mediaFile.length()
                 }
                 !media.checkedOnSizeButUnknown() -> {
                     // only query the network if we haven't already checked
@@ -65,12 +63,10 @@ object MediaSizeLoader {
                 }
             }
             Log.d(TAG, "new size: $size")
-            if (size <= 0) {
-                // they didn't tell us the size, but we don't want to keep querying on it
-                media.setCheckedOnSizeButUnknown()
-            } else {
-                media.size = size
-            }
+            // they didn't tell us the size, but we don't want to keep querying on it
+            if (size <= 0) media.setCheckedOnSizeButUnknown()
+            else media.size = size
+
             emitter.onSuccess(size)
             DBWriter.setFeedMedia(media)
         })

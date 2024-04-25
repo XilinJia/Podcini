@@ -31,10 +31,7 @@ class TimeRangeDialog(context: Context, from: Int, to: Int) : MaterialAlertDialo
     val to: Int
         get() = view.to
 
-    internal class TimeRangeView @JvmOverloads constructor(context: Context,
-                                                           internal var from: Int = 0,
-                                                           var to: Int = 0
-    ) : View(context) {
+    internal class TimeRangeView @JvmOverloads constructor(context: Context, internal var from: Int = 0, var to: Int = 0) : View(context) {
         private val paintDial = Paint()
         private val paintSelected = Paint()
         private val paintText = Paint()
@@ -59,29 +56,18 @@ class TimeRangeDialog(context: Context, from: Int, to: Int) : MaterialAlertDialo
 
             paintText.isAntiAlias = true
             paintText.style = Paint.Style.FILL
-            paintText.color =
-                getColorFromAttr(context, android.R.attr.textColorPrimary)
+            paintText.color = getColorFromAttr(context, android.R.attr.textColorPrimary)
             paintText.textAlign = Paint.Align.CENTER
         }
 
         override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
             when {
-                MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.EXACTLY
-                        && MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.EXACTLY -> {
+                MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.EXACTLY && MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.EXACTLY ->
                     super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-                }
-                MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.EXACTLY -> {
-                    super.onMeasure(widthMeasureSpec, widthMeasureSpec)
-                }
-                MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.EXACTLY -> {
-                    super.onMeasure(heightMeasureSpec, heightMeasureSpec)
-                }
-                MeasureSpec.getSize(widthMeasureSpec) < MeasureSpec.getSize(heightMeasureSpec) -> {
-                    super.onMeasure(widthMeasureSpec, widthMeasureSpec)
-                }
-                else -> {
-                    super.onMeasure(heightMeasureSpec, heightMeasureSpec)
-                }
+                MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.EXACTLY -> super.onMeasure(widthMeasureSpec, widthMeasureSpec)
+                MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.EXACTLY -> super.onMeasure(heightMeasureSpec, heightMeasureSpec)
+                MeasureSpec.getSize(widthMeasureSpec) < MeasureSpec.getSize(heightMeasureSpec) -> super.onMeasure(widthMeasureSpec, widthMeasureSpec)
+                else -> super.onMeasure(heightMeasureSpec, heightMeasureSpec)
             }
         }
 
@@ -123,12 +109,8 @@ class TimeRangeDialog(context: Context, from: Int, to: Int) : MaterialAlertDialo
 
             paintText.textSize = 0.6f * padding
             val timeRange = when {
-                from == to -> {
-                    context.getString(R.string.sleep_timer_always)
-                }
-                DateFormat.is24HourFormat(context) -> {
-                    String.format(Locale.getDefault(), "%02d:00 - %02d:00", from, to)
-                }
+                from == to -> context.getString(R.string.sleep_timer_always)
+                DateFormat.is24HourFormat(context) -> String.format(Locale.getDefault(), "%02d:00 - %02d:00", from, to)
                 else -> {
                     String.format(Locale.getDefault(), "%02d:00 %s - %02d:00 %s", from % 12,
                         if (from >= 12) "PM" else "AM", to % 12, if (to >= 12) "PM" else "AM")
@@ -167,10 +149,9 @@ class TimeRangeDialog(context: Context, from: Int, to: Int) : MaterialAlertDialo
                 }
                 event.action == MotionEvent.ACTION_MOVE -> {
                     val newTime = (24 * (angle / 360.0)).toInt()
-                    if (from == to && touching != 0) {
-                        // Switch which handle is focussed such that selection is the smaller arc
-                        touching = if ((((newTime - to + 24) % 24) < 12)) 2 else 1
-                    }
+                    // Switch which handle is focussed such that selection is the smaller arc
+                    if (from == to && touching != 0) touching = if ((((newTime - to + 24) % 24) < 12)) 2 else 1
+
                     when (touching) {
                         1 -> {
                             from = newTime

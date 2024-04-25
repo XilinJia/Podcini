@@ -53,15 +53,9 @@ object ThemeSwitcher {
         var theme = UserPreferences.theme
         if (theme == UserPreferences.ThemePreference.SYSTEM) {
             val nightMode = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-            theme = if (nightMode == Configuration.UI_MODE_NIGHT_YES) {
-                UserPreferences.ThemePreference.DARK
-            } else {
-                UserPreferences.ThemePreference.LIGHT
-            }
+            theme = if (nightMode == Configuration.UI_MODE_NIGHT_YES) UserPreferences.ThemePreference.DARK else UserPreferences.ThemePreference.LIGHT
         }
-        if (theme == UserPreferences.ThemePreference.DARK && UserPreferences.isBlackTheme) {
-            theme = UserPreferences.ThemePreference.BLACK
-        }
+        if (theme == UserPreferences.ThemePreference.DARK && UserPreferences.isBlackTheme) theme = UserPreferences.ThemePreference.BLACK
         return theme!!
     }
 }

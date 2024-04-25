@@ -149,19 +149,14 @@ class PodDBAdapter private constructor() {
         values.put(KEY_HAS_EMBEDDED_PICTURE, media.hasEmbeddedPicture())
         values.put(KEY_LAST_PLAYED_TIME, media.getLastPlayedTime())
 
-        if (media.getPlaybackCompletionDate() != null) {
-            values.put(KEY_PLAYBACK_COMPLETION_DATE, media.getPlaybackCompletionDate()!!.time)
-        } else {
-            values.put(KEY_PLAYBACK_COMPLETION_DATE, 0)
-        }
-        if (media.item != null) {
-            values.put(KEY_FEEDITEM, media.item!!.id)
-        }
-        if (media.id == 0L) {
-            media.id = db.insert(TABLE_NAME_FEED_MEDIA, null, values)
-        } else {
-            db.update(TABLE_NAME_FEED_MEDIA, values, "$KEY_ID=?", arrayOf(media.id.toString()))
-        }
+        if (media.getPlaybackCompletionDate() != null) values.put(KEY_PLAYBACK_COMPLETION_DATE, media.getPlaybackCompletionDate()!!.time)
+        else values.put(KEY_PLAYBACK_COMPLETION_DATE, 0)
+
+        if (media.item != null) values.put(KEY_FEEDITEM, media.item!!.id)
+
+        if (media.id == 0L) media.id = db.insert(TABLE_NAME_FEED_MEDIA, null, values)
+        else db.update(TABLE_NAME_FEED_MEDIA, values, "$KEY_ID=?", arrayOf(media.id.toString()))
+
         return media.id
     }
 
@@ -173,9 +168,7 @@ class PodDBAdapter private constructor() {
             values.put(KEY_PLAYED_DURATION, media.playedDuration)
             values.put(KEY_LAST_PLAYED_TIME, media.getLastPlayedTime())
             db.update(TABLE_NAME_FEED_MEDIA, values, "$KEY_ID=?", arrayOf(media.id.toString()))
-        } else {
-            Log.e(TAG, "setFeedMediaPlaybackInformation: ID of media was 0")
-        }
+        } else Log.e(TAG, "setFeedMediaPlaybackInformation: ID of media was 0")
     }
 
     fun setFeedMediaPlaybackCompletionDate(media: FeedMedia) {
@@ -184,9 +177,7 @@ class PodDBAdapter private constructor() {
             values.put(KEY_PLAYBACK_COMPLETION_DATE, media.getPlaybackCompletionDate()!!.time)
             values.put(KEY_PLAYED_DURATION, media.playedDuration)
             db.update(TABLE_NAME_FEED_MEDIA, values, "$KEY_ID=?", arrayOf(media.id.toString()))
-        } else {
-            Log.e(TAG, "setFeedMediaPlaybackCompletionDate: ID of media was 0")
-        }
+        } else Log.e(TAG, "setFeedMediaPlaybackCompletionDate: ID of media was 0")
     }
 
     fun resetAllMediaPlayedDuration() {
@@ -217,9 +208,7 @@ class PodDBAdapter private constructor() {
                         updateOrInsertFeedItem(item, false)
                     }
                 }
-                if (feed.preferences != null) {
-                    setFeedPreferences(feed.preferences!!)
-                }
+                if (feed.preferences != null) setFeedPreferences(feed.preferences!!)
             }
             db.setTransactionSuccessful()
         } catch (e: SQLException) {
@@ -283,9 +272,8 @@ class PodDBAdapter private constructor() {
         val values = ContentValues()
         values.put(KEY_TITLE, item.title)
         values.put(KEY_LINK, item.link)
-        if (item.description != null) {
-            values.put(KEY_DESCRIPTION, item.description)
-        }
+        if (item.description != null) values.put(KEY_DESCRIPTION, item.description)
+
         values.put(KEY_PUBDATE, item.getPubDate()!!.time)
         values.put(KEY_PAYMENT_LINK, item.paymentLink)
         if (item.feed != null) {
@@ -293,15 +281,9 @@ class PodDBAdapter private constructor() {
             values.put(KEY_FEED, item.feed!!.id)
         }
         when {
-            item.isNew -> {
-                values.put(KEY_READ, FeedItem.NEW)
-            }
-            item.isPlayed() -> {
-                values.put(KEY_READ, FeedItem.PLAYED)
-            }
-            else -> {
-                values.put(KEY_READ, FeedItem.UNPLAYED)
-            }
+            item.isNew -> values.put(KEY_READ, FeedItem.NEW)
+            item.isPlayed() -> values.put(KEY_READ, FeedItem.PLAYED)
+            else -> values.put(KEY_READ, FeedItem.UNPLAYED)
         }
         values.put(KEY_HAS_CHAPTERS, item.chapters != null || item.hasChapters())
         values.put(KEY_ITEM_IDENTIFIER, item.itemIdentifier)
@@ -309,17 +291,12 @@ class PodDBAdapter private constructor() {
         values.put(KEY_IMAGE_URL, item.imageUrl)
         values.put(KEY_PODCASTINDEX_CHAPTER_URL, item.podcastIndexChapterUrl)
 
-        if (item.id == 0L) {
-            item.id = db.insert(TABLE_NAME_FEED_ITEMS, null, values)
-        } else {
-            db.update(TABLE_NAME_FEED_ITEMS, values, "$KEY_ID=?", arrayOf(item.id.toString()))
-        }
-        if (item.media != null) {
-            setMedia(item.media)
-        }
-        if (item.chapters != null) {
-            setChapters(item)
-        }
+        if (item.id == 0L) item.id = db.insert(TABLE_NAME_FEED_ITEMS, null, values)
+        else db.update(TABLE_NAME_FEED_ITEMS, values, "$KEY_ID=?", arrayOf(item.id.toString()))
+
+        if (item.media != null) setMedia(item.media)
+        if (item.chapters != null) setChapters(item)
+
         return item.id
     }
 
@@ -376,18 +353,13 @@ class PodDBAdapter private constructor() {
             values.put(KEY_FEEDITEM, item.id)
             values.put(KEY_LINK, chapter.link)
             values.put(KEY_IMAGE_URL, chapter.imageUrl)
-            if (chapter.id == 0L) {
-                chapter.id = db.insert(TABLE_NAME_SIMPLECHAPTERS, null, values)
-            } else {
-                db.update(TABLE_NAME_SIMPLECHAPTERS, values, "$KEY_ID=?", arrayOf(chapter.id.toString()))
-            }
+            if (chapter.id == 0L) chapter.id = db.insert(TABLE_NAME_SIMPLECHAPTERS, null, values)
+            else db.update(TABLE_NAME_SIMPLECHAPTERS, values, "$KEY_ID=?", arrayOf(chapter.id.toString()))
         }
     }
 
     fun resetPagedFeedPage(feed: Feed) {
-        val sql = ("UPDATE " + TABLE_NAME_FEEDS
-                + " SET " + KEY_NEXT_PAGE_LINK + "=" + KEY_DOWNLOAD_URL
-                + " WHERE " + KEY_ID + "=" + feed.id)
+        val sql = ("UPDATE " + TABLE_NAME_FEEDS + " SET " + KEY_NEXT_PAGE_LINK + "=" + KEY_DOWNLOAD_URL + " WHERE " + KEY_ID + "=" + feed.id)
         db.execSQL(sql)
     }
 
@@ -416,11 +388,9 @@ class PodDBAdapter private constructor() {
         values.put(KEY_COMPLETION_DATE, status.getCompletionDate().time)
         values.put(KEY_REASON_DETAILED, status.reasonDetailed)
         values.put(KEY_DOWNLOADSTATUS_TITLE, status.title)
-        if (status.id == 0L) {
-            status.id = db.insert(TABLE_NAME_DOWNLOAD_LOG, null, values)
-        } else {
-            db.update(TABLE_NAME_DOWNLOAD_LOG, values, "$KEY_ID=?", arrayOf(status.id.toString()))
-        }
+        if (status.id == 0L) status.id = db.insert(TABLE_NAME_DOWNLOAD_LOG, null, values)
+        else db.update(TABLE_NAME_DOWNLOAD_LOG, values, "$KEY_ID=?", arrayOf(status.id.toString()))
+
         return status.id
     }
 
@@ -505,21 +475,17 @@ class PodDBAdapter private constructor() {
             val itemIds = StringBuilder()
             for (item in items) {
                 if (item.media != null) {
-                    if (mediaIds.isNotEmpty()) {
-                        mediaIds.append(",")
-                    }
+                    if (mediaIds.isNotEmpty()) mediaIds.append(",")
                     mediaIds.append(item.media!!.id)
                 }
-                if (itemIds.isNotEmpty()) {
-                    itemIds.append(",")
-                }
+                if (itemIds.isNotEmpty()) itemIds.append(",")
                 itemIds.append(item.id)
             }
 
             db.beginTransactionNonExclusive()
             db.delete(TABLE_NAME_SIMPLECHAPTERS, "$KEY_FEEDITEM IN ($itemIds)", null)
-            db.delete(TABLE_NAME_DOWNLOAD_LOG, (KEY_FEEDFILETYPE + "=" + FeedMedia.FEEDFILETYPE_FEEDMEDIA
-                    ) + " AND " + KEY_FEEDFILE + " IN (" + mediaIds + ")", null)
+            db.delete(TABLE_NAME_DOWNLOAD_LOG, (KEY_FEEDFILETYPE + "=" + FeedMedia.FEEDFILETYPE_FEEDMEDIA)
+                    + " AND " + KEY_FEEDFILE + " IN (" + mediaIds + ")", null)
             db.delete(TABLE_NAME_FEED_MEDIA, "$KEY_ID IN ($mediaIds)", null)
             db.delete(TABLE_NAME_FEED_ITEMS, "$KEY_ID IN ($itemIds)", null)
             db.setTransactionSuccessful()
@@ -569,9 +535,7 @@ class PodDBAdapter private constructor() {
          * @return The cursor of the query
          */
         get() {
-            val query = ("SELECT " + KEYS_FEED
-                    + " FROM " + TABLE_NAME_FEEDS
-                    + " ORDER BY " + TABLE_NAME_FEEDS + "." + KEY_TITLE + " COLLATE NOCASE ASC")
+            val query = ("SELECT " + KEYS_FEED + " FROM " + TABLE_NAME_FEEDS + " ORDER BY " + TABLE_NAME_FEEDS + "." + KEY_TITLE + " COLLATE NOCASE ASC")
             return db.rawQuery(query, null)
         }
 
@@ -587,9 +551,7 @@ class PodDBAdapter private constructor() {
     fun getItemsOfFeedCursor(feed: Feed, filter: FeedItemFilter?): Cursor {
         val filterQuery = generateFrom(filter!!)
         val whereClauseAnd = if ("" == filterQuery) "" else " AND $filterQuery"
-        val query = (SELECT_FEED_ITEMS_AND_MEDIA
-                + " WHERE " + TABLE_NAME_FEED_ITEMS + "." + KEY_FEED + "=" + feed.id
-                + whereClauseAnd)
+        val query = (SELECT_FEED_ITEMS_AND_MEDIA + " WHERE " + TABLE_NAME_FEED_ITEMS + "." + KEY_FEED + "=" + feed.id + whereClauseAnd)
         return db.rawQuery(query, null)
     }
 
@@ -597,17 +559,13 @@ class PodDBAdapter private constructor() {
      * Return the description and content_encoded of item
      */
     fun getDescriptionOfItem(item: FeedItem): Cursor {
-        val query = ("SELECT " + KEY_DESCRIPTION
-                + " FROM " + TABLE_NAME_FEED_ITEMS
-                + " WHERE " + KEY_ID + "=" + item.id)
+        val query = ("SELECT " + KEY_DESCRIPTION + " FROM " + TABLE_NAME_FEED_ITEMS + " WHERE " + KEY_ID + "=" + item.id)
         return db.rawQuery(query, null)
     }
 
     fun getSimpleChaptersOfFeedItemCursor(item: FeedItem): Cursor {
-        return db.query(TABLE_NAME_SIMPLECHAPTERS, null, KEY_FEEDITEM
-                + "=?", arrayOf(item.id.toString()), null,
-            null, null
-        )
+        return db.query(TABLE_NAME_SIMPLECHAPTERS, null, KEY_FEEDITEM + "=?", arrayOf(item.id.toString()),
+            null, null, null)
     }
 
     fun getDownloadLog(feedFileType: Int, feedFileId: Long): Cursor {
@@ -688,9 +646,8 @@ class PodDBAdapter private constructor() {
 
     fun setFeedItems(oldState: Int, newState: Int, feedId: Long) {
         var sql = "UPDATE $TABLE_NAME_FEED_ITEMS SET $KEY_READ=$newState"
-        if (feedId > 0) {
-            sql += " WHERE $KEY_FEED=$feedId"
-        }
+        if (feedId > 0) sql += " WHERE $KEY_FEED=$feedId"
+
         if (FeedItem.NEW <= oldState && oldState <= FeedItem.PLAYED) {
             sql += if (feedId > 0) " AND " else " WHERE "
             sql += "$KEY_READ=$oldState"
@@ -772,8 +729,7 @@ class PodDBAdapter private constructor() {
 
     fun getFeedItemCursor(ids: Array<String>): Cursor {
         require(ids.size <= IN_OPERATOR_MAXIMUM) { "number of IDs must not be larger than $IN_OPERATOR_MAXIMUM" }
-        val query = (SELECT_FEED_ITEMS_AND_MEDIA
-                + " WHERE " + SELECT_KEY_ITEM_ID + " IN (" + TextUtils.join(",", ids) + ")")
+        val query = (SELECT_FEED_ITEMS_AND_MEDIA + " WHERE " + SELECT_KEY_ITEM_ID + " IN (" + TextUtils.join(",", ids) + ")")
         return db.rawQuery(query, null)
     }
 
@@ -781,13 +737,10 @@ class PodDBAdapter private constructor() {
         require(urls.size <= IN_OPERATOR_MAXIMUM) { "number of IDs must not be larger than $IN_OPERATOR_MAXIMUM" }
         val urlsString = StringBuilder()
         for (i in urls.indices) {
-            if (i != 0) {
-                urlsString.append(",")
-            }
+            if (i != 0) urlsString.append(",")
             urlsString.append(DatabaseUtils.sqlEscapeString(urls[i]))
         }
-        val query = (SELECT_FEED_ITEMS_AND_MEDIA
-                + " WHERE " + KEY_DOWNLOAD_URL + " IN (" + urlsString + ")")
+        val query = (SELECT_FEED_ITEMS_AND_MEDIA + " WHERE " + KEY_DOWNLOAD_URL + " IN (" + urlsString + ")")
         return db.rawQuery(query, null)
     }
 
@@ -840,8 +793,7 @@ class PodDBAdapter private constructor() {
                     + TABLE_NAME_FEED_ITEMS + "." + KEY_READ + "=" + FeedItem.PLAYED + " OR "
                     + TABLE_NAME_FEED_MEDIA + "." + KEY_POSITION + "> 0")
         }
-        val timeFilter = (lastPlayedTime + ">=" + timeFilterFrom
-                + " AND " + lastPlayedTime + "<" + timeFilterTo)
+        val timeFilter = (lastPlayedTime + ">=" + timeFilterFrom + " AND " + lastPlayedTime + "<" + timeFilterTo)
         var playedTime = "$TABLE_NAME_FEED_MEDIA.$KEY_PLAYED_DURATION"
         if (includeMarkedAsPlayed) {
             playedTime = ("(CASE WHEN " + playedTime + " != 0"
@@ -891,9 +843,7 @@ class PodDBAdapter private constructor() {
             val query = String.format("SELECT COUNT(%s) FROM %s", KEY_ID, TABLE_NAME_QUEUE)
             val c = db.rawQuery(query, null)
             var result = 0
-            if (c.moveToFirst()) {
-                result = c.getInt(0)
-            }
+            if (c.moveToFirst()) result = c.getInt(0)
             c.close()
             return result
         }
@@ -1018,13 +968,9 @@ class PodDBAdapter private constructor() {
      */
     fun searchItems(feedID: Long, searchQuery: String): Cursor {
         val queryWords = prepareSearchQuery(searchQuery)
-        val queryFeedId = if (feedID != 0L) {
-            // search items in specific feed
-            "$KEY_FEED = $feedID"
-        } else {
-            // search through all items
-            "1 = 1"
-        }
+        // search items in specific feed
+        // search through all items
+        val queryFeedId = if (feedID != 0L) "$KEY_FEED = $feedID" else "1 = 1"
 
         val queryStart = (SELECT_FEED_ITEMS_AND_MEDIA_WITH_DESCRIPTION + " WHERE " + queryFeedId + " AND (")
         val sb = StringBuilder(queryStart)
@@ -1036,9 +982,7 @@ class PodDBAdapter private constructor() {
                 .append(KEY_TITLE).append(" LIKE '%").append(queryWords[i])
                 .append("%') ")
 
-            if (i != queryWords.size - 1) {
-                sb.append("AND ")
-            }
+            if (i != queryWords.size - 1) sb.append("AND ")
         }
 
         sb.append(") ORDER BY $KEY_PUBDATE DESC LIMIT 300")
@@ -1068,9 +1012,7 @@ class PodDBAdapter private constructor() {
                 .append(KEY_DESCRIPTION).append(" LIKE '%").append(queryWords[i])
                 .append("%') ")
 
-            if (i != queryWords.size - 1) {
-                sb.append("AND ")
-            }
+            if (i != queryWords.size - 1) sb.append("AND ")
         }
 
         sb.append("ORDER BY $KEY_TITLE ASC LIMIT 300")
@@ -1432,9 +1374,7 @@ class PodDBAdapter private constructor() {
         @JvmStatic
         @Synchronized
         fun getInstance(): PodDBAdapter {
-            if (instance == null) {
-                instance = PodDBAdapter()
-            }
+            if (instance == null) instance = PodDBAdapter()
             return instance!!
         }
 

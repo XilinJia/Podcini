@@ -29,20 +29,13 @@ class APQueueCleanupAlgorithm : EpisodeCleanupAlgorithm() {
             var l = lhs.getPubDate()
             var r = rhs.getPubDate()
 
-            if (l == null) {
-                l = Date()
-            }
-            if (r == null) {
-                r = Date()
-            }
+            if (l == null) l = Date()
+            if (r == null) r = Date()
+
             l.compareTo(r)
         }
 
-        val delete = if (candidates.size > numberOfEpisodesToDelete) {
-            candidates.subList(0, numberOfEpisodesToDelete)
-        } else {
-            candidates
-        }
+        val delete = if (candidates.size > numberOfEpisodesToDelete) candidates.subList(0, numberOfEpisodesToDelete) else candidates
 
         for (item in delete) {
             try {
@@ -56,10 +49,7 @@ class APQueueCleanupAlgorithm : EpisodeCleanupAlgorithm() {
 
         val counter = delete.size
 
-
-        Log.i(TAG, String.format(Locale.US,
-            "Auto-delete deleted %d episodes (%d requested)", counter,
-            numberOfEpisodesToDelete))
+        Log.i(TAG, String.format(Locale.US, "Auto-delete deleted %d episodes (%d requested)", counter, numberOfEpisodesToDelete))
 
         return counter
     }
@@ -70,12 +60,8 @@ class APQueueCleanupAlgorithm : EpisodeCleanupAlgorithm() {
             val downloadedItems = getEpisodes(0, Int.MAX_VALUE,
                 FeedItemFilter(FeedItemFilter.DOWNLOADED), SortOrder.DATE_NEW_OLD)
             for (item in downloadedItems) {
-                if (item.hasMedia()
-                        && item.media!!.isDownloaded()
-                        && !item.isTagged(FeedItem.TAG_QUEUE)
-                        && !item.isTagged(FeedItem.TAG_FAVORITE)) {
+                if (item.hasMedia() && item.media!!.isDownloaded() && !item.isTagged(FeedItem.TAG_QUEUE) && !item.isTagged(FeedItem.TAG_FAVORITE))
                     candidates.add(item)
-                }
             }
             return candidates
         }

@@ -25,8 +25,7 @@ class PodciniApp : Application() {
     override fun onCreate() {
         super.onCreate()
         ClientConfig.USER_AGENT = "Podcini/" + BuildConfig.VERSION_NAME
-        ClientConfig.applicationCallbacks =
-            ApplicationCallbacksImpl()
+        ClientConfig.applicationCallbacks = ApplicationCallbacksImpl()
 
         Thread.setDefaultUncaughtExceptionHandler(CrashReportWriter())
         RxJavaErrorHandlerSetup.setupRxJavaErrorHandler()

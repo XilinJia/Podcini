@@ -17,8 +17,9 @@ class DownloadRequest private constructor(@JvmField val destination: String?,
                                           @JvmField var password: String?,
                                           private val mediaEnqueued: Boolean,
                                           @JvmField val arguments: Bundle?,
-                                          private val initiatedByUser: Boolean
-) : Parcelable {
+                                          private val initiatedByUser: Boolean)
+    : Parcelable {
+
     var progressPercent: Int = 0
     var soFar: Long = 0
     var size: Long = 0
@@ -26,9 +27,8 @@ class DownloadRequest private constructor(@JvmField val destination: String?,
 
     constructor(destination: String, source: String, title: String, feedfileId: Long,
                 feedfileType: Int, username: String?, password: String?,
-                arguments: Bundle?, initiatedByUser: Boolean
-    ) : this(destination, source, title, feedfileId, feedfileType, null, username, password, false,
-        arguments, initiatedByUser)
+                arguments: Bundle?, initiatedByUser: Boolean)
+            : this(destination, source, title, feedfileId, feedfileType, null, username, password, false, arguments, initiatedByUser)
 
     private constructor(builder: Builder) : this(builder.destination,
         builder.source,
@@ -70,10 +70,8 @@ class DownloadRequest private constructor(@JvmField val destination: String?,
         // of them from a Parcel (from an Intent extra to submit a request to DownloadService) will fail.
         //
         // see: https://stackoverflow.com/a/22926342
-        dest.writeString(nonNullString(
-            username))
-        dest.writeString(nonNullString(
-            password))
+        dest.writeString(nonNullString(username))
+        dest.writeString(nonNullString(password))
         dest.writeByte(if ((mediaEnqueued)) 1.toByte() else 0)
         dest.writeBundle(arguments)
         dest.writeByte(if (initiatedByUser) 1.toByte() else 0)
@@ -170,9 +168,7 @@ class DownloadRequest private constructor(@JvmField val destination: String?,
 //        }
 
         fun setForce(force: Boolean) {
-            if (force) {
-                lastModified = null
-            }
+            if (force) lastModified = null
         }
 
         fun lastModified(lastModified: String?): Builder {

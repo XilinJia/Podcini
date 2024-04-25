@@ -24,10 +24,8 @@ class FeedParserTask(private val request: DownloadRequest) : Callable<FeedHandle
         private set
 
     init {
-        downloadStatus = DownloadResult(
-            0, request.title?:"", 0, request.feedfileType, false,
-            DownloadError.ERROR_REQUEST_ERROR, Date(),
-            "Unknown error: Status not set")
+        downloadStatus = DownloadResult(0, request.title?:"", 0, request.feedfileType, false,
+            DownloadError.ERROR_REQUEST_ERROR, Date(), "Unknown error: Status not set")
     }
 
     override fun call(): FeedHandlerResult? {
@@ -48,9 +46,7 @@ class FeedParserTask(private val request: DownloadRequest) : Callable<FeedHandle
             result = feedHandler.parseFeed(feed)
             Log.d(TAG, feed.title + " parsed")
             checkFeedData(feed)
-            if (feed.imageUrl.isNullOrEmpty()) {
-                feed.imageUrl = Feed.PREFIX_GENERATIVE_COVER + feed.download_url
-            }
+            if (feed.imageUrl.isNullOrEmpty()) feed.imageUrl = Feed.PREFIX_GENERATIVE_COVER + feed.download_url
         } catch (e: SAXException) {
             isSuccessful = false
             e.printStackTrace()
@@ -70,9 +66,7 @@ class FeedParserTask(private val request: DownloadRequest) : Callable<FeedHandle
             e.printStackTrace()
             isSuccessful = false
             reason = DownloadError.ERROR_UNSUPPORTED_TYPE
-            if ("html".equals(e.rootElement, ignoreCase = true)) {
-                reason = DownloadError.ERROR_UNSUPPORTED_TYPE_HTML
-            }
+            if ("html".equals(e.rootElement, ignoreCase = true)) reason = DownloadError.ERROR_UNSUPPORTED_TYPE_HTML
             reasonDetailed = e.message
         } catch (e: InvalidFeedException) {
             e.printStackTrace()
@@ -88,8 +82,7 @@ class FeedParserTask(private val request: DownloadRequest) : Callable<FeedHandle
         }
 
         if (isSuccessful) {
-            downloadStatus = DownloadResult(feed, feed.getHumanReadableIdentifier()?:"", DownloadError.SUCCESS,
-                isSuccessful, reasonDetailed?:"")
+            downloadStatus = DownloadResult(feed, feed.getHumanReadableIdentifier()?:"", DownloadError.SUCCESS, isSuccessful, reasonDetailed?:"")
             return result
         } else {
             downloadStatus = DownloadResult(feed, feed.getHumanReadableIdentifier()?:"", reason?:DownloadError.ERROR_NOT_FOUND,
@@ -103,18 +96,14 @@ class FeedParserTask(private val request: DownloadRequest) : Callable<FeedHandle
      */
     @Throws(InvalidFeedException::class)
     private fun checkFeedData(feed: Feed) {
-        if (feed.title == null) {
-            throw InvalidFeedException("Feed has no title")
-        }
+        if (feed.title == null) throw InvalidFeedException("Feed has no title")
         checkFeedItems(feed)
     }
 
     @Throws(InvalidFeedException::class)
     private fun checkFeedItems(feed: Feed) {
         for (item in feed.items) {
-            if (item.title == null) {
-                throw InvalidFeedException("Item has no title: $item")
-            }
+            if (item.title == null) throw InvalidFeedException("Item has no title: $item")
         }
     }
 

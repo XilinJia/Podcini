@@ -71,9 +71,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     var controller: PlaybackController? = null
     var isFavorite = false
 
-    @OptIn(UnstableApi::class) override fun onCreateView(inflater: LayoutInflater,
-                                                         container: ViewGroup?,
-                                                         savedInstanceState: Bundle?): View {
+    @OptIn(UnstableApi::class) override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         _binding = VideoEpisodeFragmentBinding.inflate(LayoutInflater.from(requireContext()))
         root = binding.root
@@ -124,9 +122,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     @UnstableApi
     override fun onPause() {
         if (!PictureInPictureUtil.isInPictureInPictureMode(requireActivity())) {
-            if (controller?.status == PlayerStatus.PLAYING) {
-                controller!!.pause()
-            }
+            if (controller?.status == PlayerStatus.PLAYING) controller!!.pause()
         }
         super.onPause()
     }
@@ -135,9 +131,8 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     override fun onStop() {
         EventBus.getDefault().unregister(this)
         super.onStop()
-        if (!PictureInPictureUtil.isInPictureInPictureMode(requireActivity())) {
-            videoControlsHider.removeCallbacks(hideVideoControls)
-        }
+        if (!PictureInPictureUtil.isInPictureInPictureMode(requireActivity())) videoControlsHider.removeCallbacks(hideVideoControls)
+
         // Controller released; we will not receive buffering updates
         binding.progressBar.visibility = View.GONE
     }
@@ -156,15 +151,9 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     @Suppress("unused")
     fun bufferUpdate(event: BufferUpdateEvent) {
         when {
-            event.hasStarted() -> {
-                binding.progressBar.visibility = View.VISIBLE
-            }
-            event.hasEnded() -> {
-                binding.progressBar.visibility = View.INVISIBLE
-            }
-            else -> {
-                binding.sbPosition.secondaryProgress = (event.progress * binding.sbPosition.max).toInt()
-            }
+            event.hasStarted() -> binding.progressBar.visibility = View.VISIBLE
+            event.hasEnded() -> binding.progressBar.visibility = View.INVISIBLE
+            else -> binding.sbPosition.secondaryProgress = (event.progress * binding.sbPosition.max).toInt()
         }
     }
 
@@ -245,9 +234,8 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     }
 
     @UnstableApi private fun onFragmentLoaded() {
-        if (webviewData != null && !itemsLoaded) {
+        if (webviewData != null && !itemsLoaded)
             webvDescription.loadDataWithBaseURL("https://127.0.0.1", webviewData!!, "text/html", "utf-8", "about:blank")
-        }
     }
 
     @UnstableApi
@@ -277,16 +265,14 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         binding.sbPosition.setOnSeekBarChangeListener(this)
         binding.rewindButton.setOnClickListener { onRewind() }
         binding.rewindButton.setOnLongClickListener {
-            SkipPreferenceDialog.showSkipPreference(requireContext(),
-                SkipPreferenceDialog.SkipDirection.SKIP_REWIND, null)
+            SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_REWIND, null)
             true
         }
         binding.playButton.setIsVideoScreen(true)
         binding.playButton.setOnClickListener { onPlayPause() }
         binding.fastForwardButton.setOnClickListener { onFastForward() }
         binding.fastForwardButton.setOnLongClickListener {
-            SkipPreferenceDialog.showSkipPreference(requireContext(),
-                SkipPreferenceDialog.SkipDirection.SKIP_FORWARD, null)
+            SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_FORWARD, null)
             false
         }
         // To suppress touches directly below the slider
@@ -300,8 +286,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
 
         binding.videoPlayerContainer.setOnTouchListener(onVideoviewTouched)
         binding.videoPlayerContainer.viewTreeObserver.addOnGlobalLayoutListener {
-            binding.videoView.setAvailableSize(
-                binding.videoPlayerContainer.width.toFloat(), binding.videoPlayerContainer.height.toFloat())
+            binding.videoView.setAvailableSize(binding.videoPlayerContainer.width.toFloat(), binding.videoPlayerContainer.height.toFloat())
         }
 
         webvDescription = binding.webvDescription
@@ -344,8 +329,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
             }
             if (videoControlsShowing) {
                 hideVideoControls(false)
-                if (videoMode == VideoplayerActivity.VideoMode.FULL_SCREEN_VIEW)
-                        (activity as AppCompatActivity).supportActionBar?.hide()
+                if (videoMode == VideoplayerActivity.VideoMode.FULL_SCREEN_VIEW) (activity as AppCompatActivity).supportActionBar?.hide()
                 videoControlsShowing = false
             }
             return@OnTouchListener true
@@ -361,8 +345,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     fun toggleVideoControlsVisibility() {
         if (videoControlsShowing) {
             hideVideoControls(true)
-            if (videoMode == VideoplayerActivity.VideoMode.FULL_SCREEN_VIEW)
-                    (activity as AppCompatActivity).supportActionBar?.hide()
+            if (videoMode == VideoplayerActivity.VideoMode.FULL_SCREEN_VIEW) (activity as AppCompatActivity).supportActionBar?.hide()
         } else {
             showVideoControls()
             (activity as AppCompatActivity).supportActionBar?.show()
@@ -391,15 +374,13 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         binding.skipAnimationImage.layoutParams = params
         binding.skipAnimationImage.startAnimation(skipAnimation)
         skipAnimation.setAnimationListener(object : Animation.AnimationListener {
-            override fun onAnimationStart(animation: Animation) {
-            }
+            override fun onAnimationStart(animation: Animation) {}
 
             override fun onAnimationEnd(animation: Animation) {
                 binding.skipAnimationImage.visibility = View.GONE
             }
 
-            override fun onAnimationRepeat(animation: Animation) {
-            }
+            override fun onAnimationRepeat(animation: Animation) {}
         })
     }
 
@@ -412,18 +393,15 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         override fun surfaceCreated(holder: SurfaceHolder) {
             Log.d(TAG, "Videoview holder created")
             videoSurfaceCreated = true
-            if (controller?.status == PlayerStatus.PLAYING) {
-                controller!!.setVideoSurface(holder)
-            }
+            if (controller?.status == PlayerStatus.PLAYING) controller!!.setVideoSurface(holder)
             setupVideoAspectRatio()
         }
 
         override fun surfaceDestroyed(holder: SurfaceHolder) {
             Log.d(TAG, "Videosurface was destroyed")
             videoSurfaceCreated = false
-            if (controller != null && !destroyingDueToReload && !(activity as VideoplayerActivity).switchToAudioOnly) {
+            if (controller != null && !destroyingDueToReload && !(activity as VideoplayerActivity).switchToAudioOnly)
                 controller!!.notifyVideoSurfaceAbandoned()
-            }
         }
     }
 
@@ -462,8 +440,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         if (videoControlsShowing) {
             Log.d(TAG, "Hiding video controls")
             hideVideoControls(true)
-            if (videoMode == VideoplayerActivity.VideoMode.FULL_SCREEN_VIEW)
-                (activity as? AppCompatActivity)?.supportActionBar?.hide()
+            if (videoMode == VideoplayerActivity.VideoMode.FULL_SCREEN_VIEW) (activity as? AppCompatActivity)?.supportActionBar?.hide()
             videoControlsShowing = false
         }
     }
@@ -517,11 +494,9 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
             return
         }
         binding.positionLabel.text = getDurationStringLong(currentPosition)
-        if (showTimeLeft) {
-            binding.durationLabel.text = "-" + getDurationStringLong(remainingTime)
-        } else {
-            binding.durationLabel.text = getDurationStringLong(duration)
-        }
+        if (showTimeLeft) binding.durationLabel.text = "-" + getDurationStringLong(remainingTime)
+        else binding.durationLabel.text = getDurationStringLong(duration)
+
         updateProgressbarPosition(currentPosition, duration)
     }
 

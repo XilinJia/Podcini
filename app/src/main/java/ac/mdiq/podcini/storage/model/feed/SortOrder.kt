@@ -41,14 +41,11 @@ enum class SortOrder(@JvmField val code: Int, @JvmField val scope: Scope) {
 
         @JvmStatic
         fun fromCodeString(codeStr: String?): SortOrder? {
-            if (codeStr.isNullOrEmpty()) {
-                return null
-            }
+            if (codeStr.isNullOrEmpty()) return null
+
             val code = codeStr.toInt()
             for (sortOrder in entries) {
-                if (sortOrder.code == code) {
-                    return sortOrder
-                }
+                if (sortOrder.code == code) return sortOrder
             }
             throw IllegalArgumentException("Unsupported code: $code")
         }

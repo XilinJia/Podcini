@@ -19,17 +19,13 @@ class AboutFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.preferences_about)
 
-        findPreference<Preference>("about_version")!!.summary = String.format(
-            "%s (%s)", BuildConfig.VERSION_NAME, BuildConfig.COMMIT_HASH)
+        findPreference<Preference>("about_version")!!.summary = String.format("%s (%s)", BuildConfig.VERSION_NAME, BuildConfig.COMMIT_HASH)
         findPreference<Preference>("about_version")!!.onPreferenceClickListener =
             Preference.OnPreferenceClickListener { preference: Preference? ->
                 val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                val clip = ClipData.newPlainText(getString(R.string.bug_report_title),
-                    findPreference<Preference>("about_version")!!.summary)
+                val clip = ClipData.newPlainText(getString(R.string.bug_report_title), findPreference<Preference>("about_version")!!.summary)
                 clipboard.setPrimaryClip(clip)
-                if (Build.VERSION.SDK_INT <= 32) {
-                    Snackbar.make(requireView(), R.string.copied_to_clipboard, Snackbar.LENGTH_SHORT).show()
-                }
+                if (Build.VERSION.SDK_INT <= 32) Snackbar.make(requireView(), R.string.copied_to_clipboard, Snackbar.LENGTH_SHORT).show()
                 true
             }
         findPreference<Preference>("about_contributors")!!.onPreferenceClickListener =

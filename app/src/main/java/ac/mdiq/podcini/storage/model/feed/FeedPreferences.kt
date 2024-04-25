@@ -41,9 +41,7 @@ class FeedPreferences(@JvmField var feedID: Long,
             @JvmStatic
             fun fromCode(code: Int): AutoDeleteAction {
                 for (action in entries) {
-                    if (code == action.code) {
-                        return action
-                    }
+                    if (code == action.code) return action
                 }
                 return NEVER
             }
@@ -59,9 +57,7 @@ class FeedPreferences(@JvmField var feedID: Long,
             @JvmStatic
             fun fromCode(code: Int): NewEpisodesAction {
                 for (action in entries) {
-                    if (code == action.code) {
-                        return action
-                    }
+                    if (code == action.code) return action
                 }
                 return GLOBAL
             }
@@ -87,15 +83,10 @@ class FeedPreferences(@JvmField var feedID: Long,
      * @return True if the two objects are different.
      */
     fun compareWithOther(other: FeedPreferences?): Boolean {
-        if (other == null) {
-            return true
-        }
-        if (!TextUtils.equals(username, other.username)) {
-            return true
-        }
-        if (!TextUtils.equals(password, other.password)) {
-            return true
-        }
+        if (other == null) return true
+        if (!TextUtils.equals(username, other.username)) return true
+        if (!TextUtils.equals(password, other.password)) return true
+
         return false
     }
 

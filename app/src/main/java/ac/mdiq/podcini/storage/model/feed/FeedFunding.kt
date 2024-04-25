@@ -12,17 +12,11 @@ class FeedFunding(@JvmField var url: String?, @JvmField var content: String?) {
     }
 
     override fun equals(obj: Any?): Boolean {
-        if (obj == null || obj.javaClass != this.javaClass) {
-            return false
-        }
-
+        if (obj == null || obj.javaClass != this.javaClass) return false
         val funding = obj as FeedFunding
-        if (url == null && funding.url == null && content == null && funding.content == null) {
-            return true
-        }
-        if (url != null && url == funding.url && content != null && content == funding.content) {
-            return true
-        }
+        if (url == null && funding.url == null && content == null && funding.content == null) return true
+        if (url != null && url == funding.url && content != null && content == funding.content) return true
+
         return false
     }
 
@@ -36,32 +30,24 @@ class FeedFunding(@JvmField var url: String?, @JvmField var content: String?) {
 
         @JvmStatic
         fun extractPaymentLinks(payLinks: String?): ArrayList<FeedFunding> {
-            if (payLinks.isNullOrBlank()) {
-                return arrayListOf()
-            }
+            if (payLinks.isNullOrBlank()) return arrayListOf()
+
             // old format before we started with PodcastIndex funding tag
             val funding = ArrayList<FeedFunding>()
-            if (!payLinks.contains(FUNDING_ENTRIES_SEPARATOR)
-                    && !payLinks.contains(FUNDING_TITLE_SEPARATOR)) {
+            if (!payLinks.contains(FUNDING_ENTRIES_SEPARATOR) && !payLinks.contains(FUNDING_TITLE_SEPARATOR)) {
                 funding.add(FeedFunding(payLinks, ""))
                 return funding
             }
             val list = payLinks.split(FUNDING_ENTRIES_SEPARATOR.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-            if (list.isEmpty()) {
-                return arrayListOf()
-            }
+            if (list.isEmpty()) return arrayListOf()
 
             for (str in list) {
-                val linkContent = str.split(FUNDING_TITLE_SEPARATOR.toRegex()).dropLastWhile { it.isEmpty() }
-                    .toTypedArray()
-                if (StringUtils.isBlank(linkContent[0])) {
-                    continue
-                }
+                val linkContent = str.split(FUNDING_TITLE_SEPARATOR.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+                if (StringUtils.isBlank(linkContent[0])) continue
+
                 val url = linkContent[0]
                 var title = ""
-                if (linkContent.size > 1 && !StringUtils.isBlank(linkContent[1])) {
-                    title = linkContent[1]
-                }
+                if (linkContent.size > 1 && !StringUtils.isBlank(linkContent[1])) title = linkContent[1]
                 funding.add(FeedFunding(url, title))
             }
             return funding
@@ -69,9 +55,8 @@ class FeedFunding(@JvmField var url: String?, @JvmField var content: String?) {
 
         fun getPaymentLinksAsString(fundingList: ArrayList<FeedFunding>?): String? {
             val result = StringBuilder()
-            if (fundingList == null) {
-                return null
-            }
+            if (fundingList == null) return null
+
             for (fund in fundingList) {
                 result.append(fund.url).append(FUNDING_TITLE_SEPARATOR).append(fund.content)
                 result.append(FUNDING_ENTRIES_SEPARATOR)

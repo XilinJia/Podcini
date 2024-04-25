@@ -52,9 +52,7 @@ class OnlineSearchFragment : Fragment() {
                 break
             }
         }
-        if (searchProvider == null) {
-            Log.i(TAG,"Podcast searcher not found")
-        }
+        if (searchProvider == null) Log.i(TAG,"Podcast searcher not found")
     }
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -89,11 +87,7 @@ class OnlineSearchFragment : Fragment() {
                 }
             }
 
-            override fun onScroll(view: AbsListView,
-                                  firstVisibleItem: Int,
-                                  visibleItemCount: Int,
-                                  totalItemCount: Int
-            ) {}
+            override fun onScroll(view: AbsListView, firstVisibleItem: Int, visibleItemCount: Int, totalItemCount: Int) {}
         })
         return binding.root
     }
@@ -125,9 +119,7 @@ class OnlineSearchFragment : Fragment() {
                 }
             })
             sv.setOnQueryTextFocusChangeListener(View.OnFocusChangeListener { view: View, hasFocus: Boolean ->
-                if (hasFocus) {
-                    showInputMethod(view.findFocus())
-                }
+                if (hasFocus) showInputMethod(view.findFocus())
             })
         }
         searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {

@@ -111,22 +111,17 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) :
         if (inActionMode()) {
             holder.secondaryActionButton.setOnClickListener(null)
             if (isSelected(pos)) {
-                holder.itemView.setBackgroundColor(-0x78000000
-                        + (0xffffff and ThemeUtils.getColorFromAttr(mainActivityRef.get()!!, R.attr.colorAccent)))
-            } else {
-                holder.itemView.setBackgroundResource(color.transparent)
-            }
+                holder.itemView.setBackgroundColor(-0x78000000 + (0xffffff and ThemeUtils.getColorFromAttr(mainActivityRef.get()!!, R.attr.colorAccent)))
+            } else holder.itemView.setBackgroundResource(color.transparent)
         }
 
         afterBindViewHolder(holder, pos)
         holder.hideSeparatorIfNecessary()
     }
 
-    protected open fun beforeBindViewHolder(holder: EpisodeItemViewHolder, pos: Int) {
-    }
+    protected open fun beforeBindViewHolder(holder: EpisodeItemViewHolder, pos: Int) {}
 
-    protected open fun afterBindViewHolder(holder: EpisodeItemViewHolder, pos: Int) {
-    }
+    protected open fun afterBindViewHolder(holder: EpisodeItemViewHolder, pos: Int) {}
 
     @UnstableApi override fun onViewRecycled(holder: EpisodeItemViewHolder) {
         super.onViewRecycled(holder)

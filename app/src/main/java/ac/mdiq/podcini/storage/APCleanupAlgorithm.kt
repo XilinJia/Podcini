@@ -7,6 +7,8 @@ import ac.mdiq.podcini.storage.DBReader.getEpisodes
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
 import ac.mdiq.podcini.storage.model.feed.SortOrder
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
 import java.util.*
 import java.util.concurrent.ExecutionException
 
@@ -25,27 +27,20 @@ class APCleanupAlgorithm(
         return candidates.size
     }
 
-    public override fun performCleanup(context: Context, numberOfEpisodesToDelete: Int): Int {
+    @OptIn(UnstableApi::class) public override fun performCleanup(context: Context, numberOfEpisodesToDelete: Int): Int {
         val candidates = candidates.toMutableList()
 
         candidates.sortWith { lhs: FeedItem, rhs: FeedItem ->
             var l = lhs.media!!.getPlaybackCompletionDate()
             var r = rhs.media!!.getPlaybackCompletionDate()
 
-            if (l == null) {
-                l = Date()
-            }
-            if (r == null) {
-                r = Date()
-            }
+            if (l == null) l = Date()
+            if (r == null) r = Date()
+
             l.compareTo(r)
         }
 
-        val delete = if (candidates.size > numberOfEpisodesToDelete) {
-            candidates.subList(0, numberOfEpisodesToDelete)
-        } else {
-            candidates
-        }
+        val delete = if (candidates.size > numberOfEpisodesToDelete) candidates.subList(0, numberOfEpisodesToDelete) else candidates
 
         for (item in delete) {
             try {
@@ -59,10 +54,7 @@ class APCleanupAlgorithm(
 
         val counter = delete.size
 
-
-        Log.i(TAG, String.format(Locale.US,
-            "Auto-delete deleted %d episodes (%d requested)", counter,
-            numberOfEpisodesToDelete))
+        Log.i(TAG, String.format(Locale.US, "Auto-delete deleted %d episodes (%d requested)", counter, numberOfEpisodesToDelete))
 
         return counter
     }
@@ -80,18 +72,13 @@ class APCleanupAlgorithm(
 
             val mostRecentDateForDeletion = calcMostRecentDateForDeletion(Date())
             for (item in downloadedItems) {
-                if (item.hasMedia()
-                        && item.media!!.isDownloaded()
-                        && !item.isTagged(FeedItem.TAG_QUEUE)
-                        && item.isPlayed()
+                if (item.hasMedia() && item.media!!.isDownloaded() && !item.isTagged(FeedItem.TAG_QUEUE) && item.isPlayed()
                         && !item.isTagged(FeedItem.TAG_FAVORITE)) {
                     val media = item.media
                     // make sure this candidate was played at least the proper amount of days prior
                     // to now
-                    if (media?.getPlaybackCompletionDate() != null && media.getPlaybackCompletionDate()!!
-                                .before(mostRecentDateForDeletion)) {
+                    if (media?.getPlaybackCompletionDate() != null && media.getPlaybackCompletionDate()!!.before(mostRecentDateForDeletion))
                         candidates.add(item)
-                    }
                 }
             }
             return candidates

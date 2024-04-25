@@ -74,9 +74,8 @@ class EpisodesListFragment : BaseEpisodesListFragment() {
     }
 
     @OptIn(UnstableApi::class) override fun onMenuItemClick(item: MenuItem): Boolean {
-        if (super.onOptionsItemSelected(item)) {
-            return true
-        }
+        if (super.onOptionsItemSelected(item)) return true
+
         when (item.itemId) {
 //            R.id.filter_items -> {
 //                AllEpisodesFilterDialog.newInstance(getFilter()).show(childFragmentManager, null)

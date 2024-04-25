@@ -61,8 +61,7 @@ class OpmlReader {
                             }
                             elementList!!.add(element)
                         } else {
-                            if (BuildConfig.DEBUG) Log.d(TAG,
-                                "Skipping element because of missing xml url")
+                            if (BuildConfig.DEBUG) Log.d(TAG, "Skipping element because of missing xml url")
                         }
                     }
                 }

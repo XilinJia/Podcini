@@ -31,9 +31,7 @@ object PodciniHttpClient {
     @JvmStatic
     @Synchronized
     fun getHttpClient(): OkHttpClient {
-        if (httpClient == null) {
-            httpClient = newBuilder().build()
-        }
+        if (httpClient == null) httpClient = newBuilder().build()
         return httpClient!!
     }
 

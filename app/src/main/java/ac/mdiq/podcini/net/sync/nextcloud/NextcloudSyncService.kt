@@ -14,13 +14,11 @@ import java.io.IOException
 import java.net.MalformedURLException
 import kotlin.math.min
 
-class NextcloudSyncService(private val httpClient: OkHttpClient, baseHosturl: String?,
-                           private val username: String, private val password: String
-) : ISyncService {
+class NextcloudSyncService(private val httpClient: OkHttpClient, baseHosturl: String?, private val username: String, private val password: String)
+    : ISyncService {
     private val hostname = HostnameParser(baseHosturl)
 
-    override fun login() {
-    }
+    override fun login() {}
 
     @Throws(SyncServiceException::class)
     override fun getSubscriptionChanges(lastSync: Long): SubscriptionChanges {
@@ -85,8 +83,7 @@ class NextcloudSyncService(private val httpClient: OkHttpClient, baseHosturl: St
     override fun uploadEpisodeActions(queuedEpisodeActions: List<EpisodeAction?>?): UploadChangesResponse {
         var i = 0
         while (i < queuedEpisodeActions!!.size) {
-            uploadEpisodeActionsPartial(queuedEpisodeActions,
-                i, min(queuedEpisodeActions.size.toDouble(), (i + UPLOAD_BULK_SIZE).toDouble()).toInt())
+            uploadEpisodeActionsPartial(queuedEpisodeActions, i, min(queuedEpisodeActions.size.toDouble(), (i + UPLOAD_BULK_SIZE).toDouble()).toInt())
             i += UPLOAD_BULK_SIZE
         }
         return NextcloudGpodderEpisodeActionPostResponse(System.currentTimeMillis() / 1000)
@@ -99,9 +96,7 @@ class NextcloudSyncService(private val httpClient: OkHttpClient, baseHosturl: St
             for (i in from until to) {
                 val episodeAction = queuedEpisodeActions!![i]
                 val obj = episodeAction!!.writeToJsonObject()
-                if (obj != null) {
-                    list.put(obj)
-                }
+                if (obj != null) list.put(obj)
             }
             val url: HttpUrl.Builder = makeUrl("/index.php/apps/gpoddersync/episode_action/create")
             val requestBody = RequestBody.create("application/json".toMediaType(), list.toString())
@@ -121,9 +116,8 @@ class NextcloudSyncService(private val httpClient: OkHttpClient, baseHosturl: St
             .method(method, body)
             .build()
         val response = httpClient.newCall(request).execute()
-        if (response.code != 200) {
-            throw IOException("Response code: " + response.code)
-        }
+        if (response.code != 200) throw IOException("Response code: " + response.code)
+
         return response.body!!.string()
     }
 
@@ -131,14 +125,13 @@ class NextcloudSyncService(private val httpClient: OkHttpClient, baseHosturl: St
         val builder = HttpUrl.Builder()
         if (hostname.scheme != null) builder.scheme(hostname.scheme!!)
         if (hostname.host != null) builder.host(hostname.host!!)
-        return builder.port(hostname.port)
-            .addPathSegments(hostname.subfolder + path)
+        return builder.port(hostname.port).addPathSegments(hostname.subfolder + path)
     }
 
-    override fun logout() {
-    }
+    override fun logout() {}
 
     private class NextcloudGpodderEpisodeActionPostResponse(epochSecond: Long) : UploadChangesResponse(epochSecond)
+
     companion object {
         private const val UPLOAD_BULK_SIZE = 30
     }

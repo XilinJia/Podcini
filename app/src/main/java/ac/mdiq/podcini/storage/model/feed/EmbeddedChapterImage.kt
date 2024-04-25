@@ -21,12 +21,10 @@ class EmbeddedChapterImage(@JvmField val media: Playable, private val imageUrl: 
     }
 
     override fun equals(o: Any?): Boolean {
-        if (this === o) {
-            return true
-        }
-        if (o == null || javaClass != o.javaClass) {
-            return false
-        }
+        if (this === o) return true
+
+        if (o == null || javaClass != o.javaClass) return false
+
         val that = o as EmbeddedChapterImage
         return TextUtils.equals(imageUrl, that.imageUrl)
     }
@@ -49,12 +47,7 @@ class EmbeddedChapterImage(@JvmField val media: Playable, private val imageUrl: 
 
         fun getModelFor(media: Playable, chapter: Int): Any? {
             val imageUrl = media.getChapters()[chapter].imageUrl
-            return if (imageUrl != null && isEmbeddedChapterImage(
-                        imageUrl)) {
-                EmbeddedChapterImage(media, imageUrl)
-            } else {
-                imageUrl
-            }
+            return if (imageUrl != null && isEmbeddedChapterImage(imageUrl)) EmbeddedChapterImage(media, imageUrl) else  imageUrl
         }
     }
 }

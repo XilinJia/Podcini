@@ -40,9 +40,7 @@ class PodcastIndexPodcastSearcher : PodcastSearcher {
                     for (i in 0 until j.length()) {
                         val podcastJson = j.getJSONObject(i)
                         val podcast = PodcastSearchResult.fromPodcastIndex(podcastJson)
-                        if (podcast.feedUrl != null) {
-                            podcasts.add(podcast)
-                        }
+                        if (podcast.feedUrl != null) podcasts.add(podcast)
                     }
                 } else {
                     subscriber.onError(IOException(response.toString()))

@@ -57,11 +57,7 @@ internal class ApOkHttpUrlLoader private constructor(private val client: OkHttpC
         }
     }
 
-    override fun buildLoadData(model: String,
-                               width: Int,
-                               height: Int,
-                               options: Options
-    ): ModelLoader.LoadData<InputStream> {
+    override fun buildLoadData(model: String, width: Int, height: Int, options: Options): ModelLoader.LoadData<InputStream> {
         return ModelLoader.LoadData(ObjectKey(model), ResizingOkHttpStreamFetcher(client, GlideUrl(model)))
     }
 

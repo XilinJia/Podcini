@@ -49,9 +49,7 @@ class FeedDiscoverer {
                 if (type == MIME_RSS || type == MIME_ATOM) {
                     val title = link.attr("title")
                     val processedUrl = processURL(baseUrl, href)
-                    if (processedUrl != null) {
-                        res[processedUrl] = title.ifEmpty { href }
-                    }
+                    if (processedUrl != null) res[processedUrl] = title.ifEmpty { href }
                 }
             }
         }
@@ -63,9 +61,7 @@ class FeedDiscoverer {
         if (uri.isRelative) {
             val res = Uri.parse(baseUrl).buildUpon().path(strUrl).build()
             return res?.toString()
-        } else {
-            return strUrl
-        }
+        } else return strUrl
     }
 
     companion object {

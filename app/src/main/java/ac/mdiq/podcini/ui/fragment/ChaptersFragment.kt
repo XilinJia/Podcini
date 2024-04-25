@@ -78,9 +78,8 @@ class ChaptersFragment : AppCompatDialogFragment() {
 
         adapter = ChaptersListAdapter(requireContext(), object : ChaptersListAdapter.Callback {
             override fun onPlayChapterButtonClicked(pos: Int) {
-                if (controller?.status != PlayerStatus.PLAYING) {
-                    controller!!.playPause()
-                }
+                if (controller?.status != PlayerStatus.PLAYING) controller!!.playPause()
+
                 val chapter = adapter.getItem(pos)
                 if (chapter != null) controller!!.seekTo(chapter.start.toInt())
                 updateChapterSelection(pos, true)
@@ -90,8 +89,7 @@ class ChaptersFragment : AppCompatDialogFragment() {
 
         progressBar.visibility = View.VISIBLE
 
-        val wrapHeight = CoordinatorLayout.LayoutParams(
-            CoordinatorLayout.LayoutParams.MATCH_PARENT, CoordinatorLayout.LayoutParams.WRAP_CONTENT)
+        val wrapHeight = CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MATCH_PARENT, CoordinatorLayout.LayoutParams.WRAP_CONTENT)
         recyclerView.layoutParams = wrapHeight
 
         controller = object : PlaybackController(requireActivity()) {
@@ -139,9 +137,7 @@ class ChaptersFragment : AppCompatDialogFragment() {
             if (media != null) {
                 loadChapters(media, requireContext(), forceRefresh)
                 emitter.onSuccess(media)
-            } else {
-                emitter.onComplete()
-            }
+            } else emitter.onComplete()
         }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -156,14 +152,13 @@ class ChaptersFragment : AppCompatDialogFragment() {
         if (media.getChapters().isEmpty()) {
             dismiss()
             Toast.makeText(context, R.string.no_chapters_label, Toast.LENGTH_LONG).show()
-        } else {
-            progressBar.visibility = View.GONE
-        }
+        } else progressBar.visibility = View.GONE
+
         adapter.setMedia(media)
         (dialog as AlertDialog).getButton(DialogInterface.BUTTON_NEUTRAL).visibility = View.INVISIBLE
-        if ((media is FeedMedia) && !media.item?.podcastIndexChapterUrl.isNullOrEmpty()) {
+        if ((media is FeedMedia) && !media.item?.podcastIndexChapterUrl.isNullOrEmpty())
             (dialog as AlertDialog).getButton(DialogInterface.BUTTON_NEUTRAL).visibility = View.VISIBLE
-        }
+
         val positionOfCurrentChapter = getCurrentChapter(media)
         updateChapterSelection(positionOfCurrentChapter, true)
     }

@@ -33,29 +33,22 @@ class Atom : Namespace() {
                 when {
                     parent.name.matches(isFeedItem.toRegex()) -> {
                         when {
-                            rel == null || LINK_REL_ALTERNATE == rel -> {
-                                if (state.currentItem != null) state.currentItem!!.link = href
-                            }
+                            rel == null || LINK_REL_ALTERNATE == rel -> if (state.currentItem != null) state.currentItem!!.link = href
                             LINK_REL_ENCLOSURE == rel -> {
                                 val strSize: String? = attributes.getValue(LINK_LENGTH)
                                 var size: Long = 0
                                 try {
-                                    if (strSize != null) {
-                                        size = strSize.toLong()
-                                    }
+                                    if (strSize != null) size = strSize.toLong()
                                 } catch (e: NumberFormatException) {
                                     Log.d(TAG, "Length attribute could not be parsed.")
                                 }
                                 val mimeType: String? = getMimeType(attributes.getValue(LINK_TYPE), href)
 
                                 val currItem = state.currentItem
-                                if (isMediaFile(mimeType) && currItem != null && !currItem.hasMedia()) {
+                                if (isMediaFile(mimeType) && currItem != null && !currItem.hasMedia())
                                     currItem.media = FeedMedia(currItem, href, size, mimeType)
-                                }
                             }
-                            LINK_REL_PAYMENT == rel -> {
-                                if (state.currentItem != null) state.currentItem!!.paymentLink = href
-                            }
+                            LINK_REL_PAYMENT == rel -> if (state.currentItem != null) state.currentItem!!.paymentLink = href
                         }
                     }
                     parent.name.matches(isFeed.toRegex()) -> {
@@ -68,15 +61,12 @@ class Atom : Namespace() {
                                                          * LINK_TYPE_HTML or LINK_TYPE_XHTML
                                                          */
                                 when {
-                                    type == null && state.feed.link == null || LINK_TYPE_HTML == type || LINK_TYPE_XHTML == type -> {
+                                    type == null && state.feed.link == null || LINK_TYPE_HTML == type || LINK_TYPE_XHTML == type ->
                                         state.feed.link = href
-                                    }
                                     LINK_TYPE_ATOM == type || LINK_TYPE_RSS == type -> {
                                         // treat as podlove alternate feed
                                         var title: String? = attributes.getValue(LINK_TITLE)
-                                        if (title.isNullOrEmpty()) {
-                                            title = href?:""
-                                        }
+                                        if (title.isNullOrEmpty()) title = href?:""
                                         if (!href.isNullOrEmpty()) state.addAlternateFeedUrl(title, href)
                                     }
                                 }
@@ -86,9 +76,7 @@ class Atom : Namespace() {
                                 when {
                                     LINK_TYPE_ATOM == type || LINK_TYPE_RSS == type -> {
                                         var title: String? = attributes.getValue(LINK_TITLE)
-                                        if (title.isNullOrEmpty()) {
-                                            title = href?:""
-                                        }
+                                        if (title.isNullOrEmpty()) title = href?:""
                                         if (!href.isNullOrEmpty()) state.addAlternateFeedUrl(title, href)
                                     }
                                     LINK_TYPE_HTML == type || LINK_TYPE_XHTML == type -> {
@@ -96,9 +84,7 @@ class Atom : Namespace() {
                                     }
                                 }
                             }
-                            LINK_REL_PAYMENT == rel -> {
-                                state.feed.addPayment(FeedFunding(href, ""))
-                            }
+                            LINK_REL_PAYMENT == rel -> state.feed.addPayment(FeedFunding(href, ""))
                             LINK_REL_NEXT == rel -> {
                                 state.feed.isPaged = true
                                 state.feed.nextPageLink = href
@@ -114,8 +100,7 @@ class Atom : Namespace() {
     override fun handleElementEnd(localName: String, state: HandlerState) {
         Log.d(TAG, "handleElementEnd $localName")
         if (ENTRY == localName) {
-            if (state.currentItem != null &&
-                    state.tempObjects.containsKey(Itunes.DURATION)) {
+            if (state.currentItem != null && state.tempObjects.containsKey(Itunes.DURATION)) {
                 val currentItem = state.currentItem
                 if (currentItem!!.hasMedia()) {
                     val duration = state.tempObjects[Itunes.DURATION] as Int?
@@ -128,11 +113,7 @@ class Atom : Namespace() {
 
         if (state.tagstack.size >= 2) {
             var textElement: AtomText? = null
-            val contentRaw = if (state.contentBuf != null) {
-                state.contentBuf.toString()
-            } else {
-                ""
-            }
+            val contentRaw = if (state.contentBuf != null) state.contentBuf.toString() else ""
             val content = trimAllWhitespace(contentRaw)
             val topElement = state.tagstack.peek()
             val top = topElement.name
@@ -147,52 +128,30 @@ class Atom : Namespace() {
             when {
                 ID == top -> {
                     when {
-                        FEED == second -> {
-                            state.feed.feedIdentifier = contentRaw
-                        }
-                        ENTRY == second && state.currentItem != null -> {
-                            state.currentItem!!.itemIdentifier = contentRaw
-                        }
+                        FEED == second -> state.feed.feedIdentifier = contentRaw
+                        ENTRY == second && state.currentItem != null -> state.currentItem!!.itemIdentifier = contentRaw
                     }
                 }
                 TITLE == top && textElement != null -> {
                     when {
-                        FEED == second -> {
-                            state.feed.title = textElement.processedContent
-                        }
-                        ENTRY == second && state.currentItem != null -> {
-                            state.currentItem!!.title = textElement.processedContent
-                        }
+                        FEED == second -> state.feed.title = textElement.processedContent
+                        ENTRY == second && state.currentItem != null -> state.currentItem!!.title = textElement.processedContent
                     }
                 }
-                SUBTITLE == top && FEED == second && textElement != null -> {
-                    state.feed.description = textElement.processedContent
-                }
-                CONTENT == top && ENTRY == second && textElement != null && state.currentItem != null -> {
+                SUBTITLE == top && FEED == second && textElement != null -> state.feed.description = textElement.processedContent
+                CONTENT == top && ENTRY == second && textElement != null && state.currentItem != null ->
                     state.currentItem!!.setDescriptionIfLonger(textElement.processedContent)
-                }
-                SUMMARY == top && ENTRY == second && textElement != null && state.currentItem != null -> {
+                SUMMARY == top && ENTRY == second && textElement != null && state.currentItem != null ->
                     state.currentItem!!.setDescriptionIfLonger(textElement.processedContent)
-                }
-                UPDATED == top && ENTRY == second && state.currentItem != null && state.currentItem!!.pubDate == null -> {
+                UPDATED == top && ENTRY == second && state.currentItem != null && state.currentItem!!.pubDate == null ->
                     state.currentItem!!.pubDate = parseOrNullIfFuture(content)
-                }
-                PUBLISHED == top && ENTRY == second && state.currentItem != null -> {
-                    state.currentItem!!.pubDate = parseOrNullIfFuture(content)
-                }
-                IMAGE_LOGO == top && state.feed.imageUrl == null -> {
-                    state.feed.imageUrl = content
-                }
-                IMAGE_ICON == top -> {
-                    state.feed.imageUrl = content
-                }
+                PUBLISHED == top && ENTRY == second && state.currentItem != null -> state.currentItem!!.pubDate = parseOrNullIfFuture(content)
+                IMAGE_LOGO == top && state.feed.imageUrl == null -> state.feed.imageUrl = content
+                IMAGE_ICON == top -> state.feed.imageUrl = content
                 AUTHOR_NAME == top && AUTHOR == second && state.currentItem == null -> {
                     val currentName = state.feed.author
-                    if (currentName == null) {
-                        state.feed.author = content
-                    } else {
-                        state.feed.author = "$currentName, $content"
-                    }
+                    if (currentName == null) state.feed.author = content
+                    else state.feed.author = "$currentName, $content"
                 }
             }
         }

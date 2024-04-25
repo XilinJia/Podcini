@@ -21,9 +21,7 @@ class MainActivityStarter(private val context: Context) {
     }
 
     fun getIntent(): Intent {
-        if (fragmentArgs != null) {
-            intent.putExtra(EXTRA_FRAGMENT_ARGS, fragmentArgs)
-        }
+        if (fragmentArgs != null) intent.putExtra(EXTRA_FRAGMENT_ARGS, fragmentArgs)
         return intent
     }
 

@@ -9,8 +9,8 @@ import java.io.Serializable
  */
 abstract class FeedFile @JvmOverloads constructor(@JvmField var file_url: String? = null,
                                                   @JvmField var download_url: String? = null,
-                                                  private var downloaded: Boolean = false
-) : FeedComponent(), Serializable {
+                                                  private var downloaded: Boolean = false)
+    : FeedComponent(), Serializable {
 
     /**
      * Creates a new FeedFile object.
@@ -46,12 +46,9 @@ abstract class FeedFile @JvmOverloads constructor(@JvmField var file_url: String
      * @return true if attribute values are different, false otherwise
      */
     fun compareWithOther(other: FeedFile): Boolean {
-        if (super.compareWithOther(other)) {
-            return true
-        }
-        if (!TextUtils.equals(download_url, other.download_url)) {
-            return true
-        }
+        if (super.compareWithOther(other)) return true
+        if (!TextUtils.equals(download_url, other.download_url)) return true
+
         return false
     }
 
@@ -77,9 +74,7 @@ abstract class FeedFile @JvmOverloads constructor(@JvmField var file_url: String
      */
     open fun setFile_url(file_url: String?) {
         this.file_url = file_url
-        if (file_url == null) {
-            downloaded = false
-        }
+        if (file_url == null) downloaded = false
     }
 
     fun isDownloaded(): Boolean {

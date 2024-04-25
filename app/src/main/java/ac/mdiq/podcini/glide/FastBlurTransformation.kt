@@ -12,11 +12,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 class FastBlurTransformation : BitmapTransformation() {
-    override fun transform(pool: BitmapPool,
-                           source: Bitmap,
-                           outWidth: Int,
-                           outHeight: Int
-    ): Bitmap {
+    override fun transform(pool: BitmapPool, source: Bitmap, outWidth: Int, outHeight: Int): Bitmap {
         val targetWidth = outWidth / 3
         val targetHeight = (1.0 * outHeight * targetWidth / outWidth).toInt()
         val resized = ThumbnailUtils.extractThumbnail(source, targetWidth, targetHeight)
@@ -76,9 +72,7 @@ class FastBlurTransformation : BitmapTransformation() {
             //
             // Stack Blur Algorithm by Mario Klingemann <mario@quasimondo.com>
 
-            if (radius < 1) {
-                return null
-            }
+            if (radius < 1) return null
 
             val w = bitmap.width
             val h = bitmap.height
@@ -182,9 +176,8 @@ class FastBlurTransformation : BitmapTransformation() {
                     goutsum -= sir[1]
                     boutsum -= sir[2]
 
-                    if (y == 0) {
-                        vmin[x] = min((x + radius + 1).toDouble(), wm.toDouble()).toInt()
-                    }
+                    if (y == 0) vmin[x] = min((x + radius + 1).toDouble(), wm.toDouble()).toInt()
+
                     p = pix[yw + vmin[x]]
 
                     sir[0] = (p and 0xff0000) shr 16
@@ -254,9 +247,8 @@ class FastBlurTransformation : BitmapTransformation() {
                         boutsum += sir[2]
                     }
 
-                    if (i < hm) {
-                        yp += w
-                    }
+                    if (i < hm) yp += w
+
                     i++
                 }
                 yi = x
@@ -277,9 +269,8 @@ class FastBlurTransformation : BitmapTransformation() {
                     goutsum -= sir[1]
                     boutsum -= sir[2]
 
-                    if (x == 0) {
-                        vmin[y] = (min((y + r1).toDouble(), hm.toDouble()) * w).toInt()
-                    }
+                    if (x == 0) vmin[y] = (min((y + r1).toDouble(), hm.toDouble()) * w).toInt()
+
                     p = x + vmin[y]
 
                     sir[0] = r[p]

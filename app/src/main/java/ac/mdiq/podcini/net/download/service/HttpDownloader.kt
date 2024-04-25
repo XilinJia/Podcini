@@ -50,9 +50,7 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
                 httpReq.cacheControl(CacheControl.Builder().noCache().build()) // noStore breaks CDNs
             }
 
-            if (uri.scheme == "http") {
-                httpReq.addHeader("Upgrade-Insecure-Requests", "1")
-            }
+            if (uri.scheme == "http") httpReq.addHeader("Upgrade-Insecure-Requests", "1")
 
             if (!downloadRequest.lastModified.isNullOrEmpty()) {
                 val lastModified = downloadRequest.lastModified
@@ -80,9 +78,7 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
             responseBody = response.body
             val contentEncodingHeader = response.header("Content-Encoding")
             var isGzip = false
-            if (!contentEncodingHeader.isNullOrEmpty()) {
-                isGzip = TextUtils.equals(contentEncodingHeader.lowercase(Locale.getDefault()), "gzip")
-            }
+            if (!contentEncodingHeader.isNullOrEmpty()) isGzip = TextUtils.equals(contentEncodingHeader.lowercase(Locale.getDefault()), "gzip")
 
             Log.d(TAG, "Response code is " + response.code)// check if size specified in the response header is the same as the size of the
             // written file. This check cannot be made if compression was used
@@ -117,9 +113,8 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
                     } else {
                         var success = destination.delete()
                         success = success or destination.createNewFile()
-                        if (!success) {
-                            throw IOException("Unable to recreate partially downloaded file")
-                        }
+                        if (!success) throw IOException("Unable to recreate partially downloaded file")
+
                         out = RandomAccessFile(destination, "rw")
                     }
 
@@ -129,9 +124,7 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
                     Log.d(TAG, "Getting size of download")
                     downloadRequest.size = responseBody.contentLength() + downloadRequest.soFar
                     Log.d(TAG, "Size is " + downloadRequest.size)
-                    if (downloadRequest.size < 0) {
-                        downloadRequest.size = DownloadResult.SIZE_UNKNOWN.toLong()
-                    }
+                    if (downloadRequest.size < 0) downloadRequest.size = DownloadResult.SIZE_UNKNOWN.toLong()
 
                     val freeSpace = freeSpaceAvailable
                     Log.d(TAG, "Free space is $freeSpace")
@@ -159,8 +152,8 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
                         // written file. This check cannot be made if compression was used
                         when {
                             !isGzip && downloadRequest.size != DownloadResult.SIZE_UNKNOWN.toLong() && downloadRequest.soFar != downloadRequest.size -> {
-                                onFail(DownloadError.ERROR_IO_WRONG_SIZE, "Download completed but size: "
-                                        + downloadRequest.soFar + " does not equal expected size " + downloadRequest.size)
+                                onFail(DownloadError.ERROR_IO_WRONG_SIZE,
+                                    "Download completed but size: ${downloadRequest.soFar} does not equal expected size ${downloadRequest.size}")
                                 return
                             }
                             downloadRequest.size > 0 && downloadRequest.soFar == 0L -> {
@@ -169,11 +162,8 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
                             }
                             else -> {
                                 val lastModified = response.header("Last-Modified")
-                                if (lastModified != null) {
-                                    downloadRequest.setLastModified(lastModified)
-                                } else {
-                                    downloadRequest.setLastModified(response.header("ETag"))
-                                }
+                                if (lastModified != null) downloadRequest.setLastModified(lastModified)
+                                else downloadRequest.setLastModified(response.header("ETag"))
                                 onSuccess()
                             }
                         }

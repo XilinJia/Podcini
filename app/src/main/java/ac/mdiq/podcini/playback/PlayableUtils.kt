@@ -25,9 +25,9 @@ object PlayableUtils {
             val item = playable.item
             if (item != null && item.isNew) DBWriter.markItemPlayed(FeedItem.UNPLAYED, item.id)
 
-            if (playable.startPosition >= 0 && playable.getPosition() > playable.startPosition) {
+            if (playable.startPosition >= 0 && playable.getPosition() > playable.startPosition)
                 playable.playedDuration = (playable.playedDurationWhenStarted + playable.getPosition() - playable.startPosition)
-            }
+
             DBWriter.setFeedMediaPlaybackInformation(playable)
         }
     }

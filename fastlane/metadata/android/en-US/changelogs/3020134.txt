@@ -1,0 +1,7 @@
+ 
+Version 4.9.3 brings several changes:
+
+* show toast message when episode home views are not available
+* fixed crash bug on app startup when player buttons are clicked before play
+* large codebase cleaning
+* episode home menu item is disable on video player

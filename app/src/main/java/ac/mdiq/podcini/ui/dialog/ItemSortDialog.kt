@@ -76,8 +76,7 @@ open class ItemSortDialog : BottomSheetDialogFragment() {
             }
             binding.gridLayout.addView(item.root)
         } else {
-            val item = SortDialogItemBinding.inflate(
-                layoutInflater, binding.gridLayout, false)
+            val item = SortDialogItemBinding.inflate(layoutInflater, binding.gridLayout, false)
             item.button.setText(title)
             item.button.setOnClickListener {
                 sortOrder = if (ascendingIsDefault) ascending else descending

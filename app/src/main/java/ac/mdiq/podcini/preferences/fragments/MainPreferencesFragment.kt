@@ -57,64 +57,53 @@ class MainPreferencesFragment : PreferenceFragmentCompat() {
 
     @SuppressLint("CommitTransaction")
     private fun setupMainScreen() {
-        findPreference<Preference>(PREF_SCREEN_USER_INTERFACE)!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                (activity as PreferenceActivity).openScreen(R.xml.preferences_user_interface)
-                true
-            }
-        findPreference<Preference>(PREF_SCREEN_PLAYBACK)!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                (activity as PreferenceActivity).openScreen(R.xml.preferences_playback)
-                true
-            }
-        findPreference<Preference>(PREF_SCREEN_DOWNLOADS)!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                (activity as PreferenceActivity).openScreen(R.xml.preferences_downloads)
-                true
-            }
-        findPreference<Preference>(PREF_SCREEN_SYNCHRONIZATION)!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                (activity as PreferenceActivity).openScreen(R.xml.preferences_synchronization)
-                true
-            }
-        findPreference<Preference>(PREF_SCREEN_IMPORT_EXPORT)!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                (activity as PreferenceActivity).openScreen(R.xml.preferences_import_export)
-                true
-            }
-        findPreference<Preference>(PREF_NOTIFICATION)!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                (activity as PreferenceActivity).openScreen(R.xml.preferences_notifications)
-                true
-            }
-        findPreference<Preference>(PREF_ABOUT)!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.settingsContainer, AboutFragment())
-                    .addToBackStack(getString(R.string.about_pref))
-                    .commit()
-                true
-            }
-        findPreference<Preference>(PREF_DOCUMENTATION)!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini")
-                true
-            }
-        findPreference<Preference>(PREF_VIEW_FORUM)!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini/discussions")
-                true
-            }
-        findPreference<Preference>(PREF_CONTRIBUTE)!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini")
-                true
-            }
-        findPreference<Preference>(PREF_SEND_BUG_REPORT)!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                startActivity(Intent(activity, BugReportActivity::class.java))
-                true
-            }
+        findPreference<Preference>(PREF_SCREEN_USER_INTERFACE)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            (activity as PreferenceActivity).openScreen(R.xml.preferences_user_interface)
+            true
+        }
+        findPreference<Preference>(PREF_SCREEN_PLAYBACK)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            (activity as PreferenceActivity).openScreen(R.xml.preferences_playback)
+            true
+        }
+        findPreference<Preference>(PREF_SCREEN_DOWNLOADS)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            (activity as PreferenceActivity).openScreen(R.xml.preferences_downloads)
+            true
+        }
+        findPreference<Preference>(PREF_SCREEN_SYNCHRONIZATION)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            (activity as PreferenceActivity).openScreen(R.xml.preferences_synchronization)
+            true
+        }
+        findPreference<Preference>(PREF_SCREEN_IMPORT_EXPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            (activity as PreferenceActivity).openScreen(R.xml.preferences_import_export)
+            true
+        }
+        findPreference<Preference>(PREF_NOTIFICATION)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            (activity as PreferenceActivity).openScreen(R.xml.preferences_notifications)
+            true
+        }
+        findPreference<Preference>(PREF_ABOUT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.settingsContainer, AboutFragment())
+                .addToBackStack(getString(R.string.about_pref))
+                .commit()
+            true
+        }
+        findPreference<Preference>(PREF_DOCUMENTATION)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini")
+            true
+        }
+        findPreference<Preference>(PREF_VIEW_FORUM)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini/discussions")
+            true
+        }
+        findPreference<Preference>(PREF_CONTRIBUTE)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini")
+            true
+        }
+        findPreference<Preference>(PREF_SEND_BUG_REPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            startActivity(Intent(activity, BugReportActivity::class.java))
+            true
+        }
     }
 
 //    private val localizedWebsiteLink: String
@@ -143,24 +132,17 @@ class MainPreferencesFragment : PreferenceFragmentCompat() {
         config.setFragmentContainerViewId(R.id.settingsContainer)
         config.setBreadcrumbsEnabled(true)
 
-        config.index(R.xml.preferences_user_interface)
-            .addBreadcrumb(getTitleOfPage(R.xml.preferences_user_interface))
-        config.index(R.xml.preferences_playback)
-            .addBreadcrumb(getTitleOfPage(R.xml.preferences_playback))
-        config.index(R.xml.preferences_downloads)
-            .addBreadcrumb(getTitleOfPage(R.xml.preferences_downloads))
-        config.index(R.xml.preferences_import_export)
-            .addBreadcrumb(getTitleOfPage(R.xml.preferences_import_export))
+        config.index(R.xml.preferences_user_interface).addBreadcrumb(getTitleOfPage(R.xml.preferences_user_interface))
+        config.index(R.xml.preferences_playback).addBreadcrumb(getTitleOfPage(R.xml.preferences_playback))
+        config.index(R.xml.preferences_downloads).addBreadcrumb(getTitleOfPage(R.xml.preferences_downloads))
+        config.index(R.xml.preferences_import_export).addBreadcrumb(getTitleOfPage(R.xml.preferences_import_export))
         config.index(R.xml.preferences_autodownload)
             .addBreadcrumb(getTitleOfPage(R.xml.preferences_downloads))
             .addBreadcrumb(R.string.automation)
             .addBreadcrumb(getTitleOfPage(R.xml.preferences_autodownload))
-        config.index(R.xml.preferences_synchronization)
-            .addBreadcrumb(getTitleOfPage(R.xml.preferences_synchronization))
-        config.index(R.xml.preferences_notifications)
-            .addBreadcrumb(getTitleOfPage(R.xml.preferences_notifications))
-        config.index(R.xml.feed_settings)
-            .addBreadcrumb(getTitleOfPage(R.xml.feed_settings))
+        config.index(R.xml.preferences_synchronization).addBreadcrumb(getTitleOfPage(R.xml.preferences_synchronization))
+        config.index(R.xml.preferences_notifications).addBreadcrumb(getTitleOfPage(R.xml.preferences_notifications))
+        config.index(R.xml.feed_settings).addBreadcrumb(getTitleOfPage(R.xml.feed_settings))
         config.index(R.xml.preferences_swipe)
             .addBreadcrumb(getTitleOfPage(R.xml.preferences_user_interface))
             .addBreadcrumb(getTitleOfPage(R.xml.preferences_swipe))

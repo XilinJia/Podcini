@@ -9,9 +9,8 @@ class TimeSpeedConverter(private val speed: Float) {
      */
     fun convert(time: Int): Int {
         val timeRespectsSpeed = UserPreferences.timeRespectsSpeed()
-        if (time > 0 && timeRespectsSpeed) {
-            return (time / speed).toInt()
-        }
+        if (time > 0 && timeRespectsSpeed) return (time / speed).toInt()
+
         return time
     }
 }

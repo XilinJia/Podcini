@@ -17,22 +17,17 @@ class PodcastIndex : Namespace() {
             }
             CHAPTERS == localName -> {
                 val href: String? = attributes.getValue(URL)
-                if (state.currentItem != null && !href.isNullOrEmpty()) {
-                    state.currentItem!!.podcastIndexChapterUrl = href
-                }
+                if (state.currentItem != null && !href.isNullOrEmpty()) state.currentItem!!.podcastIndexChapterUrl = href
             }
         }
         return SyndElement(localName, this)
     }
 
     override fun handleElementEnd(localName: String, state: HandlerState) {
-        if (state.contentBuf == null) {
-            return
-        }
+        if (state.contentBuf == null) return
+
         val content = state.contentBuf.toString()
-        if (FUNDING == localName && state.currentFunding != null && content.isNotEmpty()) {
-            state.currentFunding!!.setContent(content)
-        }
+        if (FUNDING == localName && state.currentFunding != null && content.isNotEmpty()) state.currentFunding!!.setContent(content)
     }
 
     companion object {

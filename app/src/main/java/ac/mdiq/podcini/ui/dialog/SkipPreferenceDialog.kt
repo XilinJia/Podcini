@@ -17,20 +17,14 @@ import java.util.*
 object SkipPreferenceDialog {
     fun showSkipPreference(context: Context, direction: SkipDirection, textView: TextView?) {
         var checked = 0
-        val skipSecs = if (direction == SkipDirection.SKIP_FORWARD) {
-            fastForwardSecs
-        } else {
-            rewindSecs
-        }
+        val skipSecs = if (direction == SkipDirection.SKIP_FORWARD) fastForwardSecs else rewindSecs
 
         val values = context.resources.getIntArray(R.array.seek_delta_values)
         val choices = arrayOfNulls<String>(values.size)
         for (i in values.indices) {
-            if (skipSecs == values[i]) {
-                checked = i
-            }
-            choices[i] = String.format(Locale.getDefault(),
-                "%d %s", values[i], context.getString(R.string.time_seconds))
+            if (skipSecs == values[i]) checked = i
+
+            choices[i] = String.format(Locale.getDefault(), "%d %s", values[i], context.getString(R.string.time_seconds))
         }
 
         val builder = MaterialAlertDialogBuilder(context)
@@ -41,14 +35,11 @@ object SkipPreferenceDialog {
                 System.err.printf("Choice in showSkipPreference is out of bounds %d", choice)
             } else {
                 val seconds = values[choice]
-                if (direction == SkipDirection.SKIP_FORWARD) {
-                    fastForwardSecs = seconds
-                } else {
-                    rewindSecs = seconds
-                }
-                if (textView != null) {
-                    textView.text = NumberFormat.getInstance().format(seconds.toLong())
-                }
+                if (direction == SkipDirection.SKIP_FORWARD) fastForwardSecs = seconds
+                else rewindSecs = seconds
+
+                if (textView != null) textView.text = NumberFormat.getInstance().format(seconds.toLong())
+
                 dialog.dismiss()
             }
         }

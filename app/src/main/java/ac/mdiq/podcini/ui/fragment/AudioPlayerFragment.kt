@@ -83,7 +83,6 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     var _binding: AudioplayerFragmentBinding? = null
     private val binding get() = _binding!!
 
-//    private lateinit var itemDesrView: View
     private lateinit var itemDescFrag: PlayerDetailsFragment
 
     private lateinit var toolbar: MaterialToolbar
@@ -132,8 +131,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             .replace(R.id.playerFragment1, playerFragment1!!, InternalPlayerFragment.TAG)
             .commit()
         playerView1 = binding.root.findViewById(R.id.playerFragment1)
-        playerView1.setBackgroundColor(
-            SurfaceColors.getColorForElevation(requireContext(), 8 * resources.displayMetrics.density))
+        playerView1.setBackgroundColor(SurfaceColors.getColorForElevation(requireContext(), 8 * resources.displayMetrics.density))
 
         playerFragment2 = InternalPlayerFragment.newInstance(controller!!)
         childFragmentManager.beginTransaction()
@@ -188,24 +186,6 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_EXPANDED
     }
 
-//    private fun setupLengthTextView() {
-//        showTimeLeft = UserPreferences.shouldShowRemainingTime()
-//        txtvLength.setOnClickListener(View.OnClickListener {
-//            if (controller == null) return@OnClickListener
-//
-//            showTimeLeft = !showTimeLeft
-//            UserPreferences.setShowRemainTimeSetting(showTimeLeft)
-//            updatePosition(PlaybackPositionEvent(controller!!.position, controller!!.duration))
-//        })
-//    }
-
-//    @Subscribe(threadMode = ThreadMode.MAIN)
-//    fun updatePlaybackSpeedButton(event: SpeedChangedEvent) {
-//        val speedStr: String = DecimalFormat("0.00").format(event.newSpeed.toDouble())
-//        txtvPlaybackSpeed.text = speedStr
-//        butPlaybackSpeed.setSpeed(event.newSpeed)
-//    }
-
     private fun loadMediaInfo(includingChapters: Boolean) {
         Log.d(TAG, "loadMediaInfo called")
 
@@ -220,9 +200,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 if (media != null) {
                     if (includingChapters) ChapterUtils.loadChapters(media, requireContext(), false)
                     emitter.onSuccess(media)
-                } else {
-                    emitter.onComplete()
-                }
+                } else emitter.onComplete()
             }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -233,9 +211,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                     playerFragment2?.updateUi(media)
                     if (!includingChapters) loadMediaInfo(true)
                 }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) },
-                    {
-                        updateUi(null)
-                    })
+                    { updateUi(null) })
         }
     }
 
@@ -319,9 +295,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     fun onEvenStartPlay(event: StartPlayEvent) {
         Log.d(TAG, "onEvenStartPlay ${event.item.title}")
         currentitem = event.item
-        if (currentMedia?.getIdentifier() == null || currentitem!!.media!!.getIdentifier() != currentMedia?.getIdentifier()) {
+        if (currentMedia?.getIdentifier() == null || currentitem!!.media!!.getIdentifier() != currentMedia?.getIdentifier())
             itemDescFrag.setItem(currentitem!!)
-        }
     }
 
     override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
@@ -344,9 +319,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 //                        sbPosition.highlightCurrentChapter()
 //                    }
                     txtvSeek.text = controller!!.getMedia()?.getChapters()?.get(newChapterIndex)?.title ?: ("\n${Converter.getDurationStringLong(position)}")
-                } else {
-                    txtvSeek.text = Converter.getDurationStringLong(position)
-                }
+                } else txtvSeek.text = Converter.getDurationStringLong(position)
             }
             duration != controller!!.duration -> updateUi(controller!!.getMedia())
         }
@@ -472,6 +445,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         private lateinit var imgvCover: ImageView
         lateinit var butPlay: PlayButton
 
+        private var isControlButtonsSet = false
+
         lateinit var butPlaybackSpeed: PlaybackSpeedIndicatorView
         lateinit var txtvPlaybackSpeed: TextView
 
@@ -512,11 +487,11 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             txtvLength = binding.txtvLength
 
             setupLengthTextView()
-            setupControlButtons()
+//            setupControlButtons()
             butPlaybackSpeed.setOnClickListener {
                 VariableSpeedDialog.newInstance(booleanArrayOf(true, true, true), null)?.show(childFragmentManager, null)
             }
-            sbPosition.setOnSeekBarChangeListener(this)
+//            sbPosition.setOnSeekBarChangeListener(null)
 
             binding.internalPlayerFragment.setOnClickListener {
                 Log.d(TAG, "internalPlayerFragment was clicked")
@@ -553,18 +528,24 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 if (controller == null) return@setOnClickListener
 
                 val media = controller!!.getMedia()
-                if (media?.getMediaType() == MediaType.VIDEO && controller!!.status != PlayerStatus.PLAYING) {
-                    controller!!.playPause()
-                    requireContext().startActivity(PlaybackService.getPlayerActivityIntent(requireContext(), media?.getMediaType()))
-                } else {
-                    controller!!.playPause()
+                if (media != null) {
+                    if (media.getMediaType() == MediaType.VIDEO && controller!!.status != PlayerStatus.PLAYING) {
+                        controller!!.playPause()
+                        requireContext().startActivity(PlaybackService.getPlayerActivityIntent(requireContext(), media.getMediaType()))
+                    } else controller!!.playPause()
+                    if (!isControlButtonsSet) {
+                        setupControlButtons()
+                        sbPosition.visibility = View.VISIBLE
+                        sbPosition.setOnSeekBarChangeListener(this)
+                        isControlButtonsSet = true
+                    }
                 }
             }
         }
 
         @OptIn(UnstableApi::class) private fun setupControlButtons() {
             butRev.setOnClickListener {
-                if (controller != null) {
+                if (controller != null && controller!!.isPlaybackServiceReady()) {
                     val curr: Int = controller!!.position
                     controller!!.seekTo(curr - UserPreferences.rewindSecs * 1000)
                 }
@@ -573,10 +554,10 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_REWIND, txtvRev)
                 true
             }
-            butPlay.setOnClickListener {
-                controller?.init()
-                controller?.playPause()
-            }
+//            butPlay.setOnClickListener {
+//                controller?.init()
+//                controller?.playPause()
+//            }
             butPlay.setOnLongClickListener {
                 if (controller != null && controller!!.status == PlayerStatus.PLAYING) {
                     val fallbackSpeed = UserPreferences.fallbackSpeed
@@ -585,7 +566,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 true
             }
             butFF.setOnClickListener {
-                if (controller != null) {
+                if (controller != null && controller!!.isPlaybackServiceReady()) {
                     val curr: Int = controller!!.position
                     controller!!.seekTo(curr + UserPreferences.fastForwardSecs * 1000)
                 }
@@ -601,8 +582,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 }
             }
             butSkip.setOnLongClickListener {
-                activity?.sendBroadcast(
-                    MediaButtonReceiver.createIntent(requireContext(), KeyEvent.KEYCODE_MEDIA_NEXT))
+                activity?.sendBroadcast(MediaButtonReceiver.createIntent(requireContext(), KeyEvent.KEYCODE_MEDIA_NEXT))
                 true
             }
         }
@@ -693,7 +673,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         override fun onStartTrackingTouch(seekBar: SeekBar) {}
 
         @OptIn(UnstableApi::class) override fun onStopTrackingTouch(seekBar: SeekBar) {
-            if (controller != null) {
+            if (controller != null && controller!!.isPlaybackServiceReady()) {
                 val prog: Float = seekBar.progress / (seekBar.max.toFloat())
                 controller!!.seekTo((prog * controller!!.duration).toInt())
             }

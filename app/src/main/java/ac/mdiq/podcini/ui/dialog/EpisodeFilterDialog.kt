@@ -33,9 +33,7 @@ abstract class EpisodeFilterDialog(context: Context, filter: FeedFilter) :
             // Store minimal duration in seconds, show in minutes
             viewBinding.episodeFilterDurationText
                 .setText((filter.minimalDurationFilter / 60).toString())
-        } else {
-            viewBinding.episodeFilterDurationText.isEnabled = false
-        }
+        } else viewBinding.episodeFilterDurationText.isEnabled = false
 
         if (filter.excludeOnly()) {
             termList = filter.getExcludeFilter().toMutableList()
@@ -48,8 +46,7 @@ abstract class EpisodeFilterDialog(context: Context, filter: FeedFilter) :
 
         setNegativeButton(R.string.cancel_label, null)
         setPositiveButton(R.string.confirm_label) { dialog: DialogInterface, which: Int ->
-            this.onConfirmClick(dialog,
-                which)
+            this.onConfirmClick(dialog, which)
         }
     }
 
@@ -69,9 +66,8 @@ abstract class EpisodeFilterDialog(context: Context, filter: FeedFilter) :
         viewBinding.termsRecycler.adapter = adapter
         viewBinding.termsTextInput.setEndIconOnClickListener {
             val newWord = viewBinding.termsTextInput.editText!!.text.toString().replace("\"", "").trim { it <= ' ' }
-            if (newWord.isEmpty() || termList.contains(newWord)) {
-                return@setEndIconOnClickListener
-            }
+            if (newWord.isEmpty() || termList.contains(newWord)) return@setEndIconOnClickListener
+
             termList.add(newWord)
             viewBinding.termsTextInput.editText!!.setText("")
             adapter.notifyDataSetChanged()
@@ -92,11 +88,9 @@ abstract class EpisodeFilterDialog(context: Context, filter: FeedFilter) :
         }
         var excludeFilter = ""
         var includeFilter = ""
-        if (viewBinding.includeRadio.isChecked) {
-            includeFilter = toFilterString(termList)
-        } else {
-            excludeFilter = toFilterString(termList)
-        }
+        if (viewBinding.includeRadio.isChecked) includeFilter = toFilterString(termList)
+        else excludeFilter = toFilterString(termList)
+
         onConfirmed(FeedFilter(includeFilter, excludeFilter, minimalDuration))
     }
 

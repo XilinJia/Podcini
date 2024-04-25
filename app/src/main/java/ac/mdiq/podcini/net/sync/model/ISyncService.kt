@@ -10,9 +10,7 @@ interface ISyncService {
     fun getSubscriptionChanges(lastSync: Long): SubscriptionChanges?
 
     @Throws(SyncServiceException::class)
-    fun uploadSubscriptionChanges(
-            addedFeeds: List<String?>?, removedFeeds: List<String?>?
-    ): UploadChangesResponse?
+    fun uploadSubscriptionChanges(addedFeeds: List<String?>?, removedFeeds: List<String?>?): UploadChangesResponse?
 
     @Throws(SyncServiceException::class)
     fun getEpisodeActionChanges(lastSync: Long): EpisodeActionChanges?

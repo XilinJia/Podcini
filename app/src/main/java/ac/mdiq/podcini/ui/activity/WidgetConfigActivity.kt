@@ -43,17 +43,12 @@ class WidgetConfigActivity : AppCompatActivity() {
 
         val configIntent = intent
         val extras = configIntent.extras
-        if (extras != null) {
-            appWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID,
-                AppWidgetManager.INVALID_APPWIDGET_ID)
-        }
+        if (extras != null) appWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
 
         val resultValue = Intent()
         resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
         setResult(RESULT_CANCELED, resultValue)
-        if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
-            finish()
-        }
+        if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) finish()
 
         opacityTextView = binding.widgetOpacityTextView
         opacitySeekBar = binding.widgetOpacitySeekBar
@@ -68,11 +63,9 @@ class WidgetConfigActivity : AppCompatActivity() {
                 widgetPreview.setBackgroundColor(color)
             }
 
-            override fun onStartTrackingTouch(seekBar: SeekBar) {
-            }
+            override fun onStartTrackingTouch(seekBar: SeekBar) {}
 
-            override fun onStopTrackingTouch(seekBar: SeekBar) {
-            }
+            override fun onStopTrackingTouch(seekBar: SeekBar) {}
         })
 
         wpBinding.txtNoPlaying.visibility = View.GONE

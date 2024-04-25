@@ -13,44 +13,33 @@ internal object DBUpgrader {
      */
     fun upgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         if (oldVersion <= 1) {
-            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEEDS + " ADD COLUMN "
-                    + PodDBAdapter.KEY_TYPE + " TEXT")
+            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEEDS + " ADD COLUMN " + PodDBAdapter.KEY_TYPE + " TEXT")
         }
         if (oldVersion <= 2) {
-            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_SIMPLECHAPTERS
-                    + " ADD COLUMN " + PodDBAdapter.KEY_LINK + " TEXT")
+            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_SIMPLECHAPTERS + " ADD COLUMN " + PodDBAdapter.KEY_LINK + " TEXT")
         }
         if (oldVersion <= 3) {
-            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEED_ITEMS
-                    + " ADD COLUMN " + PodDBAdapter.KEY_ITEM_IDENTIFIER + " TEXT")
+            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEED_ITEMS + " ADD COLUMN " + PodDBAdapter.KEY_ITEM_IDENTIFIER + " TEXT")
         }
         if (oldVersion <= 4) {
-            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEEDS + " ADD COLUMN "
-                    + PodDBAdapter.KEY_FEED_IDENTIFIER + " TEXT")
+            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEEDS + " ADD COLUMN " + PodDBAdapter.KEY_FEED_IDENTIFIER + " TEXT")
         }
         if (oldVersion <= 5) {
-            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_DOWNLOAD_LOG
-                    + " ADD COLUMN " + PodDBAdapter.KEY_REASON_DETAILED + " TEXT")
-            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_DOWNLOAD_LOG
-                    + " ADD COLUMN " + PodDBAdapter.KEY_DOWNLOADSTATUS_TITLE + " TEXT")
+            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_DOWNLOAD_LOG + " ADD COLUMN " + PodDBAdapter.KEY_REASON_DETAILED + " TEXT")
+            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_DOWNLOAD_LOG + " ADD COLUMN " + PodDBAdapter.KEY_DOWNLOADSTATUS_TITLE + " TEXT")
         }
         if (oldVersion <= 6) {
-            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_SIMPLECHAPTERS
-                    + " ADD COLUMN type INTEGER")
+            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_SIMPLECHAPTERS + " ADD COLUMN type INTEGER")
         }
         if (oldVersion <= 7) {
-            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEED_MEDIA
-                    + " ADD COLUMN " + PodDBAdapter.KEY_PLAYBACK_COMPLETION_DATE
-                    + " INTEGER")
+            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEED_MEDIA + " ADD COLUMN " + PodDBAdapter.KEY_PLAYBACK_COMPLETION_DATE + " INTEGER")
         }
         if (oldVersion <= 8) {
             val KEY_ID_POSITION = 0
             val KEY_MEDIA_POSITION = 1
 
             // Add feeditem column to feedmedia table
-            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEED_MEDIA
-                    + " ADD COLUMN " + PodDBAdapter.KEY_FEEDITEM
-                    + " INTEGER")
+            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEED_MEDIA + " ADD COLUMN " + PodDBAdapter.KEY_FEEDITEM + " INTEGER")
             val feeditemCursor = db.query(PodDBAdapter.TABLE_NAME_FEED_ITEMS,
                 arrayOf(PodDBAdapter.KEY_ID, PodDBAdapter.KEY_MEDIA), "? > 0",
                 arrayOf(PodDBAdapter.KEY_MEDIA), null, null, null)
@@ -72,42 +61,25 @@ internal object DBUpgrader {
             feeditemCursor.close()
         }
         if (oldVersion <= 9) {
-            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEEDS
-                    + " ADD COLUMN " + PodDBAdapter.KEY_AUTO_DOWNLOAD_ENABLED
-                    + " INTEGER DEFAULT 1")
+            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEEDS + " ADD COLUMN " + PodDBAdapter.KEY_AUTO_DOWNLOAD_ENABLED + " INTEGER DEFAULT 1")
         }
         if (oldVersion <= 10) {
-            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEEDS
-                    + " ADD COLUMN flattr_status"
-                    + " INTEGER")
-            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEED_ITEMS
-                    + " ADD COLUMN flattr_status"
-                    + " INTEGER")
-            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEED_MEDIA
-                    + " ADD COLUMN " + PodDBAdapter.KEY_PLAYED_DURATION
-                    + " INTEGER")
+            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEEDS + " ADD COLUMN flattr_status" + " INTEGER")
+            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEED_ITEMS + " ADD COLUMN flattr_status" + " INTEGER")
+            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEED_MEDIA + " ADD COLUMN " + PodDBAdapter.KEY_PLAYED_DURATION + " INTEGER")
         }
         if (oldVersion <= 11) {
-            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEEDS
-                    + " ADD COLUMN " + PodDBAdapter.KEY_USERNAME
-                    + " TEXT")
-            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEEDS
-                    + " ADD COLUMN " + PodDBAdapter.KEY_PASSWORD
-                    + " TEXT")
-            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEED_ITEMS
-                    + " ADD COLUMN image"
-                    + " INTEGER")
+            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEEDS + " ADD COLUMN " + PodDBAdapter.KEY_USERNAME + " TEXT")
+            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEEDS + " ADD COLUMN " + PodDBAdapter.KEY_PASSWORD + " TEXT")
+            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEED_ITEMS + " ADD COLUMN image" + " INTEGER")
         }
         if (oldVersion <= 12) {
-            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEEDS
-                    + " ADD COLUMN " + PodDBAdapter.KEY_IS_PAGED + " INTEGER DEFAULT 0")
-            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEEDS
-                    + " ADD COLUMN " + PodDBAdapter.KEY_NEXT_PAGE_LINK + " TEXT")
+            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEEDS + " ADD COLUMN " + PodDBAdapter.KEY_IS_PAGED + " INTEGER DEFAULT 0")
+            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEEDS + " ADD COLUMN " + PodDBAdapter.KEY_NEXT_PAGE_LINK + " TEXT")
         }
         if (oldVersion <= 13) {
             // remove duplicate rows in "Chapters" table that were created because of a bug.
-            db.execSQL(String.format("DELETE FROM %s WHERE %s NOT IN " +
-                    "(SELECT MIN(%s) as %s FROM %s GROUP BY %s,%s,%s,%s,%s)",
+            db.execSQL(String.format("DELETE FROM %s WHERE %s NOT IN " + "(SELECT MIN(%s) as %s FROM %s GROUP BY %s,%s,%s,%s,%s)",
                 PodDBAdapter.TABLE_NAME_SIMPLECHAPTERS,
                 PodDBAdapter.KEY_ID,
                 PodDBAdapter.KEY_ID,
@@ -120,8 +92,7 @@ internal object DBUpgrader {
                 "type"))
         }
         if (oldVersion <= 14) {
-            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEED_ITEMS
-                    + " ADD COLUMN " + PodDBAdapter.KEY_AUTO_DOWNLOAD_ENABLED + " INTEGER")
+            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEED_ITEMS + " ADD COLUMN " + PodDBAdapter.KEY_AUTO_DOWNLOAD_ENABLED + " INTEGER")
             db.execSQL("UPDATE " + PodDBAdapter.TABLE_NAME_FEED_ITEMS
                     + " SET " + PodDBAdapter.KEY_AUTO_DOWNLOAD_ENABLED + " = "
                     + "(SELECT " + PodDBAdapter.KEY_AUTO_DOWNLOAD_ENABLED
@@ -129,11 +100,9 @@ internal object DBUpgrader {
                     + " WHERE " + PodDBAdapter.TABLE_NAME_FEEDS + "." + PodDBAdapter.KEY_ID
                     + " = " + PodDBAdapter.TABLE_NAME_FEED_ITEMS + "." + PodDBAdapter.KEY_FEED + ")")
 
-            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEEDS
-                    + " ADD COLUMN " + PodDBAdapter.KEY_HIDE + " TEXT")
+            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEEDS + " ADD COLUMN " + PodDBAdapter.KEY_HIDE + " TEXT")
 
-            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEEDS
-                    + " ADD COLUMN " + PodDBAdapter.KEY_LAST_UPDATE_FAILED + " INTEGER DEFAULT 0")
+            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEEDS + " ADD COLUMN " + PodDBAdapter.KEY_LAST_UPDATE_FAILED + " INTEGER DEFAULT 0")
 
             // create indexes
             db.execSQL(PodDBAdapter.CREATE_INDEX_FEEDITEMS_FEED)
@@ -142,11 +111,8 @@ internal object DBUpgrader {
             db.execSQL(PodDBAdapter.CREATE_INDEX_SIMPLECHAPTERS_FEEDITEM)
         }
         if (oldVersion <= 15) {
-            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEED_MEDIA
-                    + " ADD COLUMN " + PodDBAdapter.KEY_HAS_EMBEDDED_PICTURE + " INTEGER DEFAULT -1")
-            db.execSQL("UPDATE " + PodDBAdapter.TABLE_NAME_FEED_MEDIA
-                    + " SET " + PodDBAdapter.KEY_HAS_EMBEDDED_PICTURE + "=0"
-                    + " WHERE " + PodDBAdapter.KEY_DOWNLOADED + "=0")
+            db.execSQL("ALTER TABLE " + PodDBAdapter.TABLE_NAME_FEED_MEDIA + " ADD COLUMN " + PodDBAdapter.KEY_HAS_EMBEDDED_PICTURE + " INTEGER DEFAULT -1")
+            db.execSQL("UPDATE " + PodDBAdapter.TABLE_NAME_FEED_MEDIA + " SET " + PodDBAdapter.KEY_HAS_EMBEDDED_PICTURE + "=0" + " WHERE " + PodDBAdapter.KEY_DOWNLOADED + "=0")
             val c = db.rawQuery("SELECT " + PodDBAdapter.KEY_FILE_URL
                     + " FROM " + PodDBAdapter.TABLE_NAME_FEED_MEDIA
                     + " WHERE " + PodDBAdapter.KEY_DOWNLOADED + "=1 "
@@ -188,9 +154,7 @@ internal object DBUpgrader {
                     + PodDBAdapter.TABLE_NAME_FEED_MEDIA + "." + PodDBAdapter.KEY_DOWNLOADED + " = 0 AND " // undownloaded
                     + PodDBAdapter.TABLE_NAME_FEED_MEDIA + "." + PodDBAdapter.KEY_POSITION + " = 0 AND " // not partially played
                     + PodDBAdapter.TABLE_NAME_QUEUE + "." + PodDBAdapter.KEY_ID + " IS NULL") // not in queue
-            val sql = ("UPDATE " + PodDBAdapter.TABLE_NAME_FEED_ITEMS
-                    + " SET " + PodDBAdapter.KEY_READ + "=" + FeedItem.NEW
-                    + " WHERE " + PodDBAdapter.KEY_ID + " IN (" + selectNew + ")")
+            val sql = ("UPDATE " + PodDBAdapter.TABLE_NAME_FEED_ITEMS + " SET " + PodDBAdapter.KEY_READ + "=" + FeedItem.NEW + " WHERE " + PodDBAdapter.KEY_ID + " IN (" + selectNew + ")")
             Log.d("Migration", "SQL: $sql")
             db.execSQL(sql)
         }

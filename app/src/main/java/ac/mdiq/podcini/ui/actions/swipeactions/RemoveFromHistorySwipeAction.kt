@@ -36,8 +36,8 @@ class RemoveFromHistorySwipeAction : SwipeAction {
 
         (fragment.requireActivity() as MainActivity)
             .showSnackbarAbovePlayer(R.string.removed_history_label, Snackbar.LENGTH_LONG)
-            .setAction(fragment.getString(R.string.undo)
-            ) { if (playbackCompletionDate != null) DBWriter.addItemToPlaybackHistory(item.media, playbackCompletionDate) }
+            .setAction(fragment.getString(R.string.undo)) {
+                if (playbackCompletionDate != null) DBWriter.addItemToPlaybackHistory(item.media, playbackCompletionDate) }
     }
 
     override fun willRemove(filter: FeedItemFilter, item: FeedItem): Boolean {

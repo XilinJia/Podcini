@@ -7,15 +7,8 @@ import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
 
-class PodcastSearchResult private constructor(
-        val title: String,
-        val imageUrl: String?,
-        val feedUrl: String?,
-        val author: String?,
-        val count: Int?,
-        val update: String?,
-        val source: String
-) {
+class PodcastSearchResult private constructor(val title: String, val imageUrl: String?, val feedUrl: String?,
+                                              val author: String?, val count: Int?, val update: String?, val source: String) {
     companion object {
         fun dummy(): PodcastSearchResult {
             return PodcastSearchResult("", "", "", "", 0, "", "dummy")
@@ -50,13 +43,10 @@ class PodcastSearchResult private constructor(
             while (imageUrl == null && i < images.length()) {
                 val image = images.getJSONObject(i)
                 val height = image.getJSONObject("attributes").getString("height")
-                if (height.toInt() >= 100) {
-                    imageUrl = image.getString("label")
-                }
+                if (height.toInt() >= 100) imageUrl = image.getString("label")
                 i++
             }
-            val feedUrl = "https://itunes.apple.com/lookup?id=" +
-                    json.getJSONObject("id").getJSONObject("attributes").getString("im:id")
+            val feedUrl = "https://itunes.apple.com/lookup?id=" + json.getJSONObject("id").getJSONObject("attributes").getString("im:id")
 
             var author: String? = null
             try {

@@ -70,13 +70,11 @@ class ShareDialog : BottomSheetDialogFragment() {
         binding.shareMediaFileRadio.visibility = if (downloaded) View.VISIBLE else View.GONE
 
         val hasDownloadUrl = hasMedia && item!!.media!!.download_url != null
-        if (!hasDownloadUrl) {
-            binding.shareMediaReceiverRadio.visibility = View.GONE
-        }
+        if (!hasDownloadUrl) binding.shareMediaReceiverRadio.visibility = View.GONE
+
         var type = prefs.getInt(PREF_SHARE_EPISODE_TYPE, 1)
-        if ((type == 2 && !hasDownloadUrl) || (type == 3 && !downloaded)) {
-            type = 1
-        }
+        if ((type == 2 && !hasDownloadUrl) || (type == 3 && !downloaded)) type = 1
+
         binding.shareSocialRadio.isChecked = type == 1
         binding.shareMediaReceiverRadio.isChecked = type == 2
         binding.shareMediaFileRadio.isChecked = type == 3

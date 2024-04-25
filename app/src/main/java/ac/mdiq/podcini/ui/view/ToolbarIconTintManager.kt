@@ -13,8 +13,9 @@ import ac.mdiq.podcini.R
 
 abstract class ToolbarIconTintManager(private val context: Context,
                                       private val toolbar: MaterialToolbar,
-                                      private val collapsingToolbar: CollapsingToolbarLayout
-) : OnOffsetChangedListener {
+                                      private val collapsingToolbar: CollapsingToolbarLayout)
+    : OnOffsetChangedListener {
+
     private var isTinted = false
 
     override fun onOffsetChanged(appBarLayout: AppBarLayout, offset: Int) {

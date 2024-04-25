@@ -50,8 +50,7 @@ class SleepTimerDialog : DialogFragment() {
     @UnstableApi override fun onStart() {
         super.onStart()
         controller = object : PlaybackController(requireActivity()) {
-            override fun loadMediaInfo() {
-            }
+            override fun loadMediaInfo() {}
         }
         controller.init()
         EventBus.getDefault().register(this)
@@ -139,9 +138,8 @@ class SleepTimerDialog : DialogFragment() {
             }
             try {
                 val time = etxtTime.getText().toString().toLong()
-                if (time == 0L) {
-                    throw NumberFormatException("Timer must not be zero")
-                }
+                if (time == 0L) throw NumberFormatException("Timer must not be zero")
+
                 setLastTimer(etxtTime.getText().toString())
                 controller.setSleepTimer(timerMillis())
                 
@@ -158,6 +156,7 @@ class SleepTimerDialog : DialogFragment() {
         super.onDestroyView()
         _binding = null
     }
+
     private fun showTimeRangeDialog(context: Context, from: Int, to: Int) {
         val dialog = TimeRangeDialog(requireContext(), from, to)
         dialog.setOnDismissListener {
@@ -174,19 +173,15 @@ class SleepTimerDialog : DialogFragment() {
         val to = autoEnableTo()
 
         when {
-            from == to -> {
-                text = getString(R.string.auto_enable_label)
-            }
+            from == to -> text = getString(R.string.auto_enable_label)
             DateFormat.is24HourFormat(context) -> {
                 val formattedFrom = String.format(Locale.getDefault(), "%02d:00", from)
                 val formattedTo = String.format(Locale.getDefault(), "%02d:00", to)
                 text = getString(R.string.auto_enable_label_with_times, formattedFrom, formattedTo)
             }
             else -> {
-                val formattedFrom = String.format(Locale.getDefault(), "%02d:00 %s",
-                    from % 12, if (from >= 12) "PM" else "AM")
-                val formattedTo = String.format(Locale.getDefault(), "%02d:00 %s",
-                    to % 12, if (to >= 12) "PM" else "AM")
+                val formattedFrom = String.format(Locale.getDefault(), "%02d:00 %s", from % 12, if (from >= 12) "PM" else "AM")
+                val formattedTo = String.format(Locale.getDefault(), "%02d:00 %s", to % 12, if (to >= 12) "PM" else "AM")
                 text = getString(R.string.auto_enable_label_with_times, formattedFrom, formattedTo)
             }
         }
@@ -197,8 +192,7 @@ class SleepTimerDialog : DialogFragment() {
     @Suppress("unused")
     fun timerUpdated(event: SleepTimerUpdatedEvent) {
         timeDisplay.visibility = if (event.isOver || event.isCancelled) View.GONE else View.VISIBLE
-        timeSetup.visibility =
-            if (event.isOver || event.isCancelled) View.VISIBLE else View.GONE
+        timeSetup.visibility = if (event.isOver || event.isCancelled) View.VISIBLE else View.GONE
         time.text = getDurationStringLong(event.getTimeLeft().toInt())
     }
 

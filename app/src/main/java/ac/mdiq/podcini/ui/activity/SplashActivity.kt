@@ -32,17 +32,16 @@ class SplashActivity : Activity() {
         }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                {
-                    val intent = Intent(this@SplashActivity, MainActivity::class.java)
-                    startActivity(intent)
-                    overridePendingTransition(0, 0)
-                    finish()
-                }, { error: Throwable ->
-                    error.printStackTrace()
-                    CrashReportWriter.write(error)
-                    Toast.makeText(this, error.localizedMessage, Toast.LENGTH_LONG).show()
-                    finish()
-                })
+            .subscribe({
+                val intent = Intent(this@SplashActivity, MainActivity::class.java)
+                startActivity(intent)
+                overridePendingTransition(0, 0)
+                finish()
+            }, { error: Throwable ->
+                error.printStackTrace()
+                CrashReportWriter.write(error)
+                Toast.makeText(this, error.localizedMessage, Toast.LENGTH_LONG).show()
+                finish()
+            })
     }
 }

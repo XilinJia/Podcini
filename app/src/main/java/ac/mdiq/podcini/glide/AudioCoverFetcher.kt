@@ -15,15 +15,11 @@ internal class AudioCoverFetcher(private val path: String, private val context: 
     override fun loadData(priority: Priority, callback: DataFetcher.DataCallback<in InputStream?>) {
         try {
             MediaMetadataRetrieverCompat().use { retriever ->
-                if (path.startsWith(ContentResolver.SCHEME_CONTENT)) {
-                    retriever.setDataSource(context, Uri.parse(path))
-                } else {
-                    retriever.setDataSource(path)
-                }
+                if (path.startsWith(ContentResolver.SCHEME_CONTENT)) retriever.setDataSource(context, Uri.parse(path))
+                else retriever.setDataSource(path)
+
                 val picture = retriever.embeddedPicture
-                if (picture != null) {
-                    callback.onDataReady(ByteArrayInputStream(picture))
-                }
+                if (picture != null) callback.onDataReady(ByteArrayInputStream(picture))
             }
         } catch (e: Exception) {
             callback.onLoadFailed(e)

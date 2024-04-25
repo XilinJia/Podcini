@@ -10,8 +10,8 @@ class FeedFilter // We're storing the strings and not the parsed terms because
 // 2. We don't know if we'll actually be asked to parse anything anyways.
 @JvmOverloads constructor(val includeFilterRaw: String? = "",
                           val excludeFilterRaw: String? = "",
-                          val minimalDurationFilter: Int = -1
-) : Serializable {
+                          val minimalDurationFilter: Int = -1)
+    : Serializable {
     /**
      * Parses the text in to a list of single words or quoted strings.
      * Example: "One "Two Three"" returns ["One", "Two Three"]
@@ -36,18 +36,14 @@ class FeedFilter // We're storing the strings and not the parsed terms because
         val includeTerms = parseTerms(includeFilterRaw)
         val excludeTerms = parseTerms(excludeFilterRaw)
 
-        if (includeTerms.isEmpty() && excludeTerms.isEmpty() && minimalDurationFilter <= -1) {
-            // nothing has been specified, so include everything
-            return true
-        }
+        // nothing has been specified, so include everything
+        if (includeTerms.isEmpty() && excludeTerms.isEmpty() && minimalDurationFilter <= -1) return true
 
         // Check if the episode is long enough if minimal duration filter is on
         if (hasMinimalDurationFilter() && item.media != null) {
             val durationInMs = item.media!!.getDuration()
             // Minimal Duration is stored in seconds
-            if (durationInMs > 0 && durationInMs / 1000 < minimalDurationFilter) {
-                return false
-            }
+            if (durationInMs > 0 && durationInMs / 1000 < minimalDurationFilter) return false
         }
 
         // check using lowercase so the users don't have to worry about case.
@@ -56,29 +52,21 @@ class FeedFilter // We're storing the strings and not the parsed terms because
         // if it's explicitly excluded, it shouldn't be autodownloaded
         // even if it has include terms
         for (term in excludeTerms) {
-            if (title.contains(term.trim { it <= ' ' }.lowercase(Locale.getDefault()))) {
-                return false
-            }
+            if (title.contains(term.trim { it <= ' ' }.lowercase(Locale.getDefault()))) return false
         }
 
         for (term in includeTerms) {
-            if (title.contains(term.trim { it <= ' ' }.lowercase(Locale.getDefault()))) {
-                return true
-            }
+            if (title.contains(term.trim { it <= ' ' }.lowercase(Locale.getDefault()))) return true
         }
 
         // now's the tricky bit
         // if they haven't set an include filter, but they have set an exclude filter
         // default to including, but if they've set both, then exclude
-        if (!hasIncludeFilter() && hasExcludeFilter()) {
-            return true
-        }
+        if (!hasIncludeFilter() && hasExcludeFilter()) return true
 
         // if they only set minimal duration filter and arrived here, autodownload
         // should happen
-        if (hasMinimalDurationFilter()) {
-            return true
-        }
+        if (hasMinimalDurationFilter()) return true
 
         return false
     }

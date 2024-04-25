@@ -14,11 +14,8 @@ object ImageResourceUtils {
      */
     @JvmStatic
     fun getEpisodeListImageLocation(playable: Playable): String? {
-        return if (UserPreferences.useEpisodeCoverSetting) {
-            playable.getImageLocation()
-        } else {
-            getFallbackImageLocation(playable)
-        }
+        return if (UserPreferences.useEpisodeCoverSetting) playable.getImageLocation()
+        else getFallbackImageLocation(playable)
     }
 
     /**
@@ -26,33 +23,20 @@ object ImageResourceUtils {
      */
     @JvmStatic
     fun getEpisodeListImageLocation(feedItem: FeedItem): String? {
-        return if (UserPreferences.useEpisodeCoverSetting) {
-            feedItem.imageLocation
-        } else {
-            getFallbackImageLocation(feedItem)
-        }
+        return if (UserPreferences.useEpisodeCoverSetting) feedItem.imageLocation
+        else getFallbackImageLocation(feedItem)
     }
 
     @JvmStatic
     fun getFallbackImageLocation(playable: Playable): String? {
         if (playable is FeedMedia) {
             val item = playable.item
-            return if (item?.feed != null) {
-                item.feed!!.imageUrl
-            } else {
-                null
-            }
-        } else {
-            return playable.getImageLocation()
-        }
+            return item?.feed?.imageUrl
+        } else return playable.getImageLocation()
     }
 
     @JvmStatic
     fun getFallbackImageLocation(feedItem: FeedItem): String? {
-        return if (feedItem.feed != null) {
-            feedItem.feed!!.imageUrl
-        } else {
-            null
-        }
+        return feedItem.feed?.imageUrl
     }
 }

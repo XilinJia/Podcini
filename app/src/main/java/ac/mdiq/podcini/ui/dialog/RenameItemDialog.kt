@@ -46,9 +46,7 @@ class RenameItemDialog {
                 if (feed != null) {
                     feed!!.setCustomTitle(newTitle)
                     DBWriter.setFeedCustomTitle(feed!!)
-                } else {
-                    renameTag(newTitle)
-                }
+                } else renameTag(newTitle)
             }
             .setNeutralButton(R.string.reset, null)
             .setNegativeButton(R.string.cancel_label, null)

@@ -17,9 +17,7 @@ class FeedSyncTask(private val context: Context, request: DownloadRequest) {
 
     fun run(): Boolean {
         feedHandlerResult = task.call()
-        if (!task.isSuccessful) {
-            return false
-        }
+        if (!task.isSuccessful) return false
 
         savedFeed = DBTasks.updateFeed(context, feedHandlerResult!!.feed, false)
         return true

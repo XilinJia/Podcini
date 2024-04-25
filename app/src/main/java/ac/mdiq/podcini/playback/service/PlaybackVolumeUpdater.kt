@@ -6,8 +6,7 @@ import ac.mdiq.podcini.playback.base.PlaybackServiceMediaPlayer
 import ac.mdiq.podcini.playback.base.PlayerStatus
 
 internal class PlaybackVolumeUpdater {
-    fun updateVolumeIfNecessary(mediaPlayer: PlaybackServiceMediaPlayer, feedId: Long,
-                                volumeAdaptionSetting: VolumeAdaptionSetting) {
+    fun updateVolumeIfNecessary(mediaPlayer: PlaybackServiceMediaPlayer, feedId: Long, volumeAdaptionSetting: VolumeAdaptionSetting) {
         val playable = mediaPlayer.getPlayable()
 
         if (playable is FeedMedia) updateFeedMediaVolumeIfNecessary(mediaPlayer, feedId, volumeAdaptionSetting, playable)

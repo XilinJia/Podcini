@@ -11,18 +11,11 @@ class AtomText(name: String?, namespace: Namespace?, private val type: String?) 
     val processedContent: String?
         /** Processes the content according to the type and returns it.  */
         get() = when (type) {
-            null -> {
-                content
-            }
-            TYPE_HTML -> {
-                HtmlCompat.fromHtml(content!!, HtmlCompat.FROM_HTML_MODE_LEGACY).toString()
-            }
-            TYPE_XHTML -> {
-                content
-            }
-            else -> { // Handle as text by default
-                content
-            }
+            null -> content
+            TYPE_HTML -> HtmlCompat.fromHtml(content!!, HtmlCompat.FROM_HTML_MODE_LEGACY).toString()
+            TYPE_XHTML -> content
+            // Handle as text by default
+            else -> content
         }
 
     fun setContent(content: String?) {

@@ -37,9 +37,7 @@ class ChaptersListAdapter(private val context: Context, private val callback: Ca
         this.media = media
         hasImages = false
         for (chapter in media.getChapters()) {
-            if (!chapter.imageUrl.isNullOrEmpty()) {
-                hasImages = true
-            }
+            if (!chapter.imageUrl.isNullOrEmpty()) hasImages = true
         }
         notifyDataSetChanged()
     }
@@ -48,11 +46,9 @@ class ChaptersListAdapter(private val context: Context, private val callback: Ca
         val sc = getItem(position)?: return
         holder.title.text = sc.title
         holder.start.text = getDurationStringLong(sc.start.toInt())
-        val duration = if (position + 1 < itemCount) {
-            media!!.getChapters()[position + 1].start - sc.start
-        } else {
-            (media?.getDuration()?:0) - sc.start
-        }
+        val duration = if (position + 1 < itemCount) media!!.getChapters()[position + 1].start - sc.start
+        else (media?.getDuration()?:0) - sc.start
+
         holder.duration.text = context.getString(R.string.chapter_duration,
             getDurationStringLocalized(context, duration.toInt().toLong()))
 
@@ -99,9 +95,7 @@ class ChaptersListAdapter(private val context: Context, private val callback: Ca
                         .into(holder.image)
                 }
             }
-        } else {
-            holder.image.visibility = View.GONE
-        }
+        } else holder.image.visibility = View.GONE
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChapterHolder {

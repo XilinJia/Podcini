@@ -40,35 +40,27 @@ object SynchronizationSettings {
         get() = sharedPreferences.getString(SELECTED_SYNC_PROVIDER, null)
 
     fun updateLastSynchronizationAttempt() {
-        sharedPreferences.edit()
-            .putLong(LAST_SYNC_ATTEMPT_TIMESTAMP, System.currentTimeMillis())
-            .apply()
+        sharedPreferences.edit().putLong(LAST_SYNC_ATTEMPT_TIMESTAMP, System.currentTimeMillis()).apply()
     }
 
     fun setLastSynchronizationAttemptSuccess(isSuccess: Boolean) {
-        sharedPreferences.edit()
-            .putBoolean(LAST_SYNC_ATTEMPT_SUCCESS, isSuccess)
-            .apply()
+        sharedPreferences.edit().putBoolean(LAST_SYNC_ATTEMPT_SUCCESS, isSuccess).apply()
     }
 
     val lastSubscriptionSynchronizationTimestamp: Long
         get() = sharedPreferences.getLong(LAST_SUBSCRIPTION_SYNC_TIMESTAMP, 0)
 
     fun setLastSubscriptionSynchronizationAttemptTimestamp(newTimeStamp: Long) {
-        sharedPreferences.edit()
-            .putLong(LAST_SUBSCRIPTION_SYNC_TIMESTAMP, newTimeStamp).apply()
+        sharedPreferences.edit().putLong(LAST_SUBSCRIPTION_SYNC_TIMESTAMP, newTimeStamp).apply()
     }
 
     val lastEpisodeActionSynchronizationTimestamp: Long
-        get() = sharedPreferences
-            .getLong(LAST_EPISODE_ACTIONS_SYNC_TIMESTAMP, 0)
+        get() = sharedPreferences.getLong(LAST_EPISODE_ACTIONS_SYNC_TIMESTAMP, 0)
 
     fun setLastEpisodeActionSynchronizationAttemptTimestamp(timestamp: Long) {
-        sharedPreferences.edit()
-            .putLong(LAST_EPISODE_ACTIONS_SYNC_TIMESTAMP, timestamp).apply()
+        sharedPreferences.edit().putLong(LAST_EPISODE_ACTIONS_SYNC_TIMESTAMP, timestamp).apply()
     }
 
     private val sharedPreferences: SharedPreferences
-        get() = ClientConfig.applicationCallbacks!!.getApplicationInstance()!!
-            .getSharedPreferences(NAME, Context.MODE_PRIVATE)
+        get() = ClientConfig.applicationCallbacks!!.getApplicationInstance()!!.getSharedPreferences(NAME, Context.MODE_PRIVATE)
 }

@@ -23,9 +23,7 @@ object VideoModeDialog {
 
         val items = context.resources.getStringArray(R.array.video_mode_options)
         dialog.setSingleChoiceItems(items, selectedIndex) { d: DialogInterface, which: Int ->
-            if (selectedIndex != which) {
-                setVideoMode(entryValues[which].toInt())
-            }
+            if (selectedIndex != which) setVideoMode(entryValues[which].toInt())
             d.dismiss()
         }
         dialog.show()

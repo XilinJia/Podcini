@@ -16,15 +16,12 @@ import com.google.android.material.tabs.TabLayoutMediator
  * Displays the 'about->Contributors' pager screen.
  */
 class ContributorsPagerFragment : Fragment() {
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         setHasOptionsMenu(true)
         val binding = PagerFragmentBinding.inflate(inflater)
         val viewPager = binding.viewpager
-        viewPager.adapter = StatisticsPagerAdapter(
-            this)
+        viewPager.adapter = StatisticsPagerAdapter(this)
         // Give the TabLayout the ViewPager
         val tabLayout = binding.slidingTabs
         TabLayoutMediator(tabLayout, viewPager) { tab: TabLayout.Tab, position: Int ->

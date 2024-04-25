@@ -1,10 +1,8 @@
 package ac.mdiq.podcini.storage.model.download
 
 /** Utility class for Download Errors.  */
-enum class DownloadError(
-        /** Get machine-readable code.  */
-        @JvmField val code: Int
-) {
+/** Get machine-readable code.  */
+enum class DownloadError(@JvmField val code: Int) {
     SUCCESS(0),
     ERROR_PARSER_EXCEPTION(1),
     ERROR_UNSUPPORTED_TYPE(2),
@@ -34,9 +32,7 @@ enum class DownloadError(
         @JvmStatic
         fun fromCode(code: Int): DownloadError {
             for (reason in entries) {
-                if (reason.code == code) {
-                    return reason
-                }
+                if (reason.code == code) return reason
             }
             throw IllegalArgumentException("unknown code: $code")
         }

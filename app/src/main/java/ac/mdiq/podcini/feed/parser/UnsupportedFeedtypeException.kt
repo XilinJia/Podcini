@@ -9,15 +9,9 @@ class UnsupportedFeedtypeException : Exception {
     override var message: String? = null
         get() {
             return when {
-                field != null -> {
-                    field!!
-                }
-                type == TypeGetter.Type.INVALID -> {
-                    "Invalid type"
-                }
-                else -> {
-                    "Type $type not supported"
-                }
+                field != null -> field!!
+                type == TypeGetter.Type.INVALID -> "Invalid type"
+                else -> "Type $type not supported"
             }
         }
 

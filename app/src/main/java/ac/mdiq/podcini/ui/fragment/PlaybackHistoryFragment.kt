@@ -44,21 +44,16 @@ class PlaybackHistoryFragment : BaseEpisodesListFragment() {
         return FeedItemFilter.unfiltered()
     }
     @OptIn(UnstableApi::class) override fun onMenuItemClick(item: MenuItem): Boolean {
-        if (super.onOptionsItemSelected(item)) {
-            return true
-        }
+        if (super.onOptionsItemSelected(item)) return true
+
         if (item.itemId == R.id.clear_history_item) {
-            val conDialog: ConfirmationDialog = object : ConfirmationDialog(
-                requireContext(),
-                R.string.clear_history_label,
-                R.string.clear_playback_history_msg) {
+            val conDialog: ConfirmationDialog = object : ConfirmationDialog(requireContext(), R.string.clear_history_label, R.string.clear_playback_history_msg) {
                 override fun onConfirmButtonPressed(dialog: DialogInterface) {
                     dialog.dismiss()
                     DBWriter.clearPlaybackHistory()
                 }
             }
             conDialog.createNewDialog().show()
-
             return true
         }
         return false

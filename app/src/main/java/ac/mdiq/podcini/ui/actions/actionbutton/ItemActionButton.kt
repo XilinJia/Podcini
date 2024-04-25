@@ -36,27 +36,13 @@ abstract class ItemActionButton internal constructor(@JvmField var item: FeedIte
                 else -> DownloadServiceInterface.get()?.isDownloadingEpisode(media.download_url!!)?:false
             }
             return when {
-                media.getMediaType() == MediaType.FLASH -> {
-                    VisitWebsiteActionButton(item)
-                }
-                isCurrentlyPlaying(media) -> {
-                    PauseActionButton(item)
-                }
-                item.feed != null && item.feed!!.isLocalFeed -> {
-                    PlayLocalActionButton(item)
-                }
-                media.isDownloaded() -> {
-                    PlayActionButton(item)
-                }
-                isDownloadingMedia -> {
-                    CancelDownloadActionButton(item)
-                }
-                isStreamOverDownload || item.feed == null || item.feedId == 0L -> {
-                    StreamActionButton(item)
-                }
-                else -> {
-                    DownloadActionButton(item)
-                }
+                media.getMediaType() == MediaType.FLASH -> VisitWebsiteActionButton(item)
+                isCurrentlyPlaying(media) -> PauseActionButton(item)
+                item.feed != null && item.feed!!.isLocalFeed -> PlayLocalActionButton(item)
+                media.isDownloaded() -> PlayActionButton(item)
+                isDownloadingMedia -> CancelDownloadActionButton(item)
+                isStreamOverDownload || item.feed == null || item.feedId == 0L -> StreamActionButton(item)
+                else -> DownloadActionButton(item)
             }
         }
     }

@@ -294,3 +294,10 @@
 
 * fixed the action buttons on notification widget. bit strange with the order though as they appear different on my Android 9 and Android 14 devices
 * media3 requires quite some logic change, so be mindful with any issues
+
+## 4.9.3
+
+* show toast message when episode home views are not available
+* fixed crash bug on app startup when player buttons are clicked before play
+* large codebase cleaning
+* episode home menu item is disable on video player

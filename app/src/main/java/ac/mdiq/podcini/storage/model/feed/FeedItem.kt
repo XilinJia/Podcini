@@ -153,21 +153,12 @@ class FeedItem : FeedComponent, Serializable {
 
     fun updateFromOther(other: FeedItem) {
         super.updateFromOther(other)
-        if (other.imageUrl != null) {
-            this.imageUrl = other.imageUrl
-        }
-        if (other.title != null) {
-            title = other.title
-        }
-        if (other.description != null) {
-            description = other.description
-        }
-        if (other.link != null) {
-            link = other.link
-        }
-        if (other.pubDate != null && other.pubDate != pubDate) {
-            pubDate = other.pubDate
-        }
+        if (other.imageUrl != null) this.imageUrl = other.imageUrl
+        if (other.title != null) title = other.title
+        if (other.description != null) description = other.description
+        if (other.link != null) link = other.link
+        if (other.pubDate != null && other.pubDate != pubDate) pubDate = other.pubDate
+
         if (other.media != null) {
             when {
                 media == null -> {
@@ -175,22 +166,14 @@ class FeedItem : FeedComponent, Serializable {
                     // reset to new if feed item did link to a file before
                     setNew()
                 }
-                media!!.compareWithOther(other.media) -> {
-                    media!!.updateFromOther(other.media)
-                }
+                media!!.compareWithOther(other.media) -> media!!.updateFromOther(other.media)
             }
         }
-        if (other.paymentLink != null) {
-            paymentLink = other.paymentLink
-        }
+        if (other.paymentLink != null) paymentLink = other.paymentLink
         if (other.chapters != null) {
-            if (!hasChapters) {
-                chapters = other.chapters
-            }
+            if (!hasChapters) chapters = other.chapters
         }
-        if (other.podcastIndexChapterUrl != null) {
-            podcastIndexChapterUrl = other.podcastIndexChapterUrl
-        }
+        if (other.podcastIndexChapterUrl != null) podcastIndexChapterUrl = other.podcastIndexChapterUrl
     }
 
     val identifyingValue: String?
@@ -201,36 +184,21 @@ class FeedItem : FeedComponent, Serializable {
          * of the entry.
          */
         get() = when {
-            !itemIdentifier.isNullOrEmpty() -> {
-                itemIdentifier
-            }
-            !title.isNullOrEmpty() -> {
-                title
-            }
-            media?.download_url != null -> {
-                media!!.download_url
-            }
-            else -> {
-                link
-            }
+            !itemIdentifier.isNullOrEmpty() -> itemIdentifier
+            !title.isNullOrEmpty() -> title
+            media?.download_url != null -> media!!.download_url
+            else -> link
         }
 
     @JvmName("getPubDateFunction")
     fun getPubDate(): Date? {
-        return if (pubDate != null) {
-            pubDate!!.clone() as Date
-        } else {
-            null
-        }
+        return pubDate?.clone() as? Date
     }
 
     @JvmName("setPubDateFunction")
     fun setPubDate(pubDate: Date?) {
-        if (pubDate != null) {
-            this.pubDate = pubDate.clone() as Date
-        } else {
-            this.pubDate = null
-        }
+        if (pubDate != null) this.pubDate = pubDate.clone() as Date
+        else this.pubDate = null
     }
 
     /**
@@ -241,9 +209,7 @@ class FeedItem : FeedComponent, Serializable {
     @JvmName("setMediaFunction")
     fun setMedia(media: FeedMedia?) {
         this.media = media
-        if (media != null && media.item !== this) {
-            media.setItem(this)
-        }
+        if (media != null && media.item !== this) media.setItem(this)
     }
 
     val isNew: Boolean
@@ -258,11 +224,7 @@ class FeedItem : FeedComponent, Serializable {
     }
 
     fun setPlayed(played: Boolean) {
-        playState = if (played) {
-            PLAYED
-        } else {
-            UNPLAYED
-        }
+        playState = if (played) PLAYED else UNPLAYED
     }
 
     val isInProgress: Boolean
@@ -273,16 +235,11 @@ class FeedItem : FeedComponent, Serializable {
      * @param newDescription The new item description, content:encoded, itunes:description, etc.
      */
     fun setDescriptionIfLonger(newDescription: String?) {
-        if (newDescription == null) {
-            return
-        }
+        if (newDescription == null) return
+
         when {
-            this.description == null -> {
-                this.description = newDescription
-            }
-            description!!.length < newDescription.length -> {
-                this.description = newDescription
-            }
+            this.description == null -> this.description = newDescription
+            description!!.length < newDescription.length -> this.description = newDescription
         }
     }
 
@@ -292,18 +249,10 @@ class FeedItem : FeedComponent, Serializable {
 
     val imageLocation: String?
         get() = when {
-            imageUrl != null -> {
-                imageUrl
-            }
-            media != null && media!!.hasEmbeddedPicture() -> {
-                FeedMedia.FILENAME_PREFIX_EMBEDDED_COVER + media!!.getLocalMediaUrl()
-            }
-            feed != null -> {
-                feed!!.imageUrl
-            }
-            else -> {
-                null
-            }
+            imageUrl != null -> imageUrl
+            media != null && media!!.hasEmbeddedPicture() -> FeedMedia.FILENAME_PREFIX_EMBEDDED_COVER + media!!.getLocalMediaUrl()
+            feed != null -> feed!!.imageUrl
+            else -> null
         }
 
     enum class State {

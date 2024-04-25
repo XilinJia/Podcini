@@ -12,9 +12,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 /**
  * Displays a dialog with a username and password text field and an optional checkbox to save username and preferences.
  */
-abstract class AuthenticationDialog(context: Context, titleRes: Int, enableUsernameField: Boolean,
-                                    usernameInitialValue: String?, passwordInitialValue: String?
-) : MaterialAlertDialogBuilder(context) {
+abstract class AuthenticationDialog(context: Context, titleRes: Int, enableUsernameField: Boolean, usernameInitialValue: String?, passwordInitialValue: String?)
+    : MaterialAlertDialogBuilder(context) {
 
     var passwordHidden: Boolean = true
 
@@ -24,12 +23,9 @@ abstract class AuthenticationDialog(context: Context, titleRes: Int, enableUsern
         setView(viewBinding.root)
 
         viewBinding.usernameEditText.isEnabled = enableUsernameField
-        if (usernameInitialValue != null) {
-            viewBinding.usernameEditText.setText(usernameInitialValue)
-        }
-        if (passwordInitialValue != null) {
-            viewBinding.passwordEditText.setText(passwordInitialValue)
-        }
+        if (usernameInitialValue != null) viewBinding.usernameEditText.setText(usernameInitialValue)
+        if (passwordInitialValue != null) viewBinding.passwordEditText.setText(passwordInitialValue)
+
         viewBinding.showPasswordButton.setOnClickListener {
             if (passwordHidden) {
                 viewBinding.passwordEditText.transformationMethod = HideReturnsTransformationMethod.getInstance()
@@ -44,13 +40,11 @@ abstract class AuthenticationDialog(context: Context, titleRes: Int, enableUsern
         setOnCancelListener { onCancelled() }
         setNegativeButton(R.string.cancel_label) { _: DialogInterface?, _: Int -> onCancelled() }
         setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
-            onConfirmed(viewBinding.usernameEditText.text.toString(),
-                viewBinding.passwordEditText.text.toString())
+            onConfirmed(viewBinding.usernameEditText.text.toString(), viewBinding.passwordEditText.text.toString())
         }
     }
 
-    protected open fun onCancelled() {
-    }
+    protected open fun onCancelled() {}
 
     protected abstract fun onConfirmed(username: String, password: String)
 }

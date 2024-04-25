@@ -31,9 +31,7 @@ class PreferenceSwitchDialog(private var context: Context, private val title: St
         builder.setView(layout)
 
         builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
-            if (onPreferenceChangedListener != null) {
-                onPreferenceChangedListener!!.preferenceChanged(switchButton.isChecked)
-            }
+            onPreferenceChangedListener?.preferenceChanged(switchButton.isChecked)
         }
         builder.setNegativeButton(R.string.cancel_label, null)
         builder.create().show()

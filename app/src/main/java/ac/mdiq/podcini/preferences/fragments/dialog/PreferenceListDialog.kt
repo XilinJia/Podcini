@@ -25,9 +25,7 @@ class PreferenceListDialog(private var context: Context, private val title: Stri
             selectedPos = which
         }
         builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
-            if (onPreferenceChangedListener != null && selectedPos >= 0) {
-                onPreferenceChangedListener!!.preferenceChanged(selectedPos)
-            }
+            if (onPreferenceChangedListener != null && selectedPos >= 0) onPreferenceChangedListener!!.preferenceChanged(selectedPos)
         }
         builder.setNegativeButton(R.string.cancel_label, null)
         builder.create().show()

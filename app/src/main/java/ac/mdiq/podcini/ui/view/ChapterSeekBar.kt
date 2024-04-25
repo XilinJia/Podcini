@@ -55,18 +55,16 @@ class ChapterSeekBar : AppCompatSeekBar {
             this.dividerPos!![0] = 0f
             System.arraycopy(dividerPos, 0, this.dividerPos!!, 1, dividerPos.size)
             this.dividerPos!![this.dividerPos!!.size - 1] = 1f
-        } else {
-            this.dividerPos = null
-        }
+        } else this.dividerPos = null
+
         invalidate()
     }
 
     fun highlightCurrentChapter() {
         isHighlighted = true
-        Handler(Looper.getMainLooper()).postDelayed({
-            isHighlighted = false
-            invalidate()
-        }, 1000)
+        Handler(Looper.getMainLooper()).postDelayed(
+            { isHighlighted = false; invalidate() },
+            1000)
     }
 
     @Synchronized
@@ -78,11 +76,9 @@ class ChapterSeekBar : AppCompatSeekBar {
         progressSecondary = secondaryProgress / max.toFloat() * width
         progressPrimary = progress / max.toFloat() * width
 
-        if (dividerPos == null) {
-            drawProgress(canvas)
-        } else {
-            drawProgressChapters(canvas)
-        }
+        if (dividerPos == null) drawProgress(canvas)
+        else drawProgressChapters(canvas)
+
         drawThumb(canvas)
     }
 
@@ -115,12 +111,8 @@ class ChapterSeekBar : AppCompatSeekBar {
 
                 if (progressSecondary > 0 && progressSecondary < width) {
                     when {
-                        right < progressSecondary -> {
-                            canvas.drawRect(left, top, right, bottom, paintBackground)
-                        }
-                        progressSecondary > left -> {
-                            canvas.drawRect(left, top, progressSecondary, bottom, paintBackground)
-                        }
+                        right < progressSecondary -> canvas.drawRect(left, top, right, bottom, paintBackground)
+                        progressSecondary > left -> canvas.drawRect(left, top, progressSecondary, bottom, paintBackground)
                     }
                 }
 
@@ -133,9 +125,7 @@ class ChapterSeekBar : AppCompatSeekBar {
                         canvas.drawRect(leftCurr, topExpanded, rightCurr, bottomExpanded, paintBackground)
                         canvas.drawRect(leftCurr, topExpanded, progressPrimary, bottomExpanded, paintProgressPrimary)
                     }
-                    else -> {
-                        canvas.drawRect(leftCurr, top, progressPrimary, bottom, paintProgressPrimary)
-                    }
+                    else -> canvas.drawRect(leftCurr, top, progressPrimary, bottom, paintProgressPrimary)
                 }
             }
         }

@@ -68,9 +68,7 @@ class PlaybackServiceTaskManager(private val context: Context, private val callb
             positionSaverFuture = schedExecutor.scheduleWithFixedDelay(positionSaver, POSITION_SAVER_WAITING_INTERVAL.toLong(),
                 POSITION_SAVER_WAITING_INTERVAL.toLong(), TimeUnit.MILLISECONDS)
             Log.d(TAG, "Started PositionSaver")
-        } else {
-            Log.d(TAG, "Call to startPositionSaver was ignored.")
-        }
+        } else Log.d(TAG, "Call to startPositionSaver was ignored.")
     }
 
     @get:Synchronized
@@ -102,9 +100,7 @@ class PlaybackServiceTaskManager(private val context: Context, private val callb
             widgetUpdaterFuture = schedExecutor.scheduleWithFixedDelay(widgetUpdater, WIDGET_UPDATER_NOTIFICATION_INTERVAL.toLong(),
                 WIDGET_UPDATER_NOTIFICATION_INTERVAL.toLong(), TimeUnit.MILLISECONDS)
             Log.d(TAG, "Started WidgetUpdater")
-        } else {
-            Log.d(TAG, "Call to startWidgetUpdater was ignored.")
-        }
+        } else Log.d(TAG, "Call to startWidgetUpdater was ignored.")
     }
 
     /**
@@ -243,9 +239,7 @@ class PlaybackServiceTaskManager(private val context: Context, private val callb
             // Run on ui thread even if called from schedExecutor
             val handler = Handler(Looper.getMainLooper())
             return Runnable { handler.post(runnable) }
-        } else {
-            return runnable
-        }
+        } else return runnable
     }
 
     /**
@@ -287,10 +281,9 @@ class PlaybackServiceTaskManager(private val context: Context, private val callb
                 }
                 if (timeLeft <= 0) {
                     Log.d(TAG, "Sleep timer expired")
-                    if (shakeListener != null) {
-                        shakeListener!!.pause()
-                        shakeListener = null
-                    }
+                    shakeListener?.pause()
+                    shakeListener = null
+
                     hasVibrated = false
                 }
             }
@@ -303,10 +296,8 @@ class PlaybackServiceTaskManager(private val context: Context, private val callb
         fun restart() {
             EventBus.getDefault().post(SleepTimerUpdatedEvent.cancelled())
             setSleepTimer(waitingTime)
-            if (shakeListener != null) {
-                shakeListener!!.pause()
-                shakeListener = null
-            }
+            shakeListener?.pause()
+            shakeListener = null
         }
 
         fun cancel() {

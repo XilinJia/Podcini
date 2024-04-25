@@ -46,9 +46,7 @@ class FeedDiscoverAdapter(mainActivity: MainActivity) : BaseAdapter() {
             holder = Holder()
             holder.imageView = binding.discoveryCover
             convertView.tag = holder
-        } else {
-            holder = convertView.tag as Holder
-        }
+        } else holder = convertView.tag as Holder
 
         val podcast: PodcastSearchResult? = getItem(position)
         holder.imageView!!.contentDescription = podcast?.title

@@ -136,9 +136,7 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
         if (PlaybackStatus.isCurrentlyPlaying(media)) {
             val density: Float = activity.resources.displayMetrics.density
             itemView.setBackgroundColor(SurfaceColors.getColorForElevation(activity, 8 * density))
-        } else {
-            itemView.setBackgroundResource(ThemeUtils.getDrawableFromAttr(activity, R.attr.selectableItemBackground))
-        }
+        } else itemView.setBackgroundResource(ThemeUtils.getDrawableFromAttr(activity, R.attr.selectableItemBackground))
 
         val dls = DownloadServiceInterface.get()
         when {
@@ -180,28 +178,21 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
         }
 
         when {
-            media.size > 0 -> {
-                size.text = Formatter.formatShortFileSize(activity, media.size)
-            }
+            media.size > 0 -> size.text = Formatter.formatShortFileSize(activity, media.size)
             NetworkUtils.isEpisodeHeadDownloadAllowed && !media.checkedOnSizeButUnknown() -> {
                 size.text = "{fa-spinner}"
                 Iconify.addIcons(size)
                 MediaSizeLoader.getFeedMediaSizeObservable(media).subscribe(
                     Consumer<Long?> { sizeValue: Long? ->
                         if (sizeValue == null) return@Consumer
-                        if (sizeValue > 0) {
-                            size.text = Formatter.formatShortFileSize(activity, sizeValue)
-                        } else {
-                            size.text = ""
-                        }
+                        if (sizeValue > 0) size.text = Formatter.formatShortFileSize(activity, sizeValue)
+                        else size.text = ""
                     }) { error: Throwable? ->
                     size.text = ""
                     Log.e(TAG, Log.getStackTraceString(error))
                 }
             }
-            else -> {
-                size.text = ""
-            }
+            else -> size.text = ""
         }
     }
 
@@ -246,11 +237,8 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
             Log.w(TAG, "Could not react to position observer update because of invalid time")
             return
         }
-        if (UserPreferences.shouldShowRemainingTime()) {
-            duration.text = (if (remainingTime > 0) "-" else "") + Converter.getDurationStringLong(remainingTime)
-        } else {
-            duration.text = Converter.getDurationStringLong(timeDuration)
-        }
+        if (UserPreferences.shouldShowRemainingTime()) duration.text = (if (remainingTime > 0) "-" else "") + Converter.getDurationStringLong(remainingTime)
+        else duration.text = Converter.getDurationStringLong(timeDuration)
     }
 
     val feedItem: FeedItem?
@@ -270,9 +258,7 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
      * Hides the separator dot between icons and text if there are no icons.
      */
     fun hideSeparatorIfNecessary() {
-        val hasIcons = isInQueue.visibility == View.VISIBLE ||
-                isVideo.visibility == View.VISIBLE ||
-                isFavorite.visibility == View.VISIBLE
+        val hasIcons = isInQueue.visibility == View.VISIBLE || isVideo.visibility == View.VISIBLE || isFavorite.visibility == View.VISIBLE
         separatorIcons.visibility = if (hasIcons) View.VISIBLE else View.GONE
     }
 

@@ -31,8 +31,8 @@ abstract class ConfirmationDialog(private val context: Context, private val titl
         val builder = MaterialAlertDialogBuilder(context)
         builder.setTitle(titleId)
         builder.setMessage(message)
-        builder.setPositiveButton(if (positiveText != 0) positiveText else R.string.confirm_label
-        ) { dialog: DialogInterface, _: Int -> onConfirmButtonPressed(dialog) }
+        builder.setPositiveButton(if (positiveText != 0) positiveText else R.string.confirm_label) {
+            dialog: DialogInterface, _: Int -> onConfirmButtonPressed(dialog) }
         builder.setNegativeButton(R.string.cancel_label) { dialog: DialogInterface, _: Int ->
             onCancelButtonPressed(dialog)
         }

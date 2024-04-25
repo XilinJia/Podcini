@@ -75,15 +75,11 @@ class ChapterReader(input: CountingInputStream?) : ID3Reader(input!!) {
                 if (MIME_IMAGE_URL == mime) {
                     val link = readIsoStringNullTerminated(frameHeader.size)
                     Log.d(TAG, "Link: $link")
-                    if (chapter.imageUrl.isNullOrEmpty() || type.toInt() == IMAGE_TYPE_COVER) {
-                        chapter.imageUrl = link
-                    }
+                    if (chapter.imageUrl.isNullOrEmpty() || type.toInt() == IMAGE_TYPE_COVER) chapter.imageUrl = link
                 } else {
                     val alreadyConsumed = position - frameStartPosition
                     val rawImageDataLength = frameHeader.size - alreadyConsumed
-                    if (chapter.imageUrl.isNullOrEmpty() || type.toInt() == IMAGE_TYPE_COVER) {
-                        chapter.imageUrl = makeUrl(position, rawImageDataLength)
-                    }
+                    if (chapter.imageUrl.isNullOrEmpty() || type.toInt() == IMAGE_TYPE_COVER) chapter.imageUrl = makeUrl(position, rawImageDataLength)
                 }
             }
             else -> Log.d(TAG, "Unknown chapter sub-frame.")

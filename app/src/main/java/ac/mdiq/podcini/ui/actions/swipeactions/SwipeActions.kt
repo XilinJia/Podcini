@@ -63,10 +63,7 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
     private val isSwipeActionEnabled: Boolean
         get() = isSwipeActionEnabled(fragment.requireContext(), tag)
 
-    override fun onMove(recyclerView: RecyclerView,
-                        viewHolder: RecyclerView.ViewHolder,
-                        target: RecyclerView.ViewHolder
-    ): Boolean {
+    override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
         return false
     }
 
@@ -98,10 +95,8 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
         })
     }
 
-    @UnstableApi override fun onChildDraw(c: Canvas, recyclerView: RecyclerView,
-                                          viewHolder: RecyclerView.ViewHolder,
-                                          dx: Float, dy: Float, actionState: Int, isCurrentlyActive: Boolean
-    ) {
+    @UnstableApi override fun onChildDraw(c: Canvas, recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder,
+                                          dx: Float, dy: Float, actionState: Int, isCurrentlyActive: Boolean) {
         var dx = dx
         val right: SwipeAction
         val left: SwipeAction
@@ -140,25 +135,18 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
                 val dir = if (dx > 0) ItemTouchHelper.RIGHT else ItemTouchHelper.LEFT
                 swipedOutTo = if (swipeThresholdReached) dir else 0
             }
-        } else {
-            swipeOutEnabled = true
-        }
+        } else swipeOutEnabled = true
 
         //add color and icon
         val context = fragment.requireContext()
         val themeColor = getColorFromAttr(context, android.R.attr.colorBackground)
-        val actionColor = getColorFromAttr(context,
-            if (dx > 0) right.getActionColor() else left.getActionColor())
-        val builder = RecyclerViewSwipeDecorator.Builder(
-            c, recyclerView, viewHolder, dx, dy, actionState, isCurrentlyActive)
+        val actionColor = getColorFromAttr(context, if (dx > 0) right.getActionColor() else left.getActionColor())
+        val builder = RecyclerViewSwipeDecorator.Builder(c, recyclerView, viewHolder, dx, dy, actionState, isCurrentlyActive)
             .addSwipeRightActionIcon(right.getActionIcon())
             .addSwipeLeftActionIcon(left.getActionIcon())
             .addSwipeRightBackgroundColor(getColorFromAttr(context, R.attr.background_elevated))
             .addSwipeLeftBackgroundColor(getColorFromAttr(context, R.attr.background_elevated))
-            .setActionIconTint(
-                ColorUtils.blendARGB(themeColor,
-                    actionColor,
-                    max(0.5, displacementPercentage.toDouble()).toFloat()))
+            .setActionIconTint(ColorUtils.blendARGB(themeColor, actionColor, max(0.5, displacementPercentage.toDouble()).toFloat()))
         builder.create().decorate()
 
         super.onChildDraw(c, recyclerView, viewHolder, dx, dy, actionState, isCurrentlyActive)
@@ -186,12 +174,8 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
     }
 
     override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
-        return if (!isSwipeActionEnabled) {
-            makeMovementFlags(getDragDirs(recyclerView, viewHolder),
-                0)
-        } else {
-            super.getMovementFlags(recyclerView, viewHolder)
-        }
+        return if (!isSwipeActionEnabled) makeMovementFlags(getDragDirs(recyclerView, viewHolder), 0)
+        else super.getMovementFlags(recyclerView, viewHolder)
     }
 
     fun startDrag(holder: EpisodeItemViewHolder?) {
@@ -207,10 +191,8 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
         init {
             val actions = prefs!!.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             if (actions.size == 2) {
-                this.right = Stream.of(swipeActions)
-                    .filter { a: SwipeAction -> a.getId().equals(actions[0]) }.single()
-                this.left = Stream.of(swipeActions)
-                    .filter { a: SwipeAction -> a.getId().equals(actions[1]) }.single()
+                this.right = Stream.of(swipeActions).filter { a: SwipeAction -> a.getId().equals(actions[0]) }.single()
+                this.left = Stream.of(swipeActions).filter { a: SwipeAction -> a.getId().equals(actions[1]) }.single()
             }
         }
 

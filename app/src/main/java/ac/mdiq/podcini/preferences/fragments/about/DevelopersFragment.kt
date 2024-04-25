@@ -22,33 +22,26 @@ class DevelopersFragment : ListFragment() {
         listView.divider = null
         listView.setSelector(color.transparent)
 
-        developersLoader =
-            Single.create { emitter: SingleEmitter<ArrayList<SimpleIconListAdapter.ListItem>?> ->
-                val developers = ArrayList<SimpleIconListAdapter.ListItem>()
-                val reader = BufferedReader(InputStreamReader(
-                    requireContext().assets.open("developers.csv"), "UTF-8"))
-                var line: String
-                while ((reader.readLine().also { line = it }) != null) {
-                    val info = line.split(";".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-                    developers.add(SimpleIconListAdapter.ListItem(info[0], info[2],
-                        "https://avatars2.githubusercontent.com/u/" + info[1] + "?s=60&v=4"))
-                }
-                emitter.onSuccess(developers)
+        developersLoader = Single.create { emitter: SingleEmitter<ArrayList<SimpleIconListAdapter.ListItem>?> ->
+            val developers = ArrayList<SimpleIconListAdapter.ListItem>()
+            val reader = BufferedReader(InputStreamReader(requireContext().assets.open("developers.csv"), "UTF-8"))
+            var line: String
+            while ((reader.readLine().also { line = it }) != null) {
+                val info = line.split(";".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+                developers.add(SimpleIconListAdapter.ListItem(info[0], info[2], "https://avatars2.githubusercontent.com/u/" + info[1] + "?s=60&v=4"))
             }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    { developers: ArrayList<SimpleIconListAdapter.ListItem>? ->
-                        if (developers != null) listAdapter = SimpleIconListAdapter(requireContext(), developers)
-                    },
-                    { error: Throwable -> Toast.makeText(context, error.message, Toast.LENGTH_LONG).show() }
-                )
+            emitter.onSuccess(developers)
+        }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ developers: ArrayList<SimpleIconListAdapter.ListItem>? ->
+                if (developers != null) listAdapter = SimpleIconListAdapter(requireContext(), developers)
+            }, { error: Throwable -> Toast.makeText(context, error.message, Toast.LENGTH_LONG).show() }
+            )
     }
 
     override fun onStop() {
         super.onStop()
-        if (developersLoader != null) {
-            developersLoader!!.dispose()
-        }
+        developersLoader?.dispose()
     }
 }

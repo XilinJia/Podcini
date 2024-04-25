@@ -38,9 +38,8 @@ class TagSettingsDialog : DialogFragment() {
 //        val feedPreferencesList = serializedData as? List<FeedPreferences> ?: listOf()
         val commonTags: MutableSet<String> = if (feedPreferencesList.isEmpty()) mutableSetOf() else HashSet(feedPreferencesList[0].getTags())
 
-        for (preference in feedPreferencesList) {
-            commonTags.retainAll(preference.getTags())
-        }
+        for (preference in feedPreferencesList) commonTags.retainAll(preference.getTags())
+
         displayedTags = ArrayList(commonTags)
         displayedTags.remove(FeedPreferences.TAG_ROOT)
 
@@ -72,9 +71,7 @@ class TagSettingsDialog : DialogFragment() {
             false
         }
 
-        if (feedPreferencesList.size > 1) {
-            binding.commonTagsInfo.visibility = View.VISIBLE
-        }
+        if (feedPreferencesList.size > 1) binding.commonTagsInfo.visibility = View.VISIBLE
 
         val dialog = MaterialAlertDialogBuilder(requireContext())
         dialog.setView(binding.root)
@@ -105,9 +102,8 @@ class TagSettingsDialog : DialogFragment() {
     }
 
     private fun addTag(name: String) {
-        if (name.isEmpty() || displayedTags.contains(name)) {
-            return
-        }
+        if (name.isEmpty() || displayedTags.contains(name)) return
+
         displayedTags.add(name)
         binding.newTagEditText.setText("")
         adapter.notifyDataSetChanged()

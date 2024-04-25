@@ -12,9 +12,7 @@ class SimpleChapters : Namespace() {
         val currentItem = state.currentItem
         if (currentItem != null) {
             when {
-                localName == CHAPTERS -> {
-                    currentItem.chapters = mutableListOf()
-                }
+                localName == CHAPTERS -> currentItem.chapters = mutableListOf()
                 localName == CHAPTER && !attributes.getValue(START).isNullOrEmpty() -> {
                     // if the chapter's START is empty, we don't need to do anything
                     try {

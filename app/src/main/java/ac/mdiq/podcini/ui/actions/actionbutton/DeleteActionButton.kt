@@ -17,16 +17,12 @@ class DeleteActionButton(item: FeedItem) : ItemActionButton(item) {
     }
     @UnstableApi override fun onClick(context: Context) {
         val media = item.media ?: return
-
         showLocalFeedDeleteWarningIfNecessary(context, listOf(item)) { DBWriter.deleteFeedMediaOfItem(context, media.id) }
     }
 
     override val visibility: Int
         get() {
-            if (item.media != null && (item.media!!.isDownloaded() || item.feed?.isLocalFeed == true)) {
-                return View.VISIBLE
-            }
-
+            if (item.media != null && (item.media!!.isDownloaded() || item.feed?.isLocalFeed == true)) return View.VISIBLE
             return View.INVISIBLE
         }
 }

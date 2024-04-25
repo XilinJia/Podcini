@@ -25,60 +25,32 @@ object FeedItemFilterQuery {
 
         val statements: MutableList<String> = ArrayList()
         when {
-            filter.showPlayed -> {
-                statements.add("$keyRead = 1 ")
-            }
-            filter.showUnplayed -> {
-                statements.add(" NOT $keyRead = 1 ") // Match "New" items (read = -1) as well
-            }
-            filter.showNew -> {
-                statements.add("$keyRead = -1 ")
-            }
+            filter.showPlayed -> statements.add("$keyRead = 1 ")
+            filter.showUnplayed -> statements.add(" NOT $keyRead = 1 ") // Match "New" items (read = -1) as well
+            filter.showNew -> statements.add("$keyRead = -1 ")
         }
         when {
-            filter.showPaused -> {
-                statements.add(" ($keyPosition NOT NULL AND $keyPosition > 0 ) ")
-            }
-            filter.showNotPaused -> {
-                statements.add(" ($keyPosition IS NULL OR $keyPosition = 0 ) ")
-            }
+            filter.showPaused -> statements.add(" ($keyPosition NOT NULL AND $keyPosition > 0 ) ")
+            filter.showNotPaused -> statements.add(" ($keyPosition IS NULL OR $keyPosition = 0 ) ")
         }
         when {
-            filter.showQueued -> {
-                statements.add("$keyItemId IN (SELECT $keyFeedItem FROM $tableQueue) ")
-            }
-            filter.showNotQueued -> {
-                statements.add("$keyItemId NOT IN (SELECT $keyFeedItem FROM $tableQueue) ")
-            }
+            filter.showQueued -> statements.add("$keyItemId IN (SELECT $keyFeedItem FROM $tableQueue) ")
+            filter.showNotQueued -> statements.add("$keyItemId NOT IN (SELECT $keyFeedItem FROM $tableQueue) ")
         }
         when {
-            filter.showDownloaded -> {
-                statements.add("$keyDownloaded = 1 ")
-            }
-            filter.showNotDownloaded -> {
-                statements.add("$keyDownloaded = 0 ")
-            }
+            filter.showDownloaded -> statements.add("$keyDownloaded = 1 ")
+            filter.showNotDownloaded -> statements.add("$keyDownloaded = 0 ")
         }
         when {
-            filter.showHasMedia -> {
-                statements.add("$keyMediaId NOT NULL ")
-            }
-            filter.showNoMedia -> {
-                statements.add("$keyMediaId IS NULL ")
-            }
+            filter.showHasMedia -> statements.add("$keyMediaId NOT NULL ")
+            filter.showNoMedia -> statements.add("$keyMediaId IS NULL ")
         }
         when {
-            filter.showIsFavorite -> {
-                statements.add("$keyItemId IN (SELECT $keyFeedItem FROM $tableFavorites) ")
-            }
-            filter.showNotFavorite -> {
-                statements.add("$keyItemId NOT IN (SELECT $keyFeedItem FROM $tableFavorites) ")
-            }
+            filter.showIsFavorite -> statements.add("$keyItemId IN (SELECT $keyFeedItem FROM $tableFavorites) ")
+            filter.showNotFavorite -> statements.add("$keyItemId NOT IN (SELECT $keyFeedItem FROM $tableFavorites) ")
         }
 
-        if (statements.isEmpty()) {
-            return ""
-        }
+        if (statements.isEmpty()) return ""
 
         val query = StringBuilder(" (" + statements[0])
         for (r in statements.subList(1, statements.size)) {

@@ -25,11 +25,8 @@ class WidgetUpdaterWorker(context: Context, workerParams: WorkerParameters) : Wo
      */
     private fun updateWidget() {
         val media = createInstanceFromPreferences(applicationContext)
-        if (media != null) {
-            WidgetUpdater.updateWidget(applicationContext, WidgetState(media, PlayerStatus.STOPPED, media.getPosition(), media.getDuration(), getCurrentPlaybackSpeed(media)))
-        } else {
-            WidgetUpdater.updateWidget(applicationContext, WidgetState(PlayerStatus.STOPPED))
-        }
+        if (media != null) WidgetUpdater.updateWidget(applicationContext, WidgetState(media, PlayerStatus.STOPPED, media.getPosition(), media.getDuration(), getCurrentPlaybackSpeed(media)))
+        else WidgetUpdater.updateWidget(applicationContext, WidgetState(PlayerStatus.STOPPED))
     }
 
     companion object {

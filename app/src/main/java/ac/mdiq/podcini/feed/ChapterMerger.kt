@@ -13,18 +13,10 @@ object ChapterMerger {
     fun merge(chapters1: List<Chapter>?, chapters2: List<Chapter>?): List<Chapter>? {
         Log.d(TAG, "Merging chapters")
         when {
-            chapters1 == null -> {
-                return chapters2
-            }
-            chapters2 == null -> {
-                return chapters1
-            }
-            chapters2.size > chapters1.size -> {
-                return chapters2
-            }
-            chapters2.size < chapters1.size -> {
-                return chapters1
-            }
+            chapters1 == null -> return chapters2
+            chapters2 == null -> return chapters1
+            chapters2.size > chapters1.size -> return chapters2
+            chapters2.size < chapters1.size -> return chapters1
             else -> {
                 // Merge chapter lists of same length. Store in chapters2 array.
                 // In case the lists can not be merged, return chapters1 array.
@@ -37,15 +29,9 @@ object ChapterMerger {
                         return if (score(chapters1) > score(chapters2)) chapters1 else chapters2
                     }
 
-                    if (chapterTarget.imageUrl.isNullOrEmpty()) {
-                        chapterTarget.imageUrl = chapterOther.imageUrl
-                    }
-                    if (chapterTarget.link.isNullOrEmpty()) {
-                        chapterTarget.link = chapterOther.link
-                    }
-                    if (chapterTarget.title.isNullOrEmpty()) {
-                        chapterTarget.title = chapterOther.title
-                    }
+                    if (chapterTarget.imageUrl.isNullOrEmpty()) chapterTarget.imageUrl = chapterOther.imageUrl
+                    if (chapterTarget.link.isNullOrEmpty()) chapterTarget.link = chapterOther.link
+                    if (chapterTarget.title.isNullOrEmpty()) chapterTarget.title = chapterOther.title
                 }
                 return chapters2
             }

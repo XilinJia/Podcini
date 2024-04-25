@@ -15,9 +15,7 @@ class MarkAsPlayedActionButton(item: FeedItem) : ItemActionButton(item) {
         return R.drawable.ic_check
     }
     @UnstableApi override fun onClick(context: Context) {
-        if (!item.isPlayed()) {
-            DBWriter.markItemPlayed(item, FeedItem.PLAYED, true)
-        }
+        if (!item.isPlayed()) DBWriter.markItemPlayed(item, FeedItem.PLAYED, true)
     }
 
     override val visibility: Int

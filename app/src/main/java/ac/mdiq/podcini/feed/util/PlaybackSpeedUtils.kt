@@ -33,16 +33,12 @@ object PlaybackSpeedUtils {
                     if (feed?.preferences != null) {
                         playbackSpeed = feed.preferences!!.feedPlaybackSpeed
                         Log.d(TAG, "using feed speed $playbackSpeed")
-                    } else {
-                        Log.d(TAG, "Can not get feed specific playback speed: $feed")
-                    }
+                    } else Log.d(TAG, "Can not get feed specific playback speed: $feed")
                 }
             }
         }
 
-        if (mediaType != null && playbackSpeed == FeedPreferences.SPEED_USE_GLOBAL) {
-            playbackSpeed = UserPreferences.getPlaybackSpeed(mediaType)
-        }
+        if (mediaType != null && playbackSpeed == FeedPreferences.SPEED_USE_GLOBAL) playbackSpeed = UserPreferences.getPlaybackSpeed(mediaType)
 
         return playbackSpeed
     }

@@ -119,9 +119,7 @@ class ShownotesCleaner(context: Context, private val rawShownotes: String, priva
                 else durationStringShortToMs(group, useHourFormat)
 
                 var replacementText = group
-                if (time < playableDuration) {
-                    replacementText = String.format(Locale.US, TIMECODE_LINK, time, group)
-                }
+                if (time < playableDuration) replacementText = String.format(Locale.US, TIMECODE_LINK, time, group)
 
                 matcherForElement.appendReplacement(buffer, replacementText)
             }
@@ -134,12 +132,9 @@ class ShownotesCleaner(context: Context, private val rawShownotes: String, priva
     private fun cleanCss(document: Document) {
         for (element in document.allElements) {
             when {
-                element.hasAttr("style") -> {
+                element.hasAttr("style") ->
                     element.attr("style", element.attr("style").replace(CSS_COLOR.toRegex(), ""))
-                }
-                element.tagName() == "style" -> {
-                    element.html(cleanStyleTag(element.html()))
-                }
+                element.tagName() == "style" -> element.html(cleanStyleTag(element.html()))
             }
         }
     }
@@ -172,9 +167,7 @@ class ShownotesCleaner(context: Context, private val rawShownotes: String, priva
                 val m = TIMECODE_LINK_REGEX.matcher(link!!)
 
                 try {
-                    if (m.find()) {
-                        return m.group(1)?.toInt()?:0
-                    }
+                    if (m.find()) return m.group(1)?.toInt()?:0
                 } catch (e: NumberFormatException) {
                     e.printStackTrace()
                 }

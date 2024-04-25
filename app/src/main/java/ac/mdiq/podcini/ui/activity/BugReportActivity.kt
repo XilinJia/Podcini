@@ -42,11 +42,9 @@ class BugReportActivity : AppCompatActivity() {
         var stacktrace = "No crash report recorded"
         try {
             val crashFile = CrashReportWriter.file
-            if (crashFile.exists()) {
-                stacktrace = IOUtils.toString(FileInputStream(crashFile), Charset.forName("UTF-8"))
-            } else {
-                Log.d(TAG, stacktrace)
-            }
+            if (crashFile.exists()) stacktrace = IOUtils.toString(FileInputStream(crashFile), Charset.forName("UTF-8"))
+            else Log.d(TAG, stacktrace)
+
         } catch (e: IOException) {
             e.printStackTrace()
         }
@@ -59,17 +57,14 @@ class BugReportActivity : AppCompatActivity() {
             """.trimIndent()
 
         binding.btnOpenBugTracker.setOnClickListener {
-            openInBrowser(
-                this@BugReportActivity, "https://github.com/XilinJia/Podcini/issues")
+            openInBrowser(this@BugReportActivity, "https://github.com/XilinJia/Podcini/issues")
         }
 
         binding.btnCopyLog.setOnClickListener {
             val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
             val clip = ClipData.newPlainText(getString(R.string.bug_report_title), crashDetailsTextView.text)
             clipboard.setPrimaryClip(clip)
-            if (Build.VERSION.SDK_INT < 32) {
-                Snackbar.make(binding.root, R.string.copied_to_clipboard, Snackbar.LENGTH_SHORT).show()
-            }
+            if (Build.VERSION.SDK_INT < 32) Snackbar.make(binding.root, R.string.copied_to_clipboard, Snackbar.LENGTH_SHORT).show()
         }
     }
 
@@ -124,7 +119,6 @@ class BugReportActivity : AppCompatActivity() {
             Snackbar.make(binding.root, e.message!!, Snackbar.LENGTH_LONG).show()
         }
     }
-
 
     companion object {
         private const val TAG = "BugReportActivity"

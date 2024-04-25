@@ -93,11 +93,8 @@ import java.util.concurrent.TimeUnit
             val media = getFeedMedia(mediaId)
             if (media != null) {
                 val result = deleteFeedMediaSynchronous(context, media)
-
                 val item = media.item
-                if (result && item != null && shouldDeleteRemoveFromQueue()) {
-                    removeQueueItemSynchronous(context, false, item.id)
-                }
+                if (result && item != null && shouldDeleteRemoveFromQueue()) removeQueueItemSynchronous(context, false, item.id)
             }
         }
     }
@@ -172,9 +169,7 @@ import java.util.concurrent.TimeUnit
         return runOnDbThread {
             val feed = getFeed(feedId) ?: return@runOnDbThread
             // delete stored media files and mark them as read
-            if (feed.items.isEmpty()) {
-                getFeedItemList(feed)
-            }
+            if (feed.items.isEmpty()) getFeedItemList(feed)
             deleteFeedItemsSynchronous(context, feed.items)
 
             // delete feed
@@ -183,9 +178,9 @@ import java.util.concurrent.TimeUnit
             adapter.removeFeed(feed)
             adapter.close()
 
-            if (!feed.isLocalFeed && feed.download_url != null) {
+            if (!feed.isLocalFeed && feed.download_url != null)
                 SynchronizationQueueSink.enqueueFeedRemovedIfSynchronizationIsActive(context, feed.download_url!!)
-            }
+
             EventBus.getDefault().post(FeedListUpdateEvent(feed))
         }
     }
@@ -207,9 +202,7 @@ import java.util.concurrent.TimeUnit
         val queue = getQueue().toMutableList()
         val removedFromQueue: MutableList<FeedItem> = ArrayList()
         for (item in items) {
-            if (queue.remove(item)) {
-                removedFromQueue.add(item)
-            }
+            if (queue.remove(item)) removedFromQueue.add(item)
             if (item.media != null) {
                 if (item.media?.id == currentlyPlayingFeedMediaId) {
                     // Applies to both downloaded and streamed media
@@ -218,18 +211,14 @@ import java.util.concurrent.TimeUnit
                 }
                 if (item.feed != null && !item.feed!!.isLocalFeed) {
                     DownloadServiceInterface.get()?.cancel(context, item.media!!)
-                    if (item.media!!.isDownloaded()) {
-                        deleteFeedMediaSynchronous(context, item.media!!)
-                    }
+                    if (item.media!!.isDownloaded()) deleteFeedMediaSynchronous(context, item.media!!)
                 }
             }
         }
 
         val adapter = getInstance()
         adapter.open()
-        if (removedFromQueue.isNotEmpty()) {
-            adapter.setQueue(queue)
-        }
+        if (removedFromQueue.isNotEmpty()) adapter.setQueue(queue)
         adapter.removeFeedItems(items)
         adapter.close()
 
@@ -328,9 +317,7 @@ import java.util.concurrent.TimeUnit
      * @param performAutoDownload True if an auto-download process should be started after the operation
      * @throws IndexOutOfBoundsException if index < 0 || index >= queue.size()
      */
-    @UnstableApi fun addQueueItemAt(context: Context, itemId: Long,
-                       index: Int, performAutoDownload: Boolean
-    ): Future<*> {
+    @UnstableApi fun addQueueItemAt(context: Context, itemId: Long, index: Int, performAutoDownload: Boolean): Future<*> {
         Log.d(TAG, "addQueueItemAt called")
         return runOnDbThread {
             val adapter = getInstance()
@@ -346,16 +333,12 @@ import java.util.concurrent.TimeUnit
                     item.addTag(FeedItem.TAG_QUEUE)
                     EventBus.getDefault().post(added(item, index))
                     EventBus.getDefault().post(updated(item))
-                    if (item.isNew) {
-                        markItemPlayed(FeedItem.UNPLAYED, item.id)
-                    }
+                    if (item.isNew) markItemPlayed(FeedItem.UNPLAYED, item.id)
                 }
             }
 
             adapter.close()
-            if (performAutoDownload) {
-                autodownloadUndownloadedItems(context)
-            }
+            if (performAutoDownload) autodownloadUndownloadedItems(context)
         }
     }
 
@@ -368,9 +351,7 @@ import java.util.concurrent.TimeUnit
         Log.d(TAG, "addQueueItem called")
         val itemIds = LongList(items.size)
         for (item in items) {
-            if (!item.hasMedia()) {
-                continue
-            }
+            if (!item.hasMedia()) continue
             itemIds.add(item.id)
             item.addTag(FeedItem.TAG_QUEUE)
         }
@@ -385,9 +366,7 @@ import java.util.concurrent.TimeUnit
      * @param performAutoDownload true if an auto-download process should be started after the operation.
      * @param itemIds             IDs of the FeedItem objects that should be added to the queue.
      */
-    @UnstableApi fun addQueueItem(context: Context, performAutoDownload: Boolean,
-                     vararg itemIds: Long
-    ): Future<*> {
+    @UnstableApi fun addQueueItem(context: Context, performAutoDownload: Boolean, vararg itemIds: Long): Future<*> {
         return addQueueItem(context, performAutoDownload, true, *itemIds)
     }
 
@@ -400,13 +379,11 @@ import java.util.concurrent.TimeUnit
      * @param markAsUnplayed      true if the items should be marked as unplayed when enqueueing
      * @param itemIds             IDs of the FeedItem objects that should be added to the queue.
      */
-    @UnstableApi fun addQueueItem(context: Context, performAutoDownload: Boolean,
-                     markAsUnplayed: Boolean, vararg itemIds: Long): Future<*> {
+    @UnstableApi fun addQueueItem(context: Context, performAutoDownload: Boolean, markAsUnplayed: Boolean, vararg itemIds: Long): Future<*> {
         Log.d(TAG, "addQueueItem(context ...) called")
         return runOnDbThread {
-            if (itemIds.isEmpty()) {
-                return@runOnDbThread
-            }
+            if (itemIds.isEmpty()) return@runOnDbThread
+
             val adapter = getInstance()
             adapter.open()
             val queue = getQueue(adapter).toMutableList()
@@ -429,9 +406,7 @@ import java.util.concurrent.TimeUnit
                         item.addTag(FeedItem.TAG_QUEUE)
                         updatedItems.add(item)
                         queueModified = true
-                        if (item.isNew) {
-                            markAsUnplayedIds.add(item.id)
-                        }
+                        if (item.isNew) markAsUnplayedIds.add(item.id)
                         insertPosition++
                     }
                 }
@@ -443,14 +418,10 @@ import java.util.concurrent.TimeUnit
                     EventBus.getDefault().post(event)
                 }
                 EventBus.getDefault().post(updated(updatedItems))
-                if (markAsUnplayed && markAsUnplayedIds.size() > 0) {
-                    markItemPlayed(FeedItem.UNPLAYED, *markAsUnplayedIds.toArray())
-                }
+                if (markAsUnplayed && markAsUnplayedIds.size() > 0) markItemPlayed(FeedItem.UNPLAYED, *markAsUnplayedIds.toArray())
             }
             adapter.close()
-            if (performAutoDownload) {
-                autodownloadUndownloadedItems(context)
-            }
+            if (performAutoDownload) autodownloadUndownloadedItems(context)
         }
     }
 
@@ -462,17 +433,14 @@ import java.util.concurrent.TimeUnit
      * @param events Replaces the events by a single SORT event if the list has to be sorted automatically.
      */
     private fun applySortOrder(queue: MutableList<FeedItem>, events: MutableList<QueueEvent>) {
-        if (!isQueueKeepSorted) {
-            // queue is not in keep sorted mode, there's nothing to do
-            return
-        }
+        // queue is not in keep sorted mode, there's nothing to do
+        if (!isQueueKeepSorted) return
 
         // Sort queue by configured sort order
         val sortOrder = queueKeepSortedOrder
-        if (sortOrder == SortOrder.RANDOM) {
-            // do not shuffle the list on every change
-            return
-        }
+        // do not shuffle the list on every change
+        if (sortOrder == SortOrder.RANDOM) return
+
         if (sortOrder != null) {
             val permutor = getPermutor(sortOrder)
             permutor.reorder(queue)
@@ -530,8 +498,7 @@ import java.util.concurrent.TimeUnit
             if (position >= 0) {
                 val item = getFeedItem(itemId)
                 if (item == null) {
-                    Log.e(TAG, "removeQueueItem - item in queue but somehow cannot be loaded." +
-                            " Item ignored. It should never happen. id:" + itemId)
+                    Log.e(TAG, "removeQueueItem - item in queue but somehow cannot be loaded. Item ignored. It should never happen. id:$itemId")
                     continue
                 }
                 queue.removeAt(position)
@@ -549,21 +516,14 @@ import java.util.concurrent.TimeUnit
                 EventBus.getDefault().post(event)
             }
             EventBus.getDefault().post(updated(updatedItems))
-        } else {
-            Log.w(TAG, "Queue was not modified by call to removeQueueItem")
-        }
+        } else Log.w(TAG, "Queue was not modified by call to removeQueueItem")
+
         adapter.close()
-        if (performAutoDownload) {
-            autodownloadUndownloadedItems(context)
-        }
+        if (performAutoDownload) autodownloadUndownloadedItems(context)
     }
 
     fun toggleFavoriteItem(item: FeedItem): Future<*> {
-        return if (item.isTagged(FeedItem.TAG_FAVORITE)) {
-            removeFavoriteItem(item)
-        } else {
-            addFavoriteItem(item)
-        }
+        return if (item.isTagged(FeedItem.TAG_FAVORITE)) removeFavoriteItem(item) else addFavoriteItem(item)
     }
 
     fun addFavoriteItem(item: FeedItem): Future<*> {
@@ -598,11 +558,8 @@ import java.util.concurrent.TimeUnit
         return runOnDbThread {
             val queueIdList = getQueueIDList()
             val index = queueIdList.indexOf(itemId)
-            if (index >= 0) {
-                moveQueueItemHelper(index, 0, broadcastUpdate)
-            } else {
-                Log.e(TAG, "moveQueueItemToTop: item not found")
-            }
+            if (index >= 0) moveQueueItemHelper(index, 0, broadcastUpdate)
+            else Log.e(TAG, "moveQueueItemToTop: item not found")
         }
     }
 
@@ -616,12 +573,8 @@ import java.util.concurrent.TimeUnit
         return runOnDbThread {
             val queueIdList = getQueueIDList()
             val index = queueIdList.indexOf(itemId)
-            if (index >= 0) {
-                moveQueueItemHelper(index, queueIdList.size() - 1,
-                    broadcastUpdate)
-            } else {
-                Log.e(TAG, "moveQueueItemToBottom: item not found")
-            }
+            if (index >= 0) moveQueueItemHelper(index, queueIdList.size() - 1, broadcastUpdate)
+            else Log.e(TAG, "moveQueueItemToBottom: item not found")
         }
     }
 
@@ -660,15 +613,11 @@ import java.util.concurrent.TimeUnit
             if (from >= 0 && from < queue.size && to >= 0 && to < queue.size) {
                 val item: FeedItem = queue.removeAt(from)
                 queue.add(to, item)
-
                 adapter.setQueue(queue)
-                if (broadcastUpdate) {
-                    EventBus.getDefault().post(moved(item, to))
-                }
+                if (broadcastUpdate) EventBus.getDefault().post(moved(item, to))
             }
-        } else {
-            Log.e(TAG, "moveQueueItemHelper: Could not load queue")
-        }
+        } else Log.e(TAG, "moveQueueItemHelper: Could not load queue")
+
         adapter.close()
     }
 
@@ -709,9 +658,7 @@ import java.util.concurrent.TimeUnit
             adapter.open()
             adapter.setFeedItemRead(played, *itemIds)
             adapter.close()
-            if (broadcastUpdate) {
-                EventBus.getDefault().post(UnreadItemsUpdateEvent())
-            }
+            if (broadcastUpdate) EventBus.getDefault().post(UnreadItemsUpdateEvent())
         }
     }
 
@@ -728,10 +675,7 @@ import java.util.concurrent.TimeUnit
         return markItemPlayed(item.id, played, mediaId, resetMediaPosition)
     }
 
-    private fun markItemPlayed(itemId: Long,
-                               played: Int,
-                               mediaId: Long,
-                               resetMediaPosition: Boolean): Future<*> {
+    private fun markItemPlayed(itemId: Long, played: Int, mediaId: Long, resetMediaPosition: Boolean): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -778,9 +722,8 @@ import java.util.concurrent.TimeUnit
             adapter.close()
 
             for (feed in feeds) {
-                if (!feed.isLocalFeed && feed.download_url != null) {
+                if (!feed.isLocalFeed && feed.download_url != null)
                     SynchronizationQueueSink.enqueueFeedAddedIfSynchronizationIsActive(context, feed.download_url!!)
-                }
             }
 
             val backupManager = BackupManager(context)
@@ -897,9 +840,7 @@ import java.util.concurrent.TimeUnit
         Log.d(TAG, "indexInItemList called")
         for (i in items.indices) {
             val item = items[i]
-            if (item?.id == itemId) {
-                return i
-            }
+            if (item?.id == itemId) return i
         }
         return -1
     }
@@ -949,9 +890,7 @@ import java.util.concurrent.TimeUnit
 
             permutor.reorder(queue)
             adapter.setQueue(queue)
-            if (broadcastUpdate) {
-                EventBus.getDefault().post(QueueEvent.sorted(queue))
-            }
+            if (broadcastUpdate) EventBus.getDefault().post(QueueEvent.sorted(queue))
             adapter.close()
         }
     }
@@ -1007,8 +946,6 @@ import java.util.concurrent.TimeUnit
         if ("DatabaseExecutor" == Thread.currentThread().name) {
             runnable.run()
             return Futures.immediateFuture<Any?>(null)
-        } else {
-            return dbExec.submit(runnable)
-        }
+        } else return dbExec.submit(runnable)
     }
 }

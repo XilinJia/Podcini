@@ -49,12 +49,9 @@ class EpisodeAction private constructor(builder: Builder) {
         get() = action!!.name.lowercase()
 
     override fun equals(o: Any?): Boolean {
-        if (this === o) {
-            return true
-        }
-        if (o !is EpisodeAction) {
-            return false
-        }
+        if (this === o) return true
+
+        if (o !is EpisodeAction) return false
 
         val that = o
         return started == that.started && position == that.position && total == that.total && action != that.action && podcast == that.podcast && episode == that.episode && timestamp == that.timestamp && guid == that.guid
@@ -100,16 +97,7 @@ class EpisodeAction private constructor(builder: Builder) {
     }
 
     override fun toString(): String {
-        return ("EpisodeAction{"
-                + "podcast='" + podcast + '\''
-                + ", episode='" + episode + '\''
-                + ", guid='" + guid + '\''
-                + ", action=" + action
-                + ", timestamp=" + timestamp
-                + ", started=" + started
-                + ", position=" + position
-                + ", total=" + total
-                + '}')
+        return ("EpisodeAction{podcast='$podcast', episode='$episode', guid='$guid', action=$action, timestamp=$timestamp, started=$started, position=$position, total=$total}")
     }
 
     enum class Action {
@@ -144,23 +132,17 @@ class EpisodeAction private constructor(builder: Builder) {
         }
 
         fun started(seconds: Int): Builder {
-            if (action == Action.PLAY) {
-                this.started = seconds
-            }
+            if (action == Action.PLAY) this.started = seconds
             return this
         }
 
         fun position(seconds: Int): Builder {
-            if (action == Action.PLAY) {
-                this.position = seconds
-            }
+            if (action == Action.PLAY) this.position = seconds
             return this
         }
 
         fun total(seconds: Int): Builder {
-            if (action == Action.PLAY) {
-                this.total = seconds
-            }
+            if (action == Action.PLAY) this.total = seconds
             return this
         }
 
@@ -189,9 +171,8 @@ class EpisodeAction private constructor(builder: Builder) {
             val podcast = `object`.optString("podcast")
             val episode = `object`.optString("episode")
             val actionString = `object`.optString("action")
-            if (podcast.isNullOrEmpty() || episode.isNullOrEmpty() || actionString.isNullOrEmpty()) {
-                return null
-            }
+            if (podcast.isNullOrEmpty() || episode.isNullOrEmpty() || actionString.isNullOrEmpty()) return null
+
             val action: Action
             try {
                 action = Action.valueOf(actionString.uppercase())
@@ -210,19 +191,13 @@ class EpisodeAction private constructor(builder: Builder) {
                 }
             }
             val guid = `object`.optString("guid")
-            if (guid.isNotEmpty()) {
-                builder.guid(guid)
-            }
+            if (guid.isNotEmpty()) builder.guid(guid)
+
             if (action == Action.PLAY) {
                 val started = `object`.optInt("started", -1)
                 val position = `object`.optInt("position", -1)
                 val total = `object`.optInt("total", -1)
-                if (started >= 0 && position > 0 && total > 0) {
-                    builder
-                        .started(started)
-                        .position(position)
-                        .total(total)
-                }
+                if (started >= 0 && position > 0 && total > 0) builder.started(started).position(position).total(total)
             }
             return builder.build()
         }

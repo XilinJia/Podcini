@@ -19,30 +19,14 @@ class EpisodeMultiSelectActionHandler(private val activity: MainActivity, privat
 
     fun handleAction(items: List<FeedItem>) {
         when (actionId) {
-            R.id.add_to_favorite_batch -> {
-                markFavorite(items)
-            }
-            R.id.add_to_queue_batch -> {
-                queueChecked(items)
-            }
-            R.id.remove_from_queue_batch -> {
-                removeFromQueueChecked(items)
-            }
-            R.id.mark_read_batch -> {
-                markedCheckedPlayed(items)
-            }
-            R.id.mark_unread_batch -> {
-                markedCheckedUnplayed(items)
-            }
-            R.id.download_batch -> {
-                downloadChecked(items)
-            }
-            R.id.delete_batch -> {
-                LocalDeleteModal.showLocalFeedDeleteWarningIfNecessary(activity, items) { deleteChecked(items) }
-            }
-            else -> {
-                Log.e(TAG, "Unrecognized speed dial action item. Do nothing. id=$actionId")
-            }
+            R.id.add_to_favorite_batch -> markFavorite(items)
+            R.id.add_to_queue_batch -> queueChecked(items)
+            R.id.remove_from_queue_batch -> removeFromQueueChecked(items)
+            R.id.mark_read_batch -> markedCheckedPlayed(items)
+            R.id.mark_unread_batch -> markedCheckedUnplayed(items)
+            R.id.download_batch -> downloadChecked(items)
+            R.id.delete_batch -> LocalDeleteModal.showLocalFeedDeleteWarningIfNecessary(activity, items) { deleteChecked(items) }
+            else -> Log.e(TAG, "Unrecognized speed dial action item. Do nothing. id=$actionId")
         }
     }
 
@@ -50,9 +34,7 @@ class EpisodeMultiSelectActionHandler(private val activity: MainActivity, privat
         // Check if an episode actually contains any media files before adding it to queue
         val toQueue = LongList(items.size)
         for (episode in items) {
-            if (episode.hasMedia()) {
-                toQueue.add(episode.id)
-            }
+            if (episode.hasMedia()) toQueue.add(episode.id)
         }
         DBWriter.addQueueItem(activity, true, *toQueue.toArray())
         showMessage(R.plurals.added_to_queue_batch_label, toQueue.size())
@@ -86,9 +68,7 @@ class EpisodeMultiSelectActionHandler(private val activity: MainActivity, privat
     private fun downloadChecked(items: List<FeedItem>) {
         // download the check episodes in the same order as they are currently displayed
         for (episode in items) {
-            if (episode.hasMedia() && episode.feed != null && !episode.feed!!.isLocalFeed) {
-                DownloadServiceInterface.get()?.download(activity, episode)
-            }
+            if (episode.hasMedia() && episode.feed != null && !episode.feed!!.isLocalFeed) DownloadServiceInterface.get()?.download(activity, episode)
         }
         showMessage(R.plurals.downloading_batch_label, items.size)
     }
@@ -111,9 +91,7 @@ class EpisodeMultiSelectActionHandler(private val activity: MainActivity, privat
             if (snackbar != null) {
                 snackbar?.setText(text)
                 snackbar?.show() // Resets the timeout
-            } else {
-                snackbar = activity.showSnackbarAbovePlayer(text, Snackbar.LENGTH_LONG)
-            }
+            } else snackbar = activity.showSnackbarAbovePlayer(text, Snackbar.LENGTH_LONG)
         }
     }
 

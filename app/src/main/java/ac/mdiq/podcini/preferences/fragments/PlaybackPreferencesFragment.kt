@@ -34,45 +34,38 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
     @OptIn(UnstableApi::class) private fun setupPlaybackScreen() {
         val activity: Activity? = activity
 
-        findPreference<Preference>(PREF_PLAYBACK_SPEED_LAUNCHER)!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                VariableSpeedDialog.newInstance(booleanArrayOf(false, false, true),2)?.show(childFragmentManager, null)
-                true
-            }
-        findPreference<Preference>(PREF_PLAYBACK_REWIND_DELTA_LAUNCHER)!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_REWIND, null)
-                true
-            }
-        findPreference<Preference>(PREF_PLAYBACK_VIDEO_MODE_LAUNCHER)?.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                VideoModeDialog.showDialog(requireContext())
-                true
-            }
+        findPreference<Preference>(PREF_PLAYBACK_SPEED_LAUNCHER)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            VariableSpeedDialog.newInstance(booleanArrayOf(false, false, true),2)?.show(childFragmentManager, null)
+            true
+        }
+        findPreference<Preference>(PREF_PLAYBACK_REWIND_DELTA_LAUNCHER)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_REWIND, null)
+            true
+        }
+        findPreference<Preference>(PREF_PLAYBACK_VIDEO_MODE_LAUNCHER)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            VideoModeDialog.showDialog(requireContext())
+            true
+        }
 
-        findPreference<Preference>(PREF_PLAYBACK_SPEED_FORWARD_LAUNCHER)!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                EditForwardSpeedDialog(requireActivity()).show()
-                true
-            }
-        findPreference<Preference>(PREF_PLAYBACK_FALLBACK_SPEED_LAUNCHER)!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                EditFallbackSpeedDialog(requireActivity()).show()
-                true
-            }
-        findPreference<Preference>(PREF_PLAYBACK_FAST_FORWARD_DELTA_LAUNCHER)!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_FORWARD, null)
-                true
-            }
-        findPreference<Preference>(PREF_PLAYBACK_PREFER_STREAMING)!!.onPreferenceChangeListener =
-            Preference.OnPreferenceChangeListener { _: Preference?, _: Any? ->
-                // Update all visible lists to reflect new streaming action button
-                EventBus.getDefault().post(UnreadItemsUpdateEvent())
-                // User consciously decided whether to prefer the streaming button, disable suggestion to change that
-                doNotAskAgain(UsageStatistics.ACTION_STREAM)
-                true
-            }
+        findPreference<Preference>(PREF_PLAYBACK_SPEED_FORWARD_LAUNCHER)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            EditForwardSpeedDialog(requireActivity()).show()
+            true
+        }
+        findPreference<Preference>(PREF_PLAYBACK_FALLBACK_SPEED_LAUNCHER)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            EditFallbackSpeedDialog(requireActivity()).show()
+            true
+        }
+        findPreference<Preference>(PREF_PLAYBACK_FAST_FORWARD_DELTA_LAUNCHER)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_FORWARD, null)
+            true
+        }
+        findPreference<Preference>(PREF_PLAYBACK_PREFER_STREAMING)!!.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, _: Any? ->
+            // Update all visible lists to reflect new streaming action button
+            EventBus.getDefault().post(UnreadItemsUpdateEvent())
+            // User consciously decided whether to prefer the streaming button, disable suggestion to change that
+            doNotAskAgain(UsageStatistics.ACTION_STREAM)
+            true
+        }
         if (Build.VERSION.SDK_INT >= 31) {
             findPreference<Preference>(UserPreferences.PREF_UNPAUSE_ON_HEADSET_RECONNECT)!!.isVisible = false
             findPreference<Preference>(UserPreferences.PREF_UNPAUSE_ON_BLUETOOTH_RECONNECT)!!.isVisible = false
@@ -95,20 +88,16 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
         val pref = requirePreference<ListPreference>(UserPreferences.PREF_ENQUEUE_LOCATION)
         pref.summary = res.getString(R.string.pref_enqueue_location_sum, options[pref.value])
 
-        pref.onPreferenceChangeListener =
-            Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any? ->
-                if (newValue !is String) {
-                    return@OnPreferenceChangeListener false
-                }
-                pref.summary = res.getString(R.string.pref_enqueue_location_sum, options[newValue])
-                true
-            }
+        pref.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any? ->
+            if (newValue !is String) return@OnPreferenceChangeListener false
+            pref.summary = res.getString(R.string.pref_enqueue_location_sum, options[newValue])
+            true
+        }
     }
 
     private fun <T : Preference?> requirePreference(key: CharSequence): T {
         // Possibly put it to a common method in abstract base class
-        val result = findPreference<T>(key)
-            ?: throw IllegalArgumentException("Preference with key '$key' is not found")
+        val result = findPreference<T>(key) ?: throw IllegalArgumentException("Preference with key '$key' is not found")
         return result
     }
 

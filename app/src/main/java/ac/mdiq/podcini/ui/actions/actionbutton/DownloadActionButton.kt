@@ -26,9 +26,7 @@ class DownloadActionButton(item: FeedItem) : ItemActionButton(item) {
 
     override fun onClick(context: Context) {
         val media = item.media
-        if (media == null || shouldNotDownload(media)) {
-            return
-        }
+        if (media == null || shouldNotDownload(media)) return
 
         logAction(UsageStatistics.ACTION_DOWNLOAD)
 
@@ -37,16 +35,13 @@ class DownloadActionButton(item: FeedItem) : ItemActionButton(item) {
         } else {
             val builder = MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.confirm_mobile_download_dialog_title)
-                .setPositiveButton(R.string.confirm_mobile_download_dialog_download_later
-                ) { _: DialogInterface?, _: Int -> DownloadServiceInterface.get()?.downloadNow(context, item, false) }
-                .setNeutralButton(R.string.confirm_mobile_download_dialog_allow_this_time
-                ) { _: DialogInterface?, _: Int -> DownloadServiceInterface.get()?.downloadNow(context, item, true) }
+                .setPositiveButton(R.string.confirm_mobile_download_dialog_download_later) { _: DialogInterface?, _: Int ->
+                    DownloadServiceInterface.get()?.downloadNow(context, item, false) }
+                .setNeutralButton(R.string.confirm_mobile_download_dialog_allow_this_time) { _: DialogInterface?, _: Int ->
+                    DownloadServiceInterface.get()?.downloadNow(context, item, true) }
                 .setNegativeButton(R.string.cancel_label, null)
-            if (isNetworkRestricted && isVpnOverWifi) {
-                builder.setMessage(R.string.confirm_mobile_download_dialog_message_vpn)
-            } else {
-                builder.setMessage(R.string.confirm_mobile_download_dialog_message)
-            }
+            if (isNetworkRestricted && isVpnOverWifi) builder.setMessage(R.string.confirm_mobile_download_dialog_message_vpn)
+            else builder.setMessage(R.string.confirm_mobile_download_dialog_message)
 
             builder.show()
         }

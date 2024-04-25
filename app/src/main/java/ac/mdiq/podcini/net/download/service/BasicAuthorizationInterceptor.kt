@@ -21,9 +21,7 @@ class BasicAuthorizationInterceptor : Interceptor {
 
         var response: Response = chain.proceed(request)
 
-        if (response.code != HttpURLConnection.HTTP_UNAUTHORIZED) {
-            return response
-        }
+        if (response.code != HttpURLConnection.HTTP_UNAUTHORIZED) return response
 
         val newRequest: Builder = request.newBuilder()
         if (!TextUtils.equals(response.request.url.toString(), request.url.toString())) {
@@ -43,13 +41,10 @@ class BasicAuthorizationInterceptor : Interceptor {
             val downloadRequest = request.tag() as? DownloadRequest
             if (downloadRequest?.source != null) {
                 userInfo = URIUtil.getURIFromRequestUrl(downloadRequest.source!!).userInfo
-                if (userInfo.isEmpty() && (!downloadRequest.username.isNullOrEmpty() || !downloadRequest.password.isNullOrEmpty())) {
+                if (userInfo.isEmpty() && (!downloadRequest.username.isNullOrEmpty() || !downloadRequest.password.isNullOrEmpty()))
                     userInfo = downloadRequest.username + ":" + downloadRequest.password
-                }
             }
-        } else {
-            userInfo = DBReader.getImageAuthentication(request.url.toString())
-        }
+        } else userInfo = DBReader.getImageAuthentication(request.url.toString())
 
         if (userInfo.isEmpty()) {
             Log.d(TAG, "no credentials for '" + request.url + "'")
@@ -67,9 +62,7 @@ class BasicAuthorizationInterceptor : Interceptor {
         newRequest.header(HEADER_AUTHORIZATION, encode(username, password, "ISO-8859-1"))
         response = chain.proceed(newRequest.build())
 
-        if (response.code != HttpURLConnection.HTTP_UNAUTHORIZED) {
-            return response
-        }
+        if (response.code != HttpURLConnection.HTTP_UNAUTHORIZED) return response
 
         Log.d(TAG, "Authorization failed, re-trying with UTF-8 encoded credentials")
         newRequest.header(HEADER_AUTHORIZATION, encode(username, password, "UTF-8"))

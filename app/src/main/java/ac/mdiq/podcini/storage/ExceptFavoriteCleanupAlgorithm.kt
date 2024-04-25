@@ -9,6 +9,8 @@ import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
 import ac.mdiq.podcini.storage.model.feed.SortOrder
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.episodeCacheSize
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
 import java.util.*
 import java.util.concurrent.ExecutionException
 
@@ -25,26 +27,18 @@ class ExceptFavoriteCleanupAlgorithm : EpisodeCleanupAlgorithm() {
         return candidates.size
     }
 
-    public override fun performCleanup(context: Context, numberOfEpisodesToDelete: Int): Int {
+    @OptIn(UnstableApi::class) public override fun performCleanup(context: Context, numberOfEpisodesToDelete: Int): Int {
         var candidates = candidates
 
         // in the absence of better data, we'll sort by item publication date
         candidates = candidates.sortedWith { lhs: FeedItem, rhs: FeedItem ->
             val l = lhs.getPubDate()
             val r = rhs.getPubDate()
-            if (l != null && r != null) {
-                return@sortedWith l.compareTo(r)
-            } else {
-                // No date - compare by id which should be always incremented
-                return@sortedWith lhs.id.compareTo(rhs.id)
-            }
+            if (l != null && r != null) return@sortedWith l.compareTo(r)
+            else return@sortedWith lhs.id.compareTo(rhs.id)  // No date - compare by id which should be always incremented
         }
 
-        val delete = if (candidates.size > numberOfEpisodesToDelete) {
-            candidates.subList(0, numberOfEpisodesToDelete)
-        } else {
-            candidates
-        }
+        val delete = if (candidates.size > numberOfEpisodesToDelete) candidates.subList(0, numberOfEpisodesToDelete) else candidates
 
         for (item in delete) {
             try {
@@ -57,9 +51,7 @@ class ExceptFavoriteCleanupAlgorithm : EpisodeCleanupAlgorithm() {
         }
 
         val counter = delete.size
-        Log.i(TAG, String.format(Locale.US,
-            "Auto-delete deleted %d episodes (%d requested)", counter,
-            numberOfEpisodesToDelete))
+        Log.i(TAG, String.format(Locale.US, "Auto-delete deleted %d episodes (%d requested)", counter, numberOfEpisodesToDelete))
 
         return counter
     }
@@ -67,14 +59,9 @@ class ExceptFavoriteCleanupAlgorithm : EpisodeCleanupAlgorithm() {
     private val candidates: List<FeedItem>
         get() {
             val candidates: MutableList<FeedItem> = ArrayList()
-            val downloadedItems = getEpisodes(0, Int.MAX_VALUE,
-                FeedItemFilter(FeedItemFilter.DOWNLOADED), SortOrder.DATE_NEW_OLD)
+            val downloadedItems = getEpisodes(0, Int.MAX_VALUE, FeedItemFilter(FeedItemFilter.DOWNLOADED), SortOrder.DATE_NEW_OLD)
             for (item in downloadedItems) {
-                if (item.hasMedia()
-                        && item.media!!.isDownloaded()
-                        && !item.isTagged(FeedItem.TAG_FAVORITE)) {
-                    candidates.add(item)
-                }
+                if (item.hasMedia() && item.media!!.isDownloaded() && !item.isTagged(FeedItem.TAG_FAVORITE)) candidates.add(item)
             }
             return candidates
         }
@@ -83,9 +70,7 @@ class ExceptFavoriteCleanupAlgorithm : EpisodeCleanupAlgorithm() {
         val cacheSize = episodeCacheSize
         if (cacheSize != UserPreferences.EPISODE_CACHE_SIZE_UNLIMITED) {
             val downloadedEpisodes = getTotalEpisodeCount(FeedItemFilter(FeedItemFilter.DOWNLOADED))
-            if (downloadedEpisodes > cacheSize) {
-                return downloadedEpisodes - cacheSize
-            }
+            if (downloadedEpisodes > cacheSize) return downloadedEpisodes - cacheSize
         }
         return 0
     }

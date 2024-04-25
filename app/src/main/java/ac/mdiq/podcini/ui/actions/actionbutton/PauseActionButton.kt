@@ -18,8 +18,6 @@ class PauseActionButton(item: FeedItem) : ItemActionButton(item) {
     @UnstableApi override fun onClick(context: Context) {
         val media = item.media ?: return
 
-        if (isCurrentlyPlaying(media)) {
-            context.sendBroadcast(createIntent(context, KeyEvent.KEYCODE_MEDIA_PAUSE))
-        }
+        if (isCurrentlyPlaying(media)) context.sendBroadcast(createIntent(context, KeyEvent.KEYCODE_MEDIA_PAUSE))
     }
 }

@@ -40,9 +40,7 @@ class SubscriptionsFilter(private val properties: Array<String>) {
      * Run a list of feed items through the filter.
      */
     fun filter(items: List<Feed>, feedCounters: Map<Long?, Int>): List<Feed> {
-        if (properties.isEmpty()) {
-            return items
-        }
+        if (properties.isEmpty()) return items
 
         val result: MutableList<Feed> = ArrayList()
 
@@ -51,30 +49,16 @@ class SubscriptionsFilter(private val properties: Array<String>) {
 
             // If the item does not meet a requirement, skip it.
             when {
-                showAutoDownloadEnabled && itemPreferences?.autoDownload != true -> {
-                    continue
-                }
-                showAutoDownloadDisabled && itemPreferences?.autoDownload == true -> {
-                    continue
-                }
+                showAutoDownloadEnabled && itemPreferences?.autoDownload != true -> continue
+                showAutoDownloadDisabled && itemPreferences?.autoDownload == true -> continue
             }
-
             when {
-                showUpdatedEnabled && itemPreferences?.keepUpdated != true -> {
-                    continue
-                }
-                showUpdatedDisabled && itemPreferences?.keepUpdated == true -> {
-                    continue
-                }
+                showUpdatedEnabled && itemPreferences?.keepUpdated != true -> continue
+                showUpdatedDisabled && itemPreferences?.keepUpdated == true -> continue
             }
-
             when {
-                showEpisodeNotificationEnabled && itemPreferences?.showEpisodeNotification != true -> {
-                    continue
-                }
-                showEpisodeNotificationDisabled && itemPreferences?.showEpisodeNotification == true -> {
-                    continue
-                }
+                showEpisodeNotificationEnabled && itemPreferences?.showEpisodeNotification != true -> continue
+                showEpisodeNotificationDisabled && itemPreferences?.showEpisodeNotification == true -> continue
             }
 
             // If the item reaches here, it meets all criteria (except counter > 0)
@@ -83,9 +67,7 @@ class SubscriptionsFilter(private val properties: Array<String>) {
 
         if (showIfCounterGreaterZero) {
             for (i in result.indices.reversed()) {
-                if (!feedCounters.containsKey(result[i].id) || feedCounters[result[i].id]!! <= 0) {
-                    result.removeAt(i)
-                }
+                if (!feedCounters.containsKey(result[i].id) || feedCounters[result[i].id]!! <= 0) result.removeAt(i)
             }
         }
 

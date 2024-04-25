@@ -41,9 +41,7 @@ class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, To
         disposable?.dispose()
     }
 
-    override fun onCreateView(inflater: LayoutInflater,
-                              container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Log.d(TAG, "fragment onCreateView")
         _binding = DownloadLogFragmentBinding.inflate(inflater)
         binding.toolbar.inflateMenu(R.menu.download_log)
@@ -73,9 +71,7 @@ class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, To
 
     override fun onItemClick(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
         val item = adapter.getItem(position)
-        if (item is DownloadResult) {
-            DownloadLogDetailsDialog(requireContext(), item).show()
-        }
+        if (item is DownloadResult) DownloadLogDetailsDialog(requireContext(), item).show()
     }
 
     @Subscribe
@@ -89,9 +85,7 @@ class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, To
 
     @UnstableApi override fun onMenuItemClick(item: MenuItem): Boolean {
         when {
-            super.onOptionsItemSelected(item) -> {
-                return true
-            }
+            super.onOptionsItemSelected(item) -> return true
             item.itemId == R.id.clear_logs_item -> {
                 DBWriter.clearDownloadLog()
                 return true

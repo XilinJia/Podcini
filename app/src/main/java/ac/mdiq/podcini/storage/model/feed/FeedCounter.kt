@@ -10,9 +10,7 @@ enum class FeedCounter(val id: Int) {
     companion object {
         fun fromOrdinal(id: Int): FeedCounter {
             for (counter in entries) {
-                if (counter.id == id) {
-                    return counter
-                }
+                if (counter.id == id) return counter
             }
             return SHOW_NONE
         }

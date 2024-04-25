@@ -34,9 +34,7 @@ class ThemePreference : Preference {
         card.setCardBackgroundColor(if (theme == activeTheme) surfaceColorActive else surfaceColor)
         card.setOnClickListener {
             UserPreferences.theme = theme
-            if (onPreferenceChangeListener != null) {
-                onPreferenceChangeListener!!.onPreferenceChange(this, UserPreferences.theme)
-            }
+            onPreferenceChangeListener?.onPreferenceChange(this, UserPreferences.theme)
             updateUi()
         }
     }

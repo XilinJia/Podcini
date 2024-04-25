@@ -195,9 +195,8 @@ class MainActivity : CastEnabledActivity() {
                 for (workInfo in workInfos) {
                     var downloadUrl: String? = null
                     for (tag in workInfo.tags) {
-                        if (tag.startsWith(DownloadServiceInterface.WORK_TAG_EPISODE_URL)) {
+                        if (tag.startsWith(DownloadServiceInterface.WORK_TAG_EPISODE_URL))
                             downloadUrl = tag.substring(DownloadServiceInterface.WORK_TAG_EPISODE_URL.length)
-                        }
                     }
                     if (downloadUrl == null) continue
 
@@ -460,7 +459,6 @@ class MainActivity : CastEnabledActivity() {
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-
         if (bottomSheet.state == BottomSheetBehavior.STATE_EXPANDED) bottomSheetCallback.onSlide(dummyView, 1.0f)
     }
 
@@ -476,9 +474,7 @@ class MainActivity : CastEnabledActivity() {
                 // MediaController implements the Player interface, so it can be
                 // attached to the PlayerView UI component.
 //                playerView.setPlayer(controllerFuture.get())
-        },
-            MoreExecutors.directExecutor()
-        )
+        }, MoreExecutors.directExecutor())
     }
 
     override fun onResume() {
@@ -538,9 +534,7 @@ class MainActivity : CastEnabledActivity() {
                 if (NavDrawerFragment.getLastNavFragment(this) == toPage || UserPreferences.DEFAULT_PAGE_REMEMBER == toPage) {
                     if (backButtonOpensDrawer()) drawerLayout?.openDrawer(navDrawer)
                     else super.onBackPressed()
-                } else {
-                    loadFragment(toPage, null)
-                }
+                } else loadFragment(toPage, null)
             }
         }
     }
@@ -588,12 +582,11 @@ class MainActivity : CastEnabledActivity() {
 
         if (intent.getBooleanExtra(MainActivityStarter.EXTRA_OPEN_DRAWER, false)) drawerLayout?.open()
 
-        if (intent.getBooleanExtra(MainActivityStarter.EXTRA_OPEN_DOWNLOAD_LOGS, false)) {
+        if (intent.getBooleanExtra(MainActivityStarter.EXTRA_OPEN_DOWNLOAD_LOGS, false))
             DownloadLogFragment().show(supportFragmentManager, null)
-        }
-        if (intent.getBooleanExtra(EXTRA_REFRESH_ON_START, false)) {
-            runOnceOrAsk(this)
-        }
+
+        if (intent.getBooleanExtra(EXTRA_REFRESH_ON_START, false)) runOnceOrAsk(this)
+
         // to avoid handling the intent twice when the configuration changes
         setIntent(Intent(this@MainActivity, MainActivity::class.java))
     }
@@ -610,9 +603,8 @@ class MainActivity : CastEnabledActivity() {
         if (bottomSheet.state == BottomSheetBehavior.STATE_COLLAPSED) {
             s = Snackbar.make(mainView, text!!, duration)
             if (audioPlayerFragmentView.visibility == View.VISIBLE) s.setAnchorView(audioPlayerFragmentView)
-        } else {
-            s = Snackbar.make(binding.root, text!!, duration)
-        }
+        } else s = Snackbar.make(binding.root, text!!, duration)
+
         s.show()
         return s
     }

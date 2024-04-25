@@ -51,52 +51,41 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
 
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
     fun syncStatusChanged(event: SyncServiceEvent) {
-        if (!SynchronizationSettings.isProviderConnected) {
-            return
-        }
+        if (!SynchronizationSettings.isProviderConnected) return
+
         updateScreen()
-        if (event.messageResId == R.string.sync_status_error
-                || event.messageResId == R.string.sync_status_success) {
-            updateLastSyncReport(SynchronizationSettings.isLastSyncSuccessful,
-                SynchronizationSettings.lastSyncAttempt)
-        } else {
-            (activity as PreferenceActivity).supportActionBar!!
-                .setSubtitle(event.messageResId)
-        }
+        if (event.messageResId == R.string.sync_status_error || event.messageResId == R.string.sync_status_success)
+            updateLastSyncReport(SynchronizationSettings.isLastSyncSuccessful, SynchronizationSettings.lastSyncAttempt)
+        else (activity as PreferenceActivity).supportActionBar!!.setSubtitle(event.messageResId)
     }
 
     private fun setupScreen() {
         val activity: Activity? = activity
-        findPreference<Preference>(PREFERENCE_GPODNET_SETLOGIN_INFORMATION)
-            ?.setOnPreferenceClickListener {
-                val dialog: AuthenticationDialog = object : AuthenticationDialog(requireContext(),
-                    R.string.pref_gpodnet_setlogin_information_title,
-                    false, SynchronizationCredentials.username, null) {
-                    override fun onConfirmed(username: String, password: String) {
-                        SynchronizationCredentials.password = password
-                    }
+        findPreference<Preference>(PREFERENCE_GPODNET_SETLOGIN_INFORMATION)?.setOnPreferenceClickListener {
+            val dialog: AuthenticationDialog = object : AuthenticationDialog(requireContext(), R.string.pref_gpodnet_setlogin_information_title,
+                false, SynchronizationCredentials.username, null) {
+                override fun onConfirmed(username: String, password: String) {
+                    SynchronizationCredentials.password = password
                 }
-                dialog.show()
-                true
             }
-        findPreference<Preference>(PREFERENCE_SYNC)!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                SyncService.syncImmediately(requireActivity().applicationContext)
-                true
-            }
-        findPreference<Preference>(PREFERENCE_FORCE_FULL_SYNC)!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                SyncService.fullSync(requireContext())
-                true
-            }
-        findPreference<Preference>(PREFERENCE_LOGOUT)!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                SynchronizationCredentials.clear(requireContext())
-                Snackbar.make(requireView(), R.string.pref_synchronization_logout_toast, Snackbar.LENGTH_LONG).show()
-                SynchronizationSettings.setSelectedSyncProvider(null)
-                updateScreen()
-                true
-            }
+            dialog.show()
+            true
+        }
+        findPreference<Preference>(PREFERENCE_SYNC)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            SyncService.syncImmediately(requireActivity().applicationContext)
+            true
+        }
+        findPreference<Preference>(PREFERENCE_FORCE_FULL_SYNC)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            SyncService.fullSync(requireContext())
+            true
+        }
+        findPreference<Preference>(PREFERENCE_LOGOUT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            SynchronizationCredentials.clear(requireContext())
+            Snackbar.make(requireView(), R.string.pref_synchronization_logout_toast, Snackbar.LENGTH_LONG).show()
+            SynchronizationSettings.setSelectedSyncProvider(null)
+            updateScreen()
+            true
+        }
     }
 
     private fun updateScreen() {
@@ -114,11 +103,10 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
             preferenceHeader!!.setTitle(R.string.synchronization_choose_title)
             preferenceHeader.setSummary(R.string.synchronization_summary_unchoosen)
             preferenceHeader.setIcon(R.drawable.ic_cloud)
-            preferenceHeader.onPreferenceClickListener =
-                Preference.OnPreferenceClickListener {
-                    chooseProviderAndLogin()
-                    true
-                }
+            preferenceHeader.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+                chooseProviderAndLogin()
+                true
+            }
         }
 
         val gpodnetSetLoginPreference = findPreference<Preference>(PREFERENCE_GPODNET_SETLOGIN_INFORMATION)
@@ -132,8 +120,7 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
                 SynchronizationCredentials.username, SynchronizationCredentials.hosturl)
             val formattedSummary = HtmlCompat.fromHtml(summary, HtmlCompat.FROM_HTML_MODE_LEGACY)
             findPreference<Preference>(PREFERENCE_LOGOUT)!!.summary = formattedSummary
-            updateLastSyncReport(SynchronizationSettings.isLastSyncSuccessful,
-                SynchronizationSettings.lastSyncAttempt)
+            updateLastSyncReport(SynchronizationSettings.isLastSyncSuccessful, SynchronizationSettings.lastSyncAttempt)
         } else {
             findPreference<Preference>(PREFERENCE_LOGOUT)?.summary = ""
             (activity as PreferenceActivity).supportActionBar?.setSubtitle("")
@@ -166,9 +153,8 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
                         holder!!.title = binding.title
                         convertView.tag = holder
                     }
-                } else {
-                    holder = convertView.tag as ViewHolder
-                }
+                } else holder = convertView.tag as ViewHolder
+
                 val synchronizationProviderViewData = getItem(position)
                 holder!!.title!!.setText(synchronizationProviderViewData!!.summaryResource)
                 holder!!.icon!!.setImageResource(synchronizationProviderViewData.iconResource)
@@ -198,10 +184,8 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
         get() = SynchronizationSettings.selectedSyncProviderKey?:""
 
     private fun updateLastSyncReport(successful: Boolean, lastTime: Long) {
-        val status = String.format("%1\$s (%2\$s)", getString(if (successful
-        ) R.string.gpodnetsync_pref_report_successful else R.string.gpodnetsync_pref_report_failed),
-            DateUtils.getRelativeDateTimeString(context,
-                lastTime, DateUtils.MINUTE_IN_MILLIS, DateUtils.WEEK_IN_MILLIS, DateUtils.FORMAT_SHOW_TIME))
+        val status = String.format("%1\$s (%2\$s)", getString(if (successful) R.string.gpodnetsync_pref_report_successful else R.string.gpodnetsync_pref_report_failed),
+            DateUtils.getRelativeDateTimeString(context, lastTime, DateUtils.MINUTE_IN_MILLIS, DateUtils.WEEK_IN_MILLIS, DateUtils.FORMAT_SHOW_TIME))
         (activity as PreferenceActivity).supportActionBar!!.subtitle = status
     }
 

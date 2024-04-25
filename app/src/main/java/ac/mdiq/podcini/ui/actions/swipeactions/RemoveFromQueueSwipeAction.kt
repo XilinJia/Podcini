@@ -35,14 +35,9 @@ class RemoveFromQueueSwipeAction : SwipeAction {
         DBWriter.removeQueueItem(fragment.requireActivity(), true, item)
 
         if (willRemove(filter, item)) {
-            (fragment.requireActivity() as MainActivity).showSnackbarAbovePlayer(
-                fragment.resources.getQuantityString(R.plurals.removed_from_queue_batch_label, 1, 1),
-                Snackbar.LENGTH_LONG)
+            (fragment.requireActivity() as MainActivity).showSnackbarAbovePlayer(fragment.resources.getQuantityString(R.plurals.removed_from_queue_batch_label, 1, 1), Snackbar.LENGTH_LONG)
                 .setAction(fragment.getString(R.string.undo)) {
-                    DBWriter.addQueueItemAt(fragment.requireActivity(),
-                        item.id,
-                        position,
-                        false)
+                    DBWriter.addQueueItemAt(fragment.requireActivity(), item.id, position, false)
                 }
         }
     }

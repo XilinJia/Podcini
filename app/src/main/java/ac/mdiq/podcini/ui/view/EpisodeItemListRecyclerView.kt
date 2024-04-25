@@ -56,9 +56,7 @@ class EpisodeItemListRecyclerView : RecyclerView {
         val prefs = context.getSharedPreferences(TAG, Context.MODE_PRIVATE)
         val position = prefs.getInt(PREF_PREFIX_SCROLL_POSITION + tag, 0)
         val offset = prefs.getInt(PREF_PREFIX_SCROLL_OFFSET + tag, 0)
-        if (position > 0 || offset > 0) {
-            layoutManager.scrollToPositionWithOffset(position, offset)
-        }
+        if (position > 0 || offset > 0) layoutManager.scrollToPositionWithOffset(position, offset)
     }
 
     val isScrolledToBottom: Boolean

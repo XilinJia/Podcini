@@ -13,8 +13,7 @@ object PlaybackStatus {
      */
     @JvmStatic
     fun isCurrentlyPlaying(media: FeedMedia?): Boolean {
-        return (isPlaying(media) && PlaybackService.isRunning
-                && ((PlaybackPreferences.currentPlayerStatus == PlaybackPreferences.PLAYER_STATUS_PLAYING)))
+        return (isPlaying(media) && PlaybackService.isRunning && ((PlaybackPreferences.currentPlayerStatus == PlaybackPreferences.PLAYER_STATUS_PLAYING)))
     }
 
     @JvmStatic

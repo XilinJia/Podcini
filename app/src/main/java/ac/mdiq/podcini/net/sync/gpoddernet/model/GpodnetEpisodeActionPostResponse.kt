@@ -7,13 +7,13 @@ import org.apache.commons.lang3.builder.ToStringStyle
 import org.json.JSONException
 import org.json.JSONObject
 
-class GpodnetEpisodeActionPostResponse private constructor(timestamp: Long,
-                                                           /**
-                                                            * URLs that should be updated. The key of the map is the original URL, the value of the map
-                                                            * is the sanitized URL.
-                                                            */
-                                                           private val updatedUrls: Map<String, String>
-) : UploadChangesResponse(timestamp) {
+/**
+ * URLs that should be updated. The key of the map is the original URL, the value of the map
+ * is the sanitized URL.
+ */
+class GpodnetEpisodeActionPostResponse private constructor(timestamp: Long, private val updatedUrls: Map<String, String>)
+    : UploadChangesResponse(timestamp) {
+
     override fun toString(): String {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE)
     }

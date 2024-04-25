@@ -43,9 +43,8 @@ class SubscriptionsFilterDialog : BottomSheetDialogFragment() {
             if (item.values.size == 2) {
                 binding.filterButton2.setText(item.values[1].displayName)
                 binding.filterButton2.tag = item.values[1].filterId
-            } else {
-                binding.filterButton2.visibility = View.GONE
-            }
+            } else binding.filterButton2.visibility = View.GONE
+
             binding.filterButton1.maxLines = 3
             binding.filterButton1.isSingleLine = false
             binding.filterButton2.maxLines = 3
@@ -57,9 +56,7 @@ class SubscriptionsFilterDialog : BottomSheetDialogFragment() {
         for (filterId in filterValues) {
             if (filterId.isNotEmpty()) {
                 val button = dialogBinding.root.findViewWithTag<Button>(filterId)
-                if (button != null) {
-                    (button.parent as MaterialButtonToggleGroup).check(button.id)
-                }
+                if (button != null) (button.parent as MaterialButtonToggleGroup).check(button.id)
             }
         }
 
@@ -70,9 +67,7 @@ class SubscriptionsFilterDialog : BottomSheetDialogFragment() {
         dialogBinding.resetFiltermenu.setOnClickListener {
             updateFilter(emptySet())
             for (i in 0 until rows.childCount) {
-                if (rows.getChildAt(i) is MaterialButtonToggleGroup) {
-                    (rows.getChildAt(i) as MaterialButtonToggleGroup).clearChecked()
-                }
+                if (rows.getChildAt(i) is MaterialButtonToggleGroup) (rows.getChildAt(i) as MaterialButtonToggleGroup).clearChecked()
             }
         }
         return dialogBinding.root
@@ -82,16 +77,12 @@ class SubscriptionsFilterDialog : BottomSheetDialogFragment() {
         get() {
             val filterValues: MutableSet<String> = HashSet()
             for (i in 0 until rows.childCount) {
-                if (rows.getChildAt(i) !is MaterialButtonToggleGroup) {
-                    continue
-                }
+                if (rows.getChildAt(i) !is MaterialButtonToggleGroup) continue
+
                 val group = rows.getChildAt(i) as MaterialButtonToggleGroup
-                if (group.checkedButtonId == View.NO_ID) {
-                    continue
-                }
-                val tag = group.findViewById<View>(group.checkedButtonId).tag as String?
-                    ?: // Clear buttons use no tag
-                    continue
+                if (group.checkedButtonId == View.NO_ID) continue
+
+                val tag = group.findViewById<View>(group.checkedButtonId).tag as? String ?: continue    // Clear buttons use no tag
                 filterValues.add(tag)
             }
             return filterValues

@@ -62,13 +62,9 @@ object RemoveFeedDialog {
 
     private fun getMessageId(context: Context, feeds: List<Feed>): String {
         return if (feeds.size == 1) {
-            if (feeds[0].isLocalFeed) {
-                context.getString(R.string.feed_delete_confirmation_local_msg) + feeds[0].title
-            } else {
-                context.getString(R.string.feed_delete_confirmation_msg) + feeds[0].title
-            }
-        } else {
-            context.getString(R.string.feed_delete_confirmation_msg_batch)
-        }
+            if (feeds[0].isLocalFeed) context.getString(R.string.feed_delete_confirmation_local_msg) + feeds[0].title
+            else context.getString(R.string.feed_delete_confirmation_msg) + feeds[0].title
+        } else context.getString(R.string.feed_delete_confirmation_msg_batch)
+
     }
 }

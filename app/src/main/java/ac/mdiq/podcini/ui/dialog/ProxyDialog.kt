@@ -80,33 +80,28 @@ class ProxyDialog(private val context: Context) {
         val types: MutableList<String> = ArrayList()
         types.add(Proxy.Type.DIRECT.name)
         types.add(Proxy.Type.HTTP.name)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            types.add(Proxy.Type.SOCKS.name)
-        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) types.add(Proxy.Type.SOCKS.name)
+
         val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, types)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spType.setAdapter(adapter)
         val proxyConfig = proxyConfig
         spType.setSelection(adapter.getPosition(proxyConfig.type.name))
         etHost = binding.etHost
-        if (!proxyConfig.host.isNullOrEmpty()) {
-            etHost.setText(proxyConfig.host)
-        }
+        if (!proxyConfig.host.isNullOrEmpty()) etHost.setText(proxyConfig.host)
+
         etHost.addTextChangedListener(requireTestOnChange)
         etPort = binding.etPort
-        if (proxyConfig.port > 0) {
-            etPort.setText(proxyConfig.port.toString())
-        }
+        if (proxyConfig.port > 0) etPort.setText(proxyConfig.port.toString())
+
         etPort.addTextChangedListener(requireTestOnChange)
         etUsername = binding.etUsername
-        if (!proxyConfig.username.isNullOrEmpty()) {
-            etUsername.setText(proxyConfig.username)
-        }
+        if (!proxyConfig.username.isNullOrEmpty()) etUsername.setText(proxyConfig.username)
+
         etUsername.addTextChangedListener(requireTestOnChange)
         etPassword = binding.etPassword
-        if (!proxyConfig.password.isNullOrEmpty()) {
-            etPassword.setText(proxyConfig.password)
-        }
+        if (!proxyConfig.password.isNullOrEmpty()) etPassword.setText(proxyConfig.password)
+
         etPassword.addTextChangedListener(requireTestOnChange)
         if (proxyConfig.type == Proxy.Type.DIRECT) {
             enableSettings(false)
@@ -135,17 +130,14 @@ class ProxyDialog(private val context: Context) {
         val port = etPort.text.toString()
 
         var username: String? = etUsername.text.toString()
-        if (username.isNullOrEmpty()) {
-            username = null
-        }
+        if (username.isNullOrEmpty()) username = null
+
         var password: String? = etPassword.text.toString()
-        if (password.isNullOrEmpty()) {
-            password = null
-        }
+        if (password.isNullOrEmpty()) password = null
+
         var portValue = 0
-        if (port.isNotEmpty()) {
-            portValue = port.toInt()
-        }
+        if (port.isNotEmpty()) portValue = port.toInt()
+
         val config = ProxyConfig(typeEnum, host, portValue, username, password)
         proxyConfig = config
         setProxyConfig(config)
@@ -170,9 +162,8 @@ class ProxyDialog(private val context: Context) {
 
     private fun checkValidity(): Boolean {
         var valid = true
-        if (spType.selectedItemPosition > 0) {
-            valid = checkHost()
-        }
+        if (spType.selectedItemPosition > 0) valid = checkHost()
+
         valid = valid and checkPort()
         return valid
     }
@@ -243,9 +234,8 @@ class ProxyDialog(private val context: Context) {
             val username = etUsername.text.toString()
             val password = etPassword.text.toString()
             var portValue = 8080
-            if (port.isNotEmpty()) {
-                portValue = port.toInt()
-            }
+            if (port.isNotEmpty()) portValue = port.toInt()
+
             val address: SocketAddress = InetSocketAddress.createUnresolved(host, portValue)
             val proxyType = Proxy.Type.valueOf(type.uppercase())
             val builder: OkHttpClient.Builder = newBuilder()

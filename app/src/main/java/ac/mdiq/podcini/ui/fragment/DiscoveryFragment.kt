@@ -117,9 +117,8 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         //Show information about the podcast when the list item is clicked
         gridView.onItemClickListener = OnItemClickListener { _: AdapterView<*>?, _: View?, position: Int, _: Long ->
             val podcast = searchResults!![position]
-            if (podcast.feedUrl == null) {
-                return@OnItemClickListener
-            }
+            if (podcast.feedUrl == null) return@OnItemClickListener
+
             val fragment: Fragment = OnlineFeedViewFragment.newInstance(podcast.feedUrl)
             (activity as MainActivity).loadChildFragment(fragment)
         }
@@ -176,30 +175,28 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
 
         val loader = ItunesTopListLoader(requireContext())
-        disposable =
-            Observable.fromCallable { loader.loadToplist(country?:"",
-                NUM_OF_TOP_PODCASTS, DBReader.getFeedList()) }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    { podcasts: List<PodcastSearchResult>? ->
-                        progressBar.visibility = View.GONE
-                        topList = podcasts
-                        updateData(topList)
-                    }, { error: Throwable ->
-                        Log.e(TAG, Log.getStackTraceString(error))
-                        progressBar.visibility = View.GONE
-                        txtvError.text = error.message
-                        txtvError.visibility = View.VISIBLE
-                        butRetry.setOnClickListener { loadToplist(country) }
-                        butRetry.visibility = View.VISIBLE
-                    })
+        disposable = Observable.fromCallable { loader.loadToplist(country?:"",
+            NUM_OF_TOP_PODCASTS, DBReader.getFeedList()) }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { podcasts: List<PodcastSearchResult>? ->
+                    progressBar.visibility = View.GONE
+                    topList = podcasts
+                    updateData(topList)
+                }, { error: Throwable ->
+                    Log.e(TAG, Log.getStackTraceString(error))
+                    progressBar.visibility = View.GONE
+                    txtvError.text = error.message
+                    txtvError.visibility = View.VISIBLE
+                    butRetry.setOnClickListener { loadToplist(country) }
+                    butRetry.visibility = View.VISIBLE
+                })
     }
 
     override fun onMenuItemClick(item: MenuItem): Boolean {
-        if (super.onOptionsItemSelected(item)) {
-            return true
-        }
+        if (super.onOptionsItemSelected(item)) return true
+
         val itemId = item.itemId
         when (itemId) {
             R.id.discover_hide_item -> {

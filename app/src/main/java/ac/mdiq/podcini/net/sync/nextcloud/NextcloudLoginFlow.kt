@@ -21,11 +21,8 @@ import java.net.URI
 import java.net.URL
 import java.util.concurrent.TimeUnit
 
-class NextcloudLoginFlow(private val httpClient: OkHttpClient,
-                         private val rawHostUrl: String,
-                         private val context: Context,
-                         private val callback: AuthenticationCallback
-) {
+class NextcloudLoginFlow(private val httpClient: OkHttpClient, private val rawHostUrl: String, private val context: Context,
+                         private val callback: AuthenticationCallback) {
     private val hostname = HostnameParser(rawHostUrl)
     private var token: String? = null
     private var endpoint: String? = null
@@ -76,8 +73,7 @@ class NextcloudLoginFlow(private val httpClient: OkHttpClient,
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ result: JSONObject ->
-                callback.onNextcloudAuthenticated(
-                    result.getString("server"), result.getString("loginName"), result.getString("appPassword"))
+                callback.onNextcloudAuthenticated(result.getString("server"), result.getString("loginName"), result.getString("appPassword"))
             },
                 { error: Throwable ->
                     this.token = null
@@ -87,18 +83,13 @@ class NextcloudLoginFlow(private val httpClient: OkHttpClient,
     }
 
     fun cancel() {
-        if (startDisposable != null) {
-            startDisposable!!.dispose()
-        }
-        if (pollDisposable != null) {
-            pollDisposable!!.dispose()
-        }
+        startDisposable?.dispose()
+        pollDisposable?.dispose()
     }
 
     @Throws(IOException::class, JSONException::class)
     private fun doRequest(url: URL, bodyContent: String): JSONObject {
-        val requestBody = RequestBody.create(
-            "application/x-www-form-urlencoded".toMediaType(), bodyContent)
+        val requestBody = RequestBody.create("application/x-www-form-urlencoded".toMediaType(), bodyContent)
         val request: Request = Builder().url(url).method("POST", requestBody).build()
         val response = httpClient.newCall(request).execute()
         if (response.code != 200) {
@@ -118,9 +109,7 @@ class NextcloudLoginFlow(private val httpClient: OkHttpClient,
     companion object {
         private const val TAG = "NextcloudLoginFlow"
 
-        fun fromInstanceState(httpClient: OkHttpClient, context: Context,
-                              callback: AuthenticationCallback, instanceState: ArrayList<String>
-        ): NextcloudLoginFlow {
+        fun fromInstanceState(httpClient: OkHttpClient, context: Context, callback: AuthenticationCallback, instanceState: ArrayList<String>): NextcloudLoginFlow {
             val flow = NextcloudLoginFlow(httpClient, instanceState[0], context, callback)
             flow.token = instanceState[1]
             flow.endpoint = instanceState[2]

@@ -61,9 +61,7 @@ import java.util.concurrent.*
         var feedID: Long = 0
         if (cursor.moveToFirst()) {
             do {
-                if (cursor.getString(1) == downloadUrl) {
-                    feedID = cursor.getLong(0)
-                }
+                if (cursor.getString(1) == downloadUrl) feedID = cursor.getLong(0)
             } while (cursor.moveToNext())
         }
         cursor.close()
@@ -155,9 +153,7 @@ import java.util.concurrent.*
     private fun searchFeedItemByIdentifyingValue(items: List<FeedItem>?, searchItem: FeedItem): FeedItem? {
         if (items == null) return null
         for (item in items) {
-            if (TextUtils.equals(item.identifyingValue, searchItem.identifyingValue)) {
-                return item
-            }
+            if (TextUtils.equals(item.identifyingValue, searchItem.identifyingValue)) return item
         }
         return null
     }
@@ -169,9 +165,7 @@ import java.util.concurrent.*
     private fun searchFeedItemGuessDuplicate(items: List<FeedItem>?, searchItem: FeedItem): FeedItem? {
         if (items == null) return null
         for (item in items) {
-            if (FeedItemDuplicateGuesser.seemDuplicates(item, searchItem)) {
-                return item
-            }
+            if (FeedItemDuplicateGuesser.seemDuplicates(item, searchItem)) return item
         }
         return null
     }
@@ -286,11 +280,8 @@ import java.util.concurrent.*
                     Log.d(TAG, "Found new item: " + item.title)
                     item.feed = savedFeed
 
-                    if (idx >= savedFeed.items.size) {
-                        savedFeed.items.add(item)
-                    } else {
-                        savedFeed.items.add(idx, item)
-                    }
+                    if (idx >= savedFeed.items.size) savedFeed.items.add(item)
+                    else savedFeed.items.add(idx, item)
                 }
             }
 
@@ -319,13 +310,10 @@ import java.util.concurrent.*
                 DBWriter.addNewFeed(context, newFeed).get()
                 // Update with default values that are set in database
                 resultFeed = searchFeedByIdentifyingValueOrID(newFeed)
-            } else {
-                DBWriter.setCompleteFeed(savedFeed).get()
-            }
+            } else DBWriter.setCompleteFeed(savedFeed).get()
+
             DBReader.updateFeedList(adapter)
-            if (removeUnlistedItems) {
-                DBWriter.deleteFeedItems(context, unlistedItems).get()
-            }
+            if (removeUnlistedItems) DBWriter.deleteFeedItems(context, unlistedItems).get()
         } catch (e: InterruptedException) {
             e.printStackTrace()
         } catch (e: ExecutionException) {
@@ -334,11 +322,8 @@ import java.util.concurrent.*
 
         adapter.close()
 
-        if (savedFeed != null) {
-            EventBus.getDefault().post(FeedListUpdateEvent(savedFeed))
-        } else {
-            EventBus.getDefault().post(FeedListUpdateEvent(emptyList()))
-        }
+        if (savedFeed != null) EventBus.getDefault().post(FeedListUpdateEvent(savedFeed))
+        else EventBus.getDefault().post(FeedListUpdateEvent(emptyList()))
 
         return resultFeed
     }

@@ -126,11 +126,8 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         webvDescription = binding.webvDescription
         webvDescription.setTimecodeSelectedListener { time: Int? ->
             val cMedia = controller?.getMedia()
-            if (item?.media?.getIdentifier() == cMedia?.getIdentifier()) {
-                controller!!.seekTo(time ?: 0)
-            } else {
-                (activity as MainActivity).showSnackbarAbovePlayer(R.string.play_this_to_seek_position, Snackbar.LENGTH_LONG)
-            }
+            if (item?.media?.getIdentifier() == cMedia?.getIdentifier()) controller!!.seekTo(time ?: 0)
+            else (activity as MainActivity).showSnackbarAbovePlayer(R.string.play_this_to_seek_position, Snackbar.LENGTH_LONG)
         }
         registerForContextMenu(webvDescription)
 
@@ -143,9 +140,9 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         butAction2 = binding.butAction2
         noMediaLabel = binding.noMediaLabel
 
-        butAction0.setOnClickListener(View.OnClickListener {
+        butAction0.setOnClickListener {
             if (item?.link != null) (activity as MainActivity).loadChildFragment(EpisodeHomeFragment.newInstance(item!!))
-        })
+        }
 
         butAction1.setOnClickListener(View.OnClickListener {
             when {

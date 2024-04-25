@@ -14,9 +14,7 @@ class SyndHandler(feed: Feed, type: TypeGetter.Type) : DefaultHandler() {
     val state: HandlerState = HandlerState(feed)
 
     init {
-        if (type == TypeGetter.Type.RSS20 || type == TypeGetter.Type.RSS091) {
-            state.defaultNamespaces.push(Rss20())
-        }
+        if (type == TypeGetter.Type.RSS20 || type == TypeGetter.Type.RSS091) state.defaultNamespaces.push(Rss20())
     }
 
     @Throws(SAXException::class)
@@ -31,9 +29,7 @@ class SyndHandler(feed: Feed, type: TypeGetter.Type) : DefaultHandler() {
 
     @Throws(SAXException::class)
     override fun characters(ch: CharArray, start: Int, length: Int) {
-        if (state.tagstack.size >= 2 && state.contentBuf != null) {
-            state.contentBuf!!.appendRange(ch, start, start + length)
-        }
+        if (state.tagstack.size >= 2 && state.contentBuf != null) state.contentBuf!!.appendRange(ch, start, start + length)
     }
 
     @Throws(SAXException::class)
@@ -48,9 +44,7 @@ class SyndHandler(feed: Feed, type: TypeGetter.Type) : DefaultHandler() {
 
     @Throws(SAXException::class)
     override fun endPrefixMapping(prefix: String) {
-        if (state.defaultNamespaces.size > 1 && prefix == DEFAULT_PREFIX) {
-            state.defaultNamespaces.pop()
-        }
+        if (state.defaultNamespaces.size > 1 && prefix == DEFAULT_PREFIX) state.defaultNamespaces.pop()
     }
 
     @Throws(SAXException::class)
@@ -60,9 +54,7 @@ class SyndHandler(feed: Feed, type: TypeGetter.Type) : DefaultHandler() {
             when {
                 uri == Atom.NSURI -> {
                     when (prefix) {
-                        DEFAULT_PREFIX -> {
-                            state.defaultNamespaces.push(Atom())
-                        }
+                        DEFAULT_PREFIX -> state.defaultNamespaces.push(Atom())
                         Atom.NSTAG -> {
                             state.namespaces[uri] = Atom()
                             Log.d(TAG, "Recognized Atom namespace")
@@ -103,9 +95,7 @@ class SyndHandler(feed: Feed, type: TypeGetter.Type) : DefaultHandler() {
 
     private fun getHandlingNamespace(uri: String, qualifiedName: String): Namespace? {
         var handler = state.namespaces[uri]
-        if (handler == null && !state.defaultNamespaces.empty() && !qualifiedName.contains(":")) {
-            handler = state.defaultNamespaces.peek()
-        }
+        if (handler == null && !state.defaultNamespaces.empty() && !qualifiedName.contains(":")) handler = state.defaultNamespaces.peek()
         return handler
     }
 

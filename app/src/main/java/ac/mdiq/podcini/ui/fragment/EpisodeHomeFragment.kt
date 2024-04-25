@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.text.Html
 import android.util.Log
 import android.view.*
+import android.widget.Toast
 import androidx.annotation.OptIn
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ShareCompat
@@ -109,44 +110,26 @@ class EpisodeHomeFragment : Fragment(), Toolbar.OnMenuItemClickListener, TextToS
                     textContent = article.textContent
 //                    Log.d(TAG, "readability4J: ${article.textContent}")
                     readerhtml = article.contentWithDocumentsCharsetOrUtf8
-                    if (readerhtml != null) {
+                    if (!readerhtml.isNullOrEmpty()) {
                         val shownotesCleaner = ShownotesCleaner(requireContext(), readerhtml!!, 0)
                         cleanedNotes = shownotesCleaner.processShownotes()
                     }
                 }
             }
-            if (cleanedNotes != null) {
+            if (!cleanedNotes.isNullOrEmpty()) {
                 binding.readerView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes!!, "text/html", "UTF-8", null)
 //                binding.readerView.loadDataWithBaseURL(currentItem!!.link!!, readerhtml!!, "text/html", "UTF-8", null)
                 binding.readerView.visibility = View.VISIBLE
                 binding.webView.visibility = View.GONE
-            }
+            } else Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show()
         } else {
-            if (currentItem?.link != null) {
+            if (!currentItem?.link.isNullOrEmpty()) {
                 binding.webView.loadUrl(currentItem!!.link!!)
                 binding.readerView.visibility = View.GONE
                 binding.webView.visibility = View.VISIBLE
-            }
+            } else Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show()
         }
     }
-
-//    suspend fun fetchHtmlSource(urlString: String): String = withContext(Dispatchers.IO) {
-//        val url = URL(urlString)
-//        val connection = url.openConnection()
-//        val inputStream = connection.getInputStream()
-//        val bufferedReader = BufferedReader(InputStreamReader(inputStream))
-//
-//        val stringBuilder = StringBuilder()
-//        var line: String?
-//        while (bufferedReader.readLine().also { line = it } != null) {
-//            stringBuilder.append(line)
-//        }
-//
-//        bufferedReader.close()
-//        inputStream.close()
-//
-//        stringBuilder.toString()
-//    }
 
     @Deprecated("Deprecated in Java")
     override fun onPrepareOptionsMenu(menu: Menu) {

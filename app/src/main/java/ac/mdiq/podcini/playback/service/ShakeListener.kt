@@ -31,10 +31,8 @@ internal class ShakeListener(private val mContext: Context, private val mSleepTi
     }
 
     fun pause() {
-        if (mSensorMgr != null) {
-            mSensorMgr!!.unregisterListener(this)
-            mSensorMgr = null
-        }
+        mSensorMgr?.unregisterListener(this)
+        mSensorMgr = null
     }
 
     override fun onSensorChanged(event: SensorEvent) {
@@ -49,8 +47,7 @@ internal class ShakeListener(private val mContext: Context, private val mSleepTi
         }
     }
 
-    override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
-    }
+    override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
 
     companion object {
         private val TAG: String = ShakeListener::class.java.simpleName

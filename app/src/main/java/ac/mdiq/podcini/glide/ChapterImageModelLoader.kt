@@ -29,11 +29,7 @@ class ChapterImageModelLoader : ModelLoader<EmbeddedChapterImage?, ByteBuffer?> 
         }
     }
 
-    override fun buildLoadData(model: EmbeddedChapterImage,
-                               width: Int,
-                               height: Int,
-                               options: Options
-    ): ModelLoader.LoadData<ByteBuffer?> {
+    override fun buildLoadData(model: EmbeddedChapterImage, width: Int, height: Int, options: Options): ModelLoader.LoadData<ByteBuffer?> {
         return ModelLoader.LoadData(ObjectKey(model), EmbeddedImageFetcher(model))
     }
 
@@ -59,9 +55,8 @@ class ChapterImageModelLoader : ModelLoader<EmbeddedChapterImage?, ByteBuffer?> 
                     val url = image.media.getStreamUrl()
                     if (url != null) httpReq.url(url)
                     val response = getHttpClient()!!.newCall(httpReq.build()).execute()
-                    if (!response.isSuccessful || response.body == null) {
-                        throw IOException("Invalid response: " + response.code + " " + response.message)
-                    }
+                    if (!response.isSuccessful || response.body == null) throw IOException("Invalid response: " + response.code + " " + response.message)
+
                     callback.onDataReady(ByteBuffer.wrap(response.body!!.bytes()))
                 }
             } catch (e: IOException) {

@@ -32,10 +32,8 @@ class Rss20 : Namespace() {
                     var size: Long = 0
                     try {
                         size = attributes.getValue(ENC_LEN)?.toLong() ?: 0
-                        if (size < 16384) {
-                            // less than 16kb is suspicious, check manually
-                            size = 0
-                        }
+                        // less than 16kb is suspicious, check manually
+                        if (size < 16384) size = 0
                     } catch (e: NumberFormatException) {
                         Log.d(TAG, "Length attribute could not be parsed.")
                     }
@@ -54,9 +52,7 @@ class Rss20 : Namespace() {
                     val currentItem = state.currentItem!!
                     // the title tag is optional in RSS 2.0. The description is used
                     // as a title if the item has no title-tag.
-                    if (currentItem.title == null) {
-                        currentItem.title = currentItem.description
-                    }
+                    if (currentItem.title == null) currentItem.title = currentItem.description
 
                     if (state.tempObjects.containsKey(Itunes.DURATION)) {
                         if (currentItem.hasMedia()) {
@@ -77,59 +73,38 @@ class Rss20 : Namespace() {
                 val secondElement = state.secondTag
                 val second = secondElement.name
                 var third: String? = null
-                if (state.tagstack.size >= 3) {
-                    third = state.thirdTag.name
-                }
+                if (state.tagstack.size >= 3) third = state.thirdTag.name
+
                 when {
                     GUID == top && ITEM == second -> {
                         // some feed creators include an empty or non-standard guid-element in their feed,
                         // which should be ignored
-                        if (contentRaw.isNotEmpty() && state.currentItem != null) {
-                            state.currentItem!!.itemIdentifier = contentRaw
-                        }
+                        if (contentRaw.isNotEmpty() && state.currentItem != null) state.currentItem!!.itemIdentifier = contentRaw
                     }
                     TITLE == top -> {
                         when {
-                            ITEM == second && state.currentItem != null -> {
-                                state.currentItem!!.title = contentFromHtml
-                            }
-                            CHANNEL == second -> {
-                                state.feed.title = contentFromHtml
-                            }
+                            ITEM == second && state.currentItem != null -> state.currentItem!!.title = contentFromHtml
+                            CHANNEL == second -> state.feed.title = contentFromHtml
                         }
                     }
                     LINK == top -> {
                         when {
-                            CHANNEL == second -> {
-                                state.feed.link = content
-                            }
-                            ITEM == second && state.currentItem != null -> {
-                                state.currentItem!!.link = content
-                            }
+                            CHANNEL == second -> state.feed.link = content
+                            ITEM == second && state.currentItem != null -> state.currentItem!!.link = content
                         }
                     }
-                    PUBDATE == top && ITEM == second && state.currentItem != null -> {
-                        state.currentItem!!.pubDate = parseOrNullIfFuture(content)
-                    }
+                    PUBDATE == top && ITEM == second && state.currentItem != null -> state.currentItem!!.pubDate = parseOrNullIfFuture(content)
                     URL == top && IMAGE == second && CHANNEL == third -> {
                         // prefer itunes:image
-                        if (state.feed.imageUrl == null) {
-                            state.feed.imageUrl = content
-                        }
+                        if (state.feed.imageUrl == null) state.feed.imageUrl = content
                     }
                     DESCR == localName -> {
                         when {
-                            CHANNEL == second -> {
-                                state.feed.description = contentFromHtml
-                            }
-                            ITEM == second && state.currentItem != null -> {
-                                state.currentItem!!.setDescriptionIfLonger(content) // fromHtml here breaks \n when not html
-                            }
+                            CHANNEL == second -> state.feed.description = contentFromHtml
+                            ITEM == second && state.currentItem != null -> state.currentItem!!.setDescriptionIfLonger(content) // fromHtml here breaks \n when not html
                         }
                     }
-                    LANGUAGE == localName -> {
-                        state.feed.language = content.lowercase()
-                    }
+                    LANGUAGE == localName -> state.feed.language = content.lowercase()
                 }
             }
         }

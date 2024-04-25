@@ -77,11 +77,7 @@ class FeedMedia : FeedFile, Playable {
     }
 
     override fun getHumanReadableIdentifier(): String? {
-        return if (item?.title != null) {
-            item!!.title
-        } else {
-            download_url
-        }
+        return if (item?.title != null) item!!.title else download_url
     }
 
     val mediaItem: MediaBrowserCompat.MediaItem
@@ -99,12 +95,8 @@ class FeedMedia : FeedFile, Playable {
             if (item != null) {
                 // getImageLocation() also loads embedded images, which we can not send to external devices
                 when {
-                    item!!.imageUrl != null -> {
-                        builder.setIconUri(Uri.parse(item!!.imageUrl))
-                    }
-                    item!!.feed?.imageUrl != null -> {
-                        builder.setIconUri(Uri.parse(item!!.feed!!.imageUrl))
-                    }
+                    item!!.imageUrl != null -> builder.setIconUri(Uri.parse(item!!.imageUrl))
+                    item!!.feed?.imageUrl != null -> builder.setIconUri(Uri.parse(item!!.feed!!.imageUrl))
                 }
             }
             return MediaBrowserCompat.MediaItem(builder.build(), MediaBrowserCompat.MediaItem.FLAG_PLAYABLE)
@@ -119,32 +111,21 @@ class FeedMedia : FeedFile, Playable {
 
     fun updateFromOther(other: FeedMedia) {
         super.updateFromOther(other)
-        if (other.size > 0) {
-            size = other.size
-        }
-        if (other.duration > 0 && duration <= 0) { // Do not overwrite duration that we measured after downloading
-            duration = other.duration
-        }
-        if (other.mime_type != null) {
-            mime_type = other.mime_type
-        }
+        if (other.size > 0) size = other.size
+        // Do not overwrite duration that we measured after downloading
+        if (other.duration > 0 && duration <= 0) duration = other.duration
+        if (other.mime_type != null) mime_type = other.mime_type
     }
 
     fun compareWithOther(other: FeedMedia): Boolean {
-        if (super.compareWithOther(other)) {
-            return true
-        }
+        if (super.compareWithOther(other)) return true
+
         if (other.mime_type != null) {
-            if (mime_type == null || mime_type != other.mime_type) {
-                return true
-            }
+            if (mime_type == null || mime_type != other.mime_type) return true
         }
-        if (other.size > 0 && other.size != size) {
-            return true
-        }
-        if (other.duration > 0 && duration <= 0) {
-            return true
-        }
+        if (other.size > 0 && other.size != size) return true
+        if (other.duration > 0 && duration <= 0) return true
+
         return false
     }
 
@@ -174,9 +155,7 @@ class FeedMedia : FeedFile, Playable {
 
     override fun setPosition(position: Int) {
         this.position = position
-        if (position > 0 && item != null && item!!.isNew) {
-            item!!.setPlayed(false)
-        }
+        if (position > 0 && item != null && item!!.isNew) item!!.setPlayed(false)
     }
 
     override fun getDescription(): String? {
@@ -202,9 +181,7 @@ class FeedMedia : FeedFile, Playable {
      */
     fun setItem(item: FeedItem?) {
         this.item = item
-        if (item != null && item.media !== this) {
-            item.setMedia(this)
-        }
+        if (item != null && item.media !== this) item.setMedia(this)
     }
 
     fun getPlaybackCompletionDate(): Date? {
@@ -213,8 +190,7 @@ class FeedMedia : FeedFile, Playable {
     }
 
     fun setPlaybackCompletionDate(playbackCompletionDate: Date?) {
-        this.playbackCompletionDate = if (playbackCompletionDate == null
-        ) null else playbackCompletionDate.clone() as Date
+        this.playbackCompletionDate = if (playbackCompletionDate == null) null else playbackCompletionDate.clone() as Date
     }
 
     val isInProgress: Boolean
@@ -225,9 +201,7 @@ class FeedMedia : FeedFile, Playable {
     }
 
     fun hasEmbeddedPicture(): Boolean {
-        if (hasEmbeddedPicture == null) {
-            checkEmbeddedPicture()
-        }
+        if (hasEmbeddedPicture == null) checkEmbeddedPicture()
         return hasEmbeddedPicture!!
     }
 
@@ -248,22 +222,16 @@ class FeedMedia : FeedFile, Playable {
     }
 
     override fun writeToPreferences(prefEditor: SharedPreferences.Editor) {
-        if (item?.feed != null) {
-            prefEditor.putLong(PREF_FEED_ID, item!!.feed!!.id)
-        } else {
-            prefEditor.putLong(PREF_FEED_ID, 0L)
-        }
+        if (item?.feed != null) prefEditor.putLong(PREF_FEED_ID, item!!.feed!!.id)
+        else prefEditor.putLong(PREF_FEED_ID, 0L)
+
         prefEditor.putLong(PREF_MEDIA_ID, id)
     }
 
     override fun getEpisodeTitle(): String {
         if (item == null) return "No title"
 
-        return if (item!!.title != null) {
-            item!!.title!!
-        } else {
-            item!!.identifyingValue?:"No title"
-        }
+        return if (item!!.title != null) item!!.title!! else item!!.identifyingValue?:"No title"
     }
 
     override fun getChapters(): List<Chapter> {
@@ -324,22 +292,14 @@ class FeedMedia : FeedFile, Playable {
     }
 
     override fun setChapters(chapters: List<Chapter>) {
-        if (item != null) {
-            item!!.chapters = chapters.toMutableList()
-        }
+        if (item != null) item!!.chapters = chapters.toMutableList()
     }
 
     override fun getImageLocation(): String? {
         return when {
-            item != null -> {
-                item!!.imageLocation
-            }
-            hasEmbeddedPicture() -> {
-                FILENAME_PREFIX_EMBEDDED_COVER + getLocalMediaUrl()
-            }
-            else -> {
-                null
-            }
+            item != null -> item!!.imageLocation
+            hasEmbeddedPicture() -> FILENAME_PREFIX_EMBEDDED_COVER + getLocalMediaUrl()
+            else -> null
         }
     }
 
@@ -349,9 +309,7 @@ class FeedMedia : FeedFile, Playable {
 
     override fun setDownloaded(downloaded: Boolean) {
         super.setDownloaded(downloaded)
-        if (item != null && downloaded && item!!.isNew) {
-            item!!.setPlayed(false)
-        }
+        if (item != null && downloaded && item!!.isNew) item!!.setPlayed(false)
     }
 
     fun checkEmbeddedPicture() {
@@ -363,11 +321,7 @@ class FeedMedia : FeedFile, Playable {
             MediaMetadataRetrieverCompat().use { mmr ->
                 mmr.setDataSource(getLocalMediaUrl())
                 val image = mmr.embeddedPicture
-                hasEmbeddedPicture = if (image != null) {
-                    java.lang.Boolean.TRUE
-                } else {
-                    java.lang.Boolean.FALSE
-                }
+                hasEmbeddedPicture = if (image != null) java.lang.Boolean.TRUE else java.lang.Boolean.FALSE
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -376,12 +330,8 @@ class FeedMedia : FeedFile, Playable {
     }
 
     override fun equals(o: Any?): Boolean {
-        if (o == null) {
-            return false
-        }
-        if (o is RemoteMedia) {
-            return o == this
-        }
+        if (o == null) return false
+        if (o is RemoteMedia) return o == this
         return super.equals(o)
     }
 

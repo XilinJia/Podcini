@@ -33,13 +33,10 @@ abstract class VorbisCommentReader internal constructor(private val input: Input
         val oggPageHeader = byteArrayOf('O'.code.toByte(), 'g'.code.toByte(), 'g'.code.toByte(), 'S'.code.toByte())
         for (bytesRead in 0 until SECOND_PAGE_MAX_LENGTH) {
             val data = input.read()
-            if (data == -1) {
-                throw IOException("EOF while trying to find vorbis page")
-            }
+            if (data == -1) throw IOException("EOF while trying to find vorbis page")
+
             buffer[bytesRead % buffer.size] = data.toByte()
-            if (bufferMatches(buffer, oggPageHeader, bytesRead)) {
-                break
-            }
+            if (bufferMatches(buffer, oggPageHeader, bytesRead)) break
         }
         // read segments
         IOUtils.skipFully(input, 22)
@@ -53,8 +50,7 @@ abstract class VorbisCommentReader internal constructor(private val input: Input
             val vectorLength = EndianUtils.readSwappedUnsignedInteger(input)
             if (vectorLength > 20 * 1024 * 1024) {
                 val keyPart = readUtf8String(10)
-                throw VorbisCommentReaderException("User comment unrealistically long. "
-                        + "key=" + keyPart + ", length=" + vectorLength)
+                throw VorbisCommentReaderException("User comment unrealistically long. key=$keyPart, length=$vectorLength")
             }
             val key = readContentVectorKey(vectorLength)!!.lowercase()
             val shouldReadValue = handles(key)
@@ -62,9 +58,8 @@ abstract class VorbisCommentReader internal constructor(private val input: Input
             if (shouldReadValue) {
                 val value = readUtf8String(vectorLength - key.length - 1)
                 onContentVectorValue(key, value)
-            } else {
-                IOUtils.skipFully(input, vectorLength - key.length - 1)
-            }
+            } else IOUtils.skipFully(input, vectorLength - key.length - 1)
+
         } catch (e: IOException) {
             e.printStackTrace()
         }
@@ -99,9 +94,7 @@ abstract class VorbisCommentReader internal constructor(private val input: Input
                     IOUtils.skip(input, (FIRST_OGG_PAGE_LENGTH - FIRST_OPUS_PAGE_LENGTH).toLong())
                     return
                 }
-                bufferMatches(buffer, "OpusHead".toByteArray(), i) -> {
-                    return
-                }
+                bufferMatches(buffer, "OpusHead".toByteArray(), i) -> return
             }
         }
         throw IOException("No vorbis identification header found")
@@ -120,12 +113,8 @@ abstract class VorbisCommentReader internal constructor(private val input: Input
         for (bytesRead in 0 until SECOND_PAGE_MAX_LENGTH) {
             buffer[bytesRead % buffer.size] = input.read().toByte()
             when {
-                bufferMatches(buffer, oggCommentHeader, bytesRead) -> {
-                    return
-                }
-                bufferMatches(buffer, "OpusTags".toByteArray(), bytesRead) -> {
-                    return
-                }
+                bufferMatches(buffer, oggCommentHeader, bytesRead) -> return
+                bufferMatches(buffer, "OpusTags".toByteArray(), bytesRead) -> return
             }
         }
         throw IOException("No comment header found")
@@ -142,9 +131,7 @@ abstract class VorbisCommentReader internal constructor(private val input: Input
                 posInHaystack += haystack.size
             }
             posInHaystack %= haystack.size
-            if (haystack[posInHaystack] != needle[needle.size - 1 - i]) {
-                return false
-            }
+            if (haystack[posInHaystack] != needle[needle.size - 1 - i]) return false
         }
         return true
     }
@@ -166,11 +153,8 @@ abstract class VorbisCommentReader internal constructor(private val input: Input
         val builder = StringBuilder()
         for (i in 0 until vectorLength) {
             val c = input.read().toChar()
-            if (c == '=') {
-                return builder.toString()
-            } else {
-                builder.append(c)
-            }
+            if (c == '=') return builder.toString()
+            else builder.append(c)
         }
         return null // no key found
     }

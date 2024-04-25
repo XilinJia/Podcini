@@ -33,39 +33,28 @@ object ChapterUtils {
     @JvmStatic
     fun getCurrentChapterIndex(media: Playable?, position: Int): Int {
         val chapters = media?.getChapters()
-        if (chapters.isNullOrEmpty()) {
-            return -1
-        }
+        if (chapters.isNullOrEmpty()) return -1
+
         for (i in chapters.indices) {
-            if (chapters[i].start > position) {
-                return i - 1
-            }
+            if (chapters[i].start > position) return i - 1
         }
         return chapters.size - 1
     }
 
     @JvmStatic
     fun loadChapters(playable: Playable, context: Context, forceRefresh: Boolean) {
-        if (playable.chaptersLoaded() && !forceRefresh) {
-            // Already loaded
-            return
-        }
+        // Already loaded
+        if (playable.chaptersLoaded() && !forceRefresh) return
 
         var chaptersFromDatabase: List<Chapter>? = null
         var chaptersFromPodcastIndex: List<Chapter>? = null
         if (playable is FeedMedia) {
-            if (playable.item == null) {
-                playable.setItem(DBReader.getFeedItem(playable.itemId))
-            }
+            if (playable.item == null) playable.setItem(DBReader.getFeedItem(playable.itemId))
+
             val item = playable.item
             if (item != null) {
-                if (item.hasChapters()) {
-                    chaptersFromDatabase = DBReader.loadChaptersOfFeedItem(item)
-                }
-
-                if (!item.podcastIndexChapterUrl.isNullOrEmpty()) {
-                    chaptersFromPodcastIndex = loadChaptersFromUrl(item.podcastIndexChapterUrl!!, forceRefresh)
-                }
+                if (item.hasChapters()) chaptersFromDatabase = DBReader.loadChaptersOfFeedItem(item)
+                if (!item.podcastIndexChapterUrl.isNullOrEmpty()) chaptersFromPodcastIndex = loadChaptersFromUrl(item.podcastIndexChapterUrl!!, forceRefresh)
             }
         }
 
@@ -73,12 +62,9 @@ object ChapterUtils {
         val chaptersMergePhase1 = merge(chaptersFromDatabase, chaptersFromMediaFile)
         val chapters = merge(chaptersMergePhase1, chaptersFromPodcastIndex)
         Log.d(TAG, "loadChapters chapters size: ${chapters?.size?:0} ${playable.getEpisodeTitle()}")
-        if (chapters == null) {
-            // Do not try loading again. There are no chapters.
-            playable.setChapters(listOf())
-        } else {
-            playable.setChapters(chapters)
-        }
+        if (chapters == null) playable.setChapters(listOf())    // Do not try loading again. There are no chapters.
+        else playable.setChapters(chapters)
+
     }
 
     fun loadChaptersFromMediaFile(playable: Playable, context: Context): List<Chapter> {
@@ -115,13 +101,11 @@ object ChapterUtils {
     @Throws(IOException::class)
     private fun openStream(playable: Playable, context: Context): CountingInputStream {
         if (playable.localFileAvailable()) {
-            if (playable.getLocalMediaUrl() == null) {
-                throw IOException("No local url")
-            }
+            if (playable.getLocalMediaUrl() == null) throw IOException("No local url")
+
             val source = File(playable.getLocalMediaUrl() ?: "")
-            if (!source.exists()) {
-                throw IOException("Local file does not exist")
-            }
+            if (!source.exists()) throw IOException("Local file does not exist")
+
             return CountingInputStream(BufferedInputStream(FileInputStream(source)))
         } else {
             val streamurl = playable.getStreamUrl()
@@ -139,14 +123,12 @@ object ChapterUtils {
     }
 
     fun loadChaptersFromUrl(url: String, forceRefresh: Boolean): List<Chapter> {
-        if (forceRefresh) {
-            return loadChaptersFromUrl(url, CacheControl.FORCE_NETWORK)
-        }
+        if (forceRefresh) return loadChaptersFromUrl(url, CacheControl.FORCE_NETWORK)
+
         val cachedChapters = loadChaptersFromUrl(url, CacheControl.FORCE_CACHE)
-        if (cachedChapters.size <= 1) {
-            // Some publishers use one dummy chapter before actual chapters are available
-            return loadChaptersFromUrl(url, CacheControl.FORCE_NETWORK)
-        }
+        // Some publishers use one dummy chapter before actual chapters are available
+        if (cachedChapters.size <= 1) return loadChaptersFromUrl(url, CacheControl.FORCE_NETWORK)
+
         return cachedChapters
     }
 
@@ -155,9 +137,8 @@ object ChapterUtils {
         try {
             val request: Request = Builder().url(url).cacheControl(cacheControl).build()
             response = getHttpClient().newCall(request).execute()
-            if (response.isSuccessful && response.body != null) {
-                return PodcastIndexChapterParser.parse(response.body!!.string())
-            }
+            if (response.isSuccessful && response.body != null) return PodcastIndexChapterParser.parse(response.body!!.string())
+
         } catch (e: IOException) {
             e.printStackTrace()
         } finally {
@@ -187,9 +168,8 @@ object ChapterUtils {
         var chapters = reader.getChapters()
         chapters = chapters.sortedWith(ChapterStartTimeComparator())
         enumerateEmptyChapterTitles(chapters)
-        if (chaptersValid(chapters)) {
-            return chapters
-        }
+        if (chaptersValid(chapters)) return chapters
+
         return emptyList()
     }
 
@@ -199,20 +179,15 @@ object ChapterUtils {
     private fun enumerateEmptyChapterTitles(chapters: List<Chapter>) {
         for (i in chapters.indices) {
             val c = chapters[i]
-            if (c.title == null) {
-                c.title = i.toString()
-            }
+            if (c.title == null) c.title = i.toString()
         }
     }
 
     private fun chaptersValid(chapters: List<Chapter>): Boolean {
-        if (chapters.isEmpty()) {
-            return false
-        }
+        if (chapters.isEmpty()) return false
+
         for (c in chapters) {
-            if (c.start < 0) {
-                return false
-            }
+            if (c.start < 0) return false
         }
         return true
     }

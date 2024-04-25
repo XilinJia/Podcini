@@ -38,20 +38,13 @@ object DateUtils {
             // even more precise than microseconds: discard further decimal places
             when {
                 current - start > 4 -> {
-                    date = if (current < date.length - 1) {
-                        date.substring(0, start + 4) + date.substring(current)
-                    } else {
-                        date.substring(0, start + 4)
-                    }
+                    date = if (current < date.length - 1) date.substring(0, start + 4) + date.substring(current) else date.substring(0, start + 4)
                     // less than 4 decimal places: pad to have a consistent format for the parser
                 }
                 current - start < 4 -> {
-                    date = if (current < date.length - 1) {
-                        (date.substring(0, current) + StringUtils.repeat("0", 4 - (current - start))
-                                + date.substring(current))
-                    } else {
-                        date.substring(0, current) + StringUtils.repeat("0", 4 - (current - start))
-                    }
+                    date = if (current < date.length - 1)
+                        (date.substring(0, current) + StringUtils.repeat("0", 4 - (current - start)) + date.substring(current))
+                    else date.substring(0, current) + StringUtils.repeat("0", 4 - (current - start))
                 }
             }
         }
@@ -96,18 +89,14 @@ object DateUtils {
             pos.index = 0
             try {
                 val result = parser.parse(date, pos)
-                if (result != null && pos.index == date.length) {
-                    return result
-                }
+                if (result != null && pos.index == date.length) return result
             } catch (e: Exception) {
                 Log.e(TAG, Log.getStackTraceString(e))
             }
         }
 
         // if date string starts with a weekday, try parsing date string without it
-        if (date.matches("^\\w+, .*$".toRegex())) {
-            return parse(date.substring(date.indexOf(',') + 1))
-        }
+        if (date.matches("^\\w+, .*$".toRegex())) return parse(date.substring(date.indexOf(',') + 1))
 
         Log.d(TAG, "Could not parse date string \"$input\" [$date]")
         return null
@@ -120,9 +109,7 @@ object DateUtils {
     fun parseOrNullIfFuture(input: String?): Date? {
         val date = parse(input) ?: return null
         val now = Date()
-        if (date.after(now)) {
-            return null
-        }
+        if (date.after(now)) return null
         return date
     }
 

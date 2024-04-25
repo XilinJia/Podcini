@@ -7,9 +7,8 @@ import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
 object EpisodeCleanupAlgorithmFactory {
     @JvmStatic
     fun build(): EpisodeCleanupAlgorithm {
-        if (!isEnableAutodownload) {
-            return APNullCleanupAlgorithm()
-        }
+        if (!isEnableAutodownload) return APNullCleanupAlgorithm()
+
         return when (val cleanupValue = episodeCleanupValue) {
             UserPreferences.EPISODE_CLEANUP_EXCEPT_FAVORITE -> ExceptFavoriteCleanupAlgorithm()
             UserPreferences.EPISODE_CLEANUP_QUEUE -> APQueueCleanupAlgorithm()

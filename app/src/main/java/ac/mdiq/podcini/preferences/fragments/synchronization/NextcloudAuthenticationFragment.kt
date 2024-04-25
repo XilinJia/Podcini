@@ -34,13 +34,11 @@ class NextcloudAuthenticationFragment : DialogFragment(), NextcloudLoginFlow.Aut
         dialog.setView(viewBinding!!.root)
 
         viewBinding!!.chooseHostButton.setOnClickListener {
-            nextcloudLoginFlow = NextcloudLoginFlow(getHttpClient(),
-                viewBinding!!.serverUrlText.text.toString(), requireContext(), this)
+            nextcloudLoginFlow = NextcloudLoginFlow(getHttpClient(), viewBinding!!.serverUrlText.text.toString(), requireContext(), this)
             startLoginFlow()
         }
         if (savedInstanceState?.getStringArrayList(EXTRA_LOGIN_FLOW) != null) {
-            nextcloudLoginFlow = NextcloudLoginFlow.fromInstanceState(getHttpClient(),
-                requireContext(), this, savedInstanceState.getStringArrayList(EXTRA_LOGIN_FLOW)!!)
+            nextcloudLoginFlow = NextcloudLoginFlow.fromInstanceState(getHttpClient(), requireContext(), this, savedInstanceState.getStringArrayList(EXTRA_LOGIN_FLOW)!!)
             startLoginFlow()
         }
         return dialog.create()
@@ -56,23 +54,17 @@ class NextcloudAuthenticationFragment : DialogFragment(), NextcloudLoginFlow.Aut
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        if (nextcloudLoginFlow != null) {
-            outState.putStringArrayList(EXTRA_LOGIN_FLOW, nextcloudLoginFlow!!.saveInstanceState())
-        }
+        if (nextcloudLoginFlow != null) outState.putStringArrayList(EXTRA_LOGIN_FLOW, nextcloudLoginFlow!!.saveInstanceState())
     }
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        if (nextcloudLoginFlow != null) {
-            nextcloudLoginFlow!!.cancel()
-        }
+        nextcloudLoginFlow?.cancel()
     }
 
     override fun onResume() {
         super.onResume()
-        if (shouldDismiss) {
-            dismiss()
-        }
+        if (shouldDismiss) dismiss()
     }
 
     override fun onNextcloudAuthenticated(server: String, username: String, password: String) {
@@ -82,11 +74,8 @@ class NextcloudAuthenticationFragment : DialogFragment(), NextcloudLoginFlow.Aut
         SynchronizationCredentials.hosturl = server
         SynchronizationCredentials.username = username
         SyncService.fullSync(requireContext())
-        if (isResumed) {
-            dismiss()
-        } else {
-            shouldDismiss = true
-        }
+        if (isResumed) dismiss()
+        else shouldDismiss = true
     }
 
     override fun onNextcloudAuthError(errorMessage: String?) {

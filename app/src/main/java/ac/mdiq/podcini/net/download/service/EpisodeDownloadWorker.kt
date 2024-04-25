@@ -50,9 +50,7 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
                 while (true) {
                     try {
                         synchronized(notificationProgress) {
-                            if (isInterrupted) {
-                                return
-                            }
+                            if (isInterrupted) return
                             notificationProgress.put(media.getEpisodeTitle(), request.progressPercent)
                         }
                         setProgressAsync(
@@ -60,8 +58,7 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
                                 .putInt(DownloadServiceInterface.WORK_DATA_PROGRESS, request.progressPercent)
                                 .build())
                             .get()
-                        val nm = applicationContext
-                            .getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                        val nm = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                         nm.notify(R.id.notification_downloading, generateProgressNotification())
                         sleep(1000)
                     } catch (e: InterruptedException) {
@@ -80,9 +77,9 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
             e.printStackTrace()
             result = Result.failure()
         }
-        if (result == Result.failure() && downloader?.downloadRequest?.destination != null) {
+        if (result == Result.failure() && downloader?.downloadRequest?.destination != null)
             FileUtils.deleteQuietly(File(downloader!!.downloadRequest.destination!!))
-        }
+
         progressUpdaterThread.interrupt()
         try {
             progressUpdaterThread.join()
@@ -92,8 +89,7 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
         synchronized(notificationProgress) {
             notificationProgress.remove(media.getEpisodeTitle())
             if (notificationProgress.isEmpty()) {
-                val nm = applicationContext
-                    .getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                val nm = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                 nm.cancel(R.id.notification_downloading)
             }
         }
@@ -107,8 +103,7 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
     }
 
     override fun getForegroundInfoAsync(): ListenableFuture<ForegroundInfo> {
-        return Futures.immediateFuture(
-            ForegroundInfo(R.id.notification_downloading, generateProgressNotification()))
+        return Futures.immediateFuture(ForegroundInfo(R.id.notification_downloading, generateProgressNotification()))
     }
 
     @OptIn(UnstableApi::class) private fun performDownload(media: FeedMedia, request: DownloadRequest): Result {
@@ -144,22 +139,18 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
             return Result.failure()
         }
 
-        if (downloader!!.cancelled) {
-            // This also happens when the worker was preempted, not just when the user cancelled it
-            return Result.success()
-        }
+        // This also happens when the worker was preempted, not just when the user cancelled it
+        if (downloader!!.cancelled) return Result.success()
 
         val status = downloader!!.result
         if (status.isSuccessful) {
-            val handler = MediaDownloadedHandler(
-                applicationContext, downloader!!.result, request)
+            val handler = MediaDownloadedHandler(applicationContext, downloader!!.result, request)
             handler.run()
             DBWriter.addDownloadStatus(handler.updatedStatus)
             return Result.success()
         }
 
-        if (status.reason == DownloadError.ERROR_HTTP_DATA_ERROR
-                && status.reasonDetailed.toInt() == 416) {
+        if (status.reason == DownloadError.ERROR_HTTP_DATA_ERROR && status.reasonDetailed.toInt() == 416) {
             Log.d(TAG, "Requested invalid range, restarting download from the beginning")
             if (downloader?.downloadRequest?.destination != null) FileUtils.deleteQuietly(File(downloader!!.downloadRequest.destination!!))
             sendMessage(request.title?:"", false)
@@ -181,9 +172,7 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
         if (isLastRunAttempt) {
             sendErrorNotification(downloader!!.downloadRequest.title?:"")
             return Result.failure()
-        } else {
-            return Result.retry()
-        }
+        } else return Result.retry()
     }
 
     private val isLastRunAttempt: Boolean
@@ -192,14 +181,11 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
     private fun sendMessage(episodeTitle: String, isImmediateFail: Boolean) {
         var episodeTitle = episodeTitle
         val retrying = !isLastRunAttempt && !isImmediateFail
-        if (episodeTitle.length > 20) {
-            episodeTitle = episodeTitle.substring(0, 19) + "…"
-        }
-        EventBus.getDefault().post(MessageEvent(
-            applicationContext.getString(
-                if (retrying) R.string.download_error_retrying else R.string.download_error_not_retrying,
-                episodeTitle), { ctx: Context -> MainActivityStarter(ctx).withDownloadLogsOpen().start() },
-            applicationContext.getString(R.string.download_error_details)))
+        if (episodeTitle.length > 20) episodeTitle = episodeTitle.substring(0, 19) + "…"
+
+        EventBus.getDefault().post(MessageEvent(applicationContext.getString(
+            if (retrying) R.string.download_error_retrying else R.string.download_error_not_retrying,
+            episodeTitle), { ctx: Context -> MainActivityStarter(ctx).withDownloadLogsOpen().start() }, applicationContext.getString(R.string.download_error_details)))
     }
 
     private fun getDownloadLogsIntent(context: Context): PendingIntent {
@@ -220,8 +206,7 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
             return
         }
 
-        val builder = NotificationCompat.Builder(applicationContext,
-            NotificationUtils.CHANNEL_ID_DOWNLOAD_ERROR)
+        val builder = NotificationCompat.Builder(applicationContext, NotificationUtils.CHANNEL_ID_DOWNLOAD_ERROR)
         builder.setTicker(applicationContext.getString(R.string.download_report_title))
             .setContentTitle(applicationContext.getString(R.string.download_report_title))
             .setContentText(applicationContext.getString(R.string.download_error_tap_for_details))
@@ -229,8 +214,7 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
             .setContentIntent(getDownloadLogsIntent(applicationContext))
             .setAutoCancel(true)
         builder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-        val nm = applicationContext
-            .getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val nm = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         nm.notify(R.id.notification_download_report, builder.build())
     }
 
@@ -244,12 +228,9 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
             bigTextB.append(String.format(Locale.getDefault(), "%s (%d%%)\n", key, value))
         }
         val bigText = bigTextB.toString().trim { it <= ' ' }
-        val contentText = if (progressCopy.size == 1) {
-            bigText
-        } else {
-            applicationContext.resources.getQuantityString(R.plurals.downloads_left,
-                progressCopy.size, progressCopy.size)
-        }
+        val contentText = if (progressCopy.size == 1) bigText
+        else applicationContext.resources.getQuantityString(R.plurals.downloads_left, progressCopy.size, progressCopy.size)
+
         val builder = NotificationCompat.Builder(applicationContext, NotificationUtils.CHANNEL_ID_DOWNLOADING)
         builder.setTicker(applicationContext.getString(R.string.download_notification_title_episodes))
             .setContentTitle(applicationContext.getString(R.string.download_notification_title_episodes))

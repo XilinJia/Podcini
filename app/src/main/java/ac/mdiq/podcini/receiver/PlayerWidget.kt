@@ -81,8 +81,7 @@ class PlayerWidget : AppWidgetProvider() {
             val workRequest: OneTimeWorkRequest = OneTimeWorkRequest.Builder(WidgetUpdaterWorker::class.java)
                 .setInitialDelay((100 * 356).toLong(), TimeUnit.DAYS)
                 .build()
-            WorkManager.getInstance(context)
-                .enqueueUniqueWork(WORKAROUND_WORK_NAME, ExistingWorkPolicy.REPLACE, workRequest)
+            WorkManager.getInstance(context).enqueueUniqueWork(WORKAROUND_WORK_NAME, ExistingWorkPolicy.REPLACE, workRequest)
         }
 
         @JvmStatic

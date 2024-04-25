@@ -63,11 +63,8 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
 
         val displayMetrics: DisplayMetrics = requireContext().resources.displayMetrics
         val screenWidthDp: Float = displayMetrics.widthPixels / displayMetrics.density
-        if (screenWidthDp > 600) {
-            discoverGridLayout.numColumns = 6
-        } else {
-            discoverGridLayout.numColumns = 4
-        }
+        if (screenWidthDp > 600) discoverGridLayout.numColumns = 6
+        else discoverGridLayout.numColumns = 4
 
         // Fill with dummy elements to have a fixed height and
         // prevent the UI elements below from jumping on slow connections
@@ -104,8 +101,7 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
 
         val loader = ItunesTopListLoader(requireContext())
         val prefs: SharedPreferences = requireActivity().getSharedPreferences(ItunesTopListLoader.PREFS, Context.MODE_PRIVATE)
-        val countryCode: String = prefs.getString(ItunesTopListLoader.PREF_KEY_COUNTRY_CODE,
-            Locale.getDefault().country)!!
+        val countryCode: String = prefs.getString(ItunesTopListLoader.PREF_KEY_COUNTRY_CODE, Locale.getDefault().country)!!
         if (prefs.getBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, false)) {
             errorTextView.setText(R.string.discover_is_hidden)
             errorView.visibility = View.VISIBLE
@@ -129,9 +125,7 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
         }
 
         disposable = Observable.fromCallable {
-            loader.loadToplist(countryCode,
-                NUM_SUGGESTIONS,
-                DBReader.getFeedList())
+            loader.loadToplist(countryCode, NUM_SUGGESTIONS, DBReader.getFeedList())
         }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())

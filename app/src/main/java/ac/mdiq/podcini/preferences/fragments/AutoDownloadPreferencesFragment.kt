@@ -46,29 +46,23 @@ class AutoDownloadPreferencesFragment : PreferenceFragmentCompat() {
     private fun setupAutoDownloadScreen() {
         findPreference<Preference>(UserPreferences.PREF_ENABLE_AUTODL)!!.onPreferenceChangeListener =
             Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any? ->
-                if (newValue is Boolean) {
-                    checkAutodownloadItemVisibility(newValue)
-                }
+                if (newValue is Boolean) checkAutodownloadItemVisibility(newValue)
                 true
             }
-        if (Build.VERSION.SDK_INT >= 29) {
-            findPreference<Preference>(UserPreferences.PREF_ENABLE_AUTODL_WIFI_FILTER)!!.isVisible = false
-        }
+        if (Build.VERSION.SDK_INT >= 29) findPreference<Preference>(UserPreferences.PREF_ENABLE_AUTODL_WIFI_FILTER)!!.isVisible = false
+
         findPreference<Preference>(UserPreferences.PREF_ENABLE_AUTODL_WIFI_FILTER)?.onPreferenceChangeListener =
             Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any? ->
                 if (newValue is Boolean) {
                     setSelectedNetworksEnabled(newValue)
                     return@OnPreferenceChangeListener true
-                } else {
-                    return@OnPreferenceChangeListener false
-                }
+                } else return@OnPreferenceChangeListener false
             }
     }
 
     private fun checkAutodownloadItemVisibility(autoDownload: Boolean) {
         findPreference<Preference>(UserPreferences.PREF_EPISODE_CACHE_SIZE)!!.isEnabled = autoDownload
-        findPreference<Preference>(UserPreferences.PREF_ENABLE_AUTODL_ON_BATTERY)!!.isEnabled =
-            autoDownload
+        findPreference<Preference>(UserPreferences.PREF_ENABLE_AUTODL_ON_BATTERY)!!.isEnabled = autoDownload
         findPreference<Preference>(UserPreferences.PREF_ENABLE_AUTODL_WIFI_FILTER)!!.isEnabled = autoDownload
         findPreference<Preference>(UserPreferences.PREF_EPISODE_CLEANUP)!!.isEnabled = autoDownload
         setSelectedNetworksEnabled(autoDownload && isEnableAutodownloadWifiFilter)
@@ -76,15 +70,12 @@ class AutoDownloadPreferencesFragment : PreferenceFragmentCompat() {
 
     @SuppressLint("MissingPermission") // getConfiguredNetworks needs location permission starting with API 29
     private fun buildAutodownloadSelectedNetworksPreference() {
-        if (Build.VERSION.SDK_INT >= 29) {
-            return
-        }
+        if (Build.VERSION.SDK_INT >= 29) return
 
         val activity: Activity? = activity
 
-        if (selectedNetworks != null) {
-            clearAutodownloadSelectedNetworsPreference()
-        }
+        if (selectedNetworks != null) clearAutodownloadSelectedNetworsPreference()
+
         // get configured networks
         val wifiservice = activity!!.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         val networks = wifiservice.configuredNetworks
@@ -94,8 +85,7 @@ class AutoDownloadPreferencesFragment : PreferenceFragmentCompat() {
             return
         }
         networks.sortWith { x: WifiConfiguration, y: WifiConfiguration ->
-            blankIfNull(x.SSID).compareTo(
-                blankIfNull(y.SSID), ignoreCase = true)
+            blankIfNull(x.SSID).compareTo(blankIfNull(y.SSID), ignoreCase = true)
         }
         selectedNetworks = arrayOfNulls(networks.size)
         val prefValues = listOf(*autodownloadSelectedNetworks)
@@ -103,29 +93,20 @@ class AutoDownloadPreferencesFragment : PreferenceFragmentCompat() {
         val clickListener = Preference.OnPreferenceClickListener { preference: Preference ->
             if (preference is CheckBoxPreference) {
                 val key = preference.getKey()
-                val prefValuesList: MutableList<String?> = ArrayList(
-                    listOf(*autodownloadSelectedNetworks)
-                )
-                val newValue = preference
-                    .isChecked
+                val prefValuesList: MutableList<String?> = ArrayList(listOf(*autodownloadSelectedNetworks))
+                val newValue = preference.isChecked
                 Log.d(TAG, "Selected network $key. New state: $newValue")
 
                 val index = prefValuesList.indexOf(key)
                 when {
-                    index >= 0 && !newValue -> {
-                        // remove network
-                        prefValuesList.removeAt(index)
-                    }
-                    index < 0 && newValue -> {
-                        prefValuesList.add(key)
-                    }
+                    // remove network
+                    index >= 0 && !newValue -> prefValuesList.removeAt(index)
+                    index < 0 && newValue -> prefValuesList.add(key)
                 }
 
                 setAutodownloadSelectedNetworks(prefValuesList.toTypedArray<String?>())
                 return@OnPreferenceClickListener true
-            } else {
-                return@OnPreferenceClickListener false
-            }
+            } else return@OnPreferenceClickListener false
         }
         // create preference for each known network. attach listener and set
         // value
@@ -149,9 +130,7 @@ class AutoDownloadPreferencesFragment : PreferenceFragmentCompat() {
             val prefScreen = preferenceScreen
 
             for (network in selectedNetworks!!) {
-                if (network != null) {
-                    prefScreen.removePreference(network)
-                }
+                if (network != null) prefScreen.removePreference(network)
             }
         }
     }
@@ -160,26 +139,15 @@ class AutoDownloadPreferencesFragment : PreferenceFragmentCompat() {
         val res = requireActivity().resources
 
         val pref = findPreference<ListPreference>(UserPreferences.PREF_EPISODE_CLEANUP)
-        val values = res.getStringArray(
-            R.array.episode_cleanup_values)
+        val values = res.getStringArray(R.array.episode_cleanup_values)
         val entries = arrayOfNulls<String>(values.size)
         for (x in values.indices) {
             when (val v = values[x].toInt()) {
-                UserPreferences.EPISODE_CLEANUP_EXCEPT_FAVORITE -> {
-                    entries[x] = res.getString(R.string.episode_cleanup_except_favorite_removal)
-                }
-                UserPreferences.EPISODE_CLEANUP_QUEUE -> {
-                    entries[x] = res.getString(R.string.episode_cleanup_queue_removal)
-                }
-                UserPreferences.EPISODE_CLEANUP_NULL -> {
-                    entries[x] = res.getString(R.string.episode_cleanup_never)
-                }
-                0 -> {
-                    entries[x] = res.getString(R.string.episode_cleanup_after_listening)
-                }
-                in 1..23 -> {
-                    entries[x] = res.getQuantityString(R.plurals.episode_cleanup_hours_after_listening, v, v)
-                }
+                UserPreferences.EPISODE_CLEANUP_EXCEPT_FAVORITE -> entries[x] = res.getString(R.string.episode_cleanup_except_favorite_removal)
+                UserPreferences.EPISODE_CLEANUP_QUEUE -> entries[x] = res.getString(R.string.episode_cleanup_queue_removal)
+                UserPreferences.EPISODE_CLEANUP_NULL -> entries[x] = res.getString(R.string.episode_cleanup_never)
+                0 -> entries[x] = res.getString(R.string.episode_cleanup_after_listening)
+                in 1..23 -> entries[x] = res.getQuantityString(R.plurals.episode_cleanup_hours_after_listening, v, v)
                 else -> {
                     val numDays = v / 24 // assume underlying value will be NOT fraction of days, e.g., 36 (hours)
                     entries[x] = res.getQuantityString(R.plurals.episode_cleanup_days_after_listening, numDays, numDays)

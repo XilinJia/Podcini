@@ -20,9 +20,8 @@ abstract class SelectableAdapter<T : RecyclerView.ViewHolder?>(private val activ
     private var totalNumberOfItems = COUNT_AUTOMATICALLY
 
     fun startSelectMode(pos: Int) {
-        if (inActionMode()) {
-            endSelectMode()
-        }
+        if (inActionMode()) endSelectMode()
+
         onSelectModeListener?.onStartSelectMode()
 
         shouldSelectLazyLoadedItems = false
@@ -99,11 +98,9 @@ abstract class SelectableAdapter<T : RecyclerView.ViewHolder?>(private val activ
      * @param selected true for selected state and false for unselected
      */
     open fun setSelected(pos: Int, selected: Boolean) {
-        if (selected) {
-            selectedIds.add(getItemId(pos))
-        } else {
-            selectedIds.remove(getItemId(pos))
-        }
+        if (selected) selectedIds.add(getItemId(pos))
+        else selectedIds.remove(getItemId(pos))
+
         updateTitle()
     }
 
@@ -138,9 +135,7 @@ abstract class SelectableAdapter<T : RecyclerView.ViewHolder?>(private val activ
         setSelected(pos, !isSelected(pos))
         notifyItemChanged(pos)
 
-        if (selectedIds.size == 0) {
-            endSelectMode()
-        }
+        if (selectedIds.size == 0) endSelectMode()
     }
 
     fun inActionMode(): Boolean {
@@ -161,16 +156,12 @@ abstract class SelectableAdapter<T : RecyclerView.ViewHolder?>(private val activ
     }
 
     fun updateTitle() {
-        if (actionMode == null) {
-            return
-        }
+        if (actionMode == null) return
         var totalCount = itemCount
         var selectedCount = selectedIds.size
         if (totalNumberOfItems != COUNT_AUTOMATICALLY) {
             totalCount = totalNumberOfItems
-            if (shouldSelectLazyLoadedItems) {
-                selectedCount += (totalNumberOfItems - itemCount)
-            }
+            if (shouldSelectLazyLoadedItems) selectedCount += (totalNumberOfItems - itemCount)
         }
         actionMode!!.title = activity.resources
             .getQuantityString(R.plurals.num_selected_label, selectedIds.size,

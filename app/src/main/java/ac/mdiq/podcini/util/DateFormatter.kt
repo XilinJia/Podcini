@@ -18,9 +18,8 @@ object DateFormatter {
 
     @JvmStatic
     fun formatAbbrev(context: Context?, date: Date?): String {
-        if (date == null) {
-            return ""
-        }
+        if (date == null) return ""
+
         val now = GregorianCalendar()
         val cal = GregorianCalendar()
         cal.time = date
@@ -34,9 +33,8 @@ object DateFormatter {
 
     @JvmStatic
     fun formatForAccessibility(date: Date?): String {
-        if (date == null) {
-            return ""
-        }
+        if (date == null) return ""
+
         return DateFormat.getDateInstance(DateFormat.LONG).format(date)
     }
 }

@@ -36,14 +36,9 @@ class LicensesFragment : ListFragment() {
             val libraryList = docBuilder.parse(stream).getElementsByTagName("library")
             for (i in 0 until libraryList.length) {
                 val lib = libraryList.item(i).attributes
-                licenses.add(LicenseItem(
-                    lib.getNamedItem("name").textContent,
-                    String.format("By %s, %s license",
-                        lib.getNamedItem("author").textContent,
-                        lib.getNamedItem("license").textContent),
-                    "",
-                    lib.getNamedItem("website").textContent,
-                    lib.getNamedItem("licenseText").textContent))
+                licenses.add(LicenseItem(lib.getNamedItem("name").textContent,
+                    String.format("By %s, %s license", lib.getNamedItem("author").textContent, lib.getNamedItem("license").textContent),
+                    "", lib.getNamedItem("website").textContent, lib.getNamedItem("licenseText").textContent))
             }
             emitter.onSuccess(licenses)
         }
@@ -55,12 +50,8 @@ class LicensesFragment : ListFragment() {
             )
     }
 
-    private class LicenseItem(title: String,
-                              subtitle: String,
-                              imageUrl: String,
-                              val licenseUrl: String,
-                              val licenseTextFile: String
-    ) : SimpleIconListAdapter.ListItem(title, subtitle, imageUrl)
+    private class LicenseItem(title: String, subtitle: String, imageUrl: String, val licenseUrl: String, val licenseTextFile: String)
+        : SimpleIconListAdapter.ListItem(title, subtitle, imageUrl)
 
     override fun onListItemClick(l: ListView, v: View, position: Int, id: Long) {
         super.onListItemClick(l, v, position, id)
@@ -71,20 +62,15 @@ class LicensesFragment : ListFragment() {
             .setTitle(item.title)
             .setItems(items) { dialog: DialogInterface?, which: Int ->
                 when (which) {
-                    0 -> {
-                        openInBrowser(requireContext(), item.licenseUrl)
-                    }
-                    1 -> {
-                        showLicenseText(item.licenseTextFile)
-                    }
+                    0 -> openInBrowser(requireContext(), item.licenseUrl)
+                    1 -> showLicenseText(item.licenseTextFile)
                 }
             }.show()
     }
 
     private fun showLicenseText(licenseTextFile: String) {
         try {
-            val reader = BufferedReader(InputStreamReader(
-                requireContext().assets.open(licenseTextFile), "UTF-8"))
+            val reader = BufferedReader(InputStreamReader(requireContext().assets.open(licenseTextFile), "UTF-8"))
             val licenseText = StringBuilder()
             var line: String?
             while ((reader.readLine().also { line = it }) != null) {

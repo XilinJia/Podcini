@@ -1,10 +1,6 @@
 package ac.mdiq.podcini.net.sync.gpoddernet.model
 
-class GpodnetDevice(val id: String,
-                    val caption: String,
-                    type: String?,
-                    val subscriptions: Int
-) {
+class GpodnetDevice(val id: String, val caption: String, type: String?, val subscriptions: Int) {
     val type: DeviceType
 
     init {
@@ -12,8 +8,7 @@ class GpodnetDevice(val id: String,
     }
 
     override fun toString(): String {
-        return ("GpodnetDevice [id=" + id + ", caption=" + caption + ", type="
-                + type + ", subscriptions=" + subscriptions + "]")
+        return ("GpodnetDevice [id=" + id + ", caption=" + caption + ", type=" + type + ", subscriptions=" + subscriptions + "]")
     }
 
     enum class DeviceType {
@@ -25,9 +20,7 @@ class GpodnetDevice(val id: String,
 
         companion object {
             fun fromString(s: String?): DeviceType {
-                if (s == null) {
-                    return OTHER
-                }
+                if (s == null) return OTHER
 
                 return when (s) {
                     "desktop" -> DESKTOP

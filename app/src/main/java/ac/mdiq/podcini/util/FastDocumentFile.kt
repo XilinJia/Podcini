@@ -12,14 +12,12 @@ class FastDocumentFile(val name: String, val type: String, val uri: Uri, val len
     companion object {
         @JvmStatic
         fun list(context: Context, folderUri: Uri?): List<FastDocumentFile> {
-            val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(folderUri,
-                DocumentsContract.getDocumentId(folderUri))
-            val cursor =
-                context.contentResolver.query(childrenUri, arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID,
-                    DocumentsContract.Document.COLUMN_DISPLAY_NAME,
-                    DocumentsContract.Document.COLUMN_SIZE,
-                    DocumentsContract.Document.COLUMN_LAST_MODIFIED,
-                    DocumentsContract.Document.COLUMN_MIME_TYPE), null, null, null)
+            val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(folderUri, DocumentsContract.getDocumentId(folderUri))
+            val cursor = context.contentResolver.query(childrenUri, arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+                DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+                DocumentsContract.Document.COLUMN_SIZE,
+                DocumentsContract.Document.COLUMN_LAST_MODIFIED,
+                DocumentsContract.Document.COLUMN_MIME_TYPE), null, null, null)
             val list = ArrayList<FastDocumentFile>()
             while (cursor!!.moveToNext()) {
                 val id = cursor.getString(0)

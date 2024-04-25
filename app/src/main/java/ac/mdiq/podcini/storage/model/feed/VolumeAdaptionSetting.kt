@@ -16,9 +16,7 @@ enum class VolumeAdaptionSetting(private val value: Int, @JvmField val adaptionF
         @JvmStatic
         fun fromInteger(value: Int): VolumeAdaptionSetting {
             for (setting in entries) {
-                if (setting.value == value) {
-                    return setting
-                }
+                if (setting.value == value) return setting
             }
             throw IllegalArgumentException("Cannot map value to VolumeAdaptionSetting: $value")
         }

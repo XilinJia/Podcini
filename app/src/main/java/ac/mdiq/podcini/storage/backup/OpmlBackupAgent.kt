@@ -13,6 +13,8 @@ import ac.mdiq.podcini.storage.DBReader.getFeedList
 import ac.mdiq.podcini.storage.DBTasks.updateFeed
 import ac.mdiq.podcini.net.download.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.storage.model.feed.Feed
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
 import org.apache.commons.io.IOUtils
 import org.xmlpull.v1.XmlPullParserException
 import java.io.*
@@ -37,10 +39,7 @@ class OpmlBackupAgent : BackupAgentHelper() {
          */
         private var mChecksum: ByteArray = byteArrayOf()
 
-        override fun performBackup(oldState: ParcelFileDescriptor,
-                                   data: BackupDataOutput,
-                                   newState: ParcelFileDescriptor
-        ) {
+        override fun performBackup(oldState: ParcelFileDescriptor, data: BackupDataOutput, newState: ParcelFileDescriptor) {
             Log.d(TAG, "Performing backup")
             val byteStream = ByteArrayOutputStream()
             var digester: MessageDigest? = null
@@ -48,8 +47,7 @@ class OpmlBackupAgent : BackupAgentHelper() {
 
             try {
                 digester = MessageDigest.getInstance("MD5")
-                writer = OutputStreamWriter(DigestOutputStream(byteStream, digester),
-                    Charset.forName("UTF-8"))
+                writer = OutputStreamWriter(DigestOutputStream(byteStream, digester), Charset.forName("UTF-8"))
             } catch (e: NoSuchAlgorithmException) {
                 writer = OutputStreamWriter(byteStream, Charset.forName("UTF-8"))
             }
@@ -94,7 +92,7 @@ class OpmlBackupAgent : BackupAgentHelper() {
             }
         }
 
-        override fun restoreEntity(data: BackupDataInputStream) {
+        @OptIn(UnstableApi::class) override fun restoreEntity(data: BackupDataInputStream) {
             Log.d(TAG, "Backup restore")
 
             if (OPML_ENTITY_KEY != data.key) {
@@ -107,8 +105,7 @@ class OpmlBackupAgent : BackupAgentHelper() {
 
             try {
                 digester = MessageDigest.getInstance("MD5")
-                reader = InputStreamReader(DigestInputStream(data, digester),
-                    Charset.forName("UTF-8"))
+                reader = InputStreamReader(DigestInputStream(data, digester), Charset.forName("UTF-8"))
             } catch (e: NoSuchAlgorithmException) {
                 reader = InputStreamReader(data, Charset.forName("UTF-8"))
             }
@@ -142,9 +139,7 @@ class OpmlBackupAgent : BackupAgentHelper() {
          * @param checksum
          */
         private fun writeNewStateDescription(newState: ParcelFileDescriptor, checksum: ByteArray?) {
-            if (checksum == null) {
-                return
-            }
+            if (checksum == null) return
 
             try {
                 val outState = FileOutputStream(newState.fileDescriptor)

@@ -19,9 +19,7 @@ object SynchronizationQueueSink {
     }
 
     fun syncNowIfNotSyncedRecently() {
-        if (System.currentTimeMillis() - SynchronizationSettings.lastSyncAttempt > 1000 * 60 * 10) {
-            syncNow()
-        }
+        if (System.currentTimeMillis() - SynchronizationSettings.lastSyncAttempt > 1000 * 60 * 10) syncNow()
     }
 
     @JvmStatic
@@ -30,9 +28,8 @@ object SynchronizationQueueSink {
     }
 
     fun enqueueFeedAddedIfSynchronizationIsActive(context: Context, downloadUrl: String) {
-        if (!SynchronizationSettings.isProviderConnected) {
-            return
-        }
+        if (!SynchronizationSettings.isProviderConnected) return
+
         LockingAsyncExecutor.executeLockedAsync {
             SynchronizationQueueStorage(context).enqueueFeedAdded(downloadUrl)
             syncNow()
@@ -40,9 +37,8 @@ object SynchronizationQueueSink {
     }
 
     fun enqueueFeedRemovedIfSynchronizationIsActive(context: Context, downloadUrl: String) {
-        if (!SynchronizationSettings.isProviderConnected) {
-            return
-        }
+        if (!SynchronizationSettings.isProviderConnected) return
+
         LockingAsyncExecutor.executeLockedAsync {
             SynchronizationQueueStorage(context).enqueueFeedRemoved(downloadUrl)
             syncNow()
@@ -50,27 +46,19 @@ object SynchronizationQueueSink {
     }
 
     fun enqueueEpisodeActionIfSynchronizationIsActive(context: Context, action: EpisodeAction) {
-        if (!SynchronizationSettings.isProviderConnected) {
-            return
-        }
+        if (!SynchronizationSettings.isProviderConnected) return
+
         LockingAsyncExecutor.executeLockedAsync {
             SynchronizationQueueStorage(context).enqueueEpisodeAction(action)
             syncNow()
         }
     }
 
-    fun enqueueEpisodePlayedIfSynchronizationIsActive(context: Context, media: FeedMedia,
-                                                      completed: Boolean
-    ) {
-        if (!SynchronizationSettings.isProviderConnected) {
-            return
-        }
-        if (media.item?.feed == null || media.item!!.feed!!.isLocalFeed) {
-            return
-        }
-        if (media.startPosition < 0 || (!completed && media.startPosition >= media.getPosition())) {
-            return
-        }
+    fun enqueueEpisodePlayedIfSynchronizationIsActive(context: Context, media: FeedMedia, completed: Boolean) {
+        if (!SynchronizationSettings.isProviderConnected) return
+        if (media.item?.feed == null || media.item!!.feed!!.isLocalFeed) return
+        if (media.startPosition < 0 || (!completed && media.startPosition >= media.getPosition())) return
+
         val action = EpisodeAction.Builder(media.item!!, EpisodeAction.PLAY)
             .currentTimestamp()
             .started(media.startPosition / 1000)

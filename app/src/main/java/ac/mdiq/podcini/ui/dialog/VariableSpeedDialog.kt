@@ -85,24 +85,16 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
         addCurrentSpeedChip.text = String.format(Locale.getDefault(), "%1$.2f", event.newSpeed)
     }
 
-    @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                                           savedInstanceState: Bundle?
-    ): View? {
+    @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = SpeedSelectDialogBinding.inflate(inflater)
 
         settingCode = (arguments?.getBooleanArray("settingCode") ?: BooleanArray(3) {true})
         val index_default = arguments?.getInt("index_default")
 
         when (index_default) {
-            null, 0 -> {
-                binding.currentAudio.isChecked = true
-            }
-            1 -> {
-                binding.currentPodcast.isChecked = true
-            }
-            else -> {
-                binding.global.isChecked = true
-            }
+            null, 0 -> binding.currentAudio.isChecked = true
+            1 -> binding.currentPodcast.isChecked = true
+            else -> binding.global.isChecked = true
         }
 
         speedSeekBar = binding.speedSeekBar
@@ -153,8 +145,7 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
     private fun addCurrentSpeed() {
         val newSpeed = speedSeekBar.currentSpeed
         if (selectedSpeeds.contains(newSpeed)) {
-            Snackbar.make(addCurrentSpeedChip,
-                getString(R.string.preset_already_exists, newSpeed), Snackbar.LENGTH_LONG).show()
+            Snackbar.make(addCurrentSpeedChip, getString(R.string.preset_already_exists, newSpeed), Snackbar.LENGTH_LONG).show()
         } else {
             selectedSpeeds.add(newSpeed)
             selectedSpeeds.sort()

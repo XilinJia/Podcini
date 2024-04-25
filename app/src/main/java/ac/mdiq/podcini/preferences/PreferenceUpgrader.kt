@@ -48,10 +48,9 @@ object PreferenceUpgrader {
     }
 
     private fun upgrade(oldVersion: Int, context: Context) {
-        if (oldVersion == -1) {
-            //New installation
-            return
-        }
+        //New installation
+        if (oldVersion == -1) return
+
         if (oldVersion < 1070196) {
             // migrate episode cleanup value (unit changed from days to hours)
             val oldValueInDays = episodeCleanupValue
@@ -60,14 +59,10 @@ object PreferenceUpgrader {
             } // else 0 or special negative values, no change needed
         }
         if (oldVersion < 1070197) {
-            if (prefs.getBoolean("prefMobileUpdate", false)) {
-                prefs.edit().putString("prefMobileUpdateAllowed", "everything").apply()
-            }
+            if (prefs.getBoolean("prefMobileUpdate", false)) prefs.edit().putString("prefMobileUpdateAllowed", "everything").apply()
         }
         if (oldVersion < 1070300) {
-            if (prefs.getBoolean("prefEnableAutoDownloadOnMobile", false)) {
-                isAllowMobileAutoDownload = true
-            }
+            if (prefs.getBoolean("prefEnableAutoDownloadOnMobile", false)) isAllowMobileAutoDownload = true
             when (prefs.getString("prefMobileUpdateAllowed", "images")) {
                 "everything" -> {
                     isAllowMobileFeedRefresh = true
@@ -80,9 +75,7 @@ object PreferenceUpgrader {
         }
         if (oldVersion < 1070400) {
             val theme = theme
-            if (theme == UserPreferences.ThemePreference.LIGHT) {
-                prefs.edit().putString(UserPreferences.PREF_THEME, "system").apply()
-            }
+            if (theme == UserPreferences.ThemePreference.LIGHT) prefs.edit().putString(UserPreferences.PREF_THEME, "system").apply()
 
             isQueueLocked = false
             isStreamOverDownload = false
@@ -96,48 +89,37 @@ object PreferenceUpgrader {
         }
         if (oldVersion < 2010300) {
             // Migrate hardware button preferences
-            if (prefs.getBoolean("prefHardwareForwardButtonSkips", false)) {
-                prefs.edit().putString(UserPreferences.PREF_HARDWARE_FORWARD_BUTTON,
-                    KeyEvent.KEYCODE_MEDIA_NEXT.toString()).apply()
-            }
-            if (prefs.getBoolean("prefHardwarePreviousButtonRestarts", false)) {
-                prefs.edit().putString(UserPreferences.PREF_HARDWARE_PREVIOUS_BUTTON,
-                    KeyEvent.KEYCODE_MEDIA_PREVIOUS.toString()).apply()
-            }
+            if (prefs.getBoolean("prefHardwareForwardButtonSkips", false))
+                prefs.edit().putString(UserPreferences.PREF_HARDWARE_FORWARD_BUTTON, KeyEvent.KEYCODE_MEDIA_NEXT.toString()).apply()
+
+            if (prefs.getBoolean("prefHardwarePreviousButtonRestarts", false))
+                prefs.edit().putString(UserPreferences.PREF_HARDWARE_PREVIOUS_BUTTON, KeyEvent.KEYCODE_MEDIA_PREVIOUS.toString()).apply()
         }
         if (oldVersion < 2040000) {
             val swipePrefs = context.getSharedPreferences(SwipeActions.PREF_NAME, Context.MODE_PRIVATE)
             swipePrefs.edit().putString(SwipeActions.KEY_PREFIX_SWIPEACTIONS + QueueFragment.TAG,
                 SwipeAction.REMOVE_FROM_QUEUE + "," + SwipeAction.REMOVE_FROM_QUEUE).apply()
         }
-        if (oldVersion < 2050000) {
-            prefs.edit().putBoolean(UserPreferences.PREF_PAUSE_PLAYBACK_FOR_FOCUS_LOSS, true).apply()
-        }
+        if (oldVersion < 2050000) prefs.edit().putBoolean(UserPreferences.PREF_PAUSE_PLAYBACK_FOR_FOCUS_LOSS, true).apply()
+
         if (oldVersion < 2080000) {
             // Migrate drawer feed counter setting to reflect removal of
             // "unplayed and in inbox" (0), by changing it to "unplayed" (2)
             val feedCounterSetting = prefs.getString(UserPreferences.PREF_DRAWER_FEED_COUNTER, "2")
-            if (feedCounterSetting == "0") {
-                prefs.edit().putString(UserPreferences.PREF_DRAWER_FEED_COUNTER, "2").apply()
-            }
+            if (feedCounterSetting == "0") prefs.edit().putString(UserPreferences.PREF_DRAWER_FEED_COUNTER, "2").apply()
 
-            val sleepTimerPreferences =
-                context.getSharedPreferences(SleepTimerPreferences.PREF_NAME, Context.MODE_PRIVATE)
+            val sleepTimerPreferences = context.getSharedPreferences(SleepTimerPreferences.PREF_NAME, Context.MODE_PRIVATE)
             val timeUnits = arrayOf(TimeUnit.SECONDS, TimeUnit.MINUTES, TimeUnit.HOURS)
             val value = lastTimerValue()!!.toLong()
             val unit = timeUnits[sleepTimerPreferences.getInt("LastTimeUnit", 1)]
             setLastTimer(unit.toMinutes(value).toString())
 
-            if (prefs.getString(UserPreferences.PREF_EPISODE_CACHE_SIZE, "20")
-                    == context.getString(R.string.pref_episode_cache_unlimited)) {
-                prefs.edit().putString(UserPreferences.PREF_EPISODE_CACHE_SIZE,
-                    "" + UserPreferences.EPISODE_CACHE_SIZE_UNLIMITED).apply()
-            }
+            if (prefs.getString(UserPreferences.PREF_EPISODE_CACHE_SIZE, "20") == context.getString(R.string.pref_episode_cache_unlimited))
+                prefs.edit().putString(UserPreferences.PREF_EPISODE_CACHE_SIZE, "" + UserPreferences.EPISODE_CACHE_SIZE_UNLIMITED).apply()
         }
         if (oldVersion < 3000007) {
-            if (prefs.getString("prefBackButtonBehavior", "") == "drawer") {
+            if (prefs.getString("prefBackButtonBehavior", "") == "drawer")
                 prefs.edit().putBoolean(UserPreferences.PREF_BACK_OPENS_DRAWER, true).apply()
-            }
         }
         if (oldVersion < 3010000) {
             if (prefs.getString(UserPreferences.PREF_THEME, "system") == "2") {
@@ -147,27 +129,20 @@ object PreferenceUpgrader {
                     .apply()
             }
             isAllowMobileSync = true
-            if (prefs.getString(UserPreferences.PREF_UPDATE_INTERVAL, ":")!!
-                        .contains(":")) { // Unset or "time of day"
+            // Unset or "time of day"
+            if (prefs.getString(UserPreferences.PREF_UPDATE_INTERVAL, ":")!!.contains(":"))
                 prefs.edit().putString(UserPreferences.PREF_UPDATE_INTERVAL, "12").apply()
-            }
+
         }
-        if (oldVersion < 3020000) {
-            NotificationManagerCompat.from(context).deleteNotificationChannel("auto_download")
-        }
+        if (oldVersion < 3020000) NotificationManagerCompat.from(context).deleteNotificationChannel("auto_download")
 
         if (oldVersion < 3030000) {
-            val allEpisodesPreferences =
-                context.getSharedPreferences(AllEpisodesFragment.PREF_NAME, Context.MODE_PRIVATE)
+            val allEpisodesPreferences = context.getSharedPreferences(AllEpisodesFragment.PREF_NAME, Context.MODE_PRIVATE)
             val oldEpisodeSort = allEpisodesPreferences.getString(UserPreferences.PREF_SORT_ALL_EPISODES, "")
-            if (!StringUtils.isAllEmpty(oldEpisodeSort)) {
-                prefs.edit().putString(UserPreferences.PREF_SORT_ALL_EPISODES, oldEpisodeSort).apply()
-            }
+            if (!StringUtils.isAllEmpty(oldEpisodeSort)) prefs.edit().putString(UserPreferences.PREF_SORT_ALL_EPISODES, oldEpisodeSort).apply()
 
             val oldEpisodeFilter = allEpisodesPreferences.getString("filter", "")
-            if (!StringUtils.isAllEmpty(oldEpisodeFilter)) {
-                prefs.edit().putString(UserPreferences.PREF_FILTER_ALL_EPISODES, oldEpisodeFilter).apply()
-            }
+            if (!StringUtils.isAllEmpty(oldEpisodeFilter)) prefs.edit().putString(UserPreferences.PREF_FILTER_ALL_EPISODES, oldEpisodeFilter).apply()
         }
     }
 }

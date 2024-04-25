@@ -110,9 +110,7 @@ open class SubscriptionsAdapter(mainActivity: MainActivity) :
     }
 
     override fun getItemId(position: Int): Long {
-        if (position >= listItems.size) {
-            return RecyclerView.NO_ID // Dummy views
-        }
+        if (position >= listItems.size) return RecyclerView.NO_ID // Dummy views
         return listItems[position].id
     }
 
@@ -182,9 +180,7 @@ open class SubscriptionsAdapter(mainActivity: MainActivity) :
                 count.text = NumberFormat.getInstance().format(drawerItem.counter.toLong()) + " episodes"
 //                count.text = NumberFormat.getInstance().format(drawerItem.feed.items.size.toLong()) + " episodes"
                 count.visibility = View.VISIBLE
-            } else {
-                count.visibility = View.VISIBLE
-            }
+            } else count.visibility = View.VISIBLE
 
             val mainActRef = mainActivityRef.get() ?: return
 
@@ -212,11 +208,7 @@ open class SubscriptionsAdapter(mainActivity: MainActivity) :
 
     class GridDividerItemDecorator : RecyclerView.ItemDecoration() {
 
-        override fun getItemOffsets(outRect: Rect,
-                                    view: View,
-                                    parent: RecyclerView,
-                                    state: RecyclerView.State
-        ) {
+        override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
             super.getItemOffsets(outRect, view, parent, state)
             val context = parent.context
             val insetOffset = convertDpToPixel(context, 1f).toInt()

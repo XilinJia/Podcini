@@ -41,6 +41,7 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
     private var released = false
     private var initialized = false
     private var eventsRegistered = false
+
     private var loadedFeedMedia: Long = -1
 
     /**
@@ -109,7 +110,7 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
     }
 
     fun isPlaybackServiceReady() : Boolean {
-        return playbackService != null
+        return playbackService != null && playbackService!!.isServiceReady()
     }
 
     private fun unbind() {
@@ -311,9 +312,7 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
 
     fun extendSleepTimer(extendTime: Long) {
         val timeLeft = sleepTimerTimeLeft
-        if (playbackService != null && timeLeft != Playable.INVALID_TIME.toLong()) {
-            setSleepTimer(timeLeft + extendTime)
-        }
+        if (playbackService != null && timeLeft != Playable.INVALID_TIME.toLong()) setSleepTimer(timeLeft + extendTime)
     }
 
     fun setSleepTimer(time: Long) {
@@ -324,11 +323,13 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
         if (playbackService != null) {
             playbackService!!.seekTo(time)
         } else {
-            val media = getMedia()
+//            val media = getMedia()
+            if (media == null) return
+            PlaybackServiceStarter(activity, media!!).start()
             if (media is FeedMedia) {
-                media.setPosition(time)
-                DBWriter.setFeedItem(media.item)
-                EventBus.getDefault().post(PlaybackPositionEvent(time, media.getDuration()))
+                media!!.setPosition(time)
+                DBWriter.setFeedItem((media as FeedMedia).item)
+                EventBus.getDefault().post(PlaybackPositionEvent(time, media!!.getDuration()))
             }
         }
     }

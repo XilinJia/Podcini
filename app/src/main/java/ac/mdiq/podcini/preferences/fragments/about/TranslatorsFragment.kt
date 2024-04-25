@@ -22,32 +22,27 @@ class TranslatorsFragment : ListFragment() {
         listView.divider = null
         listView.setSelector(color.transparent)
 
-        translatorsLoader =
-            Single.create { emitter: SingleEmitter<ArrayList<SimpleIconListAdapter.ListItem>?> ->
-                val translators = ArrayList<SimpleIconListAdapter.ListItem>()
-                val reader = BufferedReader(InputStreamReader(
-                    requireContext().assets.open("translators.csv"), "UTF-8"))
-                var line: String
-                while ((reader.readLine().also { line = it }) != null) {
-                    val info = line.split(";".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-                    translators.add(SimpleIconListAdapter.ListItem(info[0], info[1], ""))
-                }
-                emitter.onSuccess(translators)
+        translatorsLoader = Single.create { emitter: SingleEmitter<ArrayList<SimpleIconListAdapter.ListItem>?> ->
+            val translators = ArrayList<SimpleIconListAdapter.ListItem>()
+            val reader = BufferedReader(InputStreamReader(requireContext().assets.open("translators.csv"), "UTF-8"))
+            var line: String
+            while ((reader.readLine().also { line = it }) != null) {
+                val info = line.split(";".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+                translators.add(SimpleIconListAdapter.ListItem(info[0], info[1], ""))
             }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    { translators: ArrayList<SimpleIconListAdapter.ListItem>? ->
-                        if (translators != null) listAdapter = SimpleIconListAdapter(requireContext(), translators)
-                    },
-                    { error: Throwable -> Toast.makeText(context, error.message, Toast.LENGTH_LONG).show() }
-                )
+            emitter.onSuccess(translators)
+        }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ translators: ArrayList<SimpleIconListAdapter.ListItem>? ->
+                if (translators != null) listAdapter = SimpleIconListAdapter(requireContext(), translators)
+            },
+                { error: Throwable -> Toast.makeText(context, error.message, Toast.LENGTH_LONG).show() }
+            )
     }
 
     override fun onStop() {
         super.onStop()
-        if (translatorsLoader != null) {
-            translatorsLoader!!.dispose()
-        }
+        translatorsLoader?.dispose()
     }
 }

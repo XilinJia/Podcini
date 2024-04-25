@@ -22,15 +22,13 @@ class ConnectionStateMonitor
     }
 
     fun enable(context: Context) {
-        val connectivityManager =
-            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         connectivityManager.registerNetworkCallback(networkRequest, this)
         connectivityManager.addDefaultNetworkActiveListener(this)
     }
 
     fun disable(context: Context) {
-        val connectivityManager =
-            context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         connectivityManager.unregisterNetworkCallback(this)
         connectivityManager.removeDefaultNetworkActiveListener(this)
     }

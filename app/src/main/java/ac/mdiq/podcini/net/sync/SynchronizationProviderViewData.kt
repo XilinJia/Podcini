@@ -19,9 +19,7 @@ enum class SynchronizationProviderViewData(@JvmField val identifier: String, val
         @JvmStatic
         fun fromIdentifier(provider: String): SynchronizationProviderViewData? {
             for (synchronizationProvider in entries) {
-                if (synchronizationProvider.identifier == provider) {
-                    return synchronizationProvider
-                }
+                if (synchronizationProvider.identifier == provider) return synchronizationProvider
             }
             return null
         }

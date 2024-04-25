@@ -24,9 +24,7 @@ object BackportTrustManager {
             factory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
             factory.init(keystore)
             for (manager in factory.trustManagers) {
-                if (manager is X509TrustManager) {
-                    return manager
-                }
+                if (manager is X509TrustManager) return manager
             }
         } catch (e: NoSuchAlgorithmException) {
             e.printStackTrace()

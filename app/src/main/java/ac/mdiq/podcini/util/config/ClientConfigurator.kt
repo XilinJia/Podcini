@@ -26,9 +26,8 @@ object ClientConfigurator {
 
     @Synchronized
     fun initialize(context: Context) {
-        if (initialized) {
-            return
-        }
+        if (initialized) return
+
         PodDBAdapter.init(context)
         UserPreferences.init(context)
         UsageStatistics.init(context)

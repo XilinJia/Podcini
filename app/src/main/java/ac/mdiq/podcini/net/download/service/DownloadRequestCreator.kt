@@ -21,9 +21,8 @@ object DownloadRequestCreator {
     @JvmStatic
     fun create(feed: Feed): DownloadRequest.Builder {
         val dest = File(feedfilePath, getFeedfileName(feed))
-        if (dest.exists()) {
-            dest.delete()
-        }
+        if (dest.exists()) dest.delete()
+
         Log.d(TAG, "Requesting download feed from url " + feed.download_url)
 
         val username = feed.preferences?.username
@@ -39,15 +38,10 @@ object DownloadRequestCreator {
         val pdFile = if (media.file_url != null) File(media.file_url!!) else null
         val partiallyDownloadedFileExists = pdFile?.exists() ?: false
         var dest: File
-        dest = if (partiallyDownloadedFileExists) {
-            pdFile!!
-        } else {
-            File(getMediafilePath(media), getMediafilename(media))
-        }
+        dest = if (partiallyDownloadedFileExists) pdFile!! else File(getMediafilePath(media), getMediafilename(media))
 
-        if (dest.exists() && !partiallyDownloadedFileExists) {
-            dest = findUnusedFile(dest)!!
-        }
+        if (dest.exists() && !partiallyDownloadedFileExists) dest = findUnusedFile(dest)!!
+
         Log.d(TAG, "Requesting download media from url " + media.download_url)
 
         val username = media.item?.feed?.preferences?.username
@@ -60,11 +54,7 @@ object DownloadRequestCreator {
         // find different name
         var newDest: File? = null
         for (i in 1 until Int.MAX_VALUE) {
-            val newName = (FilenameUtils.getBaseName(dest.name)
-                    + "-"
-                    + i
-                    + FilenameUtils.EXTENSION_SEPARATOR
-                    + FilenameUtils.getExtension(dest.name))
+            val newName = (FilenameUtils.getBaseName(dest.name) + "-" + i + FilenameUtils.EXTENSION_SEPARATOR + FilenameUtils.getExtension(dest.name))
             Log.d(TAG, "Testing filename $newName")
             newDest = File(dest.parent, newName)
             if (!newDest.exists()) {
@@ -80,17 +70,15 @@ object DownloadRequestCreator {
 
     private fun getFeedfileName(feed: Feed): String {
         var filename = feed.download_url
-        if (!feed.title.isNullOrEmpty()) {
-            filename = feed.title
-        }
+        if (!feed.title.isNullOrEmpty()) filename = feed.title
+
         if (filename == null) return ""
         return "feed-" + FileNameGenerator.generateFileName(filename) + feed.id
     }
 
     private fun getMediafilePath(media: FeedMedia): String {
         val title = media.item?.feed?.title?:return ""
-        val mediaPath = (MEDIA_DOWNLOADPATH
-                + FileNameGenerator.generateFileName(title))
+        val mediaPath = (MEDIA_DOWNLOADPATH + FileNameGenerator.generateFileName(title))
         return UserPreferences.getDataFolder(mediaPath).toString() + "/"
     }
 
@@ -106,16 +94,10 @@ object DownloadRequestCreator {
         val urlBaseFilename = URLUtil.guessFileName(media.download_url, null, media.mime_type)
 
         var baseFilename: String
-        baseFilename = if (titleBaseFilename != "") {
-            titleBaseFilename
-        } else {
-            urlBaseFilename
-        }
+        baseFilename = if (titleBaseFilename != "") titleBaseFilename else urlBaseFilename
         val filenameMaxLength = 220
-        if (baseFilename.length > filenameMaxLength) {
-            baseFilename = baseFilename.substring(0, filenameMaxLength)
-        }
-        return (baseFilename + FilenameUtils.EXTENSION_SEPARATOR + media.id
-                + FilenameUtils.EXTENSION_SEPARATOR + FilenameUtils.getExtension(urlBaseFilename))
+        if (baseFilename.length > filenameMaxLength) baseFilename = baseFilename.substring(0, filenameMaxLength)
+
+        return (baseFilename + FilenameUtils.EXTENSION_SEPARATOR + media.id + FilenameUtils.EXTENSION_SEPARATOR + FilenameUtils.getExtension(urlBaseFilename))
     }
 }

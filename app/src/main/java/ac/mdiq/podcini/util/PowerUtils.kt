@@ -19,7 +19,6 @@ object PowerUtils {
         val batteryStatus = context.registerReceiver(null, iFilter)
 
         val status = batteryStatus!!.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
-        return (status == BatteryManager.BATTERY_STATUS_CHARGING ||
-                status == BatteryManager.BATTERY_STATUS_FULL)
+        return (status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL)
     }
 }

@@ -103,14 +103,10 @@ object SleepTimerPreferences {
     @JvmStatic
     fun isInTimeRange(from: Int, to: Int, current: Int): Boolean {
         // Range covers one day
-        if (from < to) {
-            return from <= current && current < to
-        }
+        if (from < to) return from <= current && current < to
 
         // Range covers two days
-        if (from <= current) {
-            return true
-        }
+        if (from <= current) return true
 
         return current < to
     }

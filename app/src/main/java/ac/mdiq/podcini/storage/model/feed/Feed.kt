@@ -205,10 +205,8 @@ class Feed : FeedFile {
      * This constructor is used for requesting a feed download (it must not be used for anything else!). It should be
      * used if the title of the feed is already known.
      */
-    constructor(url: String?, lastUpdate: String?, title: String?, username: String?, password: String?) : this(url,
-        lastUpdate,
-        title) {
-        preferences = FeedPreferences(0, true, FeedPreferences.AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF,
+    constructor(url: String?, lastUpdate: String?, title: String?, username: String?, password: String?) : this(url, lastUpdate, title) {
+        preferences = FeedPreferences(0, false, FeedPreferences.AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF,
             FeedPreferences.NewEpisodesAction.GLOBAL, username, password)
     }
 

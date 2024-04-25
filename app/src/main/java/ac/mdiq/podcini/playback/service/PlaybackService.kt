@@ -499,7 +499,7 @@ class PlaybackService : MediaSessionService() {
                         Log.d(TAG, "Received media button event")
                         notificationButton = true
                     }
-//                    val handled = handleKeycode(keycode, notificationButton)
+                    val handled = handleKeycode(keycode, notificationButton)
                 }
                 playable != null -> {
                     val allowStreamThisTime = intent.getBooleanExtra(PlaybackServiceInterface.EXTRA_ALLOW_STREAM_THIS_TIME, false)

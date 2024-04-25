@@ -42,6 +42,7 @@ open class AutomaticDownloadAlgorithm {
 
             // true if we should auto download based on power status
             val powerShouldAutoDl = (deviceCharging(context) || isEnableAutodownloadOnBattery)
+            Log.d(TAG, "prepare autoDownloadUndownloadedItems $networkShouldAutoDl $powerShouldAutoDl")
 
             // we should only auto download if both network AND power are happy
             if (networkShouldAutoDl && powerShouldAutoDl) {
@@ -49,7 +50,9 @@ open class AutomaticDownloadAlgorithm {
 
                 val candidates: MutableList<FeedItem>
                 val queue = getQueue()
+
                 val newItems = getEpisodes(0, Int.MAX_VALUE, FeedItemFilter(FeedItemFilter.NEW), SortOrder.DATE_NEW_OLD)
+                Log.d(TAG, "newItems: ${newItems.size}")
                 candidates = ArrayList(queue.size + newItems.size)
                 candidates.addAll(queue)
                 for (newItem in newItems) {
@@ -84,9 +87,7 @@ open class AutomaticDownloadAlgorithm {
                     }
                 }
             }
-            else {
-                Log.d(TAG, "not auto downloaded networkShouldAutoDl: $networkShouldAutoDl powerShouldAutoDl $powerShouldAutoDl")
-            }
+            else Log.d(TAG, "not auto downloaded networkShouldAutoDl: $networkShouldAutoDl powerShouldAutoDl $powerShouldAutoDl")
         }
     }
 

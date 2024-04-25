@@ -222,6 +222,10 @@ import java.util.concurrent.*
                 savedFeed.preferences!!.updateFromOther(newFeed.preferences)
             }
 
+            val priorMostRecent = savedFeed.mostRecentItem
+            var priorMostRecentDate: Date? = Date()
+            priorMostRecentDate = priorMostRecent?.getPubDate()
+
             // Look for new or updated Items
             for (idx in newFeed.items.indices) {
                 val item = newFeed.items[idx]
@@ -282,6 +286,12 @@ import java.util.concurrent.*
 
                     if (idx >= savedFeed.items.size) savedFeed.items.add(item)
                     else savedFeed.items.add(idx, item)
+
+                    val pubDate = item.getPubDate()
+                    if (pubDate == null || priorMostRecentDate == null || priorMostRecentDate.before(pubDate) || priorMostRecentDate == pubDate) {
+                        Log.d(TAG, "Marking item published on ${pubDate} new, prior most recent date = $priorMostRecentDate")
+                        item.setNew()
+                    }
                 }
             }
 

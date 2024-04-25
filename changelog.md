@@ -301,3 +301,12 @@
 * fixed crash bug on app startup when player buttons are clicked before play
 * large codebase cleaning
 * episode home menu item is disable on video player
+
+## 4.9.4
+
+* fixed non-functioning pause button in queue list
+* fixed player control buttons not being properly activated
+* enabled the function for auto downloading of feeds
+	* when global auto download setting is enabled, no existing feed is automatically included for auto download
+	* when subscribing a new feed, there an option for auto download
+	* new episode of a feed is auto downloaded at a feed refresh only when both global and feed settings for auto download are enabled

@@ -68,8 +68,8 @@ class FeedPreferences(@JvmField var feedID: Long,
 
     constructor(feedID: Long, autoDownload: Boolean, autoDeleteAction: AutoDeleteAction,
                 volumeAdaptionSetting: VolumeAdaptionSetting?, newEpisodesAction: NewEpisodesAction?,
-                username: String?, password: String?
-    ) : this(feedID, autoDownload, true, autoDeleteAction, volumeAdaptionSetting, username, password,
+                username: String?, password: String?)
+            : this(feedID, autoDownload, true, autoDeleteAction, volumeAdaptionSetting, username, password,
         FeedFilter(), SPEED_USE_GLOBAL, 0, 0, false, newEpisodesAction, HashSet<String>())
 
     init {

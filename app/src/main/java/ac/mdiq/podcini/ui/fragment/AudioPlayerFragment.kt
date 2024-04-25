@@ -487,11 +487,11 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             txtvLength = binding.txtvLength
 
             setupLengthTextView()
-//            setupControlButtons()
+            setupControlButtons()
             butPlaybackSpeed.setOnClickListener {
                 VariableSpeedDialog.newInstance(booleanArrayOf(true, true, true), null)?.show(childFragmentManager, null)
             }
-//            sbPosition.setOnSeekBarChangeListener(null)
+            sbPosition.setOnSeekBarChangeListener(this)
 
             binding.internalPlayerFragment.setOnClickListener {
                 Log.d(TAG, "internalPlayerFragment was clicked")
@@ -534,9 +534,9 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                         requireContext().startActivity(PlaybackService.getPlayerActivityIntent(requireContext(), media.getMediaType()))
                     } else controller!!.playPause()
                     if (!isControlButtonsSet) {
-                        setupControlButtons()
+//                        setupControlButtons()
                         sbPosition.visibility = View.VISIBLE
-                        sbPosition.setOnSeekBarChangeListener(this)
+//                        sbPosition.setOnSeekBarChangeListener(this)
                         isControlButtonsSet = true
                     }
                 }
@@ -548,6 +548,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 if (controller != null && controller!!.isPlaybackServiceReady()) {
                     val curr: Int = controller!!.position
                     controller!!.seekTo(curr - UserPreferences.rewindSecs * 1000)
+                    sbPosition.visibility = View.VISIBLE
                 }
             }
             butRev.setOnLongClickListener {
@@ -569,6 +570,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 if (controller != null && controller!!.isPlaybackServiceReady()) {
                     val curr: Int = controller!!.position
                     controller!!.seekTo(curr + UserPreferences.fastForwardSecs * 1000)
+                    sbPosition.visibility = View.VISIBLE
                 }
             }
             butFF.setOnLongClickListener {
@@ -632,8 +634,12 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 txtvLength.text = Converter.getDurationStringLong(duration)
             }
 
+            if (sbPosition.visibility == View.INVISIBLE && controller != null && controller!!.isPlaybackServiceReady()) {
+                sbPosition.visibility = View.VISIBLE
+            }
             if (!sbPosition.isPressed) {
                 val progress: Float = (event.position.toFloat()) / event.duration
+//                Log.d(TAG, "updating sbPosition: $progress")
                 sbPosition.progress = (progress * sbPosition.max).toInt()
             }
         }

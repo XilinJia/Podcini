@@ -92,8 +92,7 @@ class FeedItem : FeedComponent, Serializable {
      */
     constructor(id: Long, title: String?, link: String?, pubDate: Date?, paymentLink: String?, feedId: Long,
                 hasChapters: Boolean, imageUrl: String?, state: Int,
-                itemIdentifier: String?, autoDownloadEnabled: Boolean, podcastIndexChapterUrl: String?
-    ) {
+                itemIdentifier: String?, autoDownloadEnabled: Boolean, podcastIndexChapterUrl: String?) {
         this.id = id
         this.title = title
         this.link = link
@@ -111,14 +110,7 @@ class FeedItem : FeedComponent, Serializable {
     /**
      * This constructor should be used for creating test objects.
      */
-    constructor(id: Long,
-                title: String?,
-                itemIdentifier: String?,
-                link: String?,
-                pubDate: Date?,
-                state: Int,
-                feed: Feed?
-    ) {
+    constructor(id: Long, title: String?, itemIdentifier: String?, link: String?, pubDate: Date?, state: Int, feed: Feed?) {
         this.id = id
         this.title = title
         this.itemIdentifier = itemIdentifier
@@ -132,15 +124,7 @@ class FeedItem : FeedComponent, Serializable {
     /**
      * This constructor should be used for creating test objects involving chapter marks.
      */
-    constructor(id: Long,
-                title: String?,
-                itemIdentifier: String?,
-                link: String?,
-                pubDate: Date?,
-                state: Int,
-                feed: Feed?,
-                hasChapters: Boolean
-    ) {
+    constructor(id: Long, title: String?, itemIdentifier: String?, link: String?, pubDate: Date?, state: Int, feed: Feed?, hasChapters: Boolean) {
         this.id = id
         this.title = title
         this.itemIdentifier = itemIdentifier

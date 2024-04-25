@@ -33,7 +33,7 @@ class FeedParserTask(private val request: DownloadRequest) : Callable<FeedHandle
         feed.file_url = request.destination
         feed.id = request.feedfileId
         feed.setDownloaded(true)
-        feed.preferences = FeedPreferences(0, true, FeedPreferences.AutoDeleteAction.GLOBAL,
+        feed.preferences = FeedPreferences(0, false, FeedPreferences.AutoDeleteAction.GLOBAL,
             VolumeAdaptionSetting.OFF, FeedPreferences.NewEpisodesAction.GLOBAL, request.username, request.password)
         if (request.arguments != null) feed.pageNr = request.arguments.getInt(DownloadRequest.REQUEST_ARG_PAGE_NR, 0)
 

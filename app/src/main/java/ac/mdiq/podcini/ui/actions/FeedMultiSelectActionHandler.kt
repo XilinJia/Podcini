@@ -57,7 +57,7 @@ class FeedMultiSelectActionHandler(private val activity: MainActivity, private v
         val preferenceSwitchDialog = PreferenceSwitchDialog(activity, activity.getString(R.string.auto_download_settings_label), activity.getString(R.string.auto_download_label))
         preferenceSwitchDialog.setOnPreferenceChangedListener(@UnstableApi object: PreferenceSwitchDialog.OnPreferenceChangedListener {
             override fun preferenceChanged(enabled: Boolean) {
-                saveFeedPreferences { feedPreferences: FeedPreferences -> feedPreferences.autoDownload = enabled }
+//                saveFeedPreferences { feedPreferences: FeedPreferences -> feedPreferences.autoDownload = enabled }
             }
         })
         preferenceSwitchDialog.openDialog()

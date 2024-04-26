@@ -165,9 +165,11 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
             Log.d(TAG, "Received statusUpdate Intent.")
             if (playbackService != null) {
                 val info = playbackService!!.pSMPInfo
-                status = info.playerStatus
-                media = info.playable
-                handleStatus()
+                if (status != info.playerStatus || media != info.playable) {
+                    status = info.playerStatus
+                    media = info.playable
+                    handleStatus()
+                }
             } else {
                 Log.w(TAG, "Couldn't receive status update: playbackService was null")
                 if (PlaybackService.isRunning) {

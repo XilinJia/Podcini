@@ -17,8 +17,7 @@ object IntentUtils {
      */
     @JvmStatic
     fun isCallable(context: Context, intent: Intent?): Boolean {
-        val list = context.packageManager.queryIntentActivities(intent!!,
-            PackageManager.MATCH_DEFAULT_ONLY)
+        val list = context.packageManager.queryIntentActivities(intent!!, PackageManager.MATCH_DEFAULT_ONLY)
         for (info in list) {
             if (info.activityInfo.exported) return true
         }
@@ -32,6 +31,7 @@ object IntentUtils {
 
     @JvmStatic
     fun openInBrowser(context: Context, url: String) {
+        Log.d(TAG, "url: $url")
         try {
             val myIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
             myIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

@@ -26,8 +26,6 @@ import ac.mdiq.podcini.ui.dialog.MediaPlayerErrorDialog
 import ac.mdiq.podcini.ui.dialog.SkipPreferenceDialog
 import ac.mdiq.podcini.ui.dialog.SleepTimerDialog
 import ac.mdiq.podcini.ui.dialog.VariableSpeedDialog
-import ac.mdiq.podcini.ui.fragment.EpisodeHomeFragment.Companion.fetchHtmlSource
-import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ChapterSeekBar
 import ac.mdiq.podcini.ui.view.PlayButton
 import ac.mdiq.podcini.ui.view.PlaybackSpeedIndicatorView
@@ -65,8 +63,6 @@ import io.reactivex.MaybeEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
-import kotlinx.coroutines.runBlocking
-import net.dankito.readability4j.Readability4J
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -74,6 +70,7 @@ import java.text.DecimalFormat
 import java.text.NumberFormat
 import kotlin.math.max
 import kotlin.math.min
+
 
 /**
  * Shows the audio player.
@@ -192,7 +189,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         val theMedia = controller?.getMedia() ?: return
         Log.d(TAG, "loadMediaInfo $theMedia")
 
-        if (currentMedia == null || theMedia?.getIdentifier() != currentMedia?.getIdentifier()) {
+        if (currentMedia == null || theMedia.getIdentifier() != currentMedia?.getIdentifier()) {
             Log.d(TAG, "loadMediaInfo loading details")
             disposable?.dispose()
             disposable = Maybe.create<Playable> { emitter: MaybeEmitter<Playable?> ->
@@ -297,6 +294,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         currentitem = event.item
         if (currentMedia?.getIdentifier() == null || currentitem!!.media!!.getIdentifier() != currentMedia?.getIdentifier())
             itemDescFrag.setItem(currentitem!!)
+        (activity as MainActivity).setPlayerVisible(true)
     }
 
     override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
@@ -404,8 +402,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 return true
             }
             R.id.share_notes -> {
-                if (feedItem == null) return false
-                val notes = feedItem.description
+                val notes = if (itemDescFrag.showHomeText) itemDescFrag.readerhtml else feedItem?.description
                 if (!notes.isNullOrEmpty()) {
                     val shareText = if (Build.VERSION.SDK_INT >= 24) Html.fromHtml(notes, Html.FROM_HTML_MODE_LEGACY).toString()
                     else Html.fromHtml(notes).toString()
@@ -649,6 +646,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             when (event.action) {
                 PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN -> (activity as MainActivity).setPlayerVisible(false)
                 PlaybackServiceEvent.Action.SERVICE_STARTED -> (activity as MainActivity).setPlayerVisible(true)
+//                PlaybackServiceEvent.Action.SERVICE_RESTARTED -> (activity as MainActivity).setPlayerVisible(true)
             }
         }
 

@@ -11,11 +11,23 @@
     </item>
 
     <item
+        android:id="@+id/switchJS"
+        android:icon="@drawable/javascript_icon_245402"
+        android:title="@string/javasript_label"
+        custom:showAsAction="always">
+    </item>
+
+    <item
         android:id="@+id/switch_home"
         android:icon="@drawable/baseline_home_24"
         android:title="@string/home_label"
         custom:showAsAction="always">
     </item>
 
+    <item
+        android:id="@+id/share_notes"
+        android:title="@string/share_notes_label"
+        custom:showAsAction="never">
+    </item>
 
 </menu>

@@ -64,7 +64,7 @@ import org.greenrobot.eventbus.ThreadMode
  */
 @UnstableApi
 class PlayerDetailsFragment : Fragment() {
-    private lateinit var webvDescription: ShownotesWebView
+    private lateinit var shownoteView: ShownotesWebView
 
     private var _binding: PlayerDetailsFragmentBinding? = null
     private val binding get() = _binding!!
@@ -79,8 +79,9 @@ class PlayerDetailsFragment : Fragment() {
     private var webViewLoader: Disposable? = null
     private var controller: PlaybackController? = null
 
-    private var showHomeText = false
-    var homeText: String? = null
+    internal var showHomeText = false
+    internal var homeText: String? = null
+    internal var readerhtml: String? = null
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Log.d(TAG, "fragment onCreateView")
@@ -96,20 +97,20 @@ class PlayerDetailsFragment : Fragment() {
         binding.butNextChapter.setOnClickListener { seekToNextChapter() }
 
         Log.d(TAG, "fragment onCreateView")
-        webvDescription = binding.webview
-        webvDescription.setTimecodeSelectedListener { time: Int? -> controller?.seekTo(time!!) }
-        webvDescription.setPageFinishedListener {
+        shownoteView = binding.webview
+        shownoteView.setTimecodeSelectedListener { time: Int? -> controller?.seekTo(time!!) }
+        shownoteView.setPageFinishedListener {
             // Restoring the scroll position might not always work
-            webvDescription.postDelayed({ this@PlayerDetailsFragment.restoreFromPreference() }, 50)
+            shownoteView.postDelayed({ this@PlayerDetailsFragment.restoreFromPreference() }, 50)
         }
 
         binding.root.addOnLayoutChangeListener(object : OnLayoutChangeListener {
             override fun onLayoutChange(v: View, left: Int, top: Int, right: Int, bottom: Int, oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int) {
-                if (binding.root.measuredHeight != webvDescription.minimumHeight) webvDescription.setMinimumHeight(binding.root.measuredHeight)
+                if (binding.root.measuredHeight != shownoteView.minimumHeight) shownoteView.setMinimumHeight(binding.root.measuredHeight)
                 binding.root.removeOnLayoutChangeListener(this)
             }
         })
-        registerForContextMenu(webvDescription)
+        registerForContextMenu(shownoteView)
         controller = object : PlaybackController(requireActivity()) {
             override fun loadMediaInfo() {
                 load()
@@ -125,12 +126,12 @@ class PlayerDetailsFragment : Fragment() {
         controller?.release()
         controller = null
         Log.d(TAG, "Fragment destroyed")
-        webvDescription.removeAllViews()
-        webvDescription.destroy()
+        shownoteView.removeAllViews()
+        shownoteView.destroy()
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
-        return webvDescription.onContextItemSelected(item)
+        return shownoteView.onContextItemSelected(item)
     }
 
     @UnstableApi private fun load() {
@@ -168,7 +169,7 @@ class PlayerDetailsFragment : Fragment() {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ data: String? ->
-                webvDescription.loadDataWithBaseURL("https://127.0.0.1", data!!, "text/html", "utf-8", "about:blank")
+                shownoteView.loadDataWithBaseURL("https://127.0.0.1", data!!, "text/html", "utf-8", "about:blank")
                 Log.d(TAG, "Webview loaded")
             }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
         loadMediaInfo()
@@ -198,20 +199,20 @@ class PlayerDetailsFragment : Fragment() {
                     val htmlSource = fetchHtmlSource(url)
                     val readability4J = Readability4J(item!!.link!!, htmlSource)
                     val article = readability4J.parse()
-                    val readerhtml = article.contentWithDocumentsCharsetOrUtf8
-                    if (readerhtml != null) {
-                        val shownotesCleaner = ShownotesCleaner(requireContext(), readerhtml, 0)
+                    readerhtml = article.contentWithDocumentsCharsetOrUtf8
+                    if (!readerhtml.isNullOrEmpty()) {
+                        val shownotesCleaner = ShownotesCleaner(requireContext(), readerhtml!!, 0)
                         homeText = shownotesCleaner.processShownotes()
                     }
                 }
             }
             if (!homeText.isNullOrEmpty())
-                binding.webview.loadDataWithBaseURL("https://127.0.0.1", homeText!!, "text/html", "UTF-8", null)
+                shownoteView.loadDataWithBaseURL("https://127.0.0.1", homeText!!, "text/html", "UTF-8", null)
             else Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show()
         } else {
             val shownotesCleaner = ShownotesCleaner(requireContext(), item?.description ?: "", media?.getDuration()?:0)
             cleanedNotes = shownotesCleaner.processShownotes()
-            if (!cleanedNotes.isNullOrEmpty()) binding.webview.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes!!, "text/html", "UTF-8", null)
+            if (!cleanedNotes.isNullOrEmpty()) shownoteView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes!!, "text/html", "UTF-8", null)
             else Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show()
         }
     }

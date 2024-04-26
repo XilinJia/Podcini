@@ -14,8 +14,7 @@ import android.util.Log
 import android.view.SurfaceHolder
 import androidx.core.util.Consumer
 import androidx.media3.common.*
-import androidx.media3.common.Player.DiscontinuityReason
-import androidx.media3.common.Player.PositionInfo
+import androidx.media3.common.Player.*
 import androidx.media3.common.TrackSelectionParameters.AudioOffloadPreferences
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
@@ -65,11 +64,14 @@ class ExoPlayerWrapper internal constructor(private val context: Context) {
     private fun createPlayer() {
         if (exoPlayer == null) createStaticPlayer(context)
 
-        exoPlayer?.addListener(object : Player.Listener {
-            override fun onPlaybackStateChanged(playbackState: @Player.State Int) {
-                when {
-                    audioCompletionListener != null && playbackState == Player.STATE_ENDED -> audioCompletionListener?.run()
-                    playbackState == Player.STATE_BUFFERING -> bufferingUpdateListener?.accept(BUFFERING_STARTED)
+        exoPlayer?.addListener(object : Listener {
+            override fun onPlaybackStateChanged(playbackState: @State Int) {
+                when (playbackState) {
+                    STATE_ENDED -> {
+                        exoPlayer?.seekTo(C.TIME_UNSET)
+                        if (audioCompletionListener != null) audioCompletionListener?.run()
+                    }
+                    STATE_BUFFERING -> bufferingUpdateListener?.accept(BUFFERING_STARTED)
                     else -> bufferingUpdateListener?.accept(BUFFERING_ENDED)
                 }
             }
@@ -88,7 +90,7 @@ class ExoPlayerWrapper internal constructor(private val context: Context) {
             }
 
             override fun onPositionDiscontinuity(oldPosition: PositionInfo, newPosition: PositionInfo, reason: @DiscontinuityReason Int) {
-                if (reason == Player.DISCONTINUITY_REASON_SEEK) audioSeekCompleteListener?.run()
+                if (reason == DISCONTINUITY_REASON_SEEK) audioSeekCompleteListener?.run()
             }
 
             override fun onAudioSessionIdChanged(audioSessionId: Int) {
@@ -112,7 +114,8 @@ class ExoPlayerWrapper internal constructor(private val context: Context) {
         }
 
     val isPlaying: Boolean
-        get() = exoPlayer!!.playWhenReady
+        get() = exoPlayer!!.isPlaying
+//        get() = exoPlayer!!.playWhenReady
 
     fun pause() {
         exoPlayer?.pause()
@@ -205,7 +208,7 @@ class ExoPlayerWrapper internal constructor(private val context: Context) {
     }
 
     fun start() {
-        if (exoPlayer?.playbackState == Player.STATE_IDLE) prepare()
+        if (exoPlayer?.playbackState == STATE_IDLE || exoPlayer?.playbackState == STATE_ENDED ) prepare()
 
         exoPlayer?.play()
         // Can't set params when paused - so always set it on start in case they changed
@@ -258,8 +261,9 @@ class ExoPlayerWrapper internal constructor(private val context: Context) {
         get() {
             val trackSelections = exoPlayer!!.currentTrackSelections
             val availableFormats = formats
+            Log.d(TAG, "selectedAudioTrack called tracks: ${trackSelections.length} formats: ${availableFormats.size}")
             for (i in 0 until trackSelections.length) {
-                val track = trackSelections[i] as ExoTrackSelection? ?: continue
+                val track = trackSelections[i] as? ExoTrackSelection ?: continue
                 if (availableFormats.contains(track.selectedFormat)) return availableFormats.indexOf(track.selectedFormat)
             }
             return -1

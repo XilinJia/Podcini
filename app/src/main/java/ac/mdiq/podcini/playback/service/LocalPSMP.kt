@@ -125,7 +125,7 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
                 return
             } else {
                 // stop playback of this episode
-                if (playerStatus == PlayerStatus.PAUSED || playerStatus == PlayerStatus.PLAYING || playerStatus == PlayerStatus.PREPARED)
+                if (playerStatus == PlayerStatus.PAUSED || (playerStatus == PlayerStatus.PLAYING) || playerStatus == PlayerStatus.PREPARED)
                     playerWrapper?.stop()
 
                 // set temporarily to pause in order to update list with current position
@@ -168,8 +168,7 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
                 }
             }
             val uiModeManager = context.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
-            if (uiModeManager.currentModeType != Configuration.UI_MODE_TYPE_CAR) setPlayerStatus(PlayerStatus.INITIALIZED,
-                this.playable)
+            if (uiModeManager.currentModeType != Configuration.UI_MODE_TYPE_CAR) setPlayerStatus(PlayerStatus.INITIALIZED, this.playable)
 
             if (prepareImmediately) {
                 setPlayerStatus(PlayerStatus.PREPARING, this.playable)
@@ -276,8 +275,8 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
         if (playerWrapper != null && mediaType == MediaType.VIDEO) videoSize = Pair(playerWrapper!!.videoWidth, playerWrapper!!.videoHeight)
 
         if (playable != null) {
-            // TODO this call has no effect!
-            if (playable!!.getPosition() > 0) seekTo(playable!!.getPosition())
+            val pos = playable!!.getPosition()
+            if (pos > 0) seekTo(pos)
 
             if (playable!!.getDuration() <= 0) {
                 Log.d(TAG, "Setting duration of media")
@@ -318,8 +317,10 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
 
         if (t >= getDuration()) {
             Log.d(TAG, "Seek reached end of file, skipping to next episode")
+//            TODO: test
+            playerWrapper?.seekTo(t)
             endPlayback(true, wasSkipped = true, true, toStoppedState = true)
-            return
+//            return
         }
 
         when (playerStatus) {
@@ -367,7 +368,8 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
      */
     override fun getDuration(): Int {
         var retVal = Playable.INVALID_TIME
-        if (playerStatus == PlayerStatus.PLAYING || playerStatus == PlayerStatus.PAUSED || playerStatus == PlayerStatus.PREPARED) {
+        if ((playerStatus == PlayerStatus.PLAYING)
+                || playerStatus == PlayerStatus.PAUSED || playerStatus == PlayerStatus.PREPARED) {
             if (playerWrapper != null) retVal = playerWrapper!!.duration
         }
         if (retVal <= 0 && playable != null && playable!!.getDuration() > 0) retVal = playable!!.getDuration()
@@ -379,6 +381,7 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
      */
     override fun getPosition(): Int {
         var retVal = Playable.INVALID_TIME
+//        TODO: test
         if (playerStatus.isAtLeast(PlayerStatus.PREPARED)) {
             if (playerWrapper != null) retVal = playerWrapper!!.currentPosition
         }
@@ -409,7 +412,8 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
      */
     override fun getPlaybackSpeed(): Float {
         var retVal = 1f
-        if (playerStatus == PlayerStatus.PLAYING || playerStatus == PlayerStatus.PAUSED || playerStatus == PlayerStatus.INITIALIZED || playerStatus == PlayerStatus.PREPARED) {
+        if (playerStatus == PlayerStatus.PLAYING|| playerStatus == PlayerStatus.PAUSED || playerStatus == PlayerStatus.INITIALIZED
+                || playerStatus == PlayerStatus.PREPARED) {
             if (playerWrapper != null) retVal = playerWrapper!!.currentSpeedMultiplier
         }
         return retVal
@@ -622,6 +626,8 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
             shouldContinue || toStoppedState -> {
                 if (nextMedia == null) {
                     callback.onPlaybackEnded(null, true)
+                    playable = null
+                    ExoPlayerWrapper.exoPlayer?.stop()
                     stop()
                 }
                 val hasNext = nextMedia != null
@@ -660,6 +666,7 @@ class LocalPSMP(context: Context, callback: PSMPCallback) : PlaybackServiceMedia
             }
         })
         mp.setOnErrorListener(Consumer { message: String ->
+            Log.e(TAG, "PlayerErrorEvent: $message")
             EventBus.getDefault().postSticky(PlayerErrorEvent(message))
         })
     }

@@ -17,6 +17,7 @@ import ac.mdiq.podcini.ui.view.CircularProgressBar
 import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.actions.menuhandler.FeedItemMenuHandler
+import ac.mdiq.podcini.ui.fragment.EpisodeHomeFragment.Companion.currentItem
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.Converter
 import ac.mdiq.podcini.util.DateFormatter
@@ -25,6 +26,7 @@ import ac.mdiq.podcini.util.event.EpisodeDownloadEvent
 import ac.mdiq.podcini.util.event.FeedItemEvent
 import ac.mdiq.podcini.util.event.PlayerStatusEvent
 import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
+import ac.mdiq.podcini.util.event.settings.SpeedPresetChangedEvent
 import android.os.Build
 import android.os.Bundle
 import android.text.Html
@@ -70,6 +72,8 @@ import kotlin.math.max
 class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var _binding: EpisodeInfoFragmentBinding? = null
     private val binding get() = _binding!!
+
+    private var homeFragment: EpisodeHomeFragment? = null
 
     private var itemsLoaded = false
     private var item: FeedItem? = null
@@ -141,7 +145,8 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         noMediaLabel = binding.noMediaLabel
 
         butAction0.setOnClickListener {
-            if (item?.link != null) (activity as MainActivity).loadChildFragment(EpisodeHomeFragment.newInstance(item!!))
+            homeFragment = EpisodeHomeFragment.newInstance(item!!)
+            if (item?.link != null) (activity as MainActivity).loadChildFragment(homeFragment!!)
         }
 
         butAction1.setOnClickListener(View.OnClickListener {
@@ -398,7 +403,6 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     @UnstableApi private fun load() {
         disposable?.dispose()
-
         if (!itemsLoaded) progbarLoading.visibility = View.VISIBLE
 
         disposable = Observable.fromCallable<FeedItem?> { this.loadInBackground() }

@@ -310,3 +310,12 @@
 	* when global auto download setting is enabled, no existing feed is automatically included for auto download
 	* when subscribing a new feed, there an option for auto download
 	* new episode of a feed is auto downloaded at a feed refresh only when both global and feed settings for auto download are enabled
+	
+## 4.9.5
+
+* added action bar option in episode home view to switch on/off JavaScript
+* added share notes menu item in reader mode of episode home view
+* TTS speed uses playback speed of the feed or 1.0
+* on player detailed view, if showing episode home reader content, then "share notes" shares the reader content
+* fixed bug of not re-playing a finished episode
+* fixed (possibly) bug of marking multiple items played when one is finished playing

@@ -4,9 +4,9 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.playback.PlayableUtils.saveCurrentPosition
 import ac.mdiq.podcini.playback.PlaybackServiceStarter
-import ac.mdiq.podcini.playback.base.PlaybackServiceMediaPlayer
-import ac.mdiq.podcini.playback.base.PlaybackServiceMediaPlayer.PSMPCallback
-import ac.mdiq.podcini.playback.base.PlaybackServiceMediaPlayer.PSMPInfo
+import ac.mdiq.podcini.playback.base.MediaPlayerBase
+import ac.mdiq.podcini.playback.base.MediaPlayerBase.PSMPCallback
+import ac.mdiq.podcini.playback.base.MediaPlayerBase.PSMPInfo
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.cast.CastPsmp
 import ac.mdiq.podcini.playback.cast.CastStateListener
@@ -81,9 +81,6 @@ import android.view.SurfaceHolder
 import android.webkit.URLUtil
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
-import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
-import androidx.media3.common.Player
 import androidx.media3.common.Player.STATE_ENDED
 import androidx.media3.common.Player.STATE_IDLE
 import androidx.media3.common.util.UnstableApi
@@ -112,7 +109,7 @@ import kotlin.math.max
  */
 @UnstableApi
 class PlaybackService : MediaSessionService() {
-    private var mediaPlayer: PlaybackServiceMediaPlayer? = null
+    private var mediaPlayer: MediaPlayerBase? = null
     private var positionEventTimer: Disposable? = null
 
     private lateinit var customMediaNotificationProvider: CustomMediaNotificationProvider
@@ -153,10 +150,10 @@ class PlaybackService : MediaSessionService() {
 
         if (Build.VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
             registerReceiver(autoStateUpdated, IntentFilter("com.google.android.gms.car.media.STATUS"), RECEIVER_NOT_EXPORTED)
-            registerReceiver(shutdownReceiver, IntentFilter(PlaybackServiceInterface.ACTION_SHUTDOWN_PLAYBACK_SERVICE), RECEIVER_NOT_EXPORTED)
+            registerReceiver(shutdownReceiver, IntentFilter(PlaybackServiceConstants.ACTION_SHUTDOWN_PLAYBACK_SERVICE), RECEIVER_NOT_EXPORTED)
         } else {
             registerReceiver(autoStateUpdated, IntentFilter("com.google.android.gms.car.media.STATUS"))
-            registerReceiver(shutdownReceiver, IntentFilter(PlaybackServiceInterface.ACTION_SHUTDOWN_PLAYBACK_SERVICE))
+            registerReceiver(shutdownReceiver, IntentFilter(PlaybackServiceConstants.ACTION_SHUTDOWN_PLAYBACK_SERVICE))
         }
 
         registerReceiver(headsetDisconnected, IntentFilter(Intent.ACTION_HEADSET_PLUG))
@@ -181,8 +178,8 @@ class PlaybackService : MediaSessionService() {
         customMediaNotificationProvider = CustomMediaNotificationProvider(applicationContext)
         setMediaNotificationProvider(customMediaNotificationProvider)
 
-        if (ExoPlayerWrapper.exoPlayer == null) ExoPlayerWrapper.createStaticPlayer(applicationContext)
-        mediaSession = MediaSession.Builder(applicationContext, ExoPlayerWrapper.exoPlayer!!)
+        if (LocalMediaPlayer.exoPlayer == null) LocalMediaPlayer.createStaticPlayer(applicationContext)
+        mediaSession = MediaSession.Builder(applicationContext, LocalMediaPlayer.exoPlayer!!)
             .setCallback(MyCallback())
             .setCustomLayout(notificationCustomButtons)
             .build()
@@ -200,7 +197,7 @@ class PlaybackService : MediaSessionService() {
             mediaPlayer!!.shutdown()
         }
         mediaPlayer = CastPsmp.getInstanceIfConnected(this, mediaPlayerCallback)
-        if (mediaPlayer == null) mediaPlayer = LocalPSMP(applicationContext, mediaPlayerCallback) // Cast not supported or not connected
+        if (mediaPlayer == null) mediaPlayer = LocalMediaPlayer(applicationContext, mediaPlayerCallback) // Cast not supported or not connected
         if (media != null) mediaPlayer!!.playMediaObject(media, !media.localFileAvailable(), wasPlaying, true)
         isCasting = mediaPlayer!!.isCasting()
     }
@@ -226,13 +223,13 @@ class PlaybackService : MediaSessionService() {
         castStateListener.destroy()
 
         cancelPositionObserver()
+        LocalMediaPlayer.cleanup()
         mediaSession?.run {
             player.release()
             release()
             mediaSession = null
         }
-        ExoPlayerWrapper.exoPlayer?.release()
-        ExoPlayerWrapper.exoPlayer =  null
+        LocalMediaPlayer.exoPlayer =  null
         mediaPlayer?.shutdown()
 
         unregisterReceiver(autoStateUpdated)
@@ -464,13 +461,13 @@ class PlaybackService : MediaSessionService() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
-//        Log.d(TAG, "OnStartCommand called")
 
         val keycode = intent?.getIntExtra(MediaButtonReceiver.EXTRA_KEYCODE, -1) ?: -1
         val customAction = intent?.getStringExtra(MediaButtonReceiver.EXTRA_CUSTOM_ACTION)
         val hardwareButton = intent?.getBooleanExtra(MediaButtonReceiver.EXTRA_HARDWAREBUTTON, false) ?: false
-        val playable = intent?.getParcelableExtra<Playable>(PlaybackServiceInterface.EXTRA_PLAYABLE)
-        Log.d(TAG, "OnStartCommand $keycode $customAction $hardwareButton $playable")
+        val playable = intent?.getParcelableExtra<Playable>(PlaybackServiceConstants.EXTRA_PLAYABLE)
+
+        Log.d(TAG, "OnStartCommand flags=$flags startId=$startId $keycode $customAction $hardwareButton ${playable?.getEpisodeTitle()}")
 
         if (keycode == -1 && playable == null && customAction == null) {
             Log.e(TAG, "PlaybackService was started with no arguments")
@@ -493,9 +490,9 @@ class PlaybackService : MediaSessionService() {
                     val handled = handleKeycode(keycode, notificationButton)
                 }
                 playable != null -> {
-                    val allowStreamThisTime = intent.getBooleanExtra(PlaybackServiceInterface.EXTRA_ALLOW_STREAM_THIS_TIME, false)
-                    val allowStreamAlways = intent.getBooleanExtra(PlaybackServiceInterface.EXTRA_ALLOW_STREAM_ALWAYS, false)
-                    sendNotificationBroadcast(PlaybackServiceInterface.NOTIFICATION_TYPE_RELOAD, 0)
+                    val allowStreamThisTime = intent.getBooleanExtra(PlaybackServiceConstants.EXTRA_ALLOW_STREAM_THIS_TIME, false)
+                    val allowStreamAlways = intent.getBooleanExtra(PlaybackServiceConstants.EXTRA_ALLOW_STREAM_ALWAYS, false)
+                    sendNotificationBroadcast(PlaybackServiceConstants.NOTIFICATION_TYPE_RELOAD, 0)
                     if (allowStreamAlways) isAllowMobileStreaming = true
                     Observable.fromCallable {
                         if (playable is FeedMedia) return@fromCallable DBReader.getFeedMedia(playable.id)
@@ -522,7 +519,6 @@ class PlaybackService : MediaSessionService() {
 
     private fun skipIntro(playable: Playable) {
         val item = (playable as? FeedMedia)?.item ?: currentitem ?: return
-//        val item = currentitem ?: (playable as? FeedMedia)?.item ?: return
         val feed = item.feed ?: DBReader.getFeed(item.feedId)
         val preferences = feed?.preferences
 
@@ -548,8 +544,8 @@ class PlaybackService : MediaSessionService() {
         }
 
         val intentAllowThisTime = Intent(originalIntent)
-        intentAllowThisTime.setAction(PlaybackServiceInterface.EXTRA_ALLOW_STREAM_THIS_TIME)
-        intentAllowThisTime.putExtra(PlaybackServiceInterface.EXTRA_ALLOW_STREAM_THIS_TIME, true)
+        intentAllowThisTime.setAction(PlaybackServiceConstants.EXTRA_ALLOW_STREAM_THIS_TIME)
+        intentAllowThisTime.putExtra(PlaybackServiceConstants.EXTRA_ALLOW_STREAM_THIS_TIME, true)
         val pendingIntentAllowThisTime = if (Build.VERSION.SDK_INT >= VERSION_CODES.O)
             PendingIntent.getForegroundService(this, R.id.pending_intent_allow_stream_this_time, intentAllowThisTime,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
@@ -557,8 +553,8 @@ class PlaybackService : MediaSessionService() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
         val intentAlwaysAllow = Intent(intentAllowThisTime)
-        intentAlwaysAllow.setAction(PlaybackServiceInterface.EXTRA_ALLOW_STREAM_ALWAYS)
-        intentAlwaysAllow.putExtra(PlaybackServiceInterface.EXTRA_ALLOW_STREAM_ALWAYS, true)
+        intentAlwaysAllow.setAction(PlaybackServiceConstants.EXTRA_ALLOW_STREAM_ALWAYS)
+        intentAlwaysAllow.putExtra(PlaybackServiceConstants.EXTRA_ALLOW_STREAM_ALWAYS, true)
         val pendingIntentAlwaysAllow = if (Build.VERSION.SDK_INT >= VERSION_CODES.O)
             PendingIntent.getForegroundService(this, R.id.pending_intent_allow_stream_always, intentAlwaysAllow,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
@@ -569,8 +565,7 @@ class PlaybackService : MediaSessionService() {
             .setSmallIcon(R.drawable.ic_notification_stream)
             .setContentTitle(getString(R.string.confirm_mobile_streaming_notification_title))
             .setContentText(getString(R.string.confirm_mobile_streaming_notification_message))
-            .setStyle(NotificationCompat.BigTextStyle()
-                .bigText(getString(R.string.confirm_mobile_streaming_notification_message)))
+            .setStyle(NotificationCompat.BigTextStyle().bigText(getString(R.string.confirm_mobile_streaming_notification_message)))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntentAllowThisTime)
             .addAction(R.drawable.ic_notification_stream, getString(R.string.confirm_mobile_streaming_button_once), pendingIntentAllowThisTime)
@@ -679,9 +674,7 @@ class PlaybackService : MediaSessionService() {
     }
 
     private fun startPlayingFromPreferences() {
-        Observable.fromCallable {
-            createInstanceFromPreferences(applicationContext)
-        }
+        Observable.fromCallable { createInstanceFromPreferences(applicationContext) }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
@@ -703,9 +696,7 @@ class PlaybackService : MediaSessionService() {
             return
         }
 
-        if (playable.getIdentifier() != currentlyPlayingFeedMediaId) {
-            clearCurrentlyPlayingTemporaryPlaybackSpeed()
-        }
+        if (playable.getIdentifier() != currentlyPlayingFeedMediaId) clearCurrentlyPlayingTemporaryPlaybackSpeed()
 
         mediaPlayer?.playMediaObject(playable, stream, true, true)
         recreateMediaSessionIfNeeded()
@@ -740,7 +731,7 @@ class PlaybackService : MediaSessionService() {
         }
 
         override fun onChapterLoaded(media: Playable?) {
-            sendNotificationBroadcast(PlaybackServiceInterface.NOTIFICATION_TYPE_RELOAD, 0)
+            sendNotificationBroadcast(PlaybackServiceConstants.NOTIFICATION_TYPE_RELOAD, 0)
             updateMediaSession(mediaPlayer?.playerStatus)
         }
     }
@@ -748,7 +739,7 @@ class PlaybackService : MediaSessionService() {
     private val mediaPlayerCallback: PSMPCallback = object : PSMPCallback {
         override fun statusChanged(newInfo: PSMPInfo?) {
             currentMediaType = mediaPlayer?.getCurrentMediaType() ?: MediaType.UNKNOWN
-            Log.d(TAG, "statusChanged called")
+            Log.d(TAG, "statusChanged called ${newInfo?.playerStatus}")
 //            updateMediaSession(newInfo?.playerStatus)
             if (newInfo != null) {
                 when (newInfo.playerStatus) {
@@ -787,7 +778,7 @@ class PlaybackService : MediaSessionService() {
                             setSleepTimer(timerMillis())
                             EventBus.getDefault().post(MessageEvent(getString(R.string.sleep_timer_enabled_label), { disableSleepTimer() }, getString(R.string.undo)))
                         }
-                        loadQueueForMediaSession()
+//                        loadQueueForMediaSession()
                     }
                     PlayerStatus.ERROR -> writeNoMediaPlaying()
                     else -> {}
@@ -808,7 +799,7 @@ class PlaybackService : MediaSessionService() {
 
         override fun onMediaChanged(reloadUI: Boolean) {
             Log.d(TAG, "reloadUI callback reached")
-            if (reloadUI) sendNotificationBroadcast(PlaybackServiceInterface.NOTIFICATION_TYPE_RELOAD, 0)
+            if (reloadUI) sendNotificationBroadcast(PlaybackServiceConstants.NOTIFICATION_TYPE_RELOAD, 0)
 //            updateNotificationAndMediaSession(this@PlaybackService.playable)
         }
 
@@ -895,12 +886,12 @@ class PlaybackService : MediaSessionService() {
     }
 
     private fun getNextInQueue(currentMedia: Playable?): Playable? {
+        Log.d(TAG, "getNextInQueue currentMedia: ${currentMedia?.getEpisodeTitle()}")
         if (currentMedia !is FeedMedia) {
             Log.d(TAG, "getNextInQueue(), but playable not an instance of FeedMedia, so not proceeding")
             writeNoMediaPlaying()
             return null
         }
-        Log.d(TAG, "getNextInQueue()")
         if (currentMedia.item == null) currentMedia.setItem(DBReader.getFeedItem(currentMedia.itemId))
         val item = currentMedia.item
         if (item == null) {
@@ -911,6 +902,7 @@ class PlaybackService : MediaSessionService() {
         val nextItem = DBReader.getNextInQueue(item)
 
         if (nextItem?.media == null) {
+            Log.d(TAG, "getNextInQueue nextItem: $nextItem media: ${nextItem?.media}")
             writeNoMediaPlaying()
             return null
         }
@@ -934,20 +926,20 @@ class PlaybackService : MediaSessionService() {
      * Set of instructions to be performed when playback ends.
      */
     private fun onPlaybackEnded(mediaType: MediaType?, stopPlaying: Boolean) {
-        Log.d(TAG, "Playback ended")
+        Log.d(TAG, "onPlaybackEnded mediaType: $mediaType stopPlaying: $stopPlaying")
         clearCurrentlyPlayingTemporaryPlaybackSpeed()
         if (stopPlaying) {
             taskManager.cancelPositionSaver()
             cancelPositionObserver()
         }
         if (mediaType == null) {
-            sendNotificationBroadcast(PlaybackServiceInterface.NOTIFICATION_TYPE_PLAYBACK_END, 0)
+            sendNotificationBroadcast(PlaybackServiceConstants.NOTIFICATION_TYPE_PLAYBACK_END, 0)
         } else {
-            sendNotificationBroadcast(PlaybackServiceInterface.NOTIFICATION_TYPE_RELOAD,
+            sendNotificationBroadcast(PlaybackServiceConstants.NOTIFICATION_TYPE_RELOAD,
                 when {
-                    isCasting -> PlaybackServiceInterface.EXTRA_CODE_CAST
-                    mediaType == MediaType.VIDEO -> PlaybackServiceInterface.EXTRA_CODE_VIDEO
-                    else -> PlaybackServiceInterface.EXTRA_CODE_AUDIO
+                    isCasting -> PlaybackServiceConstants.EXTRA_CODE_CAST
+                    mediaType == MediaType.VIDEO -> PlaybackServiceConstants.EXTRA_CODE_VIDEO
+                    else -> PlaybackServiceConstants.EXTRA_CODE_AUDIO
                 })
         }
     }
@@ -977,7 +969,7 @@ class PlaybackService : MediaSessionService() {
             Log.e(TAG, "Cannot do post-playback processing: media was null")
             return
         }
-        Log.d(TAG, "onPostPlayback(): media=" + playable.getEpisodeTitle())
+        Log.d(TAG, "onPostPlayback(): ended=$ended skipped=$skipped playingNext=$playingNext media=${playable.getEpisodeTitle()} ")
 
         if (playable !is FeedMedia) {
             Log.d(TAG, "Not doing post-playback processing: media not of type FeedMedia")
@@ -1008,6 +1000,7 @@ class PlaybackService : MediaSessionService() {
 
         if (item != null) {
             if (ended || smartMarkAsPlayed || autoSkipped || (skipped && !shouldSkipKeepEpisode())) {
+                Log.d(TAG, "onPostPlayback ended: $ended smartMarkAsPlayed: $smartMarkAsPlayed autoSkipped: $autoSkipped skipped: $skipped")
                 // only mark the item as played if we're not keeping it anyways
                 DBWriter.markItemPlayed(item, FeedItem.PLAYED, ended || (skipped && smartMarkAsPlayed))
                 // don't know if it actually matters to not autodownload when smart mark as played is triggered
@@ -1037,9 +1030,9 @@ class PlaybackService : MediaSessionService() {
     }
 
     private fun sendNotificationBroadcast(type: Int, code: Int) {
-        val intent = Intent(PlaybackServiceInterface.ACTION_PLAYER_NOTIFICATION)
-        intent.putExtra(PlaybackServiceInterface.EXTRA_NOTIFICATION_TYPE, type)
-        intent.putExtra(PlaybackServiceInterface.EXTRA_NOTIFICATION_CODE, code)
+        val intent = Intent(PlaybackServiceConstants.ACTION_PLAYER_NOTIFICATION)
+        intent.putExtra(PlaybackServiceConstants.EXTRA_NOTIFICATION_TYPE, type)
+        intent.putExtra(PlaybackServiceConstants.EXTRA_NOTIFICATION_CODE, code)
         intent.setPackage(packageName)
         sendBroadcast(intent)
     }
@@ -1344,7 +1337,7 @@ class PlaybackService : MediaSessionService() {
 
     private val shutdownReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if (TextUtils.equals(intent.action, PlaybackServiceInterface.ACTION_SHUTDOWN_PLAYBACK_SERVICE))
+            if (TextUtils.equals(intent.action, PlaybackServiceConstants.ACTION_SHUTDOWN_PLAYBACK_SERVICE))
                 EventBus.getDefault().post(PlaybackServiceEvent(PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN))
         }
     }
@@ -1548,7 +1541,7 @@ class PlaybackService : MediaSessionService() {
         positionEventTimer = Observable.interval(POSITION_EVENT_INTERVAL, TimeUnit.SECONDS)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
-                Log.d(TAG, "setupPositionObserver currentPosition: $currentPosition, currentPlaybackSpeed: $currentPlaybackSpeed")
+                Log.d(TAG, "positionEventTimer currentPosition: $currentPosition, currentPlaybackSpeed: $currentPlaybackSpeed")
                 EventBus.getDefault().post(PlaybackPositionEvent(currentPosition, duration))
                 skipEndingIfNecessary()
             }

@@ -239,7 +239,7 @@ object DBReader {
     @JvmStatic
     fun getQueueIDList(): LongList {
         Log.d(TAG, "getQueueIDList() called")
-//        printStackTrce()
+//        printStackTrace()
 
         val adapter = getInstance()
         adapter.open()
@@ -524,7 +524,7 @@ object DBReader {
      * @return The FeedItem next in queue or null if the FeedItem could not be found.
      */
     fun getNextInQueue(item: FeedItem): FeedItem? {
-        Log.d(TAG, "getNextInQueue() called with: " + "itemId = [" + item.id + "]")
+        Log.d(TAG, "getNextInQueue() called with: itemId = [${item.id}]")
         val adapter = getInstance()
         adapter.open()
         try {
@@ -539,6 +539,7 @@ object DBReader {
                     return nextItem
                 }
             } catch (e: Exception) {
+                Log.d(TAG, "getNextInQueue error: ${e.message}")
                 return null
             }
         } finally {
@@ -640,7 +641,7 @@ object DBReader {
     fun loadDescriptionOfFeedItem(item: FeedItem) {
         Log.d(TAG, "loadDescriptionOfFeedItem() called with: item = [$item]")
         //        TODO: need to find out who are often calling this
-//        printStackTrce()
+//        printStackTrace()
         val adapter = getInstance()
         adapter.open()
         try {

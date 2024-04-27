@@ -2,7 +2,7 @@ package ac.mdiq.podcini.service.playback
 
 import ac.mdiq.podcini.storage.model.feed.*
 import ac.mdiq.podcini.storage.model.playback.Playable
-import ac.mdiq.podcini.playback.base.PlaybackServiceMediaPlayer
+import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.service.PlaybackVolumeUpdater
 import org.junit.Before
@@ -11,11 +11,11 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 
 class PlaybackVolumeUpdaterTest {
-    private var mediaPlayer: PlaybackServiceMediaPlayer? = null
+    private var mediaPlayer: MediaPlayerBase? = null
 
     @Before
     fun setUp() {
-        mediaPlayer = Mockito.mock(PlaybackServiceMediaPlayer::class.java)
+        mediaPlayer = Mockito.mock(MediaPlayerBase::class.java)
     }
 
     @Test

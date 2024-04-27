@@ -20,7 +20,7 @@ import kotlin.concurrent.Volatile
  * Abstract class that allows for different implementations of the PlaybackServiceMediaPlayer for local
  * and remote (cast devices) playback.
  */
-abstract class PlaybackServiceMediaPlayer protected constructor(protected val context: Context, protected val callback: PSMPCallback) {
+abstract class MediaPlayerBase protected constructor(protected val context: Context, protected val callback: PSMPCallback) {
 
     @Volatile
     private var oldPlayerStatus: PlayerStatus? = null
@@ -377,7 +377,8 @@ abstract class PlaybackServiceMediaPlayer protected constructor(protected val co
      * Holds information about a PSMP object.
      */
     class PSMPInfo(@JvmField val oldPlayerStatus: PlayerStatus?, @JvmField var playerStatus: PlayerStatus, @JvmField var playable: Playable?)
+
     companion object {
-        private const val TAG = "PlaybackSvcMediaPlayer"
+        private const val TAG = "MediaPlayerBase"
     }
 }

@@ -1,0 +1,5 @@
+ 
+Version 4.9.6 brings several changes:
+
+* fixed the nasty bug of marking multiple items played when one is finished playing
+* merged PlayerWrapper class into LocalMediaPlayer

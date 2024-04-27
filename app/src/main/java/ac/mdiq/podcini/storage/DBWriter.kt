@@ -14,7 +14,7 @@ import ac.mdiq.podcini.feed.LocalFeedUpdater.updateFeed
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.createInstanceFromPreferences
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.currentlyPlayingFeedMediaId
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.writeNoMediaPlaying
-import ac.mdiq.podcini.playback.service.PlaybackServiceInterface
+import ac.mdiq.podcini.playback.service.PlaybackServiceConstants
 import ac.mdiq.podcini.storage.DBReader.getFeed
 import ac.mdiq.podcini.storage.DBReader.getFeedItem
 import ac.mdiq.podcini.storage.DBReader.getFeedItemList
@@ -43,6 +43,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.enqueueLocation
 import ac.mdiq.podcini.preferences.UserPreferences.isQueueKeepSorted
 import ac.mdiq.podcini.preferences.UserPreferences.queueKeepSortedOrder
 import ac.mdiq.podcini.preferences.UserPreferences.shouldDeleteRemoveFromQueue
+import ac.mdiq.podcini.util.showStackTrace
 import org.greenrobot.eventbus.EventBus
 import java.io.File
 import java.util.*
@@ -135,7 +136,7 @@ import java.util.concurrent.TimeUnit
 
         if (media.id == currentlyPlayingFeedMediaId) {
             writeNoMediaPlaying()
-            sendLocalBroadcast(context, PlaybackServiceInterface.ACTION_SHUTDOWN_PLAYBACK_SERVICE)
+            sendLocalBroadcast(context, PlaybackServiceConstants.ACTION_SHUTDOWN_PLAYBACK_SERVICE)
 
             val nm = NotificationManagerCompat.from(context)
             nm.cancel(R.id.notification_playing)
@@ -207,7 +208,7 @@ import java.util.concurrent.TimeUnit
                 if (item.media?.id == currentlyPlayingFeedMediaId) {
                     // Applies to both downloaded and streamed media
                     writeNoMediaPlaying()
-                    sendLocalBroadcast(context, PlaybackServiceInterface.ACTION_SHUTDOWN_PLAYBACK_SERVICE)
+                    sendLocalBroadcast(context, PlaybackServiceConstants.ACTION_SHUTDOWN_PLAYBACK_SERVICE)
                 }
                 if (item.feed != null && !item.feed!!.isLocalFeed) {
                     DownloadServiceInterface.get()?.cancel(context, item.media!!)
@@ -481,10 +482,10 @@ import java.util.concurrent.TimeUnit
         return runOnDbThread { removeQueueItemSynchronous(context, performAutoDownload, *itemIds) }
     }
 
-    @UnstableApi private fun removeQueueItemSynchronous(context: Context,
-                                           performAutoDownload: Boolean, vararg itemIds: Long) {
-        Log.d(TAG, "removeQueueItemSynchronous called")
+    @UnstableApi private fun removeQueueItemSynchronous(context: Context, performAutoDownload: Boolean, vararg itemIds: Long) {
+        Log.d(TAG, "removeQueueItemSynchronous called $itemIds")
         if (itemIds.isEmpty()) return
+        showStackTrace()
 
         val adapter = getInstance()
         adapter.open()
@@ -497,6 +498,7 @@ import java.util.concurrent.TimeUnit
             val position = indexInItemList(queue, itemId)
             if (position >= 0) {
                 val item = getFeedItem(itemId)
+                Log.d(TAG, "removing item from queue: ${item?.title}")
                 if (item == null) {
                     Log.e(TAG, "removeQueueItem - item in queue but somehow cannot be loaded. Item ignored. It should never happen. id:$itemId")
                     continue

@@ -319,3 +319,8 @@
 * on player detailed view, if showing episode home reader content, then "share notes" shares the reader content
 * fixed bug of not re-playing a finished episode
 * fixed (possibly) bug of marking multiple items played when one is finished playing
+
+## 4.9.6
+
+* fixed the nasty bug of marking multiple items played when one is finished playing
+* merged PlayerWrapper class into LocalMediaPlayer

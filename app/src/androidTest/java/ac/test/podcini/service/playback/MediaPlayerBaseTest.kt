@@ -3,11 +3,11 @@ package de.test.podcini.service.playback
 import androidx.test.annotation.UiThreadTest
 import androidx.test.filters.MediumTest
 import androidx.test.platform.app.InstrumentationRegistry
-import ac.mdiq.podcini.playback.service.LocalPSMP
+import ac.mdiq.podcini.playback.service.LocalMediaPlayer
 import ac.mdiq.podcini.storage.model.feed.*
 import ac.mdiq.podcini.storage.model.playback.Playable
-import ac.mdiq.podcini.playback.base.PlaybackServiceMediaPlayer
-import ac.mdiq.podcini.playback.base.PlaybackServiceMediaPlayer.PSMPInfo
+import ac.mdiq.podcini.playback.base.MediaPlayerBase
+import ac.mdiq.podcini.playback.base.MediaPlayerBase.PSMPInfo
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.storage.database.PodDBAdapter.Companion.deleteDatabase
 import ac.mdiq.podcini.storage.database.PodDBAdapter.Companion.getInstance
@@ -31,7 +31,7 @@ import kotlin.concurrent.Volatile
  * Test class for LocalPSMP
  */
 @MediumTest
-class PlaybackServiceMediaPlayerTest {
+class MediaPlayerBaseTest {
     private var PLAYABLE_LOCAL_URL: String? = null
     private var httpServer: HTTPBin? = null
     private var playableFileUrl: String? = null
@@ -97,7 +97,7 @@ class PlaybackServiceMediaPlayerTest {
     @UiThreadTest
     fun testInit() {
         val c = InstrumentationRegistry.getInstrumentation().targetContext
-        val psmp: PlaybackServiceMediaPlayer = LocalPSMP(c, DefaultPSMPCallback())
+        val psmp: MediaPlayerBase = LocalMediaPlayer(c, DefaultPSMPCallback())
         psmp.shutdown()
     }
 
@@ -148,7 +148,7 @@ class PlaybackServiceMediaPlayerTest {
                 }
             }
         })
-        val psmp: PlaybackServiceMediaPlayer = LocalPSMP(c, callback)
+        val psmp: MediaPlayerBase = LocalMediaPlayer(c, callback)
         val p = writeTestPlayable(playableFileUrl, null)
         psmp.playMediaObject(p, true, false, false)
         val res = countDownLatch.await(LATCH_TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
@@ -190,7 +190,7 @@ class PlaybackServiceMediaPlayerTest {
                 }
             }
         })
-        val psmp: PlaybackServiceMediaPlayer = LocalPSMP(c, callback)
+        val psmp: MediaPlayerBase = LocalMediaPlayer(c, callback)
         val p = writeTestPlayable(playableFileUrl, null)
         psmp.playMediaObject(p, true, true, false)
 
@@ -238,7 +238,7 @@ class PlaybackServiceMediaPlayerTest {
                 }
             }
         })
-        val psmp: PlaybackServiceMediaPlayer = LocalPSMP(c, callback)
+        val psmp: MediaPlayerBase = LocalMediaPlayer(c, callback)
         val p = writeTestPlayable(playableFileUrl, null)
         psmp.playMediaObject(p, true, false, true)
         val res = countDownLatch.await(LATCH_TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
@@ -287,7 +287,7 @@ class PlaybackServiceMediaPlayerTest {
                 }
             }
         })
-        val psmp: PlaybackServiceMediaPlayer = LocalPSMP(c, callback)
+        val psmp: MediaPlayerBase = LocalMediaPlayer(c, callback)
         val p = writeTestPlayable(playableFileUrl, null)
         psmp.playMediaObject(p, true, true, true)
         val res = countDownLatch.await(LATCH_TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
@@ -327,7 +327,7 @@ class PlaybackServiceMediaPlayerTest {
                 }
             }
         })
-        val psmp: PlaybackServiceMediaPlayer = LocalPSMP(c, callback)
+        val psmp: MediaPlayerBase = LocalMediaPlayer(c, callback)
         val p = writeTestPlayable(playableFileUrl, PLAYABLE_LOCAL_URL)
         psmp.playMediaObject(p, false, false, false)
         val res = countDownLatch.await(LATCH_TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
@@ -368,7 +368,7 @@ class PlaybackServiceMediaPlayerTest {
                 }
             }
         })
-        val psmp: PlaybackServiceMediaPlayer = LocalPSMP(c, callback)
+        val psmp: MediaPlayerBase = LocalMediaPlayer(c, callback)
         val p = writeTestPlayable(playableFileUrl, PLAYABLE_LOCAL_URL)
         psmp.playMediaObject(p, false, true, false)
         val res = countDownLatch.await(LATCH_TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
@@ -414,7 +414,7 @@ class PlaybackServiceMediaPlayerTest {
                 }
             }
         })
-        val psmp: PlaybackServiceMediaPlayer = LocalPSMP(c, callback)
+        val psmp: MediaPlayerBase = LocalMediaPlayer(c, callback)
         val p = writeTestPlayable(playableFileUrl, PLAYABLE_LOCAL_URL)
         psmp.playMediaObject(p, false, false, true)
         val res = countDownLatch.await(LATCH_TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
@@ -463,7 +463,7 @@ class PlaybackServiceMediaPlayerTest {
                 }
             }
         })
-        val psmp: PlaybackServiceMediaPlayer = LocalPSMP(c, callback)
+        val psmp: MediaPlayerBase = LocalMediaPlayer(c, callback)
         val p = writeTestPlayable(playableFileUrl, PLAYABLE_LOCAL_URL)
         psmp.playMediaObject(p, false, true, true)
         val res = countDownLatch.await(LATCH_TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
@@ -519,7 +519,7 @@ class PlaybackServiceMediaPlayerTest {
                 if (assertionError == null) assertionError = AssertionFailedError("Unexpected call to shouldStop")
             }
         })
-        val psmp: PlaybackServiceMediaPlayer = LocalPSMP(c, callback)
+        val psmp: MediaPlayerBase = LocalMediaPlayer(c, callback)
         val p = writeTestPlayable(playableFileUrl, PLAYABLE_LOCAL_URL)
         if (initialState == PlayerStatus.PLAYING) {
             psmp.playMediaObject(p, stream, true, true)
@@ -623,7 +623,7 @@ class PlaybackServiceMediaPlayerTest {
                 }
             }
         })
-        val psmp: PlaybackServiceMediaPlayer = LocalPSMP(c, callback)
+        val psmp: MediaPlayerBase = LocalMediaPlayer(c, callback)
         if (initialState == PlayerStatus.PREPARED || initialState == PlayerStatus.PLAYING || initialState == PlayerStatus.PAUSED) {
             val startWhenPrepared = (initialState != PlayerStatus.PREPARED)
             psmp.playMediaObject(writeTestPlayable(playableFileUrl, PLAYABLE_LOCAL_URL), false, startWhenPrepared, true)
@@ -682,7 +682,7 @@ class PlaybackServiceMediaPlayerTest {
                 }
             }
         })
-        val psmp: PlaybackServiceMediaPlayer = LocalPSMP(c, callback)
+        val psmp: MediaPlayerBase = LocalMediaPlayer(c, callback)
         val p = writeTestPlayable(playableFileUrl, PLAYABLE_LOCAL_URL)
         if (initialState == PlayerStatus.INITIALIZED || initialState == PlayerStatus.PLAYING || initialState == PlayerStatus.PREPARED || initialState == PlayerStatus.PAUSED) {
             val prepareImmediately = (initialState != PlayerStatus.INITIALIZED)
@@ -755,7 +755,7 @@ class PlaybackServiceMediaPlayerTest {
                 }
             }
         })
-        val psmp: PlaybackServiceMediaPlayer = LocalPSMP(c, callback)
+        val psmp: MediaPlayerBase = LocalMediaPlayer(c, callback)
         val p = writeTestPlayable(playableFileUrl, PLAYABLE_LOCAL_URL)
         val prepareImmediately = initialState != PlayerStatus.INITIALIZED
         val startImmediately = initialState != PlayerStatus.PREPARED

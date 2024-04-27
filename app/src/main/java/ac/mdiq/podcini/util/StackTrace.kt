@@ -1,8 +1,10 @@
 package ac.mdiq.podcini.util
 
-fun printStackTrace() {
+import android.util.Log
+
+fun showStackTrace() {
     val stackTraceElements = Thread.currentThread().stackTrace
     stackTraceElements.forEach { element ->
-        println(element)
+        Log.d("showStackTrace", element.toString())
     }
 }

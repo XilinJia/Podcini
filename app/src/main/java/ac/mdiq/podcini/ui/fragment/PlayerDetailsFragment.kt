@@ -157,7 +157,7 @@ class PlayerDetailsFragment : Fragment() {
             if (item != null) {
                 if (cleanedNotes == null || item!!.description == null || loadedMediaId != media?.getIdentifier()) {
                     Log.d(TAG, "calling load description ${cleanedNotes==null} ${item!!.description==null} ${item!!.media?.getIdentifier()} ${media?.getIdentifier()}")
-//                    printStackTrce()
+//                    printStackTrace()
                     DBReader.loadDescriptionOfFeedItem(item!!)
                     loadedMediaId = media?.getIdentifier()
                     val shownotesCleaner = ShownotesCleaner(context, item?.description ?: "", media?.getDuration()?:0)

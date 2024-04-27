@@ -6,7 +6,7 @@ import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.preferences.PlaybackPreferences
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
-import ac.mdiq.podcini.playback.service.PlaybackServiceInterface
+import ac.mdiq.podcini.playback.service.PlaybackServiceConstants
 import ac.mdiq.podcini.storage.DBWriter
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
@@ -171,7 +171,7 @@ object FeedItemMenuHandler {
                 selectedItem.media?.setPosition(0)
                 if (PlaybackPreferences.currentlyPlayingFeedMediaId == (selectedItem.media?.id ?: "")) {
                     PlaybackPreferences.writeNoMediaPlaying()
-                    IntentUtils.sendLocalBroadcast(context, PlaybackServiceInterface.ACTION_SHUTDOWN_PLAYBACK_SERVICE)
+                    IntentUtils.sendLocalBroadcast(context, PlaybackServiceConstants.ACTION_SHUTDOWN_PLAYBACK_SERVICE)
                 }
                 DBWriter.markItemPlayed(selectedItem, FeedItem.UNPLAYED, true)
             }

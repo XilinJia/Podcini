@@ -4,7 +4,7 @@ import ac.mdiq.podcini.feed.util.PlaybackSpeedUtils.getCurrentPlaybackSpeed
 import ac.mdiq.podcini.preferences.PlaybackPreferences
 import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.playback.service.PlaybackService.LocalBinder
-import ac.mdiq.podcini.playback.service.PlaybackServiceInterface
+import ac.mdiq.podcini.playback.service.PlaybackServiceConstants
 import ac.mdiq.podcini.storage.DBWriter
 import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
 import ac.mdiq.podcini.util.event.playback.PlaybackServiceEvent
@@ -69,10 +69,10 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             activity.registerReceiver(statusUpdate, IntentFilter(PlaybackService.ACTION_PLAYER_STATUS_CHANGED), Context.RECEIVER_NOT_EXPORTED)
-            activity.registerReceiver(notificationReceiver, IntentFilter(PlaybackServiceInterface.ACTION_PLAYER_NOTIFICATION), Context.RECEIVER_NOT_EXPORTED)
+            activity.registerReceiver(notificationReceiver, IntentFilter(PlaybackServiceConstants.ACTION_PLAYER_NOTIFICATION), Context.RECEIVER_NOT_EXPORTED)
         } else {
             activity.registerReceiver(statusUpdate, IntentFilter(PlaybackService.ACTION_PLAYER_STATUS_CHANGED))
-            activity.registerReceiver(notificationReceiver, IntentFilter(PlaybackServiceInterface.ACTION_PLAYER_NOTIFICATION))
+            activity.registerReceiver(notificationReceiver, IntentFilter(PlaybackServiceConstants.ACTION_PLAYER_NOTIFICATION))
         }
 
         if (!released) bindToService()
@@ -184,14 +184,14 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
 
     private val notificationReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            val type = intent.getIntExtra(PlaybackServiceInterface.EXTRA_NOTIFICATION_TYPE, -1)
-            val code = intent.getIntExtra(PlaybackServiceInterface.EXTRA_NOTIFICATION_CODE, -1)
+            val type = intent.getIntExtra(PlaybackServiceConstants.EXTRA_NOTIFICATION_TYPE, -1)
+            val code = intent.getIntExtra(PlaybackServiceConstants.EXTRA_NOTIFICATION_CODE, -1)
             if (code == -1 || type == -1) {
                 Log.d(TAG, "Bad arguments. Won't handle intent")
                 return
             }
             when (type) {
-                PlaybackServiceInterface.NOTIFICATION_TYPE_RELOAD -> {
+                PlaybackServiceConstants.NOTIFICATION_TYPE_RELOAD -> {
                     if (playbackService == null && PlaybackService.isRunning) {
                         bindToService()
                         return
@@ -199,7 +199,7 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
                     mediaInfoLoaded = false
                     queryService()
                 }
-                PlaybackServiceInterface.NOTIFICATION_TYPE_PLAYBACK_END -> onPlaybackEnd()
+                PlaybackServiceConstants.NOTIFICATION_TYPE_PLAYBACK_END -> onPlaybackEnd()
             }
         }
     }

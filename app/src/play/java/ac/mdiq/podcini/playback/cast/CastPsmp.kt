@@ -1,18 +1,16 @@
 package ac.mdiq.podcini.playback.cast
 
-import ac.mdiq.podcini.util.event.PlayerErrorEvent
-import ac.mdiq.podcini.util.event.playback.BufferUpdateEvent
+import ac.mdiq.podcini.playback.base.MediaPlayerBase
+import ac.mdiq.podcini.playback.base.PlayerStatus
+import ac.mdiq.podcini.playback.base.RewindAfterPauseUtils.calculatePositionWithRewind
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.storage.model.playback.RemoteMedia
-import ac.mdiq.podcini.playback.base.PlaybackServiceMediaPlayer
-import ac.mdiq.podcini.playback.base.PlayerStatus
-import ac.mdiq.podcini.playback.base.RewindAfterPauseUtils.calculatePositionWithRewind
-import ac.mdiq.podcini.playback.service.ExoPlayerWrapper
+import ac.mdiq.podcini.util.event.PlayerErrorEvent
+import ac.mdiq.podcini.util.event.playback.BufferUpdateEvent
 import android.annotation.SuppressLint
 import android.content.Context
-import android.media.AudioManager
 import android.util.Log
 import android.util.Pair
 import android.view.SurfaceHolder
@@ -29,10 +27,10 @@ import kotlin.math.max
 import kotlin.math.min
 
 /**
- * Implementation of PlaybackServiceMediaPlayer suitable for remote playback on Cast Devices.
+ * Implementation of MediaPlayerBase suitable for remote playback on Cast Devices.
  */
 @SuppressLint("VisibleForTests")
-class CastPsmp(context: Context, callback: PSMPCallback) : PlaybackServiceMediaPlayer(context, callback) {
+class CastPsmp(context: Context, callback: PSMPCallback) : MediaPlayerBase(context, callback) {
     @Volatile
     private var media: Playable?
 
@@ -82,38 +80,28 @@ class CastPsmp(context: Context, callback: PSMPCallback) : PlaybackServiceMediaP
     }
 
     private fun setBuffering(buffering: Boolean) {
-        if (buffering && isBuffering.compareAndSet(false, true)) {
-            EventBus.getDefault().post(BufferUpdateEvent.started())
-        } else if (!buffering && isBuffering.compareAndSet(true, false)) {
-            EventBus.getDefault().post(BufferUpdateEvent.ended())
+        when {
+            buffering && isBuffering.compareAndSet(false, true) -> EventBus.getDefault().post(BufferUpdateEvent.started())
+            !buffering && isBuffering.compareAndSet(true, false) -> EventBus.getDefault().post(BufferUpdateEvent.ended())
         }
     }
 
     private fun localVersion(info: MediaInfo?): Playable? {
-        if (info == null || info.metadata == null) {
-            return null
-        }
-        if (CastUtils.matches(info, media)) {
-            return media
-        }
+        if (info == null || info.metadata == null) return null
+        if (CastUtils.matches(info, media)) return media
+
         val streamUrl = info.metadata!!.getString(CastUtils.KEY_STREAM_URL)
         return if (streamUrl == null) CastUtils.makeRemoteMedia(info) else callback.findMedia(streamUrl)
     }
 
     private fun remoteVersion(playable: Playable?): MediaInfo? {
-        if (playable == null) {
-            return null
+        return when {
+            playable == null -> null
+            CastUtils.matches(remoteMedia, playable) -> remoteMedia
+            playable is FeedMedia -> MediaInfoCreator.from(playable)
+            playable is RemoteMedia -> MediaInfoCreator.from(playable)
+            else -> null
         }
-        if (CastUtils.matches(remoteMedia, playable)) {
-            return remoteMedia
-        }
-        if (playable is FeedMedia) {
-            return MediaInfoCreator.from(playable)
-        }
-        if (playable is RemoteMedia) {
-            return MediaInfoCreator.from(playable)
-        }
-        return null
     }
 
     private fun onRemoteMediaPlayerStatusUpdated() {
@@ -121,9 +109,8 @@ class CastPsmp(context: Context, callback: PSMPCallback) : PlaybackServiceMediaP
         if (status == null) {
             Log.d(TAG, "Received null MediaStatus")
             return
-        } else {
-            Log.d(TAG, "Received remote status/media update. New state=" + status.playerState)
-        }
+        } else Log.d(TAG, "Received remote status/media update. New state=" + status.playerState)
+
         var state = status.playerState
         val oldState = remoteState
         remoteMedia = status.mediaInfo
@@ -137,16 +124,13 @@ class CastPsmp(context: Context, callback: PSMPCallback) : PlaybackServiceMediaP
         val oldMedia = media
         val position = status.streamPosition.toInt()
         // check for incompatible states
-        if ((state == MediaStatus.PLAYER_STATE_PLAYING || state == MediaStatus.PLAYER_STATE_PAUSED)
-                && currentMedia == null) {
+        if ((state == MediaStatus.PLAYER_STATE_PLAYING || state == MediaStatus.PLAYER_STATE_PAUSED) && currentMedia == null) {
             Log.w(TAG, "RemoteMediaPlayer returned playing or pausing state, but with no media")
             state = MediaStatus.PLAYER_STATE_UNKNOWN
             stateChanged = oldState != MediaStatus.PLAYER_STATE_UNKNOWN
         }
 
-        if (stateChanged) {
-            remoteState = state
-        }
+        if (stateChanged) remoteState = state
 
         if (mediaChanged && stateChanged && oldState == MediaStatus.PLAYER_STATE_PLAYING && state != MediaStatus.PLAYER_STATE_IDLE) {
             callback.onPlaybackPause(null, Playable.INVALID_TIME)
@@ -160,17 +144,16 @@ class CastPsmp(context: Context, callback: PSMPCallback) : PlaybackServiceMediaP
             MediaStatus.PLAYER_STATE_PLAYING -> {
                 if (!stateChanged) {
                     //These steps are necessary because they won't be performed by setPlayerStatus()
-                    if (position >= 0) {
-                        currentMedia!!.setPosition(position)
-                    }
+                    if (position >= 0) currentMedia!!.setPosition(position)
                     currentMedia!!.onPlaybackStart()
                 }
                 setPlayerStatus(PlayerStatus.PLAYING, currentMedia, position)
             }
             MediaStatus.PLAYER_STATE_PAUSED -> setPlayerStatus(PlayerStatus.PAUSED, currentMedia, position)
-            MediaStatus.PLAYER_STATE_BUFFERING -> setPlayerStatus(if ((mediaChanged || playerStatus == PlayerStatus.PREPARING)
-            ) PlayerStatus.PREPARING else PlayerStatus.SEEKING, currentMedia,
-                currentMedia?.getPosition() ?: Playable.INVALID_TIME)
+            MediaStatus.PLAYER_STATE_BUFFERING -> setPlayerStatus(
+                if ((mediaChanged || playerStatus == PlayerStatus.PREPARING)) PlayerStatus.PREPARING
+                else PlayerStatus.SEEKING,
+                currentMedia, currentMedia?.getPosition() ?: Playable.INVALID_TIME)
             MediaStatus.PLAYER_STATE_IDLE -> {
                 val reason = status.idleReason
                 when (reason) {
@@ -179,9 +162,7 @@ class CastPsmp(context: Context, callback: PSMPCallback) : PlaybackServiceMediaP
                         callback.onPlaybackEnded(null, true)
                         setPlayerStatus(PlayerStatus.STOPPED, currentMedia)
                         if (oldMedia != null) {
-                            if (position >= 0) {
-                                oldMedia.setPosition(position)
-                            }
+                            if (position >= 0) oldMedia.setPosition(position)
                             callback.onPostPlayback(oldMedia, ended = false, skipped = false, playingNext = false)
                         }
                         // onPlaybackEnded pretty much takes care of updating the UI
@@ -196,19 +177,16 @@ class CastPsmp(context: Context, callback: PSMPCallback) : PlaybackServiceMediaP
                         }
                         setPlayerStatus(PlayerStatus.PREPARING, currentMedia)
                     }
-                    MediaStatus.IDLE_REASON_NONE ->                         // This probably only happens when we connected but no command has been sent yet.
-                        setPlayerStatus(PlayerStatus.INITIALIZED, currentMedia)
+                    // This probably only happens when we connected but no command has been sent yet.
+                    MediaStatus.IDLE_REASON_NONE -> setPlayerStatus(PlayerStatus.INITIALIZED, currentMedia)
                     MediaStatus.IDLE_REASON_FINISHED -> {
                         // This is our onCompletionListener...
-                        if (mediaChanged && currentMedia != null) {
-                            media = currentMedia
-                        }
+                        if (mediaChanged && currentMedia != null) media = currentMedia
                         endPlayback(true, wasSkipped = false, shouldContinue = true, toStoppedState = true)
                         return
                     }
                     MediaStatus.IDLE_REASON_ERROR -> {
-                        Log.w(TAG, "Got an error status from the Chromecast. "
-                                + "Skipping, if possible, to the next episode...")
+                        Log.w(TAG, "Got an error status from the Chromecast. Skipping, if possible, to the next episode...")
                         EventBus.getDefault().post(PlayerErrorEvent("Chromecast error code 1"))
                         endPlayback(false, wasSkipped = false, shouldContinue = true, toStoppedState = true)
                         return
@@ -223,9 +201,7 @@ class CastPsmp(context: Context, callback: PSMPCallback) : PlaybackServiceMediaP
         }
         if (mediaChanged) {
             callback.onMediaChanged(true)
-            if (oldMedia != null) {
-                callback.onPostPlayback(oldMedia, ended = false, skipped = false, playingNext = currentMedia != null)
-            }
+            if (oldMedia != null) callback.onPostPlayback(oldMedia, ended = false, skipped = false, playingNext = currentMedia != null)
         }
     }
 
@@ -243,9 +219,7 @@ class CastPsmp(context: Context, callback: PSMPCallback) : PlaybackServiceMediaP
 //        setMediaPlayerListeners(mediaPlayer)
     }
 
-    override fun playMediaObject(playable: Playable, stream: Boolean,
-                                 startWhenPrepared: Boolean, prepareImmediately: Boolean
-    ) {
+    override fun playMediaObject(playable: Playable, stream: Boolean, startWhenPrepared: Boolean, prepareImmediately: Boolean) {
         Log.d(TAG, "playMediaObject() called")
         playMediaObject(playable, false, stream, startWhenPrepared, prepareImmediately)
     }
@@ -257,20 +231,17 @@ class CastPsmp(context: Context, callback: PSMPCallback) : PlaybackServiceMediaP
      *
      * @see .playMediaObject
      */
-    private fun playMediaObject(playable: Playable, forceReset: Boolean,
-                                stream: Boolean, startWhenPrepared: Boolean, prepareImmediately: Boolean
-    ) {
+    private fun playMediaObject(playable: Playable, forceReset: Boolean, stream: Boolean, startWhenPrepared: Boolean, prepareImmediately: Boolean) {
         if (!CastUtils.isCastable(playable, castContext.sessionManager.currentCastSession)) {
             Log.d(TAG, "media provided is not compatible with cast device")
             EventBus.getDefault().post(PlayerErrorEvent("Media not compatible with cast device"))
             var nextPlayable: Playable? = playable
             do {
                 nextPlayable = callback.getNextInQueue(nextPlayable)
-            } while (nextPlayable != null && !CastUtils.isCastable(nextPlayable,
-                        castContext.sessionManager.currentCastSession))
-            if (nextPlayable != null) {
-                playMediaObject(nextPlayable, forceReset, stream, startWhenPrepared, prepareImmediately)
-            }
+            } while (nextPlayable != null && !CastUtils.isCastable(nextPlayable, castContext.sessionManager.currentCastSession))
+
+            if (nextPlayable != null) playMediaObject(nextPlayable, forceReset, stream, startWhenPrepared, prepareImmediately)
+
             return
         }
 
@@ -283,9 +254,8 @@ class CastPsmp(context: Context, callback: PSMPCallback) : PlaybackServiceMediaP
                 // set temporarily to pause in order to update list with current position
                 val isPlaying = remoteMediaClient!!.isPlaying
                 val position = remoteMediaClient.approximateStreamPosition.toInt()
-                if (isPlaying) {
-                    callback.onPlaybackPause(media, position)
-                }
+                if (isPlaying) callback.onPlaybackPause(media, position)
+
                 if (media != null && media?.getIdentifier() != playable.getIdentifier()) {
                     val oldMedia: Playable = media!!
                     callback.onPostPlayback(oldMedia, false, skipped = false, playingNext = true)
@@ -302,15 +272,11 @@ class CastPsmp(context: Context, callback: PSMPCallback) : PlaybackServiceMediaP
         callback.ensureMediaInfoLoaded(media!!)
         callback.onMediaChanged(true)
         setPlayerStatus(PlayerStatus.INITIALIZED, media)
-        if (prepareImmediately) {
-            prepare()
-        }
+        if (prepareImmediately) prepare()
     }
 
     override fun resume() {
-        val newPosition = calculatePositionWithRewind(
-            media!!.getPosition(),
-            media!!.getLastPlayedTime())
+        val newPosition = calculatePositionWithRewind(media!!.getPosition(), media!!.getLastPlayedTime())
         seekTo(newPosition)
         remoteMediaClient!!.play()
     }
@@ -324,11 +290,8 @@ class CastPsmp(context: Context, callback: PSMPCallback) : PlaybackServiceMediaP
             Log.d(TAG, "Preparing media player")
             setPlayerStatus(PlayerStatus.PREPARING, media)
             var position = media!!.getPosition()
-            if (position > 0) {
-                position = calculatePositionWithRewind(
-                    position,
-                    media!!.getLastPlayedTime())
-            }
+            if (position > 0) position = calculatePositionWithRewind(position, media!!.getLastPlayedTime())
+
             remoteMediaClient!!.load(MediaLoadRequestData.Builder()
                 .setMediaInfo(remoteMedia)
                 .setAutoplay(startWhenPrepared.get())
@@ -338,44 +301,30 @@ class CastPsmp(context: Context, callback: PSMPCallback) : PlaybackServiceMediaP
 
     override fun reinit() {
         Log.d(TAG, "reinit() called")
-        if (media != null) {
-            playMediaObject(media!!, true,
-                stream = false,
-                startWhenPrepared = startWhenPrepared.get(),
-                prepareImmediately = false)
-        } else {
-            Log.d(TAG, "Call to reinit was ignored: media was null")
-        }
+        if (media != null) playMediaObject(media!!, true, stream = false, startWhenPrepared = startWhenPrepared.get(), prepareImmediately = false)
+        else Log.d(TAG, "Call to reinit was ignored: media was null")
     }
 
     override fun seekTo(t: Int) {
         Exception("Seeking to $t").printStackTrace()
-        remoteMediaClient!!.seek(MediaSeekOptions.Builder()
-            .setPosition(t.toLong()).build())
+        remoteMediaClient!!.seek(MediaSeekOptions.Builder().setPosition(t.toLong()).build())
     }
 
     override fun seekDelta(d: Int) {
         val position = getPosition()
-        if (position != Playable.INVALID_TIME) {
-            seekTo(position + d)
-        } else {
-            Log.e(TAG, "getPosition() returned INVALID_TIME in seekDelta")
-        }
+        if (position != Playable.INVALID_TIME) seekTo(position + d)
+        else Log.e(TAG, "getPosition() returned INVALID_TIME in seekDelta")
     }
 
     override fun getDuration(): Int {
         var retVal = remoteMediaClient!!.streamDuration.toInt()
-        if (retVal == Playable.INVALID_TIME && media != null && media!!.getDuration() > 0) {
-            retVal = media!!.getDuration()
-        }
+        if (retVal == Playable.INVALID_TIME && media != null && media!!.getDuration() > 0) retVal = media!!.getDuration()
         return retVal
     }
 
     override fun getPosition(): Int {
         var retVal = remoteMediaClient!!.approximateStreamPosition.toInt()
-        if (retVal <= 0 && media != null && media!!.getPosition() >= 0) {
-            retVal = media!!.getPosition()
-        }
+        if (retVal <= 0 && media != null && media!!.getPosition() >= 0) retVal = media!!.getPosition()
         return retVal
     }
 
@@ -388,8 +337,7 @@ class CastPsmp(context: Context, callback: PSMPCallback) : PlaybackServiceMediaP
     }
 
     override fun setPlaybackParams(speed: Float, skipSilence: Boolean) {
-        val playbackRate = max(MediaLoadOptions.PLAYBACK_RATE_MIN,
-            min(MediaLoadOptions.PLAYBACK_RATE_MAX, speed.toDouble())).toFloat().toDouble()
+        val playbackRate = max(MediaLoadOptions.PLAYBACK_RATE_MIN, min(MediaLoadOptions.PLAYBACK_RATE_MAX, speed.toDouble())).toFloat().toDouble()
         remoteMediaClient!!.setPlaybackRate(playbackRate)
     }
 
@@ -449,20 +397,15 @@ class CastPsmp(context: Context, callback: PSMPCallback) : PlaybackServiceMediaP
         return -1
     }
 
-    override fun endPlayback(hasEnded: Boolean, wasSkipped: Boolean, shouldContinue: Boolean,
-                             toStoppedState: Boolean
-    ) {
+    override fun endPlayback(hasEnded: Boolean, wasSkipped: Boolean, shouldContinue: Boolean, toStoppedState: Boolean) {
         Log.d(TAG, "endPlayback() called")
         val isPlaying = playerStatus == PlayerStatus.PLAYING
-        if (playerStatus != PlayerStatus.INDETERMINATE) {
-            setPlayerStatus(PlayerStatus.INDETERMINATE, media)
-        }
+        if (playerStatus != PlayerStatus.INDETERMINATE) setPlayerStatus(PlayerStatus.INDETERMINATE, media)
+
         if (media != null && wasSkipped) {
             // current position only really matters when we skip
             val position = getPosition()
-            if (position >= 0) {
-                media!!.setPosition(position)
-            }
+            if (position >= 0) media!!.setPosition(position)
         }
         val currentMedia = media
         var nextMedia: Playable? = null
@@ -470,36 +413,30 @@ class CastPsmp(context: Context, callback: PSMPCallback) : PlaybackServiceMediaP
             nextMedia = callback.getNextInQueue(currentMedia)
 
             val playNextEpisode = isPlaying && nextMedia != null
-            if (playNextEpisode) {
-                Log.d(TAG, "Playback of next episode will start immediately.")
-            } else if (nextMedia == null) {
-                Log.d(TAG, "No more episodes available to play")
-            } else {
-                Log.d(TAG, "Loading next episode, but not playing automatically.")
+            when {
+                playNextEpisode -> Log.d(TAG, "Playback of next episode will start immediately.")
+                nextMedia == null -> Log.d(TAG, "No more episodes available to play")
+                else -> Log.d(TAG, "Loading next episode, but not playing automatically.")
             }
 
             if (nextMedia != null) {
                 callback.onPlaybackEnded(nextMedia.getMediaType(), !playNextEpisode)
                 // setting media to null signals to playMediaObject() that we're taking care of post-playback processing
                 media = null
-                playMediaObject(nextMedia,
-                    forceReset = false,
-                    stream = true,
-                    startWhenPrepared = playNextEpisode,
-                    prepareImmediately = playNextEpisode)
+                playMediaObject(nextMedia, forceReset = false, stream = true, startWhenPrepared = playNextEpisode, prepareImmediately = playNextEpisode)
             }
         }
-        if (shouldContinue || toStoppedState) {
-            if (nextMedia == null) {
-                remoteMediaClient!!.stop()
-                // Otherwise we rely on the chromecast callback to tell us the playback has stopped.
-                callback.onPostPlayback(currentMedia!!, hasEnded, wasSkipped, false)
-            } else {
-                callback.onPostPlayback(currentMedia!!, hasEnded, wasSkipped, true)
+        when {
+            shouldContinue || toStoppedState -> {
+                if (nextMedia == null) {
+                    remoteMediaClient!!.stop()
+                    // Otherwise we rely on the chromecast callback to tell us the playback has stopped.
+                    callback.onPostPlayback(currentMedia!!, hasEnded, wasSkipped, false)
+                } else {
+                    callback.onPostPlayback(currentMedia!!, hasEnded, wasSkipped, true)
+                }
             }
-        } else if (isPlaying) {
-            callback.onPlaybackPause(currentMedia,
-                currentMedia?.getPosition() ?: Playable.INVALID_TIME)
+            isPlaying -> callback.onPlaybackPause(currentMedia, currentMedia?.getPosition() ?: Playable.INVALID_TIME)
         }
     }
 
@@ -514,17 +451,11 @@ class CastPsmp(context: Context, callback: PSMPCallback) : PlaybackServiceMediaP
     companion object {
         const val TAG: String = "CastPSMP"
 
-        fun getInstanceIfConnected(context: Context,
-                                   callback: PSMPCallback
-        ): PlaybackServiceMediaPlayer? {
-            if (GoogleApiAvailability.getInstance()
-                        .isGooglePlayServicesAvailable(context) != ConnectionResult.SUCCESS) {
-                return null
-            }
+        fun getInstanceIfConnected(context: Context, callback: PSMPCallback): MediaPlayerBase? {
+            if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context) != ConnectionResult.SUCCESS) return null
+
             try {
-                if (CastContext.getSharedInstance(context).castState == CastState.CONNECTED) {
-                    return CastPsmp(context, callback)
-                }
+                if (CastContext.getSharedInstance(context).castState == CastState.CONNECTED) return CastPsmp(context, callback)
             } catch (e: Exception) {
                 e.printStackTrace()
             }

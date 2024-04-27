@@ -1,6 +1,6 @@
 package ac.mdiq.podcini.playback.service
 
-object PlaybackServiceInterface {
+object PlaybackServiceConstants {
     const val EXTRA_PLAYABLE: String = "PlaybackService.PlayableExtra"
     const val EXTRA_ALLOW_STREAM_THIS_TIME: String = "extra.ac.mdiq.podcini.service.allowStream"
     const val EXTRA_ALLOW_STREAM_ALWAYS: String = "extra.ac.mdiq.podcini.service.allowStreamAlways"

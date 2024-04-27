@@ -2,8 +2,8 @@ package de.test.podcini.service.playback
 
 import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.storage.model.playback.Playable
-import ac.mdiq.podcini.playback.base.PlaybackServiceMediaPlayer.PSMPCallback
-import ac.mdiq.podcini.playback.base.PlaybackServiceMediaPlayer.PSMPInfo
+import ac.mdiq.podcini.playback.base.MediaPlayerBase.PSMPCallback
+import ac.mdiq.podcini.playback.base.MediaPlayerBase.PSMPInfo
 
 class CancelablePSMPCallback(private val originalCallback: PSMPCallback) : PSMPCallback {
     private var isCancelled = false

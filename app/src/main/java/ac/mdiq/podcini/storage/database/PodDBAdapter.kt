@@ -137,9 +137,9 @@ class PodDBAdapter private constructor() {
      *
      * @return the id of the entry
      */
-    fun setMedia(media: FeedMedia?): Long {
+    fun setMedia(media: FeedMedia): Long {
         val values = ContentValues()
-        values.put(KEY_DURATION, media!!.getDuration())
+        values.put(KEY_DURATION, media.getDuration())
         values.put(KEY_POSITION, media.getPosition())
         values.put(KEY_SIZE, media.size)
         values.put(KEY_MIME_TYPE, media.mime_type)
@@ -273,6 +273,7 @@ class PodDBAdapter private constructor() {
         values.put(KEY_TITLE, item.title)
         values.put(KEY_LINK, item.link)
         if (item.description != null) values.put(KEY_DESCRIPTION, item.description)
+        if (item.transcript != null) values.put(KEY_TRANSCRIPT, item.transcript)
 
         values.put(KEY_PUBDATE, item.getPubDate()!!.time)
         values.put(KEY_PAYMENT_LINK, item.paymentLink)
@@ -294,7 +295,7 @@ class PodDBAdapter private constructor() {
         if (item.id == 0L) item.id = db.insert(TABLE_NAME_FEED_ITEMS, null, values)
         else db.update(TABLE_NAME_FEED_ITEMS, values, "$KEY_ID=?", arrayOf(item.id.toString()))
 
-        if (item.media != null) setMedia(item.media)
+        if (item.media != null) setMedia(item.media!!)
         if (item.chapters != null) setChapters(item)
 
         return item.id
@@ -497,6 +498,29 @@ class PodDBAdapter private constructor() {
     }
 
     /**
+     * Remove FeedMedia entries of the listed items.
+     */
+    fun removeItemMedia(items: List<FeedItem>) {
+        try {
+            val mediaIds = StringBuilder()
+            for (item in items) {
+                if (item.media != null) {
+                    if (mediaIds.isNotEmpty()) mediaIds.append(",")
+                    mediaIds.append(item.media!!.id)
+                }
+            }
+
+            db.beginTransactionNonExclusive()
+            db.delete(TABLE_NAME_FEED_MEDIA, "$KEY_ID IN ($mediaIds)", null)
+            db.setTransactionSuccessful()
+        } catch (e: SQLException) {
+            Log.e(TAG, Log.getStackTraceString(e))
+        } finally {
+            db.endTransaction()
+        }
+    }
+
+    /**
      * Remove a feed with all its FeedItems and Media entries.
      */
     fun removeFeed(feed: Feed) {
@@ -535,7 +559,7 @@ class PodDBAdapter private constructor() {
          * @return The cursor of the query
          */
         get() {
-            val query = ("SELECT " + KEYS_FEED + " FROM " + TABLE_NAME_FEEDS + " ORDER BY " + TABLE_NAME_FEEDS + "." + KEY_TITLE + " COLLATE NOCASE ASC")
+            val query = ("SELECT $KEYS_FEED FROM $TABLE_NAME_FEEDS ORDER BY $TABLE_NAME_FEEDS.$KEY_TITLE COLLATE NOCASE ASC")
             return db.rawQuery(query, null)
         }
 
@@ -551,20 +575,25 @@ class PodDBAdapter private constructor() {
     fun getItemsOfFeedCursor(feed: Feed, filter: FeedItemFilter?): Cursor {
         val filterQuery = generateFrom(filter!!)
         val whereClauseAnd = if ("" == filterQuery) "" else " AND $filterQuery"
-        val query = (SELECT_FEED_ITEMS_AND_MEDIA + " WHERE " + TABLE_NAME_FEED_ITEMS + "." + KEY_FEED + "=" + feed.id + whereClauseAnd)
+        val query = ("$SELECT_FEED_ITEMS_AND_MEDIA WHERE $TABLE_NAME_FEED_ITEMS.$KEY_FEED=${feed.id}$whereClauseAnd")
         return db.rawQuery(query, null)
     }
 
     /**
      * Return the description and content_encoded of item
      */
-    fun getDescriptionOfItem(item: FeedItem): Cursor {
-        val query = ("SELECT " + KEY_DESCRIPTION + " FROM " + TABLE_NAME_FEED_ITEMS + " WHERE " + KEY_ID + "=" + item.id)
+    fun getTextDetailsOfItem(item: FeedItem): Cursor {
+        val query = ("SELECT $KEY_DESCRIPTION, $KEY_TRANSCRIPT FROM $TABLE_NAME_FEED_ITEMS WHERE $KEY_ID=${item.id}")
+        return db.rawQuery(query, null)
+    }
+
+    fun getTranscriptOfItem(item: FeedItem): Cursor {
+        val query = ("SELECT " + KEY_TRANSCRIPT + " FROM " + TABLE_NAME_FEED_ITEMS + " WHERE " + KEY_ID + "=" + item.id)
         return db.rawQuery(query, null)
     }
 
     fun getSimpleChaptersOfFeedItemCursor(item: FeedItem): Cursor {
-        return db.query(TABLE_NAME_SIMPLECHAPTERS, null, KEY_FEEDITEM + "=?", arrayOf(item.id.toString()),
+        return db.query(TABLE_NAME_SIMPLECHAPTERS, null, "$KEY_FEEDITEM=?", arrayOf(item.id.toString()),
             null, null, null)
     }
 
@@ -712,7 +741,7 @@ class PodDBAdapter private constructor() {
         get() = DatabaseUtils.queryNumEntries(db, TABLE_NAME_FEED_MEDIA, "$KEY_PLAYBACK_COMPLETION_DATE> 0")
 
     fun getSingleFeedMediaCursor(id: Long): Cursor {
-        val query = ("SELECT " + KEYS_FEED_MEDIA + " FROM " + TABLE_NAME_FEED_MEDIA + " WHERE " + KEY_ID + "=" + id)
+        val query = ("SELECT $KEYS_FEED_MEDIA FROM $TABLE_NAME_FEED_MEDIA WHERE $KEY_ID=$id")
         return db.rawQuery(query, null)
     }
 
@@ -740,7 +769,7 @@ class PodDBAdapter private constructor() {
             if (i != 0) urlsString.append(",")
             urlsString.append(DatabaseUtils.sqlEscapeString(urls[i]))
         }
-        val query = (SELECT_FEED_ITEMS_AND_MEDIA + " WHERE " + KEY_DOWNLOAD_URL + " IN (" + urlsString + ")")
+        val query = ("$SELECT_FEED_ITEMS_AND_MEDIA WHERE $KEY_DOWNLOAD_URL IN ($urlsString)")
         return db.rawQuery(query, null)
     }
 
@@ -793,7 +822,7 @@ class PodDBAdapter private constructor() {
                     + TABLE_NAME_FEED_ITEMS + "." + KEY_READ + "=" + FeedItem.PLAYED + " OR "
                     + TABLE_NAME_FEED_MEDIA + "." + KEY_POSITION + "> 0")
         }
-        val timeFilter = (lastPlayedTime + ">=" + timeFilterFrom + " AND " + lastPlayedTime + "<" + timeFilterTo)
+        val timeFilter = ("$lastPlayedTime>=$timeFilterFrom AND $lastPlayedTime<$timeFilterTo")
         var playedTime = "$TABLE_NAME_FEED_MEDIA.$KEY_PLAYED_DURATION"
         if (includeMarkedAsPlayed) {
             playedTime = ("(CASE WHEN " + playedTime + " != 0"
@@ -924,10 +953,15 @@ class PodDBAdapter private constructor() {
 
     val mostRecentUnreadItemDates: Map<Long, Long>
         get() {
+//            val query = ("SELECT " + KEY_FEED + ","
+//                    + " MAX(" + TABLE_NAME_FEED_ITEMS + "." + KEY_PUBDATE + ") AS most_recent_pubdate"
+//                    + " FROM " + TABLE_NAME_FEED_ITEMS
+//                    + " WHERE " + KEY_READ + " = 0"
+//                    + " GROUP BY " + KEY_FEED)
+
             val query = ("SELECT " + KEY_FEED + ","
-                    + " MAX(" + TABLE_NAME_FEED_ITEMS + "." + KEY_PUBDATE + ") AS most_recent_pubdate"
+                    + " MAX(CASE WHEN " + KEY_READ + " != 1 THEN " + KEY_PUBDATE + " ELSE 0 END) AS most_recent_pubdate"
                     + " FROM " + TABLE_NAME_FEED_ITEMS
-                    + " WHERE " + KEY_READ + " = 0"
                     + " GROUP BY " + KEY_FEED)
 
             val c = db.rawQuery(query, null)
@@ -972,7 +1006,7 @@ class PodDBAdapter private constructor() {
         // search through all items
         val queryFeedId = if (feedID != 0L) "$KEY_FEED = $feedID" else "1 = 1"
 
-        val queryStart = (SELECT_FEED_ITEMS_AND_MEDIA_WITH_DESCRIPTION + " WHERE " + queryFeedId + " AND (")
+        val queryStart = ("$SELECT_FEED_ITEMS_AND_MEDIA_WITH_DESCRIPTION WHERE $queryFeedId AND (")
         val sb = StringBuilder(queryStart)
 
         for (i in queryWords.indices) {
@@ -1053,7 +1087,6 @@ class PodDBAdapter private constructor() {
     /**
      * Helper class for opening the Podcini database.
      */
-    private class PodDBHelper
     /**
      * Constructor.
      *
@@ -1061,8 +1094,9 @@ class PodDBAdapter private constructor() {
      * @param name    Name of the database
      * @param factory to use for creating cursor objects
      */
-        (context: Context, name: String?, factory: CursorFactory?) :
-        SQLiteOpenHelper(context, name, factory, VERSION, PodDbErrorHandler()) {
+    private class PodDBHelper(context: Context, name: String?, factory: CursorFactory?)
+        : SQLiteOpenHelper(context, name, factory, VERSION, PodDbErrorHandler()) {
+
         override fun onCreate(db: SQLiteDatabase) {
             db.execSQL(CREATE_TABLE_FEEDS)
             db.execSQL(CREATE_TABLE_FEED_ITEMS)
@@ -1092,7 +1126,7 @@ class PodDBAdapter private constructor() {
     companion object {
         private const val TAG = "PodDBAdapter"
         const val DATABASE_NAME: String = "Podcini.db"
-        const val VERSION: Int = 3010000
+        const val VERSION: Int = 3020000
 
         /**
          * Maximum number of arguments for IN-operator.
@@ -1105,6 +1139,7 @@ class PodDBAdapter private constructor() {
         const val KEY_CUSTOM_TITLE: String = "custom_title"
         const val KEY_LINK: String = "link"
         const val KEY_DESCRIPTION: String = "description"
+        const val KEY_TRANSCRIPT: String = "transcript"
         const val KEY_FILE_URL: String = "file_url"
         const val KEY_DOWNLOAD_URL: String = "download_url"
         const val KEY_PUBDATE: String = "pubDate"
@@ -1206,7 +1241,8 @@ class PodDBAdapter private constructor() {
                 + TABLE_NAME_FEED_ITEMS + " (" + TABLE_PRIMARY_KEY
                 + KEY_TITLE + " TEXT," + KEY_PUBDATE + " INTEGER,"
                 + KEY_READ + " INTEGER," + KEY_LINK + " TEXT,"
-                + KEY_DESCRIPTION + " TEXT," + KEY_PAYMENT_LINK + " TEXT,"
+                + KEY_DESCRIPTION + " TEXT," + KEY_TRANSCRIPT + " TEXT,"
+                + KEY_PAYMENT_LINK + " TEXT,"
                 + KEY_MEDIA + " INTEGER," + KEY_FEED + " INTEGER,"
                 + KEY_HAS_CHAPTERS + " INTEGER," + KEY_ITEM_IDENTIFIER + " TEXT,"
                 + KEY_IMAGE_URL + " TEXT,"
@@ -1355,7 +1391,7 @@ class PodDBAdapter private constructor() {
 
         private const val SELECT_FEED_ITEMS_AND_MEDIA_WITH_DESCRIPTION =
             ("SELECT " + KEYS_FEED_ITEM_WITHOUT_DESCRIPTION + ", " + KEYS_FEED_MEDIA + ", "
-                    + TABLE_NAME_FEED_ITEMS + "." + KEY_DESCRIPTION
+                    + TABLE_NAME_FEED_ITEMS + "." + KEY_DESCRIPTION + "." + KEY_TRANSCRIPT
                     + " FROM " + TABLE_NAME_FEED_ITEMS
                     + JOIN_FEED_ITEM_AND_MEDIA)
         private const val SELECT_FEED_ITEMS_AND_MEDIA =

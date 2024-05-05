@@ -25,6 +25,9 @@ class FeedItem : FeedComponent, Serializable {
     var description: String? = null
         private set
 
+    var transcript: String? = null
+        private set
+
     @JvmField
     var link: String? = null
 
@@ -211,6 +214,10 @@ class FeedItem : FeedComponent, Serializable {
         playState = if (played) PLAYED else UNPLAYED
     }
 
+    fun setBuilding() {
+        playState = BUILDING
+    }
+
     val isInProgress: Boolean
         get() = (media != null && media!!.isInProgress)
 
@@ -219,11 +226,20 @@ class FeedItem : FeedComponent, Serializable {
      * @param newDescription The new item description, content:encoded, itunes:description, etc.
      */
     fun setDescriptionIfLonger(newDescription: String?) {
-        if (newDescription == null) return
+        if (newDescription.isNullOrEmpty()) return
 
         when {
             this.description == null -> this.description = newDescription
             description!!.length < newDescription.length -> this.description = newDescription
+        }
+    }
+
+    fun setTranscriptIfLonger(newTranscript: String?) {
+        if (newTranscript.isNullOrEmpty()) return
+
+        when {
+            this.transcript == null -> this.transcript = newTranscript
+            transcript!!.length < newTranscript.length -> this.description = newTranscript
         }
     }
 
@@ -293,5 +309,6 @@ class FeedItem : FeedComponent, Serializable {
         const val NEW: Int = -1
         const val UNPLAYED: Int = 0
         const val PLAYED: Int = 1
+        const val BUILDING: Int = 2
     }
 }

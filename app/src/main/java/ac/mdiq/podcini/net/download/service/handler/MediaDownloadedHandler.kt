@@ -59,7 +59,7 @@ class MediaDownloadedHandler(private val context: Context, var updatedStatus: Do
         val item = media.item
 
         try {
-            DBWriter.setFeedMedia(media).get()
+            DBWriter.persistFeedMedia(media).get()
 
             // we've received the media, we don't want to autodownload it again
             if (item != null) {
@@ -67,7 +67,7 @@ class MediaDownloadedHandler(private val context: Context, var updatedStatus: Do
                 // setFeedItem() signals (via EventBus) that the item has been updated,
                 // so we do it after the enclosing media has been updated above,
                 // to ensure subscribers will get the updated FeedMedia as well
-                DBWriter.setFeedItem(item).get()
+                DBWriter.persistFeedItem(item).get()
                 if (broadcastUnreadStateUpdate) EventBus.getDefault().post(UnreadItemsUpdateEvent())
             }
         } catch (e: InterruptedException) {

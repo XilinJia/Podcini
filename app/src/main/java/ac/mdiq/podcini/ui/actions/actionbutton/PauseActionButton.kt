@@ -7,6 +7,7 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.receiver.MediaButtonReceiver.Companion.createIntent
 import ac.mdiq.podcini.util.PlaybackStatus.isCurrentlyPlaying
 import ac.mdiq.podcini.storage.model.feed.FeedItem
+import android.util.Log
 
 class PauseActionButton(item: FeedItem) : ItemActionButton(item) {
     override fun getLabel(): Int {
@@ -16,6 +17,7 @@ class PauseActionButton(item: FeedItem) : ItemActionButton(item) {
         return R.drawable.ic_pause
     }
     @UnstableApi override fun onClick(context: Context) {
+        Log.d("PauseActionButton", "onClick called")
         val media = item.media ?: return
 
         if (isCurrentlyPlaying(media)) context.sendBroadcast(createIntent(context, KeyEvent.KEYCODE_MEDIA_PAUSE))

@@ -227,7 +227,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         val feedItem = VideoplayerActivity.getFeedItem(controller?.getMedia())
         if (feedItem != null) {
             val duration = feedItem.media?.getDuration()?: Int.MAX_VALUE
-            DBReader.loadDescriptionOfFeedItem(feedItem)
+            DBReader.loadTextDetailsOfFeedItem(feedItem)
             webviewData = ShownotesCleaner(requireContext(), feedItem.description?:"", duration).processShownotes()
         }
         return feedItem

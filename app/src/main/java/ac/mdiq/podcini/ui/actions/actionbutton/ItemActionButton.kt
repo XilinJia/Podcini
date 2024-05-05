@@ -11,6 +11,8 @@ import android.widget.ImageView
 import androidx.media3.common.util.UnstableApi
 
 abstract class ItemActionButton internal constructor(@JvmField var item: FeedItem) {
+    val TAG = this::class.simpleName
+
     abstract fun getLabel(): Int
 
     abstract fun getDrawable(): Int
@@ -19,6 +21,8 @@ abstract class ItemActionButton internal constructor(@JvmField var item: FeedIte
 
     open val visibility: Int
         get() = View.VISIBLE
+
+    var processing: Float = -1f
 
     fun configure(button: View, icon: ImageView, context: Context) {
         button.visibility = visibility
@@ -29,7 +33,7 @@ abstract class ItemActionButton internal constructor(@JvmField var item: FeedIte
 
     @UnstableApi companion object {
         fun forItem(item: FeedItem): ItemActionButton {
-            val media = item.media ?: return MarkAsPlayedActionButton(item)
+            val media = item.media ?: return TTSActionButton(item)
 
             val isDownloadingMedia = when (media.download_url) {
                 null -> false

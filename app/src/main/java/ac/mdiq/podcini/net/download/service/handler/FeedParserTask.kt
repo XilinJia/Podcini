@@ -46,6 +46,7 @@ class FeedParserTask(private val request: DownloadRequest) : Callable<FeedHandle
             result = feedHandler.parseFeed(feed)
             Log.d(TAG, feed.title + " parsed")
             checkFeedData(feed)
+//            TODO: what the shit is this??
             if (feed.imageUrl.isNullOrEmpty()) feed.imageUrl = Feed.PREFIX_GENERATIVE_COVER + feed.download_url
         } catch (e: SAXException) {
             isSuccessful = false

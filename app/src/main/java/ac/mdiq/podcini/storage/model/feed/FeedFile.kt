@@ -56,9 +56,8 @@ abstract class FeedFile @JvmOverloads constructor(@JvmField var file_url: String
      * Returns true if the file exists at file_url.
      */
     fun fileExists(): Boolean {
-        if (file_url == null) {
-            return false
-        } else {
+        if (file_url == null) return false
+        else {
             val f = File(file_url!!)
             return f.exists()
         }

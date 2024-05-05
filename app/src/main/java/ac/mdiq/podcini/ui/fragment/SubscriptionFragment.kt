@@ -288,7 +288,6 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
                 { result: List<NavDrawerData.FeedDrawerItem> ->
                     // We have fewer items. This can result in items being selected that are no longer visible.
                     if ( feedListFiltered.size > result.size) subscriptionAdapter.endSelectMode()
-
                     feedList = result
                     filterOnTag()
                     progressBar.visibility = View.GONE

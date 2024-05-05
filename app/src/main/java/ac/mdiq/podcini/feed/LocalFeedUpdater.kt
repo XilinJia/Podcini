@@ -221,7 +221,7 @@ object LocalFeedUpdater {
         val status = DownloadResult(feed, feed.title?:"",
             DownloadError.ERROR_IO_ERROR, false, reasonDetailed?:"")
         DBWriter.addDownloadStatus(status)
-        DBWriter.setFeedLastUpdateFailed(feed.id, true)
+        DBWriter.persistFeedLastUpdateFailed(feed.id, true)
     }
 
     /**
@@ -230,7 +230,7 @@ object LocalFeedUpdater {
     @UnstableApi private fun reportSuccess(feed: Feed) {
         val status = DownloadResult(feed, feed.title?:"", DownloadError.SUCCESS, true, "")
         DBWriter.addDownloadStatus(status)
-        DBWriter.setFeedLastUpdateFailed(feed.id, false)
+        DBWriter.persistFeedLastUpdateFailed(feed.id, false)
     }
 
     /**

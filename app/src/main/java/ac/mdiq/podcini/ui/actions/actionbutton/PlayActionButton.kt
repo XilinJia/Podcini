@@ -10,6 +10,7 @@ import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.util.event.playback.StartPlayEvent
 import android.util.Log
+import android.widget.Toast
 import org.greenrobot.eventbus.EventBus
 
 class PlayActionButton(item: FeedItem) : ItemActionButton(item) {
@@ -20,8 +21,12 @@ class PlayActionButton(item: FeedItem) : ItemActionButton(item) {
         return R.drawable.ic_play_24dp
     }
     @UnstableApi override fun onClick(context: Context) {
-        val media = item.media ?: return
         Log.d("PlayActionButton", "onClick called")
+        val media = item.media
+        if (media == null) {
+            Toast.makeText(context, R.string.no_media_label, Toast.LENGTH_LONG).show()
+            return
+        }
         if (!media.fileExists()) {
             DBTasks.notifyMissingFeedMediaFile(context, media)
             return

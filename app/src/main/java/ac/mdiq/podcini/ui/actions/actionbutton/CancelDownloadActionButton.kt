@@ -26,7 +26,7 @@ class CancelDownloadActionButton(item: FeedItem) : ItemActionButton(item) {
         if (media != null) DownloadServiceInterface.get()?.cancel(context, media)
         if (isEnableAutodownload) {
             item.disableAutoDownload()
-            DBWriter.setFeedItem(item)
+            DBWriter.persistFeedItem(item)
         }
     }
 }

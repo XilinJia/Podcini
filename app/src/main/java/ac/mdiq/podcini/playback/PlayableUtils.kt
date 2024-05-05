@@ -28,7 +28,7 @@ object PlayableUtils {
             if (playable.startPosition >= 0 && playable.getPosition() > playable.startPosition)
                 playable.playedDuration = (playable.playedDurationWhenStarted + playable.getPosition() - playable.startPosition)
 
-            DBWriter.setFeedMediaPlaybackInformation(playable)
+            DBWriter.persistFeedMediaPlaybackInformation(playable)
         }
     }
 }

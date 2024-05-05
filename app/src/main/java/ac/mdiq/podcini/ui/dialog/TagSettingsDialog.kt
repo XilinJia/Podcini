@@ -120,7 +120,7 @@ class TagSettingsDialog : DialogFragment() {
         for (preferences in feedPreferencesList) {
             preferences.getTags().removeAll(commonTags)
             preferences.getTags().addAll(displayedTags)
-            DBWriter.setFeedPreferences(preferences)
+            DBWriter.persistFeedPreferences(preferences)
         }
     }
 

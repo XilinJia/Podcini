@@ -7,8 +7,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 
 object LocalDeleteModal {
-    fun showLocalFeedDeleteWarningIfNecessary(context: Context, items: Iterable<FeedItem>,
-                                              deleteCommand: Runnable) {
+    fun showLocalFeedDeleteWarningIfNecessary(context: Context, items: Iterable<FeedItem>, deleteCommand: Runnable) {
+
         var anyLocalFeed = false
         for (item in items) {
             if (item.feed?.isLocalFeed == true) {

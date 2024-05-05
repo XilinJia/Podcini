@@ -158,8 +158,8 @@ android {
         // Version code schema (not used):
         // "1.2.3-beta4"    -> 1020304
         // "1.2.3"          -> 1020395
-        versionCode 3020137
-        versionName "4.9.6"
+        versionCode 3020138
+        versionName "4.10.0"
 
         def commit = ""
         try {
@@ -248,12 +248,12 @@ dependencies {
     implementation "androidx.work:work-runtime:2.9.0"
     implementation "androidx.core:core-splashscreen:1.0.1"
     implementation 'androidx.documentfile:documentfile:1.0.1'
-    implementation 'androidx.webkit:webkit:1.9.0'
+    implementation 'androidx.webkit:webkit:1.10.0'
 
     implementation "com.google.android.material:material:1.11.0"
 
     implementation "org.apache.commons:commons-lang3:3.14.0"
-    implementation "commons-io:commons-io:2.15.1"
+    implementation 'commons-io:commons-io:2.16.1'
     implementation "org.jsoup:jsoup:1.17.2"
 
     implementation "com.github.bumptech.glide:glide:4.16.0"
@@ -263,7 +263,7 @@ dependencies {
     implementation "com.squareup.okhttp3:okhttp:4.12.0"
     implementation "com.squareup.okhttp3:okhttp-urlconnection:4.12.0"
 
-    implementation "com.squareup.okio:okio:3.7.0"
+    implementation 'com.squareup.okio:okio:3.9.0'
 
     implementation "org.greenrobot:eventbus:3.3.1"
     kapt "org.greenrobot:eventbus-annotation-processor:3.3.1"
@@ -294,17 +294,17 @@ dependencies {
     androidTestImplementation "androidx.test:runner:1.5.2"
     androidTestImplementation "androidx.test:rules:1.5.0"
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation "org.awaitility:awaitility:4.2.0"
+    androidTestImplementation 'org.awaitility:awaitility:4.2.1'
 
     implementation 'com.github.mfietz:fyydlin:v0.5.0'
 
     // Non-free dependencies:
 
     testImplementation "androidx.test:core:1.5.0"
-    testImplementation "org.awaitility:awaitility:4.2.0"
+    testImplementation 'org.awaitility:awaitility:4.2.1'
     testImplementation "junit:junit:4.13.2"
     testImplementation 'org.mockito:mockito-inline:5.2.0'
-    testImplementation "org.robolectric:robolectric:4.11.1"
+    testImplementation 'org.robolectric:robolectric:4.12'
     testImplementation 'javax.inject:javax.inject:1'
 
     playImplementation 'com.google.android.gms:play-services-base:18.3.0'

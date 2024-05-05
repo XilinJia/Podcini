@@ -68,7 +68,7 @@ object MediaSizeLoader {
             else media.size = size
 
             emitter.onSuccess(size)
-            DBWriter.setFeedMedia(media)
+            DBWriter.persistFeedMedia(media)
         })
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())

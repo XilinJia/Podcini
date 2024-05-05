@@ -32,6 +32,7 @@ import org.greenrobot.eventbus.ThreadMode
  */
 @UnstableApi
 abstract class PlaybackController(private val activity: FragmentActivity) {
+
     private var playbackService: PlaybackService? = null
 
     var status: PlayerStatus = PlayerStatus.STOPPED
@@ -215,7 +216,7 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
         checkMediaInfoLoaded()
         when (status) {
             PlayerStatus.PLAYING -> updatePlayButtonShowsPlay(false)
-            PlayerStatus.PREPARING -> if (playbackService != null) updatePlayButtonShowsPlay(!playbackService!!.isStartWhenPrepared)
+            PlayerStatus.PREPARING -> updatePlayButtonShowsPlay(!(playbackService?.isStartWhenPrepared ?: false))
             PlayerStatus.FALLBACK, PlayerStatus.PAUSED, PlayerStatus.PREPARED, PlayerStatus.STOPPED, PlayerStatus.INITIALIZED ->
                 updatePlayButtonShowsPlay(true)
             else -> {}
@@ -246,7 +247,6 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
             val info = playbackService!!.pSMPInfo
             status = info.playerStatus
             media = info.playable
-
             // make sure that new media is loaded if it's available
             mediaInfoLoaded = false
             handleStatus()
@@ -280,9 +280,7 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
                 playbackService?.prepare()
             }
             else -> {
-                PlaybackServiceStarter(activity, media!!)
-                    .callEvenIfRunning(true)
-                    .start()
+                PlaybackServiceStarter(activity, media!!).callEvenIfRunning(true).start()
                 Log.w(TAG, "Play/Pause button was pressed and PlaybackService state was unknown")
             }
         }
@@ -322,15 +320,14 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
     }
 
     fun seekTo(time: Int) {
-        if (playbackService != null) {
-            playbackService!!.seekTo(time)
-        } else {
+        if (playbackService != null) playbackService!!.seekTo(time)
+        else {
 //            val media = getMedia()
             if (media == null) return
             PlaybackServiceStarter(activity, media!!).start()
             if (media is FeedMedia) {
                 media!!.setPosition(time)
-                DBWriter.setFeedItem((media as FeedMedia).item)
+                DBWriter.persistFeedItem((media as FeedMedia).item)
                 EventBus.getDefault().post(PlaybackPositionEvent(time, media!!.getDuration()))
             }
         }
@@ -341,9 +338,8 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
     }
 
     fun setPlaybackSpeed(speed: Float, codeArray: BooleanArray? = null) {
-        if (playbackService != null) {
-            playbackService!!.setSpeed(speed, codeArray)
-        } else {
+        if (playbackService != null) playbackService!!.setSpeed(speed, codeArray)
+        else {
             UserPreferences.setPlaybackSpeed(speed)
             EventBus.getDefault().post(SpeedChangedEvent(speed))
         }

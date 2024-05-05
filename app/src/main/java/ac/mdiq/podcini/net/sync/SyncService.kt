@@ -27,7 +27,7 @@ import ac.mdiq.podcini.storage.DBReader.loadAdditionalFeedItemListData
 import ac.mdiq.podcini.storage.DBTasks.removeFeedWithDownloadUrl
 import ac.mdiq.podcini.storage.DBTasks.updateFeed
 import ac.mdiq.podcini.storage.DBWriter.removeQueueItem
-import ac.mdiq.podcini.storage.DBWriter.setItemList
+import ac.mdiq.podcini.storage.DBWriter.persistItemList
 import ac.mdiq.podcini.storage.model.feed.*
 import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.util.FeedItemUtil.hasAlmostEnded
@@ -38,7 +38,6 @@ import ac.mdiq.podcini.util.event.SyncServiceEvent
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
-import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.media3.common.util.UnstableApi
@@ -225,7 +224,7 @@ class SyncService(context: Context, params: WorkerParameters) : Worker(context, 
         }
         removeQueueItem(applicationContext, false, *queueToBeRemoved.toArray())
         loadAdditionalFeedItemListData(updatedItems)
-        setItemList(updatedItems)
+        persistItemList(updatedItems)
     }
 
     private fun clearErrorNotifications() {

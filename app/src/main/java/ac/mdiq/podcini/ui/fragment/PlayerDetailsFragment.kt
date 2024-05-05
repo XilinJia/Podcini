@@ -5,17 +5,19 @@ import ac.mdiq.podcini.databinding.PlayerDetailsFragmentBinding
 import ac.mdiq.podcini.feed.util.ImageResourceUtils
 import ac.mdiq.podcini.playback.PlaybackController
 import ac.mdiq.podcini.storage.DBReader
+import ac.mdiq.podcini.storage.DBWriter.persistFeedItem
 import ac.mdiq.podcini.storage.model.feed.Chapter
 import ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.fragment.EpisodeHomeFragment.Companion.fetchHtmlSource
+import ac.mdiq.podcini.ui.fragment.EpisodeHomeFragment.Companion
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.ChapterUtils
 import ac.mdiq.podcini.util.DateFormatter
+import ac.mdiq.podcini.util.NetworkUtils.fetchHtmlSource
 import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
@@ -158,7 +160,7 @@ class PlayerDetailsFragment : Fragment() {
                 if (cleanedNotes == null || item!!.description == null || loadedMediaId != media?.getIdentifier()) {
                     Log.d(TAG, "calling load description ${cleanedNotes==null} ${item!!.description==null} ${item!!.media?.getIdentifier()} ${media?.getIdentifier()}")
 //                    printStackTrace()
-                    DBReader.loadDescriptionOfFeedItem(item!!)
+                    DBReader.loadTextDetailsOfFeedItem(item!!)
                     loadedMediaId = media?.getIdentifier()
                     val shownotesCleaner = ShownotesCleaner(context, item?.description ?: "", media?.getDuration()?:0)
                     cleanedNotes = shownotesCleaner.processShownotes()
@@ -193,22 +195,26 @@ class PlayerDetailsFragment : Fragment() {
     fun buildHomeReaderText() {
         showHomeText = !showHomeText
         if (showHomeText) {
-            if (homeText == null && item?.link != null) {
-                runBlocking {
+            homeText = item!!.transcript
+            runBlocking {
+                if (homeText == null && item?.link != null) {
                     val url = item!!.link!!
                     val htmlSource = fetchHtmlSource(url)
                     val readability4J = Readability4J(item!!.link!!, htmlSource)
                     val article = readability4J.parse()
                     readerhtml = article.contentWithDocumentsCharsetOrUtf8
                     if (!readerhtml.isNullOrEmpty()) {
-                        val shownotesCleaner = ShownotesCleaner(requireContext(), readerhtml!!, 0)
-                        homeText = shownotesCleaner.processShownotes()
+                        item!!.setTranscriptIfLonger(readerhtml)
+                        homeText = item!!.transcript
+                        persistFeedItem(item)
                     }
                 }
             }
-            if (!homeText.isNullOrEmpty())
-                shownoteView.loadDataWithBaseURL("https://127.0.0.1", homeText!!, "text/html", "UTF-8", null)
-            else Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show()
+            if (!homeText.isNullOrEmpty()) {
+                val shownotesCleaner = ShownotesCleaner(requireContext(), homeText!!, 0)
+                cleanedNotes = shownotesCleaner.processShownotes()
+                shownoteView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes!!, "text/html", "UTF-8", null)
+            } else Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show()
         } else {
             val shownotesCleaner = ShownotesCleaner(requireContext(), item?.description ?: "", media?.getDuration()?:0)
             cleanedNotes = shownotesCleaner.processShownotes()

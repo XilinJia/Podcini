@@ -22,15 +22,14 @@ import ac.mdiq.podcini.storage.DBWriter.deleteFeedMediaOfItem
 import ac.mdiq.podcini.storage.DBWriter.moveQueueItem
 import ac.mdiq.podcini.storage.DBWriter.removeAllNewFlags
 import ac.mdiq.podcini.storage.DBWriter.removeQueueItem
-import ac.mdiq.podcini.storage.DBWriter.setFeedItem
-import ac.mdiq.podcini.storage.DBWriter.setFeedMediaPlaybackInformation
+import ac.mdiq.podcini.storage.DBWriter.persistFeedItem
+import ac.mdiq.podcini.storage.DBWriter.persistFeedMediaPlaybackInformation
 import ac.mdiq.podcini.util.FeedItemUtil.getIdList
 import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterfaceStub
-import ac.mdiq.podcini.storage.DBWriter
 import ac.mdiq.podcini.storage.database.PodDBAdapter
 import ac.mdiq.podcini.storage.database.PodDBAdapter.Companion.deleteDatabase
 import ac.mdiq.podcini.storage.database.PodDBAdapter.Companion.getInstance
@@ -109,13 +108,13 @@ class DbWriterTest {
             "dummy path", "download_url", true, null, 0, 0)
         item.setMedia(media)
 
-        setFeedItem(item)[TIMEOUT, TimeUnit.SECONDS]
+        persistFeedItem(item)[TIMEOUT, TimeUnit.SECONDS]
 
         media.setPosition(position)
         media.setLastPlayedTime(lastPlayedTime)
         media.playedDuration = playedDuration
 
-        setFeedMediaPlaybackInformation(item.media)[TIMEOUT, TimeUnit.SECONDS]
+        persistFeedMediaPlaybackInformation(item.media)[TIMEOUT, TimeUnit.SECONDS]
 
         val itemFromDb = getFeedItem(item.id)
         val mediaFromDb = itemFromDb!!.media

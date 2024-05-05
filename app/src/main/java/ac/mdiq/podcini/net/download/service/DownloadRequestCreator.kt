@@ -7,6 +7,7 @@ import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.storage.model.feed.FeedItem
 import org.apache.commons.io.FilenameUtils
 import java.io.File
 
@@ -100,4 +101,30 @@ object DownloadRequestCreator {
 
         return (baseFilename + FilenameUtils.EXTENSION_SEPARATOR + media.id + FilenameUtils.EXTENSION_SEPARATOR + FilenameUtils.getExtension(urlBaseFilename))
     }
+
+    fun getMediafilePath(item: FeedItem): String {
+        val title = item.feed?.title?:return ""
+        val mediaPath = (MEDIA_DOWNLOADPATH + FileNameGenerator.generateFileName(title))
+        return UserPreferences.getDataFolder(mediaPath).toString() + "/"
+    }
+
+    fun getMediafilename(item: FeedItem): String {
+        var titleBaseFilename = ""
+
+        // Try to generate the filename by the item title
+        if (item.title != null) {
+            val title = item.title!!
+            titleBaseFilename = FileNameGenerator.generateFileName(title)
+        }
+
+//        val urlBaseFilename = URLUtil.guessFileName(media.download_url, null, media.mime_type)
+
+        var baseFilename: String
+        baseFilename = if (titleBaseFilename != "") titleBaseFilename else "NoTitle"
+        val filenameMaxLength = 220
+        if (baseFilename.length > filenameMaxLength) baseFilename = baseFilename.substring(0, filenameMaxLength)
+
+        return (baseFilename + FilenameUtils.EXTENSION_SEPARATOR + "noid" + FilenameUtils.EXTENSION_SEPARATOR + "wav")
+    }
+
 }

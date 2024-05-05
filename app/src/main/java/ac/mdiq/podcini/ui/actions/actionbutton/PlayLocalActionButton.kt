@@ -7,8 +7,10 @@ import ac.mdiq.podcini.playback.service.PlaybackService.Companion.getPlayerActiv
 import ac.mdiq.podcini.playback.PlaybackServiceStarter
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.playback.MediaType
+import android.util.Log
+import android.widget.Toast
 
-class PlayLocalActionButton(item: FeedItem?) : ItemActionButton(item!!) {
+class PlayLocalActionButton(item: FeedItem) : ItemActionButton(item) {
     override fun getLabel(): Int {
         return R.string.play_label
     }
@@ -16,8 +18,12 @@ class PlayLocalActionButton(item: FeedItem?) : ItemActionButton(item!!) {
         return R.drawable.ic_play_24dp
     }
     @UnstableApi override fun onClick(context: Context) {
-        val media = item.media ?: return
-
+        Log.d("PlayLocalActionButton", "onClick called")
+        val media = item.media
+        if (media == null) {
+            Toast.makeText(context, R.string.no_media_label, Toast.LENGTH_LONG).show()
+            return
+        }
         PlaybackServiceStarter(context, media)
             .callEvenIfRunning(true)
             .start()

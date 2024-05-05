@@ -229,6 +229,7 @@ class OnlineFeedViewFragment : Fragment() {
         val connection = URL(url).openConnection() as HttpURLConnection
         val type = connection.contentType
         Log.d(TAG, "connection type: $type")
+        connection.disconnect()
         return when {
             type.contains("html", ignoreCase = true) -> "HTML"
             type.contains("xml", ignoreCase = true) -> "XML"
@@ -516,7 +517,7 @@ class OnlineFeedViewFragment : Fragment() {
                             feedPreferences.username = username
                             feedPreferences.password = password
                         }
-                        DBWriter.setFeedPreferences(feedPreferences)
+                        DBWriter.persistFeedPreferences(feedPreferences)
                     }
                     openFeed()
                 }

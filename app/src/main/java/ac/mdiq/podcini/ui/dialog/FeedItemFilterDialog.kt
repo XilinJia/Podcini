@@ -9,7 +9,7 @@ import androidx.media3.common.util.UnstableApi
 class FeedItemFilterDialog : ItemFilterDialog() {
     @OptIn(UnstableApi::class) override fun onFilterChanged(newFilterValues: Set<String>) {
         val feedId = requireArguments().getLong(ARGUMENT_FEED_ID)
-        DBWriter.setFeedItemsFilter(feedId, newFilterValues)
+        DBWriter.persistFeedItemsFilter(feedId, newFilterValues)
     }
 
     companion object {

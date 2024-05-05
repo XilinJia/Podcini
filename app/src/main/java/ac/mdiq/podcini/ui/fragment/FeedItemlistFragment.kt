@@ -1,11 +1,42 @@
 package ac.mdiq.podcini.ui.fragment
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.FeedItemListFragmentBinding
+import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
+import ac.mdiq.podcini.feed.FeedEvent
+import ac.mdiq.podcini.glide.FastBlurTransformation
+import ac.mdiq.podcini.net.download.FeedUpdateManager
+import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.storage.DBReader
+import ac.mdiq.podcini.storage.DBWriter
+import ac.mdiq.podcini.storage.model.download.DownloadResult
+import ac.mdiq.podcini.storage.model.feed.Feed
+import ac.mdiq.podcini.storage.model.feed.FeedItem
+import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
+import ac.mdiq.podcini.storage.model.feed.SortOrder
+import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectActionHandler
+import ac.mdiq.podcini.ui.actions.menuhandler.FeedItemMenuHandler
+import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
+import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.adapter.EpisodeItemListAdapter
+import ac.mdiq.podcini.ui.adapter.SelectableAdapter
+import ac.mdiq.podcini.ui.dialog.*
+import ac.mdiq.podcini.ui.utils.MoreContentListFooterUtil
+import ac.mdiq.podcini.ui.view.ToolbarIconTintManager
+import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
+import ac.mdiq.podcini.util.FeedItemPermutors
+import ac.mdiq.podcini.util.FeedItemUtil
+import ac.mdiq.podcini.util.IntentUtils
+import ac.mdiq.podcini.util.ShareUtils
+import ac.mdiq.podcini.util.event.*
+import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
 import android.app.Activity
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.LightingColorFilter
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.view.*
 import android.widget.AdapterView
@@ -21,47 +52,21 @@ import com.google.android.material.snackbar.Snackbar
 import com.joanzapata.iconify.Iconify
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.adapter.EpisodeItemListAdapter
-import ac.mdiq.podcini.ui.adapter.SelectableAdapter
-import ac.mdiq.podcini.feed.FeedEvent
-import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
-import ac.mdiq.podcini.storage.DBReader
-import ac.mdiq.podcini.storage.DBWriter
-import ac.mdiq.podcini.util.FeedItemPermutors
-import ac.mdiq.podcini.util.FeedItemUtil
-import ac.mdiq.podcini.util.IntentUtils
-import ac.mdiq.podcini.util.ShareUtils
-import ac.mdiq.podcini.net.download.FeedUpdateManager
-import ac.mdiq.podcini.ui.utils.MoreContentListFooterUtil
-import ac.mdiq.podcini.databinding.FeedItemListFragmentBinding
-import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
-import ac.mdiq.podcini.ui.dialog.*
-import ac.mdiq.podcini.util.event.*
-import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
-import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectActionHandler
-import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
-import ac.mdiq.podcini.ui.actions.menuhandler.FeedItemMenuHandler
-import ac.mdiq.podcini.storage.model.download.DownloadResult
-import ac.mdiq.podcini.storage.model.feed.Feed
-import ac.mdiq.podcini.storage.model.feed.FeedItem
-import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
-import ac.mdiq.podcini.storage.model.feed.SortOrder
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.glide.FastBlurTransformation
-import ac.mdiq.podcini.ui.view.ToolbarIconTintManager
-import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
 import io.reactivex.Maybe
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutionException
+import java.util.concurrent.Semaphore
 
 /**
  * Displays a list of FeedItems.
@@ -85,6 +90,8 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
     private var feedID: Long = 0
     private var feed: Feed? = null
     private var disposable: Disposable? = null
+
+    private val ioScope = CoroutineScope(Dispatchers.IO)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -188,6 +195,13 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
             adapter.endSelectMode()
             true
         }
+
+        ioScope.launch {
+            if (!ttsReady) {
+                initializeTTS(requireContext())
+                semaphore.acquire()
+            }
+        }
         return binding.root
     }
 
@@ -198,6 +212,12 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         EventBus.getDefault().unregister(this)
         disposable?.dispose()
         adapter.endSelectMode()
+
+        tts?.stop()
+        tts?.shutdown()
+        ttsWorking = false
+        ttsReady = false
+        tts = null
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -494,7 +514,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
                 .load(feed!!.imageUrl)
                 .apply(RequestOptions()
                     .placeholder(R.color.light_gray)
-                    .error(R.color.light_gray)
+                    .error(R.mipmap.ic_launcher)
                     .fitCenter()
                     .dontAnimate())
                 .into(binding.header.imgvCover)
@@ -583,7 +603,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 
         @UnstableApi override fun onSelectionChanged() {
             super.onSelectionChanged()
-            DBWriter.setFeedItemSortOrder(requireArguments().getLong(ARG_FEED_ID), sortOrder)
+            DBWriter.persistFeedItemSortOrder(requireArguments().getLong(ARG_FEED_ID), sortOrder)
         }
 
         companion object {
@@ -624,6 +644,27 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
             b.putLong(ARGUMENT_FEED_ID, feedId)
             i.arguments = b
             return i
+        }
+
+        var tts: TextToSpeech? = null
+        var ttsReady = false
+        var ttsWorking = false
+        val semaphore = Semaphore(0)
+
+        fun initializeTTS(context: Context) {
+            Log.d(TAG, "starting TTS")
+            if (tts == null) {
+                tts = TextToSpeech(context) { status: Int ->
+                    if (status == TextToSpeech.SUCCESS) {
+                        ttsReady = true
+                        semaphore.release()
+                        Log.d(TAG, "TTS init success")
+                    } else {
+                        Log.w(TAG, "TTS init failed")
+                        Toast.makeText(context, R.string.tts_init_failed, Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
         }
     }
 }

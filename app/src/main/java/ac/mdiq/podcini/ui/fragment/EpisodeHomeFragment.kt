@@ -2,12 +2,13 @@ package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.EpisodeHomeFragmentBinding
+import ac.mdiq.podcini.storage.DBWriter.persistFeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
-import android.os.Build
+import ac.mdiq.podcini.util.NetworkUtils.fetchHtmlSource
+import android.content.Context
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
-import android.text.Html
 import android.util.Log
 import android.view.*
 import android.webkit.WebView
@@ -16,41 +17,43 @@ import android.widget.Toast
 import androidx.annotation.OptIn
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ShareCompat
+import androidx.core.text.HtmlCompat
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.media3.common.util.UnstableApi
 import com.google.android.material.appbar.MaterialToolbar
 import io.reactivex.disposables.Disposable
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
-import net.dankito.readability4j.Readability4J
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.net.URL
+import kotlinx.coroutines.*
+import net.dankito.readability4j.extended.Readability4JExtended
 import java.util.*
-
 
 /**
  * Displays information about an Episode (FeedItem) and actions.
  */
-class EpisodeHomeFragment : Fragment(), Toolbar.OnMenuItemClickListener, TextToSpeech.OnInitListener {
+class EpisodeHomeFragment : Fragment() {
     private var _binding: EpisodeHomeFragmentBinding? = null
     private val binding get() = _binding!!
 
-//    private var item: FeedItem? = null
+    private val ioScope = CoroutineScope(Dispatchers.IO)  // IO dispatcher for initialization
 
     private var startIndex = 0
-    private var tts: TextToSpeech? = null
     private var ttsSpeed = 1.0f
 
     private lateinit var toolbar: MaterialToolbar
 
     private var disposable: Disposable? = null
 
+    private var readerText: String? = null
+    private var cleanedNotes: String? = null
     private var readerhtml: String? = null
-    private var readMode = false
+    private var readMode = true
     private var ttsPlaying = false
     private var jsEnabled = false
+
+    private var tts: TextToSpeech? = null
+    private var ttsReady = false
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
@@ -60,9 +63,8 @@ class EpisodeHomeFragment : Fragment(), Toolbar.OnMenuItemClickListener, TextToS
 
         toolbar = binding.toolbar
         toolbar.title = ""
-        toolbar.inflateMenu(R.menu.episode_home)
         toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
-        toolbar.setOnMenuItemClickListener(this)
+        toolbar.addMenuProvider(menuProvider, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
         if (!currentItem?.link.isNullOrEmpty()) showContent()
         else {
@@ -74,9 +76,7 @@ class EpisodeHomeFragment : Fragment(), Toolbar.OnMenuItemClickListener, TextToS
             webViewClient = object : WebViewClient() {
                 override fun onPageFinished(view: WebView?, url: String?) {
                     val isEmpty = view?.title.isNullOrEmpty() && view?.contentDescription.isNullOrEmpty()
-                    if (isEmpty) {
-                        Log.d(TAG, "content is empty")
-                    }
+                    if (isEmpty) Log.d(TAG, "content is empty")
                 }
             }
         }
@@ -91,48 +91,64 @@ class EpisodeHomeFragment : Fragment(), Toolbar.OnMenuItemClickListener, TextToS
         updateAppearance()
     }
 
-    override fun onInit(status: Int) {
-        if (status == TextToSpeech.SUCCESS) {
-            Log.i(TAG, "TTS init success with Locale: ${currentItem?.feed?.language}")
-            if (currentItem?.feed?.language != null) {
-                val result = tts?.setLanguage(Locale(currentItem!!.feed!!.language!!))
-                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    Log.w(TAG, "TTS language not supported ${currentItem?.feed?.language}")
-                    Toast.makeText(context, R.string.language_not_supported_by_tts, Toast.LENGTH_LONG).show()
-                }
-                ttsSpeed = currentItem?.feed?.preferences?.feedPlaybackSpeed ?: 1.0f
-                tts?.setSpeechRate(ttsSpeed)
-            }
-        } else {
-            Log.w(TAG, "TTS init failed")
-            Toast.makeText(context, R.string.tts_init_failed, Toast.LENGTH_LONG).show()
-        }
-    }
-
-    private fun showReaderContent() {
+    @OptIn(UnstableApi::class) private fun showReaderContent() {
         if (!currentItem?.link.isNullOrEmpty()) {
-            if (cleanedNotes == null) {
-                runBlocking {
-                    val url = currentItem!!.link!!
-                    val htmlSource = fetchHtmlSource(url)
-                    val readability4J = Readability4J(currentItem?.link!!, htmlSource)
-                    val article = readability4J.parse()
-                    readerText = article.textContent
+            runBlocking {
+                if (cleanedNotes == null) {
+                    if (currentItem?.transcript == null) {
+                        val url = currentItem!!.link!!
+                        val htmlSource = fetchHtmlSource(url)
+                        val article = Readability4JExtended(currentItem?.link!!, htmlSource).parse()
+                        readerText = article.textContent
 //                    Log.d(TAG, "readability4J: ${article.textContent}")
-                    readerhtml = article.contentWithDocumentsCharsetOrUtf8
+                        readerhtml = article.contentWithDocumentsCharsetOrUtf8
+                    } else {
+                        readerhtml = currentItem!!.transcript
+                        readerText = HtmlCompat.fromHtml(readerhtml!!, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
+                    }
                     if (!readerhtml.isNullOrEmpty()) {
                         val shownotesCleaner = ShownotesCleaner(requireContext(), readerhtml!!, 0)
                         cleanedNotes = shownotesCleaner.processShownotes()
+                        currentItem!!.setTranscriptIfLonger(readerhtml)
+                        persistFeedItem(currentItem)
                     }
                 }
             }
         }
         if (!cleanedNotes.isNullOrEmpty()) {
-            if (tts == null) tts = TextToSpeech(requireContext(), this)
-            binding.readerView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes!!, "text/html", "UTF-8", null)
-            binding.readerView.visibility = View.VISIBLE
-            binding.webView.visibility = View.GONE
+            ioScope.launch {
+                if (!ttsReady) initializeTTS(requireContext())
+
+                withContext(Dispatchers.Main) {
+                    binding.readerView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes!!, "text/html", "UTF-8", null)
+                    binding.readerView.visibility = View.VISIBLE
+                    binding.webView.visibility = View.GONE
+                }
+            }
         } else Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show()
+    }
+
+    private fun initializeTTS(context: Context) {
+        Log.d(TAG, "starting TTS")
+        if (tts == null) {
+            tts = TextToSpeech(context) { status: Int ->
+                if (status == TextToSpeech.SUCCESS) {
+                    if (currentItem?.feed?.language != null) {
+                        val result = tts?.setLanguage(Locale(currentItem!!.feed!!.language!!))
+                        if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                            Log.w(TAG, "TTS language not supported ${currentItem?.feed?.language}")
+                            Toast.makeText(context, getString(R.string.language_not_supported_by_tts) + " ${currentItem?.feed?.language}", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                    ttsReady = true
+//                    semaphore.release()
+                    Log.d(TAG, "TTS init success")
+                } else {
+                    Log.w(TAG, "TTS init failed")
+                    Toast.makeText(context, R.string.tts_init_failed, Toast.LENGTH_LONG).show()
+                }
+            }
+        }
     }
 
     private fun showWebContent() {
@@ -150,67 +166,75 @@ class EpisodeHomeFragment : Fragment(), Toolbar.OnMenuItemClickListener, TextToS
         else showWebContent()
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onPrepareOptionsMenu(menu: Menu) {
-        val textSpeech = menu.findItem(R.id.text_speech)
-        textSpeech.isVisible = readMode
-        if (readMode) {
-            if (ttsPlaying) textSpeech.setIcon(R.drawable.ic_pause) else textSpeech.setIcon(R.drawable.ic_play_24dp)
+    private val menuProvider = object: MenuProvider {
+        override fun onPrepareMenu(menu: Menu) {
+//            super.onPrepareMenu(menu)
+            Log.d(TAG, "onPrepareMenu called")
+            val textSpeech = menu.findItem(R.id.text_speech)
+            textSpeech?.isVisible = readMode
+            if (readMode) {
+                if (ttsPlaying) textSpeech?.setIcon(R.drawable.ic_pause) else textSpeech?.setIcon(R.drawable.ic_play_24dp)
+            }
+            menu.findItem(R.id.share_notes)?.setVisible(readMode)
+            menu.findItem(R.id.switchJS)?.setVisible(!readMode)
         }
-        menu.findItem(R.id.share_notes).setVisible(readMode)
-    }
 
-    @UnstableApi override fun onMenuItemClick(menuItem: MenuItem): Boolean {
-        when (menuItem.itemId) {
-            R.id.switch_home -> {
-                Log.d(TAG, "switch_home selected")
-                switchMode()
-                return true
-            }
-            R.id.switchJS -> {
-                Log.d(TAG, "switchJS selected")
-                jsEnabled = !jsEnabled
-                showWebContent()
-                return true
-            }
+        override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+            menuInflater.inflate(R.menu.episode_home, menu)
+            onPrepareMenu(menu)
+        }
 
-            R.id.text_speech -> {
-                Log.d(TAG, "text_speech selected: $readerText")
-                if (tts != null) {
-                    if (tts!!.isSpeaking) tts?.stop()
-                    if (!ttsPlaying) {
-                        ttsPlaying = true
-                        if (!readerText.isNullOrEmpty()) {
-                            tts?.setSpeechRate(ttsSpeed)
-                            while (startIndex < readerText!!.length) {
-                                val endIndex = minOf(startIndex + maxChunkLength, readerText!!.length)
-                                val chunk = readerText!!.substring(startIndex, endIndex)
-                                tts?.speak(chunk, TextToSpeech.QUEUE_ADD, null, null)
-                                startIndex += maxChunkLength
+        @OptIn(UnstableApi::class) override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+            when (menuItem.itemId) {
+                R.id.switch_home -> {
+                    Log.d(TAG, "switch_home selected")
+                    switchMode()
+                    return true
+                }
+                R.id.switchJS -> {
+                    Log.d(TAG, "switchJS selected")
+                    jsEnabled = !jsEnabled
+                    showWebContent()
+                    return true
+                }
+                R.id.text_speech -> {
+                    Log.d(TAG, "text_speech selected: $readerText")
+                    if (tts != null) {
+                        if (tts!!.isSpeaking) tts?.stop()
+                        if (!ttsPlaying) {
+                            ttsPlaying = true
+                            if (!readerText.isNullOrEmpty()) {
+                                ttsSpeed = currentItem?.feed?.preferences?.feedPlaybackSpeed ?: 1.0f
+                                tts?.setSpeechRate(ttsSpeed)
+                                while (startIndex < readerText!!.length) {
+                                    val endIndex = minOf(startIndex + MAX_CHUNK_LENGTH, readerText!!.length)
+                                    val chunk = readerText!!.substring(startIndex, endIndex)
+                                    tts?.speak(chunk, TextToSpeech.QUEUE_ADD, null, null)
+                                    startIndex += MAX_CHUNK_LENGTH
+                                }
                             }
-                        }
-                    } else ttsPlaying = false
-                    updateAppearance()
+                        } else ttsPlaying = false
+                        updateAppearance()
+                    }
+                    return true
                 }
-                return true
-            }
-            R.id.share_notes -> {
-                val notes = readerhtml
-                if (!notes.isNullOrEmpty()) {
-                    val shareText = if (Build.VERSION.SDK_INT >= 24) Html.fromHtml(notes, Html.FROM_HTML_MODE_LEGACY).toString()
-                    else Html.fromHtml(notes).toString()
-                    val context = requireContext()
-                    val intent = ShareCompat.IntentBuilder(context)
-                        .setType("text/plain")
-                        .setText(shareText)
-                        .setChooserTitle(R.string.share_notes_label)
-                        .createChooserIntent()
-                    context.startActivity(intent)
+                R.id.share_notes -> {
+                    val notes = readerhtml
+                    if (!notes.isNullOrEmpty()) {
+                        val shareText = HtmlCompat.fromHtml(notes, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
+                        val context = requireContext()
+                        val intent = ShareCompat.IntentBuilder(context)
+                            .setType("text/plain")
+                            .setText(shareText)
+                            .setChooserTitle(R.string.share_notes_label)
+                            .createChooserIntent()
+                        context.startActivity(intent)
+                    }
+                    return true
                 }
-                return true
-            }
-            else -> {
-                return currentItem != null
+                else -> {
+                    return currentItem != null
+                }
             }
         }
     }
@@ -225,7 +249,9 @@ class EpisodeHomeFragment : Fragment(), Toolbar.OnMenuItemClickListener, TextToS
         Log.d(TAG, "onDestroyView")
         _binding = null
         disposable?.dispose()
+        tts?.stop()
         tts?.shutdown()
+        tts = null
     }
 
     @UnstableApi private fun updateAppearance() {
@@ -233,54 +259,27 @@ class EpisodeHomeFragment : Fragment(), Toolbar.OnMenuItemClickListener, TextToS
             Log.d(TAG, "updateAppearance currentItem is null")
             return
         }
-        onPrepareOptionsMenu(toolbar.menu)
-//        FeedItemMenuHandler.onPrepareMenu(toolbar.menu, currentItem, R.id.switch_home)
+//        onPrepareOptionsMenu(toolbar.menu)
+        toolbar.invalidateMenu()
+//        menuProvider.onPrepareMenu(toolbar.menu)
     }
 
     companion object {
         private const val TAG = "EpisodeHomeFragment"
-        private const val ARG_FEEDITEM = "feeditem"
+        private const val MAX_CHUNK_LENGTH = 2000
 
-        const val maxChunkLength = 200
-
-        private var readerText: String? = null
-        private var cleanedNotes: String? = null
         var currentItem: FeedItem? = null
 
         @JvmStatic
         fun newInstance(item: FeedItem): EpisodeHomeFragment {
             val fragment = EpisodeHomeFragment()
-//            val args = Bundle()
             Log.d(TAG, "item.itemIdentifier ${item.itemIdentifier}")
             if (item.itemIdentifier != currentItem?.itemIdentifier) {
                 currentItem = item
-                cleanedNotes = null
-                readerText = null
             } else {
                 currentItem?.feed = item.feed
             }
-//            args.putSerializable(ARG_FEEDITEM, item)
-//            fragment.arguments = args
             return fragment
         }
-
-        suspend fun fetchHtmlSource(urlString: String): String = withContext(Dispatchers.IO) {
-            val url = URL(urlString)
-            val connection = url.openConnection()
-            val inputStream = connection.getInputStream()
-            val bufferedReader = BufferedReader(InputStreamReader(inputStream))
-
-            val stringBuilder = StringBuilder()
-            var line: String?
-            while (bufferedReader.readLine().also { line = it } != null) {
-                stringBuilder.append(line)
-            }
-
-            bufferedReader.close()
-            inputStream.close()
-
-            stringBuilder.toString()
-        }
-
     }
 }

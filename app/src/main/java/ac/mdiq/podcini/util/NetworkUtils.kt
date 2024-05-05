@@ -6,6 +6,11 @@ import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
 import android.os.Build
 import ac.mdiq.podcini.preferences.UserPreferences
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.net.URL
 import java.util.regex.Pattern
 
 object NetworkUtils {
@@ -116,7 +121,24 @@ object NetworkUtils {
             }
         }
         if (throwable.cause != null) return wasDownloadBlocked(throwable.cause)
-
         return false
+    }
+
+    suspend fun fetchHtmlSource(urlString: String): String = withContext(Dispatchers.IO) {
+        val url = URL(urlString)
+        val connection = url.openConnection()
+        val inputStream = connection.getInputStream()
+        val bufferedReader = BufferedReader(InputStreamReader(inputStream))
+
+        val stringBuilder = StringBuilder()
+        var line: String?
+        while (bufferedReader.readLine().also { line = it } != null) {
+            stringBuilder.append(line)
+        }
+
+        bufferedReader.close()
+        inputStream.close()
+
+        stringBuilder.toString()
     }
 }

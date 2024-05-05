@@ -95,14 +95,22 @@ import java.util.concurrent.TimeUnit
             if (media != null) {
                 val result = deleteFeedMediaSynchronous(context, media)
                 val item = media.item
+                if (item != null && media.download_url.isNullOrEmpty()) {
+                    val adapter = getInstance()
+                    adapter.open()
+                    adapter.removeItemMedia(listOf(item))
+                    adapter.close()
+                    item.setMedia(null)
+                    persistFeedItem(item)
+                    EventBus.getDefault().post(updated(item))
+                }
                 if (result && item != null && shouldDeleteRemoveFromQueue()) removeQueueItemSynchronous(context, false, item.id)
             }
         }
     }
 
     private fun deleteFeedMediaSynchronous(context: Context, media: FeedMedia): Boolean {
-        Log.i(TAG, String.format(Locale.US, "Requested to delete FeedMedia [id=%d, title=%s, downloaded=%s",
-            media.id, media.getEpisodeTitle(), media.isDownloaded()))
+        Log.i(TAG, String.format(Locale.US, "Requested to delete FeedMedia [id=%d, title=%s, downloaded=%s", media.id, media.getEpisodeTitle(), media.isDownloaded()))
         var localDelete = false
         val url = media.getFile_url()
         when {
@@ -733,7 +741,7 @@ import java.util.concurrent.TimeUnit
         }
     }
 
-    fun setCompleteFeed(vararg feeds: Feed): Future<*> {
+    fun persistCompleteFeed(vararg feeds: Feed): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -742,7 +750,7 @@ import java.util.concurrent.TimeUnit
         }
     }
 
-    fun setItemList(items: List<FeedItem>): Future<*> {
+    fun persistItemList(items: List<FeedItem>): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -758,7 +766,7 @@ import java.util.concurrent.TimeUnit
      *
      * @param media The FeedMedia object.
      */
-    fun setFeedMedia(media: FeedMedia?): Future<*> {
+    fun persistFeedMedia(media: FeedMedia): Future<*> {
         Log.d(TAG, "setFeedMedia called")
         return runOnDbThread {
             val adapter = getInstance()
@@ -774,7 +782,7 @@ import java.util.concurrent.TimeUnit
      * @param media The FeedMedia object.
      */
     @JvmStatic
-    fun setFeedMediaPlaybackInformation(media: FeedMedia?): Future<*> {
+    fun persistFeedMediaPlaybackInformation(media: FeedMedia?): Future<*> {
         Log.d(TAG, "setFeedMediaPlaybackInformation called")
         return runOnDbThread {
             if (media != null) {
@@ -793,8 +801,8 @@ import java.util.concurrent.TimeUnit
      * @param item The FeedItem object.
      */
     @JvmStatic
-    fun setFeedItem(item: FeedItem?): Future<*> {
-        Log.d(TAG, "setFeedItem called")
+    fun persistFeedItem(item: FeedItem?): Future<*> {
+        Log.d(TAG, "persistFeedItem called")
         return runOnDbThread {
             if (item != null) {
                 val adapter = getInstance()
@@ -824,7 +832,7 @@ import java.util.concurrent.TimeUnit
      *
      * @param preferences The FeedPreferences object.
      */
-    fun setFeedPreferences(preferences: FeedPreferences): Future<*> {
+    fun persistFeedPreferences(preferences: FeedPreferences): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -852,7 +860,7 @@ import java.util.concurrent.TimeUnit
      *
      * @param lastUpdateFailed true if last update failed
      */
-    fun setFeedLastUpdateFailed(feedId: Long, lastUpdateFailed: Boolean): Future<*> {
+    fun persistFeedLastUpdateFailed(feedId: Long, lastUpdateFailed: Boolean): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -862,7 +870,7 @@ import java.util.concurrent.TimeUnit
         }
     }
 
-    fun setFeedCustomTitle(feed: Feed): Future<*> {
+    fun persistFeedCustomTitle(feed: Feed): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -903,7 +911,7 @@ import java.util.concurrent.TimeUnit
      * @param feedId       The feed's ID
      * @param filterValues Values that represent properties to filter by
      */
-    fun setFeedItemsFilter(feedId: Long, filterValues: Set<String>): Future<*> {
+    fun persistFeedItemsFilter(feedId: Long, filterValues: Set<String>): Future<*> {
         Log.d(TAG, "setFeedItemsFilter() called with: feedId = [$feedId], filterValues = [$filterValues]")
         return runOnDbThread {
             val adapter = getInstance()
@@ -918,7 +926,7 @@ import java.util.concurrent.TimeUnit
      * Set item sort order of the feed
      *
      */
-    fun setFeedItemSortOrder(feedId: Long, sortOrder: SortOrder?): Future<*> {
+    fun persistFeedItemSortOrder(feedId: Long, sortOrder: SortOrder?): Future<*> {
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()

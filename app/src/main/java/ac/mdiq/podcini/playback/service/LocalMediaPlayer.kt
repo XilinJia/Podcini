@@ -132,19 +132,18 @@ class LocalMediaPlayer(context: Context, callback: PSMPCallback) : MediaPlayerBa
 
     private fun setupExoPlayer() {
         if (exoPlayer == null) {
-            if (exoplayerListener != null) exoPlayer?.removeListener(exoplayerListener!!)
             createStaticPlayer(context)
         }
     }
 
     @Throws(IllegalStateException::class)
-    fun prepareWR() {
+    private fun prepareWR() {
         if (mediaSource == null) return
         exoPlayer?.setMediaSource(mediaSource!!, false)
         exoPlayer?.prepare()
     }
 
-    fun release() {
+    private fun release() {
         bufferingUpdateDisposable.dispose()
 
 //        exoplayerListener = null
@@ -163,13 +162,21 @@ class LocalMediaPlayer(context: Context, callback: PSMPCallback) : MediaPlayerBa
         exoPlayer?.setAudioAttributes(b.build(), false)
     }
 
+    private fun metadata(p: Playable): MediaMetadata {
+        val builder = MediaMetadata.Builder()
+            .setArtist(p.getFeedTitle())
+            .setTitle(p.getEpisodeTitle())
+            .setAlbumArtist(p.getFeedTitle())
+            .setDisplayTitle(p.getEpisodeTitle())
+            .setSubtitle(p.getFeedTitle())
+            .setArtworkUri(null)
+        return builder.build()
+    }
+
     @Throws(IllegalArgumentException::class, IllegalStateException::class)
-    fun setDataSource(s: String, user: String?, password: String?) {
+    private fun setDataSource(m: MediaMetadata, s: String, user: String?, password: String?) {
         Log.d(TAG, "setDataSource: $s")
 
-        //        Call.Factory callFactory = PodciniHttpClient.getHttpClient(); // Assuming it returns OkHttpClient
-//        OkHttpDataSource.Factory httpDataSourceFactory = new OkHttpDataSource.Factory(callFactory)
-//                .setUserAgent(ClientConfig.USER_AGENT);
         val httpDataSourceFactory = OkHttpDataSource.Factory(PodciniHttpClient.getHttpClient() as okhttp3.Call.Factory)
             .setUserAgent(ClientConfig.USER_AGENT)
 
@@ -183,18 +190,20 @@ class LocalMediaPlayer(context: Context, callback: PSMPCallback) : MediaPlayerBa
         extractorsFactory.setConstantBitrateSeekingEnabled(true)
         extractorsFactory.setMp3ExtractorFlags(Mp3Extractor.FLAG_DISABLE_ID3_METADATA)
         val f = ProgressiveMediaSource.Factory(dataSourceFactory, extractorsFactory)
-        val mediaItem = MediaItem.fromUri(Uri.parse(s))
+
+        val mediaItem = MediaItem.Builder()
+            .setUri(Uri.parse(s))
+            .setMediaMetadata(m).build()
+
         mediaSource = f.createMediaSource(mediaItem)
     }
 
-    fun start() {
+    private fun play() {
         if (exoPlayer?.playbackState == STATE_IDLE || exoPlayer?.playbackState == STATE_ENDED ) prepareWR()
-
         exoPlayer?.play()
         // Can't set params when paused - so always set it on start in case they changed
         exoPlayer!!.playbackParameters = playbackParameters
     }
-
 
     /**
      * Starts or prepares playback of the specified Playable object. If another Playable object is already being played, the currently playing
@@ -259,12 +268,10 @@ class LocalMediaPlayer(context: Context, callback: PSMPCallback) : MediaPlayerBa
 
                 // set temporarily to pause in order to update list with current position
                 if (playerStatus == PlayerStatus.PLAYING) callback.onPlaybackPause(this.playable, getPosition())
-
                 if (this.playable!!.getIdentifier() != playable.getIdentifier()) {
                     val oldMedia: Playable = this.playable!!
                     callback.onPostPlayback(oldMedia, ended = false, skipped = false, true)
                 }
-
                 setPlayerStatus(PlayerStatus.INDETERMINATE, null)
             }
         }
@@ -276,6 +283,7 @@ class LocalMediaPlayer(context: Context, callback: PSMPCallback) : MediaPlayerBa
         createMediaPlayer()
         this@LocalMediaPlayer.startWhenPrepared.set(startWhenPrepared)
         setPlayerStatus(PlayerStatus.INITIALIZING, this.playable)
+        val metadata = metadata(playable)
         try {
             callback.ensureMediaInfoLoaded(this.playable!!)
             callback.onMediaChanged(false)
@@ -286,13 +294,13 @@ class LocalMediaPlayer(context: Context, callback: PSMPCallback) : MediaPlayerBa
                     if (streamurl != null) {
                         if (playable is FeedMedia && playable.item?.feed?.preferences != null) {
                             val preferences = playable.item!!.feed!!.preferences!!
-                            setDataSource(streamurl, preferences.username, preferences.password)
-                        } else setDataSource(streamurl, null, null)
+                            setDataSource(metadata, streamurl, preferences.username, preferences.password)
+                        } else setDataSource(metadata, streamurl, null, null)
                     }
                 }
                 else -> {
                     val localMediaurl = this.playable!!.getLocalMediaUrl()
-                    if (!localMediaurl.isNullOrEmpty() && File(localMediaurl).canRead()) setDataSource(localMediaurl, null, null)
+                    if (!localMediaurl.isNullOrEmpty() && File(localMediaurl).canRead()) setDataSource(metadata, localMediaurl, null, null)
                     else throw IOException("Unable to read local file $localMediaurl")
                 }
             }
@@ -337,14 +345,13 @@ class LocalMediaPlayer(context: Context, callback: PSMPCallback) : MediaPlayerBa
                     val newPosition = RewindAfterPauseUtils.calculatePositionWithRewind(playable!!.getPosition(), playable!!.getLastPlayedTime())
                     seekTo(newPosition)
                 }
-                start()
+                play()
 
                 setPlayerStatus(PlayerStatus.PLAYING, playable)
                 pausedBecauseOfTransientAudiofocusLoss = false
             } else Log.e(TAG, "Failed to request audio focus")
         } else Log.d(TAG, "Call to resume() was ignored because current state of PSMP object is $playerStatus")
     }
-
 
     /**
      * Saves the current position and pauses playback. Note that, if audiofocus
@@ -363,7 +370,6 @@ class LocalMediaPlayer(context: Context, callback: PSMPCallback) : MediaPlayerBa
             Log.d(TAG, "Pausing playback.")
             exoPlayer?.pause()
             setPlayerStatus(PlayerStatus.PAUSED, playable, getPosition())
-
             if (abandonFocus) {
                 abandonAudioFocus()
                 pausedBecauseOfTransientAudiofocusLoss = false
@@ -400,20 +406,16 @@ class LocalMediaPlayer(context: Context, callback: PSMPCallback) : MediaPlayerBa
     private fun onPrepared(startWhenPrepared: Boolean) {
         check(playerStatus == PlayerStatus.PREPARING) { "Player is not in PREPARING state" }
         Log.d(TAG, "Resource prepared")
-
         if (mediaType == MediaType.VIDEO) videoSize = Pair(videoWidth, videoHeight)
-
         if (playable != null) {
             val pos = playable!!.getPosition()
             if (pos > 0) seekTo(pos)
-
             if (playable!!.getDuration() <= 0) {
                 Log.d(TAG, "Setting duration of media")
                 playable!!.setDuration(if (exoPlayer?.duration == C.TIME_UNSET) Playable.INVALID_TIME else exoPlayer!!.duration.toInt())
             }
         }
         setPlayerStatus(PlayerStatus.PREPARED, playable)
-
         if (startWhenPrepared) resume()
     }
 
@@ -618,9 +620,7 @@ class LocalMediaPlayer(context: Context, callback: PSMPCallback) : MediaPlayerBa
             Log.d(TAG, "Resetting video surface")
             exoPlayer?.setVideoSurfaceHolder(null)
             reinit()
-        } else {
-            Log.e(TAG, "Resetting video surface for media of Audio type")
-        }
+        } else Log.e(TAG, "Resetting video surface for media of Audio type")
     }
 
     /**
@@ -681,12 +681,10 @@ class LocalMediaPlayer(context: Context, callback: PSMPCallback) : MediaPlayerBa
 
     override fun createMediaPlayer() {
         release()
-
         if (playable == null) {
             playerStatus = PlayerStatus.STOPPED
             return
         }
-
         setAudioStreamType(AudioManager.STREAM_MUSIC)
         setMediaPlayerListeners()
     }
@@ -717,7 +715,6 @@ class LocalMediaPlayer(context: Context, callback: PSMPCallback) : MediaPlayerBa
                     Log.d(TAG, "Lost audio focus temporarily. Pausing...")
                     exoPlayer?.pause() // Pause without telling the PlaybackService
                     pausedBecauseOfTransientAudiofocusLoss = true
-
                     audioFocusCanceller.removeCallbacksAndMessages(null)
                     // Still did not get back the audio focus. Now actually pause.
                     audioFocusCanceller.postDelayed({ if (pausedBecauseOfTransientAudiofocusLoss) pause(abandonFocus = true, reinit = false) },
@@ -727,9 +724,8 @@ class LocalMediaPlayer(context: Context, callback: PSMPCallback) : MediaPlayerBa
             focusChange == AudioManager.AUDIOFOCUS_GAIN -> {
                 Log.d(TAG, "Gained audio focus")
                 audioFocusCanceller.removeCallbacksAndMessages(null)
-                if (pausedBecauseOfTransientAudiofocusLoss) start()    // we paused => play now
+                if (pausedBecauseOfTransientAudiofocusLoss) play()    // we paused => play now
                 else setVolume(1.0f, 1.0f)   // we ducked => raise audio level back
-
                 pausedBecauseOfTransientAudiofocusLoss = false
             }
         }
@@ -761,7 +757,6 @@ class LocalMediaPlayer(context: Context, callback: PSMPCallback) : MediaPlayerBa
         releaseWifiLockIfNecessary()
 
         val isPlaying = playerStatus == PlayerStatus.PLAYING
-
         // we're relying on the position stored in the Playable object for post-playback processing
         val position = getPosition()
         if (position >= 0) playable?.setPosition(position)
@@ -774,7 +769,6 @@ class LocalMediaPlayer(context: Context, callback: PSMPCallback) : MediaPlayerBa
 
         val currentMedia = playable
         var nextMedia: Playable? = null
-
         if (shouldContinue) {
             // Load next episode if previous episode was in the queue and if there
             // is an episode in the queue left.
@@ -853,9 +847,7 @@ class LocalMediaPlayer(context: Context, callback: PSMPCallback) : MediaPlayerBa
         Log.d(TAG, "genericSeekCompleteListener")
         seekLatch?.countDown()
 
-        if (playerStatus == PlayerStatus.PLAYING) {
-            if (playable != null) callback.onPlaybackStart(playable!!, getPosition())
-        }
+        if (playerStatus == PlayerStatus.PLAYING && playable != null) callback.onPlaybackStart(playable!!, getPosition())
         if (playerStatus == PlayerStatus.SEEKING && statusBeforeSeeking != null) setPlayerStatus(statusBeforeSeeking!!, playable, getPosition())
     }
 
@@ -917,25 +909,20 @@ class LocalMediaPlayer(context: Context, callback: PSMPCallback) : MediaPlayerBa
                         else -> bufferingUpdateListener?.accept(BUFFERING_ENDED)
                     }
                 }
-
                 override fun onPlayerError(error: PlaybackException) {
                     Log.d(TAG, "onPlayerError ${error.message}")
                     if (wasDownloadBlocked(error)) audioErrorListener?.accept(context.getString(R.string.download_error_blocked))
                     else {
                         var cause = error.cause
-                        if (cause is HttpDataSourceException) {
-                            if (cause.cause != null) cause = cause.cause
-                        }
+                        if (cause is HttpDataSourceException && cause.cause != null) cause = cause.cause
                         if (cause != null && "Source error" == cause.message) cause = cause.cause
                         audioErrorListener?.accept(if (cause != null) cause.message else error.message)
                     }
                 }
-
                 override fun onPositionDiscontinuity(oldPosition: PositionInfo, newPosition: PositionInfo, reason: @DiscontinuityReason Int) {
                     Log.d(TAG, "onPositionDiscontinuity $oldPosition $newPosition $reason")
                     if (reason == DISCONTINUITY_REASON_SEEK) audioSeekCompleteListener?.run()
                 }
-
                 override fun onAudioSessionIdChanged(audioSessionId: Int) {
                     Log.d(TAG, "onAudioSessionIdChanged $audioSessionId")
                     initLoudnessEnhancer(audioSessionId)
@@ -943,7 +930,6 @@ class LocalMediaPlayer(context: Context, callback: PSMPCallback) : MediaPlayerBa
             }
 
             exoPlayer?.addListener(exoplayerListener!!)
-
             initLoudnessEnhancer(exoPlayer!!.audioSessionId)
         }
 
@@ -960,6 +946,7 @@ class LocalMediaPlayer(context: Context, callback: PSMPCallback) : MediaPlayerBa
         }
 
         fun cleanup() {
+            if (exoplayerListener != null) exoPlayer?.removeListener(exoplayerListener!!)
             exoplayerListener = null
             audioSeekCompleteListener = null
             audioCompletionListener = null

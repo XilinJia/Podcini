@@ -32,7 +32,7 @@ Some drastic changes are made in the project since version 4.0:
 - Viewbindings are enabled for most views,
 - Project became mono-modular.
 
-Even so, the database remains backward compatible, and AntennaPod's db can be easily imported.
+~Even so, the database remains backward compatible, and AntennaPod's db can be easily imported.~  Since version 4.10.0 and/or AntennaPod 3.3.2, AntennaPod's DB can not be directly imported
 
 ## Notable new features & enhancements
 
@@ -76,6 +76,7 @@ Even so, the database remains backward compatible, and AntennaPod's db can be ea
 * Left and right swipe actions on lists now have telltales and can be configured on the spot
 * Played episodes have clearer markings
 * Sort dialog no longer dims the main view
+* in episode list view, if episode has no media, TTS button is shown for fetching transcript (if not exist) and then generating audio file from the transcript. TTS audio files are playable in the same way as local media (with speed setting, pause and rewind/forward)
 * Subscriptions view has sorting by "Unread publication date"
 
 ### Podcast/Episode
@@ -83,8 +84,8 @@ Even so, the database remains backward compatible, and AntennaPod's db can be ea
 * New share notes menu option on various episode views
 * Feed info view offers a link for direct search of feeds related to author
 * New episode home view with two display modes: webpage or reader
-* Text-to-Speech is enabled in reader's mode
-* RSS feeds with no playable media can be subscribed and read/listened
+* In episode, in addition to "description" there is a new "transcript" field to save text (if any) fetched from the episode's website
+* RSS feeds with no playable media can be subscribed and read/listened (via TTS)
 
 ### Online feed
 

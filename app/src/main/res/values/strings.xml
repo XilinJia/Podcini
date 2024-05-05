@@ -61,6 +61,7 @@
     <string name="web_content_not_available">Web content is not available</string>
     <string name="language_not_supported_by_tts">The language is not supported by TTS</string>
     <string name="tts_init_failed">TTS init failed</string>
+    <string name="episode_has_no_content">Episode has not content</string>
 
     <string name="notification_permission_text">Since Android 13, top level notification is needed for normal refresh and playback. You may disallow notifications of sub-catergories at your wish.</string>
     <string name="notification_permission_denied">You denied the permission.</string>
@@ -214,6 +215,7 @@
         <item quantity="one">Downloading %d episode.</item>
         <item quantity="other">Downloading %d episodes.</item>
     </plurals>
+    <string name="TTS_label">Speak</string>
     <string name="play_label">Play</string>
     <string name="pause_label">Pause</string>
     <string name="stream_label">Stream</string>

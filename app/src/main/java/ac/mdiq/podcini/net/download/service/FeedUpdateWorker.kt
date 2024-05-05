@@ -122,7 +122,7 @@ class FeedUpdateWorker(context: Context, params: WorkerParameters) : Worker(cont
                 if (feed.isLocalFeed) LocalFeedUpdater.updateFeed(feed, applicationContext, null)
                 else refreshFeed(feed, force)
             } catch (e: Exception) {
-                DBWriter.setFeedLastUpdateFailed(feed.id, true)
+                DBWriter.persistFeedLastUpdateFailed(feed.id, true)
                 val status = DownloadResult(feed, feed.title?:"", DownloadError.ERROR_IO_ERROR, false, e.message?:"")
                 DBWriter.addDownloadStatus(status)
             }
@@ -147,7 +147,7 @@ class FeedUpdateWorker(context: Context, params: WorkerParameters) : Worker(cont
         if (!downloader.result.isSuccessful) {
             if (downloader.cancelled || downloader.result.reason == DownloadError.ERROR_DOWNLOAD_CANCELLED) return
 
-            DBWriter.setFeedLastUpdateFailed(request.feedfileId, true)
+            DBWriter.persistFeedLastUpdateFailed(request.feedfileId, true)
             DBWriter.addDownloadStatus(downloader.result)
             return
         }
@@ -156,7 +156,7 @@ class FeedUpdateWorker(context: Context, params: WorkerParameters) : Worker(cont
         val success = feedSyncTask.run()
 
         if (!success) {
-            DBWriter.setFeedLastUpdateFailed(request.feedfileId, true)
+            DBWriter.persistFeedLastUpdateFailed(request.feedfileId, true)
             DBWriter.addDownloadStatus(feedSyncTask.downloadStatus)
             return
         }

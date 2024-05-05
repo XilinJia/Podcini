@@ -12,12 +12,11 @@ import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.ui.actions.actionbutton.*
-import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.view.CircularProgressBar
-import ac.mdiq.podcini.ui.utils.ThemeUtils
-import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.actions.menuhandler.FeedItemMenuHandler
-import ac.mdiq.podcini.ui.fragment.EpisodeHomeFragment.Companion.currentItem
+import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.utils.ShownotesCleaner
+import ac.mdiq.podcini.ui.utils.ThemeUtils
+import ac.mdiq.podcini.ui.view.CircularProgressBar
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.Converter
 import ac.mdiq.podcini.util.DateFormatter
@@ -26,10 +25,8 @@ import ac.mdiq.podcini.util.event.EpisodeDownloadEvent
 import ac.mdiq.podcini.util.event.FeedItemEvent
 import ac.mdiq.podcini.util.event.PlayerStatusEvent
 import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
-import ac.mdiq.podcini.util.event.settings.SpeedPresetChangedEvent
 import android.os.Build
 import android.os.Bundle
-import android.text.Html
 import android.text.Layout
 import android.text.TextUtils
 import android.util.Log
@@ -37,13 +34,11 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.ProgressBar
-import android.widget.TextView
+import android.widget.*
 import androidx.annotation.OptIn
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ShareCompat
+import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import androidx.media3.common.util.UnstableApi
 import com.bumptech.glide.Glide
@@ -89,7 +84,8 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private lateinit var imgvCover: ImageView
     private lateinit var progbarDownload: CircularProgressBar
     private lateinit var progbarLoading: ProgressBar
-    private lateinit var butAction0: View
+
+    private lateinit var homeButtonAction: View
     private lateinit var butAction1: ImageView
     private lateinit var butAction2: ImageView
     private lateinit var noMediaLabel: View
@@ -139,14 +135,18 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         imgvCover.setOnClickListener { openPodcast() }
         progbarDownload = binding.circularProgressBar
         progbarLoading = binding.progbarLoading
-        butAction0 = binding.butAction0
+        homeButtonAction = binding.homeButton
         butAction1 = binding.butAction1
         butAction2 = binding.butAction2
         noMediaLabel = binding.noMediaLabel
 
-        butAction0.setOnClickListener {
-            homeFragment = EpisodeHomeFragment.newInstance(item!!)
-            if (item?.link != null) (activity as MainActivity).loadChildFragment(homeFragment!!)
+        homeButtonAction.setOnClickListener {
+            if (!item?.link.isNullOrEmpty()) {
+                homeFragment = EpisodeHomeFragment.newInstance(item!!)
+                (activity as MainActivity).loadChildFragment(homeFragment!!)
+            } else {
+                Toast.makeText(context, "Episode link is not valid ${item?.link}", Toast.LENGTH_LONG).show()
+            }
         }
 
         butAction1.setOnClickListener(View.OnClickListener {
@@ -225,8 +225,8 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 if (item == null) return false
                 val notes = item!!.description
                 if (!notes.isNullOrEmpty()) {
-                    val shareText = if (Build.VERSION.SDK_INT >= 24) Html.fromHtml(notes, Html.FROM_HTML_MODE_LEGACY).toString()
-                    else Html.fromHtml(notes).toString()
+                    val shareText = if (Build.VERSION.SDK_INT >= 24) HtmlCompat.fromHtml(notes, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
+                    else HtmlCompat.fromHtml(notes, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
                     val context = requireContext()
                     val intent = ShareCompat.IntentBuilder(context)
                         .setType("text/plain")
@@ -323,7 +323,8 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         val media: FeedMedia? = item?.media
         if (media == null) {
             if (item != null) {
-                actionButton1 = MarkAsPlayedActionButton(item!!)
+//                actionButton1 = VisitWebsiteActionButton(item!!)
+                butAction1.visibility = View.INVISIBLE
                 actionButton2 = VisitWebsiteActionButton(item!!)
             }
             noMediaLabel.visibility = View.VISIBLE
@@ -337,7 +338,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 actionButton1 = when {
                     media.getMediaType() == MediaType.FLASH -> VisitWebsiteActionButton(item!!)
                     PlaybackStatus.isCurrentlyPlaying(media) -> PauseActionButton(item!!)
-                    item!!.feed != null && item!!.feed!!.isLocalFeed -> PlayLocalActionButton(item)
+                    item!!.feed != null && item!!.feed!!.isLocalFeed -> PlayLocalActionButton(item!!)
                     media.isDownloaded() -> PlayActionButton(item!!)
                     else -> StreamActionButton(item!!)
                 }
@@ -423,7 +424,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         val feedItem = item
         if (feedItem != null) {
             val duration = feedItem.media?.getDuration()?: Int.MAX_VALUE
-            DBReader.loadDescriptionOfFeedItem(feedItem)
+            DBReader.loadTextDetailsOfFeedItem(feedItem)
             webviewData = ShownotesCleaner(requireContext(), feedItem.description?:"", duration).processShownotes()
         }
         return feedItem

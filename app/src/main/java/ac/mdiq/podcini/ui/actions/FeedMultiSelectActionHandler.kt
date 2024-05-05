@@ -122,7 +122,7 @@ class FeedMultiSelectActionHandler(private val activity: MainActivity, private v
         for (feed in selectedItems) {
             if (feed.preferences == null) continue
             preferencesConsumer.accept(feed.preferences)
-            DBWriter.setFeedPreferences(feed.preferences!!)
+            DBWriter.persistFeedPreferences(feed.preferences!!)
         }
         showMessage(R.plurals.updated_feeds_batch_label, selectedItems.size)
     }

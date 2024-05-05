@@ -172,7 +172,7 @@ class FeedSettingsFragment : Fragment() {
                     @UnstableApi override fun onConfirmed(skipIntro: Int, skipEnding: Int) {
                         feedPreferences!!.feedSkipIntro = skipIntro
                         feedPreferences!!.feedSkipEnding = skipEnding
-                        DBWriter.setFeedPreferences(feedPreferences!!)
+                        DBWriter.persistFeedPreferences(feedPreferences!!)
                         EventBus.getDefault().post(SkipIntroEndingChangedEvent(feedPreferences!!.feedSkipIntro, feedPreferences!!.feedSkipEnding, feed!!.id))
                     }
                 }.show()
@@ -204,7 +204,7 @@ class FeedSettingsFragment : Fragment() {
                         val newSpeed = if (viewBinding.useGlobalCheckbox.isChecked) FeedPreferences.SPEED_USE_GLOBAL
                         else viewBinding.seekBar.currentSpeed
                         feedPreferences!!.feedPlaybackSpeed = newSpeed
-                        if (feedPreferences != null) DBWriter.setFeedPreferences(feedPreferences!!)
+                        if (feedPreferences != null) DBWriter.persistFeedPreferences(feedPreferences!!)
                         EventBus.getDefault().post(SpeedPresetChangedEvent(feedPreferences!!.feedPlaybackSpeed, feed!!.id))
                     }
                     .setNegativeButton(R.string.cancel_label, null)
@@ -219,7 +219,7 @@ class FeedSettingsFragment : Fragment() {
                 object : EpisodeFilterDialog(requireContext(), feedPreferences!!.filter) {
                     @UnstableApi override fun onConfirmed(filter: FeedFilter) {
                         feedPreferences!!.filter = filter
-                        DBWriter.setFeedPreferences(feedPreferences!!)
+                        DBWriter.persistFeedPreferences(feedPreferences!!)
                     }
                 }.show()
                 false
@@ -233,7 +233,7 @@ class FeedSettingsFragment : Fragment() {
                     @UnstableApi override fun onConfirmed(username: String, password: String) {
                         feedPreferences!!.username = username
                         feedPreferences!!.password = password
-                        val setPreferencesFuture = DBWriter.setFeedPreferences(feedPreferences!!)
+                        val setPreferencesFuture = DBWriter.persistFeedPreferences(feedPreferences!!)
                         Thread({
                             try {
                                 setPreferencesFuture.get()
@@ -259,7 +259,7 @@ class FeedSettingsFragment : Fragment() {
                     "never" -> feedPreferences!!.currentAutoDelete = AutoDeleteAction.NEVER
                     else -> {}
                 }
-                DBWriter.setFeedPreferences(feedPreferences!!)
+                DBWriter.persistFeedPreferences(feedPreferences!!)
                 updateAutoDeleteSummary()
                 false
             }
@@ -298,7 +298,7 @@ class FeedSettingsFragment : Fragment() {
                     "heavy_boost" -> feedPreferences!!.volumeAdaptionSetting = VolumeAdaptionSetting.HEAVY_BOOST
                     else -> {}
                 }
-                DBWriter.setFeedPreferences(feedPreferences!!)
+                DBWriter.persistFeedPreferences(feedPreferences!!)
                 updateVolumeAdaptationValue()
                 if (feed != null && feedPreferences!!.volumeAdaptionSetting != null)
                     EventBus.getDefault().post(VolumeAdaptionChangedEvent(feedPreferences!!.volumeAdaptionSetting!!, feed!!.id))
@@ -356,7 +356,7 @@ class FeedSettingsFragment : Fragment() {
             pref.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any ->
                 val checked = newValue == true
                 feedPreferences!!.keepUpdated = checked
-                DBWriter.setFeedPreferences(feedPreferences!!)
+                DBWriter.persistFeedPreferences(feedPreferences!!)
                 pref.isChecked = checked
                 false
             }
@@ -387,7 +387,7 @@ class FeedSettingsFragment : Fragment() {
             pref.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any ->
                 val checked = newValue == true
                 feedPreferences!!.autoDownload = checked
-                DBWriter.setFeedPreferences(feedPreferences!!)
+                DBWriter.persistFeedPreferences(feedPreferences!!)
                 updateAutoDownloadEnabled()
                 pref.isChecked = checked
                 false

@@ -1,25 +1,24 @@
 package ac.mdiq.podcini.storage
 
-import android.database.Cursor
-import android.util.Log
-import androidx.collection.ArrayMap
-import ac.mdiq.podcini.storage.NavDrawerData.*
-import ac.mdiq.podcini.util.FeedItemPermutors.getPermutor
-import ac.mdiq.podcini.util.LongList
-import ac.mdiq.podcini.util.comparator.DownloadResultComparator
-import ac.mdiq.podcini.util.comparator.PlaybackCompletionDateComparator
-import ac.mdiq.podcini.storage.model.download.DownloadResult
-import ac.mdiq.podcini.storage.model.feed.*
-import ac.mdiq.podcini.storage.model.feed.FeedItemFilter.Companion.unfiltered
+import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.feedCounterSetting
+import ac.mdiq.podcini.preferences.UserPreferences.feedOrder
+import ac.mdiq.podcini.storage.NavDrawerData.FeedDrawerItem
 import ac.mdiq.podcini.storage.database.PodDBAdapter
 import ac.mdiq.podcini.storage.database.PodDBAdapter.Companion.getInstance
 import ac.mdiq.podcini.storage.database.mapper.*
 import ac.mdiq.podcini.storage.database.mapper.DownloadResultCursorMapper.convert
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.feedCounterSetting
-import ac.mdiq.podcini.preferences.UserPreferences.feedOrder
+import ac.mdiq.podcini.storage.model.download.DownloadResult
+import ac.mdiq.podcini.storage.model.feed.*
+import ac.mdiq.podcini.storage.model.feed.FeedItemFilter.Companion.unfiltered
 import ac.mdiq.podcini.storage.model.feed.FeedPreferences.Companion.TAG_ROOT
-import java.util.*
+import ac.mdiq.podcini.util.FeedItemPermutors.getPermutor
+import ac.mdiq.podcini.util.LongList
+import ac.mdiq.podcini.util.comparator.DownloadResultComparator
+import ac.mdiq.podcini.util.comparator.PlaybackCompletionDateComparator
+import android.database.Cursor
+import android.util.Log
+import androidx.collection.ArrayMap
 import kotlin.math.min
 
 
@@ -169,7 +168,7 @@ object DBReader {
     }
 
     fun getFeedItemList(feed: Feed?, filter: FeedItemFilter?, sortOrder: SortOrder?): List<FeedItem> {
-        Log.d(TAG, "getFeedItemList() called with: feed = [$feed]")
+//        Log.d(TAG, "getFeedItemList() called with: feed = [$feed]")
 
         val adapter = getInstance()
         adapter.open()
@@ -195,7 +194,7 @@ object DBReader {
 
     @JvmStatic
     fun extractItemlistFromCursor(itemlistCursor: Cursor): List<FeedItem> {
-        Log.d(TAG, "extractItemlistFromCursor() called with: itemlistCursor = [$itemlistCursor]")
+//        Log.d(TAG, "extractItemlistFromCursor() called with: itemlistCursor = [$itemlistCursor]")
         val adapter = getInstance()
         adapter.open()
         try {
@@ -212,6 +211,7 @@ object DBReader {
             val indexMediaId = cursor.getColumnIndexOrThrow(PodDBAdapter.SELECT_KEY_MEDIA_ID)
             do {
                 val item = FeedItemCursorMapper.convert(cursor)
+//                Log.d(TAG, "extractItemlistFromCursor item ${item.title}")
                 result.add(item)
                 if (!cursor.isNull(indexMediaId)) item.setMedia(FeedMediaCursorMapper.convert(cursor))
             } while (cursor.moveToNext())
@@ -570,8 +570,7 @@ object DBReader {
      * @return The FeedItem or null if the FeedItem could not be found.
      * Does NOT load additional attributes like feed or queue state.
      */
-    private fun getFeedItemByGuidOrEpisodeUrl(guid: String?, episodeUrl: String,
-                                              adapter: PodDBAdapter?): FeedItem? {
+    private fun getFeedItemByGuidOrEpisodeUrl(guid: String?, episodeUrl: String, adapter: PodDBAdapter?): FeedItem? {
         adapter?.getFeedItemCursor(guid, episodeUrl)?.use { cursor ->
             if (!cursor.moveToNext()) return null
             val list = extractItemlistFromCursor(adapter, cursor)
@@ -589,7 +588,6 @@ object DBReader {
      */
     fun getImageAuthentication(imageUrl: String): String {
         Log.d(TAG, "getImageAuthentication() called with: imageUrl = [$imageUrl]")
-
         val adapter = getInstance()
         adapter.open()
         try {
@@ -606,9 +604,7 @@ object DBReader {
                 val username = cursor.getString(0)
                 val password = cursor.getString(1)
                 credentials = if (!username.isNullOrEmpty() && password != null) "$username:$password" else ""
-            } else {
-                credentials = ""
-            }
+            } else credentials = ""
         }
         return credentials
     }
@@ -638,18 +634,21 @@ object DBReader {
      *
      * @param item The FeedItem
      */
-    fun loadDescriptionOfFeedItem(item: FeedItem) {
-        Log.d(TAG, "loadDescriptionOfFeedItem() called with: item = [$item]")
+    fun loadTextDetailsOfFeedItem(item: FeedItem) {
+        Log.d(TAG, "loadTextOfFeedItem() called with: item = [$item]")
         //        TODO: need to find out who are often calling this
 //        printStackTrace()
         val adapter = getInstance()
         adapter.open()
         try {
-            adapter.getDescriptionOfItem(item).use { cursor ->
+            adapter.getTextDetailsOfItem(item).use { cursor ->
                 if (cursor.moveToFirst()) {
                     val indexDescription = cursor.getColumnIndex(PodDBAdapter.KEY_DESCRIPTION)
                     val description = cursor.getString(indexDescription)
                     item.setDescriptionIfLonger(description)
+                    val indexTranscript = cursor.getColumnIndex(PodDBAdapter.KEY_TRANSCRIPT)
+                    val transcript = cursor.getString(indexTranscript)
+                    item.setTranscriptIfLonger(transcript)
                 }
             }
         } finally {
@@ -771,8 +770,7 @@ object DBReader {
      *
      * @return The list of statistics objects
      */
-    fun getStatistics(includeMarkedAsPlayed: Boolean,
-                      timeFilterFrom: Long, timeFilterTo: Long): StatisticsResult {
+    fun getStatistics(includeMarkedAsPlayed: Boolean, timeFilterFrom: Long, timeFilterTo: Long): StatisticsResult {
         val adapter = getInstance()
         adapter.open()
 
@@ -885,17 +883,22 @@ object DBReader {
                     dateRhs.compareTo(dateLhs)
                 }
             }
+//            doing FEED_ORDER_LAST_UNREAD_UPDATED
             else -> {
                 val recentUnreadPubDates = adapter.mostRecentUnreadItemDates
                 comparator = Comparator { lhs: Feed, rhs: Feed ->
                     val dateLhs = if (recentUnreadPubDates.containsKey(lhs.id)) recentUnreadPubDates[lhs.id]!! else 0
                     val dateRhs = if (recentUnreadPubDates.containsKey(rhs.id)) recentUnreadPubDates[rhs.id]!! else 0
+//                    Log.d(TAG, "FEED_ORDER_LAST_UNREAD_UPDATED ${lhs.title} ${SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(dateLhs))}")
                     dateRhs.compareTo(dateLhs)
                 }
             }
         }
 
-        feeds.sortWith(comparator)
+        synchronized(feeds) {
+            feeds.sortWith(comparator)
+        }
+
         val queueSize = adapter.queueSize
         val numNewItems = getTotalEpisodeCount(FeedItemFilter(FeedItemFilter.NEW))
         val numDownloadedItems = getTotalEpisodeCount(FeedItemFilter(FeedItemFilter.DOWNLOADED))

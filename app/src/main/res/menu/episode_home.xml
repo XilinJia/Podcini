@@ -4,8 +4,8 @@
 
     <item
         android:id="@+id/text_speech"
-        android:icon="@drawable/ic_play_24dp"
-        android:title="@string/play_label"
+        android:icon="@drawable/text_to_speech"
+        android:title="@string/TTS_label"
         android:visible="false"
         custom:showAsAction="always">
     </item>

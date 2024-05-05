@@ -37,9 +37,7 @@ import ac.mdiq.podcini.util.event.PlayerErrorEvent
 import ac.mdiq.podcini.util.event.playback.*
 import android.app.Activity
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
-import android.text.Html
 import android.util.Log
 import android.view.*
 import android.widget.ImageButton
@@ -50,6 +48,7 @@ import androidx.annotation.OptIn
 import androidx.appcompat.widget.Toolbar
 import androidx.cardview.widget.CardView
 import androidx.core.app.ShareCompat
+import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.media3.common.util.UnstableApi
@@ -71,7 +70,6 @@ import java.text.NumberFormat
 import kotlin.math.max
 import kotlin.math.min
 
-
 /**
  * Shows the audio player.
  */
@@ -80,7 +78,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     var _binding: AudioplayerFragmentBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var itemDescFrag: PlayerDetailsFragment
+    private lateinit var playerDetailsFragment: PlayerDetailsFragment
 
     private lateinit var toolbar: MaterialToolbar
     private var playerFragment1: InternalPlayerFragment? = null
@@ -103,7 +101,6 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         _binding = AudioplayerFragmentBinding.inflate(inflater)
-
         binding.root.setOnTouchListener { _: View?, _: MotionEvent? -> true } // Avoid clicks going through player to fragments below
 
         Log.d(TAG, "fragment onCreateView")
@@ -142,8 +139,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
         val fm = requireActivity().supportFragmentManager
         val transaction = fm.beginTransaction()
-        itemDescFrag = PlayerDetailsFragment()
-        transaction.replace(R.id.itemDescription, itemDescFrag).commit()
+        playerDetailsFragment = PlayerDetailsFragment()
+        transaction.replace(R.id.itemDescription, playerDetailsFragment).commit()
 
         EventBus.getDefault().register(this)
         return binding.root
@@ -240,7 +237,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     @Subscribe(threadMode = ThreadMode.MAIN)
     @Suppress("unused")
     fun sleepTimerUpdate(event: SleepTimerUpdatedEvent) {
-        if (event.isCancelled || event.wasJustEnabled()) this@AudioPlayerFragment.loadMediaInfo(false)
+        if (event.isCancelled || event.wasJustEnabled()) loadMediaInfo(false)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -280,7 +277,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun favoritesChanged(event: FavoritesEvent?) {
-        this@AudioPlayerFragment.loadMediaInfo(false)
+        loadMediaInfo(false)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -292,8 +289,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     fun onEvenStartPlay(event: StartPlayEvent) {
         Log.d(TAG, "onEvenStartPlay ${event.item.title}")
         currentitem = event.item
-        if (currentMedia?.getIdentifier() == null || currentitem!!.media!!.getIdentifier() != currentMedia?.getIdentifier())
-            itemDescFrag.setItem(currentitem!!)
+        if (currentMedia?.getIdentifier() == null || currentitem!!.media?.getIdentifier() != currentMedia?.getIdentifier())
+            playerDetailsFragment.setItem(currentitem!!)
         (activity as MainActivity).setPlayerVisible(true)
     }
 
@@ -382,7 +379,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         val itemId = menuItem.itemId
         when (itemId) {
             R.id.show_home_reader_view -> {
-                itemDescFrag.buildHomeReaderText()
+                playerDetailsFragment.buildHomeReaderText()
                 return true
             }
             R.id.show_video -> {
@@ -402,10 +399,9 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 return true
             }
             R.id.share_notes -> {
-                val notes = if (itemDescFrag.showHomeText) itemDescFrag.readerhtml else feedItem?.description
+                val notes = if (playerDetailsFragment.showHomeText) playerDetailsFragment.readerhtml else feedItem?.description
                 if (!notes.isNullOrEmpty()) {
-                    val shareText = if (Build.VERSION.SDK_INT >= 24) Html.fromHtml(notes, Html.FROM_HTML_MODE_LEGACY).toString()
-                    else Html.fromHtml(notes).toString()
+                    val shareText = HtmlCompat.fromHtml(notes, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
                     val context = requireContext()
                     val intent = ShareCompat.IntentBuilder(context)
                         .setType("text/plain")
@@ -422,7 +418,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
     @JvmOverloads
     fun scrollToTop() {
-        itemDescFrag.scrollToTop()
+        playerDetailsFragment.scrollToTop()
     }
 
     fun fadePlayerToToolbar(slideOffset: Float) {
@@ -530,10 +526,9 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                         controller!!.playPause()
                         requireContext().startActivity(PlaybackService.getPlayerActivityIntent(requireContext(), media.getMediaType()))
                     } else controller!!.playPause()
+
                     if (!isControlButtonsSet) {
-//                        setupControlButtons()
                         sbPosition.visibility = View.VISIBLE
-//                        sbPosition.setOnSeekBarChangeListener(this)
                         isControlButtonsSet = true
                     }
                 }
@@ -552,10 +547,6 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_REWIND, txtvRev)
                 true
             }
-//            butPlay.setOnClickListener {
-//                controller?.init()
-//                controller?.playPause()
-//            }
             butPlay.setOnLongClickListener {
                 if (controller != null && controller!!.status == PlayerStatus.PLAYING) {
                     val fallbackSpeed = UserPreferences.fallbackSpeed
@@ -721,7 +712,6 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
         companion object {
             const val TAG: String = "InternalPlayerFragment"
-
             var controller: PlaybackController? = null
 
             fun newInstance(controller_: PlaybackController) : InternalPlayerFragment {

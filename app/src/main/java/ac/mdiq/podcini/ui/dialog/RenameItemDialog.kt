@@ -45,7 +45,7 @@ class RenameItemDialog {
                 val newTitle = binding.editText.text.toString()
                 if (feed != null) {
                     feed!!.setCustomTitle(newTitle)
-                    DBWriter.setFeedCustomTitle(feed!!)
+                    DBWriter.persistFeedCustomTitle(feed!!)
                 } else renameTag(newTitle)
             }
             .setNeutralButton(R.string.reset, null)

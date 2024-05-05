@@ -31,7 +31,10 @@ import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.storage.model.feed.Feed.Companion.PREFIX_GENERATIVE_COVER
+import ac.mdiq.podcini.storage.model.feed.FeedItem.Companion.BUILDING
 import ac.mdiq.podcini.ui.actions.actionbutton.ItemActionButton
+import ac.mdiq.podcini.ui.actions.actionbutton.TTSActionButton
 import ac.mdiq.podcini.ui.view.CircularProgressBar
 import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.util.Converter
@@ -63,6 +66,9 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
     private val isVideo: ImageView = binding.ivIsVideo
     private val isFavorite: ImageView = binding.isFavorite
     private val progressBar: ProgressBar = binding.progressBar
+
+    private var actionButton: ItemActionButton? = null
+
     @JvmField
     val secondaryActionButton: View = binding.secondaryActionButton.root
     @JvmField
@@ -101,12 +107,22 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
         isInQueue.visibility = if (item.isTagged(FeedItem.TAG_QUEUE)) View.VISIBLE else View.GONE
         container.alpha = if (item.isPlayed()) 0.75f else 1.0f
 
-        val actionButton: ItemActionButton = ItemActionButton.forItem(item)
-        actionButton.configure(secondaryActionButton, secondaryActionIcon, activity)
-        secondaryActionButton.isFocusable = false
+        val newButton = ItemActionButton.forItem(item)
+        Log.d(TAG, "bind ${actionButton?.TAG} ${newButton.TAG} ${item.title}")
+        // not using a new button to ensure valid progress values
+        if (!(actionButton?.TAG == TTSActionButton::class.simpleName && newButton.TAG == TTSActionButton::class.simpleName)) {
+            actionButton = newButton
+            actionButton?.configure(secondaryActionButton, secondaryActionIcon, activity)
+            secondaryActionButton.isFocusable = false
+        }
 
+        Log.d(TAG, "bind called ${item.media}")
         if (item.media != null) {
             bind(item.media!!)
+        } else if (item.playState == BUILDING) {
+            //            for generating TTS files for episode without media
+            secondaryActionProgress.setPercentage(actionButton!!.processing, item)
+            secondaryActionProgress.setIndeterminate(false)
         } else {
             secondaryActionProgress.setPercentage(0f, item)
             secondaryActionProgress.setIndeterminate(false)
@@ -119,7 +135,8 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
 
         if (coverHolder.visibility == View.VISIBLE) {
             val imgLoc = ImageResourceUtils.getEpisodeListImageLocation(item)
-            if (!imgLoc.isNullOrBlank()) CoverLoader(activity)
+            Log.d(TAG, "imgLoc $imgLoc")
+            if (!imgLoc.isNullOrBlank() && !imgLoc.contains(PREFIX_GENERATIVE_COVER)) CoverLoader(activity)
                 .withUri(imgLoc)
                 .withFallbackUri(item.feed?.imageUrl)
                 .withPlaceholderView(placeholder)
@@ -142,7 +159,7 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
         when {
             media.download_url != null && dls?.isDownloadingEpisode(media.download_url!!) == true -> {
                 val percent: Float = 0.01f * dls.getProgress(media.download_url!!)
-                secondaryActionProgress.setPercentage(max(percent.toDouble(), 0.01).toFloat(), item)
+                secondaryActionProgress.setPercentage(max(percent, 0.01f), item)
                 secondaryActionProgress.setIndeterminate(dls.isEpisodeQueued(media.download_url!!))
             }
             media.isDownloaded() -> {

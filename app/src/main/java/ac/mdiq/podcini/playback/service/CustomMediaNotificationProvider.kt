@@ -3,6 +3,7 @@ package ac.mdiq.podcini.playback.service
 import android.app.Notification
 import android.content.Context
 import androidx.core.app.NotificationCompat
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.*
@@ -32,4 +33,11 @@ class CustomMediaNotificationProvider(context: Context) : DefaultMediaNotificati
         return super.addNotificationActions(mediaSession, notificationMediaButtons, builder, actionFactory)
     }
 
+    override fun getNotificationContentTitle(metadata: MediaMetadata): CharSequence {
+        return metadata.title ?: "No title"
+    }
+
+    override fun getNotificationContentText(metadata: MediaMetadata): CharSequence {
+        return metadata.subtitle ?: "No text"
+    }
 }

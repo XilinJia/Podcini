@@ -43,9 +43,7 @@ class StatisticsFragment : PagedToolbarFragment() {
     private var _binding: PagerFragmentBinding? = null
     private val binding get() = _binding!!
 
-    @OptIn(UnstableApi::class) override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                                                         savedInstanceState: Bundle?
-    ): View {
+    @OptIn(UnstableApi::class) override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         setHasOptionsMenu(true)
         _binding = PagerFragmentBinding.inflate(inflater)
@@ -76,6 +74,7 @@ class StatisticsFragment : PagedToolbarFragment() {
         super.onDestroyView()
         _binding = null
     }
+
     @UnstableApi override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.statistics_reset) {
             confirmResetStatistics()

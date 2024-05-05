@@ -88,7 +88,7 @@ import java.util.concurrent.*
         Log.i(TAG, "The feedmanager was notified about a missing episode. It will update its database now.")
         media.setDownloaded(false)
         media.setFile_url(null)
-        DBWriter.setFeedMedia(media)
+        DBWriter.persistFeedMedia(media)
         if (media.item != null) EventBus.getDefault().post(updated(media.item!!))
         EventBus.getDefault().post(MessageEvent(context.getString(R.string.error_file_not_found)))
     }
@@ -223,8 +223,7 @@ import java.util.concurrent.*
             }
 
             val priorMostRecent = savedFeed.mostRecentItem
-            var priorMostRecentDate: Date? = Date()
-            priorMostRecentDate = priorMostRecent?.getPubDate()
+            val priorMostRecentDate: Date? = priorMostRecent?.getPubDate()
 
             // Look for new or updated Items
             for (idx in newFeed.items.indices) {
@@ -289,7 +288,7 @@ import java.util.concurrent.*
 
                     val pubDate = item.getPubDate()
                     if (pubDate == null || priorMostRecentDate == null || priorMostRecentDate.before(pubDate) || priorMostRecentDate == pubDate) {
-                        Log.d(TAG, "Marking item published on ${pubDate} new, prior most recent date = $priorMostRecentDate")
+                        Log.d(TAG, "Marking item published on $pubDate new, prior most recent date = $priorMostRecentDate")
                         item.setNew()
                     }
                 }
@@ -320,7 +319,7 @@ import java.util.concurrent.*
                 DBWriter.addNewFeed(context, newFeed).get()
                 // Update with default values that are set in database
                 resultFeed = searchFeedByIdentifyingValueOrID(newFeed)
-            } else DBWriter.setCompleteFeed(savedFeed).get()
+            } else DBWriter.persistCompleteFeed(savedFeed).get()
 
             DBReader.updateFeedList(adapter)
             if (removeUnlistedItems) DBWriter.deleteFeedItems(context, unlistedItems).get()

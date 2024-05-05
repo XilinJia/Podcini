@@ -13,8 +13,7 @@ abstract class FeedComponent internal constructor() {
      * FeedComponent. This method should only update attributes which where read from
      * the feed.
      */
-    fun updateFromOther(other: FeedComponent?) {
-    }
+    fun updateFromOther(other: FeedComponent?) {}
 
     /**
      * Compare's this FeedComponent's attribute values with another FeedComponent's

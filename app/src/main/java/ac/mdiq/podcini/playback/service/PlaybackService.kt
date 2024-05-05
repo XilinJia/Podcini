@@ -66,13 +66,13 @@ import ac.mdiq.podcini.util.event.settings.VolumeAdaptionChangedEvent
 import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.bluetooth.BluetoothA2dp
 import android.content.*
 import android.media.AudioManager
 import android.os.*
 import android.os.Build.VERSION_CODES
 import android.service.quicksettings.TileService
-import android.support.v4.media.session.MediaSessionCompat
 import android.text.TextUtils
 import android.util.Log
 import android.util.Pair
@@ -88,11 +88,10 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionResult
+import androidx.work.impl.utils.futures.SettableFuture
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import io.reactivex.Observable
-import io.reactivex.Single
-import io.reactivex.SingleEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
@@ -126,9 +125,6 @@ class PlaybackService : MediaSessionService() {
 
     private var currentitem: FeedItem? = null
 
-    /**
-     * Used for Lollipop notifications, Android Wear, and Android Auto.
-     */
     private var mediaSession: MediaSession? = null
 
     private val mBinder: IBinder = LocalBinder()
@@ -163,6 +159,7 @@ class PlaybackService : MediaSessionService() {
         taskManager = PlaybackServiceTaskManager(this, taskManagerCallback)
 
         recreateMediaSessionIfNeeded()
+
         castStateListener = object : CastStateListener(this) {
             override fun onSessionStartedOrEnded() {
                 recreateMediaPlayer()
@@ -198,6 +195,7 @@ class PlaybackService : MediaSessionService() {
         }
         mediaPlayer = CastPsmp.getInstanceIfConnected(this, mediaPlayerCallback)
         if (mediaPlayer == null) mediaPlayer = LocalMediaPlayer(applicationContext, mediaPlayerCallback) // Cast not supported or not connected
+
         if (media != null) mediaPlayer!!.playMediaObject(media, !media.localFileAvailable(), wasPlaying, true)
         isCasting = mediaPlayer!!.isCasting()
     }
@@ -311,30 +309,49 @@ class PlaybackService : MediaSessionService() {
             }
             return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
         }
+
+        override fun onPlaybackResumption(mediaSession: MediaSession, controller: MediaSession.ControllerInfo): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
+            val settable = SettableFuture.create<MediaSession.MediaItemsWithStartPosition>()
+//            scope.launch {
+//                // Your app is responsible for storing the playlist and the start position
+//                // to use here
+//                val resumptionPlaylist = restorePlaylist()
+//                settable.set(resumptionPlaylist)
+//            }
+            return settable
+        }
+
+        // this is just for testing
+//        override fun onAddMediaItems(mediaSession: MediaSession, controller: MediaSession.ControllerInfo, mediaItems: MutableList<MediaItem>): ListenableFuture<List<MediaItem>> {
+//            val updatedMediaItems = mediaItems.map { mediaItem ->
+//                mediaItem.buildUpon().setUri(mediaItem.requestMetadata.mediaUri).build()
+//            }
+//            return Futures.immediateFuture(updatedMediaItems)
+//        }
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
         return mediaSession
     }
 
-    private fun loadQueueForMediaSession() {
-        Single.create { emitter: SingleEmitter<List<MediaSessionCompat.QueueItem>?> ->
-            val queueItems: MutableList<MediaSessionCompat.QueueItem> = ArrayList()
-            for (feedItem in DBReader.getQueue()) {
-                if (feedItem.media != null) {
-                    val mediaDescription = feedItem.media!!.mediaItem.description
-                    queueItems.add(MediaSessionCompat.QueueItem(mediaDescription, feedItem.id))
-                }
-            }
-            emitter.onSuccess(queueItems)
-        }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ queueItems: List<MediaSessionCompat.QueueItem>? ->
-//                mediaSession?.setQueue(queueItems)
-                       },
-                { obj: Throwable -> obj.printStackTrace() })
-    }
+//    private fun loadQueueForMediaSession() {
+//        Single.create { emitter: SingleEmitter<List<MediaSessionCompat.QueueItem>?> ->
+//            val queueItems: MutableList<MediaSessionCompat.QueueItem> = ArrayList()
+//            for (feedItem in DBReader.getQueue()) {
+//                if (feedItem.media != null) {
+//                    val mediaDescription = feedItem.media!!.mediaItem.description
+//                    queueItems.add(MediaSessionCompat.QueueItem(mediaDescription, feedItem.id))
+//                }
+//            }
+//            emitter.onSuccess(queueItems)
+//        }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe({
+////                mediaSession?.setQueue(queueItems)
+//                       },
+//                { obj: Throwable -> obj.printStackTrace() })
+//    }
 
 //    private fun createBrowsableMediaItem(@StringRes title: Int, @DrawableRes icon: Int, numEpisodes: Int): MediaItem {
 //        val uri = Uri.Builder()
@@ -548,18 +565,18 @@ class PlaybackService : MediaSessionService() {
         intentAllowThisTime.putExtra(PlaybackServiceConstants.EXTRA_ALLOW_STREAM_THIS_TIME, true)
         val pendingIntentAllowThisTime = if (Build.VERSION.SDK_INT >= VERSION_CODES.O)
             PendingIntent.getForegroundService(this, R.id.pending_intent_allow_stream_this_time, intentAllowThisTime,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+                PendingIntent.FLAG_UPDATE_CURRENT or FLAG_IMMUTABLE)
         else PendingIntent.getService(this, R.id.pending_intent_allow_stream_this_time, intentAllowThisTime,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            PendingIntent.FLAG_UPDATE_CURRENT or FLAG_IMMUTABLE)
 
         val intentAlwaysAllow = Intent(intentAllowThisTime)
         intentAlwaysAllow.setAction(PlaybackServiceConstants.EXTRA_ALLOW_STREAM_ALWAYS)
         intentAlwaysAllow.putExtra(PlaybackServiceConstants.EXTRA_ALLOW_STREAM_ALWAYS, true)
         val pendingIntentAlwaysAllow = if (Build.VERSION.SDK_INT >= VERSION_CODES.O)
             PendingIntent.getForegroundService(this, R.id.pending_intent_allow_stream_always, intentAlwaysAllow,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+                PendingIntent.FLAG_UPDATE_CURRENT or FLAG_IMMUTABLE)
         else PendingIntent.getService(this, R.id.pending_intent_allow_stream_always, intentAlwaysAllow,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            PendingIntent.FLAG_UPDATE_CURRENT or FLAG_IMMUTABLE)
 
         val builder = NotificationCompat.Builder(this, NotificationUtils.CHANNEL_ID_USER_ACTION)
             .setSmallIcon(R.drawable.ic_notification_stream)
@@ -698,7 +715,7 @@ class PlaybackService : MediaSessionService() {
 
         if (playable.getIdentifier() != currentlyPlayingFeedMediaId) clearCurrentlyPlayingTemporaryPlaybackSpeed()
 
-        mediaPlayer?.playMediaObject(playable, stream, true, true)
+        mediaPlayer?.playMediaObject(playable, stream, startWhenPrepared = true, true)
         recreateMediaSessionIfNeeded()
 //        updateNotificationAndMediaSession(playable)
         addPlayableToQueue(playable)
@@ -715,7 +732,7 @@ class PlaybackService : MediaSessionService() {
     }
 
     fun notifyVideoSurfaceAbandoned() {
-        mediaPlayer?.pause(true, false)
+        mediaPlayer?.pause(abandonFocus = true, reinit = false)
         mediaPlayer?.resetVideoSurface()
 //        updateNotificationAndMediaSession(playable)
     }
@@ -732,7 +749,7 @@ class PlaybackService : MediaSessionService() {
 
         override fun onChapterLoaded(media: Playable?) {
             sendNotificationBroadcast(PlaybackServiceConstants.NOTIFICATION_TYPE_RELOAD, 0)
-            updateMediaSession(mediaPlayer?.playerStatus)
+//            updateMediaSession(mediaPlayer?.playerStatus)
         }
     }
 
@@ -849,7 +866,7 @@ class PlaybackService : MediaSessionService() {
     @Suppress("unused")
     fun playerError(event: PlayerErrorEvent?) {
         if (mediaPlayer?.playerStatus == PlayerStatus.PLAYING || mediaPlayer?.playerStatus == PlayerStatus.FALLBACK)
-            mediaPlayer!!.pause(true, false)
+            mediaPlayer!!.pause(abandonFocus = true, reinit = false)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -860,7 +877,7 @@ class PlaybackService : MediaSessionService() {
             if (this.playable is FeedMedia && playable!!.getDuration() <= 0 && (mediaPlayer?.getDuration()?:0) > 0) {
                 // Playable is being streamed and does not have a duration specified in the feed
                 playable.setDuration(mediaPlayer!!.getDuration())
-                DBWriter.setFeedMedia(playable as FeedMedia?)
+                DBWriter.persistFeedMedia(playable as FeedMedia)
 //                updateNotificationAndMediaSession(playable)
             }
         }
@@ -871,7 +888,7 @@ class PlaybackService : MediaSessionService() {
     fun sleepTimerUpdate(event: SleepTimerUpdatedEvent) {
         when {
             event.isOver -> {
-                mediaPlayer?.pause(true, true)
+                mediaPlayer?.pause(abandonFocus = true, reinit = true)
                 mediaPlayer?.setVolume(1.0f, 1.0f)
             }
             event.getTimeLeft() < PlaybackServiceTaskManager.NOTIFICATION_THRESHOLD -> {
@@ -902,7 +919,7 @@ class PlaybackService : MediaSessionService() {
         val nextItem = DBReader.getNextInQueue(item)
 
         if (nextItem?.media == null) {
-            Log.d(TAG, "getNextInQueue nextItem: $nextItem media: ${nextItem?.media}")
+            Log.d(TAG, "getNextInQueue nextItem: $nextItem media is null")
             writeNoMediaPlaying()
             return null
         }
@@ -1064,10 +1081,8 @@ class PlaybackService : MediaSessionService() {
 
     /**
      * Updates the Media Session for the corresponding status.
-     *
-     * @param playerStatus the current [PlayerStatus]
      */
-    private fun updateMediaSession(playerStatus: PlayerStatus?) {
+//    private fun updateMediaSession(playerStatus: PlayerStatus?) {
 //        val sessionState = PlaybackStateCompat.Builder()
 //        val state = if (playerStatus != null) {
 //            when (playerStatus) {
@@ -1124,58 +1139,14 @@ class PlaybackService : MediaSessionService() {
 //            WearMediaSession.mediaSessionSetExtraForWear(mediaSession!!)
 ////            mediaSession!!.setPlaybackState(sessionState.build())
 //        }
-    }
+//    }
 
-    private fun updateNotificationAndMediaSession(p: Playable?) {
-//        setupNotification(p)
-        updateMediaSessionMetadata(p)
-    }
-
-    private fun updateMediaSessionMetadata(p: Playable?) {
-        if (p == null || mediaSession == null) return
-
-        // TODO: how to set meta data
-//        val builder = MediaMetadata.Builder()
-//        builder.setArtist(p.getFeedTitle())
-//        builder.setTitle(p.getEpisodeTitle())
-//        builder.setAlbumArtist(p.getFeedTitle())
-////        builder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, p.getDuration().toLong())
-//        builder.setDisplayTitle(p.getEpisodeTitle())
-//        builder.setSubtitle(p.getFeedTitle())
-
-        // TODO: what's this?
-//        mediaSession!!.setSessionActivity(PendingIntent.getActivity(this, R.id.pending_intent_player_activity,
-//            getPlayerActivityIntent(this), FLAG_IMMUTABLE))
-
-//        try {
-////            mediaSession!!.setMetadata(builder.build())
-//            val mediaItem = MediaItem.Builder().setMediaMetadata(builder.build()).build()
-//        } catch (e: OutOfMemoryError) {
-//            Log.e(TAG, "Setting media session metadata", e)
-//            builder.setArtworkUri(null)
-////            mediaSession!!.setMetadata(builder.build())
-//            val mediaItem = MediaItem.Builder().setMediaMetadata(builder.build()).build()
-//        }
-    }
-
-    /**
-     * Used by setupNotification to load notification data in another thread.
-     */
-    private var playableIconLoaderThread: Thread? = null
-
-    /**
-     * Prepares notification and starts the service in the foreground.
-     */
-    // TODO: not needed?
-//    @Synchronized
-//    private fun setupNotification(playable: Playable?) {
-//        Log.d(TAG, "setupNotification")
-//        playableIconLoaderThread?.interrupt()
+//    private fun updateMediaSessionMetadata(p: Playable?) {
+//        if (p == null || mediaSession == null) return
 //
-//        if (playable == null || mediaPlayer == null) {
-//            Log.d(TAG, "setupNotification: playable=$playable mediaPlayer=$mediaPlayer")
-//            return
-//        }
+//        // TODO: what's this?
+//        mediaSession!!.setSessionActivity(
+//            PendingIntent.getActivity(this, R.id.pending_intent_player_activity, getPlayerActivityIntent(this), FLAG_IMMUTABLE))
 //    }
 
     /**
@@ -1433,7 +1404,7 @@ class PlaybackService : MediaSessionService() {
                             if (feedPreferences != null) {
                                 feedPreferences.feedPlaybackSpeed = speed
                                 Log.d(TAG, "setSpeed ${feed.title} $speed")
-                                DBWriter.setFeedPreferences(feedPreferences)
+                                DBWriter.persistFeedPreferences(feedPreferences)
                                 EventBus.getDefault().post(SpeedPresetChangedEvent(feedPreferences.feedPlaybackSpeed, feed.id))
                             }
                         }
@@ -1492,24 +1463,12 @@ class PlaybackService : MediaSessionService() {
         EventBus.getDefault().post(PlaybackPositionEvent(t, duration))
     }
 
-    private fun seekDelta(d: Int) {
-        mediaPlayer?.seekDelta(d)
-    }
-
     val duration: Int
-        /**
-         * call getDuration() on mediaplayer or return INVALID_TIME if player is in
-         * an invalid state.
-         */
         get() {
             return mediaPlayer?.getDuration() ?: Playable.INVALID_TIME
         }
 
     val currentPosition: Int
-        /**
-         * call getCurrentPosition() on mediaplayer or return INVALID_TIME if player
-         * is in an invalid state.
-         */
         get() {
             return mediaPlayer?.getPosition() ?: Playable.INVALID_TIME
         }
@@ -1571,16 +1530,16 @@ class PlaybackService : MediaSessionService() {
         /**
          * Custom actions used by Android Wear, Android Auto, and Android (API 33+ only)
          */
-        private const val CUSTOM_ACTION_SKIP_TO_NEXT = "action.ac.mdiq.podcini.service.skipToNext"
-        private const val CUSTOM_ACTION_FAST_FORWARD = "action.ac.mdiq.podcini.service.fastForward"
-        private const val CUSTOM_ACTION_REWIND = "action.ac.mdiq.podcini.service.rewind"
-        private const val CUSTOM_ACTION_CHANGE_PLAYBACK_SPEED = "action.ac.mdiq.podcini.service.changePlaybackSpeed"
-        const val CUSTOM_ACTION_NEXT_CHAPTER: String = "action.ac.mdiq.podcini.service.next_chapter"
+//        private const val CUSTOM_ACTION_SKIP_TO_NEXT = "action.ac.mdiq.podcini.service.skipToNext"
+//        private const val CUSTOM_ACTION_FAST_FORWARD = "action.ac.mdiq.podcini.service.fastForward"
+//        private const val CUSTOM_ACTION_REWIND = "action.ac.mdiq.podcini.service.rewind"
+//        private const val CUSTOM_ACTION_CHANGE_PLAYBACK_SPEED = "action.ac.mdiq.podcini.service.changePlaybackSpeed"
+//        const val CUSTOM_ACTION_NEXT_CHAPTER: String = "action.ac.mdiq.podcini.service.next_chapter"
 
         /**
          * Set a max number of episodes to load for Android Auto, otherwise there could be performance issues
          */
-        const val MAX_ANDROID_AUTO_EPISODES_PER_FEED: Int = 100
+//        const val MAX_ANDROID_AUTO_EPISODES_PER_FEED: Int = 100
 
         /**
          * Is true if service is running.

@@ -126,7 +126,7 @@
                     tools:src="@drawable/ic_settings" />
 
                 <ImageView
-                    android:id="@+id/butAction0"
+                    android:id="@+id/homeButton"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_marginLeft="40dp"

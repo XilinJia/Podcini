@@ -16,9 +16,8 @@ object Converter {
      */
     @JvmStatic
     fun getDurationStringLong(duration: Int): String {
-        if (duration <= 0) {
-            return "00:00:00"
-        } else {
+        if (duration <= 0) return "00:00:00"
+        else {
             val hms = millisecondsToHms(duration.toLong())
             return String.format(Locale.getDefault(), "%02d:%02d:%02d", hms[0], hms[1], hms[2])
         }

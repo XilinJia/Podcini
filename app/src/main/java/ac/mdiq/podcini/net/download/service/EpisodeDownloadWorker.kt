@@ -17,7 +17,6 @@ import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
-import android.os.Build
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.core.app.NotificationCompat
@@ -53,11 +52,7 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
                             if (isInterrupted) return
                             notificationProgress.put(media.getEpisodeTitle(), request.progressPercent)
                         }
-                        setProgressAsync(
-                            Data.Builder()
-                                .putInt(DownloadServiceInterface.WORK_DATA_PROGRESS, request.progressPercent)
-                                .build())
-                            .get()
+                        setProgressAsync(Data.Builder().putInt(DownloadServiceInterface.WORK_DATA_PROGRESS, request.progressPercent).build()).get()
                         val nm = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                         nm.notify(R.id.notification_downloading, generateProgressNotification())
                         sleep(1000)
@@ -119,7 +114,7 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
         if (dest.exists()) {
             media.file_url = request.destination
             try {
-                DBWriter.setFeedMedia(media).get()
+                DBWriter.persistFeedMedia(media).get()
             } catch (e: Exception) {
                 Log.e(TAG, "ExecutionException in writeFileUrl: " + e.message)
             }

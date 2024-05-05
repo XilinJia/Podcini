@@ -43,8 +43,8 @@ class FeedMedia : FeedFile, Playable {
     var itemId: Long = 0
         private set
 
-    constructor(i: FeedItem?, download_url: String?, size: Long, mime_type: String?
-    ) : super(null, download_url, false) {
+    constructor(i: FeedItem?, download_url: String?, size: Long, mime_type: String?)
+            : super(null, download_url, false) {
         this.item = i
         this.size = size
         this.mime_type = mime_type
@@ -53,8 +53,8 @@ class FeedMedia : FeedFile, Playable {
     constructor(id: Long, item: FeedItem?, duration: Int, position: Int,
                 size: Long, mime_type: String?, file_url: String?, download_url: String?,
                 downloaded: Boolean, playbackCompletionDate: Date?, played_duration: Int,
-                lastPlayedTime: Long
-    ) : super(file_url, download_url, downloaded) {
+                lastPlayedTime: Long)
+            : super(file_url, download_url, downloaded) {
         this.id = id
         this.item = item
         this.duration = duration
@@ -63,16 +63,15 @@ class FeedMedia : FeedFile, Playable {
         this.playedDurationWhenStarted = played_duration
         this.size = size
         this.mime_type = mime_type
-        this.playbackCompletionDate = if (playbackCompletionDate == null
-        ) null else playbackCompletionDate.clone() as Date
+        this.playbackCompletionDate = if (playbackCompletionDate == null) null else playbackCompletionDate.clone() as Date
         this.lastPlayedTime = lastPlayedTime
     }
 
     constructor(id: Long, item: FeedItem?, duration: Int, position: Int,
                 size: Long, mime_type: String?, file_url: String?, download_url: String?,
                 downloaded: Boolean, playbackCompletionDate: Date?, played_duration: Int,
-                hasEmbeddedPicture: Boolean?, lastPlayedTime: Long
-    ) : this(id, item, duration, position, size, mime_type, file_url, download_url, downloaded,
+                hasEmbeddedPicture: Boolean?, lastPlayedTime: Long)
+            : this(id, item, duration, position, size, mime_type, file_url, download_url, downloaded,
         playbackCompletionDate, played_duration, lastPlayedTime) {
         this.hasEmbeddedPicture = hasEmbeddedPicture
     }

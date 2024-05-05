@@ -1,0 +1,12 @@
+ 
+Version 4.10.0 brings several changes:
+
+* fixed media info on notification widget
+* added in DB column "transcript" in feed items table to store episode home reader text fetched from the website
+* added TTS button for fetching transcript (if not exist) and then generating audio file from the transcript
+* in episode list view, if episode has no media, TTS button is shown if audio file is not yet generated, otherwise Play/Pause button is shown
+* TTS audio files are playable in the same way as local media (with speed setting, pause and rewind/forward)
+* when a no-media episode is deleted, the audio file is deleted
+* episode home view opens reader mode first
+* button1 in episode info view is set to invisible if no media
+* fixed feed sorting "unread publication date"

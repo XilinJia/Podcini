@@ -195,14 +195,26 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
             adapter.endSelectMode()
             true
         }
+        return binding.root
+    }
 
-        ioScope.launch {
-            if (!ttsReady) {
-                initializeTTS(requireContext())
-                semaphore.acquire()
+    private val semaphore = Semaphore(0)
+    private fun initializeTTS(context: Context) {
+        Log.d(TAG, "starting TTS")
+        if (tts == null) {
+            tts = TextToSpeech(context) { status: Int ->
+                if (status == TextToSpeech.SUCCESS) {
+                    ttsReady = true
+                    semaphore.release()
+                    Log.d(TAG, "TTS init success")
+                } else {
+                    Log.w(TAG, "TTS init failed")
+                        requireActivity().runOnUiThread {
+                        Toast.makeText(context, R.string.tts_init_failed, Toast.LENGTH_LONG).show()
+                    }
+                }
             }
         }
-        return binding.root
     }
 
     override fun onDestroyView() {
@@ -523,7 +535,6 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 
     @UnstableApi private fun loadItems() {
         disposable?.dispose()
-
         disposable = Observable.fromCallable<Feed?> { this.loadData() }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -531,6 +542,23 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
                 { result: Feed? ->
                     feed = result
                     Log.d(TAG, "loadItems subscribe called ${feed?.title}")
+                    if (feed != null) {
+                        var hasNonMediaItems = false
+                        for (item in feed!!.items) {
+                            if (item.media == null) {
+                                hasNonMediaItems = true
+                                break
+                            }
+                        }
+                        if (hasNonMediaItems) {
+                            ioScope.launch {
+                                if (!ttsReady) {
+                                    initializeTTS(requireContext())
+                                    semaphore.acquire()
+                                }
+                            }
+                        }
+                    }
                     swipeActions.setFilter(feed?.itemFilter)
                     refreshHeaderView()
                     binding.progressBar.visibility = View.GONE
@@ -649,22 +677,5 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         var tts: TextToSpeech? = null
         var ttsReady = false
         var ttsWorking = false
-        val semaphore = Semaphore(0)
-
-        fun initializeTTS(context: Context) {
-            Log.d(TAG, "starting TTS")
-            if (tts == null) {
-                tts = TextToSpeech(context) { status: Int ->
-                    if (status == TextToSpeech.SUCCESS) {
-                        ttsReady = true
-                        semaphore.release()
-                        Log.d(TAG, "TTS init success")
-                    } else {
-                        Log.w(TAG, "TTS init failed")
-                        Toast.makeText(context, R.string.tts_init_failed, Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
-        }
     }
 }

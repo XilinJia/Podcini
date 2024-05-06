@@ -1,4 +1,4 @@
-package ac.mdiq.podcini.playback
+package ac.mdiq.podcini.util
 
 import java.io.*
 import java.nio.ByteBuffer
@@ -6,7 +6,7 @@ import java.nio.ByteOrder
 
 // converted to Kotlin from the java file: https://gist.github.com/DrustZ/d3d3fc8fcc1067433db4dd3079f8d187
 object AudioMediaOperation {
-    fun MergeAudios(selection: Array<String>, outpath: String?, callback: OperationCallbacks?) {
+    fun mergeAudios(selection: Array<String>, outpath: String?, callback: OperationCallbacks?) {
         var RECORDER_SAMPLERATE = 0
         try {
             val amplifyOutputStream = DataOutputStream(BufferedOutputStream(FileOutputStream(outpath)))
@@ -145,7 +145,7 @@ object AudioMediaOperation {
     }
 
     @Throws(IOException::class)
-    fun RawToWave(rawfn: String?, wavefn: String?) {
+    fun rawToWave(rawfn: String, wavefn: String) {
         val rawFile = File(rawfn)
         val waveFile = File(wavefn)
         val rawData = ByteArray(rawFile.length().toInt())
@@ -233,8 +233,8 @@ object AudioMediaOperation {
 
     @Throws(IOException::class)
     fun writeString(output: DataOutputStream, value: String) {
-        for (i in 0 until value.length) {
-            output.write(value[i].code)
+        for (element in value) {
+            output.write(element.code)
         }
     }
 

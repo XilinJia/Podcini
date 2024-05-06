@@ -3,7 +3,7 @@ package ac.mdiq.podcini.ui.actions.actionbutton
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.download.service.DownloadRequestCreator.getMediafilePath
 import ac.mdiq.podcini.net.download.service.DownloadRequestCreator.getMediafilename
-import ac.mdiq.podcini.playback.AudioMediaOperation.MergeAudios
+import ac.mdiq.podcini.util.AudioMediaOperation.mergeAudios
 import ac.mdiq.podcini.storage.DBWriter
 import ac.mdiq.podcini.storage.DBWriter.persistFeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedItem
@@ -77,9 +77,7 @@ class TTSActionButton(item: FeedItem) : ItemActionButton(item) {
                     val result = tts?.setLanguage(Locale(item.feed!!.language!!))
                     if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                         Log.w(TAG, "TTS language not supported ${item.feed?.language} $result")
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(context, context.getString(R.string.language_not_supported_by_tts) + " ${item.feed?.language} $result", Toast.LENGTH_LONG).show()
-                        }
+                        withContext(Dispatchers.Main) { Toast.makeText(context, context.getString(R.string.language_not_supported_by_tts) + " ${item.feed?.language} $result", Toast.LENGTH_LONG).show() }
                     }
                 }
 
@@ -117,9 +115,7 @@ class TTSActionButton(item: FeedItem) : ItemActionButton(item) {
                     status = tts?.synthesizeToFile(chunk, null, tempFile, tempFile.absolutePath) ?: 0
                     Log.d(TAG, "status: $status chunk: ${chunk.substring(0, min(80, chunk.length))}")
                     if (status == TextToSpeech.ERROR) {
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(context, "Error generating audio file $tempFile.absolutePath", Toast.LENGTH_LONG).show()
-                        }
+                        withContext(Dispatchers.Main) { Toast.makeText(context, "Error generating audio file $tempFile.absolutePath", Toast.LENGTH_LONG).show() }
                         break
                     }
                     startIndex += chunkLength
@@ -131,7 +127,7 @@ class TTSActionButton(item: FeedItem) : ItemActionButton(item) {
                 processing = 0.85f
                 EventBus.getDefault().post(updated(item))
                 if (status == TextToSpeech.SUCCESS) {
-                    MergeAudios(parts.toTypedArray(), mediaFile.absolutePath, null)
+                    mergeAudios(parts.toTypedArray(), mediaFile.absolutePath, null)
 
 //                if (mediaFile.exists()) mediaFile.delete()
 //                if (!mediaFile.exists()) {
@@ -156,7 +152,7 @@ class TTSActionButton(item: FeedItem) : ItemActionButton(item) {
                     f.delete()
                 }
                 ttsWorking = false
-            } else Toast.makeText(context, R.string.episode_has_no_content, Toast.LENGTH_LONG).show()
+            } else withContext(Dispatchers.Main) { Toast.makeText(context, R.string.episode_has_no_content, Toast.LENGTH_LONG).show() }
 
             item.setPlayed(false)
             processing = 1f

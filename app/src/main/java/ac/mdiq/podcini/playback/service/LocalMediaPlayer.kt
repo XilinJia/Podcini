@@ -856,7 +856,7 @@ class LocalMediaPlayer(context: Context, callback: PSMPCallback) : MediaPlayerBa
     }
 
     companion object {
-        private const val TAG = "LclPlaybackSvcMPlayer"
+        private const val TAG = "LocalMediaPlayer"
 
 //         from wrapper
         const val BUFFERING_STARTED: Int = -1

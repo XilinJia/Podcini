@@ -1,0 +1,5 @@
+ 
+Version 4.10.1 brings several changes:
+
+* fixed crash issue when TTS engine is not available on device
+* in feed item list view, only start TTS engine when some episodes have no media

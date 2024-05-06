@@ -1,3 +1,8 @@
+## 4.10.1
+
+* fixed crash issue when TTS engine is not available on device
+* in feed item list view, only start TTS engine when some episodes have no media
+
 ## 4.10.0
 
 * fixed media info on notification widget
@@ -54,7 +59,7 @@
 ## 4.9.0
 
 * fixed bug of player always expands when changing audio
-* migrated to media3's MediaSession and MediaLibraryService thought no new features added with this. some behavior might change or issues might arise, need to be mindful
+* migrated to media3's MediaSession and MediaLibraryService though no new features added with this. some behavior might change or issues might arise, need to be mindful
 * when video mode is temporarily audio only, click on image on audio player on a video episode also brings up the normal player detailed view
 * added a menu action item in player detailed view to turn to fullscreen video for video episode
 * added episode home view accessible right from episode info view. episode home view has two display modes: webpage or reader. 

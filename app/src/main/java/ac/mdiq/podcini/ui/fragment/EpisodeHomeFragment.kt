@@ -137,7 +137,9 @@ class EpisodeHomeFragment : Fragment() {
                         val result = tts?.setLanguage(Locale(currentItem!!.feed!!.language!!))
                         if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                             Log.w(TAG, "TTS language not supported ${currentItem?.feed?.language}")
-                            Toast.makeText(context, getString(R.string.language_not_supported_by_tts) + " ${currentItem?.feed?.language}", Toast.LENGTH_LONG).show()
+                            requireActivity().runOnUiThread {
+                                Toast.makeText(context, getString(R.string.language_not_supported_by_tts) + " ${currentItem?.feed?.language}", Toast.LENGTH_LONG).show()
+                            }
                         }
                     }
                     ttsReady = true
@@ -145,7 +147,7 @@ class EpisodeHomeFragment : Fragment() {
                     Log.d(TAG, "TTS init success")
                 } else {
                     Log.w(TAG, "TTS init failed")
-                    Toast.makeText(context, R.string.tts_init_failed, Toast.LENGTH_LONG).show()
+                    requireActivity().runOnUiThread {Toast.makeText(context, R.string.tts_init_failed, Toast.LENGTH_LONG).show() }
                 }
             }
         }
@@ -171,9 +173,9 @@ class EpisodeHomeFragment : Fragment() {
 //            super.onPrepareMenu(menu)
             Log.d(TAG, "onPrepareMenu called")
             val textSpeech = menu.findItem(R.id.text_speech)
-            textSpeech?.isVisible = readMode
-            if (readMode) {
-                if (ttsPlaying) textSpeech?.setIcon(R.drawable.ic_pause) else textSpeech?.setIcon(R.drawable.ic_play_24dp)
+            textSpeech?.isVisible = readMode && tts != null
+            if (textSpeech?.isVisible == true) {
+                if (ttsPlaying) textSpeech.setIcon(R.drawable.ic_pause) else textSpeech.setIcon(R.drawable.ic_play_24dp)
             }
             menu.findItem(R.id.share_notes)?.setVisible(readMode)
             menu.findItem(R.id.switchJS)?.setVisible(!readMode)
@@ -215,7 +217,8 @@ class EpisodeHomeFragment : Fragment() {
                             }
                         } else ttsPlaying = false
                         updateAppearance()
-                    }
+                    } else Toast.makeText(context, R.string.tts_not_available, Toast.LENGTH_LONG).show()
+
                     return true
                 }
                 R.id.share_notes -> {

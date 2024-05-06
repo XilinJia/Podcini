@@ -360,14 +360,12 @@ class PodDBAdapter private constructor() {
     }
 
     fun resetPagedFeedPage(feed: Feed) {
-        val sql = ("UPDATE " + TABLE_NAME_FEEDS + " SET " + KEY_NEXT_PAGE_LINK + "=" + KEY_DOWNLOAD_URL + " WHERE " + KEY_ID + "=" + feed.id)
+        val sql = ("UPDATE $TABLE_NAME_FEEDS SET $KEY_NEXT_PAGE_LINK=$KEY_DOWNLOAD_URL WHERE $KEY_ID=${feed.id}")
         db.execSQL(sql)
     }
 
     fun setFeedLastUpdateFailed(feedId: Long, failed: Boolean) {
-        val sql = ("UPDATE " + TABLE_NAME_FEEDS
-                + " SET " + KEY_LAST_UPDATE_FAILED + "=" + (if (failed) "1" else "0")
-                + " WHERE " + KEY_ID + "=" + feedId)
+        val sql = ("UPDATE $TABLE_NAME_FEEDS SET $KEY_LAST_UPDATE_FAILED=${if (failed) "1" else "0"} WHERE $KEY_ID=$feedId")
         db.execSQL(sql)
     }
 
@@ -431,7 +429,7 @@ class PodDBAdapter private constructor() {
     }
 
     fun removeFavoriteItem(item: FeedItem) {
-        val deleteClause = String.format("DELETE FROM %s WHERE %s=%s AND %s=%s", TABLE_NAME_FAVORITES, KEY_FEEDITEM, item.id, KEY_FEED, item.feedId)
+        val deleteClause = "DELETE FROM $TABLE_NAME_FAVORITES WHERE $KEY_FEEDITEM=${item.id} AND $KEY_FEED=${item.feedId}"
         db.execSQL(deleteClause)
     }
 
@@ -485,8 +483,8 @@ class PodDBAdapter private constructor() {
 
             db.beginTransactionNonExclusive()
             db.delete(TABLE_NAME_SIMPLECHAPTERS, "$KEY_FEEDITEM IN ($itemIds)", null)
-            db.delete(TABLE_NAME_DOWNLOAD_LOG, (KEY_FEEDFILETYPE + "=" + FeedMedia.FEEDFILETYPE_FEEDMEDIA)
-                    + " AND " + KEY_FEEDFILE + " IN (" + mediaIds + ")", null)
+            db.delete(TABLE_NAME_DOWNLOAD_LOG,
+                "$KEY_FEEDFILETYPE=${FeedMedia.FEEDFILETYPE_FEEDMEDIA} AND $KEY_FEEDFILE IN ($mediaIds)", null)
             db.delete(TABLE_NAME_FEED_MEDIA, "$KEY_ID IN ($mediaIds)", null)
             db.delete(TABLE_NAME_FEED_ITEMS, "$KEY_ID IN ($itemIds)", null)
             db.setTransactionSuccessful()
@@ -588,25 +586,21 @@ class PodDBAdapter private constructor() {
     }
 
     fun getTranscriptOfItem(item: FeedItem): Cursor {
-        val query = ("SELECT " + KEY_TRANSCRIPT + " FROM " + TABLE_NAME_FEED_ITEMS + " WHERE " + KEY_ID + "=" + item.id)
+        val query = ("SELECT $KEY_TRANSCRIPT FROM $TABLE_NAME_FEED_ITEMS WHERE $KEY_ID=${item.id}")
         return db.rawQuery(query, null)
     }
 
     fun getSimpleChaptersOfFeedItemCursor(item: FeedItem): Cursor {
-        return db.query(TABLE_NAME_SIMPLECHAPTERS, null, "$KEY_FEEDITEM=?", arrayOf(item.id.toString()),
-            null, null, null)
+        return db.query(TABLE_NAME_SIMPLECHAPTERS, null, "$KEY_FEEDITEM=?", arrayOf(item.id.toString()), null, null, null)
     }
 
     fun getDownloadLog(feedFileType: Int, feedFileId: Long): Cursor {
-        val query = ("SELECT * FROM " + TABLE_NAME_DOWNLOAD_LOG +
-                " WHERE " + KEY_FEEDFILE + "=" + feedFileId + " AND " + KEY_FEEDFILETYPE + "=" + feedFileType
-                + " ORDER BY " + KEY_ID + " DESC")
+        val query = ("SELECT * FROM $TABLE_NAME_DOWNLOAD_LOG WHERE $KEY_FEEDFILE=$feedFileId AND $KEY_FEEDFILETYPE=$feedFileType ORDER BY $KEY_ID DESC")
         return db.rawQuery(query, null)
     }
 
     fun getDownloadLogCursor(limit: Int): Cursor {
-        return db.query(TABLE_NAME_DOWNLOAD_LOG, null, null, null, null,
-            null, "$KEY_COMPLETION_DATE DESC LIMIT $limit")
+        return db.query(TABLE_NAME_DOWNLOAD_LOG, null, null, null, null, null, "$KEY_COMPLETION_DATE DESC LIMIT $limit")
     }
 
     val queueCursor: Cursor
@@ -616,12 +610,7 @@ class PodDBAdapter private constructor() {
          * cursor uses the FEEDITEM_SEL_FI_SMALL selection.
          */
         get() {
-            val query = ("SELECT " + KEYS_FEED_ITEM_WITHOUT_DESCRIPTION + ", " + KEYS_FEED_MEDIA
-                    + " FROM " + TABLE_NAME_QUEUE
-                    + " INNER JOIN " + TABLE_NAME_FEED_ITEMS
-                    + " ON " + SELECT_KEY_ITEM_ID + " = " + TABLE_NAME_QUEUE + "." + KEY_FEEDITEM
-                    + JOIN_FEED_ITEM_AND_MEDIA
-                    + " ORDER BY " + TABLE_NAME_QUEUE + "." + KEY_ID)
+            val query = ("SELECT $KEYS_FEED_ITEM_WITHOUT_DESCRIPTION, $KEYS_FEED_MEDIA FROM $TABLE_NAME_QUEUE INNER JOIN $TABLE_NAME_FEED_ITEMS ON $SELECT_KEY_ITEM_ID = $TABLE_NAME_QUEUE.$KEY_FEEDITEM$JOIN_FEED_ITEM_AND_MEDIA ORDER BY $TABLE_NAME_QUEUE.$KEY_ID")
             return db.rawQuery(query, null)
         }
 
@@ -629,43 +618,19 @@ class PodDBAdapter private constructor() {
         get() = db.query(TABLE_NAME_QUEUE, arrayOf(KEY_FEEDITEM), null, null, null, null, "$KEY_ID ASC", null)
 
     fun getNextInQueue(item: FeedItem): Cursor {
-        val query = ("SELECT " + KEYS_FEED_ITEM_WITHOUT_DESCRIPTION + ", " + KEYS_FEED_MEDIA
-                + " FROM " + TABLE_NAME_QUEUE
-                + " INNER JOIN " + TABLE_NAME_FEED_ITEMS
-                + " ON " + SELECT_KEY_ITEM_ID + " = " + TABLE_NAME_QUEUE + "." + KEY_FEEDITEM
-                + JOIN_FEED_ITEM_AND_MEDIA
-                + " WHERE Queue.ID > (SELECT Queue.ID FROM Queue WHERE Queue.FeedItem = "
-                + item.id
-                + ")"
-                + " ORDER BY Queue.ID"
-                + " LIMIT 1")
+        val query = ("SELECT $KEYS_FEED_ITEM_WITHOUT_DESCRIPTION, $KEYS_FEED_MEDIA FROM $TABLE_NAME_QUEUE INNER JOIN $TABLE_NAME_FEED_ITEMS ON $SELECT_KEY_ITEM_ID = $TABLE_NAME_QUEUE.$KEY_FEEDITEM$JOIN_FEED_ITEM_AND_MEDIA WHERE Queue.ID > (SELECT Queue.ID FROM Queue WHERE Queue.FeedItem = ${item.id}) ORDER BY Queue.ID LIMIT 1")
         return db.rawQuery(query, null)
     }
 
     fun getPausedQueueCursor(limit: Int): Cursor {
-        val hasPositionOrRecentlyPlayed = (TABLE_NAME_FEED_MEDIA + "." + KEY_POSITION + " >= 1000"
-                + " OR " + TABLE_NAME_FEED_MEDIA + "." + KEY_LAST_PLAYED_TIME
-                + " >= " + (System.currentTimeMillis() - 30000))
-        val query = ("SELECT " + KEYS_FEED_ITEM_WITHOUT_DESCRIPTION + ", " + KEYS_FEED_MEDIA
-                + " FROM " + TABLE_NAME_QUEUE
-                + " INNER JOIN " + TABLE_NAME_FEED_ITEMS
-                + " ON " + SELECT_KEY_ITEM_ID + " = " + TABLE_NAME_QUEUE + "." + KEY_FEEDITEM
-                + JOIN_FEED_ITEM_AND_MEDIA
-                + " ORDER BY (CASE WHEN " + hasPositionOrRecentlyPlayed + " THEN "
-                + TABLE_NAME_FEED_MEDIA + "." + KEY_LAST_PLAYED_TIME + " ELSE 0 END) DESC , "
-                + TABLE_NAME_QUEUE + "." + KEY_ID
-                + " LIMIT " + limit)
+        val hasPositionOrRecentlyPlayed = ("$TABLE_NAME_FEED_MEDIA.$KEY_POSITION >= 1000 OR $TABLE_NAME_FEED_MEDIA.$KEY_LAST_PLAYED_TIME >= ${System.currentTimeMillis() - 30000}")
+        val query = ("SELECT $KEYS_FEED_ITEM_WITHOUT_DESCRIPTION, $KEYS_FEED_MEDIA FROM $TABLE_NAME_QUEUE INNER JOIN $TABLE_NAME_FEED_ITEMS ON $SELECT_KEY_ITEM_ID = $TABLE_NAME_QUEUE.$KEY_FEEDITEM$JOIN_FEED_ITEM_AND_MEDIA ORDER BY (CASE WHEN $hasPositionOrRecentlyPlayed THEN $TABLE_NAME_FEED_MEDIA.$KEY_LAST_PLAYED_TIME ELSE 0 END) DESC , $TABLE_NAME_QUEUE.$KEY_ID LIMIT $limit")
         return db.rawQuery(query, null)
     }
 
     fun getFavoritesIdsCursor(offset: Int, limit: Int): Cursor {
         // Way faster than selecting all columns
-        val query = ("SELECT " + TABLE_NAME_FEED_ITEMS + "." + KEY_ID
-                + " FROM " + TABLE_NAME_FEED_ITEMS
-                + " INNER JOIN " + TABLE_NAME_FAVORITES
-                + " ON " + TABLE_NAME_FEED_ITEMS + "." + KEY_ID + " = " + TABLE_NAME_FAVORITES + "." + KEY_FEEDITEM
-                + " ORDER BY " + TABLE_NAME_FEED_ITEMS + "." + KEY_PUBDATE + " DESC"
-                + " LIMIT " + offset + ", " + limit)
+        val query = ("SELECT $TABLE_NAME_FEED_ITEMS.$KEY_ID FROM $TABLE_NAME_FEED_ITEMS INNER JOIN $TABLE_NAME_FAVORITES ON $TABLE_NAME_FEED_ITEMS.$KEY_ID = $TABLE_NAME_FAVORITES.$KEY_FEEDITEM ORDER BY $TABLE_NAME_FEED_ITEMS.$KEY_PUBDATE DESC LIMIT $offset, $limit")
         return db.rawQuery(query, null)
     }
 
@@ -688,28 +653,22 @@ class PodDBAdapter private constructor() {
         val orderByQuery = generateFrom(sortOrder)
         val filterQuery = generateFrom(filter!!)
         val whereClause = if ("" == filterQuery) "" else " WHERE $filterQuery"
-        val query = (SELECT_FEED_ITEMS_AND_MEDIA + whereClause + "ORDER BY " + orderByQuery + " LIMIT " + offset + ", " + limit)
+        val query = ("$SELECT_FEED_ITEMS_AND_MEDIA${whereClause}ORDER BY $orderByQuery LIMIT $offset, $limit")
         return db.rawQuery(query, null)
     }
 
     fun getEpisodeCountCursor(filter: FeedItemFilter?): Cursor {
         val filterQuery = generateFrom(filter!!)
         val whereClause = if ("" == filterQuery) "" else " WHERE $filterQuery"
-        val query = ("SELECT count(" + TABLE_NAME_FEED_ITEMS + "." + KEY_ID + ") FROM " + TABLE_NAME_FEED_ITEMS
-                + JOIN_FEED_ITEM_AND_MEDIA + whereClause)
+        val query = ("SELECT count($TABLE_NAME_FEED_ITEMS.$KEY_ID) FROM $TABLE_NAME_FEED_ITEMS$JOIN_FEED_ITEM_AND_MEDIA$whereClause")
         return db.rawQuery(query, null)
     }
 
     fun getRandomEpisodesCursor(limit: Int, seed: Int): Cursor {
-        val allItemsRandomOrder = (SELECT_FEED_ITEMS_AND_MEDIA
-                + " WHERE (" + KEY_READ + " = " + FeedItem.NEW + " OR " + KEY_READ + " = " + FeedItem.UNPLAYED + ") " // Only from the last two years. Older episodes often contain broken covers and stuff like that
-                + " AND " + KEY_PUBDATE + " > " + (System.currentTimeMillis() - 1000L * 3600L * 24L * 356L * 2) // Hide episodes that have been played but not completed
-                + " AND (" + KEY_LAST_PLAYED_TIME + " == 0"
-                + " OR " + KEY_LAST_PLAYED_TIME + " > " + (System.currentTimeMillis() - 1000L * 3600L) + ")"
-                + " ORDER BY " + randomEpisodeNumber(seed))
-        val query = ("SELECT * FROM (" + allItemsRandomOrder + ")"
-                + " GROUP BY " + KEY_FEED
-                + " ORDER BY " + randomEpisodeNumber(seed * 3) + " DESC LIMIT " + limit)
+        // Only from the last two years. Older episodes often contain broken covers and stuff like that
+        // Hide episodes that have been played but not completed
+        val allItemsRandomOrder = ("$SELECT_FEED_ITEMS_AND_MEDIA WHERE ($KEY_READ = ${FeedItem.NEW} OR $KEY_READ = ${FeedItem.UNPLAYED})  AND $KEY_PUBDATE > ${System.currentTimeMillis() - 1000L * 3600L * 24L * 356L * 2} AND ($KEY_LAST_PLAYED_TIME == 0 OR $KEY_LAST_PLAYED_TIME > ${System.currentTimeMillis() - 1000L * 3600L}) ORDER BY ${randomEpisodeNumber(seed)}")
+        val query = ("SELECT * FROM ($allItemsRandomOrder) GROUP BY $KEY_FEED ORDER BY ${randomEpisodeNumber(seed * 3)} DESC LIMIT $limit")
         return db.rawQuery(query, null)
     }
 
@@ -746,9 +705,7 @@ class PodDBAdapter private constructor() {
     }
 
     fun getFeedCursor(id: Long): Cursor {
-        val query = ("SELECT " + KEYS_FEED
-                + " FROM " + TABLE_NAME_FEEDS
-                + " WHERE " + SELECT_KEY_FEED_ID + " = " + id)
+        val query = ("SELECT $KEYS_FEED FROM $TABLE_NAME_FEEDS WHERE $SELECT_KEY_FEED_ID = $id")
         return db.rawQuery(query, null)
     }
 
@@ -782,88 +739,41 @@ class PodDBAdapter private constructor() {
             whereClauseCondition = "$TABLE_NAME_FEED_ITEMS.$KEY_ITEM_IDENTIFIER=$escapedGuid"
         }
 
-        val query = (SELECT_FEED_ITEMS_AND_MEDIA
-                + " INNER JOIN " + TABLE_NAME_FEEDS
-                + " ON " + TABLE_NAME_FEED_ITEMS + "." + KEY_FEED + "=" + TABLE_NAME_FEEDS + "." + KEY_ID
-                + " WHERE " + whereClauseCondition)
+        val query = ("$SELECT_FEED_ITEMS_AND_MEDIA INNER JOIN $TABLE_NAME_FEEDS ON $TABLE_NAME_FEED_ITEMS.$KEY_FEED=$TABLE_NAME_FEEDS.$KEY_ID WHERE $whereClauseCondition")
         return db.rawQuery(query, null)
     }
 
     fun getImageAuthenticationCursor(imageUrl: String?): Cursor {
         val downloadUrl = DatabaseUtils.sqlEscapeString(imageUrl)
-        val query = (""
-                + "SELECT " + KEY_USERNAME + "," + KEY_PASSWORD + " FROM " + TABLE_NAME_FEED_ITEMS
-                + " INNER JOIN " + TABLE_NAME_FEEDS
-                + " ON " + TABLE_NAME_FEED_ITEMS + "." + KEY_FEED + " = " + TABLE_NAME_FEEDS + "." + KEY_ID
-                + " WHERE " + TABLE_NAME_FEED_ITEMS + "." + KEY_IMAGE_URL + "=" + downloadUrl
-                + " UNION SELECT " + KEY_USERNAME + "," + KEY_PASSWORD + " FROM " + TABLE_NAME_FEEDS
-                + " WHERE " + TABLE_NAME_FEEDS + "." + KEY_IMAGE_URL + "=" + downloadUrl)
+        val query = ("SELECT $KEY_USERNAME,$KEY_PASSWORD FROM $TABLE_NAME_FEED_ITEMS INNER JOIN $TABLE_NAME_FEEDS ON $TABLE_NAME_FEED_ITEMS.$KEY_FEED = $TABLE_NAME_FEEDS.$KEY_ID WHERE $TABLE_NAME_FEED_ITEMS.$KEY_IMAGE_URL=$downloadUrl UNION SELECT $KEY_USERNAME,$KEY_PASSWORD FROM $TABLE_NAME_FEEDS WHERE $TABLE_NAME_FEEDS.$KEY_IMAGE_URL=$downloadUrl")
         return db.rawQuery(query, null)
     }
 
     val monthlyStatisticsCursor: Cursor
         get() {
-            val query = ("SELECT SUM(" + KEY_PLAYED_DURATION + ") AS total_duration"
-                    + ", strftime('%m', datetime(" + KEY_LAST_PLAYED_TIME + "/1000, 'unixepoch')) AS month"
-                    + ", strftime('%Y', datetime(" + KEY_LAST_PLAYED_TIME + "/1000, 'unixepoch')) AS year"
-                    + " FROM " + TABLE_NAME_FEED_MEDIA
-                    + " WHERE " + KEY_LAST_PLAYED_TIME + " > 0 AND " + KEY_PLAYED_DURATION + " > 0"
-                    + " GROUP BY year, month"
-                    + " ORDER BY year, month")
+            val query = ("SELECT SUM($KEY_PLAYED_DURATION) AS total_duration, strftime('%m', datetime($KEY_LAST_PLAYED_TIME/1000, 'unixepoch')) AS month, strftime('%Y', datetime($KEY_LAST_PLAYED_TIME/1000, 'unixepoch')) AS year FROM $TABLE_NAME_FEED_MEDIA WHERE $KEY_LAST_PLAYED_TIME > 0 AND $KEY_PLAYED_DURATION > 0 GROUP BY year, month ORDER BY year, month")
             return db.rawQuery(query, null)
         }
 
     fun getFeedStatisticsCursor(includeMarkedAsPlayed: Boolean, timeFilterFrom: Long, timeFilterTo: Long): Cursor {
         val lastPlayedTime = "$TABLE_NAME_FEED_MEDIA.$KEY_LAST_PLAYED_TIME"
-        var wasStarted = (TABLE_NAME_FEED_MEDIA + "." + KEY_PLAYBACK_COMPLETION_DATE + " > 0"
-                + " AND " + TABLE_NAME_FEED_MEDIA + "." + KEY_PLAYED_DURATION + " > 0")
+        var wasStarted = ("$TABLE_NAME_FEED_MEDIA.$KEY_PLAYBACK_COMPLETION_DATE > 0 AND $TABLE_NAME_FEED_MEDIA.$KEY_PLAYED_DURATION > 0")
         if (includeMarkedAsPlayed) {
-            wasStarted = ("(" + wasStarted + ") OR "
-                    + TABLE_NAME_FEED_ITEMS + "." + KEY_READ + "=" + FeedItem.PLAYED + " OR "
-                    + TABLE_NAME_FEED_MEDIA + "." + KEY_POSITION + "> 0")
+            wasStarted = ("($wasStarted) OR $TABLE_NAME_FEED_ITEMS.$KEY_READ=${FeedItem.PLAYED} OR $TABLE_NAME_FEED_MEDIA.$KEY_POSITION> 0")
         }
         val timeFilter = ("$lastPlayedTime>=$timeFilterFrom AND $lastPlayedTime<$timeFilterTo")
         var playedTime = "$TABLE_NAME_FEED_MEDIA.$KEY_PLAYED_DURATION"
         if (includeMarkedAsPlayed) {
-            playedTime = ("(CASE WHEN " + playedTime + " != 0"
-                    + " THEN " + playedTime + " ELSE ("
-                    + "CASE WHEN " + TABLE_NAME_FEED_ITEMS + "." + KEY_READ + "=" + FeedItem.PLAYED
-                    + " THEN " + TABLE_NAME_FEED_MEDIA + "." + KEY_DURATION + " ELSE 0 END"
-                    + ") END)")
+            playedTime = ("(CASE WHEN $playedTime != 0 THEN $playedTime ELSE (CASE WHEN $TABLE_NAME_FEED_ITEMS.$KEY_READ=${FeedItem.PLAYED} THEN $TABLE_NAME_FEED_MEDIA.$KEY_DURATION ELSE 0 END) END)")
         }
 
-        val query = ("SELECT " + KEYS_FEED + ", "
-                + "COUNT(*) AS num_episodes, "
-                + "MIN(CASE WHEN " + lastPlayedTime + " > 0"
-                + " THEN " + lastPlayedTime + " ELSE " + Long.MAX_VALUE + " END) AS oldest_date, "
-                + "SUM(CASE WHEN (" + wasStarted + ") THEN 1 ELSE 0 END) AS episodes_started, "
-                + "IFNULL(SUM(CASE WHEN (" + timeFilter + ")"
-                + " THEN (" + playedTime + ") ELSE 0 END), 0) AS played_time, "
-                + "IFNULL(SUM(" + TABLE_NAME_FEED_MEDIA + "." + KEY_DURATION + "), 0) AS total_time, "
-                + "SUM(CASE WHEN " + TABLE_NAME_FEED_MEDIA + "." + KEY_DOWNLOADED + " > 0"
-                + " THEN 1 ELSE 0 END) AS num_downloaded, "
-                + "SUM(CASE WHEN " + TABLE_NAME_FEED_MEDIA + "." + KEY_DOWNLOADED + " > 0"
-                + " THEN " + TABLE_NAME_FEED_MEDIA + "." + KEY_SIZE + " ELSE 0 END) AS download_size"
-                + " FROM " + TABLE_NAME_FEED_ITEMS
-                + JOIN_FEED_ITEM_AND_MEDIA
-                + " INNER JOIN " + TABLE_NAME_FEEDS
-                + " ON " + TABLE_NAME_FEED_ITEMS + "." + KEY_FEED + "=" + TABLE_NAME_FEEDS + "." + KEY_ID
-                + " GROUP BY " + TABLE_NAME_FEEDS + "." + KEY_ID)
+        val query = ("SELECT $KEYS_FEED, COUNT(*) AS num_episodes, MIN(CASE WHEN $lastPlayedTime > 0 THEN $lastPlayedTime ELSE ${Long.MAX_VALUE} END) AS oldest_date, SUM(CASE WHEN ($wasStarted) THEN 1 ELSE 0 END) AS episodes_started, IFNULL(SUM(CASE WHEN ($timeFilter) THEN ($playedTime) ELSE 0 END), 0) AS played_time, IFNULL(SUM($TABLE_NAME_FEED_MEDIA.$KEY_DURATION), 0) AS total_time, SUM(CASE WHEN $TABLE_NAME_FEED_MEDIA.$KEY_DOWNLOADED > 0 THEN 1 ELSE 0 END) AS num_downloaded, SUM(CASE WHEN $TABLE_NAME_FEED_MEDIA.$KEY_DOWNLOADED > 0 THEN $TABLE_NAME_FEED_MEDIA.$KEY_SIZE ELSE 0 END) AS download_size FROM $TABLE_NAME_FEED_ITEMS$JOIN_FEED_ITEM_AND_MEDIA INNER JOIN $TABLE_NAME_FEEDS ON $TABLE_NAME_FEED_ITEMS.$KEY_FEED=$TABLE_NAME_FEEDS.$KEY_ID GROUP BY $TABLE_NAME_FEEDS.$KEY_ID")
         return db.rawQuery(query, null)
     }
 
     fun getTimeBetweenReleaseAndPlayback(timeFilterFrom: Long, timeFilterTo: Long): Cursor {
-        val from = (" FROM " + TABLE_NAME_FEED_ITEMS
-                + JOIN_FEED_ITEM_AND_MEDIA
-                + " WHERE " + TABLE_NAME_FEED_MEDIA + "." + KEY_LAST_PLAYED_TIME + ">=" + timeFilterFrom
-                + " AND " + TABLE_NAME_FEED_ITEMS + "." + KEY_PUBDATE + ">=" + timeFilterFrom
-                + " AND " + TABLE_NAME_FEED_MEDIA + "." + KEY_LAST_PLAYED_TIME + "<" + timeFilterTo)
-        val query = ("SELECT " + TABLE_NAME_FEED_MEDIA + "." + KEY_LAST_PLAYED_TIME
-                + " - " + TABLE_NAME_FEED_ITEMS + "." + KEY_PUBDATE + " AS diff"
-                + from
-                + " ORDER BY diff ASC"
-                + " LIMIT 1"
-                + " OFFSET (SELECT count(*)/2 " + from + ")")
+        val from = (" FROM $TABLE_NAME_FEED_ITEMS$JOIN_FEED_ITEM_AND_MEDIA WHERE $TABLE_NAME_FEED_MEDIA.$KEY_LAST_PLAYED_TIME>=$timeFilterFrom AND $TABLE_NAME_FEED_ITEMS.$KEY_PUBDATE>=$timeFilterFrom AND $TABLE_NAME_FEED_MEDIA.$KEY_LAST_PLAYED_TIME<$timeFilterTo")
+        val query = ("SELECT $TABLE_NAME_FEED_MEDIA.$KEY_LAST_PLAYED_TIME - $TABLE_NAME_FEED_ITEMS.$KEY_PUBDATE AS diff$from ORDER BY diff ASC LIMIT 1 OFFSET (SELECT count(*)/2 $from)")
         return db.rawQuery(query, null)
     }
 
@@ -906,12 +816,7 @@ class PodDBAdapter private constructor() {
             limitFeeds = "$KEY_FEED IN ($builder) AND "
         }
 
-        val query = ("SELECT " + KEY_FEED + ", COUNT(" + TABLE_NAME_FEED_ITEMS + "." + KEY_ID + ") AS count "
-                + " FROM " + TABLE_NAME_FEED_ITEMS
-                + " LEFT JOIN " + TABLE_NAME_FEED_MEDIA + " ON "
-                + TABLE_NAME_FEED_ITEMS + "." + KEY_ID + "=" + TABLE_NAME_FEED_MEDIA + "." + KEY_FEEDITEM
-                + " WHERE " + limitFeeds + " "
-                + whereRead + " GROUP BY " + KEY_FEED)
+        val query = ("SELECT $KEY_FEED, COUNT($TABLE_NAME_FEED_ITEMS.$KEY_ID) AS count  FROM $TABLE_NAME_FEED_ITEMS LEFT JOIN $TABLE_NAME_FEED_MEDIA ON $TABLE_NAME_FEED_ITEMS.$KEY_ID=$TABLE_NAME_FEED_MEDIA.$KEY_FEEDITEM WHERE $limitFeeds $whereRead GROUP BY $KEY_FEED")
 
         val c = db.rawQuery(query, null)
         val result: MutableMap<Long, Int> = HashMap()
@@ -933,10 +838,7 @@ class PodDBAdapter private constructor() {
 
     val mostRecentItemDates: Map<Long, Long>
         get() {
-            val query = ("SELECT " + KEY_FEED + ","
-                    + " MAX(" + TABLE_NAME_FEED_ITEMS + "." + KEY_PUBDATE + ") AS most_recent_pubdate"
-                    + " FROM " + TABLE_NAME_FEED_ITEMS
-                    + " GROUP BY " + KEY_FEED)
+            val query = ("SELECT $KEY_FEED, MAX($TABLE_NAME_FEED_ITEMS.$KEY_PUBDATE) AS most_recent_pubdate FROM $TABLE_NAME_FEED_ITEMS GROUP BY $KEY_FEED")
 
             val c = db.rawQuery(query, null)
             val result: MutableMap<Long, Long> = HashMap()
@@ -953,16 +855,7 @@ class PodDBAdapter private constructor() {
 
     val mostRecentUnreadItemDates: Map<Long, Long>
         get() {
-//            val query = ("SELECT " + KEY_FEED + ","
-//                    + " MAX(" + TABLE_NAME_FEED_ITEMS + "." + KEY_PUBDATE + ") AS most_recent_pubdate"
-//                    + " FROM " + TABLE_NAME_FEED_ITEMS
-//                    + " WHERE " + KEY_READ + " = 0"
-//                    + " GROUP BY " + KEY_FEED)
-
-            val query = ("SELECT " + KEY_FEED + ","
-                    + " MAX(CASE WHEN " + KEY_READ + " != 1 THEN " + KEY_PUBDATE + " ELSE 0 END) AS most_recent_pubdate"
-                    + " FROM " + TABLE_NAME_FEED_ITEMS
-                    + " GROUP BY " + KEY_FEED)
+            val query = ("SELECT $KEY_FEED, MAX(CASE WHEN $KEY_READ != 1 THEN $KEY_PUBDATE ELSE 0 END) AS most_recent_pubdate FROM $TABLE_NAME_FEED_ITEMS GROUP BY $KEY_FEED")
 
             val c = db.rawQuery(query, null)
             val result: MutableMap<Long, Long> = HashMap()
@@ -1118,8 +1011,7 @@ class PodDBAdapter private constructor() {
             Log.w("DBAdapter", "Upgrading from version $oldVersion to $newVersion.")
             DBUpgrader.upgrade(db, oldVersion, newVersion)
 
-            db.execSQL("DELETE FROM " + TABLE_NAME_DOWNLOAD_LOG + " WHERE "
-                    + KEY_COMPLETION_DATE + "<" + (System.currentTimeMillis() - 7L * 24L * 3600L * 1000L))
+            db.execSQL("DELETE FROM $TABLE_NAME_DOWNLOAD_LOG WHERE $KEY_COMPLETION_DATE<${System.currentTimeMillis() - 7L * 24L * 3600L * 1000L}")
         }
     }
 
@@ -1206,104 +1098,34 @@ class PodDBAdapter private constructor() {
         const val TABLE_NAME_FAVORITES: String = "Favorites"
 
         // SQL Statements for creating new tables
-        private const val TABLE_PRIMARY_KEY = (KEY_ID
-                + " INTEGER PRIMARY KEY AUTOINCREMENT ,")
+        private const val TABLE_PRIMARY_KEY = ("$KEY_ID INTEGER PRIMARY KEY AUTOINCREMENT ,")
 
-        private const val CREATE_TABLE_FEEDS = ("CREATE TABLE "
-                + TABLE_NAME_FEEDS + " (" + TABLE_PRIMARY_KEY + KEY_TITLE
-                + " TEXT," + KEY_CUSTOM_TITLE + " TEXT," + KEY_FILE_URL + " TEXT," + KEY_DOWNLOAD_URL + " TEXT,"
-                + KEY_DOWNLOADED + " INTEGER," + KEY_LINK + " TEXT,"
-                + KEY_DESCRIPTION + " TEXT," + KEY_PAYMENT_LINK + " TEXT,"
-                + KEY_LASTUPDATE + " TEXT," + KEY_LANGUAGE + " TEXT," + KEY_AUTHOR
-                + " TEXT," + KEY_IMAGE_URL + " TEXT," + KEY_TYPE + " TEXT,"
-                + KEY_FEED_IDENTIFIER + " TEXT," + KEY_AUTO_DOWNLOAD_ENABLED + " INTEGER DEFAULT 1,"
-                + KEY_USERNAME + " TEXT,"
-                + KEY_PASSWORD + " TEXT,"
-                + KEY_INCLUDE_FILTER + " TEXT DEFAULT '',"
-                + KEY_EXCLUDE_FILTER + " TEXT DEFAULT '',"
-                + KEY_MINIMAL_DURATION_FILTER + " INTEGER DEFAULT -1,"
-                + KEY_KEEP_UPDATED + " INTEGER DEFAULT 1,"
-                + KEY_IS_PAGED + " INTEGER DEFAULT 0,"
-                + KEY_NEXT_PAGE_LINK + " TEXT,"
-                + KEY_HIDE + " TEXT,"
-                + KEY_SORT_ORDER + " TEXT,"
-                + KEY_LAST_UPDATE_FAILED + " INTEGER DEFAULT 0,"
-                + KEY_AUTO_DELETE_ACTION + " INTEGER DEFAULT 0,"
-                + KEY_FEED_PLAYBACK_SPEED + " REAL DEFAULT " + FeedPreferences.SPEED_USE_GLOBAL + ","
-                + KEY_FEED_VOLUME_ADAPTION + " INTEGER DEFAULT 0,"
-                + KEY_FEED_TAGS + " TEXT,"
-                + KEY_FEED_SKIP_INTRO + " INTEGER DEFAULT 0,"
-                + KEY_FEED_SKIP_ENDING + " INTEGER DEFAULT 0,"
-                + KEY_EPISODE_NOTIFICATION + " INTEGER DEFAULT 0,"
-                + KEY_NEW_EPISODES_ACTION + " INTEGER DEFAULT 0)")
+        private const val CREATE_TABLE_FEEDS = ("CREATE TABLE $TABLE_NAME_FEEDS ($TABLE_PRIMARY_KEY$KEY_TITLE TEXT,$KEY_CUSTOM_TITLE TEXT,$KEY_FILE_URL TEXT,$KEY_DOWNLOAD_URL TEXT,$KEY_DOWNLOADED INTEGER,$KEY_LINK TEXT,$KEY_DESCRIPTION TEXT,$KEY_PAYMENT_LINK TEXT,$KEY_LASTUPDATE TEXT,$KEY_LANGUAGE TEXT,$KEY_AUTHOR TEXT,$KEY_IMAGE_URL TEXT,$KEY_TYPE TEXT,$KEY_FEED_IDENTIFIER TEXT,$KEY_AUTO_DOWNLOAD_ENABLED INTEGER DEFAULT 1,$KEY_USERNAME TEXT,$KEY_PASSWORD TEXT,$KEY_INCLUDE_FILTER TEXT DEFAULT '',$KEY_EXCLUDE_FILTER TEXT DEFAULT '',$KEY_MINIMAL_DURATION_FILTER INTEGER DEFAULT -1,$KEY_KEEP_UPDATED INTEGER DEFAULT 1,$KEY_IS_PAGED INTEGER DEFAULT 0,$KEY_NEXT_PAGE_LINK TEXT,$KEY_HIDE TEXT,$KEY_SORT_ORDER TEXT,$KEY_LAST_UPDATE_FAILED INTEGER DEFAULT 0,$KEY_AUTO_DELETE_ACTION INTEGER DEFAULT 0,$KEY_FEED_PLAYBACK_SPEED REAL DEFAULT ${FeedPreferences.SPEED_USE_GLOBAL},$KEY_FEED_VOLUME_ADAPTION INTEGER DEFAULT 0,$KEY_FEED_TAGS TEXT,$KEY_FEED_SKIP_INTRO INTEGER DEFAULT 0,$KEY_FEED_SKIP_ENDING INTEGER DEFAULT 0,$KEY_EPISODE_NOTIFICATION INTEGER DEFAULT 0,$KEY_NEW_EPISODES_ACTION INTEGER DEFAULT 0)")
 
-        private const val CREATE_TABLE_FEED_ITEMS = ("CREATE TABLE "
-                + TABLE_NAME_FEED_ITEMS + " (" + TABLE_PRIMARY_KEY
-                + KEY_TITLE + " TEXT," + KEY_PUBDATE + " INTEGER,"
-                + KEY_READ + " INTEGER," + KEY_LINK + " TEXT,"
-                + KEY_DESCRIPTION + " TEXT," + KEY_TRANSCRIPT + " TEXT,"
-                + KEY_PAYMENT_LINK + " TEXT,"
-                + KEY_MEDIA + " INTEGER," + KEY_FEED + " INTEGER,"
-                + KEY_HAS_CHAPTERS + " INTEGER," + KEY_ITEM_IDENTIFIER + " TEXT,"
-                + KEY_IMAGE_URL + " TEXT,"
-                + KEY_AUTO_DOWNLOAD_ENABLED + " INTEGER,"
-                + KEY_PODCASTINDEX_CHAPTER_URL + " TEXT)")
+        private const val CREATE_TABLE_FEED_ITEMS = ("CREATE TABLE $TABLE_NAME_FEED_ITEMS ($TABLE_PRIMARY_KEY$KEY_TITLE TEXT,$KEY_PUBDATE INTEGER,$KEY_READ INTEGER,$KEY_LINK TEXT,$KEY_DESCRIPTION TEXT,$KEY_TRANSCRIPT TEXT,$KEY_PAYMENT_LINK TEXT,$KEY_MEDIA INTEGER,$KEY_FEED INTEGER,$KEY_HAS_CHAPTERS INTEGER,$KEY_ITEM_IDENTIFIER TEXT,$KEY_IMAGE_URL TEXT,$KEY_AUTO_DOWNLOAD_ENABLED INTEGER,$KEY_PODCASTINDEX_CHAPTER_URL TEXT)")
 
-        private const val CREATE_TABLE_FEED_MEDIA = ("CREATE TABLE "
-                + TABLE_NAME_FEED_MEDIA + " (" + TABLE_PRIMARY_KEY + KEY_DURATION
-                + " INTEGER," + KEY_FILE_URL + " TEXT," + KEY_DOWNLOAD_URL
-                + " TEXT," + KEY_DOWNLOADED + " INTEGER," + KEY_POSITION
-                + " INTEGER," + KEY_SIZE + " INTEGER," + KEY_MIME_TYPE + " TEXT,"
-                + KEY_PLAYBACK_COMPLETION_DATE + " INTEGER,"
-                + KEY_FEEDITEM + " INTEGER,"
-                + KEY_PLAYED_DURATION + " INTEGER,"
-                + KEY_HAS_EMBEDDED_PICTURE + " INTEGER,"
-                + KEY_LAST_PLAYED_TIME + " INTEGER" + ")")
+        private const val CREATE_TABLE_FEED_MEDIA = ("CREATE TABLE $TABLE_NAME_FEED_MEDIA ($TABLE_PRIMARY_KEY$KEY_DURATION INTEGER,$KEY_FILE_URL TEXT,$KEY_DOWNLOAD_URL TEXT,$KEY_DOWNLOADED INTEGER,$KEY_POSITION INTEGER,$KEY_SIZE INTEGER,$KEY_MIME_TYPE TEXT,$KEY_PLAYBACK_COMPLETION_DATE INTEGER,$KEY_FEEDITEM INTEGER,$KEY_PLAYED_DURATION INTEGER,$KEY_HAS_EMBEDDED_PICTURE INTEGER,$KEY_LAST_PLAYED_TIME INTEGER)")
 
-        private const val CREATE_TABLE_DOWNLOAD_LOG = ("CREATE TABLE "
-                + TABLE_NAME_DOWNLOAD_LOG + " (" + TABLE_PRIMARY_KEY + KEY_FEEDFILE
-                + " INTEGER," + KEY_FEEDFILETYPE + " INTEGER," + KEY_REASON
-                + " INTEGER," + KEY_SUCCESSFUL + " INTEGER," + KEY_COMPLETION_DATE
-                + " INTEGER," + KEY_REASON_DETAILED + " TEXT,"
-                + KEY_DOWNLOADSTATUS_TITLE + " TEXT)")
+        private const val CREATE_TABLE_DOWNLOAD_LOG = ("CREATE TABLE $TABLE_NAME_DOWNLOAD_LOG ($TABLE_PRIMARY_KEY$KEY_FEEDFILE INTEGER,$KEY_FEEDFILETYPE INTEGER,$KEY_REASON INTEGER,$KEY_SUCCESSFUL INTEGER,$KEY_COMPLETION_DATE INTEGER,$KEY_REASON_DETAILED TEXT,$KEY_DOWNLOADSTATUS_TITLE TEXT)")
 
-        private const val CREATE_TABLE_QUEUE = ("CREATE TABLE "
-                + TABLE_NAME_QUEUE + "(" + KEY_ID + " INTEGER PRIMARY KEY,"
-                + KEY_FEEDITEM + " INTEGER," + KEY_FEED + " INTEGER)")
+        private const val CREATE_TABLE_QUEUE = ("CREATE TABLE $TABLE_NAME_QUEUE($KEY_ID INTEGER PRIMARY KEY,$KEY_FEEDITEM INTEGER,$KEY_FEED INTEGER)")
 
-        private const val CREATE_TABLE_SIMPLECHAPTERS = ("CREATE TABLE "
-                + TABLE_NAME_SIMPLECHAPTERS + " (" + TABLE_PRIMARY_KEY + KEY_TITLE
-                + " TEXT," + KEY_START + " INTEGER," + KEY_FEEDITEM + " INTEGER,"
-                + KEY_LINK + " TEXT," + KEY_IMAGE_URL + " TEXT)")
+        private const val CREATE_TABLE_SIMPLECHAPTERS = ("CREATE TABLE $TABLE_NAME_SIMPLECHAPTERS ($TABLE_PRIMARY_KEY$KEY_TITLE TEXT,$KEY_START INTEGER,$KEY_FEEDITEM INTEGER,$KEY_LINK TEXT,$KEY_IMAGE_URL TEXT)")
 
         // SQL Statements for creating indexes
-        const val CREATE_INDEX_FEEDITEMS_FEED: String = ("CREATE INDEX "
-                + TABLE_NAME_FEED_ITEMS + "_" + KEY_FEED + " ON " + TABLE_NAME_FEED_ITEMS + " ("
-                + KEY_FEED + ")")
+        const val CREATE_INDEX_FEEDITEMS_FEED: String = ("CREATE INDEX ${TABLE_NAME_FEED_ITEMS}_$KEY_FEED ON $TABLE_NAME_FEED_ITEMS ($KEY_FEED)")
 
-        const val CREATE_INDEX_FEEDITEMS_PUBDATE: String = ("CREATE INDEX "
-                + TABLE_NAME_FEED_ITEMS + "_" + KEY_PUBDATE + " ON " + TABLE_NAME_FEED_ITEMS + " ("
-                + KEY_PUBDATE + ")")
+        const val CREATE_INDEX_FEEDITEMS_PUBDATE: String = ("CREATE INDEX ${TABLE_NAME_FEED_ITEMS}_$KEY_PUBDATE ON $TABLE_NAME_FEED_ITEMS ($KEY_PUBDATE)")
 
-        const val CREATE_INDEX_FEEDITEMS_READ: String = ("CREATE INDEX "
-                + TABLE_NAME_FEED_ITEMS + "_" + KEY_READ + " ON " + TABLE_NAME_FEED_ITEMS + " ("
-                + KEY_READ + ")")
+        const val CREATE_INDEX_FEEDITEMS_READ: String = ("CREATE INDEX ${TABLE_NAME_FEED_ITEMS}_$KEY_READ ON $TABLE_NAME_FEED_ITEMS ($KEY_READ)")
 
-        const val CREATE_INDEX_QUEUE_FEEDITEM: String = ("CREATE INDEX "
-                + TABLE_NAME_QUEUE + "_" + KEY_FEEDITEM + " ON " + TABLE_NAME_QUEUE + " ("
-                + KEY_FEEDITEM + ")")
+        const val CREATE_INDEX_QUEUE_FEEDITEM: String = ("CREATE INDEX ${TABLE_NAME_QUEUE}_$KEY_FEEDITEM ON $TABLE_NAME_QUEUE ($KEY_FEEDITEM)")
 
-        const val CREATE_INDEX_FEEDMEDIA_FEEDITEM: String = ("CREATE INDEX "
-                + TABLE_NAME_FEED_MEDIA + "_" + KEY_FEEDITEM + " ON " + TABLE_NAME_FEED_MEDIA + " ("
-                + KEY_FEEDITEM + ")")
+        const val CREATE_INDEX_FEEDMEDIA_FEEDITEM: String = ("CREATE INDEX ${TABLE_NAME_FEED_MEDIA}_$KEY_FEEDITEM ON $TABLE_NAME_FEED_MEDIA ($KEY_FEEDITEM)")
 
-        const val CREATE_INDEX_SIMPLECHAPTERS_FEEDITEM: String = ("CREATE INDEX "
-                + TABLE_NAME_SIMPLECHAPTERS + "_" + KEY_FEEDITEM + " ON " + TABLE_NAME_SIMPLECHAPTERS + " ("
-                + KEY_FEEDITEM + ")")
+        const val CREATE_INDEX_SIMPLECHAPTERS_FEEDITEM: String = ("CREATE INDEX ${TABLE_NAME_SIMPLECHAPTERS}_$KEY_FEEDITEM ON $TABLE_NAME_SIMPLECHAPTERS ($KEY_FEEDITEM)")
 
-        const val CREATE_TABLE_FAVORITES: String = ("CREATE TABLE "
-                + TABLE_NAME_FAVORITES + "(" + KEY_ID + " INTEGER PRIMARY KEY,"
-                + KEY_FEEDITEM + " INTEGER," + KEY_FEED + " INTEGER)")
+        const val CREATE_TABLE_FAVORITES: String = ("CREATE TABLE $TABLE_NAME_FAVORITES($KEY_ID INTEGER PRIMARY KEY,$KEY_FEEDITEM INTEGER,$KEY_FEED INTEGER)")
 
         /**
          * All the tables in the database
@@ -1322,82 +1144,16 @@ class PodDBAdapter private constructor() {
         const val SELECT_KEY_FEED_ID: String = "feed_id"
 
         private const val KEYS_FEED_ITEM_WITHOUT_DESCRIPTION =
-            (TABLE_NAME_FEED_ITEMS + "." + KEY_ID + " AS " + SELECT_KEY_ITEM_ID + ", "
-                    + TABLE_NAME_FEED_ITEMS + "." + KEY_TITLE + ", "
-                    + TABLE_NAME_FEED_ITEMS + "." + KEY_PUBDATE + ", "
-                    + TABLE_NAME_FEED_ITEMS + "." + KEY_READ + ", "
-                    + TABLE_NAME_FEED_ITEMS + "." + KEY_LINK + ", "
-                    + TABLE_NAME_FEED_ITEMS + "." + KEY_PAYMENT_LINK + ", "
-                    + TABLE_NAME_FEED_ITEMS + "." + KEY_MEDIA + ", "
-                    + TABLE_NAME_FEED_ITEMS + "." + KEY_FEED + ", "
-                    + TABLE_NAME_FEED_ITEMS + "." + KEY_HAS_CHAPTERS + ", "
-                    + TABLE_NAME_FEED_ITEMS + "." + KEY_ITEM_IDENTIFIER + ", "
-                    + TABLE_NAME_FEED_ITEMS + "." + KEY_IMAGE_URL + ", "
-                    + TABLE_NAME_FEED_ITEMS + "." + KEY_AUTO_DOWNLOAD_ENABLED + ", "
-                    + TABLE_NAME_FEED_ITEMS + "." + KEY_PODCASTINDEX_CHAPTER_URL)
+            ("$TABLE_NAME_FEED_ITEMS.$KEY_ID AS $SELECT_KEY_ITEM_ID, $TABLE_NAME_FEED_ITEMS.$KEY_TITLE, $TABLE_NAME_FEED_ITEMS.$KEY_PUBDATE, $TABLE_NAME_FEED_ITEMS.$KEY_READ, $TABLE_NAME_FEED_ITEMS.$KEY_LINK, $TABLE_NAME_FEED_ITEMS.$KEY_PAYMENT_LINK, $TABLE_NAME_FEED_ITEMS.$KEY_MEDIA, $TABLE_NAME_FEED_ITEMS.$KEY_FEED, $TABLE_NAME_FEED_ITEMS.$KEY_HAS_CHAPTERS, $TABLE_NAME_FEED_ITEMS.$KEY_ITEM_IDENTIFIER, $TABLE_NAME_FEED_ITEMS.$KEY_IMAGE_URL, $TABLE_NAME_FEED_ITEMS.$KEY_AUTO_DOWNLOAD_ENABLED, $TABLE_NAME_FEED_ITEMS.$KEY_PODCASTINDEX_CHAPTER_URL")
 
-        private const val KEYS_FEED_MEDIA = (TABLE_NAME_FEED_MEDIA + "." + KEY_ID + " AS " + SELECT_KEY_MEDIA_ID + ", "
-                + TABLE_NAME_FEED_MEDIA + "." + KEY_DURATION + ", "
-                + TABLE_NAME_FEED_MEDIA + "." + KEY_FILE_URL + ", "
-                + TABLE_NAME_FEED_MEDIA + "." + KEY_DOWNLOAD_URL + ", "
-                + TABLE_NAME_FEED_MEDIA + "." + KEY_DOWNLOADED + ", "
-                + TABLE_NAME_FEED_MEDIA + "." + KEY_POSITION + ", "
-                + TABLE_NAME_FEED_MEDIA + "." + KEY_SIZE + ", "
-                + TABLE_NAME_FEED_MEDIA + "." + KEY_MIME_TYPE + ", "
-                + TABLE_NAME_FEED_MEDIA + "." + KEY_PLAYBACK_COMPLETION_DATE + ", "
-                + TABLE_NAME_FEED_MEDIA + "." + KEY_FEEDITEM + ", "
-                + TABLE_NAME_FEED_MEDIA + "." + KEY_PLAYED_DURATION + ", "
-                + TABLE_NAME_FEED_MEDIA + "." + KEY_HAS_EMBEDDED_PICTURE + ", "
-                + TABLE_NAME_FEED_MEDIA + "." + KEY_LAST_PLAYED_TIME)
+        private const val KEYS_FEED_MEDIA = ("$TABLE_NAME_FEED_MEDIA.$KEY_ID AS $SELECT_KEY_MEDIA_ID, $TABLE_NAME_FEED_MEDIA.$KEY_DURATION, $TABLE_NAME_FEED_MEDIA.$KEY_FILE_URL, $TABLE_NAME_FEED_MEDIA.$KEY_DOWNLOAD_URL, $TABLE_NAME_FEED_MEDIA.$KEY_DOWNLOADED, $TABLE_NAME_FEED_MEDIA.$KEY_POSITION, $TABLE_NAME_FEED_MEDIA.$KEY_SIZE, $TABLE_NAME_FEED_MEDIA.$KEY_MIME_TYPE, $TABLE_NAME_FEED_MEDIA.$KEY_PLAYBACK_COMPLETION_DATE, $TABLE_NAME_FEED_MEDIA.$KEY_FEEDITEM, $TABLE_NAME_FEED_MEDIA.$KEY_PLAYED_DURATION, $TABLE_NAME_FEED_MEDIA.$KEY_HAS_EMBEDDED_PICTURE, $TABLE_NAME_FEED_MEDIA.$KEY_LAST_PLAYED_TIME")
 
-        private const val KEYS_FEED = (TABLE_NAME_FEEDS + "." + KEY_ID + " AS " + SELECT_KEY_FEED_ID + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_TITLE + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_CUSTOM_TITLE + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_FILE_URL + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_DOWNLOAD_URL + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_DOWNLOADED + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_LINK + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_DESCRIPTION + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_PAYMENT_LINK + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_LASTUPDATE + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_LANGUAGE + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_AUTHOR + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_IMAGE_URL + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_TYPE + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_FEED_IDENTIFIER + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_IS_PAGED + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_NEXT_PAGE_LINK + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_LAST_UPDATE_FAILED + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_AUTO_DOWNLOAD_ENABLED + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_KEEP_UPDATED + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_USERNAME + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_PASSWORD + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_HIDE + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_SORT_ORDER + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_AUTO_DELETE_ACTION + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_FEED_VOLUME_ADAPTION + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_INCLUDE_FILTER + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_EXCLUDE_FILTER + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_MINIMAL_DURATION_FILTER + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_FEED_PLAYBACK_SPEED + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_FEED_TAGS + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_FEED_SKIP_INTRO + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_FEED_SKIP_ENDING + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_EPISODE_NOTIFICATION + ", "
-                + TABLE_NAME_FEEDS + "." + KEY_NEW_EPISODES_ACTION)
+        private const val KEYS_FEED = ("$TABLE_NAME_FEEDS.$KEY_ID AS $SELECT_KEY_FEED_ID, $TABLE_NAME_FEEDS.$KEY_TITLE, $TABLE_NAME_FEEDS.$KEY_CUSTOM_TITLE, $TABLE_NAME_FEEDS.$KEY_FILE_URL, $TABLE_NAME_FEEDS.$KEY_DOWNLOAD_URL, $TABLE_NAME_FEEDS.$KEY_DOWNLOADED, $TABLE_NAME_FEEDS.$KEY_LINK, $TABLE_NAME_FEEDS.$KEY_DESCRIPTION, $TABLE_NAME_FEEDS.$KEY_PAYMENT_LINK, $TABLE_NAME_FEEDS.$KEY_LASTUPDATE, $TABLE_NAME_FEEDS.$KEY_LANGUAGE, $TABLE_NAME_FEEDS.$KEY_AUTHOR, $TABLE_NAME_FEEDS.$KEY_IMAGE_URL, $TABLE_NAME_FEEDS.$KEY_TYPE, $TABLE_NAME_FEEDS.$KEY_FEED_IDENTIFIER, $TABLE_NAME_FEEDS.$KEY_IS_PAGED, $TABLE_NAME_FEEDS.$KEY_NEXT_PAGE_LINK, $TABLE_NAME_FEEDS.$KEY_LAST_UPDATE_FAILED, $TABLE_NAME_FEEDS.$KEY_AUTO_DOWNLOAD_ENABLED, $TABLE_NAME_FEEDS.$KEY_KEEP_UPDATED, $TABLE_NAME_FEEDS.$KEY_USERNAME, $TABLE_NAME_FEEDS.$KEY_PASSWORD, $TABLE_NAME_FEEDS.$KEY_HIDE, $TABLE_NAME_FEEDS.$KEY_SORT_ORDER, $TABLE_NAME_FEEDS.$KEY_AUTO_DELETE_ACTION, $TABLE_NAME_FEEDS.$KEY_FEED_VOLUME_ADAPTION, $TABLE_NAME_FEEDS.$KEY_INCLUDE_FILTER, $TABLE_NAME_FEEDS.$KEY_EXCLUDE_FILTER, $TABLE_NAME_FEEDS.$KEY_MINIMAL_DURATION_FILTER, $TABLE_NAME_FEEDS.$KEY_FEED_PLAYBACK_SPEED, $TABLE_NAME_FEEDS.$KEY_FEED_TAGS, $TABLE_NAME_FEEDS.$KEY_FEED_SKIP_INTRO, $TABLE_NAME_FEEDS.$KEY_FEED_SKIP_ENDING, $TABLE_NAME_FEEDS.$KEY_EPISODE_NOTIFICATION, $TABLE_NAME_FEEDS.$KEY_NEW_EPISODES_ACTION")
 
-        private const val JOIN_FEED_ITEM_AND_MEDIA = (" LEFT JOIN " + TABLE_NAME_FEED_MEDIA
-                + " ON " + TABLE_NAME_FEED_ITEMS + "." + KEY_ID + "=" + TABLE_NAME_FEED_MEDIA + "." + KEY_FEEDITEM + " ")
+        private const val JOIN_FEED_ITEM_AND_MEDIA = (" LEFT JOIN $TABLE_NAME_FEED_MEDIA ON $TABLE_NAME_FEED_ITEMS.$KEY_ID=$TABLE_NAME_FEED_MEDIA.$KEY_FEEDITEM ")
 
-        private const val SELECT_FEED_ITEMS_AND_MEDIA_WITH_DESCRIPTION =
-            ("SELECT " + KEYS_FEED_ITEM_WITHOUT_DESCRIPTION + ", " + KEYS_FEED_MEDIA + ", "
-                    + TABLE_NAME_FEED_ITEMS + "." + KEY_DESCRIPTION + "." + KEY_TRANSCRIPT
-                    + " FROM " + TABLE_NAME_FEED_ITEMS
-                    + JOIN_FEED_ITEM_AND_MEDIA)
-        private const val SELECT_FEED_ITEMS_AND_MEDIA =
-            ("SELECT " + KEYS_FEED_ITEM_WITHOUT_DESCRIPTION + ", " + KEYS_FEED_MEDIA
-                    + " FROM " + TABLE_NAME_FEED_ITEMS
-                    + JOIN_FEED_ITEM_AND_MEDIA)
+        private const val SELECT_FEED_ITEMS_AND_MEDIA_WITH_DESCRIPTION = ("SELECT $KEYS_FEED_ITEM_WITHOUT_DESCRIPTION, $KEYS_FEED_MEDIA, $TABLE_NAME_FEED_ITEMS.$KEY_DESCRIPTION.$KEY_TRANSCRIPT FROM $TABLE_NAME_FEED_ITEMS$JOIN_FEED_ITEM_AND_MEDIA")
+        private const val SELECT_FEED_ITEMS_AND_MEDIA = ("SELECT $KEYS_FEED_ITEM_WITHOUT_DESCRIPTION, $KEYS_FEED_MEDIA FROM $TABLE_NAME_FEED_ITEMS$JOIN_FEED_ITEM_AND_MEDIA")
 
         private lateinit var context: Context
         private var instance: PodDBAdapter? = null

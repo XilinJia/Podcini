@@ -114,8 +114,7 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
         adapterFeeds = object : HorizontalFeedListAdapter(activity as MainActivity) {
             override fun onCreateContextMenu(contextMenu: ContextMenu, view: View, contextMenuInfo: ContextMenu.ContextMenuInfo?) {
                 super.onCreateContextMenu(contextMenu, view, contextMenuInfo)
-                MenuItemUtils.setOnClickListeners(contextMenu
-                ) { item: MenuItem -> this@SearchFragment.onContextItemSelected(item) }
+                MenuItemUtils.setOnClickListeners(contextMenu) { item: MenuItem -> this@SearchFragment.onContextItemSelected(item) }
             }
         }
         recyclerViewFeeds.adapter = adapterFeeds

@@ -3,6 +3,9 @@ package ac.mdiq.podcini.ui.dialog
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.AudioControlsBinding
 import ac.mdiq.podcini.playback.PlaybackController
+import ac.mdiq.podcini.playback.PlaybackController.Companion.audioTracks
+import ac.mdiq.podcini.playback.PlaybackController.Companion.selectedAudioTrack
+import ac.mdiq.podcini.playback.PlaybackController.Companion.setAudioTrack
 import android.app.Dialog
 import android.os.Bundle
 import android.os.Handler
@@ -51,8 +54,6 @@ class PlaybackControlsDialog : DialogFragment() {
     }
 
     @UnstableApi private fun setupAudioTracks() {
-        val audioTracks = controller!!.audioTracks
-        val selectedAudioTrack = controller!!.selectedAudioTrack
         val butAudioTracks = binding.audioTracks
         if (audioTracks.size < 2 || selectedAudioTrack < 0) {
             butAudioTracks.visibility = View.GONE
@@ -62,7 +63,7 @@ class PlaybackControlsDialog : DialogFragment() {
         butAudioTracks.visibility = View.VISIBLE
         butAudioTracks.text = audioTracks[selectedAudioTrack]
         butAudioTracks.setOnClickListener {
-            controller!!.setAudioTrack((selectedAudioTrack + 1) % audioTracks.size)
+            setAudioTrack((selectedAudioTrack + 1) % audioTracks.size)
             Handler(Looper.getMainLooper()).postDelayed({ this.setupAudioTracks() }, 500)
         }
     }

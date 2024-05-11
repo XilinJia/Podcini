@@ -4,23 +4,24 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.BaseEpisodesListFragmentBinding
 import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.net.download.FeedUpdateManager
-import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
+import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectActionHandler
+import ac.mdiq.podcini.ui.actions.menuhandler.FeedItemMenuHandler
+import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
+import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.EpisodeItemListAdapter
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
-import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectActionHandler
-import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
-import ac.mdiq.podcini.ui.actions.menuhandler.FeedItemMenuHandler
-import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.view.EmptyViewHandler
 import ac.mdiq.podcini.ui.view.EpisodeItemListRecyclerView
 import ac.mdiq.podcini.ui.view.LiftOnScrollListener
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
 import ac.mdiq.podcini.util.FeedItemUtil
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.*
+import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
 import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
@@ -82,7 +83,7 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
         super.onCreateView(inflater, container, savedInstanceState)
 
         _binding = BaseEpisodesListFragmentBinding.inflate(inflater)
-        Log.d(TAG, "fragment onCreateView")
+        Logd(TAG, "fragment onCreateView")
 
         txtvInformation = binding.txtvInformation
         toolbar = binding.toolbar
@@ -222,7 +223,7 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
-        Log.d(TAG, "onContextItemSelected() called with: item = [$item]")
+        Logd(TAG, "onContextItemSelected() called with: item = [$item]")
         when {
             // The method is called on all fragments in a ViewPager, so this needs to be ignored in invisible ones.
             // Apparently, none of the visibility check method works reliably on its own, so we just use all.
@@ -284,7 +285,7 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({ data: List<FeedItem> ->
                 if (data.size < EPISODES_PER_PAGE) hasMoreItems = false
-
+                Logd(TAG, "loadMoreItems $page ${data.size}")
                 episodes.addAll(data)
                 listAdapter.setDummyViews(0)
                 listAdapter.updateItems(episodes)
@@ -411,7 +412,6 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
                     listAdapter.updateItems(episodes)
                     listAdapter.setTotalNumberOfItems(data.second)
                     if (restoreScrollPosition) recyclerView.restoreScrollPosition(getPrefName())
-
                     updateToolbar()
                 }, { error: Throwable? ->
                     listAdapter.setDummyViews(0)

@@ -151,7 +151,7 @@ import java.util.concurrent.*
      * Get a FeedItem by its identifying value.
      */
     private fun searchFeedItemByIdentifyingValue(items: List<FeedItem>?, searchItem: FeedItem): FeedItem? {
-        if (items == null) return null
+        if (items.isNullOrEmpty()) return null
         for (item in items) {
             if (TextUtils.equals(item.identifyingValue, searchItem.identifyingValue)) return item
         }
@@ -205,7 +205,6 @@ import java.util.concurrent.*
             resultFeed = newFeed
         } else {
             Log.d(TAG, "Feed with title " + newFeed.title + " already exists. Syncing new with existing one.")
-
             newFeed.items.sortWith(FeedItemPubdateComparator())
 
             if (newFeed.pageNr == savedFeed.pageNr) {

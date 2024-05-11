@@ -15,6 +15,7 @@ object SynchronizationCredentials {
     private const val PREF_PASSWORD = "ac.mdiq.podcini.preferences.gpoddernet.password"
     private const val PREF_DEVICEID = "ac.mdiq.podcini.preferences.gpoddernet.deviceID"
     private const val PREF_HOSTNAME = "prefGpodnetHostname"
+    private const val PREF_HOSTPORT = "prefHostport"
 
     private val preferences: SharedPreferences
         get() = ClientConfig.applicationCallbacks!!.getApplicationInstance()!!.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
@@ -45,6 +46,13 @@ object SynchronizationCredentials {
         get() = preferences.getString(PREF_HOSTNAME, null)
         set(value) {
             preferences.edit().putString(PREF_HOSTNAME, value).apply()
+        }
+
+    @JvmStatic
+    var hostport: Int
+        get() = preferences.getInt(PREF_HOSTPORT, 0)
+        set(value) {
+            preferences.edit().putInt(PREF_HOSTPORT, value).apply()
         }
 
     @Synchronized

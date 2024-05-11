@@ -41,25 +41,23 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
-    private val chooseOpmlExportPathLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
-            this.chooseOpmlExportPathResult(result)
-        }
-    private val chooseHtmlExportPathLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
-            this.chooseHtmlExportPathResult(result)
-        }
-    private val chooseFavoritesExportPathLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
-            this.chooseFavoritesExportPathResult(result)
-        }
-    private val restoreDatabaseLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
-            this.restoreDatabaseResult(result)
-        }
+    private val chooseOpmlExportPathLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+        this.chooseOpmlExportPathResult(result) }
+    private val chooseHtmlExportPathLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+        this.chooseHtmlExportPathResult(result) }
+    private val chooseFavoritesExportPathLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+        this.chooseFavoritesExportPathResult(result) }
+    private val restoreDatabaseLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+        this.restoreDatabaseResult(result) }
     private val backupDatabaseLauncher = registerForActivityResult<String, Uri>(BackupDatabase()) { uri: Uri? -> this.backupDatabaseResult(uri) }
-    private val chooseOpmlImportPathLauncher =
-        registerForActivityResult<String, Uri>(ActivityResultContracts.GetContent()) { uri: Uri? -> this.chooseOpmlImportPathResult(uri) }
+    private val chooseOpmlImportPathLauncher = registerForActivityResult<String, Uri>(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        this.chooseOpmlImportPathResult(uri) }
+
+    // TODO: implement
+    private val restorePreferencesLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+        this.restorePreferencesResult(result) }
+    private val backupPreferencesLauncher = registerForActivityResult<String, Uri>(BackupPreferences()) { uri: Uri? -> this.backupPreferencesResult(uri) }
+
     private var disposable: Disposable? = null
     private var progressDialog: ProgressDialog? = null
 
@@ -110,6 +108,15 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
             exportDatabase()
             true
         }
+        findPreference<Preference>(PREF_PREFERENCES_IMPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            importPreferences()
+            true
+        }
+        findPreference<Preference>(PREF_PREFERENCES_EXPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            exportPreferences()
+            true
+        }
+
         findPreference<Preference>(PREF_FAVORITE_EXPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             openExportPathPicker(Export.FAVORITES, chooseFavoritesExportPathLauncher, FavoritesWriter())
             true
@@ -132,12 +139,20 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
             disposable = worker.exportObservable()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ output: DocumentFile? ->
-                    showExportSuccessSnackbar(output?.uri, exportType.contentType)
-                },
+                .subscribe({ output: DocumentFile? -> showExportSuccessSnackbar(output?.uri, exportType.contentType) },
                     { error: Throwable -> this.showExportErrorDialog(error) },
                     { progressDialog!!.dismiss() })
         }
+    }
+
+    // TODO: implement
+    private fun exportPreferences() {
+//        backupDatabaseLauncher.launch(dateStampFilename(DATABASE_EXPORT_FILENAME))
+    }
+
+    // TODO: implement
+    private fun importPreferences() {
+//        backupDatabaseLauncher.launch(dateStampFilename(DATABASE_EXPORT_FILENAME))
     }
 
     private fun exportDatabase() {
@@ -173,13 +188,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
 
     fun showExportSuccessSnackbar(uri: Uri?, mimeType: String?) {
         Snackbar.make(requireView(), R.string.export_success_title, Snackbar.LENGTH_LONG)
-            .setAction(R.string.share_label) {
-                IntentBuilder(requireContext())
-                    .setType(mimeType)
-                    .addStream(uri!!)
-                    .setChooserTitle(R.string.share_label)
-                    .startChooser()
-            }
+            .setAction(R.string.share_label) { IntentBuilder(requireContext()).setType(mimeType).addStream(uri!!).setChooserTitle(R.string.share_label).startChooser() }
             .show()
     }
 
@@ -235,6 +244,31 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
             }, { error: Throwable -> this.showExportErrorDialog(error) })
     }
 
+    private fun restorePreferencesResult(result: ActivityResult) {
+        if (result.resultCode != Activity.RESULT_OK || result.data == null) return
+//        val uri = result.data!!.data
+//        progressDialog!!.show()
+//        disposable = Completable.fromAction { DatabaseTransporter.importBackup(uri, requireContext()) }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe({
+//                showDatabaseImportSuccessDialog()
+//                progressDialog!!.dismiss()
+//            }, { error: Throwable -> this.showExportErrorDialog(error) })
+    }
+
+    private fun backupPreferencesResult(uri: Uri?) {
+        if (uri == null) return
+//        progressDialog!!.show()
+//        disposable = Completable.fromAction { DatabaseTransporter.exportToDocument(uri, requireContext()) }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe({
+//                showExportSuccessSnackbar(uri, "application/x-sqlite3")
+//                progressDialog!!.dismiss()
+//            }, { error: Throwable -> this.showExportErrorDialog(error) })
+    }
+
     private fun chooseOpmlImportPathResult(uri: Uri?) {
         if (uri == null) return
         val intent = Intent(context, OpmlImportActivity::class.java)
@@ -272,6 +306,15 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         }
     }
 
+    private class BackupPreferences : CreateDocument() {
+        override fun createIntent(context: Context, input: String): Intent {
+            return super.createIntent(context, input)
+//                .addCategory(Intent.CATEGORY_OPENABLE)
+//                .setType("application/x-sqlite3")
+        }
+    }
+
+
     private enum class Export(val contentType: String, val outputNameTemplate: String, @field:StringRes val labelResId: Int) {
         OPML(CONTENT_TYPE_OPML, DEFAULT_OPML_OUTPUT_NAME, R.string.opml_export_label),
         HTML(CONTENT_TYPE_HTML, DEFAULT_HTML_OUTPUT_NAME, R.string.html_export_label),
@@ -283,6 +326,8 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         private const val PREF_OPML_EXPORT = "prefOpmlExport"
         private const val PREF_OPML_IMPORT = "prefOpmlImport"
         private const val PREF_HTML_EXPORT = "prefHtmlExport"
+        private const val PREF_PREFERENCES_IMPORT = "prefPrefImport"
+        private const val PREF_PREFERENCES_EXPORT = "prefPrefExport"
         private const val PREF_DATABASE_IMPORT = "prefDatabaseImport"
         private const val PREF_DATABASE_EXPORT = "prefDatabaseExport"
         private const val PREF_FAVORITE_EXPORT = "prefFavoritesExport"

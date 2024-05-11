@@ -108,7 +108,7 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
         container.alpha = if (item.isPlayed()) 0.75f else 1.0f
 
         val newButton = ItemActionButton.forItem(item)
-        Log.d(TAG, "bind ${actionButton?.TAG} ${newButton.TAG} ${item.title}")
+//        Log.d(TAG, "bind ${actionButton?.TAG} ${newButton.TAG} ${item.title}")
         // not using a new button to ensure valid progress values
         if (!(actionButton?.TAG == TTSActionButton::class.simpleName && newButton.TAG == TTSActionButton::class.simpleName)) {
             actionButton = newButton
@@ -116,7 +116,7 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
             secondaryActionButton.isFocusable = false
         }
 
-        Log.d(TAG, "bind called ${item.media}")
+//        Log.d(TAG, "bind called ${item.media}")
         if (item.media != null) {
             bind(item.media!!)
         } else if (item.playState == BUILDING) {
@@ -135,7 +135,7 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
 
         if (coverHolder.visibility == View.VISIBLE) {
             val imgLoc = ImageResourceUtils.getEpisodeListImageLocation(item)
-            Log.d(TAG, "imgLoc $imgLoc")
+//            Log.d(TAG, "imgLoc $imgLoc")
             if (!imgLoc.isNullOrBlank() && !imgLoc.contains(PREFIX_GENERATIVE_COVER)) CoverLoader(activity)
                 .withUri(imgLoc)
                 .withFallbackUri(item.feed?.imageUrl)

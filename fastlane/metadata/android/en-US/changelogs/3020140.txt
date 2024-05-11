@@ -1,0 +1,20 @@
+ 
+Version 5.0.0 brings several changes:
+
+* experimental (back up before use) release of instant sync between devices on the same wifi network without a server
+* have media3 exoplayer taking over all audio focus controls to better cooperate with other media players. be mindful of any possible issues
+* fixed some icon handling issues noticed on Android 14
+* overhauled image handling routines, replaced Glide with Coil: efficiency improved, app lighter, and lots of exception issues eliminated, though appearance not fully replicated
+* suppressed log.d messages in release app
+* fixed search failure bug introduced with adding of transcript column
+* fixed a null pointer exception when opening online feed providing null connection type
+* fixed bug of episodes being mostly duplicated in online feed episodes view
+* fixed play/pause button not correctly set sometimes
+* fixed position not correctly shown sometimes
+* fixed position not correctly set on starting streaming
+* fixed issue with long-press on the Skip button
+* player status has now a single point of reference
+* player detailed view is only initialized at first open
+* instant (or wifi) sync can be accessed from Settings->Synchronization, where an instruction is shown
+* it syncs the play states (position and played) of episodes that exist in both devices (ensure to refresh first) and that have been played (completed or not) on at least one device
+* so far, every sync is a full sync, no subscription feeds sync, and no media files sync

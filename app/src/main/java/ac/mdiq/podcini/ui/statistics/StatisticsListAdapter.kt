@@ -4,6 +4,8 @@ package ac.mdiq.podcini.ui.statistics
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.StatisticsListitemBinding
 import ac.mdiq.podcini.databinding.StatisticsListitemTotalBinding
+import ac.mdiq.podcini.storage.StatisticsItem
+import ac.mdiq.podcini.ui.statistics.PieChartView.PieChartData
 import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
@@ -12,10 +14,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
-import ac.mdiq.podcini.storage.StatisticsItem
-import ac.mdiq.podcini.ui.statistics.PieChartView.PieChartData
+import coil.load
 
 /**
  * Parent Adapter for the playback and download statistics list.
@@ -51,15 +50,18 @@ abstract class StatisticsListAdapter protected constructor(@JvmField protected v
         } else {
             val holder = h as StatisticsHolder
             val statsItem = statisticsData!![position - 1]
-            if (!statsItem.feed.imageUrl.isNullOrBlank()) Glide.with(context)
-                .load(statsItem.feed.imageUrl)
-                .apply(RequestOptions()
-                    .placeholder(R.color.light_gray)
-                    .error(R.color.light_gray)
-                    .fitCenter()
-                    .dontAnimate())
-                .into(holder.image)
-
+//            if (!statsItem.feed.imageUrl.isNullOrBlank()) Glide.with(context)
+//                .load(statsItem.feed.imageUrl)
+//                .apply(RequestOptions()
+//                    .placeholder(R.color.light_gray)
+//                    .error(R.color.light_gray)
+//                    .fitCenter()
+//                    .dontAnimate())
+//                .into(holder.image)
+            holder.image.load(statsItem.feed.imageUrl) {
+                placeholder(R.color.light_gray)
+                error(R.mipmap.ic_launcher)
+            }
             holder.title.text = statsItem.feed.title
             holder.chip.setTextColor(pieChartData!!.getColorOfItem(position - 1))
             onBindFeedViewHolder(holder, statsItem)

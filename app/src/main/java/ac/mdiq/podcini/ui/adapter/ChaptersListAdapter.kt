@@ -1,5 +1,15 @@
 package ac.mdiq.podcini.ui.adapter
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.SimplechapterItemBinding
+import ac.mdiq.podcini.storage.model.feed.Chapter
+import ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage
+import ac.mdiq.podcini.storage.model.playback.Playable
+import ac.mdiq.podcini.ui.adapter.ChaptersListAdapter.ChapterHolder
+import ac.mdiq.podcini.ui.view.CircularProgressBar
+import ac.mdiq.podcini.util.Converter.getDurationStringLocalized
+import ac.mdiq.podcini.util.Converter.getDurationStringLong
+import ac.mdiq.podcini.util.IntentUtils.openInBrowser
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -8,21 +18,10 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.FitCenter
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
-import com.bumptech.glide.request.RequestOptions
+import coil.ImageLoader
+import coil.load
+import coil.request.ImageRequest
 import com.google.android.material.elevation.SurfaceColors
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.SimplechapterItemBinding
-import ac.mdiq.podcini.ui.adapter.ChaptersListAdapter.ChapterHolder
-import ac.mdiq.podcini.util.Converter.getDurationStringLocalized
-import ac.mdiq.podcini.util.Converter.getDurationStringLong
-import ac.mdiq.podcini.util.IntentUtils.openInBrowser
-import ac.mdiq.podcini.storage.model.feed.Chapter
-import ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage
-import ac.mdiq.podcini.storage.model.playback.Playable
-import ac.mdiq.podcini.ui.view.CircularProgressBar
 import kotlin.math.max
 import kotlin.math.min
 
@@ -83,16 +82,19 @@ class ChaptersListAdapter(private val context: Context, private val callback: Ca
         if (hasImages) {
             holder.image.visibility = View.VISIBLE
             if (sc.imageUrl.isNullOrEmpty()) {
-                Glide.with(context).clear(holder.image)
+//                Glide.with(context).clear(holder.image)
+                val imageLoader = ImageLoader.Builder(context).build()
+                imageLoader.enqueue(ImageRequest.Builder(context).data(null).target(holder.image).build())
             } else {
                 if (media != null) {
                     val imgUrl = EmbeddedChapterImage.getModelFor(media!!,position)
-                    if (imgUrl != null) Glide.with(context)
-                        .load(imgUrl)
-                        .apply(RequestOptions()
-                            .dontAnimate()
-                            .transform(FitCenter(), RoundedCorners((4 * context.resources.displayMetrics.density).toInt())))
-                        .into(holder.image)
+//                    if (imgUrl != null) Glide.with(context)
+//                        .load(imgUrl)
+//                        .apply(RequestOptions()
+//                            .dontAnimate()
+//                            .transform(FitCenter(), RoundedCorners((4 * context.resources.displayMetrics.density).toInt())))
+//                        .into(holder.image)
+                    holder.image.load(imgUrl)
                 }
             }
         } else holder.image.visibility = View.GONE

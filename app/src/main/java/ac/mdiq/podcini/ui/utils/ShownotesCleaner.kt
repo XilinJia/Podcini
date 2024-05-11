@@ -1,13 +1,13 @@
 package ac.mdiq.podcini.ui.utils
 
 import ac.mdiq.podcini.R
-import android.content.Context
-import android.graphics.Color
-import android.util.Log
-import android.util.TypedValue
-import androidx.annotation.ColorInt
 import ac.mdiq.podcini.util.Converter.durationStringLongToMs
 import ac.mdiq.podcini.util.Converter.durationStringShortToMs
+import ac.mdiq.podcini.util.Logd
+import android.content.Context
+import android.graphics.Color
+import android.util.TypedValue
+import androidx.annotation.ColorInt
 import org.apache.commons.io.IOUtils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -59,7 +59,7 @@ class ShownotesCleaner(context: Context, private val rawShownotes: String, priva
         var shownotes = rawShownotes
 
         if (shownotes.isEmpty()) {
-            Log.d(TAG, "shownotesProvider contained no shownotes. Returning 'no shownotes' message")
+            Logd(TAG, "shownotesProvider contained no shownotes. Returning 'no shownotes' message")
             shownotes = "<html><head></head><body><p id='apNoShownotes'>$noShownotesLabel</p></body></html>"
         }
 
@@ -76,7 +76,7 @@ class ShownotesCleaner(context: Context, private val rawShownotes: String, priva
 
     private fun addTimecodes(document: Document) {
         val elementsWithTimeCodes = document.body().getElementsMatchingOwnText(TIMECODE_REGEX)
-        Log.d(TAG, "Recognized " + elementsWithTimeCodes.size + " timecodes")
+        Logd(TAG, "Recognized " + elementsWithTimeCodes.size + " timecodes")
 
         if (elementsWithTimeCodes.size == 0) return  // No elements with timecodes
 

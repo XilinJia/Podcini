@@ -2,20 +2,18 @@ package ac.mdiq.podcini.ui.adapter
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.model.feed.FeedItem
-import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.utils.ThemeUtils
-import ac.mdiq.podcini.ui.fragment.EpisodeInfoFragment
 import ac.mdiq.podcini.ui.actions.menuhandler.FeedItemMenuHandler
+import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.fragment.EpisodeInfoFragment
+import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
 import android.R.color
 import android.app.Activity
-import android.os.Build
 import android.util.Log
 import android.view.*
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.RecyclerView
 import java.lang.ref.WeakReference
-
 
 /**
  * List adapter for the list of new episodes.
@@ -35,7 +33,8 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) :
 
     fun setDummyViews(dummyViews: Int) {
         this.dummyViews = dummyViews
-        notifyDataSetChanged()
+//        TODO: test : what is this?
+//        notifyDataSetChanged()
     }
 
     fun updateItems(items: List<FeedItem>) {
@@ -63,7 +62,7 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) :
 
         // Reset state of recycled views
         holder.coverHolder.visibility = View.VISIBLE
-        holder.dragHandle.setVisibility(View.GONE)
+        holder.dragHandle.visibility = View.GONE
 
         beforeBindViewHolder(holder, pos)
 
@@ -83,7 +82,6 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) :
 //                val ids: LongArray = FeedItemUtil.getIds(episodes)
 //                val position = ArrayUtils.indexOf(ids, item.id)
                 activity?.loadChildFragment(EpisodeInfoFragment.newInstance(episodes[pos]))
-                Log.d("infoCard", "setOnClickListener starting EpisodeInfoFragment")
             } else {
                 toggleSelection(holder.bindingAdapterPosition)
             }
@@ -159,7 +157,8 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) :
     }
 
     protected fun getItem(index: Int): FeedItem? {
-        return if (index in episodes.indices) episodes[index] else null
+        val item = if (index in episodes.indices) episodes[index] else null
+        return item
     }
 
     protected val activity: Activity?

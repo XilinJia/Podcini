@@ -7,7 +7,7 @@ import ac.mdiq.podcini.playback.service.LocalMediaPlayer
 import ac.mdiq.podcini.storage.model.feed.*
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.playback.base.MediaPlayerBase
-import ac.mdiq.podcini.playback.base.MediaPlayerBase.PSMPInfo
+import ac.mdiq.podcini.playback.base.MediaPlayerBase.MediaPlayerInfo
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.storage.database.PodDBAdapter.Companion.deleteDatabase
 import ac.mdiq.podcini.storage.database.PodDBAdapter.Companion.getInstance
@@ -80,7 +80,7 @@ class MediaPlayerBaseTest {
         Assert.assertEquals(0, httpServer!!.serveFile(dest).toLong())
     }
 
-    private fun checkPSMPInfo(info: PSMPInfo?) {
+    private fun checkPSMPInfo(info: MediaPlayerInfo?) {
         try {
             when (info!!.playerStatus) {
                 PlayerStatus.PLAYING, PlayerStatus.PAUSED, PlayerStatus.PREPARED, PlayerStatus.PREPARING, PlayerStatus.INITIALIZED, PlayerStatus.INITIALIZING, PlayerStatus.SEEKING -> Assert.assertNotNull(
@@ -126,7 +126,7 @@ class MediaPlayerBaseTest {
         val c = InstrumentationRegistry.getInstrumentation().targetContext
         val countDownLatch = CountDownLatch(2)
         val callback = CancelablePSMPCallback(object : DefaultPSMPCallback() {
-            override fun statusChanged(newInfo: PSMPInfo?) {
+            override fun statusChanged(newInfo: MediaPlayerInfo?) {
                 try {
                     checkPSMPInfo(newInfo)
                     check(newInfo!!.playerStatus != PlayerStatus.ERROR) { "MediaPlayer error" }
@@ -168,7 +168,7 @@ class MediaPlayerBaseTest {
         val c = InstrumentationRegistry.getInstrumentation().targetContext
         val countDownLatch = CountDownLatch(2)
         val callback = CancelablePSMPCallback(object : DefaultPSMPCallback() {
-            override fun statusChanged(newInfo: PSMPInfo?) {
+            override fun statusChanged(newInfo: MediaPlayerInfo?) {
                 try {
                     checkPSMPInfo(newInfo)
                     check(newInfo!!.playerStatus != PlayerStatus.ERROR) { "MediaPlayer error" }
@@ -211,7 +211,7 @@ class MediaPlayerBaseTest {
         val c = InstrumentationRegistry.getInstrumentation().targetContext
         val countDownLatch = CountDownLatch(4)
         val callback = CancelablePSMPCallback(object : DefaultPSMPCallback() {
-            override fun statusChanged(newInfo: PSMPInfo?) {
+            override fun statusChanged(newInfo: MediaPlayerInfo?) {
                 try {
                     checkPSMPInfo(newInfo)
                     check(newInfo!!.playerStatus != PlayerStatus.ERROR) { "MediaPlayer error" }
@@ -257,7 +257,7 @@ class MediaPlayerBaseTest {
         val c = InstrumentationRegistry.getInstrumentation().targetContext
         val countDownLatch = CountDownLatch(5)
         val callback = CancelablePSMPCallback(object : DefaultPSMPCallback() {
-            override fun statusChanged(newInfo: PSMPInfo?) {
+            override fun statusChanged(newInfo: MediaPlayerInfo?) {
                 try {
                     checkPSMPInfo(newInfo)
                     check(newInfo!!.playerStatus != PlayerStatus.ERROR) { "MediaPlayer error" }
@@ -305,7 +305,7 @@ class MediaPlayerBaseTest {
         val c = InstrumentationRegistry.getInstrumentation().targetContext
         val countDownLatch = CountDownLatch(2)
         val callback = CancelablePSMPCallback(object : DefaultPSMPCallback() {
-            override fun statusChanged(newInfo: PSMPInfo?) {
+            override fun statusChanged(newInfo: MediaPlayerInfo?) {
                 try {
                     checkPSMPInfo(newInfo)
                     check(newInfo!!.playerStatus != PlayerStatus.ERROR) { "MediaPlayer error" }
@@ -346,7 +346,7 @@ class MediaPlayerBaseTest {
         val c = InstrumentationRegistry.getInstrumentation().targetContext
         val countDownLatch = CountDownLatch(2)
         val callback = CancelablePSMPCallback(object : DefaultPSMPCallback() {
-            override fun statusChanged(newInfo: PSMPInfo?) {
+            override fun statusChanged(newInfo: MediaPlayerInfo?) {
                 try {
                     checkPSMPInfo(newInfo)
                     check(newInfo!!.playerStatus != PlayerStatus.ERROR) { "MediaPlayer error" }
@@ -387,7 +387,7 @@ class MediaPlayerBaseTest {
         val c = InstrumentationRegistry.getInstrumentation().targetContext
         val countDownLatch = CountDownLatch(4)
         val callback = CancelablePSMPCallback(object : DefaultPSMPCallback() {
-            override fun statusChanged(newInfo: PSMPInfo?) {
+            override fun statusChanged(newInfo: MediaPlayerInfo?) {
                 try {
                     checkPSMPInfo(newInfo)
                     check(newInfo!!.playerStatus != PlayerStatus.ERROR) { "MediaPlayer error" }
@@ -432,7 +432,7 @@ class MediaPlayerBaseTest {
         val c = InstrumentationRegistry.getInstrumentation().targetContext
         val countDownLatch = CountDownLatch(5)
         val callback = CancelablePSMPCallback(object : DefaultPSMPCallback() {
-            override fun statusChanged(newInfo: PSMPInfo?) {
+            override fun statusChanged(newInfo: MediaPlayerInfo?) {
                 try {
                     checkPSMPInfo(newInfo)
                     check(newInfo!!.playerStatus != PlayerStatus.ERROR) { "MediaPlayer error" }
@@ -486,7 +486,7 @@ class MediaPlayerBaseTest {
         val countDownLatch = CountDownLatch(latchCount)
 
         val callback = CancelablePSMPCallback(object : DefaultPSMPCallback() {
-            override fun statusChanged(newInfo: PSMPInfo?) {
+            override fun statusChanged(newInfo: MediaPlayerInfo?) {
                 checkPSMPInfo(newInfo)
                 when {
                     newInfo!!.playerStatus == PlayerStatus.ERROR -> {
@@ -607,7 +607,7 @@ class MediaPlayerBaseTest {
         val countDownLatch = CountDownLatch(latchCount)
 
         val callback = CancelablePSMPCallback(object : DefaultPSMPCallback() {
-            override fun statusChanged(newInfo: PSMPInfo?) {
+            override fun statusChanged(newInfo: MediaPlayerInfo?) {
                 checkPSMPInfo(newInfo)
                 when {
                     newInfo!!.playerStatus == PlayerStatus.ERROR -> {
@@ -666,7 +666,7 @@ class MediaPlayerBaseTest {
         val latchCount = 1
         val countDownLatch = CountDownLatch(latchCount)
         val callback = CancelablePSMPCallback(object : DefaultPSMPCallback() {
-            override fun statusChanged(newInfo: PSMPInfo?) {
+            override fun statusChanged(newInfo: MediaPlayerInfo?) {
                 checkPSMPInfo(newInfo)
                 if (newInfo!!.playerStatus == PlayerStatus.ERROR) {
                     if (assertionError == null) assertionError = UnexpectedStateChange(newInfo.playerStatus)
@@ -739,7 +739,7 @@ class MediaPlayerBaseTest {
         val latchCount = 2
         val countDownLatch = CountDownLatch(latchCount)
         val callback = CancelablePSMPCallback(object : DefaultPSMPCallback() {
-            override fun statusChanged(newInfo: PSMPInfo?) {
+            override fun statusChanged(newInfo: MediaPlayerInfo?) {
                 checkPSMPInfo(newInfo)
                 if (newInfo!!.playerStatus == PlayerStatus.ERROR) {
                     if (assertionError == null) assertionError = UnexpectedStateChange(newInfo.playerStatus)

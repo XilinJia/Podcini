@@ -43,8 +43,7 @@ class NextcloudLoginFlow(private val httpClient: OkHttpClient, private val rawHo
             return
         }
         startDisposable = Observable.fromCallable {
-            val url = URI(hostname.scheme, null, hostname.host, hostname.port,
-                hostname.subfolder + "/index.php/login/v2", null, null).toURL()
+            val url = URI(hostname.scheme, null, hostname.host, hostname.port, hostname.subfolder + "/index.php/login/v2", null, null).toURL()
             val result = doRequest(url, "")
             val loginUrl = result.getString("login")
             this.token = result.getJSONObject("poll").getString("token")
@@ -102,7 +101,6 @@ class NextcloudLoginFlow(private val httpClient: OkHttpClient, private val rawHo
 
     interface AuthenticationCallback {
         fun onNextcloudAuthenticated(server: String, username: String, password: String)
-
         fun onNextcloudAuthError(errorMessage: String?)
     }
 

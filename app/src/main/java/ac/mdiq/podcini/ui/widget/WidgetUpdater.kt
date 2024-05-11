@@ -1,33 +1,35 @@
 package ac.mdiq.podcini.ui.widget
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.feed.util.ImageResourceUtils.getFallbackImageLocation
+import ac.mdiq.podcini.playback.base.PlayerStatus
+import ac.mdiq.podcini.preferences.UserPreferences.shouldShowRemainingTime
+import ac.mdiq.podcini.receiver.MediaButtonReceiver.Companion.createPendingIntent
+import ac.mdiq.podcini.receiver.PlayerWidget
+import ac.mdiq.podcini.receiver.PlayerWidget.Companion.isEnabled
+import ac.mdiq.podcini.storage.model.playback.MediaType
+import ac.mdiq.podcini.storage.model.playback.Playable
+import ac.mdiq.podcini.ui.activity.appstartintent.MainActivityStarter
+import ac.mdiq.podcini.ui.activity.appstartintent.PlaybackSpeedActivityStarter
+import ac.mdiq.podcini.ui.activity.appstartintent.VideoPlayerActivityStarter
+import ac.mdiq.podcini.util.Converter.getDurationStringLong
+import ac.mdiq.podcini.util.TimeSpeedConverter
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.widget.RemoteViews
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.FitCenter
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
-import com.bumptech.glide.request.RequestOptions
-
-import ac.mdiq.podcini.feed.util.ImageResourceUtils.getFallbackImageLocation
-import ac.mdiq.podcini.receiver.MediaButtonReceiver.Companion.createPendingIntent
-import ac.mdiq.podcini.receiver.PlayerWidget
-import ac.mdiq.podcini.receiver.PlayerWidget.Companion.isEnabled
-import ac.mdiq.podcini.util.Converter.getDurationStringLong
-import ac.mdiq.podcini.util.TimeSpeedConverter
-import ac.mdiq.podcini.storage.model.playback.MediaType
-import ac.mdiq.podcini.storage.model.playback.Playable
-import ac.mdiq.podcini.playback.base.PlayerStatus
-import ac.mdiq.podcini.preferences.UserPreferences.shouldShowRemainingTime
-import ac.mdiq.podcini.ui.activity.appstartintent.MainActivityStarter
-import ac.mdiq.podcini.ui.activity.appstartintent.PlaybackSpeedActivityStarter
-import ac.mdiq.podcini.ui.activity.appstartintent.VideoPlayerActivityStarter
-import java.util.concurrent.TimeUnit
+import coil.imageLoader
+import coil.request.ErrorResult
+import coil.request.ImageRequest
+import coil.request.SuccessResult
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlin.math.max
 
 /**
@@ -57,26 +59,49 @@ object WidgetUpdater {
             views.setOnClickPendingIntent(R.id.butPlaybackSpeed, startPlaybackSpeedDialog)
 
             val radius = context.resources.getDimensionPixelSize(R.dimen.widget_inner_radius)
-            val options = RequestOptions()
-                .dontAnimate()
-                .transform(FitCenter(), RoundedCorners(radius))
+//            val options = RequestOptions()
+//                .dontAnimate()
+//                .transform(FitCenter(), RoundedCorners(radius))
 
             try {
                 val imgLoc = widgetState.media.getImageLocation()
                 val imgLoc1 = getFallbackImageLocation(widgetState.media)
-                icon = Glide.with(context)
-                    .asBitmap()
-                    .load(imgLoc)
-                    .error(Glide.with(context)
-                        .asBitmap()
-                        .load(imgLoc1)
-                        .apply(options)
-                        .submit(iconSize, iconSize)[500, TimeUnit.MILLISECONDS])
-                    .apply(options)
-                    .submit(iconSize, iconSize)
-                    .get(500, TimeUnit.MILLISECONDS)
-                if (icon != null) views.setImageViewBitmap(R.id.imgvCover, icon)
-                else views.setImageViewResource(R.id.imgvCover, R.mipmap.ic_launcher)
+//                icon = Glide.with(context)
+//                    .asBitmap()
+//                    .load(imgLoc)
+//                    .error(Glide.with(context)
+//                        .asBitmap()
+//                        .load(imgLoc1)
+//                        .apply(options)
+//                        .submit(iconSize, iconSize)[500, TimeUnit.MILLISECONDS])
+//                    .apply(options)
+//                    .submit(iconSize, iconSize)
+//                    .get(500, TimeUnit.MILLISECONDS)
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    val request = ImageRequest.Builder(context)
+                        .data(imgLoc)
+                        .placeholder(R.color.light_gray)
+                        .listener(object : ImageRequest.Listener {
+                            override fun onError(request: ImageRequest, throwable: ErrorResult) {
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    val fallbackImageRequest = ImageRequest.Builder(context)
+                                        .data(imgLoc1)
+                                        .error(R.mipmap.ic_launcher)
+                                        .size(iconSize, iconSize)
+                                        .build()
+                                    val result = (context.imageLoader.execute(fallbackImageRequest) as SuccessResult).drawable
+                                    icon = (result as BitmapDrawable).bitmap
+                                }
+                            }
+                        })
+                        .size(iconSize, iconSize)
+                        .build()
+                    val result = (context.imageLoader.execute(request) as SuccessResult).drawable
+                    icon = (result as BitmapDrawable).bitmap
+                    if (icon != null) views.setImageViewBitmap(R.id.imgvCover, icon)
+                    else views.setImageViewResource(R.id.imgvCover, R.mipmap.ic_launcher)
+                }
             } catch (tr1: Throwable) {
                 Log.e(TAG, "Error loading the media icon for the widget", tr1)
             }

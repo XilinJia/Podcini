@@ -22,6 +22,7 @@ import ac.mdiq.podcini.storage.DBReader.getQueue
 import ac.mdiq.podcini.storage.DBReader.getQueueIDList
 import ac.mdiq.podcini.storage.DBWriter.clearQueue
 import ac.mdiq.podcini.playback.PlaybackController
+import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.storage.model.feed.FeedItemFilter.Companion.unfiltered
 import ac.mdiq.podcini.storage.model.feed.SortOrder
 import ac.mdiq.podcini.playback.base.PlayerStatus
@@ -87,7 +88,7 @@ class PlaybackTest {
         setupPlaybackController()
         playFromQueue(0)
         Awaitility.await().atMost(5, TimeUnit.SECONDS)
-            .until { controller!!.status == PlayerStatus.INITIALIZED }
+            .until { MediaPlayerBase.status == PlayerStatus.INITIALIZED }
     }
 
     @Test
@@ -148,11 +149,11 @@ class PlaybackTest {
         // let playback run a bit then pause
         Awaitility.await()
             .atMost(1000, TimeUnit.MILLISECONDS)
-            .until { PlayerStatus.PLAYING == controller!!.status }
+            .until { PlayerStatus.PLAYING == MediaPlayerBase.status }
         pauseEpisode()
         Awaitility.await()
             .atMost(1000, TimeUnit.MILLISECONDS)
-            .until { PlayerStatus.PAUSED == controller!!.status }
+            .until { PlayerStatus.PAUSED == MediaPlayerBase.status }
 
         Assert.assertThat("Ensure even with smart mark as play, after pause, the item remains in the queue.",
             getQueue(), Matchers.hasItems(feedItem))

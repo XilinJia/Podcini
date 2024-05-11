@@ -1,8 +1,8 @@
 package ac.mdiq.podcini.util.error
 
-import android.util.Log
 import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.util.error.CrashReportWriter.Companion.write
+import android.util.Log
 import io.reactivex.exceptions.UndeliverableException
 import io.reactivex.plugins.RxJavaPlugins
 

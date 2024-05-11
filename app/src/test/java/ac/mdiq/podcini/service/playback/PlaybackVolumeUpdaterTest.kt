@@ -22,7 +22,7 @@ class PlaybackVolumeUpdaterTest {
     fun noChangeIfNoFeedMediaPlaying() {
         val playbackVolumeUpdater = PlaybackVolumeUpdater()
 
-        Mockito.`when`(mediaPlayer!!.playerStatus).thenReturn(PlayerStatus.PAUSED)
+        Mockito.`when`(MediaPlayerBase.status).thenReturn(PlayerStatus.PAUSED)
 
         val noFeedMedia = Mockito.mock(Playable::class.java)
         Mockito.`when`(mediaPlayer!!.getPlayable()).thenReturn(noFeedMedia)
@@ -37,7 +37,7 @@ class PlaybackVolumeUpdaterTest {
     fun noChangeIfPlayerStatusIsError() {
         val playbackVolumeUpdater = PlaybackVolumeUpdater()
 
-        Mockito.`when`(mediaPlayer!!.playerStatus).thenReturn(PlayerStatus.ERROR)
+        Mockito.`when`(MediaPlayerBase.status).thenReturn(PlayerStatus.ERROR)
 
         val feedMedia = mockFeedMedia()
         Mockito.`when`(mediaPlayer!!.getPlayable()).thenReturn(feedMedia)
@@ -52,7 +52,7 @@ class PlaybackVolumeUpdaterTest {
     fun noChangeIfPlayerStatusIsIndeterminate() {
         val playbackVolumeUpdater = PlaybackVolumeUpdater()
 
-        Mockito.`when`(mediaPlayer!!.playerStatus).thenReturn(PlayerStatus.INDETERMINATE)
+        Mockito.`when`(MediaPlayerBase.status).thenReturn(PlayerStatus.INDETERMINATE)
 
         val feedMedia = mockFeedMedia()
         Mockito.`when`(mediaPlayer!!.getPlayable()).thenReturn(feedMedia)
@@ -67,7 +67,7 @@ class PlaybackVolumeUpdaterTest {
     fun noChangeIfPlayerStatusIsStopped() {
         val playbackVolumeUpdater = PlaybackVolumeUpdater()
 
-        Mockito.`when`(mediaPlayer!!.playerStatus).thenReturn(PlayerStatus.STOPPED)
+        Mockito.`when`(MediaPlayerBase.status).thenReturn(PlayerStatus.STOPPED)
 
         val feedMedia = mockFeedMedia()
         Mockito.`when`(mediaPlayer!!.getPlayable()).thenReturn(feedMedia)
@@ -80,7 +80,7 @@ class PlaybackVolumeUpdaterTest {
 
     @Test
     fun noChangeIfPlayableIsNoItemOfAffectedFeed() {
-        Mockito.`when`(mediaPlayer!!.playerStatus).thenReturn(PlayerStatus.PLAYING)
+        Mockito.`when`(MediaPlayerBase.status).thenReturn(PlayerStatus.PLAYING)
 
         val feedMedia = mockFeedMedia()
         Mockito.`when`(mediaPlayer!!.getPlayable()).thenReturn(feedMedia)
@@ -97,7 +97,7 @@ class PlaybackVolumeUpdaterTest {
     fun updatesPreferencesForLoadedFeedMediaIfPlayerStatusIsPaused() {
         val playbackVolumeUpdater = PlaybackVolumeUpdater()
 
-        Mockito.`when`(mediaPlayer!!.playerStatus).thenReturn(PlayerStatus.PAUSED)
+        Mockito.`when`(MediaPlayerBase.status).thenReturn(PlayerStatus.PAUSED)
 
         val feedMedia = mockFeedMedia()
         Mockito.`when`(mediaPlayer!!.getPlayable()).thenReturn(feedMedia)
@@ -116,7 +116,7 @@ class PlaybackVolumeUpdaterTest {
     fun updatesPreferencesForLoadedFeedMediaIfPlayerStatusIsPrepared() {
         val playbackVolumeUpdater = PlaybackVolumeUpdater()
 
-        Mockito.`when`(mediaPlayer!!.playerStatus).thenReturn(PlayerStatus.PREPARED)
+        Mockito.`when`(MediaPlayerBase.status).thenReturn(PlayerStatus.PREPARED)
 
         val feedMedia = mockFeedMedia()
         Mockito.`when`(mediaPlayer!!.getPlayable()).thenReturn(feedMedia)
@@ -135,7 +135,7 @@ class PlaybackVolumeUpdaterTest {
     fun updatesPreferencesForLoadedFeedMediaIfPlayerStatusIsInitializing() {
         val playbackVolumeUpdater = PlaybackVolumeUpdater()
 
-        Mockito.`when`(mediaPlayer!!.playerStatus).thenReturn(PlayerStatus.INITIALIZING)
+        Mockito.`when`(MediaPlayerBase.status).thenReturn(PlayerStatus.INITIALIZING)
 
         val feedMedia = mockFeedMedia()
         Mockito.`when`(mediaPlayer!!.getPlayable()).thenReturn(feedMedia)
@@ -154,7 +154,7 @@ class PlaybackVolumeUpdaterTest {
     fun updatesPreferencesForLoadedFeedMediaIfPlayerStatusIsPreparing() {
         val playbackVolumeUpdater = PlaybackVolumeUpdater()
 
-        Mockito.`when`(mediaPlayer!!.playerStatus).thenReturn(PlayerStatus.PREPARING)
+        Mockito.`when`(MediaPlayerBase.status).thenReturn(PlayerStatus.PREPARING)
 
         val feedMedia = mockFeedMedia()
         Mockito.`when`(mediaPlayer!!.getPlayable()).thenReturn(feedMedia)
@@ -173,7 +173,7 @@ class PlaybackVolumeUpdaterTest {
     fun updatesPreferencesForLoadedFeedMediaIfPlayerStatusIsSeeking() {
         val playbackVolumeUpdater = PlaybackVolumeUpdater()
 
-        Mockito.`when`(mediaPlayer!!.playerStatus).thenReturn(PlayerStatus.SEEKING)
+        Mockito.`when`(MediaPlayerBase.status).thenReturn(PlayerStatus.SEEKING)
 
         val feedMedia = mockFeedMedia()
         Mockito.`when`(mediaPlayer!!.getPlayable()).thenReturn(feedMedia)
@@ -192,7 +192,7 @@ class PlaybackVolumeUpdaterTest {
     fun updatesPreferencesAndForcesVolumeChangeForLoadedFeedMediaIfPlayerStatusIsPlaying() {
         val playbackVolumeUpdater = PlaybackVolumeUpdater()
 
-        Mockito.`when`(mediaPlayer!!.playerStatus).thenReturn(PlayerStatus.PLAYING)
+        Mockito.`when`(MediaPlayerBase.status).thenReturn(PlayerStatus.PLAYING)
 
         val feedMedia = mockFeedMedia()
         Mockito.`when`(mediaPlayer!!.getPlayable()).thenReturn(feedMedia)

@@ -5,9 +5,9 @@ import ac.mdiq.podcini.databinding.EditTextDialogBinding
 import ac.mdiq.podcini.storage.DBWriter
 import ac.mdiq.podcini.storage.NavDrawerData.FeedDrawerItem
 import ac.mdiq.podcini.storage.model.feed.Feed
+import ac.mdiq.podcini.util.Logd
 import android.app.Activity
 import android.content.DialogInterface
-import android.util.Log
 import android.view.LayoutInflater
 import androidx.annotation.OptIn
 import androidx.appcompat.app.AlertDialog
@@ -70,6 +70,6 @@ class RenameItemDialog {
 //                DBWriter.setFeedPreferences(preferences)
 //            }
 //        }
-        Log.d("RenameDialog", "rename tag not needed here")
+        Logd("RenameDialog", "rename tag not needed here")
     }
 }

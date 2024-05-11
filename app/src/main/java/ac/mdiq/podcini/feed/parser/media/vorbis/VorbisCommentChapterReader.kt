@@ -1,8 +1,7 @@
 package ac.mdiq.podcini.feed.parser.media.vorbis
 
-import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.storage.model.feed.Chapter
-import android.util.Log
+import ac.mdiq.podcini.util.Logd
 import java.io.InputStream
 import java.util.concurrent.TimeUnit
 
@@ -15,7 +14,7 @@ class VorbisCommentChapterReader(input: InputStream?) : VorbisCommentReader(inpu
 
     @Throws(VorbisCommentReaderException::class)
     public override fun onContentVectorValue(key: String?, value: String?) {
-        if (BuildConfig.DEBUG) Log.d(TAG, "Key: $key, value: $value")
+        Logd(TAG, "Key: $key, value: $value")
 
         val attribute = getAttributeTypeFromKey(key)
         val id = getIdFromKey(key)

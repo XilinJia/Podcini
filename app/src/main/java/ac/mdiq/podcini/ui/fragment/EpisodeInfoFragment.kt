@@ -20,6 +20,7 @@ import ac.mdiq.podcini.ui.view.CircularProgressBar
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.Converter
 import ac.mdiq.podcini.util.DateFormatter
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.PlaybackStatus
 import ac.mdiq.podcini.util.event.EpisodeDownloadEvent
 import ac.mdiq.podcini.util.event.FeedItemEvent
@@ -41,10 +42,9 @@ import androidx.core.app.ShareCompat
 import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import androidx.media3.common.util.UnstableApi
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.FitCenter
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
-import com.bumptech.glide.request.RequestOptions
+import coil.imageLoader
+import coil.request.ErrorResult
+import coil.request.ImageRequest
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.snackbar.Snackbar
 import com.skydoves.balloon.ArrowOrientation
@@ -108,7 +108,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
         _binding = EpisodeInfoFragmentBinding.inflate(inflater, container, false)
         root = binding.root
-        Log.d(TAG, "fragment onCreateView")
+        Logd(TAG, "fragment onCreateView")
 
         toolbar = binding.toolbar
         toolbar.title = ""
@@ -254,7 +254,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     @OptIn(UnstableApi::class) override fun onDestroyView() {
         super.onDestroyView()
-        Log.d(TAG, "onDestroyView")
+        Logd(TAG, "onDestroyView")
         _binding = null
         EventBus.getDefault().unregister(this)
         controller?.release()
@@ -273,7 +273,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     @UnstableApi private fun updateAppearance() {
         if (item == null) {
-            Log.d(TAG, "updateAppearance item is null")
+            Logd(TAG, "updateAppearance item is null")
             return
         }
         if (item!!.hasMedia()) {
@@ -291,20 +291,25 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             txtvPublished.setContentDescription(DateFormatter.formatForAccessibility(item!!.pubDate))
         }
 
-        val options: RequestOptions = RequestOptions()
-            .error(R.color.light_gray)
-            .transform(FitCenter(), RoundedCorners((8 * resources.displayMetrics.density).toInt()))
-            .dontAnimate()
-
         val imgLocFB = ImageResourceUtils.getFallbackImageLocation(item!!)
-        if (!item!!.imageLocation.isNullOrBlank() || !imgLocFB.isNullOrBlank())
-            Glide.with(this)
-                .load(item!!.imageLocation)
-                .error(Glide.with(this)
-                    .load(imgLocFB)
-                    .apply(options))
-                .apply(options)
-                .into(imgvCover)
+        val imageLoader = imgvCover.context.imageLoader
+        val imageRequest = ImageRequest.Builder(requireContext())
+            .data(item!!.imageLocation)
+            .placeholder(R.color.light_gray)
+            .listener(object : ImageRequest.Listener {
+                override fun onError(request: ImageRequest, throwable: ErrorResult) {
+                    val fallbackImageRequest = ImageRequest.Builder(requireContext())
+                        .data(imgLocFB)
+                        .error(R.mipmap.ic_launcher)
+                        .target(imgvCover)
+                        .build()
+                    imageLoader.enqueue(fallbackImageRequest)
+                }
+            })
+            .target(imgvCover)
+            .build()
+        imageLoader.enqueue(imageRequest)
+
         updateButtons()
     }
 
@@ -375,7 +380,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: FeedItemEvent) {
-        Log.d(TAG, "onEventMainThread() called with: event = [$event]")
+        Logd(TAG, "onEventMainThread() called with: event = [$event]")
         if (this.item == null) return
         for (item in event.items) {
             if (this.item!!.id == item.id) {

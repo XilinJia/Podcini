@@ -1,14 +1,14 @@
 package ac.mdiq.podcini.playback.base
 
+import ac.mdiq.podcini.storage.model.playback.MediaType
+import ac.mdiq.podcini.storage.model.playback.Playable
+import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.media.AudioManager
 import android.net.wifi.WifiManager
 import android.net.wifi.WifiManager.WifiLock
-import android.util.Log
 import android.util.Pair
 import android.view.SurfaceHolder
-import ac.mdiq.podcini.storage.model.playback.MediaType
-import ac.mdiq.podcini.storage.model.playback.Playable
 import kotlin.concurrent.Volatile
 
 /*
@@ -31,10 +31,10 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
      * could result in nonsensical results (like a status of PLAYING, but a null playable)
      * @return the current player status
      */
-    @get:Synchronized
-    @Volatile
-    var playerStatus: PlayerStatus
-        protected set
+//    @get:Synchronized
+//    @Volatile
+//    var playerStatus: PlayerStatus
+//        protected set
 
     /**
      * A wifi-lock that is acquired if the media file is being streamed.
@@ -42,7 +42,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
     private var wifiLock: WifiLock? = null
 
     init {
-        playerStatus = PlayerStatus.STOPPED
+        status = PlayerStatus.STOPPED
     }
 
     abstract fun isStartWhenPrepared(): Boolean
@@ -211,13 +211,13 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
      */
 
     @get:Synchronized
-    val pSMPInfo: PSMPInfo
+    val pSMPInfo: MediaPlayerInfo
         /**
          * Returns a PSMInfo object that contains information about the current state of the PSMP object.
          *
          * @return The PSMPInfo object.
          */
-        get() = PSMPInfo(oldPlayerStatus, playerStatus, getPlayable())
+        get() = MediaPlayerInfo(oldPlayerStatus, status, getPlayable())
 
     /**
      * Returns the current media, if you need the media and the player status together, you should
@@ -236,7 +236,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
 
     fun skip() {
         if (getPosition() < 1000) {
-            Log.d(TAG, "Ignoring skip, is in first second of playback")
+            Logd(TAG, "Ignoring skip, is in first second of playback")
             return
         }
         endPlayback(hasEnded = false, wasSkipped = true, shouldContinue = true, toStoppedState = true)
@@ -322,10 +322,10 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
      */
     @Synchronized
     protected fun setPlayerStatus(newStatus: PlayerStatus, newMedia: Playable?, position: Int) {
-        Log.d(TAG, this.javaClass.simpleName + ": Setting player status to " + newStatus)
+        Logd(TAG, this.javaClass.simpleName + ": Setting player status to " + newStatus)
 
-        this.oldPlayerStatus = playerStatus
-        this.playerStatus = newStatus
+        this.oldPlayerStatus = status
+        status = newStatus
         setPlayable(newMedia)
 
         if (newMedia != null && newStatus != PlayerStatus.INDETERMINATE) {
@@ -335,7 +335,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
             }
         }
 
-        callback.statusChanged(PSMPInfo(oldPlayerStatus, playerStatus, getPlayable()))
+        callback.statusChanged(MediaPlayerInfo(oldPlayerStatus, status, getPlayable()))
     }
 
     val isAudioChannelInUse: Boolean
@@ -352,7 +352,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
     }
 
     interface PSMPCallback {
-        fun statusChanged(newInfo: PSMPInfo?)
+        fun statusChanged(newInfo: MediaPlayerInfo?)
 
         fun shouldStop()
 
@@ -376,9 +376,15 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
     /**
      * Holds information about a PSMP object.
      */
-    class PSMPInfo(@JvmField val oldPlayerStatus: PlayerStatus?, @JvmField var playerStatus: PlayerStatus, @JvmField var playable: Playable?)
+    class MediaPlayerInfo(@JvmField val oldPlayerStatus: PlayerStatus?, @JvmField var playerStatus: PlayerStatus, @JvmField var playable: Playable?)
 
     companion object {
         private const val TAG = "MediaPlayerBase"
+
+        @get:Synchronized
+        @Volatile
+        @JvmStatic
+        var status: PlayerStatus = PlayerStatus.STOPPED
+//            protected set
     }
 }

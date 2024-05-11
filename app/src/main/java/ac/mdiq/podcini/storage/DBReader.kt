@@ -13,6 +13,7 @@ import ac.mdiq.podcini.storage.model.feed.*
 import ac.mdiq.podcini.storage.model.feed.FeedItemFilter.Companion.unfiltered
 import ac.mdiq.podcini.storage.model.feed.FeedPreferences.Companion.TAG_ROOT
 import ac.mdiq.podcini.util.FeedItemPermutors.getPermutor
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.LongList
 import ac.mdiq.podcini.util.comparator.DownloadResultComparator
 import ac.mdiq.podcini.util.comparator.PlaybackCompletionDateComparator
@@ -134,7 +135,7 @@ object DBReader {
      * @param items The FeedItems whose Feed-objects should be loaded.
      */
     private fun loadFeedDataOfFeedItemList(items: List<FeedItem>) {
-        Log.d(TAG, "loadFeedDataOfFeedItemList called")
+        Logd(TAG, "loadFeedDataOfFeedItemList called")
         val feedIndex: MutableMap<Long, Feed> = ArrayMap(feeds.size)
         val feedsCopy = ArrayList(feeds)
         for (feed in feedsCopy) {
@@ -228,7 +229,7 @@ object DBReader {
 
     @JvmStatic
     fun getQueue(adapter: PodDBAdapter?): List<FeedItem> {
-        Log.d(TAG, "getQueue(adapter)")
+        Logd(TAG, "getQueue(adapter)")
         adapter?.queueCursor.use { cursor ->
             val items = extractItemlistFromCursor(adapter, cursor)
             loadAdditionalFeedItemListData(items)
@@ -238,7 +239,7 @@ object DBReader {
 
     @JvmStatic
     fun getQueueIDList(): LongList {
-        Log.d(TAG, "getQueueIDList() called")
+        Logd(TAG, "getQueueIDList() called")
 //        printStackTrace()
 
         val adapter = getInstance()
@@ -263,7 +264,7 @@ object DBReader {
 
     @JvmStatic
     fun getQueue(): List<FeedItem> {
-        Log.d(TAG, "getQueue() called")
+        Logd(TAG, "getQueue() called")
 
         val adapter = getInstance()
         adapter.open()
@@ -275,7 +276,7 @@ object DBReader {
     }
 
     private fun getFavoriteIDList(): LongList {
-        Log.d(TAG, "getFavoriteIDList() called")
+        Logd(TAG, "getFavoriteIDList() called")
 
         val adapter = getInstance()
         adapter.open()
@@ -300,7 +301,7 @@ object DBReader {
      */
     @JvmStatic
     fun getEpisodes(offset: Int, limit: Int, filter: FeedItemFilter?, sortOrder: SortOrder?): List<FeedItem> {
-        Log.d(TAG, "getEpisodes called with: offset=$offset, limit=$limit")
+        Logd(TAG, "getEpisodes called with: offset=$offset, limit=$limit")
         val adapter = getInstance()
         adapter.open()
         try {
@@ -316,7 +317,7 @@ object DBReader {
 
     @JvmStatic
     fun getTotalEpisodeCount(filter: FeedItemFilter?): Int {
-        Log.d(TAG, "getTotalEpisodeCount called")
+        Logd(TAG, "getTotalEpisodeCount called")
         val adapter = getInstance()
         adapter.open()
         try {
@@ -353,7 +354,7 @@ object DBReader {
      */
     @JvmStatic
     fun getPlaybackHistory(offset: Int, limit: Int): List<FeedItem> {
-        Log.d(TAG, "getPlaybackHistory() called")
+        Logd(TAG, "getPlaybackHistory() called")
 
         val adapter = getInstance()
         adapter.open()
@@ -395,7 +396,7 @@ object DBReader {
 
     @JvmStatic
     fun getDownloadLog(): List<DownloadResult> {
-        Log.d(TAG, "getDownloadLog() called")
+        Logd(TAG, "getDownloadLog() called")
 
         val adapter = getInstance()
         adapter.open()
@@ -421,7 +422,7 @@ object DBReader {
      * newest events first.
      */
     fun getFeedDownloadLog(feedId: Long): List<DownloadResult> {
-        Log.d(TAG, "getFeedDownloadLog() called with: feed = [$feedId]")
+        Logd(TAG, "getFeedDownloadLog() called with: feed = [$feedId]")
 
         val adapter = getInstance()
         adapter.open()
@@ -460,7 +461,7 @@ object DBReader {
      * database and the items-attribute will be set correctly.
      */
     fun getFeed(feedId: Long, filtered: Boolean): Feed? {
-        Log.d(TAG, "getFeed() called with: feedId = [$feedId]")
+        Logd(TAG, "getFeed() called with: feedId = [$feedId]")
         val adapter = getInstance()
         adapter.open()
         try {
@@ -481,7 +482,7 @@ object DBReader {
     }
 
     private fun getFeedItem(itemId: Long, adapter: PodDBAdapter?): FeedItem? {
-        Log.d(TAG, "Loading feeditem with id $itemId")
+        Logd(TAG, "Loading feeditem with id $itemId")
 
         var item: FeedItem? = null
         adapter?.getFeedItemCursor(itemId.toString())?.use { cursor ->
@@ -506,7 +507,7 @@ object DBReader {
      */
     @JvmStatic
     fun getFeedItem(itemId: Long): FeedItem? {
-        Log.d(TAG, "getFeedItem() called with: itemId = [$itemId]")
+        Logd(TAG, "getFeedItem() called with: itemId = [$itemId]")
 
         val adapter = getInstance()
         adapter.open()
@@ -524,7 +525,7 @@ object DBReader {
      * @return The FeedItem next in queue or null if the FeedItem could not be found.
      */
     fun getNextInQueue(item: FeedItem): FeedItem? {
-        Log.d(TAG, "getNextInQueue() called with: itemId = [${item.id}]")
+        Logd(TAG, "getNextInQueue() called with: itemId = [${item.id}]")
         val adapter = getInstance()
         adapter.open()
         try {
@@ -539,7 +540,7 @@ object DBReader {
                     return nextItem
                 }
             } catch (e: Exception) {
-                Log.d(TAG, "getNextInQueue error: ${e.message}")
+                Logd(TAG, "getNextInQueue error: ${e.message}")
                 return null
             }
         } finally {
@@ -548,7 +549,7 @@ object DBReader {
     }
 
     fun getPausedQueue(limit: Int): List<FeedItem> {
-        Log.d(TAG, "getPausedQueue() called ")
+        Logd(TAG, "getPausedQueue() called ")
         val adapter = getInstance()
         adapter.open()
         try {
@@ -587,7 +588,7 @@ object DBReader {
      * @return Credentials in format "Username:Password", empty String if no authorization given
      */
     fun getImageAuthentication(imageUrl: String): String {
-        Log.d(TAG, "getImageAuthentication() called with: imageUrl = [$imageUrl]")
+        Logd(TAG, "getImageAuthentication() called with: imageUrl = [$imageUrl]")
         val adapter = getInstance()
         adapter.open()
         try {
@@ -619,7 +620,7 @@ object DBReader {
      */
     @JvmStatic
     fun getFeedItemByGuidOrEpisodeUrl(guid: String?, episodeUrl: String): FeedItem? {
-        Log.d(TAG, "getFeedItemByGuidOrEpisodeUrl called")
+        Logd(TAG, "getFeedItemByGuidOrEpisodeUrl called")
         val adapter = getInstance()
         adapter.open()
         try {
@@ -635,7 +636,7 @@ object DBReader {
      * @param item The FeedItem
      */
     fun loadTextDetailsOfFeedItem(item: FeedItem) {
-        Log.d(TAG, "loadTextOfFeedItem() called with: item = [$item]")
+        Logd(TAG, "loadTextOfFeedItem() called with: item = [$item]")
         //        TODO: need to find out who are often calling this
 //        printStackTrace()
         val adapter = getInstance()
@@ -665,7 +666,7 @@ object DBReader {
      */
     @JvmStatic
     fun loadChaptersOfFeedItem(item: FeedItem): List<Chapter>? {
-        Log.d(TAG, "loadChaptersOfFeedItem() called with: item = [${item.title}]")
+        Logd(TAG, "loadChaptersOfFeedItem() called with: item = [${item.title}]")
 //        TODO: need to find out who are often calling this
 //        val stackTraceElements = Thread.currentThread().stackTrace
 //        stackTraceElements.forEach { element ->
@@ -704,7 +705,7 @@ object DBReader {
      */
     @JvmStatic
     fun getFeedMedia(mediaId: Long): FeedMedia? {
-        Log.d(TAG, "getFeedMedia called")
+        Logd(TAG, "getFeedMedia called")
         val adapter = getInstance()
         adapter.open()
         try {
@@ -727,7 +728,7 @@ object DBReader {
     }
 
     fun getFeedItemsWithUrl(urls: List<String?>?): List<FeedItem> {
-        Log.d(TAG, "getFeedItemsWithUrl() called ")
+        Logd(TAG, "getFeedItemsWithUrl() called ")
         val adapter = getInstance()
         adapter.open()
         try {
@@ -822,7 +823,7 @@ object DBReader {
      */
     @JvmStatic
     fun getNavDrawerData(subscriptionsFilter: SubscriptionsFilter?): NavDrawerData {
-        Log.d(TAG, "getNavDrawerData() called with: " + "")
+        Logd(TAG, "getNavDrawerData() called with: " + "")
         val adapter = getInstance()
         adapter.open()
 

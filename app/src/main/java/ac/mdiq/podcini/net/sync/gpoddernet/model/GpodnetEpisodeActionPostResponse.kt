@@ -28,14 +28,15 @@ class GpodnetEpisodeActionPostResponse private constructor(timestamp: Long, priv
         @JvmStatic
         @Throws(JSONException::class)
         fun fromJSONObject(objectString: String?): GpodnetEpisodeActionPostResponse {
-            val `object` = JSONObject(objectString)
-            val timestamp = `object`.getLong("timestamp")
-            val urls = `object`.getJSONArray("update_urls")
-            val updatedUrls: MutableMap<String, String> = ArrayMap(urls.length())
-            for (i in 0 until urls.length()) {
-                val urlPair = urls.getJSONArray(i)
-                updatedUrls[urlPair.getString(0)] = urlPair.getString(1)
-            }
+//            val `object` = JSONObject(objectString)
+//            val timestamp = `object`.getLong("timestamp")
+//            val urls = `object`.getJSONArray("update_urls")
+//            val updatedUrls: MutableMap<String, String> = ArrayMap(urls.length())
+//            for (i in 0 until urls.length()) {
+//                val urlPair = urls.getJSONArray(i)
+//                updatedUrls[urlPair.getString(0)] = urlPair.getString(1)
+//            }
+            val (timestamp, updatedUrls) = UploadChangesResponse.fromJSONObject(objectString)
             return GpodnetEpisodeActionPostResponse(timestamp, updatedUrls)
         }
     }

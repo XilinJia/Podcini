@@ -1,13 +1,13 @@
 package ac.mdiq.podcini.net.download.service
 
-import android.util.Log
-import android.webkit.URLUtil
-import ac.mdiq.podcini.util.FileNameGenerator
-import ac.mdiq.podcini.storage.model.feed.Feed
-import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.storage.model.feed.FeedItem
+import ac.mdiq.podcini.storage.model.feed.FeedMedia
+import ac.mdiq.podcini.util.FileNameGenerator
+import ac.mdiq.podcini.util.Logd
+import android.webkit.URLUtil
 import org.apache.commons.io.FilenameUtils
 import java.io.File
 
@@ -24,7 +24,7 @@ object DownloadRequestCreator {
         val dest = File(feedfilePath, getFeedfileName(feed))
         if (dest.exists()) dest.delete()
 
-        Log.d(TAG, "Requesting download feed from url " + feed.download_url)
+        Logd(TAG, "Requesting download feed from url " + feed.download_url)
 
         val username = feed.preferences?.username
         val password = feed.preferences?.password
@@ -43,7 +43,7 @@ object DownloadRequestCreator {
 
         if (dest.exists() && !partiallyDownloadedFileExists) dest = findUnusedFile(dest)!!
 
-        Log.d(TAG, "Requesting download media from url " + media.download_url)
+        Logd(TAG, "Requesting download media from url " + media.download_url)
 
         val username = media.item?.feed?.preferences?.username
         val password = media.item?.feed?.preferences?.password
@@ -56,10 +56,10 @@ object DownloadRequestCreator {
         var newDest: File? = null
         for (i in 1 until Int.MAX_VALUE) {
             val newName = (FilenameUtils.getBaseName(dest.name) + "-" + i + FilenameUtils.EXTENSION_SEPARATOR + FilenameUtils.getExtension(dest.name))
-            Log.d(TAG, "Testing filename $newName")
+            Logd(TAG, "Testing filename $newName")
             newDest = File(dest.parent, newName)
             if (!newDest.exists()) {
-                Log.d(TAG, "File doesn't exist yet. Using $newName")
+                Logd(TAG, "File doesn't exist yet. Using $newName")
                 break
             }
         }

@@ -1,12 +1,13 @@
 package ac.mdiq.podcini.feed.parser.namespace
 
-import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.feed.parser.HandlerState
 import ac.mdiq.podcini.feed.parser.element.AtomText
 import ac.mdiq.podcini.feed.parser.element.SyndElement
 import ac.mdiq.podcini.feed.parser.util.MimeTypeUtils.getMimeType
 import ac.mdiq.podcini.feed.parser.util.MimeTypeUtils.isImageFile
 import ac.mdiq.podcini.feed.parser.util.MimeTypeUtils.isMediaFile
+import ac.mdiq.podcini.storage.model.feed.FeedMedia
+import ac.mdiq.podcini.util.Logd
 import android.util.Log
 import org.xml.sax.Attributes
 import java.util.concurrent.TimeUnit
@@ -14,7 +15,7 @@ import java.util.concurrent.TimeUnit
 /** Processes tags from the http://search.yahoo.com/mrss/ namespace.  */
 class Media : Namespace() {
     override fun handleElementStart(localName: String, state: HandlerState, attributes: Attributes): SyndElement {
-        Log.d(TAG, "handleElementStart $localName")
+//        Log.d(TAG, "handleElementStart $localName")
         when (localName) {
             CONTENT -> {
                 val url: String? = attributes.getValue(DOWNLOAD_URL)
@@ -68,7 +69,7 @@ class Media : Namespace() {
                                 Log.e(TAG, "Duration \"$durationStr\" could not be parsed")
                             }
                         }
-                        Log.d(TAG, "handleElementStart creating media: ${state.currentItem?.title} $url $size $mimeType")
+                        Logd(TAG, "handleElementStart creating media: ${state.currentItem?.title} $url $size $mimeType")
                         val media = FeedMedia(state.currentItem, url, size, mimeType)
                         if (durationMs > 0) media.setDuration( durationMs)
 
@@ -97,7 +98,7 @@ class Media : Namespace() {
     }
 
     override fun handleElementEnd(localName: String, state: HandlerState) {
-        Log.d(TAG, "handleElementEnd $localName")
+//        Log.d(TAG, "handleElementEnd $localName")
         if (DESCRIPTION == localName) {
             val content = state.contentBuf.toString()
             state.currentItem?.setDescriptionIfLonger(content)

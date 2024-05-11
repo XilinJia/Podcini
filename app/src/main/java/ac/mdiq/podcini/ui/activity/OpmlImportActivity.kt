@@ -1,11 +1,19 @@
 package ac.mdiq.podcini.ui.activity
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.OpmlSelectionBinding
+import ac.mdiq.podcini.net.download.FeedUpdateManager.runOnce
+import ac.mdiq.podcini.preferences.ThemeSwitcher.getTheme
+import ac.mdiq.podcini.storage.DBTasks
+import ac.mdiq.podcini.storage.export.opml.OpmlElement
+import ac.mdiq.podcini.storage.export.opml.OpmlReader
+import ac.mdiq.podcini.storage.model.feed.Feed
+import ac.mdiq.podcini.util.Logd
 import android.Manifest
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
@@ -24,14 +32,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.media3.common.util.UnstableApi
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.storage.export.opml.OpmlElement
-import ac.mdiq.podcini.storage.export.opml.OpmlReader
-import ac.mdiq.podcini.preferences.ThemeSwitcher.getTheme
-import ac.mdiq.podcini.storage.DBTasks
-import ac.mdiq.podcini.net.download.FeedUpdateManager.runOnce
-import ac.mdiq.podcini.databinding.OpmlSelectionBinding
-import ac.mdiq.podcini.storage.model.feed.Feed
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -116,9 +116,8 @@ class OpmlImportActivity : AppCompatActivity() {
         }
 
         var uri = intent.data
-        if (uri != null && uri.toString().startsWith("/")) {
-            uri = Uri.parse("file://$uri")
-        } else {
+        if (uri != null && uri.toString().startsWith("/")) uri = Uri.parse("file://$uri")
+        else {
             val extraText = intent.getStringExtra(Intent.EXTRA_TEXT)
             if (extraText != null) uri = Uri.parse(extraText)
         }
@@ -190,9 +189,8 @@ class OpmlImportActivity : AppCompatActivity() {
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-            if (isGranted) {
-                startImport()
-            } else {
+            if (isGranted) startImport()
+            else {
                 MaterialAlertDialogBuilder(this)
                     .setMessage(R.string.opml_import_ask_read_permission)
                     .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int -> requestPermission() }
@@ -221,12 +219,12 @@ class OpmlImportActivity : AppCompatActivity() {
             .subscribe(
                 { result: ArrayList<OpmlElement>? ->
                     binding.progressBar.visibility = View.GONE
-                    Log.d(TAG, "Parsing was successful")
+                    Logd(TAG, "Parsing was successful")
                     readElements = result
                     listAdapter = ArrayAdapter(this@OpmlImportActivity, android.R.layout.simple_list_item_multiple_choice, titleList)
                     binding.feedlist.adapter = listAdapter
                 }, { e: Throwable ->
-                    Log.d(TAG, Log.getStackTraceString(e))
+                    Logd(TAG, Log.getStackTraceString(e))
                     val message = if (e.message == null) "" else e.message!!
                     if (message.lowercase().contains("permission")) {
                         val permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)

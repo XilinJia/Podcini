@@ -1,16 +1,17 @@
 package ac.mdiq.podcini.net.download.service
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.net.download.service.DownloadRequestCreator.create
 import ac.mdiq.podcini.net.download.service.handler.MediaDownloadedHandler
+import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
+import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.DBWriter
 import ac.mdiq.podcini.storage.model.download.DownloadError
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.ui.activity.appstartintent.MainActivityStarter
 import ac.mdiq.podcini.ui.utils.NotificationUtils
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.config.ClientConfigurator
 import ac.mdiq.podcini.util.event.MessageEvent
 import android.app.Notification
@@ -88,7 +89,7 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
                 nm.cancel(R.id.notification_downloading)
             }
         }
-        Log.d(TAG, "Worker for " + media.download_url + " returned.")
+        Logd(TAG, "Worker for " + media.download_url + " returned.")
         return result
     }
 
@@ -122,7 +123,7 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
 
         downloader = DefaultDownloaderFactory().create(request)
         if (downloader == null) {
-            Log.d(TAG, "Unable to create downloader")
+            Logd(TAG, "Unable to create downloader")
             return Result.failure()
         }
 
@@ -146,7 +147,7 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
         }
 
         if (status.reason == DownloadError.ERROR_HTTP_DATA_ERROR && status.reasonDetailed.toInt() == 416) {
-            Log.d(TAG, "Requested invalid range, restarting download from the beginning")
+            Logd(TAG, "Requested invalid range, restarting download from the beginning")
             if (downloader?.downloadRequest?.destination != null) FileUtils.deleteQuietly(File(downloader!!.downloadRequest.destination!!))
             sendMessage(request.title?:"", false)
             return retry3times()

@@ -10,11 +10,11 @@ import ac.mdiq.podcini.feed.parser.UnsupportedFeedtypeException
 import ac.mdiq.podcini.net.common.UrlChecker.prepareUrl
 import ac.mdiq.podcini.net.discovery.CombinedSearcher
 import ac.mdiq.podcini.net.discovery.PodcastSearcherRegistry
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
-import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
 import ac.mdiq.podcini.net.download.service.DownloadRequestCreator.create
 import ac.mdiq.podcini.net.download.service.Downloader
 import ac.mdiq.podcini.net.download.service.HttpDownloader
+import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.DBTasks
 import ac.mdiq.podcini.storage.DBWriter
@@ -23,10 +23,10 @@ import ac.mdiq.podcini.storage.model.download.DownloadResult
 import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import ac.mdiq.podcini.ui.dialog.AuthenticationDialog
-import ac.mdiq.podcini.glide.FastBlurTransformation
+import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import ac.mdiq.podcini.util.DownloadErrorLabel.from
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EpisodeDownloadEvent
 import ac.mdiq.podcini.util.event.FeedListUpdateEvent
 import ac.mdiq.podcini.util.syndication.FeedDiscoverer
@@ -51,8 +51,7 @@ import androidx.annotation.OptIn
 import androidx.annotation.UiThread
 import androidx.fragment.app.Fragment
 import androidx.media3.common.util.UnstableApi
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
+import coil.load
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import io.reactivex.Maybe
@@ -109,7 +108,7 @@ class OnlineFeedViewFragment : Fragment() {
         binding.card.setOnClickListener(null)
         binding.card.setCardBackgroundColor(getColorFromAttr(requireContext(), R.attr.colorSurface))
 
-        Log.d(TAG, "fragment onCreateView")
+        Logd(TAG, "fragment onCreateView")
 
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
@@ -122,7 +121,7 @@ class OnlineFeedViewFragment : Fragment() {
             Log.e(TAG, "feedUrl is null.")
             showNoPodcastFoundError()
         } else {
-            Log.d(TAG, "Activity was started with url $feedUrl")
+            Logd(TAG, "Activity was started with url $feedUrl")
             setLoadingLayout()
             // Remove subscribeonandroid.com from feed URL in order to subscribe to the actual feed URL
             if (feedUrl.contains("subscribeonandroid.com")) feedUrl = feedUrl.replaceFirst("((www.)?(subscribeonandroid.com/))".toRegex(), "")
@@ -201,15 +200,15 @@ class OnlineFeedViewFragment : Fragment() {
     }
 
     private fun tryToRetrieveFeedUrlBySearch(error: FeedUrlNotFoundException) {
-        Log.d(TAG, "Unable to retrieve feed url, trying to retrieve feed url from search")
+        Logd(TAG, "Unable to retrieve feed url, trying to retrieve feed url from search")
         val url = searchFeedUrlByTrackName(error.trackName, error.artistName)
         if (url != null) {
-            Log.d(TAG, "Successfully retrieve feed url")
+            Logd(TAG, "Successfully retrieve feed url")
             isFeedFoundBySearch = true
             startFeedDownload(url)
         } else {
             showNoPodcastFoundError()
-            Log.d(TAG, "Failed to retrieve feed url")
+            Logd(TAG, "Failed to retrieve feed url")
         }
     }
 
@@ -227,9 +226,16 @@ class OnlineFeedViewFragment : Fragment() {
 
     private fun htmlOrXml(url: String): String? {
         val connection = URL(url).openConnection() as HttpURLConnection
-        val type = connection.contentType
-        Log.d(TAG, "connection type: $type")
-        connection.disconnect()
+        var type: String? = null
+        try {
+            type = connection.contentType
+            Logd(TAG, "connection type: $type")
+        } catch (e: IOException) {
+            Log.e(TAG, "Error connecting to URL", e)
+        } finally {
+            connection.disconnect()
+        }
+        if (type == null) return null
         return when {
             type.contains("html", ignoreCase = true) -> "HTML"
             type.contains("xml", ignoreCase = true) -> "XML"
@@ -238,16 +244,15 @@ class OnlineFeedViewFragment : Fragment() {
     }
 
     private fun startFeedDownload(url: String) {
-        Log.d(TAG, "Starting feed download")
-        val urlType = htmlOrXml(url)
-        when (urlType) {
+        Logd(TAG, "Starting feed download")
+        when (val urlType = htmlOrXml(url)) {
             "HTML" -> {
                 val doc = Jsoup.connect(url).get()
                 val linkElements = doc.select("link[type=application/rss+xml]")
 //                TODO: should show them all as options
                 for (element in linkElements) {
                     val rssUrl = element.attr("href")
-                    Log.d(TAG, "RSS URL: $rssUrl")
+                    Logd(TAG, "RSS URL: $rssUrl")
                     startFeedDownload(rssUrl)
                     return
                 }
@@ -313,7 +318,7 @@ class OnlineFeedViewFragment : Fragment() {
     }
 
     private fun parseFeed(destination: String) {
-        Log.d(TAG, "Parsing feed")
+        Logd(TAG, "Parsing feed")
         parser = Maybe.fromCallable { doParseFeed(destination) }
             .subscribeOn(Schedulers.computation())
             .observeOn(AndroidSchedulers.mainThread())
@@ -328,7 +333,7 @@ class OnlineFeedViewFragment : Fragment() {
 
                 override fun onError(error: Throwable) {
                     showErrorDialog(error.message, "")
-                    Log.d(TAG, "Feed parser exception: " + Log.getStackTraceString(error))
+                    Logd(TAG, "Feed parser exception: " + Log.getStackTraceString(error))
                 }
             })
     }
@@ -348,7 +353,7 @@ class OnlineFeedViewFragment : Fragment() {
         return try {
             handler.parseFeed(feed)
         } catch (e: UnsupportedFeedtypeException) {
-            Log.d(TAG, "Unsupported feed type detected")
+            Logd(TAG, "Unsupported feed type detected")
             if ("html".equals(e.rootElement, ignoreCase = true)) {
                 if (selectedDownloadUrl != null) {
 //                    val doc = Jsoup.connect(selectedDownloadUrl).get()
@@ -372,7 +377,7 @@ class OnlineFeedViewFragment : Fragment() {
             throw e
         } finally {
             val rc = destinationFile.delete()
-            Log.d(TAG, "Deleted feed source file. Result: $rc")
+            Logd(TAG, "Deleted feed source file. Result: $rc")
         }
     }
 
@@ -392,22 +397,18 @@ class OnlineFeedViewFragment : Fragment() {
         binding.episodeLabel.setOnClickListener { showEpisodes(feed.items)}
 
         if (!feed.imageUrl.isNullOrBlank()) {
-            Glide.with(this)
-                .load(feed.imageUrl)
-                .apply(RequestOptions()
-                    .placeholder(R.color.light_gray)
-                    .error(R.color.light_gray)
-                    .fitCenter()
-                    .dontAnimate())
-                .into(binding.coverImage)
-            Glide.with(this)
-                .load(feed.imageUrl)
-                .apply(RequestOptions()
-                    .placeholder(R.color.image_readability_tint)
-                    .error(R.color.image_readability_tint)
-                    .transform(FastBlurTransformation())
-                    .dontAnimate())
-                .into(binding.backgroundImage)
+            binding.coverImage.load(feed.imageUrl) {
+                placeholder(R.color.light_gray)
+                error(R.mipmap.ic_launcher)
+            }
+//            Glide.with(this)
+//                .load(feed.imageUrl)
+//                .apply(RequestOptions()
+//                    .placeholder(R.color.image_readability_tint)
+//                    .error(R.color.image_readability_tint)
+//                    .transform(FastBlurTransformation())
+//                    .dontAnimate())
+//                .into(binding.backgroundImage)
         }
 
         binding.titleLabel.text = feed.title
@@ -425,6 +426,9 @@ class OnlineFeedViewFragment : Fragment() {
             if (feedInFeedlist()) {
                 openFeed()
             } else {
+                for (item in feed.items) {
+                    item.id = 0L
+                }
                 DBTasks.updateFeed(requireContext(), feed, false)
                 didPressSubscribe = true
                 handleUpdatedFeedStatus()
@@ -479,10 +483,14 @@ class OnlineFeedViewFragment : Fragment() {
         (activity as MainActivity).loadFeedFragmentById(feedId, null)
     }
 
-    @UnstableApi private fun showEpisodes(episodes: List<FeedItem>) {
-        Log.d(TAG, "showEpisodes ${episodes.size}")
-        if (episodes.isNullOrEmpty()) return
-        val fragment: Fragment = EpisodesListFragment.newInstance(ArrayList(episodes))
+    @UnstableApi private fun showEpisodes(episodes: MutableList<FeedItem>) {
+        Logd(TAG, "showEpisodes ${episodes.size}")
+        if (episodes.isEmpty()) return
+        episodes.sortByDescending { it.pubDate }
+        for (i in 0..<episodes.size) {
+            episodes[i].id = 1234567890L + i
+        }
+        val fragment: Fragment = EpisodesListFragment.newInstance(episodes)
         (activity as MainActivity).loadChildFragment(fragment)
     }
 

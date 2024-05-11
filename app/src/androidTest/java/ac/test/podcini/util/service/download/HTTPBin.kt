@@ -1,6 +1,6 @@
 package de.test.podcini.util.service.download
 
-import ac.mdiq.podcini.BuildConfig
+import ac.mdiq.podcini.util.Logd
 import android.util.Base64
 import android.util.Log
 import fi.iki.elonen.NanoHTTPD
@@ -62,7 +62,7 @@ class HTTPBin : NanoHTTPD(0) {
     }
 
     override fun serve(session: IHTTPSession): Response {
-        if (BuildConfig.DEBUG) Log.d(TAG, "Requested url: " + session.uri)
+        Logd(TAG, "Requested url: " + session.uri)
 
         val segments = session.uri.split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         if (segments.size < 3) {

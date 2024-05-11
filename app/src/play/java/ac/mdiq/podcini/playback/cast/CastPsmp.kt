@@ -105,15 +105,15 @@ class CastPsmp(context: Context, callback: PSMPCallback) : MediaPlayerBase(conte
     }
 
     private fun onRemoteMediaPlayerStatusUpdated() {
-        val status = remoteMediaClient!!.mediaStatus
-        if (status == null) {
+        val mediaStatus = remoteMediaClient!!.mediaStatus
+        if (mediaStatus == null) {
             Log.d(TAG, "Received null MediaStatus")
             return
-        } else Log.d(TAG, "Received remote status/media update. New state=" + status.playerState)
+        } else Log.d(TAG, "Received remote status/media update. New state=" + mediaStatus.playerState)
 
-        var state = status.playerState
+        var state = mediaStatus.playerState
         val oldState = remoteState
-        remoteMedia = status.mediaInfo
+        remoteMedia = mediaStatus.mediaInfo
         val mediaChanged = !CastUtils.matches(remoteMedia, media)
         var stateChanged = state != oldState
         if (!mediaChanged && !stateChanged) {
@@ -122,7 +122,7 @@ class CastPsmp(context: Context, callback: PSMPCallback) : MediaPlayerBase(conte
         }
         val currentMedia = if (mediaChanged) localVersion(remoteMedia) else media
         val oldMedia = media
-        val position = status.streamPosition.toInt()
+        val position = mediaStatus.streamPosition.toInt()
         // check for incompatible states
         if ((state == MediaStatus.PLAYER_STATE_PLAYING || state == MediaStatus.PLAYER_STATE_PAUSED) && currentMedia == null) {
             Log.w(TAG, "RemoteMediaPlayer returned playing or pausing state, but with no media")
@@ -151,11 +151,11 @@ class CastPsmp(context: Context, callback: PSMPCallback) : MediaPlayerBase(conte
             }
             MediaStatus.PLAYER_STATE_PAUSED -> setPlayerStatus(PlayerStatus.PAUSED, currentMedia, position)
             MediaStatus.PLAYER_STATE_BUFFERING -> setPlayerStatus(
-                if ((mediaChanged || playerStatus == PlayerStatus.PREPARING)) PlayerStatus.PREPARING
+                if ((mediaChanged || status == PlayerStatus.PREPARING)) PlayerStatus.PREPARING
                 else PlayerStatus.SEEKING,
                 currentMedia, currentMedia?.getPosition() ?: Playable.INVALID_TIME)
             MediaStatus.PLAYER_STATE_IDLE -> {
-                val reason = status.idleReason
+                val reason = mediaStatus.idleReason
                 when (reason) {
                     MediaStatus.IDLE_REASON_CANCELED -> {
                         // Essentially means stopped at the request of a user
@@ -194,7 +194,7 @@ class CastPsmp(context: Context, callback: PSMPCallback) : MediaPlayerBase(conte
                     else -> return
                 }
             }
-            MediaStatus.PLAYER_STATE_UNKNOWN -> if (playerStatus != PlayerStatus.INDETERMINATE || media !== currentMedia) {
+            MediaStatus.PLAYER_STATE_UNKNOWN -> if (status != PlayerStatus.INDETERMINATE || media !== currentMedia) {
                 setPlayerStatus(PlayerStatus.INDETERMINATE, currentMedia)
             }
             else -> Log.w(TAG, "Remote media state undetermined!")
@@ -210,7 +210,7 @@ class CastPsmp(context: Context, callback: PSMPCallback) : MediaPlayerBase(conte
 //
 //        if (media == null) {
 //            mediaPlayer = null
-//            playerStatus = PlayerStatus.STOPPED
+//            MediaPlayerBase.status = PlayerStatus.STOPPED
 //            return
 //        }
 //
@@ -246,7 +246,7 @@ class CastPsmp(context: Context, callback: PSMPCallback) : MediaPlayerBase(conte
         }
 
         if (media != null) {
-            if (!forceReset && media!!.getIdentifier() == playable.getIdentifier() && playerStatus == PlayerStatus.PLAYING) {
+            if (!forceReset && media!!.getIdentifier() == playable.getIdentifier() && status == PlayerStatus.PLAYING) {
                 // episode is already playing -> ignore method call
                 Log.d(TAG, "Method call to playMediaObject was ignored: media file already playing.")
                 return
@@ -286,7 +286,7 @@ class CastPsmp(context: Context, callback: PSMPCallback) : MediaPlayerBase(conte
     }
 
     override fun prepare() {
-        if (playerStatus == PlayerStatus.INITIALIZED) {
+        if (status == PlayerStatus.INITIALIZED) {
             Log.d(TAG, "Preparing media player")
             setPlayerStatus(PlayerStatus.PREPARING, media)
             var position = media!!.getPosition()
@@ -399,8 +399,8 @@ class CastPsmp(context: Context, callback: PSMPCallback) : MediaPlayerBase(conte
 
     override fun endPlayback(hasEnded: Boolean, wasSkipped: Boolean, shouldContinue: Boolean, toStoppedState: Boolean) {
         Log.d(TAG, "endPlayback() called")
-        val isPlaying = playerStatus == PlayerStatus.PLAYING
-        if (playerStatus != PlayerStatus.INDETERMINATE) setPlayerStatus(PlayerStatus.INDETERMINATE, media)
+        val isPlaying = status == PlayerStatus.PLAYING
+        if (status != PlayerStatus.INDETERMINATE) setPlayerStatus(PlayerStatus.INDETERMINATE, media)
 
         if (media != null && wasSkipped) {
             // current position only really matters when we skip

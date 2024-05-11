@@ -3,13 +3,15 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.SimpleListFragmentBinding
 import ac.mdiq.podcini.playback.PlaybackController
+import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.PlayerStatus
-import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.ui.adapter.ChaptersListAdapter
 import ac.mdiq.podcini.util.ChapterUtils.getCurrentChapterIndex
 import ac.mdiq.podcini.util.ChapterUtils.loadChapters
+import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
@@ -69,7 +71,7 @@ class ChaptersFragment : AppCompatDialogFragment() {
         _binding = SimpleListFragmentBinding.inflate(inflater)
         binding.toolbar.visibility = View.GONE
 
-        Log.d(TAG, "fragment onCreateView")
+        Logd(TAG, "fragment onCreateView")
         val recyclerView = binding.recyclerView
         progressBar = binding.progLoading
         layoutManager = LinearLayoutManager(activity)
@@ -78,7 +80,7 @@ class ChaptersFragment : AppCompatDialogFragment() {
 
         adapter = ChaptersListAdapter(requireContext(), object : ChaptersListAdapter.Callback {
             override fun onPlayChapterButtonClicked(pos: Int) {
-                if (controller?.status != PlayerStatus.PLAYING) controller!!.playPause()
+                if (MediaPlayerBase.status != PlayerStatus.PLAYING) controller!!.playPause()
 
                 val chapter = adapter.getItem(pos)
                 if (chapter != null) controller!!.seekTo(chapter.start.toInt())

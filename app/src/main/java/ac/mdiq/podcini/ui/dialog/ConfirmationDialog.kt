@@ -1,9 +1,9 @@
 package ac.mdiq.podcini.ui.dialog
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.content.DialogInterface
-import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
@@ -17,7 +17,7 @@ abstract class ConfirmationDialog(private val context: Context, private val titl
     constructor(context: Context, titleId: Int, messageId: Int) : this(context, titleId, context.getString(messageId))
 
     private fun onCancelButtonPressed(dialog: DialogInterface) {
-        Log.d(TAG, "Dialog was cancelled")
+        Logd(TAG, "Dialog was cancelled")
         dialog.dismiss()
     }
 

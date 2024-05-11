@@ -1,6 +1,6 @@
 package ac.mdiq.podcini.sync
 
-import ac.mdiq.podcini.net.sync.EpisodeActionFilter
+import ac.mdiq.podcini.net.sync.SyncService.Companion.getRemoteActionsOverridingLocalActions
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import junit.framework.TestCase
 import java.text.ParseException
@@ -8,7 +8,7 @@ import java.text.SimpleDateFormat
 
 
 class EpisodeActionFilterTest : TestCase() {
-    var episodeActionFilter: EpisodeActionFilter = EpisodeActionFilter
+//    var episodeActionFilter: EpisodeActionFilter = EpisodeActionFilter
 
     @Throws(ParseException::class)
     fun testGetRemoteActionsHappeningAfterLocalActions() {
@@ -46,8 +46,7 @@ class EpisodeActionFilterTest : TestCase() {
             .build()
         )
 
-        val uniqueList = episodeActionFilter
-            .getRemoteActionsOverridingLocalActions(remoteActions, episodeActions)
+        val uniqueList =getRemoteActionsOverridingLocalActions(remoteActions, episodeActions)
         assertSame(1, uniqueList.size)
     }
 
@@ -87,8 +86,7 @@ class EpisodeActionFilterTest : TestCase() {
             .build()
         )
 
-        val uniqueList = episodeActionFilter
-            .getRemoteActionsOverridingLocalActions(remoteActions, episodeActions)
+        val uniqueList = getRemoteActionsOverridingLocalActions(remoteActions, episodeActions)
         assertSame(0, uniqueList.size)
     }
 
@@ -122,8 +120,7 @@ class EpisodeActionFilterTest : TestCase() {
             .build()
         )
 
-        val uniqueList = episodeActionFilter
-            .getRemoteActionsOverridingLocalActions(remoteActions, episodeActions)
+        val uniqueList = getRemoteActionsOverridingLocalActions(remoteActions, episodeActions)
         assertEquals(2, uniqueList.size)
     }
 
@@ -157,8 +154,7 @@ class EpisodeActionFilterTest : TestCase() {
             .build()
         )
 
-        val uniqueList = episodeActionFilter
-            .getRemoteActionsOverridingLocalActions(remoteActions, episodeActions)
+        val uniqueList = getRemoteActionsOverridingLocalActions(remoteActions, episodeActions)
         assertEquals(0, uniqueList.size)
     }
 
@@ -180,8 +176,7 @@ class EpisodeActionFilterTest : TestCase() {
             .build()
         )
 
-        val uniqueList = episodeActionFilter
-            .getRemoteActionsOverridingLocalActions(remoteActions, episodeActions)
+        val uniqueList = getRemoteActionsOverridingLocalActions(remoteActions, episodeActions)
         assertSame(1, uniqueList.size)
     }
 }

@@ -1,8 +1,8 @@
 package ac.mdiq.podcini.feed.parser
 
-import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.feed.parser.util.TypeGetter
-import android.util.Log
+import ac.mdiq.podcini.storage.model.feed.Feed
+import ac.mdiq.podcini.util.Logd
 import org.apache.commons.io.input.XmlStreamReader
 import org.xml.sax.InputSource
 import org.xml.sax.SAXException
@@ -30,7 +30,7 @@ class FeedHandler {
 
             val inputStreamReader: Reader = XmlStreamReader(File(feed.file_url!!))
             val inputSource = InputSource(inputStreamReader)
-            Log.d("FeedHandler", "starting saxParser.parse")
+            Logd("FeedHandler", "starting saxParser.parse")
             saxParser.parse(inputSource, handler)
             inputStreamReader.close()
         }

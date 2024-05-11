@@ -1,22 +1,19 @@
 package ac.mdiq.podcini.net.download.service
 
 import ac.mdiq.podcini.R
-import android.text.TextUtils
-import android.util.Log
+import ac.mdiq.podcini.feed.parser.util.DateUtils.parse
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
-import ac.mdiq.podcini.util.NetworkUtils.wasDownloadBlocked
-import ac.mdiq.podcini.util.StorageUtils.freeSpaceAvailable
-import ac.mdiq.podcini.util.URIUtil.getURIFromRequestUrl
+import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
 import ac.mdiq.podcini.storage.model.download.DownloadError
 import ac.mdiq.podcini.storage.model.download.DownloadResult
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
-import ac.mdiq.podcini.feed.parser.util.DateUtils.parse
-import okhttp3.CacheControl
-import okhttp3.Protocol
-import okhttp3.Request
-import okhttp3.Response
-import okhttp3.ResponseBody
+import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.NetworkUtils.wasDownloadBlocked
+import ac.mdiq.podcini.util.StorageUtils.freeSpaceAvailable
+import ac.mdiq.podcini.util.URIUtil.getURIFromRequestUrl
+import android.text.TextUtils
+import android.util.Log
+import okhttp3.*
 import okhttp3.internal.http.StatusLine
 import org.apache.commons.io.IOUtils
 import java.io.*
@@ -42,10 +39,10 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
             httpReq.tag(downloadRequest)
             httpReq.cacheControl(CacheControl.Builder().noStore().build())
 
-            Log.d(TAG, "starting download: " + downloadRequest.feedfileType + " " + uri.scheme)
+            Logd(TAG, "starting download: " + downloadRequest.feedfileType + " " + uri.scheme)
             if (downloadRequest.feedfileType == FeedMedia.FEEDFILETYPE_FEEDMEDIA) {
                 // set header explicitly so that okhttp doesn't do transparent gzip
-                Log.d(TAG, "addHeader(\"Accept-Encoding\", \"identity\")")
+                Logd(TAG, "addHeader(\"Accept-Encoding\", \"identity\")")
                 httpReq.addHeader("Accept-Encoding", "identity")
                 httpReq.cacheControl(CacheControl.Builder().noCache().build()) // noStore breaks CDNs
             }
@@ -58,11 +55,11 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
                 if (lastModifiedDate != null) {
                     val threeDaysAgo = System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 3
                     if (lastModifiedDate.time > threeDaysAgo) {
-                        Log.d(TAG, "addHeader(\"If-Modified-Since\", \"$lastModified\")")
+                        Logd(TAG, "addHeader(\"If-Modified-Since\", \"$lastModified\")")
                         httpReq.addHeader("If-Modified-Since", lastModified?:"")
                     }
                 } else {
-                    Log.d(TAG, "addHeader(\"If-None-Match\", \"$lastModified\")")
+                    Logd(TAG, "addHeader(\"If-None-Match\", \"$lastModified\")")
                     httpReq.addHeader("If-None-Match", lastModified?:"")
                 }
             }
@@ -71,7 +68,7 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
             if (fileExists && destination.length() > 0) {
                 downloadRequest.soFar = destination.length()
                 httpReq.addHeader("Range", "bytes=" + downloadRequest.soFar + "-")
-                Log.d(TAG, "Adding range header: " + downloadRequest.soFar)
+                Logd(TAG, "Adding range header: " + downloadRequest.soFar)
             }
 
             val response = newCall(httpReq)
@@ -80,12 +77,12 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
             var isGzip = false
             if (!contentEncodingHeader.isNullOrEmpty()) isGzip = TextUtils.equals(contentEncodingHeader.lowercase(Locale.getDefault()), "gzip")
 
-            Log.d(TAG, "Response code is " + response.code)// check if size specified in the response header is the same as the size of the
+            Logd(TAG, "Response code is " + response.code)// check if size specified in the response header is the same as the size of the
             // written file. This check cannot be made if compression was used
             //                    Log.d(TAG,"buffer: $buffer")
             when {
                 !response.isSuccessful && response.code == HttpURLConnection.HTTP_NOT_MODIFIED -> {
-                    Log.d(TAG, "Feed '" + downloadRequest.source + "' not modified since last update, Download canceled")
+                    Logd(TAG, "Feed '" + downloadRequest.source + "' not modified since last update, Download canceled")
                     onCancelled()
                     return
                 }
@@ -106,7 +103,7 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
                     if (fileExists && response.code == HttpURLConnection.HTTP_PARTIAL && !contentRangeHeader.isNullOrEmpty()) {
                         val start = contentRangeHeader.substring("bytes ".length, contentRangeHeader.indexOf("-"))
                         downloadRequest.soFar = start.toLong()
-                        Log.d(TAG, "Starting download at position " + downloadRequest.soFar)
+                        Logd(TAG, "Starting download at position " + downloadRequest.soFar)
 
                         out = RandomAccessFile(destination, "rw")
                         out.seek(downloadRequest.soFar)
@@ -121,19 +118,19 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
                     val buffer = ByteArray(BUFFER_SIZE)
                     var count = 0
                     downloadRequest.setStatusMsg(R.string.download_running)
-                    Log.d(TAG, "Getting size of download")
+                    Logd(TAG, "Getting size of download")
                     downloadRequest.size = responseBody.contentLength() + downloadRequest.soFar
-                    Log.d(TAG, "Size is " + downloadRequest.size)
+                    Logd(TAG, "Size is " + downloadRequest.size)
                     if (downloadRequest.size < 0) downloadRequest.size = DownloadResult.SIZE_UNKNOWN.toLong()
 
                     val freeSpace = freeSpaceAvailable
-                    Log.d(TAG, "Free space is $freeSpace")
+                    Logd(TAG, "Free space is $freeSpace")
                     if (downloadRequest.size != DownloadResult.SIZE_UNKNOWN.toLong() && downloadRequest.size > freeSpace) {
                         onFail(DownloadError.ERROR_NOT_ENOUGH_SPACE, null)
                         return
                     }
 
-                    Log.d(TAG, "Starting download")
+                    Logd(TAG, "Starting download")
                     try {
                         while (!cancelled && (connection.read(buffer).also { count = it }) != -1) {
                             //                    Log.d(TAG,"buffer: $buffer")
@@ -230,9 +227,9 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
                 e.printStackTrace()
             }
         }
-        Log.d(TAG, "content length: $contentLength")
+        Logd(TAG, "content length: $contentLength")
         val contentType = response.header("Content-Type")
-        Log.d(TAG, "content type: $contentType")
+        Logd(TAG, "content type: $contentType")
         return contentType != null && contentType.startsWith("text/") && contentLength < 100 * 1024
     }
 
@@ -276,28 +273,28 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
         val secondUrl = responses[1]!!.request.url.toString()
         when {
             firstCode == HttpURLConnection.HTTP_MOVED_PERM || firstCode == StatusLine.HTTP_PERM_REDIRECT -> {
-                Log.d(TAG, "Detected permanent redirect from " + downloadRequest.source + " to " + secondUrl)
+                Logd(TAG, "Detected permanent redirect from " + downloadRequest.source + " to " + secondUrl)
                 permanentRedirectUrl = secondUrl
             }
             secondUrl == firstUrl.replace("http://", "https://") -> {
-                Log.d(TAG, "Treating http->https non-permanent redirect as permanent: $firstUrl")
+                Logd(TAG, "Treating http->https non-permanent redirect as permanent: $firstUrl")
                 permanentRedirectUrl = secondUrl
             }
         }
     }
 
     private fun onSuccess() {
-        Log.d(TAG, "Download was successful")
+        Logd(TAG, "Download was successful")
         result.setSuccessful()
     }
 
     private fun onFail(reason: DownloadError, reasonDetailed: String?) {
-        Log.d(TAG, "onFail() called with: reason = [$reason], reasonDetailed = [$reasonDetailed]")
+        Logd(TAG, "onFail() called with: reason = [$reason], reasonDetailed = [$reasonDetailed]")
         result.setFailed(reason, reasonDetailed?:"")
     }
 
     private fun onCancelled() {
-        Log.d(TAG, "Download was cancelled")
+        Logd(TAG, "Download was cancelled")
         result.setCancelled()
         cancelled = true
     }

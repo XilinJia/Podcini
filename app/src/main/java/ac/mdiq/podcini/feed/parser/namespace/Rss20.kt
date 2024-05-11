@@ -1,15 +1,15 @@
 package ac.mdiq.podcini.feed.parser.namespace
 
-import android.util.Log
-import androidx.core.text.HtmlCompat
-import ac.mdiq.podcini.storage.model.feed.FeedItem
-import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.feed.parser.HandlerState
 import ac.mdiq.podcini.feed.parser.element.SyndElement
 import ac.mdiq.podcini.feed.parser.util.DateUtils.parseOrNullIfFuture
 import ac.mdiq.podcini.feed.parser.util.MimeTypeUtils.getMimeType
 import ac.mdiq.podcini.feed.parser.util.MimeTypeUtils.isMediaFile
 import ac.mdiq.podcini.feed.parser.util.SyndStringUtils.trimAllWhitespace
+import ac.mdiq.podcini.storage.model.feed.FeedItem
+import ac.mdiq.podcini.storage.model.feed.FeedMedia
+import ac.mdiq.podcini.util.Logd
+import androidx.core.text.HtmlCompat
 import org.xml.sax.Attributes
 
 /**
@@ -17,6 +17,7 @@ import org.xml.sax.Attributes
  */
 class Rss20 : Namespace() {
     override fun handleElementStart(localName: String, state: HandlerState, attributes: Attributes): SyndElement {
+//        Log.d(TAG, "handleElementStart $localName")
         when {
             ITEM == localName && CHANNEL == state.tagstack.lastElement()?.name -> {
                 state.currentItem = FeedItem()
@@ -35,7 +36,7 @@ class Rss20 : Namespace() {
                         // less than 16kb is suspicious, check manually
                         if (size < 16384) size = 0
                     } catch (e: NumberFormatException) {
-                        Log.d(TAG, "Length attribute could not be parsed.")
+                        Logd(TAG, "Length attribute could not be parsed.")
                     }
                     val media = FeedMedia(state.currentItem, url, size, mimeType)
                     if(state.currentItem != null) state.currentItem!!.media = media
@@ -46,6 +47,7 @@ class Rss20 : Namespace() {
     }
 
     override fun handleElementEnd(localName: String, state: HandlerState) {
+//        Log.d(TAG, "handleElementEnd $localName")
         when {
             ITEM == localName -> {
                 if (state.currentItem != null) {
@@ -76,9 +78,9 @@ class Rss20 : Namespace() {
                 if (state.tagstack.size >= 3) third = state.thirdTag.name
 
                 when {
+                    // some feed creators include an empty or non-standard guid-element in their feed,
+                    // which should be ignored
                     GUID == top && ITEM == second -> {
-                        // some feed creators include an empty or non-standard guid-element in their feed,
-                        // which should be ignored
                         if (contentRaw.isNotEmpty() && state.currentItem != null) state.currentItem!!.itemIdentifier = contentRaw
                     }
                     TITLE == top -> {
@@ -94,8 +96,8 @@ class Rss20 : Namespace() {
                         }
                     }
                     PUBDATE == top && ITEM == second && state.currentItem != null -> state.currentItem!!.pubDate = parseOrNullIfFuture(content)
+                    // prefer itunes:image
                     URL == top && IMAGE == second && CHANNEL == third -> {
-                        // prefer itunes:image
                         if (state.feed.imageUrl == null) state.feed.imageUrl = content
                     }
                     DESCR == localName -> {

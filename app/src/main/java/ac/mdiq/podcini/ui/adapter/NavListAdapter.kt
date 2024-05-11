@@ -17,7 +17,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
-import android.os.Build
 import android.view.*
 import android.view.ContextMenu.ContextMenuInfo
 import android.view.View.OnCreateContextMenuListener
@@ -30,10 +29,7 @@ import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.FitCenter
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
-import com.bumptech.glide.request.RequestOptions
+import coil.load
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.apache.commons.lang3.ArrayUtils
 import java.lang.ref.WeakReference
@@ -258,15 +254,20 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
         val feed = drawerItem.feed
         val context = activity.get() ?: return
 
-        if (!feed.imageUrl.isNullOrBlank()) Glide.with(context)
-            .load(feed.imageUrl)
-            .apply(RequestOptions()
-                .placeholder(R.color.light_gray)
-                .error(R.color.light_gray)
-                .transform(FitCenter(),
-                    RoundedCorners((4 * context.resources.displayMetrics.density).toInt()))
-                .dontAnimate())
-            .into(holder.image)
+//        if (!feed.imageUrl.isNullOrBlank()) Glide.with(context)
+//            .load(feed.imageUrl)
+//            .apply(RequestOptions()
+//                .placeholder(R.color.light_gray)
+//                .error(R.color.light_gray)
+//                .transform(FitCenter(),
+//                    RoundedCorners((4 * context.resources.displayMetrics.density).toInt()))
+//                .dontAnimate())
+//            .into(holder.image)
+
+        holder.image.load(feed.imageUrl) {
+            placeholder(R.color.light_gray)
+            error(R.mipmap.ic_launcher)
+        }
 
         if (feed.hasLastUpdateFailed()) {
             val p = holder.title.layoutParams as RelativeLayout.LayoutParams

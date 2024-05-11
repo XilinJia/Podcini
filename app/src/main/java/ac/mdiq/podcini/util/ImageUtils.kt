@@ -1,45 +1,14 @@
-package ac.mdiq.podcini.glide
+package ac.mdiq.podcini.util
 
 import android.graphics.Bitmap
-import android.media.ThumbnailUtils
-import android.util.Log
-import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool
-import com.bumptech.glide.load.resource.bitmap.BitmapTransformation
-import java.nio.charset.Charset
-import java.security.MessageDigest
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-class FastBlurTransformation : BitmapTransformation() {
-    override fun transform(pool: BitmapPool, source: Bitmap, outWidth: Int, outHeight: Int): Bitmap {
-        val targetWidth = outWidth / 3
-        val targetHeight = (1.0 * outHeight * targetWidth / outWidth).toInt()
-        val resized = ThumbnailUtils.extractThumbnail(source, targetWidth, targetHeight)
-        val result = fastBlur(resized, STACK_BLUR_RADIUS)
-        if (result == null) {
-            Log.w(TAG, "result was null")
-            return source
-        }
-        return result
-    }
-
-    override fun equals(o: Any?): Boolean {
-        return o is FastBlurTransformation
-    }
-
-    override fun hashCode(): Int {
-        return ID.hashCode()
-    }
-
-    override fun updateDiskCacheKey(messageDigest: MessageDigest) {
-        messageDigest.update(TAG.toByteArray(Charset.defaultCharset()))
-    }
+class ImageUtils {
 
     companion object {
-        private const val ID = "ac.mdiq.podcini.ui.glide.FastBlurTransformation"
-
-        private val TAG: String = FastBlurTransformation::class.java.simpleName
+        private val TAG: String = ImageUtils::class.java.simpleName
 
         private const val STACK_BLUR_RADIUS = 10
 
@@ -305,4 +274,5 @@ class FastBlurTransformation : BitmapTransformation() {
             return bitmap
         }
     }
+
 }

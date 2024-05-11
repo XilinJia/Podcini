@@ -3,7 +3,7 @@ package de.test.podcini.service.playback
 import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.PSMPCallback
-import ac.mdiq.podcini.playback.base.MediaPlayerBase.PSMPInfo
+import ac.mdiq.podcini.playback.base.MediaPlayerBase.MediaPlayerInfo
 
 class CancelablePSMPCallback(private val originalCallback: PSMPCallback) : PSMPCallback {
     private var isCancelled = false
@@ -12,7 +12,7 @@ class CancelablePSMPCallback(private val originalCallback: PSMPCallback) : PSMPC
         isCancelled = true
     }
 
-    override fun statusChanged(newInfo: PSMPInfo?) {
+    override fun statusChanged(newInfo: MediaPlayerInfo?) {
         if (isCancelled) {
             return
         }

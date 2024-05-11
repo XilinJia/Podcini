@@ -23,7 +23,7 @@ import ac.mdiq.podcini.storage.DBWriter.moveQueueItem
 import ac.mdiq.podcini.storage.DBWriter.removeAllNewFlags
 import ac.mdiq.podcini.storage.DBWriter.removeQueueItem
 import ac.mdiq.podcini.storage.DBWriter.persistFeedItem
-import ac.mdiq.podcini.storage.DBWriter.persistFeedMediaPlaybackInformation
+import ac.mdiq.podcini.storage.DBWriter.persistFeedMediaPlaybackInfo
 import ac.mdiq.podcini.util.FeedItemUtil.getIdList
 import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.storage.model.feed.FeedItem
@@ -114,7 +114,7 @@ class DbWriterTest {
         media.setLastPlayedTime(lastPlayedTime)
         media.playedDuration = playedDuration
 
-        persistFeedMediaPlaybackInformation(item.media)[TIMEOUT, TimeUnit.SECONDS]
+        persistFeedMediaPlaybackInfo(item.media)[TIMEOUT, TimeUnit.SECONDS]
 
         val itemFromDb = getFeedItem(item.id)
         val mediaFromDb = itemFromDb!!.media

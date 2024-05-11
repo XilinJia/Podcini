@@ -544,7 +544,7 @@
   <string name="synchronization_full_sync_title">Volledige synchronisatie afdwingen</string>
   <string name="synchronization_force_sync_summary">Alle abonnementen en afspeelstatussen opnieuw synchroniseren</string>
   <string name="synchronization_logout">Uitloggen</string>
-  <string name="synchronization_login_status"><![CDATA[Ingelogd als <i>%1$s</i> op <i>%2$s</i>. <br/><br/>Na uitloggen is het weer mogelijk een synchronisatie provider te kiezen]]></string>
+  <string name="synchronization_login_status"><![CDATA[IngeLogd( als <i>%1$s</i> op <i>%2$s</i>. <br/><br/>Na uitloggen is het weer mogelijk een synchronisatie provider te kiezen]]></string>
   <string name="pref_synchronization_logout_toast">Uitloggen geslaagd</string>
   <string name="gpodnetsync_error_title">gpodder.net - synchronisatiefout</string>
   <string name="gpodnetsync_error_descr">Er is een fout opgetreden tijdens het synchroniseren:\u0020</string>

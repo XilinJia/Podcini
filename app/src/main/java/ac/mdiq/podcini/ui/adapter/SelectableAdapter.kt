@@ -6,6 +6,7 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.recyclerview.widget.RecyclerView
 import ac.mdiq.podcini.R
+import android.util.Log
 
 /**
  * Used by Recyclerviews that need to provide ability to select items.

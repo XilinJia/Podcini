@@ -118,8 +118,7 @@ class Feed : FeedFile {
                 description: String?, paymentLinks: String?, author: String?, language: String?,
                 type: String?, feedIdentifier: String?, imageUrl: String?, fileUrl: String?,
                 downloadUrl: String?, downloaded: Boolean, paged: Boolean, nextPageLink: String?,
-                filter: String?, sortOrder: SortOrder?, lastUpdateFailed: Boolean
-    ) : super(fileUrl, downloadUrl, downloaded) {
+                filter: String?, sortOrder: SortOrder?, lastUpdateFailed: Boolean) : super(fileUrl, downloadUrl, downloaded) {
         this.id = id
         this.feedTitle = title
         this.customTitle = customTitle

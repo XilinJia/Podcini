@@ -6,6 +6,11 @@ import ac.mdiq.podcini.databinding.InternalPlayerFragmentBinding
 import ac.mdiq.podcini.feed.util.ImageResourceUtils
 import ac.mdiq.podcini.feed.util.PlaybackSpeedUtils
 import ac.mdiq.podcini.playback.PlaybackController
+import ac.mdiq.podcini.playback.PlaybackController.Companion.fallbackSpeed
+import ac.mdiq.podcini.playback.PlaybackController.Companion.isPlaybackServiceReady
+import ac.mdiq.podcini.playback.PlaybackController.Companion.sleepTimerActive
+import ac.mdiq.podcini.playback.PlaybackController.Companion.speedForward
+import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.cast.CastEnabledActivity
 import ac.mdiq.podcini.playback.service.PlaybackService
@@ -31,6 +36,7 @@ import ac.mdiq.podcini.ui.view.PlayButton
 import ac.mdiq.podcini.ui.view.PlaybackSpeedIndicatorView
 import ac.mdiq.podcini.util.ChapterUtils
 import ac.mdiq.podcini.util.Converter
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.TimeSpeedConverter
 import ac.mdiq.podcini.util.event.FavoritesEvent
 import ac.mdiq.podcini.util.event.PlayerErrorEvent
@@ -52,8 +58,9 @@ import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.media3.common.util.UnstableApi
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
+import coil.imageLoader
+import coil.request.ErrorResult
+import coil.request.ImageRequest
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.elevation.SurfaceColors
@@ -75,10 +82,11 @@ import kotlin.math.min
  */
 @UnstableApi
 class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar.OnMenuItemClickListener {
+
     var _binding: AudioplayerFragmentBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var playerDetailsFragment: PlayerDetailsFragment
+    private var playerDetailsFragment: PlayerDetailsFragment? = null
 
     private lateinit var toolbar: MaterialToolbar
     private var playerFragment1: InternalPlayerFragment? = null
@@ -103,7 +111,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         _binding = AudioplayerFragmentBinding.inflate(inflater)
         binding.root.setOnTouchListener { _: View?, _: MotionEvent? -> true } // Avoid clicks going through player to fragments below
 
-        Log.d(TAG, "fragment onCreateView")
+        Logd(TAG, "fragment onCreateView")
         toolbar = binding.toolbar
         toolbar.title = ""
         toolbar.setNavigationOnClickListener {
@@ -137,13 +145,17 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         cardViewSeek = binding.cardViewSeek
         txtvSeek = binding.txtvSeek
 
-        val fm = requireActivity().supportFragmentManager
-        val transaction = fm.beginTransaction()
-        playerDetailsFragment = PlayerDetailsFragment()
-        transaction.replace(R.id.itemDescription, playerDetailsFragment).commit()
-
         EventBus.getDefault().register(this)
         return binding.root
+    }
+
+    fun initDetailedView() {
+        if (playerDetailsFragment == null) {
+            val fm = requireActivity().supportFragmentManager
+            val transaction = fm.beginTransaction()
+            playerDetailsFragment = PlayerDetailsFragment()
+            transaction.replace(R.id.itemDescription, playerDetailsFragment!!).commit()
+        }
     }
 
     override fun onDestroyView() {
@@ -152,7 +164,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         controller?.release()
         controller = null
         EventBus.getDefault().unregister(this)
-        Log.d(TAG, "Fragment destroyed")
+        Logd(TAG, "Fragment destroyed")
     }
 
     private fun setChapterDividers(media: Playable?) {
@@ -181,13 +193,13 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     }
 
     private fun loadMediaInfo(includingChapters: Boolean) {
-        Log.d(TAG, "loadMediaInfo called")
+        Logd(TAG, "loadMediaInfo called")
 
         val theMedia = controller?.getMedia() ?: return
-        Log.d(TAG, "loadMediaInfo $theMedia")
+        Logd(TAG, "loadMediaInfo $theMedia")
 
         if (currentMedia == null || theMedia.getIdentifier() != currentMedia?.getIdentifier()) {
-            Log.d(TAG, "loadMediaInfo loading details")
+            Logd(TAG, "loadMediaInfo loading details")
             disposable?.dispose()
             disposable = Maybe.create<Playable> { emitter: MaybeEmitter<Playable?> ->
                 val media: Playable? = theMedia
@@ -229,7 +241,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     }
 
     private fun updateUi(media: Playable?) {
-        Log.d(TAG, "updateUi called")
+        Logd(TAG, "updateUi called")
         setChapterDividers(media)
         setupOptionsMenu(media)
     }
@@ -287,10 +299,10 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEvenStartPlay(event: StartPlayEvent) {
-        Log.d(TAG, "onEvenStartPlay ${event.item.title}")
+        Logd(TAG, "onEvenStartPlay ${event.item.title}")
         currentitem = event.item
         if (currentMedia?.getIdentifier() == null || currentitem!!.media?.getIdentifier() != currentMedia?.getIdentifier())
-            playerDetailsFragment.setItem(currentitem!!)
+            playerDetailsFragment?.setItem(currentitem!!)
         (activity as MainActivity).setPlayerVisible(true)
     }
 
@@ -362,8 +374,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         toolbar.menu?.findItem(R.id.show_video)?.setVisible(mediaType == MediaType.VIDEO)
 
         if (controller != null) {
-            toolbar.menu.findItem(R.id.set_sleeptimer_item).setVisible(!controller!!.sleepTimerActive())
-            toolbar.menu.findItem(R.id.disable_sleeptimer_item).setVisible(controller!!.sleepTimerActive())
+            toolbar.menu.findItem(R.id.set_sleeptimer_item).setVisible(!sleepTimerActive())
+            toolbar.menu.findItem(R.id.disable_sleeptimer_item).setVisible(sleepTimerActive())
         }
         (activity as? CastEnabledActivity)?.requestCastButton(toolbar.menu)
     }
@@ -379,7 +391,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         val itemId = menuItem.itemId
         when (itemId) {
             R.id.show_home_reader_view -> {
-                playerDetailsFragment.buildHomeReaderText()
+                playerDetailsFragment?.buildHomeReaderText()
                 return true
             }
             R.id.show_video -> {
@@ -399,7 +411,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 return true
             }
             R.id.share_notes -> {
-                val notes = if (playerDetailsFragment.showHomeText) playerDetailsFragment.readerhtml else feedItem?.description
+                val notes = if (playerDetailsFragment?.showHomeText == true) playerDetailsFragment!!.readerhtml else feedItem?.description
                 if (!notes.isNullOrEmpty()) {
                     val shareText = HtmlCompat.fromHtml(notes, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
                     val context = requireContext()
@@ -418,7 +430,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
     @JvmOverloads
     fun scrollToTop() {
-        playerDetailsFragment.scrollToTop()
+        playerDetailsFragment?.scrollToTop()
     }
 
     fun fadePlayerToToolbar(slideOffset: Float) {
@@ -462,7 +474,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         @UnstableApi
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             _binding = InternalPlayerFragmentBinding.inflate(inflater)
-            Log.d(TAG, "fragment onCreateView")
+            Logd(TAG, "fragment onCreateView")
 
             episodeTitle = binding.titleView
             butPlaybackSpeed = binding.butPlaybackSpeed
@@ -487,7 +499,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             sbPosition.setOnSeekBarChangeListener(this)
 
             binding.internalPlayerFragment.setOnClickListener {
-                Log.d(TAG, "internalPlayerFragment was clicked")
+                Logd(TAG, "internalPlayerFragment was clicked")
                 val media = controller?.getMedia()
                 if (media != null) {
                     val mediaType = media.getMediaType()
@@ -522,7 +534,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
                 val media = controller!!.getMedia()
                 if (media != null) {
-                    if (media.getMediaType() == MediaType.VIDEO && controller!!.status != PlayerStatus.PLAYING) {
+                    if (media.getMediaType() == MediaType.VIDEO && MediaPlayerBase.status != PlayerStatus.PLAYING) {
                         controller!!.playPause()
                         requireContext().startActivity(PlaybackService.getPlayerActivityIntent(requireContext(), media.getMediaType()))
                     } else controller!!.playPause()
@@ -537,7 +549,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
         @OptIn(UnstableApi::class) private fun setupControlButtons() {
             butRev.setOnClickListener {
-                if (controller != null && controller!!.isPlaybackServiceReady()) {
+                if (controller != null && isPlaybackServiceReady()) {
                     val curr: Int = controller!!.position
                     controller!!.seekTo(curr - UserPreferences.rewindSecs * 1000)
                     sbPosition.visibility = View.VISIBLE
@@ -548,14 +560,14 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 true
             }
             butPlay.setOnLongClickListener {
-                if (controller != null && controller!!.status == PlayerStatus.PLAYING) {
+                if (controller != null && MediaPlayerBase.status == PlayerStatus.PLAYING) {
                     val fallbackSpeed = UserPreferences.fallbackSpeed
-                    if (fallbackSpeed > 0.1f) controller!!.fallbackSpeed(fallbackSpeed)
+                    if (fallbackSpeed > 0.1f) fallbackSpeed(fallbackSpeed)
                 }
                 true
             }
             butFF.setOnClickListener {
-                if (controller != null && controller!!.isPlaybackServiceReady()) {
+                if (controller != null && isPlaybackServiceReady()) {
                     val curr: Int = controller!!.position
                     controller!!.seekTo(curr + UserPreferences.fastForwardSecs * 1000)
                     sbPosition.visibility = View.VISIBLE
@@ -566,9 +578,9 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 true
             }
             butSkip.setOnClickListener {
-                if (controller != null && controller!!.status == PlayerStatus.PLAYING) {
+                if (controller != null && MediaPlayerBase.status == PlayerStatus.PLAYING) {
                     val speedForward = UserPreferences.speedforwardSpeed
-                    if (speedForward > 0.1f) controller!!.speedForward(speedForward)
+                    if (speedForward > 0.1f) speedForward(speedForward)
                 }
             }
             butSkip.setOnLongClickListener {
@@ -622,7 +634,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 txtvLength.text = Converter.getDurationStringLong(duration)
             }
 
-            if (sbPosition.visibility == View.INVISIBLE && controller != null && controller!!.isPlaybackServiceReady()) {
+            if (sbPosition.visibility == View.INVISIBLE && isPlaybackServiceReady()) {
                 sbPosition.visibility = View.VISIBLE
             }
             if (!sbPosition.isPressed) {
@@ -643,7 +655,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
         override fun onDestroy() {
             super.onDestroy()
-            Log.d(TAG, "Fragment is about to be destroyed")
+            Logd(TAG, "Fragment is about to be destroyed")
             disposable?.dispose()
         }
 
@@ -668,38 +680,40 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         override fun onStartTrackingTouch(seekBar: SeekBar) {}
 
         @OptIn(UnstableApi::class) override fun onStopTrackingTouch(seekBar: SeekBar) {
-            if (controller != null && controller!!.isPlaybackServiceReady()) {
+            if (isPlaybackServiceReady()) {
                 val prog: Float = seekBar.progress / (seekBar.max.toFloat())
-                controller!!.seekTo((prog * controller!!.duration).toInt())
+                controller?.seekTo((prog * controller!!.duration).toInt())
             }
         }
 
         @UnstableApi
         fun updateUi(media: Playable?) {
-            Log.d(TAG, "updateUi called $media")
+            Logd(TAG, "updateUi called $media")
             if (media == null) return
 
             episodeTitle.text = media.getEpisodeTitle()
             (activity as MainActivity).setPlayerVisible(true)
             onPositionObserverUpdate(PlaybackPositionEvent(media.getPosition(), media.getDuration()))
 
-            val options = RequestOptions()
-                .placeholder(R.color.light_gray)
-                .error(R.color.light_gray)
-                .fitCenter()
-                .dontAnimate()
-
             val imgLoc = ImageResourceUtils.getEpisodeListImageLocation(media) + "sdfsdf"
             val imgLocFB = ImageResourceUtils.getFallbackImageLocation(media)
-
-            Glide.with(this)
-                .load(imgLoc)
-                .error(Glide.with(this)
-                    .load(imgLocFB)
-                    .error(R.mipmap.ic_launcher)
-                    .apply(options))
-                .apply(options)
-                .into(imgvCover)
+            val imageLoader = imgvCover.context.imageLoader
+            val imageRequest = ImageRequest.Builder(requireContext())
+                .data(imgLoc)
+                .placeholder(R.color.light_gray)
+                .listener(object : ImageRequest.Listener {
+                    override fun onError(request: ImageRequest, throwable: ErrorResult) {
+                        val fallbackImageRequest = ImageRequest.Builder(requireContext())
+                            .data(imgLocFB)
+                            .error(R.mipmap.ic_launcher)
+                            .target(imgvCover)
+                            .build()
+                        imageLoader.enqueue(fallbackImageRequest)
+                    }
+                })
+                .target(imgvCover)
+                .build()
+            imageLoader.enqueue(imageRequest)
 
             if (controller?.isPlayingVideoLocally == true) {
                 (activity as MainActivity).bottomSheet.setLocked(true)

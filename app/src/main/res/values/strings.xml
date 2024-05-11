@@ -581,16 +581,22 @@
     <string name="sync_status_subscriptions">Synchronizing subscriptions…</string>
     <string name="sync_status_wait_for_downloads">Waiting for downloads to complete…</string>
     <string name="sync_status_success">Synchronization successful</string>
+    <string name="sync_status_in_progress">Synchronization in progress</string>
     <string name="sync_status_error">Synchronization failed</string>
+    <string name="sync_error_host_not_respond">Host not responding, giving up</string>
+    <string name="sync_error_guest_not_respond">Guest not responding, giving up</string>
 
     <!-- import and export -->
     <string name="import_export_summary">Move subscriptions and queue to another device</string>
+    <string name="preferences">Preferences</string>
     <string name="database">Database</string>
     <string name="opml">OPML</string>
     <string name="html">HTML</string>
     <string name="html_export_summary">Show your subscriptions to a friend</string>
     <string name="opml_export_summary">Transfer your subscriptions to another podcast app</string>
     <string name="opml_import_summary">Import your subscriptions from another podcast app</string>
+    <string name="preferences_export_summary">Transfer Podcini preferences to Podcini on another device</string>
+    <string name="preferences_import_summary">Import Podcini preferences from another device</string>
     <string name="database_export_summary">Transfer subscriptions, listened episodes and queue to Podcini on another device</string>
     <string name="database_import_summary">Import Podcini database from another device</string>
     <string name="opml_import_label">OPML import</string>
@@ -601,6 +607,8 @@
     <string name="deselect_all_label">Deselect all</string>
     <string name="opml_export_label">OPML export</string>
     <string name="html_export_label">HTML export</string>
+    <string name="preferences_export_label">Preferences export</string>
+    <string name="preferences_import_label">Preferences import</string>
     <string name="database_export_label">Database export</string>
     <string name="database_import_label">Database import</string>
     <string name="database_import_warning">Importing a database will replace all of your current subscriptions and playing history. You should export your current database as a backup. Do you want to replace\?</string>
@@ -648,15 +656,25 @@
     <string name="sleep_timer_enabled_label">Sleep timer enabled</string>
 
     <!-- Synchronisation -->
+    <string name="wifi_sync_summary_unchoosen">You can connect two devices on the same wifi network to synchronize your episodes play states</string>
     <string name="synchronization_choose_title">Choose synchronization provider</string>
     <string name="synchronization_summary_unchoosen">You can choose from multiple providers to synchronize your subscriptions and episode play state with</string>
     <string name="dialog_choose_sync_service_title">Choose synchronization provider</string>
+    <string name="wifi_description">Sync locally with devices in the same network</string>
     <string name="gpodnet_description">Gpodder.net is an open-source podcast synchronization service that you can install on your own server. Gpodder.net is independent of the Podcini project.</string>
     <string name="synchronization_summary_nextcloud">Gpoddersync is an open-source Nextcloud app that you can easily install on your own server. The app is independent of the Podcini project.</string>
     <string name="synchronization_host_explanation">You can pick your own server to synchronize with. When you have identified your preferred synchronization server, please enter its address here.</string>
+    <string name="synchronization_host_address_label">Host address</string>
+    <string name="synchronization_host_port_label">Host port</string>
     <string name="synchronization_host_label">Server address</string>
+    <string name="guest_butLabel">As guest</string>
+    <string name="host_butLabel">As host</string>
     <string name="proceed_to_login_butLabel">Proceed to login</string>
+    <string name="wifisync_explanation_message">This performs wifi sync between two peer devices. The devices should act as either Host or Guest but not the same. The device acting as Host would have its IP address shown. Ensure to copy that address on guest device. Port number can be changed as needed, but both device should use the same port number. Once confirmed it can not be cancelled.  After confirm, maximum time to wait for response on either device is 2 minutes.</string>
+    <string name="wifisync_progress_message">Communicating with peer</string>
     <string name="synchronization_nextcloud_authenticate_browser">Grant access using the opened web browser and come back to Podcini.</string>
+    <string name="connect_to_peer">Connect to peer</string>
+    <string name="host_or_guest">Make yourself a Host or Guest first</string>
     <string name="gpodnetauth_login_butLabel">Login</string>
     <string name="synchronization_credentials_explanation">Please provide the credentials of your account on the synchronization server.</string>
     <string name="gpodnetauth_encryption_warning">Password and data are not encrypted!</string>

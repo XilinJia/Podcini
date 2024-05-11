@@ -24,9 +24,8 @@ import java.text.NumberFormat
 /**
  * Adapter for subscriptions
  */
-open class SubscriptionsAdapter(mainActivity: MainActivity) :
-    SelectableAdapter<SubscriptionsAdapter.SubscriptionViewHolder?>(mainActivity),
-    View.OnCreateContextMenuListener {
+open class SubscriptionsAdapter(mainActivity: MainActivity)
+    : SelectableAdapter<SubscriptionsAdapter.SubscriptionViewHolder?>(mainActivity), View.OnCreateContextMenuListener {
 
     private val mainActivityRef: WeakReference<MainActivity> = WeakReference<MainActivity>(mainActivity)
     private var listItems: List<NavDrawerData.FeedDrawerItem>
@@ -58,7 +57,7 @@ open class SubscriptionsAdapter(mainActivity: MainActivity) :
             holder.selectCheckbox.visibility = View.VISIBLE
             holder.selectView.visibility = View.VISIBLE
 
-            holder.selectCheckbox.setChecked((isSelected(position)))
+            holder.selectCheckbox.setChecked(isSelected(position))
             holder.selectCheckbox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
                 setSelected(holder.bindingAdapterPosition, isChecked)
             }
@@ -86,8 +85,7 @@ open class SubscriptionsAdapter(mainActivity: MainActivity) :
         }
 
         holder.itemView.setOnTouchListener { _: View?, e: MotionEvent ->
-            if (e.isFromSource(InputDevice.SOURCE_MOUSE)
-                    && e.buttonState == MotionEvent.BUTTON_SECONDARY) {
+            if (e.isFromSource(InputDevice.SOURCE_MOUSE) && e.buttonState == MotionEvent.BUTTON_SECONDARY) {
                 if (!inActionMode()) {
                     longPressedPosition = holder.bindingAdapterPosition
                     selectedItem = drawerItem

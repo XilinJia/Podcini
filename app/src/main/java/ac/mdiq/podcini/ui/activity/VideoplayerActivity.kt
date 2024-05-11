@@ -2,6 +2,8 @@ package ac.mdiq.podcini.ui.activity
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.VideoplayerActivityBinding
+import ac.mdiq.podcini.playback.PlaybackController.Companion.audioTracks
+import ac.mdiq.podcini.playback.PlaybackController.Companion.sleepTimerActive
 import ac.mdiq.podcini.playback.cast.CastEnabledActivity
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isCasting
@@ -16,6 +18,7 @@ import ac.mdiq.podcini.ui.fragment.VideoEpisodeFragment
 import ac.mdiq.podcini.ui.utils.PictureInPictureUtil
 import ac.mdiq.podcini.util.FeedItemUtil.getLinkWithFallback
 import ac.mdiq.podcini.util.IntentUtils.openInBrowser
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.ShareUtils.hasLinkToShare
 import ac.mdiq.podcini.util.event.MessageEvent
 import ac.mdiq.podcini.util.event.PlayerErrorEvent
@@ -34,7 +37,6 @@ import android.view.*
 import android.view.MenuItem.SHOW_AS_ACTION_NEVER
 import android.widget.EditText
 import androidx.media3.common.util.UnstableApi
-import com.bumptech.glide.Glide
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -151,12 +153,12 @@ class VideoplayerActivity : CastEnabledActivity() {
 
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
-        Glide.get(this).trimMemory(level)
+//        Glide.get(this).trimMemory(level)
     }
 
     override fun onLowMemory() {
         super.onLowMemory()
-        Glide.get(this).clearMemory()
+//        Glide.get(this).clearMemory()
     }
 
     fun toggleViews() {
@@ -184,7 +186,7 @@ class VideoplayerActivity : CastEnabledActivity() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: MessageEvent) {
-        Log.d(TAG, "onEvent($event)")
+        Logd(TAG, "onEvent($event)")
         val errorDialog = MaterialAlertDialogBuilder(this)
         errorDialog.setMessage(event.message)
         errorDialog.setPositiveButton(event.actionText) { _: DialogInterface?, _: Int ->
@@ -226,11 +228,11 @@ class VideoplayerActivity : CastEnabledActivity() {
             menu.findItem(R.id.remove_from_favorites_item).setVisible(videoEpisodeFragment.isFavorite)
         }
 
-        menu.findItem(R.id.set_sleeptimer_item).setVisible(!controller.sleepTimerActive())
-        menu.findItem(R.id.disable_sleeptimer_item).setVisible(controller.sleepTimerActive())
+        menu.findItem(R.id.set_sleeptimer_item).setVisible(!sleepTimerActive())
+        menu.findItem(R.id.disable_sleeptimer_item).setVisible(sleepTimerActive())
         menu.findItem(R.id.player_switch_to_audio_only).setVisible(true)
 
-        menu.findItem(R.id.audio_controls).setVisible(controller.audioTracks.size >= 2)
+        menu.findItem(R.id.audio_controls).setVisible(audioTracks.size >= 2)
         menu.findItem(R.id.playback_speed).setVisible(true)
         menu.findItem(R.id.player_show_chapters).setVisible(true)
 

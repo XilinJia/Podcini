@@ -12,7 +12,6 @@ import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.fragment.EpisodeHomeFragment.Companion
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.ChapterUtils
@@ -28,7 +27,6 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
 import android.graphics.ColorFilter
-import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -43,11 +41,9 @@ import androidx.core.graphics.BlendModeColorFilterCompat
 import androidx.core.graphics.BlendModeCompat
 import androidx.fragment.app.Fragment
 import androidx.media3.common.util.UnstableApi
-import com.bumptech.glide.Glide
-import com.bumptech.glide.RequestBuilder
-import com.bumptech.glide.load.resource.bitmap.FitCenter
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
-import com.bumptech.glide.request.RequestOptions
+import coil.imageLoader
+import coil.request.ErrorResult
+import coil.request.ImageRequest
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import io.reactivex.Maybe
@@ -174,12 +170,12 @@ class PlayerDetailsFragment : Fragment() {
                 shownoteView.loadDataWithBaseURL("https://127.0.0.1", data!!, "text/html", "utf-8", "about:blank")
                 Log.d(TAG, "Webview loaded")
             }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
+
         loadMediaInfo()
     }
 
     @UnstableApi private fun loadMediaInfo() {
         disposable?.dispose()
-
         disposable = Maybe.create<Playable> { emitter: MaybeEmitter<Playable?> ->
             media = controller?.getMedia()
             if (media != null) emitter.onSuccess(media!!)
@@ -304,27 +300,62 @@ class PlayerDetailsFragment : Fragment() {
 
     private fun displayCoverImage() {
         if (media == null) return
-        val options: RequestOptions = RequestOptions()
-            .dontAnimate()
-            .transform(FitCenter(), RoundedCorners((16 * resources.displayMetrics.density).toInt()))
+//        val options: RequestOptions = RequestOptions()
+//            .dontAnimate()
+//            .transform(FitCenter(), RoundedCorners((16 * resources.displayMetrics.density).toInt()))
 
-        val cover: RequestBuilder<Drawable> = Glide.with(this)
-            .load(media!!.getImageLocation())
-            .error(Glide.with(this)
-                .load(ImageResourceUtils.getFallbackImageLocation(media!!))
-                .apply(options))
-            .apply(options)
+//        val cover: RequestBuilder<Drawable> = Glide.with(this)
+//            .load(media!!.getImageLocation())
+//            .error(Glide.with(this)
+//                .load(ImageResourceUtils.getFallbackImageLocation(media!!))
+//                .apply(options))
+//            .apply(options)
 
         if (displayedChapterIndex == -1 || media!!.getChapters().isEmpty() || media!!.getChapters()[displayedChapterIndex].imageUrl.isNullOrEmpty()) {
-            cover.into(binding.imgvCover)
+//            cover.into(binding.imgvCover)
+            val imageLoader = binding.imgvCover.context.imageLoader
+            val imageRequest = ImageRequest.Builder(requireContext())
+                .data(media!!.getImageLocation())
+                .placeholder(R.color.light_gray)
+                .listener(object : ImageRequest.Listener {
+                    override fun onError(request: ImageRequest, throwable: ErrorResult) {
+                        val fallbackImageRequest = ImageRequest.Builder(requireContext())
+                            .data(ImageResourceUtils.getFallbackImageLocation(media!!))
+                            .error(R.mipmap.ic_launcher)
+                            .target(binding.imgvCover)
+                            .build()
+                        imageLoader.enqueue(fallbackImageRequest)
+                    }
+                })
+                .target(binding.imgvCover)
+                .build()
+            imageLoader.enqueue(imageRequest)
+
         } else {
             val imgLoc = EmbeddedChapterImage.getModelFor(media!!, displayedChapterIndex)
-            if (imgLoc != null) Glide.with(this)
-                .load(imgLoc)
-                .apply(options)
-                .thumbnail(cover)
-                .error(cover)
-                .into(binding.imgvCover)
+//            if (imgLoc != null) Glide.with(this)
+//                .load(imgLoc)
+//                .apply(options)
+//                .thumbnail(cover)
+//                .error(cover)
+//                .into(binding.imgvCover)
+            val imageLoader = binding.imgvCover.context.imageLoader
+            val imageRequest = ImageRequest.Builder(requireContext())
+                .data(imgLoc)
+                .placeholder(R.color.light_gray)
+                .listener(object : ImageRequest.Listener {
+                    override fun onError(request: ImageRequest, throwable: ErrorResult) {
+                        val fallbackImageRequest = ImageRequest.Builder(requireContext())
+                            .data(ImageResourceUtils.getFallbackImageLocation(media!!))
+                            .error(R.mipmap.ic_launcher)
+                            .target(binding.imgvCover)
+                            .build()
+                        imageLoader.enqueue(fallbackImageRequest)
+                    }
+                })
+                .target(binding.imgvCover)
+                .build()
+            imageLoader.enqueue(imageRequest)
         }
     }
 

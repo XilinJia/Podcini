@@ -1,12 +1,12 @@
 package ac.mdiq.podcini.ui.widget
 
-import android.content.Context
-import android.util.Log
-import androidx.work.*
 import ac.mdiq.podcini.feed.util.PlaybackSpeedUtils.getCurrentPlaybackSpeed
+import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.createInstanceFromPreferences
 import ac.mdiq.podcini.ui.widget.WidgetUpdater.WidgetState
-import ac.mdiq.podcini.playback.base.PlayerStatus
+import ac.mdiq.podcini.util.Logd
+import android.content.Context
+import androidx.work.*
 
 class WidgetUpdaterWorker(context: Context, workerParams: WorkerParameters) : Worker(context, workerParams) {
 
@@ -14,7 +14,7 @@ class WidgetUpdaterWorker(context: Context, workerParams: WorkerParameters) : Wo
         try {
             updateWidget()
         } catch (e: Exception) {
-            Log.d(TAG, "Failed to update Podcini widget: ", e)
+            Logd(TAG, "Failed to update Podcini widget: $e")
             return Result.failure()
         }
         return Result.success()

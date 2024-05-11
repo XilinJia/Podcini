@@ -1,6 +1,6 @@
 package ac.mdiq.podcini.sync
 
-import ac.mdiq.podcini.net.sync.GuidValidator.isValidGuid
+import ac.mdiq.podcini.net.sync.SyncService.Companion.isValidGuid
 import junit.framework.TestCase
 
 class GuidValidatorTest : TestCase() {

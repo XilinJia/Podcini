@@ -9,7 +9,6 @@ import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.storage.model.feed.FeedFunding
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.dialog.EditUrlSettingsDialog
-import ac.mdiq.podcini.glide.FastBlurTransformation
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.ui.statistics.feed.FeedStatisticsFragment
 import ac.mdiq.podcini.ui.view.ToolbarIconTintManager
@@ -39,8 +38,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
 import androidx.media3.common.util.UnstableApi
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
+import coil.load
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.appbar.MaterialToolbar
@@ -176,23 +174,28 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         Log.d(TAG, "Language is " + feed!!.language)
         Log.d(TAG, "Author is " + feed!!.author)
         Log.d(TAG, "URL is " + feed!!.download_url)
-        if (!feed?.imageUrl.isNullOrBlank()) {
-            Glide.with(this)
-                .load(feed!!.imageUrl)
-                .apply(RequestOptions()
-                    .placeholder(R.color.light_gray)
-                    .error(R.color.light_gray)
-                    .fitCenter()
-                    .dontAnimate())
-                .into(imgvCover)
-            Glide.with(this)
-                .load(feed!!.imageUrl)
-                .apply(RequestOptions()
-                    .placeholder(R.color.image_readability_tint)
-                    .error(R.color.image_readability_tint)
-                    .transform(FastBlurTransformation())
-                    .dontAnimate())
-                .into(imgvBackground)
+//        if (!feed?.imageUrl.isNullOrBlank()) {
+//            Glide.with(this)
+//                .load(feed!!.imageUrl)
+//                .apply(RequestOptions()
+//                    .placeholder(R.color.light_gray)
+//                    .error(R.color.light_gray)
+//                    .fitCenter()
+//                    .dontAnimate())
+//                .into(imgvCover)
+//            Glide.with(this)
+//                .load(feed!!.imageUrl)
+//                .apply(RequestOptions()
+//                    .placeholder(R.color.image_readability_tint)
+//                    .error(R.color.image_readability_tint)
+//                    .transform(FastBlurTransformation())
+//                    .dontAnimate())
+//                .into(imgvBackground)
+//        }
+
+        imgvCover.load(feed!!.imageUrl) {
+            placeholder(R.color.light_gray)
+            error(R.mipmap.ic_launcher)
         }
 
         txtvTitle.text = feed!!.title

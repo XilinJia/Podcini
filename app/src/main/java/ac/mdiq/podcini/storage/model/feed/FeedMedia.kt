@@ -1,5 +1,10 @@
 package ac.mdiq.podcini.storage.model.feed
 
+import ac.mdiq.podcini.storage.model.MediaMetadataRetrieverCompat
+import ac.mdiq.podcini.storage.model.playback.MediaType
+import ac.mdiq.podcini.storage.model.playback.Playable
+import ac.mdiq.podcini.storage.model.playback.RemoteMedia
+import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
@@ -7,11 +12,6 @@ import android.os.Parcel
 import android.os.Parcelable
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
-import ac.mdiq.podcini.storage.model.MediaMetadataRetrieverCompat
-import ac.mdiq.podcini.storage.model.playback.MediaType
-import ac.mdiq.podcini.storage.model.playback.Playable
-import ac.mdiq.podcini.storage.model.playback.RemoteMedia
-import android.util.Log
 import java.util.*
 import kotlin.concurrent.Volatile
 import kotlin.math.max
@@ -276,7 +276,7 @@ class FeedMedia : FeedFile, Playable {
     }
 
     override fun onPlaybackPause(context: Context) {
-        Log.d("FeedMedia", "onPlaybackPause $position $duration")
+        Logd("FeedMedia", "onPlaybackPause $position $duration")
         if (position > startPosition) {
             playedDuration = playedDurationWhenStarted + position - startPosition
             playedDurationWhenStarted = playedDuration

@@ -1,19 +1,20 @@
 package ac.mdiq.podcini.net.download.service.handler
 
+import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
+import ac.mdiq.podcini.net.sync.model.EpisodeAction
+import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
+import ac.mdiq.podcini.storage.DBReader
+import ac.mdiq.podcini.storage.DBWriter
+import ac.mdiq.podcini.storage.model.MediaMetadataRetrieverCompat
+import ac.mdiq.podcini.storage.model.download.DownloadError
+import ac.mdiq.podcini.storage.model.download.DownloadResult
+import ac.mdiq.podcini.util.ChapterUtils
+import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
 import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.util.Log
 import androidx.media3.common.util.UnstableApi
-import ac.mdiq.podcini.storage.DBReader
-import ac.mdiq.podcini.storage.DBWriter
-import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
-import ac.mdiq.podcini.util.ChapterUtils
-import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
-import ac.mdiq.podcini.storage.model.MediaMetadataRetrieverCompat
-import ac.mdiq.podcini.storage.model.download.DownloadError
-import ac.mdiq.podcini.storage.model.download.DownloadResult
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
-import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import org.greenrobot.eventbus.EventBus
 import java.io.File
 import java.util.concurrent.ExecutionException
@@ -47,10 +48,10 @@ class MediaDownloadedHandler(private val context: Context, var updatedStatus: Do
                 mmr.setDataSource(media.file_url)
                 durationStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
                 media.setDuration( durationStr!!.toInt())
-                Log.d(TAG, "Duration of file is " + media.getDuration())
+                Logd(TAG, "Duration of file is " + media.getDuration())
             }
         } catch (e: NumberFormatException) {
-            Log.d(TAG, "Invalid file duration: $durationStr")
+            Logd(TAG, "Invalid file duration: $durationStr")
         } catch (e: Exception) {
             Log.e(TAG, "Get duration failed", e)
             media.setDuration(30000)

@@ -1,14 +1,14 @@
 package ac.mdiq.podcini.ui.actions.actionbutton
 
-import android.content.Context
-import androidx.media3.common.util.UnstableApi
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.playback.service.PlaybackService.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.playback.PlaybackServiceStarter
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.playback.MediaType
-import android.util.Log
+import ac.mdiq.podcini.util.Logd
+import android.content.Context
 import android.widget.Toast
+import androidx.media3.common.util.UnstableApi
 
 class PlayLocalActionButton(item: FeedItem) : ItemActionButton(item) {
     override fun getLabel(): Int {
@@ -18,7 +18,7 @@ class PlayLocalActionButton(item: FeedItem) : ItemActionButton(item) {
         return R.drawable.ic_play_24dp
     }
     @UnstableApi override fun onClick(context: Context) {
-        Log.d("PlayLocalActionButton", "onClick called")
+        Logd("PlayLocalActionButton", "onClick called")
         val media = item.media
         if (media == null) {
             Toast.makeText(context, R.string.no_media_label, Toast.LENGTH_LONG).show()

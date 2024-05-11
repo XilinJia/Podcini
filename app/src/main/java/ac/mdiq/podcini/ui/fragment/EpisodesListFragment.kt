@@ -4,8 +4,8 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
 import ac.mdiq.podcini.ui.dialog.AllEpisodesFilterDialog.AllEpisodesFilterChangedEvent
+import ac.mdiq.podcini.util.Logd
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -24,10 +24,10 @@ class EpisodesListFragment : BaseEpisodesListFragment() {
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val root = super.onCreateView(inflater, container, savedInstanceState)
-        Log.d(TAG, "fragment onCreateView")
+        Logd(TAG, "fragment onCreateView")
 
-        val episodes_ = requireArguments().getSerializable(EXTRA_EPISODES) as? ArrayList<FeedItem>
-        if (episodes_ != null) episodeList.addAll(episodes_)
+//        val episodes_ = requireArguments().getSerializable(EXTRA_EPISODES) as? ArrayList<FeedItem>
+//        if (episodes_ != null) episodeList.addAll(episodes_)
 
         toolbar.inflateMenu(R.menu.episodes)
         toolbar.setTitle(R.string.episodes_label)
@@ -40,13 +40,18 @@ class EpisodesListFragment : BaseEpisodesListFragment() {
         return root
     }
 
+    fun setEpisodes(episodeList_: MutableList<FeedItem>) {
+        episodeList.clear()
+        episodeList.addAll(episodeList_)
+    }
+
     override fun loadData(): List<FeedItem> {
         if (episodeList.isEmpty()) return listOf()
         return episodeList.subList(0, min(episodeList.size-1, page * EPISODES_PER_PAGE))
     }
 
     override fun loadMoreData(page: Int): List<FeedItem> {
-        return episodeList.subList((page - 1) * EPISODES_PER_PAGE, min(episodeList.size-1, page * EPISODES_PER_PAGE))
+        return episodeList.subList((page - 1) * EPISODES_PER_PAGE, min(episodeList.size, page * EPISODES_PER_PAGE))
     }
 
     override fun loadTotalItemCount(): Int {
@@ -138,11 +143,9 @@ class EpisodesListFragment : BaseEpisodesListFragment() {
         const val EXTRA_EPISODES: String = "episodes_list"
 
         @JvmStatic
-        fun newInstance(episodes: ArrayList<FeedItem>): EpisodesListFragment {
+        fun newInstance(episodes: MutableList<FeedItem>): EpisodesListFragment {
             val i = EpisodesListFragment()
-            val b = Bundle()
-            b.putSerializable(EXTRA_EPISODES, episodes)
-            i.arguments = b
+            i.setEpisodes(episodes)
             return i
         }
 

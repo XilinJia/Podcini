@@ -6,9 +6,7 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.request.RequestOptions
+import coil.load
 
 /**
  * Displays a list of items that have a subtitle and an icon.
@@ -24,13 +22,14 @@ class SimpleIconListAdapter<T : SimpleIconListAdapter.ListItem>(private val cont
         val binding = SimpleIconListItemBinding.bind(view!!)
         binding.title.text = item.title
         binding.subtitle.text = item.subtitle
-        if (item.imageUrl.isNotBlank()) Glide.with(context)
-            .load(item.imageUrl)
-            .apply(RequestOptions()
-                .diskCacheStrategy(DiskCacheStrategy.NONE)
-                .fitCenter()
-                .dontAnimate())
-            .into(binding.icon)
+//        if (item.imageUrl.isNotBlank()) Glide.with(context)
+//            .load(item.imageUrl)
+//            .apply(RequestOptions()
+//                .diskCacheStrategy(DiskCacheStrategy.NONE)
+//                .fitCenter()
+//                .dontAnimate())
+//            .into(binding.icon)
+        binding.icon.load(item.imageUrl)
         return view
     }
 

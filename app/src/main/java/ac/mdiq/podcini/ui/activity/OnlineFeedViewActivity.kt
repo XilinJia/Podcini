@@ -1,6 +1,7 @@
 package ac.mdiq.podcini.ui.activity
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.util.Logd
 import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
@@ -36,7 +37,7 @@ class OnlineFeedViewActivity : AppCompatActivity() {
             Log.e(TAG, "feedUrl is null.")
             showNoPodcastFoundError()
         } else {
-            Log.d(TAG, "Activity was started with url $feedUrl")
+            Logd(TAG, "Activity was started with url $feedUrl")
 
             val intent = MainActivity.showOnlineFeed(this, feedUrl)
             intent.putExtra(MainActivity.EXTRA_STARTED_FROM_SEARCH, getIntent().getBooleanExtra(MainActivity.EXTRA_STARTED_FROM_SEARCH, false))

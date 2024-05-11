@@ -4,6 +4,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <Preference
+        android:key="preference_instant_sync"
+        android:icon="@drawable/wifi_sync"
+        android:summary="@string/wifi_sync_summary_unchoosen"/>
+
+    <Preference
         android:key="preference_synchronization_description"
         android:icon="@drawable/ic_notification_sync"
         android:summary="@string/synchronization_summary_unchoosen"/>

@@ -31,7 +31,7 @@ object IntentUtils {
 
     @JvmStatic
     fun openInBrowser(context: Context, url: String) {
-        Log.d(TAG, "url: $url")
+        Logd(TAG, "url: $url")
         try {
             val myIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
             myIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

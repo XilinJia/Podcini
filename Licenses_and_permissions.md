@@ -16,7 +16,9 @@ Apache License 2.0
 
 [org.jsoup](https://jsoup.org/license) The MIT License
 
-[com.github.bumptech.glide](https://github.com/bumptech/glide/blob/master/LICENSE) Various
+[io.coil-kt](https://github.com/coil-kt/coil/blob/main/LICENSE.txt) Apache License 2.0
+
+[net.dankito.readability4j](https://github.com/dankito/Readability4J/blob/master/LICENSE) Apache License 2.0
 
 [com.squareup.okhttp3](https://github.com/square/okhttp/blob/master/LICENSE.txt) Apache License 2.0
 

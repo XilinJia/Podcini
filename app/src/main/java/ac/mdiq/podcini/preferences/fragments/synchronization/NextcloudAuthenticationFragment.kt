@@ -13,6 +13,7 @@ import ac.mdiq.podcini.net.sync.SynchronizationCredentials
 import ac.mdiq.podcini.net.sync.SynchronizationProviderViewData
 import ac.mdiq.podcini.net.sync.SynchronizationSettings
 import ac.mdiq.podcini.databinding.NextcloudAuthDialogBinding
+import ac.mdiq.podcini.net.sync.SynchronizationSettings.setSelectedSyncProvider
 import ac.mdiq.podcini.net.sync.nextcloud.NextcloudLoginFlow
 
 /**
@@ -68,7 +69,7 @@ class NextcloudAuthenticationFragment : DialogFragment(), NextcloudLoginFlow.Aut
     }
 
     override fun onNextcloudAuthenticated(server: String, username: String, password: String) {
-        SynchronizationSettings.setSelectedSyncProvider(SynchronizationProviderViewData.NEXTCLOUD_GPODDER)
+        setSelectedSyncProvider(SynchronizationProviderViewData.NEXTCLOUD_GPODDER)
         SynchronizationCredentials.clear(requireContext())
         SynchronizationCredentials.password = password
         SynchronizationCredentials.hosturl = server

@@ -2,7 +2,6 @@ package ac.mdiq.podcini.net.sync
 
 import ac.mdiq.podcini.R
 
-
 enum class SynchronizationProviderViewData(@JvmField val identifier: String, val summaryResource: Int, val iconResource: Int) {
     GPODDER_NET(
         "GPODDER_NET",

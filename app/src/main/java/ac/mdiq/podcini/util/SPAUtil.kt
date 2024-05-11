@@ -1,11 +1,10 @@
 package ac.mdiq.podcini.util
 
+import ac.mdiq.podcini.receiver.SPAReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.preference.PreferenceManager
-import ac.mdiq.podcini.BuildConfig
-import ac.mdiq.podcini.receiver.SPAReceiver
 
 /**
  * Provides methods related to PodciniSP (https://github.com/danieloeh/PodciniSP)
@@ -35,7 +34,7 @@ object SPAUtil {
         val prefs = PreferenceManager.getDefaultSharedPreferences(appContext)
         if (!prefs.getBoolean(PREF_HAS_QUERIED_SP_APPS, false)) {
             appContext.sendBroadcast(Intent(SPAReceiver.ACTION_SP_APPS_QUERY_FEEDS))
-            if (BuildConfig.DEBUG) Log.d(TAG, "Sending SP_APPS_QUERY_FEEDS intent")
+            Logd(TAG, "Sending SP_APPS_QUERY_FEEDS intent")
 
             val editor = prefs.edit()
             editor.putBoolean(PREF_HAS_QUERIED_SP_APPS, true)

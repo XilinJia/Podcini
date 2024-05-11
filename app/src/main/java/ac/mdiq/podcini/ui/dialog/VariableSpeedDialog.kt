@@ -3,11 +3,15 @@ package ac.mdiq.podcini.ui.dialog
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.SpeedSelectDialogBinding
 import ac.mdiq.podcini.playback.PlaybackController
-import ac.mdiq.podcini.util.event.playback.SpeedChangedEvent
+import ac.mdiq.podcini.playback.PlaybackController.Companion.isPlaybackServiceReady
+import ac.mdiq.podcini.playback.PlaybackController.Companion.setPlaybackSpeed
+import ac.mdiq.podcini.playback.PlaybackController.Companion.setSkipSilence
 import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.preferences.UserPreferences.playbackSpeedArray
 import ac.mdiq.podcini.ui.view.ItemOffsetDecoration
 import ac.mdiq.podcini.ui.view.PlaybackSpeedSeekBar
+import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.event.playback.SpeedChangedEvent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -120,7 +124,7 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
         skipSilence.isChecked = isSkipSilence
         skipSilence.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
             isSkipSilence = isChecked
-            controller?.setSkipSilence(isChecked)
+            setSkipSilence(isChecked)
         }
 
         return binding.root
@@ -128,7 +132,7 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
 
     @OptIn(UnstableApi::class) override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        if (controller == null || !controller!!.isPlaybackServiceReady()) {
+        if (!isPlaybackServiceReady()) {
             binding.currentAudio.visibility = View.INVISIBLE
             binding.currentPodcast.visibility = View.INVISIBLE
         } else {
@@ -172,15 +176,15 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
                 true
             }
             holder.chip.setOnClickListener { Handler(Looper.getMainLooper()).postDelayed({
-                Log.d("VariableSpeedDialog", "holder.chip settingCode0: ${settingCode[0]} ${settingCode[1]} ${settingCode[2]}")
+                Logd("VariableSpeedDialog", "holder.chip settingCode0: ${settingCode[0]} ${settingCode[1]} ${settingCode[2]}")
                 settingCode[0] = binding.currentAudio.isChecked
                 settingCode[1] = binding.currentPodcast.isChecked
                 settingCode[2] = binding.global.isChecked
-                Log.d("VariableSpeedDialog", "holder.chip settingCode: ${settingCode[0]} ${settingCode[1]} ${settingCode[2]}")
+                Logd("VariableSpeedDialog", "holder.chip settingCode: ${settingCode[0]} ${settingCode[1]} ${settingCode[2]}")
 
                 if (controller != null) {
                     dismiss()
-                    controller!!.setPlaybackSpeed(speed, settingCode)
+                    setPlaybackSpeed(speed, settingCode)
                 }
             }, 200) }
         }
@@ -203,7 +207,7 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
          */
         fun newInstance(settingCode_: BooleanArray? = null, index_default: Int? = null): VariableSpeedDialog? {
             val settingCode = settingCode_ ?: BooleanArray(3){true}
-            Log.d("VariableSpeedDialog", "newInstance settingCode: ${settingCode[0]} ${settingCode[1]} ${settingCode[2]}")
+            Logd("VariableSpeedDialog", "newInstance settingCode: ${settingCode[0]} ${settingCode[1]} ${settingCode[2]}")
             if (settingCode.size != 3) {
                 Log.e("VariableSpeedDialog", "wrong settingCode dimension")
                 return null

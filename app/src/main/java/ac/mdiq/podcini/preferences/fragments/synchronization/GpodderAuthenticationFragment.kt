@@ -9,6 +9,7 @@ import ac.mdiq.podcini.net.sync.SynchronizationSettings
 import ac.mdiq.podcini.net.sync.gpoddernet.GpodnetService
 import ac.mdiq.podcini.net.sync.gpoddernet.model.GpodnetDevice
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
+import ac.mdiq.podcini.net.sync.SynchronizationSettings.setSelectedSyncProvider
 import ac.mdiq.podcini.util.FileNameGenerator.generateFileName
 import android.app.Dialog
 import android.content.Context
@@ -234,7 +235,7 @@ class GpodderAuthenticationFragment : DialogFragment() {
                 }
                 STEP_DEVICE -> {
                     checkNotNull(selectedDevice) { "Device must not be null here" }
-                    SynchronizationSettings.setSelectedSyncProvider(SynchronizationProviderViewData.GPODDER_NET)
+                    setSelectedSyncProvider(SynchronizationProviderViewData.GPODDER_NET)
                     SynchronizationCredentials.username = username
                     SynchronizationCredentials.password = password
                     SynchronizationCredentials.deviceID = selectedDevice!!.id

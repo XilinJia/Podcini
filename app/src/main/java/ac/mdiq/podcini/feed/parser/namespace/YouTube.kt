@@ -9,7 +9,7 @@ import org.xml.sax.Attributes
 
 class YouTube : Namespace() {
     override fun handleElementStart(localName: String, state: HandlerState, attributes: Attributes): SyndElement {
-        Log.d(TAG, "handleElementStart $localName")
+//        Log.d(TAG, "handleElementStart $localName")
         if (IMAGE == localName) {
             val url: String? = attributes.getValue(IMAGE_HREF)
 
@@ -25,7 +25,7 @@ class YouTube : Namespace() {
     }
 
     override fun handleElementEnd(localName: String, state: HandlerState) {
-        Log.d(TAG, "handleElementEnd $localName")
+//        Log.d(TAG, "handleElementEnd $localName")
         if (state.contentBuf == null) return
 
         val content = state.contentBuf.toString()

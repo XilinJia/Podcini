@@ -3,6 +3,9 @@ package ac.mdiq.podcini.net.sync.queue
 import android.content.Context
 import ac.mdiq.podcini.net.sync.LockingAsyncExecutor
 import ac.mdiq.podcini.net.sync.SynchronizationSettings
+import ac.mdiq.podcini.net.sync.SynchronizationSettings.isProviderConnected
+import ac.mdiq.podcini.net.sync.SynchronizationSettings.lastSyncAttempt
+import ac.mdiq.podcini.net.sync.SynchronizationSettings.wifiSyncEnabledKey
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 
@@ -19,7 +22,7 @@ object SynchronizationQueueSink {
     }
 
     fun syncNowIfNotSyncedRecently() {
-        if (System.currentTimeMillis() - SynchronizationSettings.lastSyncAttempt > 1000 * 60 * 10) syncNow()
+        if (System.currentTimeMillis() - lastSyncAttempt > 1000 * 60 * 10) syncNow()
     }
 
     @JvmStatic
@@ -28,7 +31,7 @@ object SynchronizationQueueSink {
     }
 
     fun enqueueFeedAddedIfSynchronizationIsActive(context: Context, downloadUrl: String) {
-        if (!SynchronizationSettings.isProviderConnected) return
+        if (!isProviderConnected) return
 
         LockingAsyncExecutor.executeLockedAsync {
             SynchronizationQueueStorage(context).enqueueFeedAdded(downloadUrl)
@@ -37,7 +40,7 @@ object SynchronizationQueueSink {
     }
 
     fun enqueueFeedRemovedIfSynchronizationIsActive(context: Context, downloadUrl: String) {
-        if (!SynchronizationSettings.isProviderConnected) return
+        if (!isProviderConnected) return
 
         LockingAsyncExecutor.executeLockedAsync {
             SynchronizationQueueStorage(context).enqueueFeedRemoved(downloadUrl)
@@ -46,7 +49,7 @@ object SynchronizationQueueSink {
     }
 
     fun enqueueEpisodeActionIfSynchronizationIsActive(context: Context, action: EpisodeAction) {
-        if (!SynchronizationSettings.isProviderConnected) return
+        if (!isProviderConnected) return
 
         LockingAsyncExecutor.executeLockedAsync {
             SynchronizationQueueStorage(context).enqueueEpisodeAction(action)
@@ -55,7 +58,7 @@ object SynchronizationQueueSink {
     }
 
     fun enqueueEpisodePlayedIfSynchronizationIsActive(context: Context, media: FeedMedia, completed: Boolean) {
-        if (!SynchronizationSettings.isProviderConnected) return
+        if (!isProviderConnected) return
         if (media.item?.feed == null || media.item!!.feed!!.isLocalFeed) return
         if (media.startPosition < 0 || (!completed && media.startPosition >= media.getPosition())) return
 

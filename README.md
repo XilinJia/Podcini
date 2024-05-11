@@ -1,38 +1,30 @@
 # Podcini
 
 <img width="100" src="https://raw.githubusercontent.com/xilinjia/podcini/main/images/icon 256x256.png" align="left" style="margin-right:15px"/>
-Podcini is an open source podcast manager/player project.
+Podcini is an open source podcast instrument, attuned to Puccini <img src="./images/Puccini.jpg" height="50" />, adorned with pasticcini <img src="./images/pasticcini.jpg" height="50" /> and aromatized with porcini <img src="./images/porcini.jpg" height="50" />.
 
-This project is a fork of [AntennaPod](<https://github.com/AntennaPod/AntennaPod>) as of Feb 5 2024.
+This project is based on a fork of [AntennaPod](<https://github.com/AntennaPod/AntennaPod>) as of Feb 5 2024.
 
 Compared to AntennaPod this project:
 
-1. Migrated the media player to `androidx.media3`,
-2. Added `AudioOffloadMode` support, which is supposed to be kind to device battery,
-3. Relies on the most recent dependencies,
-4. Is __purely__ Kotlin based,
-4. Targets Android 14,
-5. Aims to improve efficiency and provide more user-friendly features
+1. Migrated all media routines to `androidx.media3`,
+2. Plays in `AudioOffloadMode`, kind to device battery,
+3. Is purely `Kotlin` based and mono-modular,
+4. Targets Android 14 with updated dependencies,
+5. Outfits with Viewbinding and modern image library Coil,
+6. Boasts new UI's including streamlined drawer, subscriptions view and player controller
+7. Offers Readability for RSS contents and TTS integration,
+8. Features `instant sync` across devices without a server.
+
+The project aims to improve efficiency and provide more useful and user-friendly features.
+
+~Even so, the database remains backward compatible, and AntennaPod's db can be easily imported.~  Since version 4.10.0 and/or AntennaPod 3.3.2, AntennaPod's DB can not be directly imported
 
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
      alt="Get it on F-Droid"
      height="80">](https://f-droid.org/packages/ac.mdiq.podcini/)
 
 Or download the latest APK from the [Releases Section](https://github.com/XilinJia/Podcini/releases/latest).
-
-## Version 4
-
-Some drastic changes are made in the project since version 4.0:
-- A whole new interface of the Subscriptions page showing only the feeds with tags as filters, no longer having tags as folders in the page,
-- Home, Echo and Inbox pages are removed from the project,
-- Subscriptions is now the default page,
-- Feed list are no longer shown in the drawer,
-- Access to statistics is in the drawer.
-- `OnlineFeedView` activity is stripped down to only receive externally shared feeds,
-- Viewbindings are enabled for most views,
-- Project became mono-modular.
-
-~Even so, the database remains backward compatible, and AntennaPod's db can be easily imported.~  Since version 4.10.0 and/or AntennaPod 3.3.2, AntennaPod's DB can not be directly imported
 
 ## Notable new features & enhancements
 
@@ -67,6 +59,7 @@ Some drastic changes are made in the project since version 4.0:
 
 ### Podcast/Episode list
 
+* A whole new interface of the Subscriptions page showing only the feeds with tags as filters, no longer having tags as folders in the page,
 * New and efficient ways of click and long-click operations on lists:
   * click on title area opens the podcast/episode
   * long-press on title area automatically enters in selection mode
@@ -94,7 +87,14 @@ Some drastic changes are made in the project since version 4.0:
 * Online feed info display is handled in similar ways as any local feed, and offers options to subscribe or view episodes
 * Online feed episodes can be freely played (streamed) without a subscription
 * externally shared feed opens in the new online feed view fragment
+* OnlineFeedView` activity is stripped down to only receive externally shared feeds
 * Youtube channels are accepted from external share or paste of address in podcast search view, and can be subscribed as a normal podcast, though video play is handled externally
+
+### Instant (or Wifi) sync
+
+* Ability to sync between devices on the same wifi network without a server (experimental release, back up before use)
+* It syncs the play states (position and played) of episodes that exist in both devices (ensure to refresh first) and that have been played (completed or not)
+* So far, every sync is a full sync, no subscription feeds sync, and no media files sync
 
 ### Security
 

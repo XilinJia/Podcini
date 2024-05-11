@@ -3,6 +3,10 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.VideoEpisodeFragmentBinding
 import ac.mdiq.podcini.playback.PlaybackController
+import ac.mdiq.podcini.playback.PlaybackController.Companion.notifyVideoSurfaceAbandoned
+import ac.mdiq.podcini.playback.PlaybackController.Companion.setVideoSurface
+import ac.mdiq.podcini.playback.PlaybackController.Companion.videoSize
+import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.preferences.UserPreferences.fastForwardSecs
 import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
@@ -97,7 +101,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
                     setupVideoAspectRatio()
                     if (videoSurfaceCreated && controller != null) {
                         Log.d(TAG, "Videosurface already created, setting videosurface now")
-                        controller!!.setVideoSurface(binding.videoView.holder)
+                        setVideoSurface(binding.videoView.holder)
                     }
                 }
             }
@@ -122,7 +126,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     @UnstableApi
     override fun onPause() {
         if (!PictureInPictureUtil.isInPictureInPictureMode(requireActivity())) {
-            if (controller?.status == PlayerStatus.PLAYING) controller!!.pause()
+            if (MediaPlayerBase.status == PlayerStatus.PLAYING) controller!!.pause()
         }
         super.onPause()
     }
@@ -159,11 +163,10 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
 
     private fun setupVideoAspectRatio() {
         if (videoSurfaceCreated && controller != null) {
-            val videoSize = controller!!.videoSize
-            if (videoSize != null && videoSize.first > 0 && videoSize.second > 0) {
-                Log.d(TAG, "Width,height of video: " + videoSize.first + ", " + videoSize.second)
+            if (videoSize != null && videoSize!!.first > 0 && videoSize!!.second > 0) {
+                Log.d(TAG, "Width,height of video: " + videoSize!!.first + ", " + videoSize!!.second)
                 val videoWidth = resources.displayMetrics.widthPixels
-                val videoHeight = (videoWidth.toFloat() / videoSize.first * videoSize.second).toInt()
+                val videoHeight = (videoWidth.toFloat() / videoSize!!.first * videoSize!!.second).toInt()
                 Log.d(TAG, "Width,height of video: " + videoWidth + ", " + videoHeight)
                 binding.videoView.setVideoSize(videoWidth, videoHeight)
 //                binding.videoView.setVideoSize(videoSize.first, videoSize.second)
@@ -182,7 +185,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         Log.d(TAG, "loadMediaInfo called")
         if (controller?.getMedia() == null) return
 
-        if (controller!!.status == PlayerStatus.PLAYING && !controller!!.isPlayingVideoLocally) {
+        if (MediaPlayerBase.status == PlayerStatus.PLAYING && !controller!!.isPlayingVideoLocally) {
             Log.d(TAG, "Closing, no longer video")
             destroyingDueToReload = true
             activity?.finish()
@@ -393,7 +396,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         override fun surfaceCreated(holder: SurfaceHolder) {
             Log.d(TAG, "Videoview holder created")
             videoSurfaceCreated = true
-            if (controller?.status == PlayerStatus.PLAYING) controller!!.setVideoSurface(holder)
+            if (MediaPlayerBase.status == PlayerStatus.PLAYING) setVideoSurface(holder)
             setupVideoAspectRatio()
         }
 
@@ -401,7 +404,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
             Log.d(TAG, "Videosurface was destroyed")
             videoSurfaceCreated = false
             if (controller != null && !destroyingDueToReload && !(activity as VideoplayerActivity).switchToAudioOnly)
-                controller!!.notifyVideoSurfaceAbandoned()
+                notifyVideoSurfaceAbandoned()
         }
     }
 

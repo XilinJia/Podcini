@@ -1,6 +1,11 @@
 package ac.mdiq.podcini.ui.adapter
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.HorizontalFeedItemBinding
+import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.fragment.FeedItemlistFragment
+import ac.mdiq.podcini.ui.view.SquareImageView
 import android.view.ContextMenu
 import android.view.MenuInflater
 import android.view.View
@@ -10,13 +15,9 @@ import androidx.annotation.StringRes
 import androidx.cardview.widget.CardView
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.HorizontalFeedItemBinding
-import ac.mdiq.podcini.ui.fragment.FeedItemlistFragment
-import ac.mdiq.podcini.storage.model.feed.Feed
-import ac.mdiq.podcini.ui.view.SquareImageView
+import coil.ImageLoader
+import coil.load
+import coil.request.ImageRequest
 import java.lang.ref.WeakReference
 
 open class HorizontalFeedListAdapter(mainActivity: MainActivity) :
@@ -58,7 +59,9 @@ open class HorizontalFeedListAdapter(mainActivity: MainActivity) :
         holder.actionButton.visibility = View.GONE
         if (position >= data.size) {
             holder.itemView.alpha = 0.1f
-            Glide.with(mainActivityRef.get()!!).clear(holder.imageView)
+//            Glide.with(mainActivityRef.get()!!).clear(holder.imageView)
+            val imageLoader = ImageLoader.Builder(mainActivityRef.get()!!).build()
+            imageLoader.enqueue(ImageRequest.Builder(mainActivityRef.get()!!).data(null).target(holder.imageView).build())
             holder.imageView.setImageResource(R.color.medium_gray)
             return
         }
@@ -77,13 +80,17 @@ open class HorizontalFeedListAdapter(mainActivity: MainActivity) :
             false
         }
 
-        if (!podcast.imageUrl.isNullOrBlank()) Glide.with(mainActivityRef.get()!!)
-            .load(podcast.imageUrl)
-            .apply(RequestOptions()
-                .placeholder(R.color.light_gray)
-                .fitCenter()
-                .dontAnimate())
-            .into(holder.imageView)
+//        if (!podcast.imageUrl.isNullOrBlank()) Glide.with(mainActivityRef.get()!!)
+//            .load(podcast.imageUrl)
+//            .apply(RequestOptions()
+//                .placeholder(R.color.light_gray)
+//                .fitCenter()
+//                .dontAnimate())
+//            .into(holder.imageView)
+        holder.imageView.load(podcast.imageUrl) {
+            placeholder(R.color.light_gray)
+            error(R.mipmap.ic_launcher)
+        }
     }
 
     override fun getItemId(position: Int): Long {

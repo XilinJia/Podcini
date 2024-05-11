@@ -4,7 +4,6 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.FeedItemListFragmentBinding
 import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.feed.FeedEvent
-import ac.mdiq.podcini.glide.FastBlurTransformation
 import ac.mdiq.podcini.net.download.FeedUpdateManager
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.DBReader
@@ -25,10 +24,7 @@ import ac.mdiq.podcini.ui.dialog.*
 import ac.mdiq.podcini.ui.utils.MoreContentListFooterUtil
 import ac.mdiq.podcini.ui.view.ToolbarIconTintManager
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
-import ac.mdiq.podcini.util.FeedItemPermutors
-import ac.mdiq.podcini.util.FeedItemUtil
-import ac.mdiq.podcini.util.IntentUtils
-import ac.mdiq.podcini.util.ShareUtils
+import ac.mdiq.podcini.util.*
 import ac.mdiq.podcini.util.event.*
 import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
 import android.app.Activity
@@ -46,8 +42,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
+import coil.load
 import com.google.android.material.snackbar.Snackbar
 import com.joanzapata.iconify.Iconify
 import com.leinardi.android.speeddial.SpeedDialActionItem
@@ -101,7 +96,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
     }
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        Log.d(TAG, "fragment onCreateView")
+        Logd(TAG, "fragment onCreateView")
 
         _binding = FeedItemListFragmentBinding.inflate(inflater)
         _speedDialBinding = MultiSelectSpeedDialBinding.bind(binding.root)
@@ -200,13 +195,13 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 
     private val semaphore = Semaphore(0)
     private fun initializeTTS(context: Context) {
-        Log.d(TAG, "starting TTS")
+        Logd(TAG, "starting TTS")
         if (tts == null) {
             tts = TextToSpeech(context) { status: Int ->
                 if (status == TextToSpeech.SUCCESS) {
                     ttsReady = true
                     semaphore.release()
-                    Log.d(TAG, "TTS init success")
+                    Logd(TAG, "TTS init success")
                 } else {
                     Log.w(TAG, "TTS init failed")
                         requireActivity().runOnUiThread {
@@ -312,13 +307,13 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEvent(event: FeedEvent) {
-        Log.d(TAG, "onEvent() called with: event = [$event]")
+        Logd(TAG, "onEvent() called with: event = [$event]")
         if (event.feedId == feedID) loadItems()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: FeedItemEvent) {
-        Log.d(TAG, "onEventMainThread() called with FeedItemEvent event = [$event]")
+        Logd(TAG, "onEventMainThread() called with FeedItemEvent event = [$event]")
         if (feed == null || feed!!.items.isEmpty()) return
 
         var i = 0
@@ -337,7 +332,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: EpisodeDownloadEvent) {
-        Log.d(TAG, "onEventMainThread() called with EpisodeDownloadEvent event = [$event]")
+        Logd(TAG, "onEventMainThread() called with EpisodeDownloadEvent event = [$event]")
         if (feed == null || feed!!.items.isEmpty()) return
 
         for (downloadUrl in event.urls) {
@@ -351,7 +346,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 //        Log.d(TAG, "onEventMainThread() called with PlaybackPositionEvent event = [$event]")
         if (currentPlaying != null && currentPlaying!!.isCurrentlyPlayingItem) currentPlaying!!.notifyPlaybackPositionUpdated(event)
         else {
-            Log.d(TAG, "onEventMainThread() search list")
+            Logd(TAG, "onEventMainThread() search list")
             for (i in 0 until adapter.itemCount) {
                 val holder: EpisodeItemViewHolder? = binding.recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
                 if (holder != null && holder.isCurrentlyPlayingItem) {
@@ -365,13 +360,13 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun favoritesChanged(event: FavoritesEvent?) {
-        Log.d(TAG, "favoritesChanged called")
+        Logd(TAG, "favoritesChanged called")
         updateUi()
     }
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onQueueChanged(event: QueueEvent?) {
-        Log.d(TAG, "onQueueChanged called")
+        Logd(TAG, "onQueueChanged called")
         updateUi()
     }
 
@@ -401,20 +396,20 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onPlayerStatusChanged(event: PlayerStatusEvent?) {
-        Log.d(TAG, "onPlayerStatusChanged called")
+        Logd(TAG, "onPlayerStatusChanged called")
         updateUi()
     }
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onUnreadItemsChanged(event: UnreadItemsUpdateEvent?) {
-        Log.d(TAG, "onUnreadItemsChanged called")
+        Logd(TAG, "onUnreadItemsChanged called")
         updateUi()
     }
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onFeedListChanged(event: FeedListUpdateEvent) {
         if (feed != null && event.contains(feed!!)) {
-            Log.d(TAG, "onFeedListChanged called")
+            Logd(TAG, "onFeedListChanged called")
             updateUi()
         }
     }
@@ -513,23 +508,23 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 
     private fun loadFeedImage() {
         if (!feed?.imageUrl.isNullOrBlank()) {
-            Glide.with(this)
-                .load(feed!!.imageUrl)
-                .apply(RequestOptions()
-                    .placeholder(R.color.image_readability_tint)
-                    .error(R.color.image_readability_tint)
-                    .transform(FastBlurTransformation())
-                    .dontAnimate())
-                .into(binding.imgvBackground)
+//            binding.imgvBackground.load(feed!!.imageUrl) {
+//                placeholder(R.color.image_readability_tint)
+//                error(R.color.image_readability_tint)
+//            }
+//            Glide.with(this)
+//                .load(feed!!.imageUrl)
+//                .apply(RequestOptions()
+//                    .placeholder(R.color.image_readability_tint)
+//                    .error(R.color.image_readability_tint)
+//                    .transform(FastBlurTransformation())
+//                    .dontAnimate())
+//                .into(binding.imgvBackground)
 
-            Glide.with(this)
-                .load(feed!!.imageUrl)
-                .apply(RequestOptions()
-                    .placeholder(R.color.light_gray)
-                    .error(R.mipmap.ic_launcher)
-                    .fitCenter()
-                    .dontAnimate())
-                .into(binding.header.imgvCover)
+            binding.header.imgvCover.load(feed!!.imageUrl) {
+                placeholder(R.color.light_gray)
+                error(R.mipmap.ic_launcher)
+            }
         }
     }
 
@@ -541,7 +536,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
             .subscribe(
                 { result: Feed? ->
                     feed = result
-                    Log.d(TAG, "loadItems subscribe called ${feed?.title}")
+                    Logd(TAG, "loadItems subscribe called ${feed?.title}")
                     if (feed != null) {
                         var hasNonMediaItems = false
                         for (item in feed!!.items) {

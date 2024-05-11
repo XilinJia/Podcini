@@ -5,13 +5,13 @@ import ac.mdiq.podcini.databinding.SettingsActivityBinding
 import ac.mdiq.podcini.preferences.ThemeSwitcher.getTheme
 import ac.mdiq.podcini.preferences.fragments.*
 import ac.mdiq.podcini.preferences.fragments.synchronization.SynchronizationPreferencesFragment
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.MessageEvent
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -158,7 +158,7 @@ class PreferenceActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: MessageEvent) {
-        Log.d(FRAGMENT_TAG, "onEvent($event)")
+        Logd(FRAGMENT_TAG, "onEvent($event)")
         val s = Snackbar.make(binding.root, event.message, Snackbar.LENGTH_LONG)
         if (event.action != null) {
             s.setAction(event.actionText) { event.action.accept(this) }

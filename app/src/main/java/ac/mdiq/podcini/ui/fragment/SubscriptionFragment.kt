@@ -112,8 +112,7 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
         subscriptionAdapter = object : SubscriptionsAdapter(activity as MainActivity) {
             override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
                 super.onCreateContextMenu(menu, v, menuInfo)
-                MenuItemUtils.setOnClickListeners(menu
-                ) { item: MenuItem ->
+                MenuItemUtils.setOnClickListeners(menu) { item: MenuItem ->
                     this@SubscriptionFragment.onContextItemSelected(item)
                 }
             }
@@ -137,7 +136,6 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
                 tagFilterIndex = position
                 filterOnTag()
             }
-
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
@@ -186,7 +184,6 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
             override fun onMainActionSelected(): Boolean {
                 return false
             }
-
             override fun onToggleChanged(isOpen: Boolean) {}
         })
         speedDialView.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->

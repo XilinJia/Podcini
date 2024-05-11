@@ -81,6 +81,15 @@ import java.util.concurrent.TimeUnit
         }
     }
 
+    fun deleteItemsMedia(items: List<FeedItem>) {
+        runOnDbThread {
+            val adapter = getInstance()
+            adapter.open()
+            adapter.removeItemMedia(items)
+            adapter.close()
+        }
+    }
+
     /**
      * Deletes a downloaded FeedMedia file from the storage device.
      *
@@ -767,7 +776,7 @@ import java.util.concurrent.TimeUnit
      * @param media The FeedMedia object.
      */
     fun persistFeedMedia(media: FeedMedia): Future<*> {
-        Log.d(TAG, "setFeedMedia called")
+        Log.d(TAG, "persistFeedMedia called")
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -782,8 +791,8 @@ import java.util.concurrent.TimeUnit
      * @param media The FeedMedia object.
      */
     @JvmStatic
-    fun persistFeedMediaPlaybackInformation(media: FeedMedia?): Future<*> {
-        Log.d(TAG, "setFeedMediaPlaybackInformation called")
+    fun persistFeedMediaPlaybackInfo(media: FeedMedia?): Future<*> {
+        Log.d(TAG, "persistFeedMediaPlaybackInfo called")
         return runOnDbThread {
             if (media != null) {
                 val adapter = getInstance()
@@ -912,7 +921,7 @@ import java.util.concurrent.TimeUnit
      * @param filterValues Values that represent properties to filter by
      */
     fun persistFeedItemsFilter(feedId: Long, filterValues: Set<String>): Future<*> {
-        Log.d(TAG, "setFeedItemsFilter() called with: feedId = [$feedId], filterValues = [$filterValues]")
+        Log.d(TAG, "persistFeedItemsFilter() called with: feedId = [$feedId], filterValues = [$filterValues]")
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()

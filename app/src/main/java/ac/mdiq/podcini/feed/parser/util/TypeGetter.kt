@@ -1,8 +1,8 @@
 package ac.mdiq.podcini.feed.parser.util
 
-import android.util.Log
-import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.feed.parser.UnsupportedFeedtypeException
+import ac.mdiq.podcini.storage.model.feed.Feed
+import ac.mdiq.podcini.util.Logd
 import org.apache.commons.io.input.XmlStreamReader
 import org.jsoup.Jsoup
 import org.xmlpull.v1.XmlPullParser
@@ -36,7 +36,7 @@ class TypeGetter {
                         when (val tag = xpp.name) {
                             ATOM_ROOT -> {
                                 feed.type = Feed.TYPE_ATOM1
-                                Log.d(TAG, "Recognized type Atom")
+                                Logd(TAG, "Recognized type Atom")
 
                                 val strLang = xpp.getAttributeValue("http://www.w3.org/XML/1998/namespace", "lang")
                                 if (strLang != null) feed.language = strLang
@@ -48,23 +48,23 @@ class TypeGetter {
                                 when (strVersion) {
                                     null -> {
                                         feed.type = Feed.TYPE_RSS2
-                                        Log.d(TAG, "Assuming type RSS 2.0")
+                                        Logd(TAG, "Assuming type RSS 2.0")
                                         return Type.RSS20
                                     }
                                     "2.0" -> {
                                         feed.type = Feed.TYPE_RSS2
-                                        Log.d(TAG, "Recognized type RSS 2.0")
+                                        Logd(TAG, "Recognized type RSS 2.0")
                                         return Type.RSS20
                                     }
                                     "0.91", "0.92" -> {
-                                        Log.d(TAG, "Recognized type RSS 0.91/0.92")
+                                        Logd(TAG, "Recognized type RSS 0.91/0.92")
                                         return Type.RSS091
                                     }
                                     else -> throw UnsupportedFeedtypeException("Unsupported rss version")
                                 }
                             }
                             else -> {
-                                Log.d(TAG, "Type is invalid")
+                                Logd(TAG, "Type is invalid")
                                 throw UnsupportedFeedtypeException(Type.INVALID, tag)
                             }
                         }
@@ -85,25 +85,25 @@ class TypeGetter {
                     Jsoup.parse(File(feed.file_url!!))
                     rootElement = "html"
                 } catch (e1: IOException) {
-                    Log.d(TAG, "IOException: " + feed.file_url)
+                    Logd(TAG, "IOException: " + feed.file_url)
                     e1.printStackTrace()
                 }
                 throw UnsupportedFeedtypeException(Type.INVALID, rootElement)
             } catch (e: IOException) {
-                Log.d(TAG, "IOException: " + feed.file_url)
+                Logd(TAG, "IOException: " + feed.file_url)
                 e.printStackTrace()
             } finally {
                 if (reader != null) {
                     try {
                         reader.close()
                     } catch (e: IOException) {
-                        Log.d(TAG, "IOException: $reader")
+                        Logd(TAG, "IOException: $reader")
                         e.printStackTrace()
                     }
                 }
             }
         }
-        Log.d(TAG, "Type is invalid")
+        Logd(TAG, "Type is invalid")
         throw UnsupportedFeedtypeException(Type.INVALID)
     }
 
@@ -114,11 +114,11 @@ class TypeGetter {
         try {
             reader = XmlStreamReader(File(feed.file_url!!))
         } catch (e: FileNotFoundException) {
-            Log.d(TAG, "FileNotFoundException: " + feed.file_url)
+            Logd(TAG, "FileNotFoundException: " + feed.file_url)
             e.printStackTrace()
             return null
         } catch (e: IOException) {
-            Log.d(TAG, "IOException: " + feed.file_url)
+            Logd(TAG, "IOException: " + feed.file_url)
             e.printStackTrace()
             return null
         }

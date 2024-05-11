@@ -1,21 +1,21 @@
 package ac.mdiq.podcini.feed.parser.namespace
 
 import ac.mdiq.podcini.feed.parser.HandlerState
-import android.util.Log
-import ac.mdiq.podcini.storage.model.feed.FeedFunding
-import ac.mdiq.podcini.storage.model.feed.FeedItem
-import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.feed.parser.element.AtomText
 import ac.mdiq.podcini.feed.parser.element.SyndElement
 import ac.mdiq.podcini.feed.parser.util.DateUtils.parseOrNullIfFuture
 import ac.mdiq.podcini.feed.parser.util.MimeTypeUtils.getMimeType
 import ac.mdiq.podcini.feed.parser.util.MimeTypeUtils.isMediaFile
 import ac.mdiq.podcini.feed.parser.util.SyndStringUtils.trimAllWhitespace
+import ac.mdiq.podcini.storage.model.feed.FeedFunding
+import ac.mdiq.podcini.storage.model.feed.FeedItem
+import ac.mdiq.podcini.storage.model.feed.FeedMedia
+import ac.mdiq.podcini.util.Logd
 import org.xml.sax.Attributes
 
 class Atom : Namespace() {
     override fun handleElementStart(localName: String, state: HandlerState, attributes: Attributes): SyndElement {
-        Log.d(TAG, "handleElementStart $localName")
+//        Log.d(TAG, "handleElementStart $localName")
         when {
             ENTRY == localName -> {
                 state.currentItem = FeedItem()
@@ -40,7 +40,7 @@ class Atom : Namespace() {
                                 try {
                                     if (strSize != null) size = strSize.toLong()
                                 } catch (e: NumberFormatException) {
-                                    Log.d(TAG, "Length attribute could not be parsed.")
+                                    Logd(TAG, "Length attribute could not be parsed.")
                                 }
                                 val mimeType: String? = getMimeType(attributes.getValue(LINK_TYPE), href)
 
@@ -98,7 +98,7 @@ class Atom : Namespace() {
     }
 
     override fun handleElementEnd(localName: String, state: HandlerState) {
-        Log.d(TAG, "handleElementEnd $localName")
+//        Log.d(TAG, "handleElementEnd $localName")
         if (ENTRY == localName) {
             if (state.currentItem != null && state.tempObjects.containsKey(Itunes.DURATION)) {
                 val currentItem = state.currentItem

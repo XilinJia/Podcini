@@ -1,8 +1,8 @@
 package ac.mdiq.podcini.storage.export.opml
 
-import android.util.Log
-import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.storage.export.CommonSymbols
+import ac.mdiq.podcini.util.Logd
+import android.util.Log
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import org.xmlpull.v1.XmlPullParserFactory
@@ -33,14 +33,14 @@ class OpmlReader {
 
         while (eventType != XmlPullParser.END_DOCUMENT) {
             when (eventType) {
-                XmlPullParser.START_DOCUMENT -> if (BuildConfig.DEBUG) Log.d(TAG, "Reached beginning of document")
+                XmlPullParser.START_DOCUMENT -> Logd(TAG, "Reached beginning of document")
                 XmlPullParser.START_TAG -> when {
                     xpp.name == OpmlSymbols.OPML -> {
                         isInOpml = true
-                        if (BuildConfig.DEBUG) Log.d(TAG, "Reached beginning of OPML tree.")
+                        Logd(TAG, "Reached beginning of OPML tree.")
                     }
                     isInOpml && xpp.name == OpmlSymbols.OUTLINE -> {
-                        if (BuildConfig.DEBUG) Log.d(TAG, "Found new Opml element")
+                        Logd(TAG, "Found new Opml element")
                         val element = OpmlElement()
 
                         val title = xpp.getAttributeValue(null, CommonSymbols.TITLE)
@@ -61,7 +61,7 @@ class OpmlReader {
                             }
                             elementList!!.add(element)
                         } else {
-                            if (BuildConfig.DEBUG) Log.d(TAG, "Skipping element because of missing xml url")
+                            Logd(TAG, "Skipping element because of missing xml url")
                         }
                     }
                 }
@@ -69,7 +69,7 @@ class OpmlReader {
             eventType = xpp.next()
         }
 
-        if (BuildConfig.DEBUG) Log.d(TAG, "Parsing finished.")
+        Logd(TAG, "Parsing finished.")
 
         return elementList!!
     }

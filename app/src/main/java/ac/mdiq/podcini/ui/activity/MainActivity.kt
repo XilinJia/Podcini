@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.ui.activity
 
+import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.MainActivityBinding
 import ac.mdiq.podcini.net.download.FeedUpdateManager
@@ -18,11 +19,12 @@ import ac.mdiq.podcini.receiver.MediaButtonReceiver.Companion.createIntent
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.model.download.DownloadStatus
 import ac.mdiq.podcini.ui.activity.appstartintent.MainActivityStarter
-import ac.mdiq.podcini.ui.utils.ThemeUtils.getDrawableFromAttr
 import ac.mdiq.podcini.ui.dialog.RatingDialog
 import ac.mdiq.podcini.ui.fragment.*
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
+import ac.mdiq.podcini.ui.utils.ThemeUtils.getDrawableFromAttr
 import ac.mdiq.podcini.ui.view.LockableBottomSheetBehavior
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EpisodeDownloadEvent
 import ac.mdiq.podcini.util.event.FeedUpdateRunningEvent
 import ac.mdiq.podcini.util.event.MessageEvent
@@ -38,6 +40,7 @@ import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.StrictMode
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.KeyEvent
@@ -60,7 +63,6 @@ import androidx.media3.session.SessionToken
 import androidx.recyclerview.widget.RecyclerView
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import com.bumptech.glide.Glide
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
@@ -84,6 +86,7 @@ class MainActivity : CastEnabledActivity() {
     private val binding get() = _binding!!
 
     private lateinit var mainView: View
+    private lateinit var audioPlayerFragment: AudioPlayerFragment
     private lateinit var audioPlayerFragmentView: View
     private lateinit var navDrawer: View
     private lateinit var dummyView : View
@@ -100,6 +103,13 @@ class MainActivity : CastEnabledActivity() {
     @UnstableApi public override fun onCreate(savedInstanceState: Bundle?) {
         lastTheme = getNoTitleTheme(this)
         setTheme(lastTheme)
+
+        if (BuildConfig.DEBUG) {
+            val builder = StrictMode.ThreadPolicy.Builder()
+                .detectAll()  // Enable all detections
+                .penaltyLog()  // Log violations to the console
+            StrictMode.setThreadPolicy(builder.build())
+        }
 
         DBReader.updateFeedList()
 
@@ -158,7 +168,7 @@ class MainActivity : CastEnabledActivity() {
         val transaction = fm.beginTransaction()
         val navDrawerFragment = NavDrawerFragment()
         transaction.replace(R.id.navDrawerFragment, navDrawerFragment, NavDrawerFragment.TAG)
-        val audioPlayerFragment = AudioPlayerFragment()
+        audioPlayerFragment = AudioPlayerFragment()
         transaction.replace(R.id.audioplayerFragment, audioPlayerFragment, AudioPlayerFragment.TAG)
         transaction.commit()
         navDrawer = findViewById(R.id.navDrawerFragment)
@@ -210,7 +220,7 @@ class MainActivity : CastEnabledActivity() {
                             DownloadStatus.STATE_COMPLETED
                         }
                         WorkInfo.State.CANCELLED -> {
-                            Log.d(TAG, "download cancelled $downloadUrl")
+                            Logd(TAG, "download cancelled $downloadUrl")
                             DownloadStatus.STATE_COMPLETED
                         }
                     }
@@ -265,10 +275,13 @@ class MainActivity : CastEnabledActivity() {
 
     private val bottomSheetCallback: BottomSheetCallback = @UnstableApi object : BottomSheetCallback() {
          override fun onStateChanged(view: View, state: Int) {
-             Log.d(TAG, "bottomSheet onStateChanged $state")
+             Logd(TAG, "bottomSheet onStateChanged $state")
              when (state) {
                  BottomSheetBehavior.STATE_COLLAPSED -> onSlide(view,0.0f)
-                 BottomSheetBehavior.STATE_EXPANDED -> onSlide(view, 1.0f)
+                 BottomSheetBehavior.STATE_EXPANDED -> {
+                     audioPlayerFragment.initDetailedView()
+                     onSlide(view, 1.0f)
+                 }
                  else -> {}
              }
          }
@@ -282,7 +295,7 @@ class MainActivity : CastEnabledActivity() {
     }
 
     fun setupToolbarToggle(toolbar: MaterialToolbar, displayUpArrow: Boolean) {
-        Log.d(TAG, "setupToolbarToggle ${drawerLayout?.id} $displayUpArrow")
+        Logd(TAG, "setupToolbarToggle ${drawerLayout?.id} $displayUpArrow")
         // Tablet layout does not have a drawer
         when {
             drawerLayout != null -> {
@@ -352,7 +365,7 @@ class MainActivity : CastEnabledActivity() {
     fun loadFragment(tag: String?, args: Bundle?) {
         var tag = tag
         var args = args
-        Log.d(TAG, "loadFragment(tag: $tag, args: $args)")
+        Logd(TAG, "loadFragment(tag: $tag, args: $args)")
         val fragment: Fragment
         when (tag) {
             QueueFragment.TAG -> fragment = QueueFragment()
@@ -447,7 +460,7 @@ class MainActivity : CastEnabledActivity() {
         val maxWidth = resources.getDimension(R.dimen.nav_drawer_max_screen_size).toInt()
 
         navDrawer.layoutParams.width = min(width.toDouble(), maxWidth.toDouble()).toInt()
-        Log.d(TAG, "setNavDrawerSize: ${navDrawer.layoutParams.width}")
+        Logd(TAG, "setNavDrawerSize: ${navDrawer.layoutParams.width}")
     }
 
     private val screenWidth: Int
@@ -503,16 +516,16 @@ class MainActivity : CastEnabledActivity() {
 
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
-        Glide.get(this).trimMemory(level)
+//        Glide.get(this).trimMemory(level)
     }
 
     override fun onLowMemory() {
         super.onLowMemory()
-        Glide.get(this).clearMemory()
+//        Glide.get(this).clearMemory()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        Log.d(TAG, "onOptionsItemSelected ${item.title}")
+        Logd(TAG, "onOptionsItemSelected ${item.title}")
         when {
             drawerToggle != null && drawerToggle!!.onOptionsItemSelected(item) -> return true // Tablet layout does not have a drawer
             item.itemId == android.R.id.home -> {
@@ -541,14 +554,14 @@ class MainActivity : CastEnabledActivity() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: MessageEvent) {
-        Log.d(TAG, "onEvent($event)")
+        Logd(TAG, "onEvent($event)")
 
         val snackbar = showSnackbarAbovePlayer(event.message, Snackbar.LENGTH_LONG)
         if (event.action != null) snackbar.setAction(event.actionText) { event.action.accept(this) }
     }
 
     private fun handleNavIntent() {
-        Log.d(TAG, "handleNavIntent()")
+        Logd(TAG, "handleNavIntent()")
         val intent = intent
         when {
             intent.hasExtra(EXTRA_FEED_ID) -> {
@@ -623,7 +636,7 @@ class MainActivity : CastEnabledActivity() {
     private fun handleDeeplink(uri: Uri?) {
         if (uri?.path == null) return
 
-        Log.d(TAG, "Handling deeplink: $uri")
+        Logd(TAG, "Handling deeplink: $uri")
         when (uri.path) {
             "/deeplink/search" -> {
                 val query = uri.getQueryParameter("query") ?: return

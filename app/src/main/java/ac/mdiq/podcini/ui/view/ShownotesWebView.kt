@@ -1,6 +1,10 @@
 package ac.mdiq.podcini.ui.view
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.utils.ShownotesCleaner
+import ac.mdiq.podcini.util.*
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -19,15 +23,8 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.core.content.ContextCompat
 import androidx.core.util.Consumer
-import com.google.android.material.snackbar.Snackbar
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
-import ac.mdiq.podcini.util.IntentUtils
-import ac.mdiq.podcini.util.NetworkUtils
-import ac.mdiq.podcini.util.ShareUtils
-import ac.mdiq.podcini.ui.utils.ShownotesCleaner
-import ac.mdiq.podcini.util.Converter
 import androidx.media3.common.util.UnstableApi
+import com.google.android.material.snackbar.Snackbar
 import kotlin.math.max
 
 class ShownotesWebView : WebView, View.OnLongClickListener {
@@ -71,7 +68,7 @@ class ShownotesWebView : WebView, View.OnLongClickListener {
 
             override fun onPageFinished(view: WebView, url: String) {
                 super.onPageFinished(view, url)
-                Log.d(TAG, "Page finished")
+                Logd(TAG, "Page finished")
                 pageFinishedListener?.run()
             }
         })
@@ -81,13 +78,13 @@ class ShownotesWebView : WebView, View.OnLongClickListener {
         val r: HitTestResult = getHitTestResult()
         when (r.type) {
             HitTestResult.SRC_ANCHOR_TYPE -> {
-                Log.d(TAG, "Link of webview was long-pressed. Extra: " + r.extra)
+                Logd(TAG, "Link of webview was long-pressed. Extra: " + r.extra)
                 selectedUrl = r.extra
                 showContextMenu()
                 return true
             }
             HitTestResult.EMAIL_TYPE -> {
-                Log.d(TAG, "E-Mail of webview was long-pressed. Extra: " + r.extra)
+                Logd(TAG, "E-Mail of webview was long-pressed. Extra: " + r.extra)
                 ContextCompat.getSystemService(context, ClipboardManager::class.java)?.setPrimaryClip(ClipData.newPlainText("Podcini", r.extra))
                 if (Build.VERSION.SDK_INT <= 32 && this.context is MainActivity) {
                     (this.context as MainActivity).showSnackbarAbovePlayer(resources.getString(R.string.copied_to_clipboard), Snackbar.LENGTH_SHORT)

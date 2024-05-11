@@ -19,6 +19,9 @@ import ac.mdiq.podcini.preferences.SleepTimerPreferences.vibrate
 import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.util.Converter.getDurationStringLong
 import ac.mdiq.podcini.playback.PlaybackController
+import ac.mdiq.podcini.playback.PlaybackController.Companion.disableSleepTimer
+import ac.mdiq.podcini.playback.PlaybackController.Companion.extendSleepTimer
+import ac.mdiq.podcini.playback.PlaybackController.Companion.setSleepTimer
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
@@ -83,13 +86,13 @@ class SleepTimerDialog : DialogFragment() {
         val extendSleepTwentyMinutesButton = binding.extendSleepTwentyMinutesButton
         extendSleepTwentyMinutesButton.text = getString(R.string.extend_sleep_timer_label, 20)
         extendSleepFiveMinutesButton.setOnClickListener {
-            controller.extendSleepTimer((5 * 1000 * 60).toLong())
+            extendSleepTimer((5 * 1000 * 60).toLong())
         }
         extendSleepTenMinutesButton.setOnClickListener {
-            controller.extendSleepTimer((10 * 1000 * 60).toLong())
+            extendSleepTimer((10 * 1000 * 60).toLong())
         }
         extendSleepTwentyMinutesButton.setOnClickListener {
-            controller.extendSleepTimer((20 * 1000 * 60).toLong())
+            extendSleepTimer((20 * 1000 * 60).toLong())
         }
 
         etxtTime.setText(lastTimerValue())
@@ -128,7 +131,7 @@ class SleepTimerDialog : DialogFragment() {
 
         val disableButton = binding.disableSleeptimerButton
         disableButton.setOnClickListener {
-            controller.disableSleepTimer()
+            disableSleepTimer()
         }
         val setButton = binding.setSleeptimerButton
         setButton.setOnClickListener {
@@ -141,7 +144,7 @@ class SleepTimerDialog : DialogFragment() {
                 if (time == 0L) throw NumberFormatException("Timer must not be zero")
 
                 setLastTimer(etxtTime.getText().toString())
-                controller.setSleepTimer(timerMillis())
+                setSleepTimer(timerMillis())
                 
                 closeKeyboard(content)
             } catch (e: NumberFormatException) {

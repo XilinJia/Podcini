@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.net.sync.nextcloud
 
 import ac.mdiq.podcini.net.sync.HostnameParser
-import ac.mdiq.podcini.net.sync.gpoddernet.mapper.ResponseMapper
+import ac.mdiq.podcini.net.sync.ResponseMapper
 import ac.mdiq.podcini.net.sync.gpoddernet.model.GpodnetUploadChangesResponse
 import ac.mdiq.podcini.net.sync.model.*
 import okhttp3.*
@@ -41,14 +41,12 @@ class NextcloudSyncService(private val httpClient: OkHttpClient, baseHosturl: St
     }
 
     @Throws(NextcloudSynchronizationServiceException::class)
-    override fun uploadSubscriptionChanges(addedFeeds: List<String?>?,
-                                           removedFeeds: List<String?>?
-    ): UploadChangesResponse {
+    override fun uploadSubscriptionChanges(added: List<String>, removed: List<String>): UploadChangesResponse {
         try {
             val url: HttpUrl.Builder = makeUrl("/index.php/apps/gpoddersync/subscription_change/create")
             val requestObject = JSONObject()
-            requestObject.put("add", JSONArray(addedFeeds))
-            requestObject.put("remove", JSONArray(removedFeeds))
+            requestObject.put("add", JSONArray(added))
+            requestObject.put("remove", JSONArray(removed))
             val requestBody = RequestBody.create("application/json".toMediaType(), requestObject.toString())
             performRequest(url, "POST", requestBody)
         } catch (e: Exception) {
@@ -80,9 +78,9 @@ class NextcloudSyncService(private val httpClient: OkHttpClient, baseHosturl: St
     }
 
     @Throws(NextcloudSynchronizationServiceException::class)
-    override fun uploadEpisodeActions(queuedEpisodeActions: List<EpisodeAction?>?): UploadChangesResponse {
+    override fun uploadEpisodeActions(queuedEpisodeActions: List<EpisodeAction>): UploadChangesResponse {
         var i = 0
-        while (i < queuedEpisodeActions!!.size) {
+        while (i < queuedEpisodeActions.size) {
             uploadEpisodeActionsPartial(queuedEpisodeActions, i, min(queuedEpisodeActions.size.toDouble(), (i + UPLOAD_BULK_SIZE).toDouble()).toInt())
             i += UPLOAD_BULK_SIZE
         }

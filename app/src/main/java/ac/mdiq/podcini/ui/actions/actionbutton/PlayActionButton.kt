@@ -1,16 +1,16 @@
 package ac.mdiq.podcini.ui.actions.actionbutton
 
-import android.content.Context
-import androidx.media3.common.util.UnstableApi
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.storage.DBTasks
 import ac.mdiq.podcini.playback.PlaybackServiceStarter
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.getPlayerActivityIntent
+import ac.mdiq.podcini.storage.DBTasks
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.playback.MediaType
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.playback.StartPlayEvent
-import android.util.Log
+import android.content.Context
 import android.widget.Toast
+import androidx.media3.common.util.UnstableApi
 import org.greenrobot.eventbus.EventBus
 
 class PlayActionButton(item: FeedItem) : ItemActionButton(item) {
@@ -21,7 +21,7 @@ class PlayActionButton(item: FeedItem) : ItemActionButton(item) {
         return R.drawable.ic_play_24dp
     }
     @UnstableApi override fun onClick(context: Context) {
-        Log.d("PlayActionButton", "onClick called")
+        Logd("PlayActionButton", "onClick called")
         val media = item.media
         if (media == null) {
             Toast.makeText(context, R.string.no_media_label, Toast.LENGTH_LONG).show()

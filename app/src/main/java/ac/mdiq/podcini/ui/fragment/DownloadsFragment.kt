@@ -5,27 +5,28 @@ import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.databinding.SimpleListFragmentBinding
 import ac.mdiq.podcini.net.download.FeedUpdateManager
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
-import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
 import ac.mdiq.podcini.storage.model.feed.SortOrder
+import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectActionHandler
+import ac.mdiq.podcini.ui.actions.actionbutton.DeleteActionButton
+import ac.mdiq.podcini.ui.actions.menuhandler.FeedItemMenuHandler
+import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
+import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.EpisodeItemListAdapter
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
-import ac.mdiq.podcini.ui.actions.actionbutton.DeleteActionButton
 import ac.mdiq.podcini.ui.dialog.ItemSortDialog
-import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectActionHandler
-import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
-import ac.mdiq.podcini.ui.actions.menuhandler.FeedItemMenuHandler
-import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.view.EmptyViewHandler
 import ac.mdiq.podcini.ui.view.EpisodeItemListRecyclerView
 import ac.mdiq.podcini.ui.view.LiftOnScrollListener
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
 import ac.mdiq.podcini.util.FeedItemUtil
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.*
+import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -75,7 +76,7 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = SimpleListFragmentBinding.inflate(inflater)
 
-        Log.d(TAG, "fragment onCreateView")
+        Logd(TAG, "fragment onCreateView")
         toolbar = binding.toolbar
         toolbar.setTitle(R.string.downloads_label)
         toolbar.inflateMenu(R.menu.downloads_completed)
@@ -230,7 +231,7 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: FeedItemEvent) {
-        Log.d(TAG, "onEventMainThread() called with: event = [$event]")
+        Logd(TAG, "onEventMainThread() called with: event = [$event]")
 
         var i = 0
         val size: Int = event.items.size
@@ -263,7 +264,7 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
         if (currentPlaying != null && currentPlaying!!.isCurrentlyPlayingItem)
             currentPlaying!!.notifyPlaybackPositionUpdated(event)
         else {
-            Log.d(TAG, "onEventMainThread() search list")
+            Logd(TAG, "onEventMainThread() search list")
             for (i in 0 until adapter.itemCount) {
                 val holder: EpisodeItemViewHolder? = recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
                 if (holder != null && holder.isCurrentlyPlayingItem) {

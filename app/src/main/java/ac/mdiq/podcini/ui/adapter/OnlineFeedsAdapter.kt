@@ -11,14 +11,10 @@ import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.media3.common.util.UnstableApi
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.load.resource.bitmap.FitCenter
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
-import com.bumptech.glide.request.RequestOptions
+import coil.load
 
-class OnlineFeedsAdapter(private val context: Context, objects: List<PodcastSearchResult>) :
-    ArrayAdapter<PodcastSearchResult?>(context, 0, objects) {
+class OnlineFeedsAdapter(private val context: Context, objects: List<PodcastSearchResult>)
+    : ArrayAdapter<PodcastSearchResult?>(context, 0, objects) {
 
 //    List holding the podcasts found in the search
     private val data: List<PodcastSearchResult> = objects
@@ -63,16 +59,20 @@ class OnlineFeedsAdapter(private val context: Context, objects: List<PodcastSear
         } else viewHolder.updateView.visibility = View.INVISIBLE
 
         //Update the empty imageView with the image from the feed
-        if (!podcast.imageUrl.isNullOrBlank()) Glide.with(context)
-            .load(podcast.imageUrl)
-            .apply(RequestOptions()
-                .placeholder(R.color.light_gray)
-                .diskCacheStrategy(DiskCacheStrategy.NONE)
-                .transform(FitCenter(),
-                    RoundedCorners((4 * context.resources.displayMetrics.density).toInt()))
-                .dontAnimate())
-            .into(viewHolder.coverView)
+//        if (!podcast.imageUrl.isNullOrBlank()) Glide.with(context)
+//            .load(podcast.imageUrl)
+//            .apply(RequestOptions()
+//                .placeholder(R.color.light_gray)
+//                .diskCacheStrategy(DiskCacheStrategy.NONE)
+//                .transform(FitCenter(),
+//                    RoundedCorners((4 * context.resources.displayMetrics.density).toInt()))
+//                .dontAnimate())
+//            .into(viewHolder.coverView)
 
+        viewHolder.coverView.load(podcast.imageUrl) {
+            placeholder(R.color.light_gray)
+            error(R.mipmap.ic_launcher)
+        }
         return view
     }
 

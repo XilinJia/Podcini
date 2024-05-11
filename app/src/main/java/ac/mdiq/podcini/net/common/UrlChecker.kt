@@ -19,12 +19,12 @@ object UrlChecker {
     /**
      * Checks if URL is valid and modifies it if necessary.
      *
-     * @param url The url which is going to be prepared
+     * @param url_ The url which is going to be prepared
      * @return The prepared url
      */
     @JvmStatic
-    fun prepareUrl(url: String): String {
-        var url = url
+    fun prepareUrl(url_: String): String {
+        var url = url_
         url = url.trim { it <= ' ' }
         val lowerCaseUrl = url.lowercase() // protocol names are case insensitive
         when {
@@ -69,15 +69,15 @@ object UrlChecker {
      * Checks if URL is valid and modifies it if necessary.
      * This method also handles protocol relative URLs.
      *
-     * @param url  The url which is going to be prepared
-     * @param base The url against which the (possibly relative) url is applied. If this is null,
+     * @param url_  The url which is going to be prepared
+     * @param base_ The url against which the (possibly relative) url is applied. If this is null,
      * the result of prepareURL(url) is returned instead.
      * @return The prepared url
      */
     @JvmStatic
-    fun prepareUrl(url: String, base: String?): String {
-        var url = url
-        var base = base ?: return prepareUrl(url)
+    fun prepareUrl(url_: String, base_: String?): String {
+        var url = url_
+        var base = base_ ?: return prepareUrl(url)
         url = url.trim { it <= ' ' }
         base = prepareUrl(base)
         val urlUri = Uri.parse(url)

@@ -15,13 +15,14 @@ class HostnameParser(hosturl: String?) {
     var subfolder: String? = null
 
     init {
-        val m = URLSPLIT_REGEX.matcher(hosturl)
+        val m = URLSPLIT_REGEX.matcher(hosturl?:"")
         if (m.matches()) {
             scheme = m.group(1)
             host = IDN.toASCII(m.group(2))
             // regex -> can only be digits
-            port = if (m.group(3) == null) -1 else m.group(3).toInt()
-            subfolder = if (m.group(4) == null) "" else StringUtils.stripEnd(m.group(4), "/")
+            port = m.group(3)?.toInt() ?: -1
+            val mg4 = m.group(4)
+            subfolder = if (mg4 == null) "" else StringUtils.stripEnd(mg4, "/")
         } else {
             // URL does not match regex: use it anyway -> this will cause an exception on connect
             scheme = "https"

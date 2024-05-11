@@ -7,6 +7,7 @@ import android.content.SharedPreferences
 object SynchronizationSettings {
     const val LAST_SYNC_ATTEMPT_TIMESTAMP: String = "last_sync_attempt_timestamp"
     private const val NAME = "synchronization"
+    private const val WIFI_SYNC_ENABLED = "wifi_sync_enabled"
     private const val SELECTED_SYNC_PROVIDER = "selected_sync_provider"
     private const val LAST_SYNC_ATTEMPT_SUCCESS = "last_sync_attempt_success"
     private const val LAST_EPISODE_ACTIONS_SYNC_TIMESTAMP = "last_episode_actions_sync_timestamp"
@@ -38,6 +39,16 @@ object SynchronizationSettings {
 
     val selectedSyncProviderKey: String?
         get() = sharedPreferences.getString(SELECTED_SYNC_PROVIDER, null)
+
+    fun setWifiSyncEnabled(stat: Boolean) {
+        sharedPreferences
+            .edit()
+            .putBoolean(WIFI_SYNC_ENABLED, stat)
+            .apply()
+    }
+
+    val wifiSyncEnabledKey: Boolean
+        get() = sharedPreferences.getBoolean(WIFI_SYNC_ENABLED, false)
 
     fun updateLastSynchronizationAttempt() {
         sharedPreferences.edit().putLong(LAST_SYNC_ATTEMPT_TIMESTAMP, System.currentTimeMillis()).apply()

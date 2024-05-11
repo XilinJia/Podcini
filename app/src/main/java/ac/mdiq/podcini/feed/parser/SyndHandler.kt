@@ -1,9 +1,9 @@
 package ac.mdiq.podcini.feed.parser
 
-import android.util.Log
-import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.feed.parser.namespace.*
 import ac.mdiq.podcini.feed.parser.util.TypeGetter
+import ac.mdiq.podcini.storage.model.feed.Feed
+import ac.mdiq.podcini.util.Logd
 import org.xml.sax.Attributes
 import org.xml.sax.SAXException
 import org.xml.sax.helpers.DefaultHandler
@@ -57,37 +57,37 @@ class SyndHandler(feed: Feed, type: TypeGetter.Type) : DefaultHandler() {
                         DEFAULT_PREFIX -> state.defaultNamespaces.push(Atom())
                         Atom.NSTAG -> {
                             state.namespaces[uri] = Atom()
-                            Log.d(TAG, "Recognized Atom namespace")
+                            Logd(TAG, "Recognized Atom namespace")
                         }
                     }
                 }
                 uri == Content.NSURI && prefix == Content.NSTAG -> {
                     state.namespaces[uri] = Content()
-                    Log.d(TAG, "Recognized Content namespace")
+                    Logd(TAG, "Recognized Content namespace")
                 }
                 uri == Itunes.NSURI && prefix == Itunes.NSTAG -> {
                     state.namespaces[uri] = Itunes()
-                    Log.d(TAG, "Recognized ITunes namespace")
+                    Logd(TAG, "Recognized ITunes namespace")
                 }
                 uri == YouTube.NSURI && prefix == YouTube.NSTAG -> {
                     state.namespaces[uri] = YouTube()
-                    Log.d(TAG, "Recognized YouTube namespace")
+                    Logd(TAG, "Recognized YouTube namespace")
                 }
                 uri == SimpleChapters.NSURI && prefix.matches(SimpleChapters.NSTAG.toRegex()) -> {
                     state.namespaces[uri] = SimpleChapters()
-                    Log.d(TAG, "Recognized SimpleChapters namespace")
+                    Logd(TAG, "Recognized SimpleChapters namespace")
                 }
                 uri == Media.NSURI && prefix == Media.NSTAG -> {
                     state.namespaces[uri] = Media()
-                    Log.d(TAG, "Recognized media namespace")
+                    Logd(TAG, "Recognized media namespace")
                 }
                 uri == DublinCore.NSURI && prefix == DublinCore.NSTAG -> {
                     state.namespaces[uri] = DublinCore()
-                    Log.d(TAG, "Recognized DublinCore namespace")
+                    Logd(TAG, "Recognized DublinCore namespace")
                 }
                 uri == PodcastIndex.NSURI || uri == PodcastIndex.NSURI2 && prefix == PodcastIndex.NSTAG -> {
                     state.namespaces[uri] = PodcastIndex()
-                    Log.d(TAG, "Recognized PodcastIndex namespace")
+                    Logd(TAG, "Recognized PodcastIndex namespace")
                 }
             }
         }

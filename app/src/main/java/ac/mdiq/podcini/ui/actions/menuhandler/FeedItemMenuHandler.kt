@@ -2,6 +2,8 @@ package ac.mdiq.podcini.ui.actions.menuhandler
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.sync.SynchronizationSettings
+import ac.mdiq.podcini.net.sync.SynchronizationSettings.isProviderConnected
+import ac.mdiq.podcini.net.sync.SynchronizationSettings.wifiSyncEnabledKey
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.preferences.PlaybackPreferences
@@ -139,7 +141,7 @@ object FeedItemMenuHandler {
             R.id.mark_read_item -> {
                 selectedItem.setPlayed(true)
                 DBWriter.markItemPlayed(selectedItem, FeedItem.PLAYED, true)
-                if (selectedItem.feed?.isLocalFeed != true && SynchronizationSettings.isProviderConnected) {
+                if (selectedItem.feed?.isLocalFeed != true && (isProviderConnected || wifiSyncEnabledKey)) {
                     val media: FeedMedia? = selectedItem.media
                     // not all items have media, Gpodder only cares about those that do
                     if (media != null) {

@@ -2,8 +2,8 @@ package ac.mdiq.podcini.util
 
 import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.R
-import androidx.annotation.StringRes
 import ac.mdiq.podcini.storage.model.download.DownloadError
+import androidx.annotation.StringRes
 
 /**
  * Provides user-visible labels for download errors.

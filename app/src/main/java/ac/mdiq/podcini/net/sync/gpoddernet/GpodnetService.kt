@@ -1,16 +1,16 @@
 package ac.mdiq.podcini.net.sync.gpoddernet
 
 import ac.mdiq.podcini.BuildConfig
-import android.util.Log
 import ac.mdiq.podcini.net.sync.HostnameParser
-import ac.mdiq.podcini.net.sync.gpoddernet.mapper.ResponseMapper.readEpisodeActionsFromJsonObject
-import ac.mdiq.podcini.net.sync.gpoddernet.mapper.ResponseMapper.readSubscriptionChangesFromJsonObject
+import ac.mdiq.podcini.net.sync.ResponseMapper.readEpisodeActionsFromJsonObject
+import ac.mdiq.podcini.net.sync.ResponseMapper.readSubscriptionChangesFromJsonObject
 import ac.mdiq.podcini.net.sync.gpoddernet.model.GpodnetDevice
 import ac.mdiq.podcini.net.sync.gpoddernet.model.GpodnetDevice.DeviceType
 import ac.mdiq.podcini.net.sync.gpoddernet.model.GpodnetEpisodeActionPostResponse
 import ac.mdiq.podcini.net.sync.gpoddernet.model.GpodnetPodcast
 import ac.mdiq.podcini.net.sync.gpoddernet.model.GpodnetUploadChangesResponse
 import ac.mdiq.podcini.net.sync.model.*
+import android.util.Log
 import okhttp3.*
 import okhttp3.Credentials.basic
 import okhttp3.MediaType.Companion.toMediaType
@@ -56,10 +56,7 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
      */
     @Throws(GpodnetServiceException::class)
     fun searchPodcasts(query: String?, scaledLogoSize: Int): List<GpodnetPodcast> {
-        val parameters = if ((scaledLogoSize in 1..256)) String.format(Locale.US,
-            "q=%s&scale_logo=%d",
-            query,
-            scaledLogoSize) else String.format("q=%s", query)
+        val parameters = if ((scaledLogoSize in 1..256)) String.format(Locale.US, "q=%s&scale_logo=%d", query, scaledLogoSize) else String.format("q=%s", query)
         try {
             val url = URI(baseScheme, null, baseHost, basePort, "/search.json", parameters, null).toURL()
             val request: Builder = Builder().url(url)
@@ -122,21 +119,15 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
     fun configureDevice(deviceId: String, caption: String?, type: DeviceType?) {
         requireLoggedIn()
         try {
-            val url = URI(baseScheme, null, baseHost, basePort,
-                String.format("/api/2/devices/%s/%s.json", username, deviceId), null, null).toURL()
+            val url = URI(baseScheme, null, baseHost, basePort, String.format("/api/2/devices/%s/%s.json", username, deviceId), null, null).toURL()
             val content: String
             if (caption != null || type != null) {
                 val jsonContent = JSONObject()
-                if (caption != null) {
-                    jsonContent.put("caption", caption)
-                }
-                if (type != null) {
-                    jsonContent.put("type", type.toString())
-                }
+                if (caption != null) jsonContent.put("caption", caption)
+                if (type != null) jsonContent.put("type", type.toString())
                 content = jsonContent.toString()
-            } else {
-                content = ""
-            }
+            } else content = ""
+
             val body = RequestBody.create(JSON, content)
             val request: Builder = Builder().post(body).url(url)
             executeRequest(request)
@@ -168,8 +159,7 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
     fun uploadSubscriptions(deviceId: String, subscriptions: List<String?>) {
         requireLoggedIn()
         try {
-            val url = URI(baseScheme, null, baseHost, basePort,
-                String.format("/subscriptions/%s/%s.txt", username, deviceId), null, null).toURL()
+            val url = URI(baseScheme, null, baseHost, basePort, String.format("/subscriptions/%s/%s.txt", username, deviceId), null, null).toURL()
             val builder = StringBuilder()
             for (s in subscriptions) {
                 builder.append(s)
@@ -201,11 +191,10 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
      * is an authentication error.
      */
     @Throws(GpodnetServiceException::class)
-    override fun uploadSubscriptionChanges(added: List<String?>?, removed: List<String?>?): UploadChangesResponse {
+    override fun uploadSubscriptionChanges(added: List<String>, removed: List<String>): UploadChangesResponse {
         requireLoggedIn()
         try {
-            val url = URI(baseScheme, null, baseHost, basePort,
-                String.format("/api/2/subscriptions/%s/%s.json", username, deviceId), null, null).toURL()
+            val url = URI(baseScheme, null, baseHost, basePort, String.format("/api/2/subscriptions/%s/%s.json", username, deviceId), null, null).toURL()
 
             val requestObject = JSONObject()
             requestObject.put("add", JSONArray(added))
@@ -275,24 +264,19 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
      * is an authentication error.
      */
     @Throws(SyncServiceException::class)
-    override fun uploadEpisodeActions(episodeActions: List<EpisodeAction?>?): UploadChangesResponse? {
+    override fun uploadEpisodeActions(episodeActions: List<EpisodeAction>): UploadChangesResponse? {
         requireLoggedIn()
         var response: UploadChangesResponse? = null
         var i = 0
-        while (i < episodeActions!!.size) {
-            response = uploadEpisodeActionsPartial(episodeActions,
-                i, min(episodeActions.size.toDouble(), (i + UPLOAD_BULK_SIZE).toDouble())
-                    .toInt())
+        while (i < episodeActions.size) {
+            response = uploadEpisodeActionsPartial(episodeActions, i, min(episodeActions.size.toDouble(), (i + UPLOAD_BULK_SIZE).toDouble()).toInt())
             i += UPLOAD_BULK_SIZE
         }
         return response
     }
 
     @Throws(SyncServiceException::class)
-    private fun uploadEpisodeActionsPartial(episodeActions: List<EpisodeAction?>?,
-                                            from: Int,
-                                            to: Int
-    ): UploadChangesResponse {
+    private fun uploadEpisodeActionsPartial(episodeActions: List<EpisodeAction?>?, from: Int, to: Int): UploadChangesResponse {
         try {
             Log.d(TAG, "Uploading partial actions " + from + " to " + to + " of " + episodeActions!!.size)
             val url = URI(baseScheme, null, baseHost, basePort,
@@ -369,8 +353,7 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
     override fun login() {
         val url: URL
         try {
-            url = URI(baseScheme, null, baseHost, basePort,
-                String.format("/api/2/auth/%s/login.json", username), null, null).toURL()
+            url = URI(baseScheme, null, baseHost, basePort, String.format("/api/2/auth/%s/login.json", username), null, null).toURL()
         } catch (e: MalformedURLException) {
             e.printStackTrace()
             throw GpodnetServiceException(e)
@@ -417,11 +400,7 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
     private fun getStringFromResponseBody(body: ResponseBody): String {
         val outputStream: ByteArrayOutputStream
         val contentLength = body.contentLength().toInt()
-        outputStream = if (contentLength > 0) {
-            ByteArrayOutputStream(contentLength)
-        } else {
-            ByteArrayOutputStream()
-        }
+        outputStream = if (contentLength > 0) ByteArrayOutputStream(contentLength) else ByteArrayOutputStream()
         try {
             val buffer = ByteArray(8 * 1024)
             val inVal = body.byteStream()
@@ -451,11 +430,9 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
                     }
                 }
                 if (responseCode >= 500) {
-                    throw GpodnetServiceBadStatusCodeException("Gpodder.net is currently unavailable (code "
-                            + responseCode + ")", responseCode)
+                    throw GpodnetServiceBadStatusCodeException("Gpodder.net is currently unavailable (code " + responseCode + ")", responseCode)
                 } else {
-                    throw GpodnetServiceBadStatusCodeException("Unable to connect to Gpodder.net (code "
-                            + responseCode + ": " + response.message + ")", responseCode)
+                    throw GpodnetServiceBadStatusCodeException("Unable to connect to Gpodder.net (code " + responseCode + ": " + response.message + ")", responseCode)
                 }
             }
         }
@@ -476,19 +453,11 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
 
         val title: String
         val titleObj = `object`.opt("title")
-        title = if (titleObj is String) {
-            titleObj
-        } else {
-            url
-        }
+        title = if (titleObj is String) titleObj else url
 
         val description: String
         val descriptionObj = `object`.opt("description")
-        description = if (descriptionObj is String) {
-            descriptionObj
-        } else {
-            ""
-        }
+        description = if (descriptionObj is String) descriptionObj else ""
 
         val subscribers = `object`.getInt("subscribers")
 
@@ -496,23 +465,17 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
         var logoUrl = if ((logoUrlObj is String)) logoUrlObj else null
         if (logoUrl == null) {
             val scaledLogoUrl = `object`.opt("scaled_logo_url")
-            if (scaledLogoUrl is String) {
-                logoUrl = scaledLogoUrl
-            }
+            if (scaledLogoUrl is String) logoUrl = scaledLogoUrl
         }
 
         var website: String? = null
         val websiteObj = `object`.opt("website")
-        if (websiteObj is String) {
-            website = websiteObj
-        }
+        if (websiteObj is String) website = websiteObj
         val mygpoLink = `object`.getString("mygpo_link")
 
         var author: String? = null
         val authorObj = `object`.opt("author")
-        if (authorObj is String) {
-            author = authorObj
-        }
+        if (authorObj is String) author = authorObj
         return GpodnetPodcast(url, title, description, subscribers, logoUrl!!, website!!, mygpoLink, author!!)
     }
 
@@ -534,8 +497,7 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
         return GpodnetDevice(id, caption, type, subscriptions)
     }
 
-    override fun logout() {
-    }
+    override fun logout() {}
 
     fun setCredentials(username: String, password: String) {
         this.username = username

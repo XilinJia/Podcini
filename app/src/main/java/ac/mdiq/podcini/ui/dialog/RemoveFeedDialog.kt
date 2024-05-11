@@ -1,12 +1,13 @@
 package ac.mdiq.podcini.ui.dialog
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.storage.DBWriter
+import ac.mdiq.podcini.storage.model.feed.Feed
+import ac.mdiq.podcini.util.Logd
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.DialogInterface
 import android.util.Log
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.storage.DBWriter
-import ac.mdiq.podcini.storage.model.feed.Feed
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import io.reactivex.Completable
@@ -49,7 +50,7 @@ object RemoveFeedDialog {
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                         {
-                            Log.d(TAG, "Feed(s) deleted")
+                            Logd(TAG, "Feed(s) deleted")
                             progressDialog.dismiss()
                         }, { error: Throwable? ->
                             Log.e(TAG, Log.getStackTraceString(error))

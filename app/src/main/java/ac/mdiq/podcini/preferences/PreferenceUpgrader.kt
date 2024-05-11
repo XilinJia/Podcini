@@ -1,19 +1,9 @@
 package ac.mdiq.podcini.preferences
 
-import android.content.Context
-import android.content.SharedPreferences
-import android.view.KeyEvent
-import androidx.core.app.NotificationManagerCompat
-import androidx.preference.PreferenceManager
 import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.lastTimerValue
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.setLastTimer
-import ac.mdiq.podcini.util.error.CrashReportWriter.Companion.file
-import ac.mdiq.podcini.ui.fragment.AllEpisodesFragment
-import ac.mdiq.podcini.ui.fragment.QueueFragment
-import ac.mdiq.podcini.ui.actions.swipeactions.SwipeAction
-import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
 import ac.mdiq.podcini.preferences.UserPreferences.EnqueueLocation
 import ac.mdiq.podcini.preferences.UserPreferences.episodeCleanupValue
 import ac.mdiq.podcini.preferences.UserPreferences.isAllowMobileAutoDownload
@@ -24,6 +14,16 @@ import ac.mdiq.podcini.preferences.UserPreferences.isAllowMobileSync
 import ac.mdiq.podcini.preferences.UserPreferences.isQueueLocked
 import ac.mdiq.podcini.preferences.UserPreferences.isStreamOverDownload
 import ac.mdiq.podcini.preferences.UserPreferences.theme
+import ac.mdiq.podcini.ui.actions.swipeactions.SwipeAction
+import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
+import ac.mdiq.podcini.ui.fragment.AllEpisodesFragment
+import ac.mdiq.podcini.ui.fragment.QueueFragment
+import ac.mdiq.podcini.util.error.CrashReportWriter.Companion.file
+import android.content.Context
+import android.content.SharedPreferences
+import android.view.KeyEvent
+import androidx.core.app.NotificationManagerCompat
+import androidx.preference.PreferenceManager
 import org.apache.commons.lang3.StringUtils
 import java.util.concurrent.TimeUnit
 

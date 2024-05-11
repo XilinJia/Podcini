@@ -1,33 +1,33 @@
 package ac.mdiq.podcini.ui.activity
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.activity.MainActivity.Companion.EXTRA_FEED_ID
+import ac.mdiq.podcini.databinding.SubscriptionSelectionActivityBinding
 import ac.mdiq.podcini.preferences.ThemeSwitcher
+import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.NavDrawerData
-import ac.mdiq.podcini.databinding.SubscriptionSelectionActivityBinding
 import ac.mdiq.podcini.storage.model.feed.Feed
-import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.ui.activity.MainActivity.Companion.EXTRA_FEED_ID
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.ListView
+import androidx.annotation.OptIn
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.media3.common.util.UnstableApi
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.RequestOptions
-import com.bumptech.glide.request.target.Target
+import coil.imageLoader
+import coil.request.ErrorResult
+import coil.request.ImageRequest
+import coil.request.SuccessResult
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -100,21 +100,36 @@ class SelectSubscriptionActivity : AppCompatActivity() {
 
     private fun getBitmapFromUrl(feed: Feed) {
         val iconSize = (128 * resources.displayMetrics.density).toInt()
-        if (!feed.imageUrl.isNullOrBlank()) Glide.with(this)
-            .asBitmap()
-            .load(feed.imageUrl)
-            .apply(RequestOptions.overrideOf(iconSize, iconSize))
-            .listener(object : RequestListener<Bitmap?> {
-                @UnstableApi override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Bitmap?>, isFirstResource: Boolean): Boolean {
-                    addShortcut(feed, null)
-                    return true
-                }
 
-                @UnstableApi override fun onResourceReady(resource: Bitmap, model: Any, target: Target<Bitmap?>, dataSource: DataSource, isFirstResource: Boolean): Boolean {
-                    addShortcut(feed, resource)
-                    return true
+//        if (!feed.imageUrl.isNullOrBlank()) Glide.with(this)
+//            .asBitmap()
+//            .load(feed.imageUrl)
+//            .apply(RequestOptions.overrideOf(iconSize, iconSize))
+//            .listener(object : RequestListener<Bitmap?> {
+//                @UnstableApi override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Bitmap?>, isFirstResource: Boolean): Boolean {
+//                    addShortcut(feed, null)
+//                    return true
+//                }
+//                @UnstableApi override fun onResourceReady(resource: Bitmap, model: Any, target: Target<Bitmap?>, dataSource: DataSource, isFirstResource: Boolean): Boolean {
+//                    addShortcut(feed, resource)
+//                    return true
+//                }
+//            }).submit()
+
+        val request = ImageRequest.Builder(this)
+            .data(feed.imageUrl)
+            .placeholder(R.color.light_gray)
+            .listener(object : ImageRequest.Listener {
+                @OptIn(UnstableApi::class) override fun onError(request: ImageRequest, throwable: ErrorResult) {
+                    addShortcut(feed, null)
                 }
-            }).submit()
+                @OptIn(UnstableApi::class) override fun onSuccess(request: ImageRequest, result: SuccessResult) {
+                    addShortcut(feed, (result.drawable as BitmapDrawable).bitmap)
+                }
+            })
+            .size(iconSize, iconSize)
+            .build()
+        imageLoader.enqueue(request)
     }
 
     private fun loadSubscriptions() {

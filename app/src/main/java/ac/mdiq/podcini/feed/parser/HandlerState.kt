@@ -11,12 +11,10 @@ import java.util.*
  * Contains all relevant information to describe the current state of a
  * SyndHandler.
  */
-class HandlerState(
-        /**
-         * Feed that the Handler is currently processing.
-         */
-        @JvmField var feed: Feed
-) {
+/**
+ * Feed that the Handler is currently processing.
+ */
+class HandlerState(@JvmField var feed: Feed) {
     /**
      * Contains links to related feeds, e.g. feeds with enclosures in other formats. The key of the map is the
      * URL of the feed, the value is the title

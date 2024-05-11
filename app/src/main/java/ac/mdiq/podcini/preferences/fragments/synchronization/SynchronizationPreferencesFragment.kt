@@ -23,6 +23,8 @@ import ac.mdiq.podcini.net.sync.SyncService
 import ac.mdiq.podcini.net.sync.SynchronizationCredentials
 import ac.mdiq.podcini.net.sync.SynchronizationProviderViewData
 import ac.mdiq.podcini.net.sync.SynchronizationSettings
+import ac.mdiq.podcini.net.sync.SynchronizationSettings.isProviderConnected
+import ac.mdiq.podcini.net.sync.SynchronizationSettings.wifiSyncEnabledKey
 import ac.mdiq.podcini.ui.dialog.AuthenticationDialog
 import ac.mdiq.podcini.util.event.SyncServiceEvent
 import org.greenrobot.eventbus.EventBus
@@ -30,6 +32,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
 class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
+
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.preferences_synchronization)
         setupScreen()
@@ -51,7 +54,7 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
 
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
     fun syncStatusChanged(event: SyncServiceEvent) {
-        if (!SynchronizationSettings.isProviderConnected) return
+        if (!isProviderConnected && !wifiSyncEnabledKey) return
 
         updateScreen()
         if (event.messageResId == R.string.sync_status_error || event.messageResId == R.string.sync_status_success)
@@ -89,6 +92,12 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
     }
 
     private fun updateScreen() {
+        val preferenceInstantSync = findPreference<Preference>(PREFERENCE_INSTANT_SYNC)
+        preferenceInstantSync!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            WifiAuthenticationFragment().show(childFragmentManager, WifiAuthenticationFragment.TAG)
+            true
+        }
+
         val loggedIn = SynchronizationSettings.isProviderConnected
         val preferenceHeader = findPreference<Preference>(PREFERENCE_SYNCHRONIZATION_DESCRIPTION)
         if (loggedIn) {
@@ -112,9 +121,9 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
         val gpodnetSetLoginPreference = findPreference<Preference>(PREFERENCE_GPODNET_SETLOGIN_INFORMATION)
         gpodnetSetLoginPreference!!.isVisible = isProviderSelected(SynchronizationProviderViewData.GPODDER_NET)
         gpodnetSetLoginPreference.isEnabled = loggedIn
-        findPreference<Preference>(PREFERENCE_SYNC)!!.isEnabled = loggedIn
-        findPreference<Preference>(PREFERENCE_FORCE_FULL_SYNC)!!.isEnabled = loggedIn
-        findPreference<Preference>(PREFERENCE_LOGOUT)!!.isEnabled = loggedIn
+        findPreference<Preference>(PREFERENCE_SYNC)!!.isVisible = loggedIn
+        findPreference<Preference>(PREFERENCE_FORCE_FULL_SYNC)!!.isVisible = loggedIn
+        findPreference<Preference>(PREFERENCE_LOGOUT)!!.isVisible = loggedIn
         if (loggedIn) {
             val summary = getString(R.string.synchronization_login_status,
                 SynchronizationCredentials.username, SynchronizationCredentials.hosturl)
@@ -132,8 +141,7 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
         builder.setTitle(R.string.dialog_choose_sync_service_title)
 
         val providers = SynchronizationProviderViewData.entries.toTypedArray()
-        val adapter: ListAdapter = object : ArrayAdapter<SynchronizationProviderViewData?>(
-            requireContext(), R.layout.alertdialog_sync_provider_chooser, providers) {
+        val adapter: ListAdapter = object : ArrayAdapter<SynchronizationProviderViewData?>(requireContext(), R.layout.alertdialog_sync_provider_chooser, providers) {
             var holder: ViewHolder? = null
 
             inner class ViewHolder {
@@ -164,10 +172,8 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
 
         builder.setAdapter(adapter) { _: DialogInterface?, which: Int ->
             when (providers[which]) {
-                SynchronizationProviderViewData.GPODDER_NET -> GpodderAuthenticationFragment()
-                    .show(childFragmentManager, GpodderAuthenticationFragment.TAG)
-                SynchronizationProviderViewData.NEXTCLOUD_GPODDER -> NextcloudAuthenticationFragment()
-                    .show(childFragmentManager, NextcloudAuthenticationFragment.TAG)
+                SynchronizationProviderViewData.GPODDER_NET -> GpodderAuthenticationFragment().show(childFragmentManager, GpodderAuthenticationFragment.TAG)
+                SynchronizationProviderViewData.NEXTCLOUD_GPODDER -> NextcloudAuthenticationFragment().show(childFragmentManager, NextcloudAuthenticationFragment.TAG)
             }
             updateScreen()
         }
@@ -190,6 +196,7 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
     }
 
     companion object {
+        private const val PREFERENCE_INSTANT_SYNC = "preference_instant_sync"
         private const val PREFERENCE_SYNCHRONIZATION_DESCRIPTION = "preference_synchronization_description"
         private const val PREFERENCE_GPODNET_SETLOGIN_INFORMATION = "pref_gpodnet_setlogin_information"
         private const val PREFERENCE_SYNC = "pref_synchronization_sync"

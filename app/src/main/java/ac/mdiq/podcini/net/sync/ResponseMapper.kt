@@ -1,4 +1,4 @@
-package ac.mdiq.podcini.net.sync.gpoddernet.mapper
+package ac.mdiq.podcini.net.sync
 
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.model.EpisodeAction.Companion.readFromJsonObject

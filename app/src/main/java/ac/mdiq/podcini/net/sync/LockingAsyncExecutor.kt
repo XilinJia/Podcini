@@ -28,8 +28,7 @@ object LockingAsyncExecutor {
                 } finally {
                     lock.unlock()
                 }
-            }.subscribeOn(Schedulers.io())
-                .subscribe()
+            }.subscribeOn(Schedulers.io()).subscribe()
         }
     }
 }

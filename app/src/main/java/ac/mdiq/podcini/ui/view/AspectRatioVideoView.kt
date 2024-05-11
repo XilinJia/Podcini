@@ -1,8 +1,8 @@
 package ac.mdiq.podcini.ui.view
 
+import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.util.AttributeSet
-import android.util.Log
 import android.widget.VideoView
 import kotlin.math.ceil
 
@@ -19,7 +19,7 @@ class AspectRatioVideoView @JvmOverloads constructor(context: Context, attrs: At
             super.onMeasure(widthMeasureSpec, heightMeasureSpec)
             return
         }
-        Log.d(TAG, "onMeasure $mAvailableWidth $mAvailableHeight")
+        Logd(TAG, "onMeasure $mAvailableWidth $mAvailableHeight")
         if (mAvailableWidth < 0 || mAvailableHeight < 0) {
             mAvailableWidth = width.toFloat()
             mAvailableHeight = height.toFloat()
@@ -53,7 +53,7 @@ class AspectRatioVideoView @JvmOverloads constructor(context: Context, attrs: At
         // Set the new video size
         mVideoWidth = videoWidth
         mVideoHeight = videoHeight
-        Log.d(TAG, "setVideoSize $mVideoWidth $mVideoHeight")
+        Logd(TAG, "setVideoSize $mVideoWidth $mVideoHeight")
 
         /*
          * If this isn't set the video is stretched across the
@@ -76,7 +76,7 @@ class AspectRatioVideoView @JvmOverloads constructor(context: Context, attrs: At
     fun setAvailableSize(width: Float, height: Float) {
         mAvailableWidth = width
         mAvailableHeight = height
-        Log.d(TAG, "setAvailableSize $mAvailableWidth $mAvailableHeight")
+        Logd(TAG, "setAvailableSize $mAvailableWidth $mAvailableHeight")
 //        requestLayout()
     }
 

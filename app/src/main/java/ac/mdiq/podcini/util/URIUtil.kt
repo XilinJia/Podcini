@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.util
 
 import android.util.Log
-import ac.mdiq.podcini.BuildConfig
 import java.net.MalformedURLException
 import java.net.URI
 import java.net.URISyntaxException
@@ -19,7 +18,7 @@ object URIUtil {
         try {
             return URI(source)
         } catch (e: URISyntaxException) {
-            if (BuildConfig.DEBUG) Log.d(TAG, "Source is not encoded, encoding now")
+            Logd(TAG, "Source is not encoded, encoding now")
         }
         try {
             val url = URL(source)

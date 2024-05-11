@@ -2,7 +2,7 @@
 
 <img width="100" src="https://raw.githubusercontent.com/xilinjia/podcini/main/images/icon 256x256.png" align="left" style="margin-right:15px"/>
 
-Podcini is an open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccini.jpg) *, adorned with pasticcini ![pasticcini](./images/pasticcini.jpg) * and aromatized with porcini ![porcini](./images/porcini.jpg) *.
+Podcini is an open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccini.jpg), adorned with pasticcini ![pasticcini](./images/pasticcini.jpg) * and aromatized with porcini ![porcini](./images/porcini.jpg) *.
 This project is based on a fork of [AntennaPod](<https://github.com/AntennaPod/AntennaPod>) as of Feb 5 2024.
 
 Compared to AntennaPod this project:

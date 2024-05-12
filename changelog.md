@@ -1,3 +1,7 @@
+## 5.0.1
+
+* fixed crash when opening Import/Export in settings
+
 ## 5.0.0
 
 * experimental (back up before use) release of instant sync between devices on the same wifi network without a server

@@ -108,11 +108,11 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
             exportDatabase()
             true
         }
-        findPreference<Preference>(PREF_PREFERENCES_IMPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(PREF_PREFERENCES_IMPORT)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             importPreferences()
             true
         }
-        findPreference<Preference>(PREF_PREFERENCES_EXPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(PREF_PREFERENCES_EXPORT)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             exportPreferences()
             true
         }

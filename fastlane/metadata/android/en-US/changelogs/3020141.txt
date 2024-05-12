@@ -1,0 +1,4 @@
+ 
+Version 5.0.1 brings several changes:
+
+* fixed crash when opening Import/Export in settings

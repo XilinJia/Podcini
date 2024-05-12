@@ -4,6 +4,12 @@
 
 Podcini is an open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccini.jpg), adorned with pasticcini ![pasticcini](./images/pasticcini.jpg) and aromatized with porcini ![porcini](./images/porcini.jpg).
 
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+     alt="Get it on F-Droid"
+     height="80">](https://f-droid.org/packages/ac.mdiq.podcini/)
+
+Or download the latest APK from the [Releases Section](https://github.com/XilinJia/Podcini/releases/latest).
+
 This project is based on a fork of [AntennaPod](<https://github.com/AntennaPod/AntennaPod>) as of Feb 5 2024.
 
 Compared to AntennaPod this project:
@@ -13,19 +19,14 @@ Compared to AntennaPod this project:
 3. Is purely `Kotlin` based and mono-modular,
 4. Targets Android 14 with updated dependencies,
 5. Outfits with Viewbinding and modern image library Coil,
-6. Boasts new UI's including streamlined drawer, subscriptions view and player controller
-7. Offers Readability for RSS contents and TTS integration,
-8. Features `instant sync` across devices without a server.
+6. Boasts new UI's including streamlined drawer, subscriptions view and player controller,
+7. Accepts podcast as well as plain RSS and YouTube feeds,
+8. Offers Readability and Text-to-Speech for RSS contents,
+9. Features `instant sync` across devices without a server.
 
 The project aims to improve efficiency and provide more useful and user-friendly features.
 
 ~Even so, the database remains backward compatible, and AntennaPod's db can be easily imported.~  Since version 4.10.0 and/or AntennaPod 3.3.2, AntennaPod's DB can not be directly imported
-
-[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
-     alt="Get it on F-Droid"
-     height="80">](https://f-droid.org/packages/ac.mdiq.podcini/)
-
-Or download the latest APK from the [Releases Section](https://github.com/XilinJia/Podcini/releases/latest).
 
 ## Notable new features & enhancements
 

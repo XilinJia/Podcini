@@ -126,7 +126,7 @@ For more details of the changes, see the [Changelog](changelog.md)
 
 ## License
 
-Podcini, same as the project it was forked for, is licensed under the GNU General Public License (GPL-3.0).
+Podcini, same as the project it was forked from, is licensed under the GNU General Public License (GPL-3.0).
 You can find the license text in the LICENSE file.
 
 ## Copyright

@@ -7,7 +7,6 @@ Podcini is an open source podcast instrument, attuned to Puccini ![Puccini](./im
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
      alt="Get it on F-Droid"
      height="80">](https://f-droid.org/packages/ac.mdiq.podcini/)
-
 Or download the latest APK from the [Releases Section](https://github.com/XilinJia/Podcini/releases/latest).
 
 This project is based on a fork of [AntennaPod](<https://github.com/AntennaPod/AntennaPod>) as of Feb 5 2024.

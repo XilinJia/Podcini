@@ -93,9 +93,9 @@ The project aims to improve efficiency and provide more useful and user-friendly
 
 ### Instant (or Wifi) sync
 
-* Ability to sync between devices on the same wifi network without a server (experimental release, back up before use)
+* Ability to sync between devices on the same wifi network without a server (experimental feature)
 * It syncs the play states (position and played) of episodes that exist in both devices (ensure to refresh first) and that have been played (completed or not)
-* So far, every sync is a full sync, no subscription feeds sync, and no media files sync
+* So far, every sync is a full sync, no sync for subscriptions and media files
 
 ### Security
 

@@ -15,10 +15,8 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.annotation.OptIn
-import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ShareCompat
 import androidx.core.text.HtmlCompat
-import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -247,9 +245,19 @@ class EpisodeHomeFragment : Fragment() {
         updateAppearance()
     }
 
+    private fun cleatWebview(webview: WebView) {
+        binding.root.removeView(webview)
+        webview.clearHistory()
+        webview.clearCache(true)
+        webview.clearView()
+        webview.destroy()
+    }
+
     @OptIn(UnstableApi::class) override fun onDestroyView() {
         super.onDestroyView()
         Log.d(TAG, "onDestroyView")
+        cleatWebview(binding.webView)
+        cleatWebview(binding.readerView)
         _binding = null
         disposable?.dispose()
         tts?.stop()

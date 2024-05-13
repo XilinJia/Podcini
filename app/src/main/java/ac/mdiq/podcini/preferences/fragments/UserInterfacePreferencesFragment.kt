@@ -22,6 +22,7 @@ import com.google.android.material.snackbar.Snackbar
 import org.greenrobot.eventbus.EventBus
 
 class UserInterfacePreferencesFragment : PreferenceFragmentCompat() {
+
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.preferences_user_interface)
         setupInterfaceScreen()

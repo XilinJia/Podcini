@@ -99,8 +99,8 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        item = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) requireArguments().getSerializable(ARG_FEEDITEM, FeedItem::class.java)
-        else requireArguments().getSerializable(ARG_FEEDITEM) as? FeedItem
+//        item = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) requireArguments().getSerializable(ARG_FEEDITEM, FeedItem::class.java)
+//        else requireArguments().getSerializable(ARG_FEEDITEM) as? FeedItem
     }
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -260,6 +260,9 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         controller?.release()
         disposable?.dispose()
         root.removeView(webvDescription)
+        webvDescription.clearHistory()
+        webvDescription.clearCache(true)
+        webvDescription.clearView()
         webvDescription.destroy()
     }
 
@@ -300,6 +303,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 override fun onError(request: ImageRequest, throwable: ErrorResult) {
                     val fallbackImageRequest = ImageRequest.Builder(requireContext())
                         .data(imgLocFB)
+                        .setHeader("User-Agent", "Mozilla/5.0")
                         .error(R.mipmap.ic_launcher)
                         .target(imgvCover)
                         .build()
@@ -411,6 +415,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         disposable?.dispose()
         if (!itemsLoaded) progbarLoading.visibility = View.VISIBLE
 
+        Logd(TAG, "load() called")
         disposable = Observable.fromCallable<FeedItem?> { this.loadInBackground() }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -435,6 +440,10 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         return feedItem
     }
 
+    fun setItem(item_: FeedItem) {
+        item = item_
+    }
+
     companion object {
         private const val TAG = "EpisodeInfoFragment"
         private const val ARG_FEEDITEM = "feeditem"
@@ -442,9 +451,10 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         @JvmStatic
         fun newInstance(item: FeedItem): EpisodeInfoFragment {
             val fragment = EpisodeInfoFragment()
-            val args = Bundle()
-            args.putSerializable(ARG_FEEDITEM, item)
-            fragment.arguments = args
+            fragment.setItem(item)
+//            val args = Bundle()
+//            args.putSerializable(ARG_FEEDITEM, item)
+//            fragment.arguments = args
             return fragment
         }
     }

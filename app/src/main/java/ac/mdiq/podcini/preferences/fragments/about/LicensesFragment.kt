@@ -60,7 +60,7 @@ class LicensesFragment : ListFragment() {
         val items = arrayOf<CharSequence>("View website", "View license")
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(item.title)
-            .setItems(items) { dialog: DialogInterface?, which: Int ->
+            .setItems(items) { _: DialogInterface?, which: Int ->
                 when (which) {
                     0 -> openInBrowser(requireContext(), item.licenseUrl)
                     1 -> showLicenseText(item.licenseTextFile)

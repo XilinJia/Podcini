@@ -118,6 +118,7 @@ class SelectSubscriptionActivity : AppCompatActivity() {
 
         val request = ImageRequest.Builder(this)
             .data(feed.imageUrl)
+            .setHeader("User-Agent", "Mozilla/5.0")
             .placeholder(R.color.light_gray)
             .listener(object : ImageRequest.Listener {
                 @OptIn(UnstableApi::class) override fun onError(request: ImageRequest, throwable: ErrorResult) {

@@ -6,6 +6,7 @@ import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.ui.activity.PreferenceActivity.Companion.getTitleOfPage
 import ac.mdiq.podcini.preferences.fragments.about.AboutFragment
 import ac.mdiq.podcini.util.IntentUtils.openInBrowser
+import ac.mdiq.podcini.util.Logd
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.PorterDuff
@@ -18,6 +19,8 @@ import com.bytehamster.lib.preferencesearch.SearchPreference
 
 class MainPreferencesFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        Logd("MainPreferencesFragment", "onCreatePreferences")
+
         addPreferencesFromResource(R.xml.preferences)
         setupMainScreen()
         setupSearch()
@@ -128,7 +131,7 @@ class MainPreferencesFragment : PreferenceFragmentCompat() {
     private fun setupSearch() {
         val searchPreference = findPreference<SearchPreference>("searchPreference")
         val config = searchPreference!!.searchConfiguration
-        config.setActivity((activity as AppCompatActivity?)!!)
+        config.setActivity((activity as AppCompatActivity))
         config.setFragmentContainerViewId(R.id.settingsContainer)
         config.setBreadcrumbsEnabled(true)
 

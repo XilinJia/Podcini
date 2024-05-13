@@ -21,7 +21,7 @@ class AboutFragment : PreferenceFragmentCompat() {
 
         findPreference<Preference>("about_version")!!.summary = String.format("%s (%s)", BuildConfig.VERSION_NAME, BuildConfig.COMMIT_HASH)
         findPreference<Preference>("about_version")!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener { preference: Preference? ->
+            Preference.OnPreferenceClickListener {
                 val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 val clip = ClipData.newPlainText(getString(R.string.bug_report_title), findPreference<Preference>("about_version")!!.summary)
                 clipboard.setPrimaryClip(clip)
@@ -29,7 +29,7 @@ class AboutFragment : PreferenceFragmentCompat() {
                 true
             }
         findPreference<Preference>("about_contributors")!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener { preference: Preference? ->
+            Preference.OnPreferenceClickListener {
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.settingsContainer, ContributorsPagerFragment())
                     .addToBackStack(getString(R.string.contributors))
@@ -37,12 +37,12 @@ class AboutFragment : PreferenceFragmentCompat() {
                 true
             }
         findPreference<Preference>("about_privacy_policy")!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener { preference: Preference? ->
+            Preference.OnPreferenceClickListener {
                 openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini/blob/main/PrivacyPolicy.md")
                 true
             }
         findPreference<Preference>("about_licenses")!!.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener { preference: Preference? ->
+            Preference.OnPreferenceClickListener {
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.settingsContainer, LicensesFragment())
                     .addToBackStack(getString(R.string.translators))

@@ -316,11 +316,13 @@ class PlayerDetailsFragment : Fragment() {
             val imageLoader = binding.imgvCover.context.imageLoader
             val imageRequest = ImageRequest.Builder(requireContext())
                 .data(media!!.getImageLocation())
+                .setHeader("User-Agent", "Mozilla/5.0")
                 .placeholder(R.color.light_gray)
                 .listener(object : ImageRequest.Listener {
                     override fun onError(request: ImageRequest, throwable: ErrorResult) {
                         val fallbackImageRequest = ImageRequest.Builder(requireContext())
                             .data(ImageResourceUtils.getFallbackImageLocation(media!!))
+                            .setHeader("User-Agent", "Mozilla/5.0")
                             .error(R.mipmap.ic_launcher)
                             .target(binding.imgvCover)
                             .build()
@@ -342,11 +344,13 @@ class PlayerDetailsFragment : Fragment() {
             val imageLoader = binding.imgvCover.context.imageLoader
             val imageRequest = ImageRequest.Builder(requireContext())
                 .data(imgLoc)
+                .setHeader("User-Agent", "Mozilla/5.0")
                 .placeholder(R.color.light_gray)
                 .listener(object : ImageRequest.Listener {
                     override fun onError(request: ImageRequest, throwable: ErrorResult) {
                         val fallbackImageRequest = ImageRequest.Builder(requireContext())
                             .data(ImageResourceUtils.getFallbackImageLocation(media!!))
+                            .setHeader("User-Agent", "Mozilla/5.0")
                             .error(R.mipmap.ic_launcher)
                             .target(binding.imgvCover)
                             .build()

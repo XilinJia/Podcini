@@ -97,9 +97,10 @@ The project aims to improve efficiency and provide more useful and user-friendly
 * It syncs the play states (position and played) of episodes that exist in both devices (ensure to refresh first) and that have been played (completed or not)
 * So far, every sync is a full sync, no sync for subscriptions and media files
 
-### Security
+### Security and reliability
 
 * Disabled `usesCleartextTraffic`, so that all content transmission is more private and secure
+* Settings/Preferences can now to exported and imported
 
 For more details of the changes, see the [Changelog](changelog.md)
 

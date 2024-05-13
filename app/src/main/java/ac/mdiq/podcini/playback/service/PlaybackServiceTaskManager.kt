@@ -306,12 +306,6 @@ class PlaybackServiceTaskManager(private val context: Context, private val callb
 
             EventBus.getDefault().post(SleepTimerUpdatedEvent.cancelled())
         }
-
-//        companion object {
-//            private const val TAG = "SleepTimer"
-//            private const val UPDATE_INTERVAL = 1000L
-//            const val NOTIFICATION_THRESHOLD: Long = 10000
-//        }
     }
 
     interface PSTMCallback {

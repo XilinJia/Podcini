@@ -1,3 +1,9 @@
+## 5.1.0
+
+* properly destroys WebView objects
+* fixed issue loading image lacking a header
+* preferences now can be exported/imported
+
 ## 5.0.1
 
 * fixed crash when opening Import/Export in settings

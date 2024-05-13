@@ -20,9 +20,6 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.FeeditemlistItemBinding
 import ac.mdiq.podcini.ui.adapter.CoverLoader
 import ac.mdiq.podcini.feed.util.ImageResourceUtils
-import ac.mdiq.podcini.util.DateFormatter
-import ac.mdiq.podcini.util.NetworkUtils
-import ac.mdiq.podcini.util.PlaybackStatus
 import ac.mdiq.podcini.net.download.MediaSizeLoader
 import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
 import ac.mdiq.podcini.storage.model.feed.FeedItem
@@ -37,8 +34,10 @@ import ac.mdiq.podcini.ui.actions.actionbutton.ItemActionButton
 import ac.mdiq.podcini.ui.actions.actionbutton.TTSActionButton
 import ac.mdiq.podcini.ui.view.CircularProgressBar
 import ac.mdiq.podcini.ui.utils.ThemeUtils
-import ac.mdiq.podcini.util.Converter
+import ac.mdiq.podcini.util.*
 import android.widget.LinearLayout
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.content.ContextCompat.getDrawable
 import io.reactivex.functions.Consumer
 import kotlin.math.max
 
@@ -117,32 +116,39 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
         }
 
 //        Log.d(TAG, "bind called ${item.media}")
-        if (item.media != null) {
-            bind(item.media!!)
-        } else if (item.playState == BUILDING) {
-            //            for generating TTS files for episode without media
-            secondaryActionProgress.setPercentage(actionButton!!.processing, item)
-            secondaryActionProgress.setIndeterminate(false)
-        } else {
-            secondaryActionProgress.setPercentage(0f, item)
-            secondaryActionProgress.setIndeterminate(false)
-            isVideo.visibility = View.GONE
-            progressBar.visibility = View.GONE
-            duration.visibility = View.GONE
-            position.visibility = View.GONE
-            itemView.setBackgroundResource(ThemeUtils.getDrawableFromAttr(activity, R.attr.selectableItemBackground))
+        when {
+            item.media != null -> {
+                bind(item.media!!)
+            }
+            item.playState == BUILDING -> {
+                //            for generating TTS files for episode without media
+                secondaryActionProgress.setPercentage(actionButton!!.processing, item)
+                secondaryActionProgress.setIndeterminate(false)
+            }
+            else -> {
+                secondaryActionProgress.setPercentage(0f, item)
+                secondaryActionProgress.setIndeterminate(false)
+                isVideo.visibility = View.GONE
+                progressBar.visibility = View.GONE
+                duration.visibility = View.GONE
+                position.visibility = View.GONE
+                itemView.setBackgroundResource(ThemeUtils.getDrawableFromAttr(activity, R.attr.selectableItemBackground))
+            }
         }
 
         if (coverHolder.visibility == View.VISIBLE) {
             val imgLoc = ImageResourceUtils.getEpisodeListImageLocation(item)
-//            Log.d(TAG, "imgLoc $imgLoc")
+            Logd(TAG, "imgLoc $imgLoc ${item.feed?.imageUrl} ${item.title}")
             if (!imgLoc.isNullOrBlank() && !imgLoc.contains(PREFIX_GENERATIVE_COVER)) CoverLoader(activity)
                 .withUri(imgLoc)
                 .withFallbackUri(item.feed?.imageUrl)
                 .withPlaceholderView(placeholder)
                 .withCoverView(cover)
                 .load()
-            else cover.setImageResource(R.mipmap.ic_launcher)
+            else {
+                Logd(TAG, "setting to ic_launcher")
+                cover.setImageDrawable(AppCompatResources.getDrawable(activity, R.drawable.ic_launcher_foreground))
+            }
         }
     }
 

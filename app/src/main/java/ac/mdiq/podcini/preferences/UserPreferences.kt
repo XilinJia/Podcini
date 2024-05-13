@@ -154,7 +154,7 @@ object UserPreferences {
     }
 
     @JvmStatic
-    var theme: ThemePreference?
+    var theme: ThemePreference
         get() = when (prefs.getString(PREF_THEME, "system")) {
             "0" -> ThemePreference.LIGHT
             "1" -> ThemePreference.DARK
@@ -175,7 +175,7 @@ object UserPreferences {
         get() = Build.VERSION.SDK_INT >= 31 && prefs.getBoolean(PREF_TINTED_COLORS, false)
 
     @JvmStatic
-    var hiddenDrawerItems: List<String?>
+    var hiddenDrawerItems: List<String>
         get() {
             val hiddenItems = prefs.getString(PREF_HIDDEN_DRAWER_ITEMS, "")
             return ArrayList(listOf(*TextUtils.split(hiddenItems, ",")))
@@ -188,10 +188,9 @@ object UserPreferences {
         }
 
     @JvmStatic
-    var fullNotificationButtons: List<Int>?
+    var fullNotificationButtons: List<Int>
         get() {
-            val buttons = TextUtils.split(prefs.getString(PREF_FULL_NOTIFICATION_BUTTONS,
-                "$NOTIFICATION_BUTTON_SKIP,$NOTIFICATION_BUTTON_PLAYBACK_SPEED"), ",")
+            val buttons = TextUtils.split(prefs.getString(PREF_FULL_NOTIFICATION_BUTTONS, "$NOTIFICATION_BUTTON_SKIP,$NOTIFICATION_BUTTON_PLAYBACK_SPEED"), ",")
             val notificationButtons: MutableList<Int> = ArrayList()
             for (button in buttons) {
                 notificationButtons.add(button.toInt())
@@ -509,7 +508,7 @@ object UserPreferences {
         val defaultValue = HashSet<String>()
         defaultValue.add("images")
         val getValueStringSet = prefs.getStringSet(PREF_MOBILE_UPDATE, defaultValue)
-        val allowed: MutableSet<String> = HashSet(getValueStringSet)
+        val allowed: MutableSet<String> = HashSet(getValueStringSet!!)
         if (allow) allowed.add(type)
         else allowed.remove(type)
 

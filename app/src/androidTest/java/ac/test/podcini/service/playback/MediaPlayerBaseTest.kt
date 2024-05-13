@@ -97,7 +97,7 @@ class MediaPlayerBaseTest {
     @UiThreadTest
     fun testInit() {
         val c = InstrumentationRegistry.getInstrumentation().targetContext
-        val psmp: MediaPlayerBase = LocalMediaPlayer(c, DefaultPSMPCallback())
+        val psmp: MediaPlayerBase = LocalMediaPlayer(c, DefaultMediaPlayerCallback())
         psmp.shutdown()
     }
 
@@ -125,7 +125,7 @@ class MediaPlayerBaseTest {
     fun testPlayMediaObjectStreamNoStartNoPrepare() {
         val c = InstrumentationRegistry.getInstrumentation().targetContext
         val countDownLatch = CountDownLatch(2)
-        val callback = CancelablePSMPCallback(object : DefaultPSMPCallback() {
+        val callback = CancelableMediaPlayerCallback(object : DefaultMediaPlayerCallback() {
             override fun statusChanged(newInfo: MediaPlayerInfo?) {
                 try {
                     checkPSMPInfo(newInfo)
@@ -155,7 +155,7 @@ class MediaPlayerBaseTest {
         if (assertionError != null) throw assertionError!!
         Assert.assertTrue(res)
 
-        Assert.assertSame(PlayerStatus.INITIALIZED, psmp.pSMPInfo.playerStatus)
+        Assert.assertSame(PlayerStatus.INITIALIZED, psmp.playerInfo.playerStatus)
         Assert.assertFalse(psmp.isStartWhenPrepared())
         callback.cancel()
         psmp.shutdown()
@@ -167,7 +167,7 @@ class MediaPlayerBaseTest {
     fun testPlayMediaObjectStreamStartNoPrepare() {
         val c = InstrumentationRegistry.getInstrumentation().targetContext
         val countDownLatch = CountDownLatch(2)
-        val callback = CancelablePSMPCallback(object : DefaultPSMPCallback() {
+        val callback = CancelableMediaPlayerCallback(object : DefaultMediaPlayerCallback() {
             override fun statusChanged(newInfo: MediaPlayerInfo?) {
                 try {
                     checkPSMPInfo(newInfo)
@@ -198,7 +198,7 @@ class MediaPlayerBaseTest {
         if (assertionError != null) throw assertionError!!
         Assert.assertTrue(res)
 
-        Assert.assertSame(PlayerStatus.INITIALIZED, psmp.pSMPInfo.playerStatus)
+        Assert.assertSame(PlayerStatus.INITIALIZED, psmp.playerInfo.playerStatus)
         Assert.assertTrue(psmp.isStartWhenPrepared())
         callback.cancel()
         psmp.shutdown()
@@ -210,7 +210,7 @@ class MediaPlayerBaseTest {
     fun testPlayMediaObjectStreamNoStartPrepare() {
         val c = InstrumentationRegistry.getInstrumentation().targetContext
         val countDownLatch = CountDownLatch(4)
-        val callback = CancelablePSMPCallback(object : DefaultPSMPCallback() {
+        val callback = CancelableMediaPlayerCallback(object : DefaultMediaPlayerCallback() {
             override fun statusChanged(newInfo: MediaPlayerInfo?) {
                 try {
                     checkPSMPInfo(newInfo)
@@ -244,7 +244,7 @@ class MediaPlayerBaseTest {
         val res = countDownLatch.await(LATCH_TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
         if (assertionError != null) throw assertionError!!
         Assert.assertTrue(res)
-        Assert.assertSame(PlayerStatus.PREPARED, psmp.pSMPInfo.playerStatus)
+        Assert.assertSame(PlayerStatus.PREPARED, psmp.playerInfo.playerStatus)
         callback.cancel()
 
         psmp.shutdown()
@@ -256,7 +256,7 @@ class MediaPlayerBaseTest {
     fun testPlayMediaObjectStreamStartPrepare() {
         val c = InstrumentationRegistry.getInstrumentation().targetContext
         val countDownLatch = CountDownLatch(5)
-        val callback = CancelablePSMPCallback(object : DefaultPSMPCallback() {
+        val callback = CancelableMediaPlayerCallback(object : DefaultMediaPlayerCallback() {
             override fun statusChanged(newInfo: MediaPlayerInfo?) {
                 try {
                     checkPSMPInfo(newInfo)
@@ -293,7 +293,7 @@ class MediaPlayerBaseTest {
         val res = countDownLatch.await(LATCH_TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
         if (assertionError != null) throw assertionError!!
         Assert.assertTrue(res)
-        Assert.assertSame(PlayerStatus.PLAYING, psmp.pSMPInfo.playerStatus)
+        Assert.assertSame(PlayerStatus.PLAYING, psmp.playerInfo.playerStatus)
         callback.cancel()
         psmp.shutdown()
     }
@@ -304,7 +304,7 @@ class MediaPlayerBaseTest {
     fun testPlayMediaObjectLocalNoStartNoPrepare() {
         val c = InstrumentationRegistry.getInstrumentation().targetContext
         val countDownLatch = CountDownLatch(2)
-        val callback = CancelablePSMPCallback(object : DefaultPSMPCallback() {
+        val callback = CancelableMediaPlayerCallback(object : DefaultMediaPlayerCallback() {
             override fun statusChanged(newInfo: MediaPlayerInfo?) {
                 try {
                     checkPSMPInfo(newInfo)
@@ -333,7 +333,7 @@ class MediaPlayerBaseTest {
         val res = countDownLatch.await(LATCH_TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
         if (assertionError != null) throw assertionError!!
         Assert.assertTrue(res)
-        Assert.assertSame(PlayerStatus.INITIALIZED, psmp.pSMPInfo.playerStatus)
+        Assert.assertSame(PlayerStatus.INITIALIZED, psmp.playerInfo.playerStatus)
         Assert.assertFalse(psmp.isStartWhenPrepared())
         callback.cancel()
         psmp.shutdown()
@@ -345,7 +345,7 @@ class MediaPlayerBaseTest {
     fun testPlayMediaObjectLocalStartNoPrepare() {
         val c = InstrumentationRegistry.getInstrumentation().targetContext
         val countDownLatch = CountDownLatch(2)
-        val callback = CancelablePSMPCallback(object : DefaultPSMPCallback() {
+        val callback = CancelableMediaPlayerCallback(object : DefaultMediaPlayerCallback() {
             override fun statusChanged(newInfo: MediaPlayerInfo?) {
                 try {
                     checkPSMPInfo(newInfo)
@@ -374,7 +374,7 @@ class MediaPlayerBaseTest {
         val res = countDownLatch.await(LATCH_TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
         if (assertionError != null) throw assertionError!!
         Assert.assertTrue(res)
-        Assert.assertSame(PlayerStatus.INITIALIZED, psmp.pSMPInfo.playerStatus)
+        Assert.assertSame(PlayerStatus.INITIALIZED, psmp.playerInfo.playerStatus)
         Assert.assertTrue(psmp.isStartWhenPrepared())
         callback.cancel()
         psmp.shutdown()
@@ -386,7 +386,7 @@ class MediaPlayerBaseTest {
     fun testPlayMediaObjectLocalNoStartPrepare() {
         val c = InstrumentationRegistry.getInstrumentation().targetContext
         val countDownLatch = CountDownLatch(4)
-        val callback = CancelablePSMPCallback(object : DefaultPSMPCallback() {
+        val callback = CancelableMediaPlayerCallback(object : DefaultMediaPlayerCallback() {
             override fun statusChanged(newInfo: MediaPlayerInfo?) {
                 try {
                     checkPSMPInfo(newInfo)
@@ -420,7 +420,7 @@ class MediaPlayerBaseTest {
         val res = countDownLatch.await(LATCH_TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
         if (assertionError != null) throw assertionError!!
         Assert.assertTrue(res)
-        Assert.assertSame(PlayerStatus.PREPARED, psmp.pSMPInfo.playerStatus)
+        Assert.assertSame(PlayerStatus.PREPARED, psmp.playerInfo.playerStatus)
         callback.cancel()
         psmp.shutdown()
     }
@@ -431,7 +431,7 @@ class MediaPlayerBaseTest {
     fun testPlayMediaObjectLocalStartPrepare() {
         val c = InstrumentationRegistry.getInstrumentation().targetContext
         val countDownLatch = CountDownLatch(5)
-        val callback = CancelablePSMPCallback(object : DefaultPSMPCallback() {
+        val callback = CancelableMediaPlayerCallback(object : DefaultMediaPlayerCallback() {
             override fun statusChanged(newInfo: MediaPlayerInfo?) {
                 try {
                     checkPSMPInfo(newInfo)
@@ -469,7 +469,7 @@ class MediaPlayerBaseTest {
         val res = countDownLatch.await(LATCH_TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
         if (assertionError != null) throw assertionError!!
         Assert.assertTrue(res)
-        Assert.assertSame(PlayerStatus.PLAYING, psmp.pSMPInfo.playerStatus)
+        Assert.assertSame(PlayerStatus.PLAYING, psmp.playerInfo.playerStatus)
         callback.cancel()
         psmp.shutdown()
     }
@@ -485,7 +485,7 @@ class MediaPlayerBaseTest {
         val latchCount = if ((stream && reinit)) 2 else 1
         val countDownLatch = CountDownLatch(latchCount)
 
-        val callback = CancelablePSMPCallback(object : DefaultPSMPCallback() {
+        val callback = CancelableMediaPlayerCallback(object : DefaultMediaPlayerCallback() {
             override fun statusChanged(newInfo: MediaPlayerInfo?) {
                 checkPSMPInfo(newInfo)
                 when {
@@ -606,7 +606,7 @@ class MediaPlayerBaseTest {
             }
         val countDownLatch = CountDownLatch(latchCount)
 
-        val callback = CancelablePSMPCallback(object : DefaultPSMPCallback() {
+        val callback = CancelableMediaPlayerCallback(object : DefaultMediaPlayerCallback() {
             override fun statusChanged(newInfo: MediaPlayerInfo?) {
                 checkPSMPInfo(newInfo)
                 when {
@@ -665,7 +665,7 @@ class MediaPlayerBaseTest {
         val c = InstrumentationRegistry.getInstrumentation().targetContext
         val latchCount = 1
         val countDownLatch = CountDownLatch(latchCount)
-        val callback = CancelablePSMPCallback(object : DefaultPSMPCallback() {
+        val callback = CancelableMediaPlayerCallback(object : DefaultMediaPlayerCallback() {
             override fun statusChanged(newInfo: MediaPlayerInfo?) {
                 checkPSMPInfo(newInfo)
                 if (newInfo!!.playerStatus == PlayerStatus.ERROR) {
@@ -696,7 +696,7 @@ class MediaPlayerBaseTest {
 
         val res = countDownLatch.await(timeoutSeconds, TimeUnit.SECONDS)
         if (initialState != PlayerStatus.INITIALIZED) {
-            Assert.assertEquals(initialState, psmp.pSMPInfo.playerStatus)
+            Assert.assertEquals(initialState, psmp.playerInfo.playerStatus)
         }
 
         if (assertionError != null) throw assertionError!!
@@ -738,7 +738,7 @@ class MediaPlayerBaseTest {
         val c = InstrumentationRegistry.getInstrumentation().targetContext
         val latchCount = 2
         val countDownLatch = CountDownLatch(latchCount)
-        val callback = CancelablePSMPCallback(object : DefaultPSMPCallback() {
+        val callback = CancelableMediaPlayerCallback(object : DefaultMediaPlayerCallback() {
             override fun statusChanged(newInfo: MediaPlayerInfo?) {
                 checkPSMPInfo(newInfo)
                 if (newInfo!!.playerStatus == PlayerStatus.ERROR) {

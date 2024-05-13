@@ -2,10 +2,12 @@ package ac.mdiq.podcini.ui.adapter
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.util.Logd
 import android.graphics.drawable.Drawable
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import coil.Coil
 import coil.ImageLoader
 import coil.imageLoader
 import coil.request.ErrorResult
@@ -60,43 +62,24 @@ class CoverLoader(private val activity: MainActivity) {
     fun load() {
         if (imgvCover == null) return
 
-//        val coverTarget = CoverTarget(fallbackTitle, imgvCover!!, textAndImageCombined)
         val coverTargetCoil = CoilCoverTarget(fallbackTitle, imgvCover!!, textAndImageCombined)
 
         if (resource != 0) {
-//            Glide.with(imgvCover!!).clear(coverTarget)
             val imageLoader = ImageLoader.Builder(activity).build()
             imageLoader.enqueue(ImageRequest.Builder(activity).data(null).target(coverTargetCoil).build())
             imgvCover!!.setImageResource(resource)
-//            CoverTarget.setTitleVisibility(fallbackTitle, textAndImageCombined)
             CoilCoverTarget.setTitleVisibility(fallbackTitle, textAndImageCombined)
             return
         }
 
-//        val options: RequestOptions = RequestOptions()
-//            .fitCenter()
-//            .dontAnimate()
-//
-//        var builder: RequestBuilder<Drawable?> = Glide.with(imgvCover!!)
-//            .`as`(Drawable::class.java)
-//            .load(uri)
-//            .apply(options)
-//
-//        if (!fallbackUri.isNullOrBlank()) {
-//            builder = builder.error(Glide.with(imgvCover!!)
-//                .`as`(Drawable::class.java)
-//                .load(fallbackUri)
-//                .apply(options))
-//        }
-//
-//        builder.into<CoverTarget>(coverTarget)
-
         val request = ImageRequest.Builder(activity)
             .data(uri)
+            .setHeader("User-Agent", "Mozilla/5.0")
             .listener(object : ImageRequest.Listener {
                 override fun onError(request: ImageRequest, throwable: ErrorResult) {
                     val fallbackImageRequest = ImageRequest.Builder(activity)
                         .data(fallbackUri)
+                        .setHeader("User-Agent", "Mozilla/5.0")
                         .error(R.mipmap.ic_launcher)
                         .target(coverTargetCoil)
                         .build()
@@ -105,38 +88,10 @@ class CoverLoader(private val activity: MainActivity) {
             })
             .target(coverTargetCoil)
             .build()
-        activity.imageLoader.enqueue(request)
+        activity.imageLoader
+            .enqueue(request)
 
     }
-
-//    internal class CoverTarget(fallbackTitle: TextView?, coverImage: ImageView, private val textAndImageCombined: Boolean)
-//        : CustomViewTarget<ImageView, Drawable>(coverImage) {
-//
-//        private val fallbackTitle: WeakReference<TextView?> = WeakReference<TextView?>(fallbackTitle)
-//        private val cover: WeakReference<ImageView> = WeakReference(coverImage)
-//
-//        override fun onLoadFailed(errorDrawable: Drawable?) {
-//            setTitleVisibility(fallbackTitle.get(), true)
-//        }
-//
-//        override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable?>?) {
-//            val ivCover = cover.get()
-//            ivCover!!.setImageDrawable(resource)
-//            setTitleVisibility(fallbackTitle.get(), textAndImageCombined)
-//        }
-//
-//        override fun onResourceCleared(placeholder: Drawable?) {
-//            val ivCover = cover.get()
-//            ivCover!!.setImageDrawable(placeholder)
-//            setTitleVisibility(fallbackTitle.get(), textAndImageCombined)
-//        }
-//
-//        companion object {
-//            fun setTitleVisibility(fallbackTitle: TextView?, textAndImageCombined: Boolean) {
-//                fallbackTitle?.visibility = if (textAndImageCombined) View.VISIBLE else View.GONE
-//            }
-//        }
-//    }
 
     internal class CoilCoverTarget(fallbackTitle: TextView?, coverImage: ImageView, private val textAndImageCombined: Boolean) : Target {
 
@@ -155,12 +110,6 @@ class CoverLoader(private val activity: MainActivity) {
             ivCover!!.setImageDrawable(resource)
             setTitleVisibility(fallbackTitle.get(), textAndImageCombined)
         }
-
-//        override fun onResourceCleared(placeholder: Drawable?) {
-//            val ivCover = cover.get()
-//            ivCover!!.setImageDrawable(placeholder)
-//            setTitleVisibility(fallbackTitle.get(), textAndImageCombined)
-//        }
 
         companion object {
             fun setTitleVisibility(fallbackTitle: TextView?, textAndImageCombined: Boolean) {

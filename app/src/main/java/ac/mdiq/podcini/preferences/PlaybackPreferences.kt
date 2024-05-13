@@ -21,6 +21,7 @@ import org.greenrobot.eventbus.EventBus
  * otherwise every public method will throw an Exception when called.
  */
 class PlaybackPreferences private constructor() : OnSharedPreferenceChangeListener {
+
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String?) {
         if (PREF_CURRENT_PLAYER_STATUS == key) EventBus.getDefault().post(PlayerStatusEvent())
     }

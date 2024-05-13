@@ -1,6 +1,18 @@
 package ac.mdiq.podcini.preferences.fragments
 
-import android.app.Activity
+import ac.mdiq.podcini.PodciniApp.Companion.forceRestart
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.storage.DatabaseTransporter
+import ac.mdiq.podcini.storage.PreferencesTransporter
+import ac.mdiq.podcini.storage.asynctask.DocumentFileExportWorker
+import ac.mdiq.podcini.storage.asynctask.ExportWorker
+import ac.mdiq.podcini.storage.export.ExportWriter
+import ac.mdiq.podcini.storage.export.favorites.FavoritesWriter
+import ac.mdiq.podcini.storage.export.html.HtmlWriter
+import ac.mdiq.podcini.storage.export.opml.OpmlWriter
+import ac.mdiq.podcini.ui.activity.OpmlImportActivity
+import ac.mdiq.podcini.ui.activity.PreferenceActivity
+import android.app.Activity.RESULT_OK
 import android.app.ProgressDialog
 import android.content.ActivityNotFoundException
 import android.content.Context
@@ -21,17 +33,6 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import ac.mdiq.podcini.PodciniApp.Companion.forceRestart
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.activity.OpmlImportActivity
-import ac.mdiq.podcini.ui.activity.PreferenceActivity
-import ac.mdiq.podcini.storage.asynctask.DocumentFileExportWorker
-import ac.mdiq.podcini.storage.asynctask.ExportWorker
-import ac.mdiq.podcini.storage.export.ExportWriter
-import ac.mdiq.podcini.storage.export.favorites.FavoritesWriter
-import ac.mdiq.podcini.storage.export.html.HtmlWriter
-import ac.mdiq.podcini.storage.export.opml.OpmlWriter
-import ac.mdiq.podcini.storage.DatabaseTransporter
 import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -41,6 +42,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
+
     private val chooseOpmlExportPathLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
         this.chooseOpmlExportPathResult(result) }
     private val chooseHtmlExportPathLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
@@ -53,10 +55,15 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
     private val chooseOpmlImportPathLauncher = registerForActivityResult<String, Uri>(ActivityResultContracts.GetContent()) { uri: Uri? ->
         this.chooseOpmlImportPathResult(uri) }
 
-    // TODO: implement
     private val restorePreferencesLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
-        this.restorePreferencesResult(result) }
-    private val backupPreferencesLauncher = registerForActivityResult<String, Uri>(BackupPreferences()) { uri: Uri? -> this.backupPreferencesResult(uri) }
+        this.restorePreferencesResult(result)
+    }
+    private val backupPreferencesLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if (it.resultCode == RESULT_OK) {
+            val data: Uri? = it.data?.data
+            if (data != null) PreferencesTransporter.exportToDocument(data, requireContext())
+        }
+    }
 
     private var disposable: Disposable? = null
     private var progressDialog: ProgressDialog? = null
@@ -145,14 +152,29 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         }
     }
 
-    // TODO: implement
     private fun exportPreferences() {
-//        backupDatabaseLauncher.launch(dateStampFilename(DATABASE_EXPORT_FILENAME))
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        intent.addCategory(Intent.CATEGORY_DEFAULT)
+        backupPreferencesLauncher.launch(intent)
     }
 
-    // TODO: implement
     private fun importPreferences() {
-//        backupDatabaseLauncher.launch(dateStampFilename(DATABASE_EXPORT_FILENAME))
+        val builder = MaterialAlertDialogBuilder(requireActivity())
+        builder.setTitle(R.string.preferences_import_label)
+        builder.setMessage(R.string.preferences_import_warning)
+
+        // add a button
+        builder.setNegativeButton(R.string.no, null)
+        builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            intent.addCategory(Intent.CATEGORY_DEFAULT)
+            restorePreferencesLauncher.launch(intent)
+        }
+
+        // create and show the alert dialog
+        builder.show()
     }
 
     private fun exportDatabase() {
@@ -186,7 +208,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         builder.show()
     }
 
-    fun showExportSuccessSnackbar(uri: Uri?, mimeType: String?) {
+    private fun showExportSuccessSnackbar(uri: Uri?, mimeType: String?) {
         Snackbar.make(requireView(), R.string.export_success_title, Snackbar.LENGTH_LONG)
             .setAction(R.string.share_label) { IntentBuilder(requireContext()).setType(mimeType).addStream(uri!!).setChooserTitle(R.string.share_label).startChooser() }
             .show()
@@ -202,28 +224,41 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
     }
 
     private fun chooseOpmlExportPathResult(result: ActivityResult) {
-        if (result.resultCode != Activity.RESULT_OK || result.data == null) return
+        if (result.resultCode != RESULT_OK || result.data == null) return
         val uri = result.data!!.data
         exportWithWriter(OpmlWriter(), uri, Export.OPML)
     }
 
     private fun chooseHtmlExportPathResult(result: ActivityResult) {
-        if (result.resultCode != Activity.RESULT_OK || result.data == null) return
+        if (result.resultCode != RESULT_OK || result.data == null) return
         val uri = result.data!!.data
         exportWithWriter(HtmlWriter(), uri, Export.HTML)
     }
 
     private fun chooseFavoritesExportPathResult(result: ActivityResult) {
-        if (result.resultCode != Activity.RESULT_OK || result.data == null) return
+        if (result.resultCode != RESULT_OK || result.data == null) return
         val uri = result.data!!.data
         exportWithWriter(FavoritesWriter(), uri, Export.FAVORITES)
     }
 
     private fun restoreDatabaseResult(result: ActivityResult) {
-        if (result.resultCode != Activity.RESULT_OK || result.data == null) return
+        if (result.resultCode != RESULT_OK || result.data == null) return
         val uri = result.data!!.data
         progressDialog!!.show()
         disposable = Completable.fromAction { DatabaseTransporter.importBackup(uri, requireContext()) }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({
+                showDatabaseImportSuccessDialog()
+                progressDialog!!.dismiss()
+            }, { error: Throwable -> this.showExportErrorDialog(error) })
+    }
+
+    private fun restorePreferencesResult(result: ActivityResult) {
+        if (result.resultCode != RESULT_OK || result.data?.data == null) return
+        val uri = result.data!!.data!!
+        progressDialog!!.show()
+        disposable = Completable.fromAction { PreferencesTransporter.importBackup(uri, requireContext()) }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
@@ -242,31 +277,6 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                 showExportSuccessSnackbar(uri, "application/x-sqlite3")
                 progressDialog!!.dismiss()
             }, { error: Throwable -> this.showExportErrorDialog(error) })
-    }
-
-    private fun restorePreferencesResult(result: ActivityResult) {
-        if (result.resultCode != Activity.RESULT_OK || result.data == null) return
-//        val uri = result.data!!.data
-//        progressDialog!!.show()
-//        disposable = Completable.fromAction { DatabaseTransporter.importBackup(uri, requireContext()) }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe({
-//                showDatabaseImportSuccessDialog()
-//                progressDialog!!.dismiss()
-//            }, { error: Throwable -> this.showExportErrorDialog(error) })
-    }
-
-    private fun backupPreferencesResult(uri: Uri?) {
-        if (uri == null) return
-//        progressDialog!!.show()
-//        disposable = Completable.fromAction { DatabaseTransporter.exportToDocument(uri, requireContext()) }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe({
-//                showExportSuccessSnackbar(uri, "application/x-sqlite3")
-//                progressDialog!!.dismiss()
-//            }, { error: Throwable -> this.showExportErrorDialog(error) })
     }
 
     private fun chooseOpmlImportPathResult(uri: Uri?) {
@@ -306,19 +316,10 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         }
     }
 
-    private class BackupPreferences : CreateDocument() {
-        override fun createIntent(context: Context, input: String): Intent {
-            return super.createIntent(context, input)
-//                .addCategory(Intent.CATEGORY_OPENABLE)
-//                .setType("application/x-sqlite3")
-        }
-    }
-
-
     private enum class Export(val contentType: String, val outputNameTemplate: String, @field:StringRes val labelResId: Int) {
         OPML(CONTENT_TYPE_OPML, DEFAULT_OPML_OUTPUT_NAME, R.string.opml_export_label),
         HTML(CONTENT_TYPE_HTML, DEFAULT_HTML_OUTPUT_NAME, R.string.html_export_label),
-        FAVORITES(CONTENT_TYPE_HTML, DEFAULT_FAVORITES_OUTPUT_NAME, R.string.favorites_export_label)
+        FAVORITES(CONTENT_TYPE_HTML, DEFAULT_FAVORITES_OUTPUT_NAME, R.string.favorites_export_label),
     }
 
     companion object {

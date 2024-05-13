@@ -2,14 +2,13 @@ package ac.mdiq.podcini.preferences.fragments.synchronization
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.*
+import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
 import ac.mdiq.podcini.net.sync.SyncService
 import ac.mdiq.podcini.net.sync.SynchronizationCredentials
 import ac.mdiq.podcini.net.sync.SynchronizationProviderViewData
-import ac.mdiq.podcini.net.sync.SynchronizationSettings
+import ac.mdiq.podcini.net.sync.SynchronizationSettings.setSelectedSyncProvider
 import ac.mdiq.podcini.net.sync.gpoddernet.GpodnetService
 import ac.mdiq.podcini.net.sync.gpoddernet.model.GpodnetDevice
-import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
-import ac.mdiq.podcini.net.sync.SynchronizationSettings.setSelectedSyncProvider
 import ac.mdiq.podcini.util.FileNameGenerator.generateFileName
 import android.app.Dialog
 import android.content.Context

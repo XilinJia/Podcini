@@ -1,0 +1,6 @@
+ 
+Version 5.1.0 brings several changes:
+
+* properly destroys WebView objects
+* fixed issue loading image lacking a header
+* preferences now can be exported/imported

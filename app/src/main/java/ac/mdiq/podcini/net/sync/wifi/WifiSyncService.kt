@@ -227,7 +227,7 @@ import kotlin.math.min
         return null
     }
 
-    @Throws(WifiSynchronizationServiceException::class)
+    @Throws(SyncServiceException::class)
     override fun uploadSubscriptionChanges(added: List<String>, removed: List<String>): UploadChangesResponse? {
         Log.d(TAG, "uploadSubscriptionChanges does nothing")
         return null
@@ -280,7 +280,7 @@ import kotlin.math.min
         return newTimeStamp
     }
 
-    @Throws(WifiSynchronizationServiceException::class)
+    @Throws(SyncServiceException::class)
     override fun uploadEpisodeActions(queuedEpisodeActions: List<EpisodeAction>): UploadChangesResponse {
 //        Log.d(TAG, "uploadEpisodeActions called")
         var i = 0
@@ -292,7 +292,7 @@ import kotlin.math.min
         return WifiEpisodeActionPostResponse(System.currentTimeMillis() / 1000)
     }
 
-    @Throws(WifiSynchronizationServiceException::class)
+    @Throws(SyncServiceException::class)
     private fun uploadEpisodeActionsPartial(queuedEpisodeActions: List<EpisodeAction>, from: Int, to: Int) {
 //        Log.d(TAG, "uploadEpisodeActionsPartial called")
         try {
@@ -308,7 +308,7 @@ import kotlin.math.min
             sendToPeer("EpisodeActions", list.toString())
         } catch (e: Exception) {
             e.printStackTrace()
-            throw WifiSynchronizationServiceException(e)
+            throw SyncServiceException(e)
         }
     }
 

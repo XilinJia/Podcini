@@ -81,12 +81,14 @@ object WidgetUpdater {
                 CoroutineScope(Dispatchers.IO).launch {
                     val request = ImageRequest.Builder(context)
                         .data(imgLoc)
+                        .setHeader("User-Agent", "Mozilla/5.0")
                         .placeholder(R.color.light_gray)
                         .listener(object : ImageRequest.Listener {
                             override fun onError(request: ImageRequest, throwable: ErrorResult) {
                                 CoroutineScope(Dispatchers.IO).launch {
                                     val fallbackImageRequest = ImageRequest.Builder(context)
                                         .data(imgLoc1)
+                                        .setHeader("User-Agent", "Mozilla/5.0")
                                         .error(R.mipmap.ic_launcher)
                                         .size(iconSize, iconSize)
                                         .build()

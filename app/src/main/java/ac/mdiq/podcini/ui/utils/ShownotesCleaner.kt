@@ -81,7 +81,6 @@ class ShownotesCleaner(context: Context, private val rawShownotes: String, priva
         if (elementsWithTimeCodes.size == 0) return  // No elements with timecodes
 
         var useHourFormat = true
-
         if (playableDuration != Int.MAX_VALUE) {
             // We need to decide if we are going to treat short timecodes as HH:MM or MM:SS. To do
             // so we will parse all the short timecodes and see if they fit in the duration. If one
@@ -91,10 +90,8 @@ class ShownotesCleaner(context: Context, private val rawShownotes: String, priva
                 val matcherForElement = TIMECODE_REGEX.matcher(element.html())
                 while (matcherForElement.find()) {
                     // We only want short timecodes right now.
-
                     if (matcherForElement.group(1) == null) {
                         val time = durationStringShortToMs(matcherForElement.group(0)!!, true)
-
                         // If the parsed timecode is greater then the duration then we know we need to
                         // use the minute format so we are done.
                         if (time > playableDuration) {
@@ -103,7 +100,6 @@ class ShownotesCleaner(context: Context, private val rawShownotes: String, priva
                         }
                     }
                 }
-
                 if (!useHourFormat) break
             }
         }
@@ -114,13 +110,10 @@ class ShownotesCleaner(context: Context, private val rawShownotes: String, priva
 
             while (matcherForElement.find()) {
                 val group = matcherForElement.group(0) ?: continue
-
                 val time = if (matcherForElement.group(1) != null) durationStringLongToMs(group)
                 else durationStringShortToMs(group, useHourFormat)
-
                 var replacementText = group
                 if (time < playableDuration) replacementText = String.format(Locale.US, TIMECODE_LINK, time, group)
-
                 matcherForElement.appendReplacement(buffer, replacementText)
             }
 

@@ -16,18 +16,18 @@
                 android:summary="@string/database_import_summary"/>
     </PreferenceCategory>
 
-<!--    <PreferenceCategory android:title="@string/preferences">-->
-<!--        <Preference-->
-<!--            android:key="prefPrefExport"-->
-<!--            search:keywords="@string/import_export_search_keywords"-->
-<!--            android:title="@string/preferences_export_label"-->
-<!--            android:summary="@string/preferences_export_summary"/>-->
-<!--        <Preference-->
-<!--            android:key="prefPrefImport"-->
-<!--            search:keywords="@string/import_export_search_keywords"-->
-<!--            android:title="@string/preferences_import_label"-->
-<!--            android:summary="@string/preferences_import_summary"/>-->
-<!--    </PreferenceCategory>-->
+    <PreferenceCategory android:title="@string/preferences">
+        <Preference
+            android:key="prefPrefExport"
+            search:keywords="@string/import_export_search_keywords"
+            android:title="@string/preferences_export_label"
+            android:summary="@string/preferences_export_summary"/>
+        <Preference
+            android:key="prefPrefImport"
+            search:keywords="@string/import_export_search_keywords"
+            android:title="@string/preferences_import_label"
+            android:summary="@string/preferences_import_summary"/>
+    </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/opml">
         <Preference

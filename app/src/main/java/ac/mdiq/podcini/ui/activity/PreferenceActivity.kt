@@ -38,6 +38,7 @@ class PreferenceActivity : AppCompatActivity(), SearchPreferenceResultListener {
         setTheme(getTheme(this))
         super.onCreate(savedInstanceState)
 
+        Logd("PreferenceActivity", "onCreate")
         val ab = supportActionBar
         ab?.setDisplayHomeAsUpEnabled(true)
 

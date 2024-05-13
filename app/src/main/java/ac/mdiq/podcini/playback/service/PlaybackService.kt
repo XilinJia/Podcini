@@ -5,7 +5,7 @@ import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.playback.PlaybackServiceStarter
 import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.MediaPlayerInfo
-import ac.mdiq.podcini.playback.base.MediaPlayerBase.PSMPCallback
+import ac.mdiq.podcini.playback.base.MediaPlayerBase.MediaPlayerCallback
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.cast.CastPsmp
 import ac.mdiq.podcini.playback.cast.CastStateListener
@@ -129,7 +129,7 @@ class PlaybackService : MediaSessionService() {
     private val mBinder: IBinder = LocalBinder()
 
     val mPlayerInfo: MediaPlayerInfo
-        get() = mediaPlayer!!.pSMPInfo
+        get() = mediaPlayer!!.playerInfo
 
     val status: PlayerStatus
         get() = MediaPlayerBase.status
@@ -361,14 +361,6 @@ class PlaybackService : MediaSessionService() {
 //            }
             return settable
         }
-
-        // this is just for testing
-//        override fun onAddMediaItems(mediaSession: MediaSession, controller: MediaSession.ControllerInfo, mediaItems: MutableList<MediaItem>): ListenableFuture<List<MediaItem>> {
-//            val updatedMediaItems = mediaItems.map { mediaItem ->
-//                mediaItem.buildUpon().setUri(mediaItem.requestMetadata.mediaUri).build()
-//            }
-//            return Futures.immediateFuture(updatedMediaItems)
-//        }
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
@@ -640,7 +632,7 @@ class PlaybackService : MediaSessionService() {
      */
     private fun handleKeycode(keycode: Int, notificationButton: Boolean): Boolean {
         Logd(TAG, "Handling keycode: $keycode")
-        val info = mediaPlayer?.pSMPInfo
+        val info = mediaPlayer?.playerInfo
         val status = info?.playerStatus
         when (keycode) {
             KeyEvent.KEYCODE_HEADSETHOOK, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
@@ -801,7 +793,7 @@ class PlaybackService : MediaSessionService() {
         }
     }
 
-    private val mediaPlayerCallback: PSMPCallback = object : PSMPCallback {
+    private val mediaPlayerCallback: MediaPlayerCallback = object : MediaPlayerCallback {
         override fun statusChanged(newInfo: MediaPlayerInfo?) {
             currentMediaType = mediaPlayer?.getCurrentMediaType() ?: MediaType.UNKNOWN
             Logd(TAG, "statusChanged called ${newInfo?.playerStatus}")
@@ -809,11 +801,11 @@ class PlaybackService : MediaSessionService() {
             if (newInfo != null) {
                 when (newInfo.playerStatus) {
                     PlayerStatus.INITIALIZED -> {
-                        if (mediaPlayer != null) writeMediaPlaying(mediaPlayer!!.pSMPInfo.playable, mediaPlayer!!.pSMPInfo.playerStatus, currentitem)
+                        if (mediaPlayer != null) writeMediaPlaying(mediaPlayer!!.playerInfo.playable, mediaPlayer!!.playerInfo.playerStatus, currentitem)
 //                        updateNotificationAndMediaSession(newInfo.playable)
                     }
                     PlayerStatus.PREPARED -> {
-                        if (mediaPlayer != null) writeMediaPlaying(mediaPlayer!!.pSMPInfo.playable, mediaPlayer!!.pSMPInfo.playerStatus, currentitem)
+                        if (mediaPlayer != null) writeMediaPlaying(mediaPlayer!!.playerInfo.playable, mediaPlayer!!.playerInfo.playerStatus, currentitem)
                         taskManager.startChapterLoader(newInfo.playable!!)
                     }
                     PlayerStatus.PAUSED -> {

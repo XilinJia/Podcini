@@ -98,7 +98,7 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
             true
         }
 
-        val loggedIn = SynchronizationSettings.isProviderConnected
+        val loggedIn = isProviderConnected
         val preferenceHeader = findPreference<Preference>(PREFERENCE_SYNCHRONIZATION_DESCRIPTION)
         if (loggedIn) {
             val selectedProvider = SynchronizationProviderViewData.fromIdentifier(selectedSyncProviderKey)

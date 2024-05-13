@@ -636,7 +636,7 @@ object DBReader {
      * @param item The FeedItem
      */
     fun loadTextDetailsOfFeedItem(item: FeedItem) {
-        Logd(TAG, "loadTextOfFeedItem() called with: item = [$item]")
+        Logd(TAG, "loadTextDetailsOfFeedItem() called with: item = [${item.title}]")
         //        TODO: need to find out who are often calling this
 //        printStackTrace()
         val adapter = getInstance()

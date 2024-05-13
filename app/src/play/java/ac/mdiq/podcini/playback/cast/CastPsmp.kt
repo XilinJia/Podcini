@@ -30,7 +30,7 @@ import kotlin.math.min
  * Implementation of MediaPlayerBase suitable for remote playback on Cast Devices.
  */
 @SuppressLint("VisibleForTests")
-class CastPsmp(context: Context, callback: PSMPCallback) : MediaPlayerBase(context, callback) {
+class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBase(context, callback) {
     @Volatile
     private var media: Playable?
 
@@ -451,7 +451,7 @@ class CastPsmp(context: Context, callback: PSMPCallback) : MediaPlayerBase(conte
     companion object {
         const val TAG: String = "CastPSMP"
 
-        fun getInstanceIfConnected(context: Context, callback: PSMPCallback): MediaPlayerBase? {
+        fun getInstanceIfConnected(context: Context, callback: MediaPlayerCallback): MediaPlayerBase? {
             if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context) != ConnectionResult.SUCCESS) return null
 
             try {

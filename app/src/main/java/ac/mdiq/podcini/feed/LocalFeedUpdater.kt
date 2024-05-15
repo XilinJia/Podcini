@@ -25,6 +25,7 @@ import ac.mdiq.podcini.feed.parser.media.id3.ID3ReaderException
 import ac.mdiq.podcini.feed.parser.media.id3.Id3MetadataReader
 import ac.mdiq.podcini.feed.parser.media.vorbis.VorbisCommentMetadataReader
 import ac.mdiq.podcini.feed.parser.media.vorbis.VorbisCommentReaderException
+import ac.mdiq.podcini.util.Logd
 import org.apache.commons.io.input.CountingInputStream
 import java.io.BufferedInputStream
 import java.io.IOException
@@ -186,8 +187,7 @@ object LocalFeedUpdater {
                     item.setDescriptionIfLonger(reader.comment)
                 }
             } catch (e: IOException) {
-                Log.d(TAG, "Unable to parse ID3 of " + file.uri + ": " + e.message)
-
+                Logd(TAG, "Unable to parse ID3 of " + file.uri + ": " + e.message)
                 try {
                     context.contentResolver.openInputStream(file.uri).use { inputStream ->
                         val reader = VorbisCommentMetadataReader(inputStream)
@@ -195,12 +195,12 @@ object LocalFeedUpdater {
                         item.setDescriptionIfLonger(reader.description)
                     }
                 } catch (e2: IOException) {
-                    Log.d(TAG, "Unable to parse vorbis comments of " + file.uri + ": " + e2.message)
+                    Logd(TAG, "Unable to parse vorbis comments of " + file.uri + ": " + e2.message)
                 } catch (e2: VorbisCommentReaderException) {
-                    Log.d(TAG, "Unable to parse vorbis comments of " + file.uri + ": " + e2.message)
+                    Logd(TAG, "Unable to parse vorbis comments of " + file.uri + ": " + e2.message)
                 }
             } catch (e: ID3ReaderException) {
-                Log.d(TAG, "Unable to parse ID3 of " + file.uri + ": " + e.message)
+                Logd(TAG, "Unable to parse ID3 of " + file.uri + ": " + e.message)
 
                 try {
                     context.contentResolver.openInputStream(file.uri).use { inputStream ->
@@ -209,9 +209,9 @@ object LocalFeedUpdater {
                         item.setDescriptionIfLonger(reader.description)
                     }
                 } catch (e2: IOException) {
-                    Log.d(TAG, "Unable to parse vorbis comments of " + file.uri + ": " + e2.message)
+                    Logd(TAG, "Unable to parse vorbis comments of " + file.uri + ": " + e2.message)
                 } catch (e2: VorbisCommentReaderException) {
-                    Log.d(TAG, "Unable to parse vorbis comments of " + file.uri + ": " + e2.message)
+                    Logd(TAG, "Unable to parse vorbis comments of " + file.uri + ": " + e2.message)
                 }
             }
         }

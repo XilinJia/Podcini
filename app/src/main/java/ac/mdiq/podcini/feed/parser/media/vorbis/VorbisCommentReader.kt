@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.feed.parser.media.vorbis
 
+import ac.mdiq.podcini.util.Logd
 import android.util.Log
 import org.apache.commons.io.EndianUtils
 import org.apache.commons.io.IOUtils
@@ -17,12 +18,12 @@ abstract class VorbisCommentReader internal constructor(private val input: Input
             findOggPage()
             findCommentHeader()
             val commentHeader = readCommentHeader()
-            Log.d(TAG, commentHeader.toString())
+            Logd(TAG, commentHeader.toString())
             for (i in 0 until commentHeader.userCommentLength) {
                 readUserComment()
             }
         } catch (e: IOException) {
-            Log.d(TAG, "Vorbis parser: " + e.message)
+            Logd(TAG, "Vorbis parser: " + e.message)
         }
     }
 
@@ -54,7 +55,7 @@ abstract class VorbisCommentReader internal constructor(private val input: Input
             }
             val key = readContentVectorKey(vectorLength)!!.lowercase()
             val shouldReadValue = handles(key)
-            Log.d(TAG, "key=$key, length=$vectorLength, handles=$shouldReadValue")
+            Logd(TAG, "key=$key, length=$vectorLength, handles=$shouldReadValue")
             if (shouldReadValue) {
                 val value = readUtf8String(vectorLength - key.length - 1)
                 onContentVectorValue(key, value)

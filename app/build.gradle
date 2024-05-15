@@ -159,8 +159,8 @@ android {
         // Version code schema (not used):
         // "1.2.3-beta4"    -> 1020304
         // "1.2.3"          -> 1020395
-        versionCode 3020142
-        versionName "5.1.0"
+        versionCode 3020143
+        versionName "5.2.0"
 
         def commit = ""
         try {
@@ -261,10 +261,6 @@ dependencies {
     implementation "org.jsoup:jsoup:1.17.2"
 
     implementation "io.coil-kt:coil:2.6.0"
-
-//    implementation "com.github.bumptech.glide:glide:4.16.0"
-//    implementation "com.github.bumptech.glide:okhttp3-integration:4.16.0@aar"
-//    kapt "com.github.bumptech.glide:ksp:4.16.0"
 
     implementation "com.squareup.okhttp3:okhttp:4.12.0"
     implementation "com.squareup.okhttp3:okhttp-urlconnection:4.12.0"

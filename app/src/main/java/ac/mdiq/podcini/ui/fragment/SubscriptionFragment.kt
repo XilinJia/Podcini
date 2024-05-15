@@ -8,16 +8,17 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.NavDrawerData
 import ac.mdiq.podcini.storage.model.feed.Feed
+import ac.mdiq.podcini.ui.actions.FeedMultiSelectActionHandler
+import ac.mdiq.podcini.ui.actions.menuhandler.FeedMenuHandler
+import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.adapter.SubscriptionsAdapter
 import ac.mdiq.podcini.ui.dialog.FeedSortDialog
 import ac.mdiq.podcini.ui.dialog.SubscriptionsFilterDialog
-import ac.mdiq.podcini.ui.actions.FeedMultiSelectActionHandler
-import ac.mdiq.podcini.ui.actions.menuhandler.FeedMenuHandler
-import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.view.EmptyViewHandler
 import ac.mdiq.podcini.ui.view.LiftOnScrollListener
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.FeedListUpdateEvent
 import ac.mdiq.podcini.util.event.FeedTagsChangedEvent
 import ac.mdiq.podcini.util.event.FeedUpdateRunningEvent
@@ -39,10 +40,7 @@ import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -72,7 +70,8 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
     private var displayedFolder: String = ""
     private var displayUpArrow = false
 
-    private var disposable: Disposable? = null
+    val scope = CoroutineScope(Dispatchers.Main)
+//    private var disposable: Disposable? = null
     private var feedList: List<NavDrawerData.FeedDrawerItem> = mutableListOf()
     private var feedListFiltered: List<NavDrawerData.FeedDrawerItem> = mutableListOf()
 
@@ -86,7 +85,7 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentSubscriptionsBinding.inflate(inflater)
 
-        Log.d(TAG, "fragment onCreateView")
+        Logd(TAG, "fragment onCreateView")
         toolbar = binding.toolbar
         toolbar.setOnMenuItemClickListener(this)
         toolbar.setOnLongClickListener {
@@ -201,7 +200,8 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
         super.onDestroyView()
         _binding = null
         EventBus.getDefault().unregister(this)
-        disposable?.dispose()
+        scope.cancel()
+//        disposable?.dispose()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -272,17 +272,37 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
     }
 
     private fun loadSubscriptions() {
-        disposable?.dispose()
+//        disposable?.dispose()
         emptyView.hide()
-        disposable = Observable.fromCallable {
-            val data: NavDrawerData = DBReader.getNavDrawerData(UserPreferences.subscriptionsFilter)
-            val items: List<NavDrawerData.FeedDrawerItem> = data.items
-            items
-        }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { result: List<NavDrawerData.FeedDrawerItem> ->
+//        disposable = Observable.fromCallable {
+//            val data: NavDrawerData = DBReader.getNavDrawerData(UserPreferences.subscriptionsFilter)
+//            val items: List<NavDrawerData.FeedDrawerItem> = data.items
+//            items
+//        }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe(
+//                { result: List<NavDrawerData.FeedDrawerItem> ->
+//                    // We have fewer items. This can result in items being selected that are no longer visible.
+//                    if ( feedListFiltered.size > result.size) subscriptionAdapter.endSelectMode()
+//                    feedList = result
+//                    filterOnTag()
+//                    progressBar.visibility = View.GONE
+//                    subscriptionAdapter.setItems(feedListFiltered)
+//                    feedCount.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
+//                    emptyView.updateVisibility()
+//                }, { error: Throwable? ->
+//                    Log.e(TAG, Log.getStackTraceString(error))
+//                })
+
+        scope.launch {
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    val data: NavDrawerData = DBReader.getNavDrawerData(UserPreferences.subscriptionsFilter)
+                    val items: List<NavDrawerData.FeedDrawerItem> = data.items
+                    items
+                }
+                withContext(Dispatchers.Main) {
                     // We have fewer items. This can result in items being selected that are no longer visible.
                     if ( feedListFiltered.size > result.size) subscriptionAdapter.endSelectMode()
                     feedList = result
@@ -291,9 +311,11 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
                     subscriptionAdapter.setItems(feedListFiltered)
                     feedCount.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
                     emptyView.updateVisibility()
-                }, { error: Throwable? ->
-                    Log.e(TAG, Log.getStackTraceString(error))
-                })
+                }
+            } catch (e: Throwable) {
+                Log.e(TAG, Log.getStackTraceString(e))
+            }
+        }
 
         if (UserPreferences.subscriptionsFilter.isEnabled) feedsFilteredMsg.visibility = View.VISIBLE
         else feedsFilteredMsg.visibility = View.GONE

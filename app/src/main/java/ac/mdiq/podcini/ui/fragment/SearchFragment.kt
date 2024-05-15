@@ -5,24 +5,25 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.databinding.SearchFragmentBinding
 import ac.mdiq.podcini.net.discovery.CombinedSearcher
-import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
 import ac.mdiq.podcini.storage.FeedSearcher
 import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.storage.model.feed.FeedItem
-import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.adapter.EpisodeItemListAdapter
-import ac.mdiq.podcini.ui.adapter.HorizontalFeedListAdapter
-import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectActionHandler
 import ac.mdiq.podcini.ui.actions.menuhandler.FeedItemMenuHandler
 import ac.mdiq.podcini.ui.actions.menuhandler.FeedMenuHandler
 import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
+import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.adapter.EpisodeItemListAdapter
+import ac.mdiq.podcini.ui.adapter.HorizontalFeedListAdapter
+import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.view.EmptyViewHandler
 import ac.mdiq.podcini.ui.view.EpisodeItemListRecyclerView
 import ac.mdiq.podcini.ui.view.LiftOnScrollListener
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
 import ac.mdiq.podcini.util.FeedItemUtil
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.*
+import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
 import android.content.Context
 import android.os.Bundle
 import android.os.Handler
@@ -42,10 +43,7 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.snackbar.Snackbar
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -70,7 +68,8 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
     private var results: MutableList<FeedItem> = mutableListOf()
     private var currentPlaying: EpisodeItemViewHolder? = null
 
-    private var disposable: Disposable? = null
+    val scope = CoroutineScope(Dispatchers.Main)
+//    private var disposable: Disposable? = null
     private var lastQueryChange: Long = 0
     private var isOtherViewInFoucus = false
 
@@ -82,13 +81,14 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
 
     override fun onStop() {
         super.onStop()
-        disposable?.dispose()
+        scope.cancel()
+//        disposable?.dispose()
     }
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = SearchFragmentBinding.inflate(inflater)
 
-        Log.d(TAG, "fragment onCreateView")
+        Logd(TAG, "fragment onCreateView")
         setupToolbar(binding.toolbar)
         speedDialBinding = MultiSelectSpeedDialBinding.bind(binding.root)
         progressBar = binding.progressBar
@@ -243,7 +243,7 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: FeedItemEvent) {
-        Log.d(TAG, "onEventMainThread() called with: event = [$event]")
+        Logd(TAG, "onEventMainThread() called with: event = [$event]")
 
         var i = 0
         val size: Int = event.items.size
@@ -272,7 +272,7 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
         if (currentPlaying != null && currentPlaying!!.isCurrentlyPlayingItem)
             currentPlaying!!.notifyPlaybackPositionUpdated(event)
         else {
-            Log.d(TAG, "onEventMainThread() search list")
+            Logd(TAG, "onEventMainThread() search list")
             for (i in 0 until adapter.itemCount) {
                 val holder: EpisodeItemViewHolder? = recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
                 if (holder != null && holder.isCurrentlyPlayingItem) {
@@ -296,27 +296,50 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
     }
 
     @UnstableApi private fun search() {
-        disposable?.dispose()
+//        disposable?.dispose()
 
         adapterFeeds.setEndButton(R.string.search_online) { this.searchOnline() }
         chip.visibility = if ((requireArguments().getLong(ARG_FEED, 0) == 0L)) View.GONE else View.VISIBLE
-        disposable = Observable.fromCallable { this.performSearch() }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ results: Pair<List<FeedItem>?, List<Feed?>?> ->
-                progressBar.visibility = View.GONE
-                if (results.first != null) {
-                    this.results = results.first!!.toMutableList()
-                    adapter.updateItems(results.first!!)
+//        disposable = Observable.fromCallable { this.performSearch() }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe({ results: Pair<List<FeedItem>?, List<Feed?>?> ->
+//                progressBar.visibility = View.GONE
+//                if (results.first != null) {
+//                    this.results = results.first!!.toMutableList()
+//                    adapter.updateItems(results.first!!)
+//                }
+//                if (requireArguments().getLong(ARG_FEED, 0) == 0L) {
+//                    if (results.second != null) adapterFeeds.updateData(results.second!!.filterNotNull())
+//                } else adapterFeeds.updateData(emptyList())
+//
+//                if (searchView.query.toString().isEmpty()) emptyViewHandler.setMessage(R.string.type_to_search)
+//                else emptyViewHandler.setMessage(getString(R.string.no_results_for_query) + searchView.query)
+//
+//            }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
+
+        scope.launch {
+            try {
+                val results = withContext(Dispatchers.IO) {
+                    performSearch()
                 }
-                if (requireArguments().getLong(ARG_FEED, 0) == 0L) {
-                    if (results.second != null) adapterFeeds.updateData(results.second!!.filterNotNull())
-                } else adapterFeeds.updateData(emptyList())
+                withContext(Dispatchers.Main) {
+                    progressBar.visibility = View.GONE
+                    if (results.first != null) {
+                        this@SearchFragment.results = results.first!!.toMutableList()
+                        adapter.updateItems(results.first!!)
+                    }
+                    if (requireArguments().getLong(ARG_FEED, 0) == 0L) {
+                        if (results.second != null) adapterFeeds.updateData(results.second!!.filterNotNull())
+                    } else adapterFeeds.updateData(emptyList())
 
-                if (searchView.query.toString().isEmpty()) emptyViewHandler.setMessage(R.string.type_to_search)
-                else emptyViewHandler.setMessage(getString(R.string.no_results_for_query) + searchView.query)
-
-            }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
+                    if (searchView.query.toString().isEmpty()) emptyViewHandler.setMessage(R.string.type_to_search)
+                    else emptyViewHandler.setMessage(getString(R.string.no_results_for_query) + searchView.query)
+                }
+            } catch (e: Throwable) {
+                Log.e(TAG, Log.getStackTraceString(e))
+            }
+        }
     }
 
     @UnstableApi private fun performSearch(): Pair<List<FeedItem>?, List<Feed?>?> {

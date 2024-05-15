@@ -10,9 +10,10 @@ import android.content.DialogInterface
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
-import io.reactivex.Completable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 object RemoveFeedDialog {
     private const val TAG = "RemoveFeedDialog"
@@ -41,21 +42,39 @@ object RemoveFeedDialog {
                 progressDialog.setCancelable(false)
                 progressDialog.show()
 
-                Completable.fromAction {
-                    for (feed in feeds) {
-                        DBWriter.deleteFeed(context, feed.id).get()
-                    }
-                }
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(
-                        {
+//                Completable.fromAction {
+//                    for (feed in feeds) {
+//                        DBWriter.deleteFeed(context, feed.id).get()
+//                    }
+//                }
+//                    .subscribeOn(Schedulers.io())
+//                    .observeOn(AndroidSchedulers.mainThread())
+//                    .subscribe(
+//                        {
+//                            Logd(TAG, "Feed(s) deleted")
+//                            progressDialog.dismiss()
+//                        }, { error: Throwable? ->
+//                            Log.e(TAG, Log.getStackTraceString(error))
+//                            progressDialog.dismiss()
+//                        })
+
+                val scope = CoroutineScope(Dispatchers.Main)
+                scope.launch {
+                    try {
+                        withContext(Dispatchers.IO) {
+                            for (feed in feeds) {
+                                DBWriter.deleteFeed(context, feed.id).get()
+                            }
+                        }
+                        withContext(Dispatchers.Main) {
                             Logd(TAG, "Feed(s) deleted")
                             progressDialog.dismiss()
-                        }, { error: Throwable? ->
-                            Log.e(TAG, Log.getStackTraceString(error))
-                            progressDialog.dismiss()
-                        })
+                        }
+                    } catch (e: Throwable) {
+                        Log.e(TAG, Log.getStackTraceString(e))
+                        withContext(Dispatchers.Main) { progressDialog.dismiss() }
+                    }
+                }
             }
         }
         dialog.createNewDialog().show()

@@ -23,6 +23,7 @@ import ac.mdiq.podcini.ui.utils.PictureInPictureUtil
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.Converter.getDurationStringLong
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.TimeSpeedConverter
 import ac.mdiq.podcini.util.event.playback.BufferUpdateEvent
 import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
@@ -41,13 +42,11 @@ import androidx.core.app.ActivityCompat.invalidateOptionsMenu
 import androidx.fragment.app.Fragment
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.media3.common.util.UnstableApi
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import java.lang.Runnable
 
 @UnstableApi
 class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
@@ -63,7 +62,9 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     private var lastScreenTap: Long = 0
     private val videoControlsHider = Handler(Looper.getMainLooper())
     private var showTimeLeft = false
-    private var disposable: Disposable? = null
+
+    val scope = CoroutineScope(Dispatchers.Main)
+//    private var disposable: Disposable? = null
     private var prog = 0f
 
     private var itemsLoaded = false
@@ -92,7 +93,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     @OptIn(UnstableApi::class) private fun newPlaybackController(): PlaybackController {
         return object : PlaybackController(requireActivity()) {
             override fun updatePlayButtonShowsPlay(showPlay: Boolean) {
-                Log.d(TAG, "updatePlayButtonShowsPlay called")
+                Logd(TAG, "updatePlayButtonShowsPlay called")
                 binding.playButton.setIsShowPlay(showPlay)
                 if (showPlay) {
                     (activity as AppCompatActivity).window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -100,7 +101,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
                     (activity as AppCompatActivity).window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                     setupVideoAspectRatio()
                     if (videoSurfaceCreated && controller != null) {
-                        Log.d(TAG, "Videosurface already created, setting videosurface now")
+                        Logd(TAG, "Videosurface already created, setting videosurface now")
                         setVideoSurface(binding.videoView.holder)
                     }
                 }
@@ -148,7 +149,8 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         _binding = null
         controller?.release()
         controller = null // prevent leak
-        disposable?.dispose()
+        scope.cancel()
+//        disposable?.dispose()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -164,10 +166,10 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     private fun setupVideoAspectRatio() {
         if (videoSurfaceCreated && controller != null) {
             if (videoSize != null && videoSize!!.first > 0 && videoSize!!.second > 0) {
-                Log.d(TAG, "Width,height of video: " + videoSize!!.first + ", " + videoSize!!.second)
+                Logd(TAG, "Width,height of video: ${videoSize!!.first}, ${videoSize!!.second}")
                 val videoWidth = resources.displayMetrics.widthPixels
                 val videoHeight = (videoWidth.toFloat() / videoSize!!.first * videoSize!!.second).toInt()
-                Log.d(TAG, "Width,height of video: " + videoWidth + ", " + videoHeight)
+                Logd(TAG, "Width,height of video: $videoWidth, $videoHeight")
                 binding.videoView.setVideoSize(videoWidth, videoHeight)
 //                binding.videoView.setVideoSize(videoSize.first, videoSize.second)
 //                binding.videoView.setVideoSize(-1, -1)
@@ -175,18 +177,18 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
                 Log.e(TAG, "Could not determine video size")
                 val videoWidth = resources.displayMetrics.widthPixels
                 val videoHeight = (videoWidth.toFloat() / 16 * 9).toInt()
-                Log.d(TAG, "Width,height of video: " + videoWidth + ", " + videoHeight)
+                Logd(TAG, "Width,height of video: $videoWidth, $videoHeight")
                 binding.videoView.setVideoSize(videoWidth, videoHeight)
             }
         }
     }
 
     @OptIn(UnstableApi::class) private fun loadMediaInfo() {
-        Log.d(TAG, "loadMediaInfo called")
+        Logd(TAG, "loadMediaInfo called")
         if (controller?.getMedia() == null) return
 
         if (MediaPlayerBase.status == PlayerStatus.PLAYING && !controller!!.isPlayingVideoLocally) {
-            Log.d(TAG, "Closing, no longer video")
+            Logd(TAG, "Closing, no longer video")
             destroyingDueToReload = true
             activity?.finish()
             MainActivityStarter(requireContext()).withOpenPlayer().start()
@@ -203,27 +205,50 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     }
 
     @UnstableApi private fun load() {
-        disposable?.dispose()
-        Log.d(TAG, "load() called")
+//        disposable?.dispose()
+        Logd(TAG, "load() called")
 
-        disposable = Observable.fromCallable<FeedItem?> { this.loadInBackground() }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ result: FeedItem? ->
-                item = result
-                Log.d(TAG, "load() item ${item?.id}")
-                if (item != null) {
-                    val isFav = item!!.isTagged(FeedItem.TAG_FAVORITE)
-                    if (isFavorite != isFav) {
-                        isFavorite = isFav
-                        invalidateOptionsMenu(requireActivity())
-                    }
+//        disposable = Observable.fromCallable<FeedItem?> { this.loadInBackground() }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe({ result: FeedItem? ->
+//                item = result
+//                Logd(TAG, "load() item ${item?.id}")
+//                if (item != null) {
+//                    val isFav = item!!.isTagged(FeedItem.TAG_FAVORITE)
+//                    if (isFavorite != isFav) {
+//                        isFavorite = isFav
+//                        invalidateOptionsMenu(requireActivity())
+//                    }
+//                }
+//                onFragmentLoaded()
+//                itemsLoaded = true
+//            }, { error: Throwable? ->
+//                Log.e(TAG, Log.getStackTraceString(error))
+//            })
+
+        scope.launch {
+            try {
+                item = withContext(Dispatchers.IO) {
+                    loadInBackground()
                 }
-                onFragmentLoaded()
-                itemsLoaded = true
-            }, { error: Throwable? ->
-                Log.e(TAG, Log.getStackTraceString(error))
-            })
+                withContext(Dispatchers.Main) {
+                    Logd(TAG, "load() item ${item?.id}")
+                    if (item != null) {
+                        val isFav = item!!.isTagged(FeedItem.TAG_FAVORITE)
+                        if (isFavorite != isFav) {
+                            isFavorite = isFav
+                            invalidateOptionsMenu(requireActivity())
+                        }
+                    }
+                    onFragmentLoaded()
+                    itemsLoaded = true
+                }
+            } catch (e: Throwable) {
+                Log.e(TAG, Log.getStackTraceString(e))
+            }
+        }
+
     }
 
     private fun loadInBackground(): FeedItem? {
@@ -244,7 +269,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     @UnstableApi
     private fun setupView() {
         showTimeLeft = shouldShowRemainingTime()
-        Log.d(TAG, "setupView showTimeLeft: $showTimeLeft")
+        Logd(TAG, "setupView showTimeLeft: $showTimeLeft")
 
         binding.durationLabel.setOnClickListener {
             showTimeLeft = !showTimeLeft
@@ -262,7 +287,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
             binding.durationLabel.text = length
 
             setShowRemainTimeSetting(showTimeLeft)
-            Log.d("timeleft on click", if (showTimeLeft) "true" else "false")
+            Logd("timeleft on click", if (showTimeLeft) "true" else "false")
         }
 
         binding.sbPosition.setOnSeekBarChangeListener(this)
@@ -394,14 +419,14 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
 
         @UnstableApi
         override fun surfaceCreated(holder: SurfaceHolder) {
-            Log.d(TAG, "Videoview holder created")
+            Logd(TAG, "Videoview holder created")
             videoSurfaceCreated = true
             if (MediaPlayerBase.status == PlayerStatus.PLAYING) setVideoSurface(holder)
             setupVideoAspectRatio()
         }
 
         override fun surfaceDestroyed(holder: SurfaceHolder) {
-            Log.d(TAG, "Videosurface was destroyed")
+            Logd(TAG, "Videosurface was destroyed")
             videoSurfaceCreated = false
             if (controller != null && !destroyingDueToReload && !(activity as VideoplayerActivity).switchToAudioOnly)
                 notifyVideoSurfaceAbandoned()
@@ -441,7 +466,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
 
     private val hideVideoControls = Runnable {
         if (videoControlsShowing) {
-            Log.d(TAG, "Hiding video controls")
+            Logd(TAG, "Hiding video controls")
             hideVideoControls(true)
             if (videoMode == VideoplayerActivity.VideoMode.FULL_SCREEN_VIEW) (activity as? AppCompatActivity)?.supportActionBar?.hide()
             videoControlsShowing = false
@@ -504,7 +529,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     }
 
     private fun updateProgressbarPosition(position: Int, duration: Int) {
-        Log.d(TAG, "updateProgressbarPosition($position, $duration)")
+        Logd(TAG, "updateProgressbarPosition ($position, $duration)")
         val progress = (position.toFloat()) / duration
         binding.sbPosition.progress = (progress * binding.sbPosition.max).toInt()
     }

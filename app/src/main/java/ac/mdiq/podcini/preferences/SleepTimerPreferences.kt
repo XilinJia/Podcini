@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.preferences
 
+import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
@@ -30,7 +31,7 @@ object SleepTimerPreferences {
      */
     @JvmStatic
     fun init(context: Context) {
-        Log.d(TAG, "Creating new instance of SleepTimerPreferences")
+        Logd(TAG, "Creating new instance of SleepTimerPreferences")
         prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
     }
 

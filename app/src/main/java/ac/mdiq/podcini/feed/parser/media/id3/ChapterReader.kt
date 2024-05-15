@@ -4,6 +4,7 @@ import android.util.Log
 import ac.mdiq.podcini.storage.model.feed.Chapter
 import ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage.Companion.makeUrl
 import ac.mdiq.podcini.feed.parser.media.id3.model.FrameHeader
+import ac.mdiq.podcini.util.Logd
 import org.apache.commons.io.input.CountingInputStream
 import java.io.IOException
 import java.net.URLDecoder
@@ -18,9 +19,9 @@ class ChapterReader(input: CountingInputStream?) : ID3Reader(input!!) {
     @Throws(IOException::class, ID3ReaderException::class)
     override fun readFrame(frameHeader: FrameHeader) {
         if (FRAME_ID_CHAPTER == frameHeader.id) {
-            Log.d(TAG, "Handling frame: $frameHeader")
+            Logd(TAG, "Handling frame: $frameHeader")
             val chapter = readChapter(frameHeader)
-            Log.d(TAG, "Chapter done: $chapter")
+            Logd(TAG, "Chapter done: $chapter")
             chapters.add(chapter)
         } else {
             super.readFrame(frameHeader)
@@ -48,12 +49,12 @@ class ChapterReader(input: CountingInputStream?) : ID3Reader(input!!) {
 
     @Throws(IOException::class, ID3ReaderException::class)
     fun readChapterSubFrame(frameHeader: FrameHeader, chapter: Chapter) {
-        Log.d(TAG, "Handling subframe: $frameHeader")
+        Logd(TAG, "Handling subframe: $frameHeader")
         val frameStartPosition = position
         when (frameHeader.id) {
             FRAME_ID_TITLE -> {
                 chapter.title = readEncodingAndString(frameHeader.size)
-                Log.d(TAG, "Found title: " + chapter.title)
+                Logd(TAG, "Found title: " + chapter.title)
             }
             FRAME_ID_LINK -> {
                 readEncodingAndString(frameHeader.size) // skip description
@@ -61,7 +62,7 @@ class ChapterReader(input: CountingInputStream?) : ID3Reader(input!!) {
                 try {
                     val decodedLink = URLDecoder.decode(url, "ISO-8859-1")
                     chapter.link = decodedLink
-                    Log.d(TAG, "Found link: " + chapter.link)
+                    Logd(TAG, "Found link: " + chapter.link)
                 } catch (iae: IllegalArgumentException) {
                     Log.w(TAG, "Bad URL found in ID3 data")
                 }
@@ -71,10 +72,10 @@ class ChapterReader(input: CountingInputStream?) : ID3Reader(input!!) {
                 val mime = readIsoStringNullTerminated(frameHeader.size)
                 val type = readByte()
                 val description = readEncodedString(encoding.toInt(), frameHeader.size)
-                Log.d(TAG, "Found apic: $mime,$description")
+                Logd(TAG, "Found apic: $mime,$description")
                 if (MIME_IMAGE_URL == mime) {
                     val link = readIsoStringNullTerminated(frameHeader.size)
-                    Log.d(TAG, "Link: $link")
+                    Logd(TAG, "Link: $link")
                     if (chapter.imageUrl.isNullOrEmpty() || type.toInt() == IMAGE_TYPE_COVER) chapter.imageUrl = link
                 } else {
                     val alreadyConsumed = position - frameStartPosition
@@ -82,7 +83,7 @@ class ChapterReader(input: CountingInputStream?) : ID3Reader(input!!) {
                     if (chapter.imageUrl.isNullOrEmpty() || type.toInt() == IMAGE_TYPE_COVER) chapter.imageUrl = makeUrl(position, rawImageDataLength)
                 }
             }
-            else -> Log.d(TAG, "Unknown chapter sub-frame.")
+            else -> Logd(TAG, "Unknown chapter sub-frame.")
         }
         // Skip garbage to fill frame completely
         // This also asserts that we are not reading too many bytes from this frame.

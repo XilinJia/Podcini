@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.media3.common.util.UnstableApi
 import ac.mdiq.podcini.util.config.ClientConfigurator
 import ac.mdiq.podcini.net.download.FeedUpdateManager
+import ac.mdiq.podcini.util.Logd
 
 /**
  * Refreshes all feeds when it receives an intent
@@ -14,7 +15,7 @@ import ac.mdiq.podcini.net.download.FeedUpdateManager
 class FeedUpdateReceiver : BroadcastReceiver() {
     @UnstableApi
     override fun onReceive(context: Context, intent: Intent) {
-        Log.d(TAG, "Received intent")
+        Logd(TAG, "Received intent")
         ClientConfigurator.initialize(context)
 
         FeedUpdateManager.runOnce(context)

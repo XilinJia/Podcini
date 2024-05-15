@@ -39,11 +39,7 @@ import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.snackbar.Snackbar
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
-import io.reactivex.Completable
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -62,6 +58,8 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
     var _binding: BaseEpisodesListFragmentBinding? = null
     protected val binding get() = _binding!!
 
+    val scope = CoroutineScope(Dispatchers.Main)
+
     lateinit var recyclerView: EpisodeItemListRecyclerView
     lateinit var emptyView: EmptyViewHandler
     lateinit var speedDialView: SpeedDialView
@@ -77,7 +75,7 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
     @JvmField
     var episodes: MutableList<FeedItem> = ArrayList()
 
-    protected var disposable: Disposable? = null
+//    protected var disposable: Disposable? = null
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
@@ -202,7 +200,7 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
 
     override fun onStop() {
         super.onStop()
-        disposable?.dispose()
+//        disposable?.dispose()
     }
 
     @UnstableApi override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -242,68 +240,115 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
 
     @UnstableApi private fun performMultiSelectAction(actionItemId: Int) {
         val handler = EpisodeMultiSelectActionHandler((activity as MainActivity), actionItemId)
-        Completable.fromAction {
-            handler.handleAction(listAdapter.selectedItems.filterIsInstance<FeedItem>())
-            if (listAdapter.shouldSelectLazyLoadedItems()) {
-                var applyPage = page + 1
-                var nextPage: List<FeedItem>
-                do {
-                    nextPage = loadMoreData(applyPage)
-                    handler.handleAction(nextPage)
-                    applyPage++
-                } while (nextPage.size == EPISODES_PER_PAGE)
+//        Completable.fromAction {
+//            handler.handleAction(listAdapter.selectedItems.filterIsInstance<FeedItem>())
+//            if (listAdapter.shouldSelectLazyLoadedItems()) {
+//                var applyPage = page + 1
+//                var nextPage: List<FeedItem>
+//                do {
+//                    nextPage = loadMoreData(applyPage)
+//                    handler.handleAction(nextPage)
+//                    applyPage++
+//                } while (nextPage.size == EPISODES_PER_PAGE)
+//            }
+//        }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe({ listAdapter.endSelectMode() },
+//                { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
+
+        scope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    handler.handleAction(listAdapter.selectedItems.filterIsInstance<FeedItem>())
+                    if (listAdapter.shouldSelectLazyLoadedItems()) {
+                        var applyPage = page + 1
+                        var nextPage: List<FeedItem>
+                        do {
+                            nextPage = loadMoreData(applyPage)
+                            handler.handleAction(nextPage)
+                            applyPage++
+                        } while (nextPage.size == EPISODES_PER_PAGE)
+                    }
+                    withContext(Dispatchers.Main) {
+                        listAdapter.endSelectMode()
+                    }
+                }
+            } catch (e: Throwable) {
+                Log.e(TAG, Log.getStackTraceString(e))
             }
         }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ listAdapter.endSelectMode() },
-                { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
     }
 
     private fun setupLoadMoreScrollListener() {
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(view: RecyclerView, deltaX: Int, deltaY: Int) {
                 super.onScrolled(view, deltaX, deltaY)
+                Logd(TAG, "addOnScrollListener called isLoadingMore:$isLoadingMore hasMoreItems:$hasMoreItems ${recyclerView.isScrolledToBottom}")
                 if (!isLoadingMore && hasMoreItems && recyclerView.isScrolledToBottom) {
                     /* The end of the list has been reached. Load more data. */
                     page++
                     loadMoreItems()
-                    isLoadingMore = true
+//                    isLoadingMore = true
                 }
             }
         })
     }
 
     private fun loadMoreItems() {
-        disposable?.dispose()
+//        disposable?.dispose()
+        Logd(TAG, "loadMoreItems() called $page")
 
         isLoadingMore = true
         listAdapter.setDummyViews(1)
         listAdapter.notifyItemInserted(listAdapter.itemCount - 1)
-        disposable = Observable.fromCallable { loadMoreData(page) }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ data: List<FeedItem> ->
-                if (data.size < EPISODES_PER_PAGE) hasMoreItems = false
-                Logd(TAG, "loadMoreItems $page ${data.size}")
-                episodes.addAll(data)
-                listAdapter.setDummyViews(0)
-                listAdapter.updateItems(episodes)
-                if (listAdapter.shouldSelectLazyLoadedItems()) listAdapter.setSelected(episodes.size - data.size, episodes.size, true)
+//        disposable = Observable.fromCallable { loadMoreData(page) }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe({ data: List<FeedItem> ->
+//                if (data.size < EPISODES_PER_PAGE) hasMoreItems = false
+//                Logd(TAG, "loadMoreItems $page ${data.size}")
+//                episodes.addAll(data)
+//                listAdapter.setDummyViews(0)
+//                listAdapter.updateItems(episodes)
+//                if (listAdapter.shouldSelectLazyLoadedItems()) listAdapter.setSelected(episodes.size - data.size, episodes.size, true)
+//
+//            }, { error: Throwable? ->
+//                listAdapter.setDummyViews(0)
+//                listAdapter.updateItems(emptyList())
+//                Log.e(TAG, Log.getStackTraceString(error))
+//            }, {
+//                // Make sure to not always load 2 pages at once
+//                recyclerView.post { isLoadingMore = false }
+//            })
 
-            }, { error: Throwable? ->
+        scope.launch {
+            try {
+                val data = withContext(Dispatchers.IO) {
+                    loadMoreData(page)
+                }
+                withContext(Dispatchers.Main) {
+                    if (data.size < EPISODES_PER_PAGE) hasMoreItems = false
+                    Logd(TAG, "loadMoreItems $page ${data.size}")
+                    episodes.addAll(data)
+                    listAdapter.setDummyViews(0)
+                    listAdapter.updateItems(episodes)
+                    if (listAdapter.shouldSelectLazyLoadedItems()) listAdapter.setSelected(episodes.size - data.size, episodes.size, true)
+                }
+            } catch (e: Throwable) {
                 listAdapter.setDummyViews(0)
                 listAdapter.updateItems(emptyList())
-                Log.e(TAG, Log.getStackTraceString(error))
-            }, {
-                // Make sure to not always load 2 pages at once
-                recyclerView.post { isLoadingMore = false }
-            })
+                Log.e(TAG, Log.getStackTraceString(e))
+            } finally {
+                withContext(Dispatchers.Main) { recyclerView.post { isLoadingMore = false } }
+            }
+        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        scope.cancel()
         EventBus.getDefault().unregister(this)
         listAdapter.endSelectMode()
     }
@@ -319,7 +364,7 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: FeedItemEvent) {
-        Log.d(TAG, "onEventMainThread() called with FeedItemEvent event = [$event]")
+        Logd(TAG, "onEventMainThread() called with FeedItemEvent event = [$event]")
         for (item in event.items) {
             val pos: Int = FeedItemUtil.indexOfItemWithId(episodes, item.id)
             if (pos >= 0) {
@@ -338,7 +383,7 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
         if (currentPlaying != null && currentPlaying!!.isCurrentlyPlayingItem)
             currentPlaying!!.notifyPlaybackPositionUpdated(event)
         else {
-            Log.d(TAG, "onEventMainThread() search list")
+            Logd(TAG, "onEventMainThread() search list")
             for (i in 0 until listAdapter.itemCount) {
                 val holder: EpisodeItemViewHolder? = recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
                 if (holder != null && holder.isCurrentlyPlayingItem) {
@@ -395,15 +440,37 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
     }
 
     fun loadItems() {
-        disposable?.dispose()
+        Logd(TAG, "loadItems() called")
+//        disposable?.dispose()
 
-        disposable = Observable.fromCallable {
-            Pair(loadData().toMutableList(), loadTotalItemCount())
-        }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { data: Pair<MutableList<FeedItem>, Int> ->
+//        disposable = Observable.fromCallable {
+//            Pair(loadData().toMutableList(), loadTotalItemCount())
+//        }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe(
+//                { data: Pair<MutableList<FeedItem>, Int> ->
+//                    val restoreScrollPosition = episodes.isEmpty()
+//                    episodes = data.first
+//                    hasMoreItems = !(page == 1 && episodes.size < EPISODES_PER_PAGE)
+//                    progressBar.visibility = View.GONE
+//                    listAdapter.setDummyViews(0)
+//                    listAdapter.updateItems(episodes)
+//                    listAdapter.setTotalNumberOfItems(data.second)
+//                    if (restoreScrollPosition) recyclerView.restoreScrollPosition(getPrefName())
+//                    updateToolbar()
+//                }, { error: Throwable? ->
+//                    listAdapter.setDummyViews(0)
+//                    listAdapter.updateItems(emptyList())
+//                    Log.e(TAG, Log.getStackTraceString(error))
+//                })
+
+        scope.launch {
+            try {
+                val data = withContext(Dispatchers.IO) {
+                    Pair(loadData().toMutableList(), loadTotalItemCount())
+                }
+                withContext(Dispatchers.Main) {
                     val restoreScrollPosition = episodes.isEmpty()
                     episodes = data.first
                     hasMoreItems = !(page == 1 && episodes.size < EPISODES_PER_PAGE)
@@ -413,11 +480,14 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
                     listAdapter.setTotalNumberOfItems(data.second)
                     if (restoreScrollPosition) recyclerView.restoreScrollPosition(getPrefName())
                     updateToolbar()
-                }, { error: Throwable? ->
-                    listAdapter.setDummyViews(0)
-                    listAdapter.updateItems(emptyList())
-                    Log.e(TAG, Log.getStackTraceString(error))
-                })
+                }
+            } catch (e: Throwable) {
+                listAdapter.setDummyViews(0)
+                listAdapter.updateItems(emptyList())
+                Log.e(TAG, Log.getStackTraceString(e))
+            }
+        }
+
     }
 
     protected abstract fun loadData(): List<FeedItem>
@@ -446,7 +516,7 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
     }
 
     companion object {
-        const val TAG: String = "EpisodesListFragment"
+        const val TAG: String = "BaseEpisodesListFragment"
         private const val KEY_UP_ARROW = "up_arrow"
         const val EPISODES_PER_PAGE: Int = 150
     }

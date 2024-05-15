@@ -43,6 +43,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.enqueueLocation
 import ac.mdiq.podcini.preferences.UserPreferences.isQueueKeepSorted
 import ac.mdiq.podcini.preferences.UserPreferences.queueKeepSortedOrder
 import ac.mdiq.podcini.preferences.UserPreferences.shouldDeleteRemoveFromQueue
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.showStackTrace
 import org.greenrobot.eventbus.EventBus
 import java.io.File
@@ -98,7 +99,7 @@ import java.util.concurrent.TimeUnit
      */
     @JvmStatic
     fun deleteFeedMediaOfItem(context: Context, mediaId: Long): Future<*> {
-        Log.d(TAG, "deleteFeedMediaOfItem called")
+        Logd(TAG, "deleteFeedMediaOfItem called")
         return runOnDbThread {
             val media = getFeedMedia(mediaId)
             if (media != null) {
@@ -208,7 +209,7 @@ import java.util.concurrent.TimeUnit
      * Deleting media also removes the download log entries.
      */
     fun deleteFeedItems(context: Context, items: List<FeedItem>): Future<*> {
-        Log.d(TAG, "deleteFeedItems called")
+        Logd(TAG, "deleteFeedItems called")
         return runOnDbThread { deleteFeedItemsSynchronous(context, items) }
     }
 
@@ -295,7 +296,7 @@ import java.util.concurrent.TimeUnit
     fun addItemToPlaybackHistory(media: FeedMedia?, date: Date? = Date()): Future<*> {
         return runOnDbThread {
             if (media != null) {
-                Log.d(TAG, "Adding item to playback history")
+                Logd(TAG, "Adding item to playback history")
                 media.setPlaybackCompletionDate(date)
 
                 val adapter = getInstance()
@@ -313,7 +314,7 @@ import java.util.concurrent.TimeUnit
      * @param status The DownloadStatus object.
      */
     fun addDownloadStatus(status: DownloadResult?): Future<*> {
-        Log.d(TAG, "addDownloadStatus called")
+        Logd(TAG, "addDownloadStatus called")
         return runOnDbThread {
             if (status != null) {
                 val adapter = getInstance()
@@ -336,7 +337,7 @@ import java.util.concurrent.TimeUnit
      * @throws IndexOutOfBoundsException if index < 0 || index >= queue.size()
      */
     @UnstableApi fun addQueueItemAt(context: Context, itemId: Long, index: Int, performAutoDownload: Boolean): Future<*> {
-        Log.d(TAG, "addQueueItemAt called")
+        Logd(TAG, "addQueueItemAt called")
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -366,7 +367,7 @@ import java.util.concurrent.TimeUnit
     }
 
     fun addQueueItem(context: Context, markAsUnplayed: Boolean, vararg items: FeedItem): Future<*> {
-        Log.d(TAG, "addQueueItem called")
+        Logd(TAG, "addQueueItem called")
         val itemIds = LongList(items.size)
         for (item in items) {
             if (!item.hasMedia()) continue
@@ -398,7 +399,7 @@ import java.util.concurrent.TimeUnit
      * @param itemIds             IDs of the FeedItem objects that should be added to the queue.
      */
     @UnstableApi fun addQueueItem(context: Context, performAutoDownload: Boolean, markAsUnplayed: Boolean, vararg itemIds: Long): Future<*> {
-        Log.d(TAG, "addQueueItem(context ...) called")
+        Logd(TAG, "addQueueItem(context ...) called")
         return runOnDbThread {
             if (itemIds.isEmpty()) return@runOnDbThread
 
@@ -500,7 +501,7 @@ import java.util.concurrent.TimeUnit
     }
 
     @UnstableApi private fun removeQueueItemSynchronous(context: Context, performAutoDownload: Boolean, vararg itemIds: Long) {
-        Log.d(TAG, "removeQueueItemSynchronous called $itemIds")
+        Logd(TAG, "removeQueueItemSynchronous called $itemIds")
         if (itemIds.isEmpty()) return
         showStackTrace()
 
@@ -515,7 +516,7 @@ import java.util.concurrent.TimeUnit
             val position = indexInItemList(queue, itemId)
             if (position >= 0) {
                 val item = getFeedItem(itemId)
-                Log.d(TAG, "removing item from queue: ${item?.title}")
+                Logd(TAG, "removing item from queue: ${item?.title}")
                 if (item == null) {
                     Log.e(TAG, "removeQueueItem - item in queue but somehow cannot be loaded. Item ignored. It should never happen. id:$itemId")
                     continue
@@ -776,7 +777,7 @@ import java.util.concurrent.TimeUnit
      * @param media The FeedMedia object.
      */
     fun persistFeedMedia(media: FeedMedia): Future<*> {
-        Log.d(TAG, "persistFeedMedia called")
+        Logd(TAG, "persistFeedMedia called")
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -792,7 +793,7 @@ import java.util.concurrent.TimeUnit
      */
     @JvmStatic
     fun persistFeedMediaPlaybackInfo(media: FeedMedia?): Future<*> {
-        Log.d(TAG, "persistFeedMediaPlaybackInfo called")
+        Logd(TAG, "persistFeedMediaPlaybackInfo called")
         return runOnDbThread {
             if (media != null) {
                 val adapter = getInstance()
@@ -811,7 +812,7 @@ import java.util.concurrent.TimeUnit
      */
     @JvmStatic
     fun persistFeedItem(item: FeedItem?): Future<*> {
-        Log.d(TAG, "persistFeedItem called")
+        Logd(TAG, "persistFeedItem called")
         return runOnDbThread {
             if (item != null) {
                 val adapter = getInstance()
@@ -827,7 +828,7 @@ import java.util.concurrent.TimeUnit
      * Updates download URL of a feed
      */
     fun updateFeedDownloadURL(original: String, updated: String): Future<*> {
-        Log.d(TAG, "updateFeedDownloadURL(original: $original, updated: $updated)")
+        Logd(TAG, "updateFeedDownloadURL(original: $original, updated: $updated)")
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -856,7 +857,7 @@ import java.util.concurrent.TimeUnit
     }
 
     private fun indexInItemList(items: List<FeedItem?>, itemId: Long): Int {
-        Log.d(TAG, "indexInItemList called")
+        Logd(TAG, "indexInItemList called")
         for (i in items.indices) {
             val item = items[i]
             if (item?.id == itemId) return i
@@ -921,7 +922,7 @@ import java.util.concurrent.TimeUnit
      * @param filterValues Values that represent properties to filter by
      */
     fun persistFeedItemsFilter(feedId: Long, filterValues: Set<String>): Future<*> {
-        Log.d(TAG, "persistFeedItemsFilter() called with: feedId = [$feedId], filterValues = [$filterValues]")
+        Logd(TAG, "persistFeedItemsFilter() called with: feedId = [$feedId], filterValues = [$filterValues]")
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()

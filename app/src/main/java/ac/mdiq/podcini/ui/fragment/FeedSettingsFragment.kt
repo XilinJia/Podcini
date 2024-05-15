@@ -16,6 +16,7 @@ import ac.mdiq.podcini.ui.dialog.AuthenticationDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeFilterDialog
 import ac.mdiq.podcini.ui.dialog.FeedPreferenceSkipDialog
 import ac.mdiq.podcini.ui.dialog.TagSettingsDialog
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.settings.SkipIntroEndingChangedEvent
 import ac.mdiq.podcini.util.event.settings.SpeedPresetChangedEvent
 import ac.mdiq.podcini.util.event.settings.VolumeAdaptionChangedEvent
@@ -40,12 +41,7 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import io.reactivex.Maybe
-import io.reactivex.MaybeEmitter
-import io.reactivex.MaybeOnSubscribe
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import java.util.*
 import java.util.concurrent.ExecutionException
@@ -54,13 +50,14 @@ class FeedSettingsFragment : Fragment() {
     private var _binding: FeedsettingsBinding? = null
     private val binding get() = _binding!!
 
-    private var disposable: Disposable? = null
+    val scope = CoroutineScope(Dispatchers.Main)
+//    private var disposable: Disposable? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FeedsettingsBinding.inflate(inflater)
 
         val feedId = requireArguments().getLong(EXTRA_FEED_ID)
-        Log.d(TAG, "fragment onCreateView")
+        Logd(TAG, "fragment onCreateView")
 
         val toolbar = binding.toolbar
         toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
@@ -69,16 +66,31 @@ class FeedSettingsFragment : Fragment() {
             .replace(R.id.settings_fragment_container, FeedSettingsPreferenceFragment.newInstance(feedId), "settings_fragment")
             .commitAllowingStateLoss()
 
-        disposable = Maybe.create(MaybeOnSubscribe { emitter: MaybeEmitter<Feed> ->
-            val feed = DBReader.getFeed(feedId)
-            if (feed != null) emitter.onSuccess(feed)
-            else emitter.onComplete()
-        } as MaybeOnSubscribe<Feed>)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ result: Feed -> toolbar.subtitle = result.title },
-                { error: Throwable? -> Log.d(TAG, Log.getStackTraceString(error)) },
-                {})
+//        disposable = Maybe.create(MaybeOnSubscribe { emitter: MaybeEmitter<Feed> ->
+//            val feed = DBReader.getFeed(feedId)
+//            if (feed != null) emitter.onSuccess(feed)
+//            else emitter.onComplete()
+//        } as MaybeOnSubscribe<Feed>)
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe({ result: Feed -> toolbar.subtitle = result.title },
+//                { error: Throwable? -> Logd(TAG, Log.getStackTraceString(error)) },
+//                {})
+
+        scope.launch {
+            val feed = withContext(Dispatchers.IO) {
+                DBReader.getFeed(feedId)
+            }
+            if (feed!= null) {
+                withContext(Dispatchers.Main) {
+                    toolbar.subtitle = feed.title
+                }
+            }
+        }.invokeOnCompletion { throwable ->
+            if (throwable!= null) {
+                Logd(TAG, Log.getStackTraceString(throwable))
+            }
+        }
 
         return binding.root
     }
@@ -86,12 +98,14 @@ class FeedSettingsFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        disposable?.dispose()
+        scope.cancel()
+//        disposable?.dispose()
     }
 
     class FeedSettingsPreferenceFragment : PreferenceFragmentCompat() {
         private var feed: Feed? = null
-        private var disposable: Disposable? = null
+        val scope = CoroutineScope(Dispatchers.Main)
+//        private var disposable: Disposable? = null
         private var feedPreferences: FeedPreferences? = null
 
         var notificationPermissionDenied: Boolean = false
@@ -123,46 +137,83 @@ class FeedSettingsFragment : Fragment() {
             findPreference<Preference>(PREF_SCREEN)!!.isVisible = false
 
             val feedId = requireArguments().getLong(EXTRA_FEED_ID)
-            disposable = Maybe.create { emitter: MaybeEmitter<Feed?> ->
-                val feed = DBReader.getFeed(feedId)
-                if (feed != null) emitter.onSuccess(feed)
-                else emitter.onComplete()
-            }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ result: Feed? ->
-                    feed = result
-                    feedPreferences = feed!!.preferences
+//            disposable = Maybe.create { emitter: MaybeEmitter<Feed?> ->
+//                val feed = DBReader.getFeed(feedId)
+//                if (feed != null) emitter.onSuccess(feed)
+//                else emitter.onComplete()
+//            }
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe({ result: Feed? ->
+//                    feed = result
+//                    feedPreferences = feed!!.preferences
+//
+//                    setupAutoDownloadGlobalPreference()
+//                    setupAutoDownloadPreference()
+//                    setupKeepUpdatedPreference()
+//                    setupAutoDeletePreference()
+//                    setupVolumeAdaptationPreferences()
+////                    setupNewEpisodesAction()
+//                    setupAuthentificationPreference()
+//                    setupEpisodeFilterPreference()
+//                    setupPlaybackSpeedPreference()
+//                    setupFeedAutoSkipPreference()
+////                    setupEpisodeNotificationPreference()
+//                    setupTags()
+//
+//                    updateAutoDeleteSummary()
+//                    updateVolumeAdaptationValue()
+//                    updateAutoDownloadEnabled()
+////                    updateNewEpisodesAction()
+//
+//                    if (feed!!.isLocalFeed) {
+//                        findPreference<Preference>(PREF_AUTHENTICATION)!!.isVisible = false
+//                        findPreference<Preference>(PREF_CATEGORY_AUTO_DOWNLOAD)!!.isVisible = false
+//                    }
+//                    findPreference<Preference>(PREF_SCREEN)!!.isVisible = true
+//                }, { error: Throwable? -> Logd(TAG, Log.getStackTraceString(error)) }, {})
 
-                    setupAutoDownloadGlobalPreference()
-                    setupAutoDownloadPreference()
-                    setupKeepUpdatedPreference()
-                    setupAutoDeletePreference()
-                    setupVolumeAdaptationPreferences()
-//                    setupNewEpisodesAction()
-                    setupAuthentificationPreference()
-                    setupEpisodeFilterPreference()
-                    setupPlaybackSpeedPreference()
-                    setupFeedAutoSkipPreference()
-//                    setupEpisodeNotificationPreference()
-                    setupTags()
+            scope.launch {
+                feed = withContext(Dispatchers.IO) {
+                    DBReader.getFeed(feedId)
+                }
+                if (feed!= null) {
+                    withContext(Dispatchers.Main) {
+                        feedPreferences = feed!!.preferences
 
-                    updateAutoDeleteSummary()
-                    updateVolumeAdaptationValue()
-                    updateAutoDownloadEnabled()
-//                    updateNewEpisodesAction()
+                        setupAutoDownloadGlobalPreference()
+                        setupAutoDownloadPreference()
+                        setupKeepUpdatedPreference()
+                        setupAutoDeletePreference()
+                        setupVolumeAdaptationPreferences()
+                        setupAuthentificationPreference()
+                        setupEpisodeFilterPreference()
+                        setupPlaybackSpeedPreference()
+                        setupFeedAutoSkipPreference()
+                        setupTags()
 
-                    if (feed!!.isLocalFeed) {
-                        findPreference<Preference>(PREF_AUTHENTICATION)!!.isVisible = false
-                        findPreference<Preference>(PREF_CATEGORY_AUTO_DOWNLOAD)!!.isVisible = false
+                        updateAutoDeleteSummary()
+                        updateVolumeAdaptationValue()
+                        updateAutoDownloadEnabled()
+
+                        if (feed!!.isLocalFeed) {
+                            findPreference<Preference>(PREF_AUTHENTICATION)!!.isVisible = false
+                            findPreference<Preference>(PREF_CATEGORY_AUTO_DOWNLOAD)!!.isVisible = false
+                        }
+                        findPreference<Preference>(PREF_SCREEN)!!.isVisible = true
                     }
-                    findPreference<Preference>(PREF_SCREEN)!!.isVisible = true
-                }, { error: Throwable? -> Log.d(TAG, Log.getStackTraceString(error)) }, {})
+                }
+            }.invokeOnCompletion { throwable ->
+                if (throwable!= null) {
+                    Logd(TAG, Log.getStackTraceString(throwable))
+                }
+            }
         }
 
         override fun onDestroy() {
             super.onDestroy()
-            disposable?.dispose()
+            scope.cancel()
+//            disposable?.dispose()
         }
 
         private fun setupFeedAutoSkipPreference() {

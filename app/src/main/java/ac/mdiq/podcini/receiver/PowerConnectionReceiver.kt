@@ -9,6 +9,7 @@ import ac.mdiq.podcini.util.config.ClientConfigurator
 import ac.mdiq.podcini.storage.DBTasks
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownloadOnBattery
+import ac.mdiq.podcini.util.Logd
 
 // modified from http://developer.android.com/training/monitoring-device-state/battery-monitoring.html
 // and ConnectivityActionReceiver.java
@@ -19,11 +20,11 @@ class PowerConnectionReceiver : BroadcastReceiver() {
     @UnstableApi override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action
 
-        Log.d(TAG, "charging intent: $action")
+        Logd(TAG, "charging intent: $action")
 
         ClientConfigurator.initialize(context)
         if (Intent.ACTION_POWER_CONNECTED == action) {
-            Log.d(TAG, "charging, starting auto-download")
+            Logd(TAG, "charging, starting auto-download")
             // we're plugged in, this is a great time to auto-download if everything else is
             // right. So, even if the user allows auto-dl on battery, let's still start
             // downloading now. They shouldn't mind.
@@ -33,9 +34,9 @@ class PowerConnectionReceiver : BroadcastReceiver() {
         } else {
             // if we're not supposed to be auto-downloading when we're not charging, stop it
             if (!isEnableAutodownloadOnBattery) {
-                Log.d(TAG, "not charging anymore, canceling auto-download")
+                Logd(TAG, "not charging anymore, canceling auto-download")
                 DownloadServiceInterface.get()?.cancelAll(context)
-            } else Log.d(TAG, "not charging anymore, but the user allows auto-download when on battery so we'll keep going")
+            } else Logd(TAG, "not charging anymore, but the user allows auto-download when on battery so we'll keep going")
         }
     }
 

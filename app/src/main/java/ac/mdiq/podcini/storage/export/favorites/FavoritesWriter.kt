@@ -8,6 +8,7 @@ import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
 import ac.mdiq.podcini.storage.model.feed.SortOrder
+import ac.mdiq.podcini.util.Logd
 import org.apache.commons.io.IOUtils
 import java.io.IOException
 import java.io.Writer
@@ -17,7 +18,7 @@ import java.util.*
 class FavoritesWriter : ExportWriter {
     @Throws(IllegalArgumentException::class, IllegalStateException::class, IOException::class)
     override fun writeDocument(feeds: List<Feed?>?, writer: Writer?, context: Context) {
-        Log.d(TAG, "Starting to write document")
+        Logd(TAG, "Starting to write document")
 
         val templateStream = context!!.assets.open("html-export-template.html")
         var template = IOUtils.toString(templateStream, UTF_8)
@@ -50,7 +51,7 @@ class FavoritesWriter : ExportWriter {
 
         writer.append(templateParts[1])
 
-        Log.d(TAG, "Finished writing document")
+        Logd(TAG, "Finished writing document")
     }
 
     /**

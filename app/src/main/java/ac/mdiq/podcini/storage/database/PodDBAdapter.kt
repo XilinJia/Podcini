@@ -14,6 +14,7 @@ import ac.mdiq.podcini.storage.model.feed.*
 import ac.mdiq.podcini.storage.model.feed.SortOrder.Companion.toCodeString
 import ac.mdiq.podcini.storage.database.mapper.FeedItemFilterQuery.generateFrom
 import ac.mdiq.podcini.storage.database.mapper.FeedItemSortQuery.generateFrom
+import ac.mdiq.podcini.util.Logd
 import org.apache.commons.io.FileUtils
 import java.io.File
 import java.io.IOException
@@ -77,20 +78,17 @@ class PodDBAdapter private constructor() {
 
         values.put(KEY_IS_PAGED, feed.isPaged)
         values.put(KEY_NEXT_PAGE_LINK, feed.nextPageLink)
-        if (!feed.itemFilter?.values.isNullOrEmpty()) {
-            values.put(KEY_HIDE, TextUtils.join(",", feed.itemFilter!!.values))
-        } else {
-            values.put(KEY_HIDE, "")
-        }
-        values.put(KEY_SORT_ORDER, toCodeString(
-            feed.sortOrder))
+        if (!feed.itemFilter?.values.isNullOrEmpty()) values.put(KEY_HIDE, TextUtils.join(",", feed.itemFilter!!.values))
+        else values.put(KEY_HIDE, "")
+
+        values.put(KEY_SORT_ORDER, toCodeString(feed.sortOrder))
         values.put(KEY_LAST_UPDATE_FAILED, feed.hasLastUpdateFailed())
         if (feed.id == 0L) {
             // Create new entry
-            Log.d(this.toString(), "Inserting new Feed into db")
+            Logd(this.toString(), "Inserting new Feed into db")
             feed.id = db.insert(TABLE_NAME_FEEDS, null, values)
         } else {
-            Log.d(this.toString(), "Updating existing Feed in db")
+            Logd(this.toString(), "Updating existing Feed in db")
             db.update(TABLE_NAME_FEEDS, values, "$KEY_ID=?", arrayOf(feed.id.toString()))
         }
         return feed.id
@@ -120,7 +118,7 @@ class PodDBAdapter private constructor() {
 
     fun setFeedItemFilter(feedId: Long, filterValues: Set<String?>?) {
         val valuesList = TextUtils.join(",", filterValues!!)
-        Log.d(TAG, String.format(Locale.US, "setFeedItemFilter() called with: feedId = [%d], filterValues = [%s]", feedId, valuesList))
+        Logd(TAG, String.format(Locale.US, "setFeedItemFilter() called with: feedId = [%d], filterValues = [%s]", feedId, valuesList))
         val values = ContentValues()
         values.put(KEY_HIDE, valuesList)
         db.update(TABLE_NAME_FEEDS, values, "$KEY_ID=?", arrayOf(feedId.toString()))
@@ -419,7 +417,7 @@ class PodDBAdapter private constructor() {
     fun addFavoriteItem(item: FeedItem) {
         // don't add an item that's already there...
         if (isItemInFavorites(item)) {
-            Log.d(TAG, "item already in favorites")
+            Logd(TAG, "item already in favorites")
             return
         }
         val values = ContentValues()
@@ -570,7 +568,7 @@ class PodDBAdapter private constructor() {
      * @param feed The feed you want to get the FeedItems from.
      * @return The cursor of the query
      */
-    fun getItemsOfFeedCursor(feed: Feed, filter: FeedItemFilter?): Cursor {
+    fun getItemsOfFeedCursor(feed: Feed, filter: FeedItemFilter): Cursor {
         val filterQuery = generateFrom(filter!!)
         val whereClauseAnd = if ("" == filterQuery) "" else " AND $filterQuery"
         val query = ("$SELECT_FEED_ITEMS_AND_MEDIA WHERE $TABLE_NAME_FEED_ITEMS.$KEY_FEED=${feed.id}$whereClauseAnd")
@@ -649,7 +647,7 @@ class PodDBAdapter private constructor() {
         db.execSQL(sql)
     }
 
-    fun getEpisodesCursor(offset: Int, limit: Int, filter: FeedItemFilter?, sortOrder: SortOrder?): Cursor {
+    fun getEpisodesCursor(offset: Int, limit: Int, filter: FeedItemFilter, sortOrder: SortOrder?): Cursor {
         val orderByQuery = generateFrom(sortOrder)
         val filterQuery = generateFrom(filter!!)
         val whereClause = if ("" == filterQuery) "" else " WHERE $filterQuery"
@@ -657,7 +655,7 @@ class PodDBAdapter private constructor() {
         return db.rawQuery(query, null)
     }
 
-    fun getEpisodeCountCursor(filter: FeedItemFilter?): Cursor {
+    fun getEpisodeCountCursor(filter: FeedItemFilter): Cursor {
         val filterQuery = generateFrom(filter!!)
         val whereClause = if ("" == filterQuery) "" else " WHERE $filterQuery"
         val query = ("SELECT count($TABLE_NAME_FEED_ITEMS.$KEY_ID) FROM $TABLE_NAME_FEED_ITEMS$JOIN_FEED_ITEM_AND_MEDIA$whereClause")
@@ -787,9 +785,9 @@ class PodDBAdapter private constructor() {
             return result
         }
 
-    fun getFeedCounters(setting: FeedCounter?, vararg feedIds: Long): Map<Long, Int> {
+    fun getFeedEpisodesCounters(setting: FeedCounter?, vararg feedIds: Long): Map<Long, Int> {
         val whereRead = when (setting) {
-//            FeedCounter.SHOW_NEW -> KEY_READ + "=" + FeedItem.NEW
+            FeedCounter.SHOW_NEW -> KEY_READ + "=" + FeedItem.NEW
             FeedCounter.SHOW_UNPLAYED -> ("(" + KEY_READ + "=" + FeedItem.NEW + " OR " + KEY_READ + "=" + FeedItem.UNPLAYED + ")")
             FeedCounter.SHOW_DOWNLOADED -> "$KEY_DOWNLOADED=1"
             FeedCounter.SHOW_DOWNLOADED_UNPLAYED -> ("(" + KEY_READ + "=" + FeedItem.NEW
@@ -798,10 +796,10 @@ class PodDBAdapter private constructor() {
             FeedCounter.SHOW_NONE -> return HashMap()
             else -> return HashMap()
         }
-        return conditionalFeedCounterRead(whereRead, *feedIds)
+        return conditionalFeedEpisodesCounterRead(whereRead, *feedIds)
     }
 
-    private fun conditionalFeedCounterRead(whereRead: String, vararg feedIds: Long): Map<Long, Int> {
+    private fun conditionalFeedEpisodesCounterRead(whereRead: String, vararg feedIds: Long): Map<Long, Int> {
         var limitFeeds = ""
         if (feedIds.isNotEmpty()) {
             // work around TextUtils.join wanting only boxed items
@@ -833,7 +831,7 @@ class PodDBAdapter private constructor() {
 
     fun getPlayedEpisodesCounters(vararg feedIds: Long): Map<Long, Int> {
         val whereRead = KEY_READ + "=" + FeedItem.PLAYED
-        return conditionalFeedCounterRead(whereRead, *feedIds)
+        return conditionalFeedEpisodesCounterRead(whereRead, *feedIds)
     }
 
     val mostRecentItemDates: Map<Long, Long>
@@ -968,9 +966,9 @@ class PodDBAdapter private constructor() {
             val backupFile = File(backupFolder, "CorruptedDatabaseBackup.db")
             try {
                 FileUtils.copyFile(dbPath, backupFile)
-                Log.d(TAG, "Dumped database to " + backupFile.path)
+                Logd(TAG, "Dumped database to " + backupFile.path)
             } catch (e: IOException) {
-                Log.d(TAG, Log.getStackTraceString(e))
+                Logd(TAG, Log.getStackTraceString(e))
             }
 
             DefaultDatabaseErrorHandler().onCorruption(db) // This deletes the database

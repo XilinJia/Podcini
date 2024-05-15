@@ -186,7 +186,7 @@ object FeedItemMenuHandler {
                 shareDialog.show((fragment.requireActivity().supportFragmentManager), "ShareEpisodeDialog")
             }
             else -> {
-                Log.d(TAG, "Unknown menuItemId: $menuItemId")
+                Logd(TAG, "Unknown menuItemId: $menuItemId")
                 return false
             }
         }
@@ -204,7 +204,7 @@ object FeedItemMenuHandler {
     fun markReadWithUndo(fragment: Fragment, item: FeedItem?, playState: Int, showSnackbar: Boolean) {
         if (item == null) return
 
-        Log.d(TAG, "markReadWithUndo(" + item.id + ")")
+        Logd(TAG, "markReadWithUndo(" + item.id + ")")
         // we're marking it as unplayed since the user didn't actually play it
         // but they don't want it considered 'NEW' anymore
         DBWriter.markItemPlayed(playState, item.id)

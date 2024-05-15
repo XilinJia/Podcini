@@ -9,6 +9,7 @@ import ac.mdiq.podcini.net.discovery.PodcastSearchResult
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.OnlineFeedsAdapter
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.DiscoveryDefaultUpdateEvent
 import android.content.Context
 import android.content.DialogInterface
@@ -29,10 +30,7 @@ import androidx.media3.common.util.UnstableApi
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import java.util.*
 
@@ -61,7 +59,9 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
      */
     private var searchResults: List<PodcastSearchResult>? = null
     private var topList: List<PodcastSearchResult>? = null
-    private var disposable: Disposable? = null
+
+    val scope = CoroutineScope(Dispatchers.Main)
+//    private var disposable: Disposable? = null
     private var countryCode: String? = "US"
     private var hidden = false
     private var needsConfirm = false
@@ -101,7 +101,7 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         _binding = FragmentItunesSearchBinding.inflate(inflater)
 //        val root = inflater.inflate(R.layout.fragment_itunes_search, container, false)
 
-        Log.d(TAG, "fragment onCreateView")
+        Logd(TAG, "fragment onCreateView")
         gridView = binding.gridView
         adapter = OnlineFeedsAdapter(requireActivity(), ArrayList())
         gridView.setAdapter(adapter)
@@ -135,13 +135,14 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
-        disposable?.dispose()
+        scope.cancel()
+//        disposable?.dispose()
 
         adapter = null
     }
 
     private fun loadToplist(country: String?) {
-        disposable?.dispose()
+//        disposable?.dispose()
 
         gridView.visibility = View.GONE
         txtvError.visibility = View.GONE
@@ -175,23 +176,44 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
 
         val loader = ItunesTopListLoader(requireContext())
-        disposable = Observable.fromCallable { loader.loadToplist(country?:"",
-            NUM_OF_TOP_PODCASTS, DBReader.getFeedList()) }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { podcasts: List<PodcastSearchResult>? ->
+//        disposable = Observable.fromCallable { loader.loadToplist(country?:"",
+//            NUM_OF_TOP_PODCASTS, DBReader.getFeedList()) }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe(
+//                { podcasts: List<PodcastSearchResult>? ->
+//                    progressBar.visibility = View.GONE
+//                    topList = podcasts
+//                    updateData(topList)
+//                }, { error: Throwable ->
+//                    Log.e(TAG, Log.getStackTraceString(error))
+//                    progressBar.visibility = View.GONE
+//                    txtvError.text = error.message
+//                    txtvError.visibility = View.VISIBLE
+//                    butRetry.setOnClickListener { loadToplist(country) }
+//                    butRetry.visibility = View.VISIBLE
+//                })
+
+        scope.launch {
+            try {
+                val podcasts = withContext(Dispatchers.IO) {
+                    loader.loadToplist(country?:"", NUM_OF_TOP_PODCASTS, DBReader.getFeedList())
+                }
+                withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
                     topList = podcasts
                     updateData(topList)
-                }, { error: Throwable ->
-                    Log.e(TAG, Log.getStackTraceString(error))
-                    progressBar.visibility = View.GONE
-                    txtvError.text = error.message
-                    txtvError.visibility = View.VISIBLE
-                    butRetry.setOnClickListener { loadToplist(country) }
-                    butRetry.visibility = View.VISIBLE
-                })
+                }
+            } catch (e: Throwable) {
+                Log.e(TAG, Log.getStackTraceString(e))
+                progressBar.visibility = View.GONE
+                txtvError.text = e.message
+                txtvError.visibility = View.VISIBLE
+                butRetry.setOnClickListener { loadToplist(country) }
+                butRetry.visibility = View.VISIBLE
+            }
+        }
+
     }
 
     override fun onMenuItemClick(item: MenuItem): Boolean {

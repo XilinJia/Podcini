@@ -8,6 +8,7 @@ import ac.mdiq.podcini.storage.model.download.DownloadResult
 import ac.mdiq.podcini.ui.adapter.DownloadLogAdapter
 import ac.mdiq.podcini.ui.dialog.DownloadLogDetailsDialog
 import ac.mdiq.podcini.ui.view.EmptyViewHandler
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.DownloadLogEvent
 import android.os.Bundle
 import android.util.Log
@@ -17,10 +18,7 @@ import android.widget.AdapterView.OnItemClickListener
 import androidx.appcompat.widget.Toolbar
 import androidx.media3.common.util.UnstableApi
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 
@@ -34,15 +32,17 @@ class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, To
     private lateinit var adapter: DownloadLogAdapter
 
     private var downloadLog: List<DownloadResult> = ArrayList()
-    private var disposable: Disposable? = null
+//    private var disposable: Disposable? = null
+    val scope = CoroutineScope(Dispatchers.Main)
 
     override fun onStop() {
         super.onStop()
-        disposable?.dispose()
+        scope.cancel()
+//        disposable?.dispose()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        Log.d(TAG, "fragment onCreateView")
+        Logd(TAG, "fragment onCreateView")
         _binding = DownloadLogFragmentBinding.inflate(inflater)
         binding.toolbar.inflateMenu(R.menu.download_log)
         binding.toolbar.setOnMenuItemClickListener(this)
@@ -95,17 +95,31 @@ class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, To
     }
 
     private fun loadDownloadLog() {
-        disposable?.dispose()
+//        disposable?.dispose()
 
-        disposable = Observable.fromCallable { DBReader.getDownloadLog() }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ result: List<DownloadResult>? ->
-                if (result != null) {
+//        disposable = Observable.fromCallable { DBReader.getDownloadLog() }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe({ result: List<DownloadResult>? ->
+//                if (result != null) {
+//                    downloadLog = result
+//                    adapter.setDownloadLog(downloadLog)
+//                }
+//            }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
+
+        scope.launch {
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    DBReader.getDownloadLog()
+                }
+                withContext(Dispatchers.Main) {
                     downloadLog = result
                     adapter.setDownloadLog(downloadLog)
                 }
-            }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
+            } catch (e: Throwable) {
+                Log.e(TAG, Log.getStackTraceString(e))
+            }
+        }
     }
 
     companion object {

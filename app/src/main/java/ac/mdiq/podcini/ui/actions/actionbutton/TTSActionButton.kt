@@ -11,6 +11,7 @@ import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.ui.fragment.FeedItemlistFragment.Companion.tts
 import ac.mdiq.podcini.ui.fragment.FeedItemlistFragment.Companion.ttsReady
 import ac.mdiq.podcini.ui.fragment.FeedItemlistFragment.Companion.ttsWorking
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.NetworkUtils.fetchHtmlSource
 import ac.mdiq.podcini.util.event.FeedItemEvent.Companion.updated
 import android.content.Context
@@ -44,7 +45,7 @@ class TTSActionButton(item: FeedItem) : ItemActionButton(item) {
     }
 
     @OptIn(UnstableApi::class) override fun onClick(context: Context) {
-        Log.d("TTSActionButton", "onClick called")
+        Logd("TTSActionButton", "onClick called")
         if (item.link.isNullOrEmpty()) {
             Toast.makeText(context, R.string.episode_has_no_content, Toast.LENGTH_LONG).show()
             return
@@ -61,7 +62,7 @@ class TTSActionButton(item: FeedItem) : ItemActionButton(item) {
                     readerText = article.textContent
                     item.setTranscriptIfLonger(article.contentWithDocumentsCharsetOrUtf8)
                     persistFeedItem(item)
-                    Log.d(TAG, "readability4J: ${readerText?.substring(max(0, readerText!!.length-100), readerText!!.length)}")
+                    Logd(TAG, "readability4J: ${readerText?.substring(max(0, readerText!!.length-100), readerText!!.length)}")
                 }
             } else readerText = HtmlCompat.fromHtml(item.transcript!!, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
             processing = 0.1f
@@ -87,7 +88,7 @@ class TTSActionButton(item: FeedItem) : ItemActionButton(item) {
                     override fun onStart(utteranceId: String?) {}
                     override fun onDone(utteranceId: String?) {
                         j++
-                        Log.d(TAG, "onDone ${mediaFile.length()} $utteranceId")
+                        Logd(TAG, "onDone ${mediaFile.length()} $utteranceId")
                     }
                     @Deprecated("Deprecated in Java")
                     override fun onError(utteranceId: String) {
@@ -100,20 +101,20 @@ class TTSActionButton(item: FeedItem) : ItemActionButton(item) {
                     }
                 })
 
-                Log.d(TAG, "readerText: ${readerText?.length}")
+                Logd(TAG, "readerText: ${readerText?.length}")
                 var startIndex = 0
                 var i = 0
                 val parts = mutableListOf<String>()
                 val chunkLength = getMaxSpeechInputLength()
                 var status = TextToSpeech.ERROR
                 while (startIndex < readerText!!.length) {
-                    Log.d(TAG, "working on chunk $i $startIndex")
+                    Logd(TAG, "working on chunk $i $startIndex")
                     val endIndex = minOf(startIndex + chunkLength, readerText!!.length)
                     val chunk = readerText!!.substring(startIndex, endIndex)
                     val tempFile = File.createTempFile("tts_temp_${i}_", ".wav")
                     parts.add(tempFile.absolutePath)
                     status = tts?.synthesizeToFile(chunk, null, tempFile, tempFile.absolutePath) ?: 0
-                    Log.d(TAG, "status: $status chunk: ${chunk.substring(0, min(80, chunk.length))}")
+                    Logd(TAG, "status: $status chunk: ${chunk.substring(0, min(80, chunk.length))}")
                     if (status == TextToSpeech.ERROR) {
                         withContext(Dispatchers.Main) { Toast.makeText(context, "Error generating audio file $tempFile.absolutePath", Toast.LENGTH_LONG).show() }
                         break
@@ -138,7 +139,7 @@ class TTSActionButton(item: FeedItem) : ItemActionButton(item) {
 //                    }
 //                }
                     val mFilename = mediaFile.absolutePath
-                    Log.d(TAG, "saving TTS to file $mFilename")
+                    Logd(TAG, "saving TTS to file $mFilename")
                     val media = FeedMedia(item, null, 0, "audio/*")
                     media.setFile_url(mFilename)
                     media.setDownloaded(true)

@@ -54,12 +54,12 @@ import androidx.media3.common.util.UnstableApi
 import coil.load
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import io.reactivex.Maybe
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import io.reactivex.observers.DisposableMaybeObserver
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -97,6 +97,8 @@ class OnlineFeedViewFragment : Fragment() {
     private var isFeedFoundBySearch = false
 
     private var dialog: Dialog? = null
+
+    val scope = CoroutineScope(Dispatchers.Main)
 
     private var download: Disposable? = null
     private var parser: Disposable? = null
@@ -197,6 +199,18 @@ class OnlineFeedViewFragment : Fragment() {
                         Log.e(TAG, Log.getStackTraceString(error))
                     }
                 })
+//        scope.launch(Dispatchers.IO) {
+//            try {
+//                startFeedDownload(url)
+//            } catch (e: FeedUrlNotFoundException) {
+//                tryToRetrieveFeedUrlBySearch(e)
+//            } catch (e: Throwable) {
+//                withContext(Dispatchers.Main) {
+//                    showNoPodcastFoundError()
+//                    Log.e(TAG, Log.getStackTraceString(e))
+//                }
+//            }
+//        }
     }
 
     private fun tryToRetrieveFeedUrlBySearch(error: FeedUrlNotFoundException) {
@@ -269,16 +283,32 @@ class OnlineFeedViewFragment : Fragment() {
             .withInitiatedByUser(true)
             .build()
 
-        download = Observable.fromCallable {
-            feeds = DBReader.getFeedList()
-            downloader = HttpDownloader(request)
-            downloader?.call()
-            downloader?.result
+//        download = Observable.fromCallable {
+//            feeds = DBReader.getFeedList()
+//            downloader = HttpDownloader(request)
+//            downloader?.call()
+//            downloader?.result
+//        }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe({ status: DownloadResult? -> if (request.destination != null) checkDownloadResult(status, request.destination) },
+//                { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
+
+        scope.launch {
+            try {
+                val status = withContext(Dispatchers.IO) {
+                    feeds = DBReader.getFeedList()
+                    downloader = HttpDownloader(request)
+                    downloader?.call()
+                    downloader?.result
+                }
+                withContext(Dispatchers.Main) {
+                    if (request.destination != null) checkDownloadResult(status, request.destination)
+                }
+            } catch (e: Throwable) {
+                Log.e(TAG, Log.getStackTraceString(e))
+            }
         }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ status: DownloadResult? -> if (request.destination != null) checkDownloadResult(status, request.destination) },
-                { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
     }
 
     private fun checkDownloadResult(status: DownloadResult?, destination: String) {
@@ -301,15 +331,30 @@ class OnlineFeedViewFragment : Fragment() {
 
     @UnstableApi @Subscribe
     fun onFeedListChanged(event: FeedListUpdateEvent?) {
-        updater = Observable.fromCallable { DBReader.getFeedList() }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { feeds: List<Feed>? ->
+//        updater = Observable.fromCallable { DBReader.getFeedList() }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe(
+//                { feeds: List<Feed>? ->
+//                    this@OnlineFeedViewFragment.feeds = feeds
+//                    handleUpdatedFeedStatus()
+//                }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) }
+//            )
+        scope.launch {
+            try {
+                val feeds = withContext(Dispatchers.IO) {
+                    DBReader.getFeedList()
+                }
+                withContext(Dispatchers.Main) {
                     this@OnlineFeedViewFragment.feeds = feeds
                     handleUpdatedFeedStatus()
-                }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) }
-            )
+                }
+            } catch (e: Throwable) {
+                Log.e(TAG, Log.getStackTraceString(e))
+            }
+        }
+
+
     }
 
     @UnstableApi @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
@@ -317,25 +362,40 @@ class OnlineFeedViewFragment : Fragment() {
         handleUpdatedFeedStatus()
     }
 
-    private fun parseFeed(destination: String) {
+    @OptIn(UnstableApi::class) private fun parseFeed(destination: String) {
         Logd(TAG, "Parsing feed")
-        parser = Maybe.fromCallable { doParseFeed(destination) }
-            .subscribeOn(Schedulers.computation())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeWith(object : DisposableMaybeObserver<FeedHandlerResult?>() {
-                @UnstableApi override fun onSuccess(result: FeedHandlerResult) {
-                    showFeedInformation(result.feed, result.alternateFeedUrls)
+//        parser = Maybe.fromCallable { doParseFeed(destination) }
+//            .subscribeOn(Schedulers.computation())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribeWith(object : DisposableMaybeObserver<FeedHandlerResult?>() {
+//                @UnstableApi override fun onSuccess(result: FeedHandlerResult) {
+//                    showFeedInformation(result.feed, result.alternateFeedUrls)
+//                }
+//
+//                override fun onComplete() {
+//                    // Ignore null result: We showed the discovery dialog.
+//                }
+//
+//                override fun onError(error: Throwable) {
+//                    showErrorDialog(error.message, "")
+//                    Logd(TAG, "Feed parser exception: " + Log.getStackTraceString(error))
+//                }
+//            })
+        scope.launch {
+            try {
+                val result = withContext(Dispatchers.Default) {
+                    doParseFeed(destination)
                 }
-
-                override fun onComplete() {
-                    // Ignore null result: We showed the discovery dialog.
+                withContext(Dispatchers.Main) {
+                    if (result != null) showFeedInformation(result.feed, result.alternateFeedUrls)
                 }
-
-                override fun onError(error: Throwable) {
-                    showErrorDialog(error.message, "")
-                    Logd(TAG, "Feed parser exception: " + Log.getStackTraceString(error))
+            } catch (e: Throwable) {
+                withContext(Dispatchers.Main) {
+                    showErrorDialog(e.message, "")
+                    Logd(TAG, "Feed parser exception: " + Log.getStackTraceString(e))
                 }
-            })
+            }
+        }
     }
 
     /**

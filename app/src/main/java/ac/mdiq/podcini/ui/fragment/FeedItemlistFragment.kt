@@ -47,19 +47,12 @@ import com.google.android.material.snackbar.Snackbar
 import com.joanzapata.iconify.Iconify
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
-import io.reactivex.Maybe
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.apache.commons.lang3.StringUtils
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import java.util.concurrent.Callable
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Semaphore
 
@@ -84,9 +77,10 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
     private var headerCreated = false
     private var feedID: Long = 0
     private var feed: Feed? = null
-    private var disposable: Disposable? = null
+//    private var disposable: Disposable? = null
 
     private val ioScope = CoroutineScope(Dispatchers.IO)
+    private val scope = CoroutineScope(Dispatchers.Main)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -217,7 +211,9 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         _binding = null
         _speedDialBinding = null
         EventBus.getDefault().unregister(this)
-        disposable?.dispose()
+//        disposable?.dispose()
+        ioScope.cancel()
+        scope.cancel()
         adapter.endSelectMode()
 
         tts?.stop()
@@ -483,20 +479,33 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
     }
 
     private fun showErrorDetails() {
-        Maybe.fromCallable<DownloadResult>(
-            Callable {
+//        Maybe.fromCallable<DownloadResult>(
+//            Callable {
+//                val feedDownloadLog: List<DownloadResult> = DBReader.getFeedDownloadLog(feedID)
+//                if (feedDownloadLog.isEmpty() || feedDownloadLog[0].isSuccessful) return@Callable null
+//                feedDownloadLog[0]
+//            })
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe(
+//                { downloadStatus: DownloadResult ->
+//                    DownloadLogDetailsDialog(requireContext(), downloadStatus).show()
+//                },
+//                { error: Throwable -> error.printStackTrace() },
+//                { DownloadLogFragment().show(childFragmentManager, null) })
+
+        scope.launch {
+            val downloadResult = withContext(Dispatchers.IO) {
                 val feedDownloadLog: List<DownloadResult> = DBReader.getFeedDownloadLog(feedID)
-                if (feedDownloadLog.isEmpty() || feedDownloadLog[0].isSuccessful) return@Callable null
-                feedDownloadLog[0]
-            })
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { downloadStatus: DownloadResult ->
-                    DownloadLogDetailsDialog(requireContext(), downloadStatus).show()
-                },
-                { error: Throwable -> error.printStackTrace() },
-                { DownloadLogFragment().show(childFragmentManager, null) })
+                if (feedDownloadLog.isEmpty() || feedDownloadLog[0].isSuccessful) null else feedDownloadLog[0]
+            }
+            withContext(Dispatchers.Main) {
+                if (downloadResult != null) DownloadLogDetailsDialog(requireContext(), downloadResult).show()
+                else DownloadLogFragment().show(childFragmentManager, null)
+            }
+        }.invokeOnCompletion { throwable ->
+            throwable?.printStackTrace()
+        }
     }
 
     @UnstableApi private fun showFeedInfo() {
@@ -508,19 +517,6 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 
     private fun loadFeedImage() {
         if (!feed?.imageUrl.isNullOrBlank()) {
-//            binding.imgvBackground.load(feed!!.imageUrl) {
-//                placeholder(R.color.image_readability_tint)
-//                error(R.color.image_readability_tint)
-//            }
-//            Glide.with(this)
-//                .load(feed!!.imageUrl)
-//                .apply(RequestOptions()
-//                    .placeholder(R.color.image_readability_tint)
-//                    .error(R.color.image_readability_tint)
-//                    .transform(FastBlurTransformation())
-//                    .dontAnimate())
-//                .into(binding.imgvBackground)
-
             binding.header.imgvCover.load(feed!!.imageUrl) {
                 placeholder(R.color.light_gray)
                 error(R.mipmap.ic_launcher)
@@ -529,17 +525,54 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
     }
 
     @UnstableApi private fun loadItems() {
-        disposable?.dispose()
-        disposable = Observable.fromCallable<Feed?> { this.loadData() }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { result: Feed? ->
-                    feed = result
-                    Logd(TAG, "loadItems subscribe called ${feed?.title}")
-                    if (feed != null) {
+//        disposable?.dispose()
+//        disposable = Observable.fromCallable<Feed?> { this.loadData() }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe(
+//                { result: Feed? ->
+//                    feed = result
+//                    Logd(TAG, "loadItems subscribe called ${feed?.title}")
+//                    if (feed != null) {
+//                        var hasNonMediaItems = false
+//                        for (item in feed!!.items) {
+//                            if (item.media == null) {
+//                                hasNonMediaItems = true
+//                                break
+//                            }
+//                        }
+//                        if (hasNonMediaItems) {
+//                            ioScope.launch {
+//                                if (!ttsReady) {
+//                                    initializeTTS(requireContext())
+//                                    semaphore.acquire()
+//                                }
+//                            }
+//                        }
+//                    }
+//                    swipeActions.setFilter(feed?.itemFilter)
+//                    refreshHeaderView()
+//                    binding.progressBar.visibility = View.GONE
+//                    adapter.setDummyViews(0)
+//                    if (feed != null) adapter.updateItems(feed!!.items)
+//                    binding.header.counts.text = (feed?.items?.size?:0).toString()
+//                    updateToolbar()
+//                }, { error: Throwable? ->
+//                    feed = null
+//                    refreshHeaderView()
+//                    adapter.setDummyViews(0)
+//                    adapter.updateItems(emptyList())
+//                    updateToolbar()
+//                    Log.e(TAG, Log.getStackTraceString(error))
+//                })
+
+        scope.launch {
+            try {
+                feed = withContext(Dispatchers.IO) {
+                    val feed_ = loadData()
+                    if (feed_ != null) {
                         var hasNonMediaItems = false
-                        for (item in feed!!.items) {
+                        for (item in feed_!!.items) {
                             if (item.media == null) {
                                 hasNonMediaItems = true
                                 break
@@ -554,6 +587,10 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
                             }
                         }
                     }
+                    feed_
+                }
+                withContext(Dispatchers.Main) {
+                    Logd(TAG, "loadItems subscribe called ${feed?.title}")
                     swipeActions.setFilter(feed?.itemFilter)
                     refreshHeaderView()
                     binding.progressBar.visibility = View.GONE
@@ -561,14 +598,16 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
                     if (feed != null) adapter.updateItems(feed!!.items)
                     binding.header.counts.text = (feed?.items?.size?:0).toString()
                     updateToolbar()
-                }, { error: Throwable? ->
-                    feed = null
-                    refreshHeaderView()
-                    adapter.setDummyViews(0)
-                    adapter.updateItems(emptyList())
-                    updateToolbar()
-                    Log.e(TAG, Log.getStackTraceString(error))
-                })
+                }
+            } catch (e: Throwable) {
+                feed = null
+                refreshHeaderView()
+                adapter.setDummyViews(0)
+                adapter.updateItems(emptyList())
+                updateToolbar()
+                Log.e(TAG, Log.getStackTraceString(e))
+            }
+        }
     }
 
     private fun loadData(): Feed? {

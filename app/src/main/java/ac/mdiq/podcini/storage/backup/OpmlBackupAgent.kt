@@ -13,6 +13,7 @@ import ac.mdiq.podcini.storage.DBReader.getFeedList
 import ac.mdiq.podcini.storage.DBTasks.updateFeed
 import ac.mdiq.podcini.net.download.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.storage.model.feed.Feed
+import ac.mdiq.podcini.util.Logd
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import org.apache.commons.io.IOUtils
@@ -40,7 +41,7 @@ class OpmlBackupAgent : BackupAgentHelper() {
         private var mChecksum: ByteArray = byteArrayOf()
 
         override fun performBackup(oldState: ParcelFileDescriptor, data: BackupDataOutput, newState: ParcelFileDescriptor) {
-            Log.d(TAG, "Performing backup")
+            Logd(TAG, "Performing backup")
             val byteStream = ByteArrayOutputStream()
             var digester: MessageDigest? = null
             var writer: Writer
@@ -59,7 +60,7 @@ class OpmlBackupAgent : BackupAgentHelper() {
                 // Compare checksum of new and old file to see if we need to perform a backup at all
                 if (digester != null) {
                     val newChecksum = digester.digest()
-                    Log.d(TAG, "New checksum: " + BigInteger(1, newChecksum).toString(16))
+                    Logd(TAG, "New checksum: " + BigInteger(1, newChecksum).toString(16))
 
                     // Get the old checksum
                     if (oldState != null) {
@@ -69,10 +70,10 @@ class OpmlBackupAgent : BackupAgentHelper() {
                         if (len != -1) {
                             val oldChecksum = ByteArray(len)
                             IOUtils.read(inState, oldChecksum, 0, len)
-                            Log.d(TAG, "Old checksum: " + BigInteger(1, oldChecksum).toString(16))
+                            Logd(TAG, "Old checksum: " + BigInteger(1, oldChecksum).toString(16))
 
                             if (oldChecksum.contentEquals(newChecksum)) {
-                                Log.d(TAG, "Checksums are the same; won't backup")
+                                Logd(TAG, "Checksums are the same; won't backup")
                                 return
                             }
                         }
@@ -81,7 +82,7 @@ class OpmlBackupAgent : BackupAgentHelper() {
                     writeNewStateDescription(newState, newChecksum)
                 }
 
-                Log.d(TAG, "Backing up OPML")
+                Logd(TAG, "Backing up OPML")
                 val bytes = byteStream.toByteArray()
                 data.writeEntityHeader(OPML_ENTITY_KEY, bytes.size)
                 data.writeEntityData(bytes, bytes.size)
@@ -93,10 +94,10 @@ class OpmlBackupAgent : BackupAgentHelper() {
         }
 
         @OptIn(UnstableApi::class) override fun restoreEntity(data: BackupDataInputStream) {
-            Log.d(TAG, "Backup restore")
+            Logd(TAG, "Backup restore")
 
             if (OPML_ENTITY_KEY != data.key) {
-                Log.d(TAG, "Unknown entity key: " + data.key)
+                Logd(TAG, "Unknown entity key: " + data.key)
                 return
             }
 

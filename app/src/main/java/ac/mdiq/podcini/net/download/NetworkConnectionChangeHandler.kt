@@ -7,6 +7,7 @@ import ac.mdiq.podcini.storage.DBTasks
 import ac.mdiq.podcini.util.NetworkUtils.isAutoDownloadAllowed
 import ac.mdiq.podcini.util.NetworkUtils.isNetworkRestricted
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.util.Logd
 
 @UnstableApi
 object NetworkConnectionChangeHandler {
@@ -21,7 +22,7 @@ object NetworkConnectionChangeHandler {
     @JvmStatic
     fun networkChangedDetected() {
         if (isAutoDownloadAllowed) {
-            Log.d(TAG, "auto-dl network available, starting auto-download")
+            Logd(TAG, "auto-dl network available, starting auto-download")
             DBTasks.autodownloadUndownloadedItems(context)
         } else { // if new network is Wi-Fi, finish ongoing downloads,
             // otherwise cancel all downloads

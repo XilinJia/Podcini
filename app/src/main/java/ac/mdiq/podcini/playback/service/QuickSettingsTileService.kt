@@ -12,6 +12,7 @@ import androidx.annotation.RequiresApi
 import androidx.media3.common.util.UnstableApi
 import ac.mdiq.podcini.preferences.PlaybackPreferences
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
+import ac.mdiq.podcini.util.Logd
 
 @UnstableApi
 @RequiresApi(api = Build.VERSION_CODES.N)
@@ -43,7 +44,7 @@ class QuickSettingsTileService : TileService() {
 
     fun updateTile() {
         val qsTile = qsTile
-        if (qsTile == null) Log.d(TAG, "Ignored call to update QS tile: getQsTile() returned null.")
+        if (qsTile == null) Logd(TAG, "Ignored call to update QS tile: getQsTile() returned null.")
         else {
             val isPlaying = (PlaybackService.isRunning && PlaybackPreferences.currentPlayerStatus == PlaybackPreferences.PLAYER_STATUS_PLAYING)
             qsTile.state = if (isPlaying) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE

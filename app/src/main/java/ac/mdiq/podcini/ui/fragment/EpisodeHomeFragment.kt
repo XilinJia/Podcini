@@ -5,6 +5,7 @@ import ac.mdiq.podcini.databinding.EpisodeHomeFragmentBinding
 import ac.mdiq.podcini.storage.DBWriter.persistFeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.NetworkUtils.fetchHtmlSource
 import android.content.Context
 import android.os.Bundle
@@ -57,7 +58,7 @@ class EpisodeHomeFragment : Fragment() {
         super.onCreateView(inflater, container, savedInstanceState)
 
         _binding = EpisodeHomeFragmentBinding.inflate(inflater, container, false)
-        Log.d(TAG, "fragment onCreateView")
+        Logd(TAG, "fragment onCreateView")
 
         toolbar = binding.toolbar
         toolbar.title = ""
@@ -74,7 +75,7 @@ class EpisodeHomeFragment : Fragment() {
             webViewClient = object : WebViewClient() {
                 override fun onPageFinished(view: WebView?, url: String?) {
                     val isEmpty = view?.title.isNullOrEmpty() && view?.contentDescription.isNullOrEmpty()
-                    if (isEmpty) Log.d(TAG, "content is empty")
+                    if (isEmpty) Logd(TAG, "content is empty")
                 }
             }
         }
@@ -127,7 +128,7 @@ class EpisodeHomeFragment : Fragment() {
     }
 
     private fun initializeTTS(context: Context) {
-        Log.d(TAG, "starting TTS")
+        Logd(TAG, "starting TTS")
         if (tts == null) {
             tts = TextToSpeech(context) { status: Int ->
                 if (status == TextToSpeech.SUCCESS) {
@@ -142,7 +143,7 @@ class EpisodeHomeFragment : Fragment() {
                     }
                     ttsReady = true
 //                    semaphore.release()
-                    Log.d(TAG, "TTS init success")
+                    Logd(TAG, "TTS init success")
                 } else {
                     Log.w(TAG, "TTS init failed")
                     requireActivity().runOnUiThread {Toast.makeText(context, R.string.tts_init_failed, Toast.LENGTH_LONG).show() }
@@ -154,7 +155,7 @@ class EpisodeHomeFragment : Fragment() {
     private fun showWebContent() {
         if (!currentItem?.link.isNullOrEmpty()) {
             binding.webView.settings.javaScriptEnabled = jsEnabled
-            Log.d(TAG, "currentItem!!.link ${currentItem!!.link}")
+            Logd(TAG, "currentItem!!.link ${currentItem!!.link}")
             binding.webView.loadUrl(currentItem!!.link!!)
             binding.readerView.visibility = View.GONE
             binding.webView.visibility = View.VISIBLE
@@ -169,7 +170,7 @@ class EpisodeHomeFragment : Fragment() {
     private val menuProvider = object: MenuProvider {
         override fun onPrepareMenu(menu: Menu) {
 //            super.onPrepareMenu(menu)
-            Log.d(TAG, "onPrepareMenu called")
+            Logd(TAG, "onPrepareMenu called")
             val textSpeech = menu.findItem(R.id.text_speech)
             textSpeech?.isVisible = readMode && tts != null
             if (textSpeech?.isVisible == true) {
@@ -187,18 +188,18 @@ class EpisodeHomeFragment : Fragment() {
         @OptIn(UnstableApi::class) override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
             when (menuItem.itemId) {
                 R.id.switch_home -> {
-                    Log.d(TAG, "switch_home selected")
+                    Logd(TAG, "switch_home selected")
                     switchMode()
                     return true
                 }
                 R.id.switchJS -> {
-                    Log.d(TAG, "switchJS selected")
+                    Logd(TAG, "switchJS selected")
                     jsEnabled = !jsEnabled
                     showWebContent()
                     return true
                 }
                 R.id.text_speech -> {
-                    Log.d(TAG, "text_speech selected: $readerText")
+                    Logd(TAG, "text_speech selected: $readerText")
                     if (tts != null) {
                         if (tts!!.isSpeaking) tts?.stop()
                         if (!ttsPlaying) {
@@ -255,7 +256,7 @@ class EpisodeHomeFragment : Fragment() {
 
     @OptIn(UnstableApi::class) override fun onDestroyView() {
         super.onDestroyView()
-        Log.d(TAG, "onDestroyView")
+        Logd(TAG, "onDestroyView")
         cleatWebview(binding.webView)
         cleatWebview(binding.readerView)
         _binding = null
@@ -267,7 +268,7 @@ class EpisodeHomeFragment : Fragment() {
 
     @UnstableApi private fun updateAppearance() {
         if (currentItem == null) {
-            Log.d(TAG, "updateAppearance currentItem is null")
+            Logd(TAG, "updateAppearance currentItem is null")
             return
         }
 //        onPrepareOptionsMenu(toolbar.menu)
@@ -284,7 +285,7 @@ class EpisodeHomeFragment : Fragment() {
         @JvmStatic
         fun newInstance(item: FeedItem): EpisodeHomeFragment {
             val fragment = EpisodeHomeFragment()
-            Log.d(TAG, "item.itemIdentifier ${item.itemIdentifier}")
+            Logd(TAG, "item.itemIdentifier ${item.itemIdentifier}")
             if (item.itemIdentifier != currentItem?.itemIdentifier) {
                 currentItem = item
             } else {

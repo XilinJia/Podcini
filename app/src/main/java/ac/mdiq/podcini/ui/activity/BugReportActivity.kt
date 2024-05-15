@@ -5,6 +5,7 @@ import ac.mdiq.podcini.databinding.BugReportBinding
 import ac.mdiq.podcini.preferences.ThemeSwitcher.getTheme
 import ac.mdiq.podcini.preferences.UserPreferences.getDataFolder
 import ac.mdiq.podcini.util.IntentUtils.openInBrowser
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.error.CrashReportWriter
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -43,7 +44,7 @@ class BugReportActivity : AppCompatActivity() {
         try {
             val crashFile = CrashReportWriter.file
             if (crashFile.exists()) stacktrace = IOUtils.toString(FileInputStream(crashFile), Charset.forName("UTF-8"))
-            else Log.d(TAG, stacktrace)
+            else Logd(TAG, stacktrace)
 
         } catch (e: IOException) {
             e.printStackTrace()

@@ -26,6 +26,14 @@ object PodcastSearcherRegistry {
         return Single.just(url)
     }
 
+//    fun lookupUrlCo(url: String): String {
+//        for (searchProviderInfo in searchProviders) {
+//            if (searchProviderInfo.searcher.javaClass != CombinedSearcher::class.java && searchProviderInfo.searcher.urlNeedsLookup(url))
+//                return searchProviderInfo.searcher.lookupUrlCo(url)
+//        }
+//        return url
+//    }
+
     fun urlNeedsLookup(url: String): Boolean {
         for (searchProviderInfo in searchProviders) {
             if (searchProviderInfo.searcher.javaClass != CombinedSearcher::class.java && searchProviderInfo.searcher.urlNeedsLookup(url)) return true

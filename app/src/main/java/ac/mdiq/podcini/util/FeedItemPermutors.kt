@@ -97,7 +97,7 @@ object FeedItemPermutors {
     }
 
     private fun feedTitle(item: FeedItem?): String {
-        Log.d("permutors", "feedTitle ${item?.feed?.title}")
+        Logd("permutors", "feedTitle ${item?.feed?.title}")
         return if (item?.feed?.title != null) item.feed!!.title!!.lowercase(Locale.getDefault()) else ""
     }
 

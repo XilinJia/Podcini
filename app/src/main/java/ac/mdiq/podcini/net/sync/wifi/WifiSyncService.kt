@@ -15,6 +15,7 @@ import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
 import ac.mdiq.podcini.storage.model.feed.SortOrder
 import ac.mdiq.podcini.util.FeedItemUtil.hasAlmostEnded
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.SyncServiceEvent
 import android.content.Context
 import android.util.Log
@@ -38,7 +39,7 @@ import kotlin.math.min
     var loginFail = false
 
     override fun doWork(): Result {
-        Log.d(TAG, "doWork() called")
+        Logd(TAG, "doWork() called")
 
         SynchronizationSettings.updateLastSynchronizationAttempt()
         setCurrentlyActive(true)
@@ -107,7 +108,7 @@ import kotlin.math.min
     private var socket: Socket? = null
 
     @OptIn(UnstableApi::class) override fun login() {
-        Log.d(TAG, "serverIp: $hostIp serverPort: $hostPort $isGuest")
+        Logd(TAG, "serverIp: $hostIp serverPort: $hostPort $isGuest")
         EventBus.getDefault().post(SyncServiceEvent(R.string.sync_status_in_progress, "2"))
         if (!isPortInUse(hostPort)) {
             if (isGuest) {
@@ -134,7 +135,7 @@ import kotlin.math.min
                     try {
                         socket = serverSocket!!.accept()
                         while (true) {
-                            Log.d(TAG, "waiting for guest message")
+                            Logd(TAG, "waiting for guest message")
                             try {
                                 receiveFromPeer()
                                 sendToPeer("Hello", "Hello, Client")
@@ -191,30 +192,24 @@ import kotlin.math.min
                 val messageData = parts[1]
                 // Process the message based on the type
                 when (messageType) {
-                    "Hello" -> Log.d(TAG, "Received Hello message: $messageData")
+                    "Hello" -> Logd(TAG, "Received Hello message: $messageData")
                     "EpisodeActions" -> {
                         val remoteActions = mutableListOf<EpisodeAction>()
                         val jsonArray = JSONArray(messageData)
                         for (i in 0 until jsonArray.length()) {
                             val jsonAction = jsonArray.getJSONObject(i)
 
-//                            TODO: this conversion shouldn't be needed, check about the uploader
-//                            val timeStr = jsonAction.getString("timestamp")
-//                            val format = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
-//                            val date = format.parse(timeStr)
-//                            jsonAction.put("timestamp", date?.time?:0L)
-
-                            Log.d(TAG, "Received EpisodeActions message: $i $jsonAction")
+                            Logd(TAG, "Received EpisodeActions message: $i $jsonAction")
                             val action = readFromJsonObject(jsonAction)
                             if (action != null) remoteActions.add(action)
                         }
                         processEpisodeActions(remoteActions)
                     }
                     "AllSent" -> {
-                        Log.d(TAG, "Received AllSent message: $messageData")
+                        Logd(TAG, "Received AllSent message: $messageData")
                         return true
                     }
-                    else -> Log.d(TAG, "Received unknown message: $messageData")
+                    else -> Logd(TAG, "Received unknown message: $messageData")
                 }
             }
         }
@@ -223,19 +218,19 @@ import kotlin.math.min
 
     @Throws(SyncServiceException::class)
     override fun getSubscriptionChanges(lastSync: Long): SubscriptionChanges? {
-        Log.d(TAG, "getSubscriptionChanges does nothing")
+        Logd(TAG, "getSubscriptionChanges does nothing")
         return null
     }
 
     @Throws(SyncServiceException::class)
     override fun uploadSubscriptionChanges(added: List<String>, removed: List<String>): UploadChangesResponse? {
-        Log.d(TAG, "uploadSubscriptionChanges does nothing")
+        Logd(TAG, "uploadSubscriptionChanges does nothing")
         return null
     }
 
     @Throws(SyncServiceException::class)
     override fun getEpisodeActionChanges(timestamp: Long): EpisodeActionChanges? {
-        Log.d(TAG, "getEpisodeActionChanges does nothing")
+        Logd(TAG, "getEpisodeActionChanges does nothing")
         return null
     }
 
@@ -243,7 +238,7 @@ import kotlin.math.min
         var newTimeStamp = newTimeStamp_
         EventBus.getDefault().postSticky(SyncServiceEvent(R.string.sync_status_episodes_upload))
         val queuedEpisodeActions: MutableList<EpisodeAction> = synchronizationQueueStorage.queuedEpisodeActions
-        Log.d(TAG, "pushEpisodeActions queuedEpisodeActions: ${queuedEpisodeActions.size}")
+        Logd(TAG, "pushEpisodeActions queuedEpisodeActions: ${queuedEpisodeActions.size}")
 
         if (lastSync == 0L) {
             EventBus.getDefault().postSticky(SyncServiceEvent(R.string.sync_status_upload_played))
@@ -253,7 +248,7 @@ import kotlin.math.min
             val comItems = mutableSetOf<FeedItem>()
             comItems.addAll(pausedItems)
             comItems.addAll(readItems)
-            Log.d(TAG, "First sync. Upload state for all " + comItems.size + " played episodes")
+            Logd(TAG, "First sync. Upload state for all " + comItems.size + " played episodes")
             for (item in comItems) {
                 val media = item.media ?: continue
                 val played = EpisodeAction.Builder(item, EpisodeAction.PLAY)
@@ -268,10 +263,10 @@ import kotlin.math.min
         if (queuedEpisodeActions.isNotEmpty()) {
             LockingAsyncExecutor.lock.lock()
             try {
-                Log.d(TAG, "Uploading ${queuedEpisodeActions.size} actions: ${StringUtils.join(queuedEpisodeActions, ", ")}")
+                Logd(TAG, "Uploading ${queuedEpisodeActions.size} actions: ${StringUtils.join(queuedEpisodeActions, ", ")}")
                 val postResponse = uploadEpisodeActions(queuedEpisodeActions)
                 newTimeStamp = postResponse.timestamp
-                Log.d(TAG, "Upload episode response: $postResponse")
+                Logd(TAG, "Upload episode response: $postResponse")
                 synchronizationQueueStorage.clearEpisodeActionQueue()
             } finally {
                 LockingAsyncExecutor.lock.unlock()
@@ -301,7 +296,7 @@ import kotlin.math.min
                 val episodeAction = queuedEpisodeActions[i]
                 val obj = episodeAction.writeToJsonObject()
                 if (obj != null) {
-                    Log.d(TAG, "sending EpisodeAction: $obj")
+                    Logd(TAG, "sending EpisodeAction: $obj")
                     list.put(obj)
                 }
             }
@@ -325,18 +320,18 @@ import kotlin.math.min
         }
         feedItem.media = getFeedMedia(feedItem.media!!.id)
         var idRemove = 0L
-        Log.d(TAG, "processEpisodeAction ${feedItem.media!!.getLastPlayedTime()} ${(action.timestamp?.time?:0L)} ${action.position} ${feedItem.title}")
+        Logd(TAG, "processEpisodeAction ${feedItem.media!!.getLastPlayedTime()} ${(action.timestamp?.time?:0L)} ${action.position} ${feedItem.title}")
         if (feedItem.media!!.getLastPlayedTime() < (action.timestamp?.time?:0L)) {
             feedItem.media!!.setPosition(action.position * 1000)
             feedItem.media!!.setLastPlayedTime(action.timestamp!!.time)
             if (hasAlmostEnded(feedItem.media!!)) {
-                Log.d(TAG, "Marking as played")
+                Logd(TAG, "Marking as played")
                 feedItem.setPlayed(true)
                 feedItem.media!!.setPosition(0)
                 idRemove = feedItem.id
-            } else Log.d(TAG, "Setting position")
+            } else Logd(TAG, "Setting position")
             persistFeedMediaPlaybackInfo(feedItem.media)
-        } else Log.d(TAG, "local is newer, no change")
+        } else Logd(TAG, "local is newer, no change")
 
         return Pair(idRemove, feedItem)
     }

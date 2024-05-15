@@ -16,6 +16,7 @@ import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.ChapterUtils
 import ac.mdiq.podcini.util.DateFormatter
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.NetworkUtils.fetchHtmlSource
 import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
 import android.animation.Animator
@@ -46,12 +47,7 @@ import coil.request.ErrorResult
 import coil.request.ImageRequest
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
-import io.reactivex.Maybe
-import io.reactivex.MaybeEmitter
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import net.dankito.readability4j.Readability4J
 import org.apache.commons.lang3.StringUtils
 import org.greenrobot.eventbus.Subscribe
@@ -61,20 +57,20 @@ import org.greenrobot.eventbus.ThreadMode
  * Displays the description of a Playable object in a Webview.
  */
 @UnstableApi
-class PlayerDetailsFragment : Fragment() {
+class  PlayerDetailsFragment : Fragment() {
     private lateinit var shownoteView: ShownotesWebView
 
     private var _binding: PlayerDetailsFragmentBinding? = null
     private val binding get() = _binding!!
 
+    private var prevItem: FeedItem? = null
     private var media: Playable? = null
     private var item: FeedItem? = null
-    private var loadedMediaId: Any? = null
     private var displayedChapterIndex = -1
 
+    val scope = CoroutineScope(Dispatchers.Main)
     private var cleanedNotes: String? = null
-    private var disposable: Disposable? = null
-    private var webViewLoader: Disposable? = null
+//    private var webViewLoader: Disposable? = null
     private var controller: PlaybackController? = null
 
     internal var showHomeText = false
@@ -82,7 +78,7 @@ class PlayerDetailsFragment : Fragment() {
     internal var readerhtml: String? = null
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        Log.d(TAG, "fragment onCreateView")
+        Logd(TAG, "fragment onCreateView")
         _binding = PlayerDetailsFragmentBinding.inflate(inflater)
 
         binding.imgvCover.setOnClickListener { onPlayPause() }
@@ -94,7 +90,7 @@ class PlayerDetailsFragment : Fragment() {
         binding.butPrevChapter.setOnClickListener { seekToPrevChapter() }
         binding.butNextChapter.setOnClickListener { seekToNextChapter() }
 
-        Log.d(TAG, "fragment onCreateView")
+        Logd(TAG, "fragment onCreateView")
         shownoteView = binding.webview
         shownoteView.setTimecodeSelectedListener { time: Int? -> controller?.seekTo(time!!) }
         shownoteView.setPageFinishedListener {
@@ -123,7 +119,7 @@ class PlayerDetailsFragment : Fragment() {
         _binding = null
         controller?.release()
         controller = null
-        Log.d(TAG, "Fragment destroyed")
+        Logd(TAG, "Fragment destroyed")
         shownoteView.removeAllViews()
         shownoteView.destroy()
     }
@@ -132,60 +128,85 @@ class PlayerDetailsFragment : Fragment() {
         return shownoteView.onContextItemSelected(item)
     }
 
-    @UnstableApi private fun load() {
-        Log.d(TAG, "load() called")
-        webViewLoader?.dispose()
+//    @UnstableApi private fun load0() {
+//        webViewLoader?.dispose()
+//
+//        val context = context ?: return
+//        webViewLoader = Maybe.create { emitter: MaybeEmitter<String?> ->
+//            if (item == null) {
+//                media = controller?.getMedia()
+//                if (media == null) {
+//                    emitter.onComplete()
+//                    return@create
+//                }
+//                if (media is FeedMedia) {
+//                    val feedMedia = media as FeedMedia
+//                    item = feedMedia.item
+//                    item?.setDescription(null)
+//                    showHomeText = false
+//                    homeText = null
+//                }
+//            }
+//            if (item != null) {
+//                media = item!!.media
+//                if (item!!.description == null) DBReader.loadTextDetailsOfFeedItem(item!!)
+//                if (prevItem?.itemIdentifier != item!!.itemIdentifier) cleanedNotes = null
+//                if (cleanedNotes == null) {
+//                    Logd(TAG, "calling load description ${item!!.description==null} ${item!!.title}")
+//                    val shownotesCleaner = ShownotesCleaner(context, item?.description ?: "", media?.getDuration()?:0)
+//                    cleanedNotes = shownotesCleaner.processShownotes()
+//                }
+//                prevItem = item
+//                emitter.onSuccess(cleanedNotes?:"")
+//            } else emitter.onComplete()
+//        }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe({ data: String? ->
+//                Logd(TAG, "subscribe: ${media?.getEpisodeTitle()}")
+//                displayMediaInfo(media!!)
+//                shownoteView.loadDataWithBaseURL("https://127.0.0.1", data!!, "text/html", "utf-8", "about:blank")
+//                Logd(TAG, "Webview loaded")
+//            }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
+//    }
 
+    private fun load() {
         val context = context ?: return
-        webViewLoader = Maybe.create { emitter: MaybeEmitter<String?> ->
-            media = controller?.getMedia()
-            if (media == null) {
-                emitter.onComplete()
-                return@create
-            }
-            if (media is FeedMedia) {
-                val feedMedia = media as FeedMedia
-                if (item?.itemIdentifier != feedMedia.item?.itemIdentifier) {
-                    item = feedMedia.item
-                    showHomeText = false
-                    homeText = null
+        scope.launch {
+            withContext(Dispatchers.IO) {
+                if (item == null) {
+                    media = controller?.getMedia()
+                    if (media != null && media is FeedMedia) {
+                        val feedMedia = media as FeedMedia
+                        item = feedMedia.item
+                        item?.setDescription(null)
+                        showHomeText = false
+                        homeText = null
+                    }
+                }
+                if (item != null) {
+                    media = item!!.media
+                    if (item!!.description == null) DBReader.loadTextDetailsOfFeedItem(item!!)
+                    if (prevItem?.itemIdentifier != item!!.itemIdentifier) cleanedNotes = null
+                    if (cleanedNotes == null) {
+                        Logd(TAG, "calling load description ${item!!.description==null} ${item!!.title}")
+                        val shownotesCleaner = ShownotesCleaner(context, item?.description ?: "", media?.getDuration()?:0)
+                        cleanedNotes = shownotesCleaner.processShownotes()
+                    }
+                    prevItem = item
                 }
             }
-//            Log.d(TAG, "webViewLoader ${item?.id} ${cleanedNotes==null} ${item!!.description==null} ${loadedMediaId == null} ${item?.media?.getIdentifier()} ${media?.getIdentifier()}")
-            if (item != null) {
-                if (cleanedNotes == null || item!!.description == null || loadedMediaId != media?.getIdentifier()) {
-                    Log.d(TAG, "calling load description ${cleanedNotes==null} ${item!!.description==null} ${item!!.media?.getIdentifier()} ${media?.getIdentifier()}")
-//                    printStackTrace()
-                    DBReader.loadTextDetailsOfFeedItem(item!!)
-                    loadedMediaId = media?.getIdentifier()
-                    val shownotesCleaner = ShownotesCleaner(context, item?.description ?: "", media?.getDuration()?:0)
-                    cleanedNotes = shownotesCleaner.processShownotes()
-                }
+            withContext(Dispatchers.Main) {
+                Logd(TAG, "subscribe: ${media?.getEpisodeTitle()}")
+                displayMediaInfo(media!!)
+                shownoteView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes!!, "text/html", "utf-8", "about:blank")
+                Logd(TAG, "Webview loaded")
             }
-            emitter.onSuccess(cleanedNotes?:"")
+        }.invokeOnCompletion { throwable ->
+            if (throwable!= null) {
+                Log.e(TAG, Log.getStackTraceString(throwable))
+            }
         }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ data: String? ->
-                shownoteView.loadDataWithBaseURL("https://127.0.0.1", data!!, "text/html", "utf-8", "about:blank")
-                Log.d(TAG, "Webview loaded")
-            }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
-
-        loadMediaInfo()
-    }
-
-    @UnstableApi private fun loadMediaInfo() {
-        disposable?.dispose()
-        disposable = Maybe.create<Playable> { emitter: MaybeEmitter<Playable?> ->
-            media = controller?.getMedia()
-            if (media != null) emitter.onSuccess(media!!)
-            else emitter.onComplete()
-        }.subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ media: Playable ->
-                this.media = media
-                displayMediaInfo(media)
-            }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
     }
 
     fun buildHomeReaderText() {
@@ -220,27 +241,21 @@ class PlayerDetailsFragment : Fragment() {
     }
 
     @UnstableApi private fun displayMediaInfo(media: Playable) {
+        Logd(TAG, "displayMediaInfo ${item?.title} ${media.getEpisodeTitle()}")
         val pubDateStr = DateFormatter.formatAbbrev(context, media.getPubDate())
         binding.txtvPodcastTitle.text = StringUtils.stripToEmpty(media.getFeedTitle())
-        if (item == null || item!!.media?.getIdentifier() != media.getIdentifier()) {
-            if (media is FeedMedia) {
-                if (item?.itemIdentifier != media.item?.itemIdentifier) {
-                    item = media.item
-                    showHomeText = false
-                    homeText = null
-                }
-                if (item != null) {
-                    val openFeed: Intent = MainActivity.getIntentToOpenFeed(requireContext(), item!!.feedId)
-                    binding.txtvPodcastTitle.setOnClickListener { startActivity(openFeed) }
-                }
-            } else {
-                binding.txtvPodcastTitle.setOnClickListener(null)
+        if (media is FeedMedia) {
+            if (item != null) {
+                val openFeed: Intent = MainActivity.getIntentToOpenFeed(requireContext(), item!!.feedId)
+                binding.txtvPodcastTitle.setOnClickListener { startActivity(openFeed) }
             }
+        } else {
+            binding.txtvPodcastTitle.setOnClickListener(null)
         }
         binding.txtvPodcastTitle.setOnLongClickListener { copyText(media.getFeedTitle()) }
         binding.episodeDate.text = StringUtils.stripToEmpty(pubDateStr)
-        binding.txtvEpisodeTitle.text = media.getEpisodeTitle()
-        binding.txtvEpisodeTitle.setOnLongClickListener { copyText(media.getEpisodeTitle()) }
+        binding.txtvEpisodeTitle.text = item?.title
+        binding.txtvEpisodeTitle.setOnLongClickListener { copyText(item?.title?:"") }
         binding.txtvEpisodeTitle.setOnClickListener {
             val lines = binding.txtvEpisodeTitle.lineCount
             val animUnit = 1500
@@ -300,19 +315,7 @@ class PlayerDetailsFragment : Fragment() {
 
     private fun displayCoverImage() {
         if (media == null) return
-//        val options: RequestOptions = RequestOptions()
-//            .dontAnimate()
-//            .transform(FitCenter(), RoundedCorners((16 * resources.displayMetrics.density).toInt()))
-
-//        val cover: RequestBuilder<Drawable> = Glide.with(this)
-//            .load(media!!.getImageLocation())
-//            .error(Glide.with(this)
-//                .load(ImageResourceUtils.getFallbackImageLocation(media!!))
-//                .apply(options))
-//            .apply(options)
-
         if (displayedChapterIndex == -1 || media!!.getChapters().isEmpty() || media!!.getChapters()[displayedChapterIndex].imageUrl.isNullOrEmpty()) {
-//            cover.into(binding.imgvCover)
             val imageLoader = binding.imgvCover.context.imageLoader
             val imageRequest = ImageRequest.Builder(requireContext())
                 .data(media!!.getImageLocation())
@@ -335,12 +338,6 @@ class PlayerDetailsFragment : Fragment() {
 
         } else {
             val imgLoc = EmbeddedChapterImage.getModelFor(media!!, displayedChapterIndex)
-//            if (imgLoc != null) Glide.with(this)
-//                .load(imgLoc)
-//                .apply(options)
-//                .thumbnail(cover)
-//                .error(cover)
-//                .into(binding.imgvCover)
             val imageLoader = binding.imgvCover.context.imageLoader
             val imageRequest = ImageRequest.Builder(requireContext())
                 .data(imgLoc)
@@ -402,15 +399,15 @@ class PlayerDetailsFragment : Fragment() {
     }
 
     @UnstableApi private fun savePreference() {
-        Log.d(TAG, "Saving preferences")
+        Logd(TAG, "Saving preferences")
         val prefs = requireActivity().getSharedPreferences(PREF, Activity.MODE_PRIVATE)
         val editor = prefs.edit()
         if (controller?.getMedia() != null) {
-            Log.d(TAG, "Saving scroll position: " + binding.itemDescriptionFragment.scrollY)
+            Logd(TAG, "Saving scroll position: " + binding.itemDescriptionFragment.scrollY)
             editor.putInt(PREF_SCROLL_Y, binding.itemDescriptionFragment.scrollY)
             editor.putString(PREF_PLAYABLE_ID, controller!!.getMedia()!!.getIdentifier().toString())
         } else {
-            Log.d(TAG, "savePreferences was called while media or webview was null")
+            Logd(TAG, "savePreferences was called while media or webview was null")
             editor.putInt(PREF_SCROLL_Y, -1)
             editor.putString(PREF_PLAYABLE_ID, "")
         }
@@ -420,7 +417,7 @@ class PlayerDetailsFragment : Fragment() {
     @UnstableApi private fun restoreFromPreference(): Boolean {
         if ((activity as MainActivity).bottomSheet.state != BottomSheetBehavior.STATE_EXPANDED) return false
 
-        Log.d(TAG, "Restoring from preferences")
+        Logd(TAG, "Restoring from preferences")
         val activity: Activity? = activity
         if (activity != null) {
             val prefs = activity.getSharedPreferences(PREF, Activity.MODE_PRIVATE)
@@ -428,11 +425,11 @@ class PlayerDetailsFragment : Fragment() {
             val scrollY = prefs.getInt(PREF_SCROLL_Y, -1)
             if (scrollY != -1) {
                 if (id == controller?.getMedia()?.getIdentifier()?.toString()) {
-                    Log.d(TAG, "Restored scroll Position: $scrollY")
+                    Logd(TAG, "Restored scroll Position: $scrollY")
                     binding.itemDescriptionFragment.scrollTo(binding.itemDescriptionFragment.scrollX, scrollY)
                     return true
                 }
-                Log.d(TAG, "reset scroll Position: 0")
+                Logd(TAG, "reset scroll Position: 0")
                 binding.itemDescriptionFragment.scrollTo(0, 0)
 
                 return true
@@ -455,7 +452,7 @@ class PlayerDetailsFragment : Fragment() {
     }
 
     fun setItem(item_: FeedItem) {
-        Log.d(TAG, "setItem ${item_.title}")
+        Logd(TAG, "setItem ${item_.title}")
         if (item?.itemIdentifier != item_.itemIdentifier) {
             item = item_
             showHomeText = false
@@ -491,7 +488,7 @@ class PlayerDetailsFragment : Fragment() {
 
     override fun onStop() {
         super.onStop()
-        webViewLoader?.dispose()
+//        webViewLoader?.dispose()
     }
 
     @UnstableApi private fun copyText(text: String): Boolean {
@@ -504,7 +501,7 @@ class PlayerDetailsFragment : Fragment() {
     }
 
     companion object {
-        private const val TAG = "ItemDescriptionFragment"
+        private const val TAG = "PlayerDetailsFragment"
 
         private const val PREF = "ItemDescriptionFragmentPrefs"
         private const val PREF_SCROLL_Y = "prefScrollY"

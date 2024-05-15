@@ -61,8 +61,7 @@ open class DbCleanupTests {
         adapter.open()
         adapter.close()
 
-        val prefEdit = PreferenceManager
-            .getDefaultSharedPreferences(context.applicationContext).edit()
+        val prefEdit = PreferenceManager.getDefaultSharedPreferences(context.applicationContext).edit()
         prefEdit.putString(UserPreferences.PREF_EPISODE_CACHE_SIZE, EPISODE_CACHE_SIZE.toString())
         prefEdit.putString(UserPreferences.PREF_EPISODE_CLEANUP, cleanupAlgorithm.toString())
         prefEdit.putBoolean(UserPreferences.PREF_ENABLE_AUTODL, true)
@@ -113,10 +112,7 @@ open class DbCleanupTests {
     }
 
     @Throws(IOException::class)
-    fun populateItems(numItems: Int, feed: Feed, items: MutableList<FeedItem>,
-                      files: MutableList<File>, itemState: Int, addToQueue: Boolean,
-                      addToFavorites: Boolean
-    ) {
+    fun populateItems(numItems: Int, feed: Feed, items: MutableList<FeedItem>, files: MutableList<File>, itemState: Int, addToQueue: Boolean, addToFavorites: Boolean) {
         for (i in 0 until numItems) {
             val itemDate = Date((numItems - i).toLong())
             var playbackCompletionDate: Date? = null
@@ -136,12 +132,8 @@ open class DbCleanupTests {
         val adapter = getInstance()
         adapter.open()
         adapter.setCompleteFeed(feed)
-        if (addToQueue) {
-            adapter.setQueue(items)
-        }
-        if (addToFavorites) {
-            adapter.setFavorites(items)
-        }
+        if (addToQueue) adapter.setQueue(items)
+        if (addToFavorites) adapter.setFavorites(items)
         adapter.close()
 
         Assert.assertTrue(feed.id != 0L)

@@ -1,6 +1,7 @@
 package ac.mdiq.podcini.util.error
 
 import ac.mdiq.podcini.BuildConfig
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.error.CrashReportWriter.Companion.write
 import android.util.Log
 import io.reactivex.exceptions.UndeliverableException
@@ -13,7 +14,7 @@ object RxJavaErrorHandlerSetup {
         RxJavaPlugins.setErrorHandler { exception: Throwable? ->
             if (exception is UndeliverableException) {
                 // Probably just disposed because the fragment was left
-                Log.d(TAG, "Ignored exception: " + Log.getStackTraceString(exception))
+                Logd(TAG, "Ignored exception: " + Log.getStackTraceString(exception))
                 return@setErrorHandler
             }
             // Usually, undeliverable exceptions are wrapped in an UndeliverableException.

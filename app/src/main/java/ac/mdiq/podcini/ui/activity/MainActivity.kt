@@ -277,8 +277,14 @@ class MainActivity : CastEnabledActivity() {
          override fun onStateChanged(view: View, state: Int) {
              Logd(TAG, "bottomSheet onStateChanged $state")
              when (state) {
-                 BottomSheetBehavior.STATE_COLLAPSED -> onSlide(view,0.0f)
+                 BottomSheetBehavior.STATE_COLLAPSED -> {
+                     audioPlayerFragment.isCollapsed = true
+//                     audioPlayerFragment.updateUi()
+                     onSlide(view,0.0f)
+                 }
                  BottomSheetBehavior.STATE_EXPANDED -> {
+                     audioPlayerFragment.isCollapsed = false
+//                     audioPlayerFragment.updateUi()
                      audioPlayerFragment.initDetailedView()
                      onSlide(view, 1.0f)
                  }

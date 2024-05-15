@@ -7,8 +7,10 @@ class NavDrawerData(@JvmField val items: List<FeedDrawerItem>,
                     @JvmField val numNewItems: Int,
                     val numDownloadedItems: Int,
                     val feedCounters: Map<Long, Int>,
-                    val reclaimableSpace: Int
-) {
+                    val reclaimableSpace: Int,
+                    @JvmField val numItems: Int,
+                    @JvmField val numFeeds: Int) {
+
     class FeedDrawerItem(val feed: Feed, val id: Long, val counter: Int) {
          var layer: Int = 0
 

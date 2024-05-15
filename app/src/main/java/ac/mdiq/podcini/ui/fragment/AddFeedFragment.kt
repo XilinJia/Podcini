@@ -10,6 +10,7 @@ import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.storage.model.feed.SortOrder
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.OpmlImportActivity
+import ac.mdiq.podcini.util.Logd
 import android.content.*
 import android.net.Uri
 import android.os.Bundle
@@ -26,9 +27,10 @@ import androidx.fragment.app.Fragment
 import androidx.media3.common.util.UnstableApi
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Provides actions for adding new podcast subscriptions.
@@ -52,7 +54,7 @@ class AddFeedFragment : Fragment() {
         _binding = AddfeedBinding.inflate(inflater)
         activity = getActivity() as? MainActivity
 
-        Log.d(TAG, "fragment onCreateView")
+        Logd(TAG, "fragment onCreateView")
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
 
@@ -162,18 +164,36 @@ class AddFeedFragment : Fragment() {
     @UnstableApi private fun addLocalFolderResult(uri: Uri?) {
         if (uri == null) return
 
-        Observable.fromCallable<Feed> { addLocalFolder(uri) }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { feed: Feed ->
-                    val fragment: Fragment = FeedItemlistFragment.newInstance(feed.id)
-                    (getActivity() as MainActivity).loadChildFragment(fragment)
-                }, { error: Throwable ->
-                    Log.e(TAG, Log.getStackTraceString(error))
-                    (getActivity() as MainActivity)
-                        .showSnackbarAbovePlayer(error.localizedMessage, Snackbar.LENGTH_LONG)
-                })
+//        Observable.fromCallable<Feed> { addLocalFolder(uri) }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe(
+//                { feed: Feed ->
+//                    val fragment: Fragment = FeedItemlistFragment.newInstance(feed.id)
+//                    (getActivity() as MainActivity).loadChildFragment(fragment)
+//                }, { error: Throwable ->
+//                    Log.e(TAG, Log.getStackTraceString(error))
+//                    (getActivity() as MainActivity)
+//                        .showSnackbarAbovePlayer(error.localizedMessage, Snackbar.LENGTH_LONG)
+//                })
+
+        val scope = CoroutineScope(Dispatchers.Main)
+        scope.launch {
+            try {
+                val feed = withContext(Dispatchers.IO) {
+                    addLocalFolder(uri)
+                }
+                withContext(Dispatchers.Main) {
+                    if (feed != null) {
+                        val fragment: Fragment = FeedItemlistFragment.newInstance(feed.id)
+                        (getActivity() as MainActivity).loadChildFragment(fragment)
+                    }
+                }
+            } catch (e: Throwable) {
+                Log.e(TAG, Log.getStackTraceString(e))
+                (getActivity() as MainActivity).showSnackbarAbovePlayer(e.localizedMessage, Snackbar.LENGTH_LONG)
+            }
+        }
     }
 
     @UnstableApi private fun addLocalFolder(uri: Uri): Feed? {

@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import ac.mdiq.podcini.storage.export.ExportWriter
 import ac.mdiq.podcini.storage.model.feed.Feed
+import ac.mdiq.podcini.util.Logd
 import org.apache.commons.io.IOUtils
 import java.io.IOException
 import java.io.Writer
@@ -16,7 +17,7 @@ class HtmlWriter : ExportWriter {
      */
     @Throws(IllegalArgumentException::class, IllegalStateException::class, IOException::class)
     override fun writeDocument(feeds: List<Feed?>?, writer: Writer?, context: Context) {
-        Log.d(TAG, "Starting to write document")
+        Logd(TAG, "Starting to write document")
 
         val templateStream = context!!.assets.open("html-export-template.html")
         var template = IOUtils.toString(templateStream, "UTF-8")
@@ -36,7 +37,7 @@ class HtmlWriter : ExportWriter {
             writer.append("\">Feed</a></span></p></div></li>\n")
         }
         writer.append(templateParts[1])
-        Log.d(TAG, "Finished writing document")
+        Logd(TAG, "Finished writing document")
     }
 
     override fun fileExtension(): String {

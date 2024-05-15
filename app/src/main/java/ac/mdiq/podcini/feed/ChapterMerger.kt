@@ -2,6 +2,7 @@ package ac.mdiq.podcini.feed
 
 import android.util.Log
 import ac.mdiq.podcini.storage.model.feed.Chapter
+import ac.mdiq.podcini.util.Logd
 import kotlin.math.abs
 
 object ChapterMerger {
@@ -11,7 +12,7 @@ object ChapterMerger {
      * This method might modify the input data.
      */
     fun merge(chapters1: List<Chapter>?, chapters2: List<Chapter>?): List<Chapter>? {
-        Log.d(TAG, "Merging chapters")
+        Logd(TAG, "Merging chapters")
         when {
             chapters1 == null -> return chapters2
             chapters2 == null -> return chapters1

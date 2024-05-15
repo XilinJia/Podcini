@@ -48,12 +48,11 @@ import androidx.media3.extractor.DefaultExtractorsFactory
 import androidx.media3.extractor.mp3.Mp3Extractor
 import androidx.media3.ui.DefaultTrackNameProvider
 import androidx.media3.ui.TrackNameProvider
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
+import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import java.io.File
 import java.io.IOException
+import java.lang.Runnable
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -83,8 +82,8 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
     private var isShutDown = false
     private var seekLatch: CountDownLatch? = null
 
-    private val bufferUpdateInterval = 5L
-    private val bufferingUpdateDisposable: Disposable
+    private val bufferUpdateInterval = 5000L
+//    private val bufferingUpdateDisposable: Disposable
     private var mediaSource: MediaSource? = null
     private var playbackParameters: PlaybackParameters
 
@@ -125,7 +124,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
     }
 
     private fun release() {
-        bufferingUpdateDisposable.dispose()
+//        bufferingUpdateDisposable.dispose()
 
 //        exoplayerListener = null
         exoPlayer?.stop()
@@ -670,11 +669,20 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
             createStaticPlayer(context)
         }
         playbackParameters = exoPlayer!!.playbackParameters
-        bufferingUpdateDisposable = Observable.interval(bufferUpdateInterval, TimeUnit.SECONDS)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                bufferingUpdateListener?.accept(exoPlayer!!.bufferedPercentage)
+//        bufferingUpdateDisposable = Observable.interval(bufferUpdateInterval, TimeUnit.SECONDS)
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe {
+//                bufferingUpdateListener?.accept(exoPlayer!!.bufferedPercentage)
+//            }
+        val scope = CoroutineScope(Dispatchers.Main)
+        scope.launch {
+            while (true) {
+                delay(bufferUpdateInterval)
+                withContext(Dispatchers.Main) {
+                    bufferingUpdateListener?.accept(exoPlayer!!.bufferedPercentage)
+                }
             }
+        }
     }
 
     override fun endPlayback(hasEnded: Boolean, wasSkipped: Boolean, shouldContinue: Boolean, toStoppedState: Boolean) {

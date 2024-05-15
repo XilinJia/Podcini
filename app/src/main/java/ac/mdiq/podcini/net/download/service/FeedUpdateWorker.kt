@@ -28,6 +28,7 @@ import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.storage.model.download.DownloadError
 import ac.mdiq.podcini.storage.model.download.DownloadResult
 import ac.mdiq.podcini.storage.model.feed.Feed
+import ac.mdiq.podcini.util.Logd
 import android.os.Build
 import java.util.*
 
@@ -54,7 +55,7 @@ class FeedUpdateWorker(context: Context, params: WorkerParameters) : Worker(cont
             toUpdate.shuffle() // If the worker gets cancelled early, every feed has a chance to be updated
         } else {
             val feed = DBReader.getFeed(feedId) ?: return Result.success()
-            Log.d(TAG, "doWork feed.download_url: ${feed.download_url}")
+            Logd(TAG, "doWork feed.download_url: ${feed.download_url}")
             if (!feed.isLocalFeed) allAreLocal = false
             toUpdate = ArrayList()
             toUpdate.add(feed) // Needs to be updatable, so no singletonList
@@ -63,7 +64,7 @@ class FeedUpdateWorker(context: Context, params: WorkerParameters) : Worker(cont
 
         if (!inputData.getBoolean(FeedUpdateManager.EXTRA_EVEN_ON_MOBILE, false) && !allAreLocal) {
             if (!NetworkUtils.networkAvailable() || !NetworkUtils.isFeedRefreshAllowed) {
-                Log.d(TAG, "Blocking automatic update")
+                Logd(TAG, "Blocking automatic update")
                 return Result.retry()
             }
         }

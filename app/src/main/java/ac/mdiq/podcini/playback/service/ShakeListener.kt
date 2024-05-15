@@ -7,6 +7,7 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.util.Log
 import ac.mdiq.podcini.playback.service.PlaybackServiceTaskManager.SleepTimer
+import ac.mdiq.podcini.util.Logd
 import kotlin.math.sqrt
 
 internal class ShakeListener(private val mContext: Context, private val mSleepTimer: SleepTimer) : SensorEventListener {
@@ -42,7 +43,7 @@ internal class ShakeListener(private val mContext: Context, private val mSleepTi
 
         val gForce = sqrt((gX * gX + gY * gY + gZ * gZ).toDouble())
         if (gForce > 2.25) {
-            Log.d(TAG, "Detected shake $gForce")
+            Logd(TAG, "Detected shake $gForce")
             mSleepTimer.restart()
         }
     }

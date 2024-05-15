@@ -3,6 +3,7 @@ package ac.mdiq.podcini.feed.parser.media.id3
 import android.util.Log
 import ac.mdiq.podcini.feed.parser.media.id3.model.FrameHeader
 import ac.mdiq.podcini.feed.parser.media.id3.model.TagHeader
+import ac.mdiq.podcini.util.Logd
 import org.apache.commons.io.IOUtils
 import org.apache.commons.io.input.CountingInputStream
 import java.io.ByteArrayOutputStream
@@ -25,7 +26,7 @@ open class ID3Reader(private val inputStream: CountingInputStream) {
         while (position < tagContentStartPosition + tagHeader!!.size) {
             val frameHeader = readFrameHeader()
             if (frameHeader.id[0] < '0' || frameHeader.id[0] > 'z') {
-                Log.d(TAG, "Stopping because of invalid frame: $frameHeader")
+                Logd(TAG, "Stopping because of invalid frame: $frameHeader")
                 return
             }
             readFrame(frameHeader)
@@ -34,7 +35,7 @@ open class ID3Reader(private val inputStream: CountingInputStream) {
 
     @Throws(IOException::class, ID3ReaderException::class)
     protected open fun readFrame(frameHeader: FrameHeader) {
-        Log.d(TAG, "Skipping frame: " + frameHeader.id + ", size: " + frameHeader.size)
+        Logd(TAG, "Skipping frame: " + frameHeader.id + ", size: " + frameHeader.size)
         skipBytes(frameHeader.size)
     }
 

@@ -16,6 +16,7 @@ import ac.mdiq.podcini.storage.model.download.DownloadResult
 import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.comparator.FeedItemPubdateComparator
 import ac.mdiq.podcini.util.event.FeedItemEvent.Companion.updated
 import ac.mdiq.podcini.util.event.FeedListUpdateEvent
@@ -105,7 +106,7 @@ import java.util.concurrent.*
      */
     @UnstableApi @JvmStatic
     fun autodownloadUndownloadedItems(context: Context): Future<*> {
-        Log.d(TAG, "autodownloadUndownloadedItems")
+        Logd(TAG, "autodownloadUndownloadedItems")
         return autodownloadExec.submit(downloadAlgorithm.autoDownloadUndownloadedItems(context))
     }
 
@@ -190,7 +191,7 @@ import java.util.concurrent.*
     @JvmStatic
     @Synchronized
     fun updateFeed(context: Context, newFeed: Feed, removeUnlistedItems: Boolean): Feed? {
-        Log.d(TAG, "updateFeed called")
+        Logd(TAG, "updateFeed called")
         var resultFeed: Feed?
         val unlistedItems: MutableList<FeedItem> = ArrayList()
 
@@ -200,24 +201,24 @@ import java.util.concurrent.*
         // Look up feed in the feedslist
         val savedFeed = searchFeedByIdentifyingValueOrID(newFeed)
         if (savedFeed == null) {
-            Log.d(TAG, "Found no existing Feed with title " + newFeed.title + ". Adding as new one.")
+            Logd(TAG, "Found no existing Feed with title " + newFeed.title + ". Adding as new one.")
 
             resultFeed = newFeed
         } else {
-            Log.d(TAG, "Feed with title " + newFeed.title + " already exists. Syncing new with existing one.")
+            Logd(TAG, "Feed with title " + newFeed.title + " already exists. Syncing new with existing one.")
             newFeed.items.sortWith(FeedItemPubdateComparator())
 
             if (newFeed.pageNr == savedFeed.pageNr) {
                 if (savedFeed.compareWithOther(newFeed)) {
-                    Log.d(TAG, "Feed has updated attribute values. Updating old feed's attributes")
+                    Logd(TAG, "Feed has updated attribute values. Updating old feed's attributes")
                     savedFeed.updateFromOther(newFeed)
                 }
             } else {
-                Log.d(TAG, "New feed has a higher page number.")
+                Logd(TAG, "New feed has a higher page number.")
                 savedFeed.nextPageLink = newFeed.nextPageLink
             }
             if (savedFeed.preferences != null && savedFeed.preferences!!.compareWithOther(newFeed.preferences)) {
-                Log.d(TAG, "Feed has updated preferences. Updating old feed's preferences")
+                Logd(TAG, "Feed has updated preferences. Updating old feed's preferences")
                 savedFeed.preferences!!.updateFromOther(newFeed.preferences)
             }
 
@@ -249,7 +250,7 @@ import java.util.concurrent.*
                 if (!newFeed.isLocalFeed && oldItem == null) {
                     oldItem = searchFeedItemGuessDuplicate(savedFeed.items, item)
                     if (oldItem != null) {
-                        Log.d(TAG, "Repaired duplicate: $oldItem, $item")
+                        Logd(TAG, "Repaired duplicate: $oldItem, $item")
                         DBWriter.addDownloadStatus(DownloadResult(savedFeed,
                             item.title?:"", DownloadError.ERROR_PARSER_EXCEPTION_DUPLICATE, false,
                             """
@@ -279,7 +280,7 @@ import java.util.concurrent.*
                 if (oldItem != null) {
                     oldItem.updateFromOther(item)
                 } else {
-                    Log.d(TAG, "Found new item: " + item.title)
+                    Logd(TAG, "Found new item: " + item.title)
                     item.feed = savedFeed
 
                     if (idx >= savedFeed.items.size) savedFeed.items.add(item)
@@ -287,7 +288,7 @@ import java.util.concurrent.*
 
                     val pubDate = item.getPubDate()
                     if (pubDate == null || priorMostRecentDate == null || priorMostRecentDate.before(pubDate) || priorMostRecentDate == pubDate) {
-                        Log.d(TAG, "Marking item published on $pubDate new, prior most recent date = $priorMostRecentDate")
+                        Logd(TAG, "Marking item published on $pubDate new, prior most recent date = $priorMostRecentDate")
                         item.setNew()
                     }
                 }
@@ -357,7 +358,7 @@ import java.util.concurrent.*
      */
     @JvmStatic
     fun searchFeedItems(feedID: Long, query: String): FutureTask<List<FeedItem>> {
-        Log.d(TAG, "searchFeedItems called")
+        Logd(TAG, "searchFeedItems called")
         return FutureTask(object : QueryTask<List<FeedItem>>() {
             override fun execute(adapter: PodDBAdapter?) {
                 val searchResult = adapter?.searchItems(feedID, query)

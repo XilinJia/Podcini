@@ -12,6 +12,7 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
+import ac.mdiq.podcini.util.Logd
 
 /**
  * List adapter for the queue.
@@ -45,7 +46,7 @@ open class QueueRecyclerAdapter(mainActivity: MainActivity, private val swipeAct
                     val isLtr = holder.itemView.getLayoutDirection() == View.LAYOUT_DIRECTION_LTR
                     val factor = (if (isLtr) 1 else -1).toFloat()
                     if (factor * event.x < factor * 0.5 * v1.width) swipeActions.startDrag(holder)
-                    else Log.d(TAG, "Ignoring drag in right half of the image")
+                    else Logd(TAG, "Ignoring drag in right half of the image")
                 }
                 false
             }

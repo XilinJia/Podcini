@@ -10,6 +10,7 @@ import ac.mdiq.podcini.net.sync.gpoddernet.model.GpodnetEpisodeActionPostRespons
 import ac.mdiq.podcini.net.sync.gpoddernet.model.GpodnetPodcast
 import ac.mdiq.podcini.net.sync.gpoddernet.model.GpodnetUploadChangesResponse
 import ac.mdiq.podcini.net.sync.model.*
+import ac.mdiq.podcini.util.Logd
 import android.util.Log
 import okhttp3.*
 import okhttp3.Credentials.basic
@@ -278,7 +279,7 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
     @Throws(SyncServiceException::class)
     private fun uploadEpisodeActionsPartial(episodeActions: List<EpisodeAction?>?, from: Int, to: Int): UploadChangesResponse {
         try {
-            Log.d(TAG, "Uploading partial actions " + from + " to " + to + " of " + episodeActions!!.size)
+            Logd(TAG, "Uploading partial actions " + from + " to " + to + " of " + episodeActions!!.size)
             val url = URI(baseScheme, null, baseHost, basePort,
                 String.format("/api/2/episodes/%s.json", username), null, null).toURL()
 
@@ -424,7 +425,7 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
             } else {
                 if (BuildConfig.DEBUG) {
                     try {
-                        Log.d(TAG, response.body!!.string())
+                        Logd(TAG, response.body!!.string())
                     } catch (e: IOException) {
                         e.printStackTrace()
                     }

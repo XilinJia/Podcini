@@ -6,27 +6,30 @@ import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.databinding.QueueFragmentBinding
 import ac.mdiq.podcini.feed.util.PlaybackSpeedUtils
 import ac.mdiq.podcini.net.download.FeedUpdateManager
-import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.DBWriter
-import ac.mdiq.podcini.storage.model.feed.*
+import ac.mdiq.podcini.storage.model.feed.FeedItem
+import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
+import ac.mdiq.podcini.storage.model.feed.SortOrder
+import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectActionHandler
+import ac.mdiq.podcini.ui.actions.menuhandler.FeedItemMenuHandler
+import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
+import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.QueueRecyclerAdapter
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.dialog.ItemSortDialog
-import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectActionHandler
-import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
-import ac.mdiq.podcini.ui.actions.menuhandler.FeedItemMenuHandler
-import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.view.EmptyViewHandler
 import ac.mdiq.podcini.ui.view.EpisodeItemListRecyclerView
 import ac.mdiq.podcini.ui.view.LiftOnScrollListener
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
 import ac.mdiq.podcini.util.Converter
 import ac.mdiq.podcini.util.FeedItemUtil
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.*
+import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
 import android.content.Context
 import android.content.DialogInterface
 import android.content.SharedPreferences
@@ -48,10 +51,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -81,7 +81,8 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
     private var recyclerAdapter: QueueRecyclerAdapter? = null
     private var currentPlaying: EpisodeItemViewHolder? = null
 
-    private var disposable: Disposable? = null
+    val scope = CoroutineScope(Dispatchers.Main)
+//    private var disposable: Disposable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,7 +94,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
         super.onCreateView(inflater, container, savedInstanceState)
         _binding = QueueFragmentBinding.inflate(inflater)
 
-        Log.d(TAG, "fragment onCreateView")
+        Logd(TAG, "fragment onCreateView")
         toolbar = binding.toolbar
         toolbar.setOnMenuItemClickListener(this)
         toolbar.setOnLongClickListener {
@@ -194,12 +195,13 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
 
     override fun onStop() {
         super.onStop()
-        disposable?.dispose()
+        scope.cancel()
+//        disposable?.dispose()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: QueueEvent) {
-        Log.d(TAG, "onEventMainThread() called with QueueEvent event = [$event]")
+        Logd(TAG, "onEventMainThread() called with QueueEvent event = [$event]")
         if (recyclerAdapter == null) {
             loadItems(true)
             return
@@ -236,7 +238,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: FeedItemEvent) {
-        Log.d(TAG, "onEventMainThread() called with FeedItemEvent event = [$event]")
+        Logd(TAG, "onEventMainThread() called with FeedItemEvent event = [$event]")
         if (recyclerAdapter == null) {
             loadItems(true)
             return
@@ -258,7 +260,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: EpisodeDownloadEvent) {
-        Log.d(TAG, "onEventMainThread() called with EpisodeDownloadEvent event = [$event]")
+        Logd(TAG, "onEventMainThread() called with EpisodeDownloadEvent event = [$event]")
         for (downloadUrl in event.urls) {
             val pos: Int = FeedItemUtil.indexOfItemWithDownloadUrl(queue.toList(), downloadUrl)
             if (pos >= 0) recyclerAdapter?.notifyItemChangedCompat(pos)
@@ -271,7 +273,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
         if (recyclerAdapter != null) {
             if (currentPlaying != null && currentPlaying!!.isCurrentlyPlayingItem) currentPlaying!!.notifyPlaybackPositionUpdated(event)
             else {
-                Log.d(TAG, "onEventMainThread() search list")
+                Logd(TAG, "onEventMainThread() search list")
                 for (i in 0 until recyclerAdapter!!.itemCount) {
                     val holder: EpisodeItemViewHolder? = recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeItemViewHolder
                     if (holder != null && holder.isCurrentlyPlayingItem) {
@@ -286,7 +288,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onPlayerStatusChanged(event: PlayerStatusEvent?) {
-        Log.d(TAG, "onPlayerStatusChanged() called with event = [$event]")
+        Logd(TAG, "onPlayerStatusChanged() called with event = [$event]")
         loadItems(false)
         refreshToolbarState()
     }
@@ -294,7 +296,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onUnreadItemsChanged(event: UnreadItemsUpdateEvent?) {
         // Sent when playback position is reset
-        Log.d(TAG, "onUnreadItemsChanged() called with event = [$event]")
+        Logd(TAG, "onUnreadItemsChanged() called with event = [$event]")
         loadItems(false)
         refreshToolbarState()
     }
@@ -426,7 +428,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
     }
 
     @UnstableApi override fun onContextItemSelected(item: MenuItem): Boolean {
-        Log.d(TAG, "onContextItemSelected() called with: item = [$item]")
+        Logd(TAG, "onContextItemSelected() called with: item = [$item]")
         if (!isVisible || recyclerAdapter == null) return false
 
         val selectedItem: FeedItem? = recyclerAdapter!!.longPressedItem
@@ -485,22 +487,38 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
     }
 
     private fun loadItems(restoreScrollPosition: Boolean) {
-        Log.d(TAG, "loadItems() called")
-        disposable?.dispose()
+        Logd(TAG, "loadItems() called")
+//        disposable?.dispose()
 
         if (queue.isEmpty()) emptyView.hide()
 
-        disposable = Observable.fromCallable { DBReader.getQueue().toMutableList() }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ items: MutableList<FeedItem> ->
-                queue = items
-                progressBar.visibility = View.GONE
-                recyclerAdapter?.setDummyViews(0)
-                recyclerAdapter?.updateItems(queue)
-                if (restoreScrollPosition) recyclerView.restoreScrollPosition(TAG)
-                refreshInfoBar()
-            }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
+//        disposable = Observable.fromCallable { DBReader.getQueue().toMutableList() }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe({ items: MutableList<FeedItem> ->
+//                queue = items
+//                progressBar.visibility = View.GONE
+//                recyclerAdapter?.setDummyViews(0)
+//                recyclerAdapter?.updateItems(queue)
+//                if (restoreScrollPosition) recyclerView.restoreScrollPosition(TAG)
+//                refreshInfoBar()
+//            }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
+
+        scope.launch {
+            try {
+                queue = withContext(Dispatchers.IO) { DBReader.getQueue().toMutableList()  }
+                withContext(Dispatchers.Main) {
+                    progressBar.visibility = View.GONE
+                    recyclerAdapter?.setDummyViews(0)
+                    recyclerAdapter?.updateItems(queue)
+                    if (restoreScrollPosition) recyclerView.restoreScrollPosition(TAG)
+                    refreshInfoBar()
+                }
+            } catch (e: Throwable) {
+                Log.e(TAG, Log.getStackTraceString(e))
+            }
+        }
+
     }
 
     override fun onStartSelectMode() {
@@ -562,7 +580,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
 
             val from = viewHolder.bindingAdapterPosition
             val to = target.bindingAdapterPosition
-            Log.d(TAG, "move($from, $to) in memory")
+            Logd(TAG, "move($from, $to) in memory")
             if (from >= queue.size || to >= queue.size || from < 0 || to < 0) return false
 
             queue.add(to, queue.removeAt(from))
@@ -571,7 +589,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
         }
 
         @UnstableApi override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-            disposable?.dispose()
+//            disposable?.dispose()
 
             //SwipeActions
             super.onSwiped(viewHolder, direction)
@@ -592,7 +610,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
 
         @UnstableApi private fun reallyMoved(from: Int, to: Int) {
             // Write drag operation to database
-            Log.d(TAG, "Write to database move($from, $to)")
+            Logd(TAG, "Write to database move($from, $to)")
             DBWriter.moveQueueItem(from, to, true)
         }
     }

@@ -36,6 +36,7 @@ import ac.mdiq.podcini.storage.database.PodDBAdapter.Companion.getInstance
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.enqueueLocation
 import ac.mdiq.podcini.preferences.UserPreferences.shouldDeleteRemoveFromQueue
+import ac.mdiq.podcini.util.Logd
 import org.awaitility.Awaitility
 import org.junit.After
 import org.junit.Assert
@@ -465,11 +466,8 @@ class DbWriterTest {
         for (i in 0 until feed.items.size) {
             val feedItem: FeedItem = feed.items[i]
             val c = adapter.getFeedItemCursor(feedItem.id.toString())
-            if (i < 2) {
-                Assert.assertEquals(0, c.count.toLong())
-            } else {
-                Assert.assertEquals(1, c.count.toLong())
-            }
+            if (i < 2) Assert.assertEquals(0, c.count.toLong())
+            else Assert.assertEquals(1, c.count.toLong())
             c.close()
         }
         adapter.close()
@@ -699,22 +697,16 @@ class DbWriterTest {
         // Use array rather than List to make codes more succinct
         val itemIds = toItemIds(feed.items).toTypedArray<Long>()
 
-        removeQueueItem(context, false,
-            itemIds[1], itemIds[3])[TIMEOUT, TimeUnit.SECONDS]
-        assertQueueByItemIds("Average case - 2 items removed successfully",
-            itemIds[0], itemIds[2])
+        removeQueueItem(context, false, itemIds[1], itemIds[3])[TIMEOUT, TimeUnit.SECONDS]
+        assertQueueByItemIds("Average case - 2 items removed successfully", itemIds[0], itemIds[2])
 
         removeQueueItem(context, false)[TIMEOUT, TimeUnit.SECONDS]
-        assertQueueByItemIds("Boundary case - no items supplied. queue should see no change",
-            itemIds[0], itemIds[2])
+        assertQueueByItemIds("Boundary case - no items supplied. queue should see no change", itemIds[0], itemIds[2])
 
-        removeQueueItem(context, false,
-            itemIds[0], itemIds[4], -1L)[TIMEOUT, TimeUnit.SECONDS]
-        assertQueueByItemIds("Boundary case - items not in queue ignored",
-            itemIds[2])
+        removeQueueItem(context, false, itemIds[0], itemIds[4], -1L)[TIMEOUT, TimeUnit.SECONDS]
+        assertQueueByItemIds("Boundary case - items not in queue ignored", itemIds[2])
 
-        removeQueueItem(context, false,
-            itemIds[2], -1L)[TIMEOUT, TimeUnit.SECONDS]
+        removeQueueItem(context, false, itemIds[2], -1L)[TIMEOUT, TimeUnit.SECONDS]
         assertQueueByItemIds("Boundary case - invalid itemIds ignored") // the queue is empty
     }
 
@@ -741,10 +733,9 @@ class DbWriterTest {
         }
         for (from in 0 until numItems) {
             for (to in 0 until numItems) {
-                if (from == to) {
-                    continue
-                }
-                Log.d(TAG, String.format(Locale.US, "testMoveQueueItem: From=%d, To=%d", from, to))
+                if (from == to) continue
+
+                Logd(TAG, String.format(Locale.US, "testMoveQueueItem: From=%d, To=%d", from, to))
                 val fromID: Long = feed.items[from].id
 
                 adapter = getInstance()
@@ -775,8 +766,7 @@ class DbWriterTest {
         val feed = Feed("url", null, "title")
         feed.items = mutableListOf()
         for (i in 0 until numItems) {
-            val item = FeedItem(0, "title $i", "id $i", "link $i",
-                Date(), FeedItem.NEW, feed)
+            val item = FeedItem(0, "title $i", "id $i", "link $i", Date(), FeedItem.NEW, feed)
             item.setMedia(FeedMedia(item, "", 0, ""))
             feed.items.add(item)
         }
@@ -807,8 +797,7 @@ class DbWriterTest {
             val feed = Feed("url", null, "title")
             feed.items = mutableListOf()
             for (i in 0 until numItems) {
-                val item = FeedItem(0, "title $i", "id $i", "link $i",
-                    Date(), FeedItem.PLAYED, feed)
+                val item = FeedItem(0, "title $i", "id $i", "link $i", Date(), FeedItem.PLAYED, feed)
                 item.setMedia(FeedMedia(item, "", 0, ""))
                 feed.items.add(item)
             }

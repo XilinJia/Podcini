@@ -19,7 +19,6 @@ import ac.mdiq.podcini.util.comparator.DownloadResultComparator
 import ac.mdiq.podcini.util.comparator.PlaybackCompletionDateComparator
 import android.database.Cursor
 import android.util.Log
-import androidx.collection.ArrayMap
 import kotlin.math.min
 
 
@@ -30,8 +29,9 @@ import kotlin.math.min
  */
 object DBReader {
     private const val TAG = "DBReader"
-    private var feeds: MutableList<Feed> = mutableListOf()
-    private var tags: MutableList<String> = mutableListOf()
+    private val feeds: MutableList<Feed> = mutableListOf()
+    private val feedIndex: MutableMap<Long, Feed> = mutableMapOf()
+    private val tags: MutableList<String> = mutableListOf()
     private val feedListLock = Any()
 
     /**
@@ -61,11 +61,12 @@ object DBReader {
     fun updateFeedList(adapter: PodDBAdapter) {
         synchronized(feedListLock) {
             adapter.allFeedsCursor.use { cursor ->
-//                feeds = ArrayList(cursor.count)
                 feeds.clear()
+                feedIndex.clear()
                 while (cursor.moveToNext()) {
                     val feed = extractFeedFromCursorRow(cursor)
                     feeds.add(feed)
+                    feedIndex[feed.id] = feed
                 }
                 buildTags()
             }
@@ -110,20 +111,17 @@ object DBReader {
      * @param items the FeedItems who should have other data loaded
      */
     fun loadAdditionalFeedItemListData(items: List<FeedItem>) {
-        loadTagsOfFeedItemList(items)
-
-        synchronized(feedListLock) {
-            loadFeedDataOfFeedItemList(items)
-        }
-    }
-
-    private fun loadTagsOfFeedItemList(items: List<FeedItem>) {
-        val favoriteIds = getFavoriteIDList()
-        val queueIds = getQueueIDList()
+        Logd(TAG, "loadAdditionalFeedItemListData called with items.size: ${items.size}")
+        val favoriteIds = getFavoriteIDSet()
+        val queueIds = getQueueIDSet()
 
         for (item in items) {
             if (favoriteIds.contains(item.id)) item.addTag(FeedItem.TAG_FAVORITE)
             if (queueIds.contains(item.id)) item.addTag(FeedItem.TAG_QUEUE)
+        }
+
+        synchronized(feedListLock) {
+            loadFeedDataOfFeedItemList(items)
         }
     }
 
@@ -136,11 +134,12 @@ object DBReader {
      */
     private fun loadFeedDataOfFeedItemList(items: List<FeedItem>) {
         Logd(TAG, "loadFeedDataOfFeedItemList called")
-        val feedIndex: MutableMap<Long, Feed> = ArrayMap(feeds.size)
-        val feedsCopy = ArrayList(feeds)
-        for (feed in feedsCopy) {
-            feedIndex[feed.id] = feed
-        }
+//         feedIndex is now a static member
+//        val feedIndex: MutableMap<Long, Feed> = ArrayMap(feeds.size)
+//        val feedsCopy = ArrayList(feeds)
+//        for (feed in feedsCopy) {
+//            feedIndex[feed.id] = feed
+//        }
         for (item in items) {
             var feed = feedIndex[item.feedId]
             if (feed == null) {
@@ -168,9 +167,9 @@ object DBReader {
         return getFeedItemList(feed, filter, SortOrder.DATE_NEW_OLD)
     }
 
-    fun getFeedItemList(feed: Feed?, filter: FeedItemFilter?, sortOrder: SortOrder?): List<FeedItem> {
-//        Log.d(TAG, "getFeedItemList() called with: feed = [$feed]")
-
+    fun getFeedItemList(feed: Feed?, filter_: FeedItemFilter?, sortOrder: SortOrder?): List<FeedItem> {
+        val filter = filter_ ?: unfiltered()
+        Logd(TAG, "getFeedItemList() called with: ${feed?.title}")
         val adapter = getInstance()
         adapter.open()
         try {
@@ -240,8 +239,6 @@ object DBReader {
     @JvmStatic
     fun getQueueIDList(): LongList {
         Logd(TAG, "getQueueIDList() called")
-//        printStackTrace()
-
         val adapter = getInstance()
         adapter.open()
         try {
@@ -251,21 +248,39 @@ object DBReader {
         }
     }
 
-    private fun getQueueIDList(adapter: PodDBAdapter?): LongList {
-        adapter?.queueIDCursor?.use { cursor ->
+    private fun getQueueIDList(adapter: PodDBAdapter): LongList {
+        adapter.queueIDCursor.use { cursor ->
             val queueIds = LongList(cursor.count)
             while (cursor.moveToNext()) {
                 queueIds.add(cursor.getLong(0))
             }
             return queueIds
         }
-        return LongList()
+//        return LongList()
+    }
+
+    @JvmStatic
+    fun getQueueIDSet(): HashSet<Long> {
+        Logd(TAG, "getQueueIDSet() called")
+        val adapter = getInstance()
+        adapter.open()
+        try {
+            adapter.queueIDCursor.use { cursor ->
+                val queueIds = HashSet<Long>(cursor.count)
+                while (cursor.moveToNext()) {
+                    queueIds.add(cursor.getLong(0))
+                }
+                return queueIds
+            }
+//            return HashSet()
+        } finally {
+            adapter.close()
+        }
     }
 
     @JvmStatic
     fun getQueue(): List<FeedItem> {
         Logd(TAG, "getQueue() called")
-
         val adapter = getInstance()
         adapter.open()
         try {
@@ -275,14 +290,13 @@ object DBReader {
         }
     }
 
-    private fun getFavoriteIDList(): LongList {
-        Logd(TAG, "getFavoriteIDList() called")
-
+    private fun getFavoriteIDSet(): HashSet<Long> {
+        Logd(TAG, "getFavoriteIDSet() called")
         val adapter = getInstance()
         adapter.open()
         try {
             adapter.getFavoritesIdsCursor(0, Int.MAX_VALUE).use { cursor ->
-                val favoriteIDs = LongList(cursor.count)
+                val favoriteIDs = HashSet<Long>(cursor.count)
                 while (cursor.moveToNext()) {
                     favoriteIDs.add(cursor.getLong(0))
                 }
@@ -300,7 +314,8 @@ object DBReader {
      * @param filter The filter describing which episodes to filter out.
      */
     @JvmStatic
-    fun getEpisodes(offset: Int, limit: Int, filter: FeedItemFilter?, sortOrder: SortOrder?): List<FeedItem> {
+    fun getEpisodes(offset: Int, limit: Int, filter_: FeedItemFilter?, sortOrder: SortOrder?): List<FeedItem> {
+        val filter = filter_ ?: unfiltered()
         Logd(TAG, "getEpisodes called with: offset=$offset, limit=$limit")
         val adapter = getInstance()
         adapter.open()
@@ -316,7 +331,8 @@ object DBReader {
     }
 
     @JvmStatic
-    fun getTotalEpisodeCount(filter: FeedItemFilter?): Int {
+    fun getTotalEpisodeCount(filter_: FeedItemFilter?): Int {
+        val filter = filter_ ?: unfiltered()
         Logd(TAG, "getTotalEpisodeCount called")
         val adapter = getInstance()
         adapter.open()
@@ -481,11 +497,11 @@ object DBReader {
         }
     }
 
-    private fun getFeedItem(itemId: Long, adapter: PodDBAdapter?): FeedItem? {
+    private fun getFeedItem(itemId: Long, adapter: PodDBAdapter): FeedItem? {
         Logd(TAG, "Loading feeditem with id $itemId")
 
         var item: FeedItem? = null
-        adapter?.getFeedItemCursor(itemId.toString())?.use { cursor ->
+        adapter.getFeedItemCursor(itemId.toString()).use { cursor ->
             if (cursor.moveToNext()) {
                 val list = extractItemlistFromCursor(adapter, cursor)
                 if (list.isNotEmpty()) {
@@ -495,7 +511,7 @@ object DBReader {
             }
             return item
         }
-        return null
+//        return null
     }
 
     /**
@@ -525,12 +541,13 @@ object DBReader {
      * @return The FeedItem next in queue or null if the FeedItem could not be found.
      */
     fun getNextInQueue(item: FeedItem): FeedItem? {
-        Logd(TAG, "getNextInQueue() called with: itemId = [${item.id}]")
+        Logd(TAG, "*** expensive call getNextInQueue() with: itemId = [${item.id}]")
         val adapter = getInstance()
         adapter.open()
         try {
             var nextItem: FeedItem? = null
             try {
+//                TODO: these calls are expensive
                 adapter.getNextInQueue(item).use { cursor ->
                     val list = extractItemlistFromCursor(adapter, cursor)
                     if (list.isNotEmpty()) {
@@ -571,14 +588,14 @@ object DBReader {
      * @return The FeedItem or null if the FeedItem could not be found.
      * Does NOT load additional attributes like feed or queue state.
      */
-    private fun getFeedItemByGuidOrEpisodeUrl(guid: String?, episodeUrl: String, adapter: PodDBAdapter?): FeedItem? {
-        adapter?.getFeedItemCursor(guid, episodeUrl)?.use { cursor ->
+    private fun getFeedItemByGuidOrEpisodeUrl(guid: String?, episodeUrl: String, adapter: PodDBAdapter): FeedItem? {
+        adapter.getFeedItemCursor(guid, episodeUrl).use { cursor ->
             if (!cursor.moveToNext()) return null
             val list = extractItemlistFromCursor(adapter, cursor)
             if (list.isNotEmpty()) return list[0]
             return null
         }
-        return null
+//        return null
     }
 
     /**
@@ -598,9 +615,9 @@ object DBReader {
         }
     }
 
-    private fun getImageAuthentication(imageUrl: String, adapter: PodDBAdapter?): String {
-        var credentials = ""
-        adapter?.getImageAuthenticationCursor(imageUrl)?.use { cursor ->
+    private fun getImageAuthentication(imageUrl: String, adapter: PodDBAdapter): String {
+        var credentials: String
+        adapter.getImageAuthenticationCursor(imageUrl).use { cursor ->
             if (cursor.moveToFirst()) {
                 val username = cursor.getString(0)
                 val password = cursor.getString(1)
@@ -646,10 +663,10 @@ object DBReader {
                 if (cursor.moveToFirst()) {
                     val indexDescription = cursor.getColumnIndex(PodDBAdapter.KEY_DESCRIPTION)
                     val description = cursor.getString(indexDescription)
-                    item.setDescriptionIfLonger(description)
+                    item.setDescription(description)
                     val indexTranscript = cursor.getColumnIndex(PodDBAdapter.KEY_TRANSCRIPT)
                     val transcript = cursor.getString(indexTranscript)
-                    item.setTranscriptIfLonger(transcript)
+                    item.setTranscript(transcript)
                 }
             }
         } finally {
@@ -681,8 +698,8 @@ object DBReader {
         }
     }
 
-    private fun loadChaptersOfFeedItem(adapter: PodDBAdapter?, item: FeedItem): List<Chapter>? {
-        adapter?.getSimpleChaptersOfFeedItemCursor(item)?.use { cursor ->
+    private fun loadChaptersOfFeedItem(adapter: PodDBAdapter, item: FeedItem): List<Chapter>? {
+        adapter.getSimpleChaptersOfFeedItemCursor(item).use { cursor ->
             val chaptersCount = cursor.count
             if (chaptersCount == 0) {
                 item.chapters = null
@@ -694,7 +711,7 @@ object DBReader {
             }
             return chapters
         }
-        return null
+//        return null
     }
 
     /**
@@ -827,7 +844,7 @@ object DBReader {
         val adapter = getInstance()
         adapter.open()
 
-        val feedCounters: Map<Long, Int> = adapter.getFeedCounters(feedCounterSetting)
+        val feedCounters: Map<Long, Int> = adapter.getFeedEpisodesCounters(feedCounterSetting)
 //        getFeedList(adapter)
 
 //        TODO:
@@ -901,16 +918,19 @@ object DBReader {
         }
 
         val queueSize = adapter.queueSize
+//        getting all items, not only new ones
         val numNewItems = getTotalEpisodeCount(FeedItemFilter(FeedItemFilter.NEW))
         val numDownloadedItems = getTotalEpisodeCount(FeedItemFilter(FeedItemFilter.DOWNLOADED))
-
+        val numItems = getTotalEpisodeCount(unfiltered())
+        val numFeeds = feeds.size
         val items: MutableList<FeedDrawerItem> = ArrayList()
         for (feed in feeds) {
             val counter = if (feedCounters.containsKey(feed.id)) feedCounters[feed.id]!! else 0
             val drawerItem = FeedDrawerItem(feed, feed.id, counter)
             items.add(drawerItem)
         }
-        val result = NavDrawerData(items, queueSize, numNewItems, numDownloadedItems, feedCounters, EpisodeCleanupAlgorithmFactory.build().getReclaimableItems())
+        val result = NavDrawerData(items, queueSize, numNewItems, numDownloadedItems, feedCounters,
+            EpisodeCleanupAlgorithmFactory.build().getReclaimableItems(), numItems, numFeeds)
         adapter.close()
         return result
     }

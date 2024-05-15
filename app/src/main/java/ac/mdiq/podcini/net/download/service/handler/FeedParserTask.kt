@@ -10,6 +10,7 @@ import ac.mdiq.podcini.storage.model.feed.FeedPreferences
 import ac.mdiq.podcini.storage.model.feed.VolumeAdaptionSetting
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
 import ac.mdiq.podcini.feed.parser.UnsupportedFeedtypeException
+import ac.mdiq.podcini.util.Logd
 import org.xml.sax.SAXException
 import java.io.File
 import java.io.IOException
@@ -44,7 +45,7 @@ class FeedParserTask(private val request: DownloadRequest) : Callable<FeedHandle
         var result: FeedHandlerResult? = null
         try {
             result = feedHandler.parseFeed(feed)
-            Log.d(TAG, feed.title + " parsed")
+            Logd(TAG, feed.title + " parsed")
             checkFeedData(feed)
 //            TODO: what the shit is this??
             if (feed.imageUrl.isNullOrEmpty()) feed.imageUrl = Feed.PREFIX_GENERATIVE_COVER + feed.download_url
@@ -78,7 +79,7 @@ class FeedParserTask(private val request: DownloadRequest) : Callable<FeedHandle
             val feedFile = File(request.destination?:"junk")
             if (feedFile.exists()) {
                 val deleted = feedFile.delete()
-                Log.d(TAG, "Deletion of file '" + feedFile.absolutePath + "' " + (if (deleted) "successful" else "FAILED"))
+                Logd(TAG, "Deletion of file '" + feedFile.absolutePath + "' " + (if (deleted) "successful" else "FAILED"))
             }
         }
 

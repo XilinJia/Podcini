@@ -32,10 +32,10 @@ class PlayActionButton(item: FeedItem) : ItemActionButton(item) {
             return
         }
 
-        EventBus.getDefault().post(StartPlayEvent(item))
         PlaybackServiceStarter(context, media)
             .callEvenIfRunning(true)
             .start()
+        EventBus.getDefault().post(StartPlayEvent(item))
 
         if (media.getMediaType() == MediaType.VIDEO) context.startActivity(getPlayerActivityIntent(context, MediaType.VIDEO))
     }

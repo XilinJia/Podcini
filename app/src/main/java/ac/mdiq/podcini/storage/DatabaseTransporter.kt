@@ -9,6 +9,7 @@ import android.os.ParcelFileDescriptor
 import android.text.format.Formatter
 import android.util.Log
 import ac.mdiq.podcini.storage.database.PodDBAdapter
+import ac.mdiq.podcini.util.Logd
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
 import java.io.FileInputStream
@@ -39,7 +40,7 @@ object DatabaseTransporter {
                 try {
                     pfd.close()
                 } catch (e: IOException) {
-                    Log.d(TAG, "Unable to close ParcelFileDescriptor")
+                    Logd(TAG, "Unable to close ParcelFileDescriptor")
                 }
             }
         }

@@ -8,6 +8,7 @@ import ac.mdiq.podcini.net.discovery.PodcastSearchResult
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.FeedDiscoverAdapter
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.DiscoveryDefaultUpdateEvent
 import android.content.Context
 import android.content.SharedPreferences
@@ -21,10 +22,7 @@ import android.widget.*
 import androidx.annotation.OptIn
 import androidx.fragment.app.Fragment
 import androidx.media3.common.util.UnstableApi
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -34,8 +32,9 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
     private var _binding: QuickFeedDiscoveryBinding? = null
     private val binding get() = _binding!!
 
-    private var disposable: Disposable? = null
-    
+//    private var disposable: Disposable? = null
+    val scope = CoroutineScope(Dispatchers.Main)
+
     private lateinit var adapter: FeedDiscoverAdapter
     private lateinit var discoverGridLayout: GridView
     private lateinit var errorTextView: TextView
@@ -47,7 +46,7 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
         super.onCreateView(inflater, container, savedInstanceState)
         _binding = QuickFeedDiscoveryBinding.inflate(inflater)
 
-        Log.d(TAG, "fragment onCreateView")
+        Logd(TAG, "fragment onCreateView")
         val discoverMore = binding.discoverMore
         discoverMore.setOnClickListener { (activity as MainActivity).loadChildFragment(DiscoveryFragment()) }
 
@@ -84,7 +83,8 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
         super.onDestroy()
         _binding = null
         EventBus.getDefault().unregister(this)
-        disposable?.dispose()
+        scope.cancel()
+//        disposable?.dispose()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -124,13 +124,37 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
             return
         }
 
-        disposable = Observable.fromCallable {
-            loader.loadToplist(countryCode, NUM_SUGGESTIONS, DBReader.getFeedList())
-        }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { podcasts: List<PodcastSearchResult> ->
+//        disposable = Observable.fromCallable {
+//            loader.loadToplist(countryCode, NUM_SUGGESTIONS, DBReader.getFeedList())
+//        }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe(
+//                { podcasts: List<PodcastSearchResult> ->
+//                    errorView.visibility = View.GONE
+//                    if (podcasts.isEmpty()) {
+//                        errorTextView.text = resources.getText(R.string.search_status_no_results)
+//                        errorView.visibility = View.VISIBLE
+//                        discoverGridLayout.visibility = View.INVISIBLE
+//                    } else {
+//                        discoverGridLayout.visibility = View.VISIBLE
+//                        adapter.updateData(podcasts)
+//                    }
+//                }, { error: Throwable ->
+//                    Log.e(TAG, Log.getStackTraceString(error))
+//                    errorTextView.text = error.localizedMessage
+//                    errorView.visibility = View.VISIBLE
+//                    discoverGridLayout.visibility = View.INVISIBLE
+//                    errorRetry.visibility = View.VISIBLE
+//                    errorRetry.setOnClickListener { loadToplist() }
+//                })
+
+        scope.launch {
+            try {
+                val podcasts = withContext(Dispatchers.IO) {
+                    loader.loadToplist(countryCode, NUM_SUGGESTIONS, DBReader.getFeedList())
+                }
+                withContext(Dispatchers.Main) {
                     errorView.visibility = View.GONE
                     if (podcasts.isEmpty()) {
                         errorTextView.text = resources.getText(R.string.search_status_no_results)
@@ -140,14 +164,17 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
                         discoverGridLayout.visibility = View.VISIBLE
                         adapter.updateData(podcasts)
                     }
-                }, { error: Throwable ->
-                    Log.e(TAG, Log.getStackTraceString(error))
-                    errorTextView.text = error.localizedMessage
-                    errorView.visibility = View.VISIBLE
-                    discoverGridLayout.visibility = View.INVISIBLE
-                    errorRetry.visibility = View.VISIBLE
-                    errorRetry.setOnClickListener { loadToplist() }
-                })
+                }
+            } catch (e: Throwable) {
+                Log.e(TAG, Log.getStackTraceString(e))
+                errorTextView.text = e.localizedMessage
+                errorView.visibility = View.VISIBLE
+                discoverGridLayout.visibility = View.INVISIBLE
+                errorRetry.visibility = View.VISIBLE
+                errorRetry.setOnClickListener { loadToplist() }
+            }
+        }
+
     }
 
     @OptIn(UnstableApi::class) override fun onItemClick(parent: AdapterView<*>?, view: View, position: Int, id: Long) {

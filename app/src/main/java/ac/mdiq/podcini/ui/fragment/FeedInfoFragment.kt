@@ -3,7 +3,6 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.FeedinfoBinding
 import ac.mdiq.podcini.net.discovery.CombinedSearcher
-import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.DBTasks
 import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.storage.model.feed.FeedFunding
@@ -13,6 +12,7 @@ import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.ui.statistics.feed.FeedStatisticsFragment
 import ac.mdiq.podcini.ui.view.ToolbarIconTintManager
 import ac.mdiq.podcini.util.IntentUtils
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.ShareUtils
 import ac.mdiq.podcini.util.syndication.HtmlToPlainText
 import android.R.string
@@ -44,12 +44,10 @@ import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import io.reactivex.Completable
-import io.reactivex.Maybe
-import io.reactivex.MaybeEmitter
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
 
 /**
@@ -57,14 +55,10 @@ import org.apache.commons.lang3.StringUtils
  */
 @UnstableApi
 class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
-    private val addLocalFolderLauncher = registerForActivityResult<Uri?, Uri>(AddLocalFolder()) { uri: Uri? -> this.addLocalFolderResult(uri) }
-
     private var _binding: FeedinfoBinding? = null
     private val binding get() = _binding!!
 
     private var feed: Feed? = null
-    private var disposable: Disposable? = null
-    
     private lateinit var imgvCover: ImageView
     private lateinit var txtvTitle: TextView
     private lateinit var txtvDescription: TextView
@@ -76,6 +70,10 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private lateinit var infoContainer: View
     private lateinit var header: View
     private lateinit var toolbar: MaterialToolbar
+
+    private val addLocalFolderLauncher = registerForActivityResult<Uri?, Uri>(AddLocalFolder()) {
+        uri: Uri? -> this.addLocalFolderResult(uri)
+    }
 
     private val copyUrlToClipboard = View.OnClickListener {
         if (feed != null && feed!!.download_url != null) {
@@ -90,7 +88,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FeedinfoBinding.inflate(inflater)
 
-        Log.d(TAG, "fragment onCreateView")
+        Logd(TAG, "fragment onCreateView")
         toolbar = binding.toolbar
         toolbar.title = ""
         toolbar.inflateMenu(R.menu.feedinfo)
@@ -134,7 +132,8 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
         txtvUrl.setOnClickListener(copyUrlToClipboard)
 
-        val feedId = requireArguments().getLong(EXTRA_FEED_ID)
+//        val feedId = requireArguments().getLong(EXTRA_FEED_ID)
+        val feedId = feed!!.id
         parentFragmentManager.beginTransaction().replace(R.id.statisticsFragmentContainer,
             FeedStatisticsFragment.newInstance(feedId, false), "feed_statistics_fragment")
             .commitAllowingStateLoss()
@@ -144,22 +143,8 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
         }
 
+        showFeed()
         return binding.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val feedId = requireArguments().getLong(EXTRA_FEED_ID)
-        disposable = Maybe.create { emitter: MaybeEmitter<Feed?> ->
-            val feed: Feed? = DBReader.getFeed(feedId)
-            if (feed != null) emitter.onSuccess(feed)
-            else emitter.onComplete()
-        }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ result: Feed? ->
-                feed = result
-                showFeed()
-            }, { error: Throwable? -> Log.d(TAG, Log.getStackTraceString(error)) }, {})
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -171,28 +156,11 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private fun showFeed() {
         if (feed == null) return
-        Log.d(TAG, "Language is " + feed!!.language)
-        Log.d(TAG, "Author is " + feed!!.author)
-        Log.d(TAG, "URL is " + feed!!.download_url)
-//        if (!feed?.imageUrl.isNullOrBlank()) {
-//            Glide.with(this)
-//                .load(feed!!.imageUrl)
-//                .apply(RequestOptions()
-//                    .placeholder(R.color.light_gray)
-//                    .error(R.color.light_gray)
-//                    .fitCenter()
-//                    .dontAnimate())
-//                .into(imgvCover)
-//            Glide.with(this)
-//                .load(feed!!.imageUrl)
-//                .apply(RequestOptions()
-//                    .placeholder(R.color.image_readability_tint)
-//                    .error(R.color.image_readability_tint)
-//                    .transform(FastBlurTransformation())
-//                    .dontAnimate())
-//                .into(imgvBackground)
-//        }
+        Logd(TAG, "Language is " + feed!!.language)
+        Logd(TAG, "Author is " + feed!!.author)
+        Logd(TAG, "URL is " + feed!!.download_url)
 
+//        TODO: need to generate blurred image for background
         imgvCover.load(feed!!.imageUrl) {
             placeholder(R.color.light_gray)
             error(R.mipmap.ic_launcher)
@@ -244,18 +212,21 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         refreshToolbarState()
     }
 
+    fun setFeed(feed_: Feed) {
+        feed = feed_
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        disposable?.dispose()
+        feed = null
     }
 
     private fun refreshToolbarState() {
         toolbar.menu?.findItem(R.id.reconnect_local_folder)?.setVisible(feed != null && feed!!.isLocalFeed)
         toolbar.menu?.findItem(R.id.share_item)?.setVisible(feed != null && !feed!!.isLocalFeed)
         toolbar.menu?.findItem(R.id.visit_website_item)
-            ?.setVisible(feed != null && feed!!.link != null && IntentUtils.isCallable(requireContext(),
-                Intent(Intent.ACTION_VIEW, Uri.parse(feed!!.link))))
+            ?.setVisible(feed != null && feed!!.link != null && IntentUtils.isCallable(requireContext(), Intent(Intent.ACTION_VIEW, Uri.parse(feed!!.link))))
         toolbar.menu?.findItem(R.id.edit_feed_url_item)?.setVisible(feed != null && !feed!!.isLocalFeed)
     }
 
@@ -302,18 +273,37 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     @UnstableApi private fun reconnectLocalFolder(uri: Uri) {
         if (feed == null) return
 
-        Completable.fromAction {
-            requireActivity().contentResolver
-                .takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            val documentFile = DocumentFile.fromTreeUri(requireContext(), uri)
-            requireNotNull(documentFile) { "Unable to retrieve document tree" }
-            feed!!.download_url = Feed.PREFIX_LOCAL_FOLDER + uri.toString()
-            DBTasks.updateFeed(requireContext(), feed!!, true)
+//        Completable.fromAction {
+//            requireActivity().contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+//            val documentFile = DocumentFile.fromTreeUri(requireContext(), uri)
+//            requireNotNull(documentFile) { "Unable to retrieve document tree" }
+//            feed!!.download_url = Feed.PREFIX_LOCAL_FOLDER + uri.toString()
+//            DBTasks.updateFeed(requireContext(), feed!!, true)
+//        }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe({ (activity as MainActivity).showSnackbarAbovePlayer(string.ok, Snackbar.LENGTH_SHORT) },
+//                { error: Throwable -> (activity as MainActivity).showSnackbarAbovePlayer(error.localizedMessage, Snackbar.LENGTH_LONG) })
+
+        val scope = CoroutineScope(Dispatchers.Main)
+        scope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    requireActivity().contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    val documentFile = DocumentFile.fromTreeUri(requireContext(), uri)
+                    requireNotNull(documentFile) { "Unable to retrieve document tree" }
+                    feed!!.download_url = Feed.PREFIX_LOCAL_FOLDER + uri.toString()
+                    DBTasks.updateFeed(requireContext(), feed!!, true)
+                }
+                withContext(Dispatchers.Main) {
+                    (activity as MainActivity).showSnackbarAbovePlayer(string.ok, Snackbar.LENGTH_SHORT)
+                }
+            } catch (e: Throwable) {
+                withContext(Dispatchers.Main) {
+                    (activity as MainActivity).showSnackbarAbovePlayer(e.localizedMessage, Snackbar.LENGTH_LONG)
+                }
+            }
         }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ (activity as MainActivity).showSnackbarAbovePlayer(string.ok, Snackbar.LENGTH_SHORT) },
-                { error: Throwable -> (activity as MainActivity).showSnackbarAbovePlayer(error.localizedMessage, Snackbar.LENGTH_LONG) })
     }
 
     private class AddLocalFolder : ActivityResultContracts.OpenDocumentTree() {
@@ -323,13 +313,11 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     companion object {
-        private const val EXTRA_FEED_ID = "ac.mdiq.podcini.extra.feedId"
         private const val TAG = "FeedInfoActivity"
+
         fun newInstance(feed: Feed): FeedInfoFragment {
             val fragment = FeedInfoFragment()
-            val arguments = Bundle()
-            arguments.putLong(EXTRA_FEED_ID, feed.id)
-            fragment.arguments = arguments
+            fragment.setFeed(feed)
             return fragment
         }
     }

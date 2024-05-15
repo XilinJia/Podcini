@@ -19,9 +19,10 @@ import androidx.fragment.app.DialogFragment
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import java.io.Serializable
 
@@ -87,18 +88,33 @@ class TagSettingsDialog : DialogFragment() {
     }
 
     private fun loadTags() {
-        Observable.fromCallable {
-            DBReader.getTags()
-        }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { result: List<String> ->
+//        Observable.fromCallable {
+//            DBReader.getTags()
+//        }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe(
+//                { result: List<String> ->
+//                    val acAdapter = ArrayAdapter(requireContext(), R.layout.single_tag_text_view, result)
+//                    binding.newTagEditText.setAdapter(acAdapter)
+//                }, { error: Throwable? ->
+//                    Log.e(TAG, Log.getStackTraceString(error))
+//                })
+
+        val scope = CoroutineScope(Dispatchers.Main)
+        scope.launch {
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    DBReader.getTags()
+                }
+                withContext(Dispatchers.Main) {
                     val acAdapter = ArrayAdapter(requireContext(), R.layout.single_tag_text_view, result)
                     binding.newTagEditText.setAdapter(acAdapter)
-                }, { error: Throwable? ->
-                    Log.e(TAG, Log.getStackTraceString(error))
-                })
+                }
+            } catch (e: Throwable) {
+                Log.e(TAG, Log.getStackTraceString(e))
+            }
+        }
     }
 
     private fun addTag(name: String) {

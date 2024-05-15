@@ -11,7 +11,7 @@ import android.widget.ImageView
 import androidx.media3.common.util.UnstableApi
 
 abstract class ItemActionButton internal constructor(@JvmField var item: FeedItem) {
-    val TAG = this::class.simpleName
+    val TAG = this::class.simpleName ?: "ItemActionButton"
 
     abstract fun getLabel(): Int
 

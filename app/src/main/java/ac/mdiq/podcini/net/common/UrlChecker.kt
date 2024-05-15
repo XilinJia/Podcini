@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.net.common
 
+import ac.mdiq.podcini.util.Logd
 import android.net.Uri
 import android.util.Log
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
@@ -29,23 +30,23 @@ object UrlChecker {
         val lowerCaseUrl = url.lowercase() // protocol names are case insensitive
         when {
             lowerCaseUrl.startsWith("feed://") -> {
-                Log.d(TAG, "Replacing feed:// with http://")
+                Logd(TAG, "Replacing feed:// with http://")
                 return prepareUrl(url.substring("feed://".length))
             }
             lowerCaseUrl.startsWith("pcast://") -> {
-                Log.d(TAG, "Removing pcast://")
+                Logd(TAG, "Removing pcast://")
                 return prepareUrl(url.substring("pcast://".length))
             }
             lowerCaseUrl.startsWith("pcast:") -> {
-                Log.d(TAG, "Removing pcast:")
+                Logd(TAG, "Removing pcast:")
                 return prepareUrl(url.substring("pcast:".length))
             }
             lowerCaseUrl.startsWith("itpc") -> {
-                Log.d(TAG, "Replacing itpc:// with http://")
+                Logd(TAG, "Replacing itpc:// with http://")
                 return prepareUrl(url.substring("itpc://".length))
             }
             lowerCaseUrl.startsWith(AP_SUBSCRIBE) -> {
-                Log.d(TAG, "Removing podcini-subscribe://")
+                Logd(TAG, "Removing podcini-subscribe://")
                 return prepareUrl(url.substring(AP_SUBSCRIBE.length))
             }
 //            lowerCaseUrl.contains(AP_SUBSCRIBE_DEEPLINK) -> {
@@ -58,7 +59,7 @@ object UrlChecker {
 //                }
 //            }
             !(lowerCaseUrl.startsWith("http://") || lowerCaseUrl.startsWith("https://")) -> {
-                Log.d(TAG, "Adding http:// at the beginning of the URL")
+                Logd(TAG, "Adding http:// at the beginning of the URL")
                 return "http://$url"
             }
             else -> return url

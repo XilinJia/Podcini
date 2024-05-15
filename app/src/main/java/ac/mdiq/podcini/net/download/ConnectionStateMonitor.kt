@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.net.download
 
+import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.ConnectivityManager.OnNetworkActiveListener
@@ -17,7 +18,7 @@ class ConnectionStateMonitor
         .build()
 
     @UnstableApi override fun onNetworkActive() {
-        Log.d(TAG, "ConnectionStateMonitor::onNetworkActive network connection changed")
+        Logd(TAG, "ConnectionStateMonitor::onNetworkActive network connection changed")
         NetworkConnectionChangeHandler.networkChangedDetected()
     }
 

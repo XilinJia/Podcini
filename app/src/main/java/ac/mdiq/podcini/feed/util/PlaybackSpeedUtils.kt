@@ -7,6 +7,7 @@ import ac.mdiq.podcini.storage.model.feed.FeedPreferences
 import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.util.Logd
 
 /**
  * Utility class to use the appropriate playback speed based on [PlaybackPreferences]
@@ -32,8 +33,8 @@ object PlaybackSpeedUtils {
                     val feed = item.feed
                     if (feed?.preferences != null) {
                         playbackSpeed = feed.preferences!!.feedPlaybackSpeed
-                        Log.d(TAG, "using feed speed $playbackSpeed")
-                    } else Log.d(TAG, "Can not get feed specific playback speed: $feed")
+                        Logd(TAG, "using feed speed $playbackSpeed")
+                    } else Logd(TAG, "Can not get feed specific playback speed: $feed")
                 }
             }
         }

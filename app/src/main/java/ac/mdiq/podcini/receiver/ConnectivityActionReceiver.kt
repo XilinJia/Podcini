@@ -9,11 +9,12 @@ import android.util.Log
 import androidx.media3.common.util.UnstableApi
 import ac.mdiq.podcini.util.config.ClientConfigurator
 import ac.mdiq.podcini.net.download.NetworkConnectionChangeHandler.networkChangedDetected
+import ac.mdiq.podcini.util.Logd
 
 class ConnectivityActionReceiver : BroadcastReceiver() {
     @UnstableApi override fun onReceive(context: Context, intent: Intent) {
         if (TextUtils.equals(intent.action, ConnectivityManager.CONNECTIVITY_ACTION)) {
-            Log.d(TAG, "Received intent")
+            Logd(TAG, "Received intent")
 
             ClientConfigurator.initialize(context)
             networkChangedDetected()

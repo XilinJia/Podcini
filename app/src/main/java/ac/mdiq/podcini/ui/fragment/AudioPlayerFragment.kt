@@ -64,11 +64,8 @@ import coil.request.ImageRequest
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.elevation.SurfaceColors
-import io.reactivex.Maybe
-import io.reactivex.MaybeEmitter
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -97,14 +94,17 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     private lateinit  var cardViewSeek: CardView
     private lateinit  var txtvSeek: TextView
 
+    val scope = CoroutineScope(Dispatchers.Main)
     private var controller: PlaybackController? = null
-    private var disposable: Disposable? = null
+//    private var disposable: Disposable? = null
     private var seekedToChapterStart = false
     private var currentChapterIndex = -1
     private var duration = 0
 
     private var currentMedia: Playable? = null
     private var currentitem: FeedItem? = null
+
+    var isCollapsed = true
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
@@ -163,6 +163,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         _binding = null
         controller?.release()
         controller = null
+        scope.cancel()
         EventBus.getDefault().unregister(this)
         Logd(TAG, "Fragment destroyed")
     }
@@ -192,32 +193,55 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_EXPANDED
     }
 
-    private fun loadMediaInfo(includingChapters: Boolean) {
-        Logd(TAG, "loadMediaInfo called")
+//    private fun loadMediaInfo0(includingChapters: Boolean) {
+//        Logd(TAG, "loadMediaInfo called")
+//
+//        val theMedia = controller?.getMedia() ?: return
+//        Logd(TAG, "loadMediaInfo $theMedia")
+//
+//        if (currentMedia == null || theMedia.getIdentifier() != currentMedia?.getIdentifier()) {
+//            Logd(TAG, "loadMediaInfo loading details")
+//            disposable?.dispose()
+//            disposable = Maybe.create<Playable> { emitter: MaybeEmitter<Playable?> ->
+//                val media: Playable? = theMedia
+//                if (media != null) {
+//                    if (includingChapters) ChapterUtils.loadChapters(media, requireContext(), false)
+//                    emitter.onSuccess(media)
+//                } else emitter.onComplete()
+//            }
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe({ media: Playable ->
+//                    currentMedia = media
+//                    updateUi(media)
+//                    playerFragment1?.updateUi(media)
+//                    playerFragment2?.updateUi(media)
+//                    if (!includingChapters) loadMediaInfo(true)
+//                }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) },
+//                    { updateUi(null) })
+//        }
+//    }
 
+    fun loadMediaInfo(includingChapters: Boolean) {
         val theMedia = controller?.getMedia() ?: return
-        Logd(TAG, "loadMediaInfo $theMedia")
-
-        if (currentMedia == null || theMedia.getIdentifier() != currentMedia?.getIdentifier()) {
-            Logd(TAG, "loadMediaInfo loading details")
-            disposable?.dispose()
-            disposable = Maybe.create<Playable> { emitter: MaybeEmitter<Playable?> ->
-                val media: Playable? = theMedia
-                if (media != null) {
-                    if (includingChapters) ChapterUtils.loadChapters(media, requireContext(), false)
-                    emitter.onSuccess(media)
-                } else emitter.onComplete()
+        if (currentMedia == null || theMedia.getIdentifier() != currentMedia?.getIdentifier() || (includingChapters && !theMedia.chaptersLoaded())) {
+            Logd(TAG, "loadMediaInfo loading details ${theMedia.getIdentifier()} chapter: $includingChapters")
+            scope.launch {
+                val media: Playable = withContext(Dispatchers.IO) {
+                    theMedia.apply {
+                        if (includingChapters) ChapterUtils.loadChapters(this, requireContext(), false)
+                    }
+                }
+                currentMedia = media
+                updateUi()
+                playerFragment1?.updateUi(currentMedia)
+                playerFragment2?.updateUi(currentMedia)
+                if (!includingChapters) loadMediaInfo(true)
+            }.invokeOnCompletion { throwable ->
+                if (throwable!= null) {
+                    Log.e(TAG, Log.getStackTraceString(throwable))
+                }
             }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ media: Playable ->
-                    currentMedia = media
-                    updateUi(media)
-                    playerFragment1?.updateUi(media)
-                    playerFragment2?.updateUi(media)
-                    if (!includingChapters) loadMediaInfo(true)
-                }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) },
-                    { updateUi(null) })
         }
     }
 
@@ -240,10 +264,10 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         }
     }
 
-    private fun updateUi(media: Playable?) {
+    fun updateUi() {
         Logd(TAG, "updateUi called")
-        setChapterDividers(media)
-        setupOptionsMenu(media)
+        setChapterDividers(currentMedia)
+        setupOptionsMenu(currentMedia)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -265,7 +289,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     override fun onStop() {
         super.onStop()
 //        progressIndicator.visibility = View.GONE // Controller released; we will not receive buffering updates
-        disposable?.dispose()
+//        disposable?.dispose()
     }
 
 //    @Subscribe(threadMode = ThreadMode.MAIN)
@@ -328,7 +352,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                     txtvSeek.text = controller!!.getMedia()?.getChapters()?.get(newChapterIndex)?.title ?: ("\n${Converter.getDurationStringLong(position)}")
                 } else txtvSeek.text = Converter.getDurationStringLong(position)
             }
-            duration != controller!!.duration -> updateUi(controller!!.getMedia())
+            duration != controller!!.duration -> updateUi()
         }
     }
 
@@ -695,7 +719,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             (activity as MainActivity).setPlayerVisible(true)
             onPositionObserverUpdate(PlaybackPositionEvent(media.getPosition(), media.getDuration()))
 
-            val imgLoc = ImageResourceUtils.getEpisodeListImageLocation(media) + "sdfsdf"
+            val imgLoc = ImageResourceUtils.getEpisodeListImageLocation(media)
             val imgLocFB = ImageResourceUtils.getFallbackImageLocation(media)
             val imageLoader = imgvCover.context.imageLoader
             val imageRequest = ImageRequest.Builder(requireContext())

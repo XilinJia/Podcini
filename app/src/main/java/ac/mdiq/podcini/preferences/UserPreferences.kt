@@ -6,6 +6,7 @@ import ac.mdiq.podcini.storage.model.feed.FeedPreferences.NewEpisodesAction
 import ac.mdiq.podcini.storage.model.feed.SortOrder
 import ac.mdiq.podcini.storage.model.feed.SubscriptionsFilter
 import ac.mdiq.podcini.storage.model.playback.MediaType
+import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
@@ -145,7 +146,7 @@ object UserPreferences {
      */
     @JvmStatic
     fun init(context: Context) {
-        Log.d(TAG, "Creating new instance of UserPreferences")
+        Logd(TAG, "Creating new instance of UserPreferences")
 
         UserPreferences.context = context.applicationContext
         prefs = PreferenceManager.getDefaultSharedPreferences(context)
@@ -697,11 +698,11 @@ object UserPreferences {
     fun getDataFolder(type: String?): File? {
         var dataFolder = getTypeDir(prefs.getString(PREF_DATA_FOLDER, null), type)
         if (dataFolder == null || !dataFolder.canWrite()) {
-            Log.d(TAG, "User data folder not writable or not set. Trying default.")
+            Logd(TAG, "User data folder not writable or not set. Trying default.")
             dataFolder = context.getExternalFilesDir(type)
         }
         if (dataFolder == null || !dataFolder.canWrite()) {
-            Log.d(TAG, "Default data folder not available or not writable. Falling back to internal memory.")
+            Logd(TAG, "Default data folder not available or not writable. Falling back to internal memory.")
             dataFolder = getTypeDir(context.filesDir.absolutePath, type)
         }
         return dataFolder
@@ -727,7 +728,7 @@ object UserPreferences {
 
     @JvmStatic
     fun setDataFolder(dir: String) {
-        Log.d(TAG, "setDataFolder(dir: $dir)")
+        Logd(TAG, "setDataFolder(dir: $dir)")
         prefs.edit().putString(PREF_DATA_FOLDER, dir).apply()
     }
 
@@ -743,7 +744,7 @@ object UserPreferences {
                 Log.e(TAG, "Could not create .nomedia file")
                 e.printStackTrace()
             }
-            Log.d(TAG, ".nomedia file created")
+            Logd(TAG, ".nomedia file created")
         }
     }
 

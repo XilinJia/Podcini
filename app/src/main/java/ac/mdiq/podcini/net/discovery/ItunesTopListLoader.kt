@@ -6,6 +6,7 @@ import android.content.Context
 import android.util.Log
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
 import ac.mdiq.podcini.storage.model.feed.Feed
+import ac.mdiq.podcini.util.Logd
 import okhttp3.CacheControl
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -36,7 +37,7 @@ class ItunesTopListLoader(private val context: Context) {
     @Throws(IOException::class)
     private fun getTopListFeed(client: OkHttpClient?, country: String): String {
         val url = "https://itunes.apple.com/%s/rss/toppodcasts/limit=$NUM_LOADED/explicit=true/json"
-        Log.d(TAG, "Feed URL " + String.format(url, country))
+        Logd(TAG, "Feed URL " + String.format(url, country))
         val httpReq: Request.Builder = Request.Builder()
             .cacheControl(CacheControl.Builder().maxStale(1, TimeUnit.DAYS).build())
             .url(String.format(url, country))

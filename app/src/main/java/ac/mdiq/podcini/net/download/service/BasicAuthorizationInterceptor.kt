@@ -6,6 +6,7 @@ import ac.mdiq.podcini.net.download.service.HttpCredentialEncoder.encode
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.util.URIUtil
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
+import ac.mdiq.podcini.util.Logd
 import okhttp3.Interceptor
 import okhttp3.Interceptor.Chain
 import okhttp3.Request
@@ -47,24 +48,24 @@ class BasicAuthorizationInterceptor : Interceptor {
         } else userInfo = DBReader.getImageAuthentication(request.url.toString())
 
         if (userInfo.isEmpty()) {
-            Log.d(TAG, "no credentials for '" + request.url + "'")
+            Logd(TAG, "no credentials for '" + request.url + "'")
             return response
         }
 
         if (!userInfo.contains(":")) {
-            Log.d(TAG, "Invalid credentials for '" + request.url + "'")
+            Logd(TAG, "Invalid credentials for '" + request.url + "'")
             return response
         }
         val username = userInfo.substring(0, userInfo.indexOf(':'))
         val password = userInfo.substring(userInfo.indexOf(':') + 1)
 
-        Log.d(TAG, "Authorization failed, re-trying with ISO-8859-1 encoded credentials")
+        Logd(TAG, "Authorization failed, re-trying with ISO-8859-1 encoded credentials")
         newRequest.header(HEADER_AUTHORIZATION, encode(username, password, "ISO-8859-1"))
         response = chain.proceed(newRequest.build())
 
         if (response.code != HttpURLConnection.HTTP_UNAUTHORIZED) return response
 
-        Log.d(TAG, "Authorization failed, re-trying with UTF-8 encoded credentials")
+        Logd(TAG, "Authorization failed, re-trying with UTF-8 encoded credentials")
         newRequest.header(HEADER_AUTHORIZATION, encode(username, password, "UTF-8"))
         return chain.proceed(newRequest.build())
     }

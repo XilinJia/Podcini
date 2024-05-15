@@ -2,12 +2,10 @@ package ac.mdiq.podcini.ui.adapter
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.util.Logd
 import android.graphics.drawable.Drawable
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
-import coil.Coil
 import coil.ImageLoader
 import coil.imageLoader
 import coil.request.ErrorResult

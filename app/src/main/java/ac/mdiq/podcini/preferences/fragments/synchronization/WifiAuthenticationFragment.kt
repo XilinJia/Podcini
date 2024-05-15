@@ -6,6 +6,7 @@ import ac.mdiq.podcini.net.sync.SynchronizationCredentials
 import ac.mdiq.podcini.net.sync.SynchronizationSettings.setWifiSyncEnabled
 import ac.mdiq.podcini.net.sync.wifi.WifiSyncService.Companion.hostPort
 import ac.mdiq.podcini.net.sync.wifi.WifiSyncService.Companion.startInstantSync
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.SyncServiceEvent
 import android.app.Dialog
 import android.content.Context.WIFI_SERVICE
@@ -76,7 +77,7 @@ import java.util.*
         if (d != null) {
             val confirmButton = d.getButton(Dialog.BUTTON_POSITIVE) as Button
             confirmButton.setOnClickListener {
-                Log.d(TAG, "confirm button pressed")
+                Logd(TAG, "confirm button pressed")
                 if (isGuest == null) {
                     Toast.makeText(requireContext(), R.string.host_or_guest, Toast.LENGTH_LONG).show()
                     return@setOnClickListener
@@ -107,7 +108,7 @@ import java.util.*
                 binding!!.progressBar.progress = event.message.toInt()
             }
             else -> {
-                Log.d(TAG, "Sync result unknow ${event.messageResId}")
+                Logd(TAG, "Sync result unknow ${event.messageResId}")
 //                Toast.makeText(context, "Sync result unknow ${event.messageResId}", Toast.LENGTH_LONG).show()
             }
         }

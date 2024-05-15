@@ -51,10 +51,10 @@ import com.skydoves.balloon.ArrowOrientation
 import com.skydoves.balloon.ArrowOrientationRules
 import com.skydoves.balloon.Balloon
 import com.skydoves.balloon.BalloonAnimation
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -93,7 +93,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var actionButton1: ItemActionButton? = null
     private var actionButton2: ItemActionButton? = null
 
-    private var disposable: Disposable? = null
+//    private var disposable: Disposable? = null
     private var controller: PlaybackController? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -258,7 +258,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         _binding = null
         EventBus.getDefault().unregister(this)
         controller?.release()
-        disposable?.dispose()
+//        disposable?.dispose()
         root.removeView(webvDescription)
         webvDescription.clearHistory()
         webvDescription.clearCache(true)
@@ -411,33 +411,51 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         load()
     }
 
+//    @UnstableApi private fun load0() {
+//        disposable?.dispose()
+//        if (!itemsLoaded) progbarLoading.visibility = View.VISIBLE
+//
+//        Logd(TAG, "load() called")
+//        disposable = Observable.fromCallable<FeedItem?> { this.loadInBackground() }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe({ result: FeedItem? ->
+//                progbarLoading.visibility = View.GONE
+//                item = result
+//                onFragmentLoaded()
+//                itemsLoaded = true
+//            },
+//                { error: Throwable? ->
+//                    Log.e(TAG, Log.getStackTraceString(error))
+//                })
+//    }
+
     @UnstableApi private fun load() {
-        disposable?.dispose()
         if (!itemsLoaded) progbarLoading.visibility = View.VISIBLE
 
         Logd(TAG, "load() called")
-        disposable = Observable.fromCallable<FeedItem?> { this.loadInBackground() }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ result: FeedItem? ->
-                progbarLoading.visibility = View.GONE
-                item = result
-                onFragmentLoaded()
-                itemsLoaded = true
-            },
-                { error: Throwable? ->
-                    Log.e(TAG, Log.getStackTraceString(error))
-                })
-    }
-
-    private fun loadInBackground(): FeedItem? {
-        val feedItem = item
-        if (feedItem != null) {
-            val duration = feedItem.media?.getDuration()?: Int.MAX_VALUE
-            DBReader.loadTextDetailsOfFeedItem(feedItem)
-            webviewData = ShownotesCleaner(requireContext(), feedItem.description?:"", duration).processShownotes()
+        val scope = CoroutineScope(Dispatchers.Main)
+        scope.launch {
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    val feedItem = item
+                    if (feedItem != null) {
+                        val duration = feedItem.media?.getDuration()?: Int.MAX_VALUE
+                        if (feedItem.description == null || feedItem.transcript == null) DBReader.loadTextDetailsOfFeedItem(feedItem)
+                        webviewData = ShownotesCleaner(requireContext(), feedItem.description?:"", duration).processShownotes()
+                    }
+                    feedItem
+                }
+                withContext(Dispatchers.Main) {
+                    progbarLoading.visibility = View.GONE
+                    item = result
+                    onFragmentLoaded()
+                    itemsLoaded = true
+                }
+            } catch (e: Throwable) {
+                Log.e(TAG, Log.getStackTraceString(e))
+            }
         }
-        return feedItem
     }
 
     fun setItem(item_: FeedItem) {
@@ -446,15 +464,11 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     companion object {
         private const val TAG = "EpisodeInfoFragment"
-        private const val ARG_FEEDITEM = "feeditem"
 
         @JvmStatic
         fun newInstance(item: FeedItem): EpisodeInfoFragment {
             val fragment = EpisodeInfoFragment()
             fragment.setItem(item)
-//            val args = Bundle()
-//            args.putSerializable(ARG_FEEDITEM, item)
-//            fragment.arguments = args
             return fragment
         }
     }

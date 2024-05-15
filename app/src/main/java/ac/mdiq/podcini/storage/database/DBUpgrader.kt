@@ -6,6 +6,7 @@ import android.media.MediaMetadataRetriever
 import android.util.Log
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedPreferences
+import ac.mdiq.podcini.util.Logd
 
 internal object DBUpgrader {
     /**
@@ -155,7 +156,7 @@ internal object DBUpgrader {
                     + PodDBAdapter.TABLE_NAME_FEED_MEDIA + "." + PodDBAdapter.KEY_POSITION + " = 0 AND " // not partially played
                     + PodDBAdapter.TABLE_NAME_QUEUE + "." + PodDBAdapter.KEY_ID + " IS NULL") // not in queue
             val sql = ("UPDATE " + PodDBAdapter.TABLE_NAME_FEED_ITEMS + " SET " + PodDBAdapter.KEY_READ + "=" + FeedItem.NEW + " WHERE " + PodDBAdapter.KEY_ID + " IN (" + selectNew + ")")
-            Log.d("Migration", "SQL: $sql")
+            Logd("Migration", "SQL: $sql")
             db.execSQL(sql)
         }
         if (oldVersion <= 17) {

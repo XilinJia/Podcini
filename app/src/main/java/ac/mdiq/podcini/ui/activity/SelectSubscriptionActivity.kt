@@ -28,10 +28,10 @@ import coil.imageLoader
 import coil.request.ErrorResult
 import coil.request.ImageRequest
 import coil.request.SuccessResult
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 // TODO: need to enable
 class SelectSubscriptionActivity : AppCompatActivity() {
@@ -41,7 +41,8 @@ class SelectSubscriptionActivity : AppCompatActivity() {
     @Volatile
     private var listItems: List<Feed> = listOf()
 
-    private var disposable: Disposable? = null
+    val scope = CoroutineScope(Dispatchers.Main)
+//    private var disposable: Disposable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(ThemeSwitcher.getTranslucentTheme(this))
@@ -100,22 +101,6 @@ class SelectSubscriptionActivity : AppCompatActivity() {
 
     private fun getBitmapFromUrl(feed: Feed) {
         val iconSize = (128 * resources.displayMetrics.density).toInt()
-
-//        if (!feed.imageUrl.isNullOrBlank()) Glide.with(this)
-//            .asBitmap()
-//            .load(feed.imageUrl)
-//            .apply(RequestOptions.overrideOf(iconSize, iconSize))
-//            .listener(object : RequestListener<Bitmap?> {
-//                @UnstableApi override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Bitmap?>, isFirstResource: Boolean): Boolean {
-//                    addShortcut(feed, null)
-//                    return true
-//                }
-//                @UnstableApi override fun onResourceReady(resource: Bitmap, model: Any, target: Target<Bitmap?>, dataSource: DataSource, isFirstResource: Boolean): Boolean {
-//                    addShortcut(feed, resource)
-//                    return true
-//                }
-//            }).submit()
-
         val request = ImageRequest.Builder(this)
             .data(feed.imageUrl)
             .setHeader("User-Agent", "Mozilla/5.0")
@@ -134,24 +119,45 @@ class SelectSubscriptionActivity : AppCompatActivity() {
     }
 
     private fun loadSubscriptions() {
-        disposable?.dispose()
+//        disposable?.dispose()
 
-        disposable = Observable.fromCallable {
-            val data: NavDrawerData = DBReader.getNavDrawerData(UserPreferences.subscriptionsFilter)
-            getFeedItems(data.items, ArrayList())
-        }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { result: List<Feed> ->
+//        disposable = Observable.fromCallable {
+//            val data: NavDrawerData = DBReader.getNavDrawerData(UserPreferences.subscriptionsFilter)
+//            getFeedItems(data.items, ArrayList())
+//        }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe(
+//                { result: List<Feed> ->
+//                    listItems = result
+//                    val titles = ArrayList<String>()
+//                    for (feed in result) {
+//                        if (feed.title != null) titles.add(feed.title!!)
+//                    }
+//                    val adapter: ArrayAdapter<String> = ArrayAdapter<String>(this, R.layout.simple_list_item_multiple_choice_on_start, titles)
+//                    binding.list.adapter = adapter
+//                }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
+
+        scope.launch {
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    val data: NavDrawerData = DBReader.getNavDrawerData(UserPreferences.subscriptionsFilter)
+                    getFeedItems(data.items, ArrayList())
+                }
+                withContext(Dispatchers.Main) {
                     listItems = result
                     val titles = ArrayList<String>()
                     for (feed in result) {
                         if (feed.title != null) titles.add(feed.title!!)
                     }
-                    val adapter: ArrayAdapter<String> = ArrayAdapter<String>(this, R.layout.simple_list_item_multiple_choice_on_start, titles)
+                    val adapter: ArrayAdapter<String> = ArrayAdapter<String>(this@SelectSubscriptionActivity, R.layout.simple_list_item_multiple_choice_on_start, titles)
                     binding.list.adapter = adapter
-                }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
+                }
+            } catch (e: Throwable) {
+                Log.e(TAG, Log.getStackTraceString(e))
+            }
+        }
+
     }
 
     override fun onDestroy() {

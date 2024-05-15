@@ -24,10 +24,10 @@ object URIUtil {
             val url = URL(source)
             return URI(url.protocol, url.userInfo, url.host, url.port, url.path, url.query, url.ref)
         } catch (e: MalformedURLException) {
-            Log.d(TAG, "source: $source")
+            Logd(TAG, "source: $source")
             throw IllegalArgumentException(e)
         } catch (e: URISyntaxException) {
-            Log.d(TAG, "source: $source")
+            Logd(TAG, "source: $source")
             throw IllegalArgumentException(e)
         }
     }

@@ -7,6 +7,7 @@ import ac.mdiq.podcini.storage.export.CommonSymbols
 import ac.mdiq.podcini.storage.export.ExportWriter
 import ac.mdiq.podcini.util.DateFormatter.formatRfc822Date
 import ac.mdiq.podcini.storage.model.feed.Feed
+import ac.mdiq.podcini.util.Logd
 import java.io.IOException
 import java.io.Writer
 import java.util.*
@@ -19,7 +20,7 @@ class OpmlWriter : ExportWriter {
      */
     @Throws(IllegalArgumentException::class, IllegalStateException::class, IOException::class)
     override fun writeDocument(feeds: List<Feed?>?, writer: Writer?, context: Context) {
-        Log.d(TAG, "Starting to write document")
+        Logd(TAG, "Starting to write document")
         val xs = Xml.newSerializer()
         xs.setFeature(CommonSymbols.XML_FEATURE_INDENT_OUTPUT, true)
         xs.setOutput(writer)
@@ -50,7 +51,7 @@ class OpmlWriter : ExportWriter {
         xs.endTag(null, CommonSymbols.BODY)
         xs.endTag(null, OpmlSymbols.OPML)
         xs.endDocument()
-        Log.d(TAG, "Finished writing document")
+        Logd(TAG, "Finished writing document")
     }
 
     override fun fileExtension(): String {

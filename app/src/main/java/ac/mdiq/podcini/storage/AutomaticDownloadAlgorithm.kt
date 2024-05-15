@@ -18,6 +18,7 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.episodeCacheSize
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownloadOnBattery
+import ac.mdiq.podcini.util.Logd
 
 /**
  * Implements the automatic download algorithm used by Podcini. This class assumes that
@@ -42,17 +43,17 @@ open class AutomaticDownloadAlgorithm {
 
             // true if we should auto download based on power status
             val powerShouldAutoDl = (deviceCharging(context) || isEnableAutodownloadOnBattery)
-            Log.d(TAG, "prepare autoDownloadUndownloadedItems $networkShouldAutoDl $powerShouldAutoDl")
+            Logd(TAG, "prepare autoDownloadUndownloadedItems $networkShouldAutoDl $powerShouldAutoDl")
 
             // we should only auto download if both network AND power are happy
             if (networkShouldAutoDl && powerShouldAutoDl) {
-                Log.d(TAG, "Performing auto-dl of undownloaded episodes")
+                Logd(TAG, "Performing auto-dl of undownloaded episodes")
 
                 val candidates: MutableList<FeedItem>
                 val queue = getQueue()
 
                 val newItems = getEpisodes(0, Int.MAX_VALUE, FeedItemFilter(FeedItemFilter.NEW), SortOrder.DATE_NEW_OLD)
-                Log.d(TAG, "newItems: ${newItems.size}")
+                Logd(TAG, "newItems: ${newItems.size}")
                 candidates = ArrayList(queue.size + newItems.size)
                 candidates.addAll(queue)
                 for (newItem in newItems) {
@@ -80,14 +81,14 @@ open class AutomaticDownloadAlgorithm {
 
                 val itemsToDownload: List<FeedItem> = candidates.subList(0, episodeSpaceLeft)
                 if (itemsToDownload.isNotEmpty()) {
-                    Log.d(TAG, "Enqueueing " + itemsToDownload.size + " items for download")
+                    Logd(TAG, "Enqueueing " + itemsToDownload.size + " items for download")
 
                     for (episode in itemsToDownload) {
                         DownloadServiceInterface.get()?.download(context, episode)
                     }
                 }
             }
-            else Log.d(TAG, "not auto downloaded networkShouldAutoDl: $networkShouldAutoDl powerShouldAutoDl $powerShouldAutoDl")
+            else Logd(TAG, "not auto downloaded networkShouldAutoDl: $networkShouldAutoDl powerShouldAutoDl $powerShouldAutoDl")
         }
     }
 

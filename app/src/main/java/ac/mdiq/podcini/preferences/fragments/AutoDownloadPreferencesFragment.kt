@@ -19,6 +19,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.autodownloadSelectedNetworks
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownloadWifiFilter
 import ac.mdiq.podcini.preferences.UserPreferences.setAutodownloadSelectedNetworks
+import ac.mdiq.podcini.util.Logd
 import java.util.*
 
 class AutoDownloadPreferencesFragment : PreferenceFragmentCompat() {
@@ -95,7 +96,7 @@ class AutoDownloadPreferencesFragment : PreferenceFragmentCompat() {
                 val key = preference.getKey()
                 val prefValuesList: MutableList<String?> = ArrayList(listOf(*autodownloadSelectedNetworks))
                 val newValue = preference.isChecked
-                Log.d(TAG, "Selected network $key. New state: $newValue")
+                Logd(TAG, "Selected network $key. New state: $newValue")
 
                 val index = prefValuesList.indexOf(key)
                 when {

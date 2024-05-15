@@ -221,6 +221,14 @@ class FeedItem : FeedComponent, Serializable {
     val isInProgress: Boolean
         get() = (media != null && media!!.isInProgress)
 
+    fun setDescription(newDescription: String?) {
+        this.description = newDescription
+    }
+
+    fun setTranscript(newTranscript: String?) {
+        this.transcript = newTranscript
+    }
+
     /**
      * Updates this item's description property if the given argument is longer than the already stored description
      * @param newDescription The new item description, content:encoded, itunes:description, etc.

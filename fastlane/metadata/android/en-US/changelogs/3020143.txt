@@ -1,0 +1,12 @@
+ 
+Version 5.2.0 brings several changes:
+
+* suppressed log.d messages in release app (unbelievable incomplete suppression last time)
+* made loadAdditionalFeedItemListData of DBReader a bit more efficient
+* reduced unnecessary loading of media info in AudioPlayer
+* tuned playback controller for efficiency
+* improved player details view and corrected issue of showing wrong info
+* tuned episode info view for efficiency
+* tuned feed info view for start efficiency
+* tuned and slimmed down the drawer: number of Subscriptions now shows the number of subscriptions
+* replaced many RxJava stuff with Kotlin Coroutines

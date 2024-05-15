@@ -138,7 +138,7 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
 
         if (coverHolder.visibility == View.VISIBLE) {
             val imgLoc = ImageResourceUtils.getEpisodeListImageLocation(item)
-            Logd(TAG, "imgLoc $imgLoc ${item.feed?.imageUrl} ${item.title}")
+//            Logd(TAG, "imgLoc $imgLoc ${item.feed?.imageUrl} ${item.title}")
             if (!imgLoc.isNullOrBlank() && !imgLoc.contains(PREFIX_GENERATIVE_COVER)) CoverLoader(activity)
                 .withUri(imgLoc)
                 .withFallbackUri(item.feed?.imageUrl)

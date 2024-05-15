@@ -9,6 +9,7 @@ import ac.mdiq.podcini.storage.model.download.DownloadError
 import ac.mdiq.podcini.storage.model.feed.FeedFile
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
 import ac.mdiq.podcini.preferences.UserPreferences.init
+import ac.mdiq.podcini.util.Logd
 import de.test.podcini.util.service.download.HTTPBin
 import org.junit.After
 import org.junit.Assert
@@ -54,7 +55,7 @@ class HttpDownloaderTest {
         val fileUrl = File(destDir, title).absolutePath
         val file = File(fileUrl)
         if (deleteExisting) {
-            Log.d(TAG, "Deleting file: " + file.delete())
+            Logd(TAG, "Deleting file: " + file.delete())
         }
         feedfile.setFile_url(fileUrl)
         return feedfile

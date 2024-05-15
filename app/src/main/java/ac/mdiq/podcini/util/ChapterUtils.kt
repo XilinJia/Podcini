@@ -61,7 +61,7 @@ object ChapterUtils {
         val chaptersFromMediaFile = loadChaptersFromMediaFile(playable, context)
         val chaptersMergePhase1 = merge(chaptersFromDatabase, chaptersFromMediaFile)
         val chapters = merge(chaptersMergePhase1, chaptersFromPodcastIndex)
-        Log.d(TAG, "loadChapters chapters size: ${chapters?.size?:0} ${playable.getEpisodeTitle()}")
+        Logd(TAG, "loadChapters chapters size: ${chapters?.size?:0} ${playable.getEpisodeTitle()}")
         if (chapters == null) playable.setChapters(listOf())    // Do not try loading again. There are no chapters.
         else playable.setChapters(chapters)
 

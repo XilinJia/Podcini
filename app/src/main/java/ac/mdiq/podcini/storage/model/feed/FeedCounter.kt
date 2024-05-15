@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.storage.model.feed
 
 enum class FeedCounter(val id: Int) {
-//    SHOW_NEW(1),
+    SHOW_NEW(1),
     SHOW_UNPLAYED(2),
     SHOW_NONE(3),
     SHOW_DOWNLOADED(4),

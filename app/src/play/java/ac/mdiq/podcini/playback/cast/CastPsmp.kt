@@ -7,6 +7,7 @@ import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.storage.model.playback.RemoteMedia
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.PlayerErrorEvent
 import ac.mdiq.podcini.util.event.playback.BufferUpdateEvent
 import android.annotation.SuppressLint
@@ -107,9 +108,9 @@ class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBas
     private fun onRemoteMediaPlayerStatusUpdated() {
         val mediaStatus = remoteMediaClient!!.mediaStatus
         if (mediaStatus == null) {
-            Log.d(TAG, "Received null MediaStatus")
+            Logd(TAG, "Received null MediaStatus")
             return
-        } else Log.d(TAG, "Received remote status/media update. New state=" + mediaStatus.playerState)
+        } else Logd(TAG, "Received remote status/media update. New state=" + mediaStatus.playerState)
 
         var state = mediaStatus.playerState
         val oldState = remoteState
@@ -117,7 +118,7 @@ class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBas
         val mediaChanged = !CastUtils.matches(remoteMedia, media)
         var stateChanged = state != oldState
         if (!mediaChanged && !stateChanged) {
-            Log.d(TAG, "Both media and state haven't changed, so nothing to do")
+            Logd(TAG, "Both media and state haven't changed, so nothing to do")
             return
         }
         val currentMedia = if (mediaChanged) localVersion(remoteMedia) else media
@@ -220,7 +221,7 @@ class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBas
     }
 
     override fun playMediaObject(playable: Playable, stream: Boolean, startWhenPrepared: Boolean, prepareImmediately: Boolean) {
-        Log.d(TAG, "playMediaObject() called")
+        Logd(TAG, "playMediaObject() called")
         playMediaObject(playable, false, stream, startWhenPrepared, prepareImmediately)
     }
 
@@ -233,7 +234,7 @@ class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBas
      */
     private fun playMediaObject(playable: Playable, forceReset: Boolean, stream: Boolean, startWhenPrepared: Boolean, prepareImmediately: Boolean) {
         if (!CastUtils.isCastable(playable, castContext.sessionManager.currentCastSession)) {
-            Log.d(TAG, "media provided is not compatible with cast device")
+            Logd(TAG, "media provided is not compatible with cast device")
             EventBus.getDefault().post(PlayerErrorEvent("Media not compatible with cast device"))
             var nextPlayable: Playable? = playable
             do {
@@ -248,7 +249,7 @@ class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBas
         if (media != null) {
             if (!forceReset && media!!.getIdentifier() == playable.getIdentifier() && status == PlayerStatus.PLAYING) {
                 // episode is already playing -> ignore method call
-                Log.d(TAG, "Method call to playMediaObject was ignored: media file already playing.")
+                Logd(TAG, "Method call to playMediaObject was ignored: media file already playing.")
                 return
             } else {
                 // set temporarily to pause in order to update list with current position
@@ -287,7 +288,7 @@ class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBas
 
     override fun prepare() {
         if (status == PlayerStatus.INITIALIZED) {
-            Log.d(TAG, "Preparing media player")
+            Logd(TAG, "Preparing media player")
             setPlayerStatus(PlayerStatus.PREPARING, media)
             var position = media!!.getPosition()
             if (position > 0) position = calculatePositionWithRewind(position, media!!.getLastPlayedTime())
@@ -300,9 +301,9 @@ class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBas
     }
 
     override fun reinit() {
-        Log.d(TAG, "reinit() called")
+        Logd(TAG, "reinit() called")
         if (media != null) playMediaObject(media!!, true, stream = false, startWhenPrepared = startWhenPrepared.get(), prepareImmediately = false)
-        else Log.d(TAG, "Call to reinit was ignored: media was null")
+        else Logd(TAG, "Call to reinit was ignored: media was null")
     }
 
     override fun seekTo(t: Int) {
@@ -347,7 +348,7 @@ class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBas
     }
 
     override fun setVolume(volumeLeft: Float, volumeRight: Float) {
-        Log.d(TAG, "Setting the Stream volume on Remote Media Player")
+        Logd(TAG, "Setting the Stream volume on Remote Media Player")
         remoteMediaClient!!.setStreamVolume(volumeLeft.toDouble())
     }
 
@@ -398,7 +399,7 @@ class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBas
     }
 
     override fun endPlayback(hasEnded: Boolean, wasSkipped: Boolean, shouldContinue: Boolean, toStoppedState: Boolean) {
-        Log.d(TAG, "endPlayback() called")
+        Logd(TAG, "endPlayback() called")
         val isPlaying = status == PlayerStatus.PLAYING
         if (status != PlayerStatus.INDETERMINATE) setPlayerStatus(PlayerStatus.INDETERMINATE, media)
 
@@ -414,9 +415,9 @@ class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBas
 
             val playNextEpisode = isPlaying && nextMedia != null
             when {
-                playNextEpisode -> Log.d(TAG, "Playback of next episode will start immediately.")
-                nextMedia == null -> Log.d(TAG, "No more episodes available to play")
-                else -> Log.d(TAG, "Loading next episode, but not playing automatically.")
+                playNextEpisode -> Logd(TAG, "Playback of next episode will start immediately.")
+                nextMedia == null -> Logd(TAG, "No more episodes available to play")
+                else -> Logd(TAG, "Loading next episode, but not playing automatically.")
             }
 
             if (nextMedia != null) {

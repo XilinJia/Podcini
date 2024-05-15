@@ -3,6 +3,7 @@ package ac.mdiq.podcini.net.download.service
 import android.util.Log
 import ac.mdiq.podcini.storage.model.download.ProxyConfig
 import ac.mdiq.podcini.net.ssl.SslClientSetup
+import ac.mdiq.podcini.util.Logd
 import okhttp3.*
 import okhttp3.Credentials.basic
 import okhttp3.OkHttpClient.Builder
@@ -50,7 +51,7 @@ object PodciniHttpClient {
      */
     @JvmStatic
     fun newBuilder(): Builder {
-        Log.d(TAG, "Creating new instance of HTTP client")
+        Logd(TAG, "Creating new instance of HTTP client")
 
         System.setProperty("http.maxConnections", MAX_CONNECTIONS.toString())
 

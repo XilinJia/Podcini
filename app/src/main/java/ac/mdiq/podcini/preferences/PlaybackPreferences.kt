@@ -7,6 +7,7 @@ import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.storage.model.feed.FeedPreferences
 import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.storage.model.playback.Playable
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.PlayerStatusEvent
 import android.content.Context
 import android.content.SharedPreferences
@@ -133,7 +134,7 @@ class PlaybackPreferences private constructor() : OnSharedPreferenceChangeListen
 
         @JvmStatic
         fun writeMediaPlaying(playable: Playable?, playerStatus: PlayerStatus, item: FeedItem? = null) {
-            Log.d(TAG, "Writing playback preferences")
+            Logd(TAG, "Writing playback preferences ${playable?.getIdentifier()}")
             val editor = prefs.edit()
 
             if (playable == null) {
@@ -159,7 +160,7 @@ class PlaybackPreferences private constructor() : OnSharedPreferenceChangeListen
 
         @JvmStatic
         fun writePlayerStatus(playerStatus: PlayerStatus) {
-            Log.d(TAG, "Writing player status playback preferences")
+            Logd(TAG, "Writing player status playback preferences")
 
             val editor = prefs.edit()
             editor.putInt(PREF_CURRENT_PLAYER_STATUS, getCurrentPlayerStatusAsInt(playerStatus))
@@ -191,7 +192,7 @@ class PlaybackPreferences private constructor() : OnSharedPreferenceChangeListen
         @JvmStatic
         fun createInstanceFromPreferences(context: Context): Playable? {
             val currentlyPlayingMedia = currentlyPlayingMediaType
-            Log.d(TAG, "currentlyPlayingMedia: $currentlyPlayingMedia")
+            Logd(TAG, "currentlyPlayingMedia: $currentlyPlayingMedia")
             if (currentlyPlayingMedia != NO_MEDIA_PLAYING) {
                 val prefs = PreferenceManager.getDefaultSharedPreferences(context.applicationContext)
                 return createInstanceFromPreferences(currentlyPlayingMedia.toInt(), prefs)

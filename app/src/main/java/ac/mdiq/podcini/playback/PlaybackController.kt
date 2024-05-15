@@ -40,7 +40,7 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
     private var initialized = false
     private var eventsRegistered = false
 
-    private var loadedFeedMedia: Long = -1
+    private var loadedFeedMediaId: Long = -1
 
     val position: Int
         get() = playbackService?.currentPosition ?: getMedia()?.getPosition() ?: Playable.INVALID_TIME
@@ -114,7 +114,7 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
             // ignore
         }
         unbind()
-        media = null
+//        media = null
         released = true
 
         if (eventsRegistered) {
@@ -235,8 +235,9 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
     }
 
     private fun checkMediaInfoLoaded() {
-        if (!mediaInfoLoaded || loadedFeedMedia != PlaybackPreferences.currentlyPlayingFeedMediaId) {
-            loadedFeedMedia = PlaybackPreferences.currentlyPlayingFeedMediaId
+        if (!mediaInfoLoaded || loadedFeedMediaId != PlaybackPreferences.currentlyPlayingFeedMediaId) {
+            loadedFeedMediaId = PlaybackPreferences.currentlyPlayingFeedMediaId
+            Logd(TAG, "checkMediaInfoLoaded: $loadedFeedMediaId")
             loadMediaInfo()
         }
         mediaInfoLoaded = true

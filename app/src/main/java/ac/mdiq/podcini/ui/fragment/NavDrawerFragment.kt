@@ -6,15 +6,15 @@ import ac.mdiq.podcini.databinding.NavListBinding
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.NavDrawerData
-import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
-import ac.mdiq.podcini.ui.adapter.NavListAdapter
 import ac.mdiq.podcini.ui.activity.appstartintent.MainActivityStarter
-import ac.mdiq.podcini.ui.utils.ThemeUtils
-import ac.mdiq.podcini.ui.dialog.*
-import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
+import ac.mdiq.podcini.ui.adapter.NavListAdapter
+import ac.mdiq.podcini.ui.dialog.DrawerPreferencesDialog
+import ac.mdiq.podcini.ui.dialog.SubscriptionsFilterDialog
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
+import ac.mdiq.podcini.ui.utils.ThemeUtils
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.FeedListUpdateEvent
 import ac.mdiq.podcini.util.event.QueueEvent
 import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
@@ -28,12 +28,13 @@ import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.*
-import android.widget.ProgressBar
+import android.view.ContextMenu
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.annotation.OptIn
 import androidx.annotation.VisibleForTesting
 import androidx.core.graphics.Insets
-import androidx.core.util.Pair
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
@@ -42,10 +43,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.shape.MaterialShapeDrawable
 import com.google.android.material.shape.ShapeAppearanceModel
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.*
 import org.apache.commons.lang3.StringUtils
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -58,19 +56,17 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
 
     private var navDrawerData: NavDrawerData? = null
     private var flatItemList: List<NavDrawerData.FeedDrawerItem>? = null
-    private var contextPressedItem: NavDrawerData.FeedDrawerItem? = null
-    private var disposable: Disposable? = null
+    val scope = CoroutineScope(Dispatchers.Main)
 
     private lateinit var navAdapter: NavListAdapter
-    private lateinit var progressBar: ProgressBar
-    
+
     private var openFolders: MutableSet<String> = HashSet()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         _binding = NavListBinding.inflate(inflater)
 
-        Log.d(TAG, "fragment onCreateView")
+        Logd(TAG, "fragment onCreateView")
         setupDrawerRoundBackground(binding.root)
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view: View, insets: WindowInsetsCompat ->
             val bars: Insets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -88,9 +84,8 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
 
         val preferences: SharedPreferences = requireContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
 //        TODO: what is this?
-        openFolders = HashSet(preferences.getStringSet(PREF_OPEN_FOLDERS, HashSet<String>())) // Must not modify
+        openFolders = HashSet(preferences.getStringSet(PREF_OPEN_FOLDERS, HashSet<String>())!!) // Must not modify
 
-        progressBar = binding.progressBar
         val navList = binding.navRecycler
         navAdapter = NavListAdapter(itemAccess, requireActivity())
         navAdapter.setHasStableIds(true)
@@ -129,71 +124,14 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
         super.onDestroyView()
         _binding = null
         EventBus.getDefault().unregister(this)
-        disposable?.dispose()
-
-        requireContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-            .unregisterOnSharedPreferenceChangeListener(this)
-    }
-
-    override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
-        super.onCreateContextMenu(menu, v, menuInfo)
-        val inflater: MenuInflater = requireActivity().menuInflater
-        if (contextPressedItem != null) {
-            menu.setHeaderTitle(contextPressedItem!!.title)
-            inflater.inflate(R.menu.nav_feed_context, menu)
-            // episodes are not loaded, so we cannot check if the podcast has new or unplayed ones!
-        }
-        MenuItemUtils.setOnClickListeners(menu
-        ) { item: MenuItem -> this.onContextItemSelected(item) }
-    }
-
-    override fun onContextItemSelected(item: MenuItem): Boolean {
-        val pressedItem: NavDrawerData.FeedDrawerItem? = contextPressedItem
-        contextPressedItem = null
-        if (pressedItem == null) return false
-
-        return onFeedContextMenuClicked(pressedItem.feed, item)
-    }
-
-    @OptIn(UnstableApi::class) private fun onFeedContextMenuClicked(feed: Feed, item: MenuItem): Boolean {
-        val itemId = item.itemId
-        when (itemId) {
-            R.id.edit_tags -> {
-                if (feed.preferences != null) TagSettingsDialog.newInstance(listOf(feed.preferences!!)).show(childFragmentManager, TagSettingsDialog.TAG)
-                return true
-            }
-            R.id.rename_item -> {
-                RenameItemDialog(activity as Activity, feed).show()
-                return true
-            }
-            R.id.remove_feed -> {
-                RemoveFeedDialog.show(requireContext(), feed) {
-                    if (feed.id.toString() == getLastNavFragment(requireContext())) {
-                        (activity as MainActivity).loadFragment(UserPreferences.defaultPage, null)
-                        // Make sure fragment is hidden before actually starting to delete
-                        requireActivity().supportFragmentManager.executePendingTransactions()
-                    }
-                }
-                return true
-            }
-            else -> return super.onContextItemSelected(item)
-        }
-    }
-
-    private fun onTagContextMenuClicked(drawerItem: NavDrawerData.FeedDrawerItem?, item: MenuItem): Boolean {
-        val itemId = item.itemId
-        if (itemId == R.id.rename_folder_item) {
-            RenameItemDialog(activity as Activity, drawerItem).show()
-            return true
-        }
-        return super.onContextItemSelected(item)
+        scope.cancel()
+        requireContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE).unregisterOnSharedPreferenceChangeListener(this)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onUnreadItemsChanged(event: UnreadItemsUpdateEvent?) {
         loadData()
     }
-
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onFeedListChanged(event: FeedListUpdateEvent?) {
@@ -202,7 +140,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onQueueChanged(event: QueueEvent) {
-        Log.d(TAG, "onQueueChanged($event)")
+        Logd(TAG, "onQueueChanged($event)")
         // we are only interested in the number of queue items, not download status or position
         if (event.action == QueueEvent.Action.DELETED_MEDIA || event.action == QueueEvent.Action.SORTED || event.action == QueueEvent.Action.MOVED) return
 
@@ -245,11 +183,17 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
         override val numberOfNewItems: Int
             get() = navDrawerData?.numNewItems ?: 0
 
+        override val numberOfItems: Int
+            get() = navDrawerData?.numItems ?: 0
+
         override val numberOfDownloadedItems: Int
             get() = navDrawerData?.numDownloadedItems ?: 0
 
         override val reclaimableItems: Int
             get() = navDrawerData?.reclaimableSpace ?: 0
+
+        override val numberOfFeeds: Int
+            get() = navDrawerData?.numFeeds ?: 0
 
         override val feedCounterSum: Int
             get() {
@@ -297,7 +241,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
                 }
                 return true
             } else {
-                contextPressedItem = flatItemList!![position - navAdapter.subscriptionOffset]
+//                contextPressedItem = flatItemList!![position - navAdapter.subscriptionOffset]
                 return false
             }
         }
@@ -308,22 +252,21 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
     }
 
     private fun loadData() {
-        disposable = Observable.fromCallable {
-            val data: NavDrawerData = DBReader.getNavDrawerData(UserPreferences.subscriptionsFilter)
-            Pair(data, makeFlatDrawerData(data.items, 0))
-        }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { result: Pair<NavDrawerData, List<NavDrawerData.FeedDrawerItem>> ->
+        scope.launch {
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    val data: NavDrawerData = DBReader.getNavDrawerData(UserPreferences.subscriptionsFilter)
+                    Pair(data, makeFlatDrawerData(data.items, 0))
+                }
+                withContext(Dispatchers.Main) {
                     navDrawerData = result.first
                     flatItemList = result.second
                     navAdapter.notifyDataSetChanged()
-                    progressBar.visibility = View.GONE // Stays hidden once there is something in the list
-                }, { error: Throwable? ->
-                    Log.e(TAG, Log.getStackTraceString(error))
-                    progressBar.visibility = View.GONE
-                })
+                }
+            } catch (e: Throwable) {
+                Log.e(TAG, Log.getStackTraceString(e))
+            }
+        }
     }
 
     private fun makeFlatDrawerData(items: List<NavDrawerData.FeedDrawerItem>, layer: Int): List<NavDrawerData.FeedDrawerItem> {
@@ -362,7 +305,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
         )
 
         fun saveLastNavFragment(context: Context, tag: String?) {
-            Log.d(TAG, "saveLastNavFragment(tag: $tag)")
+            Logd(TAG, "saveLastNavFragment(tag: $tag)")
             val prefs: SharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
             val edit: SharedPreferences.Editor = prefs.edit()
             if (tag != null) edit.putString(PREF_LAST_FRAGMENT_TAG, tag)
@@ -374,7 +317,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
         fun getLastNavFragment(context: Context): String {
             val prefs: SharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
             val lastFragment: String = prefs.getString(PREF_LAST_FRAGMENT_TAG, SubscriptionFragment.TAG)?:""
-            Log.d(TAG, "getLastNavFragment() -> $lastFragment")
+            Logd(TAG, "getLastNavFragment() -> $lastFragment")
             return lastFragment
         }
     }

@@ -9,19 +9,20 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import ac.mdiq.podcini.ui.widget.WidgetUpdaterWorker
+import ac.mdiq.podcini.util.Logd
 import java.util.concurrent.TimeUnit
 
 class PlayerWidget : AppWidgetProvider() {
     override fun onEnabled(context: Context) {
         super.onEnabled(context)
-        Log.d(TAG, "Widget enabled")
+        Logd(TAG, "Widget enabled")
         setEnabled(context, true)
         WidgetUpdaterWorker.enqueueWork(context)
         scheduleWorkaround(context)
     }
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
-        Log.d(TAG, "onUpdate() called with: context = [$context], appWidgetManager = [$appWidgetManager], appWidgetIds = [${appWidgetIds.contentToString()}]")
+        Logd(TAG, "onUpdate() called with: context = [$context], appWidgetManager = [$appWidgetManager], appWidgetIds = [${appWidgetIds.contentToString()}]")
         WidgetUpdaterWorker.enqueueWork(context)
 
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -33,12 +34,12 @@ class PlayerWidget : AppWidgetProvider() {
 
     override fun onDisabled(context: Context) {
         super.onDisabled(context)
-        Log.d(TAG, "Widget disabled")
+        Logd(TAG, "Widget disabled")
         setEnabled(context, false)
     }
 
     override fun onDeleted(context: Context, appWidgetIds: IntArray) {
-        Log.d(TAG, "OnDeleted")
+        Logd(TAG, "OnDeleted")
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         for (appWidgetId in appWidgetIds) {
             prefs.edit().remove(KEY_WIDGET_COLOR + appWidgetId).apply()

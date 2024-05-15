@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.feed.parser.util
 
+import ac.mdiq.podcini.util.Logd
 import android.util.Log
 import org.apache.commons.lang3.StringUtils
 import java.text.ParsePosition
@@ -98,7 +99,7 @@ object DateUtils {
         // if date string starts with a weekday, try parsing date string without it
         if (date.matches("^\\w+, .*$".toRegex())) return parse(date.substring(date.indexOf(',') + 1))
 
-        Log.d(TAG, "Could not parse date string \"$input\" [$date]")
+        Logd(TAG, "Could not parse date string \"$input\" [$date]")
         return null
     }
 

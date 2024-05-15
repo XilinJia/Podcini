@@ -12,8 +12,7 @@ class FyydPodcastSearcher : PodcastSearcher {
 
     override fun search(query: String): Single<List<PodcastSearchResult?>?> {
         return Single.create { subscriber: SingleEmitter<List<PodcastSearchResult?>?> ->
-            val response = client.searchPodcasts(
-                query, 10)
+            val response = client.searchPodcasts(query, 10)
                 .subscribeOn(Schedulers.io())
                 .blockingGet()
             val searchResults = ArrayList<PodcastSearchResult?>()

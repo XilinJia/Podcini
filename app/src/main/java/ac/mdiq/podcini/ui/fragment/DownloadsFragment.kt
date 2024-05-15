@@ -41,10 +41,10 @@ import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.snackbar.Snackbar
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -69,7 +69,7 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
     private lateinit var progressBar: ProgressBar
     private lateinit var emptyView: EmptyViewHandler
     
-    private var disposable: Disposable? = null
+//    private var disposable: Disposable? = null
     private var displayUpArrow = false
     private var currentPlaying: EpisodeItemViewHolder? = null
 
@@ -166,7 +166,7 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
         adapter.endSelectMode()
         toolbar.setOnMenuItemClickListener(null)
         toolbar.setOnLongClickListener(null)
-        disposable?.dispose()
+//        disposable?.dispose()
 
         super.onDestroyView()
     }
@@ -303,39 +303,72 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
     }
 
     private fun loadItems() {
-        disposable?.dispose()
+//        disposable?.dispose()
 
         emptyView.hide()
-        disposable = Observable.fromCallable {
-            val sortOrder: SortOrder? = UserPreferences.downloadsSortedOrder
-            val downloadedItems: List<FeedItem> = DBReader.getEpisodes(0, Int.MAX_VALUE,
-                FeedItemFilter(FeedItemFilter.DOWNLOADED), sortOrder)
+//        disposable = Observable.fromCallable {
+//            val sortOrder: SortOrder? = UserPreferences.downloadsSortedOrder
+//            val downloadedItems: List<FeedItem> = DBReader.getEpisodes(0, Int.MAX_VALUE,
+//                FeedItemFilter(FeedItemFilter.DOWNLOADED), sortOrder)
+//
+//            val mediaUrls: MutableList<String> = ArrayList()
+//            if (runningDownloads.isEmpty()) return@fromCallable downloadedItems
+//
+//            for (url in runningDownloads) {
+//                if (FeedItemUtil.indexOfItemWithDownloadUrl(downloadedItems, url) != -1) continue  // Already in list
+//                mediaUrls.add(url)
+//            }
+//            val currentDownloads: MutableList<FeedItem> = DBReader.getFeedItemsWithUrl(mediaUrls).toMutableList()
+//            currentDownloads.addAll(downloadedItems)
+//            currentDownloads
+//        }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe(
+//                { result: List<FeedItem> ->
+//                    items = result.toMutableList()
+//                    adapter.setDummyViews(0)
+//                    progressBar.visibility = View.GONE
+//                    adapter.updateItems(result)
+//                    refreshInfoBar()
+//                }, { error: Throwable? ->
+//                    adapter.setDummyViews(0)
+//                    adapter.updateItems(emptyList())
+//                    Log.e(TAG, Log.getStackTraceString(error))
+//                })
 
-            val mediaUrls: MutableList<String> = ArrayList()
-            if (runningDownloads.isEmpty()) return@fromCallable downloadedItems
-
-            for (url in runningDownloads) {
-                if (FeedItemUtil.indexOfItemWithDownloadUrl(downloadedItems, url) != -1) continue  // Already in list
-                mediaUrls.add(url)
-            }
-            val currentDownloads: MutableList<FeedItem> = DBReader.getFeedItemsWithUrl(mediaUrls).toMutableList()
-            currentDownloads.addAll(downloadedItems)
-            currentDownloads
-        }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { result: List<FeedItem> ->
+        val scope = CoroutineScope(Dispatchers.Main)
+        scope.launch {
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    val sortOrder: SortOrder? = UserPreferences.downloadsSortedOrder
+                    val downloadedItems: List<FeedItem> = DBReader.getEpisodes(0, Int.MAX_VALUE, FeedItemFilter(FeedItemFilter.DOWNLOADED), sortOrder)
+                    val mediaUrls: MutableList<String> = ArrayList()
+                    if (runningDownloads.isEmpty()) {
+                        downloadedItems
+                    } else {
+                        for (url in runningDownloads) {
+                            if (FeedItemUtil.indexOfItemWithDownloadUrl(downloadedItems, url) != -1) continue
+                            mediaUrls.add(url)
+                        }
+                        val currentDownloads: MutableList<FeedItem> = DBReader.getFeedItemsWithUrl(mediaUrls).toMutableList()
+                        currentDownloads.addAll(downloadedItems)
+                        currentDownloads
+                    }
+                }
+                withContext(Dispatchers.Main) {
                     items = result.toMutableList()
                     adapter.setDummyViews(0)
                     progressBar.visibility = View.GONE
                     adapter.updateItems(result)
                     refreshInfoBar()
-                }, { error: Throwable? ->
-                    adapter.setDummyViews(0)
-                    adapter.updateItems(emptyList())
-                    Log.e(TAG, Log.getStackTraceString(error))
-                })
+                }
+            } catch (e: Throwable) {
+                adapter.setDummyViews(0)
+                adapter.updateItems(emptyList())
+                Log.e(TAG, Log.getStackTraceString(e))
+            }
+        }
     }
 
     private fun refreshInfoBar() {

@@ -10,9 +10,9 @@ import ac.mdiq.podcini.storage.model.feed.SortOrder
 import ac.mdiq.podcini.ui.dialog.AllEpisodesFilterDialog
 import ac.mdiq.podcini.ui.dialog.AllEpisodesFilterDialog.AllEpisodesFilterChangedEvent
 import ac.mdiq.podcini.ui.dialog.ItemSortDialog
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.FeedListUpdateEvent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -27,9 +27,10 @@ import org.greenrobot.eventbus.Subscribe
  * Shows all episodes (possibly filtered by user).
  */
 class AllEpisodesFragment : BaseEpisodesListFragment() {
+
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val root = super.onCreateView(inflater, container, savedInstanceState)
-        Log.d(TAG, "fragment onCreateView")
+        Logd(TAG, "fragment onCreateView")
 
         toolbar.inflateMenu(R.menu.episodes)
         toolbar.setTitle(R.string.episodes_label)
@@ -128,7 +129,7 @@ class AllEpisodesFragment : BaseEpisodesListFragment() {
     }
 
     companion object {
-        const val TAG: String = "EpisodesFragment"
+        const val TAG: String = "AllEpisodesFragment"
         const val PREF_NAME: String = "PrefAllEpisodesFragment"
     }
 }

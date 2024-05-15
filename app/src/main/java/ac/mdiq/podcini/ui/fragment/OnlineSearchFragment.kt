@@ -7,6 +7,7 @@ import ac.mdiq.podcini.net.discovery.PodcastSearcher
 import ac.mdiq.podcini.net.discovery.PodcastSearcherRegistry
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.OnlineFeedsAdapter
+import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -46,7 +47,7 @@ class OnlineSearchFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         for (info in PodcastSearcherRegistry.searchProviders) {
-            Log.d(TAG, "searchProvider: $info")
+            Logd(TAG, "searchProvider: $info")
             if (info.searcher.javaClass.getName() == requireArguments().getString(ARG_SEARCHER)) {
                 searchProvider = info.searcher
                 break
@@ -58,7 +59,7 @@ class OnlineSearchFragment : Fragment() {
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentItunesSearchBinding.inflate(inflater)
 
-        Log.d(TAG, "fragment onCreateView")
+        Logd(TAG, "fragment onCreateView")
         gridView = binding.gridView
         adapter = OnlineFeedsAdapter(requireContext(), ArrayList())
         gridView.setAdapter(adapter)

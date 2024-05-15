@@ -15,6 +15,7 @@ import ac.mdiq.podcini.util.NetworkUtils.networkAvailable
 import ac.mdiq.podcini.util.event.MessageEvent
 import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.util.Logd
 import org.greenrobot.eventbus.EventBus
 import java.util.concurrent.TimeUnit
 
@@ -68,7 +69,7 @@ object FeedUpdateManager {
     @JvmStatic
     @JvmOverloads
     fun runOnceOrAsk(context: Context, feed: Feed? = null) {
-        Log.d(TAG, "Run auto update immediately in background.")
+        Logd(TAG, "Run auto update immediately in background.")
         when {
             feed != null && feed.isLocalFeed -> runOnce(context, feed)
             !networkAvailable() -> EventBus.getDefault().post(MessageEvent(context.getString(R.string.download_error_no_connection)))

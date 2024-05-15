@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.net.discovery
 
+import ac.mdiq.podcini.util.Logd
 import android.text.TextUtils
 import android.util.Log
 import io.reactivex.Single
@@ -27,7 +28,7 @@ class CombinedSearcher : PodcastSearcher {
                 singleResults[i] = e
                 latch.countDown()
             }, { throwable: Throwable? ->
-                Log.d(TAG, Log.getStackTraceString(throwable))
+                Logd(TAG, Log.getStackTraceString(throwable))
                 latch.countDown()
             }
             ))

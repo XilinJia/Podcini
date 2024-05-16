@@ -1,0 +1,4 @@
+ 
+Version 5.2.1 brings several changes:
+
+* fixed issue of play/pause button not correctly updated in Queue

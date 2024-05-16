@@ -2,7 +2,7 @@ plugins {
     id('com.android.application')
     id 'kotlin-android'
     id 'kotlin-kapt'
-//    id 'com.google.devtools.ksp'
+    id 'com.google.devtools.ksp'
     id('com.github.triplet.play') version '3.8.3' apply false
 }
 
@@ -159,8 +159,8 @@ android {
         // Version code schema (not used):
         // "1.2.3-beta4"    -> 1020304
         // "1.2.3"          -> 1020395
-        versionCode 3020143
-        versionName "5.2.0"
+        versionCode 3020144
+        versionName "5.2.1"
 
         def commit = ""
         try {
@@ -213,7 +213,6 @@ android {
         }
     }
 
-
     androidResources {
         additionalParameters "--no-version-vectors"
     }
@@ -233,7 +232,8 @@ dependencies {
         }
     }
 
-    kapt "androidx.annotation:annotation:1.7.1"
+//    doesn't work with ksp??
+    kapt "androidx.annotation:annotation:1.8.0"
 
     implementation "androidx.appcompat:appcompat:1.6.1"
     implementation 'androidx.coordinatorlayout:coordinatorlayout:1.2.0'

@@ -107,8 +107,8 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
         container.alpha = if (item.isPlayed()) 0.75f else 1.0f
 
         val newButton = ItemActionButton.forItem(item)
-//        Log.d(TAG, "bind ${actionButton?.TAG} ${newButton.TAG} ${item.title}")
-        // not using a new button to ensure valid progress values
+        Logd(TAG, "bind ${actionButton?.TAG} ${newButton.TAG} ${item.title}")
+        // not using a new button to ensure valid progress values, for TTS audio generation
         if (!(actionButton?.TAG == TTSActionButton::class.simpleName && newButton.TAG == TTSActionButton::class.simpleName)) {
             actionButton = newButton
             actionButton?.configure(secondaryActionButton, secondaryActionIcon, activity)

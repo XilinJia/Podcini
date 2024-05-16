@@ -134,8 +134,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
         recyclerAdapter = object : QueueRecyclerAdapter(activity as MainActivity, swipeActions) {
             override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
                 super.onCreateContextMenu(menu, v, menuInfo)
-                MenuItemUtils.setOnClickListeners(menu
-                ) { item: MenuItem -> this@QueueFragment.onContextItemSelected(item) }
+                MenuItemUtils.setOnClickListeners(menu) { item: MenuItem -> this@QueueFragment.onContextItemSelected(item) }
             }
         }
         recyclerAdapter?.setOnSelectModeListener(this)
@@ -163,7 +162,6 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
             override fun onMainActionSelected(): Boolean {
                 return false
             }
-
             override fun onToggleChanged(open: Boolean) {
                 if (open && recyclerAdapter!!.selectedCount == 0) {
                     (activity as MainActivity).showSnackbarAbovePlayer(R.string.no_items_selected, Snackbar.LENGTH_SHORT)
@@ -193,11 +191,10 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
         recyclerView.saveScrollPosition(TAG)
     }
 
-    override fun onStop() {
-        super.onStop()
-        scope.cancel()
-//        disposable?.dispose()
-    }
+//    override fun onStop() {
+//        super.onStop()
+////        disposable?.dispose()
+//    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEventMainThread(event: QueueEvent) {
@@ -340,6 +337,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
         recyclerAdapter?.endSelectMode()
         recyclerAdapter = null
         EventBus.getDefault().unregister(this)
+        scope.cancel()
 
         toolbar.setOnMenuItemClickListener(null)
         toolbar.setOnLongClickListener(null)
@@ -518,7 +516,6 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAda
                 Log.e(TAG, Log.getStackTraceString(e))
             }
         }
-
     }
 
     override fun onStartSelectMode() {

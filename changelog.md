@@ -1,3 +1,7 @@
+## 5.2.1
+
+* fixed issue of play/pause button not correctly updated in Queue
+
 ## 5.2.0
 
 * suppressed log.d messages in release app (unbelievable incomplete suppression last time)

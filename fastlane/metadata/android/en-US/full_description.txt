@@ -1,5 +1,5 @@
 
-Podcini is an open source podcast instrument, attuned to Puccini, adorned with pasticcini and aromatized with porcini.
+Podcini, an open source podcast instrument, attuned to Puccini, adorned with pasticcini and aromatized with porcini, invites your harmonious heartbeats.
 
 It allows you to subscribe to any RSS feed (with or without media), gives you instant access to millions of free and paid podcasts or plain RSS feeds, from independent podcasters to large publishing houses such as the BBC, NPR and CNN. Add, import and export their feeds hassle-free using the Apple Podcasts database, OPML files or simple RSS URLs.
 

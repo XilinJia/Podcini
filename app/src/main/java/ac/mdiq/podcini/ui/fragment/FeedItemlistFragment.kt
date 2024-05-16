@@ -47,7 +47,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.joanzapata.iconify.Iconify
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
-import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.*
 import org.apache.commons.lang3.StringUtils
 import org.greenrobot.eventbus.EventBus
@@ -128,10 +127,8 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         val iconTintManager: ToolbarIconTintManager = object : ToolbarIconTintManager(
             requireContext(), binding.toolbar, binding.collapsingToolbar) {
             override fun doTint(themedContext: Context) {
-                binding.toolbar.menu.findItem(R.id.refresh_item)
-                    .setIcon(AppCompatResources.getDrawable(themedContext, R.drawable.ic_refresh))
-                binding.toolbar.menu.findItem(R.id.action_search)
-                    .setIcon(AppCompatResources.getDrawable(themedContext, R.drawable.ic_search))
+                binding.toolbar.menu.findItem(R.id.refresh_item).setIcon(AppCompatResources.getDrawable(themedContext, R.drawable.ic_refresh))
+                binding.toolbar.menu.findItem(R.id.action_search).setIcon(AppCompatResources.getDrawable(themedContext, R.drawable.ic_search))
             }
         }
         iconTintManager.updateTint()
@@ -357,13 +354,13 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun favoritesChanged(event: FavoritesEvent?) {
         Logd(TAG, "favoritesChanged called")
-        updateUi()
+        loadItems()
     }
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onQueueChanged(event: QueueEvent?) {
         Logd(TAG, "onQueueChanged called")
-        updateUi()
+        loadItems()
     }
 
     override fun onStartSelectMode() {
@@ -386,27 +383,23 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         swipeActions.attachTo(binding.recyclerView)
     }
 
-    @UnstableApi private fun updateUi() {
-        loadItems()
-    }
-
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onPlayerStatusChanged(event: PlayerStatusEvent?) {
         Logd(TAG, "onPlayerStatusChanged called")
-        updateUi()
+        loadItems()
     }
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onUnreadItemsChanged(event: UnreadItemsUpdateEvent?) {
         Logd(TAG, "onUnreadItemsChanged called")
-        updateUi()
+        loadItems()
     }
 
     @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
     fun onFeedListChanged(event: FeedListUpdateEvent) {
         if (feed != null && event.contains(feed!!)) {
             Logd(TAG, "onFeedListChanged called")
-            updateUi()
+            loadItems()
         }
     }
 
@@ -461,7 +454,6 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
     @UnstableApi private fun setupHeaderView() {
         if (feed == null || headerCreated) return
 
-        // https://github.com/bumptech/glide/issues/529
         binding.imgvBackground.colorFilter = LightingColorFilter(-0x99999a, 0x000000)
         binding.header.imgvCover.setOnClickListener { showFeedInfo() }
         binding.header.butShowSettings.setOnClickListener {
@@ -572,7 +564,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
                     val feed_ = loadData()
                     if (feed_ != null) {
                         var hasNonMediaItems = false
-                        for (item in feed_!!.items) {
+                        for (item in feed_.items) {
                             if (item.media == null) {
                                 hasNonMediaItems = true
                                 break

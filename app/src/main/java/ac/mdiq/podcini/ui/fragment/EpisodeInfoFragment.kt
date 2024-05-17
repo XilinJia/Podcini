@@ -22,10 +22,8 @@ import ac.mdiq.podcini.util.Converter
 import ac.mdiq.podcini.util.DateFormatter
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.PlaybackStatus
-import ac.mdiq.podcini.util.event.EpisodeDownloadEvent
-import ac.mdiq.podcini.util.event.FeedItemEvent
-import ac.mdiq.podcini.util.event.PlayerStatusEvent
-import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.os.Build
 import android.os.Bundle
 import android.text.Layout
@@ -41,6 +39,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ShareCompat
 import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import coil.imageLoader
 import coil.request.ErrorResult
@@ -51,20 +50,17 @@ import com.skydoves.balloon.ArrowOrientation
 import com.skydoves.balloon.ArrowOrientationRules
 import com.skydoves.balloon.Balloon
 import com.skydoves.balloon.BalloonAnimation
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 import java.util.*
 import kotlin.math.max
 
 /**
  * Displays information about an Episode (FeedItem) and actions.
  */
-class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
+@UnstableApi class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var _binding: EpisodeInfoFragmentBinding? = null
     private val binding get() = _binding!!
 
@@ -172,7 +168,6 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             }
         })
 
-        EventBus.getDefault().register(this)
         controller = object : PlaybackController(requireActivity()) {
             override fun loadMediaInfo() {
                 // Do nothing
@@ -182,6 +177,11 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         load()
 
         return binding.root
+    }
+
+    override fun onStart() {
+        super.onStart()
+        procFlowEvents()
     }
 
     @OptIn(UnstableApi::class) private fun showOnDemandConfigBalloon(offerStreaming: Boolean) {
@@ -208,7 +208,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         positiveButton.setOnClickListener {
             UserPreferences.isStreamOverDownload = offerStreaming
             // Update all visible lists to reflect new streaming action button
-            EventBus.getDefault().post(UnreadItemsUpdateEvent())
+            EventFlow.postEvent(FlowEvent.UnreadItemsUpdateEvent())
             (activity as MainActivity).showSnackbarAbovePlayer(R.string.on_demand_config_setting_changed, Snackbar.LENGTH_SHORT)
             balloon.dismiss()
         }
@@ -256,7 +256,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         super.onDestroyView()
         Logd(TAG, "onDestroyView")
         _binding = null
-        EventBus.getDefault().unregister(this)
+        
         controller?.release()
 //        disposable?.dispose()
         root.removeView(webvDescription)
@@ -382,8 +382,28 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         (activity as MainActivity).loadChildFragment(fragment)
     }
 
-    @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: FeedItemEvent) {
+    private fun procFlowEvents() {
+        lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.FeedItemEvent -> onEventMainThread(event)
+                    is FlowEvent.PlayerStatusEvent -> updateButtons()
+                    is FlowEvent.UnreadItemsUpdateEvent -> load()
+                    else -> {}
+                }
+            }
+        }
+        lifecycleScope.launch {
+            EventFlow.stickyEvents.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.EpisodeDownloadEvent -> onEventMainThread(event)
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    fun onEventMainThread(event: FlowEvent.FeedItemEvent) {
         Logd(TAG, "onEventMainThread() called with: event = [$event]")
         if (this.item == null) return
         for (item in event.items) {
@@ -394,21 +414,10 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
     }
 
-    @UnstableApi @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: EpisodeDownloadEvent) {
+    fun onEventMainThread(event: FlowEvent.EpisodeDownloadEvent) {
         if (item == null || item!!.media == null) return
         if (!event.urls.contains(item!!.media!!.download_url)) return
         if (itemsLoaded && activity != null) updateButtons()
-    }
-
-    @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onPlayerStatusChanged(event: PlayerStatusEvent?) {
-        updateButtons()
-    }
-
-    @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onUnreadItemsChanged(event: UnreadItemsUpdateEvent?) {
-        load()
     }
 
 //    @UnstableApi private fun load0() {
@@ -434,8 +443,8 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         if (!itemsLoaded) progbarLoading.visibility = View.VISIBLE
 
         Logd(TAG, "load() called")
-        val scope = CoroutineScope(Dispatchers.Main)
-        scope.launch {
+//        val scope = CoroutineScope(Dispatchers.Main)
+        lifecycleScope.launch {
             try {
                 val result = withContext(Dispatchers.IO) {
                     val feedItem = item

@@ -3,7 +3,6 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.FeedItemListFragmentBinding
 import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
-import ac.mdiq.podcini.feed.FeedEvent
 import ac.mdiq.podcini.net.download.FeedUpdateManager
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.DBReader
@@ -25,8 +24,8 @@ import ac.mdiq.podcini.ui.utils.MoreContentListFooterUtil
 import ac.mdiq.podcini.ui.view.ToolbarIconTintManager
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
 import ac.mdiq.podcini.util.*
-import ac.mdiq.podcini.util.event.*
-import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.app.Activity
 import android.content.Context
 import android.content.res.Configuration
@@ -40,6 +39,7 @@ import android.widget.Toast
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
@@ -48,17 +48,15 @@ import com.joanzapata.iconify.Iconify
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.collectLatest
 import org.apache.commons.lang3.StringUtils
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Semaphore
 
 /**
  * Displays a list of FeedItems.
  */
-class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolbar.OnMenuItemClickListener,
+@UnstableApi class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolbar.OnMenuItemClickListener,
     SelectableAdapter.OnSelectModeListener {
 
     private var _binding: FeedItemListFragmentBinding? = null
@@ -79,7 +77,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 //    private var disposable: Disposable? = null
 
     private val ioScope = CoroutineScope(Dispatchers.IO)
-    private val scope = CoroutineScope(Dispatchers.Main)
+//    private val scope = CoroutineScope(Dispatchers.Main)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -151,14 +149,12 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
             }
         })
 
-        EventBus.getDefault().register(this)
-
         binding.swipeRefresh.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
         binding.swipeRefresh.setOnRefreshListener {
             FeedUpdateManager.runOnceOrAsk(requireContext(), feed)
         }
 
-        loadItems()
+//        loadItems()
 
         // Init action UI (via a FAB Speed Dial)
         speedDialBinding.fabSD.overlayLayout = speedDialBinding.fabSDOverlay
@@ -184,6 +180,12 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         return binding.root
     }
 
+    override fun onStart() {
+        super.onStart()
+        procFlowEvents()
+        loadItems()
+    }
+
     private val semaphore = Semaphore(0)
     private fun initializeTTS(context: Context) {
         Logd(TAG, "starting TTS")
@@ -207,10 +209,10 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         super.onDestroyView()
         _binding = null
         _speedDialBinding = null
-        EventBus.getDefault().unregister(this)
+        
 //        disposable?.dispose()
         ioScope.cancel()
-        scope.cancel()
+//        scope.cancel()
         adapter.endSelectMode()
 
         tts?.stop()
@@ -298,14 +300,12 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         }
     }
 
-    @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEvent(event: FeedEvent) {
+    fun onEvent(event: FlowEvent.FeedEvent) {
         Logd(TAG, "onEvent() called with: event = [$event]")
         if (event.feedId == feedID) loadItems()
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: FeedItemEvent) {
+    fun onEventMainThread(event: FlowEvent.FeedItemEvent) {
         Logd(TAG, "onEventMainThread() called with FeedItemEvent event = [$event]")
         if (feed == null || feed!!.items.isEmpty()) return
 
@@ -323,8 +323,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         }
     }
 
-    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: EpisodeDownloadEvent) {
+    fun onEventMainThread(event: FlowEvent.EpisodeDownloadEvent) {
         Logd(TAG, "onEventMainThread() called with EpisodeDownloadEvent event = [$event]")
         if (feed == null || feed!!.items.isEmpty()) return
 
@@ -334,8 +333,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         }
     }
 
-    @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: PlaybackPositionEvent) {
+    fun onEventMainThread(event: FlowEvent.PlaybackPositionEvent) {
 //        Log.d(TAG, "onEventMainThread() called with PlaybackPositionEvent event = [$event]")
         if (currentPlaying != null && currentPlaying!!.isCurrentlyPlayingItem) currentPlaying!!.notifyPlaybackPositionUpdated(event)
         else {
@@ -351,17 +349,39 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         }
     }
 
-    @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun favoritesChanged(event: FavoritesEvent?) {
-        Logd(TAG, "favoritesChanged called")
-        loadItems()
+    private fun procFlowEvents() {
+        lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.QueueEvent -> loadItems()
+                    is FlowEvent.FavoritesEvent -> loadItems()
+                    is FlowEvent.PlaybackPositionEvent -> onEventMainThread(event)
+                    is FlowEvent.FeedItemEvent -> onEventMainThread(event)
+                    is FlowEvent.FeedEvent -> onEvent(event)
+                    is FlowEvent.PlayerStatusEvent -> loadItems()
+                    is FlowEvent.UnreadItemsUpdateEvent -> loadItems()
+                    is FlowEvent.FeedListUpdateEvent -> onFeedListChanged(event)
+                    is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
+                    else -> {}
+                }
+            }
+        }
+        lifecycleScope.launch {
+            EventFlow.stickyEvents.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.EpisodeDownloadEvent -> onEventMainThread(event)
+                    is FlowEvent.FeedUpdateRunningEvent -> onEventMainThread(event)
+                    else -> {}
+                }
+            }
+        }
+        lifecycleScope.launch {
+            EventFlow.keyEvents.collectLatest { event ->
+                onKeyUp(event)
+            }
+        }
     }
 
-    @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onQueueChanged(event: QueueEvent?) {
-        Logd(TAG, "onQueueChanged called")
-        loadItems()
-    }
 
     override fun onStartSelectMode() {
         swipeActions.detach()
@@ -383,33 +403,14 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         swipeActions.attachTo(binding.recyclerView)
     }
 
-    @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onPlayerStatusChanged(event: PlayerStatusEvent?) {
-        Logd(TAG, "onPlayerStatusChanged called")
-        loadItems()
-    }
-
-    @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onUnreadItemsChanged(event: UnreadItemsUpdateEvent?) {
-        Logd(TAG, "onUnreadItemsChanged called")
-        loadItems()
-    }
-
-    @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onFeedListChanged(event: FeedListUpdateEvent) {
+    fun onFeedListChanged(event: FlowEvent.FeedListUpdateEvent) {
         if (feed != null && event.contains(feed!!)) {
             Logd(TAG, "onFeedListChanged called")
             loadItems()
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onSwipeActionsChanged(event: SwipeActionsChangedEvent?) {
-        refreshSwipeTelltale()
-    }
-
-    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: FeedUpdateRunningEvent) {
+    fun onEventMainThread(event: FlowEvent.FeedUpdateRunningEvent) {
         nextPageLoader.setLoadingState(event.isFeedUpdateRunning)
         if (!event.isFeedUpdateRunning) nextPageLoader.root.visibility = View.GONE
         binding.swipeRefresh.isRefreshing = event.isFeedUpdateRunning
@@ -486,7 +487,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 //                { error: Throwable -> error.printStackTrace() },
 //                { DownloadLogFragment().show(childFragmentManager, null) })
 
-        scope.launch {
+        lifecycleScope.launch {
             val downloadResult = withContext(Dispatchers.IO) {
                 val feedDownloadLog: List<DownloadResult> = DBReader.getFeedDownloadLog(feedID)
                 if (feedDownloadLog.isEmpty() || feedDownloadLog[0].isSuccessful) null else feedDownloadLog[0]
@@ -558,7 +559,7 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
 //                    Log.e(TAG, Log.getStackTraceString(error))
 //                })
 
-        scope.launch {
+        lifecycleScope.launch {
             try {
                 feed = withContext(Dispatchers.IO) {
                     val feed_ = loadData()
@@ -616,7 +617,6 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         return feed
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
     fun onKeyUp(event: KeyEvent) {
         if (!isAdded || !isVisible || !isMenuVisible) return
 
@@ -648,7 +648,8 @@ class FeedItemlistFragment : Fragment(), AdapterView.OnItemClickListener, Toolba
         }
 
         override fun onAddItem(title: Int, ascending: SortOrder, descending: SortOrder, ascendingIsDefault: Boolean) {
-            if (ascending == SortOrder.DATE_OLD_NEW || ascending == SortOrder.DURATION_SHORT_LONG || ascending == SortOrder.RANDOM
+            if (ascending == SortOrder.DATE_OLD_NEW || ascending == SortOrder.PLAYED_DATE_OLD_NEW || ascending == SortOrder.COMPLETED_DATE_OLD_NEW
+                    || ascending == SortOrder.DURATION_SHORT_LONG || ascending == SortOrder.RANDOM
                     || ascending == SortOrder.EPISODE_TITLE_A_Z
                     || (requireArguments().getBoolean(ARG_FEED_IS_LOCAL) && ascending == SortOrder.EPISODE_FILENAME_A_Z)) {
                 super.onAddItem(title, ascending, descending, ascendingIsDefault)

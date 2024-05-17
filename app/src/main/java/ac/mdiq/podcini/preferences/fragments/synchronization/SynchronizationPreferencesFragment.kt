@@ -1,5 +1,17 @@
 package ac.mdiq.podcini.preferences.fragments.synchronization
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.AlertdialogSyncProviderChooserBinding
+import ac.mdiq.podcini.net.sync.SyncService
+import ac.mdiq.podcini.net.sync.SynchronizationCredentials
+import ac.mdiq.podcini.net.sync.SynchronizationProviderViewData
+import ac.mdiq.podcini.net.sync.SynchronizationSettings
+import ac.mdiq.podcini.net.sync.SynchronizationSettings.isProviderConnected
+import ac.mdiq.podcini.net.sync.SynchronizationSettings.wifiSyncEnabledKey
+import ac.mdiq.podcini.ui.activity.PreferenceActivity
+import ac.mdiq.podcini.ui.dialog.AuthenticationDialog
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.app.Activity
 import android.content.DialogInterface
 import android.os.Bundle
@@ -12,24 +24,13 @@ import android.widget.ImageView
 import android.widget.ListAdapter
 import android.widget.TextView
 import androidx.core.text.HtmlCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.AlertdialogSyncProviderChooserBinding
-import ac.mdiq.podcini.ui.activity.PreferenceActivity
-import ac.mdiq.podcini.net.sync.SyncService
-import ac.mdiq.podcini.net.sync.SynchronizationCredentials
-import ac.mdiq.podcini.net.sync.SynchronizationProviderViewData
-import ac.mdiq.podcini.net.sync.SynchronizationSettings
-import ac.mdiq.podcini.net.sync.SynchronizationSettings.isProviderConnected
-import ac.mdiq.podcini.net.sync.SynchronizationSettings.wifiSyncEnabledKey
-import ac.mdiq.podcini.ui.dialog.AuthenticationDialog
-import ac.mdiq.podcini.util.event.SyncServiceEvent
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
 
@@ -43,17 +44,27 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
         super.onStart()
         (activity as PreferenceActivity).supportActionBar!!.setTitle(R.string.synchronization_pref)
         updateScreen()
-        EventBus.getDefault().register(this)
+        procFlowEvents()
     }
 
     override fun onStop() {
         super.onStop()
-        EventBus.getDefault().unregister(this)
+        
         (activity as PreferenceActivity).supportActionBar!!.subtitle = ""
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
-    fun syncStatusChanged(event: SyncServiceEvent) {
+    private fun procFlowEvents() {
+        lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.SyncServiceEvent -> syncStatusChanged(event)
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    fun syncStatusChanged(event: FlowEvent.SyncServiceEvent) {
         if (!isProviderConnected && !wifiSyncEnabledKey) return
 
         updateScreen()

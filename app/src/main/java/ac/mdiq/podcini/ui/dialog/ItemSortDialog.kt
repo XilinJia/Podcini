@@ -1,25 +1,22 @@
 package ac.mdiq.podcini.ui.dialog
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.SortDialogBinding
+import ac.mdiq.podcini.databinding.SortDialogItemActiveBinding
+import ac.mdiq.podcini.databinding.SortDialogItemBinding
+import ac.mdiq.podcini.storage.model.feed.SortOrder
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.CompoundButton
 import android.widget.FrameLayout
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.SortDialogBinding
-import ac.mdiq.podcini.databinding.SortDialogItemActiveBinding
-import ac.mdiq.podcini.databinding.SortDialogItemBinding
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.storage.model.feed.SortOrder
-import android.graphics.Color
-import android.util.Log
-import android.view.WindowManager
 
 open class ItemSortDialog : BottomSheetDialogFragment() {
     protected var _binding: SortDialogBinding? = null
@@ -45,6 +42,8 @@ open class ItemSortDialog : BottomSheetDialogFragment() {
         onAddItem(R.string.feed_title, SortOrder.FEED_TITLE_A_Z, SortOrder.FEED_TITLE_Z_A, true)
         onAddItem(R.string.duration, SortOrder.DURATION_SHORT_LONG, SortOrder.DURATION_LONG_SHORT, true)
         onAddItem(R.string.date, SortOrder.DATE_OLD_NEW, SortOrder.DATE_NEW_OLD, false)
+        onAddItem(R.string.last_played_date, SortOrder.PLAYED_DATE_OLD_NEW, SortOrder.PLAYED_DATE_NEW_OLD, false)
+        onAddItem(R.string.completed_date, SortOrder.COMPLETED_DATE_OLD_NEW, SortOrder.COMPLETED_DATE_NEW_OLD, false)
         onAddItem(R.string.size, SortOrder.SIZE_SMALL_LARGE, SortOrder.SIZE_LARGE_SMALL, false)
         onAddItem(R.string.filename, SortOrder.EPISODE_FILENAME_A_Z, SortOrder.EPISODE_FILENAME_Z_A, true)
         onAddItem(R.string.random, SortOrder.RANDOM, SortOrder.RANDOM, true)
@@ -87,8 +86,7 @@ open class ItemSortDialog : BottomSheetDialogFragment() {
         }
     }
 
-    protected open fun onSelectionChanged() {
-    }
+    protected open fun onSelectionChanged() {}
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)

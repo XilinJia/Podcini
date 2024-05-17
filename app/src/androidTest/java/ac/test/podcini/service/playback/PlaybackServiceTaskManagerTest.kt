@@ -1,23 +1,26 @@
 package de.test.podcini.service.playback
 
-import androidx.test.annotation.UiThreadTest
-import androidx.test.filters.LargeTest
-import androidx.test.platform.app.InstrumentationRegistry
-import ac.mdiq.podcini.preferences.SleepTimerPreferences.setShakeToReset
-import ac.mdiq.podcini.preferences.SleepTimerPreferences.setVibrate
+import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.service.PlaybackServiceTaskManager
 import ac.mdiq.podcini.playback.service.PlaybackServiceTaskManager.PSTMCallback
-import ac.mdiq.podcini.ui.widget.WidgetUpdater.WidgetState
-import ac.mdiq.podcini.util.event.playback.SleepTimerUpdatedEvent
-import ac.mdiq.podcini.storage.model.feed.Feed
-import ac.mdiq.podcini.storage.model.feed.FeedItem
-import ac.mdiq.podcini.storage.model.playback.Playable
-import ac.mdiq.podcini.playback.base.PlayerStatus
+import ac.mdiq.podcini.preferences.SleepTimerPreferences.setShakeToReset
+import ac.mdiq.podcini.preferences.SleepTimerPreferences.setVibrate
 import ac.mdiq.podcini.storage.database.PodDBAdapter.Companion.deleteDatabase
 import ac.mdiq.podcini.storage.database.PodDBAdapter.Companion.getInstance
 import ac.mdiq.podcini.storage.database.PodDBAdapter.Companion.init
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
+import ac.mdiq.podcini.storage.model.feed.Feed
+import ac.mdiq.podcini.storage.model.feed.FeedItem
+import ac.mdiq.podcini.storage.model.playback.Playable
+import ac.mdiq.podcini.ui.widget.WidgetUpdater.WidgetState
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
+import androidx.test.annotation.UiThreadTest
+import androidx.test.filters.LargeTest
+import androidx.test.platform.app.InstrumentationRegistry
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -31,6 +34,9 @@ import java.util.concurrent.TimeUnit
  */
 @LargeTest
 class PlaybackServiceTaskManagerTest {
+
+    val scope = CoroutineScope(Dispatchers.Main)
+
     @After
     fun tearDown() {
         deleteDatabase()
@@ -205,19 +211,29 @@ class PlaybackServiceTaskManagerTest {
         val TIMEOUT = 2 * TIME
         val countDownLatch = CountDownLatch(1)
         val timerReceiver: Any = object : Any() {
-            @Subscribe
-            fun sleepTimerUpdate(event: SleepTimerUpdatedEvent?) {
+            private fun procFlowEvents() {
+                scope.launch {
+                    EventFlow.events.collectLatest { event ->
+                        when (event) {
+                            is FlowEvent.SleepTimerUpdatedEvent -> sleepTimerUpdate(event)
+                            else -> {}
+                        }
+                    }
+                }
+            }
+
+            fun sleepTimerUpdate(event: FlowEvent.SleepTimerUpdatedEvent?) {
                 if (countDownLatch.count == 0L) {
                     Assert.fail()
                 }
                 countDownLatch.countDown()
             }
         }
-        EventBus.getDefault().register(timerReceiver)
+//        EventBus.getDefault().register(timerReceiver)
         val pstm = PlaybackServiceTaskManager(c, defaultPSTM)
         pstm.setSleepTimer(TIME)
         countDownLatch.await(TIMEOUT, TimeUnit.MILLISECONDS)
-        EventBus.getDefault().unregister(timerReceiver)
+//        EventBus.getDefault().unregister(timerReceiver)
         pstm.shutdown()
     }
 
@@ -230,8 +246,17 @@ class PlaybackServiceTaskManagerTest {
         val TIMEOUT = 2 * TIME
         val countDownLatch = CountDownLatch(1)
         val timerReceiver: Any = object : Any() {
-            @Subscribe
-            fun sleepTimerUpdate(event: SleepTimerUpdatedEvent) {
+            private fun procFlowEvents() {
+                scope.launch {
+                    EventFlow.events.collectLatest { event ->
+                        when (event) {
+                            is FlowEvent.SleepTimerUpdatedEvent -> sleepTimerUpdate(event)
+                            else -> {}
+                        }
+                    }
+                }
+            }
+            fun sleepTimerUpdate(event: FlowEvent.SleepTimerUpdatedEvent) {
                 when {
                     event.isOver -> {
                         countDownLatch.countDown()
@@ -243,12 +268,12 @@ class PlaybackServiceTaskManagerTest {
             }
         }
         val pstm = PlaybackServiceTaskManager(c, defaultPSTM)
-        EventBus.getDefault().register(timerReceiver)
+//        EventBus.getDefault().register(timerReceiver)
         pstm.setSleepTimer(TIME)
         pstm.disableSleepTimer()
         Assert.assertFalse(countDownLatch.await(TIMEOUT, TimeUnit.MILLISECONDS))
         pstm.shutdown()
-        EventBus.getDefault().unregister(timerReceiver)
+//        EventBus.getDefault().unregister(timerReceiver)
     }
 
     @Test

@@ -8,25 +8,26 @@ import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
 import ac.mdiq.podcini.storage.model.feed.SortOrder
 import ac.mdiq.podcini.ui.dialog.AllEpisodesFilterDialog
-import ac.mdiq.podcini.ui.dialog.AllEpisodesFilterDialog.AllEpisodesFilterChangedEvent
 import ac.mdiq.podcini.ui.dialog.ItemSortDialog
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.FeedListUpdateEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.OptIn
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
 
 /**
  * Shows all episodes (possibly filtered by user).
  */
-class AllEpisodesFragment : BaseEpisodesListFragment() {
+@UnstableApi class AllEpisodesFragment : BaseEpisodesListFragment() {
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val root = super.onCreateView(inflater, container, savedInstanceState)
@@ -40,6 +41,11 @@ class AllEpisodesFragment : BaseEpisodesListFragment() {
             AllEpisodesFilterDialog.newInstance(getFilter()).show(childFragmentManager, null)
         }
         return root
+    }
+
+    override fun onStart() {
+        super.onStart()
+        procFlowEvents()
     }
 
     override fun loadData(): List<FeedItem> {
@@ -79,7 +85,7 @@ class AllEpisodesFragment : BaseEpisodesListFragment() {
                 if (filter.contains(FeedItemFilter.IS_FAVORITE)) filter.remove(FeedItemFilter.IS_FAVORITE)
                 else filter.add(FeedItemFilter.IS_FAVORITE)
 
-                onFilterChanged(AllEpisodesFilterChangedEvent(HashSet(filter)))
+                onFilterChanged(FlowEvent.AllEpisodesFilterChangedEvent(HashSet(filter)))
                 return true
             }
             R.id.episodes_sort -> {
@@ -90,8 +96,18 @@ class AllEpisodesFragment : BaseEpisodesListFragment() {
         }
     }
 
-    @Subscribe
-    fun onFilterChanged(event: AllEpisodesFilterChangedEvent) {
+    private fun procFlowEvents() {
+        lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.AllEpisodesFilterChangedEvent -> onFilterChanged(event)
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    fun onFilterChanged(event: FlowEvent.AllEpisodesFilterChangedEvent) {
         prefFilterAllEpisodes = StringUtils.join(event.filterValues, ",")
         updateFilterUi()
         page = 1
@@ -117,14 +133,15 @@ class AllEpisodesFragment : BaseEpisodesListFragment() {
         }
 
         override fun onAddItem(title: Int, ascending: SortOrder, descending: SortOrder, ascendingIsDefault: Boolean) {
-            if (ascending == SortOrder.DATE_OLD_NEW || ascending == SortOrder.DURATION_SHORT_LONG)
+            if (ascending == SortOrder.DATE_OLD_NEW || ascending == SortOrder.DURATION_SHORT_LONG
+                    || ascending == SortOrder.PLAYED_DATE_OLD_NEW || ascending == SortOrder.COMPLETED_DATE_OLD_NEW)
                 super.onAddItem(title, ascending, descending, ascendingIsDefault)
         }
 
         override fun onSelectionChanged() {
             super.onSelectionChanged()
             allEpisodesSortOrder = sortOrder
-            EventBus.getDefault().post(FeedListUpdateEvent(0))
+            EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(0))
         }
     }
 

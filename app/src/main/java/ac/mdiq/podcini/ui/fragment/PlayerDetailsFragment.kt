@@ -18,7 +18,8 @@ import ac.mdiq.podcini.util.ChapterUtils
 import ac.mdiq.podcini.util.DateFormatter
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.NetworkUtils.fetchHtmlSource
-import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
@@ -41,17 +42,20 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.BlendModeColorFilterCompat
 import androidx.core.graphics.BlendModeCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import coil.imageLoader
 import coil.request.ErrorResult
 import coil.request.ImageRequest
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import net.dankito.readability4j.Readability4J
 import org.apache.commons.lang3.StringUtils
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 
 /**
  * Displays the description of a Playable object in a Webview.
@@ -68,7 +72,7 @@ class  PlayerDetailsFragment : Fragment() {
     private var item: FeedItem? = null
     private var displayedChapterIndex = -1
 
-    val scope = CoroutineScope(Dispatchers.Main)
+//    val scope = CoroutineScope(Dispatchers.Main)
     private var cleanedNotes: String? = null
 //    private var webViewLoader: Disposable? = null
     private var controller: PlaybackController? = null
@@ -112,6 +116,11 @@ class  PlayerDetailsFragment : Fragment() {
         }
         controller?.init()
         return binding.root
+    }
+
+    override fun onStart() {
+        super.onStart()
+        procFlowEvents()
     }
 
     override fun onDestroyView() {
@@ -172,7 +181,7 @@ class  PlayerDetailsFragment : Fragment() {
 
     private fun load() {
         val context = context ?: return
-        scope.launch {
+        lifecycleScope.launch {
             withContext(Dispatchers.IO) {
                 if (item == null) {
                     media = controller?.getMedia()
@@ -443,8 +452,18 @@ class  PlayerDetailsFragment : Fragment() {
         savePreference()
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: PlaybackPositionEvent) {
+    private fun procFlowEvents() {
+        lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.PlaybackPositionEvent -> onEventMainThread(event)
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    fun onEventMainThread(event: FlowEvent.PlaybackPositionEvent) {
         val newChapterIndex: Int = ChapterUtils.getCurrentChapterIndex(media, event.position)
         if (newChapterIndex > -1 && newChapterIndex != displayedChapterIndex) {
             refreshChapterData(newChapterIndex)

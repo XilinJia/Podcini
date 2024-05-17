@@ -1,6 +1,35 @@
 package ac.mdiq.podcini.storage
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.feed.LocalFeedUpdater.updateFeed
+import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.net.sync.model.EpisodeAction
+import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
+import ac.mdiq.podcini.playback.service.PlaybackServiceConstants
+import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.createInstanceFromPreferences
+import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.currentlyPlayingFeedMediaId
+import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.writeNoMediaPlaying
+import ac.mdiq.podcini.preferences.UserPreferences.enqueueLocation
+import ac.mdiq.podcini.preferences.UserPreferences.isQueueKeepSorted
+import ac.mdiq.podcini.preferences.UserPreferences.queueKeepSortedOrder
+import ac.mdiq.podcini.preferences.UserPreferences.shouldDeleteRemoveFromQueue
+import ac.mdiq.podcini.storage.DBReader.getFeed
+import ac.mdiq.podcini.storage.DBReader.getFeedItem
+import ac.mdiq.podcini.storage.DBReader.getFeedItemList
+import ac.mdiq.podcini.storage.DBReader.getFeedMedia
+import ac.mdiq.podcini.storage.DBReader.getQueue
+import ac.mdiq.podcini.storage.DBReader.getQueueIDList
+import ac.mdiq.podcini.storage.DBTasks.autodownloadUndownloadedItems
+import ac.mdiq.podcini.storage.database.PodDBAdapter.Companion.getInstance
+import ac.mdiq.podcini.storage.model.download.DownloadResult
+import ac.mdiq.podcini.storage.model.feed.*
+import ac.mdiq.podcini.util.FeedItemPermutors.getPermutor
+import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
+import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.LongList
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.podcini.util.showStackTrace
 import android.app.backup.BackupManager
 import android.content.Context
 import android.net.Uri
@@ -9,43 +38,9 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.documentfile.provider.DocumentFile
 import androidx.media3.common.util.UnstableApi
 import com.google.common.util.concurrent.Futures
-import ac.mdiq.podcini.feed.FeedEvent
-import ac.mdiq.podcini.feed.LocalFeedUpdater.updateFeed
-import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.createInstanceFromPreferences
-import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.currentlyPlayingFeedMediaId
-import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.writeNoMediaPlaying
-import ac.mdiq.podcini.playback.service.PlaybackServiceConstants
-import ac.mdiq.podcini.storage.DBReader.getFeed
-import ac.mdiq.podcini.storage.DBReader.getFeedItem
-import ac.mdiq.podcini.storage.DBReader.getFeedItemList
-import ac.mdiq.podcini.storage.DBReader.getFeedMedia
-import ac.mdiq.podcini.storage.DBReader.getQueue
-import ac.mdiq.podcini.storage.DBReader.getQueueIDList
-import ac.mdiq.podcini.storage.DBTasks.autodownloadUndownloadedItems
-import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
-import ac.mdiq.podcini.util.FeedItemPermutors.getPermutor
-import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
-import ac.mdiq.podcini.util.LongList
-import ac.mdiq.podcini.util.event.*
-import ac.mdiq.podcini.util.event.FeedItemEvent.Companion.updated
-import ac.mdiq.podcini.util.event.QueueEvent.Companion.added
-import ac.mdiq.podcini.util.event.QueueEvent.Companion.cleared
-import ac.mdiq.podcini.util.event.QueueEvent.Companion.irreversibleRemoved
-import ac.mdiq.podcini.util.event.QueueEvent.Companion.moved
-import ac.mdiq.podcini.util.event.QueueEvent.Companion.removed
-import ac.mdiq.podcini.util.event.playback.PlaybackHistoryEvent
-import ac.mdiq.podcini.storage.model.download.DownloadResult
-import ac.mdiq.podcini.storage.model.feed.*
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
-import ac.mdiq.podcini.net.sync.model.EpisodeAction
-import ac.mdiq.podcini.storage.database.PodDBAdapter.Companion.getInstance
-import ac.mdiq.podcini.preferences.UserPreferences.enqueueLocation
-import ac.mdiq.podcini.preferences.UserPreferences.isQueueKeepSorted
-import ac.mdiq.podcini.preferences.UserPreferences.queueKeepSortedOrder
-import ac.mdiq.podcini.preferences.UserPreferences.shouldDeleteRemoveFromQueue
-import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.showStackTrace
-import org.greenrobot.eventbus.EventBus
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.*
 import java.util.concurrent.ExecutorService
@@ -112,7 +107,7 @@ import java.util.concurrent.TimeUnit
                     adapter.close()
                     item.setMedia(null)
                     persistFeedItem(item)
-                    EventBus.getDefault().post(updated(item))
+                    EventFlow.postEvent(FlowEvent.FeedItemEvent.updated(item))
                 }
                 if (result && item != null && shouldDeleteRemoveFromQueue()) removeQueueItemSynchronous(context, false, item.id)
             }
@@ -128,7 +123,7 @@ import java.util.concurrent.TimeUnit
                 // Local feed
                 val documentFile = DocumentFile.fromSingleUri(context, Uri.parse(media.getFile_url()))
                 if (documentFile == null || !documentFile.exists() || !documentFile.delete()) {
-                    EventBus.getDefault().post(MessageEvent(context.getString(R.string.delete_local_failed)))
+                    EventFlow.postEvent(FlowEvent.MessageEvent(context.getString(R.string.delete_local_failed)))
                     return false
                 }
                 media.setFile_url(null)
@@ -138,8 +133,8 @@ import java.util.concurrent.TimeUnit
                 // delete downloaded media file
                 val mediaFile = File(url)
                 if (mediaFile.exists() && !mediaFile.delete()) {
-                    val evt = MessageEvent(context.getString(R.string.delete_failed))
-                    EventBus.getDefault().post(evt)
+                    val evt = FlowEvent.MessageEvent(context.getString(R.string.delete_failed))
+                    EventFlow.postEvent(evt)
                     return false
                 }
                 media.setDownloaded(false)
@@ -171,7 +166,7 @@ import java.util.concurrent.TimeUnit
                     .currentTimestamp()
                     .build()
                 SynchronizationQueueSink.enqueueEpisodeActionIfSynchronizationIsActive(context, action)
-                EventBus.getDefault().post(updated(item))
+                EventFlow.postEvent(FlowEvent.FeedItemEvent.updated(item))
             }
         }
         return true
@@ -200,7 +195,7 @@ import java.util.concurrent.TimeUnit
             if (!feed.isLocalFeed && feed.download_url != null)
                 SynchronizationQueueSink.enqueueFeedRemovedIfSynchronizationIsActive(context, feed.download_url!!)
 
-            EventBus.getDefault().post(FeedListUpdateEvent(feed))
+            EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(feed))
         }
     }
 
@@ -242,13 +237,13 @@ import java.util.concurrent.TimeUnit
         adapter.close()
 
         for (item in removedFromQueue) {
-            EventBus.getDefault().post(irreversibleRemoved(item))
+            EventFlow.postEvent(FlowEvent.QueueEvent.irreversibleRemoved(item))
         }
 
         // we assume we also removed download log entries for the feed or its media files.
         // especially important if download or refresh failed, as the user should not be able
         // to retry these
-        EventBus.getDefault().post(DownloadLogEvent.listUpdated())
+        EventFlow.postEvent(FlowEvent.DownloadLogEvent())
 
         val backupManager = BackupManager(context)
         backupManager.dataChanged()
@@ -263,7 +258,7 @@ import java.util.concurrent.TimeUnit
             adapter.open()
             adapter.clearPlaybackHistory()
             adapter.close()
-            EventBus.getDefault().post(PlaybackHistoryEvent.listUpdated())
+            EventFlow.postEvent(FlowEvent.HistoryEvent())
         }
     }
 
@@ -276,7 +271,7 @@ import java.util.concurrent.TimeUnit
             adapter.open()
             adapter.clearDownloadLog()
             adapter.close()
-            EventBus.getDefault().post(DownloadLogEvent.listUpdated())
+            EventFlow.postEvent(FlowEvent.DownloadLogEvent())
         }
     }
 
@@ -303,7 +298,7 @@ import java.util.concurrent.TimeUnit
                 adapter.open()
                 adapter.setFeedMediaPlaybackCompletionDate(media)
                 adapter.close()
-                EventBus.getDefault().post(PlaybackHistoryEvent.listUpdated())
+                EventFlow.postEvent(FlowEvent.HistoryEvent())
             }
         }
     }
@@ -321,7 +316,7 @@ import java.util.concurrent.TimeUnit
                 adapter.open()
                 adapter.setDownloadStatus(status)
                 adapter.close()
-                EventBus.getDefault().post(DownloadLogEvent.listUpdated())
+                EventFlow.postEvent(FlowEvent.DownloadLogEvent())
             }
         }
     }
@@ -350,8 +345,8 @@ import java.util.concurrent.TimeUnit
                     queue.add(index, item)
                     adapter.setQueue(queue)
                     item.addTag(FeedItem.TAG_QUEUE)
-                    EventBus.getDefault().post(added(item, index))
-                    EventBus.getDefault().post(updated(item))
+                    EventFlow.postEvent(FlowEvent.QueueEvent.added(item, index))
+                    EventFlow.postEvent(FlowEvent.FeedItemEvent.updated(item))
                     if (item.isNew) markItemPlayed(FeedItem.UNPLAYED, item.id)
                 }
             }
@@ -409,7 +404,7 @@ import java.util.concurrent.TimeUnit
 
             var queueModified = false
             val markAsUnplayedIds = LongList()
-            val events: MutableList<QueueEvent> = ArrayList()
+            val events: MutableList<FlowEvent.QueueEvent> = ArrayList()
             val updatedItems: MutableList<FeedItem> = ArrayList()
             val positionCalculator =
                 ItemEnqueuePositionCalculator(enqueueLocation)
@@ -420,7 +415,7 @@ import java.util.concurrent.TimeUnit
                     val item = getFeedItem(itemId)
                     if (item != null) {
                         queue.add(insertPosition, item)
-                        events.add(added(item, insertPosition))
+                        events.add(FlowEvent.QueueEvent.added(item, insertPosition))
 
                         item.addTag(FeedItem.TAG_QUEUE)
                         updatedItems.add(item)
@@ -434,9 +429,9 @@ import java.util.concurrent.TimeUnit
                 applySortOrder(queue, events)
                 adapter.setQueue(queue)
                 for (event in events) {
-                    EventBus.getDefault().post(event)
+                    EventFlow.postEvent(event)
                 }
-                EventBus.getDefault().post(updated(updatedItems))
+                EventFlow.postEvent(FlowEvent.FeedItemEvent.updated(updatedItems))
                 if (markAsUnplayed && markAsUnplayedIds.size() > 0) markItemPlayed(FeedItem.UNPLAYED, *markAsUnplayedIds.toArray())
             }
             adapter.close()
@@ -451,7 +446,7 @@ import java.util.concurrent.TimeUnit
      * @param queue  The queue to be sorted.
      * @param events Replaces the events by a single SORT event if the list has to be sorted automatically.
      */
-    private fun applySortOrder(queue: MutableList<FeedItem>, events: MutableList<QueueEvent>) {
+    private fun applySortOrder(queue: MutableList<FeedItem>, events: MutableList<FlowEvent.QueueEvent>) {
         // queue is not in keep sorted mode, there's nothing to do
         if (!isQueueKeepSorted) return
 
@@ -466,7 +461,7 @@ import java.util.concurrent.TimeUnit
         }
         // Replace ADDED events by a single SORTED event
         events.clear()
-        events.add(QueueEvent.sorted(queue))
+        events.add(FlowEvent.QueueEvent.sorted(queue))
     }
 
     /**
@@ -479,7 +474,7 @@ import java.util.concurrent.TimeUnit
             adapter.open()
             adapter.clearQueue()
             adapter.close()
-            EventBus.getDefault().post(cleared())
+            EventFlow.postEvent(FlowEvent.QueueEvent.cleared())
         }
     }
 
@@ -510,7 +505,7 @@ import java.util.concurrent.TimeUnit
         val queue = getQueue(adapter).toMutableList()
 
         var queueModified = false
-        val events: MutableList<QueueEvent> = ArrayList()
+        val events: MutableList<FlowEvent.QueueEvent> = ArrayList()
         val updatedItems: MutableList<FeedItem> = ArrayList()
         for (itemId in itemIds) {
             val position = indexInItemList(queue, itemId)
@@ -523,7 +518,7 @@ import java.util.concurrent.TimeUnit
                 }
                 queue.removeAt(position)
                 item.removeTag(FeedItem.TAG_QUEUE)
-                events.add(removed(item))
+                events.add(FlowEvent.QueueEvent.removed(item))
                 updatedItems.add(item)
                 queueModified = true
             } else {
@@ -533,9 +528,9 @@ import java.util.concurrent.TimeUnit
         if (queueModified) {
             adapter.setQueue(queue)
             for (event in events) {
-                EventBus.getDefault().post(event)
+                EventFlow.postEvent(event)
             }
-            EventBus.getDefault().post(updated(updatedItems))
+            EventFlow.postEvent(FlowEvent.FeedItemEvent.updated(updatedItems))
         } else Log.w(TAG, "Queue was not modified by call to removeQueueItem")
 
         adapter.close()
@@ -552,8 +547,8 @@ import java.util.concurrent.TimeUnit
             adapter.addFavoriteItem(item)
             adapter.close()
             item.addTag(FeedItem.TAG_FAVORITE)
-            EventBus.getDefault().post(FavoritesEvent())
-            EventBus.getDefault().post(updated(item))
+            EventFlow.postEvent(FlowEvent.FavoritesEvent())
+            EventFlow.postEvent(FlowEvent.FeedItemEvent.updated(item))
         }
     }
 
@@ -563,8 +558,8 @@ import java.util.concurrent.TimeUnit
             adapter.removeFavoriteItem(item)
             adapter.close()
             item.removeTag(FeedItem.TAG_FAVORITE)
-            EventBus.getDefault().post(FavoritesEvent())
-            EventBus.getDefault().post(updated(item))
+            EventFlow.postEvent(FlowEvent.FavoritesEvent())
+            EventFlow.postEvent(FlowEvent.FeedItemEvent.updated(item))
         }
     }
 
@@ -634,7 +629,7 @@ import java.util.concurrent.TimeUnit
                 val item: FeedItem = queue.removeAt(from)
                 queue.add(to, item)
                 adapter.setQueue(queue)
-                if (broadcastUpdate) EventBus.getDefault().post(moved(item, to))
+                if (broadcastUpdate) EventFlow.postEvent(FlowEvent.QueueEvent.moved(item, to))
             }
         } else Log.e(TAG, "moveQueueItemHelper: Could not load queue")
 
@@ -678,7 +673,7 @@ import java.util.concurrent.TimeUnit
             adapter.open()
             adapter.setFeedItemRead(played, *itemIds)
             adapter.close()
-            if (broadcastUpdate) EventBus.getDefault().post(UnreadItemsUpdateEvent())
+            if (broadcastUpdate) EventFlow.postEvent(FlowEvent.UnreadItemsUpdateEvent())
         }
     }
 
@@ -701,7 +696,7 @@ import java.util.concurrent.TimeUnit
             adapter.open()
             adapter.setFeedItemRead(played, itemId, mediaId, resetMediaPosition)
             adapter.close()
-            EventBus.getDefault().post(UnreadItemsUpdateEvent())
+            EventFlow.postEvent(FlowEvent.UnreadItemsUpdateEvent())
         }
     }
 
@@ -716,7 +711,7 @@ import java.util.concurrent.TimeUnit
             adapter.open()
             adapter.setFeedItems(FeedItem.NEW, FeedItem.UNPLAYED, feedId)
             adapter.close()
-            EventBus.getDefault().post(UnreadItemsUpdateEvent())
+            EventFlow.postEvent(FlowEvent.UnreadItemsUpdateEvent())
         }
     }
 
@@ -730,7 +725,7 @@ import java.util.concurrent.TimeUnit
             adapter.open()
             adapter.setFeedItems(FeedItem.NEW, FeedItem.UNPLAYED)
             adapter.close()
-            EventBus.getDefault().post(UnreadItemsUpdateEvent())
+            EventFlow.postEvent(FlowEvent.UnreadItemsUpdateEvent())
         }
     }
 
@@ -766,7 +761,7 @@ import java.util.concurrent.TimeUnit
             adapter.open()
             adapter.storeFeedItemlist(items)
             adapter.close()
-            EventBus.getDefault().post(updated(items))
+            EventFlow.postEvent(FlowEvent.FeedItemEvent.updated(items))
         }
     }
 
@@ -819,7 +814,7 @@ import java.util.concurrent.TimeUnit
                 adapter.open()
                 adapter.setSingleFeedItem(item)
                 adapter.close()
-                EventBus.getDefault().post(updated(item))
+                EventFlow.postEvent(FlowEvent.FeedItemEvent.updated(item))
             }
         }
     }
@@ -848,7 +843,7 @@ import java.util.concurrent.TimeUnit
             adapter.open()
             adapter.setFeedPreferences(preferences)
             adapter.close()
-            EventBus.getDefault().post(FeedListUpdateEvent(preferences.feedID))
+            EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(preferences.feedID))
         }
     }
 
@@ -876,7 +871,7 @@ import java.util.concurrent.TimeUnit
             adapter.open()
             adapter.setFeedLastUpdateFailed(feedId, lastUpdateFailed)
             adapter.close()
-            EventBus.getDefault().post(FeedListUpdateEvent(feedId))
+            EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(feedId))
         }
     }
 
@@ -886,7 +881,7 @@ import java.util.concurrent.TimeUnit
             adapter.open()
             adapter.setFeedCustomTitle(feed.id, feed.getCustomTitle())
             adapter.close()
-            EventBus.getDefault().post(FeedListUpdateEvent(feed))
+            EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(feed))
         }
     }
 
@@ -910,7 +905,7 @@ import java.util.concurrent.TimeUnit
 
             permutor.reorder(queue)
             adapter.setQueue(queue)
-            if (broadcastUpdate) EventBus.getDefault().post(QueueEvent.sorted(queue))
+            if (broadcastUpdate) EventFlow.postEvent(FlowEvent.QueueEvent.sorted(queue))
             adapter.close()
         }
     }
@@ -928,7 +923,7 @@ import java.util.concurrent.TimeUnit
             adapter.open()
             adapter.setFeedItemFilter(feedId, filterValues)
             adapter.close()
-            EventBus.getDefault().post(FeedEvent(FeedEvent.Action.FILTER_CHANGED, feedId))
+            EventFlow.postEvent(FlowEvent.FeedEvent(FlowEvent.FeedEvent.Action.FILTER_CHANGED, feedId))
         }
     }
 
@@ -942,22 +937,31 @@ import java.util.concurrent.TimeUnit
             adapter.open()
             adapter.setFeedItemSortOrder(feedId, sortOrder)
             adapter.close()
-            EventBus.getDefault().post(FeedEvent(FeedEvent.Action.SORT_ORDER_CHANGED, feedId))
+            EventFlow.postEvent(FlowEvent.FeedEvent(FlowEvent.FeedEvent.Action.SORT_ORDER_CHANGED, feedId))
         }
     }
 
     /**
      * Reset the statistics in DB
      */
-    fun resetStatistics(): Future<*> {
-        return runOnDbThread {
+//    fun resetStatistics(): Future<*> {
+//        return runOnDbThread {
+//            val adapter = getInstance()
+//            adapter.open()
+//            adapter.resetAllMediaPlayedDuration()
+//            adapter.close()
+//        }
+//    }
+
+    suspend fun resetStatistics(): Unit = withContext(Dispatchers.IO) {
+        val result = async {
             val adapter = getInstance()
             adapter.open()
             adapter.resetAllMediaPlayedDuration()
             adapter.close()
         }
+        result.await()
     }
-
     /**
      * Submit to the DB thread only if caller is not already on the DB thread. Otherwise,
      * just execute synchronously

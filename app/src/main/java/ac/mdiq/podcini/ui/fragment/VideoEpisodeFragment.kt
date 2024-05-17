@@ -25,8 +25,8 @@ import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.Converter.getDurationStringLong
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.TimeSpeedConverter
-import ac.mdiq.podcini.util.event.playback.BufferUpdateEvent
-import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -41,12 +41,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat.invalidateOptionsMenu
 import androidx.fragment.app.Fragment
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
-import kotlinx.coroutines.*
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
-import java.lang.Runnable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @UnstableApi
 class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
@@ -63,7 +63,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     private val videoControlsHider = Handler(Looper.getMainLooper())
     private var showTimeLeft = false
 
-    val scope = CoroutineScope(Dispatchers.Main)
+//    val scope = CoroutineScope(Dispatchers.Main)
 //    private var disposable: Disposable? = null
     private var prog = 0f
 
@@ -95,9 +95,8 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
             override fun updatePlayButtonShowsPlay(showPlay: Boolean) {
                 Logd(TAG, "updatePlayButtonShowsPlay called")
                 binding.playButton.setIsShowPlay(showPlay)
-                if (showPlay) {
-                    (activity as AppCompatActivity).window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                } else {
+                if (showPlay) (activity as AppCompatActivity).window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                else {
                     (activity as AppCompatActivity).window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                     setupVideoAspectRatio()
                     if (videoSurfaceCreated && controller != null) {
@@ -121,7 +120,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     override fun onStart() {
         super.onStart()
         onPositionObserverUpdate()
-        EventBus.getDefault().register(this)
+        procFlowEvents()
     }
 
     @UnstableApi
@@ -134,7 +133,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
 
     @UnstableApi
     override fun onStop() {
-        EventBus.getDefault().unregister(this)
+        
         super.onStop()
         if (!PictureInPictureUtil.isInPictureInPictureMode(requireActivity())) videoControlsHider.removeCallbacks(hideVideoControls)
 
@@ -149,13 +148,23 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         _binding = null
         controller?.release()
         controller = null // prevent leak
-        scope.cancel()
+//        scope.cancel()
 //        disposable?.dispose()
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    @Suppress("unused")
-    fun bufferUpdate(event: BufferUpdateEvent) {
+    private fun procFlowEvents() {
+        lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.BufferUpdateEvent -> bufferUpdate(event)
+                    is FlowEvent.PlaybackPositionEvent -> onPositionObserverUpdate()
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    fun bufferUpdate(event: FlowEvent.BufferUpdateEvent) {
         when {
             event.hasStarted() -> binding.progressBar.visibility = View.VISIBLE
             event.hasEnded() -> binding.progressBar.visibility = View.INVISIBLE
@@ -227,7 +236,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
 //                Log.e(TAG, Log.getStackTraceString(error))
 //            })
 
-        scope.launch {
+        lifecycleScope.launch {
             try {
                 item = withContext(Dispatchers.IO) {
                     loadInBackground()
@@ -502,11 +511,6 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
 
         binding.bottomControlsContainer.visibility = View.GONE
         binding.controlsContainer.visibility = View.GONE
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: PlaybackPositionEvent?) {
-        onPositionObserverUpdate()
     }
 
     fun onPositionObserverUpdate() {

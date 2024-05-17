@@ -17,6 +17,7 @@ import java.nio.charset.Charset
  * Writes an OPML file into the export directory in the background.
  */
 class ExportWorker private constructor(private val exportWriter: ExportWriter, private val output: File, private val context: Context) {
+
     constructor(exportWriter: ExportWriter, context: Context) : this(exportWriter, File(getDataFolder(EXPORT_DIR),
         DEFAULT_OUTPUT_NAME + "." + exportWriter.fileExtension()), context)
 

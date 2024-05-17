@@ -3,22 +3,25 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
-import ac.mdiq.podcini.ui.dialog.AllEpisodesFilterDialog.AllEpisodesFilterChangedEvent
 import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.OptIn
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
-import org.greenrobot.eventbus.Subscribe
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import kotlin.math.min
 
 /**
  * Shows all episodes (possibly filtered by user).
  */
-class EpisodesListFragment : BaseEpisodesListFragment() {
+@UnstableApi class ExternalEpisodesListFragment : BaseEpisodesListFragment() {
 
     private val episodeList: MutableList<FeedItem> = mutableListOf()
 
@@ -38,6 +41,11 @@ class EpisodesListFragment : BaseEpisodesListFragment() {
 //            AllEpisodesFilterDialog.newInstance(getFilter()).show(childFragmentManager, null)
 //        }
         return root
+    }
+
+    override fun onStart() {
+        super.onStart()
+        procFlowEvents()
     }
 
     fun setEpisodes(episodeList_: MutableList<FeedItem>) {
@@ -94,12 +102,15 @@ class EpisodesListFragment : BaseEpisodesListFragment() {
         }
     }
 
-    @Subscribe
-    fun onFilterChanged(event: AllEpisodesFilterChangedEvent) {
-//        prefFilterAllEpisodes = StringUtils.join(event.filterValues, ",")
-//        updateFilterUi()
-        page = 1
-//        loadItems()
+    private fun procFlowEvents() {
+        lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.AllEpisodesFilterChangedEvent -> page = 1
+                    else -> {}
+                }
+            }
+        }
     }
 
     private fun updateFilterUi() {
@@ -143,8 +154,8 @@ class EpisodesListFragment : BaseEpisodesListFragment() {
         const val EXTRA_EPISODES: String = "episodes_list"
 
         @JvmStatic
-        fun newInstance(episodes: MutableList<FeedItem>): EpisodesListFragment {
-            val i = EpisodesListFragment()
+        fun newInstance(episodes: MutableList<FeedItem>): ExternalEpisodesListFragment {
+            val i = ExternalEpisodesListFragment()
             i.setEpisodes(episodes)
             return i
         }

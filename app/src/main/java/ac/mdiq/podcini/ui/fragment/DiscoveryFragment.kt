@@ -10,7 +10,8 @@ import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.OnlineFeedsAdapter
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.DiscoveryDefaultUpdateEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.Context
 import android.content.DialogInterface
 import android.content.SharedPreferences
@@ -26,12 +27,12 @@ import android.widget.AdapterView.OnItemClickListener
 import androidx.annotation.OptIn
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import kotlinx.coroutines.*
-import org.greenrobot.eventbus.EventBus
 import java.util.*
 
 /**
@@ -60,7 +61,7 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var searchResults: List<PodcastSearchResult>? = null
     private var topList: List<PodcastSearchResult>? = null
 
-    val scope = CoroutineScope(Dispatchers.Main)
+//    val scope = CoroutineScope(Dispatchers.Main)
 //    private var disposable: Disposable? = null
     private var countryCode: String? = "US"
     private var hidden = false
@@ -135,7 +136,7 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
-        scope.cancel()
+//        scope.cancel()
 //        disposable?.dispose()
 
         adapter = null
@@ -194,7 +195,7 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 //                    butRetry.visibility = View.VISIBLE
 //                })
 
-        scope.launch {
+        lifecycleScope.launch {
             try {
                 val podcasts = withContext(Dispatchers.IO) {
                     loader.loadToplist(country?:"", NUM_OF_TOP_PODCASTS, DBReader.getFeedList())
@@ -226,7 +227,7 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 hidden = item.isChecked
                 prefs.edit().putBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, hidden).apply()
 
-                EventBus.getDefault().post(DiscoveryDefaultUpdateEvent())
+                EventFlow.postEvent(FlowEvent.DiscoveryDefaultUpdateEvent())
                 loadToplist(countryCode)
                 return true
             }
@@ -280,7 +281,7 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     prefs.edit().putBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, hidden).apply()
                     prefs.edit().putString(ItunesTopListLoader.PREF_KEY_COUNTRY_CODE, countryCode).apply()
 
-                    EventBus.getDefault().post(DiscoveryDefaultUpdateEvent())
+                    EventFlow.postEvent(FlowEvent.DiscoveryDefaultUpdateEvent())
                     loadToplist(countryCode)
                 }
                 builder.setNegativeButton(R.string.cancel_label, null)

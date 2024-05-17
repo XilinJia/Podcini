@@ -1,0 +1,11 @@
+ 
+Version 5.3.0 brings several changes:
+
+* change normal scope to life cycle scope when possible
+* replaced EventBus with Kotlin SharedFlow, be mindful of possible issues
+* added sort order based on episode played or completed times, accessible from various episodes' list views
+* in history view, dates shown on items are last-played dates
+* in history view added sort and date filter
+* more conversion of RxJava routines to Kotlin coroutines
+* fixed crash issue sometimes when importing OPOL files
+* fixed crash issue in About view

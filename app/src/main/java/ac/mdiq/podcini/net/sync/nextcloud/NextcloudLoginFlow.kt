@@ -1,14 +1,18 @@
 package ac.mdiq.podcini.net.sync.nextcloud
 
+import ac.mdiq.podcini.net.sync.HostnameParser
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
-import ac.mdiq.podcini.net.sync.HostnameParser
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -42,27 +46,51 @@ class NextcloudLoginFlow(private val httpClient: OkHttpClient, private val rawHo
             poll()
             return
         }
-        startDisposable = Observable.fromCallable {
-            val url = URI(hostname.scheme, null, hostname.host, hostname.port, hostname.subfolder + "/index.php/login/v2", null, null).toURL()
-            val result = doRequest(url, "")
-            val loginUrl = result.getString("login")
-            this.token = result.getJSONObject("poll").getString("token")
-            this.endpoint = result.getJSONObject("poll").getString("endpoint")
-            loginUrl
-        }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { result: String? ->
+//        startDisposable = Observable.fromCallable {
+//            val url = URI(hostname.scheme, null, hostname.host, hostname.port, hostname.subfolder + "/index.php/login/v2", null, null).toURL()
+//            val result = doRequest(url, "")
+//            val loginUrl = result.getString("login")
+//            this.token = result.getJSONObject("poll").getString("token")
+//            this.endpoint = result.getJSONObject("poll").getString("endpoint")
+//            loginUrl
+//        }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe(
+//                { result: String? ->
+//                    val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(result))
+//                    context.startActivity(browserIntent)
+//                    poll()
+//                }, { error: Throwable ->
+//                    Log.e(TAG, Log.getStackTraceString(error))
+//                    this.token = null
+//                    this.endpoint = null
+//                    callback.onNextcloudAuthError(error.localizedMessage)
+//                })
+
+        val coroutineScope = CoroutineScope(Dispatchers.Main)
+        coroutineScope.launch {
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    val url = URI(hostname.scheme, null, hostname.host, hostname.port, hostname.subfolder + "/index.php/login/v2", null, null).toURL()
+                    val result = doRequest(url, "")
+                    val loginUrl = result.getString("login")
+                    token = result.getJSONObject("poll").getString("token")
+                    endpoint = result.getJSONObject("poll").getString("endpoint")
+                    loginUrl
+                }
+                withContext(Dispatchers.Main) {
                     val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(result))
                     context.startActivity(browserIntent)
                     poll()
-                }, { error: Throwable ->
-                    Log.e(TAG, Log.getStackTraceString(error))
-                    this.token = null
-                    this.endpoint = null
-                    callback.onNextcloudAuthError(error.localizedMessage)
-                })
+                }
+            } catch (e: Throwable) {
+                Log.e(TAG, Log.getStackTraceString(e))
+                token = null
+                endpoint = null
+                callback.onNextcloudAuthError(e.localizedMessage)
+            }
+        }
     }
 
     private fun poll() {

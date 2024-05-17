@@ -1,17 +1,18 @@
 package ac.mdiq.podcini.net.download.service
 
-import android.content.Context
-import androidx.work.*
-import androidx.work.Constraints.Builder
+import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.DBWriter
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
-import ac.mdiq.podcini.preferences.UserPreferences
+import android.content.Context
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
-import io.reactivex.Observable
-import io.reactivex.schedulers.Schedulers
+import androidx.work.*
+import androidx.work.Constraints.Builder
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 
@@ -39,21 +40,36 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
         DBWriter.deleteFeedMediaOfItem(context, media.id) // Remove partially downloaded file
         val tag = WORK_TAG_EPISODE_URL + media.download_url
         val future: Future<List<WorkInfo>> = WorkManager.getInstance(context).getWorkInfosByTag(tag)
-        Observable.fromFuture(future)
-            .subscribeOn(Schedulers.io())
-            .observeOn(Schedulers.io())
-            .subscribe(
-                { workInfos: List<WorkInfo> ->
-                    for (info in workInfos) {
-                        if (info.tags.contains(WORK_DATA_WAS_QUEUED)) {
-                            if (media.item != null) DBWriter.removeQueueItem(context, false, media.item!!)
-                        }
+//        Observable.fromFuture(future)
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(Schedulers.io())
+//            .subscribe(
+//                { workInfos: List<WorkInfo> ->
+//                    for (info in workInfos) {
+//                        if (info.tags.contains(WORK_DATA_WAS_QUEUED)) {
+//                            if (media.item != null) DBWriter.removeQueueItem(context, false, media.item!!)
+//                        }
+//                    }
+//                    WorkManager.getInstance(context).cancelAllWorkByTag(tag)
+//                }, { exception: Throwable ->
+//                    WorkManager.getInstance(context).cancelAllWorkByTag(tag)
+//                    exception.printStackTrace()
+//                })
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val workInfoList = future.get() // Wait for the completion of the future operation and retrieve the result
+                workInfoList.forEach { workInfo ->
+                    if (workInfo.tags.contains(WORK_DATA_WAS_QUEUED)) {
+                        if (media.item != null) DBWriter.removeQueueItem(context, false, media.item!!)
                     }
-                    WorkManager.getInstance(context).cancelAllWorkByTag(tag)
-                }, { exception: Throwable ->
-                    WorkManager.getInstance(context).cancelAllWorkByTag(tag)
-                    exception.printStackTrace()
-                })
+                }
+                WorkManager.getInstance(context).cancelAllWorkByTag(tag)
+            } catch (exception: Throwable) {
+                WorkManager.getInstance(context).cancelAllWorkByTag(tag)
+                exception.printStackTrace()
+            }
+        }
     }
 
     override fun cancelAll(context: Context) {

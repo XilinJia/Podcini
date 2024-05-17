@@ -1,20 +1,19 @@
 package ac.mdiq.podcini.ui.actions.actionbutton
 
-import android.content.Context
-import androidx.media3.common.util.UnstableApi
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.playback.PlaybackServiceStarter
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.preferences.UsageStatistics
 import ac.mdiq.podcini.preferences.UsageStatistics.logAction
-import ac.mdiq.podcini.playback.service.PlaybackService.Companion.getPlayerActivityIntent
-import ac.mdiq.podcini.util.NetworkUtils.isStreamingAllowed
-import ac.mdiq.podcini.playback.PlaybackServiceStarter
-import ac.mdiq.podcini.ui.dialog.StreamingConfirmationDialog
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.storage.model.playback.RemoteMedia
-import ac.mdiq.podcini.util.event.playback.StartPlayEvent
-import android.util.Log
-import org.greenrobot.eventbus.EventBus
+import ac.mdiq.podcini.ui.dialog.StreamingConfirmationDialog
+import ac.mdiq.podcini.util.NetworkUtils.isStreamingAllowed
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
+import android.content.Context
+import androidx.media3.common.util.UnstableApi
 
 class StreamActionButton(item: FeedItem) : ItemActionButton(item) {
     override fun getLabel(): Int {
@@ -40,7 +39,7 @@ class StreamActionButton(item: FeedItem) : ItemActionButton(item) {
             .shouldStreamThisTime(true)
             .callEvenIfRunning(true)
             .start()
-        EventBus.getDefault().post(StartPlayEvent(item))
+        EventFlow.postEvent(FlowEvent.StartPlayEvent(item))
 
         if (media.getMediaType() == MediaType.VIDEO) context.startActivity(getPlayerActivityIntent(context, MediaType.VIDEO))
     }

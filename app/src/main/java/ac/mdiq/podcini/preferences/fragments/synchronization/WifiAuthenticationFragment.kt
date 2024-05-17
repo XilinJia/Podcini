@@ -7,23 +7,23 @@ import ac.mdiq.podcini.net.sync.SynchronizationSettings.setWifiSyncEnabled
 import ac.mdiq.podcini.net.sync.wifi.WifiSyncService.Companion.hostPort
 import ac.mdiq.podcini.net.sync.wifi.WifiSyncService.Companion.startInstantSync
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.SyncServiceEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.app.Dialog
 import android.content.Context.WIFI_SERVICE
 import android.net.wifi.WifiManager
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.Toast
 import androidx.annotation.OptIn
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import java.util.*
 
 @OptIn(UnstableApi::class) class WifiAuthenticationFragment : DialogFragment() {
@@ -67,7 +67,7 @@ import java.util.*
             isGuest = false
             SynchronizationCredentials.hostport = portNum
         }
-        EventBus.getDefault().register(this)
+        procFlowEvents()
         return dialog.create()
     }
 
@@ -93,8 +93,18 @@ import java.util.*
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun syncStatusChanged(event: SyncServiceEvent) {
+    private fun procFlowEvents() {
+        lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.SyncServiceEvent -> syncStatusChanged(event)
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    fun syncStatusChanged(event: FlowEvent.SyncServiceEvent) {
         when (event.messageResId) {
             R.string.sync_status_error -> {
                 Toast.makeText(requireContext(), event.message, Toast.LENGTH_LONG).show()

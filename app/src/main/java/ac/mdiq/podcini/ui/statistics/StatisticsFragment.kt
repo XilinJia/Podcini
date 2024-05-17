@@ -5,12 +5,13 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.PagerFragmentBinding
 import ac.mdiq.podcini.storage.DBWriter
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.fragment.PagedToolbarFragment
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
+import ac.mdiq.podcini.ui.fragment.PagedToolbarFragment
 import ac.mdiq.podcini.ui.statistics.downloads.DownloadStatisticsFragment
 import ac.mdiq.podcini.ui.statistics.subscriptions.SubscriptionStatisticsFragment
 import ac.mdiq.podcini.ui.statistics.years.YearsStatisticsFragment
-import ac.mdiq.podcini.util.event.StatisticsEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
@@ -21,16 +22,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.OptIn
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
-import io.reactivex.Completable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
-import org.greenrobot.eventbus.EventBus
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Displays the 'statistics' screen
@@ -103,11 +104,24 @@ class StatisticsFragment : PagedToolbarFragment() {
             .putLong(PREF_FILTER_TO, Long.MAX_VALUE)
             .apply()
 
-        val disposable = Completable.fromFuture(DBWriter.resetStatistics())
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ EventBus.getDefault().post(StatisticsEvent()) },
-                { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
+//        val disposable = Completable.fromFuture(DBWriter.resetStatistics())
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe({ EventFlow.postEvent(FlowEvent.StatisticsEvent()) },
+//                { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
+
+        lifecycleScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    DBWriter.resetStatistics()
+                }
+                // This runs on the Main thread
+                EventFlow.postEvent(FlowEvent.StatisticsEvent())
+            } catch (error: Throwable) {
+                // This also runs on the Main thread
+                Log.e(TAG, Log.getStackTraceString(error))
+            }
+        }
     }
 
     class StatisticsPagerAdapter internal constructor(fragment: Fragment) : FragmentStateAdapter(fragment) {

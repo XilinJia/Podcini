@@ -131,8 +131,8 @@ object NetworkUtils {
         val bufferedReader = BufferedReader(InputStreamReader(inputStream))
 
         val stringBuilder = StringBuilder()
-        var line: String?
-        while (bufferedReader.readLine().also { line = it } != null) {
+        var line = ""
+        while (bufferedReader.readLine()?.also { line = it } != null) {
             stringBuilder.append(line)
         }
 

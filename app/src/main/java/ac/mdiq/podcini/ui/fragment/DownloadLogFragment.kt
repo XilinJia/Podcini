@@ -9,18 +9,21 @@ import ac.mdiq.podcini.ui.adapter.DownloadLogAdapter
 import ac.mdiq.podcini.ui.dialog.DownloadLogDetailsDialog
 import ac.mdiq.podcini.ui.view.EmptyViewHandler
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.DownloadLogEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.AdapterView
 import android.widget.AdapterView.OnItemClickListener
 import androidx.appcompat.widget.Toolbar
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import kotlinx.coroutines.*
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Shows the download log
@@ -33,11 +36,11 @@ class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, To
 
     private var downloadLog: List<DownloadResult> = ArrayList()
 //    private var disposable: Disposable? = null
-    val scope = CoroutineScope(Dispatchers.Main)
+//    val scope = CoroutineScope(Dispatchers.Main)
 
     override fun onStop() {
         super.onStop()
-        scope.cancel()
+//        scope.cancel()
 //        disposable?.dispose()
     }
 
@@ -57,14 +60,17 @@ class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, To
         binding.list.adapter = adapter
         binding.list.onItemClickListener = this
         binding.list.isNestedScrollingEnabled = true
-        EventBus.getDefault().register(this)
         loadDownloadLog()
 
         return binding.root
     }
 
+    override fun onStart() {
+        super.onStart()
+        procFlowEvents()
+    }
+
     override fun onDestroyView() {
-        EventBus.getDefault().unregister(this)
         super.onDestroyView()
         _binding = null
     }
@@ -74,9 +80,15 @@ class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, To
         if (item is DownloadResult) DownloadLogDetailsDialog(requireContext(), item).show()
     }
 
-    @Subscribe
-    fun onDownloadLogChanged(event: DownloadLogEvent?) {
-        loadDownloadLog()
+    private fun procFlowEvents() {
+        lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.DownloadLogEvent -> loadDownloadLog()
+                    else -> {}
+                }
+            }
+        }
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
@@ -107,7 +119,7 @@ class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, To
 //                }
 //            }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
 
-        scope.launch {
+        lifecycleScope.launch {
             try {
                 val result = withContext(Dispatchers.IO) {
                     DBReader.getDownloadLog()

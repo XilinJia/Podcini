@@ -1,15 +1,11 @@
 package ac.mdiq.podcini.ui.dialog
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.preferences.UserPreferences.setVideoMode
+import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
 import android.content.Context
 import android.content.DialogInterface
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
-import ac.mdiq.podcini.preferences.UserPreferences.feedOrder
-import ac.mdiq.podcini.preferences.UserPreferences.setFeedOrder
-import ac.mdiq.podcini.preferences.UserPreferences.setVideoMode
-import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
-import org.greenrobot.eventbus.EventBus
 
 object VideoModeDialog {
     fun showDialog(context: Context) {

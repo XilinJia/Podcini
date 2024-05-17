@@ -87,6 +87,7 @@
     </LinearLayout>
 
     <TextView
+        android:id="@+id/notice_message"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/statistics_speed_not_counted"

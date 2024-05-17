@@ -37,6 +37,7 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.Toolbar
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import coil.load
 import com.google.android.material.appbar.AppBarLayout
@@ -285,8 +286,8 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 //            .subscribe({ (activity as MainActivity).showSnackbarAbovePlayer(string.ok, Snackbar.LENGTH_SHORT) },
 //                { error: Throwable -> (activity as MainActivity).showSnackbarAbovePlayer(error.localizedMessage, Snackbar.LENGTH_LONG) })
 
-        val scope = CoroutineScope(Dispatchers.Main)
-        scope.launch {
+//        val scope = CoroutineScope(Dispatchers.Main)
+        lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
                     requireActivity().contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)

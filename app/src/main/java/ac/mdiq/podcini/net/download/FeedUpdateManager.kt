@@ -1,22 +1,21 @@
 package ac.mdiq.podcini.net.download
 
 import ac.mdiq.podcini.R
-import android.content.Context
-import android.content.DialogInterface
-import android.util.Log
-import androidx.work.*
-import androidx.work.Constraints.Builder
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import ac.mdiq.podcini.net.download.service.FeedUpdateWorker
+import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.storage.model.feed.Feed
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.NetworkUtils.isFeedRefreshAllowed
 import ac.mdiq.podcini.util.NetworkUtils.isNetworkRestricted
 import ac.mdiq.podcini.util.NetworkUtils.isVpnOverWifi
 import ac.mdiq.podcini.util.NetworkUtils.networkAvailable
-import ac.mdiq.podcini.util.event.MessageEvent
-import ac.mdiq.podcini.storage.model.feed.Feed
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.util.Logd
-import org.greenrobot.eventbus.EventBus
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
+import android.content.Context
+import android.content.DialogInterface
+import androidx.work.*
+import androidx.work.Constraints.Builder
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.util.concurrent.TimeUnit
 
 object FeedUpdateManager {
@@ -72,7 +71,7 @@ object FeedUpdateManager {
         Logd(TAG, "Run auto update immediately in background.")
         when {
             feed != null && feed.isLocalFeed -> runOnce(context, feed)
-            !networkAvailable() -> EventBus.getDefault().post(MessageEvent(context.getString(R.string.download_error_no_connection)))
+            !networkAvailable() -> EventFlow.postEvent(FlowEvent.MessageEvent(context.getString(R.string.download_error_no_connection)))
             isFeedRefreshAllowed -> runOnce(context, feed)
             else -> confirmMobileRefresh(context, feed)
         }

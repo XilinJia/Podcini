@@ -12,6 +12,7 @@ import ac.mdiq.podcini.storage.model.download.DownloadResult
 import ac.mdiq.podcini.storage.model.feed.*
 import ac.mdiq.podcini.storage.model.feed.FeedItemFilter.Companion.unfiltered
 import ac.mdiq.podcini.storage.model.feed.FeedPreferences.Companion.TAG_ROOT
+import ac.mdiq.podcini.util.FeedItemPermutors
 import ac.mdiq.podcini.util.FeedItemPermutors.getPermutor
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.LongList
@@ -19,6 +20,7 @@ import ac.mdiq.podcini.util.comparator.DownloadResultComparator
 import ac.mdiq.podcini.util.comparator.PlaybackCompletionDateComparator
 import android.database.Cursor
 import android.util.Log
+import java.util.*
 import kotlin.math.min
 
 
@@ -369,7 +371,7 @@ object DBReader {
      * @return The playback history. The FeedItems are sorted by their media's playbackCompletionDate in descending order.
      */
     @JvmStatic
-    fun getPlaybackHistory(offset: Int, limit: Int): List<FeedItem> {
+    fun getPlaybackHistory(offset: Int, limit: Int, start: Long = 0L, end: Long = Date().time, sortOrder: SortOrder = SortOrder.PLAYED_DATE_NEW_OLD): List<FeedItem> {
         Logd(TAG, "getPlaybackHistory() called")
 
         val adapter = getInstance()
@@ -378,7 +380,7 @@ object DBReader {
         var mediaCursor: Cursor? = null
         var itemCursor: Cursor? = null
         try {
-            mediaCursor = adapter.getCompletedMediaCursor(offset, limit)
+            mediaCursor = adapter.getPlayedMediaCursor(offset, limit, start, end)
             val itemIds = arrayOfNulls<String>(mediaCursor.count)
             var i = 0
             while (i < itemIds.size && mediaCursor.moveToPosition(i)) {
@@ -389,7 +391,7 @@ object DBReader {
             itemCursor = adapter.getFeedItemCursor(itemIds.filterNotNull().toTypedArray())
             val items = extractItemlistFromCursor(adapter, itemCursor).toMutableList()
             loadAdditionalFeedItemListData(items)
-            items.sortWith(PlaybackCompletionDateComparator())
+            getPermutor(sortOrder).reorder(items)
             return items
         } finally {
             mediaCursor?.close()

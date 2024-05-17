@@ -12,10 +12,11 @@ import java.util.*
 import java.util.concurrent.CountDownLatch
 
 class CombinedSearcher : PodcastSearcher {
+
     override fun search(query: String): Single<List<PodcastSearchResult?>?> {
         val disposables = ArrayList<Disposable>()
-        val singleResults: MutableList<List<PodcastSearchResult?>?> = ArrayList(
-            Collections.nCopies<List<PodcastSearchResult?>?>(PodcastSearcherRegistry.searchProviders.size, null))
+        val singleResults: MutableList<List<PodcastSearchResult?>?> =
+            ArrayList(Collections.nCopies<List<PodcastSearchResult?>?>(PodcastSearcherRegistry.searchProviders.size, null))
         val latch = CountDownLatch(PodcastSearcherRegistry.searchProviders.size)
         for (i in PodcastSearcherRegistry.searchProviders.indices) {
             val searchProviderInfo = PodcastSearcherRegistry.searchProviders[i]

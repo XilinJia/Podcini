@@ -1,5 +1,14 @@
 package ac.mdiq.podcini.ui.dialog
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.FilterDialogBinding
+import ac.mdiq.podcini.databinding.FilterDialogRowBinding
+import ac.mdiq.podcini.feed.SubscriptionsFilterGroup
+import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.subscriptionsFilter
+import ac.mdiq.podcini.storage.model.feed.SubscriptionsFilter
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
@@ -13,15 +22,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButtonToggleGroup
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.feed.SubscriptionsFilterGroup
-import ac.mdiq.podcini.databinding.FilterDialogBinding
-import ac.mdiq.podcini.databinding.FilterDialogRowBinding
-import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
-import ac.mdiq.podcini.storage.model.feed.SubscriptionsFilter
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.subscriptionsFilter
-import org.greenrobot.eventbus.EventBus
 import java.util.*
 
 class SubscriptionsFilterDialog : BottomSheetDialogFragment() {
@@ -111,7 +111,7 @@ class SubscriptionsFilterDialog : BottomSheetDialogFragment() {
         private fun updateFilter(filterValues: Set<String>) {
             val subscriptionsFilter = SubscriptionsFilter(filterValues.toTypedArray<String>())
             UserPreferences.subscriptionsFilter = subscriptionsFilter
-            EventBus.getDefault().post(UnreadItemsUpdateEvent())
+            EventFlow.postEvent(FlowEvent.UnreadItemsUpdateEvent())
         }
     }
 }

@@ -1,19 +1,20 @@
 package ac.mdiq.podcini.ui.statistics.feed
 
 import ac.mdiq.podcini.databinding.FeedStatisticsBinding
+import ac.mdiq.podcini.storage.DBReader
+import ac.mdiq.podcini.storage.StatisticsItem
+import ac.mdiq.podcini.util.Converter.shortLocalizedDuration
 import android.os.Bundle
 import android.text.format.Formatter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import ac.mdiq.podcini.storage.DBReader
-import ac.mdiq.podcini.storage.StatisticsItem
-import ac.mdiq.podcini.util.Converter.shortLocalizedDuration
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
+import androidx.lifecycle.lifecycleScope
 import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 
 class FeedStatisticsFragment : Fragment() {
@@ -21,11 +22,9 @@ class FeedStatisticsFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var feedId: Long = 0
-    private var disposable: Disposable? = null
+//    private var disposable: Disposable? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         feedId = requireArguments().getLong(EXTRA_FEED_ID)
         _binding = FeedStatisticsBinding.inflate(inflater)
 
@@ -43,33 +42,47 @@ class FeedStatisticsFragment : Fragment() {
     }
 
     private fun loadStatistics() {
-        disposable =
-            Observable.fromCallable {
-                val statisticsData = DBReader.getStatistics(true, 0, Long.MAX_VALUE)
-                statisticsData.feedTime.sortWith { item1: StatisticsItem, item2: StatisticsItem ->
-                    java.lang.Long.compare(item2.timePlayed,
-                        item1.timePlayed)
-                }
+//        disposable = Observable.fromCallable {
+//            val statisticsData = DBReader.getStatistics(true, 0, Long.MAX_VALUE)
+//            statisticsData.feedTime.sortWith { item1: StatisticsItem, item2: StatisticsItem ->
+//                java.lang.Long.compare(item2.timePlayed,
+//                    item1.timePlayed)
+//            }
+//
+//            for (statisticsItem in statisticsData.feedTime) {
+//                if (statisticsItem.feed.id == feedId) {
+//                    return@fromCallable statisticsItem
+//                }
+//            }
+//            null
+//        }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe({ s: StatisticsItem? -> this.showStats(s) }, { obj: Throwable -> obj.printStackTrace() })
 
-                for (statisticsItem in statisticsData.feedTime) {
-                    if (statisticsItem.feed.id == feedId) {
-                        return@fromCallable statisticsItem
+        lifecycleScope.launch {
+            try {
+                val statisticsData = withContext(Dispatchers.IO) {
+                    val data = DBReader.getStatistics(true, 0, Long.MAX_VALUE)
+                    data.feedTime.sortWith { item1: StatisticsItem, item2: StatisticsItem ->
+                        item2.timePlayed.compareTo(item1.timePlayed)
                     }
+                    for (statisticsItem in data.feedTime) {
+                        if (statisticsItem.feed.id == feedId) return@withContext statisticsItem
+                    }
+                    null
                 }
-                null
+                showStats(statisticsData)
+            } catch (error: Throwable) {
+                error.printStackTrace()
             }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ s: StatisticsItem? -> this.showStats(s) }, { obj: Throwable -> obj.printStackTrace() })
+        }
     }
 
     private fun showStats(s: StatisticsItem?) {
-        binding.startedTotalLabel.text = String.format(Locale.getDefault(), "%d / %d",
-            s!!.episodesStarted, s.episodes)
-        binding.timePlayedLabel.text =
-            shortLocalizedDuration(requireContext(), s.timePlayed)
-        binding.totalDurationLabel.text =
-            shortLocalizedDuration(requireContext(), s.time)
+        binding.startedTotalLabel.text = String.format(Locale.getDefault(), "%d / %d", s!!.episodesStarted, s.episodes)
+        binding.timePlayedLabel.text = shortLocalizedDuration(requireContext(), s.timePlayed)
+        binding.totalDurationLabel.text = shortLocalizedDuration(requireContext(), s.time)
         binding.onDeviceLabel.text = String.format(Locale.getDefault(), "%d", s.episodesDownloadCount)
         binding.spaceUsedLabel.text = Formatter.formatShortFileSize(context, s.totalDownloadSize)
     }
@@ -77,7 +90,7 @@ class FeedStatisticsFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
-        disposable?.dispose()
+//        disposable?.dispose()
     }
 
     companion object {

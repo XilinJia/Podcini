@@ -2,7 +2,11 @@ package ac.mdiq.podcini.ui.dialog
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.TimeDialogBinding
-import ac.mdiq.podcini.util.event.playback.SleepTimerUpdatedEvent
+import ac.mdiq.podcini.playback.PlaybackController
+import ac.mdiq.podcini.playback.PlaybackController.Companion.disableSleepTimer
+import ac.mdiq.podcini.playback.PlaybackController.Companion.extendSleepTimer
+import ac.mdiq.podcini.playback.PlaybackController.Companion.setSleepTimer
+import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnable
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnableFrom
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnableTo
@@ -16,12 +20,9 @@ import ac.mdiq.podcini.preferences.SleepTimerPreferences.setVibrate
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.shakeToReset
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.timerMillis
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.vibrate
-import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.util.Converter.getDurationStringLong
-import ac.mdiq.podcini.playback.PlaybackController
-import ac.mdiq.podcini.playback.PlaybackController.Companion.disableSleepTimer
-import ac.mdiq.podcini.playback.PlaybackController.Companion.extendSleepTimer
-import ac.mdiq.podcini.playback.PlaybackController.Companion.setSleepTimer
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
@@ -31,12 +32,12 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import java.util.*
 
 class SleepTimerDialog : DialogFragment() {
@@ -56,13 +57,13 @@ class SleepTimerDialog : DialogFragment() {
             override fun loadMediaInfo() {}
         }
         controller.init()
-        EventBus.getDefault().register(this)
+        procFlowEvents()
     }
 
     @UnstableApi override fun onStop() {
         super.onStop()
         controller.release()
-        EventBus.getDefault().unregister(this)
+        
     }
 
     @UnstableApi override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -191,9 +192,18 @@ class SleepTimerDialog : DialogFragment() {
         chAutoEnable.text = text
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    @Suppress("unused")
-    fun timerUpdated(event: SleepTimerUpdatedEvent) {
+    private fun procFlowEvents() {
+        lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.SleepTimerUpdatedEvent -> timerUpdated(event)
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    fun timerUpdated(event: FlowEvent.SleepTimerUpdatedEvent) {
         timeDisplay.visibility = if (event.isOver || event.isCancelled) View.GONE else View.VISIBLE
         timeSetup.visibility = if (event.isOver || event.isCancelled) View.VISIBLE else View.GONE
         time.text = getDurationStringLong(event.getTimeLeft().toInt())

@@ -697,6 +697,15 @@ class PodDBAdapter private constructor() {
     val completedMediaLength: Long
         get() = DatabaseUtils.queryNumEntries(db, TABLE_NAME_FEED_MEDIA, "$KEY_PLAYBACK_COMPLETION_DATE> 0")
 
+    fun getPlayedMediaCursor(offset: Int, limit: Int, start: Long = 0, end: Long = Date().time): Cursor {
+        require(limit >= 0) { "Limit must be >= 0" }
+
+        return db.query(TABLE_NAME_FEED_MEDIA, null,
+            String.format(Locale.US, "%s > %d AND %s <= % d", KEY_LAST_PLAYED_TIME, start, KEY_LAST_PLAYED_TIME, end),
+            null, null,
+            null, String.format(Locale.US, "%s DESC LIMIT %d, %d", KEY_LAST_PLAYED_TIME, offset, limit))
+    }
+
     fun getSingleFeedMediaCursor(id: Long): Cursor {
         val query = ("SELECT $KEYS_FEED_MEDIA FROM $TABLE_NAME_FEED_MEDIA WHERE $KEY_ID=$id")
         return db.rawQuery(query, null)

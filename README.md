@@ -17,7 +17,7 @@ Compared to AntennaPod this project:
 2. Plays in `AudioOffloadMode`, kind to device battery,
 3. Is purely `Kotlin` based and mono-modular,
 4. Targets Android 14 with updated dependencies,
-5. Outfits with Viewbinding and modern image library Coil,
+5. Outfits with Viewbinding, Coil replacing Glide, coroutines replacing RxJava, and SharedFlow replacing EventBus,
 6. Boasts new UI's including streamlined drawer, subscriptions view and player controller,
 7. Accepts podcast as well as plain RSS and YouTube feeds,
 8. Offers Readability and Text-to-Speech for RSS contents,
@@ -72,6 +72,7 @@ The project aims to improve efficiency and provide more useful and user-friendly
 * Sort dialog no longer dims the main view
 * in episode list view, if episode has no media, TTS button is shown for fetching transcript (if not exist) and then generating audio file from the transcript. TTS audio files are playable in the same way as local media (with speed setting, pause and rewind/forward)
 * Subscriptions view has sorting by "Unread publication date"
+* History view shows time of last play, and allows filters and sorts
 
 ### Podcast/Episode
 
@@ -100,7 +101,7 @@ The project aims to improve efficiency and provide more useful and user-friendly
 ### Security and reliability
 
 * Disabled `usesCleartextTraffic`, so that all content transmission is more private and secure
-* Settings/Preferences can now to exported and imported
+* Settings/Preferences can now be exported and imported
 
 For more details of the changes, see the [Changelog](changelog.md)
 

@@ -13,7 +13,8 @@ import ac.mdiq.podcini.ui.activity.appstartintent.MainActivityStarter
 import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.config.ClientConfigurator
-import ac.mdiq.podcini.util.event.MessageEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -29,7 +30,6 @@ import androidx.work.WorkerParameters
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import org.apache.commons.io.FileUtils
-import org.greenrobot.eventbus.EventBus
 import java.io.File
 import java.io.IOException
 import java.util.*
@@ -179,7 +179,7 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
         val retrying = !isLastRunAttempt && !isImmediateFail
         if (episodeTitle.length > 20) episodeTitle = episodeTitle.substring(0, 19) + "…"
 
-        EventBus.getDefault().post(MessageEvent(applicationContext.getString(
+        EventFlow.postEvent(FlowEvent.MessageEvent(applicationContext.getString(
             if (retrying) R.string.download_error_retrying else R.string.download_error_not_retrying,
             episodeTitle), { ctx: Context -> MainActivityStarter(ctx).withDownloadLogsOpen().start() }, applicationContext.getString(R.string.download_error_details)))
     }
@@ -197,10 +197,11 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
     }
 
     private fun sendErrorNotification(title: String) {
-        if (EventBus.getDefault().hasSubscriberForEvent(MessageEvent::class.java)) {
-            sendMessage(title, false)
-            return
-        }
+//        TODO: need to get number of subscribers in SharedFlow
+//        if (EventBus.getDefault().hasSubscriberForEvent(FlowEvent.MessageEvent::class.java)) {
+//            sendMessage(title, false)
+//            return
+//        }
 
         val builder = NotificationCompat.Builder(applicationContext, NotificationUtils.CHANNEL_ID_DOWNLOAD_ERROR)
         builder.setTicker(applicationContext.getString(R.string.download_report_title))

@@ -27,8 +27,8 @@ import ac.mdiq.podcini.ui.dialog.AuthenticationDialog
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import ac.mdiq.podcini.util.DownloadErrorLabel.from
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.EpisodeDownloadEvent
-import ac.mdiq.podcini.util.event.FeedListUpdateEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import ac.mdiq.podcini.util.syndication.FeedDiscoverer
 import ac.mdiq.podcini.util.syndication.HtmlToPlainText
 import android.app.Dialog
@@ -50,19 +50,17 @@ import android.widget.Toast
 import androidx.annotation.OptIn
 import androidx.annotation.UiThread
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import coil.load
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 import org.jsoup.Jsoup
 import java.io.File
 import java.io.IOException
@@ -79,7 +77,7 @@ import kotlin.concurrent.Volatile
  * If the feed cannot be downloaded or parsed, an error dialog will be displayed
  * and the activity will finish as soon as the error dialog is closed.
  */
-class OnlineFeedViewFragment : Fragment() {
+@OptIn(UnstableApi::class) class OnlineFeedViewFragment : Fragment() {
     private var _binding: OnlineFeedviewFragmentBinding? = null
     private val binding get() = _binding!!
 
@@ -98,7 +96,7 @@ class OnlineFeedViewFragment : Fragment() {
 
     private var dialog: Dialog? = null
 
-    val scope = CoroutineScope(Dispatchers.Main)
+//    val scope = CoroutineScope(Dispatchers.Main)
 
     private var download: Disposable? = null
     private var parser: Disposable? = null
@@ -160,13 +158,13 @@ class OnlineFeedViewFragment : Fragment() {
     override fun onStart() {
         super.onStart()
         isPaused = false
-        EventBus.getDefault().register(this)
+        procFlowEvents()
     }
 
     override fun onStop() {
         super.onStop()
         isPaused = true
-        EventBus.getDefault().unregister(this)
+        
         if (downloader != null && !downloader!!.isFinished) downloader!!.cancel()
         if (dialog != null && dialog!!.isShowing) dialog!!.dismiss()
     }
@@ -294,7 +292,7 @@ class OnlineFeedViewFragment : Fragment() {
 //            .subscribe({ status: DownloadResult? -> if (request.destination != null) checkDownloadResult(status, request.destination) },
 //                { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
 
-        scope.launch {
+        lifecycleScope.launch {
             try {
                 val status = withContext(Dispatchers.IO) {
                     feeds = DBReader.getFeedList()
@@ -329,8 +327,26 @@ class OnlineFeedViewFragment : Fragment() {
         }
     }
 
-    @UnstableApi @Subscribe
-    fun onFeedListChanged(event: FeedListUpdateEvent?) {
+    @OptIn(UnstableApi::class) private fun procFlowEvents() {
+        lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.FeedListUpdateEvent -> onFeedListChanged(event)
+                    else -> {}
+                }
+            }
+        }
+        lifecycleScope.launch {
+            EventFlow.stickyEvents.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.EpisodeDownloadEvent -> handleUpdatedFeedStatus()
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    fun onFeedListChanged(event: FlowEvent.FeedListUpdateEvent) {
 //        updater = Observable.fromCallable { DBReader.getFeedList() }
 //            .subscribeOn(Schedulers.io())
 //            .observeOn(AndroidSchedulers.mainThread())
@@ -340,7 +356,7 @@ class OnlineFeedViewFragment : Fragment() {
 //                    handleUpdatedFeedStatus()
 //                }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) }
 //            )
-        scope.launch {
+        lifecycleScope.launch {
             try {
                 val feeds = withContext(Dispatchers.IO) {
                     DBReader.getFeedList()
@@ -355,11 +371,6 @@ class OnlineFeedViewFragment : Fragment() {
         }
 
 
-    }
-
-    @UnstableApi @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: EpisodeDownloadEvent?) {
-        handleUpdatedFeedStatus()
     }
 
     @OptIn(UnstableApi::class) private fun parseFeed(destination: String) {
@@ -381,7 +392,7 @@ class OnlineFeedViewFragment : Fragment() {
 //                    Logd(TAG, "Feed parser exception: " + Log.getStackTraceString(error))
 //                }
 //            })
-        scope.launch {
+        lifecycleScope.launch {
             try {
                 val result = withContext(Dispatchers.Default) {
                     doParseFeed(destination)
@@ -550,7 +561,7 @@ class OnlineFeedViewFragment : Fragment() {
         for (i in 0..<episodes.size) {
             episodes[i].id = 1234567890L + i
         }
-        val fragment: Fragment = EpisodesListFragment.newInstance(episodes)
+        val fragment: Fragment = ExternalEpisodesListFragment.newInstance(episodes)
         (activity as MainActivity).loadChildFragment(fragment)
     }
 

@@ -15,9 +15,8 @@ import ac.mdiq.podcini.ui.dialog.SubscriptionsFilterDialog
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.FeedListUpdateEvent
-import ac.mdiq.podcini.util.event.QueueEvent
-import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.R.attr
 import android.app.Activity
 import android.content.Context
@@ -38,16 +37,17 @@ import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.shape.MaterialShapeDrawable
 import com.google.android.material.shape.ShapeAppearanceModel
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 import kotlin.math.max
 
 class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListener {
@@ -56,7 +56,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
 
     private var navDrawerData: NavDrawerData? = null
     private var flatItemList: List<NavDrawerData.FeedDrawerItem>? = null
-    val scope = CoroutineScope(Dispatchers.Main)
+//    val scope = CoroutineScope(Dispatchers.Main)
 
     private lateinit var navAdapter: NavListAdapter
 
@@ -117,33 +117,35 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        EventBus.getDefault().register(this)
+        procFlowEvents()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        EventBus.getDefault().unregister(this)
-        scope.cancel()
+        
+//        scope.cancel()
         requireContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE).unregisterOnSharedPreferenceChangeListener(this)
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onUnreadItemsChanged(event: UnreadItemsUpdateEvent?) {
-        loadData()
+    private fun procFlowEvents() {
+        lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.UnreadItemsUpdateEvent, is FlowEvent.FeedListUpdateEvent -> loadData()
+                    is FlowEvent.QueueEvent -> onQueueChanged(event)
+                    else -> {}
+                }
+            }
+        }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onFeedListChanged(event: FeedListUpdateEvent?) {
-        loadData()
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onQueueChanged(event: QueueEvent) {
+    fun onQueueChanged(event: FlowEvent.QueueEvent) {
         Logd(TAG, "onQueueChanged($event)")
         // we are only interested in the number of queue items, not download status or position
-        if (event.action == QueueEvent.Action.DELETED_MEDIA || event.action == QueueEvent.Action.SORTED || event.action == QueueEvent.Action.MOVED) return
-
+        if (event.action == FlowEvent.QueueEvent.Action.DELETED_MEDIA
+                || event.action == FlowEvent.QueueEvent.Action.SORTED
+                || event.action == FlowEvent.QueueEvent.Action.MOVED) return
         loadData()
     }
 
@@ -252,7 +254,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
     }
 
     private fun loadData() {
-        scope.launch {
+        lifecycleScope.launch {
             try {
                 val result = withContext(Dispatchers.IO) {
                     val data: NavDrawerData = DBReader.getNavDrawerData(UserPreferences.subscriptionsFilter)

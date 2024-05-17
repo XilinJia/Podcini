@@ -25,8 +25,8 @@ import ac.mdiq.podcini.ui.view.LiftOnScrollListener
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
 import ac.mdiq.podcini.util.FeedItemUtil
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.*
-import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -34,6 +34,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
@@ -41,19 +42,16 @@ import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.snackbar.Snackbar
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 import java.util.*
 
 /**
  * Displays all completed downloads and provides a button to delete them.
  */
-class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, Toolbar.OnMenuItemClickListener {
+@UnstableApi class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, Toolbar.OnMenuItemClickListener {
     private var _binding: SimpleListFragmentBinding? = null
     private val binding get() = _binding!!
 
@@ -148,11 +146,14 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
             DownloadLogFragment().show(childFragmentManager, null)
 
         addEmptyView()
-        EventBus.getDefault().register(this)
-
-        loadItems()
 
         return binding.root
+    }
+
+    override fun onStart() {
+        super.onStart()
+        procFlowEvents()
+        loadItems()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -161,7 +162,7 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
     }
 
     override fun onDestroyView() {
-        EventBus.getDefault().unregister(this)
+        
         _binding = null
         adapter.endSelectMode()
         toolbar.setOnMenuItemClickListener(null)
@@ -193,8 +194,7 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
         }
     }
 
-    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: EpisodeDownloadEvent) {
+    fun onEventMainThread(event: FlowEvent.EpisodeDownloadEvent) {
         val newRunningDownloads: MutableSet<String> = HashSet()
         for (url in event.urls) {
             if (DownloadServiceInterface.get()?.isDownloadingEpisode(url) == true) newRunningDownloads.add(url)
@@ -207,6 +207,28 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
         for (downloadUrl in event.urls) {
             val pos = FeedItemUtil.indexOfItemWithDownloadUrl(items.toList(), downloadUrl)
             if (pos >= 0) adapter.notifyItemChangedCompat(pos)
+        }
+    }
+
+    private fun procFlowEvents() {
+        lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.FeedItemEvent -> onEventMainThread(event)
+                    is FlowEvent.PlaybackPositionEvent -> onEventMainThread(event)
+                    is FlowEvent.PlayerStatusEvent, is FlowEvent.DownloadLogEvent, is FlowEvent.UnreadItemsUpdateEvent -> loadItems()
+                    is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
+                    else -> {}
+                }
+            }
+        }
+        lifecycleScope.launch {
+            EventFlow.stickyEvents.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.EpisodeDownloadEvent -> onEventMainThread(event)
+                    else -> {}
+                }
+            }
         }
     }
 
@@ -229,8 +251,7 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
         emptyView.attachToRecyclerView(recyclerView)
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: FeedItemEvent) {
+    fun onEventMainThread(event: FlowEvent.FeedItemEvent) {
         Logd(TAG, "onEventMainThread() called with: event = [$event]")
 
         var i = 0
@@ -258,8 +279,7 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
         refreshInfoBar()
     }
 
-    @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: PlaybackPositionEvent) {
+    fun onEventMainThread(event: FlowEvent.PlaybackPositionEvent) {
 //        Log.d(TAG, "onEventMainThread() called with PlaybackPositionEvent event = [$event]")
         if (currentPlaying != null && currentPlaying!!.isCurrentlyPlayingItem)
             currentPlaying!!.notifyPlaybackPositionUpdated(event)
@@ -275,26 +295,6 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
             }
         }
         refreshInfoBar()
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onPlayerStatusChanged(event: PlayerStatusEvent?) {
-        loadItems()
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onDownloadLogChanged(event: DownloadLogEvent?) {
-        loadItems()
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onUnreadItemsChanged(event: UnreadItemsUpdateEvent?) {
-        loadItems()
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onSwipeActionsChanged(event: SwipeActionsChangedEvent?) {
-        refreshSwipeTelltale()
     }
 
     private fun refreshSwipeTelltale() {
@@ -337,8 +337,8 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
 //                    Log.e(TAG, Log.getStackTraceString(error))
 //                })
 
-        val scope = CoroutineScope(Dispatchers.Main)
-        scope.launch {
+//        val scope = CoroutineScope(Dispatchers.Main)
+        lifecycleScope.launch {
             try {
                 val result = withContext(Dispatchers.IO) {
                     val sortOrder: SortOrder? = UserPreferences.downloadsSortedOrder
@@ -423,7 +423,9 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
         }
 
         override fun onAddItem(title: Int, ascending: SortOrder, descending: SortOrder, ascendingIsDefault: Boolean) {
-            if (ascending == SortOrder.DATE_OLD_NEW || ascending == SortOrder.DURATION_SHORT_LONG || ascending == SortOrder.EPISODE_TITLE_A_Z
+            if (ascending == SortOrder.DATE_OLD_NEW || ascending == SortOrder.PLAYED_DATE_OLD_NEW
+                    || ascending == SortOrder.COMPLETED_DATE_OLD_NEW
+                    || ascending == SortOrder.DURATION_SHORT_LONG || ascending == SortOrder.EPISODE_TITLE_A_Z
                     || ascending == SortOrder.SIZE_SMALL_LARGE || ascending == SortOrder.FEED_TITLE_A_Z) {
                 super.onAddItem(title, ascending, descending, ascendingIsDefault)
             }
@@ -432,7 +434,7 @@ class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, To
         override fun onSelectionChanged() {
             super.onSelectionChanged()
             UserPreferences.downloadsSortedOrder = sortOrder
-            EventBus.getDefault().post(DownloadLogEvent.listUpdated())
+            EventFlow.postEvent(FlowEvent.DownloadLogEvent())
         }
     }
 

@@ -21,7 +21,8 @@ import java.lang.ref.WeakReference
 open class EpisodeItemListAdapter(mainActivity: MainActivity) :
     SelectableAdapter<EpisodeItemViewHolder?>(mainActivity), View.OnCreateContextMenuListener {
 
-    private val mainActivityRef: WeakReference<MainActivity> = WeakReference<MainActivity>(mainActivity)
+    val mainActivityRef: WeakReference<MainActivity> = WeakReference<MainActivity>(mainActivity)
+
     private var episodes: List<FeedItem> = ArrayList()
     var longPressedItem: FeedItem? = null
     private var longPressedPosition: Int = 0 // used to init actionMode

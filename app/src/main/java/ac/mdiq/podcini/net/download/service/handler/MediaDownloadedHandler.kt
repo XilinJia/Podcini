@@ -10,12 +10,12 @@ import ac.mdiq.podcini.storage.model.download.DownloadError
 import ac.mdiq.podcini.storage.model.download.DownloadResult
 import ac.mdiq.podcini.util.ChapterUtils
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.util.Log
 import androidx.media3.common.util.UnstableApi
-import org.greenrobot.eventbus.EventBus
 import java.io.File
 import java.util.concurrent.ExecutionException
 
@@ -69,7 +69,7 @@ class MediaDownloadedHandler(private val context: Context, var updatedStatus: Do
                 // so we do it after the enclosing media has been updated above,
                 // to ensure subscribers will get the updated FeedMedia as well
                 DBWriter.persistFeedItem(item).get()
-                if (broadcastUnreadStateUpdate) EventBus.getDefault().post(UnreadItemsUpdateEvent())
+                if (broadcastUnreadStateUpdate) EventFlow.postEvent(FlowEvent.UnreadItemsUpdateEvent())
             }
         } catch (e: InterruptedException) {
             Log.e(TAG, "MediaHandlerThread was interrupted")

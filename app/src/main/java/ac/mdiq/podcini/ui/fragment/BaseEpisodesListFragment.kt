@@ -20,8 +20,8 @@ import ac.mdiq.podcini.ui.view.LiftOnScrollListener
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
 import ac.mdiq.podcini.util.FeedItemUtil
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.*
-import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
@@ -31,6 +31,7 @@ import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.util.Pair
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
@@ -39,16 +40,17 @@ import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.snackbar.Snackbar
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
-import kotlinx.coroutines.*
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 /**
  * Shows unread or recently published episodes
  */
-abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelectModeListener, Toolbar.OnMenuItemClickListener {
+@UnstableApi abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelectModeListener, Toolbar.OnMenuItemClickListener {
+
     @JvmField
     protected var page: Int = 1
     protected var isLoadingMore: Boolean = false
@@ -58,7 +60,7 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
     var _binding: BaseEpisodesListFragmentBinding? = null
     protected val binding get() = _binding!!
 
-    val scope = CoroutineScope(Dispatchers.Main)
+//    val scope = CoroutineScope(Dispatchers.Main)
 
     lateinit var recyclerView: EpisodeItemListRecyclerView
     lateinit var emptyView: EmptyViewHandler
@@ -120,19 +122,8 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
             FeedUpdateManager.runOnceOrAsk(requireContext())
         }
 
-        listAdapter = object : EpisodeItemListAdapter(activity as MainActivity) {
-            override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
-                super.onCreateContextMenu(menu, v, menuInfo)
-//                if (!inActionMode()) {
-//                    menu.findItem(R.id.multi_select).setVisible(true)
-//                }
-                MenuItemUtils.setOnClickListeners(menu) { item: MenuItem ->
-                    this@BaseEpisodesListFragment.onContextItemSelected(item)
-                }
-            }
-        }
-        listAdapter.setOnSelectModeListener(this)
-        recyclerView.adapter = listAdapter
+        createListAdaptor()
+
         progressBar = binding.progressBar
         progressBar.visibility = View.VISIBLE
 
@@ -181,10 +172,29 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
             true
         }
 
-        EventBus.getDefault().register(this)
-        loadItems()
-
         return binding.root
+    }
+
+    open fun createListAdaptor() {
+        listAdapter = object : EpisodeItemListAdapter(activity as MainActivity) {
+            override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
+                super.onCreateContextMenu(menu, v, menuInfo)
+//                if (!inActionMode()) {
+//                    menu.findItem(R.id.multi_select).setVisible(true)
+//                }
+                MenuItemUtils.setOnClickListeners(menu) { item: MenuItem ->
+                    this@BaseEpisodesListFragment.onContextItemSelected(item)
+                }
+            }
+        }
+        listAdapter.setOnSelectModeListener(this)
+        recyclerView.adapter = listAdapter
+    }
+
+    override fun onStart() {
+        super.onStart()
+        procFlowEvents()
+        loadItems()
     }
 
     override fun onResume() {
@@ -198,10 +208,10 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
         unregisterForContextMenu(recyclerView)
     }
 
-    override fun onStop() {
-        super.onStop()
-//        disposable?.dispose()
-    }
+//    override fun onStop() {
+//        super.onStop()
+////        disposable?.dispose()
+//    }
 
     @UnstableApi override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (super.onOptionsItemSelected(item)) return true
@@ -257,7 +267,7 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
 //            .subscribe({ listAdapter.endSelectMode() },
 //                { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
 
-        scope.launch {
+        lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
                     handler.handleAction(listAdapter.selectedItems.filterIsInstance<FeedItem>())
@@ -322,7 +332,7 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
 //                recyclerView.post { isLoadingMore = false }
 //            })
 
-        scope.launch {
+        lifecycleScope.launch {
             try {
                 val data = withContext(Dispatchers.IO) {
                     loadMoreData(page)
@@ -348,8 +358,8 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        scope.cancel()
-        EventBus.getDefault().unregister(this)
+//        scope.cancel()
+        
         listAdapter.endSelectMode()
     }
 
@@ -362,8 +372,7 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
         speedDialView.visibility = View.GONE
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: FeedItemEvent) {
+    fun onEventMainThread(event: FlowEvent.FeedItemEvent) {
         Logd(TAG, "onEventMainThread() called with FeedItemEvent event = [$event]")
         for (item in event.items) {
             val pos: Int = FeedItemUtil.indexOfItemWithId(episodes, item.id)
@@ -377,8 +386,7 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
         }
     }
 
-    @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: PlaybackPositionEvent) {
+    fun onEventMainThread(event: FlowEvent.PlaybackPositionEvent) {
 //        Log.d(TAG, "onEventMainThread() called with PlaybackPositionEvent event = [$event]")
         if (currentPlaying != null && currentPlaying!!.isCurrentlyPlayingItem)
             currentPlaying!!.notifyPlaybackPositionUpdated(event)
@@ -395,7 +403,6 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
     fun onKeyUp(event: KeyEvent) {
         if (!isAdded || !isVisible || !isMenuVisible) return
 
@@ -406,32 +413,39 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
         }
     }
 
-    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: EpisodeDownloadEvent) {
+    fun onEventMainThread(event: FlowEvent.EpisodeDownloadEvent) {
         for (downloadUrl in event.urls) {
             val pos: Int = FeedItemUtil.indexOfItemWithDownloadUrl(episodes, downloadUrl)
             if (pos >= 0) listAdapter.notifyItemChangedCompat(pos)
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onPlayerStatusChanged(event: PlayerStatusEvent?) {
-        loadItems()
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onUnreadItemsChanged(event: UnreadItemsUpdateEvent?) {
-        loadItems()
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onFeedListChanged(event: FeedListUpdateEvent?) {
-        loadItems()
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onSwipeActionsChanged(event: SwipeActionsChangedEvent?) {
-        refreshSwipeTelltale()
+    private fun procFlowEvents() {
+        lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
+                    is FlowEvent.FeedListUpdateEvent, is FlowEvent.UnreadItemsUpdateEvent, is FlowEvent.PlayerStatusEvent -> loadItems()
+                    is FlowEvent.PlaybackPositionEvent -> onEventMainThread(event)
+                    is FlowEvent.FeedItemEvent -> onEventMainThread(event)
+                    else -> {}
+                }
+            }
+        }
+        lifecycleScope.launch {
+            EventFlow.stickyEvents.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.EpisodeDownloadEvent -> onEventMainThread(event)
+                    is FlowEvent.FeedUpdateRunningEvent -> onEventMainThread(event)
+                    else -> {}
+                }
+            }
+        }
+        lifecycleScope.launch {
+            EventFlow.keyEvents.collectLatest { event ->
+                onKeyUp(event)
+            }
+        }
     }
 
     private fun refreshSwipeTelltale() {
@@ -465,7 +479,7 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
 //                    Log.e(TAG, Log.getStackTraceString(error))
 //                })
 
-        scope.launch {
+        lifecycleScope.launch {
             try {
                 val data = withContext(Dispatchers.IO) {
                     Pair(loadData().toMutableList(), loadTotalItemCount())
@@ -502,11 +516,9 @@ abstract class BaseEpisodesListFragment : Fragment(), SelectableAdapter.OnSelect
 
     protected abstract fun getPrefName(): String
 
-    protected open fun updateToolbar() {
-    }
+    protected open fun updateToolbar() {}
 
-    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: FeedUpdateRunningEvent) {
+    fun onEventMainThread(event: FlowEvent.FeedUpdateRunningEvent) {
         swipeRefreshLayout.isRefreshing = event.isFeedUpdateRunning
     }
 

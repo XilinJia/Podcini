@@ -21,7 +21,7 @@
     <string name="subscriptions_label">Subscriptions</string>
     <string name="subscriptions_list_label">Subscriptions list</string>
     <string name="cancel_download_label">Cancel download</string>
-    <string name="playback_history_label">Playback history</string>
+    <string name="playback_history_label">History</string>
     <string name="episode_cache_full_title">Episode cache full</string>
     <string name="episode_cache_full_message">The episode cache limit has been reached. You can increase the cache size in the Settings.</string>
     <string name="years_statistics_label">Years</string>
@@ -352,6 +352,8 @@
     <string name="sort">Sort</string>
     <string name="keep_sorted">Keep sorted</string>
     <string name="date">Date</string>
+    <string name="last_played_date">Played date</string>
+    <string name="completed_date">Completed date</string>
     <string name="duration">Duration</string>
     <string name="episode_title">Episode title</string>
     <string name="feed_title">Podcast title</string>

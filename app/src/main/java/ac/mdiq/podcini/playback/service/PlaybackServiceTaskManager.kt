@@ -6,7 +6,8 @@ import ac.mdiq.podcini.ui.widget.WidgetUpdater
 import ac.mdiq.podcini.ui.widget.WidgetUpdater.WidgetState
 import ac.mdiq.podcini.util.ChapterUtils
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.playback.SleepTimerUpdatedEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
@@ -16,7 +17,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.greenrobot.eventbus.EventBus
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
@@ -149,7 +149,7 @@ class PlaybackServiceTaskManager(private val context: Context, private val callb
         if (isSleepTimerActive) sleepTimerFuture!!.cancel(true)
         sleepTimer = SleepTimer(waitingTime)
         sleepTimerFuture = schedExecutor.schedule(sleepTimer, 0, TimeUnit.MILLISECONDS)
-        EventBus.getDefault().post(SleepTimerUpdatedEvent.justEnabled(waitingTime))
+        EventFlow.postEvent(FlowEvent.SleepTimerUpdatedEvent.justEnabled(waitingTime))
     }
 
     /**
@@ -263,7 +263,7 @@ class PlaybackServiceTaskManager(private val context: Context, private val callb
         override fun run() {
             Logd(TAG, "Starting SleepTimer")
             var lastTick = System.currentTimeMillis()
-            EventBus.getDefault().post(SleepTimerUpdatedEvent.updated(timeLeft))
+            EventFlow.postEvent(FlowEvent.SleepTimerUpdatedEvent.updated(timeLeft))
             while (timeLeft > 0) {
                 try {
                     Thread.sleep(UPDATE_INTERVAL)
@@ -277,7 +277,7 @@ class PlaybackServiceTaskManager(private val context: Context, private val callb
                 timeLeft -= now - lastTick
                 lastTick = now
 
-                EventBus.getDefault().post(SleepTimerUpdatedEvent.updated(timeLeft))
+                EventFlow.postEvent(FlowEvent.SleepTimerUpdatedEvent.updated(timeLeft))
                 if (timeLeft < NOTIFICATION_THRESHOLD) {
                     Logd(TAG, "Sleep timer is about to expire")
                     if (SleepTimerPreferences.vibrate() && !hasVibrated) {
@@ -304,7 +304,7 @@ class PlaybackServiceTaskManager(private val context: Context, private val callb
         }
 
         fun restart() {
-            EventBus.getDefault().post(SleepTimerUpdatedEvent.cancelled())
+            EventFlow.postEvent(FlowEvent.SleepTimerUpdatedEvent.cancelled())
             setSleepTimer(waitingTime)
             shakeListener?.pause()
             shakeListener = null
@@ -314,7 +314,7 @@ class PlaybackServiceTaskManager(private val context: Context, private val callb
             sleepTimerFuture!!.cancel(true)
             shakeListener?.pause()
 
-            EventBus.getDefault().post(SleepTimerUpdatedEvent.cancelled())
+            EventFlow.postEvent(FlowEvent.SleepTimerUpdatedEvent.cancelled())
         }
     }
 

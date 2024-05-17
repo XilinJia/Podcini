@@ -25,9 +25,8 @@ import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getDrawableFromAttr
 import ac.mdiq.podcini.ui.view.LockableBottomSheetBehavior
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.EpisodeDownloadEvent
-import ac.mdiq.podcini.util.event.FeedUpdateRunningEvent
-import ac.mdiq.podcini.util.event.MessageEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ComponentName
@@ -57,6 +56,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
@@ -69,10 +69,9 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCa
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.common.util.concurrent.MoreExecutors
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import org.apache.commons.lang3.ArrayUtils
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 import kotlin.math.min
 
 /**
@@ -196,7 +195,7 @@ class MainActivity : CastEnabledActivity() {
                         }
                     }
                 }
-                EventBus.getDefault().postSticky(FeedUpdateRunningEvent(isRefreshingFeeds))
+                EventFlow.postStickyEvent(FlowEvent.FeedUpdateRunningEvent(isRefreshingFeeds))
             }
         WorkManager.getInstance(this)
             .getWorkInfosByTagLiveData(DownloadServiceInterface.WORK_TAG)
@@ -232,7 +231,7 @@ class MainActivity : CastEnabledActivity() {
                     updatedEpisodes[downloadUrl] = DownloadStatus(status, progress)
                 }
                 DownloadServiceInterface.get()?.setCurrentDownloads(updatedEpisodes)
-                EventBus.getDefault().postSticky(EpisodeDownloadEvent(updatedEpisodes))
+                EventFlow.postStickyEvent(FlowEvent.EpisodeDownloadEvent(updatedEpisodes))
             }
     }
 
@@ -483,7 +482,7 @@ class MainActivity : CastEnabledActivity() {
 
     public override fun onStart() {
         super.onStart()
-        EventBus.getDefault().register(this)
+        procFlowEvents()
         RatingDialog.init(this)
 
         val sessionToken = SessionToken(this, ComponentName(this, PlaybackService::class.java))
@@ -517,7 +516,7 @@ class MainActivity : CastEnabledActivity() {
 
     override fun onStop() {
         super.onStop()
-        EventBus.getDefault().unregister(this)
+        
     }
 
     override fun onTrimMemory(level: Int) {
@@ -558,10 +557,19 @@ class MainActivity : CastEnabledActivity() {
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: MessageEvent) {
-        Logd(TAG, "onEvent($event)")
+    private fun procFlowEvents() {
+        lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.MessageEvent -> onEventMainThread(event)
+                    else -> {}
+                }
+            }
+        }
+    }
 
+    fun onEventMainThread(event: FlowEvent.MessageEvent) {
+        Logd(TAG, "onEvent($event)")
         val snackbar = showSnackbarAbovePlayer(event.message, Snackbar.LENGTH_LONG)
         if (event.action != null) snackbar.setAction(event.actionText) { event.action.accept(this) }
     }
@@ -674,7 +682,7 @@ class MainActivity : CastEnabledActivity() {
 
         val audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
         var customKeyCode: Int? = null
-        EventBus.getDefault().post(event)
+        EventFlow.postEvent(event)
 
         when (keyCode) {
             KeyEvent.KEYCODE_P -> customKeyCode = KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE

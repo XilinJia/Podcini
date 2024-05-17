@@ -19,10 +19,8 @@ import ac.mdiq.podcini.ui.dialog.SubscriptionsFilterDialog
 import ac.mdiq.podcini.ui.view.EmptyViewHandler
 import ac.mdiq.podcini.ui.view.LiftOnScrollListener
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.FeedListUpdateEvent
-import ac.mdiq.podcini.util.event.FeedTagsChangedEvent
-import ac.mdiq.podcini.util.event.FeedUpdateRunningEvent
-import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -32,6 +30,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -40,10 +39,10 @@ import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
-import kotlinx.coroutines.*
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 
 /**
@@ -70,7 +69,7 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
     private var displayedFolder: String = ""
     private var displayUpArrow = false
 
-    val scope = CoroutineScope(Dispatchers.Main)
+//    val scope = CoroutineScope(Dispatchers.Main)
 //    private var disposable: Disposable? = null
     private var feedList: List<NavDrawerData.FeedDrawerItem> = mutableListOf()
     private var feedListFiltered: List<NavDrawerData.FeedDrawerItem> = mutableListOf()
@@ -190,17 +189,21 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
             true
         }
 
-        EventBus.getDefault().register(this)
         loadSubscriptions()
 
         return binding.root
     }
 
+    override fun onStart() {
+        super.onStart()
+        procFlowEvents()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        EventBus.getDefault().unregister(this)
-        scope.cancel()
+        
+//        scope.cancel()
 //        disposable?.dispose()
     }
 
@@ -230,9 +233,25 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
         subscriptionAdapter.setItems(feedListFiltered)
     }
 
-    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: FeedUpdateRunningEvent) {
-        swipeRefreshLayout.isRefreshing = event.isFeedUpdateRunning
+    private fun procFlowEvents() {
+        lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.FeedListUpdateEvent -> onFeedListChanged(event)
+                    is FlowEvent.UnreadItemsUpdateEvent -> loadSubscriptions()
+                    is FlowEvent.FeedTagsChangedEvent -> resetTags()
+                    else -> {}
+                }
+            }
+        }
+        lifecycleScope.launch {
+            EventFlow.stickyEvents.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.FeedUpdateRunningEvent -> swipeRefreshLayout.isRefreshing = event.isFeedUpdateRunning
+                    else -> {}
+                }
+            }
+        }
     }
 
     @UnstableApi override fun onMenuItemClick(item: MenuItem): Boolean {
@@ -295,7 +314,7 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
 //                    Log.e(TAG, Log.getStackTraceString(error))
 //                })
 
-        scope.launch {
+        lifecycleScope.launch {
             try {
                 val result = withContext(Dispatchers.IO) {
                     val data: NavDrawerData = DBReader.getNavDrawerData(UserPreferences.subscriptionsFilter)
@@ -333,20 +352,9 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
         return FeedMenuHandler.onMenuItemClicked(this, item.itemId, feed) { this.loadSubscriptions() }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onFeedListChanged(event: FeedListUpdateEvent?) {
+    fun onFeedListChanged(event: FlowEvent.FeedListUpdateEvent?) {
         DBReader.updateFeedList()
         loadSubscriptions()
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onUnreadItemsChanged(event: UnreadItemsUpdateEvent?) {
-        loadSubscriptions()
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onFeedTagsChanged(event: FeedTagsChangedEvent?) {
-        resetTags()
     }
 
     override fun onEndSelectMode() {

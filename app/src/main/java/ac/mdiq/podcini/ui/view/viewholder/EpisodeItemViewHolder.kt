@@ -21,7 +21,6 @@ import ac.mdiq.podcini.databinding.FeeditemlistItemBinding
 import ac.mdiq.podcini.ui.adapter.CoverLoader
 import ac.mdiq.podcini.feed.util.ImageResourceUtils
 import ac.mdiq.podcini.net.download.MediaSizeLoader
-import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.storage.model.playback.MediaType
@@ -35,6 +34,7 @@ import ac.mdiq.podcini.ui.actions.actionbutton.TTSActionButton
 import ac.mdiq.podcini.ui.view.CircularProgressBar
 import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.util.*
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.widget.LinearLayout
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat.getDrawable
@@ -45,7 +45,7 @@ import kotlin.math.max
  * Holds the view which shows FeedItems.
  */
 @UnstableApi
-class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGroup?) :
+open class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGroup?) :
     RecyclerView.ViewHolder(LayoutInflater.from(activity).inflate(R.layout.feeditemlist_item, parent, false)) {
 
     val binding: FeeditemlistItemBinding = FeeditemlistItemBinding.bind(itemView)
@@ -56,7 +56,7 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
     private val placeholder: TextView = binding.txtvPlaceholder
     private val cover: ImageView = binding.imgvCover
     private val title: TextView = binding.txtvTitle
-    private val pubDate: TextView = binding.txtvPubDate
+    protected val pubDate: TextView = binding.txtvPubDate
     private val position: TextView = binding.txtvPosition
     private val duration: TextView = binding.txtvDuration
     private val size: TextView = binding.size
@@ -100,8 +100,9 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
             leftPadding.contentDescription = item.title
             binding.playedMark.visibility = View.GONE
         }
-        pubDate.text = DateFormatter.formatAbbrev(activity, item.getPubDate())
-        pubDate.setContentDescription(DateFormatter.formatForAccessibility(item.getPubDate()))
+
+        setPubDate(item)
+
         isFavorite.visibility = if (item.isTagged(FeedItem.TAG_FAVORITE)) View.VISIBLE else View.GONE
         isInQueue.visibility = if (item.isTagged(FeedItem.TAG_QUEUE)) View.VISIBLE else View.GONE
         container.alpha = if (item.isPlayed()) 0.75f else 1.0f
@@ -150,6 +151,11 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
                 cover.setImageDrawable(AppCompatResources.getDrawable(activity, R.drawable.ic_launcher_foreground))
             }
         }
+    }
+
+    open fun setPubDate(item: FeedItem) {
+        pubDate.text = DateFormatter.formatAbbrev(activity, item.getPubDate())
+        pubDate.setContentDescription(DateFormatter.formatForAccessibility(item.getPubDate()))
     }
 
     private fun bind(media: FeedMedia) {
@@ -246,7 +252,7 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
         }
     }
 
-    private fun updateDuration(event: PlaybackPositionEvent) {
+    private fun updateDuration(event: FlowEvent.PlaybackPositionEvent) {
         val media = feedItem?.media
         if (media != null) {
             media.setPosition(event.position)
@@ -270,7 +276,7 @@ class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGrou
     val isCurrentlyPlayingItem: Boolean
         get() = item?.media != null && PlaybackStatus.isCurrentlyPlaying(item?.media)
 
-    fun notifyPlaybackPositionUpdated(event: PlaybackPositionEvent) {
+    fun notifyPlaybackPositionUpdated(event: FlowEvent.PlaybackPositionEvent) {
         progressBar.progress = (100.0 * event.position / event.duration).toInt()
         position.text = Converter.getDurationStringLong(event.position)
         updateDuration(event)

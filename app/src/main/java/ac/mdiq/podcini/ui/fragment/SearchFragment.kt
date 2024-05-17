@@ -22,8 +22,8 @@ import ac.mdiq.podcini.ui.view.LiftOnScrollListener
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
 import ac.mdiq.podcini.util.FeedItemUtil
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.*
-import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.Context
 import android.os.Bundle
 import android.os.Handler
@@ -35,6 +35,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.ProgressBar
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -43,15 +44,15 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.snackbar.Snackbar
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
-import kotlinx.coroutines.*
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Performs a search operation on all feeds or one specific feed and displays the search result.
  */
-class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
+@UnstableApi class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
     private var _binding: SearchFragmentBinding? = null
     private val binding get() = _binding!!
 
@@ -68,7 +69,7 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
     private var results: MutableList<FeedItem> = mutableListOf()
     private var currentPlaying: EpisodeItemViewHolder? = null
 
-    val scope = CoroutineScope(Dispatchers.Main)
+//    val scope = CoroutineScope(Dispatchers.Main)
 //    private var disposable: Disposable? = null
     private var lastQueryChange: Long = 0
     private var isOtherViewInFoucus = false
@@ -81,7 +82,7 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
 
     override fun onStop() {
         super.onStop()
-        scope.cancel()
+//        scope.cancel()
 //        disposable?.dispose()
     }
 
@@ -124,7 +125,6 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
         emptyViewHandler.setIcon(R.drawable.ic_search)
         emptyViewHandler.setTitle(R.string.search_status_no_results)
         emptyViewHandler.setMessage(R.string.type_to_search)
-        EventBus.getDefault().register(this)
 
         chip = binding.feedTitleChip
         chip.setOnCloseIconClickListener {
@@ -171,10 +171,15 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
         return binding.root
     }
 
+    override fun onStart() {
+        super.onStart()
+        procFlowEvents()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        EventBus.getDefault().unregister(this)
+        
     }
 
     private fun setupToolbar(toolbar: MaterialToolbar) {
@@ -231,18 +236,28 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
         return super.onContextItemSelected(item)
     }
 
-    @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onFeedListChanged(event: FeedListUpdateEvent?) {
-        search()
+    private fun procFlowEvents() {
+        lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.FeedListUpdateEvent, is FlowEvent.UnreadItemsUpdateEvent, is FlowEvent.PlayerStatusEvent -> search()
+                    is FlowEvent.FeedItemEvent -> onEventMainThread(event)
+                    is FlowEvent.PlaybackPositionEvent -> onEventMainThread(event)
+                    else -> {}
+                }
+            }
+        }
+        lifecycleScope.launch {
+            EventFlow.stickyEvents.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.EpisodeDownloadEvent -> onEventMainThread(event)
+                    else -> {}
+                }
+            }
+        }
     }
 
-    @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onUnreadItemsChanged(event: UnreadItemsUpdateEvent?) {
-        search()
-    }
-
-    @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: FeedItemEvent) {
+    fun onEventMainThread(event: FlowEvent.FeedItemEvent) {
         Logd(TAG, "onEventMainThread() called with: event = [$event]")
 
         var i = 0
@@ -259,16 +274,14 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
         }
     }
 
-    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: EpisodeDownloadEvent) {
+    fun onEventMainThread(event: FlowEvent.EpisodeDownloadEvent) {
         for (downloadUrl in event.urls) {
             val pos: Int = FeedItemUtil.indexOfItemWithDownloadUrl(results, downloadUrl)
             if (pos >= 0) adapter.notifyItemChangedCompat(pos)
         }
     }
 
-    @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: PlaybackPositionEvent) {
+    fun onEventMainThread(event: FlowEvent.PlaybackPositionEvent) {
         if (currentPlaying != null && currentPlaying!!.isCurrentlyPlayingItem)
             currentPlaying!!.notifyPlaybackPositionUpdated(event)
         else {
@@ -282,11 +295,6 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
                 }
             }
         }
-    }
-
-    @UnstableApi @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onPlayerStatusChanged(event: PlayerStatusEvent?) {
-        search()
     }
 
     @UnstableApi private fun searchWithProgressBar() {
@@ -318,7 +326,7 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
 //
 //            }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
 
-        scope.launch {
+        lifecycleScope.launch {
             try {
                 val results = withContext(Dispatchers.IO) {
                     performSearch()

@@ -6,7 +6,8 @@ import ac.mdiq.podcini.preferences.ThemeSwitcher.getTheme
 import ac.mdiq.podcini.preferences.fragments.*
 import ac.mdiq.podcini.preferences.fragments.synchronization.SynchronizationPreferencesFragment
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.MessageEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Build
@@ -16,14 +17,14 @@ import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceFragmentCompat
 import com.bytehamster.lib.preferencesearch.SearchPreferenceResult
 import com.bytehamster.lib.preferencesearch.SearchPreferenceResultListener
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 /**
  * PreferenceActivity for API 11+. In order to change the behavior of the preference UI, see
@@ -144,12 +145,12 @@ class PreferenceActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
     override fun onStart() {
         super.onStart()
-        EventBus.getDefault().register(this)
+        procFlowEvents()
     }
 
     override fun onStop() {
         super.onStop()
-        EventBus.getDefault().unregister(this)
+        
     }
 
     override fun onDestroy() {
@@ -157,8 +158,18 @@ class PreferenceActivity : AppCompatActivity(), SearchPreferenceResultListener {
         _binding = null
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: MessageEvent) {
+    private fun procFlowEvents() {
+        lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.MessageEvent -> onEventMainThread(event)
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    fun onEventMainThread(event: FlowEvent.MessageEvent) {
         Logd(FRAGMENT_TAG, "onEvent($event)")
         val s = Snackbar.make(binding.root, event.message, Snackbar.LENGTH_LONG)
         if (event.action != null) {

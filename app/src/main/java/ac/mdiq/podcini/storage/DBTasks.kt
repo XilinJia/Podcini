@@ -18,15 +18,13 @@ import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.comparator.FeedItemPubdateComparator
-import ac.mdiq.podcini.util.event.FeedItemEvent.Companion.updated
-import ac.mdiq.podcini.util.event.FeedListUpdateEvent
-import ac.mdiq.podcini.util.event.MessageEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.Context
 import android.text.TextUtils
 import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.media3.common.util.UnstableApi
-import org.greenrobot.eventbus.EventBus
 import java.util.*
 import java.util.concurrent.*
 
@@ -90,8 +88,8 @@ import java.util.concurrent.*
         media.setDownloaded(false)
         media.setFile_url(null)
         DBWriter.persistFeedMedia(media)
-        if (media.item != null) EventBus.getDefault().post(updated(media.item!!))
-        EventBus.getDefault().post(MessageEvent(context.getString(R.string.error_file_not_found)))
+        if (media.item != null) EventFlow.postEvent(FlowEvent.FeedItemEvent.updated(media.item!!))
+        EventFlow.postEvent(FlowEvent.MessageEvent(context.getString(R.string.error_file_not_found)))
     }
 
     /**
@@ -138,8 +136,8 @@ import java.util.concurrent.*
             return getFeed(feed.id)
         } else {
             val feeds = getFeedList()
-            for (f in feeds) {
-                if (f.identifyingValue == feed.identifyingValue) {
+            for (f in feeds.toList()) {
+                if (f != null && f.identifyingValue == feed.identifyingValue) {
                     f.items = getFeedItemList(f).toMutableList()
                     return f
                 }
@@ -331,8 +329,8 @@ import java.util.concurrent.*
 
         adapter.close()
 
-        if (savedFeed != null) EventBus.getDefault().post(FeedListUpdateEvent(savedFeed))
-        else EventBus.getDefault().post(FeedListUpdateEvent(emptyList()))
+        if (savedFeed != null) EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(savedFeed))
+        else EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(emptyList<Long>()))
 
         return resultFeed
     }

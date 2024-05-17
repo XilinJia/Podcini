@@ -14,10 +14,13 @@ import ac.mdiq.podcini.ui.activity.appstartintent.PlaybackSpeedActivityStarter
 import ac.mdiq.podcini.ui.activity.appstartintent.VideoPlayerActivityStarter
 import ac.mdiq.podcini.util.Converter.getDurationStringLong
 import ac.mdiq.podcini.util.TimeSpeedConverter
+import android.R.attr.bitmap
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Matrix
 import android.graphics.drawable.BitmapDrawable
 import android.util.Log
 import android.view.KeyEvent
@@ -30,7 +33,9 @@ import coil.request.SuccessResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.max
+
 
 /**
  * Updates the state of the player widget.
@@ -99,10 +104,17 @@ object WidgetUpdater {
                         })
                         .size(iconSize, iconSize)
                         .build()
-                    val result = (context.imageLoader.execute(request) as SuccessResult).drawable
-                    icon = (result as BitmapDrawable).bitmap
-                    if (icon != null) views.setImageViewBitmap(R.id.imgvCover, icon)
-                    else views.setImageViewResource(R.id.imgvCover, R.mipmap.ic_launcher)
+                    withContext(Dispatchers.Main) {
+                        val result = (context.imageLoader.execute(request) as SuccessResult).drawable
+                        icon = (result as BitmapDrawable).bitmap
+                        try {
+                            if (icon != null) views.setImageViewBitmap(R.id.imgvCover, icon)
+                            else views.setImageViewResource(R.id.imgvCover, R.mipmap.ic_launcher)
+                        } catch(e: Exception) {
+                            Log.e(TAG, e.message?:"")
+                            e.printStackTrace()
+                        }
+                    }
                 }
             } catch (tr1: Throwable) {
                 Log.e(TAG, "Error loading the media icon for the widget", tr1)

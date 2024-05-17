@@ -2,6 +2,10 @@ package ac.mdiq.podcini.net.sync
 
 import io.reactivex.Completable
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.concurrent.locks.ReentrantLock
 
 object LockingAsyncExecutor {
@@ -21,14 +25,26 @@ object LockingAsyncExecutor {
                 lock.unlock()
             }
         } else {
-            Completable.fromRunnable {
-                lock.lock()
-                try {
-                    runnable.run()
-                } finally {
-                    lock.unlock()
+//            Completable.fromRunnable {
+//                lock.lock()
+//                try {
+//                    runnable.run()
+//                } finally {
+//                    lock.unlock()
+//                }
+//            }.subscribeOn(Schedulers.io()).subscribe()
+
+            val coroutineScope = CoroutineScope(Dispatchers.Main)
+            coroutineScope.launch {
+                withContext(Dispatchers.IO) {
+                    lock.lock()
+                    try {
+                        runnable.run()
+                    } finally {
+                        lock.unlock()
+                    }
                 }
-            }.subscribeOn(Schedulers.io()).subscribe()
+            }
         }
     }
 }

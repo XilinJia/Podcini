@@ -56,6 +56,7 @@ object UserPreferences {
     const val PREF_QUEUE_KEEP_SORTED_ORDER: String = "prefQueueKeepSortedOrder"
     const val PREF_NEW_EPISODES_ACTION: String = "prefNewEpisodesAction"    // not used
     private const val PREF_DOWNLOADS_SORTED_ORDER = "prefDownloadSortedOrder"
+    private const val PREF_HISTORY_SORTED_ORDER = "prefHistorySortedOrder"
     private const val PREF_INBOX_SORTED_ORDER = "prefInboxSortedOrder"
 
     // Episode
@@ -835,16 +836,23 @@ object UserPreferences {
         }
 
 //    @JvmStatic
-//    var inboxSortedOrder: SortOrder?
+//    var historySortedOrder: SortOrder?
+//        /**
+//         * Returns the sort order for the downloads.
+//         */
 //        get() {
-//            val sortOrderStr = prefs.getString(PREF_INBOX_SORTED_ORDER, "" + SortOrder.DATE_NEW_OLD.code)
+//            val sortOrderStr = prefs.getString(PREF_HISTORY_SORTED_ORDER, "" + SortOrder.PLAYED_DATE_NEW_OLD.code)
 //            return SortOrder.fromCodeString(sortOrderStr)
 //        }
+//        /**
+//         * Sets the sort order for the downloads.
+//         */
 //        set(sortOrder) {
-//            prefs.edit().putString(PREF_INBOX_SORTED_ORDER, "" + sortOrder!!.code).apply()
+//            prefs.edit().putString(PREF_HISTORY_SORTED_ORDER, "" + sortOrder!!.code).apply()
 //        }
 
-//    @JvmStatic
+
+    @JvmStatic
     var subscriptionsFilter: SubscriptionsFilter
         get() {
             val value = prefs.getString(PREF_FILTER_FEED, "")

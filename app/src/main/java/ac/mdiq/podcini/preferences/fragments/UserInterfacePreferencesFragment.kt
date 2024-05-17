@@ -7,8 +7,8 @@ import ac.mdiq.podcini.preferences.UserPreferences.setShowRemainTimeSetting
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.ui.dialog.DrawerPreferencesDialog
 import ac.mdiq.podcini.ui.dialog.FeedSortDialog
-import ac.mdiq.podcini.util.event.PlayerStatusEvent
-import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.Context
 import android.content.DialogInterface
 import android.os.Build
@@ -19,7 +19,6 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import org.greenrobot.eventbus.EventBus
 
 class UserInterfacePreferencesFragment : PreferenceFragmentCompat() {
 
@@ -45,8 +44,8 @@ class UserInterfacePreferencesFragment : PreferenceFragmentCompat() {
 
         findPreference<Preference>(UserPreferences.PREF_SHOW_TIME_LEFT)?.setOnPreferenceChangeListener { _: Preference?, newValue: Any? ->
             setShowRemainTimeSetting(newValue as Boolean?)
-            EventBus.getDefault().post(UnreadItemsUpdateEvent())
-            EventBus.getDefault().post(PlayerStatusEvent())
+            EventFlow.postEvent(FlowEvent.UnreadItemsUpdateEvent())
+            EventFlow.postEvent(FlowEvent.PlayerStatusEvent())
             true
         }
 

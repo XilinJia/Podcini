@@ -1,5 +1,13 @@
 package ac.mdiq.podcini
 
+import ac.mdiq.podcini.preferences.PreferenceUpgrader
+import ac.mdiq.podcini.ui.activity.SplashActivity
+import ac.mdiq.podcini.util.SPAUtil
+import ac.mdiq.podcini.util.config.ApplicationCallbacksImpl
+import ac.mdiq.podcini.util.config.ClientConfig
+import ac.mdiq.podcini.util.config.ClientConfigurator
+import ac.mdiq.podcini.util.error.CrashReportWriter
+import ac.mdiq.podcini.util.error.RxJavaErrorHandlerSetup
 import android.app.Application
 import android.content.ComponentName
 import android.content.Intent
@@ -9,15 +17,6 @@ import com.google.android.material.color.DynamicColors
 import com.joanzapata.iconify.Iconify
 import com.joanzapata.iconify.fonts.FontAwesomeModule
 import com.joanzapata.iconify.fonts.MaterialModule
-import ac.mdiq.podcini.ui.activity.SplashActivity
-import ac.mdiq.podcini.util.config.ApplicationCallbacksImpl
-import ac.mdiq.podcini.util.config.ClientConfig
-import ac.mdiq.podcini.util.config.ClientConfigurator
-import ac.mdiq.podcini.util.error.CrashReportWriter
-import ac.mdiq.podcini.util.error.RxJavaErrorHandlerSetup
-import ac.mdiq.podcini.preferences.PreferenceUpgrader
-import ac.mdiq.podcini.util.SPAUtil
-import org.greenrobot.eventbus.EventBus
 
 /** Main application class.  */
 class PodciniApp : Application() {
@@ -50,12 +49,12 @@ class PodciniApp : Application() {
         Iconify.with(MaterialModule())
 
         SPAUtil.sendSPAppsQueryFeedsIntent(this)
-        EventBus.builder()
-            .addIndex(ApEventBusIndex())
-//            .addIndex(ApCoreEventBusIndex())
-            .logNoSubscriberMessages(false)
-            .sendNoSubscriberEvent(false)
-            .installDefaultEventBus()
+//        EventBus.builder()
+//            .addIndex(ApEventBusIndex())
+////            .addIndex(ApCoreEventBusIndex())
+//            .logNoSubscriberMessages(false)
+//            .sendNoSubscriberEvent(false)
+//            .installDefaultEventBus()
 
         DynamicColors.applyToActivitiesIfAvailable(this)
     }

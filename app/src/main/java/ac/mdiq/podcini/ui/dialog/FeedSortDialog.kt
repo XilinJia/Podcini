@@ -1,13 +1,13 @@
 package ac.mdiq.podcini.ui.dialog
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.preferences.UserPreferences.feedOrder
+import ac.mdiq.podcini.preferences.UserPreferences.setFeedOrder
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.Context
 import android.content.DialogInterface
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
-import ac.mdiq.podcini.preferences.UserPreferences.feedOrder
-import ac.mdiq.podcini.preferences.UserPreferences.setFeedOrder
-import org.greenrobot.eventbus.EventBus
 
 object FeedSortDialog {
     fun showDialog(context: Context) {
@@ -24,7 +24,7 @@ object FeedSortDialog {
             if (selectedIndex != which) {
                 setFeedOrder(entryValues[which])
                 //Update subscriptions
-                EventBus.getDefault().post(UnreadItemsUpdateEvent())
+                EventFlow.postEvent(FlowEvent.UnreadItemsUpdateEvent())
             }
             d.dismiss()
         }

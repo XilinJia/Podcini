@@ -16,7 +16,8 @@ import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
 import ac.mdiq.podcini.storage.model.feed.SortOrder
 import ac.mdiq.podcini.util.FeedItemUtil.hasAlmostEnded
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.SyncServiceEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.Context
 import android.util.Log
 import androidx.annotation.OptIn
@@ -24,7 +25,6 @@ import androidx.core.content.ContextCompat.getString
 import androidx.media3.common.util.UnstableApi
 import androidx.work.*
 import org.apache.commons.lang3.StringUtils
-import org.greenrobot.eventbus.EventBus
 import org.json.JSONArray
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -53,7 +53,7 @@ import kotlin.math.min
                 val lastSync = SynchronizationSettings.lastEpisodeActionSynchronizationTimestamp
                 val newTimeStamp = pushEpisodeActions(this, 0L, System.currentTimeMillis())
                 SynchronizationSettings.setLastEpisodeActionSynchronizationAttemptTimestamp(newTimeStamp)
-                EventBus.getDefault().post(SyncServiceEvent(R.string.sync_status_in_progress, "50"))
+                EventFlow.postEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_in_progress, "50"))
                 sendToPeer("AllSent", "AllSent")
 
                 var receivedBye = false
@@ -63,8 +63,8 @@ import kotlin.math.min
                     } catch (e: SocketTimeoutException) {
                         Log.e("Guest", getString(context, R.string.sync_error_host_not_respond))
                         logout()
-                        EventBus.getDefault().post(SyncServiceEvent(R.string.sync_status_in_progress, "100"))
-                        EventBus.getDefault().postSticky(SyncServiceEvent(R.string.sync_status_error, getString(context, R.string.sync_error_host_not_respond)))
+                        EventFlow.postEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_in_progress, "100"))
+                        EventFlow.postStickyEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_error, getString(context, R.string.sync_error_host_not_respond)))
                         SynchronizationSettings.setLastSynchronizationAttemptSuccess(false)
                         return Result.failure()
                     }
@@ -77,13 +77,13 @@ import kotlin.math.min
                     } catch (e: SocketTimeoutException) {
                         Log.e("Host", getString(context, R.string.sync_error_guest_not_respond))
                         logout()
-                        EventBus.getDefault().post(SyncServiceEvent(R.string.sync_status_in_progress, "100"))
-                        EventBus.getDefault().postSticky(SyncServiceEvent(R.string.sync_status_error, getString(context, R.string.sync_error_guest_not_respond)))
+                        EventFlow.postEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_in_progress, "100"))
+                        EventFlow.postStickyEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_error, getString(context, R.string.sync_error_guest_not_respond)))
                         SynchronizationSettings.setLastSynchronizationAttemptSuccess(false)
                         return Result.failure()
                     }
                 }
-                EventBus.getDefault().post(SyncServiceEvent(R.string.sync_status_in_progress, "50"))
+                EventFlow.postEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_in_progress, "50"))
                 //                TODO: not using lastSync
                 val lastSync = SynchronizationSettings.lastEpisodeActionSynchronizationTimestamp
                 val newTimeStamp = pushEpisodeActions(this, 0L, System.currentTimeMillis())
@@ -92,15 +92,15 @@ import kotlin.math.min
             }
         } else {
             logout()
-            EventBus.getDefault().post(SyncServiceEvent(R.string.sync_status_in_progress, "100"))
-            EventBus.getDefault().postSticky(SyncServiceEvent(R.string.sync_status_error, "Login failure"))
+            EventFlow.postEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_in_progress, "100"))
+            EventFlow.postStickyEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_error, "Login failure"))
             SynchronizationSettings.setLastSynchronizationAttemptSuccess(false)
             return Result.failure()
         }
 
         logout()
-        EventBus.getDefault().post(SyncServiceEvent(R.string.sync_status_in_progress, "100"))
-        EventBus.getDefault().postSticky(SyncServiceEvent(R.string.sync_status_success))
+        EventFlow.postEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_in_progress, "100"))
+        EventFlow.postStickyEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_success))
         SynchronizationSettings.setLastSynchronizationAttemptSuccess(true)
         return Result.success()
     }
@@ -109,7 +109,7 @@ import kotlin.math.min
 
     @OptIn(UnstableApi::class) override fun login() {
         Logd(TAG, "serverIp: $hostIp serverPort: $hostPort $isGuest")
-        EventBus.getDefault().post(SyncServiceEvent(R.string.sync_status_in_progress, "2"))
+        EventFlow.postEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_in_progress, "2"))
         if (!isPortInUse(hostPort)) {
             if (isGuest) {
                 val maxTries = 120
@@ -159,7 +159,7 @@ import kotlin.math.min
             Log.w(TAG, "port $hostPort in use, ignored")
             loginFail = true
         }
-        EventBus.getDefault().post(SyncServiceEvent(R.string.sync_status_in_progress, "5"))
+        EventFlow.postEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_in_progress, "5"))
     }
 
     @OptIn(UnstableApi::class) private fun isPortInUse(port: Int): Boolean {
@@ -236,12 +236,12 @@ import kotlin.math.min
 
     override fun pushEpisodeActions(syncServiceImpl: ISyncService, lastSync: Long, newTimeStamp_: Long): Long {
         var newTimeStamp = newTimeStamp_
-        EventBus.getDefault().postSticky(SyncServiceEvent(R.string.sync_status_episodes_upload))
+        EventFlow.postStickyEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_episodes_upload))
         val queuedEpisodeActions: MutableList<EpisodeAction> = synchronizationQueueStorage.queuedEpisodeActions
         Logd(TAG, "pushEpisodeActions queuedEpisodeActions: ${queuedEpisodeActions.size}")
 
         if (lastSync == 0L) {
-            EventBus.getDefault().postSticky(SyncServiceEvent(R.string.sync_status_upload_played))
+            EventFlow.postStickyEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_upload_played))
 //            only push downloaded items
             val pausedItems = getEpisodes(0, Int.MAX_VALUE, FeedItemFilter(FeedItemFilter.PAUSED), SortOrder.DATE_NEW_OLD)
             val readItems = getEpisodes(0, Int.MAX_VALUE, FeedItemFilter(FeedItemFilter.PLAYED), SortOrder.DATE_NEW_OLD)
@@ -368,7 +368,7 @@ import kotlin.math.min
 
                 // Give it some time, so other possible actions can be queued.
                 builder.setInitialDelay(20L, TimeUnit.SECONDS)
-                EventBus.getDefault().postSticky(SyncServiceEvent(R.string.sync_status_started))
+                EventFlow.postStickyEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_started))
 
                 val workRequest: OneTimeWorkRequest = builder.setInitialDelay(0L, TimeUnit.SECONDS).build()
                 WorkManager.getInstance(context).enqueueUniqueWork(hostIp_, ExistingWorkPolicy.REPLACE, workRequest)

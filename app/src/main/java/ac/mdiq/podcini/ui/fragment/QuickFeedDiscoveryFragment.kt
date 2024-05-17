@@ -9,7 +9,8 @@ import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.FeedDiscoverAdapter
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.DiscoveryDefaultUpdateEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -21,11 +22,12 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.annotation.OptIn
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
-import kotlinx.coroutines.*
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 
 class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
@@ -33,7 +35,7 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
     private val binding get() = _binding!!
 
 //    private var disposable: Disposable? = null
-    val scope = CoroutineScope(Dispatchers.Main)
+//    val scope = CoroutineScope(Dispatchers.Main)
 
     private lateinit var adapter: FeedDiscoverAdapter
     private lateinit var discoverGridLayout: GridView
@@ -75,22 +77,31 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
         adapter.updateData(dummies)
         loadToplist()
 
-        EventBus.getDefault().register(this)
         return binding.root
+    }
+
+    override fun onStart() {
+        super.onStart()
+        procFlowEvents()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
-        EventBus.getDefault().unregister(this)
-        scope.cancel()
+        
+//        scope.cancel()
 //        disposable?.dispose()
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    @Suppress("unused")
-    fun onDiscoveryDefaultUpdateEvent(event: DiscoveryDefaultUpdateEvent?) {
-        loadToplist()
+    private fun procFlowEvents() {
+        lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.DiscoveryDefaultUpdateEvent -> loadToplist()
+                    else -> {}
+                }
+            }
+        }
     }
 
     private fun loadToplist() {
@@ -149,7 +160,7 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
 //                    errorRetry.setOnClickListener { loadToplist() }
 //                })
 
-        scope.launch {
+        lifecycleScope.launch {
             try {
                 val podcasts = withContext(Dispatchers.IO) {
                     loader.loadToplist(countryCode, NUM_SUGGESTIONS, DBReader.getFeedList())

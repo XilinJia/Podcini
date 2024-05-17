@@ -1,15 +1,15 @@
 package ac.mdiq.podcini.ui.dialog
 
-import android.os.Bundle
 import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
-import org.greenrobot.eventbus.EventBus
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
+import android.os.Bundle
 
 class AllEpisodesFilterDialog : ItemFilterDialog() {
     override fun onFilterChanged(newFilterValues: Set<String>) {
-        EventBus.getDefault().post(AllEpisodesFilterChangedEvent(newFilterValues))
+        EventFlow.postEvent(FlowEvent.AllEpisodesFilterChangedEvent(newFilterValues))
     }
 
-    class AllEpisodesFilterChangedEvent(val filterValues: Set<String?>?)
     companion object {
         fun newInstance(filter: FeedItemFilter?): AllEpisodesFilterDialog {
             val dialog = AllEpisodesFilterDialog()

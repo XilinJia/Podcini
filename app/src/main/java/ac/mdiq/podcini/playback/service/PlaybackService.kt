@@ -57,12 +57,8 @@ import ac.mdiq.podcini.util.FeedUtil.shouldAutoDeleteItemsOnThatFeed
 import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.NetworkUtils.isStreamingAllowed
-import ac.mdiq.podcini.util.event.MessageEvent
-import ac.mdiq.podcini.util.event.PlayerErrorEvent
-import ac.mdiq.podcini.util.event.playback.*
-import ac.mdiq.podcini.util.event.settings.SkipIntroEndingChangedEvent
-import ac.mdiq.podcini.util.event.settings.SpeedPresetChangedEvent
-import ac.mdiq.podcini.util.event.settings.VolumeAdaptionChangedEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -93,11 +89,9 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 import java.util.*
 import kotlin.concurrent.Volatile
 import kotlin.math.max
@@ -197,7 +191,7 @@ class PlaybackService : MediaSessionService() {
         registerReceiver(headsetDisconnected, IntentFilter(Intent.ACTION_HEADSET_PLUG))
         registerReceiver(bluetoothStateUpdated, IntentFilter(BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED))
         registerReceiver(audioBecomingNoisy, IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY))
-        EventBus.getDefault().register(this)
+        procFlowEvents()
         taskManager = PlaybackServiceTaskManager(this, taskManagerCallback)
 
         recreateMediaSessionIfNeeded()
@@ -207,7 +201,7 @@ class PlaybackService : MediaSessionService() {
                 recreateMediaPlayer()
             }
         }
-        EventBus.getDefault().post(PlaybackServiceEvent(PlaybackServiceEvent.Action.SERVICE_STARTED))
+        EventFlow.postEvent(FlowEvent.PlaybackServiceEvent(FlowEvent.PlaybackServiceEvent.Action.SERVICE_STARTED))
     }
 
     fun recreateMediaSessionIfNeeded() {
@@ -277,7 +271,7 @@ class PlaybackService : MediaSessionService() {
         unregisterReceiver(bluetoothStateUpdated)
         unregisterReceiver(audioBecomingNoisy)
         taskManager.shutdown()
-        EventBus.getDefault().unregister(this)
+        
     }
 
     fun isServiceReady(): Boolean {
@@ -469,10 +463,11 @@ class PlaybackService : MediaSessionService() {
 
     @SuppressLint("LaunchActivityFromNotification")
     private fun displayStreamingNotAllowedNotification(originalIntent: Intent) {
-        if (EventBus.getDefault().hasSubscriberForEvent(MessageEvent::class.java)) {
-            EventBus.getDefault().post(MessageEvent(getString(R.string.confirm_mobile_streaming_notification_message)))
-            return
-        }
+//        TODO
+//        if (EventBus.getDefault().hasSubscriberForEvent(FlowEvent.MessageEvent::class.java)) {
+//            EventFlow.postEvent(FlowEvent.MessageEvent(getString(R.string.confirm_mobile_streaming_notification_message)))
+//            return
+//        }
 
         val intentAllowThisTime = Intent(originalIntent)
         intentAllowThisTime.setAction(PlaybackServiceConstants.EXTRA_ALLOW_STREAM_THIS_TIME)
@@ -666,7 +661,8 @@ class PlaybackService : MediaSessionService() {
         override fun positionSaverTick() {
             if (currentPosition != previousPosition) {
 //                Log.d(TAG, "positionSaverTick currentPosition: $currentPosition, currentPlaybackSpeed: $currentPlaybackSpeed")
-                EventBus.getDefault().post(PlaybackPositionEvent(currentPosition, duration))
+                EventFlow.postEvent(FlowEvent.PlaybackPositionEvent(currentPosition, duration))
+//                EventFlow.postEvent(FlowEvent.PlaybackPositionEvent(currentPosition, duration))
                 skipEndingIfNecessary()
                 saveCurrentPosition(true, null, Playable.INVALID_TIME)
                 previousPosition = currentPosition
@@ -718,7 +714,7 @@ class PlaybackService : MediaSessionService() {
 
                         if (newInfo.oldPlayerStatus != null && newInfo.oldPlayerStatus != PlayerStatus.SEEKING && autoEnable() && autoEnableByTime && !sleepTimerActive()) {
                             setSleepTimer(timerMillis())
-                            EventBus.getDefault().post(MessageEvent(getString(R.string.sleep_timer_enabled_label), { disableSleepTimer() }, getString(R.string.undo)))
+                            EventFlow.postEvent(FlowEvent.MessageEvent(getString(R.string.sleep_timer_enabled_label), { disableSleepTimer() }, getString(R.string.undo)))
                         }
 //                        loadQueueForMediaSession()
                     }
@@ -784,16 +780,29 @@ class PlaybackService : MediaSessionService() {
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    @Suppress("unused")
-    fun playerError(event: PlayerErrorEvent?) {
+    private fun procFlowEvents() {
+        scope.launch {
+            EventFlow.events.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.PlayerErrorEvent -> playerError(event)
+                    is FlowEvent.BufferUpdateEvent -> bufferUpdate(event)
+                    is FlowEvent.SleepTimerUpdatedEvent -> sleepTimerUpdate(event)
+                    is FlowEvent.VolumeAdaptionChangedEvent -> volumeAdaptionChanged(event)
+                    is FlowEvent.SpeedPresetChangedEvent -> onSpeedPresetChanged(event)
+                    is FlowEvent.SkipIntroEndingChangedEvent -> skipIntroEndingPresetChanged(event)
+                    is FlowEvent.StartPlayEvent -> currentitem = event.item
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    fun playerError(event: FlowEvent.PlayerErrorEvent) {
         if (MediaPlayerBase.status == PlayerStatus.PLAYING || MediaPlayerBase.status == PlayerStatus.FALLBACK)
             mediaPlayer!!.pause(abandonFocus = true, reinit = false)
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    @Suppress("unused")
-    fun bufferUpdate(event: BufferUpdateEvent) {
+    fun bufferUpdate(event: FlowEvent.BufferUpdateEvent) {
         if (event.hasEnded()) {
             val playable = playable
             if (this.playable is FeedMedia && playable!!.getDuration() <= 0 && (mediaPlayer?.getDuration()?:0) > 0) {
@@ -804,9 +813,7 @@ class PlaybackService : MediaSessionService() {
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    @Suppress("unused")
-    fun sleepTimerUpdate(event: SleepTimerUpdatedEvent) {
+    fun sleepTimerUpdate(event: FlowEvent.SleepTimerUpdatedEvent) {
         when {
             event.isOver -> {
                 mediaPlayer?.pause(abandonFocus = true, reinit = true)
@@ -856,7 +863,7 @@ class PlaybackService : MediaSessionService() {
             writeNoMediaPlaying()
             return null
         }
-        EventBus.getDefault().post(StartPlayEvent(nextItem))
+        EventFlow.postEvent(FlowEvent.StartPlayEvent(nextItem))
         return nextItem.media
     }
 
@@ -1157,20 +1164,16 @@ class PlaybackService : MediaSessionService() {
     private val shutdownReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if (TextUtils.equals(intent.action, PlaybackServiceConstants.ACTION_SHUTDOWN_PLAYBACK_SERVICE))
-                EventBus.getDefault().post(PlaybackServiceEvent(PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN))
+                EventFlow.postEvent(FlowEvent.PlaybackServiceEvent(FlowEvent.PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN))
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    @Suppress("unused")
-    fun volumeAdaptionChanged(event: VolumeAdaptionChangedEvent) {
+    fun volumeAdaptionChanged(event: FlowEvent.VolumeAdaptionChangedEvent) {
         val playbackVolumeUpdater = PlaybackVolumeUpdater()
         if (mediaPlayer != null) playbackVolumeUpdater.updateVolumeIfNecessary(mediaPlayer!!, event.feedId, event.volumeAdaptionSetting)
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    @Suppress("unused")
-    fun onSpeedPresetChanged(event: SpeedPresetChangedEvent) {
+    fun onSpeedPresetChanged(event: FlowEvent.SpeedPresetChangedEvent) {
         val item = (playable as? FeedMedia)?.item ?: currentitem
         if (item?.feed?.id == event.feedId) {
             if (event.speed == FeedPreferences.SPEED_USE_GLOBAL) setSpeed(getPlaybackSpeed(playable!!.getMediaType()))
@@ -1178,9 +1181,7 @@ class PlaybackService : MediaSessionService() {
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    @Suppress("unused")
-    fun skipIntroEndingPresetChanged(event: SkipIntroEndingChangedEvent) {
+    fun skipIntroEndingPresetChanged(event: FlowEvent.SkipIntroEndingChangedEvent) {
         val item = (playable as? FeedMedia)?.item ?: currentitem
 //        if (playable is FeedMedia) {
         if (item?.feed?.id == event.feedId) {
@@ -1192,12 +1193,6 @@ class PlaybackService : MediaSessionService() {
             }
         }
 //        }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEvenStartPlay(event: StartPlayEvent) {
-        Logd(TAG, "onEvenStartPlay ${event.item.title}")
-        currentitem = event.item
     }
 
     fun resume() {
@@ -1244,7 +1239,7 @@ class PlaybackService : MediaSessionService() {
                                 feedPreferences.feedPlaybackSpeed = speed
                                 Logd(TAG, "setSpeed ${feed.title} $speed")
                                 DBWriter.persistFeedPreferences(feedPreferences)
-                                EventBus.getDefault().post(SpeedPresetChangedEvent(feedPreferences.feedPlaybackSpeed, feed.id))
+                                EventFlow.postEvent(FlowEvent.SpeedPresetChangedEvent(feedPreferences.feedPlaybackSpeed, feed.id))
                             }
                         }
                     }
@@ -1288,7 +1283,8 @@ class PlaybackService : MediaSessionService() {
 
     fun seekTo(t: Int) {
         mediaPlayer?.seekTo(t)
-        EventBus.getDefault().post(PlaybackPositionEvent(t, duration))
+        EventFlow.postEvent(FlowEvent.PlaybackPositionEvent(t, duration))
+//        EventFlow.postEvent(FlowEvent.PlaybackPositionEvent(t, duration))
     }
 
     fun setAudioTrack(track: Int) {

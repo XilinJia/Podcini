@@ -14,12 +14,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Displays the 'download statistics' screen
@@ -29,16 +33,14 @@ class DownloadStatisticsFragment : Fragment() {
     private var _binding: StatisticsFragmentBinding? = null
     private val binding get() = _binding!!
 
-    private var disposable: Disposable? = null
+//    private var disposable: Disposable? = null
 
     private lateinit var downloadStatisticsList: RecyclerView
     private lateinit var progressBar: ProgressBar
     private lateinit var listAdapter: DownloadStatisticsListAdapter
 
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = StatisticsFragmentBinding.inflate(inflater)
         downloadStatisticsList = binding.statisticsList
         progressBar = binding.progressBar
@@ -68,24 +70,41 @@ class DownloadStatisticsFragment : Fragment() {
     }
 
     private fun loadStatistics() {
-        disposable?.dispose()
+//        disposable?.dispose()
 
-        disposable =
-            Observable.fromCallable {
-                // Filters do not matter here
-                val statisticsData = DBReader.getStatistics(false, 0, Long.MAX_VALUE)
-                statisticsData.feedTime.sortWith { item1: StatisticsItem, item2: StatisticsItem ->
-                    item2.totalDownloadSize.compareTo(item1.totalDownloadSize)
+//        disposable = Observable.fromCallable {
+//            // Filters do not matter here
+//            val statisticsData = DBReader.getStatistics(false, 0, Long.MAX_VALUE)
+//            statisticsData.feedTime.sortWith { item1: StatisticsItem, item2: StatisticsItem ->
+//                item2.totalDownloadSize.compareTo(item1.totalDownloadSize)
+//            }
+//            statisticsData
+//        }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe({ result: StatisticsResult ->
+//                listAdapter.update(result.feedTime)
+//                progressBar.visibility = View.GONE
+//                downloadStatisticsList.visibility = View.VISIBLE
+//            }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
+
+        lifecycleScope.launch {
+            try {
+                val statisticsData = withContext(Dispatchers.IO) {
+                    val data = DBReader.getStatistics(false, 0, Long.MAX_VALUE)
+                    data.feedTime.sortWith { item1: StatisticsItem, item2: StatisticsItem ->
+                        item2.totalDownloadSize.compareTo(item1.totalDownloadSize)
+                    }
+                    data
                 }
-                statisticsData
+                listAdapter.update(statisticsData.feedTime)
+                progressBar.visibility = View.GONE
+                downloadStatisticsList.visibility = View.VISIBLE
+            } catch (error: Throwable) {
+                Log.e(TAG, Log.getStackTraceString(error))
             }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ result: StatisticsResult ->
-                    listAdapter.update(result.feedTime)
-                    progressBar.visibility = View.GONE
-                    downloadStatisticsList.visibility = View.VISIBLE
-                }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
+        }
+
     }
 
     companion object {

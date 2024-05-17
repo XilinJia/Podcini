@@ -31,9 +31,7 @@ import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.util.FeedItemUtil.hasAlmostEnded
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.LongList
-import ac.mdiq.podcini.util.event.FeedUpdateRunningEvent
-import ac.mdiq.podcini.util.event.MessageEvent
-import ac.mdiq.podcini.util.event.SyncServiceEvent
+import ac.mdiq.podcini.util.event.*
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
@@ -44,8 +42,12 @@ import androidx.core.app.NotificationCompat
 import androidx.media3.common.util.UnstableApi
 import androidx.work.*
 import androidx.work.Constraints.Builder
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
-import org.greenrobot.eventbus.EventBus
 import java.util.concurrent.TimeUnit
 
 @OptIn(UnstableApi::class)
@@ -72,11 +74,11 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
 
             activeSyncProvider.logout()
             clearErrorNotifications()
-            EventBus.getDefault().postSticky(SyncServiceEvent(R.string.sync_status_success))
+            EventFlow.postStickyEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_success))
             SynchronizationSettings.setLastSynchronizationAttemptSuccess(true)
             return Result.success()
         } catch (e: Exception) {
-            EventBus.getDefault().postSticky(SyncServiceEvent(R.string.sync_status_error))
+            EventFlow.postStickyEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_error))
             SynchronizationSettings.setLastSynchronizationAttemptSuccess(false)
             Log.e(TAG, Log.getStackTraceString(e))
 
@@ -97,7 +99,7 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
     private fun syncSubscriptions(syncServiceImpl: ISyncService) {
         Logd(TAG, "syncSubscriptions called")
         val lastSync = SynchronizationSettings.lastSubscriptionSynchronizationTimestamp
-        EventBus.getDefault().postSticky(SyncServiceEvent(R.string.sync_status_subscriptions))
+        EventFlow.postStickyEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_subscriptions))
         val localSubscriptions: List<String> = getFeedListDownloadUrls()
         val subscriptionChanges = syncServiceImpl.getSubscriptionChanges(lastSync)
         var newTimeStamp = subscriptionChanges?.timestamp?:0L
@@ -151,21 +153,32 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
 
     private fun waitForDownloadServiceCompleted() {
         Logd(TAG, "waitForDownloadServiceCompleted called")
-        EventBus.getDefault().postSticky(SyncServiceEvent(R.string.sync_status_wait_for_downloads))
-        try {
-            while (true) {
-                Thread.sleep(1000)
-                val event = EventBus.getDefault().getStickyEvent(FeedUpdateRunningEvent::class.java)
-                if (event == null || !event.isFeedUpdateRunning) return
+        EventFlow.postStickyEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_wait_for_downloads))
+        val scope = CoroutineScope(Dispatchers.IO)
+        scope.launch {
+            EventFlow.stickyEvents.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.FeedUpdateRunningEvent -> if (!event.isFeedUpdateRunning) return@collectLatest
+                    else -> {}
+                }
             }
-        } catch (e: InterruptedException) {
-            e.printStackTrace()
+            return@launch
         }
+        scope.cancel()
+//        try {
+//            while (true) {
+//                Thread.sleep(1000)
+//                val event = EventBus.getDefault().getStickyEvent(FlowEvent.FeedUpdateRunningEvent::class.java)
+//                if (event == null || !event.isFeedUpdateRunning) return
+//            }
+//        } catch (e: InterruptedException) {
+//            e.printStackTrace()
+//        }
     }
 
     fun getEpisodeActions(syncServiceImpl: ISyncService) : Pair<Long, Long> {
         val lastSync = SynchronizationSettings.lastEpisodeActionSynchronizationTimestamp
-        EventBus.getDefault().postSticky(SyncServiceEvent(R.string.sync_status_episodes_download))
+        EventFlow.postStickyEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_episodes_download))
         val getResponse = syncServiceImpl.getEpisodeActionChanges(lastSync)
         val newTimeStamp = getResponse?.timestamp?:0L
         val remoteActions = getResponse?.episodeActions?: listOf()
@@ -175,10 +188,10 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
 
     open fun pushEpisodeActions(syncServiceImpl: ISyncService, lastSync: Long, newTimeStamp_: Long): Long {
         var newTimeStamp = newTimeStamp_
-        EventBus.getDefault().postSticky(SyncServiceEvent(R.string.sync_status_episodes_upload))
+        EventFlow.postStickyEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_episodes_upload))
         val queuedEpisodeActions: MutableList<EpisodeAction> = synchronizationQueueStorage.queuedEpisodeActions
         if (lastSync == 0L) {
-            EventBus.getDefault().postSticky(SyncServiceEvent(R.string.sync_status_upload_played))
+            EventFlow.postStickyEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_upload_played))
             val readItems = getEpisodes(0, Int.MAX_VALUE, FeedItemFilter(FeedItemFilter.PLAYED), SortOrder.DATE_NEW_OLD)
             Logd(TAG, "First sync. Upload state for all " + readItems.size + " played episodes")
             for (item in readItems) {
@@ -272,10 +285,11 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
             Logd(TAG, "Skipping sync error notification because of user setting")
             return
         }
-        if (EventBus.getDefault().hasSubscriberForEvent(MessageEvent::class.java)) {
-            EventBus.getDefault().post(MessageEvent(description))
-            return
-        }
+//        TODO:
+//        if (EventBus.getDefault().hasSubscriberForEvent(FlowEvent.MessageEvent::class.java)) {
+//            EventFlow.postEvent(FlowEvent.MessageEvent(description))
+//            return
+//        }
 
         val intent = applicationContext.packageManager.getLaunchIntentForPackage(
             applicationContext.packageName)
@@ -335,7 +349,7 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
             } else {
                 // Give it some time, so other possible actions can be queued.
                 builder.setInitialDelay(20L, TimeUnit.SECONDS)
-                EventBus.getDefault().postSticky(SyncServiceEvent(R.string.sync_status_started))
+                EventFlow.postStickyEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_started))
             }
             return builder
         }

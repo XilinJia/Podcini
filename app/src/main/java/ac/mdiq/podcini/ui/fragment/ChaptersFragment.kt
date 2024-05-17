@@ -11,7 +11,8 @@ import ac.mdiq.podcini.ui.adapter.ChaptersListAdapter
 import ac.mdiq.podcini.util.ChapterUtils.getCurrentChapterIndex
 import ac.mdiq.podcini.util.ChapterUtils.loadChapters
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
@@ -23,18 +24,15 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import io.reactivex.Maybe
-import io.reactivex.MaybeEmitter
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @UnstableApi
 class ChaptersFragment : AppCompatDialogFragment() {
@@ -46,7 +44,7 @@ class ChaptersFragment : AppCompatDialogFragment() {
     private lateinit var adapter: ChaptersListAdapter
 
     private var controller: PlaybackController? = null
-    private var disposable: Disposable? = null
+//    private var disposable: Disposable? = null
     private var focusedChapter = -1
     private var media: Playable? = null
     
@@ -100,10 +98,14 @@ class ChaptersFragment : AppCompatDialogFragment() {
             }
         }
         controller?.init()
-        EventBus.getDefault().register(this)
-        loadMediaInfo(false)
 
         return binding.root
+    }
+
+    override fun onStart() {
+        super.onStart()
+        procFlowEvents()
+        loadMediaInfo(false)
     }
 
     override fun onDestroyView() {
@@ -111,16 +113,26 @@ class ChaptersFragment : AppCompatDialogFragment() {
         _binding = null
         controller?.release()
         controller = null
-        EventBus.getDefault().unregister(this)
+        
     }
 
-    override fun onStop() {
-        super.onStop()
-        disposable?.dispose()
+//    override fun onStop() {
+//        super.onStop()
+////        disposable?.dispose()
+//    }
+
+    private fun procFlowEvents() {
+        lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.PlaybackPositionEvent -> onEventMainThread(event)
+                    else -> {}
+                }
+            }
+        }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: PlaybackPositionEvent) {
+    fun onEventMainThread(event: FlowEvent.PlaybackPositionEvent) {
         updateChapterSelection(getCurrentChapter(media), false)
         adapter.notifyTimeChanged(event.position.toLong())
     }
@@ -132,19 +144,31 @@ class ChaptersFragment : AppCompatDialogFragment() {
     }
 
     private fun loadMediaInfo(forceRefresh: Boolean) {
-        disposable?.dispose()
+//        disposable?.dispose()
 
-        disposable = Maybe.create { emitter: MaybeEmitter<Any> ->
-            val media = controller!!.getMedia()
-            if (media != null) {
-                loadChapters(media, requireContext(), forceRefresh)
-                emitter.onSuccess(media)
-            } else emitter.onComplete()
+//        disposable = Maybe.create { emitter: MaybeEmitter<Any> ->
+//            val media = controller!!.getMedia()
+//            if (media != null) {
+//                loadChapters(media, requireContext(), forceRefresh)
+//                emitter.onSuccess(media)
+//            } else emitter.onComplete()
+//        }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe({ media: Any -> onMediaChanged(media as Playable) },
+//                { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
+
+        lifecycleScope.launch {
+            val media = withContext(Dispatchers.IO) {
+                val media_ = controller!!.getMedia()
+                if (media_ != null) loadChapters(media_, requireContext(), forceRefresh)
+                media_
+            }
+            onMediaChanged(media as Playable)
+        }.invokeOnCompletion { throwable ->
+            if (throwable!= null) Logd(TAG, Log.getStackTraceString(throwable))
         }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ media: Any -> onMediaChanged(media as Playable) },
-                { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
+
     }
 
     private fun onMediaChanged(media: Playable) {

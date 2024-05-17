@@ -7,11 +7,11 @@ import ac.mdiq.podcini.storage.DBTasks
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.playback.StartPlayEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.Context
 import android.widget.Toast
 import androidx.media3.common.util.UnstableApi
-import org.greenrobot.eventbus.EventBus
 
 class PlayActionButton(item: FeedItem) : ItemActionButton(item) {
     override fun getLabel(): Int {
@@ -35,7 +35,7 @@ class PlayActionButton(item: FeedItem) : ItemActionButton(item) {
         PlaybackServiceStarter(context, media)
             .callEvenIfRunning(true)
             .start()
-        EventBus.getDefault().post(StartPlayEvent(item))
+        EventFlow.postEvent(FlowEvent.StartPlayEvent(item))
 
         if (media.getMediaType() == MediaType.VIDEO) context.startActivity(getPlayerActivityIntent(context, MediaType.VIDEO))
     }

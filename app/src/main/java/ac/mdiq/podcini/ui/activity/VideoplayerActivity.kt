@@ -20,10 +20,8 @@ import ac.mdiq.podcini.util.FeedItemUtil.getLinkWithFallback
 import ac.mdiq.podcini.util.IntentUtils.openInBrowser
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.ShareUtils.hasLinkToShare
-import ac.mdiq.podcini.util.event.MessageEvent
-import ac.mdiq.podcini.util.event.PlayerErrorEvent
-import ac.mdiq.podcini.util.event.playback.PlaybackServiceEvent
-import ac.mdiq.podcini.util.event.playback.SleepTimerUpdatedEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -36,11 +34,11 @@ import android.util.Log
 import android.view.*
 import android.view.MenuItem.SHOW_AS_ACTION_NEVER
 import android.widget.EditText
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 /**
  * Activity for playing video files.
@@ -137,7 +135,7 @@ class VideoplayerActivity : CastEnabledActivity() {
 
     @UnstableApi
     override fun onStop() {
-        EventBus.getDefault().unregister(this)
+        
         super.onStop()
     }
 
@@ -148,7 +146,7 @@ class VideoplayerActivity : CastEnabledActivity() {
     @UnstableApi
     override fun onStart() {
         super.onStart()
-        EventBus.getDefault().register(this)
+        procFlowEvents()
     }
 
     override fun onTrimMemory(level: Int) {
@@ -168,24 +166,21 @@ class VideoplayerActivity : CastEnabledActivity() {
         startActivity(newIntent)
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    @Suppress("unused")
-    fun sleepTimerUpdate(event: SleepTimerUpdatedEvent) {
-        if (event.isCancelled || event.wasJustEnabled()) supportInvalidateOptionsMenu()
+    private fun procFlowEvents() {
+        lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.SleepTimerUpdatedEvent -> if (event.isCancelled || event.wasJustEnabled()) supportInvalidateOptionsMenu()
+                    is FlowEvent.PlaybackServiceEvent -> if (event.action == FlowEvent.PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN) finish()
+                    is FlowEvent.PlayerErrorEvent -> MediaPlayerErrorDialog.show(this@VideoplayerActivity, event)
+                    is FlowEvent.MessageEvent -> onEventMainThread(event)
+                    else -> {}
+                }
+            }
+        }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onPlaybackServiceChanged(event: PlaybackServiceEvent) {
-        if (event.action == PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN) finish()
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onMediaPlayerError(event: PlayerErrorEvent) {
-        MediaPlayerErrorDialog.show(this, event)
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: MessageEvent) {
+    fun onEventMainThread(event: FlowEvent.MessageEvent) {
         Logd(TAG, "onEvent($event)")
         val errorDialog = MaterialAlertDialogBuilder(this)
         errorDialog.setMessage(event.message)

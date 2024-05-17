@@ -2,6 +2,7 @@ package ac.mdiq.podcini.preferences.fragments
 
 import ac.mdiq.podcini.PodciniApp.Companion.forceRestart
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.storage.DBWriter
 import ac.mdiq.podcini.storage.DatabaseTransporter
 import ac.mdiq.podcini.storage.PreferencesTransporter
 import ac.mdiq.podcini.storage.asynctask.DocumentFileExportWorker
@@ -12,6 +13,8 @@ import ac.mdiq.podcini.storage.export.html.HtmlWriter
 import ac.mdiq.podcini.storage.export.opml.OpmlWriter
 import ac.mdiq.podcini.ui.activity.OpmlImportActivity
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
+import ac.mdiq.podcini.ui.dialog.RemoveFeedDialog
+import ac.mdiq.podcini.util.Logd
 import android.app.Activity.RESULT_OK
 import android.app.ProgressDialog
 import android.content.ActivityNotFoundException
@@ -29,6 +32,7 @@ import androidx.annotation.StringRes
 import androidx.core.app.ShareCompat.IntentBuilder
 import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -37,6 +41,10 @@ import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -245,38 +253,80 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         if (result.resultCode != RESULT_OK || result.data == null) return
         val uri = result.data!!.data
         progressDialog!!.show()
-        disposable = Completable.fromAction { DatabaseTransporter.importBackup(uri, requireContext()) }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                showDatabaseImportSuccessDialog()
-                progressDialog!!.dismiss()
-            }, { error: Throwable -> this.showExportErrorDialog(error) })
+//        disposable = Completable.fromAction { DatabaseTransporter.importBackup(uri, requireContext()) }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe({
+//                showDatabaseImportSuccessDialog()
+//                progressDialog!!.dismiss()
+//            }, { error: Throwable -> this.showExportErrorDialog(error) })
+
+        lifecycleScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    DatabaseTransporter.importBackup(uri, requireContext())
+                }
+                withContext(Dispatchers.Main) {
+                    showDatabaseImportSuccessDialog()
+                    progressDialog!!.dismiss()
+                }
+            } catch (e: Throwable) {
+                showExportErrorDialog(e)
+            }
+        }
     }
 
     private fun restorePreferencesResult(result: ActivityResult) {
         if (result.resultCode != RESULT_OK || result.data?.data == null) return
         val uri = result.data!!.data!!
         progressDialog!!.show()
-        disposable = Completable.fromAction { PreferencesTransporter.importBackup(uri, requireContext()) }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                showDatabaseImportSuccessDialog()
-                progressDialog!!.dismiss()
-            }, { error: Throwable -> this.showExportErrorDialog(error) })
+//        disposable = Completable.fromAction { PreferencesTransporter.importBackup(uri, requireContext()) }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe({
+//                showDatabaseImportSuccessDialog()
+//                progressDialog!!.dismiss()
+//            }, { error: Throwable -> this.showExportErrorDialog(error) })
+
+        lifecycleScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    PreferencesTransporter.importBackup(uri, requireContext())
+                }
+                withContext(Dispatchers.Main) {
+                    showDatabaseImportSuccessDialog()
+                    progressDialog!!.dismiss()
+                }
+            } catch (e: Throwable) {
+                showExportErrorDialog(e)
+            }
+        }
     }
 
     private fun backupDatabaseResult(uri: Uri?) {
         if (uri == null) return
         progressDialog!!.show()
-        disposable = Completable.fromAction { DatabaseTransporter.exportToDocument(uri, requireContext()) }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                showExportSuccessSnackbar(uri, "application/x-sqlite3")
-                progressDialog!!.dismiss()
-            }, { error: Throwable -> this.showExportErrorDialog(error) })
+//        disposable = Completable.fromAction { DatabaseTransporter.exportToDocument(uri, requireContext()) }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe({
+//                showExportSuccessSnackbar(uri, "application/x-sqlite3")
+//                progressDialog!!.dismiss()
+//            }, { error: Throwable -> this.showExportErrorDialog(error) })
+
+        lifecycleScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    DatabaseTransporter.exportToDocument(uri, requireContext())
+                }
+                withContext(Dispatchers.Main) {
+                    showExportSuccessSnackbar(uri, "application/x-sqlite3")
+                    progressDialog!!.dismiss()
+                }
+            } catch (e: Throwable) {
+                showExportErrorDialog(e)
+            }
+        }
     }
 
     private fun chooseOpmlImportPathResult(uri: Uri?) {

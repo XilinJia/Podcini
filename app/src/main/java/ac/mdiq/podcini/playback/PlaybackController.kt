@@ -13,9 +13,8 @@ import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.playback.PlaybackPositionEvent
-import ac.mdiq.podcini.util.event.playback.PlaybackServiceEvent
-import ac.mdiq.podcini.util.event.playback.SpeedChangedEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.*
 import android.os.Build
 import android.os.IBinder
@@ -23,10 +22,10 @@ import android.util.Log
 import android.util.Pair
 import android.view.SurfaceHolder
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 /**
  * Communicates with the playback service. GUI classes should use this class to
@@ -64,16 +63,22 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
     @Synchronized
     fun init() {
         if (!eventsRegistered) {
-            EventBus.getDefault().register(this)
+            procFlowEvents()
             eventsRegistered = true
         }
         if (PlaybackService.isRunning) initServiceRunning()
         else updatePlayButtonShowsPlay(true)
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onEventMainThread(event: PlaybackServiceEvent) {
-        if (event.action == PlaybackServiceEvent.Action.SERVICE_STARTED) init()
+    private fun procFlowEvents() {
+        activity.lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.PlaybackServiceEvent -> if (event.action == FlowEvent.PlaybackServiceEvent.Action.SERVICE_STARTED) init()
+                    else -> {}
+                }
+            }
+        }
     }
 
     @Synchronized
@@ -118,7 +123,7 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
         released = true
 
         if (eventsRegistered) {
-            EventBus.getDefault().unregister(this)
+            
             eventsRegistered = false
         }
     }
@@ -314,7 +319,8 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
             if (media is FeedMedia) {
                 media!!.setPosition(time)
                 DBWriter.persistFeedItem((media as FeedMedia).item)
-                EventBus.getDefault().post(PlaybackPositionEvent(time, media!!.getDuration()))
+                EventFlow.postEvent(FlowEvent.PlaybackPositionEvent(time, media!!.getDuration()))
+//                EventFlow.postEvent(FlowEvent.PlaybackPositionEvent(time, media!!.getDuration()))
             }
         }
     }
@@ -384,7 +390,7 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
             if (playbackService != null) playbackService!!.setSpeed(speed, codeArray)
             else {
                 UserPreferences.setPlaybackSpeed(speed)
-                EventBus.getDefault().post(SpeedChangedEvent(speed))
+                EventFlow.postEvent(FlowEvent.SpeedChangedEvent(speed))
             }
         }
 

@@ -6,7 +6,8 @@ import ac.mdiq.podcini.preferences.UsageStatistics.doNotAskAgain
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.ui.dialog.*
-import ac.mdiq.podcini.util.event.UnreadItemsUpdateEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.app.Activity
 import android.os.Build
 import android.os.Bundle
@@ -16,7 +17,6 @@ import androidx.media3.common.util.UnstableApi
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import org.greenrobot.eventbus.EventBus
 
 class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -61,7 +61,7 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
         }
         findPreference<Preference>(PREF_PLAYBACK_PREFER_STREAMING)!!.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, _: Any? ->
             // Update all visible lists to reflect new streaming action button
-            EventBus.getDefault().post(UnreadItemsUpdateEvent())
+            EventFlow.postEvent(FlowEvent.UnreadItemsUpdateEvent())
             // User consciously decided whether to prefer the streaming button, disable suggestion to change that
             doNotAskAgain(UsageStatistics.ACTION_STREAM)
             true

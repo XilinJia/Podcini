@@ -17,9 +17,8 @@ import ac.mdiq.podcini.ui.dialog.EpisodeFilterDialog
 import ac.mdiq.podcini.ui.dialog.FeedPreferenceSkipDialog
 import ac.mdiq.podcini.ui.dialog.TagSettingsDialog
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.settings.SkipIntroEndingChangedEvent
-import ac.mdiq.podcini.util.event.settings.SpeedPresetChangedEvent
-import ac.mdiq.podcini.util.event.settings.VolumeAdaptionChangedEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
@@ -34,6 +33,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.OptIn
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import androidx.preference.ListPreference
 import androidx.preference.Preference
@@ -42,7 +42,6 @@ import androidx.preference.SwitchPreferenceCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.*
-import org.greenrobot.eventbus.EventBus
 import java.util.*
 import java.util.concurrent.ExecutionException
 
@@ -50,7 +49,7 @@ class FeedSettingsFragment : Fragment() {
     private var _binding: FeedsettingsBinding? = null
     private val binding get() = _binding!!
 
-    val scope = CoroutineScope(Dispatchers.Main)
+//    val scope = CoroutineScope(Dispatchers.Main)
 //    private var disposable: Disposable? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -77,7 +76,7 @@ class FeedSettingsFragment : Fragment() {
 //                { error: Throwable? -> Logd(TAG, Log.getStackTraceString(error)) },
 //                {})
 
-        scope.launch {
+        lifecycleScope.launch {
             val feed = withContext(Dispatchers.IO) {
                 DBReader.getFeed(feedId)
             }
@@ -98,13 +97,13 @@ class FeedSettingsFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        scope.cancel()
+//        scope.cancel()
 //        disposable?.dispose()
     }
 
     class FeedSettingsPreferenceFragment : PreferenceFragmentCompat() {
         private var feed: Feed? = null
-        val scope = CoroutineScope(Dispatchers.Main)
+//        val scope = CoroutineScope(Dispatchers.Main)
 //        private var disposable: Disposable? = null
         private var feedPreferences: FeedPreferences? = null
 
@@ -173,7 +172,7 @@ class FeedSettingsFragment : Fragment() {
 //                    findPreference<Preference>(PREF_SCREEN)!!.isVisible = true
 //                }, { error: Throwable? -> Logd(TAG, Log.getStackTraceString(error)) }, {})
 
-            scope.launch {
+            lifecycleScope.launch {
                 feed = withContext(Dispatchers.IO) {
                     DBReader.getFeed(feedId)
                 }
@@ -212,7 +211,7 @@ class FeedSettingsFragment : Fragment() {
 
         override fun onDestroy() {
             super.onDestroy()
-            scope.cancel()
+//            scope.cancel()
 //            disposable?.dispose()
         }
 
@@ -224,7 +223,7 @@ class FeedSettingsFragment : Fragment() {
                         feedPreferences!!.feedSkipIntro = skipIntro
                         feedPreferences!!.feedSkipEnding = skipEnding
                         DBWriter.persistFeedPreferences(feedPreferences!!)
-                        EventBus.getDefault().post(SkipIntroEndingChangedEvent(feedPreferences!!.feedSkipIntro, feedPreferences!!.feedSkipEnding, feed!!.id))
+                        EventFlow.postEvent(FlowEvent.SkipIntroEndingChangedEvent(feedPreferences!!.feedSkipIntro, feedPreferences!!.feedSkipEnding, feed!!.id))
                     }
                 }.show()
                 false
@@ -256,7 +255,7 @@ class FeedSettingsFragment : Fragment() {
                         else viewBinding.seekBar.currentSpeed
                         feedPreferences!!.feedPlaybackSpeed = newSpeed
                         if (feedPreferences != null) DBWriter.persistFeedPreferences(feedPreferences!!)
-                        EventBus.getDefault().post(SpeedPresetChangedEvent(feedPreferences!!.feedPlaybackSpeed, feed!!.id))
+                        EventFlow.postEvent(FlowEvent.SpeedPresetChangedEvent(feedPreferences!!.feedPlaybackSpeed, feed!!.id))
                     }
                     .setNegativeButton(R.string.cancel_label, null)
                     .show()
@@ -352,7 +351,7 @@ class FeedSettingsFragment : Fragment() {
                 DBWriter.persistFeedPreferences(feedPreferences!!)
                 updateVolumeAdaptationValue()
                 if (feed != null && feedPreferences!!.volumeAdaptionSetting != null)
-                    EventBus.getDefault().post(VolumeAdaptionChangedEvent(feedPreferences!!.volumeAdaptionSetting!!, feed!!.id))
+                    EventFlow.postEvent(FlowEvent.VolumeAdaptionChangedEvent(feedPreferences!!.volumeAdaptionSetting!!, feed!!.id))
                 false
             }
         }

@@ -44,6 +44,19 @@ object FeedItemPermutors {
             SortOrder.EPISODE_FILENAME_Z_A -> comparator = Comparator { f1: FeedItem?, f2: FeedItem? ->
                 itemLink(f2).compareTo(itemLink(f1))
             }
+            SortOrder.PLAYED_DATE_OLD_NEW -> comparator = Comparator { f1: FeedItem?, f2: FeedItem? ->
+                playDate(f1).compareTo(playDate(f2))
+            }
+            SortOrder.PLAYED_DATE_NEW_OLD -> comparator = Comparator { f1: FeedItem?, f2: FeedItem? ->
+                playDate(f2).compareTo(playDate(f1))
+            }
+            SortOrder.COMPLETED_DATE_OLD_NEW -> comparator = Comparator { f1: FeedItem?, f2: FeedItem? ->
+                completeDate(f1).compareTo(completeDate(f2))
+            }
+            SortOrder.COMPLETED_DATE_NEW_OLD -> comparator = Comparator { f1: FeedItem?, f2: FeedItem? ->
+                completeDate(f2).compareTo(completeDate(f1))
+            }
+
             SortOrder.FEED_TITLE_A_Z -> comparator = Comparator { f1: FeedItem?, f2: FeedItem? ->
                 feedTitle(f1).compareTo(feedTitle(f2))
             }
@@ -77,28 +90,35 @@ object FeedItemPermutors {
 
     // Null-safe accessors
     private fun pubDate(item: FeedItem?): Date {
-        return if (item?.pubDate != null) item.pubDate!! else Date(0)
+        return item?.pubDate ?: Date(0)
+    }
+
+    private fun playDate(item: FeedItem?): Long {
+        return item?.media?.getLastPlayedTime() ?: 0
+    }
+
+    private fun completeDate(item: FeedItem?): Date {
+        return item?.media?.getPlaybackCompletionDate() ?: Date(0)
     }
 
     private fun itemTitle(item: FeedItem?): String {
-        return if (item?.title != null) item.title!!.lowercase(Locale.getDefault()) else ""
+        return (item?.title ?: "").lowercase(Locale.getDefault())
     }
 
     private fun duration(item: FeedItem?): Int {
-        return if (item?.media != null) item.media!!.getDuration() else 0
+        return item?.media?.getDuration() ?: 0
     }
 
     private fun size(item: FeedItem?): Long {
-        return if (item?.media != null) item.media!!.size else 0
+        return item?.media?.size ?: 0
     }
 
     private fun itemLink(item: FeedItem?): String {
-        return if (item?.link != null) item.link!!.lowercase(Locale.getDefault()) else ""
+        return (item?.link ?: "").lowercase(Locale.getDefault())
     }
 
     private fun feedTitle(item: FeedItem?): String {
-        Logd("permutors", "feedTitle ${item?.feed?.title}")
-        return if (item?.feed?.title != null) item.feed!!.title!!.lowercase(Locale.getDefault()) else ""
+        return (item?.feed?.title ?: "").lowercase(Locale.getDefault())
     }
 
     /**

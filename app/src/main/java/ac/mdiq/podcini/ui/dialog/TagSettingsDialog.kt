@@ -7,7 +7,8 @@ import ac.mdiq.podcini.storage.DBWriter
 import ac.mdiq.podcini.storage.model.feed.FeedPreferences
 import ac.mdiq.podcini.ui.adapter.SimpleChipAdapter
 import ac.mdiq.podcini.ui.view.ItemOffsetDecoration
-import ac.mdiq.podcini.util.event.FeedTagsChangedEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
@@ -23,7 +24,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.greenrobot.eventbus.EventBus
 import java.io.Serializable
 
 class TagSettingsDialog : DialogFragment() {
@@ -81,7 +81,7 @@ class TagSettingsDialog : DialogFragment() {
             addTag(binding.newTagEditText.text.toString().trim { it <= ' ' })
             updatePreferencesTags(feedPreferencesList, commonTags)
             DBReader.buildTags()
-            EventBus.getDefault().post(FeedTagsChangedEvent())
+            EventFlow.postEvent(FlowEvent.FeedTagsChangedEvent())
         }
         dialog.setNegativeButton(R.string.cancel_label, null)
         return dialog.create()

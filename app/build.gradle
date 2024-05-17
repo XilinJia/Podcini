@@ -1,7 +1,7 @@
 plugins {
     id('com.android.application')
     id 'kotlin-android'
-    id 'kotlin-kapt'
+//    id 'kotlin-kapt'
     id 'com.google.devtools.ksp'
     id('com.github.triplet.play') version '3.8.3' apply false
 }
@@ -159,8 +159,8 @@ android {
         // Version code schema (not used):
         // "1.2.3-beta4"    -> 1020304
         // "1.2.3"          -> 1020395
-        versionCode 3020144
-        versionName "5.2.1"
+        versionCode 3020145
+        versionName "5.3.0"
 
         def commit = ""
         try {
@@ -232,9 +232,7 @@ dependencies {
         }
     }
 
-//    doesn't work with ksp??
-    kapt "androidx.annotation:annotation:1.8.0"
-
+    implementation "androidx.annotation:annotation:1.8.0"
     implementation "androidx.appcompat:appcompat:1.6.1"
     implementation 'androidx.coordinatorlayout:coordinatorlayout:1.2.0'
     implementation "androidx.fragment:fragment-ktx:1.6.2"
@@ -266,8 +264,8 @@ dependencies {
     implementation "com.squareup.okhttp3:okhttp-urlconnection:4.12.0"
     implementation 'com.squareup.okio:okio:3.9.0'
 
-    implementation "org.greenrobot:eventbus:3.3.1"
-    kapt "org.greenrobot:eventbus-annotation-processor:3.3.1"
+//    implementation "org.greenrobot:eventbus:3.3.1"
+//    kapt "org.greenrobot:eventbus-annotation-processor:3.3.1"
 
     implementation "io.reactivex.rxjava2:rxandroid:2.1.1"
     implementation "io.reactivex.rxjava2:rxjava:2.2.21"
@@ -316,11 +314,11 @@ dependencies {
     playApi 'com.google.android.gms:play-services-cast-framework:21.4.0'
 }
 
-kapt {
-    arguments {
-        arg('eventBusIndex', 'ac.mdiq.podcini.ApEventBusIndex')
-    }
-}
+//kapt {
+//    arguments {
+//        arg('eventBusIndex', 'ac.mdiq.podcini.ApEventBusIndex')
+//    }
+//}
 
 if (project.hasProperty("podciniPlayPublisherCredentials")) {
     apply plugin: 'com.github.triplet.play'

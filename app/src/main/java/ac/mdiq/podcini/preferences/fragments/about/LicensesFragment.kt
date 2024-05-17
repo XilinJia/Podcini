@@ -1,35 +1,33 @@
 package ac.mdiq.podcini.preferences.fragments.about
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.ui.activity.PreferenceActivity
+import ac.mdiq.podcini.ui.adapter.SimpleIconListAdapter
+import ac.mdiq.podcini.util.IntentUtils.openInBrowser
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.View
 import android.widget.ListView
 import android.widget.Toast
 import androidx.fragment.app.ListFragment
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.activity.PreferenceActivity
-import ac.mdiq.podcini.ui.adapter.SimpleIconListAdapter
-import ac.mdiq.podcini.util.IntentUtils.openInBrowser
-import io.reactivex.Single
-import io.reactivex.SingleEmitter
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
 import javax.xml.parsers.DocumentBuilderFactory
 
 class LicensesFragment : ListFragment() {
-    private var licensesLoader: Disposable? = null
     private val licenses = ArrayList<LicenseItem>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         listView.divider = null
 
-        licensesLoader = Single.create { emitter: SingleEmitter<ArrayList<LicenseItem>?> ->
+        lifecycleScope.launch(Dispatchers.IO) {
             licenses.clear()
             val stream = requireContext().assets.open("licenses.xml")
             val docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
@@ -40,14 +38,14 @@ class LicensesFragment : ListFragment() {
                     String.format("By %s, %s license", lib.getNamedItem("author").textContent, lib.getNamedItem("license").textContent),
                     "", lib.getNamedItem("website").textContent, lib.getNamedItem("licenseText").textContent))
             }
-            emitter.onSuccess(licenses)
+            withContext(Dispatchers.Main) {
+                listAdapter = SimpleIconListAdapter(requireContext(), licenses)
+            }
+        }.invokeOnCompletion { throwable ->
+            if (throwable!= null) {
+                Toast.makeText(context, throwable.message, Toast.LENGTH_LONG).show()
+            }
         }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { developers: ArrayList<LicenseItem>? -> if (developers != null) listAdapter = SimpleIconListAdapter(requireContext(), developers) },
-                { error: Throwable -> Toast.makeText(context, error.message, Toast.LENGTH_LONG).show() }
-            )
     }
 
     private class LicenseItem(title: String, subtitle: String, imageUrl: String, val licenseUrl: String, val licenseTextFile: String)
@@ -72,8 +70,8 @@ class LicensesFragment : ListFragment() {
         try {
             val reader = BufferedReader(InputStreamReader(requireContext().assets.open(licenseTextFile), "UTF-8"))
             val licenseText = StringBuilder()
-            var line: String?
-            while ((reader.readLine().also { line = it }) != null) {
+            var line = ""
+            while ((reader.readLine()?.also { line = it }) != null) {
                 licenseText.append(line).append("\n")
             }
 
@@ -83,11 +81,6 @@ class LicensesFragment : ListFragment() {
         } catch (e: IOException) {
             e.printStackTrace()
         }
-    }
-
-    override fun onStop() {
-        super.onStop()
-        licensesLoader?.dispose()
     }
 
     override fun onStart() {

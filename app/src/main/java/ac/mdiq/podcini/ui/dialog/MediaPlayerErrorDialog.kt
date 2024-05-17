@@ -9,13 +9,13 @@ import android.text.style.ForegroundColorSpan
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.util.event.PlayerErrorEvent
+import ac.mdiq.podcini.util.event.FlowEvent
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 
 @OptIn(UnstableApi::class)
 object MediaPlayerErrorDialog {
-    fun show(activity: Activity, event: PlayerErrorEvent) {
+    fun show(activity: Activity, event: FlowEvent.PlayerErrorEvent) {
         val errorDialog = MaterialAlertDialogBuilder(activity)
         errorDialog.setTitle(R.string.error_label)
 

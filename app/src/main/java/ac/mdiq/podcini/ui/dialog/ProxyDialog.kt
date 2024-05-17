@@ -1,5 +1,13 @@
 package ac.mdiq.podcini.ui.dialog
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.databinding.ProxySettingsBinding
+import ac.mdiq.podcini.net.download.service.PodciniHttpClient.newBuilder
+import ac.mdiq.podcini.net.download.service.PodciniHttpClient.reinit
+import ac.mdiq.podcini.net.download.service.PodciniHttpClient.setProxyConfig
+import ac.mdiq.podcini.preferences.UserPreferences.proxyConfig
+import ac.mdiq.podcini.storage.model.download.ProxyConfig
+import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import android.app.Dialog
 import android.content.Context
 import android.os.Build
@@ -10,23 +18,17 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.ProxySettingsBinding
-import ac.mdiq.podcini.net.download.service.PodciniHttpClient.newBuilder
-import ac.mdiq.podcini.net.download.service.PodciniHttpClient.reinit
-import ac.mdiq.podcini.net.download.service.PodciniHttpClient.setProxyConfig
-import ac.mdiq.podcini.storage.model.download.ProxyConfig
-import ac.mdiq.podcini.preferences.UserPreferences.proxyConfig
-import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
-import io.reactivex.Completable
-import io.reactivex.CompletableEmitter
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
-import okhttp3.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.Credentials.basic
 import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.Request.Builder
+import okhttp3.Response
+import okhttp3.Route
 import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.Proxy
@@ -43,7 +45,7 @@ class ProxyDialog(private val context: Context) {
     private lateinit var txtvMessage: TextView
 
     private var testSuccessful = false
-    private var disposable: Disposable? = null
+//    private var disposable: Disposable? = null
 
     fun show(): Dialog {
         val content = View.inflate(context, R.layout.proxy_settings, null)
@@ -215,7 +217,7 @@ class ProxyDialog(private val context: Context) {
     }
 
     private fun test() {
-        disposable?.dispose()
+//        disposable?.dispose()
         if (!checkValidity()) {
             setTestRequired(true)
             return
@@ -227,58 +229,108 @@ class ProxyDialog(private val context: Context) {
         txtvMessage.setTextColor(textColorPrimary)
         txtvMessage.text = "{fa-circle-o-notch spin} $checking"
         txtvMessage.visibility = View.VISIBLE
-        disposable = Completable.create { emitter: CompletableEmitter ->
-            val type = spType.selectedItem as String
-            val host = etHost.text.toString()
-            val port = etPort.text.toString()
-            val username = etUsername.text.toString()
-            val password = etPassword.text.toString()
-            var portValue = 8080
-            if (port.isNotEmpty()) portValue = port.toInt()
 
-            val address: SocketAddress = InetSocketAddress.createUnresolved(host, portValue)
-            val proxyType = Proxy.Type.valueOf(type.uppercase())
-            val builder: OkHttpClient.Builder = newBuilder()
-                .connectTimeout(10, TimeUnit.SECONDS)
-                .proxy(Proxy(proxyType, address))
-            if (username.isNotEmpty()) {
-                builder.proxyAuthenticator { _: Route?, response: Response ->
-                    val credentials = basic(username, password)
-                    response.request.newBuilder()
-                        .header("Proxy-Authorization", credentials)
-                        .build()
-                }
-            }
-            val client: OkHttpClient = builder.build()
-            val request: Request = Builder().url("https://www.example.com").head().build()
+//        disposable = Completable.create { emitter: CompletableEmitter ->
+//            val type = spType.selectedItem as String
+//            val host = etHost.text.toString()
+//            val port = etPort.text.toString()
+//            val username = etUsername.text.toString()
+//            val password = etPassword.text.toString()
+//            var portValue = 8080
+//            if (port.isNotEmpty()) portValue = port.toInt()
+//
+//            val address: SocketAddress = InetSocketAddress.createUnresolved(host, portValue)
+//            val proxyType = Proxy.Type.valueOf(type.uppercase())
+//            val builder: OkHttpClient.Builder = newBuilder()
+//                .connectTimeout(10, TimeUnit.SECONDS)
+//                .proxy(Proxy(proxyType, address))
+//            if (username.isNotEmpty()) {
+//                builder.proxyAuthenticator { _: Route?, response: Response ->
+//                    val credentials = basic(username, password)
+//                    response.request.newBuilder()
+//                        .header("Proxy-Authorization", credentials)
+//                        .build()
+//                }
+//            }
+//            val client: OkHttpClient = builder.build()
+//            val request: Request = Builder().url("https://www.example.com").head().build()
+//            try {
+//                client.newCall(request).execute().use { response ->
+//                    if (response.isSuccessful) {
+//                        emitter.onComplete()
+//                    } else {
+//                        emitter.onError(IOException(response.message))
+//                    }
+//                }
+//            } catch (e: IOException) {
+//                emitter.onError(e)
+//            }
+//        }
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe(
+//                {
+//                    txtvMessage.setTextColor(getColorFromAttr(context, R.attr.icon_green))
+//                    val message = String.format("%s %s", "{fa-check}", context.getString(R.string.proxy_test_successful))
+//                    txtvMessage.text = message
+//                    setTestRequired(false)
+//                },
+//                { error: Throwable ->
+//                    error.printStackTrace()
+//                    txtvMessage.setTextColor(getColorFromAttr(context, R.attr.icon_red))
+//                    val message = String.format("%s %s: %s", "{fa-close}", context.getString(R.string.proxy_test_failed), error.message)
+//                    txtvMessage.text = message
+//                    setTestRequired(true)
+//                }
+//            )
+
+        val coroutineScope = CoroutineScope(Dispatchers.Main)
+        coroutineScope.launch(Dispatchers.IO) {
             try {
-                client.newCall(request).execute().use { response ->
-                    if (response.isSuccessful) {
-                        emitter.onComplete()
-                    } else {
-                        emitter.onError(IOException(response.message))
+                val type = spType.selectedItem as String
+                val host = etHost.text.toString()
+                val port = etPort.text.toString()
+                val username = etUsername.text.toString()
+                val password = etPassword.text.toString()
+                var portValue = 8080
+                if (port.isNotEmpty()) portValue = port.toInt()
+
+                val address: SocketAddress = InetSocketAddress.createUnresolved(host, portValue)
+                val proxyType = Proxy.Type.valueOf(type.uppercase())
+                val builder: OkHttpClient.Builder = newBuilder()
+                    .connectTimeout(10, TimeUnit.SECONDS)
+                    .proxy(Proxy(proxyType, address))
+                if (username.isNotEmpty()) {
+                    builder.proxyAuthenticator { _: Route?, response: Response ->
+                        val credentials = basic(username, password)
+                        response.request.newBuilder()
+                            .header("Proxy-Authorization", credentials)
+                            .build()
                     }
                 }
-            } catch (e: IOException) {
-                emitter.onError(e)
-            }
-        }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                {
+                val client: OkHttpClient = builder.build()
+                val request: Request = Builder().url("https://www.example.com").head().build()
+                try {
+                    client.newCall(request).execute().use { response ->
+                        if (!response.isSuccessful) throw IOException(response.message)
+                    }
+                } catch (e: IOException) {
+                    throw e
+                }
+                withContext(Dispatchers.Main) {
                     txtvMessage.setTextColor(getColorFromAttr(context, R.attr.icon_green))
                     val message = String.format("%s %s", "{fa-check}", context.getString(R.string.proxy_test_successful))
                     txtvMessage.text = message
                     setTestRequired(false)
-                },
-                { error: Throwable ->
-                    error.printStackTrace()
-                    txtvMessage.setTextColor(getColorFromAttr(context, R.attr.icon_red))
-                    val message = String.format("%s %s: %s", "{fa-close}", context.getString(R.string.proxy_test_failed), error.message)
-                    txtvMessage.text = message
-                    setTestRequired(true)
                 }
-            )
+            } catch (e: Throwable) {
+                e.printStackTrace()
+                txtvMessage.setTextColor(getColorFromAttr(context, R.attr.icon_red))
+                val message = String.format("%s %s: %s", "{fa-close}", context.getString(R.string.proxy_test_failed), e.message)
+                txtvMessage.text = message
+                setTestRequired(true)
+            }
+        }
+
     }
 }

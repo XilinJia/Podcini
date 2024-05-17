@@ -11,7 +11,8 @@ import ac.mdiq.podcini.preferences.UserPreferences.playbackSpeedArray
 import ac.mdiq.podcini.ui.view.ItemOffsetDecoration
 import ac.mdiq.podcini.ui.view.PlaybackSpeedSeekBar
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.playback.SpeedChangedEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -21,15 +22,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CompoundButton
 import androidx.annotation.OptIn
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.chip.Chip
 import com.google.android.material.snackbar.Snackbar
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import java.text.DecimalFormatSymbols
 import java.util.*
 
@@ -57,7 +58,7 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
         super.onStart()
         controller = object : PlaybackController(requireActivity()) {
             override fun loadMediaInfo() {
-                if (controller != null) updateSpeed(SpeedChangedEvent(controller!!.currentPlaybackSpeedMultiplier))
+                if (controller != null) updateSpeed(FlowEvent.SpeedChangedEvent(controller!!.currentPlaybackSpeedMultiplier))
             }
 
             override fun onPlaybackServiceConnected() {
@@ -72,19 +73,29 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
         }
         controller?.init()
 
-        EventBus.getDefault().register(this)
-        if (controller != null) updateSpeed(SpeedChangedEvent(controller!!.currentPlaybackSpeedMultiplier))
+        procFlowEvents()
+        if (controller != null) updateSpeed(FlowEvent.SpeedChangedEvent(controller!!.currentPlaybackSpeedMultiplier))
     }
 
     @UnstableApi override fun onStop() {
         super.onStop()
         controller?.release()
         controller = null
-        EventBus.getDefault().unregister(this)
+        
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun updateSpeed(event: SpeedChangedEvent) {
+    private fun procFlowEvents() {
+        lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                when (event) {
+                    is FlowEvent.SpeedChangedEvent -> updateSpeed(event)
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    fun updateSpeed(event: FlowEvent.SpeedChangedEvent) {
         speedSeekBar.updateSpeed(event.newSpeed)
         addCurrentSpeedChip.text = String.format(Locale.getDefault(), "%1$.2f", event.newSpeed)
     }

@@ -14,9 +14,8 @@ import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.NetworkUtils.wasDownloadBlocked
 import ac.mdiq.podcini.util.config.ClientConfig
-import ac.mdiq.podcini.util.event.PlayerErrorEvent
-import ac.mdiq.podcini.util.event.playback.BufferUpdateEvent
-import ac.mdiq.podcini.util.event.playback.SpeedChangedEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.app.UiModeManager
 import android.content.Context
 import android.content.res.Configuration
@@ -49,7 +48,6 @@ import androidx.media3.extractor.mp3.Mp3Extractor
 import androidx.media3.ui.DefaultTrackNameProvider
 import androidx.media3.ui.TrackNameProvider
 import kotlinx.coroutines.*
-import org.greenrobot.eventbus.EventBus
 import java.io.File
 import java.io.IOException
 import java.lang.Runnable
@@ -86,6 +84,8 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
 //    private val bufferingUpdateDisposable: Disposable
     private var mediaSource: MediaSource? = null
     private var playbackParameters: PlaybackParameters
+
+    private var bufferedPercentagePrev = 0
 
     private val formats: List<Format>
         get() {
@@ -297,11 +297,11 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
         } catch (e: IOException) {
             e.printStackTrace()
             setPlayerStatus(PlayerStatus.ERROR, null)
-            EventBus.getDefault().postSticky(PlayerErrorEvent(e.localizedMessage ?: ""))
+            EventFlow.postStickyEvent(FlowEvent.PlayerErrorEvent(e.localizedMessage ?: ""))
         } catch (e: IllegalStateException) {
             e.printStackTrace()
             setPlayerStatus(PlayerStatus.ERROR, null)
-            EventBus.getDefault().postSticky(PlayerErrorEvent(e.localizedMessage ?: ""))
+            EventFlow.postStickyEvent(FlowEvent.PlayerErrorEvent(e.localizedMessage ?: ""))
         }
     }
 
@@ -509,7 +509,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
      * This method is executed on an internal executor service.
      */
     override fun setPlaybackParams(speed: Float, skipSilence: Boolean) {
-        EventBus.getDefault().post(SpeedChangedEvent(speed))
+        EventFlow.postEvent(FlowEvent.SpeedChangedEvent(speed))
         Logd(TAG, "setPlaybackParams speed=$speed pitch=${playbackParameters.pitch} skipSilence=$skipSilence")
         playbackParameters = PlaybackParameters(speed, playbackParameters.pitch)
         exoPlayer!!.skipSilenceEnabled = skipSilence
@@ -679,7 +679,10 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
             while (true) {
                 delay(bufferUpdateInterval)
                 withContext(Dispatchers.Main) {
-                    bufferingUpdateListener?.accept(exoPlayer!!.bufferedPercentage)
+                    if (bufferedPercentagePrev != exoPlayer!!.bufferedPercentage) {
+                        bufferingUpdateListener?.accept(exoPlayer!!.bufferedPercentage)
+                        bufferedPercentagePrev = exoPlayer!!.bufferedPercentage
+                    }
                 }
             }
         }
@@ -754,14 +757,14 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
         audioSeekCompleteListener = Runnable { this.genericSeekCompleteListener() }
         bufferingUpdateListener = Consumer<Int> { percent: Int ->
             when (percent) {
-                BUFFERING_STARTED -> EventBus.getDefault().post(BufferUpdateEvent.started())
-                BUFFERING_ENDED -> EventBus.getDefault().post(BufferUpdateEvent.ended())
-                else -> EventBus.getDefault().post(BufferUpdateEvent.progressUpdate(0.01f * percent))
+                BUFFERING_STARTED -> EventFlow.postEvent(FlowEvent.BufferUpdateEvent.started())
+                BUFFERING_ENDED -> EventFlow.postEvent(FlowEvent.BufferUpdateEvent.ended())
+                else -> EventFlow.postEvent(FlowEvent.BufferUpdateEvent.progressUpdate(0.01f * percent))
             }
         }
         audioErrorListener = Consumer<String> { message: String ->
             Log.e(TAG, "PlayerErrorEvent: $message")
-            EventBus.getDefault().postSticky(PlayerErrorEvent(message))
+            EventFlow.postStickyEvent(FlowEvent.PlayerErrorEvent(message))
         }
     }
 

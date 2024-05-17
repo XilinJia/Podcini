@@ -23,6 +23,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import coil.imageLoader
 import coil.request.ErrorResult
@@ -41,7 +42,7 @@ class SelectSubscriptionActivity : AppCompatActivity() {
     @Volatile
     private var listItems: List<Feed> = listOf()
 
-    val scope = CoroutineScope(Dispatchers.Main)
+//    val scope = CoroutineScope(Dispatchers.Main)
 //    private var disposable: Disposable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -138,7 +139,7 @@ class SelectSubscriptionActivity : AppCompatActivity() {
 //                    binding.list.adapter = adapter
 //                }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
 
-        scope.launch {
+        lifecycleScope.launch {
             try {
                 val result = withContext(Dispatchers.IO) {
                     val data: NavDrawerData = DBReader.getNavDrawerData(UserPreferences.subscriptionsFilter)

@@ -8,13 +8,13 @@ import ac.mdiq.podcini.storage.model.feed.FeedPreferences
 import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.PlayerStatusEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.util.Log
 import androidx.preference.PreferenceManager
-import org.greenrobot.eventbus.EventBus
 
 /**
  * Provides access to preferences set by the playback service. A private
@@ -24,7 +24,7 @@ import org.greenrobot.eventbus.EventBus
 class PlaybackPreferences private constructor() : OnSharedPreferenceChangeListener {
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String?) {
-        if (PREF_CURRENT_PLAYER_STATUS == key) EventBus.getDefault().post(PlayerStatusEvent())
+        if (PREF_CURRENT_PLAYER_STATUS == key) EventFlow.postEvent(FlowEvent.PlayerStatusEvent())
     }
 
     companion object {

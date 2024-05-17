@@ -3,7 +3,6 @@ package ac.mdiq.podcini.ui.actions.actionbutton
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.download.service.DownloadRequestCreator.getMediafilePath
 import ac.mdiq.podcini.net.download.service.DownloadRequestCreator.getMediafilename
-import ac.mdiq.podcini.util.AudioMediaOperation.mergeAudios
 import ac.mdiq.podcini.storage.DBWriter
 import ac.mdiq.podcini.storage.DBWriter.persistFeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedItem
@@ -11,9 +10,11 @@ import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.ui.fragment.FeedItemlistFragment.Companion.tts
 import ac.mdiq.podcini.ui.fragment.FeedItemlistFragment.Companion.ttsReady
 import ac.mdiq.podcini.ui.fragment.FeedItemlistFragment.Companion.ttsWorking
+import ac.mdiq.podcini.util.AudioMediaOperation.mergeAudios
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.NetworkUtils.fetchHtmlSource
-import ac.mdiq.podcini.util.event.FeedItemEvent.Companion.updated
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.speech.tts.TextToSpeech.getMaxSpeechInputLength
@@ -26,7 +27,6 @@ import androidx.core.text.HtmlCompat
 import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.*
 import net.dankito.readability4j.Readability4J
-import org.greenrobot.eventbus.EventBus
 import java.io.File
 import java.util.*
 import kotlin.math.max
@@ -52,7 +52,7 @@ class TTSActionButton(item: FeedItem) : ItemActionButton(item) {
         }
         processing = 0.01f
         item.setBuilding()
-        EventBus.getDefault().post(updated(item))
+        EventFlow.postEvent(FlowEvent.FeedItemEvent.updated(item))
         ioScope.launch {
             if (item.transcript == null) {
                 runBlocking {
@@ -66,12 +66,12 @@ class TTSActionButton(item: FeedItem) : ItemActionButton(item) {
                 }
             } else readerText = HtmlCompat.fromHtml(item.transcript!!, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
             processing = 0.1f
-            EventBus.getDefault().post(updated(item))
+            EventFlow.postEvent(FlowEvent.FeedItemEvent.updated(item))
             if (!readerText.isNullOrEmpty()) {
                 while (!ttsReady) Thread.sleep(100)
 
                 processing = 0.15f
-                EventBus.getDefault().post(updated(item))
+                EventFlow.postEvent(FlowEvent.FeedItemEvent.updated(item))
                 while (ttsWorking) Thread.sleep(100)
                 ttsWorking = true
                 if (item.feed?.language != null) {
@@ -123,10 +123,10 @@ class TTSActionButton(item: FeedItem) : ItemActionButton(item) {
                     i++
                     while (i-j > 0) Thread.sleep(100)
                     processing = 0.15f + 0.7f * startIndex / readerText!!.length
-                    EventBus.getDefault().post(updated(item))
+                    EventFlow.postEvent(FlowEvent.FeedItemEvent.updated(item))
                 }
                 processing = 0.85f
-                EventBus.getDefault().post(updated(item))
+                EventFlow.postEvent(FlowEvent.FeedItemEvent.updated(item))
                 if (status == TextToSpeech.SUCCESS) {
                     mergeAudios(parts.toTypedArray(), mediaFile.absolutePath, null)
 
@@ -157,7 +157,7 @@ class TTSActionButton(item: FeedItem) : ItemActionButton(item) {
 
             item.setPlayed(false)
             processing = 1f
-            EventBus.getDefault().post(updated(item))
+            EventFlow.postEvent(FlowEvent.FeedItemEvent.updated(item))
         }
     }
 

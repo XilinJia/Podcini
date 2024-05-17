@@ -1,5 +1,13 @@
 package ac.mdiq.podcini.ui.actions.swipeactions
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
+import ac.mdiq.podcini.ui.dialog.SwipeActionsDialog
+import ac.mdiq.podcini.ui.fragment.*
+import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
+import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.Context
 import android.graphics.Canvas
 import androidx.core.graphics.ColorUtils
@@ -11,15 +19,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.annimon.stream.Stream
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.dialog.SwipeActionsDialog
-import ac.mdiq.podcini.ui.fragment.*
-import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
-import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
-import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
-import ac.mdiq.podcini.util.event.SwipeActionsChangedEvent
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
-import org.greenrobot.eventbus.EventBus
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
@@ -90,7 +90,7 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
         SwipeActionsDialog(fragment.requireContext(), tag).show(object : SwipeActionsDialog.Callback {
             override fun onCall() {
                 this@SwipeActions.reloadPreference()
-                EventBus.getDefault().post(SwipeActionsChangedEvent())
+                EventFlow.postEvent(FlowEvent.SwipeActionsChangedEvent())
             }
         })
     }

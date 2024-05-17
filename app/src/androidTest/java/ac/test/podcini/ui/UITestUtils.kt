@@ -1,21 +1,20 @@
 package de.test.podcini.ui
 
-import android.content.Context
-import android.util.Log
-import androidx.test.platform.app.InstrumentationRegistry
-import ac.mdiq.podcini.util.event.FeedListUpdateEvent
-import ac.mdiq.podcini.util.event.QueueEvent.Companion.setQueue
+import ac.mdiq.podcini.storage.database.PodDBAdapter.Companion.deleteDatabase
+import ac.mdiq.podcini.storage.database.PodDBAdapter.Companion.getInstance
 import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
-import ac.mdiq.podcini.storage.database.PodDBAdapter.Companion.deleteDatabase
-import ac.mdiq.podcini.storage.database.PodDBAdapter.Companion.getInstance
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
+import android.content.Context
+import android.util.Log
+import androidx.test.platform.app.InstrumentationRegistry
 import de.test.podcini.util.service.download.HTTPBin
 import de.test.podcini.util.syndication.feedgenerator.Rss2Generator
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
 import org.apache.commons.lang3.StringUtils
-import org.greenrobot.eventbus.EventBus
 import org.junit.Assert
 import java.io.File
 import java.io.FileOutputStream
@@ -193,8 +192,8 @@ class UITestUtils(private val context: Context) {
         adapter.setCompleteFeed(*hostedFeeds.toTypedArray<Feed>())
         adapter.setQueue(queue)
         adapter.close()
-        EventBus.getDefault().post(FeedListUpdateEvent(hostedFeeds))
-        EventBus.getDefault().post(setQueue(queue))
+        EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(hostedFeeds))
+        EventFlow.postEvent(FlowEvent.QueueEvent.setQueue(queue))
     }
 
     fun setMediaFileName(filename: String) {

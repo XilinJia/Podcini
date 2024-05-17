@@ -1,47 +1,37 @@
 package ac.mdiq.podcini.preferences.fragments.about
 
+import ac.mdiq.podcini.ui.adapter.SimpleIconListAdapter
 import android.R.color
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.ListFragment
-import ac.mdiq.podcini.ui.adapter.SimpleIconListAdapter
-import io.reactivex.Single
-import io.reactivex.SingleEmitter
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
 class DevelopersFragment : ListFragment() {
-    private var developersLoader: Disposable? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         listView.divider = null
         listView.setSelector(color.transparent)
 
-        developersLoader = Single.create { emitter: SingleEmitter<ArrayList<SimpleIconListAdapter.ListItem>?> ->
+        lifecycleScope.launch(Dispatchers.IO) {
             val developers = ArrayList<SimpleIconListAdapter.ListItem>()
             val reader = BufferedReader(InputStreamReader(requireContext().assets.open("developers.csv"), "UTF-8"))
-            var line: String
-            while ((reader.readLine().also { line = it }) != null) {
+            var line = ""
+            while ((reader.readLine()?.also { line = it }) != null) {
                 val info = line.split(";".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
                 developers.add(SimpleIconListAdapter.ListItem(info[0], info[2], "https://avatars2.githubusercontent.com/u/" + info[1] + "?s=60&v=4"))
             }
-            emitter.onSuccess(developers)
+            withContext(Dispatchers.Main) {
+                listAdapter = SimpleIconListAdapter(requireContext(), developers)            }
+        }.invokeOnCompletion { throwable ->
+            if (throwable != null) Toast.makeText(context, throwable.message, Toast.LENGTH_LONG).show()
         }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ developers: ArrayList<SimpleIconListAdapter.ListItem>? ->
-                if (developers != null) listAdapter = SimpleIconListAdapter(requireContext(), developers)
-            }, { error: Throwable -> Toast.makeText(context, error.message, Toast.LENGTH_LONG).show() }
-            )
-    }
-
-    override fun onStop() {
-        super.onStop()
-        developersLoader?.dispose()
     }
 }

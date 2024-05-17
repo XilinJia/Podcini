@@ -8,8 +8,8 @@ import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.storage.model.playback.RemoteMedia
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.PlayerErrorEvent
-import ac.mdiq.podcini.util.event.playback.BufferUpdateEvent
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
@@ -21,7 +21,6 @@ import com.google.android.gms.cast.framework.CastState
 import com.google.android.gms.cast.framework.media.RemoteMediaClient
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
-import org.greenrobot.eventbus.EventBus
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.Volatile
 import kotlin.math.max
@@ -67,7 +66,7 @@ class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBas
         }
 
         override fun onMediaError(mediaError: MediaError) {
-            EventBus.getDefault().post(PlayerErrorEvent(mediaError.reason!!))
+            EventFlow.postEvent(FlowEvent.PlayerErrorEvent(mediaError.reason!!))
         }
     }
 
@@ -82,8 +81,8 @@ class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBas
 
     private fun setBuffering(buffering: Boolean) {
         when {
-            buffering && isBuffering.compareAndSet(false, true) -> EventBus.getDefault().post(BufferUpdateEvent.started())
-            !buffering && isBuffering.compareAndSet(true, false) -> EventBus.getDefault().post(BufferUpdateEvent.ended())
+            buffering && isBuffering.compareAndSet(false, true) -> EventFlow.postEvent(FlowEvent.BufferUpdateEvent.started())
+            !buffering && isBuffering.compareAndSet(true, false) -> EventFlow.postEvent(FlowEvent.BufferUpdateEvent.ended())
         }
     }
 
@@ -188,7 +187,7 @@ class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBas
                     }
                     MediaStatus.IDLE_REASON_ERROR -> {
                         Log.w(TAG, "Got an error status from the Chromecast. Skipping, if possible, to the next episode...")
-                        EventBus.getDefault().post(PlayerErrorEvent("Chromecast error code 1"))
+                        EventFlow.postEvent(FlowEvent.PlayerErrorEvent("Chromecast error code 1"))
                         endPlayback(false, wasSkipped = false, shouldContinue = true, toStoppedState = true)
                         return
                     }
@@ -235,7 +234,7 @@ class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBas
     private fun playMediaObject(playable: Playable, forceReset: Boolean, stream: Boolean, startWhenPrepared: Boolean, prepareImmediately: Boolean) {
         if (!CastUtils.isCastable(playable, castContext.sessionManager.currentCastSession)) {
             Logd(TAG, "media provided is not compatible with cast device")
-            EventBus.getDefault().post(PlayerErrorEvent("Media not compatible with cast device"))
+            EventFlow.postEvent(FlowEvent.PlayerErrorEvent("Media not compatible with cast device"))
             var nextPlayable: Playable? = playable
             do {
                 nextPlayable = callback.getNextInQueue(nextPlayable)

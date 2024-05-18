@@ -521,9 +521,7 @@ import java.util.concurrent.TimeUnit
                 events.add(FlowEvent.QueueEvent.removed(item))
                 updatedItems.add(item)
                 queueModified = true
-            } else {
-                Log.v(TAG, "removeQueueItem - item  not in queue:$itemId")
-            }
+            } else Log.e(TAG, "removeQueueItem - item  not in queue:$itemId")
         }
         if (queueModified) {
             adapter.setQueue(queue)

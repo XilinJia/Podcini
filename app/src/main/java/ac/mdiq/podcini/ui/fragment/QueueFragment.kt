@@ -245,17 +245,17 @@ import java.util.*
             FlowEvent.QueueEvent.Action.REMOVED, FlowEvent.QueueEvent.Action.IRREVERSIBLE_REMOVED -> {
                 if (event.item != null) {
                     val position: Int = FeedItemUtil.indexOfItemWithId(queue.toList(), event.item.id)
-                    queue.removeAt(position)
-                    recyclerAdapter?.notifyItemRemoved(position)
+                    if (position >= 0) {
+                        queue.removeAt(position)
+                        recyclerAdapter?.notifyItemRemoved(position)
+                    } else Log.e(TAG, "Trying to remove item non-existent from queue ${event.item.id} ${event.item.title}")
                 }
             }
             FlowEvent.QueueEvent.Action.CLEARED -> {
                 queue.clear()
                 recyclerAdapter?.updateItems(queue)
             }
-            FlowEvent.QueueEvent.Action.MOVED -> return
-            FlowEvent.QueueEvent.Action.ADDED_ITEMS -> return
-            FlowEvent.QueueEvent.Action.DELETED_MEDIA -> return
+            FlowEvent.QueueEvent.Action.MOVED, FlowEvent.QueueEvent.Action.ADDED_ITEMS, FlowEvent.QueueEvent.Action.DELETED_MEDIA -> return
         }
         recyclerAdapter?.updateDragDropEnabled()
         refreshToolbarState()

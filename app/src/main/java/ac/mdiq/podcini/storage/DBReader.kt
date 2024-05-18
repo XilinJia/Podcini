@@ -12,7 +12,6 @@ import ac.mdiq.podcini.storage.model.download.DownloadResult
 import ac.mdiq.podcini.storage.model.feed.*
 import ac.mdiq.podcini.storage.model.feed.FeedItemFilter.Companion.unfiltered
 import ac.mdiq.podcini.storage.model.feed.FeedPreferences.Companion.TAG_ROOT
-import ac.mdiq.podcini.util.FeedItemPermutors
 import ac.mdiq.podcini.util.FeedItemPermutors.getPermutor
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.LongList
@@ -213,7 +212,6 @@ object DBReader {
             val indexMediaId = cursor.getColumnIndexOrThrow(PodDBAdapter.SELECT_KEY_MEDIA_ID)
             do {
                 val item = FeedItemCursorMapper.convert(cursor)
-//                Log.d(TAG, "extractItemlistFromCursor item ${item.title}")
                 result.add(item)
                 if (!cursor.isNull(indexMediaId)) item.setMedia(FeedMediaCursorMapper.convert(cursor))
             } while (cursor.moveToNext())
@@ -543,18 +541,17 @@ object DBReader {
      * @return The FeedItem next in queue or null if the FeedItem could not be found.
      */
     fun getNextInQueue(item: FeedItem): FeedItem? {
-        Logd(TAG, "*** expensive call getNextInQueue() with: itemId = [${item.id}]")
+        Logd(TAG, "getNextInQueue() with: itemId = [${item.id}]")
         val adapter = getInstance()
         adapter.open()
         try {
             var nextItem: FeedItem? = null
             try {
-//                TODO: these calls are expensive
                 adapter.getNextInQueue(item).use { cursor ->
                     val list = extractItemlistFromCursor(adapter, cursor)
                     if (list.isNotEmpty()) {
                         nextItem = list[0]
-                        loadAdditionalFeedItemListData(list)
+                        loadAdditionalFeedItemListData(listOf(list[0]))
                     }
                     return nextItem
                 }

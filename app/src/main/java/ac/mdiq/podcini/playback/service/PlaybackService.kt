@@ -831,7 +831,7 @@ class PlaybackService : MediaSessionService() {
     }
 
     private fun getNextInQueue(currentMedia: Playable?): Playable? {
-        Logd(TAG, "*** expensive call getNextInQueue currentMedia: ${currentMedia?.getEpisodeTitle()}")
+        Logd(TAG, "call getNextInQueue currentMedia: ${currentMedia?.getEpisodeTitle()}")
         if (currentMedia !is FeedMedia) {
             Logd(TAG, "getNextInQueue(), but playable not an instance of FeedMedia, so not proceeding")
             writeNoMediaPlaying()

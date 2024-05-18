@@ -1,0 +1,5 @@
+ 
+Version 5.3.1 brings several changes:
+
+* fixed crash issue on some device when attempting to remove item from queue multiple times
+* improved efficiency of getNextInQueue in DBReader

@@ -1,3 +1,8 @@
+## 5.3.1
+
+* fixed crash issue on some device when attempting to remove item from queue multiple times
+* improved efficiency of getNextInQueue in DBReader
+
 ## 5.3.0
 
 * change normal scope to life cycle scope when possible

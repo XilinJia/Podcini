@@ -22,11 +22,6 @@ Apache License 2.0
 
 [com.squareup.okhttp3](https://github.com/square/okhttp/blob/master/LICENSE.txt) Apache License 2.0
 
-<!-- [com.squareup.okio](https://github.com/square/okio/blob/master/LICENSE.txt) Apache License 2.0
- -->
- 
-[org.greenrobot:eventbus](https://github.com/greenrobot/EventBus/blob/master/LICENSE) Apache License 2.0
-
 [io.reactivex.rxjava2](https://github.com/ReactiveX/RxJava/blob/3.x/LICENSE) Apache License 2.0
 
 [com.joanzapata.iconify](https://github.com/JoanZapata/android-iconify/blob/master/LICENSE.txt) Apache License 2.0

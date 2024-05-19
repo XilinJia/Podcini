@@ -7,7 +7,7 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.DBWriter
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
-import ac.mdiq.podcini.ui.view.LocalDeleteModal.showLocalFeedDeleteWarningIfNecessary
+import ac.mdiq.podcini.ui.utils.LocalDeleteModal.showLocalFeedDeleteWarningIfNecessary
 
 class DeleteSwipeAction : SwipeAction {
     override fun getId(): String {

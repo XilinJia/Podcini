@@ -8,6 +8,8 @@ import ac.mdiq.podcini.playback.PlaybackController.Companion.setVideoSurface
 import ac.mdiq.podcini.playback.PlaybackController.Companion.videoSize
 import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.PlayerStatus
+import ac.mdiq.podcini.playback.service.PlaybackService
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion
 import ac.mdiq.podcini.preferences.UserPreferences.fastForwardSecs
 import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
 import ac.mdiq.podcini.preferences.UserPreferences.setShowRemainTimeSetting
@@ -155,6 +157,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     private fun procFlowEvents() {
         lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: $event")
                 when (event) {
                     is FlowEvent.BufferUpdateEvent -> bufferUpdate(event)
                     is FlowEvent.PlaybackPositionEvent -> onPositionObserverUpdate()

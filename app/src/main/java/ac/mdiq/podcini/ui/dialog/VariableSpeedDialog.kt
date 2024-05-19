@@ -8,7 +8,7 @@ import ac.mdiq.podcini.playback.PlaybackController.Companion.setPlaybackSpeed
 import ac.mdiq.podcini.playback.PlaybackController.Companion.setSkipSilence
 import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.preferences.UserPreferences.playbackSpeedArray
-import ac.mdiq.podcini.ui.view.ItemOffsetDecoration
+import ac.mdiq.podcini.ui.utils.ItemOffsetDecoration
 import ac.mdiq.podcini.ui.view.PlaybackSpeedSeekBar
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow

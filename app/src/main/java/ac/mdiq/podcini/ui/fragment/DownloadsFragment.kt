@@ -19,9 +19,9 @@ import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.EpisodeItemListAdapter
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.dialog.ItemSortDialog
-import ac.mdiq.podcini.ui.view.EmptyViewHandler
+import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.view.EpisodeItemListRecyclerView
-import ac.mdiq.podcini.ui.view.LiftOnScrollListener
+import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
 import ac.mdiq.podcini.util.FeedItemUtil
 import ac.mdiq.podcini.util.Logd
@@ -97,6 +97,7 @@ import java.util.*
         recyclerView.addOnScrollListener(LiftOnScrollListener(binding.appbar))
 
         swipeActions = SwipeActions(this, TAG).attachTo(recyclerView)
+        lifecycle.addObserver(swipeActions)
         swipeActions.setFilter(FeedItemFilter(FeedItemFilter.DOWNLOADED))
         refreshSwipeTelltale()
         binding.leftActionIcon.setOnClickListener {
@@ -213,6 +214,7 @@ import java.util.*
     private fun procFlowEvents() {
         lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: $event")
                 when (event) {
                     is FlowEvent.FeedItemEvent -> onEventMainThread(event)
                     is FlowEvent.PlaybackPositionEvent -> onEventMainThread(event)

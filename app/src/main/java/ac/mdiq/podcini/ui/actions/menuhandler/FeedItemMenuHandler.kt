@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.ui.actions.menuhandler
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.net.sync.SynchronizationSettings
 import ac.mdiq.podcini.net.sync.SynchronizationSettings.isProviderConnected
 import ac.mdiq.podcini.net.sync.SynchronizationSettings.wifiSyncEnabledKey
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
@@ -14,16 +13,19 @@ import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.dialog.ShareDialog
-import ac.mdiq.podcini.ui.view.LocalDeleteModal
+import ac.mdiq.podcini.ui.utils.LocalDeleteModal
 import ac.mdiq.podcini.util.*
 import android.os.Handler
-import android.util.Log
 import android.view.KeyEvent
 import android.view.Menu
 import androidx.annotation.OptIn
 import androidx.fragment.app.Fragment
 import androidx.media3.common.util.UnstableApi
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.ceil
 
 
@@ -49,7 +51,6 @@ object FeedItemMenuHandler {
         val hasMedia = selectedItem.media != null
         val isPlaying = hasMedia && PlaybackStatus.isPlaying(selectedItem.media)
         val isInQueue: Boolean = selectedItem.isTagged(FeedItem.TAG_QUEUE)
-        val fileDownloaded = hasMedia && selectedItem.media?.fileExists()?:false
         val isLocalFile = hasMedia && selectedItem.feed?.isLocalFeed?:false
         val isFavorite: Boolean = selectedItem.isTagged(FeedItem.TAG_FAVORITE)
 
@@ -73,7 +74,11 @@ object FeedItemMenuHandler {
 
         setItemVisibility(menu, R.id.add_to_favorites_item, !isFavorite)
         setItemVisibility(menu, R.id.remove_from_favorites_item, isFavorite)
-        setItemVisibility(menu, R.id.remove_item, fileDownloaded || isLocalFile)
+
+        CoroutineScope(Dispatchers.Main).launch {
+            val fileDownloaded = withContext(Dispatchers.IO) { hasMedia && selectedItem.media?.fileExists() ?: false }
+            setItemVisibility(menu, R.id.remove_item, fileDownloaded || isLocalFile)
+        }
         return true
     }
 

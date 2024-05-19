@@ -12,6 +12,7 @@ import ac.mdiq.podcini.net.download.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.databinding.EditTextDialogBinding
 import ac.mdiq.podcini.storage.model.feed.Feed
 import androidx.media3.common.util.UnstableApi
+import kotlinx.coroutines.runBlocking
 import java.lang.ref.WeakReference
 import java.util.*
 import java.util.concurrent.ExecutionException
@@ -37,7 +38,7 @@ import java.util.concurrent.ExecutionException
 
     @UnstableApi private fun onConfirmed(original: String, updated: String) {
         try {
-            DBWriter.updateFeedDownloadURL(original, updated).get()
+            runBlocking { DBWriter.updateFeedDownloadURL(original, updated).join() }
             feed.download_url = updated
             runOnce(activityRef.get()!!, feed)
         } catch (e: ExecutionException) {

@@ -4,6 +4,7 @@ import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.QuickFeedDiscoveryBinding
 import ac.mdiq.podcini.net.discovery.ItunesTopListLoader
+import ac.mdiq.podcini.net.discovery.ItunesTopListLoader.Companion.prefs
 import ac.mdiq.podcini.net.discovery.PodcastSearchResult
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.ui.activity.MainActivity
@@ -11,8 +12,6 @@ import ac.mdiq.podcini.ui.adapter.FeedDiscoverAdapter
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
-import android.content.Context
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
@@ -96,6 +95,7 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
     private fun procFlowEvents() {
         lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: $event")
                 when (event) {
                     is FlowEvent.DiscoveryDefaultUpdateEvent -> loadToplist()
                     else -> {}
@@ -111,9 +111,9 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
         poweredByTextView.visibility = View.VISIBLE
 
         val loader = ItunesTopListLoader(requireContext())
-        val prefs: SharedPreferences = requireActivity().getSharedPreferences(ItunesTopListLoader.PREFS, Context.MODE_PRIVATE)
-        val countryCode: String = prefs.getString(ItunesTopListLoader.PREF_KEY_COUNTRY_CODE, Locale.getDefault().country)!!
-        if (prefs.getBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, false)) {
+//        val prefs: SharedPreferences = requireActivity().getSharedPreferences(ItunesTopListLoader.PREFS, Context.MODE_PRIVATE)
+        val countryCode: String = prefs!!.getString(ItunesTopListLoader.PREF_KEY_COUNTRY_CODE, Locale.getDefault().country)!!
+        if (prefs!!.getBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, false)) {
             errorTextView.setText(R.string.discover_is_hidden)
             errorView.visibility = View.VISIBLE
             discoverGridLayout.visibility = View.GONE
@@ -121,7 +121,7 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
             poweredByTextView.visibility = View.GONE
             return
         }
-        if (BuildConfig.FLAVOR == "free" && prefs.getBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, true)) {
+        if (BuildConfig.FLAVOR == "free" && prefs!!.getBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, true)) {
             errorTextView.text = ""
             errorView.visibility = View.VISIBLE
             discoverGridLayout.visibility = View.VISIBLE
@@ -129,7 +129,7 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
             errorRetry.setText(R.string.discover_confirm)
             poweredByTextView.visibility = View.VISIBLE
             errorRetry.setOnClickListener {
-                prefs.edit().putBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, false).apply()
+                prefs!!.edit().putBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, false).apply()
                 loadToplist()
             }
             return
@@ -185,7 +185,6 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
                 errorRetry.setOnClickListener { loadToplist() }
             }
         }
-
     }
 
     @OptIn(UnstableApi::class) override fun onItemClick(parent: AdapterView<*>?, view: View, position: Int, id: Long) {

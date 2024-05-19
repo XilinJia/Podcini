@@ -82,9 +82,9 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
             insets
         }
 
-        val preferences: SharedPreferences = requireContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+//        val preferences: SharedPreferences = requireContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
 //        TODO: what is this?
-        openFolders = HashSet(preferences.getStringSet(PREF_OPEN_FOLDERS, HashSet<String>())!!) // Must not modify
+        openFolders = HashSet(prefs!!.getStringSet(PREF_OPEN_FOLDERS, HashSet<String>())!!) // Must not modify
 
         val navList = binding.navRecycler
         navAdapter = NavListAdapter(itemAccess, requireActivity())
@@ -96,7 +96,7 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
             startActivity(Intent(activity, PreferenceActivity::class.java))
         }
 
-        preferences.registerOnSharedPreferenceChangeListener(this)
+        prefs!!.registerOnSharedPreferenceChangeListener(this)
         return binding.root
     }
 
@@ -125,12 +125,13 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
         _binding = null
         
 //        scope.cancel()
-        requireContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE).unregisterOnSharedPreferenceChangeListener(this)
+        prefs!!.unregisterOnSharedPreferenceChangeListener(this)
     }
 
     private fun procFlowEvents() {
         lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: $event")
                 when (event) {
                     is FlowEvent.UnreadItemsUpdateEvent, is FlowEvent.FeedListUpdateEvent -> loadData()
                     is FlowEvent.QueueEvent -> onQueueChanged(event)
@@ -292,6 +293,10 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
         @VisibleForTesting
         const val PREF_NAME: String = "NavDrawerPrefs"
         const val TAG: String = "NavDrawerFragment"
+        var prefs: SharedPreferences? = null
+        fun getSharedPrefs(context: Context) {
+            if (prefs == null) prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        }
 
 //        caution: an array in re/values/arrays.xml relates to this
         @JvmField
@@ -301,15 +306,15 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
             QueueFragment.TAG,
             AllEpisodesFragment.TAG,
             DownloadsFragment.TAG,
-            PlaybackHistoryFragment.TAG,
+            HistoryFragment.TAG,
             StatisticsFragment.TAG,
             AddFeedFragment.TAG,
         )
 
         fun saveLastNavFragment(context: Context, tag: String?) {
             Logd(TAG, "saveLastNavFragment(tag: $tag)")
-            val prefs: SharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-            val edit: SharedPreferences.Editor = prefs.edit()
+//            val prefs: SharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+            val edit: SharedPreferences.Editor = prefs!!.edit()
             if (tag != null) edit.putString(PREF_LAST_FRAGMENT_TAG, tag)
             else edit.remove(PREF_LAST_FRAGMENT_TAG)
 
@@ -317,9 +322,9 @@ class NavDrawerFragment : Fragment(), SharedPreferences.OnSharedPreferenceChange
         }
 
         fun getLastNavFragment(context: Context): String {
-            val prefs: SharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-            val lastFragment: String = prefs.getString(PREF_LAST_FRAGMENT_TAG, SubscriptionFragment.TAG)?:""
-            Logd(TAG, "getLastNavFragment() -> $lastFragment")
+//            val prefs: SharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+            val lastFragment: String = prefs!!.getString(PREF_LAST_FRAGMENT_TAG, SubscriptionFragment.TAG)?:""
+//            Logd(TAG, "getLastNavFragment() -> $lastFragment")
             return lastFragment
         }
     }

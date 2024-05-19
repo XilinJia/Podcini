@@ -11,7 +11,7 @@ import ac.mdiq.podcini.playback.cast.CastPsmp
 import ac.mdiq.podcini.playback.cast.CastStateListener
 import ac.mdiq.podcini.playback.service.PlaybackServiceTaskManager.PSTMCallback
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.clearCurrentlyPlayingTemporaryPlaybackSpeed
-import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.createInstanceFromPreferences
+import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.loadPlayableFromPreferences
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.currentEpisodeIsVideo
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.currentlyPlayingFeedMediaId
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.currentlyPlayingTemporaryPlaybackSpeed
@@ -612,7 +612,7 @@ class PlaybackService : MediaSessionService() {
         scope.launch {
             try {
                 val playable = withContext(Dispatchers.IO) {
-                    createInstanceFromPreferences(applicationContext)
+                    loadPlayableFromPreferences()
                 }
                 withContext(Dispatchers.Main) {
                     startPlaying(playable, false)
@@ -783,6 +783,7 @@ class PlaybackService : MediaSessionService() {
     private fun procFlowEvents() {
         scope.launch {
             EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: $event")
                 when (event) {
                     is FlowEvent.PlayerErrorEvent -> playerError(event)
                     is FlowEvent.BufferUpdateEvent -> bufferUpdate(event)

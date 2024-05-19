@@ -9,17 +9,17 @@ import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
 import ac.mdiq.podcini.storage.model.feed.SortOrder
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
+import kotlinx.coroutines.runBlocking
 import java.util.*
 import java.util.concurrent.ExecutionException
 
 /**
  * Implementation of the EpisodeCleanupAlgorithm interface used by Podcini.
  */
-class APCleanupAlgorithm(
-        /** the number of days after playback to wait before an item is eligible to be cleaned up.
-         * Fractional for number of hours, e.g., 0.5 = 12 hours, 0.0416 = 1 hour.   */
-        @JvmField @get:VisibleForTesting val numberOfHoursAfterPlayback: Int
-) : EpisodeCleanupAlgorithm() {
+/** the number of days after playback to wait before an item is eligible to be cleaned up.
+ * Fractional for number of hours, e.g., 0.5 = 12 hours, 0.0416 = 1 hour.   */
+
+class APCleanupAlgorithm(@JvmField @get:VisibleForTesting val numberOfHoursAfterPlayback: Int) : EpisodeCleanupAlgorithm() {
     /**
      * @return the number of episodes that *could* be cleaned up, if needed
      */
@@ -44,7 +44,7 @@ class APCleanupAlgorithm(
 
         for (item in delete) {
             try {
-                DBWriter.deleteFeedMediaOfItem(context!!, item.media!!.id).get()
+                runBlocking { DBWriter.deleteFeedMediaOfItem(context, item.media!!.id).join() }
             } catch (e: InterruptedException) {
                 e.printStackTrace()
             } catch (e: ExecutionException) {
@@ -53,7 +53,6 @@ class APCleanupAlgorithm(
         }
 
         val counter = delete.size
-
         Log.i(TAG, String.format(Locale.US, "Auto-delete deleted %d episodes (%d requested)", counter, numberOfEpisodesToDelete))
 
         return counter

@@ -21,6 +21,7 @@ class MainPreferencesFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         Logd("MainPreferencesFragment", "onCreatePreferences")
 
+//  TODO: this can be expensive
         addPreferencesFromResource(R.xml.preferences)
         setupMainScreen()
         setupSearch()

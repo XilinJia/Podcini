@@ -76,7 +76,8 @@
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
 
                         <TextView
                             android:id="@+id/txtvDuration"
@@ -177,22 +178,37 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="?android:attr/dividerVertical" />
-
         </LinearLayout>
 
-        <ac.mdiq.podcini.ui.view.ShownotesWebView
-            android:id="@+id/webvDescription"
+        <ScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/header"
-            android:foreground="?android:windowContentOverlay" />
+            android:scrollbars="vertical">
 
-<!--        <WebView-->
-<!--            android:id="@+id/webView"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_below="@id/webvDescription"-->
-<!--        />-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <ac.mdiq.podcini.ui.view.ShownotesWebView
+                android:id="@+id/webvDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:foreground="?android:windowContentOverlay" />
+
+            <TextView
+                android:id="@+id/item_link"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textIsSelectable="true"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="10dp"
+                style="@style/Podcini.TextView.ListItemBody"
+                tools:text="Item link" />
+        </LinearLayout>
+        </ScrollView>
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -204,7 +220,6 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:indeterminate="true" />
-
         </FrameLayout>
 
     </RelativeLayout>

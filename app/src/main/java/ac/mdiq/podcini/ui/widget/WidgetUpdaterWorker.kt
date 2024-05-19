@@ -2,7 +2,7 @@ package ac.mdiq.podcini.ui.widget
 
 import ac.mdiq.podcini.feed.util.PlaybackSpeedUtils.getCurrentPlaybackSpeed
 import ac.mdiq.podcini.playback.base.PlayerStatus
-import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.createInstanceFromPreferences
+import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.loadPlayableFromPreferences
 import ac.mdiq.podcini.ui.widget.WidgetUpdater.WidgetState
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
@@ -24,7 +24,7 @@ class WidgetUpdaterWorker(context: Context, workerParams: WorkerParameters) : Wo
      * Loads the current media from the database and updates the widget in a background job.
      */
     private fun updateWidget() {
-        val media = createInstanceFromPreferences(applicationContext)
+        val media = loadPlayableFromPreferences()
         if (media != null) WidgetUpdater.updateWidget(applicationContext, WidgetState(media, PlayerStatus.STOPPED, media.getPosition(), media.getDuration(), getCurrentPlaybackSpeed(media)))
         else WidgetUpdater.updateWidget(applicationContext, WidgetState(PlayerStatus.STOPPED))
     }

@@ -11,6 +11,7 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.episodeCacheSize
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
+import kotlinx.coroutines.runBlocking
 import java.util.*
 import java.util.concurrent.ExecutionException
 
@@ -41,8 +42,9 @@ class ExceptFavoriteCleanupAlgorithm : EpisodeCleanupAlgorithm() {
         val delete = if (candidates.size > numberOfEpisodesToDelete) candidates.subList(0, numberOfEpisodesToDelete) else candidates
 
         for (item in delete) {
+            if (item.media == null) continue
             try {
-                DBWriter.deleteFeedMediaOfItem(context!!, item.media!!.id).get()
+                runBlocking { DBWriter.deleteFeedMediaOfItem(context, item.media!!.id).join() }
             } catch (e: InterruptedException) {
                 e.printStackTrace()
             } catch (e: ExecutionException) {

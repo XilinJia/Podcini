@@ -10,10 +10,8 @@ import android.content.DialogInterface
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
+import java.lang.Runnable
 
 object RemoveFeedDialog {
     private const val TAG = "RemoveFeedDialog"
@@ -63,7 +61,7 @@ object RemoveFeedDialog {
                     try {
                         withContext(Dispatchers.IO) {
                             for (feed in feeds) {
-                                DBWriter.deleteFeed(context, feed.id).get()
+                                runBlocking { DBWriter.deleteFeed(context, feed.id).join() }
                             }
                         }
                         withContext(Dispatchers.Main) {

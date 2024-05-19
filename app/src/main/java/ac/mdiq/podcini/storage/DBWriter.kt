@@ -6,7 +6,7 @@ import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.playback.service.PlaybackServiceConstants
-import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.createInstanceFromPreferences
+import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.loadPlayableFromPreferences
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.currentlyPlayingFeedMediaId
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.writeNoMediaPlaying
 import ac.mdiq.podcini.preferences.UserPreferences.enqueueLocation
@@ -29,7 +29,6 @@ import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.LongList
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
-import ac.mdiq.podcini.util.showStackTrace
 import android.app.backup.BackupManager
 import android.content.Context
 import android.net.Uri
@@ -37,16 +36,13 @@ import android.util.Log
 import androidx.core.app.NotificationManagerCompat
 import androidx.documentfile.provider.DocumentFile
 import androidx.media3.common.util.UnstableApi
-import com.google.common.util.concurrent.Futures
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import java.io.File
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.ContinuationInterceptor
 
 /**
  * Provides methods for writing data to Podcini's database.
@@ -56,6 +52,8 @@ import java.util.concurrent.TimeUnit
  */
 @UnstableApi object DBWriter {
     private const val TAG = "DBWriter"
+
+    val ioScope = CoroutineScope(Dispatchers.IO)
 
     private val dbExec: ExecutorService = Executors.newSingleThreadExecutor { r: Runnable? ->
         val t = Thread(r)
@@ -77,8 +75,8 @@ import java.util.concurrent.TimeUnit
         }
     }
 
-    fun deleteItemsMedia(items: List<FeedItem>) {
-        runOnDbThread {
+    fun deleteItemsMedia(items: List<FeedItem>) : Job {
+        return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
             adapter.removeItemMedia(items)
@@ -93,7 +91,7 @@ import java.util.concurrent.TimeUnit
      * @param mediaId ID of the FeedMedia object whose downloaded file should be deleted.
      */
     @JvmStatic
-    fun deleteFeedMediaOfItem(context: Context, mediaId: Long): Future<*> {
+    fun deleteFeedMediaOfItem(context: Context, mediaId: Long) : Job {
         Logd(TAG, "deleteFeedMediaOfItem called")
         return runOnDbThread {
             val media = getFeedMedia(mediaId)
@@ -179,7 +177,7 @@ import java.util.concurrent.TimeUnit
      * @param feedId  ID of the Feed that should be deleted.
      */
     @JvmStatic
-    fun deleteFeed(context: Context, feedId: Long): Future<*> {
+    fun deleteFeed(context: Context, feedId: Long) : Job {
         return runOnDbThread {
             val feed = getFeed(feedId) ?: return@runOnDbThread
             // delete stored media files and mark them as read
@@ -203,7 +201,7 @@ import java.util.concurrent.TimeUnit
      * Remove the listed items and their FeedMedia entries.
      * Deleting media also removes the download log entries.
      */
-    fun deleteFeedItems(context: Context, items: List<FeedItem>): Future<*> {
+    fun deleteFeedItems(context: Context, items: List<FeedItem>) : Job {
         Logd(TAG, "deleteFeedItems called")
         return runOnDbThread { deleteFeedItemsSynchronous(context, items) }
     }
@@ -252,7 +250,7 @@ import java.util.concurrent.TimeUnit
     /**
      * Deletes the entire playback history.
      */
-    fun clearPlaybackHistory(): Future<*> {
+    fun clearPlaybackHistory() : Job {
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -265,7 +263,7 @@ import java.util.concurrent.TimeUnit
     /**
      * Deletes the entire download log.
      */
-    fun clearDownloadLog(): Future<*> {
+    fun clearDownloadLog() : Job {
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -275,8 +273,8 @@ import java.util.concurrent.TimeUnit
         }
     }
 
-    fun deleteFromPlaybackHistory(feedItem: FeedItem): Future<*> {
-        return addItemToPlaybackHistory(feedItem.media, Date(0))
+    fun deleteFromPlaybackHistory(feedItem: FeedItem) {
+        addItemToPlaybackHistory(feedItem.media, Date(0))
     }
 
     /**
@@ -288,7 +286,7 @@ import java.util.concurrent.TimeUnit
      * @param date PlaybackCompletionDate for `media`
      */
     @JvmOverloads
-    fun addItemToPlaybackHistory(media: FeedMedia?, date: Date? = Date()): Future<*> {
+    fun addItemToPlaybackHistory(media: FeedMedia?, date: Date? = Date()) : Job {
         return runOnDbThread {
             if (media != null) {
                 Logd(TAG, "Adding item to playback history")
@@ -308,7 +306,7 @@ import java.util.concurrent.TimeUnit
      *
      * @param status The DownloadStatus object.
      */
-    fun addDownloadStatus(status: DownloadResult?): Future<*> {
+    fun addDownloadStatus(status: DownloadResult?) : Job {
         Logd(TAG, "addDownloadStatus called")
         return runOnDbThread {
             if (status != null) {
@@ -331,7 +329,7 @@ import java.util.concurrent.TimeUnit
      * @param performAutoDownload True if an auto-download process should be started after the operation
      * @throws IndexOutOfBoundsException if index < 0 || index >= queue.size()
      */
-    @UnstableApi fun addQueueItemAt(context: Context, itemId: Long, index: Int, performAutoDownload: Boolean): Future<*> {
+    @UnstableApi fun addQueueItemAt(context: Context, itemId: Long, index: Int, performAutoDownload: Boolean) : Job {
         Logd(TAG, "addQueueItemAt called")
         return runOnDbThread {
             val adapter = getInstance()
@@ -357,11 +355,11 @@ import java.util.concurrent.TimeUnit
     }
 
     @JvmStatic
-    fun addQueueItem(context: Context, vararg items: FeedItem): Future<*> {
+    fun addQueueItem(context: Context, vararg items: FeedItem) : Job {
         return addQueueItem(context, true, *items)
     }
 
-    fun addQueueItem(context: Context, markAsUnplayed: Boolean, vararg items: FeedItem): Future<*> {
+    fun addQueueItem(context: Context, markAsUnplayed: Boolean, vararg items: FeedItem) : Job {
         Logd(TAG, "addQueueItem called")
         val itemIds = LongList(items.size)
         for (item in items) {
@@ -380,7 +378,7 @@ import java.util.concurrent.TimeUnit
      * @param performAutoDownload true if an auto-download process should be started after the operation.
      * @param itemIds             IDs of the FeedItem objects that should be added to the queue.
      */
-    @UnstableApi fun addQueueItem(context: Context, performAutoDownload: Boolean, vararg itemIds: Long): Future<*> {
+    @UnstableApi fun addQueueItem(context: Context, performAutoDownload: Boolean, vararg itemIds: Long) : Job {
         return addQueueItem(context, performAutoDownload, true, *itemIds)
     }
 
@@ -393,7 +391,7 @@ import java.util.concurrent.TimeUnit
      * @param markAsUnplayed      true if the items should be marked as unplayed when enqueueing
      * @param itemIds             IDs of the FeedItem objects that should be added to the queue.
      */
-    @UnstableApi fun addQueueItem(context: Context, performAutoDownload: Boolean, markAsUnplayed: Boolean, vararg itemIds: Long): Future<*> {
+    @UnstableApi fun addQueueItem(context: Context, performAutoDownload: Boolean, markAsUnplayed: Boolean, vararg itemIds: Long) : Job {
         Logd(TAG, "addQueueItem(context ...) called")
         return runOnDbThread {
             if (itemIds.isEmpty()) return@runOnDbThread
@@ -406,9 +404,8 @@ import java.util.concurrent.TimeUnit
             val markAsUnplayedIds = LongList()
             val events: MutableList<FlowEvent.QueueEvent> = ArrayList()
             val updatedItems: MutableList<FeedItem> = ArrayList()
-            val positionCalculator =
-                ItemEnqueuePositionCalculator(enqueueLocation)
-            val currentlyPlaying = createInstanceFromPreferences(context)
+            val positionCalculator = ItemEnqueuePositionCalculator(enqueueLocation)
+            val currentlyPlaying = loadPlayableFromPreferences()
             var insertPosition = positionCalculator.calcPosition(queue, currentlyPlaying)
             for (itemId in itemIds) {
                 if (!itemListContains(queue, itemId)) {
@@ -468,7 +465,7 @@ import java.util.concurrent.TimeUnit
      * Removes all FeedItem objects from the queue.
      */
     @JvmStatic
-    fun clearQueue(): Future<*> {
+    fun clearQueue() : Job {
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -486,19 +483,19 @@ import java.util.concurrent.TimeUnit
      * @param item                FeedItem that should be removed.
      */
     @JvmStatic
-    fun removeQueueItem(context: Context, performAutoDownload: Boolean, item: FeedItem): Future<*> {
+    fun removeQueueItem(context: Context, performAutoDownload: Boolean, item: FeedItem) : Job {
         return runOnDbThread { removeQueueItemSynchronous(context, performAutoDownload, item.id) }
     }
 
     @JvmStatic
-    fun removeQueueItem(context: Context, performAutoDownload: Boolean, vararg itemIds: Long): Future<*> {
+    fun removeQueueItem(context: Context, performAutoDownload: Boolean, vararg itemIds: Long) : Job {
         return runOnDbThread { removeQueueItemSynchronous(context, performAutoDownload, *itemIds) }
     }
 
     @UnstableApi private fun removeQueueItemSynchronous(context: Context, performAutoDownload: Boolean, vararg itemIds: Long) {
         Logd(TAG, "removeQueueItemSynchronous called $itemIds")
         if (itemIds.isEmpty()) return
-        showStackTrace()
+//        showStackTrace()
 
         val adapter = getInstance()
         adapter.open()
@@ -535,11 +532,12 @@ import java.util.concurrent.TimeUnit
         if (performAutoDownload) autodownloadUndownloadedItems(context)
     }
 
-    fun toggleFavoriteItem(item: FeedItem): Future<*> {
-        return if (item.isTagged(FeedItem.TAG_FAVORITE)) removeFavoriteItem(item) else addFavoriteItem(item)
+
+    fun toggleFavoriteItem(item: FeedItem) {
+        if (item.isTagged(FeedItem.TAG_FAVORITE)) removeFavoriteItem(item) else addFavoriteItem(item)
     }
 
-    fun addFavoriteItem(item: FeedItem): Future<*> {
+    fun addFavoriteItem(item: FeedItem) : Job {
         return runOnDbThread {
             val adapter = getInstance().open()
             adapter.addFavoriteItem(item)
@@ -550,7 +548,7 @@ import java.util.concurrent.TimeUnit
         }
     }
 
-    fun removeFavoriteItem(item: FeedItem): Future<*> {
+    fun removeFavoriteItem(item: FeedItem) : Job {
         return runOnDbThread {
             val adapter = getInstance().open()
             adapter.removeFavoriteItem(item)
@@ -567,7 +565,7 @@ import java.util.concurrent.TimeUnit
      * @param itemId          The item to move to the top of the queue
      * @param broadcastUpdate true if this operation should trigger a QueueUpdateBroadcast. This option should be set to
      */
-    fun moveQueueItemToTop(itemId: Long, broadcastUpdate: Boolean): Future<*> {
+    fun moveQueueItemToTop(itemId: Long, broadcastUpdate: Boolean) : Job {
         return runOnDbThread {
             val queueIdList = getQueueIDList()
             val index = queueIdList.indexOf(itemId)
@@ -582,7 +580,7 @@ import java.util.concurrent.TimeUnit
      * @param itemId          The item to move to the bottom of the queue
      * @param broadcastUpdate true if this operation should trigger a QueueUpdateBroadcast. This option should be set to
      */
-    fun moveQueueItemToBottom(itemId: Long, broadcastUpdate: Boolean): Future<*> {
+    fun moveQueueItemToBottom(itemId: Long, broadcastUpdate: Boolean) : Job {
         return runOnDbThread {
             val queueIdList = getQueueIDList()
             val index = queueIdList.indexOf(itemId)
@@ -601,7 +599,7 @@ import java.util.concurrent.TimeUnit
      * @throws IndexOutOfBoundsException if (to < 0 || to >= queue.size()) || (from < 0 || from >= queue.size())
      */
     @JvmStatic
-    fun moveQueueItem(from: Int, to: Int, broadcastUpdate: Boolean): Future<*> {
+    fun moveQueueItem(from: Int, to: Int, broadcastUpdate: Boolean) : Job {
         return runOnDbThread { moveQueueItemHelper(from, to, broadcastUpdate) }
     }
 
@@ -634,7 +632,7 @@ import java.util.concurrent.TimeUnit
         adapter.close()
     }
 
-    fun resetPagedFeedPage(feed: Feed?): Future<*> {
+    fun resetPagedFeedPage(feed: Feed?) : Job {
         return runOnDbThread {
             if (feed != null) {
                 val adapter = getInstance()
@@ -652,7 +650,7 @@ import java.util.concurrent.TimeUnit
      *                FeedItem.UNPLAYED
      * @param itemIds IDs of the FeedItems.
      */
-    fun markItemPlayed(played: Int, vararg itemIds: Long): Future<*> {
+    fun markItemPlayed(played: Int, vararg itemIds: Long) : Job {
         return markItemPlayed(played, true, *itemIds)
     }
 
@@ -665,7 +663,7 @@ import java.util.concurrent.TimeUnit
      *        This option is usually set to true
      * @param itemIds IDs of the FeedItems.
      */
-    fun markItemPlayed(played: Int, broadcastUpdate: Boolean, vararg itemIds: Long): Future<*> {
+    fun markItemPlayed(played: Int, broadcastUpdate: Boolean, vararg itemIds: Long) : Job {
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -683,12 +681,12 @@ import java.util.concurrent.TimeUnit
      * FeedItem.NEW, FeedItem.UNPLAYED
      * @param resetMediaPosition true if this method should also reset the position of the FeedItem's FeedMedia object.
      */
-    fun markItemPlayed(item: FeedItem, played: Int, resetMediaPosition: Boolean): Future<*> {
+    fun markItemPlayed(item: FeedItem, played: Int, resetMediaPosition: Boolean) : Job {
         val mediaId = if (item.media != null) item.media!!.id else 0
         return markItemPlayed(item.id, played, mediaId, resetMediaPosition)
     }
 
-    private fun markItemPlayed(itemId: Long, played: Int, mediaId: Long, resetMediaPosition: Boolean): Future<*> {
+    private fun markItemPlayed(itemId: Long, played: Int, mediaId: Long, resetMediaPosition: Boolean) : Job {
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -703,7 +701,7 @@ import java.util.concurrent.TimeUnit
      *
      * @param feedId ID of the Feed.
      */
-    fun removeFeedNewFlag(feedId: Long): Future<*> {
+    fun removeFeedNewFlag(feedId: Long) : Job {
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -717,7 +715,7 @@ import java.util.concurrent.TimeUnit
      * Sets the 'read'-attribute of all NEW FeedItems to UNPLAYED.
      */
     @JvmStatic
-    fun removeAllNewFlags(): Future<*> {
+    fun removeAllNewFlags() : Job {
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -727,7 +725,7 @@ import java.util.concurrent.TimeUnit
         }
     }
 
-    fun addNewFeed(context: Context, vararg feeds: Feed): Future<*> {
+    fun addNewFeed(context: Context, vararg feeds: Feed) : Job {
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -744,7 +742,7 @@ import java.util.concurrent.TimeUnit
         }
     }
 
-    fun persistCompleteFeed(vararg feeds: Feed): Future<*> {
+    fun persistCompleteFeed(vararg feeds: Feed) : Job {
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -753,7 +751,7 @@ import java.util.concurrent.TimeUnit
         }
     }
 
-    fun persistItemList(items: List<FeedItem>): Future<*> {
+    fun persistItemList(items: List<FeedItem>) : Job {
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -769,7 +767,7 @@ import java.util.concurrent.TimeUnit
      *
      * @param media The FeedMedia object.
      */
-    fun persistFeedMedia(media: FeedMedia): Future<*> {
+    fun persistFeedMedia(media: FeedMedia) : Job {
         Logd(TAG, "persistFeedMedia called")
         return runOnDbThread {
             val adapter = getInstance()
@@ -785,7 +783,7 @@ import java.util.concurrent.TimeUnit
      * @param media The FeedMedia object.
      */
     @JvmStatic
-    fun persistFeedMediaPlaybackInfo(media: FeedMedia?): Future<*> {
+    fun persistFeedMediaPlaybackInfo(media: FeedMedia?) : Job {
         Logd(TAG, "persistFeedMediaPlaybackInfo called")
         return runOnDbThread {
             if (media != null) {
@@ -804,7 +802,7 @@ import java.util.concurrent.TimeUnit
      * @param item The FeedItem object.
      */
     @JvmStatic
-    fun persistFeedItem(item: FeedItem?): Future<*> {
+    fun persistFeedItem(item: FeedItem?) : Job {
         Logd(TAG, "persistFeedItem called")
         return runOnDbThread {
             if (item != null) {
@@ -820,7 +818,7 @@ import java.util.concurrent.TimeUnit
     /**
      * Updates download URL of a feed
      */
-    fun updateFeedDownloadURL(original: String, updated: String): Future<*> {
+    fun updateFeedDownloadURL(original: String, updated: String) : Job {
         Logd(TAG, "updateFeedDownloadURL(original: $original, updated: $updated)")
         return runOnDbThread {
             val adapter = getInstance()
@@ -835,7 +833,7 @@ import java.util.concurrent.TimeUnit
      *
      * @param preferences The FeedPreferences object.
      */
-    fun persistFeedPreferences(preferences: FeedPreferences): Future<*> {
+    fun persistFeedPreferences(preferences: FeedPreferences) : Job {
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -863,7 +861,7 @@ import java.util.concurrent.TimeUnit
      *
      * @param lastUpdateFailed true if last update failed
      */
-    fun persistFeedLastUpdateFailed(feedId: Long, lastUpdateFailed: Boolean): Future<*> {
+    fun persistFeedLastUpdateFailed(feedId: Long, lastUpdateFailed: Boolean) : Job {
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -873,7 +871,7 @@ import java.util.concurrent.TimeUnit
         }
     }
 
-    fun persistFeedCustomTitle(feed: Feed): Future<*> {
+    fun persistFeedCustomTitle(feed: Feed) : Job {
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -890,10 +888,10 @@ import java.util.concurrent.TimeUnit
      * QueueUpdateBroadcast. This option should be set to `false`
      * if the caller wants to avoid unexpected updates of the GUI.
      */
-    fun reorderQueue(sortOrder: SortOrder?, broadcastUpdate: Boolean): Future<*> {
+    fun reorderQueue(sortOrder: SortOrder?, broadcastUpdate: Boolean) : Job {
         if (sortOrder == null) {
             Log.w(TAG, "reorderQueue() - sortOrder is null. Do nothing.")
-            return runOnDbThread {}
+            return Job()
         }
         val permutor = getPermutor(sortOrder)
         return runOnDbThread {
@@ -914,7 +912,7 @@ import java.util.concurrent.TimeUnit
      * @param feedId       The feed's ID
      * @param filterValues Values that represent properties to filter by
      */
-    fun persistFeedItemsFilter(feedId: Long, filterValues: Set<String>): Future<*> {
+    fun persistFeedItemsFilter(feedId: Long, filterValues: Set<String>) : Job {
         Logd(TAG, "persistFeedItemsFilter() called with: feedId = [$feedId], filterValues = [$filterValues]")
         return runOnDbThread {
             val adapter = getInstance()
@@ -929,7 +927,7 @@ import java.util.concurrent.TimeUnit
      * Set item sort order of the feed
      *
      */
-    fun persistFeedItemSortOrder(feedId: Long, sortOrder: SortOrder?): Future<*> {
+    fun persistFeedItemSortOrder(feedId: Long, sortOrder: SortOrder?) : Job {
         return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
@@ -942,32 +940,36 @@ import java.util.concurrent.TimeUnit
     /**
      * Reset the statistics in DB
      */
-//    fun resetStatistics(): Future<*> {
-//        return runOnDbThread {
-//            val adapter = getInstance()
-//            adapter.open()
-//            adapter.resetAllMediaPlayedDuration()
-//            adapter.close()
-//        }
-//    }
-
-    suspend fun resetStatistics(): Unit = withContext(Dispatchers.IO) {
-        val result = async {
+    fun resetStatistics() : Job {
+        return runOnDbThread {
             val adapter = getInstance()
             adapter.open()
             adapter.resetAllMediaPlayedDuration()
             adapter.close()
         }
-        result.await()
     }
+
     /**
      * Submit to the DB thread only if caller is not already on the DB thread. Otherwise,
      * just execute synchronously
      */
-    private fun runOnDbThread(runnable: Runnable): Future<*> {
-        if ("DatabaseExecutor" == Thread.currentThread().name) {
-            runnable.run()
-            return Futures.immediateFuture<Any?>(null)
-        } else return dbExec.submit(runnable)
+//    private fun runOnDbThread(runnable: Runnable): Future<*> {
+//        if ("DatabaseExecutor" == Thread.currentThread().name) {
+//            runnable.run()
+//            return Futures.immediateFuture<Any?>(null)
+//        } else return dbExec.submit(runnable)
+//    }
+
+    private fun runOnDbThread(block: suspend () -> Unit) : Job {
+        Logd(TAG, "DBWriter runOnDbThread")
+        return ioScope.launch {
+            if (Dispatchers.IO == coroutineContext[ContinuationInterceptor]) {
+                block()
+            } else {
+                withContext(Dispatchers.IO) {
+                    block()
+                }
+            }
+        }
     }
 }

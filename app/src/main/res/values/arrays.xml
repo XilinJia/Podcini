@@ -223,16 +223,24 @@
     </string-array>
 
     <string-array name="default_page_values">
-        <item>QueueFragment</item>
-        <item>EpisodesFragment</item>
         <item>SubscriptionFragment</item>
+        <item>QueueFragment</item>
+        <item>AllEpisodesFragment</item>
+        <item>DownloadsFragment</item>
+        <item>PlaybackHistoryFragment</item>
+        <item>AddFeedFragment</item>
+        <item>StatisticsFragment</item>
         <item>remember</item>
     </string-array>
 
     <string-array name="default_page_titles">
+        <item>@string/subscriptions_label</item>
         <item>@string/queue_label</item>
         <item>@string/episodes_label</item>
-        <item>@string/subscriptions_label</item>
+        <item>@string/downloads_label</item>
+        <item>@string/playback_history_label</item>
+        <item>@string/add_feed_label</item>
+        <item>@string/statistics_label</item>
         <item>@string/remember_last_page</item>
     </string-array>
 </resources>

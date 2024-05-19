@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.util
 
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.receiver.SPAReceiver
 import android.content.Context
 import android.content.Intent
@@ -31,12 +32,12 @@ object SPAUtil {
             Log.wtf(TAG, "Unable to get application context")
             return false
         }
-        val prefs = PreferenceManager.getDefaultSharedPreferences(appContext)
-        if (!prefs.getBoolean(PREF_HAS_QUERIED_SP_APPS, false)) {
+//        val prefs = PreferenceManager.getDefaultSharedPreferences(appContext)
+        if (!appPrefs.getBoolean(PREF_HAS_QUERIED_SP_APPS, false)) {
             appContext.sendBroadcast(Intent(SPAReceiver.ACTION_SP_APPS_QUERY_FEEDS))
             Logd(TAG, "Sending SP_APPS_QUERY_FEEDS intent")
 
-            val editor = prefs.edit()
+            val editor = appPrefs.edit()
             editor.putBoolean(PREF_HAS_QUERIED_SP_APPS, true)
             editor.apply()
 

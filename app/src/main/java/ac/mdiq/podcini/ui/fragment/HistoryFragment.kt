@@ -11,7 +11,6 @@ import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.EpisodeItemListAdapter
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.dialog.ItemSortDialog
-import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.ui.statistics.subscriptions.DatesFilterDialog
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
 import ac.mdiq.podcini.util.DateFormatter
@@ -28,18 +27,18 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.*
 
-@UnstableApi class PlaybackHistoryFragment : BaseEpisodesListFragment() {
+@UnstableApi class HistoryFragment : BaseEpisodesListFragment() {
 
     private var sortOrder : SortOrder = SortOrder.PLAYED_DATE_NEW_OLD
     private var startDate : Long = 0L
     private var endDate : Long = Date().time
 
     override fun getFragmentTag(): String {
-        return "PlaybackHistoryFragment"
+        return TAG
     }
 
     override fun getPrefName(): String {
-        return "PlaybackHistoryFragment"
+        return TAG
     }
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -69,7 +68,7 @@ import java.util.*
             }
             override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
                 super.onCreateContextMenu(menu, v, menuInfo)
-                MenuItemUtils.setOnClickListeners(menu) { item: MenuItem -> this@PlaybackHistoryFragment.onContextItemSelected(item) }
+                MenuItemUtils.setOnClickListeners(menu) { item: MenuItem -> this@HistoryFragment.onContextItemSelected(item) }
             }
         }
         listAdapter.setOnSelectModeListener(this)
@@ -131,6 +130,7 @@ import java.util.*
     private fun procFlowEvents() {
         lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: $event")
                 when (event) {
                     is FlowEvent.HistoryEvent -> {
                         sortOrder = event.sortOrder
@@ -177,6 +177,6 @@ import java.util.*
     }
 
     companion object {
-        const val TAG: String = "PlaybackHistoryFragment"
+        const val TAG: String = "HistoryFragment"
     }
 }

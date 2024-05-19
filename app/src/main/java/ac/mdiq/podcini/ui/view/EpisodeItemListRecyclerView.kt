@@ -8,6 +8,8 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.receiver.PlayerWidget.Companion.PREFS_NAME
+import android.content.SharedPreferences
 
 class EpisodeItemListRecyclerView : RecyclerView {
     private lateinit var layoutManager: LinearLayoutManager
@@ -46,16 +48,16 @@ class EpisodeItemListRecyclerView : RecyclerView {
         val firstItemView = layoutManager.findViewByPosition(firstItem)
         val topOffset = firstItemView?.top?.toFloat() ?: 0f
 
-        context.getSharedPreferences(TAG, Context.MODE_PRIVATE).edit()
+        prefs!!.edit()
             .putInt(PREF_PREFIX_SCROLL_POSITION + tag, firstItem)
             .putInt(PREF_PREFIX_SCROLL_OFFSET + tag, topOffset.toInt())
             .apply()
     }
 
     fun restoreScrollPosition(tag: String) {
-        val prefs = context.getSharedPreferences(TAG, Context.MODE_PRIVATE)
-        val position = prefs.getInt(PREF_PREFIX_SCROLL_POSITION + tag, 0)
-        val offset = prefs.getInt(PREF_PREFIX_SCROLL_OFFSET + tag, 0)
+//        val prefs = context.getSharedPreferences(TAG, Context.MODE_PRIVATE)
+        val position = prefs!!.getInt(PREF_PREFIX_SCROLL_POSITION + tag, 0)
+        val offset = prefs!!.getInt(PREF_PREFIX_SCROLL_OFFSET + tag, 0)
         if (position > 0 || offset > 0) layoutManager.scrollToPositionWithOffset(position, offset)
     }
 
@@ -71,5 +73,11 @@ class EpisodeItemListRecyclerView : RecyclerView {
         private const val TAG = "EpisodeItemListRecyclerView"
         private const val PREF_PREFIX_SCROLL_POSITION = "scroll_position_"
         private const val PREF_PREFIX_SCROLL_OFFSET = "scroll_offset_"
+
+        var prefs: SharedPreferences? = null
+
+        fun getSharedPrefs(context: Context) {
+            if (prefs == null) prefs = context.getSharedPreferences(TAG, Context.MODE_PRIVATE)
+        }
     }
 }

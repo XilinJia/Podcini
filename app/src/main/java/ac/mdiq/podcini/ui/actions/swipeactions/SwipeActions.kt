@@ -3,18 +3,21 @@ package ac.mdiq.podcini.ui.actions.swipeactions
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
 import ac.mdiq.podcini.ui.dialog.SwipeActionsDialog
-import ac.mdiq.podcini.ui.fragment.*
+import ac.mdiq.podcini.ui.fragment.AllEpisodesFragment
+import ac.mdiq.podcini.ui.fragment.DownloadsFragment
+import ac.mdiq.podcini.ui.fragment.HistoryFragment
+import ac.mdiq.podcini.ui.fragment.QueueFragment
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.Canvas
+import androidx.annotation.OptIn
 import androidx.core.graphics.ColorUtils
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.*
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -26,7 +29,7 @@ import kotlin.math.min
 import kotlin.math.sin
 
 open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private val tag: String) :
-    ItemTouchHelper.SimpleCallback(dragDirs, ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT), LifecycleObserver {
+    ItemTouchHelper.SimpleCallback(dragDirs, ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT), DefaultLifecycleObserver {
 
     private var filter: FeedItemFilter? = null
 
@@ -36,15 +39,17 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
     private val itemTouchHelper = ItemTouchHelper(this)
 
     init {
-        reloadPreference()
-        fragment.lifecycle.addObserver(this)
+        actions = getPrefs(fragment.requireContext(), tag)
     }
 
     constructor(fragment: Fragment, tag: String) : this(0, fragment, tag)
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_START)
-    fun reloadPreference() {
+    override fun onStart(owner: LifecycleOwner) {
         actions = getPrefs(fragment.requireContext(), tag)
+    }
+
+    override fun onStop(owner: LifecycleOwner) {
+        actions = null
     }
 
     fun setFilter(filter: FeedItemFilter?) {
@@ -69,19 +74,10 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
 
     @UnstableApi override fun onSwiped(viewHolder: RecyclerView.ViewHolder, swipeDir: Int) {
         if (actions != null && !actions!!.hasActions()) {
-            //open settings dialog if no prefs are set
             showDialog()
-//            SwipeActionsDialog(fragment.requireContext(), tag).show(object : SwipeActionsDialog.Callback {
-//                override fun onCall() {
-//                    this@SwipeActions.reloadPreference()
-//                    EventBus.getDefault().post(SwipeActionsChangedEvent())
-//                }
-//            })
             return
         }
-
         val item = (viewHolder as EpisodeItemViewHolder).feedItem
-
         if (actions != null && item != null && filter != null)
                 (if (swipeDir == ItemTouchHelper.RIGHT) actions!!.right else actions!!.left)?.performAction(item, fragment, filter!!)
     }
@@ -89,7 +85,7 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
     fun showDialog() {
         SwipeActionsDialog(fragment.requireContext(), tag).show(object : SwipeActionsDialog.Callback {
             override fun onCall() {
-                this@SwipeActions.reloadPreference()
+                actions = getPrefs(fragment.requireContext(), tag)
                 EventFlow.postEvent(FlowEvent.SwipeActionsChangedEvent())
             }
         })
@@ -124,12 +120,10 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
 
         if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE && wontLeave) {
             swipeOutEnabled = false
-
             val swipeThresholdReached = displacementPercentage == 1f
 
             // Move slower when getting near the maxMovement
-            dx = sign * maxMovement * sin((Math.PI / 2) * displacementPercentage)
-                .toFloat()
+            dx = sign * maxMovement * sin((Math.PI / 2) * displacementPercentage).toFloat()
 
             if (isCurrentlyActive) {
                 val dir = if (dx > 0) ItemTouchHelper.RIGHT else ItemTouchHelper.LEFT
@@ -202,9 +196,15 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
     }
 
     companion object {
-        const val PREF_NAME: String = "SwipeActionsPrefs"
+        const val SWIPE_ACTIONS_PREF_NAME: String = "SwipeActionsPrefs"
         const val KEY_PREFIX_SWIPEACTIONS: String = "PrefSwipeActions"
         const val KEY_PREFIX_NO_ACTION: String = "PrefNoSwipeAction"
+
+        var prefs: SharedPreferences? = null
+
+        fun getSharedPrefs(context: Context) {
+            if (prefs == null) prefs = context.getSharedPreferences(SWIPE_ACTIONS_PREF_NAME, Context.MODE_PRIVATE)
+        }
 
         @JvmField
         val swipeActions: List<SwipeAction> = Collections.unmodifiableList(
@@ -214,9 +214,7 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
         )
 
         private fun getPrefs(context: Context, tag: String, defaultActions: String): Actions {
-            val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-            val prefsString = prefs.getString(KEY_PREFIX_SWIPEACTIONS + tag, defaultActions)
-
+            val prefsString = prefs!!.getString(KEY_PREFIX_SWIPEACTIONS + tag, defaultActions)
             return Actions(prefsString)
         }
 
@@ -224,12 +222,12 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
             return getPrefs(context, tag, "")
         }
 
-        @JvmStatic
+        @OptIn(UnstableApi::class) @JvmStatic
         fun getPrefsWithDefaults(context: Context, tag: String): Actions {
             val defaultActions = when (tag) {
                 QueueFragment.TAG -> SwipeAction.NO_ACTION + "," + SwipeAction.NO_ACTION
                 DownloadsFragment.TAG -> SwipeAction.NO_ACTION + "," + SwipeAction.NO_ACTION
-                PlaybackHistoryFragment.TAG -> SwipeAction.NO_ACTION + "," + SwipeAction.NO_ACTION
+                HistoryFragment.TAG -> SwipeAction.NO_ACTION + "," + SwipeAction.NO_ACTION
                 AllEpisodesFragment.TAG -> SwipeAction.NO_ACTION + "," + SwipeAction.NO_ACTION
                 else -> SwipeAction.NO_ACTION + "," + SwipeAction.NO_ACTION
             }
@@ -238,8 +236,7 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
 
         @JvmStatic
         fun isSwipeActionEnabled(context: Context, tag: String): Boolean {
-            val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-            return prefs.getBoolean(KEY_PREFIX_NO_ACTION + tag, true)
+            return prefs!!.getBoolean(KEY_PREFIX_NO_ACTION + tag, true)
         }
     }
 }

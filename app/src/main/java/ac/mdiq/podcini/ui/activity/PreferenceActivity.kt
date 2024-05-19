@@ -161,6 +161,7 @@ class PreferenceActivity : AppCompatActivity(), SearchPreferenceResultListener {
     private fun procFlowEvents() {
         lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
+                Logd("PreferenceActivity", "Received event: ${event}")
                 when (event) {
                     is FlowEvent.MessageEvent -> onEventMainThread(event)
                     else -> {}

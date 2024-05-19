@@ -7,6 +7,7 @@ import android.util.Log
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
 import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.util.Logd
+import android.content.SharedPreferences
 import okhttp3.CacheControl
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -80,6 +81,11 @@ class ItunesTopListLoader(private val context: Context) {
         const val PREFS: String = "CountryRegionPrefs"
         const val COUNTRY_CODE_UNSET: String = "99"
         private const val NUM_LOADED = 25
+
+        var prefs: SharedPreferences? = null
+        fun getSharedPrefs(context: Context) {
+            if (prefs == null) prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        }
 
         private fun removeSubscribed(suggestedPodcasts: List<PodcastSearchResult>, subscribedFeeds: List<Feed>, limit: Int): List<PodcastSearchResult> {
             val subscribedPodcastsSet: MutableSet<String> = HashSet()

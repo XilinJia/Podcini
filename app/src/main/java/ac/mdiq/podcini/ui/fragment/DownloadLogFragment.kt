@@ -7,7 +7,7 @@ import ac.mdiq.podcini.storage.DBWriter
 import ac.mdiq.podcini.storage.model.download.DownloadResult
 import ac.mdiq.podcini.ui.adapter.DownloadLogAdapter
 import ac.mdiq.podcini.ui.dialog.DownloadLogDetailsDialog
-import ac.mdiq.podcini.ui.view.EmptyViewHandler
+import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
@@ -83,6 +83,7 @@ class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, To
     private fun procFlowEvents() {
         lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: $event")
                 when (event) {
                     is FlowEvent.DownloadLogEvent -> loadDownloadLog()
                     else -> {}

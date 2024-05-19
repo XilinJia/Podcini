@@ -4,13 +4,14 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.NavListitemBinding
 import ac.mdiq.podcini.databinding.NavSectionItemBinding
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.UserPreferences.episodeCacheSize
 import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
+import ac.mdiq.podcini.storage.DBWriter.ioScope
 import ac.mdiq.podcini.storage.NavDrawerData.FeedDrawerItem
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.ui.fragment.*
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
-import ac.mdiq.podcini.util.Logd
 import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
@@ -28,6 +29,9 @@ import androidx.media3.common.util.UnstableApi
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.ArrayUtils
 import java.lang.ref.WeakReference
 import java.text.NumberFormat
@@ -49,9 +53,7 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
 
     init {
         loadItems()
-
-        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        prefs.registerOnSharedPreferenceChangeListener(this)
+        appPrefs.registerOnSharedPreferenceChangeListener(this@NavListAdapter)
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String?) {
@@ -78,7 +80,7 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
             QueueFragment.TAG -> R.drawable.ic_playlist_play
             AllEpisodesFragment.TAG -> R.drawable.ic_feed
             DownloadsFragment.TAG -> R.drawable.ic_download
-            PlaybackHistoryFragment.TAG -> R.drawable.ic_history
+            HistoryFragment.TAG -> R.drawable.ic_history
             SubscriptionFragment.TAG -> R.drawable.ic_subscriptions
             StatisticsFragment.TAG -> R.drawable.ic_chart_box
             AddFeedFragment.TAG -> R.drawable.ic_add
@@ -200,7 +202,7 @@ class NavListAdapter(private val itemAccess: ItemAccess, context: Activity) :
             }
         }
 
-        Logd("NavListAdapter", "bindNavView getting drawable for: ${fragmentTags[position]}")
+//        Logd("NavListAdapter", "bindNavView getting drawable for: ${fragmentTags[position]}")
         holder.image.setImageResource(getDrawable(fragmentTags[position]))
     }
 

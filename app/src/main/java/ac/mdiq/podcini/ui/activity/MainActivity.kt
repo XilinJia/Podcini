@@ -3,6 +3,7 @@ package ac.mdiq.podcini.ui.activity
 import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.MainActivityBinding
+import ac.mdiq.podcini.net.discovery.ItunesTopListLoader
 import ac.mdiq.podcini.net.download.FeedUpdateManager
 import ac.mdiq.podcini.net.download.FeedUpdateManager.restartUpdateAlarm
 import ac.mdiq.podcini.net.download.FeedUpdateManager.runOnceOrAsk
@@ -16,14 +17,19 @@ import ac.mdiq.podcini.preferences.UserPreferences.backButtonOpensDrawer
 import ac.mdiq.podcini.preferences.UserPreferences.defaultPage
 import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
 import ac.mdiq.podcini.receiver.MediaButtonReceiver.Companion.createIntent
+import ac.mdiq.podcini.receiver.PlayerWidget
 import ac.mdiq.podcini.storage.DBReader
+import ac.mdiq.podcini.storage.DBWriter.ioScope
 import ac.mdiq.podcini.storage.model.download.DownloadStatus
+import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
 import ac.mdiq.podcini.ui.activity.appstartintent.MainActivityStarter
 import ac.mdiq.podcini.ui.dialog.RatingDialog
 import ac.mdiq.podcini.ui.fragment.*
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getDrawableFromAttr
-import ac.mdiq.podcini.ui.view.LockableBottomSheetBehavior
+import ac.mdiq.podcini.ui.utils.TransitionEffect
+import ac.mdiq.podcini.ui.view.EpisodeItemListRecyclerView
+import ac.mdiq.podcini.ui.utils.LockableBottomSheetBehavior
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
@@ -110,7 +116,18 @@ class MainActivity : CastEnabledActivity() {
             StrictMode.setThreadPolicy(builder.build())
         }
 
-        DBReader.updateFeedList()
+        ioScope.launch {
+            NavDrawerFragment.getSharedPrefs(this@MainActivity)
+            SwipeActions.getSharedPrefs(this@MainActivity)
+            QueueFragment.getSharedPrefs(this@MainActivity)
+            DBReader.updateFeedList()
+            EpisodeItemListRecyclerView.getSharedPrefs(this@MainActivity)
+            PlayerDetailsFragment.getSharedPrefs(this@MainActivity)
+            PlayerWidget.getSharedPrefs(this@MainActivity)
+            StatisticsFragment.getSharedPrefs(this@MainActivity)
+            OnlineFeedViewFragment.getSharedPrefs(this@MainActivity)
+            ItunesTopListLoader.getSharedPrefs(this@MainActivity)
+        }
 
         if (savedInstanceState != null) ensureGeneratedViewIdGreaterThan(savedInstanceState.getInt(KEY_GENERATED_VIEW_ID, 0))
 
@@ -145,9 +162,8 @@ class MainActivity : CastEnabledActivity() {
 
         val fm = supportFragmentManager
         if (fm.findFragmentByTag(MAIN_FRAGMENT_TAG) == null) {
-            if (UserPreferences.DEFAULT_PAGE_REMEMBER != defaultPage) {
-                loadFragment(defaultPage, null)
-            } else {
+            if (UserPreferences.DEFAULT_PAGE_REMEMBER != defaultPage) loadFragment(defaultPage, null)
+            else {
                 val lastFragment = NavDrawerFragment.getLastNavFragment(this)
                 if (ArrayUtils.contains(NavDrawerFragment.NAV_DRAWER_TAGS, lastFragment)) {
                     loadFragment(lastFragment, null)
@@ -173,14 +189,15 @@ class MainActivity : CastEnabledActivity() {
         navDrawer = findViewById(R.id.navDrawerFragment)
         audioPlayerFragmentView = findViewById(R.id.audioplayerFragment)
 
-        checkFirstLaunch()
+        ioScope.launch {  checkFirstLaunch() }
+
         this.bottomSheet = BottomSheetBehavior.from(audioPlayerFragmentView) as LockableBottomSheetBehavior<*>
         this.bottomSheet.isHideable = false
         this.bottomSheet.isDraggable = false
         this.bottomSheet.setBottomSheetCallback(bottomSheetCallback)
 
         restartUpdateAlarm(this, false)
-        SynchronizationQueueSink.syncNowIfNotSyncedRecently()
+        ioScope.launch {  SynchronizationQueueSink.syncNowIfNotSyncedRecently() }
 
         WorkManager.getInstance(this)
             .getWorkInfosByTagLiveData(FeedUpdateManager.WORK_TAG_FEED_UPDATE)
@@ -376,7 +393,7 @@ class MainActivity : CastEnabledActivity() {
             QueueFragment.TAG -> fragment = QueueFragment()
             AllEpisodesFragment.TAG -> fragment = AllEpisodesFragment()
             DownloadsFragment.TAG -> fragment = DownloadsFragment()
-            PlaybackHistoryFragment.TAG -> fragment = PlaybackHistoryFragment()
+            HistoryFragment.TAG -> fragment = HistoryFragment()
             AddFeedFragment.TAG -> fragment = AddFeedFragment()
             SubscriptionFragment.TAG -> fragment = SubscriptionFragment()
             StatisticsFragment.TAG -> fragment = StatisticsFragment()
@@ -389,7 +406,7 @@ class MainActivity : CastEnabledActivity() {
         }
         if (args != null) fragment.arguments = args
 
-        NavDrawerFragment.saveLastNavFragment(this, tag)
+        ioScope.launch { NavDrawerFragment.saveLastNavFragment(this@MainActivity, tag) }
         loadFragment(fragment)
     }
 
@@ -560,6 +577,7 @@ class MainActivity : CastEnabledActivity() {
     private fun procFlowEvents() {
         lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: $event")
                 when (event) {
                     is FlowEvent.MessageEvent -> onEventMainThread(event)
                     else -> {}
@@ -660,7 +678,7 @@ class MainActivity : CastEnabledActivity() {
                 val feature = uri.getQueryParameter("page") ?: return
                 when (feature) {
                     "DOWNLOADS" -> loadFragment(DownloadsFragment.TAG, null)
-                    "HISTORY" -> loadFragment(PlaybackHistoryFragment.TAG, null)
+                    "HISTORY" -> loadFragment(HistoryFragment.TAG, null)
                     "EPISODES" -> loadFragment(AllEpisodesFragment.TAG, null)
                     "QUEUE" -> loadFragment(QueueFragment.TAG, null)
                     "SUBSCRIPTIONS" -> loadFragment(SubscriptionFragment.TAG, null)

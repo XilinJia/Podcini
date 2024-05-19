@@ -10,7 +10,8 @@ import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.dialog.EditUrlSettingsDialog
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.ui.statistics.feed.FeedStatisticsFragment
-import ac.mdiq.podcini.ui.view.ToolbarIconTintManager
+import ac.mdiq.podcini.ui.utils.TransitionEffect
+import ac.mdiq.podcini.ui.utils.ToolbarIconTintManager
 import ac.mdiq.podcini.util.IntentUtils
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.ShareUtils
@@ -45,7 +46,6 @@ import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

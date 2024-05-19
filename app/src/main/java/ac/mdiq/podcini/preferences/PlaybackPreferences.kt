@@ -1,6 +1,7 @@
 package ac.mdiq.podcini.preferences
 
 import ac.mdiq.podcini.playback.base.PlayerStatus
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
@@ -14,7 +15,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.util.Log
-import androidx.preference.PreferenceManager
 
 /**
  * Provides access to preferences set by the playback service. A private
@@ -88,43 +88,43 @@ class PlaybackPreferences private constructor() : OnSharedPreferenceChangeListen
         const val PLAYER_STATUS_OTHER: Int = 3
 
         private var instance: PlaybackPreferences? = null
-        private lateinit var prefs: SharedPreferences
+//        private lateinit var prefs: SharedPreferences
 
         @JvmStatic
         fun init(context: Context) {
             instance = PlaybackPreferences()
-            prefs = PreferenceManager.getDefaultSharedPreferences(context)
-            prefs.registerOnSharedPreferenceChangeListener(instance)
+//            prefs = PreferenceManager.getDefaultSharedPreferences(context)
+            appPrefs.registerOnSharedPreferenceChangeListener(instance)
         }
 
         @JvmStatic
         val currentlyPlayingMediaType: Long
-            get() = prefs.getLong(PREF_CURRENTLY_PLAYING_MEDIA_TYPE, NO_MEDIA_PLAYING)
+            get() = appPrefs.getLong(PREF_CURRENTLY_PLAYING_MEDIA_TYPE, NO_MEDIA_PLAYING)
 
         @JvmStatic
         val currentlyPlayingFeedMediaId: Long
-            get() = prefs.getLong(PREF_CURRENTLY_PLAYING_FEEDMEDIA_ID, NO_MEDIA_PLAYING)
+            get() = appPrefs.getLong(PREF_CURRENTLY_PLAYING_FEEDMEDIA_ID, NO_MEDIA_PLAYING)
 
         @JvmStatic
         val currentEpisodeIsVideo: Boolean
-            get() = prefs.getBoolean(PREF_CURRENT_EPISODE_IS_VIDEO, false)
+            get() = appPrefs.getBoolean(PREF_CURRENT_EPISODE_IS_VIDEO, false)
 
         @JvmStatic
         val currentPlayerStatus: Int
-            get() = prefs.getInt(PREF_CURRENT_PLAYER_STATUS, PLAYER_STATUS_OTHER)
+            get() = appPrefs.getInt(PREF_CURRENT_PLAYER_STATUS, PLAYER_STATUS_OTHER)
 
         @JvmStatic
         var currentlyPlayingTemporaryPlaybackSpeed: Float
-            get() = prefs.getFloat(PREF_CURRENTLY_PLAYING_TEMPORARY_PLAYBACK_SPEED, FeedPreferences.SPEED_USE_GLOBAL)
+            get() = appPrefs.getFloat(PREF_CURRENTLY_PLAYING_TEMPORARY_PLAYBACK_SPEED, FeedPreferences.SPEED_USE_GLOBAL)
             set(speed) {
-                val editor = prefs.edit()
+                val editor = appPrefs.edit()
                 editor.putFloat(PREF_CURRENTLY_PLAYING_TEMPORARY_PLAYBACK_SPEED, speed)
                 editor.apply()
             }
 
         @JvmStatic
         fun writeNoMediaPlaying() {
-            val editor = prefs.edit()
+            val editor = appPrefs.edit()
             editor.putLong(PREF_CURRENTLY_PLAYING_MEDIA_TYPE, NO_MEDIA_PLAYING)
             editor.putLong(PREF_CURRENTLY_PLAYING_FEED_ID, NO_MEDIA_PLAYING)
             editor.putLong(PREF_CURRENTLY_PLAYING_FEEDMEDIA_ID, NO_MEDIA_PLAYING)
@@ -135,7 +135,7 @@ class PlaybackPreferences private constructor() : OnSharedPreferenceChangeListen
         @JvmStatic
         fun writeMediaPlaying(playable: Playable?, playerStatus: PlayerStatus, item: FeedItem? = null) {
             Logd(TAG, "Writing playback preferences ${playable?.getIdentifier()}")
-            val editor = prefs.edit()
+            val editor = appPrefs.edit()
 
             if (playable == null) {
                 writeNoMediaPlaying()
@@ -162,14 +162,14 @@ class PlaybackPreferences private constructor() : OnSharedPreferenceChangeListen
         fun writePlayerStatus(playerStatus: PlayerStatus) {
             Logd(TAG, "Writing player status playback preferences")
 
-            val editor = prefs.edit()
+            val editor = appPrefs.edit()
             editor.putInt(PREF_CURRENT_PLAYER_STATUS, getCurrentPlayerStatusAsInt(playerStatus))
             editor.apply()
         }
 
         @JvmStatic
         fun clearCurrentlyPlayingTemporaryPlaybackSpeed() {
-            val editor = prefs.edit()
+            val editor = appPrefs.edit()
             editor.remove(PREF_CURRENTLY_PLAYING_TEMPORARY_PLAYBACK_SPEED)
             editor.apply()
         }
@@ -190,40 +190,23 @@ class PlaybackPreferences private constructor() : OnSharedPreferenceChangeListen
          * @return The restored Playable object
          */
         @JvmStatic
-        fun createInstanceFromPreferences(context: Context): Playable? {
-            val currentlyPlayingMedia = currentlyPlayingMediaType
-            Logd(TAG, "currentlyPlayingMedia: $currentlyPlayingMedia")
-            if (currentlyPlayingMedia != NO_MEDIA_PLAYING) {
-                val prefs = PreferenceManager.getDefaultSharedPreferences(context.applicationContext)
-                return createInstanceFromPreferences(currentlyPlayingMedia.toInt(), prefs)
+        fun loadPlayableFromPreferences(): Playable? {
+            val currentlyPlayingType = currentlyPlayingMediaType
+            Logd(TAG, "loadPlayableFromPreferences currentlyPlayingType: $currentlyPlayingType")
+            if (currentlyPlayingType != NO_MEDIA_PLAYING) {
+                val type = currentlyPlayingType.toInt()
+                if (type == FeedMedia.PLAYABLE_TYPE_FEEDMEDIA) {
+                    var result: Playable? = null
+                    val mediaId = appPrefs.getLong(FeedMedia.PREF_MEDIA_ID, -1)
+                    if (mediaId != -1L) result = DBReader.getFeedMedia(mediaId)
+                    Logd(TAG, "playable loaded: ${result?.getIdentifier()}")
+                    return result
+                } else {
+                    Log.e(TAG, "Could not restore Playable object from preferences")
+                    return null
+                }
             }
             return null
-        }
-
-        /**
-         * Restores a playable object from a sharedPreferences file. This method might load data from the database,
-         * depending on the type of playable that was restored.
-         *
-         * @param type An integer that represents the type of the Playable object
-         * that is restored.
-         * @param pref The SharedPreferences file from which the Playable object
-         * is restored
-         * @return The restored Playable object
-         */
-        private fun createInstanceFromPreferences(type: Int, pref: SharedPreferences): Playable? {
-            if (type == FeedMedia.PLAYABLE_TYPE_FEEDMEDIA) {
-                return createFeedMediaInstance(pref)
-            } else {
-                Log.e(TAG, "Could not restore Playable object from preferences")
-                return null
-            }
-        }
-
-        private fun createFeedMediaInstance(pref: SharedPreferences): Playable? {
-            var result: Playable? = null
-            val mediaId = pref.getLong(FeedMedia.PREF_MEDIA_ID, -1)
-            if (mediaId != -1L) result = DBReader.getFeedMedia(mediaId)
-            return result
         }
     }
 }

@@ -286,7 +286,7 @@ class FeedSettingsFragment : Fragment() {
                         val setPreferencesFuture = DBWriter.persistFeedPreferences(feedPreferences!!)
                         Thread({
                             try {
-                                setPreferencesFuture.get()
+                                runBlocking { setPreferencesFuture.join() }
                             } catch (e: InterruptedException) {
                                 e.printStackTrace()
                             } catch (e: ExecutionException) {

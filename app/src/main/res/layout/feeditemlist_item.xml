@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/feeditemlist_item"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     tools:ignore="MergeRootFrame">
@@ -80,6 +81,7 @@
                     android:layout_height="@dimen/thumbnail_length_queue_item"
                     android:layout_centerVertical="true"
                     android:importantForAccessibility="no"
+                    android:src="@drawable/ic_launcher_foreground"
                     tools:src="@tools:sample/avatars" />
 
                 <ImageView

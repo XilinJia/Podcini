@@ -105,6 +105,7 @@ import kotlin.math.min
     private fun procFlowEvents() {
         lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: $event")
                 when (event) {
                     is FlowEvent.AllEpisodesFilterChangedEvent -> page = 1
                     else -> {}

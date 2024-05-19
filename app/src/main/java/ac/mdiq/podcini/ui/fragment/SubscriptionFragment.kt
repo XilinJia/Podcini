@@ -16,13 +16,11 @@ import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.adapter.SubscriptionsAdapter
 import ac.mdiq.podcini.ui.dialog.FeedSortDialog
 import ac.mdiq.podcini.ui.dialog.SubscriptionsFilterDialog
-import ac.mdiq.podcini.ui.view.EmptyViewHandler
-import ac.mdiq.podcini.ui.view.LiftOnScrollListener
+import ac.mdiq.podcini.ui.utils.EmptyViewHandler
+import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
-import android.content.Context
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -62,7 +60,7 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
     private lateinit var toolbar: MaterialToolbar
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var progressBar: ProgressBar
-    private lateinit var prefs: SharedPreferences
+//    private lateinit var prefs: SharedPreferences
     private lateinit var speedDialView: SpeedDialView
 
     private var tagFilterIndex = 1
@@ -78,7 +76,7 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
         super.onCreate(savedInstanceState)
         retainInstance = true
 
-        prefs = requireActivity().getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+//        prefs = requireActivity().getSharedPreferences(PREFS, Context.MODE_PRIVATE)
     }
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -236,6 +234,7 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
     private fun procFlowEvents() {
         lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: $event")
                 when (event) {
                     is FlowEvent.FeedListUpdateEvent -> onFeedListChanged(event)
                     is FlowEvent.UnreadItemsUpdateEvent -> loadSubscriptions()

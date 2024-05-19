@@ -1,6 +1,8 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.playback.service.PlaybackService
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion
 import ac.mdiq.podcini.preferences.UserPreferences.allEpisodesSortOrder
 import ac.mdiq.podcini.preferences.UserPreferences.prefFilterAllEpisodes
 import ac.mdiq.podcini.storage.DBReader
@@ -99,6 +101,7 @@ import org.apache.commons.lang3.StringUtils
     private fun procFlowEvents() {
         lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: $event")
                 when (event) {
                     is FlowEvent.AllEpisodesFilterChangedEvent -> onFilterChanged(event)
                     else -> {}

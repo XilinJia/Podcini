@@ -7,6 +7,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.shouldShowRemainingTime
 import ac.mdiq.podcini.receiver.MediaButtonReceiver.Companion.createPendingIntent
 import ac.mdiq.podcini.receiver.PlayerWidget
 import ac.mdiq.podcini.receiver.PlayerWidget.Companion.isEnabled
+import ac.mdiq.podcini.receiver.PlayerWidget.Companion.prefs
 import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.ui.activity.appstartintent.MainActivityStarter
@@ -14,13 +15,10 @@ import ac.mdiq.podcini.ui.activity.appstartintent.PlaybackSpeedActivityStarter
 import ac.mdiq.podcini.ui.activity.appstartintent.VideoPlayerActivityStarter
 import ac.mdiq.podcini.util.Converter.getDurationStringLong
 import ac.mdiq.podcini.util.TimeSpeedConverter
-import android.R.attr.bitmap
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Matrix
 import android.graphics.drawable.BitmapDrawable
 import android.util.Log
 import android.view.KeyEvent
@@ -165,16 +163,16 @@ object WidgetUpdater {
 
         for (id in widgetIds) {
             val options = manager.getAppWidgetOptions(id)
-            val prefs = context.getSharedPreferences(PlayerWidget.PREFS_NAME, Context.MODE_PRIVATE)
+//            val prefs = context.getSharedPreferences(PlayerWidget.PREFS_NAME, Context.MODE_PRIVATE)
             val minWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
             val columns = getCellsForSize(minWidth)
             if (columns < 3) views.setViewVisibility(R.id.layout_center, View.INVISIBLE)
             else views.setViewVisibility(R.id.layout_center, View.VISIBLE)
 
-            val showPlaybackSpeed = prefs.getBoolean(PlayerWidget.KEY_WIDGET_PLAYBACK_SPEED + id, true)
-            val showRewind = prefs.getBoolean(PlayerWidget.KEY_WIDGET_REWIND + id, true)
-            val showFastForward = prefs.getBoolean(PlayerWidget.KEY_WIDGET_FAST_FORWARD + id, true)
-            val showSkip = prefs.getBoolean(PlayerWidget.KEY_WIDGET_SKIP + id, true)
+            val showPlaybackSpeed = prefs!!.getBoolean(PlayerWidget.KEY_WIDGET_PLAYBACK_SPEED + id, true)
+            val showRewind = prefs!!.getBoolean(PlayerWidget.KEY_WIDGET_REWIND + id, true)
+            val showFastForward = prefs!!.getBoolean(PlayerWidget.KEY_WIDGET_FAST_FORWARD + id, true)
+            val showSkip = prefs!!.getBoolean(PlayerWidget.KEY_WIDGET_SKIP + id, true)
 
             if (showPlaybackSpeed || showRewind || showSkip || showFastForward) {
                 views.setInt(R.id.extendedButtonsContainer, "setVisibility", View.VISIBLE)
@@ -188,7 +186,7 @@ object WidgetUpdater {
                 views.setInt(R.id.butPlay, "setVisibility", View.VISIBLE)
             }
 
-            val backgroundColor = prefs.getInt(PlayerWidget.KEY_WIDGET_COLOR + id, PlayerWidget.DEFAULT_COLOR)
+            val backgroundColor = prefs!!.getInt(PlayerWidget.KEY_WIDGET_COLOR + id, PlayerWidget.DEFAULT_COLOR)
             views.setInt(R.id.widgetLayout, "setBackgroundColor", backgroundColor)
 
             manager.updateAppWidget(id, views)

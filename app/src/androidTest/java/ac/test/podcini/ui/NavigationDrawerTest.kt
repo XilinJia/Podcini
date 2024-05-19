@@ -147,12 +147,12 @@ class NavigationDrawerTest {
         val hidden = hiddenDrawerItems
         Assert.assertEquals(2, hidden!!.size.toLong())
         Assert.assertTrue(hidden.contains(AllEpisodesFragment.TAG))
-        Assert.assertTrue(hidden.contains(PlaybackHistoryFragment.TAG))
+        Assert.assertTrue(hidden.contains(HistoryFragment.TAG))
     }
 
     @Test
     fun testDrawerPreferencesUnhideSomeElements() {
-        var hidden = listOf(PlaybackHistoryFragment.TAG, DownloadsFragment.TAG)
+        var hidden = listOf(HistoryFragment.TAG, DownloadsFragment.TAG)
         hiddenDrawerItems = hidden
         activityRule.launchActivity(Intent())
         openNavDrawer()
@@ -166,7 +166,7 @@ class NavigationDrawerTest {
         hidden = hiddenDrawerItems?.filterNotNull()?: listOf()
         Assert.assertEquals(2, hidden.size.toLong())
         Assert.assertTrue(hidden.contains(QueueFragment.TAG))
-        Assert.assertTrue(hidden.contains(PlaybackHistoryFragment.TAG))
+        Assert.assertTrue(hidden.contains(HistoryFragment.TAG))
     }
 
 

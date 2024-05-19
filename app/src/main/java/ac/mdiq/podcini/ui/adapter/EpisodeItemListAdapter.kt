@@ -7,6 +7,7 @@ import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.fragment.EpisodeInfoFragment
 import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
+import ac.mdiq.podcini.util.Logd
 import android.R.color
 import android.app.Activity
 import android.util.Log
@@ -18,9 +19,10 @@ import java.lang.ref.WeakReference
 /**
  * List adapter for the list of new episodes.
  */
-open class EpisodeItemListAdapter(mainActivity: MainActivity) :
-    SelectableAdapter<EpisodeItemViewHolder?>(mainActivity), View.OnCreateContextMenuListener {
+open class EpisodeItemListAdapter(mainActivity: MainActivity)
+    : SelectableAdapter<EpisodeItemViewHolder?>(mainActivity), View.OnCreateContextMenuListener {
 
+    val TAG = "EpisodeItemListAdapter"
     val mainActivityRef: WeakReference<MainActivity> = WeakReference<MainActivity>(mainActivity)
 
     private var episodes: List<FeedItem> = ArrayList()
@@ -49,6 +51,8 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) :
     }
 
     @UnstableApi override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EpisodeItemViewHolder {
+//  TODO: the Invalid resource ID 0x00000000 on Android 14 occurs after this and before onBindViewHolder,
+//        somehow, only on the first time EpisodeItemListAdapter is called
         return EpisodeItemViewHolder(mainActivityRef.get()!!, parent)
     }
 
@@ -79,24 +83,13 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) :
         }
         holder.infoCard.setOnClickListener {
             val activity: MainActivity? = mainActivityRef.get()
-            if (!inActionMode()) {
-//                val ids: LongArray = FeedItemUtil.getIds(episodes)
-//                val position = ArrayUtils.indexOf(ids, item.id)
-                activity?.loadChildFragment(EpisodeInfoFragment.newInstance(episodes[pos]))
-            } else {
-                toggleSelection(holder.bindingAdapterPosition)
-            }
+            if (!inActionMode()) activity?.loadChildFragment(EpisodeInfoFragment.newInstance(episodes[pos]))
+            else toggleSelection(holder.bindingAdapterPosition)
         }
-
         holder.coverHolder.setOnClickListener {
             val activity: MainActivity? = mainActivityRef.get()
-            if (!inActionMode()) {
-//                val ids: LongArray = FeedItemUtil.getIds(episodes)
-//                val position = ArrayUtils.indexOf(ids, item.id)
-                activity?.loadChildFragment(EpisodeInfoFragment.newInstance(episodes[pos]))
-            } else {
-                toggleSelection(holder.bindingAdapterPosition)
-            }
+            if (!inActionMode()) activity?.loadChildFragment(EpisodeInfoFragment.newInstance(episodes[pos]))
+            else toggleSelection(holder.bindingAdapterPosition)
         }
         holder.itemView.setOnTouchListener(View.OnTouchListener { _: View?, e: MotionEvent ->
             if (e.isFromSource(InputDevice.SOURCE_MOUSE) && e.buttonState == MotionEvent.BUTTON_SECONDARY) {
@@ -106,12 +99,11 @@ open class EpisodeItemListAdapter(mainActivity: MainActivity) :
             }
             false
         })
-
         if (inActionMode()) {
             holder.secondaryActionButton.setOnClickListener(null)
-            if (isSelected(pos)) {
+            if (isSelected(pos))
                 holder.itemView.setBackgroundColor(-0x78000000 + (0xffffff and ThemeUtils.getColorFromAttr(mainActivityRef.get()!!, R.attr.colorAccent)))
-            } else holder.itemView.setBackgroundResource(color.transparent)
+            else holder.itemView.setBackgroundResource(color.transparent)
         }
 
         afterBindViewHolder(holder, pos)

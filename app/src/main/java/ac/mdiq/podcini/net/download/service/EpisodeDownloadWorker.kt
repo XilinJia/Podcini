@@ -29,6 +29,7 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import kotlinx.coroutines.runBlocking
 import org.apache.commons.io.FileUtils
 import java.io.File
 import java.io.IOException
@@ -115,7 +116,7 @@ class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker
         if (dest.exists()) {
             media.file_url = request.destination
             try {
-                DBWriter.persistFeedMedia(media).get()
+                runBlocking { DBWriter.persistFeedMedia(media).join() }
             } catch (e: Exception) {
                 Log.e(TAG, "ExecutionException in writeFileUrl: " + e.message)
             }

@@ -11,8 +11,7 @@ import android.util.Log
 /**
  * Used by Recyclerviews that need to provide ability to select items.
  */
-abstract class SelectableAdapter<T : RecyclerView.ViewHolder?>(private val activity: Activity) :
-    RecyclerView.Adapter<T>() {
+abstract class SelectableAdapter<T : RecyclerView.ViewHolder?>(private val activity: Activity) : RecyclerView.Adapter<T>() {
 
     private var actionMode: ActionMode? = null
     private val selectedIds = HashSet<Long>()

@@ -66,7 +66,7 @@ import kotlin.math.max
 
     private var homeFragment: EpisodeHomeFragment? = null
 
-    private var itemsLoaded = false
+    private var itemLoaded = false
     private var item: FeedItem? = null
     private var webviewData: String? = null
 
@@ -89,15 +89,7 @@ import kotlin.math.max
     private var actionButton1: ItemActionButton? = null
     private var actionButton2: ItemActionButton? = null
 
-//    private var disposable: Disposable? = null
     private var controller: PlaybackController? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-//        item = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) requireArguments().getSerializable(ARG_FEEDITEM, FeedItem::class.java)
-//        else requireArguments().getSerializable(ARG_FEEDITEM) as? FeedItem
-    }
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
@@ -140,9 +132,7 @@ import kotlin.math.max
             if (!item?.link.isNullOrEmpty()) {
                 homeFragment = EpisodeHomeFragment.newInstance(item!!)
                 (activity as MainActivity).loadChildFragment(homeFragment!!)
-            } else {
-                Toast.makeText(context, "Episode link is not valid ${item?.link}", Toast.LENGTH_LONG).show()
-            }
+            } else Toast.makeText(context, "Episode link is not valid ${item?.link}", Toast.LENGTH_LONG).show()
         }
 
         butAction1.setOnClickListener(View.OnClickListener {
@@ -169,9 +159,7 @@ import kotlin.math.max
         })
 
         controller = object : PlaybackController(requireActivity()) {
-            override fun loadMediaInfo() {
-                // Do nothing
-            }
+            override fun loadMediaInfo() {}
         }
         controller?.init()
         load()
@@ -246,7 +234,7 @@ import kotlin.math.max
 
     @UnstableApi override fun onResume() {
         super.onResume()
-        if (itemsLoaded) {
+        if (itemLoaded) {
             progbarLoading.visibility = View.GONE
             updateAppearance()
         }
@@ -258,7 +246,6 @@ import kotlin.math.max
         _binding = null
         
         controller?.release()
-//        disposable?.dispose()
         root.removeView(webvDescription)
         webvDescription.clearHistory()
         webvDescription.clearCache(true)
@@ -267,9 +254,9 @@ import kotlin.math.max
     }
 
     @UnstableApi private fun onFragmentLoaded() {
-        if (webviewData != null && !itemsLoaded) {
+        if (webviewData != null && !itemLoaded)
             webvDescription.loadDataWithBaseURL("https://127.0.0.1", webviewData!!, "text/html", "utf-8", "about:blank")
-        }
+
 //        if (item?.link != null) binding.webView.loadUrl(item!!.link!!)
         updateAppearance()
     }
@@ -279,14 +266,13 @@ import kotlin.math.max
             Logd(TAG, "updateAppearance item is null")
             return
         }
-        if (item!!.hasMedia()) {
-            FeedItemMenuHandler.onPrepareMenu(toolbar.menu, item, R.id.open_podcast)
-        } else {
-            // these are already available via button1 and button2
-            FeedItemMenuHandler.onPrepareMenu(toolbar.menu, item, R.id.open_podcast, R.id.mark_read_item, R.id.visit_website_item)
-        }
+        if (item!!.hasMedia()) FeedItemMenuHandler.onPrepareMenu(toolbar.menu, item, R.id.open_podcast)
+        // these are already available via button1 and button2
+        else FeedItemMenuHandler.onPrepareMenu(toolbar.menu, item, R.id.open_podcast, R.id.mark_read_item, R.id.visit_website_item)
+
         if (item!!.feed != null) txtvPodcast.text = item!!.feed!!.title
         txtvTitle.text = item!!.title
+        binding.itemLink.text = item!!.link
 
         if (item?.pubDate != null) {
             val pubDateStr = DateFormatter.formatAbbrev(context, item!!.pubDate)
@@ -385,6 +371,7 @@ import kotlin.math.max
     private fun procFlowEvents() {
         lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: $event")
                 when (event) {
                     is FlowEvent.FeedItemEvent -> onEventMainThread(event)
                     is FlowEvent.PlayerStatusEvent -> updateButtons()
@@ -404,7 +391,7 @@ import kotlin.math.max
     }
 
     fun onEventMainThread(event: FlowEvent.FeedItemEvent) {
-        Logd(TAG, "onEventMainThread() called with: event = [$event]")
+        Logd(TAG, "onEventMainThread() called with: FeedItemEvent")
         if (this.item == null) return
         for (item in event.items) {
             if (this.item!!.id == item.id) {
@@ -417,33 +404,13 @@ import kotlin.math.max
     fun onEventMainThread(event: FlowEvent.EpisodeDownloadEvent) {
         if (item == null || item!!.media == null) return
         if (!event.urls.contains(item!!.media!!.download_url)) return
-        if (itemsLoaded && activity != null) updateButtons()
+        if (itemLoaded && activity != null) updateButtons()
     }
 
-//    @UnstableApi private fun load0() {
-//        disposable?.dispose()
-//        if (!itemsLoaded) progbarLoading.visibility = View.VISIBLE
-//
-//        Logd(TAG, "load() called")
-//        disposable = Observable.fromCallable<FeedItem?> { this.loadInBackground() }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe({ result: FeedItem? ->
-//                progbarLoading.visibility = View.GONE
-//                item = result
-//                onFragmentLoaded()
-//                itemsLoaded = true
-//            },
-//                { error: Throwable? ->
-//                    Log.e(TAG, Log.getStackTraceString(error))
-//                })
-//    }
-
     @UnstableApi private fun load() {
-        if (!itemsLoaded) progbarLoading.visibility = View.VISIBLE
+        if (!itemLoaded) progbarLoading.visibility = View.VISIBLE
 
         Logd(TAG, "load() called")
-//        val scope = CoroutineScope(Dispatchers.Main)
         lifecycleScope.launch {
             try {
                 val result = withContext(Dispatchers.IO) {
@@ -459,7 +426,7 @@ import kotlin.math.max
                     progbarLoading.visibility = View.GONE
                     item = result
                     onFragmentLoaded()
-                    itemsLoaded = true
+                    itemLoaded = true
                 }
             } catch (e: Throwable) {
                 Log.e(TAG, Log.getStackTraceString(e))

@@ -13,6 +13,8 @@ import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.ui.dialog.*
+import ac.mdiq.podcini.ui.fragment.AudioPlayerFragment.InternalPlayerFragment
+import ac.mdiq.podcini.ui.fragment.AudioPlayerFragment.InternalPlayerFragment.Companion
 import ac.mdiq.podcini.ui.fragment.ChaptersFragment
 import ac.mdiq.podcini.ui.fragment.VideoEpisodeFragment
 import ac.mdiq.podcini.ui.utils.PictureInPictureUtil
@@ -169,6 +171,7 @@ class VideoplayerActivity : CastEnabledActivity() {
     private fun procFlowEvents() {
         lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: $event")
                 when (event) {
                     is FlowEvent.SleepTimerUpdatedEvent -> if (event.isCancelled || event.wasJustEnabled()) supportInvalidateOptionsMenu()
                     is FlowEvent.PlaybackServiceEvent -> if (event.action == FlowEvent.PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN) finish()

@@ -1,7 +1,8 @@
-package ac.mdiq.podcini.ui.adapter
+package ac.mdiq.podcini.ui.utils
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.util.Logd
 import android.graphics.drawable.Drawable
 import android.view.View
 import android.widget.ImageView
@@ -75,6 +76,7 @@ class CoverLoader(private val activity: MainActivity) {
             .setHeader("User-Agent", "Mozilla/5.0")
             .listener(object : ImageRequest.Listener {
                 override fun onError(request: ImageRequest, throwable: ErrorResult) {
+                    Logd("CoverLoader", "Trying to get fallback image")
                     val fallbackImageRequest = ImageRequest.Builder(activity)
                         .data(fallbackUri)
                         .setHeader("User-Agent", "Mozilla/5.0")
@@ -86,9 +88,7 @@ class CoverLoader(private val activity: MainActivity) {
             })
             .target(coverTargetCoil)
             .build()
-        activity.imageLoader
-            .enqueue(request)
-
+        activity.imageLoader.enqueue(request)
     }
 
     internal class CoilCoverTarget(fallbackTitle: TextView?, coverImage: ImageView, private val textAndImageCombined: Boolean) : Target {

@@ -1,4 +1,4 @@
-package ac.mdiq.podcini.ui.view
+package ac.mdiq.podcini.ui.utils
 
 import android.content.Context
 import android.database.DataSetObserver

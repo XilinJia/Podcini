@@ -10,6 +10,9 @@ import ac.mdiq.podcini.net.sync.SynchronizationSettings.isProviderConnected
 import ac.mdiq.podcini.net.sync.SynchronizationSettings.wifiSyncEnabledKey
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.ui.dialog.AuthenticationDialog
+import ac.mdiq.podcini.ui.fragment.AudioPlayerFragment.InternalPlayerFragment
+import ac.mdiq.podcini.ui.fragment.AudioPlayerFragment.InternalPlayerFragment.Companion
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
 import android.app.Activity
@@ -56,6 +59,7 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
     private fun procFlowEvents() {
         lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
+                Logd("SynchronizationPreferencesFragment", "Received event: ${event}")
                 when (event) {
                     is FlowEvent.SyncServiceEvent -> syncStatusChanged(event)
                     else -> {}

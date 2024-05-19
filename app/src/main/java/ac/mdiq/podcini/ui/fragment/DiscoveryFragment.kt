@@ -5,6 +5,7 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.FragmentItunesSearchBinding
 import ac.mdiq.podcini.databinding.SelectCountryDialogBinding
 import ac.mdiq.podcini.net.discovery.ItunesTopListLoader
+import ac.mdiq.podcini.net.discovery.ItunesTopListLoader.Companion.prefs
 import ac.mdiq.podcini.net.discovery.PodcastSearchResult
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.ui.activity.MainActivity
@@ -42,7 +43,7 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var _binding: FragmentItunesSearchBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var prefs: SharedPreferences
+//    private lateinit var prefs: SharedPreferences
     private lateinit var gridView: GridView
     private lateinit var progressBar: ProgressBar
     private lateinit var txtvError: TextView
@@ -91,10 +92,10 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        prefs = requireActivity().getSharedPreferences(ItunesTopListLoader.PREFS, Context.MODE_PRIVATE)
-        countryCode = prefs.getString(ItunesTopListLoader.PREF_KEY_COUNTRY_CODE, Locale.getDefault().country)
-        hidden = prefs.getBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, false)
-        needsConfirm = prefs.getBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, true)
+//        prefs = requireActivity().getSharedPreferences(ItunesTopListLoader.PREFS, Context.MODE_PRIVATE)
+        countryCode = prefs!!.getString(ItunesTopListLoader.PREF_KEY_COUNTRY_CODE, Locale.getDefault().country)
+        hidden = prefs!!.getBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, false)
+        needsConfirm = prefs!!.getBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, true)
     }
 
     @OptIn(UnstableApi::class) override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -167,7 +168,7 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             butRetry.visibility = View.VISIBLE
             butRetry.setText(R.string.discover_confirm)
             butRetry.setOnClickListener {
-                prefs.edit().putBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, false).apply()
+                prefs!!.edit().putBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, false).apply()
                 needsConfirm = false
                 loadToplist(country)
             }
@@ -225,7 +226,7 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             R.id.discover_hide_item -> {
                 item.setChecked(!item.isChecked)
                 hidden = item.isChecked
-                prefs.edit().putBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, hidden).apply()
+                prefs!!.edit().putBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, hidden).apply()
 
                 EventFlow.postEvent(FlowEvent.DiscoveryDefaultUpdateEvent())
                 loadToplist(countryCode)
@@ -278,8 +279,8 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         hidden = false
                     }
 
-                    prefs.edit().putBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, hidden).apply()
-                    prefs.edit().putString(ItunesTopListLoader.PREF_KEY_COUNTRY_CODE, countryCode).apply()
+                    prefs!!.edit().putBoolean(ItunesTopListLoader.PREF_KEY_HIDDEN_DISCOVERY_COUNTRY, hidden).apply()
+                    prefs!!.edit().putString(ItunesTopListLoader.PREF_KEY_COUNTRY_CODE, countryCode).apply()
 
                     EventFlow.postEvent(FlowEvent.DiscoveryDefaultUpdateEvent())
                     loadToplist(countryCode)

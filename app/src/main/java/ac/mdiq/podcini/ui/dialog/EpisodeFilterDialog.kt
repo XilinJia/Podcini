@@ -4,7 +4,7 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.EpisodeFilterDialogBinding
 import ac.mdiq.podcini.storage.model.feed.FeedFilter
 import ac.mdiq.podcini.ui.adapter.SimpleChipAdapter
-import ac.mdiq.podcini.ui.view.ItemOffsetDecoration
+import ac.mdiq.podcini.ui.utils.ItemOffsetDecoration
 import android.content.Context
 import android.content.DialogInterface
 import android.view.LayoutInflater

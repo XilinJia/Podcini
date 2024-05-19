@@ -13,12 +13,12 @@
              android:focusableInTouchMode="false" >
 
     <ImageView
-            android:id="@+id/secondaryActionIcon"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_gravity="center"
-            tools:ignore="ContentDescription"
-            tools:src="@sample/secondaryaction"/>
+        android:id="@+id/secondaryActionIcon"
+        android:layout_width="18dp"
+        android:layout_height="21dp"
+        android:layout_gravity="center"
+        tools:ignore="ContentDescription"
+        tools:src="@sample/secondaryaction"/>
 
     <ac.mdiq.podcini.ui.view.CircularProgressBar
             android:id="@+id/secondaryActionProgress"

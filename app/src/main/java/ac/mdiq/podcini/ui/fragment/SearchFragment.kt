@@ -16,9 +16,9 @@ import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.EpisodeItemListAdapter
 import ac.mdiq.podcini.ui.adapter.HorizontalFeedListAdapter
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
-import ac.mdiq.podcini.ui.view.EmptyViewHandler
+import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.view.EpisodeItemListRecyclerView
-import ac.mdiq.podcini.ui.view.LiftOnScrollListener
+import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
 import ac.mdiq.podcini.util.FeedItemUtil
 import ac.mdiq.podcini.util.Logd
@@ -239,6 +239,7 @@ import kotlinx.coroutines.withContext
     private fun procFlowEvents() {
         lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: $event")
                 when (event) {
                     is FlowEvent.FeedListUpdateEvent, is FlowEvent.UnreadItemsUpdateEvent, is FlowEvent.PlayerStatusEvent -> search()
                     is FlowEvent.FeedItemEvent -> onEventMainThread(event)

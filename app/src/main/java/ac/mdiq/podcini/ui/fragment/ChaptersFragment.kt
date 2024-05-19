@@ -5,6 +5,8 @@ import ac.mdiq.podcini.databinding.SimpleListFragmentBinding
 import ac.mdiq.podcini.playback.PlaybackController
 import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.PlayerStatus
+import ac.mdiq.podcini.playback.service.PlaybackService
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.storage.model.playback.Playable
 import ac.mdiq.podcini.ui.adapter.ChaptersListAdapter
@@ -124,6 +126,7 @@ class ChaptersFragment : AppCompatDialogFragment() {
     private fun procFlowEvents() {
         lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: $event")
                 when (event) {
                     is FlowEvent.PlaybackPositionEvent -> onEventMainThread(event)
                     else -> {}

@@ -6,7 +6,7 @@ import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.DBWriter
 import ac.mdiq.podcini.storage.model.feed.FeedPreferences
 import ac.mdiq.podcini.ui.adapter.SimpleChipAdapter
-import ac.mdiq.podcini.ui.view.ItemOffsetDecoration
+import ac.mdiq.podcini.ui.utils.ItemOffsetDecoration
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
 import android.app.Dialog

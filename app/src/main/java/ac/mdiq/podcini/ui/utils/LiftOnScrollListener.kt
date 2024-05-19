@@ -1,4 +1,4 @@
-package ac.mdiq.podcini.ui.view
+package ac.mdiq.podcini.ui.utils
 
 import android.animation.ValueAnimator
 import android.view.View

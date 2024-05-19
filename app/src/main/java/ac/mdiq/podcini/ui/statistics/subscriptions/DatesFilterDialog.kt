@@ -28,7 +28,6 @@ abstract class DatesFilterDialog(private val context: Context, oldestDate: Long)
     protected val filterDatesFrom: Pair<Array<String>, Array<Long>>
     protected val filterDatesTo: Pair<Array<String>, Array<Long>>
 
-
     init {
         initParams()
         filterDatesFrom = makeMonthlyList(oldestDate, false)

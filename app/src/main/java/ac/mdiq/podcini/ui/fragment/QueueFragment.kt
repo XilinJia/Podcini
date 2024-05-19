@@ -21,9 +21,9 @@ import ac.mdiq.podcini.ui.adapter.QueueRecyclerAdapter
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.dialog.ItemSortDialog
-import ac.mdiq.podcini.ui.view.EmptyViewHandler
+import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.view.EpisodeItemListRecyclerView
-import ac.mdiq.podcini.ui.view.LiftOnScrollListener
+import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
 import ac.mdiq.podcini.util.Converter
 import ac.mdiq.podcini.util.FeedItemUtil
@@ -72,7 +72,6 @@ import java.util.*
     private lateinit var toolbar: MaterialToolbar
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var swipeActions: SwipeActions
-    private lateinit var prefs: SharedPreferences
     private lateinit var speedDialView: SpeedDialView
     private lateinit var progressBar: ProgressBar
     
@@ -88,7 +87,7 @@ import java.util.*
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = true
-        prefs = requireActivity().getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+//        ioScope.launch { prefs = requireActivity().getSharedPreferences(PREFS, Context.MODE_PRIVATE) }
     }
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -122,15 +121,12 @@ import java.util.*
         recyclerView.addOnScrollListener(LiftOnScrollListener(binding.appbar))
 
         swipeActions = QueueSwipeActions()
+        lifecycle.addObserver(swipeActions)
         swipeActions.setFilter(FeedItemFilter(FeedItemFilter.QUEUED))
         swipeActions.attachTo(recyclerView)
         refreshSwipeTelltale()
-        binding.leftActionIcon.setOnClickListener {
-            swipeActions.showDialog()
-        }
-        binding.rightActionIcon.setOnClickListener {
-            swipeActions.showDialog()
-        }
+        binding.leftActionIcon.setOnClickListener { swipeActions.showDialog() }
+        binding.rightActionIcon.setOnClickListener { swipeActions.showDialog() }
 
         recyclerAdapter = object : QueueRecyclerAdapter(activity as MainActivity, swipeActions) {
             override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
@@ -143,9 +139,7 @@ import java.util.*
 
         swipeRefreshLayout = binding.swipeRefresh
         swipeRefreshLayout.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
-        swipeRefreshLayout.setOnRefreshListener {
-            FeedUpdateManager.runOnceOrAsk(requireContext())
-        }
+        swipeRefreshLayout.setOnRefreshListener { FeedUpdateManager.runOnceOrAsk(requireContext()) }
 
         emptyView = EmptyViewHandler(requireContext())
         emptyView.attachToRecyclerView(recyclerView)
@@ -200,6 +194,7 @@ import java.util.*
     private fun procFlowEvents() {
         lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: $event")
                 when (event) {
                     is FlowEvent.QueueEvent -> onEventMainThread(event)
                     is FlowEvent.FeedItemEvent -> onEventMainThread(event)
@@ -406,7 +401,7 @@ import java.util.*
         val isLocked: Boolean = UserPreferences.isQueueLocked
         if (isLocked) setQueueLocked(false)
         else {
-            val shouldShowLockWarning: Boolean = prefs.getBoolean(PREF_SHOW_LOCK_WARNING, true)
+            val shouldShowLockWarning: Boolean = prefs!!.getBoolean(PREF_SHOW_LOCK_WARNING, true)
             if (!shouldShowLockWarning) setQueueLocked(true)
             else {
                 val builder = MaterialAlertDialogBuilder(requireContext())
@@ -419,7 +414,7 @@ import java.util.*
                 builder.setView(view)
 
                 builder.setPositiveButton(R.string.lock_queue) { _: DialogInterface?, _: Int ->
-                    prefs.edit().putBoolean(PREF_SHOW_LOCK_WARNING, !checkDoNotShowAgain.isChecked).apply()
+                    prefs!!.edit().putBoolean(PREF_SHOW_LOCK_WARNING, !checkDoNotShowAgain.isChecked).apply()
                     setQueueLocked(true)
                 }
                 builder.setNegativeButton(R.string.cancel_label, null)
@@ -586,7 +581,6 @@ import java.util.*
 
             // Update tracked position
             if (dragFrom == -1) dragFrom = fromPosition
-
             dragTo = toPosition
 
             val from = viewHolder.bindingAdapterPosition
@@ -632,5 +626,11 @@ import java.util.*
 
         private const val PREFS = "QueueFragment"
         private const val PREF_SHOW_LOCK_WARNING = "show_lock_warning"
+
+        private var prefs: SharedPreferences? = null
+        fun getSharedPrefs(context: Context) {
+            if (prefs == null) prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        }
+
     }
 }

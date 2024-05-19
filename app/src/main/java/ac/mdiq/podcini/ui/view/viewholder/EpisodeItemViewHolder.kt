@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.ui.view.viewholder
 
 import ac.mdiq.podcini.ui.activity.MainActivity
-import android.os.Build
 import android.text.Layout
 import android.text.format.Formatter
 import android.util.Log
@@ -18,7 +17,7 @@ import com.google.android.material.elevation.SurfaceColors
 import com.joanzapata.iconify.Iconify
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.FeeditemlistItemBinding
-import ac.mdiq.podcini.ui.adapter.CoverLoader
+import ac.mdiq.podcini.ui.utils.CoverLoader
 import ac.mdiq.podcini.feed.util.ImageResourceUtils
 import ac.mdiq.podcini.net.download.MediaSizeLoader
 import ac.mdiq.podcini.storage.model.feed.FeedItem
@@ -37,7 +36,6 @@ import ac.mdiq.podcini.util.*
 import ac.mdiq.podcini.util.event.FlowEvent
 import android.widget.LinearLayout
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.core.content.ContextCompat.getDrawable
 import io.reactivex.functions.Consumer
 import kotlin.math.max
 
@@ -45,8 +43,8 @@ import kotlin.math.max
  * Holds the view which shows FeedItems.
  */
 @UnstableApi
-open class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGroup?) :
-    RecyclerView.ViewHolder(LayoutInflater.from(activity).inflate(R.layout.feeditemlist_item, parent, false)) {
+open class EpisodeItemViewHolder(private val activity: MainActivity, parent: ViewGroup)
+    : RecyclerView.ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.feeditemlist_item, parent, false)) {
 
     val binding: FeeditemlistItemBinding = FeeditemlistItemBinding.bind(itemView)
 
@@ -108,7 +106,7 @@ open class EpisodeItemViewHolder(private val activity: MainActivity, parent: Vie
         container.alpha = if (item.isPlayed()) 0.75f else 1.0f
 
         val newButton = ItemActionButton.forItem(item)
-        Logd(TAG, "bind ${actionButton?.TAG} ${newButton.TAG} ${item.title}")
+        Logd(TAG, "Trying to bind button ${actionButton?.TAG} ${newButton.TAG} ${item.title}")
         // not using a new button to ensure valid progress values, for TTS audio generation
         if (!(actionButton?.TAG == TTSActionButton::class.simpleName && newButton.TAG == TTSActionButton::class.simpleName)) {
             actionButton = newButton
@@ -118,11 +116,9 @@ open class EpisodeItemViewHolder(private val activity: MainActivity, parent: Vie
 
 //        Log.d(TAG, "bind called ${item.media}")
         when {
-            item.media != null -> {
-                bind(item.media!!)
-            }
+            item.media != null -> bind(item.media!!)
+            //            for generating TTS files for episode without media
             item.playState == BUILDING -> {
-                //            for generating TTS files for episode without media
                 secondaryActionProgress.setPercentage(actionButton!!.processing, item)
                 secondaryActionProgress.setIndeterminate(false)
             }
@@ -139,15 +135,16 @@ open class EpisodeItemViewHolder(private val activity: MainActivity, parent: Vie
 
         if (coverHolder.visibility == View.VISIBLE) {
             val imgLoc = ImageResourceUtils.getEpisodeListImageLocation(item)
-//            Logd(TAG, "imgLoc $imgLoc ${item.feed?.imageUrl} ${item.title}")
-            if (!imgLoc.isNullOrBlank() && !imgLoc.contains(PREFIX_GENERATIVE_COVER)) CoverLoader(activity)
-                .withUri(imgLoc)
-                .withFallbackUri(item.feed?.imageUrl)
-                .withPlaceholderView(placeholder)
-                .withCoverView(cover)
-                .load()
+            Logd(TAG, "imgLoc $imgLoc ${item.feed?.imageUrl} ${item.title}")
+            if (!imgLoc.isNullOrBlank() && !imgLoc.contains(PREFIX_GENERATIVE_COVER))
+                CoverLoader(activity)
+                    .withUri(imgLoc)
+                    .withFallbackUri(item.feed?.imageUrl)
+                    .withPlaceholderView(placeholder)
+                    .withCoverView(cover)
+                    .load()
             else {
-                Logd(TAG, "setting to ic_launcher")
+                Logd(TAG, "setting cover to ic_launcher")
                 cover.setImageDrawable(AppCompatResources.getDrawable(activity, R.drawable.ic_launcher_foreground))
             }
         }
@@ -211,12 +208,11 @@ open class EpisodeItemViewHolder(private val activity: MainActivity, parent: Vie
             NetworkUtils.isEpisodeHeadDownloadAllowed && !media.checkedOnSizeButUnknown() -> {
                 size.text = "{fa-spinner}"
                 Iconify.addIcons(size)
-                MediaSizeLoader.getFeedMediaSizeObservable(media).subscribe(
-                    Consumer<Long?> { sizeValue: Long? ->
-                        if (sizeValue == null) return@Consumer
-                        if (sizeValue > 0) size.text = Formatter.formatShortFileSize(activity, sizeValue)
-                        else size.text = ""
-                    }) { error: Throwable? ->
+                MediaSizeLoader.getFeedMediaSizeObservable(media).subscribe(Consumer<Long?> { sizeValue: Long? ->
+                    if (sizeValue == null) return@Consumer
+                    if (sizeValue > 0) size.text = Formatter.formatShortFileSize(activity, sizeValue)
+                    else size.text = ""
+                }) { error: Throwable? ->
                     size.text = ""
                     Log.e(TAG, Log.getStackTraceString(error))
                 }

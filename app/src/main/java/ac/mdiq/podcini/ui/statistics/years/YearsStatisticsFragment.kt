@@ -3,8 +3,11 @@ package ac.mdiq.podcini.ui.statistics.years
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.StatisticsFragmentBinding
+import ac.mdiq.podcini.playback.service.PlaybackService
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.DBReader.MonthlyStatisticsItem
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
 import android.os.Bundle
@@ -65,6 +68,7 @@ class YearsStatisticsFragment : Fragment() {
     private fun procFlowEvents() {
         lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: $event")
                 when (event) {
                     is FlowEvent.StatisticsEvent -> refreshStatistics()
                     else -> {}

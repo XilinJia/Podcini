@@ -105,7 +105,7 @@ class Feed : FeedFile {
     var sortOrder: SortOrder? = null
         set(sortOrder) {
             if (sortOrder == null) {
-                Log.w("Feed sortOrder", "The specified sortOrder $sortOrder is invalid.")
+//                Log.w("Feed sortOrder", "The specified sortOrder $sortOrder is invalid.")
                 return
             }
             field = sortOrder

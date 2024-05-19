@@ -14,7 +14,10 @@ import ac.mdiq.podcini.net.download.service.DownloadRequestCreator.create
 import ac.mdiq.podcini.net.download.service.Downloader
 import ac.mdiq.podcini.net.download.service.HttpDownloader
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.playback.service.PlaybackService
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
+import ac.mdiq.podcini.receiver.PlayerWidget.Companion.PREFS_NAME
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.DBTasks
 import ac.mdiq.podcini.storage.DBWriter
@@ -35,6 +38,7 @@ import android.app.Dialog
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.DialogInterface
+import android.content.SharedPreferences
 import android.graphics.LightingColorFilter
 import android.os.Bundle
 import android.text.Spannable
@@ -330,6 +334,7 @@ import kotlin.concurrent.Volatile
     @OptIn(UnstableApi::class) private fun procFlowEvents() {
         lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: $event")
                 when (event) {
                     is FlowEvent.FeedListUpdateEvent -> onFeedListChanged(event)
                     else -> {}
@@ -507,8 +512,8 @@ import kotlin.concurrent.Volatile
         }
 
         if (isEnableAutodownload) {
-            val preferences = requireContext().getSharedPreferences(PREFS, MODE_PRIVATE)
-            binding.autoDownloadCheckBox.isChecked = preferences.getBoolean(PREF_LAST_AUTO_DOWNLOAD, true)
+//            val preferences = requireContext().getSharedPreferences(PREFS, MODE_PRIVATE)
+            binding.autoDownloadCheckBox.isChecked = prefs!!.getBoolean(PREF_LAST_AUTO_DOWNLOAD, true)
         }
 
         if (alternateFeedUrls.isEmpty()) {
@@ -587,8 +592,8 @@ import kotlin.concurrent.Volatile
                             val autoDownload = binding.autoDownloadCheckBox.isChecked
                             feedPreferences.autoDownload = autoDownload
 
-                            val preferences = requireContext().getSharedPreferences(PREFS, MODE_PRIVATE)
-                            val editor = preferences.edit()
+//                            val preferences = requireContext().getSharedPreferences(PREFS, MODE_PRIVATE)
+                            val editor = prefs!!.edit()
                             editor.putBoolean(PREF_LAST_AUTO_DOWNLOAD, autoDownload)
                             editor.apply()
                         }
@@ -737,6 +742,12 @@ import kotlin.concurrent.Volatile
         private const val PREFS = "OnlineFeedViewFragmentPreferences"
         private const val PREF_LAST_AUTO_DOWNLOAD = "lastAutoDownload"
         private const val KEY_UP_ARROW = "up_arrow"
+
+        var prefs: SharedPreferences? = null
+
+        fun getSharedPrefs(context: Context) {
+            if (prefs == null) prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        }
 
         @JvmStatic
         fun newInstance(feedUrl: String): OnlineFeedViewFragment {

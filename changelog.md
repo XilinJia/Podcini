@@ -1,3 +1,13 @@
+
+## 5.4.0
+
+* replaced thread with coroutines in DBWrite
+* reduced startup lags of the app, various views, and media playing
+* tidied up preferences accesses
+* updated SwipeActions to the new DefaultLifecycleObserver
+* added more options for default page
+* added link info in episode info view
+
 ## 5.3.1
 
 * fixed crash issue on some device when attempting to remove item from queue multiple times

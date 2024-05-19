@@ -8,6 +8,7 @@ import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.base.RewindAfterPauseUtils
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.storage.DBWriter.ioScope
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.storage.model.playback.MediaType
 import ac.mdiq.podcini.storage.model.playback.Playable
@@ -159,15 +160,15 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
     private fun setDataSource(m: MediaMetadata, s: String, user: String?, password: String?) {
         Logd(TAG, "setDataSource: $s")
 
-        val httpDataSourceFactory = OkHttpDataSource.Factory(PodciniHttpClient.getHttpClient() as okhttp3.Call.Factory)
-            .setUserAgent(ClientConfig.USER_AGENT)
+        if (httpDataSourceFactory == null)
+            httpDataSourceFactory = OkHttpDataSource.Factory(PodciniHttpClient.getHttpClient() as okhttp3.Call.Factory).setUserAgent(ClientConfig.USER_AGENT)
 
         if (!user.isNullOrEmpty() && !password.isNullOrEmpty()) {
             val requestProperties = HashMap<String, String>()
             requestProperties["Authorization"] = HttpCredentialEncoder.encode(user, password, "ISO-8859-1")
-            httpDataSourceFactory.setDefaultRequestProperties(requestProperties)
+            httpDataSourceFactory!!.setDefaultRequestProperties(requestProperties)
         }
-        val dataSourceFactory: DataSource.Factory = DefaultDataSourceFactory(context, null, httpDataSourceFactory)
+        val dataSourceFactory: DataSource.Factory = DefaultDataSourceFactory(context, null, httpDataSourceFactory!!)
         val extractorsFactory = DefaultExtractorsFactory()
         extractorsFactory.setConstantBitrateSeekingEnabled(true)
         extractorsFactory.setMp3ExtractorFlags(Mp3Extractor.FLAG_DISABLE_ID3_METADATA)
@@ -282,6 +283,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
                 }
                 else -> {
                     val localMediaurl = this.playable!!.getLocalMediaUrl()
+//                    TODO: File(localMediaurl).canRead() time consuming
                     if (!localMediaurl.isNullOrEmpty() && File(localMediaurl).canRead()) setDataSource(metadata, localMediaurl, null, null)
                     else throw IOException("Unable to read local file $localMediaurl")
                 }
@@ -603,8 +605,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
      * invalid values.
      */
     override fun getVideoSize(): Pair<Int, Int>? {
-        if (status != PlayerStatus.ERROR && mediaType == MediaType.VIDEO)
-            videoSize = Pair(videoWidth, videoHeight)
+        if (status != PlayerStatus.ERROR && mediaType == MediaType.VIDEO) videoSize = Pair(videoWidth, videoHeight)
         return videoSize
     }
 
@@ -664,6 +665,12 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
     init {
         mediaType = MediaType.UNKNOWN
 
+        if (httpDataSourceFactory == null) {
+            ioScope.launch {
+                httpDataSourceFactory = OkHttpDataSource.Factory(PodciniHttpClient.getHttpClient() as okhttp3.Call.Factory)
+                    .setUserAgent(ClientConfig.USER_AGENT)
+            }
+        }
         if (exoPlayer == null) {
             setupPlayerListener()
             createStaticPlayer(context)
@@ -837,6 +844,8 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
         const val BUFFERING_ENDED: Int = -2
         const val ERROR_CODE_OFFSET: Int = 1000
 
+        private var httpDataSourceFactory:  OkHttpDataSource.Factory? = null
+
         private var trackSelector: DefaultTrackSelector? = null
         var exoPlayer: ExoPlayer? = null
 
@@ -897,6 +906,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
             audioErrorListener = null
             bufferingUpdateListener = null
             loudnessEnhancer = null
+            httpDataSourceFactory = null
         }
     }
 }

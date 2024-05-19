@@ -37,7 +37,7 @@ class SwipePreferencesFragment : PreferenceFragmentCompat() {
             true
         }
         findPreference<Preference>(PREF_SWIPE_HISTORY)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            SwipeActionsDialog(requireContext(), PlaybackHistoryFragment.TAG).show (object : SwipeActionsDialog.Callback {
+            SwipeActionsDialog(requireContext(), HistoryFragment.TAG).show (object : SwipeActionsDialog.Callback {
                 override fun onCall() {}
             })
             true

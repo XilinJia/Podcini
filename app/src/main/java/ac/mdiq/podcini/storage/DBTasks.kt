@@ -25,6 +25,7 @@ import android.text.TextUtils
 import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.media3.common.util.UnstableApi
+import kotlinx.coroutines.runBlocking
 import java.util.*
 import java.util.concurrent.*
 
@@ -68,15 +69,13 @@ import java.util.concurrent.*
 
         if (feedID != 0L) {
             try {
-                DBWriter.deleteFeed(context, feedID).get()
+                runBlocking { DBWriter.deleteFeed(context, feedID).join() }
             } catch (e: InterruptedException) {
                 e.printStackTrace()
             } catch (e: ExecutionException) {
                 e.printStackTrace()
             }
-        } else {
-            Log.w(TAG, "removeFeedWithDownloadUrl: Could not find feed with url: $downloadUrl")
-        }
+        } else Log.w(TAG, "removeFeedWithDownloadUrl: Could not find feed with url: $downloadUrl")
     }
 
     /**
@@ -132,15 +131,13 @@ import java.util.concurrent.*
     }
 
     private fun searchFeedByIdentifyingValueOrID(feed: Feed): Feed? {
-        if (feed.id != 0L) {
-            return getFeed(feed.id)
-        } else {
-            val feeds = getFeedList()
-            for (f in feeds.toList()) {
-                if (f != null && f.identifyingValue == feed.identifyingValue) {
-                    f.items = getFeedItemList(f).toMutableList()
-                    return f
-                }
+        if (feed.id != 0L) return getFeed(feed.id)
+
+        val feeds = getFeedList()
+        for (f in feeds.toList()) {
+            if (f != null && f.identifyingValue == feed.identifyingValue) {
+                f.items = getFeedItemList(f).toMutableList()
+                return f
             }
         }
         return null
@@ -275,9 +272,8 @@ import java.util.concurrent.*
                     }
                 }
 
-                if (oldItem != null) {
-                    oldItem.updateFromOther(item)
-                } else {
+                if (oldItem != null) oldItem.updateFromOther(item)
+                else {
                     Logd(TAG, "Found new item: " + item.title)
                     item.feed = savedFeed
 
@@ -314,13 +310,13 @@ import java.util.concurrent.*
 
         try {
             if (savedFeed == null) {
-                DBWriter.addNewFeed(context, newFeed).get()
+                runBlocking { DBWriter.addNewFeed(context, newFeed).join() }
                 // Update with default values that are set in database
                 resultFeed = searchFeedByIdentifyingValueOrID(newFeed)
-            } else DBWriter.persistCompleteFeed(savedFeed).get()
+            } else runBlocking { DBWriter.persistCompleteFeed(savedFeed).join() }
 
             DBReader.updateFeedList(adapter)
-            if (removeUnlistedItems) DBWriter.deleteFeedItems(context, unlistedItems).get()
+            if (removeUnlistedItems) runBlocking { DBWriter.deleteFeedItems(context, unlistedItems).join() }
         } catch (e: InterruptedException) {
             e.printStackTrace()
         } catch (e: ExecutionException) {

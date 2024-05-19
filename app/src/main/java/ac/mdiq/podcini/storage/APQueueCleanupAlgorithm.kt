@@ -6,6 +6,9 @@ import ac.mdiq.podcini.storage.DBReader.getEpisodes
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
 import ac.mdiq.podcini.storage.model.feed.SortOrder
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
+import kotlinx.coroutines.runBlocking
 import java.util.*
 import java.util.concurrent.ExecutionException
 
@@ -21,7 +24,7 @@ class APQueueCleanupAlgorithm : EpisodeCleanupAlgorithm() {
         return candidates.size
     }
 
-    public override fun performCleanup(context: Context, numberOfEpisodesToDelete: Int): Int {
+    @OptIn(UnstableApi::class) public override fun performCleanup(context: Context, numberOfEpisodesToDelete: Int): Int {
         var candidates = candidates
 
         // in the absence of better data, we'll sort by item publication date
@@ -38,8 +41,9 @@ class APQueueCleanupAlgorithm : EpisodeCleanupAlgorithm() {
         val delete = if (candidates.size > numberOfEpisodesToDelete) candidates.subList(0, numberOfEpisodesToDelete) else candidates
 
         for (item in delete) {
+            if (item.media == null) continue
             try {
-                DBWriter.deleteFeedMediaOfItem(context!!, item.media!!.id).get()
+                runBlocking { DBWriter.deleteFeedMediaOfItem(context, item.media!!.id).join() }
             } catch (e: InterruptedException) {
                 e.printStackTrace()
             } catch (e: ExecutionException) {

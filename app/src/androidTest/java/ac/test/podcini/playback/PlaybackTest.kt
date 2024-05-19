@@ -30,6 +30,7 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import de.test.podcini.EspressoTestUtils
 import de.test.podcini.IgnoreOnCi
 import de.test.podcini.ui.UITestUtils
+import kotlinx.coroutines.runBlocking
 import org.awaitility.Awaitility
 import org.hamcrest.Matchers
 import org.junit.*
@@ -166,7 +167,7 @@ class PlaybackTest {
     fun testStartLocal() {
         uiTestUtils!!.addLocalFeedData(true)
         activityTestRule.launchActivity(Intent())
-        clearQueue().get()
+        runBlocking {  clearQueue().join() }
         startLocalPlayback()
     }
 
@@ -175,7 +176,7 @@ class PlaybackTest {
     fun testPlayingItemAddsToQueue() {
         uiTestUtils!!.addLocalFeedData(true)
         activityTestRule.launchActivity(Intent())
-        clearQueue().get()
+        runBlocking { clearQueue().join() }
         val queue = getQueue()
         Assert.assertEquals(0, queue.size.toLong())
         startLocalPlayback()
@@ -188,7 +189,7 @@ class PlaybackTest {
         setContinuousPlaybackPreference(false)
         uiTestUtils!!.addLocalFeedData(true)
         activityTestRule.launchActivity(Intent())
-        clearQueue().get()
+        runBlocking { clearQueue().join() }
         startLocalPlayback()
     }
 
@@ -261,10 +262,9 @@ class PlaybackTest {
     protected fun replayEpisodeCheck(followQueue: Boolean) {
         setContinuousPlaybackPreference(followQueue)
         uiTestUtils!!.addLocalFeedData(true)
-        clearQueue().get()
+        runBlocking { clearQueue().join() }
         activityTestRule.launchActivity(Intent())
-        val episodes = getEpisodes(0, 10,
-            unfiltered(), SortOrder.DATE_NEW_OLD)
+        val episodes = getEpisodes(0, 10, unfiltered(), SortOrder.DATE_NEW_OLD)
 
         startLocalPlayback()
         val media = episodes[0].media

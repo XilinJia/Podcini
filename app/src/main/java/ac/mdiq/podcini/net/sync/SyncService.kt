@@ -57,6 +57,7 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
     @UnstableApi override fun doWork(): Result {
         Logd(TAG, "doWork() called")
         val activeSyncProvider = getActiveSyncProvider() ?: return Result.failure()
+        Logd(TAG, "doWork() got syn provider")
 
         SynchronizationSettings.updateLastSynchronizationAttempt()
         setCurrentlyActive(true)
@@ -165,15 +166,6 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
             return@launch
         }
         scope.cancel()
-//        try {
-//            while (true) {
-//                Thread.sleep(1000)
-//                val event = EventBus.getDefault().getStickyEvent(FlowEvent.FeedUpdateRunningEvent::class.java)
-//                if (event == null || !event.isFeedUpdateRunning) return
-//            }
-//        } catch (e: InterruptedException) {
-//            e.printStackTrace()
-//        }
     }
 
     fun getEpisodeActions(syncServiceImpl: ISyncService) : Pair<Long, Long> {
@@ -315,11 +307,6 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
         if (selectedService == null) return null
 
         return when (selectedService) {
-//            SynchronizationProviderViewData.WIFI -> {
-////                if (hosturl != null) WifiImplSyncService(hosturl!!, hostport)
-////                else null
-//                null
-//            }
             SynchronizationProviderViewData.GPODDER_NET -> GpodnetService(getHttpClient(), hosturl, deviceID?:"", username?:"", password?:"")
             SynchronizationProviderViewData.NEXTCLOUD_GPODDER -> NextcloudSyncService(getHttpClient(), hosturl, username?:"", password?:"")
         }

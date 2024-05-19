@@ -14,6 +14,7 @@ import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.cast.CastEnabledActivity
 import ac.mdiq.podcini.playback.service.PlaybackService
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
@@ -309,9 +310,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
     private fun procFlowEvents() {
         lifecycleScope.launch {
-            Logd(TAG, "subscribing PositionFlowEvent")
             EventFlow.events.collectLatest { event ->
-//                Logd(TAG, "PositionFlowEvent: ${event}")
+                Logd(TAG, "Received event: $event")
                 when (event) {
                     is FlowEvent.PlaybackServiceEvent ->
                         if (event.action == FlowEvent.PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN)
@@ -546,7 +546,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         private fun procFlowEvents() {
             lifecycleScope.launch {
                 EventFlow.events.collectLatest { event ->
-//                    Logd(TAG, "PositionFlowEvent: ${event}")
+                    Logd(TAG, "Received event: $event")
                     when (event) {
                         is FlowEvent.PlaybackPositionEvent -> onPositionObserverUpdate(event)
                         is FlowEvent.SpeedChangedEvent -> updatePlaybackSpeedButton(event)

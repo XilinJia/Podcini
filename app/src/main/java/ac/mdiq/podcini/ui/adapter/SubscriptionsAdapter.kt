@@ -6,10 +6,10 @@ import ac.mdiq.podcini.storage.NavDrawerData
 import ac.mdiq.podcini.storage.model.feed.Feed
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.fragment.FeedItemlistFragment
+import ac.mdiq.podcini.ui.utils.CoverLoader
 import android.content.Context
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
-import android.os.Build
 import android.view.*
 import android.widget.*
 import androidx.appcompat.content.res.AppCompatResources
@@ -153,6 +153,7 @@ open class SubscriptionsAdapter(mainActivity: MainActivity)
     }
 
     inner class SubscriptionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+
         val binding = SubscriptionItemBinding.bind(itemView)
         private val title = binding.titleLabel
         private val producer = binding.producerLabel

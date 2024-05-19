@@ -17,6 +17,9 @@ import com.google.android.material.color.DynamicColors
 import com.joanzapata.iconify.Iconify
 import com.joanzapata.iconify.fonts.FontAwesomeModule
 import com.joanzapata.iconify.fonts.MaterialModule
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 /** Main application class.  */
 class PodciniApp : Application() {
@@ -42,9 +45,12 @@ class PodciniApp : Application() {
 
         singleton = this
 
-        ClientConfigurator.initialize(this)
-        PreferenceUpgrader.checkUpgrades(this)
-
+        runBlocking {
+            withContext(Dispatchers.IO) {
+                ClientConfigurator.initialize(this@PodciniApp)
+                PreferenceUpgrader.checkUpgrades(this@PodciniApp)
+            }
+        }
         Iconify.with(FontAwesomeModule())
         Iconify.with(MaterialModule())
 

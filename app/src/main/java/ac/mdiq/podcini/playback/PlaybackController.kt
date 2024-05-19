@@ -7,6 +7,7 @@ import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.playback.service.PlaybackService.LocalBinder
 import ac.mdiq.podcini.playback.service.PlaybackServiceConstants
 import ac.mdiq.podcini.preferences.PlaybackPreferences
+import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.loadPlayableFromPreferences
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.DBWriter
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
@@ -24,8 +25,11 @@ import android.view.SurfaceHolder
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 /**
  * Communicates with the playback service. GUI classes should use this class to
@@ -73,6 +77,7 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
     private fun procFlowEvents() {
         activity.lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: $event")
                 when (event) {
                     is FlowEvent.PlaybackServiceEvent -> if (event.action == FlowEvent.PlaybackServiceEvent.Action.SERVICE_STARTED) init()
                     else -> {}
@@ -305,9 +310,13 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
 
     fun getMedia(): Playable? {
         if (media == null && playbackService != null) media = playbackService!!.mPlayerInfo.playable
-        if (media == null) media = PlaybackPreferences.createInstanceFromPreferences(activity)
-
-        return media
+        if (media != null) return media
+        return runBlocking {
+            media = withContext(Dispatchers.IO) {
+                loadPlayableFromPreferences()
+            }
+            media
+        }
     }
 
     fun seekTo(time: Int) {

@@ -9,7 +9,7 @@ import ac.mdiq.podcini.storage.DBWriter
 import ac.mdiq.podcini.util.LongList
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
-import ac.mdiq.podcini.ui.view.LocalDeleteModal
+import ac.mdiq.podcini.ui.utils.LocalDeleteModal
 import androidx.media3.common.util.UnstableApi
 
 @UnstableApi

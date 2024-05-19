@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.receiver
 
+import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions.Companion.SWIPE_ACTIONS_PREF_NAME
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
@@ -10,6 +11,7 @@ import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import ac.mdiq.podcini.ui.widget.WidgetUpdaterWorker
 import ac.mdiq.podcini.util.Logd
+import android.content.SharedPreferences
 import java.util.concurrent.TimeUnit
 
 class PlayerWidget : AppWidgetProvider() {
@@ -25,10 +27,9 @@ class PlayerWidget : AppWidgetProvider() {
         Logd(TAG, "onUpdate() called with: context = [$context], appWidgetManager = [$appWidgetManager], appWidgetIds = [${appWidgetIds.contentToString()}]")
         WidgetUpdaterWorker.enqueueWork(context)
 
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        if (!prefs.getBoolean(KEY_WORKAROUND_ENABLED, false)) {
+        if (!prefs!!.getBoolean(KEY_WORKAROUND_ENABLED, false)) {
             scheduleWorkaround(context)
-            prefs.edit().putBoolean(KEY_WORKAROUND_ENABLED, true).apply()
+            prefs!!.edit().putBoolean(KEY_WORKAROUND_ENABLED, true).apply()
         }
     }
 
@@ -40,26 +41,24 @@ class PlayerWidget : AppWidgetProvider() {
 
     override fun onDeleted(context: Context, appWidgetIds: IntArray) {
         Logd(TAG, "OnDeleted")
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         for (appWidgetId in appWidgetIds) {
-            prefs.edit().remove(KEY_WIDGET_COLOR + appWidgetId).apply()
-            prefs.edit().remove(KEY_WIDGET_PLAYBACK_SPEED + appWidgetId).apply()
-            prefs.edit().remove(KEY_WIDGET_REWIND + appWidgetId).apply()
-            prefs.edit().remove(KEY_WIDGET_FAST_FORWARD + appWidgetId).apply()
-            prefs.edit().remove(KEY_WIDGET_SKIP + appWidgetId).apply()
+            prefs!!.edit().remove(KEY_WIDGET_COLOR + appWidgetId).apply()
+            prefs!!.edit().remove(KEY_WIDGET_PLAYBACK_SPEED + appWidgetId).apply()
+            prefs!!.edit().remove(KEY_WIDGET_REWIND + appWidgetId).apply()
+            prefs!!.edit().remove(KEY_WIDGET_FAST_FORWARD + appWidgetId).apply()
+            prefs!!.edit().remove(KEY_WIDGET_SKIP + appWidgetId).apply()
         }
         val manager = AppWidgetManager.getInstance(context)
         val widgetIds = manager.getAppWidgetIds(ComponentName(context, PlayerWidget::class.java))
         if (widgetIds.isEmpty()) {
-            prefs.edit().putBoolean(KEY_WORKAROUND_ENABLED, false).apply()
+            prefs!!.edit().putBoolean(KEY_WORKAROUND_ENABLED, false).apply()
             WorkManager.getInstance(context).cancelUniqueWork(WORKAROUND_WORK_NAME)
         }
         super.onDeleted(context, appWidgetIds)
     }
 
     private fun setEnabled(context: Context, enabled: Boolean) {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putBoolean(KEY_ENABLED, enabled).apply()
+        prefs!!.edit().putBoolean(KEY_ENABLED, enabled).apply()
     }
 
     companion object {
@@ -75,6 +74,12 @@ class PlayerWidget : AppWidgetProvider() {
         const val DEFAULT_COLOR: Int = -0xd9d3cf
         private const val WORKAROUND_WORK_NAME = "WidgetUpdaterWorkaround"
 
+        var prefs: SharedPreferences? = null
+
+        fun getSharedPrefs(context: Context) {
+            if (prefs == null) prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        }
+
         private fun scheduleWorkaround(context: Context) {
             // Enqueueing work enables a BOOT_COMPLETED receiver, which in turn makes Android refresh widgets.
             // This creates an endless loop with a flickering widget.
@@ -87,8 +92,8 @@ class PlayerWidget : AppWidgetProvider() {
 
         @JvmStatic
         fun isEnabled(context: Context): Boolean {
-            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            return prefs.getBoolean(KEY_ENABLED, false)
+//            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            return prefs!!.getBoolean(KEY_ENABLED, false)
         }
     }
 }

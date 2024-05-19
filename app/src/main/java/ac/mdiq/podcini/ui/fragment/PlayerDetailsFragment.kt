@@ -4,6 +4,8 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.PlayerDetailsFragmentBinding
 import ac.mdiq.podcini.feed.util.ImageResourceUtils
 import ac.mdiq.podcini.playback.PlaybackController
+import ac.mdiq.podcini.playback.service.PlaybackService
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion
 import ac.mdiq.podcini.storage.DBReader
 import ac.mdiq.podcini.storage.DBWriter.persistFeedItem
 import ac.mdiq.podcini.storage.model.feed.Chapter
@@ -11,6 +13,8 @@ import ac.mdiq.podcini.storage.model.feed.EmbeddedChapterImage
 import ac.mdiq.podcini.storage.model.feed.FeedItem
 import ac.mdiq.podcini.storage.model.feed.FeedMedia
 import ac.mdiq.podcini.storage.model.playback.Playable
+import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
+import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions.Companion.SWIPE_ACTIONS_PREF_NAME
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
@@ -25,9 +29,7 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.app.Activity
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Intent
+import android.content.*
 import android.graphics.ColorFilter
 import android.os.Build
 import android.os.Bundle
@@ -409,8 +411,8 @@ class  PlayerDetailsFragment : Fragment() {
 
     @UnstableApi private fun savePreference() {
         Logd(TAG, "Saving preferences")
-        val prefs = requireActivity().getSharedPreferences(PREF, Activity.MODE_PRIVATE)
-        val editor = prefs.edit()
+//        val prefs = requireActivity().getSharedPreferences(PREF, Activity.MODE_PRIVATE)
+        val editor = prefs!!.edit()
         if (controller?.getMedia() != null) {
             Logd(TAG, "Saving scroll position: " + binding.itemDescriptionFragment.scrollY)
             editor.putInt(PREF_SCROLL_Y, binding.itemDescriptionFragment.scrollY)
@@ -429,9 +431,9 @@ class  PlayerDetailsFragment : Fragment() {
         Logd(TAG, "Restoring from preferences")
         val activity: Activity? = activity
         if (activity != null) {
-            val prefs = activity.getSharedPreferences(PREF, Activity.MODE_PRIVATE)
-            val id = prefs.getString(PREF_PLAYABLE_ID, "")
-            val scrollY = prefs.getInt(PREF_SCROLL_Y, -1)
+//            val prefs = activity.getSharedPreferences(PREF, Activity.MODE_PRIVATE)
+            val id = prefs!!.getString(PREF_PLAYABLE_ID, "")
+            val scrollY = prefs!!.getInt(PREF_SCROLL_Y, -1)
             if (scrollY != -1) {
                 if (id == controller?.getMedia()?.getIdentifier()?.toString()) {
                     Logd(TAG, "Restored scroll Position: $scrollY")
@@ -455,6 +457,7 @@ class  PlayerDetailsFragment : Fragment() {
     private fun procFlowEvents() {
         lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: $event")
                 when (event) {
                     is FlowEvent.PlaybackPositionEvent -> onEventMainThread(event)
                     else -> {}
@@ -525,5 +528,10 @@ class  PlayerDetailsFragment : Fragment() {
         private const val PREF = "ItemDescriptionFragmentPrefs"
         private const val PREF_SCROLL_Y = "prefScrollY"
         private const val PREF_PLAYABLE_ID = "prefPlayableId"
+
+        var prefs: SharedPreferences? = null
+        fun getSharedPrefs(context: Context) {
+            if (prefs == null) prefs = context.getSharedPreferences(PREF, Context.MODE_PRIVATE)
+        }
     }
 }

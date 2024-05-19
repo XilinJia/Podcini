@@ -4,15 +4,13 @@ package ac.mdiq.podcini.ui.statistics.subscriptions
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.StatisticsFragmentBinding
 import ac.mdiq.podcini.storage.DBReader
-import ac.mdiq.podcini.storage.DBReader.MonthlyStatisticsItem
 import ac.mdiq.podcini.storage.DBReader.StatisticsResult
 import ac.mdiq.podcini.storage.StatisticsItem
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
-import ac.mdiq.podcini.ui.statistics.years.YearsStatisticsFragment
-import ac.mdiq.podcini.ui.statistics.years.YearsStatisticsFragment.Companion
+import ac.mdiq.podcini.ui.statistics.StatisticsFragment.Companion.prefs
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
-import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -21,10 +19,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -77,6 +71,7 @@ class SubscriptionStatisticsFragment : Fragment() {
     private fun procFlowEvents() {
         lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: $event")
                 when (event) {
                     is FlowEvent.StatisticsEvent -> refreshStatistics()
                     else -> {}
@@ -96,7 +91,7 @@ class SubscriptionStatisticsFragment : Fragment() {
             if (statisticsResult != null) {
                 val dialog = object: DatesFilterDialog(requireContext(), statisticsResult!!.oldestDate) {
                     override fun initParams() {
-                        prefs = requireContext().getSharedPreferences(StatisticsFragment.PREF_NAME, Context.MODE_PRIVATE)
+                        prefs = StatisticsFragment.prefs
                         includeMarkedAsPlayed = prefs!!.getBoolean(StatisticsFragment.PREF_INCLUDE_MARKED_PLAYED, false)
                         timeFilterFrom = prefs!!.getLong(StatisticsFragment.PREF_FILTER_FROM, 0)
                         timeFilterTo = prefs!!.getLong(StatisticsFragment.PREF_FILTER_TO, Long.MAX_VALUE)
@@ -126,10 +121,10 @@ class SubscriptionStatisticsFragment : Fragment() {
     private fun loadStatistics() {
 //        disposable?.dispose()
 
-        val prefs = requireContext().getSharedPreferences(StatisticsFragment.PREF_NAME, Context.MODE_PRIVATE)
-        val includeMarkedAsPlayed = prefs.getBoolean(StatisticsFragment.PREF_INCLUDE_MARKED_PLAYED, false)
-        val timeFilterFrom = prefs.getLong(StatisticsFragment.PREF_FILTER_FROM, 0)
-        val timeFilterTo = prefs.getLong(StatisticsFragment.PREF_FILTER_TO, Long.MAX_VALUE)
+//        val prefs = requireContext().getSharedPreferences(StatisticsFragment.PREF_NAME, Context.MODE_PRIVATE)
+        val includeMarkedAsPlayed = prefs!!.getBoolean(StatisticsFragment.PREF_INCLUDE_MARKED_PLAYED, false)
+        val timeFilterFrom = prefs!!.getLong(StatisticsFragment.PREF_FILTER_FROM, 0)
+        val timeFilterTo = prefs!!.getLong(StatisticsFragment.PREF_FILTER_TO, Long.MAX_VALUE)
 
 //        disposable = Observable.fromCallable {
 //            val statisticsData = DBReader.getStatistics(

@@ -16,6 +16,8 @@ import ac.mdiq.podcini.preferences.UserPreferences.isStreamOverDownload
 import ac.mdiq.podcini.preferences.UserPreferences.theme
 import ac.mdiq.podcini.ui.actions.swipeactions.SwipeAction
 import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
+import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions.Companion.getSharedPrefs
+import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions.Companion.prefs
 import ac.mdiq.podcini.ui.fragment.AllEpisodesFragment
 import ac.mdiq.podcini.ui.fragment.QueueFragment
 import ac.mdiq.podcini.util.error.CrashReportWriter.Companion.file
@@ -96,8 +98,9 @@ object PreferenceUpgrader {
                 prefs.edit().putString(UserPreferences.PREF_HARDWARE_PREVIOUS_BUTTON, KeyEvent.KEYCODE_MEDIA_PREVIOUS.toString()).apply()
         }
         if (oldVersion < 2040000) {
-            val swipePrefs = context.getSharedPreferences(SwipeActions.PREF_NAME, Context.MODE_PRIVATE)
-            swipePrefs.edit().putString(SwipeActions.KEY_PREFIX_SWIPEACTIONS + QueueFragment.TAG,
+            getSharedPrefs(context)
+//            val swipePrefs = context.getSharedPreferences(SwipeActions.SWIPE_ACTIONS_PREF_NAME, Context.MODE_PRIVATE)
+            SwipeActions.prefs!!.edit().putString(SwipeActions.KEY_PREFIX_SWIPEACTIONS + QueueFragment.TAG,
                 SwipeAction.REMOVE_FROM_QUEUE + "," + SwipeAction.REMOVE_FROM_QUEUE).apply()
         }
         if (oldVersion < 2050000) prefs.edit().putBoolean(UserPreferences.PREF_PAUSE_PLAYBACK_FOR_FOCUS_LOSS, true).apply()

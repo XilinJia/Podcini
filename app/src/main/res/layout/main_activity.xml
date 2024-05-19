@@ -30,7 +30,7 @@
             android:background="?android:attr/colorBackground"
             android:elevation="8dp"
             android:visibility="gone"
-            app:layout_behavior="ac.mdiq.podcini.ui.view.LockableBottomSheetBehavior" />
+            app:layout_behavior="ac.mdiq.podcini.ui.utils.LockableBottomSheetBehavior" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

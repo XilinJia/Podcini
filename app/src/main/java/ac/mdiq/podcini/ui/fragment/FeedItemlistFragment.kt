@@ -21,7 +21,8 @@ import ac.mdiq.podcini.ui.adapter.EpisodeItemListAdapter
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.dialog.*
 import ac.mdiq.podcini.ui.utils.MoreContentListFooterUtil
-import ac.mdiq.podcini.ui.view.ToolbarIconTintManager
+import ac.mdiq.podcini.ui.utils.TransitionEffect
+import ac.mdiq.podcini.ui.utils.ToolbarIconTintManager
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeItemViewHolder
 import ac.mdiq.podcini.util.*
 import ac.mdiq.podcini.util.event.EventFlow
@@ -112,6 +113,7 @@ import java.util.concurrent.Semaphore
         binding.recyclerView.adapter = adapter
 
         swipeActions = SwipeActions(this, TAG).attachTo(binding.recyclerView)
+        lifecycle.addObserver(swipeActions)
         refreshSwipeTelltale()
         binding.header.leftActionIcon.setOnClickListener {
             swipeActions.showDialog()
@@ -257,7 +259,7 @@ import java.util.concurrent.Semaphore
                     feed!!.nextPageLink = feed!!.download_url
                     feed!!.pageNr = 0
                     try {
-                        DBWriter.resetPagedFeedPage(feed).get()
+                        runBlocking { DBWriter.resetPagedFeedPage(feed).join() }
                         FeedUpdateManager.runOnce(requireContext(), feed)
                     } catch (e: ExecutionException) {
                         throw RuntimeException(e)
@@ -352,6 +354,7 @@ import java.util.concurrent.Semaphore
     private fun procFlowEvents() {
         lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: $event")
                 when (event) {
                     is FlowEvent.QueueEvent -> loadItems()
                     is FlowEvent.FavoritesEvent -> loadItems()

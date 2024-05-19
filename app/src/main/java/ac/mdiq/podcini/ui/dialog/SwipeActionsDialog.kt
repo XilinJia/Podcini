@@ -17,10 +17,13 @@ import ac.mdiq.podcini.ui.fragment.*
 import ac.mdiq.podcini.ui.actions.swipeactions.SwipeAction
 import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
 import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions.Companion.getPrefsWithDefaults
+import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions.Companion.getSharedPrefs
 import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions.Companion.isSwipeActionEnabled
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
 
-class SwipeActionsDialog(private val context: Context, private val tag: String) {
+@OptIn(UnstableApi::class) class SwipeActionsDialog(private val context: Context, private val tag: String) {
     private lateinit var keys: List<SwipeAction>
 
     private var rightAction: SwipeAction? = null
@@ -55,15 +58,13 @@ class SwipeActionsDialog(private val context: Context, private val tag: String) 
                 keys = Stream.of(keys).filter { a: SwipeAction ->
                     (!a.getId().equals(SwipeAction.ADD_TO_QUEUE) && !a.getId().equals(SwipeAction.REMOVE_FROM_HISTORY)) }.toList()
             }
-            PlaybackHistoryFragment.TAG -> {
+            HistoryFragment.TAG -> {
                 forFragment = context.getString(R.string.playback_history_label)
                 keys = Stream.of(keys).toList()
             }
             else -> {}
         }
-        if (tag != QueueFragment.TAG) {
-            keys = Stream.of(keys).filter { a: SwipeAction -> !a.getId().equals(SwipeAction.REMOVE_FROM_QUEUE) }.toList()
-        }
+        if (tag != QueueFragment.TAG) keys = Stream.of(keys).filter { a: SwipeAction -> !a.getId().equals(SwipeAction.REMOVE_FROM_QUEUE) }.toList()
 
         builder.setTitle(context.getString(R.string.swipeactions_label) + " - " + forFragment)
         val binding = SwipeactionsDialogBinding.inflate(LayoutInflater.from(context))
@@ -127,11 +128,9 @@ class SwipeActionsDialog(private val context: Context, private val tag: String) 
             if ((direction == LEFT && leftAction === action) || (direction == RIGHT && rightAction === action)) {
                 icon.setTint(getColorFromAttr(context, action.getActionColor()))
                 item.swipeActionLabel.setTextColor(getColorFromAttr(context, action.getActionColor()))
-            } else {
-                icon.setTint(getColorFromAttr(context, R.attr.action_icon_color))
-            }
-            item.swipeIcon.setImageDrawable(icon)
+            } else icon.setTint(getColorFromAttr(context, R.attr.action_icon_color))
 
+            item.swipeIcon.setImageDrawable(icon)
             item.root.setOnClickListener {
                 if (direction == LEFT) leftAction = keys[i]
                 else rightAction = keys[i]
@@ -158,13 +157,13 @@ class SwipeActionsDialog(private val context: Context, private val tag: String) 
     }
 
     private fun savePrefs(tag: String, right: String?, left: String?) {
-        val prefs = context.getSharedPreferences(SwipeActions.PREF_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putString(SwipeActions.KEY_PREFIX_SWIPEACTIONS + tag, "$right,$left").apply()
+        getSharedPrefs(context)
+        SwipeActions.prefs!!.edit().putString(SwipeActions.KEY_PREFIX_SWIPEACTIONS + tag, "$right,$left").apply()
     }
 
     private fun saveActionsEnabledPrefs(enabled: Boolean) {
-        val prefs = context.getSharedPreferences(SwipeActions.PREF_NAME, Context.MODE_PRIVATE)
-        prefs.edit().putBoolean(SwipeActions.KEY_PREFIX_NO_ACTION + tag, enabled).apply()
+        getSharedPrefs(context)
+        SwipeActions.prefs!!.edit().putBoolean(SwipeActions.KEY_PREFIX_NO_ACTION + tag, enabled).apply()
     }
 
     interface Callback {

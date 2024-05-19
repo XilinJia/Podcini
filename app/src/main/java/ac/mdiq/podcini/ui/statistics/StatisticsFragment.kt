@@ -3,6 +3,7 @@ package ac.mdiq.podcini.ui.statistics
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.PagerFragmentBinding
+import ac.mdiq.podcini.receiver.PlayerWidget.Companion.PREFS_NAME
 import ac.mdiq.podcini.storage.DBWriter
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
@@ -14,6 +15,7 @@ import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.Context
 import android.content.DialogInterface
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -98,7 +100,7 @@ class StatisticsFragment : PagedToolbarFragment() {
     }
 
     @UnstableApi private fun doResetStatistics() {
-        requireContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE).edit()
+        prefs!!.edit()
             .putBoolean(PREF_INCLUDE_MARKED_PLAYED, false)
             .putLong(PREF_FILTER_FROM, 0)
             .putLong(PREF_FILTER_TO, Long.MAX_VALUE)
@@ -146,10 +148,16 @@ class StatisticsFragment : PagedToolbarFragment() {
         const val PREF_FILTER_FROM: String = "filterFrom"
         const val PREF_FILTER_TO: String = "filterTo"
 
-
         private const val POS_SUBSCRIPTIONS = 0
         private const val POS_YEARS = 1
         private const val POS_SPACE_TAKEN = 2
         private const val TOTAL_COUNT = 3
+
+        var prefs: SharedPreferences? = null
+
+        fun getSharedPrefs(context: Context) {
+            if (prefs == null) prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        }
+
     }
 }

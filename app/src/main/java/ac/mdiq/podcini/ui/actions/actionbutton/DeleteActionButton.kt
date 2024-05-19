@@ -5,7 +5,7 @@ import android.view.View
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.DBWriter
 import ac.mdiq.podcini.storage.model.feed.FeedItem
-import ac.mdiq.podcini.ui.view.LocalDeleteModal.showLocalFeedDeleteWarningIfNecessary
+import ac.mdiq.podcini.ui.utils.LocalDeleteModal.showLocalFeedDeleteWarningIfNecessary
 import androidx.media3.common.util.UnstableApi
 
 class DeleteActionButton(item: FeedItem) : ItemActionButton(item) {

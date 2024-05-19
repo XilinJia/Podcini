@@ -18,6 +18,9 @@ import ac.mdiq.podcini.storage.database.PodDBAdapter
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.proxyConfig
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterfaceImpl
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 
 @UnstableApi

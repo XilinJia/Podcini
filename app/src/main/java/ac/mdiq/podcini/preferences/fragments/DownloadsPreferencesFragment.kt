@@ -15,6 +15,7 @@ import ac.mdiq.podcini.net.download.FeedUpdateManager.restartUpdateAlarm
 import ac.mdiq.podcini.ui.dialog.ChooseDataFolderDialog
 import ac.mdiq.podcini.ui.dialog.ProxyDialog
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.UserPreferences.getDataFolder
 import ac.mdiq.podcini.preferences.UserPreferences.setDataFolder
 import kotlin.Any
@@ -32,12 +33,12 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
     override fun onStart() {
         super.onStart()
         (activity as PreferenceActivity).supportActionBar!!.setTitle(R.string.downloads_pref)
-        PreferenceManager.getDefaultSharedPreferences(requireContext()).registerOnSharedPreferenceChangeListener(this)
+        appPrefs.registerOnSharedPreferenceChangeListener(this)
     }
 
     override fun onStop() {
         super.onStop()
-        PreferenceManager.getDefaultSharedPreferences(requireContext()).unregisterOnSharedPreferenceChangeListener(this)
+        appPrefs.unregisterOnSharedPreferenceChangeListener(this)
     }
 
     override fun onResume() {

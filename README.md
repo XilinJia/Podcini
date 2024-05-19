@@ -17,7 +17,7 @@ Compared to AntennaPod this project:
 2. Plays in `AudioOffloadMode`, kind to device battery,
 3. Is purely `Kotlin` based and mono-modular,
 4. Targets Android 14 with updated dependencies,
-5. Outfits with Viewbinding, Coil replacing Glide, coroutines replacing RxJava, and SharedFlow replacing EventBus,
+5. Outfits with Viewbinding, Coil replacing Glide, coroutines replacing RxJava and threads, and SharedFlow replacing EventBus,
 6. Boasts new UI's including streamlined drawer, subscriptions view and player controller,
 7. Accepts podcast as well as plain RSS and YouTube feeds,
 8. Offers Readability and Text-to-Speech for RSS contents,

@@ -138,7 +138,7 @@ object UserPreferences {
     const val DEFAULT_PAGE_REMEMBER: String = "remember"
 
     private lateinit var context: Context
-    private lateinit var prefs: SharedPreferences
+    lateinit var appPrefs: SharedPreferences
 
     /**
      * Sets up the UserPreferences class.
@@ -150,41 +150,41 @@ object UserPreferences {
         Logd(TAG, "Creating new instance of UserPreferences")
 
         UserPreferences.context = context.applicationContext
-        prefs = PreferenceManager.getDefaultSharedPreferences(context)
+        appPrefs = PreferenceManager.getDefaultSharedPreferences(context)
 
         createNoMediaFile()
     }
 
     @JvmStatic
     var theme: ThemePreference
-        get() = when (prefs.getString(PREF_THEME, "system")) {
+        get() = when (appPrefs.getString(PREF_THEME, "system")) {
             "0" -> ThemePreference.LIGHT
             "1" -> ThemePreference.DARK
             else -> ThemePreference.SYSTEM
         }
         set(theme) {
             when (theme) {
-                ThemePreference.LIGHT -> prefs.edit().putString(PREF_THEME, "0").apply()
-                ThemePreference.DARK -> prefs.edit().putString(PREF_THEME, "1").apply()
-                else -> prefs.edit().putString(PREF_THEME, "system").apply()
+                ThemePreference.LIGHT -> appPrefs.edit().putString(PREF_THEME, "0").apply()
+                ThemePreference.DARK -> appPrefs.edit().putString(PREF_THEME, "1").apply()
+                else -> appPrefs.edit().putString(PREF_THEME, "system").apply()
             }
         }
 
     val isBlackTheme: Boolean
-        get() = prefs.getBoolean(PREF_THEME_BLACK, false)
+        get() = appPrefs.getBoolean(PREF_THEME_BLACK, false)
 
     val isThemeColorTinted: Boolean
-        get() = Build.VERSION.SDK_INT >= 31 && prefs.getBoolean(PREF_TINTED_COLORS, false)
+        get() = Build.VERSION.SDK_INT >= 31 && appPrefs.getBoolean(PREF_TINTED_COLORS, false)
 
     @JvmStatic
     var hiddenDrawerItems: List<String>
         get() {
-            val hiddenItems = prefs.getString(PREF_HIDDEN_DRAWER_ITEMS, "")
+            val hiddenItems = appPrefs.getString(PREF_HIDDEN_DRAWER_ITEMS, "")
             return ArrayList(listOf(*TextUtils.split(hiddenItems, ",")))
         }
         set(items) {
             val str = TextUtils.join(",", items)
-            prefs.edit()
+            appPrefs.edit()
                 .putString(PREF_HIDDEN_DRAWER_ITEMS, str)
                 .apply()
         }
@@ -192,7 +192,7 @@ object UserPreferences {
     @JvmStatic
     var fullNotificationButtons: List<Int>
         get() {
-            val buttons = TextUtils.split(prefs.getString(PREF_FULL_NOTIFICATION_BUTTONS, "$NOTIFICATION_BUTTON_SKIP,$NOTIFICATION_BUTTON_PLAYBACK_SPEED"), ",")
+            val buttons = TextUtils.split(appPrefs.getString(PREF_FULL_NOTIFICATION_BUTTONS, "$NOTIFICATION_BUTTON_SKIP,$NOTIFICATION_BUTTON_PLAYBACK_SPEED"), ",")
             val notificationButtons: MutableList<Int> = ArrayList()
             for (button in buttons) {
                 notificationButtons.add(button.toInt())
@@ -200,8 +200,8 @@ object UserPreferences {
             return notificationButtons
         }
         set(items) {
-            val str = TextUtils.join(",", items!!)
-            prefs.edit()
+            val str = TextUtils.join(",", items)
+            appPrefs.edit()
                 .putString(PREF_FULL_NOTIFICATION_BUTTONS, str)
                 .apply()
         }
@@ -216,7 +216,7 @@ object UserPreferences {
      * @return `true` if button should be shown, `false`  otherwise
      */
     private fun showButtonOnFullNotification(buttonId: Int): Boolean {
-        return fullNotificationButtons!!.contains(buttonId)
+        return fullNotificationButtons.contains(buttonId)
     }
 
     @JvmStatic
@@ -237,13 +237,13 @@ object UserPreferences {
     @JvmStatic
     val feedOrder: Int
         get() {
-            val value = prefs.getString(PREF_DRAWER_FEED_ORDER, "" + FEED_ORDER_COUNTER)
+            val value = appPrefs.getString(PREF_DRAWER_FEED_ORDER, "" + FEED_ORDER_COUNTER)
             return value!!.toInt()
         }
 
     @JvmStatic
     fun setFeedOrder(selected: String?) {
-        prefs.edit()
+        appPrefs.edit()
             .putString(PREF_DRAWER_FEED_ORDER, selected)
             .apply()
     }
@@ -251,7 +251,7 @@ object UserPreferences {
     @JvmStatic
     val feedCounterSetting: FeedCounter
         get() {
-            val value = prefs.getString(PREF_DRAWER_FEED_COUNTER, "" + FeedCounter.SHOW_UNPLAYED.id)
+            val value = appPrefs.getString(PREF_DRAWER_FEED_COUNTER, "" + FeedCounter.SHOW_UNPLAYED.id)
             return FeedCounter.fromOrdinal(value!!.toInt())
         }
 
@@ -259,14 +259,14 @@ object UserPreferences {
         /**
          * @return `true` if episodes should use their own cover, `false`  otherwise
          */
-        get() = prefs.getBoolean(PREF_USE_EPISODE_COVER, true)
+        get() = appPrefs.getBoolean(PREF_USE_EPISODE_COVER, true)
 
     /**
      * @return `true` if we should show remaining time or the duration
      */
     @JvmStatic
     fun shouldShowRemainingTime(): Boolean {
-        return prefs.getBoolean(PREF_SHOW_TIME_LEFT, false)
+        return appPrefs.getBoolean(PREF_SHOW_TIME_LEFT, false)
     }
 
     /**
@@ -277,7 +277,7 @@ object UserPreferences {
      */
     @JvmStatic
     fun setShowRemainTimeSetting(showRemain: Boolean?) {
-        prefs.edit().putBoolean(PREF_SHOW_TIME_LEFT, showRemain!!).apply()
+        appPrefs.edit().putBoolean(PREF_SHOW_TIME_LEFT, showRemain!!).apply()
     }
 
     val notifyPriority: Int
@@ -286,7 +286,7 @@ object UserPreferences {
          *
          * @return NotificationCompat.PRIORITY_MAX or NotificationCompat.PRIORITY_DEFAULT
          */
-        get() = if (prefs.getBoolean(PREF_EXPANDED_NOTIFICATION, false)) NotificationCompat.PRIORITY_MAX else NotificationCompat.PRIORITY_DEFAULT
+        get() = if (appPrefs.getBoolean(PREF_EXPANDED_NOTIFICATION, false)) NotificationCompat.PRIORITY_MAX else NotificationCompat.PRIORITY_DEFAULT
 
     @JvmStatic
     val isPersistNotify: Boolean
@@ -295,23 +295,23 @@ object UserPreferences {
          *
          * @return `true` if notifications are persistent, `false`  otherwise
          */
-        get() = prefs.getBoolean(PREF_PERSISTENT_NOTIFICATION, true)
+        get() = appPrefs.getBoolean(PREF_PERSISTENT_NOTIFICATION, true)
 
     @JvmStatic
     val showDownloadReportRaw: Boolean
         /**
          * Used for migration of the preference to system notification channels.
          */
-        get() = prefs.getBoolean(PREF_SHOW_DOWNLOAD_REPORT, true)
+        get() = appPrefs.getBoolean(PREF_SHOW_DOWNLOAD_REPORT, true)
 
     fun enqueueDownloadedEpisodes(): Boolean {
-        return prefs.getBoolean(PREF_ENQUEUE_DOWNLOADED, true)
+        return appPrefs.getBoolean(PREF_ENQUEUE_DOWNLOADED, true)
     }
 
     @JvmStatic
     var enqueueLocation: EnqueueLocation
         get() {
-            val valStr = prefs.getString(PREF_ENQUEUE_LOCATION, EnqueueLocation.BACK.name)
+            val valStr = appPrefs.getString(PREF_ENQUEUE_LOCATION, EnqueueLocation.BACK.name)
             try {
                 return EnqueueLocation.valueOf(valStr!!)
             } catch (t: Throwable) {
@@ -321,64 +321,64 @@ object UserPreferences {
             }
         }
         set(location) {
-            prefs.edit().putString(PREF_ENQUEUE_LOCATION, location.name).apply()
+            appPrefs.edit().putString(PREF_ENQUEUE_LOCATION, location.name).apply()
         }
 
     @JvmStatic
     val isPauseOnHeadsetDisconnect: Boolean
-        get() = prefs.getBoolean(PREF_PAUSE_ON_HEADSET_DISCONNECT, true)
+        get() = appPrefs.getBoolean(PREF_PAUSE_ON_HEADSET_DISCONNECT, true)
 
     @JvmStatic
     val isUnpauseOnHeadsetReconnect: Boolean
-        get() = prefs.getBoolean(PREF_UNPAUSE_ON_HEADSET_RECONNECT, true)
+        get() = appPrefs.getBoolean(PREF_UNPAUSE_ON_HEADSET_RECONNECT, true)
 
     @JvmStatic
     val isUnpauseOnBluetoothReconnect: Boolean
-        get() = prefs.getBoolean(PREF_UNPAUSE_ON_BLUETOOTH_RECONNECT, false)
+        get() = appPrefs.getBoolean(PREF_UNPAUSE_ON_BLUETOOTH_RECONNECT, false)
 
     @JvmStatic
     val hardwareForwardButton: Int
-        get() = prefs.getString(PREF_HARDWARE_FORWARD_BUTTON, KeyEvent.KEYCODE_MEDIA_FAST_FORWARD.toString())!!.toInt()
+        get() = appPrefs.getString(PREF_HARDWARE_FORWARD_BUTTON, KeyEvent.KEYCODE_MEDIA_FAST_FORWARD.toString())!!.toInt()
 
     @JvmStatic
     val hardwarePreviousButton: Int
-        get() = prefs.getString(PREF_HARDWARE_PREVIOUS_BUTTON, KeyEvent.KEYCODE_MEDIA_REWIND.toString())!!.toInt()
+        get() = appPrefs.getString(PREF_HARDWARE_PREVIOUS_BUTTON, KeyEvent.KEYCODE_MEDIA_REWIND.toString())!!.toInt()
 
     @JvmStatic
     @set:VisibleForTesting
     var isFollowQueue: Boolean
-        get() = prefs.getBoolean(PREF_FOLLOW_QUEUE, true)
+        get() = appPrefs.getBoolean(PREF_FOLLOW_QUEUE, true)
         /**
          * Set to true to enable Continuous Playback
          */
         set(value) {
-            prefs.edit().putBoolean(PREF_FOLLOW_QUEUE, value).apply()
+            appPrefs.edit().putBoolean(PREF_FOLLOW_QUEUE, value).apply()
         }
 
     @JvmStatic
     fun shouldSkipKeepEpisode(): Boolean {
-        return prefs.getBoolean(PREF_SKIP_KEEPS_EPISODE, true)
+        return appPrefs.getBoolean(PREF_SKIP_KEEPS_EPISODE, true)
     }
 
     @JvmStatic
     fun shouldFavoriteKeepEpisode(): Boolean {
-        return prefs.getBoolean(PREF_FAVORITE_KEEPS_EPISODE, true)
+        return appPrefs.getBoolean(PREF_FAVORITE_KEEPS_EPISODE, true)
     }
 
     @JvmStatic
     val isAutoDelete: Boolean
-        get() = prefs.getBoolean(PREF_AUTO_DELETE, false)
+        get() = appPrefs.getBoolean(PREF_AUTO_DELETE, false)
 
     @JvmStatic
     val isAutoDeleteLocal: Boolean
-        get() = prefs.getBoolean(PREF_AUTO_DELETE_LOCAL, false)
+        get() = appPrefs.getBoolean(PREF_AUTO_DELETE_LOCAL, false)
 
     val smartMarkAsPlayedSecs: Int
-        get() = prefs.getString(PREF_SMART_MARK_AS_PLAYED_SECS, "30")!!.toInt()
+        get() = appPrefs.getString(PREF_SMART_MARK_AS_PLAYED_SECS, "30")!!.toInt()
 
     @JvmStatic
     fun shouldDeleteRemoveFromQueue(): Boolean {
-        return prefs.getBoolean(PREF_DELETE_REMOVES_FROM_QUEUE, false)
+        return appPrefs.getBoolean(PREF_DELETE_REMOVES_FROM_QUEUE, false)
     }
 
     @JvmStatic
@@ -389,7 +389,7 @@ object UserPreferences {
     private val audioPlaybackSpeed: Float
         get() {
             try {
-                return prefs.getString(PREF_PLAYBACK_SPEED, "1.00")!!.toFloat()
+                return appPrefs.getString(PREF_PLAYBACK_SPEED, "1.00")!!.toFloat()
             } catch (e: NumberFormatException) {
                 Log.e(TAG, Log.getStackTraceString(e))
                 setPlaybackSpeed(1.0f)
@@ -400,7 +400,7 @@ object UserPreferences {
     val videoPlayMode: Int
         get() {
             try {
-                return prefs.getString(PREF_VIDEO_MODE, "1")!!.toInt()
+                return appPrefs.getString(PREF_VIDEO_MODE, "1")!!.toInt()
             } catch (e: NumberFormatException) {
                 Log.e(TAG, Log.getStackTraceString(e))
                 setVideoMode(1)
@@ -412,7 +412,7 @@ object UserPreferences {
     var videoPlaybackSpeed: Float
         get() {
             try {
-                return prefs.getString(PREF_VIDEO_PLAYBACK_SPEED, "1.00")!!.toFloat()
+                return appPrefs.getString(PREF_VIDEO_PLAYBACK_SPEED, "1.00")!!.toFloat()
             } catch (e: NumberFormatException) {
                 Log.e(TAG, Log.getStackTraceString(e))
                 videoPlaybackSpeed = 1.0f
@@ -420,21 +420,21 @@ object UserPreferences {
             }
         }
         set(speed) {
-            prefs.edit()
+            appPrefs.edit()
                 .putString(PREF_VIDEO_PLAYBACK_SPEED, speed.toString())
                 .apply()
         }
 
     @JvmStatic
     var isSkipSilence: Boolean
-        get() = prefs.getBoolean(PREF_PLAYBACK_SKIP_SILENCE, false)
+        get() = appPrefs.getBoolean(PREF_PLAYBACK_SKIP_SILENCE, false)
         set(skipSilence) {
-            prefs.edit().putBoolean(PREF_PLAYBACK_SKIP_SILENCE, skipSilence).apply()
+            appPrefs.edit().putBoolean(PREF_PLAYBACK_SKIP_SILENCE, skipSilence).apply()
         }
 
     @JvmStatic
     var playbackSpeedArray: List<Float>
-        get() = readPlaybackSpeedArray(prefs.getString(PREF_PLAYBACK_SPEED_ARRAY, null))
+        get() = readPlaybackSpeedArray(appPrefs.getString(PREF_PLAYBACK_SPEED_ARRAY, null))
         set(speeds) {
             val format = DecimalFormatSymbols(Locale.US)
             format.decimalSeparator = '.'
@@ -443,16 +443,16 @@ object UserPreferences {
             for (speed in speeds) {
                 jsonArray.put(speedFormat.format(speed.toDouble()))
             }
-            prefs.edit().putString(PREF_PLAYBACK_SPEED_ARRAY, jsonArray.toString()).apply()
+            appPrefs.edit().putString(PREF_PLAYBACK_SPEED_ARRAY, jsonArray.toString()).apply()
         }
 
     @JvmStatic
     fun shouldPauseForFocusLoss(): Boolean {
-        return prefs.getBoolean(PREF_PAUSE_PLAYBACK_FOR_FOCUS_LOSS, true)
+        return appPrefs.getBoolean(PREF_PAUSE_PLAYBACK_FOR_FOCUS_LOSS, true)
     }
 
     val updateInterval: Long
-        get() = prefs.getString(PREF_UPDATE_INTERVAL, "12")!!.toInt().toLong()
+        get() = appPrefs.getString(PREF_UPDATE_INTERVAL, "12")!!.toInt().toLong()
 
     val isAutoUpdateDisabled: Boolean
         get() = updateInterval == 0L
@@ -460,7 +460,7 @@ object UserPreferences {
     private fun isAllowMobileFor(type: String): Boolean {
         val defaultValue = HashSet<String>()
         defaultValue.add("images")
-        val allowed = prefs.getStringSet(PREF_MOBILE_UPDATE, defaultValue)
+        val allowed = appPrefs.getStringSet(PREF_MOBILE_UPDATE, defaultValue)
         return allowed!!.contains(type)
     }
 
@@ -509,12 +509,12 @@ object UserPreferences {
     private fun setAllowMobileFor(type: String, allow: Boolean) {
         val defaultValue = HashSet<String>()
         defaultValue.add("images")
-        val getValueStringSet = prefs.getStringSet(PREF_MOBILE_UPDATE, defaultValue)
+        val getValueStringSet = appPrefs.getStringSet(PREF_MOBILE_UPDATE, defaultValue)
         val allowed: MutableSet<String> = HashSet(getValueStringSet!!)
         if (allow) allowed.add(type)
         else allowed.remove(type)
 
-        prefs.edit().putStringSet(PREF_MOBILE_UPDATE, allowed).apply()
+        appPrefs.edit().putStringSet(PREF_MOBILE_UPDATE, allowed).apply()
     }
 
     @JvmStatic
@@ -524,29 +524,29 @@ object UserPreferences {
          * negative integer EPISODE_CACHE_SIZE_UNLIMITED if the cache size is set to
          * 'unlimited'.
          */
-        get() = prefs.getString(PREF_EPISODE_CACHE_SIZE, "20")!!.toInt()
+        get() = appPrefs.getString(PREF_EPISODE_CACHE_SIZE, "20")!!.toInt()
 
     @JvmStatic
     @set:VisibleForTesting
     var isEnableAutodownload: Boolean
-        get() = prefs.getBoolean(PREF_ENABLE_AUTODL, false)
+        get() = appPrefs.getBoolean(PREF_ENABLE_AUTODL, false)
         set(enabled) {
-            prefs.edit().putBoolean(PREF_ENABLE_AUTODL, enabled).apply()
+            appPrefs.edit().putBoolean(PREF_ENABLE_AUTODL, enabled).apply()
         }
 
     @JvmStatic
     val isEnableAutodownloadOnBattery: Boolean
-        get() = prefs.getBoolean(PREF_ENABLE_AUTODL_ON_BATTERY, true)
+        get() = appPrefs.getBoolean(PREF_ENABLE_AUTODL_ON_BATTERY, true)
 
     @JvmStatic
     val isEnableAutodownloadWifiFilter: Boolean
-        get() = Build.VERSION.SDK_INT < 29 && prefs.getBoolean(PREF_ENABLE_AUTODL_WIFI_FILTER, false)
+        get() = Build.VERSION.SDK_INT < 29 && appPrefs.getBoolean(PREF_ENABLE_AUTODL_WIFI_FILTER, false)
 
     @JvmStatic
     var speedforwardSpeed: Float
         get() {
             try {
-                return prefs.getString(PREF_SPEEDFORWRD_SPEED, "0.00")!!.toFloat()
+                return appPrefs.getString(PREF_SPEEDFORWRD_SPEED, "0.00")!!.toFloat()
             } catch (e: NumberFormatException) {
                 Log.e(TAG, Log.getStackTraceString(e))
                 speedforwardSpeed = 0.0f
@@ -554,14 +554,14 @@ object UserPreferences {
             }
         }
         set(speed) {
-            prefs.edit().putString(PREF_SPEEDFORWRD_SPEED, speed.toString()).apply()
+            appPrefs.edit().putString(PREF_SPEEDFORWRD_SPEED, speed.toString()).apply()
         }
 
     @JvmStatic
     var fallbackSpeed: Float
         get() {
             try {
-                return prefs.getString(PREF_FALLBACK_SPEED, "0.00")!!.toFloat()
+                return appPrefs.getString(PREF_FALLBACK_SPEED, "0.00")!!.toFloat()
             } catch (e: NumberFormatException) {
                 Log.e(TAG, Log.getStackTraceString(e))
                 fallbackSpeed = 0.0f
@@ -569,42 +569,42 @@ object UserPreferences {
             }
         }
         set(speed) {
-            prefs.edit().putString(PREF_FALLBACK_SPEED, speed.toString()).apply()
+            appPrefs.edit().putString(PREF_FALLBACK_SPEED, speed.toString()).apply()
         }
 
     @JvmStatic
     var fastForwardSecs: Int
-        get() = prefs.getInt(PREF_FAST_FORWARD_SECS, 30)
+        get() = appPrefs.getInt(PREF_FAST_FORWARD_SECS, 30)
         set(secs) {
-            prefs.edit().putInt(PREF_FAST_FORWARD_SECS, secs).apply()
+            appPrefs.edit().putInt(PREF_FAST_FORWARD_SECS, secs).apply()
         }
 
     @JvmStatic
     var rewindSecs: Int
-        get() = prefs.getInt(PREF_REWIND_SECS, 10)
+        get() = appPrefs.getInt(PREF_REWIND_SECS, 10)
         set(secs) {
-            prefs.edit().putInt(PREF_REWIND_SECS, secs).apply()
+            appPrefs.edit().putInt(PREF_REWIND_SECS, secs).apply()
         }
 
     @JvmStatic
     val autodownloadSelectedNetworks: Array<String>
         get() {
-            val selectedNetWorks = prefs.getString(PREF_AUTODL_SELECTED_NETWORKS, "")
+            val selectedNetWorks = appPrefs.getString(PREF_AUTODL_SELECTED_NETWORKS, "")
             return TextUtils.split(selectedNetWorks, ",")
         }
 
     @JvmStatic
     var proxyConfig: ProxyConfig
         get() {
-            val type = Proxy.Type.valueOf(prefs.getString(PREF_PROXY_TYPE, Proxy.Type.DIRECT.name)!!)
-            val host = prefs.getString(PREF_PROXY_HOST, null)
-            val port = prefs.getInt(PREF_PROXY_PORT, 0)
-            val username = prefs.getString(PREF_PROXY_USER, null)
-            val password = prefs.getString(PREF_PROXY_PASSWORD, null)
+            val type = Proxy.Type.valueOf(appPrefs.getString(PREF_PROXY_TYPE, Proxy.Type.DIRECT.name)!!)
+            val host = appPrefs.getString(PREF_PROXY_HOST, null)
+            val port = appPrefs.getInt(PREF_PROXY_PORT, 0)
+            val username = appPrefs.getString(PREF_PROXY_USER, null)
+            val password = appPrefs.getString(PREF_PROXY_PASSWORD, null)
             return ProxyConfig(type, host, port, username, password)
         }
         set(config) {
-            val editor = prefs.edit()
+            val editor = appPrefs.edit()
             editor.putString(PREF_PROXY_TYPE, config.type.name)
             if (config.host.isNullOrEmpty()) editor.remove(PREF_PROXY_HOST)
             else editor.putString(PREF_PROXY_HOST, config.host)
@@ -623,31 +623,31 @@ object UserPreferences {
 
     @JvmStatic
     var isQueueLocked: Boolean
-        get() = prefs.getBoolean(PREF_QUEUE_LOCKED, false)
+        get() = appPrefs.getBoolean(PREF_QUEUE_LOCKED, false)
         set(locked) {
-            prefs.edit().putBoolean(PREF_QUEUE_LOCKED, locked).apply()
+            appPrefs.edit().putBoolean(PREF_QUEUE_LOCKED, locked).apply()
         }
 
     @JvmStatic
     fun setPlaybackSpeed(speed: Float) {
-        prefs.edit().putString(PREF_PLAYBACK_SPEED, speed.toString()).apply()
+        appPrefs.edit().putString(PREF_PLAYBACK_SPEED, speed.toString()).apply()
     }
 
     @JvmStatic
     fun setVideoMode(mode: Int) {
-        prefs.edit().putString(PREF_VIDEO_MODE, mode.toString()).apply()
+        appPrefs.edit().putString(PREF_VIDEO_MODE, mode.toString()).apply()
     }
 
     @JvmStatic
     fun setAutodownloadSelectedNetworks(value: Array<String?>?) {
-        prefs.edit().putString(PREF_AUTODL_SELECTED_NETWORKS, TextUtils.join(",", value!!)).apply()
+        appPrefs.edit().putString(PREF_AUTODL_SELECTED_NETWORKS, TextUtils.join(",", value!!)).apply()
     }
 
     @JvmStatic
     fun gpodnetNotificationsEnabled(): Boolean {
         if (Build.VERSION.SDK_INT >= 26) return true // System handles notification preferences
 
-        return prefs.getBoolean(PREF_GPODNET_NOTIFICATIONS, true)
+        return appPrefs.getBoolean(PREF_GPODNET_NOTIFICATIONS, true)
     }
 
     @JvmStatic
@@ -655,11 +655,11 @@ object UserPreferences {
         /**
          * Used for migration of the preference to system notification channels.
          */
-        get() = prefs.getBoolean(PREF_GPODNET_NOTIFICATIONS, true)
+        get() = appPrefs.getBoolean(PREF_GPODNET_NOTIFICATIONS, true)
 
     @JvmStatic
     fun setGpodnetNotificationsEnabled() {
-        prefs.edit().putBoolean(PREF_GPODNET_NOTIFICATIONS, true).apply()
+        appPrefs.edit().putBoolean(PREF_GPODNET_NOTIFICATIONS, true).apply()
     }
 
     private fun readPlaybackSpeedArray(valueFromPrefs: String?): List<Float> {
@@ -682,9 +682,9 @@ object UserPreferences {
 
     @JvmStatic
     var episodeCleanupValue: Int
-        get() = prefs.getString(PREF_EPISODE_CLEANUP, "" + EPISODE_CLEANUP_NULL)!!.toInt()
+        get() = appPrefs.getString(PREF_EPISODE_CLEANUP, "" + EPISODE_CLEANUP_NULL)!!.toInt()
         set(episodeCleanupValue) {
-            prefs.edit().putString(PREF_EPISODE_CLEANUP, episodeCleanupValue.toString()).apply()
+            appPrefs.edit().putString(PREF_EPISODE_CLEANUP, episodeCleanupValue.toString()).apply()
         }
 
     /**
@@ -697,7 +697,7 @@ object UserPreferences {
      */
     @JvmStatic
     fun getDataFolder(type: String?): File? {
-        var dataFolder = getTypeDir(prefs.getString(PREF_DATA_FOLDER, null), type)
+        var dataFolder = getTypeDir(appPrefs.getString(PREF_DATA_FOLDER, null), type)
         if (dataFolder == null || !dataFolder.canWrite()) {
             Logd(TAG, "User data folder not writable or not set. Trying default.")
             dataFolder = context.getExternalFilesDir(type)
@@ -730,7 +730,7 @@ object UserPreferences {
     @JvmStatic
     fun setDataFolder(dir: String) {
         Logd(TAG, "setDataFolder(dir: $dir)")
-        prefs.edit().putString(PREF_DATA_FOLDER, dir).apply()
+        appPrefs.edit().putString(PREF_DATA_FOLDER, dir).apply()
     }
 
     /**
@@ -751,26 +751,26 @@ object UserPreferences {
 
     @JvmStatic
     var defaultPage: String?
-        get() = prefs.getString(PREF_DEFAULT_PAGE, "SubscriptionFragment")
+        get() = appPrefs.getString(PREF_DEFAULT_PAGE, "SubscriptionFragment")
         set(defaultPage) {
-            prefs.edit().putString(PREF_DEFAULT_PAGE, defaultPage).apply()
+            appPrefs.edit().putString(PREF_DEFAULT_PAGE, defaultPage).apply()
         }
 
     @JvmStatic
     fun backButtonOpensDrawer(): Boolean {
-        return prefs.getBoolean(PREF_BACK_OPENS_DRAWER, false)
+        return appPrefs.getBoolean(PREF_BACK_OPENS_DRAWER, false)
     }
 
     @JvmStatic
     fun timeRespectsSpeed(): Boolean {
-        return prefs.getBoolean(PREF_TIME_RESPECTS_SPEED, false)
+        return appPrefs.getBoolean(PREF_TIME_RESPECTS_SPEED, false)
     }
 
     @JvmStatic
     var isStreamOverDownload: Boolean
-        get() = prefs.getBoolean(PREF_STREAM_OVER_DOWNLOAD, false)
+        get() = appPrefs.getBoolean(PREF_STREAM_OVER_DOWNLOAD, false)
         set(stream) {
-            prefs.edit().putBoolean(PREF_STREAM_OVER_DOWNLOAD, stream).apply()
+            appPrefs.edit().putBoolean(PREF_STREAM_OVER_DOWNLOAD, stream).apply()
         }
 
     @JvmStatic
@@ -780,14 +780,14 @@ object UserPreferences {
          *
          * @see .getQueueKeepSortedOrder
          */
-        get() = prefs.getBoolean(PREF_QUEUE_KEEP_SORTED, false)
+        get() = appPrefs.getBoolean(PREF_QUEUE_KEEP_SORTED, false)
         /**
          * Enables/disables the keep sorted mode of the queue.
          *
          * @see .setQueueKeepSortedOrder
          */
         set(keepSorted) {
-            prefs.edit().putBoolean(PREF_QUEUE_KEEP_SORTED, keepSorted).apply()
+            appPrefs.edit().putBoolean(PREF_QUEUE_KEEP_SORTED, keepSorted).apply()
         }
 
     @JvmStatic
@@ -799,7 +799,7 @@ object UserPreferences {
          * @see .isQueueKeepSorted
          */
         get() {
-            val sortOrderStr = prefs.getString(PREF_QUEUE_KEEP_SORTED_ORDER, "use-default")
+            val sortOrderStr = appPrefs.getString(PREF_QUEUE_KEEP_SORTED_ORDER, "use-default")
             return SortOrder.parseWithDefault(sortOrderStr, SortOrder.DATE_NEW_OLD)
         }
         /**
@@ -809,13 +809,13 @@ object UserPreferences {
          */
         set(sortOrder) {
             if (sortOrder == null) return
-            prefs.edit().putString(PREF_QUEUE_KEEP_SORTED_ORDER, sortOrder.name).apply()
+            appPrefs.edit().putString(PREF_QUEUE_KEEP_SORTED_ORDER, sortOrder.name).apply()
         }
 
     @JvmStatic
     val newEpisodesAction: NewEpisodesAction
         get() {
-            val str = prefs.getString(PREF_NEW_EPISODES_ACTION, "" + NewEpisodesAction.GLOBAL.code)
+            val str = appPrefs.getString(PREF_NEW_EPISODES_ACTION, "" + NewEpisodesAction.GLOBAL.code)
             return NewEpisodesAction.fromCode(str!!.toInt())
         }
 
@@ -825,14 +825,14 @@ object UserPreferences {
          * Returns the sort order for the downloads.
          */
         get() {
-            val sortOrderStr = prefs.getString(PREF_DOWNLOADS_SORTED_ORDER, "" + SortOrder.DATE_NEW_OLD.code)
+            val sortOrderStr = appPrefs.getString(PREF_DOWNLOADS_SORTED_ORDER, "" + SortOrder.DATE_NEW_OLD.code)
             return SortOrder.fromCodeString(sortOrderStr)
         }
         /**
          * Sets the sort order for the downloads.
          */
         set(sortOrder) {
-            prefs.edit().putString(PREF_DOWNLOADS_SORTED_ORDER, "" + sortOrder!!.code).apply()
+            appPrefs.edit().putString(PREF_DOWNLOADS_SORTED_ORDER, "" + sortOrder!!.code).apply()
         }
 
 //    @JvmStatic
@@ -855,11 +855,11 @@ object UserPreferences {
     @JvmStatic
     var subscriptionsFilter: SubscriptionsFilter
         get() {
-            val value = prefs.getString(PREF_FILTER_FEED, "")
+            val value = appPrefs.getString(PREF_FILTER_FEED, "")
             return SubscriptionsFilter(value)
         }
         set(value) {
-            prefs.edit().putString(PREF_FILTER_FEED, value.serialize()).apply()
+            appPrefs.edit().putString(PREF_FILTER_FEED, value.serialize()).apply()
         }
 
     @JvmStatic
@@ -870,16 +870,16 @@ object UserPreferences {
 
     @JvmStatic
     var allEpisodesSortOrder: SortOrder?
-        get() = SortOrder.fromCodeString(prefs.getString(PREF_SORT_ALL_EPISODES, "" + SortOrder.DATE_NEW_OLD.code))
+        get() = SortOrder.fromCodeString(appPrefs.getString(PREF_SORT_ALL_EPISODES, "" + SortOrder.DATE_NEW_OLD.code))
         set(s) {
-            prefs.edit().putString(PREF_SORT_ALL_EPISODES, "" + s!!.code).apply()
+            appPrefs.edit().putString(PREF_SORT_ALL_EPISODES, "" + s!!.code).apply()
         }
 
     @JvmStatic
     var prefFilterAllEpisodes: String
-        get() = prefs.getString(PREF_FILTER_ALL_EPISODES, "")?:""
+        get() = appPrefs.getString(PREF_FILTER_ALL_EPISODES, "")?:""
         set(filter) {
-            prefs.edit().putString(PREF_FILTER_ALL_EPISODES, filter).apply()
+            appPrefs.edit().putString(PREF_FILTER_ALL_EPISODES, filter).apply()
         }
 
     enum class ThemePreference {

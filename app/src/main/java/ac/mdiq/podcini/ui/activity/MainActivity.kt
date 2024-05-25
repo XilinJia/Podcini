@@ -74,6 +74,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -93,6 +94,7 @@ class MainActivity : CastEnabledActivity() {
     private lateinit var mainView: View
     private lateinit var audioPlayerFragment: AudioPlayerFragment
     private lateinit var audioPlayerFragmentView: View
+    private lateinit var controllerFuture: ListenableFuture<MediaController>
     private lateinit var navDrawer: View
     private lateinit var dummyView : View
     lateinit var bottomSheet: LockableBottomSheetBehavior<*>
@@ -503,7 +505,7 @@ class MainActivity : CastEnabledActivity() {
         RatingDialog.init(this)
 
         val sessionToken = SessionToken(this, ComponentName(this, PlaybackService::class.java))
-        val controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
+        controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
         controllerFuture.addListener({
                 // Call controllerFuture.get() to retrieve the MediaController.
                 // MediaController implements the Player interface, so it can be
@@ -533,7 +535,7 @@ class MainActivity : CastEnabledActivity() {
 
     override fun onStop() {
         super.onStop()
-        
+        MediaController.releaseFuture(controllerFuture)
     }
 
     override fun onTrimMemory(level: Int) {

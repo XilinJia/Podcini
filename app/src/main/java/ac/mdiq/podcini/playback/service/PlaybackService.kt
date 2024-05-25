@@ -11,10 +11,10 @@ import ac.mdiq.podcini.playback.cast.CastPsmp
 import ac.mdiq.podcini.playback.cast.CastStateListener
 import ac.mdiq.podcini.playback.service.PlaybackServiceTaskManager.PSTMCallback
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.clearCurrentlyPlayingTemporaryPlaybackSpeed
-import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.loadPlayableFromPreferences
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.currentEpisodeIsVideo
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.currentlyPlayingFeedMediaId
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.currentlyPlayingTemporaryPlaybackSpeed
+import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.loadPlayableFromPreferences
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.writeMediaPlaying
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.writeNoMediaPlaying
 import ac.mdiq.podcini.preferences.PlaybackPreferences.Companion.writePlayerStatus
@@ -60,11 +60,14 @@ import ac.mdiq.podcini.util.NetworkUtils.isStreamingAllowed
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
 import android.annotation.SuppressLint
+import android.app.Notification
+import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.bluetooth.BluetoothA2dp
 import android.content.*
+import android.content.Intent.EXTRA_KEY_EVENT
 import android.media.AudioManager
 import android.os.*
 import android.os.Build.VERSION_CODES
@@ -74,6 +77,7 @@ import android.util.Log
 import android.util.Pair
 import android.view.KeyEvent
 import android.view.SurfaceHolder
+import android.view.ViewConfiguration
 import android.webkit.URLUtil
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
@@ -81,6 +85,7 @@ import androidx.media3.common.Player.STATE_ENDED
 import androidx.media3.common.Player.STATE_IDLE
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
+import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
 import androidx.media3.session.MediaSessionService
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionResult
@@ -123,6 +128,9 @@ class PlaybackService : MediaSessionService() {
 
     private val mBinder: IBinder = LocalBinder()
 
+    private var clickCount = 0
+    private val clickHandler = Handler(Looper.getMainLooper())
+
     val mPlayerInfo: MediaPlayerInfo
         get() = mediaPlayer!!.playerInfo
 
@@ -163,7 +171,6 @@ class PlaybackService : MediaSessionService() {
 
     val videoSize: Pair<Int, Int>?
         get() = mediaPlayer?.getVideoSize()
-
 
     inner class LocalBinder : Binder() {
         val service: PlaybackService
@@ -214,6 +221,7 @@ class PlaybackService : MediaSessionService() {
         recreateMediaPlayer()
 
         if (LocalMediaPlayer.exoPlayer == null) LocalMediaPlayer.createStaticPlayer(applicationContext)
+
         mediaSession = MediaSession.Builder(applicationContext, LocalMediaPlayer.exoPlayer!!)
             .setCallback(MyCallback())
             .setCustomLayout(notificationCustomButtons)
@@ -271,62 +279,65 @@ class PlaybackService : MediaSessionService() {
         unregisterReceiver(bluetoothStateUpdated)
         unregisterReceiver(audioBecomingNoisy)
         taskManager.shutdown()
-        
     }
 
     fun isServiceReady(): Boolean {
         return mediaSession?.player?.playbackState != STATE_IDLE && mediaSession?.player?.playbackState != STATE_ENDED
     }
 
-    private inner class MyCallback : MediaSession.Callback {
+    inner class MyCallback : MediaSession.Callback {
         override fun onConnect(session: MediaSession, controller: MediaSession.ControllerInfo): MediaSession.ConnectionResult {
-           Logd(TAG, "in onConnect")
+           Logd(TAG, "in MyCallback onConnect")
             val sessionCommands = MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS.buildUpon()
 //                        .add(NotificationCustomButton.REWIND)
 //                        .add(NotificationCustomButton.FORWARD)
-            if (session.isMediaNotificationController(controller)) {
-                val playerCommands = MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS.buildUpon()
-//                        .remove(COMMAND_SEEK_TO_PREVIOUS)
-//                        .remove(COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM)
-//                        .remove(COMMAND_SEEK_TO_NEXT)
-//                        .remove(COMMAND_SEEK_TO_NEXT_MEDIA_ITEM)
-//                    .removeAll()
+            when {
+                session.isMediaNotificationController(controller) -> {
+                    val playerCommands = MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS.buildUpon()
+                    //                        .remove(COMMAND_SEEK_TO_PREVIOUS)
+                    //                        .remove(COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM)
+                    //                        .remove(COMMAND_SEEK_TO_NEXT)
+                    //                        .remove(COMMAND_SEEK_TO_NEXT_MEDIA_ITEM)
+                    //                    .removeAll()
 
-//
-//                // Custom layout and available commands to configure the legacy/framework session.
-//                return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
-////                    .setCustomLayout(
-////                        ImmutableList.of(
-////                            createSeekBackwardButton(NotificationCustomButton.REWIND),
-////                            createSeekForwardButton(customCommandSeekForward))
-////                    )
-//                    .setAvailablePlayerCommands(playerCommands.build())
-//                    .setAvailableSessionCommands(sessionCommands.build())
-//                    .build()
+                    //
+                    //                // Custom layout and available commands to configure the legacy/framework session.
+                    //                return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
+                    ////                    .setCustomLayout(
+                    ////                        ImmutableList.of(
+                    ////                            createSeekBackwardButton(NotificationCustomButton.REWIND),
+                    ////                            createSeekForwardButton(customCommandSeekForward))
+                    ////                    )
+                    //                    .setAvailablePlayerCommands(playerCommands.build())
+                    //                    .setAvailableSessionCommands(sessionCommands.build())
+                    //                    .build()
 
-//                val availableSessionCommands = connectionResult.availableSessionCommands.buildUpon()
+                    //                val availableSessionCommands = connectionResult.availableSessionCommands.buildUpon()
 
-                /* Registering custom player command buttons for player notification. */
-                notificationCustomButtons.forEach { commandButton ->
-                    Logd(TAG, "onConnect commandButton ${commandButton.displayName}")
-                    commandButton.sessionCommand?.let(sessionCommands::add)
+                    /* Registering custom player command buttons for player notification. */
+                    notificationCustomButtons.forEach { commandButton ->
+                        Logd(TAG, "MyCallback onConnect commandButton ${commandButton.displayName}")
+                        commandButton.sessionCommand?.let(sessionCommands::add)
+                    }
+
+                    return MediaSession.ConnectionResult.accept(
+                        sessionCommands.build(),
+                        playerCommands.build()
+                    )
                 }
-
-                return MediaSession.ConnectionResult.accept(
-                    sessionCommands.build(),
-                    playerCommands.build()
-                )
-            } else if (session.isAutoCompanionController(controller)) {
-                // Available session commands to accept incoming custom commands from Auto.
-                return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
-                    .setAvailableSessionCommands(sessionCommands.build())
-                    .build()
+                session.isAutoCompanionController(controller) -> {
+                    // Available session commands to accept incoming custom commands from Auto.
+                    return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
+                        .setAvailableSessionCommands(sessionCommands.build())
+                        .build()
+                }
+                // Default commands with default custom layout for all other controllers.
+                else -> return MediaSession.ConnectionResult.AcceptedResultBuilder(session).build()
             }
-            // Default commands with default custom layout for all other controllers.
-            return MediaSession.ConnectionResult.AcceptedResultBuilder(session).build()
         }
 
         override fun onPostConnect(session: MediaSession, controller: MediaSession.ControllerInfo) {
+            Logd(TAG, "MyCallback onPostConnect")
             super.onPostConnect(session, controller)
             if (notificationCustomButtons.isNotEmpty()) {
                 /* Setting custom player command buttons to mediaLibrarySession for player notification. */
@@ -337,6 +348,7 @@ class PlaybackService : MediaSessionService() {
 
         override fun onCustomCommand(session: MediaSession, controller: MediaSession.ControllerInfo, customCommand: SessionCommand, args: Bundle): ListenableFuture<SessionResult> {
             /* Handling custom command buttons from player notification. */
+            Logd(TAG, "onCustomCommand called ${customCommand.customAction}")
             when (customCommand.customAction) {
                 NotificationCustomButton.REWIND.customAction -> mediaPlayer?.seekDelta(-rewindSecs * 1000)
                 NotificationCustomButton.FORWARD.customAction -> mediaPlayer?.seekDelta(fastForwardSecs * 1000)
@@ -345,8 +357,9 @@ class PlaybackService : MediaSessionService() {
             return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
         }
 
-        override fun onPlaybackResumption(mediaSession: MediaSession, controller: MediaSession.ControllerInfo): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
-            val settable = SettableFuture.create<MediaSession.MediaItemsWithStartPosition>()
+        override fun onPlaybackResumption(mediaSession: MediaSession, controller: MediaSession.ControllerInfo): ListenableFuture<MediaItemsWithStartPosition> {
+            Logd(TAG, "onPlaybackResumption called ")
+            val settable = SettableFuture.create<MediaItemsWithStartPosition>()
 //            scope.launch {
 //                // Your app is responsible for storing the playlist and the start position
 //                // to use here
@@ -354,6 +367,31 @@ class PlaybackService : MediaSessionService() {
 //                settable.set(resumptionPlaylist)
 //            }
             return settable
+        }
+
+        override fun onMediaButtonEvent(mediaSession: MediaSession, controller: MediaSession.ControllerInfo, intent: Intent): Boolean {
+            val keyEvent =if (Build.VERSION.SDK_INT >= VERSION_CODES.TIRAMISU)
+                intent.extras!!.getParcelable(EXTRA_KEY_EVENT, KeyEvent::class.java)
+            else intent.extras!!.getParcelable(EXTRA_KEY_EVENT) as? KeyEvent
+            Logd(TAG, "onMediaButtonEvent ${keyEvent?.keyCode}")
+
+            if (keyEvent != null && keyEvent.action == KeyEvent.ACTION_DOWN && keyEvent.repeatCount == 0) {
+                val keyCode = keyEvent.keyCode
+                if (keyCode == KeyEvent.KEYCODE_HEADSETHOOK || keyCode == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE) {
+                    clickCount++
+                    clickHandler.removeCallbacksAndMessages(null)
+                    clickHandler.postDelayed({
+                        when (clickCount) {
+                            1 -> handleKeycode(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, false)
+                            2 -> mediaPlayer?.seekDelta(fastForwardSecs * 1000)
+                            3 -> mediaPlayer?.seekDelta(-rewindSecs * 1000)
+                        }
+                        clickCount = 0
+                    }, ViewConfiguration.getDoubleTapTimeout().toLong())
+                    return true
+                } else return handleKeycode(keyCode, false)
+            }
+            return false
         }
     }
 
@@ -372,6 +410,9 @@ class PlaybackService : MediaSessionService() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
+
+//        val notification = createNotification()
+//        startForeground(NOTIFICATION_ID, notification)
 
         val keycode = intent?.getIntExtra(MediaButtonReceiver.EXTRA_KEYCODE, -1) ?: -1
         val customAction = intent?.getStringExtra(MediaButtonReceiver.EXTRA_CUSTOM_ACTION)
@@ -405,20 +446,6 @@ class PlaybackService : MediaSessionService() {
                     val allowStreamAlways = intent.getBooleanExtra(PlaybackServiceConstants.EXTRA_ALLOW_STREAM_ALWAYS, false)
                     sendNotificationBroadcast(PlaybackServiceConstants.NOTIFICATION_TYPE_RELOAD, 0)
                     if (allowStreamAlways) isAllowMobileStreaming = true
-
-//                    Observable.fromCallable {
-//                        if (playable is FeedMedia) return@fromCallable DBReader.getFeedMedia(playable.id)
-//                        else return@fromCallable playable
-//                    }
-//                        .subscribeOn(Schedulers.io())
-//                        .observeOn(AndroidSchedulers.mainThread())
-//                        .subscribe(
-//                            { loadedPlayable: Playable? -> startPlaying(loadedPlayable, allowStreamThisTime) },
-//                            { error: Throwable ->
-//                                Logd(TAG, "Playable was not found. Stopping service.")
-//                                error.printStackTrace()
-//                            })
-
                     scope.launch {
                         try {
                             val loadedPlayable = withContext(Dispatchers.IO) {
@@ -1323,6 +1350,9 @@ class PlaybackService : MediaSessionService() {
 
     companion object {
         private const val TAG = "PlaybackService"
+
+        private const val NOTIFICATION_ID = 5326
+        private const val CHANNEL_ID = "podcini_session_notification_channel_id"
 
         private const val POSITION_EVENT_INTERVAL = 5L
 

@@ -1,0 +1,5 @@
+ 
+Version 5.4.1 brings several changes:
+
+* fixed occasional crash of detecting existing OPML file for new install
+* should have fixed the mal-functioning earphone buttons

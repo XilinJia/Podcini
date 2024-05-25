@@ -1,7 +1,7 @@
 plugins {
-    id('com.android.application')
+    id 'com.android.application'
     id 'kotlin-android'
-//    id 'kotlin-kapt'
+    id 'org.jetbrains.kotlin.android'
     id 'com.google.devtools.ksp'
     id('com.github.triplet.play') version '3.8.3' apply false
 }
@@ -159,8 +159,8 @@ android {
         // Version code schema (not used):
         // "1.2.3-beta4"    -> 1020304
         // "1.2.3"          -> 1020395
-        versionCode 3020147
-        versionName "5.4.0"
+        versionCode 3020148
+        versionName "5.4.1"
 
         def commit = ""
         try {
@@ -221,6 +221,7 @@ android {
 dependencies {
     implementation "androidx.core:core-ktx:1.12.0"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
     implementation 'com.android.volley:volley:1.2.1'
 
     constraints {

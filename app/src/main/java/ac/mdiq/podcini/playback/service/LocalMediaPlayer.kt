@@ -574,7 +574,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
         try {
             clearMediaPlayerListeners()
 //            TODO: should use: exoPlayer!!.playWhenReady ?
-            if (exoPlayer!!.isPlaying) exoPlayer?.stop()
+            if (exoPlayer?.isPlaying == true) exoPlayer?.stop()
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -686,7 +686,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
             while (true) {
                 delay(bufferUpdateInterval)
                 withContext(Dispatchers.Main) {
-                    if (bufferedPercentagePrev != exoPlayer!!.bufferedPercentage) {
+                    if (exoPlayer != null && bufferedPercentagePrev != exoPlayer?.bufferedPercentage) {
                         bufferingUpdateListener?.accept(exoPlayer!!.bufferedPercentage)
                         bufferedPercentagePrev = exoPlayer!!.bufferedPercentage
                     }

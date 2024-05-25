@@ -66,7 +66,13 @@ class OpmlReader {
                     }
                 }
             }
-            eventType = xpp.next()
+            try {
+//           TODO: on first install app: java.io.IOException: Underlying input stream returned zero bytes
+                eventType = xpp.next()
+            } catch(e: Exception) {
+                Log.e(TAG, "xpp.next() invalid: $e")
+                break
+            }
         }
 
         Logd(TAG, "Parsing finished.")

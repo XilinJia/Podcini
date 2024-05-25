@@ -1,4 +1,9 @@
 
+## 5.4.1
+
+* fixed occasional crash of detecting existing OPML file for new install
+* should have fixed the mal-functioning earphone buttons
+
 ## 5.4.0
 
 * replaced thread with coroutines in DBWrite

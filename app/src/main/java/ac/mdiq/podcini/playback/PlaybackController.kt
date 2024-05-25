@@ -22,6 +22,7 @@ import android.os.IBinder
 import android.util.Log
 import android.util.Pair
 import android.view.SurfaceHolder
+import android.widget.MediaController
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
@@ -114,31 +115,23 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
 
         try {
             activity.unregisterReceiver(statusUpdate)
-        } catch (e: IllegalArgumentException) {
-            // ignore
-        }
+        } catch (e: IllegalArgumentException) { }
 
         try {
             activity.unregisterReceiver(notificationReceiver)
-        } catch (e: IllegalArgumentException) {
-            // ignore
-        }
+        } catch (e: IllegalArgumentException) { }
+
         unbind()
-//        media = null
         released = true
 
-        if (eventsRegistered) {
-            
-            eventsRegistered = false
-        }
+        if (eventsRegistered) eventsRegistered = false
     }
 
     private fun unbind() {
         try {
             activity.unbindService(mConnection)
-        } catch (e: IllegalArgumentException) {
-            // ignore
-        }
+        } catch (e: IllegalArgumentException) { }
+
         initialized = false
     }
 

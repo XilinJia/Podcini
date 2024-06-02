@@ -119,7 +119,7 @@ class EpisodeHomeFragment : Fragment() {
                 if (!ttsReady) initializeTTS(requireContext())
 
                 withContext(Dispatchers.Main) {
-                    binding.readerView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes!!, "text/html", "UTF-8", null)
+                    binding.readerView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes?:"No notes", "text/html", "UTF-8", null)
                     binding.readerView.visibility = View.VISIBLE
                     binding.webView.visibility = View.GONE
                 }

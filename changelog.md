@@ -1,3 +1,10 @@
+## 5.4.2
+
+* likely fixed crash issue when the app is restarted after long idle
+* fixed null pointer crash issue in when trying to report player error
+* fixed null pointer crash issue when open player detailed view with online episode
+* likely fixed the audio break issue when streaming some podcasts, particularly those related to "iHeart" (actually the server has some invalid settings, someone should notify them).
+this should take effect with episodes in both subscribed or online feeds
 
 ## 5.4.1
 

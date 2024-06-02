@@ -100,8 +100,16 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
             activity.registerReceiver(notificationReceiver, IntentFilter(PlaybackServiceConstants.ACTION_PLAYER_NOTIFICATION))
         }
 
-        if (!released) bindToService()
-        else throw IllegalStateException("Can't call init() after release() has been called")
+//        TODO: java.lang.IllegalStateException: Can't call init() after release() has been called
+//        at ac.mdiq.podcini.playback.PlaybackController.initServiceRunning(SourceFile:104)
+        if (!released) {
+            bindToService()
+        } else {
+            released = false
+            bindToService()
+            Logd(TAG, "Testing bindToService if released")
+//            throw IllegalStateException("Can't call init() after release() has been called")
+        }
 
         checkMediaInfoLoaded()
     }

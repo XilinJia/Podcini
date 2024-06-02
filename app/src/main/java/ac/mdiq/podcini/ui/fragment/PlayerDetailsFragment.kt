@@ -210,7 +210,7 @@ class  PlayerDetailsFragment : Fragment() {
             withContext(Dispatchers.Main) {
                 Logd(TAG, "subscribe: ${media?.getEpisodeTitle()}")
                 displayMediaInfo(media!!)
-                shownoteView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes!!, "text/html", "utf-8", "about:blank")
+                shownoteView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes?:"No notes", "text/html", "utf-8", "about:blank")
                 Logd(TAG, "Webview loaded")
             }
         }.invokeOnCompletion { throwable ->
@@ -241,12 +241,12 @@ class  PlayerDetailsFragment : Fragment() {
             if (!homeText.isNullOrEmpty()) {
                 val shownotesCleaner = ShownotesCleaner(requireContext(), homeText!!, 0)
                 cleanedNotes = shownotesCleaner.processShownotes()
-                shownoteView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes!!, "text/html", "UTF-8", null)
+                shownoteView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes?:"No notes", "text/html", "UTF-8", null)
             } else Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show()
         } else {
             val shownotesCleaner = ShownotesCleaner(requireContext(), item?.description ?: "", media?.getDuration()?:0)
             cleanedNotes = shownotesCleaner.processShownotes()
-            if (!cleanedNotes.isNullOrEmpty()) shownoteView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes!!, "text/html", "UTF-8", null)
+            if (!cleanedNotes.isNullOrEmpty()) shownoteView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes?:"No notes", "text/html", "UTF-8", null)
             else Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show()
         }
     }

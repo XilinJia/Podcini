@@ -1,6 +1,5 @@
 package ac.mdiq.podcini.storage
 
-import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.net.Uri
 import android.util.Log

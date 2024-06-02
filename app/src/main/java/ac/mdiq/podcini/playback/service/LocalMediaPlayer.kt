@@ -84,6 +84,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
     private val bufferUpdateInterval = 5000L
 //    private val bufferingUpdateDisposable: Disposable
     private var mediaSource: MediaSource? = null
+    private var mediaItem: MediaItem? = null
     private var playbackParameters: PlaybackParameters
 
     private var bufferedPercentagePrev = 0
@@ -119,8 +120,10 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
 
     @Throws(IllegalStateException::class)
     private fun prepareWR() {
-        if (mediaSource == null) return
-        exoPlayer?.setMediaSource(mediaSource!!, false)
+        if (mediaSource == null && mediaItem == null) return
+
+        if (mediaSource != null) exoPlayer?.setMediaSource(mediaSource!!, false)
+        else exoPlayer?.setMediaItem(mediaItem!!)
         exoPlayer?.prepare()
     }
 
@@ -159,26 +162,29 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
     @Throws(IllegalArgumentException::class, IllegalStateException::class)
     private fun setDataSource(m: MediaMetadata, s: String, user: String?, password: String?) {
         Logd(TAG, "setDataSource: $s")
-
-        if (httpDataSourceFactory == null)
-            httpDataSourceFactory = OkHttpDataSource.Factory(PodciniHttpClient.getHttpClient() as okhttp3.Call.Factory).setUserAgent(ClientConfig.USER_AGENT)
-
-        if (!user.isNullOrEmpty() && !password.isNullOrEmpty()) {
-            val requestProperties = HashMap<String, String>()
-            requestProperties["Authorization"] = HttpCredentialEncoder.encode(user, password, "ISO-8859-1")
-            httpDataSourceFactory!!.setDefaultRequestProperties(requestProperties)
-        }
-        val dataSourceFactory: DataSource.Factory = DefaultDataSourceFactory(context, null, httpDataSourceFactory!!)
-        val extractorsFactory = DefaultExtractorsFactory()
-        extractorsFactory.setConstantBitrateSeekingEnabled(true)
-        extractorsFactory.setMp3ExtractorFlags(Mp3Extractor.FLAG_DISABLE_ID3_METADATA)
-        val f = ProgressiveMediaSource.Factory(dataSourceFactory, extractorsFactory)
-
-        val mediaItem = MediaItem.Builder()
+        
+        mediaItem = MediaItem.Builder()
             .setUri(Uri.parse(s))
             .setMediaMetadata(m).build()
+        mediaSource = null
 
-        mediaSource = f.createMediaSource(mediaItem)
+        if (!user.isNullOrEmpty() && !password.isNullOrEmpty()) {
+            if (httpDataSourceFactory == null)
+                httpDataSourceFactory = OkHttpDataSource.Factory(PodciniHttpClient.getHttpClient() as okhttp3.Call.Factory).setUserAgent(ClientConfig.USER_AGENT)
+
+            if (!user.isNullOrEmpty() && !password.isNullOrEmpty()) {
+                val requestProperties = HashMap<String, String>()
+                requestProperties["Authorization"] = HttpCredentialEncoder.encode(user, password, "ISO-8859-1")
+                httpDataSourceFactory!!.setDefaultRequestProperties(requestProperties)
+            }
+            val dataSourceFactory: DataSource.Factory = DefaultDataSourceFactory(context, null, httpDataSourceFactory!!)
+            val extractorsFactory = DefaultExtractorsFactory()
+            extractorsFactory.setConstantBitrateSeekingEnabled(true)
+            extractorsFactory.setMp3ExtractorFlags(Mp3Extractor.FLAG_DISABLE_ID3_METADATA)
+            val f = ProgressiveMediaSource.Factory(dataSourceFactory, extractorsFactory)
+
+            mediaSource = f.createMediaSource(mediaItem!!)
+        }
     }
 
     private fun play() {
@@ -821,7 +827,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
                     var cause = error.cause
                     if (cause is HttpDataSourceException && cause.cause != null) cause = cause.cause
                     if (cause != null && "Source error" == cause.message) cause = cause.cause
-                    audioErrorListener?.accept(if (cause != null) cause.message else error.message)
+                    audioErrorListener?.accept((if (cause != null) cause.message else error.message) ?:"no message")
                 }
             }
 

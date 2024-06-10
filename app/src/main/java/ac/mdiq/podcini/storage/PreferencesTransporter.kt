@@ -77,9 +77,8 @@ object PreferencesTransporter {
 //                    val prefName = file.name.substring(0, file.name.lastIndexOf('.'))
                     file.delete()
                 }
-            } else {
-                Log.e("Error", "shared_prefs directory not found")
-            }
+            } else Log.e("Error", "shared_prefs directory not found")
+
             val files = exportedDir.listFiles()
             for (file in files) {
                 if (file?.isFile == true && file.name?.endsWith(".xml") == true) {
@@ -91,6 +90,5 @@ object PreferencesTransporter {
             Log.e(TAG, Log.getStackTraceString(e))
             throw e
         } finally { }
-
     }
 }

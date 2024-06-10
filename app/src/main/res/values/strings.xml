@@ -594,6 +594,7 @@
     <string name="database">Database</string>
     <string name="opml">OPML</string>
     <string name="html">HTML</string>
+    <string name="progress">Progress</string>
     <string name="html_export_summary">Show your subscriptions to a friend</string>
     <string name="opml_export_summary">Transfer your subscriptions to another podcast app</string>
     <string name="opml_import_summary">Import your subscriptions from another podcast app</string>
@@ -607,6 +608,11 @@
     <string name="opml_import_error_no_file">No file selected!</string>
     <string name="select_all_label">Select all</string>
     <string name="deselect_all_label">Deselect all</string>
+    <string name="progress_export_label">Episodes progress export</string>
+    <string name="progress_import_label">Episodes progress import</string>
+    <string name="progress_export_summary">Transfer Podcini episodes history to Podcini on another device</string>
+    <string name="progress_import_summary">Import Podcini episodes history from another device</string>
+    <string name="progress_import_warning">Importing episodes progress will replace all of your current playing history. You should export your current progress as a backup. Do you want to replace\?</string>
     <string name="opml_export_label">OPML export</string>
     <string name="html_export_label">HTML export</string>
     <string name="preferences_export_label">Preferences export</string>

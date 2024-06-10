@@ -196,17 +196,6 @@ class PlaybackServiceTaskManager(private val context: Context, private val callb
 //        chapterLoaderFuture = null
 
         if (!media.chaptersLoaded()) {
-//            chapterLoaderFuture = Completable.create { emitter: CompletableEmitter ->
-//                ChapterUtils.loadChapters(media, context, false)
-//                emitter.onComplete()
-//            }
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe({ callback.onChapterLoaded(media) },
-//                    { throwable: Throwable? ->
-//                        Logd(TAG, "Error loading chapters: " + Log.getStackTraceString(throwable))
-//                    })
-
             val scope = CoroutineScope(Dispatchers.Main)
             scope.launch(Dispatchers.IO) {
                 try {

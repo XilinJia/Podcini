@@ -24,26 +24,6 @@ class SplashActivity : Activity() {
         val content = findViewById<View>(android.R.id.content)
         content.viewTreeObserver.addOnPreDrawListener { false } // Keep splash screen active
 
-//        Completable.create { subscriber: CompletableEmitter ->
-//            // Trigger schema updates
-//            PodDBAdapter.getInstance().open()
-//            PodDBAdapter.getInstance().close()
-//            subscriber.onComplete()
-//        }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe({
-//                val intent = Intent(this@SplashActivity, MainActivity::class.java)
-//                startActivity(intent)
-//                overridePendingTransition(0, 0)
-//                finish()
-//            }, { error: Throwable ->
-//                error.printStackTrace()
-//                CrashReportWriter.write(error)
-//                Toast.makeText(this, error.localizedMessage, Toast.LENGTH_LONG).show()
-//                finish()
-//            })
-
         val scope = CoroutineScope(Dispatchers.IO)
         scope.launch(Dispatchers.IO) {
             try {

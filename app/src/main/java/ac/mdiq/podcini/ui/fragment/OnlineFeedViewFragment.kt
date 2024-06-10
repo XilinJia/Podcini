@@ -285,17 +285,6 @@ import kotlin.concurrent.Volatile
             .withInitiatedByUser(true)
             .build()
 
-//        download = Observable.fromCallable {
-//            feeds = DBReader.getFeedList()
-//            downloader = HttpDownloader(request)
-//            downloader?.call()
-//            downloader?.result
-//        }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe({ status: DownloadResult? -> if (request.destination != null) checkDownloadResult(status, request.destination) },
-//                { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
-
         lifecycleScope.launch {
             try {
                 val status = withContext(Dispatchers.IO) {
@@ -352,15 +341,6 @@ import kotlin.concurrent.Volatile
     }
 
     fun onFeedListChanged(event: FlowEvent.FeedListUpdateEvent) {
-//        updater = Observable.fromCallable { DBReader.getFeedList() }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe(
-//                { feeds: List<Feed>? ->
-//                    this@OnlineFeedViewFragment.feeds = feeds
-//                    handleUpdatedFeedStatus()
-//                }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) }
-//            )
         lifecycleScope.launch {
             try {
                 val feeds = withContext(Dispatchers.IO) {
@@ -380,23 +360,6 @@ import kotlin.concurrent.Volatile
 
     @OptIn(UnstableApi::class) private fun parseFeed(destination: String) {
         Logd(TAG, "Parsing feed")
-//        parser = Maybe.fromCallable { doParseFeed(destination) }
-//            .subscribeOn(Schedulers.computation())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribeWith(object : DisposableMaybeObserver<FeedHandlerResult?>() {
-//                @UnstableApi override fun onSuccess(result: FeedHandlerResult) {
-//                    showFeedInformation(result.feed, result.alternateFeedUrls)
-//                }
-//
-//                override fun onComplete() {
-//                    // Ignore null result: We showed the discovery dialog.
-//                }
-//
-//                override fun onError(error: Throwable) {
-//                    showErrorDialog(error.message, "")
-//                    Logd(TAG, "Feed parser exception: " + Log.getStackTraceString(error))
-//                }
-//            })
         lifecycleScope.launch {
             try {
                 val result = withContext(Dispatchers.Default) {

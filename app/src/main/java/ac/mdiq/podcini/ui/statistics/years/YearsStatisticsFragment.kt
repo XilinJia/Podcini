@@ -91,17 +91,6 @@ class YearsStatisticsFragment : Fragment() {
     }
 
     private fun loadStatistics() {
-//        disposable?.dispose()
-
-//        disposable = Observable.fromCallable { DBReader.getMonthlyTimeStatistics() }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe({ result: List<MonthlyStatisticsItem> ->
-//                listAdapter.update(result)
-//                progressBar.visibility = View.GONE
-//                yearStatisticsList.visibility = View.VISIBLE
-//            }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
-
         lifecycleScope.launch {
             try {
                 val result: List<MonthlyStatisticsItem> = withContext(Dispatchers.IO) {

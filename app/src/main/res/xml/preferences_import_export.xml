@@ -31,13 +31,24 @@
 
     <PreferenceCategory android:title="@string/opml">
         <Preference
-                android:key="prefOpmlExport"
-                android:title="@string/opml_export_label"
-                android:summary="@string/opml_export_summary"/>
+            android:key="prefOpmlExport"
+            android:title="@string/opml_export_label"
+            android:summary="@string/opml_export_summary"/>
         <Preference
-                android:key="prefOpmlImport"
-                android:title="@string/opml_import_label"
-                android:summary="@string/opml_import_summary"/>
+            android:key="prefOpmlImport"
+            android:title="@string/opml_import_label"
+            android:summary="@string/opml_import_summary"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/progress">
+        <Preference
+            android:key="prefProgressExport"
+            android:title="@string/progress_export_label"
+            android:summary="@string/progress_export_summary"/>
+        <Preference
+            android:key="prefProgressImport"
+            android:title="@string/progress_import_label"
+            android:summary="@string/progress_import_summary"/>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/html">

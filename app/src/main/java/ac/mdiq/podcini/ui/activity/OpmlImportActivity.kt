@@ -84,35 +84,6 @@ class OpmlImportActivity : AppCompatActivity() {
         }
         binding.butConfirm.setOnClickListener {
             binding.progressBar.visibility = View.VISIBLE
-//            Completable.fromAction {
-//                val checked = binding.feedlist.checkedItemPositions
-//                for (i in 0 until checked.size()) {
-//                    if (!checked.valueAt(i)) continue
-//
-//                    if (!readElements.isNullOrEmpty()) {
-//                        val element = readElements!![checked.keyAt(i)]
-//                        val feed = Feed(element.xmlUrl, null, if (element.text != null) element.text else "Unknown podcast")
-//                        feed.items = mutableListOf()
-//                        DBTasks.updateFeed(this, feed, false)
-//                    }
-//                }
-//                runOnce(this)
-//            }
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe(
-//                    {
-//                        binding.progressBar.visibility = View.GONE
-//                        val intent = Intent(this@OpmlImportActivity, MainActivity::class.java)
-//                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-//                        startActivity(intent)
-//                        finish()
-//                    }, { e: Throwable ->
-//                        e.printStackTrace()
-//                        binding.progressBar.visibility = View.GONE
-//                        Toast.makeText(this, e.message, Toast.LENGTH_LONG).show()
-//                    })
-
             lifecycleScope.launch {
                 try {
                     withContext(Dispatchers.IO) {
@@ -151,7 +122,7 @@ class OpmlImportActivity : AppCompatActivity() {
         importUri(uri)
     }
 
-    fun importUri(uri: Uri?) {
+    private fun importUri(uri: Uri?) {
         if (uri == null) {
             MaterialAlertDialogBuilder(this)
                 .setMessage(R.string.opml_import_error_no_file)
@@ -229,53 +200,6 @@ class OpmlImportActivity : AppCompatActivity() {
     /** Starts the import process.  */
     private fun startImport() {
         binding.progressBar.visibility = View.VISIBLE
-
-//        Observable.fromCallable {
-//            val opmlFileStream = contentResolver.openInputStream(uri!!)
-//            val bomInputStream = BOMInputStream(opmlFileStream)
-//            val bom = bomInputStream.bom
-//            val charsetName = if (bom == null) "UTF-8" else bom.charsetName
-//            val reader: Reader = InputStreamReader(bomInputStream, charsetName)
-//            val opmlReader = OpmlReader()
-//            val result = opmlReader.readDocument(reader)
-//            reader.close()
-//            result
-//        }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe(
-//                { result: ArrayList<OpmlElement>? ->
-//                    binding.progressBar.visibility = View.GONE
-//                    Logd(TAG, "Parsing was successful")
-//                    readElements = result
-//                    listAdapter = ArrayAdapter(this@OpmlImportActivity, android.R.layout.simple_list_item_multiple_choice, titleList)
-//                    binding.feedlist.adapter = listAdapter
-//                }, { e: Throwable ->
-//                    Logd(TAG, Log.getStackTraceString(e))
-//                    val message = if (e.message == null) "" else e.message!!
-//                    if (message.lowercase().contains("permission")) {
-//                        val permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-//                        if (permission != PackageManager.PERMISSION_GRANTED) {
-//                            requestPermission()
-//                            return@subscribe
-//                        }
-//                    }
-//                    binding.progressBar.visibility = View.GONE
-//                    val alert = MaterialAlertDialogBuilder(this)
-//                    alert.setTitle(R.string.error_label)
-//                    val userReadable = getString(R.string.opml_reader_error)
-//                    val details = e.message
-//                    val total = """
-//                    $userReadable
-//
-//                    $details
-//                    """.trimIndent()
-//                    val errorMessage = SpannableString(total)
-//                    errorMessage.setSpan(ForegroundColorSpan(-0x77777778), userReadable.length, total.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-//                    alert.setMessage(errorMessage)
-//                    alert.setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int -> finish() }
-//                    alert.show()
-//                })
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {

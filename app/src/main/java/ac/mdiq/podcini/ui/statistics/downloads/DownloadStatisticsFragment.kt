@@ -70,24 +70,6 @@ class DownloadStatisticsFragment : Fragment() {
     }
 
     private fun loadStatistics() {
-//        disposable?.dispose()
-
-//        disposable = Observable.fromCallable {
-//            // Filters do not matter here
-//            val statisticsData = DBReader.getStatistics(false, 0, Long.MAX_VALUE)
-//            statisticsData.feedTime.sortWith { item1: StatisticsItem, item2: StatisticsItem ->
-//                item2.totalDownloadSize.compareTo(item1.totalDownloadSize)
-//            }
-//            statisticsData
-//        }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe({ result: StatisticsResult ->
-//                listAdapter.update(result.feedTime)
-//                progressBar.visibility = View.GONE
-//                downloadStatisticsList.visibility = View.VISIBLE
-//            }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
-
         lifecycleScope.launch {
             try {
                 val statisticsData = withContext(Dispatchers.IO) {

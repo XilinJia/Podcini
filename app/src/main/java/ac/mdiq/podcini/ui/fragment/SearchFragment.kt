@@ -305,28 +305,8 @@ import kotlinx.coroutines.withContext
     }
 
     @UnstableApi private fun search() {
-//        disposable?.dispose()
-
         adapterFeeds.setEndButton(R.string.search_online) { this.searchOnline() }
         chip.visibility = if ((requireArguments().getLong(ARG_FEED, 0) == 0L)) View.GONE else View.VISIBLE
-//        disposable = Observable.fromCallable { this.performSearch() }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe({ results: Pair<List<FeedItem>?, List<Feed?>?> ->
-//                progressBar.visibility = View.GONE
-//                if (results.first != null) {
-//                    this.results = results.first!!.toMutableList()
-//                    adapter.updateItems(results.first!!)
-//                }
-//                if (requireArguments().getLong(ARG_FEED, 0) == 0L) {
-//                    if (results.second != null) adapterFeeds.updateData(results.second!!.filterNotNull())
-//                } else adapterFeeds.updateData(emptyList())
-//
-//                if (searchView.query.toString().isEmpty()) emptyViewHandler.setMessage(R.string.type_to_search)
-//                else emptyViewHandler.setMessage(getString(R.string.no_results_for_query) + searchView.query)
-//
-//            }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
-
         lifecycleScope.launch {
             try {
                 val results = withContext(Dispatchers.IO) {

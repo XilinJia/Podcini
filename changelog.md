@@ -1,3 +1,13 @@
+## 5.5.0
+
+* likely fixed Nextcloud Gpoddersync fails
+* fixed text not accepted issue in "add podcast using rss feed"
+* removed kotlin-stdlib dependency to improve build speed
+* cleaned out the commented-out RxJava code
+* added export/import of episode progress for migration to future versions. the exported content is the same as with instant sync: all the play progress of episodes (completed or not)
+* this is likely the last release of Podcini 5, sauf perhaps any minor bugfixes.
+* the next Podcini overhauls the entire DB routines, SQLite is replaced with the object-based Realm, and is not compatible with version 5 and below.
+
 ## 5.4.2
 
 * likely fixed crash issue when the app is restarted after long idle

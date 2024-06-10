@@ -178,24 +178,6 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
 
         val loader = ItunesTopListLoader(requireContext())
-//        disposable = Observable.fromCallable { loader.loadToplist(country?:"",
-//            NUM_OF_TOP_PODCASTS, DBReader.getFeedList()) }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe(
-//                { podcasts: List<PodcastSearchResult>? ->
-//                    progressBar.visibility = View.GONE
-//                    topList = podcasts
-//                    updateData(topList)
-//                }, { error: Throwable ->
-//                    Log.e(TAG, Log.getStackTraceString(error))
-//                    progressBar.visibility = View.GONE
-//                    txtvError.text = error.message
-//                    txtvError.visibility = View.VISIBLE
-//                    butRetry.setOnClickListener { loadToplist(country) }
-//                    butRetry.visibility = View.VISIBLE
-//                })
-
         lifecycleScope.launch {
             try {
                 val podcasts = withContext(Dispatchers.IO) {

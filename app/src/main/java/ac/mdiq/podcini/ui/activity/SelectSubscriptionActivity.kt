@@ -120,25 +120,6 @@ class SelectSubscriptionActivity : AppCompatActivity() {
     }
 
     private fun loadSubscriptions() {
-//        disposable?.dispose()
-
-//        disposable = Observable.fromCallable {
-//            val data: NavDrawerData = DBReader.getNavDrawerData(UserPreferences.subscriptionsFilter)
-//            getFeedItems(data.items, ArrayList())
-//        }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe(
-//                { result: List<Feed> ->
-//                    listItems = result
-//                    val titles = ArrayList<String>()
-//                    for (feed in result) {
-//                        if (feed.title != null) titles.add(feed.title!!)
-//                    }
-//                    val adapter: ArrayAdapter<String> = ArrayAdapter<String>(this, R.layout.simple_list_item_multiple_choice_on_start, titles)
-//                    binding.list.adapter = adapter
-//                }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
-
         lifecycleScope.launch {
             try {
                 val result = withContext(Dispatchers.IO) {

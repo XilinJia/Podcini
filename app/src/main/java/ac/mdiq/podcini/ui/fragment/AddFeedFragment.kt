@@ -164,19 +164,6 @@ class AddFeedFragment : Fragment() {
     @UnstableApi private fun addLocalFolderResult(uri: Uri?) {
         if (uri == null) return
 
-//        Observable.fromCallable<Feed> { addLocalFolder(uri) }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe(
-//                { feed: Feed ->
-//                    val fragment: Fragment = FeedItemlistFragment.newInstance(feed.id)
-//                    (getActivity() as MainActivity).loadChildFragment(fragment)
-//                }, { error: Throwable ->
-//                    Log.e(TAG, Log.getStackTraceString(error))
-//                    (getActivity() as MainActivity)
-//                        .showSnackbarAbovePlayer(error.localizedMessage, Snackbar.LENGTH_LONG)
-//                })
-
         val scope = CoroutineScope(Dispatchers.Main)
         scope.launch {
             try {

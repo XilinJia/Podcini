@@ -16,6 +16,7 @@ import java.util.*
 
 /** Writes saved favorites to file.  */
 class FavoritesWriter : ExportWriter {
+
     @Throws(IllegalArgumentException::class, IllegalStateException::class, IOException::class)
     override fun writeDocument(feeds: List<Feed?>?, writer: Writer?, context: Context) {
         Logd(TAG, "Starting to write document")
@@ -27,30 +28,23 @@ class FavoritesWriter : ExportWriter {
 
         val favTemplateStream = context.assets.open(FAVORITE_TEMPLATE)
         val favTemplate = IOUtils.toString(favTemplateStream, UTF_8)
-
         val feedTemplateStream = context.assets.open(FEED_TEMPLATE)
         val feedTemplate = IOUtils.toString(feedTemplateStream, UTF_8)
-
-        val allFavorites = getEpisodes(0, Int.MAX_VALUE,
-            FeedItemFilter(FeedItemFilter.IS_FAVORITE), SortOrder.DATE_NEW_OLD)
+        val allFavorites = getEpisodes(0, Int.MAX_VALUE, FeedItemFilter(FeedItemFilter.IS_FAVORITE), SortOrder.DATE_NEW_OLD)
         val favoriteByFeed = getFeedMap(allFavorites)
-
         writer!!.append(templateParts[0])
 
         for (feedId in favoriteByFeed.keys) {
             val favorites: List<FeedItem> = favoriteByFeed[feedId]!!
             writer.append("<li><div>\n")
             writeFeed(writer, favorites[0].feed, feedTemplate)
-
             writer.append("<ul>\n")
             for (item in favorites) {
                 writeFavoriteItem(writer, item, favTemplate)
             }
             writer.append("</ul></div></li>\n")
         }
-
         writer.append(templateParts[1])
-
         Logd(TAG, "Finished writing document")
     }
 
@@ -62,18 +56,14 @@ class FavoritesWriter : ExportWriter {
      */
     private fun getFeedMap(favoritesList: List<FeedItem>): Map<Long, MutableList<FeedItem>> {
         val feedMap: MutableMap<Long, MutableList<FeedItem>> = TreeMap()
-
         for (item in favoritesList) {
             var feedEpisodes = feedMap[item.feedId]
-
             if (feedEpisodes == null) {
                 feedEpisodes = ArrayList()
                 feedMap[item.feedId] = feedEpisodes
             }
-
             feedEpisodes.add(item)
         }
-
         return feedMap
     }
 
@@ -93,10 +83,8 @@ class FavoritesWriter : ExportWriter {
         var favItem = favoriteTemplate.replace("{FAV_TITLE}", item.title!!.trim { it <= ' ' })
         favItem = if (item.link != null) favItem.replace("{FAV_WEBSITE}", item.link!!)
         else favItem.replace("{FAV_WEBSITE}", "")
-
         favItem = if (item.media != null && item.media!!.download_url != null) favItem.replace("{FAV_MEDIA}", item.media!!.download_url!!)
         else favItem.replace("{FAV_MEDIA}", "")
-
         writer!!.append(favItem)
     }
 

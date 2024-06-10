@@ -135,31 +135,6 @@ class QuickFeedDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
             return
         }
 
-//        disposable = Observable.fromCallable {
-//            loader.loadToplist(countryCode, NUM_SUGGESTIONS, DBReader.getFeedList())
-//        }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe(
-//                { podcasts: List<PodcastSearchResult> ->
-//                    errorView.visibility = View.GONE
-//                    if (podcasts.isEmpty()) {
-//                        errorTextView.text = resources.getText(R.string.search_status_no_results)
-//                        errorView.visibility = View.VISIBLE
-//                        discoverGridLayout.visibility = View.INVISIBLE
-//                    } else {
-//                        discoverGridLayout.visibility = View.VISIBLE
-//                        adapter.updateData(podcasts)
-//                    }
-//                }, { error: Throwable ->
-//                    Log.e(TAG, Log.getStackTraceString(error))
-//                    errorTextView.text = error.localizedMessage
-//                    errorView.visibility = View.VISIBLE
-//                    discoverGridLayout.visibility = View.INVISIBLE
-//                    errorRetry.visibility = View.VISIBLE
-//                    errorRetry.setOnClickListener { loadToplist() }
-//                })
-
         lifecycleScope.launch {
             try {
                 val podcasts = withContext(Dispatchers.IO) {

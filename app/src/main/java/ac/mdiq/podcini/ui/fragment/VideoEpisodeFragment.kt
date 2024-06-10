@@ -217,28 +217,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     }
 
     @UnstableApi private fun load() {
-//        disposable?.dispose()
         Logd(TAG, "load() called")
-
-//        disposable = Observable.fromCallable<FeedItem?> { this.loadInBackground() }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe({ result: FeedItem? ->
-//                item = result
-//                Logd(TAG, "load() item ${item?.id}")
-//                if (item != null) {
-//                    val isFav = item!!.isTagged(FeedItem.TAG_FAVORITE)
-//                    if (isFavorite != isFav) {
-//                        isFavorite = isFav
-//                        invalidateOptionsMenu(requireActivity())
-//                    }
-//                }
-//                onFragmentLoaded()
-//                itemsLoaded = true
-//            }, { error: Throwable? ->
-//                Log.e(TAG, Log.getStackTraceString(error))
-//            })
-
         lifecycleScope.launch {
             try {
                 item = withContext(Dispatchers.IO) {

@@ -36,11 +36,7 @@ class ExportWorker private constructor(private val exportWriter: ExportWriter, p
                 subscriber.onError(e)
             } finally {
                 if (writer != null) {
-                    try {
-                        writer.close()
-                    } catch (e: IOException) {
-                        subscriber.onError(e)
-                    }
+                    try { writer.close() } catch (e: IOException) { subscriber.onError(e) }
                 }
                 subscriber.onComplete()
             }

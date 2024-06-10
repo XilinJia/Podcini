@@ -46,27 +46,6 @@ class NextcloudLoginFlow(private val httpClient: OkHttpClient, private val rawHo
             poll()
             return
         }
-//        startDisposable = Observable.fromCallable {
-//            val url = URI(hostname.scheme, null, hostname.host, hostname.port, hostname.subfolder + "/index.php/login/v2", null, null).toURL()
-//            val result = doRequest(url, "")
-//            val loginUrl = result.getString("login")
-//            this.token = result.getJSONObject("poll").getString("token")
-//            this.endpoint = result.getJSONObject("poll").getString("endpoint")
-//            loginUrl
-//        }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe(
-//                { result: String? ->
-//                    val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(result))
-//                    context.startActivity(browserIntent)
-//                    poll()
-//                }, { error: Throwable ->
-//                    Log.e(TAG, Log.getStackTraceString(error))
-//                    this.token = null
-//                    this.endpoint = null
-//                    callback.onNextcloudAuthError(error.localizedMessage)
-//                })
 
         val coroutineScope = CoroutineScope(Dispatchers.Main)
         coroutineScope.launch {

@@ -251,23 +251,6 @@ import kotlinx.coroutines.withContext
 
     @UnstableApi private fun performMultiSelectAction(actionItemId: Int) {
         val handler = EpisodeMultiSelectActionHandler((activity as MainActivity), actionItemId)
-//        Completable.fromAction {
-//            handler.handleAction(listAdapter.selectedItems.filterIsInstance<FeedItem>())
-//            if (listAdapter.shouldSelectLazyLoadedItems()) {
-//                var applyPage = page + 1
-//                var nextPage: List<FeedItem>
-//                do {
-//                    nextPage = loadMoreData(applyPage)
-//                    handler.handleAction(nextPage)
-//                    applyPage++
-//                } while (nextPage.size == EPISODES_PER_PAGE)
-//            }
-//        }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe({ listAdapter.endSelectMode() },
-//                { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
-
         lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
@@ -313,26 +296,6 @@ import kotlinx.coroutines.withContext
         isLoadingMore = true
         listAdapter.setDummyViews(1)
         listAdapter.notifyItemInserted(listAdapter.itemCount - 1)
-//        disposable = Observable.fromCallable { loadMoreData(page) }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe({ data: List<FeedItem> ->
-//                if (data.size < EPISODES_PER_PAGE) hasMoreItems = false
-//                Logd(TAG, "loadMoreItems $page ${data.size}")
-//                episodes.addAll(data)
-//                listAdapter.setDummyViews(0)
-//                listAdapter.updateItems(episodes)
-//                if (listAdapter.shouldSelectLazyLoadedItems()) listAdapter.setSelected(episodes.size - data.size, episodes.size, true)
-//
-//            }, { error: Throwable? ->
-//                listAdapter.setDummyViews(0)
-//                listAdapter.updateItems(emptyList())
-//                Log.e(TAG, Log.getStackTraceString(error))
-//            }, {
-//                // Make sure to not always load 2 pages at once
-//                recyclerView.post { isLoadingMore = false }
-//            })
-
         lifecycleScope.launch {
             try {
                 val data = withContext(Dispatchers.IO) {
@@ -457,30 +420,6 @@ import kotlinx.coroutines.withContext
 
     fun loadItems() {
         Logd(TAG, "loadItems() called")
-//        disposable?.dispose()
-
-//        disposable = Observable.fromCallable {
-//            Pair(loadData().toMutableList(), loadTotalItemCount())
-//        }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe(
-//                { data: Pair<MutableList<FeedItem>, Int> ->
-//                    val restoreScrollPosition = episodes.isEmpty()
-//                    episodes = data.first
-//                    hasMoreItems = !(page == 1 && episodes.size < EPISODES_PER_PAGE)
-//                    progressBar.visibility = View.GONE
-//                    listAdapter.setDummyViews(0)
-//                    listAdapter.updateItems(episodes)
-//                    listAdapter.setTotalNumberOfItems(data.second)
-//                    if (restoreScrollPosition) recyclerView.restoreScrollPosition(getPrefName())
-//                    updateToolbar()
-//                }, { error: Throwable? ->
-//                    listAdapter.setDummyViews(0)
-//                    listAdapter.updateItems(emptyList())
-//                    Log.e(TAG, Log.getStackTraceString(error))
-//                })
-
         lifecycleScope.launch {
             try {
                 val data = withContext(Dispatchers.IO) {

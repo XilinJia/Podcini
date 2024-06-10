@@ -290,29 +290,7 @@ class SubscriptionFragment : Fragment(), Toolbar.OnMenuItemClickListener, Select
     }
 
     private fun loadSubscriptions() {
-//        disposable?.dispose()
         emptyView.hide()
-//        disposable = Observable.fromCallable {
-//            val data: NavDrawerData = DBReader.getNavDrawerData(UserPreferences.subscriptionsFilter)
-//            val items: List<NavDrawerData.FeedDrawerItem> = data.items
-//            items
-//        }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe(
-//                { result: List<NavDrawerData.FeedDrawerItem> ->
-//                    // We have fewer items. This can result in items being selected that are no longer visible.
-//                    if ( feedListFiltered.size > result.size) subscriptionAdapter.endSelectMode()
-//                    feedList = result
-//                    filterOnTag()
-//                    progressBar.visibility = View.GONE
-//                    subscriptionAdapter.setItems(feedListFiltered)
-//                    feedCount.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
-//                    emptyView.updateVisibility()
-//                }, { error: Throwable? ->
-//                    Log.e(TAG, Log.getStackTraceString(error))
-//                })
-
         lifecycleScope.launch {
             try {
                 val result = withContext(Dispatchers.IO) {

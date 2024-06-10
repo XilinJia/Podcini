@@ -7,6 +7,7 @@ import ac.mdiq.podcini.net.sync.model.*
 import okhttp3.*
 import okhttp3.Credentials.basic
 import okhttp3.MediaType.Companion.toMediaType
+import org.apache.commons.lang3.StringUtils
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -123,7 +124,7 @@ class NextcloudSyncService(private val httpClient: OkHttpClient, baseHosturl: St
         val builder = HttpUrl.Builder()
         if (hostname.scheme != null) builder.scheme(hostname.scheme!!)
         if (hostname.host != null) builder.host(hostname.host!!)
-        return builder.port(hostname.port).addPathSegments(hostname.subfolder + path)
+        return builder.port(hostname.port).addPathSegments(StringUtils.stripStart(hostname.subfolder + path, "/"))
     }
 
     override fun logout() {}

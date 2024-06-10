@@ -187,35 +187,6 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 //        updatePosition(PlaybackPositionEvent(controller!!.position, controller!!.duration))
 //    }
 
-//    private fun loadMediaInfo0(includingChapters: Boolean) {
-//        Logd(TAG, "loadMediaInfo called")
-//
-//        val theMedia = controller?.getMedia() ?: return
-//        Logd(TAG, "loadMediaInfo $theMedia")
-//
-//        if (currentMedia == null || theMedia.getIdentifier() != currentMedia?.getIdentifier()) {
-//            Logd(TAG, "loadMediaInfo loading details")
-//            disposable?.dispose()
-//            disposable = Maybe.create<Playable> { emitter: MaybeEmitter<Playable?> ->
-//                val media: Playable? = theMedia
-//                if (media != null) {
-//                    if (includingChapters) ChapterUtils.loadChapters(media, requireContext(), false)
-//                    emitter.onSuccess(media)
-//                } else emitter.onComplete()
-//            }
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe({ media: Playable ->
-//                    currentMedia = media
-//                    updateUi(media)
-//                    playerFragment1?.updateUi(media)
-//                    playerFragment2?.updateUi(media)
-//                    if (!includingChapters) loadMediaInfo(true)
-//                }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) },
-//                    { updateUi(null) })
-//        }
-//    }
-
     fun loadMediaInfo(includingChapters: Boolean) {
         val theMedia = controller?.getMedia() ?: return
         if (currentMedia == null || theMedia.getIdentifier() != currentMedia?.getIdentifier() || (includingChapters && !theMedia.chaptersLoaded())) {

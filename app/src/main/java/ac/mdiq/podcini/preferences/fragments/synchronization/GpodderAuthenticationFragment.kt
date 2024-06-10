@@ -110,26 +110,6 @@ class GpodderAuthenticationFragment : DialogFragment() {
             val inputManager = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             inputManager.hideSoftInputFromWindow(login.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
 
-//            Completable.fromAction {
-//                service?.setCredentials(usernameStr, passwordStr)
-//                service?.login()
-//                if (service != null) devices = service!!.devices
-//                this@GpodderAuthenticationFragment.username = usernameStr
-//                this@GpodderAuthenticationFragment.password = passwordStr
-//            }
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe({
-//                    login.isEnabled = true
-//                    progressBar.visibility = View.GONE
-//                    advance()
-//                }, { error: Throwable ->
-//                    login.isEnabled = true
-//                    progressBar.visibility = View.GONE
-//                    txtvError.text = error.cause!!.message
-//                    txtvError.visibility = View.VISIBLE
-//                })
-
             lifecycleScope.launch {
                 try {
                     withContext(Dispatchers.IO) {
@@ -188,24 +168,6 @@ class GpodderAuthenticationFragment : DialogFragment() {
         progBarCreateDevice.visibility = View.VISIBLE
         txtvError.visibility = View.GONE
         deviceName.isEnabled = false
-
-//        Observable.fromCallable {
-//            val deviceId = generateDeviceId(deviceNameStr)
-//            service!!.configureDevice(deviceId, deviceNameStr, GpodnetDevice.DeviceType.MOBILE)
-//            GpodnetDevice(deviceId, deviceNameStr, GpodnetDevice.DeviceType.MOBILE.toString(), 0)
-//        }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe({ device: GpodnetDevice? ->
-//                progBarCreateDevice.visibility = View.GONE
-//                selectedDevice = device
-//                advance()
-//            }, { error: Throwable ->
-//                deviceName.isEnabled = true
-//                progBarCreateDevice.visibility = View.GONE
-//                txtvError.text = error.message
-//                txtvError.visibility = View.VISIBLE
-//            })
 
         lifecycleScope.launch {
             try {

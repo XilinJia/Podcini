@@ -1,16 +1,14 @@
 package ac.mdiq.podcini.receiver
 
 import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.config.ClientConfigurator
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
-import android.util.Log
 import android.view.KeyEvent
 import androidx.core.content.ContextCompat
 import androidx.media3.common.util.UnstableApi
-import ac.mdiq.podcini.util.config.ClientConfigurator
 
 /**
  * Receives media button events.

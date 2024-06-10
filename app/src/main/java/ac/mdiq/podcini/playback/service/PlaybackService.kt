@@ -627,15 +627,6 @@ class PlaybackService : MediaSessionService() {
     }
 
     private fun startPlayingFromPreferences() {
-//        Observable.fromCallable { createInstanceFromPreferences(applicationContext) }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe(
-//                { playable: Playable? -> startPlaying(playable, false) },
-//                { error: Throwable ->
-//                    Logd(TAG, "Playable was not loaded from preferences. Stopping service.")
-//                    error.printStackTrace()
-//                })
         scope.launch {
             try {
                 val playable = withContext(Dispatchers.IO) {

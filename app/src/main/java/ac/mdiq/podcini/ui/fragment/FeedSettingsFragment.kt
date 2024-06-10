@@ -65,17 +65,6 @@ class FeedSettingsFragment : Fragment() {
             .replace(R.id.settings_fragment_container, FeedSettingsPreferenceFragment.newInstance(feedId), "settings_fragment")
             .commitAllowingStateLoss()
 
-//        disposable = Maybe.create(MaybeOnSubscribe { emitter: MaybeEmitter<Feed> ->
-//            val feed = DBReader.getFeed(feedId)
-//            if (feed != null) emitter.onSuccess(feed)
-//            else emitter.onComplete()
-//        } as MaybeOnSubscribe<Feed>)
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe({ result: Feed -> toolbar.subtitle = result.title },
-//                { error: Throwable? -> Logd(TAG, Log.getStackTraceString(error)) },
-//                {})
-
         lifecycleScope.launch {
             val feed = withContext(Dispatchers.IO) {
                 DBReader.getFeed(feedId)
@@ -136,42 +125,6 @@ class FeedSettingsFragment : Fragment() {
             findPreference<Preference>(PREF_SCREEN)!!.isVisible = false
 
             val feedId = requireArguments().getLong(EXTRA_FEED_ID)
-//            disposable = Maybe.create { emitter: MaybeEmitter<Feed?> ->
-//                val feed = DBReader.getFeed(feedId)
-//                if (feed != null) emitter.onSuccess(feed)
-//                else emitter.onComplete()
-//            }
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe({ result: Feed? ->
-//                    feed = result
-//                    feedPreferences = feed!!.preferences
-//
-//                    setupAutoDownloadGlobalPreference()
-//                    setupAutoDownloadPreference()
-//                    setupKeepUpdatedPreference()
-//                    setupAutoDeletePreference()
-//                    setupVolumeAdaptationPreferences()
-////                    setupNewEpisodesAction()
-//                    setupAuthentificationPreference()
-//                    setupEpisodeFilterPreference()
-//                    setupPlaybackSpeedPreference()
-//                    setupFeedAutoSkipPreference()
-////                    setupEpisodeNotificationPreference()
-//                    setupTags()
-//
-//                    updateAutoDeleteSummary()
-//                    updateVolumeAdaptationValue()
-//                    updateAutoDownloadEnabled()
-////                    updateNewEpisodesAction()
-//
-//                    if (feed!!.isLocalFeed) {
-//                        findPreference<Preference>(PREF_AUTHENTICATION)!!.isVisible = false
-//                        findPreference<Preference>(PREF_CATEGORY_AUTO_DOWNLOAD)!!.isVisible = false
-//                    }
-//                    findPreference<Preference>(PREF_SCREEN)!!.isVisible = true
-//                }, { error: Throwable? -> Logd(TAG, Log.getStackTraceString(error)) }, {})
-
             lifecycleScope.launch {
                 feed = withContext(Dispatchers.IO) {
                     DBReader.getFeed(feedId)

@@ -682,11 +682,6 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
             createStaticPlayer(context)
         }
         playbackParameters = exoPlayer!!.playbackParameters
-//        bufferingUpdateDisposable = Observable.interval(bufferUpdateInterval, TimeUnit.SECONDS)
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe {
-//                bufferingUpdateListener?.accept(exoPlayer!!.bufferedPercentage)
-//            }
         val scope = CoroutineScope(Dispatchers.Main)
         scope.launch {
             while (true) {

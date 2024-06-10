@@ -273,20 +273,6 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     @UnstableApi private fun reconnectLocalFolder(uri: Uri) {
         if (feed == null) return
-
-//        Completable.fromAction {
-//            requireActivity().contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-//            val documentFile = DocumentFile.fromTreeUri(requireContext(), uri)
-//            requireNotNull(documentFile) { "Unable to retrieve document tree" }
-//            feed!!.download_url = Feed.PREFIX_LOCAL_FOLDER + uri.toString()
-//            DBTasks.updateFeed(requireContext(), feed!!, true)
-//        }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe({ (activity as MainActivity).showSnackbarAbovePlayer(string.ok, Snackbar.LENGTH_SHORT) },
-//                { error: Throwable -> (activity as MainActivity).showSnackbarAbovePlayer(error.localizedMessage, Snackbar.LENGTH_LONG) })
-
-//        val scope = CoroutineScope(Dispatchers.Main)
         lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {

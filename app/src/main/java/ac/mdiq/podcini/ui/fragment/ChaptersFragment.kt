@@ -147,20 +147,6 @@ class ChaptersFragment : AppCompatDialogFragment() {
     }
 
     private fun loadMediaInfo(forceRefresh: Boolean) {
-//        disposable?.dispose()
-
-//        disposable = Maybe.create { emitter: MaybeEmitter<Any> ->
-//            val media = controller!!.getMedia()
-//            if (media != null) {
-//                loadChapters(media, requireContext(), forceRefresh)
-//                emitter.onSuccess(media)
-//            } else emitter.onComplete()
-//        }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe({ media: Any -> onMediaChanged(media as Playable) },
-//                { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
-
         lifecycleScope.launch {
             val media = withContext(Dispatchers.IO) {
                 val media_ = controller!!.getMedia()

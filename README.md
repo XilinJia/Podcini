@@ -102,6 +102,7 @@ The project aims to improve efficiency and provide more useful and user-friendly
 
 * Disabled `usesCleartextTraffic`, so that all content transmission is more private and secure
 * Settings/Preferences can now be exported and imported
+* Play history/progress can be separately exported/imported as Json files
 
 For more details of the changes, see the [Changelog](changelog.md)
 

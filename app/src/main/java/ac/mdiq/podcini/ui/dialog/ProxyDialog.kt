@@ -230,60 +230,6 @@ class ProxyDialog(private val context: Context) {
         txtvMessage.text = "{fa-circle-o-notch spin} $checking"
         txtvMessage.visibility = View.VISIBLE
 
-//        disposable = Completable.create { emitter: CompletableEmitter ->
-//            val type = spType.selectedItem as String
-//            val host = etHost.text.toString()
-//            val port = etPort.text.toString()
-//            val username = etUsername.text.toString()
-//            val password = etPassword.text.toString()
-//            var portValue = 8080
-//            if (port.isNotEmpty()) portValue = port.toInt()
-//
-//            val address: SocketAddress = InetSocketAddress.createUnresolved(host, portValue)
-//            val proxyType = Proxy.Type.valueOf(type.uppercase())
-//            val builder: OkHttpClient.Builder = newBuilder()
-//                .connectTimeout(10, TimeUnit.SECONDS)
-//                .proxy(Proxy(proxyType, address))
-//            if (username.isNotEmpty()) {
-//                builder.proxyAuthenticator { _: Route?, response: Response ->
-//                    val credentials = basic(username, password)
-//                    response.request.newBuilder()
-//                        .header("Proxy-Authorization", credentials)
-//                        .build()
-//                }
-//            }
-//            val client: OkHttpClient = builder.build()
-//            val request: Request = Builder().url("https://www.example.com").head().build()
-//            try {
-//                client.newCall(request).execute().use { response ->
-//                    if (response.isSuccessful) {
-//                        emitter.onComplete()
-//                    } else {
-//                        emitter.onError(IOException(response.message))
-//                    }
-//                }
-//            } catch (e: IOException) {
-//                emitter.onError(e)
-//            }
-//        }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe(
-//                {
-//                    txtvMessage.setTextColor(getColorFromAttr(context, R.attr.icon_green))
-//                    val message = String.format("%s %s", "{fa-check}", context.getString(R.string.proxy_test_successful))
-//                    txtvMessage.text = message
-//                    setTestRequired(false)
-//                },
-//                { error: Throwable ->
-//                    error.printStackTrace()
-//                    txtvMessage.setTextColor(getColorFromAttr(context, R.attr.icon_red))
-//                    val message = String.format("%s %s: %s", "{fa-close}", context.getString(R.string.proxy_test_failed), error.message)
-//                    txtvMessage.text = message
-//                    setTestRequired(true)
-//                }
-//            )
-
         val coroutineScope = CoroutineScope(Dispatchers.Main)
         coroutineScope.launch(Dispatchers.IO) {
             try {

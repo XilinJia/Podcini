@@ -495,21 +495,7 @@ import java.util.*
 
     private fun loadItems(restoreScrollPosition: Boolean) {
         Logd(TAG, "loadItems() called")
-//        disposable?.dispose()
-
         if (queue.isEmpty()) emptyView.hide()
-
-//        disposable = Observable.fromCallable { DBReader.getQueue().toMutableList() }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe({ items: MutableList<FeedItem> ->
-//                queue = items
-//                progressBar.visibility = View.GONE
-//                recyclerAdapter?.setDummyViews(0)
-//                recyclerAdapter?.updateItems(queue)
-//                if (restoreScrollPosition) recyclerView.restoreScrollPosition(TAG)
-//                refreshInfoBar()
-//            }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
 
         lifecycleScope.launch {
             try {

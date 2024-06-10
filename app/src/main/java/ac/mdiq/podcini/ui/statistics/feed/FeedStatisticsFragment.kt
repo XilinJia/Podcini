@@ -42,24 +42,6 @@ class FeedStatisticsFragment : Fragment() {
     }
 
     private fun loadStatistics() {
-//        disposable = Observable.fromCallable {
-//            val statisticsData = DBReader.getStatistics(true, 0, Long.MAX_VALUE)
-//            statisticsData.feedTime.sortWith { item1: StatisticsItem, item2: StatisticsItem ->
-//                java.lang.Long.compare(item2.timePlayed,
-//                    item1.timePlayed)
-//            }
-//
-//            for (statisticsItem in statisticsData.feedTime) {
-//                if (statisticsItem.feed.id == feedId) {
-//                    return@fromCallable statisticsItem
-//                }
-//            }
-//            null
-//        }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe({ s: StatisticsItem? -> this.showStats(s) }, { obj: Throwable -> obj.printStackTrace() })
-
         lifecycleScope.launch {
             try {
                 val statisticsData = withContext(Dispatchers.IO) {

@@ -40,22 +40,6 @@ object RemoveFeedDialog {
                 progressDialog.setCancelable(false)
                 progressDialog.show()
 
-//                Completable.fromAction {
-//                    for (feed in feeds) {
-//                        DBWriter.deleteFeed(context, feed.id).get()
-//                    }
-//                }
-//                    .subscribeOn(Schedulers.io())
-//                    .observeOn(AndroidSchedulers.mainThread())
-//                    .subscribe(
-//                        {
-//                            Logd(TAG, "Feed(s) deleted")
-//                            progressDialog.dismiss()
-//                        }, { error: Throwable? ->
-//                            Log.e(TAG, Log.getStackTraceString(error))
-//                            progressDialog.dismiss()
-//                        })
-
                 val scope = CoroutineScope(Dispatchers.Main)
                 scope.launch {
                     try {

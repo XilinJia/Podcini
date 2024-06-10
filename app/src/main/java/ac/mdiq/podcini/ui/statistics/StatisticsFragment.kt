@@ -106,12 +106,6 @@ class StatisticsFragment : PagedToolbarFragment() {
             .putLong(PREF_FILTER_TO, Long.MAX_VALUE)
             .apply()
 
-//        val disposable = Completable.fromFuture(DBWriter.resetStatistics())
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe({ EventFlow.postEvent(FlowEvent.StatisticsEvent()) },
-//                { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
-
         lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {

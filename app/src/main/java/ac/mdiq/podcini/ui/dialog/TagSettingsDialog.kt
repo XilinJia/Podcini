@@ -88,19 +88,6 @@ class TagSettingsDialog : DialogFragment() {
     }
 
     private fun loadTags() {
-//        Observable.fromCallable {
-//            DBReader.getTags()
-//        }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe(
-//                { result: List<String> ->
-//                    val acAdapter = ArrayAdapter(requireContext(), R.layout.single_tag_text_view, result)
-//                    binding.newTagEditText.setAdapter(acAdapter)
-//                }, { error: Throwable? ->
-//                    Log.e(TAG, Log.getStackTraceString(error))
-//                })
-
         val scope = CoroutineScope(Dispatchers.Main)
         scope.launch {
             try {

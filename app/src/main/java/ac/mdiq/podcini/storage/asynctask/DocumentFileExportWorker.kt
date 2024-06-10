@@ -34,18 +34,10 @@ class DocumentFileExportWorker(private val exportWriter: ExportWriter, private v
                 subscriber.onError(e)
             } finally {
                 if (writer != null) {
-                    try {
-                        writer.close()
-                    } catch (e: IOException) {
-                        subscriber.onError(e)
-                    }
+                    try { writer.close() } catch (e: IOException) { subscriber.onError(e) }
                 }
                 if (outputStream != null) {
-                    try {
-                        outputStream.close()
-                    } catch (e: IOException) {
-                        subscriber.onError(e)
-                    }
+                    try { outputStream.close() } catch (e: IOException) { subscriber.onError(e) }
                 }
                 subscriber.onComplete()
             }

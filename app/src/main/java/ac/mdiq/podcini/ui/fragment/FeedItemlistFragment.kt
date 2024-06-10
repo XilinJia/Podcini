@@ -475,21 +475,6 @@ import java.util.concurrent.Semaphore
     }
 
     private fun showErrorDetails() {
-//        Maybe.fromCallable<DownloadResult>(
-//            Callable {
-//                val feedDownloadLog: List<DownloadResult> = DBReader.getFeedDownloadLog(feedID)
-//                if (feedDownloadLog.isEmpty() || feedDownloadLog[0].isSuccessful) return@Callable null
-//                feedDownloadLog[0]
-//            })
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe(
-//                { downloadStatus: DownloadResult ->
-//                    DownloadLogDetailsDialog(requireContext(), downloadStatus).show()
-//                },
-//                { error: Throwable -> error.printStackTrace() },
-//                { DownloadLogFragment().show(childFragmentManager, null) })
-
         lifecycleScope.launch {
             val downloadResult = withContext(Dispatchers.IO) {
                 val feedDownloadLog: List<DownloadResult> = DBReader.getFeedDownloadLog(feedID)
@@ -521,47 +506,6 @@ import java.util.concurrent.Semaphore
     }
 
     @UnstableApi private fun loadItems() {
-//        disposable?.dispose()
-//        disposable = Observable.fromCallable<Feed?> { this.loadData() }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe(
-//                { result: Feed? ->
-//                    feed = result
-//                    Logd(TAG, "loadItems subscribe called ${feed?.title}")
-//                    if (feed != null) {
-//                        var hasNonMediaItems = false
-//                        for (item in feed!!.items) {
-//                            if (item.media == null) {
-//                                hasNonMediaItems = true
-//                                break
-//                            }
-//                        }
-//                        if (hasNonMediaItems) {
-//                            ioScope.launch {
-//                                if (!ttsReady) {
-//                                    initializeTTS(requireContext())
-//                                    semaphore.acquire()
-//                                }
-//                            }
-//                        }
-//                    }
-//                    swipeActions.setFilter(feed?.itemFilter)
-//                    refreshHeaderView()
-//                    binding.progressBar.visibility = View.GONE
-//                    adapter.setDummyViews(0)
-//                    if (feed != null) adapter.updateItems(feed!!.items)
-//                    binding.header.counts.text = (feed?.items?.size?:0).toString()
-//                    updateToolbar()
-//                }, { error: Throwable? ->
-//                    feed = null
-//                    refreshHeaderView()
-//                    adapter.setDummyViews(0)
-//                    adapter.updateItems(emptyList())
-//                    updateToolbar()
-//                    Log.e(TAG, Log.getStackTraceString(error))
-//                })
-
         lifecycleScope.launch {
             try {
                 feed = withContext(Dispatchers.IO) {

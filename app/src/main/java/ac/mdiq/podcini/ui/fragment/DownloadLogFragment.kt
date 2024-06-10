@@ -108,18 +108,6 @@ class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, To
     }
 
     private fun loadDownloadLog() {
-//        disposable?.dispose()
-
-//        disposable = Observable.fromCallable { DBReader.getDownloadLog() }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe({ result: List<DownloadResult>? ->
-//                if (result != null) {
-//                    downloadLog = result
-//                    adapter.setDownloadLog(downloadLog)
-//                }
-//            }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
-
         lifecycleScope.launch {
             try {
                 val result = withContext(Dispatchers.IO) {

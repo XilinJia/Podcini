@@ -305,41 +305,7 @@ import java.util.*
     }
 
     private fun loadItems() {
-//        disposable?.dispose()
-
         emptyView.hide()
-//        disposable = Observable.fromCallable {
-//            val sortOrder: SortOrder? = UserPreferences.downloadsSortedOrder
-//            val downloadedItems: List<FeedItem> = DBReader.getEpisodes(0, Int.MAX_VALUE,
-//                FeedItemFilter(FeedItemFilter.DOWNLOADED), sortOrder)
-//
-//            val mediaUrls: MutableList<String> = ArrayList()
-//            if (runningDownloads.isEmpty()) return@fromCallable downloadedItems
-//
-//            for (url in runningDownloads) {
-//                if (FeedItemUtil.indexOfItemWithDownloadUrl(downloadedItems, url) != -1) continue  // Already in list
-//                mediaUrls.add(url)
-//            }
-//            val currentDownloads: MutableList<FeedItem> = DBReader.getFeedItemsWithUrl(mediaUrls).toMutableList()
-//            currentDownloads.addAll(downloadedItems)
-//            currentDownloads
-//        }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe(
-//                { result: List<FeedItem> ->
-//                    items = result.toMutableList()
-//                    adapter.setDummyViews(0)
-//                    progressBar.visibility = View.GONE
-//                    adapter.updateItems(result)
-//                    refreshInfoBar()
-//                }, { error: Throwable? ->
-//                    adapter.setDummyViews(0)
-//                    adapter.updateItems(emptyList())
-//                    Log.e(TAG, Log.getStackTraceString(error))
-//                })
-
-//        val scope = CoroutineScope(Dispatchers.Main)
         lifecycleScope.launch {
             try {
                 val result = withContext(Dispatchers.IO) {

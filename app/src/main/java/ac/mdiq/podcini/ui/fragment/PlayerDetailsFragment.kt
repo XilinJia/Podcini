@@ -139,48 +139,6 @@ class  PlayerDetailsFragment : Fragment() {
         return shownoteView.onContextItemSelected(item)
     }
 
-//    @UnstableApi private fun load0() {
-//        webViewLoader?.dispose()
-//
-//        val context = context ?: return
-//        webViewLoader = Maybe.create { emitter: MaybeEmitter<String?> ->
-//            if (item == null) {
-//                media = controller?.getMedia()
-//                if (media == null) {
-//                    emitter.onComplete()
-//                    return@create
-//                }
-//                if (media is FeedMedia) {
-//                    val feedMedia = media as FeedMedia
-//                    item = feedMedia.item
-//                    item?.setDescription(null)
-//                    showHomeText = false
-//                    homeText = null
-//                }
-//            }
-//            if (item != null) {
-//                media = item!!.media
-//                if (item!!.description == null) DBReader.loadTextDetailsOfFeedItem(item!!)
-//                if (prevItem?.itemIdentifier != item!!.itemIdentifier) cleanedNotes = null
-//                if (cleanedNotes == null) {
-//                    Logd(TAG, "calling load description ${item!!.description==null} ${item!!.title}")
-//                    val shownotesCleaner = ShownotesCleaner(context, item?.description ?: "", media?.getDuration()?:0)
-//                    cleanedNotes = shownotesCleaner.processShownotes()
-//                }
-//                prevItem = item
-//                emitter.onSuccess(cleanedNotes?:"")
-//            } else emitter.onComplete()
-//        }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe({ data: String? ->
-//                Logd(TAG, "subscribe: ${media?.getEpisodeTitle()}")
-//                displayMediaInfo(media!!)
-//                shownoteView.loadDataWithBaseURL("https://127.0.0.1", data!!, "text/html", "utf-8", "about:blank")
-//                Logd(TAG, "Webview loaded")
-//            }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
-//    }
-
     private fun load() {
         val context = context ?: return
         lifecycleScope.launch {

@@ -119,34 +119,10 @@ class SubscriptionStatisticsFragment : Fragment() {
     }
 
     private fun loadStatistics() {
-//        disposable?.dispose()
-
 //        val prefs = requireContext().getSharedPreferences(StatisticsFragment.PREF_NAME, Context.MODE_PRIVATE)
         val includeMarkedAsPlayed = prefs!!.getBoolean(StatisticsFragment.PREF_INCLUDE_MARKED_PLAYED, false)
         val timeFilterFrom = prefs!!.getLong(StatisticsFragment.PREF_FILTER_FROM, 0)
         val timeFilterTo = prefs!!.getLong(StatisticsFragment.PREF_FILTER_TO, Long.MAX_VALUE)
-
-//        disposable = Observable.fromCallable {
-//            val statisticsData = DBReader.getStatistics(
-//                includeMarkedAsPlayed, timeFilterFrom, timeFilterTo)
-//            statisticsData.feedTime.sortWith { item1: StatisticsItem, item2: StatisticsItem ->
-//                item2.timePlayed.compareTo(item1.timePlayed)
-//            }
-//            statisticsData
-//        }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe({ result: StatisticsResult ->
-//                statisticsResult = result
-//                // When "from" is "today", set it to today
-//                listAdapter.setTimeFilter(includeMarkedAsPlayed, max(
-//                    min(timeFilterFrom.toDouble(), System.currentTimeMillis().toDouble()), result.oldestDate.toDouble())
-//                    .toLong(),
-//                    min(timeFilterTo.toDouble(), System.currentTimeMillis().toDouble()).toLong())
-//                listAdapter.update(result.feedTime)
-//                progressBar.visibility = View.GONE
-//                feedStatisticsList.visibility = View.VISIBLE
-//            }, { error: Throwable? -> Log.e(TAG, Log.getStackTraceString(error)) })
 
         lifecycleScope.launch {
             try {

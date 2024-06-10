@@ -40,21 +40,6 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
         DBWriter.deleteFeedMediaOfItem(context, media.id) // Remove partially downloaded file
         val tag = WORK_TAG_EPISODE_URL + media.download_url
         val future: Future<List<WorkInfo>> = WorkManager.getInstance(context).getWorkInfosByTag(tag)
-//        Observable.fromFuture(future)
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(Schedulers.io())
-//            .subscribe(
-//                { workInfos: List<WorkInfo> ->
-//                    for (info in workInfos) {
-//                        if (info.tags.contains(WORK_DATA_WAS_QUEUED)) {
-//                            if (media.item != null) DBWriter.removeQueueItem(context, false, media.item!!)
-//                        }
-//                    }
-//                    WorkManager.getInstance(context).cancelAllWorkByTag(tag)
-//                }, { exception: Throwable ->
-//                    WorkManager.getInstance(context).cancelAllWorkByTag(tag)
-//                    exception.printStackTrace()
-//                })
 
         CoroutineScope(Dispatchers.IO).launch {
             try {

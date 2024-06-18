@@ -8,6 +8,7 @@ import ac.mdiq.podcini.storage.DBReader.getFeedItemByGuidOrEpisodeUrl
 import ac.mdiq.podcini.storage.DBReader.loadAdditionalFeedItemListData
 import ac.mdiq.podcini.storage.DBWriter.persistItemList
 import ac.mdiq.podcini.storage.model.feed.FeedItem
+import ac.mdiq.podcini.storage.model.feed.FeedItem.Companion.PLAYED
 import ac.mdiq.podcini.util.FeedItemUtil.hasAlmostEnded
 import ac.mdiq.podcini.util.Logd
 import android.util.Log
@@ -58,6 +59,8 @@ object EpisodeProgressReader {
         }
         var idRemove = 0L
         feedItem.media!!.setPosition(action.position * 1000)
+        feedItem.setPlayed(action.playState == PLAYED)
+        feedItem.media!!.setLastPlayedTime(action.timestamp!!.time)
         if (hasAlmostEnded(feedItem.media!!)) {
             Logd(SyncService.TAG, "Marking as played: $action")
             feedItem.setPlayed(true)

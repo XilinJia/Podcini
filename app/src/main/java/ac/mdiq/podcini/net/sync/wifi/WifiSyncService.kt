@@ -12,6 +12,7 @@ import ac.mdiq.podcini.storage.DBReader.getFeedItemByGuidOrEpisodeUrl
 import ac.mdiq.podcini.storage.DBReader.getFeedMedia
 import ac.mdiq.podcini.storage.DBWriter.persistFeedMediaPlaybackInfo
 import ac.mdiq.podcini.storage.model.feed.FeedItem
+import ac.mdiq.podcini.storage.model.feed.FeedItem.Companion.PLAYED
 import ac.mdiq.podcini.storage.model.feed.FeedItemFilter
 import ac.mdiq.podcini.storage.model.feed.SortOrder
 import ac.mdiq.podcini.util.FeedItemUtil.hasAlmostEnded
@@ -256,6 +257,7 @@ import kotlin.math.min
                     .started(media.getPosition() / 1000)
                     .position(media.getPosition() / 1000)
                     .total(media.getDuration() / 1000)
+                    .playState(item.playState)
                     .build()
                 queuedEpisodeActions.add(played)
             }
@@ -324,6 +326,7 @@ import kotlin.math.min
         if (feedItem.media!!.getLastPlayedTime() < (action.timestamp?.time?:0L)) {
             feedItem.media!!.setPosition(action.position * 1000)
             feedItem.media!!.setLastPlayedTime(action.timestamp!!.time)
+            feedItem.setPlayed(action.playState == PLAYED)
             if (hasAlmostEnded(feedItem.media!!)) {
                 Logd(TAG, "Marking as played")
                 feedItem.setPlayed(true)

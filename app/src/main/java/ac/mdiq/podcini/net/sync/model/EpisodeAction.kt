@@ -36,12 +36,15 @@ class EpisodeAction private constructor(builder: Builder) {
      */
     val total: Int
 
+    val playState: Int
+
     init {
         this.guid = builder.guid
         this.action = builder.action
         this.timestamp = builder.timestamp
         this.started = builder.started
         this.position = builder.position
+        this.playState = builder.playState
         this.total = builder.total
     }
 
@@ -54,7 +57,7 @@ class EpisodeAction private constructor(builder: Builder) {
         if (o !is EpisodeAction) return false
 
         val that = o
-        return started == that.started && position == that.position && total == that.total && action != that.action && podcast == that.podcast && episode == that.episode && timestamp == that.timestamp && guid == that.guid
+        return started == that.started && position == that.position && total == that.total && playState == that.playState && action != that.action && podcast == that.podcast && episode == that.episode && timestamp == that.timestamp && guid == that.guid
     }
 
     override fun hashCode(): Int {
@@ -65,6 +68,7 @@ class EpisodeAction private constructor(builder: Builder) {
         result = 31 * result + (timestamp?.hashCode() ?: 0)
         result = 31 * result + started
         result = 31 * result + position
+        result = 31 * result + playState
         result = 31 * result + total
         return result
     }
@@ -87,6 +91,7 @@ class EpisodeAction private constructor(builder: Builder) {
             if (this.action == Action.PLAY) {
                 obj.put("started", this.started)
                 obj.put("position", this.position)
+                obj.put("playState", this.playState)
                 obj.put("total", this.total)
             }
         } catch (e: JSONException) {
@@ -97,7 +102,7 @@ class EpisodeAction private constructor(builder: Builder) {
     }
 
     override fun toString(): String {
-        return ("EpisodeAction{podcast='$podcast', episode='$episode', guid='$guid', action=$action, timestamp=$timestamp, started=$started, position=$position, total=$total}")
+        return ("EpisodeAction{podcast='$podcast', episode='$episode', guid='$guid', action=$action, timestamp=$timestamp, started=$started, position=$position, total=$total playState=$playState}")
     }
 
     enum class Action {
@@ -111,6 +116,7 @@ class EpisodeAction private constructor(builder: Builder) {
         var started: Int = -1
         var position: Int = -1
         var total: Int = -1
+        var playState: Int = 0
         var guid: String? = null
 
         constructor(item: FeedItem, action: Action) : this(item.feed?.download_url, item.media?.download_url, action) {
@@ -143,6 +149,11 @@ class EpisodeAction private constructor(builder: Builder) {
 
         fun total(seconds: Int): Builder {
             if (action == Action.PLAY) this.total = seconds
+            return this
+        }
+
+        fun playState(playState: Int): Builder {
+            if (action == Action.PLAY) this.playState = playState
             return this
         }
 
@@ -197,6 +208,8 @@ class EpisodeAction private constructor(builder: Builder) {
                 val started = `object`.optInt("started", -1)
                 val position = `object`.optInt("position", -1)
                 val total = `object`.optInt("total", -1)
+                val playState = `object`.optInt("playState", 0)
+                builder.playState(playState)
                 if (started >= 0 && position > 0 && total > 0) builder.started(started).position(position).total(total)
             }
             return builder.build()

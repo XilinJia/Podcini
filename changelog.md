@@ -1,3 +1,8 @@
+## 5.5.1
+
+* a minor release for better migration to Podcini 6
+* in wifi sync and episode progress export/import, included the info for episodes not played or not finished playing but marked as played
+
 ## 5.5.0
 
 * likely fixed Nextcloud Gpoddersync fails

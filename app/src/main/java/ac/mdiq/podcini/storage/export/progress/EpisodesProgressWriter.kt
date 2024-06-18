@@ -36,6 +36,7 @@ class EpisodesProgressWriter : ExportWriter {
                 .started(media.getPosition() / 1000)
                 .position(media.getPosition() / 1000)
                 .total(media.getDuration() / 1000)
+                .playState(item.playState)
                 .build()
             queuedEpisodeActions.add(played)
         }

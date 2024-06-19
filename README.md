@@ -9,6 +9,10 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
      height="80">](https://f-droid.org/packages/ac.mdiq.podcini/)
 Or download the latest APK from the [Releases Section](https://github.com/XilinJia/Podcini/releases/latest).
 
+## Preannouncement
+
+### Podcini 6, dubbed as PodciniR, is about to be under pre-release.  With a different application Id, it can be installed in parallel with a previous version. See [Podcini 6 migrations instroctions](migrationTo6.md)
+
 This project is based on a fork of [AntennaPod](<https://github.com/AntennaPod/AntennaPod>) as of Feb 5 2024.
 
 Compared to AntennaPod this project:

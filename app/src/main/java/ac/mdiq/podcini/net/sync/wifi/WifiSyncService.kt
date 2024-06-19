@@ -246,9 +246,11 @@ import kotlin.math.min
 //            only push downloaded items
             val pausedItems = getEpisodes(0, Int.MAX_VALUE, FeedItemFilter(FeedItemFilter.PAUSED), SortOrder.DATE_NEW_OLD)
             val readItems = getEpisodes(0, Int.MAX_VALUE, FeedItemFilter(FeedItemFilter.PLAYED), SortOrder.DATE_NEW_OLD)
+            val favoriteItems = getEpisodes(0, Int.MAX_VALUE, FeedItemFilter(FeedItemFilter.IS_FAVORITE), SortOrder.DATE_NEW_OLD)
             val comItems = mutableSetOf<FeedItem>()
             comItems.addAll(pausedItems)
             comItems.addAll(readItems)
+            comItems.addAll(favoriteItems)
             Logd(TAG, "First sync. Upload state for all " + comItems.size + " played episodes")
             for (item in comItems) {
                 val media = item.media ?: continue
@@ -257,6 +259,7 @@ import kotlin.math.min
                     .started(media.getPosition() / 1000)
                     .position(media.getPosition() / 1000)
                     .total(media.getDuration() / 1000)
+                    .isFavorite(item.isTagged(FeedItem.TAG_FAVORITE))
                     .playState(item.playState)
                     .build()
                 queuedEpisodeActions.add(played)
@@ -326,6 +329,7 @@ import kotlin.math.min
         if (feedItem.media!!.getLastPlayedTime() < (action.timestamp?.time?:0L)) {
             feedItem.media!!.setPosition(action.position * 1000)
             feedItem.media!!.setLastPlayedTime(action.timestamp!!.time)
+            if (action.isFavorite) feedItem.addTag(FeedItem.TAG_FAVORITE)
             feedItem.setPlayed(action.playState == PLAYED)
             if (hasAlmostEnded(feedItem.media!!)) {
                 Logd(TAG, "Marking as played")

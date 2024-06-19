@@ -60,6 +60,7 @@ object EpisodeProgressReader {
         var idRemove = 0L
         feedItem.media!!.setPosition(action.position * 1000)
         feedItem.setPlayed(action.playState == PLAYED)
+        if (action.isFavorite) feedItem.addTag(FeedItem.TAG_FAVORITE)
         feedItem.media!!.setLastPlayedTime(action.timestamp!!.time)
         if (hasAlmostEnded(feedItem.media!!)) {
             Logd(SyncService.TAG, "Marking as played: $action")

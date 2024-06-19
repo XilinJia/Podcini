@@ -38,6 +38,8 @@ class EpisodeAction private constructor(builder: Builder) {
 
     val playState: Int
 
+    val isFavorite: Boolean
+
     init {
         this.guid = builder.guid
         this.action = builder.action
@@ -45,6 +47,7 @@ class EpisodeAction private constructor(builder: Builder) {
         this.started = builder.started
         this.position = builder.position
         this.playState = builder.playState
+        this.isFavorite = builder.isFavorite
         this.total = builder.total
     }
 
@@ -57,7 +60,7 @@ class EpisodeAction private constructor(builder: Builder) {
         if (o !is EpisodeAction) return false
 
         val that = o
-        return started == that.started && position == that.position && total == that.total && playState == that.playState && action != that.action && podcast == that.podcast && episode == that.episode && timestamp == that.timestamp && guid == that.guid
+        return started == that.started && position == that.position && total == that.total && playState == that.playState && isFavorite == that.isFavorite && action != that.action && podcast == that.podcast && episode == that.episode && timestamp == that.timestamp && guid == that.guid
     }
 
     override fun hashCode(): Int {
@@ -93,6 +96,7 @@ class EpisodeAction private constructor(builder: Builder) {
                 obj.put("position", this.position)
                 obj.put("playState", this.playState)
                 obj.put("total", this.total)
+                obj.put("isFavorite", this.isFavorite)
             }
         } catch (e: JSONException) {
             Log.e(TAG, "writeToJSONObject(): " + e.message)
@@ -102,7 +106,7 @@ class EpisodeAction private constructor(builder: Builder) {
     }
 
     override fun toString(): String {
-        return ("EpisodeAction{podcast='$podcast', episode='$episode', guid='$guid', action=$action, timestamp=$timestamp, started=$started, position=$position, total=$total playState=$playState}")
+        return ("EpisodeAction{podcast='$podcast', episode='$episode', guid='$guid', action=$action, timestamp=$timestamp, started=$started, position=$position, total=$total playState=$playState isFavorite=$isFavorite}")
     }
 
     enum class Action {
@@ -117,6 +121,7 @@ class EpisodeAction private constructor(builder: Builder) {
         var position: Int = -1
         var total: Int = -1
         var playState: Int = 0
+        var isFavorite: Boolean = false
         var guid: String? = null
 
         constructor(item: FeedItem, action: Action) : this(item.feed?.download_url, item.media?.download_url, action) {
@@ -154,6 +159,11 @@ class EpisodeAction private constructor(builder: Builder) {
 
         fun playState(playState: Int): Builder {
             if (action == Action.PLAY) this.playState = playState
+            return this
+        }
+
+        fun isFavorite(isFavorite: Boolean): Builder {
+            if (action == Action.PLAY) this.isFavorite = isFavorite
             return this
         }
 
@@ -209,7 +219,8 @@ class EpisodeAction private constructor(builder: Builder) {
                 val position = `object`.optInt("position", -1)
                 val total = `object`.optInt("total", -1)
                 val playState = `object`.optInt("playState", 0)
-                builder.playState(playState)
+                val isFavorite = `object`.optBoolean("isFavorite", false)
+                builder.playState(playState).isFavorite(isFavorite)
                 if (started >= 0 && position > 0 && total > 0) builder.started(started).position(position).total(total)
             }
             return builder.build()

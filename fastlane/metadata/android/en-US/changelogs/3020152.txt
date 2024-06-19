@@ -1,0 +1,5 @@
+ 
+Version 5.5.2 brings several changes:
+
+* another minor release for better migration to Podcini 6
+* in wifi sync and episode progress export/import, included favorites info for episodes

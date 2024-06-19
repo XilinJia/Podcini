@@ -25,9 +25,11 @@ class EpisodesProgressWriter : ExportWriter {
         val queuedEpisodeActions: MutableList<EpisodeAction> = mutableListOf()
         val pausedItems = getEpisodes(0, Int.MAX_VALUE, FeedItemFilter(FeedItemFilter.PAUSED), SortOrder.DATE_NEW_OLD)
         val readItems = getEpisodes(0, Int.MAX_VALUE, FeedItemFilter(FeedItemFilter.PLAYED), SortOrder.DATE_NEW_OLD)
+        val favoriteItems = getEpisodes(0, Int.MAX_VALUE, FeedItemFilter(FeedItemFilter.IS_FAVORITE), SortOrder.DATE_NEW_OLD)
         val comItems = mutableSetOf<FeedItem>()
         comItems.addAll(pausedItems)
         comItems.addAll(readItems)
+        comItems.addAll(favoriteItems)
         Logd(TAG, "Save state for all " + comItems.size + " played episodes")
         for (item in comItems) {
             val media = item.media ?: continue
@@ -36,6 +38,7 @@ class EpisodesProgressWriter : ExportWriter {
                 .started(media.getPosition() / 1000)
                 .position(media.getPosition() / 1000)
                 .total(media.getDuration() / 1000)
+                .isFavorite(item.isTagged(FeedItem.TAG_FAVORITE))
                 .playState(item.playState)
                 .build()
             queuedEpisodeActions.add(played)

@@ -1,3 +1,8 @@
+## 5.5.2
+
+* another minor release for better migration to Podcini 6
+* in wifi sync and episode progress export/import, included favorites info for episodes
+
 ## 5.5.1
 
 * a minor release for better migration to Podcini 6

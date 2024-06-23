@@ -13,7 +13,7 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="?attr/actionBarSize"
+        android:minHeight="?android:attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
         app:navigationContentDescription="@string/toolbar_back_button_content_description"
         app:navigationIcon="?homeAsUpIndicator" />
@@ -80,14 +80,13 @@
                         android:orientation="horizontal">
 
                         <TextView
-                            android:id="@+id/txtvDuration"
+                            android:id="@+id/txtvPublished"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             style="@style/Podcini.TextView.ListItemSecondaryTitle"
-                            tools:text="@sample/episodes.json/data/duration" />
+                            tools:text="Jan 23" />
 
                         <TextView
-                            android:id="@+id/separatorIcons"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginLeft="4dp"
@@ -99,11 +98,29 @@
                             style="@style/Podcini.TextView.ListItemSecondaryTitle" />
 
                         <TextView
-                            android:id="@+id/txtvPublished"
+                            android:id="@+id/txtvDuration"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             style="@style/Podcini.TextView.ListItemSecondaryTitle"
-                            tools:text="Jan 23" />
+                            tools:text="@sample/episodes.json/data/duration" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="4dp"
+                            android:layout_marginStart="4dp"
+                            android:layout_marginRight="4dp"
+                            android:layout_marginEnd="4dp"
+                            android:importantForAccessibility="no"
+                            android:text="·"
+                            style="@style/Podcini.TextView.ListItemSecondaryTitle" />
+
+                        <TextView
+                            android:id="@+id/txtvSize"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            style="@style/Podcini.TextView.ListItemSecondaryTitle"
+                            tools:text="@sample/episodes.json/data/duration" />
 
                     </LinearLayout>
 

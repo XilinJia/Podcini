@@ -44,6 +44,13 @@
             android:title="@string/notification_pref_fragment"
             android:icon="@drawable/ic_notifications"/>
 
+    <SwitchPreferenceCompat
+        android:defaultValue="true"
+        android:enabled="true"
+        android:key="prefOPMLBackup"
+        android:summary="@string/pref_backup_on_google_sum"
+        android:title="@string/pref_backup_on_google_title"/>
+
     <PreferenceCategory
             android:key="project"
             android:title="@string/project_pref">

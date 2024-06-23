@@ -62,7 +62,7 @@
   <string name="drawer_feed_order_last_update">Sortează după data publicării</string>
   <string name="drawer_feed_order_most_played">Sortează după numărul de episoade urmărite</string>
 
-  <string name="drawer_feed_counter_unplayed">Numărul de episoade neredate</string>
+  <string name="drawer_feed_order_unplayed">Numărul de episoade neredate</string>
   <string name="drawer_feed_counter_downloaded">Numărul de episoade descărcate</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Numărul de episoade descărcate și neredate</string>
   <string name="drawer_feed_counter_none">Niciunul</string>

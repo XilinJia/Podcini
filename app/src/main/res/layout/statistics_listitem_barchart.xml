@@ -7,7 +7,7 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <ac.mdiq.podcini.ui.statistics.years.BarChartView
+    <ac.mdiq.podcini.ui.statistics.BarChartView
         android:id="@+id/barChart"
         android:layout_width="match_parent"
         android:layout_height="200dp" />

@@ -17,7 +17,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="?attr/actionBarSize"
+            android:minHeight="?android:attr/actionBarSize"
             android:theme="?attr/actionBarTheme"
             app:title="@string/add_feed_label"
             app:navigationContentDescription="@string/toolbar_back_button_content_description"
@@ -85,7 +85,7 @@
                 android:id="@+id/quickFeedDiscovery"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:name="ac.mdiq.podcini.ui.fragment.QuickFeedDiscoveryFragment" />
+                android:name="ac.mdiq.podcini.ui.fragment.QuickDiscoveryFragment" />
 
             <TextView
                 android:layout_width="match_parent"

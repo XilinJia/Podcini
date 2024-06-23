@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              android:id="@+id/switch_queue_dialog"
+              android:padding="16dp">
+
+    <Spinner
+        android:id="@+id/queue_spinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:dropDownWidth="200dp"
+        android:padding="8dp"
+        android:paddingBottom="20dp"
+        android:textColor="?android:attr/textColorPrimary"
+        android:textSize="@dimen/text_size_micro"
+        android:spinnerMode="dropdown"/>
+
+</LinearLayout>

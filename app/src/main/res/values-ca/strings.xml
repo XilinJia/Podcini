@@ -61,7 +61,7 @@
   <string name="drawer_feed_order_last_update">Ordre per data de publicació</string>
   <string name="drawer_feed_order_most_played">Ordre per número d\'episodis reproduïts</string>
 
-  <string name="drawer_feed_counter_unplayed">Número d\'episodis per reproduir</string>
+  <string name="drawer_feed_order_unplayed">Número d\'episodis per reproduir</string>
   <string name="drawer_feed_counter_downloaded">Número d\'episodis descarregats</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Número de descàrregues i episodis sense reproduir</string>
   <string name="drawer_feed_counter_none">Cap</string>

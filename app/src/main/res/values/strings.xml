@@ -83,8 +83,9 @@
     <string name="drawer_feed_order_last_update">Publication date</string>
     <string name="drawer_feed_order_last_unread_update">Unread publication date</string>
     <string name="drawer_feed_order_most_played">Number of played episodes</string>
+    <string name="drawer_feed_order_new_episodes">Number of new episodes</string>
 
-    <string name="drawer_feed_counter_unplayed">Number of unplayed episodes</string>
+    <string name="drawer_feed_order_unplayed">Number of unplayed episodes</string>
     <string name="drawer_feed_counter_downloaded">Number of downloaded episodes</string>
     <string name="drawer_feed_counter_downloaded_unplayed">Number of downloaded and unplayed episodes</string>
     <string name="drawer_feed_counter_none">None</string>
@@ -181,6 +182,7 @@
     <string name="show_info_label">Show information</string>
     <string name="show_feed_settings_label">Show podcast settings</string>
     <string name="feed_settings_label">Podcast settings</string>
+    <string name="switch_queue_label">Choose active queue</string>
     <string name="rename_feed_label">Rename podcast</string>
     <string name="remove_feed_label">Remove podcast</string>
     <string name="share_label">Share</string>
@@ -344,6 +346,8 @@
     <string name="queue_locked">Queue locked</string>
     <string name="queue_unlocked">Queue unlocked</string>
     <string name="queue_lock_warning">If you lock the queue, you can no longer swipe or reorder episodes.</string>
+    <string name="switch_queue">Switch queue</string>
+    <string name="open_queue">Open queue</string>
     <string name="checkbox_do_not_show_again">Do not show again</string>
     <string name="clear_queue_label">Clear queue</string>
     <string name="undo">Undo</string>
@@ -381,7 +385,6 @@
     <string name="no_all_episodes_label">When you add a podcast, the episodes will be shown here.</string>
     <string name="no_all_episodes_filtered_label">Try clearing the filter to see more episodes.</string>
 
-
     <string name="no_subscriptions_head_label">No subscriptions</string>
     <string name="no_subscriptions_label">To subscribe to a podcast, press the plus icon below.</string>
 
@@ -389,6 +392,8 @@
     <string name="project_pref">Project</string>
     <string name="synchronization_pref">Synchronization</string>
     <string name="synchronization_sum">Synchronize with other devices</string>
+    <string name="pref_backup_on_google_title">Auto backup of OPML</string>
+    <string name="pref_backup_on_google_sum">Auto backup OPML files to Google. Once enabled, after Podcini is uninstalled and re-installed, the subscriptions will be automatically restored.</string>
     <string name="automation">Automation</string>
     <string name="download_pref_details">Details</string>
     <string name="import_export_pref">Import/Export</string>

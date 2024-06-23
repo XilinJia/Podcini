@@ -60,7 +60,7 @@
   <string name="drawer_feed_order_last_update">Sorter etter utgivelsesdato</string>
   <string name="drawer_feed_order_most_played">Sorter etter antall avspilte episoder</string>
 
-  <string name="drawer_feed_counter_unplayed">Antall uavspilte episoder</string>
+  <string name="drawer_feed_order_unplayed">Antall uavspilte episoder</string>
   <string name="drawer_feed_counter_downloaded">Antall nedlastede episoder</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Antall of nedlastede og uavspilte episoder</string>
   <string name="drawer_feed_counter_none">Ingen</string>

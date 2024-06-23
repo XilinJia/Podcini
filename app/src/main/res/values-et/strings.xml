@@ -52,7 +52,7 @@
   <string name="drawer_feed_order_alphabetical">Sorteeri tähestiku järgi</string>
   <string name="drawer_feed_order_last_update">Sorteeri avaldamise kuupäeva järgi</string>
   <string name="drawer_feed_order_most_played">Sorteeri kuulatud saadete järgi</string>
-  <string name="drawer_feed_counter_unplayed">Kuulamata saadete arv</string>
+  <string name="drawer_feed_order_unplayed">Kuulamata saadete arv</string>
   <string name="drawer_feed_counter_downloaded">Allalaaditud saadete arv</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Allalaaditud kuulamata saadete arv</string>
   <string name="drawer_feed_counter_none">Pole</string>

@@ -17,7 +17,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="?attr/actionBarSize"
+            android:minHeight="?android:attr/actionBarSize"
             android:theme="?attr/actionBarTheme"
             app:title="@string/search_label"
             app:navigationContentDescription="@string/toolbar_back_button_content_description"
@@ -53,7 +53,7 @@
         android:paddingRight="12dp"
         android:clipToPadding="false" />
 
-    <ac.mdiq.podcini.ui.view.EpisodeItemListRecyclerView
+    <ac.mdiq.podcini.ui.view.EpisodesRecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

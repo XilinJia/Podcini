@@ -56,7 +56,7 @@
   <string name="drawer_feed_order_last_update">Rendezés közzététel dátuma szerint</string>
   <string name="drawer_feed_order_most_played">Rendezés lejátszott epizódok szerint</string>
 
-  <string name="drawer_feed_counter_unplayed">Nem játszott epizódok száma</string>
+  <string name="drawer_feed_order_unplayed">Nem játszott epizódok száma</string>
   <string name="drawer_feed_counter_downloaded">Letöltött epizódok száma</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Letöltött és nem lejátszott epizódok száma</string>
   <string name="drawer_feed_counter_none">Nincs</string>

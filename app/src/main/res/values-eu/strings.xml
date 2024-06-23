@@ -60,7 +60,7 @@
   <string name="drawer_feed_order_last_update">Antolatu argitaratze dataz</string>
   <string name="drawer_feed_order_most_played">Antolatu ikusitako saioen arabera</string>
 
-  <string name="drawer_feed_counter_unplayed">Entzun gabeko saioen zenbatekoa</string>
+  <string name="drawer_feed_order_unplayed">Entzun gabeko saioen zenbatekoa</string>
   <string name="drawer_feed_counter_downloaded">Deskargatutako saio kopurua</string>
   <string name="drawer_feed_counter_none">Bat ere ez</string>
   <!--Bug report activity-->

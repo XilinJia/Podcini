@@ -66,7 +66,7 @@
   <string name="drawer_feed_order_last_update">Nach Veröffentlichungsdatum sortieren</string>
   <string name="drawer_feed_order_most_played">Nach Anzahl gespielter Episoden sortieren</string>
 
-  <string name="drawer_feed_counter_unplayed">Anzahl nicht abgespielter Episoden</string>
+  <string name="drawer_feed_order_unplayed">Anzahl nicht abgespielter Episoden</string>
   <string name="drawer_feed_counter_downloaded">Anzahl heruntergeladener Episoden</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Anzahl heruntergeladener und nicht abgespielter Episoden</string>
   <string name="drawer_feed_counter_none">Keine</string>

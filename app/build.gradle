@@ -2,7 +2,8 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id 'org.jetbrains.kotlin.android'
-    id 'com.google.devtools.ksp'
+    id 'io.realm.kotlin'
+//    id 'com.google.devtools.ksp'
     id('com.github.triplet.play') version '3.8.3' apply false
 }
 
@@ -27,10 +28,10 @@ android {
     buildTypes {
         release {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard.cfg"
-            resValue "string", "app_name", "Podcini"
+            resValue "string", "app_name", "Podcini.R"
         }
         debug {
-            resValue "string", "app_name", "Podcini Debug"
+            resValue "string", "app_name", "Podcini.R Debug"
         }
     }
 
@@ -44,11 +45,6 @@ android {
             exclude 'META-INF/NOTICE.txt'
             exclude 'META-INF/LICENSE.txt'
             exclude 'META-INF/MANIFEST.MF'
-
-//            excludes += ["META-INF/LICENSE.txt",
-//                         "META-INF/NOTICE.txt",
-//                         "META-INF/CHANGES",
-//                         "META-INF/README.md"]
         }
     }
 
@@ -65,7 +61,7 @@ android {
     }
 
     lint {
-        disable "GradleDependency"
+//        disable "GradleDependency"
         checkDependencies true
         warningsAsErrors true
         abortOnError true
@@ -78,54 +74,23 @@ android {
     }
 }
 
-tasks.withType(Test).configureEach {
-    testLogging {
-        exceptionFormat "full"
-        events "skipped", "passed", "failed"
-        showStandardStreams true
-        displayGranularity 2
-    }
-}
+//tasks.withType(Test).configureEach {
+//    testLogging {
+//        exceptionFormat "full"
+//        events "skipped", "passed", "failed"
+//        showStandardStreams true
+//        displayGranularity 2
+//    }
+//}
 
-gradle.projectsEvaluated {
-    tasks.withType(JavaCompile).tap {
-        configureEach {
-            options.compilerArgs << "-Xlint"
-        }
-    }
-}
+//gradle.projectsEvaluated {
+//    tasks.withType(JavaCompile).tap {
+//        configureEach {
+//            options.compilerArgs << "-Xlint"
+//        }
+//    }
+//}
 
-apply plugin: 'com.github.spotbugs'
-
-spotbugs {
-    effort = 'max'
-    reportLevel = 'medium'
-    excludeFilter = rootProject.file('config/spotbugs/exclude.xml')
-    ignoreFailures = true // Handled by printing task
-}
-
-gradle.taskGraph.beforeTask { task ->
-    if (task.name.toLowerCase().contains('spotbugs')) {
-        task.doLast {
-            def reportFile = task.project.file("build/reports/spotbugs/playDebug.xml")
-            if (!reportFile.exists()) return
-            def slurped = new groovy.xml.XmlSlurper().parse(reportFile)
-
-            def foundErrors = false
-            slurped['BugInstance'].each { bug ->
-                logger.error "[SpotBugs] ${bug['LongMessage']} [${bug.@'type'}]"
-                bug['SourceLine'].each { line ->
-                    logger.error "[SpotBugs]     ${line['Message']}"
-                    foundErrors = true
-                }
-            }
-            if (foundErrors) {
-                throw new TaskExecutionException(task,
-                        new Exception("SpotBugs violations were found. See output above for details."))
-            }
-        }
-    }
-}
 
 // from playFlavor.gradle
 android {
@@ -156,22 +121,20 @@ android {
         buildConfig true
     }
     defaultConfig {
-        // Version code schema (not used):
-        // "1.2.3-beta4"    -> 1020304
-        // "1.2.3"          -> 1020395
-        versionCode 3020152
-        versionName "5.5.2"
+        versionCode 3020200
+        versionName "6.0.0"
 
+        applicationId "ac.mdiq.podcini.R"
         def commit = ""
-        try {
-            def hashStdOut = new ByteArrayOutputStream()
-            exec {
-                commandLine "git", "rev-parse", "--short", "HEAD"
-                standardOutput = hashStdOut
-            }
-            commit = hashStdOut.toString().trim()
-        } catch (Exception ignore) {
-        }
+//        try {
+//            def hashStdOut = new ByteArrayOutputStream()
+//            exec {
+//                commandLine "git", "rev-parse", "--short", "HEAD"
+//                standardOutput = hashStdOut
+//            }
+//            commit = hashStdOut.toString().trim()
+//        } catch (Exception ignore) {
+//        }
         buildConfigField "String", "COMMIT_HASH", ('"' + (commit.isEmpty() ? "Unknown commit" : commit) + '"')
 
         if (project.hasProperty("podcastindexApiKey")) {
@@ -195,11 +158,11 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix ".debug"
-            resValue "string", "provider_authority", "ac.mdiq.podcini.debug.provider"
+            resValue "string", "provider_authority", "ac.mdiq.podcini.R.debug.provider"
         }
         release {
-            resValue "string", "app_name", "Podcini"
-            resValue "string", "provider_authority", "ac.mdiq.podcini.provider"
+            resValue "string", "app_name", "Podcini.R"
+            resValue "string", "provider_authority", "ac.mdiq.podcini.R.provider"
             minifyEnabled true
             shrinkResources true
             signingConfig signingConfigs.releaseConfig
@@ -208,7 +171,7 @@ android {
     }
     applicationVariants.configureEach { variant ->
         variant.outputs.configureEach { output ->
-            def applicationName = "Podcini"
+            def applicationName = "Podcini.R"
             outputFileName = "${applicationName}_${variant.buildType.name}_${defaultConfig.versionName}.apk"
         }
     }
@@ -219,24 +182,15 @@ android {
 }
 
 dependencies {
-    implementation "androidx.core:core-ktx:1.12.0"
+    implementation "androidx.core:core-ktx:1.13.1"
 //    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
-//    implementation 'com.android.volley:volley:1.2.1'
 
-//    constraints {
-//        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version") {
-//            because("kotlin-stdlib-jdk7 is now a part of kotlin-stdlib")
-//        }
-//        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version") {
-//            because("kotlin-stdlib-jdk8 is now a part of kotlin-stdlib")
-//        }
-//    }
-
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.2"
     implementation "androidx.annotation:annotation:1.8.0"
-    implementation "androidx.appcompat:appcompat:1.6.1"
+    implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.coordinatorlayout:coordinatorlayout:1.2.0'
-    implementation "androidx.fragment:fragment-ktx:1.6.2"
+    implementation "androidx.fragment:fragment-ktx:1.8.0"
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
     implementation "androidx.media:media:1.7.0"
     implementation "androidx.media3:media3-exoplayer:1.3.1"
@@ -247,13 +201,15 @@ dependencies {
     implementation "androidx.palette:palette-ktx:1.0.0"
     implementation "androidx.preference:preference-ktx:1.2.1"
     implementation "androidx.recyclerview:recyclerview:1.3.2"
-    implementation "androidx.viewpager2:viewpager2:1.1.0-beta02"
+    implementation "androidx.viewpager2:viewpager2:1.1.0"
     implementation "androidx.work:work-runtime:2.9.0"
     implementation "androidx.core:core-splashscreen:1.0.1"
     implementation 'androidx.documentfile:documentfile:1.0.1'
-    implementation 'androidx.webkit:webkit:1.10.0'
+    implementation 'androidx.webkit:webkit:1.11.0'
 
-    implementation "com.google.android.material:material:1.11.0"
+    implementation "com.google.android.material:material:1.12.0"
+
+    implementation 'io.realm.kotlin:library-base:2.0.0'
 
     implementation "org.apache.commons:commons-lang3:3.14.0"
     implementation 'commons-io:commons-io:2.16.1'
@@ -265,16 +221,22 @@ dependencies {
     implementation "com.squareup.okhttp3:okhttp-urlconnection:4.12.0"
     implementation 'com.squareup.okio:okio:3.9.0'
 
-    implementation "io.reactivex.rxjava2:rxandroid:2.1.1"
+//    implementation "io.reactivex.rxjava2:rxandroid:2.1.1"
     implementation "io.reactivex.rxjava2:rxjava:2.2.21"
 
-    implementation "com.joanzapata.iconify:android-iconify-fontawesome:2.2.2"
-    implementation "com.joanzapata.iconify:android-iconify-material:2.2.2"
+    implementation 'com.mikepenz:iconics-core:5.5.0-compose01'
+    implementation 'com.mikepenz:iconics-views:5.5.0-compose01'
+    implementation 'com.mikepenz:google-material-typeface:4.0.0.3-kotlin@aar'
+    implementation 'com.mikepenz:google-material-typeface-outlined:4.0.0.2-kotlin@aar'
+    implementation 'com.mikepenz:fontawesome-typeface:5.13.3.0-kotlin@aar'
+
     implementation 'com.leinardi.android:speed-dial:3.3.0'
     implementation 'com.github.ByteHamster:SearchPreference:v2.5.0'
-    implementation 'com.github.skydoves:balloon:1.6.4'
+    implementation 'com.github.skydoves:balloon:1.6.5'
     implementation 'com.github.xabaras:RecyclerViewSwipeDecorator:1.3'
     implementation "com.annimon:stream:1.2.2"
+
+    implementation 'com.github.mfietz:fyydlin:v0.5.0'
 
     implementation "net.dankito.readability4j:readability4j:1.0.8"
 
@@ -282,7 +244,7 @@ dependencies {
     playImplementation 'com.google.android.play:core-ktx:1.8.1'
     compileOnly "com.google.android.wearable:wearable:2.9.0"
 
-//    this one can not be updated?
+//    this one can not be updated?   TODO: need to get an alternative
     androidTestImplementation 'com.nanohttpd:nanohttpd:2.1.1'
 
     androidTestImplementation "androidx.test.espresso:espresso-core:3.5.1"
@@ -293,8 +255,6 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'org.awaitility:awaitility:4.2.1'
 
-    implementation 'com.github.mfietz:fyydlin:v0.5.0'
-
     // Non-free dependencies:
 
     testImplementation "androidx.test:core:1.5.0"
@@ -304,19 +264,15 @@ dependencies {
     testImplementation 'org.robolectric:robolectric:4.12'
     testImplementation 'javax.inject:javax.inject:1'
 
-    playImplementation 'com.google.android.gms:play-services-base:18.3.0'
+    playImplementation 'com.google.android.gms:play-services-base:18.5.0'
     freeImplementation 'org.conscrypt:conscrypt-android:2.5.2'
 
-    playApi 'androidx.mediarouter:mediarouter:1.6.0'
-    playApi "com.google.android.support:wearable:2.9.0"
-    playApi 'com.google.android.gms:play-services-cast-framework:21.4.0'
+    playApi 'androidx.mediarouter:mediarouter:1.7.0'
+//    playApi "com.google.android.support:wearable:2.9.0"
+    playApi 'com.google.android.gms:play-services-cast-framework:21.5.0'
 }
 
-//kapt {
-//    arguments {
-//        arg('eventBusIndex', 'ac.mdiq.podcini.ApEventBusIndex')
-//    }
-//}
+apply plugin: "io.realm.kotlin"
 
 if (project.hasProperty("podciniPlayPublisherCredentials")) {
     apply plugin: 'com.github.triplet.play'

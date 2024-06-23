@@ -60,7 +60,7 @@
   <string name="drawer_feed_order_last_update">Järjestä julkaisupäivän mukaan</string>
   <string name="drawer_feed_order_most_played">Järjestä toistettujen jaksojen mukaan</string>
 
-  <string name="drawer_feed_counter_unplayed">Toistamattomia jaksoja</string>
+  <string name="drawer_feed_order_unplayed">Toistamattomia jaksoja</string>
   <string name="drawer_feed_counter_downloaded">Ladattuja jaksoja</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Ladattuja ja toistamattomia jaksoja</string>
   <string name="drawer_feed_counter_none">Ei yhtään</string>

@@ -42,7 +42,7 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <com.joanzapata.iconify.widget.IconTextView
+        <com.mikepenz.iconics.view.IconicsTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/showPasswordButton"

@@ -60,7 +60,7 @@
   <string name="drawer_feed_order_last_update">По дате выхода</string>
   <string name="drawer_feed_order_most_played">По количеству прослушанных</string>
 
-  <string name="drawer_feed_counter_unplayed">Количество непрослушанных выпусков</string>
+  <string name="drawer_feed_order_unplayed">Количество непрослушанных выпусков</string>
   <string name="drawer_feed_counter_downloaded">Количество загруженных выпусков</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Количество загруженных и непрослушанных выпусков</string>
   <string name="drawer_feed_counter_none">Ничего</string>

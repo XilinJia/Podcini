@@ -3,6 +3,12 @@
       xmlns:custom="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/open_queue"
+        android:title="@string/open_queue"
+        android:icon="@drawable/playlist_play"
+        custom:showAsAction="always"/>
+
+    <item
         android:id="@+id/sort_items"
         android:icon="@drawable/arrows_sort"
         android:menuCategory="container"
@@ -57,5 +63,9 @@
         android:visible="true"
         custom:showAsAction="collapseActionView">
     </item>
+
+    <item
+        android:id="@+id/switch_queue"
+        android:title="@string/switch_queue" />
 
 </menu>

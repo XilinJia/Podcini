@@ -80,7 +80,7 @@
         android:hint="@string/optional_hint"
         android:inputType="textPassword" />
 
-    <com.joanzapata.iconify.widget.IconTextView
+    <com.mikepenz.iconics.view.IconicsTextView
         android:id="@+id/txtvMessage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

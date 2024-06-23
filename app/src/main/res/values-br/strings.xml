@@ -60,7 +60,7 @@
   <string name="drawer_feed_order_last_update">Rummañ dre an deiziad embann</string>
   <string name="drawer_feed_order_most_played">Rummañ dre an niver a rannoù lennet</string>
 
-  <string name="drawer_feed_counter_unplayed">Niver a rannoù n\'int ket bet lennet</string>
+  <string name="drawer_feed_order_unplayed">Niver a rannoù n\'int ket bet lennet</string>
   <string name="drawer_feed_counter_downloaded">Niver a rannoù pellgarget</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Niver a rannoù pellgarget n\'int ket bet lennet</string>
   <string name="drawer_feed_counter_none">Hini ebet</string>

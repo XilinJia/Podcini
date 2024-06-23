@@ -16,7 +16,7 @@
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
+            android:layout_height="?android:attr/actionBarSize"
             app:title="@string/subscriptions_label"
             app:navigationContentDescription="@string/toolbar_back_button_content_description"
             app:navigationIcon="?homeAsUpIndicator" />
@@ -56,9 +56,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
                 android:text="12 Podcasts" />
-
         </LinearLayout>
-
     </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout
@@ -96,8 +94,8 @@
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="@dimen/text_size_micro"
             android:spinnerMode="dropdown"/>
-
     </LinearLayout>
+
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefresh"
         android:layout_width="match_parent"

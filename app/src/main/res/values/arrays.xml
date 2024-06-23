@@ -189,11 +189,14 @@
     </string-array>
 
     <string-array name="nav_drawer_feed_order_options">
-        <item>@string/drawer_feed_order_unplayed_episodes</item>
+        <item>@string/drawer_feed_order_unplayed</item>
         <item>@string/drawer_feed_order_alphabetical</item>
         <item>@string/drawer_feed_order_last_update</item>
         <item>@string/drawer_feed_order_last_unread_update</item>
         <item>@string/drawer_feed_order_most_played</item>
+        <item>@string/drawer_feed_counter_downloaded</item>
+        <item>@string/drawer_feed_counter_downloaded_unplayed</item>
+        <item>@string/drawer_feed_order_new_episodes</item>
     </string-array>
     <string-array name="nav_drawer_feed_order_values">
         <item>0</item>
@@ -201,20 +204,23 @@
         <item>2</item>
         <item>3</item>
         <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
     </string-array>
 
-    <string-array name="nav_drawer_feed_counter_options">
-        <item>@string/drawer_feed_counter_unplayed</item>
-        <item>@string/drawer_feed_counter_downloaded</item>
-        <item>@string/drawer_feed_counter_downloaded_unplayed</item>
-        <item>@string/drawer_feed_counter_none</item>
-    </string-array>
-    <string-array name="nav_drawer_feed_counter_values">
-        <item>2</item>
-        <item>4</item>
-        <item>5</item>
-        <item>3</item>
-    </string-array>
+<!--    <string-array name="nav_drawer_feed_counter_options">-->
+<!--        <item>@string/drawer_feed_order_unplayed</item>-->
+<!--        <item>@string/drawer_feed_counter_downloaded</item>-->
+<!--        <item>@string/drawer_feed_counter_downloaded_unplayed</item>-->
+<!--        <item>@string/drawer_feed_counter_none</item>-->
+<!--    </string-array>-->
+<!--    <string-array name="nav_drawer_feed_counter_values">-->
+<!--        <item>2</item>-->
+<!--        <item>4</item>-->
+<!--        <item>5</item>-->
+<!--        <item>3</item>-->
+<!--    </string-array>-->
 
     <string-array name="full_notification_buttons_options">
         <item>@string/skip_episode_label</item>
@@ -223,7 +229,7 @@
     </string-array>
 
     <string-array name="default_page_values">
-        <item>SubscriptionFragment</item>
+        <item>SubscriptionsFragment</item>
         <item>QueueFragment</item>
         <item>AllEpisodesFragment</item>
         <item>DownloadsFragment</item>

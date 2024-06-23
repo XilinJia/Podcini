@@ -41,7 +41,7 @@
             android:targetPackage="ac.mdiq.podcini">
             <extra
                 android:name="fragment_tag"
-                android:value="SubscriptionFragment" />
+                android:value="SubscriptionsFragment" />
         </intent>
     </shortcut>
 

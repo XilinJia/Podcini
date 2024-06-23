@@ -1,0 +1,10 @@
+package ac.mdiq.podcini.storage.transport
+
+/** Represents a single feed in an OPML file.  */
+class OpmlElement {
+    @JvmField
+    var text: String? = null
+    var xmlUrl: String? = null
+    var htmlUrl: String? = null
+    var type: String? = null
+}

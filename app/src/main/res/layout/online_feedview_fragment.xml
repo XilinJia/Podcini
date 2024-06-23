@@ -17,7 +17,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="?attr/actionBarSize"
+            android:minHeight="?android:attr/actionBarSize"
             android:theme="?attr/actionBarTheme"
             app:title="@string/online_feed"
             app:navigationContentDescription="@string/toolbar_back_button_content_description"

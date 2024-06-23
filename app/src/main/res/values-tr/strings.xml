@@ -65,7 +65,7 @@
   <string name="drawer_feed_order_last_update">Yayınlanma tarihine göre sırala</string>
   <string name="drawer_feed_order_most_played">Oynatılan bölüm sayısına göre sırala</string>
 
-  <string name="drawer_feed_counter_unplayed">Çalınmamış bölümlerin sayısı</string>
+  <string name="drawer_feed_order_unplayed">Çalınmamış bölümlerin sayısı</string>
   <string name="drawer_feed_counter_downloaded">İndirilen bölümlerin sayısı</string>
   <string name="drawer_feed_counter_downloaded_unplayed">İndirilen ve oynatılmamış bölümlerin sayısı</string>
   <string name="drawer_feed_counter_none">Hiçbiri</string>

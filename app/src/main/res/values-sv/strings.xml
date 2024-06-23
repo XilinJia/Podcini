@@ -62,7 +62,7 @@
   <string name="drawer_feed_order_last_update">Sortera efter publiceringsdatum</string>
   <string name="drawer_feed_order_most_played">Sortera efter antal spelade episoder</string>
 
-  <string name="drawer_feed_counter_unplayed">Antal ospelade episoder</string>
+  <string name="drawer_feed_order_unplayed">Antal ospelade episoder</string>
   <string name="drawer_feed_counter_downloaded">Antal nedladdade episoder</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Antal nedladdade och ospelade avsnitt</string>
   <string name="drawer_feed_counter_none">Inga</string>

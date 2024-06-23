@@ -65,7 +65,7 @@
   <string name="drawer_feed_order_last_update">Ordenar por data de publicação</string>
   <string name="drawer_feed_order_most_played">Ordenar por número de episódios reproduzidos</string>
 
-  <string name="drawer_feed_counter_unplayed">Número de episódios não reproduzidos</string>
+  <string name="drawer_feed_order_unplayed">Número de episódios não reproduzidos</string>
   <string name="drawer_feed_counter_downloaded">Número de episódios descarregados</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Número de episódios descarregados e não reproduzidos</string>
   <string name="drawer_feed_counter_none">Nenhum</string>

@@ -62,7 +62,7 @@
   <string name="drawer_feed_order_last_update">Sorter efter udgivelsesdato</string>
   <string name="drawer_feed_order_most_played">Sorter efter antal afspillede afsnit</string>
 
-  <string name="drawer_feed_counter_unplayed">Antal uafspillede afsnit</string>
+  <string name="drawer_feed_order_unplayed">Antal uafspillede afsnit</string>
   <string name="drawer_feed_counter_downloaded">Antal overførte afsnit</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Antal overførte og uafspillede afsnit</string>
   <string name="drawer_feed_counter_none">Ingen</string>

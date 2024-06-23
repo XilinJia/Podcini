@@ -66,7 +66,7 @@
   <string name="drawer_feed_order_last_update">按出版日期排序</string>
   <string name="drawer_feed_order_most_played">根据已播放节目的数量排序</string>
 
-  <string name="drawer_feed_counter_unplayed">未播曲目数</string>
+  <string name="drawer_feed_order_unplayed">未播曲目数</string>
   <string name="drawer_feed_counter_downloaded">已下载节目数</string>
   <string name="drawer_feed_counter_downloaded_unplayed">已下载但未播放的节目数</string>
   <string name="drawer_feed_counter_none">无</string>

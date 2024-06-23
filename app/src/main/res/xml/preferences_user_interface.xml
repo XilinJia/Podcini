@@ -38,13 +38,13 @@
             android:title="@string/pref_nav_drawer_feed_order_title"
             android:key="prefDrawerFeedOrder"
             android:summary="@string/pref_nav_drawer_feed_order_sum"/>
-        <ac.mdiq.podcini.preferences.MaterialListPreference
-            android:entryValues="@array/nav_drawer_feed_counter_values"
-            android:entries="@array/nav_drawer_feed_counter_options"
-            android:title="@string/pref_nav_drawer_feed_counter_title"
-            android:key="prefDrawerFeedIndicator"
-            android:summary="@string/pref_nav_drawer_feed_counter_sum"
-            android:defaultValue="2"/>
+<!--        <ac.mdiq.podcini.preferences.MaterialListPreference-->
+<!--            android:entryValues="@array/nav_drawer_feed_counter_values"-->
+<!--            android:entries="@array/nav_drawer_feed_counter_options"-->
+<!--            android:title="@string/pref_nav_drawer_feed_counter_title"-->
+<!--            android:key="prefDrawerFeedIndicator"-->
+<!--            android:summary="@string/pref_nav_drawer_feed_counter_sum"-->
+<!--            android:defaultValue="2"/>-->
 <!--        <Preference-->
 <!--            android:title="@string/pref_filter_feed_title"-->
 <!--            android:key="prefSubscriptionsFilter"-->
@@ -81,7 +81,7 @@
                 android:key="prefDefaultPage"
                 android:title="@string/pref_default_page"
                 android:summary="@string/pref_default_page_sum"
-                android:defaultValue="SubscriptionFragment"/>
+                android:defaultValue="SubscriptionsFragment"/>
         <SwitchPreferenceCompat
                 android:key="prefBackButtonOpensDrawer"
                 android:title="@string/pref_back_button_opens_drawer"

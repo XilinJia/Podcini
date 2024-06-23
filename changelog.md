@@ -1,3 +1,44 @@
+## 6.0.0
+
+* complete overhaul of database and routines, ditched the iron-age celebrity SQLite and entrusted the modern object-based Realm
+* export/import DB is supported for the Realm DB with file extension .realm
+* DB from Podcini version 5 and below can not be imported, see migrationTo6.md file on github for instructions
+* deleting feeds is performed promptly
+* components rely more on objects for communication, unnecessary DB access is reduced
+* subscriptions sorting is more explicit
+* in Subscriptions view, click on cover image of a feed opens the FeedInfo view (not FeedEpisodes view)
+* in Subscriptions and episodes list views, corrected the issue of wrong images of episodes being shown when scrolling
+* the Counter and its seetings are removed
+* flow event additions and improvements
+* receiving flow events are strictly tied to life cycles of the components
+* NavDrawer no longer gets updated in the background but only upon open
+* player control UI is more efficient
+* PlaybackController is further enhanced for multiple access
+* non-essential instantiations of PlaybackController are stripped
+* AudioPlayer view is hidden when there is no media set to play
+* playback routines are extensively tuned and cleaned, less layered
+* in any episode list views, swipe with NO_ACTION defined pops up the swipe config dialog
+* episodes marked played will be removed from all queues
+* in EpisodeInfo view, "mark played/unplayed", "add to/remove from queue", and "favoraite/unfovorite" are at the action bar
+* decade-old joanzapata iconify is replaced with mikepenz iconics
+* removed the need for support libraries and the need for the jetifier
+* Java tools checkstyle and spotbus are removed
+* the clumsy FeedDrawerItem class was removed and related compponents are based purely on feed objects
+* FeedInfo view has button showing number of episodes to open the FeedEpisodes view
+* on action bar of FeedEpisodes view there is a direct access to Queue
+* tidied up the header of FeedEpisodes view
+* media size is shown on episode info view
+* net-fetching of media size for not-downloaded media is removed for episode list views
+* there is a setting to disable/enable auto backup OPML files to Google
+* all RxJava code was replaced with coroutines, RxJava dependency is kept only for using fyyd search
+* PlaybackPreferences using SharePreferences was removed and related info is handled by the DB as CurrentState
+* InTheatre object is now the center reference for all currently playing stuff including the current play queue
+* 5 queues are provided by default: Default queue, and Queues 1-4
+	* all queue operations are on the curQueue, which can be set in all episodes list views
+	* on app startup, the most recently updated queue is set to curQueue
+* extensive adjustments project class structures
+* code is now built with Kotlin 2.0.0
+
 ## 5.5.2
 
 * another minor release for better migration to Podcini 6

@@ -28,7 +28,7 @@
   <string name="drawer_feed_order_alphabetical">Alfabéticamente</string>
   <string name="drawer_feed_order_last_update">Pola data d\'espublizamientu</string>
   <string name="drawer_feed_order_most_played">Pol númberu d\'episodios reproducíos</string>
-  <string name="drawer_feed_counter_unplayed">Episodios ensin reproducir</string>
+  <string name="drawer_feed_order_unplayed">Episodios ensin reproducir</string>
   <string name="drawer_feed_counter_downloaded">Episodios baxaos</string>
   <string name="drawer_feed_counter_none">Nada</string>
   <!--Bug report activity-->

@@ -16,7 +16,7 @@
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
+            android:layout_height="?android:attr/actionBarSize"
             app:navigationContentDescription="@string/toolbar_back_button_content_description"
             app:navigationIcon="?homeAsUpIndicator" />
 
@@ -83,7 +83,7 @@
         android:layout_height="match_parent"
         android:layout_below="@id/appbar">
 
-        <ac.mdiq.podcini.ui.view.EpisodeItemListRecyclerView
+        <ac.mdiq.podcini.ui.view.EpisodesRecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

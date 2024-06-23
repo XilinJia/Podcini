@@ -60,7 +60,7 @@
   <string name="drawer_feed_order_last_update">공개 날짜 순서대로 정렬</string>
   <string name="drawer_feed_order_most_played">재생한 에피소드 개수에 따라 정렬</string>
 
-  <string name="drawer_feed_counter_unplayed">재생하지 않은 에피소드 수</string>
+  <string name="drawer_feed_order_unplayed">재생하지 않은 에피소드 수</string>
   <string name="drawer_feed_counter_downloaded">다운로드한 에피소드 수</string>
   <string name="drawer_feed_counter_downloaded_unplayed">다운로드 개수 및 재생하지 않은 에피소드</string>
   <string name="drawer_feed_counter_none">없음</string>

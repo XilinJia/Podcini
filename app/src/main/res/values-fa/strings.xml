@@ -67,7 +67,7 @@
   <string name="drawer_feed_order_last_update">مرتب‌سازی بر اساس تاریخ انتشار</string>
   <string name="drawer_feed_order_most_played">چینش بر اساس تعداد قسمت‌های پخش شده</string>
 
-  <string name="drawer_feed_counter_unplayed">تعداد قسمت‌های پخش‌نشده</string>
+  <string name="drawer_feed_order_unplayed">تعداد قسمت‌های پخش‌نشده</string>
   <string name="drawer_feed_counter_downloaded">تعداد قسمت‌های بار گرفته</string>
   <string name="drawer_feed_counter_downloaded_unplayed">تعداد قسمت‌های بار گرفته و پخش نشده</string>
   <string name="drawer_feed_counter_none">هیچ‌یک</string>

@@ -64,7 +64,7 @@
   <string name="drawer_feed_order_last_update">Sortuj wg daty publikacji</string>
   <string name="drawer_feed_order_most_played">Sortuj wg liczby odtworzonych odcinków</string>
 
-  <string name="drawer_feed_counter_unplayed">Liczba nieodtworzonych odcinków</string>
+  <string name="drawer_feed_order_unplayed">Liczba nieodtworzonych odcinków</string>
   <string name="drawer_feed_counter_downloaded">Liczba pobranych odcinków</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Liczba pobranych i nieodtworzonych odcinków</string>
   <string name="drawer_feed_counter_none">Brak</string>

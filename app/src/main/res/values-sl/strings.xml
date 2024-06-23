@@ -39,7 +39,7 @@
   <string name="drawer_feed_order_alphabetical">Razvrsti po abecedi</string>
   <string name="drawer_feed_order_last_update">Razvrsti po datumu objave</string>
   <string name="drawer_feed_order_most_played">Razvrsti po številu predvajanih epizod</string>
-  <string name="drawer_feed_counter_unplayed">Število nepredvajanih epizod</string>
+  <string name="drawer_feed_order_unplayed">Število nepredvajanih epizod</string>
   <string name="drawer_feed_counter_downloaded">Število prenesenih epizod</string>
   <string name="drawer_feed_counter_none">Nič</string>
   <!--Bug report activity-->

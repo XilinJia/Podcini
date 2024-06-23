@@ -62,7 +62,7 @@
   <string name="drawer_feed_order_last_update">Usporiadať podľa dátumu zverejnenia</string>
   <string name="drawer_feed_order_most_played">Usporiadať podľa počtu prehraných epizód</string>
 
-  <string name="drawer_feed_counter_unplayed">Počet neprehraných epizód</string>
+  <string name="drawer_feed_order_unplayed">Počet neprehraných epizód</string>
   <string name="drawer_feed_counter_downloaded">Počet stiahnutých epizód</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Počet stiahnutých a neprehratých epizód</string>
   <string name="drawer_feed_counter_none">Žiadne</string>

@@ -25,6 +25,12 @@
         license="Apache 2.0"
         licenseText="LICENSE_APACHE-2.0.txt" />
     <library
+        name="Realm-Kotlin"
+        author="MongoDb"
+        website="https://github.com/realm/realm-kotlin"
+        license="Apache 2.0"
+        licenseText="LICENSE_APACHE-2.0.txt" />
+    <library
         name="Balloon"
         author="Jaewoong Eum"
         website="https://github.com/skydoves/Balloon"
@@ -34,12 +40,6 @@
         name="Conscrypt"
         author="Google"
         website="https://github.com/google/conscrypt"
-        license="Apache 2.0"
-        licenseText="LICENSE_APACHE-2.0.txt" />
-    <library
-        name="ExoPlayer"
-        author="Google"
-        website="https://github.com/google/ExoPlayer"
         license="Apache 2.0"
         licenseText="LICENSE_APACHE-2.0.txt" />
     <library
@@ -61,9 +61,9 @@
         license="Apache 2.0"
         licenseText="LICENSE_APACHE-2.0.txt" />
     <library
-        name="Iconify"
-        author="Joan Zapata"
-        website="https://github.com/JoanZapata/android-iconify"
+        name="Android-Iconics"
+        author="Mike Penz and Peter Gulko"
+        website="https://github.com/mikepenz/Android-Iconics"
         license="Apache 2.0"
         licenseText="LICENSE_ANDROID_ICONIFY.txt" />
     <library
@@ -112,12 +112,6 @@
         name="RecyclerViewSwipeDecorator"
         author="Paolo Montalto"
         website="https://github.com/xabaras/RecyclerViewSwipeDecorator"
-        license="Apache 2.0"
-        licenseText="LICENSE_APACHE-2.0.txt" />
-    <library
-        name="RxAndroid"
-        author="ReactiveX"
-        website="https://github.com/ReactiveX/RxAndroid"
         license="Apache 2.0"
         licenseText="LICENSE_APACHE-2.0.txt" />
     <library

@@ -66,7 +66,7 @@
   <string name="drawer_feed_order_last_update">Op verschijningsdatum</string>
   <string name="drawer_feed_order_most_played">Op aantal afgespeelde afleveringen</string>
 
-  <string name="drawer_feed_counter_unplayed">Aantal niet afgespeelde afleveringen</string>
+  <string name="drawer_feed_order_unplayed">Aantal niet afgespeelde afleveringen</string>
   <string name="drawer_feed_counter_downloaded">Aantal gedownloade afleveringen</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Aantal gedownloade, onbeluisterde afleveringen</string>
   <string name="drawer_feed_counter_none">Geen</string>

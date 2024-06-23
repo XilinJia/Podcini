@@ -28,7 +28,7 @@
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
-            <com.joanzapata.iconify.widget.IconTextView
+            <com.mikepenz.iconics.view.IconicsTextView
                 android:id="@+id/txtvIcon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

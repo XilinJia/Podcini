@@ -62,7 +62,7 @@
   <string name="drawer_feed_order_last_update">Сортувати за датою публікації</string>
   <string name="drawer_feed_order_most_played">Сортувати за кількістю прослуханих епізодів</string>
 
-  <string name="drawer_feed_counter_unplayed">Кількість непрослуханих епізодів</string>
+  <string name="drawer_feed_order_unplayed">Кількість непрослуханих епізодів</string>
   <string name="drawer_feed_counter_downloaded">Кількість завантажених епізодів</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Кількість завантажених але не прослуханих епізодів</string>
   <string name="drawer_feed_counter_none">Немає</string>

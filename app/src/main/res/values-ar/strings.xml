@@ -65,7 +65,7 @@
   <string name="drawer_feed_order_last_update">رتب بتاريخ النشر</string>
   <string name="drawer_feed_order_most_played">رتب بعدد الحلقات المشغلة</string>
 
-  <string name="drawer_feed_counter_unplayed">عدد الحلقات غير المشغلة</string>
+  <string name="drawer_feed_order_unplayed">عدد الحلقات غير المشغلة</string>
   <string name="drawer_feed_counter_downloaded">عدد الحلقات المنزلة</string>
   <string name="drawer_feed_counter_downloaded_unplayed">عدد الحلقات المنزلة وغير المشغلة</string>
   <string name="drawer_feed_counter_none">بدون</string>

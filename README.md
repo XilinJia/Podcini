@@ -9,27 +9,27 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
      height="80">](https://f-droid.org/packages/ac.mdiq.podcini/)
 Or download the latest APK from the [Releases Section](https://github.com/XilinJia/Podcini/releases/latest).
 
-## Preannouncement
+## Announcement
 
-### Podcini 6, dubbed as PodciniR, is about to be under pre-release.  With a different application Id, it can be installed in parallel with a previous version. See [Podcini 6 migrations instroctions](migrationTo6.md)
+### Podcini.R, or Podcini 6, is currently under pre-release for early evaluations.  The major overhaul is the replacement of SQLite DB with the object-based Realm DB.
+With a different application Id, it can be installed in parallel with a previous version. See [Podcini 6 migrations instroctions](migrationTo6.md)
 
 This project is based on a fork of [AntennaPod](<https://github.com/AntennaPod/AntennaPod>) as of Feb 5 2024.
 
 Compared to AntennaPod this project:
 
-1. Migrated all media routines to `androidx.media3`,
-2. Plays in `AudioOffloadMode`, kind to device battery,
-3. Is purely `Kotlin` based and mono-modular,
-4. Targets Android 14 with updated dependencies,
-5. Outfits with Viewbinding, Coil replacing Glide, coroutines replacing RxJava and threads, and SharedFlow replacing EventBus,
-6. Boasts new UI's including streamlined drawer, subscriptions view and player controller,
-7. Accepts podcast as well as plain RSS and YouTube feeds,
-8. Offers Readability and Text-to-Speech for RSS contents,
-9. Features `instant sync` across devices without a server.
+1. Migrated all media routines to `androidx.media3`, with `AudioOffloadMode` enabled, nicer to device battery,
+2. Is purely `Kotlin` based and mono-modular, and targets Android 14,
+3. Iron-age celebrity SQLite is replaced with modern object-base Realm DB
+4. Outfits with Viewbinding, Coil replacing Glide, coroutines replacing RxJava and threads, and SharedFlow replacing EventBus,
+5. Boasts new UI's including streamlined drawer, subscriptions view and player controller,
+6. Accepts podcast as well as plain RSS and YouTube feeds,
+7. Offers Readability and Text-to-Speech for RSS contents,
+8. Features `instant sync` across devices without a server.
 
-The project aims to improve efficiency and provide more useful and user-friendly features.
+The project aims to profit from modern frameworks, improve efficiency and provide more useful and user-friendly features.
 
-~Even so, the database remains backward compatible, and AntennaPod's db can be easily imported.~  Since version 4.10.0 and/or AntennaPod 3.3.2, AntennaPod's DB can not be directly imported
+While podcast subscriptions' OPML files (from AntennaPod or any other sources) can be easily imported, Podcini can not import DB from AntennaPod.
 
 ## Notable new features & enhancements
 

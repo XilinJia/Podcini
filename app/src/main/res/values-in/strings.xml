@@ -56,7 +56,7 @@
   <string name="drawer_feed_order_last_update">Urutkan menurut tanggal publikasi</string>
   <string name="drawer_feed_order_most_played">Urutkan menurut jumlah episode yang diputar</string>
 
-  <string name="drawer_feed_counter_unplayed">Jumlah episode yang belum diputar</string>
+  <string name="drawer_feed_order_unplayed">Jumlah episode yang belum diputar</string>
   <string name="drawer_feed_counter_downloaded">Jumlah episode yang diunduh</string>
   <string name="drawer_feed_counter_downloaded_unplayed">Jumlah episode yang terunduh dan belum terputar</string>
   <string name="drawer_feed_counter_none">Tidak ada</string>

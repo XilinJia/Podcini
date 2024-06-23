@@ -40,7 +40,7 @@
   <string name="drawer_feed_order_alphabetical">Rikiuoti pagal abėcėlę</string>
   <string name="drawer_feed_order_last_update">Rikiuoti pagal publikavimo datą</string>
   <string name="drawer_feed_order_most_played">Rikiuoti pagal perklausytų epizodų skaičių</string>
-  <string name="drawer_feed_counter_unplayed">Neperklausytų epizodų skaičius</string>
+  <string name="drawer_feed_order_unplayed">Neperklausytų epizodų skaičius</string>
   <string name="drawer_feed_counter_downloaded">Atsisiųstų epizodų skaičius</string>
   <string name="drawer_feed_counter_none">Nieko</string>
   <!--Bug report activity-->

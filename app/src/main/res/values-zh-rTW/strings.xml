@@ -38,7 +38,7 @@
   <string name="drawer_feed_order_alphabetical">按字母排序</string>
   <string name="drawer_feed_order_last_update">按發布日期排序</string>
   <string name="drawer_feed_order_most_played">按已播放的集數排序</string>
-  <string name="drawer_feed_counter_unplayed">未播放集數</string>
+  <string name="drawer_feed_order_unplayed">未播放集數</string>
   <string name="drawer_feed_counter_downloaded">已下載集數</string>
   <string name="drawer_feed_counter_none">沒有</string>
   <!--Bug report activity-->

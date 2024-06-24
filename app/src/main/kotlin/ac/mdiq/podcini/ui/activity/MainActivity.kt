@@ -400,8 +400,8 @@ class MainActivity : CastEnabledActivity() {
             navigationBarInsets.bottom + (if (visible) externalPlayerHeight else 0))
         mainView.layoutParams = params
         val playerView = findViewById<FragmentContainerView>(R.id.playerFragment1)
-        val playerParams = playerView.layoutParams as MarginLayoutParams
-        playerParams.setMargins(navigationBarInsets.left, 0, navigationBarInsets.right, 0)
+        val playerParams = playerView?.layoutParams as? MarginLayoutParams
+        playerParams?.setMargins(navigationBarInsets.left, 0, navigationBarInsets.right, 0)
         playerView.layoutParams = playerParams
         audioPlayerFragmentView.visibility = if (visible) View.VISIBLE else View.GONE
     }

@@ -22,6 +22,7 @@ import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.persistEpisodes
 import ac.mdiq.podcini.storage.database.Feeds.deleteFeed
+import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.getFeedListDownloadUrls
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueue
@@ -161,7 +162,7 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
     private fun removeFeedWithDownloadUrl(context: Context, downloadUrl: String) {
         Logd(TAG, "removeFeedWithDownloadUrl called")
         var feedID: Long? = null
-        val feeds = realm.query(Feed::class).find()
+        val feeds = getFeedList()
         for (f in feeds) {
             val url = f.downloadUrl
             if (url != null && !url.startsWith(Feed.PREFIX_LOCAL_FOLDER)) feedID = f.id

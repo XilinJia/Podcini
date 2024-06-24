@@ -21,11 +21,12 @@ Compared to AntennaPod this project:
 1. Migrated all media routines to `androidx.media3`, with `AudioOffloadMode` enabled, nicer to device battery,
 2. Is purely `Kotlin` based and mono-modular, and targets Android 14,
 3. Iron-age celebrity SQLite is replaced with modern object-base Realm DB
-4. Outfits with Viewbinding, Coil replacing Glide, coroutines replacing RxJava and threads, and SharedFlow replacing EventBus,
-5. Boasts new UI's including streamlined drawer, subscriptions view and player controller,
-6. Accepts podcast as well as plain RSS and YouTube feeds,
-7. Offers Readability and Text-to-Speech for RSS contents,
-8. Features `instant sync` across devices without a server.
+4. Removed the need for support libraries and jetifier
+5. Outfits with Viewbinding, Coil replacing Glide, coroutines replacing RxJava and threads, and SharedFlow replacing EventBus,
+6. Boasts new UI's including streamlined drawer, subscriptions view and player controller,
+7. Accepts podcast as well as plain RSS and YouTube feeds,
+8. Offers Readability and Text-to-Speech for RSS contents,
+9. Features `instant sync` across devices without a server.
 
 The project aims to profit from modern frameworks, improve efficiency and provide more useful and user-friendly features.
 
@@ -75,16 +76,27 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * Played episodes have clearer markings
 * Sort dialog no longer dims the main view
 * in episode list view, if episode has no media, TTS button is shown for fetching transcript (if not exist) and then generating audio file from the transcript. TTS audio files are playable in the same way as local media (with speed setting, pause and rewind/forward)
-* Subscriptions view has sorting by "Unread publication date"
+* Long-press filter button in FeedEpisode view enables/disables filters without changing filter settings
+* Subscriptions view has various explicit measures for sorting
+* in Subscriptions view, click on cover image of a feed opens the FeedInfo view (not FeedEpisodes view)
 * History view shows time of last play, and allows filters and sorts
+* 5 queues are provided by default: Default queue, and Queues 1-4
+	* all queue operations are on the curQueue, which can be set in all episodes list views
+	* on app startup, the most recently updated queue is set to curQueue
+* queue is circular: if the final item in queue finished, the first item in queue (if exists) will get played
+* on action bar of FeedEpisodes view there is a direct access to Queue
+
 
 ### Podcast/Episode
 
 * New share notes menu option on various episode views
 * Feed info view offers a link for direct search of feeds related to author
+* FeedInfo view has button showing number of episodes to open the FeedEpisodes view
+* in EpisodeInfo view, "mark played/unplayed", "add to/remove from queue", and "favoraite/unfovorite" are at the action bar
 * New episode home view with two display modes: webpage or reader
 * In episode, in addition to "description" there is a new "transcript" field to save text (if any) fetched from the episode's website
 * RSS feeds with no playable media can be subscribed and read/listened (via TTS)
+* deleting feeds is performed promptly
 
 ### Online feed
 
@@ -107,6 +119,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * Disabled `usesCleartextTraffic`, so that all content transmission is more private and secure
 * Settings/Preferences can now be exported and imported
 * Play history/progress can be separately exported/imported as Json files
+* There is a setting to disable/enable auto backup OPML files to Google
 
 For more details of the changes, see the [Changelog](changelog.md)
 

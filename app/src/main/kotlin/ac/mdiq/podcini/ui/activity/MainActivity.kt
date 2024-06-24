@@ -19,7 +19,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.defaultPage
 import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
 import ac.mdiq.podcini.receiver.MediaButtonReceiver.Companion.createIntent
 import ac.mdiq.podcini.receiver.PlayerWidget
-import ac.mdiq.podcini.storage.database.Feeds.updateFeedList
+import ac.mdiq.podcini.storage.database.Feeds.updateFeedMap
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
@@ -129,7 +129,7 @@ class MainActivity : CastEnabledActivity() {
             NavDrawerFragment.getSharedPrefs(this@MainActivity)
             SwipeActions.getSharedPrefs(this@MainActivity)
             QueueFragment.getSharedPrefs(this@MainActivity)
-            updateFeedList()
+            updateFeedMap()
 //            InTheatre.apply { }
             PlayerDetailsFragment.getSharedPrefs(this@MainActivity)
             PlayerWidget.getSharedPrefs(this@MainActivity)

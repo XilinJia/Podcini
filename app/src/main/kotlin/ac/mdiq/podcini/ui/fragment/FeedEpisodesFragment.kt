@@ -38,6 +38,7 @@ import ac.mdiq.podcini.util.sorting.EpisodesPermutors.getPermutor
 import android.app.Activity
 import android.content.Context
 import android.content.res.Configuration
+import android.graphics.Color
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.util.Log
@@ -84,6 +85,8 @@ import java.util.concurrent.Semaphore
     private var feedID: Long = 0
     private var feed: Feed? = null
     private var episodes: MutableList<Episode> = mutableListOf()
+
+    private var enableFilter: Boolean = true
 
     private val ioScope = CoroutineScope(Dispatchers.IO)
 
@@ -337,13 +340,17 @@ import java.util.concurrent.Semaphore
                     adapter.updateItems(episodes)
                 }
                 FlowEvent.EpisodesFilterOrSortEvent.Action.FILTER_CHANGED -> {
-                    feed!!.preferences?.filterString = event.feed.preferences?.filterString ?: ""
-                    val episodes_ = feed!!.episodes.filter { feed!!.episodeFilter.matches(it) }
                     episodes.clear()
-                    episodes.addAll(episodes_)
+                    if (enableFilter) {
+                        feed!!.preferences?.filterString = event.feed.preferences?.filterString ?: ""
+                        val episodes_ = feed!!.episodes.filter { feed!!.episodeFilter.matches(it) }
+                        episodes.addAll(episodes_)
+                    } else {
+                        episodes.addAll(feed!!.episodes)
+                    }
                     val sortOrder = fromCode(feed!!.preferences?.sortOrderCode ?: 0)
                     if (sortOrder != null) getPermutor(sortOrder).reorder(episodes)
-                    binding.header.counts.text = episodes_.size.toString()
+                    binding.header.counts.text = episodes.size.toString()
                     adapter.updateItems(episodes)
                 }
             }
@@ -596,12 +603,22 @@ import java.util.concurrent.Semaphore
             }
         }
         binding.header.butFilter.setOnClickListener {
-            if (feed != null) {
+            if (enableFilter && feed != null) {
                 val dialog = FeedEpisodeFilterDialog(feed)
                 dialog.filter = feed!!.episodeFilter
                 dialog.show(childFragmentManager, null)
             }
         }
+        binding.header.butFilter.setOnLongClickListener {
+            if (feed != null) {
+                enableFilter = !enableFilter
+                if (enableFilter) binding.header.butFilter.setColorFilter(Color.WHITE)
+                else binding.header.butFilter.setColorFilter(Color.RED)
+                onEpisodesFilterSortEvent(FlowEvent.EpisodesFilterOrSortEvent(FlowEvent.EpisodesFilterOrSortEvent.Action.FILTER_CHANGED, feed!!))
+            }
+            true
+        }
+
         binding.header.txtvFailure.setOnClickListener { showErrorDetails() }
         binding.header.counts.text = adapter.itemCount.toString()
         headerCreated = true

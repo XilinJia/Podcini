@@ -108,21 +108,27 @@ android {
 // start of the app build.gradle
 android {
     namespace "ac.mdiq.podcini"
-    lintOptions {
-        disable 'ObsoleteLintCustomCheck', 'CheckResult', 'UnusedAttribute', 'BatteryLife', 'InflateParams',
+    lint {
+        lintConfig = file("lint.xml")
+//         checkOnly += ['NewApi', 'InlinedApi']
+        checkOnly += ['NewApi', 'InlinedApi', 'UnusedResources', 'ObsoleteSdkInt',
+                        'Performance', 'ViewId', 'MissingTranslation',
+                        'Deprecation', 'DuplicateIds', 'UseSparseArrays']
+
+        disable += ['TypographyDashes', 'TypographyQuotes', 'ObsoleteLintCustomCheck', 'CheckResult', 'UnusedAttribute', 'BatteryLife', 'InflateParams',
                 'RestrictedApi', 'TrustAllX509TrustManager', 'ExportedReceiver', 'AllowBackup', 'VectorDrawableCompat',
                 'StaticFieldLeak', 'UseCompoundDrawables', 'NestedWeights', 'Overdraw', 'UselessParent', 'TextFields',
                 'AlwaysShowAction', 'Autofill', 'ClickableViewAccessibility', 'ContentDescription',
                 'KeyboardInaccessibleWidget', 'LabelFor', 'SetTextI18n', 'HardcodedText', 'RelativeOverlap',
                 'RtlCompat', 'RtlHardcoded', 'MissingMediaBrowserServiceIntentFilter', 'VectorPath',
-                'InvalidPeriodicWorkRequestInterval', 'NotifyDataSetChanged', 'RtlEnabled'
+                'InvalidPeriodicWorkRequestInterval', 'NotifyDataSetChanged', 'RtlEnabled']
     }
     buildFeatures {
         buildConfig true
     }
     defaultConfig {
-        versionCode 3020200
-        versionName "6.0.0"
+        versionCode 3020201
+        versionName "6.0.1"
 
         applicationId "ac.mdiq.podcini.R"
         def commit = ""

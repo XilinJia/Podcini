@@ -127,7 +127,7 @@ sealed class FlowEvent {
     data class FeedListUpdateEvent(val feedIds: List<Long> = emptyList()) : FlowEvent() {
         constructor(feed: Feed) : this(listOf(feed.id))
         constructor(feedId: Long) : this(listOf(feedId))
-        constructor(feeds: List<Feed>, junkInfo: String = "") : this(feeds.map { it.id })
+        constructor(feeds: List<Feed>, junk: String = "") : this(feeds.map { it.id })
 
         fun contains(feed: Feed): Boolean {
             return feedIds.contains(feed.id)

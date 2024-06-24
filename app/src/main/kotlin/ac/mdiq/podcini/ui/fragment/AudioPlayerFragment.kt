@@ -15,6 +15,7 @@ import ac.mdiq.podcini.playback.PlaybackController.Companion.position
 import ac.mdiq.podcini.playback.PlaybackController.Companion.seekTo
 import ac.mdiq.podcini.playback.PlaybackController.Companion.sleepTimerActive
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
+import ac.mdiq.podcini.playback.base.InTheatre.loadPlayableFromPreferences
 import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.getCurrentPlaybackSpeed
 import ac.mdiq.podcini.playback.base.PlayerStatus
@@ -96,8 +97,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     private var playerFragment2: InternalPlayerFragment? = null
     private var playerFragment: InternalPlayerFragment? = null
 
-    private lateinit var playerView1: View
-    private lateinit var playerView2: View
+    private var playerView1: View? = null
+    private var playerView2: View? = null
 
     private lateinit  var cardViewSeek: CardView
     private lateinit  var txtvSeek: TextView
@@ -140,14 +141,14 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             .replace(R.id.playerFragment1, playerFragment1!!, "InternalPlayerFragment1")
             .commit()
         playerView1 = binding.root.findViewById(R.id.playerFragment1)
-        playerView1.setBackgroundColor(SurfaceColors.getColorForElevation(requireContext(), 8 * resources.displayMetrics.density))
+        playerView1?.setBackgroundColor(SurfaceColors.getColorForElevation(requireContext(), 8 * resources.displayMetrics.density))
 
         playerFragment2 = InternalPlayerFragment.newInstance(controller!!)
         childFragmentManager.beginTransaction()
             .replace(R.id.playerFragment2, playerFragment2!!, "InternalPlayerFragment2")
             .commit()
         playerView2 = binding.root.findViewById(R.id.playerFragment2)
-        playerView2.setBackgroundColor(SurfaceColors.getColorForElevation(requireContext(), 8 * resources.displayMetrics.density))
+        playerView2?.setBackgroundColor(SurfaceColors.getColorForElevation(requireContext(), 8 * resources.displayMetrics.density))
 
         onCollaped()
 
@@ -463,8 +464,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     fun fadePlayerToToolbar(slideOffset: Float) {
         val playerFadeProgress = (max(0.0, min(0.2, (slideOffset - 0.2f).toDouble())) / 0.2f).toFloat()
         val player = playerView1
-        player.alpha = 1 - playerFadeProgress
-        player.visibility = if (playerFadeProgress > 0.99f) View.INVISIBLE else View.VISIBLE
+        player?.alpha = 1 - playerFadeProgress
+        player?.visibility = if (playerFadeProgress > 0.99f) View.INVISIBLE else View.VISIBLE
         val toolbarFadeProgress = (max(0.0, min(0.2, (slideOffset - 0.6f).toDouble())) / 0.2f).toFloat()
         toolbar.setAlpha(toolbarFadeProgress)
         toolbar.visibility = if (toolbarFadeProgress < 0.01f) View.INVISIBLE else View.VISIBLE

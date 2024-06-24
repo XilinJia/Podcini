@@ -25,7 +25,7 @@ object LogsAndStats {
         Logd(TAG, "addDownloadStatus called")
         return runOnIOScope {
             if (status != null) {
-                if (status.id == 0L) status.id = Date().time
+                if (status.id == 0L) status.setId()
                 realm.write {
                     copyToRealm(status)
                 }
@@ -48,7 +48,7 @@ object LogsAndStats {
         val result = StatisticsResult()
         result.oldestDate = Long.MAX_VALUE
         for (fid in groupdMedias.keys) {
-            val feed = getFeed(fid) ?: continue
+            val feed = getFeed(fid, false) ?: continue
             val episodes = feed.episodes.size.toLong()
             var feedPlayedTime = 0L
             var feedTotalTime = 0L

@@ -12,8 +12,8 @@ import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.persistEpisode
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.utils.EpisodeFilter
-import ac.mdiq.podcini.storage.utils.SortOrder
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
+import ac.mdiq.podcini.storage.utils.SortOrder
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent

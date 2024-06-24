@@ -4,6 +4,8 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.database.Feeds.deleteFeed
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.DialogInterface
@@ -31,7 +33,6 @@ object RemoveFeedDialog {
         val dialog: ConfirmationDialog = object : ConfirmationDialog(context, R.string.remove_feed_label, message) {
             @OptIn(UnstableApi::class) override fun onConfirmButtonPressed(clickedDialog: DialogInterface) {
                 callback?.run()
-
                 clickedDialog.dismiss()
 
                 val progressDialog = ProgressDialog(context)
@@ -46,8 +47,9 @@ object RemoveFeedDialog {
                         withContext(Dispatchers.IO) {
                             for (feed in feeds) {
 //                                runBlocking { deleteFeed(context, feed.id).join() }
-                                deleteFeed(context, feed.id)
+                                deleteFeed(context, feed.id, false)
                             }
+                            EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(feeds))
                         }
                         withContext(Dispatchers.Main) {
                             Logd(TAG, "Feed(s) deleted")

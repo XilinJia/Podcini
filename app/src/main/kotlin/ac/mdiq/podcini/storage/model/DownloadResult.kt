@@ -34,6 +34,7 @@ class DownloadResult(
         var reasonDetailed: String) : RealmObject {
 
     @PrimaryKey var id: Long = 0L
+        private set
 
     @Ignore
     private val completionDate = completionDate.clone() as Date
@@ -43,11 +44,16 @@ class DownloadResult(
     /**
      * Constructor for creating new completed downloads.
      */
-    constructor(id: Long, title: String, reason: DownloadError, successful: Boolean, reasonDetailed: String)
-            : this(title, id, EpisodeMedia.FEEDFILETYPE_FEEDMEDIA, successful, reason, Date(), reasonDetailed)
+    constructor(feedId: Long, title: String, reason: DownloadError, successful: Boolean, reasonDetailed: String)
+            : this(title, feedId, EpisodeMedia.FEEDFILETYPE_FEEDMEDIA, successful, reason, Date(), reasonDetailed)
 
     override fun toString(): String {
         return ("DownloadStatus [id=$id, title=$title, reason=$reason, reasonDetailed=$reasonDetailed, successful=$isSuccessful, completionDate=$completionDate, feedfileId=$feedfileId, feedfileType=$feedfileType]")
+    }
+
+    fun setId() {
+        if (idCounter < 0) idCounter = Date().time
+        id = idCounter++
     }
 
     fun getCompletionDate(): Date {
@@ -76,5 +82,7 @@ class DownloadResult(
          * so that the listadapters etc. can react properly.
          */
         const val SIZE_UNKNOWN: Int = -1
+
+        var idCounter: Long = -1
     }
 }

@@ -27,7 +27,7 @@ class DownloadLogDetailsDialog(context: Context, status: DownloadResult) : Mater
                 if (media != null) url = media.downloadUrl?:""
             }
             Feed.FEEDFILETYPE_FEED -> {
-                val feed = getFeed(status.feedfileId)
+                val feed = getFeed(status.feedfileId, false)
                 if (feed != null) url = feed.downloadUrl?:""
             }
         }

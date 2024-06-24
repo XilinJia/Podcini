@@ -3,11 +3,14 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.*
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
+import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.feedOrder
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.getTags
 import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
-import ac.mdiq.podcini.storage.database.Feeds.sortFeeds
-import ac.mdiq.podcini.storage.database.Feeds.updateFeedList
+import ac.mdiq.podcini.storage.database.Feeds.updateFeedMap
+import ac.mdiq.podcini.storage.database.RealmDB.realm
+import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.FeedPreferences
 import ac.mdiq.podcini.ui.actions.menuhandler.FeedMenuHandler
@@ -33,7 +36,6 @@ import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.annotation.OptIn
-import androidx.annotation.PluralsRes
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.Toolbar
 import androidx.cardview.widget.CardView
@@ -51,12 +53,12 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
+import io.realm.kotlin.query.RealmResults
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.lang.ref.WeakReference
 import java.text.NumberFormat
 import java.util.*
 
@@ -69,7 +71,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
     private val binding get() = _binding!!
 
     private lateinit var subscriptionRecycler: RecyclerView
-    private lateinit var subscriptionAdapter: SubscriptionsAdapter
+    private lateinit var listAdapter: ListAdapter
     private lateinit var emptyView: EmptyViewHandler
     private lateinit var feedsInfoMsg: LinearLayout
     private lateinit var feedsFilteredMsg: TextView
@@ -83,7 +85,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
     private var displayedFolder: String = ""
     private var displayUpArrow = false
 
-    private var feedList: List<Feed> = mutableListOf()
+    private var feedList: MutableList<Feed> = mutableListOf()
     private var feedListFiltered: List<Feed> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -125,12 +127,12 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
 //                }
 //            }
 //        }
-        subscriptionAdapter = SubscriptionsAdapter(activity as MainActivity)
+        listAdapter = ListAdapter()
         val gridLayoutManager = GridLayoutManager(context, 1, RecyclerView.VERTICAL, false)
         subscriptionRecycler.layoutManager = gridLayoutManager
 
-        subscriptionAdapter.setOnSelectModeListener(this)
-        subscriptionRecycler.adapter = subscriptionAdapter
+        listAdapter.setOnSelectModeListener(this)
+        subscriptionRecycler.adapter = listAdapter
         setupEmptyView()
 
         resetTags()
@@ -155,7 +157,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 val resultList = feedListFiltered.filter {
                     it.title?.lowercase(Locale.getDefault())?.contains(text)?:false || it.author?.lowercase(Locale.getDefault())?.contains(text)?:false
                 }
-                subscriptionAdapter.setItems(resultList)
+                listAdapter.setItems(resultList)
                 true
             } else false
         }
@@ -195,7 +197,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             override fun onToggleChanged(isOpen: Boolean) {}
         })
         speedDialView.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
-            FeedMultiSelectActionHandler(activity as MainActivity, subscriptionAdapter.selectedItems.filterIsInstance<Feed>()).handleAction(actionItem.id)
+            FeedMultiSelectActionHandler(activity as MainActivity, listAdapter.selectedItems.filterIsInstance<Feed>()).handleAction(actionItem.id)
             true
         }
 
@@ -211,7 +213,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
 
     override fun onStop() {
         super.onStop()
-        subscriptionAdapter.endSelectMode()
+        listAdapter.endSelectMode()
         cancelFlowEvents()
     }
 
@@ -240,7 +242,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             }
         }
         feedCount.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
-        subscriptionAdapter.setItems(feedListFiltered)
+        listAdapter.setItems(feedListFiltered)
     }
 
     private var eventSink: Job?     = null
@@ -300,16 +302,16 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             try {
                 val result = withContext(Dispatchers.IO) {
                     sortFeeds()
-                    val feeds: List<Feed> = getFeedList()
-                    feeds
+                    val fList: List<Feed> = getFeedList()
+                    fList
                 }
                 withContext(Dispatchers.Main) {
                     // We have fewer items. This can result in items being selected that are no longer visible.
-                    if ( feedListFiltered.size > result.size) subscriptionAdapter.endSelectMode()
-                    feedList = result
+                    if ( feedListFiltered.size > result.size) listAdapter.endSelectMode()
+                    feedList = result.toMutableList()
                     filterOnTag()
                     progressBar.visibility = View.GONE
-                    subscriptionAdapter.setItems(feedListFiltered)
+                    listAdapter.setItems(feedListFiltered)
                     feedCount.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
                     emptyView.updateVisibility()
                 }
@@ -322,26 +324,116 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
 //        else feedsFilteredMsg.visibility = View.GONE
     }
 
+    private fun sortFeeds() {
+        Logd(TAG, "sortFeeds() called")
+        val feedOrder = feedOrder
+        val comparator: Comparator<Feed> = when (feedOrder) {
+            UserPreferences.FEED_ORDER_UNPLAYED -> {
+                val episodes = realm.query(Episode::class).query("(playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED})").find()
+                val counterMap = counterMap(episodes)
+                comparator(counterMap)
+            }
+            UserPreferences.FEED_ORDER_ALPHABETICAL -> {
+                Comparator { lhs: Feed, rhs: Feed ->
+                    val t1 = lhs.title
+                    val t2 = rhs.title
+                    when {
+                        t1 == null -> 1
+                        t2 == null -> -1
+                        else -> t1.compareTo(t2, ignoreCase = true)
+                    }
+                }
+            }
+            UserPreferences.FEED_ORDER_MOST_PLAYED -> {
+                val episodes = realm.query(Episode::class).query("playState == ${Episode.PLAYED}").find()
+                val counterMap = counterMap(episodes)
+                comparator(counterMap)
+            }
+            UserPreferences.FEED_ORDER_LAST_UPDATED -> {
+                val episodes = realm.query(Episode::class).find()
+                val counterMap: MutableMap<Long, Long> = mutableMapOf()
+                for (episode in episodes) {
+                    val feedId = episode.feedId ?: continue
+                    val pDateOld = counterMap[feedId] ?: 0
+                    if (pDateOld < episode.pubDate) counterMap[feedId] = episode.pubDate
+                }
+                comparator(counterMap)
+            }
+            UserPreferences.FEED_ORDER_LAST_UNREAD_UPDATED -> {
+                val episodes = realm.query(Episode::class)
+                    .query("playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED}").find()
+                val counterMap: MutableMap<Long, Long> = mutableMapOf()
+                for (episode in episodes) {
+                    val feedId = episode.feedId ?: continue
+                    val pDateOld = counterMap[feedId] ?: 0
+                    if (pDateOld < episode.pubDate) counterMap[feedId] = episode.pubDate
+                }
+                comparator(counterMap)
+            }
+            UserPreferences.FEED_ORDER_DOWNLOADED -> {
+                val episodes = realm.query(Episode::class).query("media.downloaded == 1").find()
+                val counterMap = counterMap(episodes)
+                comparator(counterMap)
+            }
+            UserPreferences.FEED_ORDER_DOWNLOADED_UNPLAYED -> {
+                val episodes = realm.query(Episode::class)
+                    .query("(playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED}) AND media.downloaded == 1").find()
+                val counterMap = counterMap(episodes)
+                comparator(counterMap)
+            }
+            //            doing FEED_ORDER_NEW
+            else -> {
+                val episodes = realm.query(Episode::class).query("playState == ${Episode.NEW}").find()
+                val counterMap = counterMap(episodes)
+                comparator(counterMap)
+            }
+        }
+        feedList.sortWith(comparator)
+    }
+
+    private fun counterMap(episodes: RealmResults<Episode>): Map<Long, Long> {
+        val counterMap: MutableMap<Long, Long> = mutableMapOf()
+        for (episode in episodes) {
+            val feedId = episode.feedId ?: continue
+            val count = counterMap[feedId] ?: 0
+            counterMap[feedId] = count + 1
+        }
+        return counterMap
+    }
+
+    private fun comparator(counterMap: Map<Long, Long>): Comparator<Feed> {
+        return Comparator { lhs: Feed, rhs: Feed ->
+            val counterLhs = counterMap[lhs.id]?:0
+            val counterRhs = counterMap[rhs.id]?:0
+            when {
+                // reverse natural order: podcast with most unplayed episodes first
+                counterLhs > counterRhs -> -1
+                counterLhs == counterRhs -> lhs.title?.compareTo(rhs.title!!, ignoreCase = true) ?: -1
+                else -> 1
+            }
+        }
+    }
+
     override fun onContextItemSelected(item: MenuItem): Boolean {
-        val feed: Feed = subscriptionAdapter.getSelectedItem() ?: return false
+        val feed: Feed = listAdapter.getSelectedItem() ?: return false
         val itemId = item.itemId
         if (itemId == R.id.multi_select) {
             speedDialView.visibility = View.VISIBLE
-            return subscriptionAdapter.onContextItemSelected(item)
+            return listAdapter.onContextItemSelected(item)
         }
 //        TODO: this appears not called
         return FeedMenuHandler.onMenuItemClicked(this, item.itemId, feed) { this.loadSubscriptions() }
     }
 
     private fun onFeedListChanged(event: FlowEvent.FeedListUpdateEvent?) {
-        updateFeedList()
+        updateFeedMap()
         loadSubscriptions()
     }
 
     override fun onEndSelectMode() {
         speedDialView.close()
         speedDialView.visibility = View.GONE
-        subscriptionAdapter.setItems(feedListFiltered)
+        listAdapter.setItems(feedListFiltered)
     }
 
     override fun onStartSelectMode() {
@@ -350,12 +442,11 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         for (item in feedListFiltered) {
             feedsOnly.add(item)
         }
-        subscriptionAdapter.setItems(feedsOnly)
+        listAdapter.setItems(feedsOnly)
     }
 
     @UnstableApi
     class FeedMultiSelectActionHandler(private val activity: MainActivity, private val selectedItems: List<Feed>) {
-
         fun handleAction(id: Int) {
             when (id) {
                 R.id.remove_feed -> RemoveFeedDialog.show(activity, selectedItems)
@@ -366,26 +457,10 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 R.id.autodownload -> autoDownloadPrefHandler()
                 R.id.autoDeleteDownload -> autoDeleteEpisodesPrefHandler()
                 R.id.playback_speed -> playbackSpeedPrefHandler()
-                R.id.edit_tags -> editFeedPrefTags()
+                R.id.edit_tags -> TagSettingsDialog.newInstance(selectedItems).show(activity.supportFragmentManager, TAG)
                 else -> Log.e(TAG, "Unrecognized speed dial action item. Do nothing. id=$id")
             }
         }
-
-//    private fun notifyNewEpisodesPrefHandler() {
-//        val preferenceSwitchDialog = PreferenceSwitchDialog(activity,
-//            activity.getString(R.string.episode_notification),
-//            activity.getString(R.string.episode_notification_summary))
-//
-//        preferenceSwitchDialog.setOnPreferenceChangedListener(object: PreferenceSwitchDialog.OnPreferenceChangedListener {
-//            @UnstableApi override fun preferenceChanged(enabled: Boolean) {
-//                saveFeedPreferences { feedPreferences: FeedPreferences ->
-//                    feedPreferences.showEpisodeNotification = enabled
-//                }
-//            }
-//        })
-//        preferenceSwitchDialog.openDialog()
-//    }
-
         private fun autoDownloadPrefHandler() {
             val preferenceSwitchDialog = PreferenceSwitchDialog(activity, activity.getString(R.string.auto_download_settings_label), activity.getString(R.string.auto_download_label))
             preferenceSwitchDialog.setOnPreferenceChangedListener(@UnstableApi object: PreferenceSwitchDialog.OnPreferenceChangedListener {
@@ -395,7 +470,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             })
             preferenceSwitchDialog.openDialog()
         }
-
         @UnstableApi private fun playbackSpeedPrefHandler() {
             val viewBinding = PlaybackSpeedFeedSettingDialogBinding.inflate(activity.layoutInflater)
             viewBinding.seekBar.setProgressChangedListener { speed: Float? ->
@@ -420,7 +494,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 .setNegativeButton(R.string.cancel_label, null)
                 .show()
         }
-
         private fun autoDeleteEpisodesPrefHandler() {
             val preferenceListDialog = PreferenceListDialog(activity, activity.getString(R.string.auto_delete_label))
             val items: Array<String> = activity.resources.getStringArray(R.array.spnAutoDeleteItems)
@@ -434,7 +507,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 }
             })
         }
-
         private fun keepUpdatedPrefHandler() {
             val preferenceSwitchDialog = PreferenceSwitchDialog(activity, activity.getString(R.string.kept_updated), activity.getString(R.string.keep_updated_summary))
             preferenceSwitchDialog.setOnPreferenceChangedListener(object: PreferenceSwitchDialog.OnPreferenceChangedListener {
@@ -446,11 +518,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             })
             preferenceSwitchDialog.openDialog()
         }
-
-        @UnstableApi private fun showMessage(@PluralsRes msgId: Int, numItems: Int) {
-            activity.showSnackbarAbovePlayer(activity.resources.getQuantityString(msgId, numItems, numItems), Snackbar.LENGTH_LONG)
-        }
-
         @UnstableApi private fun saveFeedPreferences(preferencesConsumer: Consumer<FeedPreferences>) {
             for (feed in selectedItems) {
                 if (feed.preferences == null) continue
@@ -458,22 +525,18 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 persistFeedPreferences(feed)
 //                EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(feed.preferences!!.feedID))
             }
-            showMessage(R.plurals.updated_feeds_batch_label, selectedItems.size)
+            val numItems = selectedItems.size
+            activity.showSnackbarAbovePlayer(activity.resources.getQuantityString(R.plurals.updated_feeds_batch_label, numItems, numItems), Snackbar.LENGTH_LONG)
         }
-
-        private fun editFeedPrefTags() {
-            TagSettingsDialog.newInstance(selectedItems).show(activity.supportFragmentManager, TAG)
-        }
-
         companion object {
             private val TAG: String = FeedMultiSelectActionHandler::class.simpleName ?: "Anonymous"
         }
     }
 
-    private inner class SubscriptionsAdapter(mainActivity: MainActivity)
-        : SelectableAdapter<SubscriptionsAdapter.SubscriptionViewHolder?>(mainActivity), View.OnCreateContextMenuListener {
+    @OptIn(UnstableApi::class)
+    private inner class ListAdapter
+        : SelectableAdapter<ListAdapter.ViewHolder?>(activity as MainActivity), View.OnCreateContextMenuListener {
 
-        private val mainActivityRef: WeakReference<MainActivity> = WeakReference<MainActivity>(mainActivity)
         private var feedList: List<Feed>
         private var selectedItem: Feed? = null
         private var longPressedPosition: Int = 0 // used to init actionMode
@@ -499,11 +562,11 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         fun getSelectedItem(): Feed? {
             return selectedItem
         }
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SubscriptionViewHolder {
-            val itemView: View = LayoutInflater.from(mainActivityRef.get()).inflate(R.layout.subscription_item, parent, false)
-            return SubscriptionViewHolder(itemView)
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val itemView: View = LayoutInflater.from(activity).inflate(R.layout.subscription_item, parent, false)
+            return ViewHolder(itemView)
         }
-        @UnstableApi override fun onBindViewHolder(holder: SubscriptionViewHolder, position: Int) {
+        @UnstableApi override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val feed: Feed = feedList[position]
             holder.bind(feed)
             if (inActionMode()) {
@@ -524,14 +587,14 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 if (inActionMode()) holder.selectCheckbox.setChecked(!isSelected(holder.bindingAdapterPosition))
                 else {
                     val fragment: Fragment = FeedInfoFragment.newInstance(feed)
-                    mainActivityRef.get()?.loadChildFragment(fragment)
+                    (activity as MainActivity).loadChildFragment(fragment)
                 }
             }
             holder.infoCard.setOnClickListener {
                 if (inActionMode()) holder.selectCheckbox.setChecked(!isSelected(holder.bindingAdapterPosition))
                 else {
                     val fragment: Fragment = FeedEpisodesFragment.newInstance(feed.id)
-                    mainActivityRef.get()?.loadChildFragment(fragment)
+                    (activity as MainActivity).loadChildFragment(fragment)
                 }
             }
 //        holder.infoCard.setOnCreateContextMenuListener(this)
@@ -565,9 +628,10 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             if (position >= feedList.size) return RecyclerView.NO_ID // Dummy views
             return feedList[position].id
         }
+        @OptIn(UnstableApi::class)
         override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
             if (selectedItem == null) return
-            val mainActRef = mainActivityRef.get() ?: return
+            val mainActRef = (activity as MainActivity)
             val inflater: MenuInflater = mainActRef.menuInflater
             if (inActionMode()) {
 //            inflater.inflate(R.menu.multi_select_context_popup, menu)
@@ -593,7 +657,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             notifyDataSetChanged()
         }
 
-        private inner class SubscriptionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val binding = SubscriptionItemBinding.bind(itemView)
             private val title = binding.titleLabel
             private val producer = binding.producerLabel
@@ -619,8 +683,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 count.text = NumberFormat.getInstance().format(counter.toLong()) + " episodes"
                 count.visibility = View.VISIBLE
 
-                val mainActRef = mainActivityRef.get() ?: return
-
+                val mainActRef = (activity as MainActivity)
                 val coverLoader = CoverLoader(mainActRef)
                 val feed: Feed = drawerItem
                 coverLoader.withUri(feed.imageUrl)

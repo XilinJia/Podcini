@@ -11,10 +11,8 @@ import ac.mdiq.podcini.preferences.UserPreferences.episodeCacheSize
 import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
 import ac.mdiq.podcini.storage.algorithms.EpisodeCleanupAlgorithmFactory
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodesCount
-import ac.mdiq.podcini.storage.database.Feeds.feeds
-import ac.mdiq.podcini.storage.database.RealmDB.realm
+import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.model.DatasetStats
-import ac.mdiq.podcini.storage.model.PlayQueue
 import ac.mdiq.podcini.storage.utils.EpisodeFilter
 import ac.mdiq.podcini.storage.utils.EpisodeFilter.Companion.unfiltered
 import ac.mdiq.podcini.ui.activity.MainActivity
@@ -55,7 +53,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.shape.MaterialShapeDrawable
 import com.google.android.material.shape.ShapeAppearanceModel
-import io.realm.kotlin.query.Sort
 import kotlinx.coroutines.*
 import org.apache.commons.lang3.ArrayUtils
 import org.apache.commons.lang3.StringUtils
@@ -408,7 +405,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
             Logd(TAG, "getNavDrawerData() called")
             val numDownloadedItems = getEpisodesCount(EpisodeFilter(EpisodeFilter.DOWNLOADED))
             val numItems = getEpisodesCount(unfiltered())
-            val numFeeds = feeds.size
+            val numFeeds = getFeedList().size
             while (curQueue.name.isEmpty()) runBlocking { delay(100) }
             val queueSize = curQueue.episodeIds.size
 //            if (queueSize == 0) {

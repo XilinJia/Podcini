@@ -1,3 +1,13 @@
+## 6.0.1
+
+* removing a list of feeds is speedier
+* fixed issue of not starting the next in queue
+* queue is circular: if the final item in queue finished, the first item in queue (if exists) will get played
+* fixed crash issue in AudioPlayer due to view uninitialized
+* improved efficiency of getFeed
+* Tapping the media playback notification opens Podcini
+* Long-press filter button in FeedEpisode view enables/disables filters without changing filter settings
+
 ## 6.0.0
 
 * complete overhaul of database and routines, ditched the iron-age celebrity SQLite and entrusted the modern object-based Realm

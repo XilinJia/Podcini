@@ -198,7 +198,6 @@ class Episode : RealmObject {
         if (other.podcastIndexChapterUrl != null) podcastIndexChapterUrl = other.podcastIndexChapterUrl
     }
 
-
     @JvmName("getPubDateFunction")
     fun getPubDate(): Date? {
         return if (pubDate > 0) Date(pubDate) else null
@@ -219,7 +218,6 @@ class Episode : RealmObject {
     fun setMedia(media: EpisodeMedia?) {
         this.media = media
     }
-
 
     fun setNew() {
         playState = NEW

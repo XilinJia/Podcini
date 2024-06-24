@@ -54,6 +54,7 @@ import ac.mdiq.podcini.storage.model.FeedPreferences
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
+import ac.mdiq.podcini.storage.utils.EpisodeUtil.indexOfItemWithId
 import ac.mdiq.podcini.storage.utils.MediaType
 import ac.mdiq.podcini.storage.utils.VolumeAdaptionSetting
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
@@ -68,6 +69,7 @@ import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.PendingIntent.FLAG_IMMUTABLE
+import android.app.PendingIntent.FLAG_UPDATE_CURRENT
 import android.bluetooth.BluetoothA2dp
 import android.content.*
 import android.content.Intent.EXTRA_KEY_EVENT
@@ -259,7 +261,10 @@ class PlaybackService : MediaSessionService() {
 
         recreateMediaPlayer()
         if (LocalMediaPlayer.exoPlayer == null) LocalMediaPlayer.createStaticPlayer(applicationContext)
+        val intent = packageManager.getLaunchIntentForPackage(packageName)
+        val pendingIntent = PendingIntent.getActivity(this, 0, intent, FLAG_IMMUTABLE or FLAG_UPDATE_CURRENT)
         mediaSession = MediaSession.Builder(applicationContext, LocalMediaPlayer.exoPlayer!!)
+            .setSessionActivity(pendingIntent)
             .setCallback(MyCallback())
             .setCustomLayout(notificationCustomButtons)
             .build()
@@ -845,7 +850,7 @@ class PlaybackService : MediaSessionService() {
             return nextItem.media
         }
 
-        fun getNextInQueue(episode: Episode): Episode? {
+        private fun getNextInQueue(episode: Episode): Episode? {
             Logd(TAG, "getNextInQueue() with: itemId ${episode.id}")
             if (curQueue.episodes.isEmpty()) return null
 

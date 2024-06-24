@@ -230,7 +230,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
      * @param prepareImmediately Set to true if the method should also prepare the episode for playback.
      */
     override fun playMediaObject(playable: Playable, stream: Boolean, startWhenPrepared: Boolean, prepareImmediately: Boolean, forceReset: Boolean) {
-       Logd(TAG, "playMediaObject $forceReset $stream $startWhenPrepared $prepareImmediately $status ${curMedia?.getEpisodeTitle()} ")
+       Logd(TAG, "playMediaObject $forceReset $stream $startWhenPrepared $prepareImmediately $status ${playable.getEpisodeTitle()} ")
         if (curMedia != null) {
             if (!forceReset && curMedia!!.getIdentifier() == prevMedia?.getIdentifier() && status == PlayerStatus.PLAYING) {
                 // episode is already playing -> ignore method call
@@ -255,10 +255,6 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
                 setPlayerStatus(PlayerStatus.INDETERMINATE, null)
             }
         }
-//        else {
-//            Log.e(TAG, "playMediaObject curMedia is null")
-//            return
-//        }
 
         curMedia = playable
         this.isStreaming = stream

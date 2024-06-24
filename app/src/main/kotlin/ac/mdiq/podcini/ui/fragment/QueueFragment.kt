@@ -132,7 +132,7 @@ import java.util.*
         binding.leftActionIcon.setOnClickListener { swipeActions.showDialog() }
         binding.rightActionIcon.setOnClickListener { swipeActions.showDialog() }
 
-        adapter = QueueRecyclerAdapter(activity as MainActivity, swipeActions)
+        adapter = QueueRecyclerAdapter()
         adapter?.setOnSelectModeListener(this)
         recyclerView.adapter = adapter
 
@@ -260,7 +260,7 @@ import java.util.*
                     for (e in event.episodes) {
                         val pos: Int = EpisodeUtil.indexOfItemWithId(queueItems, e.id)
                         if (pos >= 0) {
-                            Logd(TAG, "removing episode $pos ${queueItems[pos]} ${e}")
+                            Logd(TAG, "removing episode $pos ${queueItems[pos]} $e")
                             queueItems.removeAt(pos)
                             adapter?.notifyItemRemoved(pos)
                         } else {
@@ -661,7 +661,7 @@ import java.util.*
         }
     }
 
-    private inner class QueueRecyclerAdapter(mainActivity: MainActivity, private val swipeActions: SwipeActions) : EpisodesAdapter(mainActivity) {
+    private inner class QueueRecyclerAdapter : EpisodesAdapter(activity as MainActivity) {
         private var dragDropEnabled: Boolean
 
         init {

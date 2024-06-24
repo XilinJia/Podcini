@@ -4,7 +4,6 @@ import ac.mdiq.podcini.net.download.DownloadError
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.feedOrder
 import ac.mdiq.podcini.storage.database.Episodes.EpisodeDuplicateGuesser
 import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodes
 import ac.mdiq.podcini.storage.database.LogsAndStats.addDownloadStatus
@@ -28,7 +27,6 @@ import android.app.backup.BackupManager
 import android.content.Context
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
-import io.realm.kotlin.query.RealmResults
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.runBlocking
 import java.io.File
@@ -37,29 +35,29 @@ import java.util.concurrent.ExecutionException
 
 object Feeds {
     private val TAG: String = Feeds::class.simpleName ?: "Anonymous"
-    internal val feeds: MutableList<Feed> = mutableListOf()
+//    internal val feeds: MutableList<Feed> = mutableListOf()
+    private val feedMap: MutableMap<Long, Feed> = mutableMapOf()
     private val tags: MutableList<String> = mutableListOf()
 
     fun getFeedList(): List<Feed> {
-        return feeds
-//        return realm.query(Feed::class).find()
+        return feedMap.values.toList()
     }
 
     fun getTags(): List<String> {
         return tags
     }
 
-    fun updateFeedList() {
-        Logd(TAG, "updateFeedList called")
+    fun updateFeedMap() {
+        Logd(TAG, "updateFeedMap called")
         val feeds_ = realm.query(Feed::class).find()
-        feeds.clear()
-        feeds.addAll(feeds_)
+        feedMap.clear()
+        feedMap.putAll(feeds_.associateBy { it.id })
         buildTags()
     }
 
     fun buildTags() {
         val tagsSet = mutableSetOf<String>()
-        val feedsCopy = feeds.toList()
+        val feedsCopy = feedMap.values
         for (feed in feedsCopy) {
             if (feed.preferences != null) {
                 for (tag in feed.preferences!!.tags) {
@@ -75,57 +73,35 @@ object Feeds {
     fun getFeedListDownloadUrls(): List<String> {
         Logd(TAG, "getFeedListDownloadUrls called")
         val result: MutableList<String> = mutableListOf()
-        val feeds = realm.query(Feed::class).find()
-        for (f in feeds) {
+//        val feeds = realm.query(Feed::class).find()
+        for (f in feedMap.values) {
             val url = f.downloadUrl
             if (url != null && !url.startsWith(Feed.PREFIX_LOCAL_FOLDER)) result.add(url)
         }
         return result
     }
 
-    fun getFeed(feedId: Long): Feed? {
-        Logd(TAG, "getFeed() called with: $feedId")
-        val f = realm.query(Feed::class).query("id == $0", feedId).first().find()
-        return if (f != null) realm.copyFromRealm(f) else null
+//    TODO: some callers don't need to copy
+    fun getFeed(feedId: Long, copy: Boolean = true): Feed? {
+//        Logd(TAG, "getFeed() called with: $feedId")
+//        val f = realm.query(Feed::class).query("id == $0", feedId).first().find()
+//        return if (f != null && f.isManaged()) realm.copyFromRealm(f) else null
+        val f = feedMap[feedId]
+        return if (f != null) {
+            if (copy) realm.copyFromRealm(f)
+            else f
+        } else null
     }
 
     private fun searchFeedByIdentifyingValueOrID(feed: Feed): Feed? {
         Logd(TAG, "searchFeedByIdentifyingValueOrID called")
         if (feed.id != 0L) return getFeed(feed.id)
         val feeds = getFeedList()
-        for (f in feeds.toList()) {
-            if (f.identifyingValue == feed.identifyingValue) {
-//                f.episodes.clear()
-//                f.episodes.addAll(getFeedItemList(f))
-                return f
-            }
+        for (f in feeds) {
+            if (f.identifyingValue == feed.identifyingValue) return f
         }
         return null
     }
-
-    private fun counterMap(episodes: RealmResults<Episode>): Map<Long, Long> {
-        val counterMap: MutableMap<Long, Long> = mutableMapOf()
-        for (episode in episodes) {
-            val feedId = episode.feedId ?: continue
-            val count = counterMap[feedId] ?: 0
-            counterMap[feedId] = count + 1
-        }
-        return counterMap
-    }
-
-    private fun comparator(counterMap: Map<Long, Long>): Comparator<Feed> {
-        return Comparator { lhs: Feed, rhs: Feed ->
-            val counterLhs = counterMap[lhs.id]?:0
-            val counterRhs = counterMap[rhs.id]?:0
-            when {
-                // reverse natural order: podcast with most unplayed episodes first
-                counterLhs > counterRhs -> -1
-                counterLhs == counterRhs -> lhs.title?.compareTo(rhs.title!!, ignoreCase = true) ?: -1
-                else -> 1
-            }
-        }
-    }
-
 
 // ------------------ writer ----------------------
 
@@ -186,8 +162,7 @@ object Feeds {
                 val possibleDuplicate = searchEpisodeGuessDuplicate(newFeed.episodes, episode)
                 if (!newFeed.isLocalFeed && possibleDuplicate != null && episode !== possibleDuplicate) {
                     // Canonical episode is the first one returned (usually oldest)
-                    addDownloadStatus(DownloadResult(savedFeed.id,
-                        episode.title ?: "", DownloadError.ERROR_PARSER_EXCEPTION_DUPLICATE, false,
+                    addDownloadStatus(DownloadResult(savedFeed.id, episode.title ?: "", DownloadError.ERROR_PARSER_EXCEPTION_DUPLICATE, false,
                         """
                             The podcast host appears to have added the same episode twice. Podcini still refreshed the feed and attempted to repair it.
                             
@@ -235,7 +210,7 @@ object Feeds {
                 else {
                     Logd(TAG, "Found new episode: ${episode.title}")
                     episode.feed = savedFeed
-                    episode.id = idLong
+                    episode.id = idLong++
                     episode.feedId = savedFeed.id
                     if (episode.media != null) episode.media!!.id = episode.id
 
@@ -247,7 +222,7 @@ object Feeds {
                         Logd(TAG, "Marking episode published on $pubDate new, prior most recent date = $priorMostRecentDate")
                         episode.setNew()
                     }
-                    idLong += 1
+//                    idLong += 1
                 }
             }
 
@@ -278,7 +253,7 @@ object Feeds {
             } else {
                 persistFeedsSync(savedFeed)
             }
-            updateFeedList()
+            updateFeedMap()
             if (removeUnlistedItems) runBlocking { deleteEpisodes(context, unlistedItems).join() }
         } catch (e: InterruptedException) {
             e.printStackTrace()
@@ -309,7 +284,6 @@ object Feeds {
      */
     private fun searchEpisodeGuessDuplicate(episodes: List<Episode>?, searchItem: Episode): Episode? {
         if (episodes.isNullOrEmpty()) return null
-
         for (episode in episodes) {
             if (EpisodeDuplicateGuesser.sameAndNotEmpty(episode.identifier, searchItem.identifier)) return episode
         }
@@ -330,75 +304,6 @@ object Feeds {
      """.trimIndent()))
     }
 
-    fun sortFeeds() {
-        Logd(TAG, "sortFeeds() called")
-        val feedOrder = feedOrder
-        val comparator: Comparator<Feed> = when (feedOrder) {
-            UserPreferences.FEED_ORDER_UNPLAYED -> {
-                val episodes = realm.query(Episode::class).query("(playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED})").find()
-                val counterMap = counterMap(episodes)
-                comparator(counterMap)
-            }
-            UserPreferences.FEED_ORDER_ALPHABETICAL -> {
-                Comparator { lhs: Feed, rhs: Feed ->
-                    val t1 = lhs.title
-                    val t2 = rhs.title
-                    when {
-                        t1 == null -> 1
-                        t2 == null -> -1
-                        else -> t1.compareTo(t2, ignoreCase = true)
-                    }
-                }
-            }
-            UserPreferences.FEED_ORDER_MOST_PLAYED -> {
-                val episodes = realm.query(Episode::class).query("playState == ${Episode.PLAYED}").find()
-                val counterMap = counterMap(episodes)
-                comparator(counterMap)
-            }
-            UserPreferences.FEED_ORDER_LAST_UPDATED -> {
-                val episodes = realm.query(Episode::class).find()
-                val counterMap: MutableMap<Long, Long> = mutableMapOf()
-                for (episode in episodes) {
-                    val feedId = episode.feedId ?: continue
-                    val pDateOld = counterMap[feedId] ?: 0
-                    if (pDateOld < episode.pubDate) counterMap[feedId] = episode.pubDate
-                }
-                comparator(counterMap)
-            }
-            UserPreferences.FEED_ORDER_LAST_UNREAD_UPDATED -> {
-                val episodes = realm.query(Episode::class)
-                    .query("playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED}").find()
-                val counterMap: MutableMap<Long, Long> = mutableMapOf()
-                for (episode in episodes) {
-                    val feedId = episode.feedId ?: continue
-                    val pDateOld = counterMap[feedId] ?: 0
-                    if (pDateOld < episode.pubDate) counterMap[feedId] = episode.pubDate
-                }
-                comparator(counterMap)
-            }
-            UserPreferences.FEED_ORDER_DOWNLOADED -> {
-                val episodes = realm.query(Episode::class).query("media.downloaded == 1").find()
-                val counterMap = counterMap(episodes)
-                comparator(counterMap)
-            }
-            UserPreferences.FEED_ORDER_DOWNLOADED_UNPLAYED -> {
-                val episodes = realm.query(Episode::class)
-                    .query("(playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED}) AND media.downloaded == 1").find()
-                val counterMap = counterMap(episodes)
-                comparator(counterMap)
-            }
-            //            doing FEED_ORDER_NEW
-            else -> {
-                val episodes = realm.query(Episode::class).query("playState == ${Episode.NEW}").find()
-                val counterMap = counterMap(episodes)
-                comparator(counterMap)
-            }
-        }
-        synchronized(feeds) {
-            feeds.sortWith(comparator)
-        }
-    }
-
     fun persistFeedLastUpdateFailed(feed: Feed, lastUpdateFailed: Boolean) : Job {
         Logd(TAG, "persistFeedLastUpdateFailed called")
         return runOnIOScope {
@@ -408,9 +313,6 @@ object Feeds {
         }
     }
 
-    /**
-     * Updates download URL of a feed
-     */
     fun updateFeedDownloadURL(original: String, updated: String) : Job {
         Logd(TAG, "updateFeedDownloadURL(original: $original, updated: $updated)")
         return runOnIOScope {
@@ -436,11 +338,11 @@ object Feeds {
 
                 Logd(TAG, "feed.episodes: ${feed.episodes.size}")
                 for (episode in feed.episodes) {
-                    episode.id = idLong
+                    episode.id = idLong++
                     episode.feedId = feed.id
                     if (episode.media != null) episode.media!!.id = episode.id
 //                        copyToRealm(episode)  // no need if episodes is a relation of feed, otherwise yes.
-                    idLong += 1
+//                    idLong += 1
                 }
                 copyToRealm(feed)
             }
@@ -478,28 +380,7 @@ object Feeds {
      * @param context A context that is used for opening a database connection.
      * @param feedId  ID of the Feed that should be deleted.
      */
-//    fun deleteFeed0(context: Context, feedId: Long) : Job {
-//        Logd(TAG, "deleteFeed called")
-//        return runOnDbThread {
-//            var feed = getFeed(feedId)
-//            if (feed != null) {
-//                deleteEpisodesSync(context, feed.episodes)
-//                realm.write {
-//                    val feed_ = query(Feed::class).query("id == $0", feedId).first().find()
-//                    if (feed_ != null) delete(feed_)
-//                }
-//                if (!feed.isLocalFeed && feed.downloadUrl != null) SynchronizationQueueSink.enqueueFeedRemovedIfSyncActive(context, feed.downloadUrl!!)
-//                EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(feed))
-//            }
-//        }
-//    }
-
-    /**
-     * Deletes a Feed and all downloaded files of its components like images and downloaded episodes.
-     * @param context A context that is used for opening a database connection.
-     * @param feedId  ID of the Feed that should be deleted.
-     */
-    fun deleteFeed(context: Context, feedId: Long) : Job {
+    fun deleteFeed(context: Context, feedId: Long, postEvent: Boolean = true) : Job {
         Logd(TAG, "deleteFeed called")
         return runOnIOScope {
             val feed = getFeed(feedId)
@@ -519,7 +400,7 @@ object Feeds {
                     }
                 }
                 if (!feed.isLocalFeed && feed.downloadUrl != null) SynchronizationQueueSink.enqueueFeedRemovedIfSyncActive(context, feed.downloadUrl!!)
-                EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(feed))
+                if (postEvent) EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(feed))
             }
         }
     }

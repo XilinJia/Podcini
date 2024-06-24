@@ -27,10 +27,10 @@ object InTheatre {
         }
 
     var curMedia: Playable? = null
-        get() {
-            if (field == null) field = loadPlayableFromPreferences()
-            return field
-        }
+//        get() {
+//            if (field == null) field = loadPlayableFromPreferences()
+//            return field
+//        }
         set(value) {
             field = value
             if (field is EpisodeMedia) {
@@ -83,6 +83,7 @@ object InTheatre {
                     copyToRealm(curState_)
                 }
             }
+            loadPlayableFromPreferences()
         }
 //        val curState_ = realm.query(CurrentState::class).first()
 //        val job = CoroutineScope(Dispatchers.Default).launch {
@@ -114,7 +115,7 @@ object InTheatre {
      * depending on the type of playable that was restored.
      * @return The restored Playable object
      */
-    fun loadPlayableFromPreferences(): Playable? {
+    fun loadPlayableFromPreferences() {
         Logd(TAG, "loadPlayableFromPreferences currentlyPlayingType: $curState.curMediaType")
         if (curState.curMediaType != NO_MEDIA_PLAYING) {
             val type = curState.curMediaType.toInt()
@@ -124,13 +125,8 @@ object InTheatre {
                     curMedia = getEpisodeMedia(mediaId)
                     if (curEpisode != null) curEpisode = (curMedia as EpisodeMedia).episode
                 }
-                return curMedia
-            } else {
-                Log.e(TAG, "Could not restore Playable object from preferences")
-                return null
-            }
+            } else Log.e(TAG, "Could not restore Playable object from preferences")
         }
-        return null
     }
 
     @OptIn(UnstableApi::class) @JvmStatic

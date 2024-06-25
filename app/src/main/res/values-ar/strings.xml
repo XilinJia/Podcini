@@ -189,7 +189,7 @@
   <string name="select_all_above">حدد الكل أعلاه</string>
   <string name="select_all_below">حدد الكل أدناه</string>
   <string name="filtered_label">مصفى</string>
-  <string name="refresh_failed_msg">{fa-exclamation-circle}  فشلت آخر عملية تحديث. اضغط لرؤية التفاصيل.</string>
+  <string name="refresh_failed_msg">{faw_exclamation_circle}  فشلت آخر عملية تحديث. اضغط لرؤية التفاصيل.</string>
   <string name="open_podcast">افتح البودكاست</string>
   <string name="please_wait_for_data">نرجو الانتظار حتى يتم تحميل البيانات</string>
   <string name="updates_disabled_label">التحديثات موقوفة</string>
@@ -695,7 +695,7 @@
   <string name="feed_tags_label">العلامات</string>
   <string name="feed_tags_summary">قم بتغيير العلامات الخاصة بهذا البودكاست للمساعدة في تنظيم اشتراكاتك</string>
   <string name="feed_folders_include_root">اعرض هذا البودكاست في القائمة الرئيسية</string>
-  <string name="multi_feed_common_tags_info">{fa-info-circle} سيتم عرض العلامات المشتركة بين الاشتراكات المختارة فقط. لن يتم تعديل العلامات الأخرى</string>
+  <string name="multi_feed_common_tags_info">{faw_info_circle} سيتم عرض العلامات المشتركة بين الاشتراكات المختارة فقط. لن يتم تعديل العلامات الأخرى</string>
   <string name="auto_download_settings_label">إعدادات التنزيل التلقائي</string>
   <string name="episode_filters_label">مصفاة الحلقات</string>
   <string name="episode_filters_description">قائمة الكلمات المستخدمة لتحديد ما إذا كان يجب تضمين حلقة أو استبعادها عند التنزيل التلقائي</string>

@@ -66,6 +66,46 @@ class EpisodeFilter(vararg properties: String) : Serializable {
         }
     }
 
+    fun queryString(): String {
+        val statements: MutableList<String> = ArrayList()
+        when {
+            showPlayed -> statements.add("playState == 1 ")
+            showUnplayed -> statements.add(" playState != 1 ") // Match "New" items (read = -1) as well
+            showNew -> statements.add("playState == -1 ")
+        }
+        when {
+            showPaused -> statements.add(" media.position > 0 ")
+            showNotPaused -> statements.add(" media.position == 0 ")
+        }
+//        when {
+//            showQueued -> statements.add("$keyItemId IN (SELECT $keyFeedItem FROM $tableQueue) ")
+//            showNotQueued -> statements.add("$keyItemId NOT IN (SELECT $keyFeedItem FROM $tableQueue) ")
+//        }
+        when {
+            showDownloaded -> statements.add("media.downloaded == true ")
+            showNotDownloaded -> statements.add("media.downloaded == false ")
+        }
+        when {
+            showHasMedia -> statements.add("media != nil ")
+            showNoMedia -> statements.add("media == nil ")
+        }
+        when {
+            showIsFavorite -> statements.add("isFavorite == true ")
+            showNotFavorite -> statements.add("isFavorite == false ")
+        }
+
+        if (statements.isEmpty()) return "id > 0"
+
+        val query = StringBuilder(" (" + statements[0])
+        for (r in statements.subList(1, statements.size)) {
+            query.append(" AND ")
+            query.append(r)
+        }
+        query.append(") ")
+
+        return query.toString()
+    }
+    
     companion object {
         const val PLAYED: String = "played"
         const val UNPLAYED: String = "unplayed"

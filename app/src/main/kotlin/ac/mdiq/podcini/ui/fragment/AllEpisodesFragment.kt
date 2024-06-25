@@ -27,11 +27,14 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
+import kotlin.math.min
 
 /**
  * Shows all episodes (possibly filtered by user).
  */
 @UnstableApi class AllEpisodesFragment : BaseEpisodesFragment() {
+
+    var allEpisodes: List<Episode> = listOf()
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val root = super.onCreateView(inflater, container, savedInstanceState)
@@ -58,11 +61,21 @@ import org.apache.commons.lang3.StringUtils
     }
 
     override fun loadData(): List<Episode> {
-        return getEpisodes(0, page * EPISODES_PER_PAGE, getFilter(), allEpisodesSortOrder)
+        allEpisodes = getEpisodes(0, Int.MAX_VALUE, getFilter(), allEpisodesSortOrder, false)
+        Logd(TAG, "loadData() allEpisodes.size ${allEpisodes.size}")
+        return allEpisodes.subList(0, page * EPISODES_PER_PAGE)
+//        return getEpisodes(0, page * EPISODES_PER_PAGE, getFilter(), allEpisodesSortOrder)
     }
 
     override fun loadMoreData(page: Int): List<Episode> {
-        return getEpisodes((page - 1) * EPISODES_PER_PAGE, EPISODES_PER_PAGE, getFilter(), allEpisodesSortOrder)
+        val offset = (page - 1) * EPISODES_PER_PAGE
+        Logd(TAG, "loadMoreData() page: $page $offset ${allEpisodes.size}")
+        if (offset >= allEpisodes.size) return listOf()
+        val toIndex = offset + EPISODES_PER_PAGE
+        Logd(TAG, "loadMoreData() $offset $toIndex ${min(allEpisodes.size, toIndex)}")
+        return allEpisodes.subList(offset, min(allEpisodes.size, toIndex))
+//        return allEpisodes.subList((page - 1) * EPISODES_PER_PAGE, EPISODES_PER_PAGE)
+//        return getEpisodes((page - 1) * EPISODES_PER_PAGE, EPISODES_PER_PAGE, getFilter(), allEpisodesSortOrder)
     }
 
     override fun loadTotalItemCount(): Int {
@@ -141,13 +154,11 @@ import org.apache.commons.lang3.StringUtils
             super.onCreate(savedInstanceState)
             sortOrder = allEpisodesSortOrder
         }
-
         override fun onAddItem(title: Int, ascending: SortOrder, descending: SortOrder, ascendingIsDefault: Boolean) {
             if (ascending == SortOrder.DATE_OLD_NEW || ascending == SortOrder.DURATION_SHORT_LONG
                     || ascending == SortOrder.PLAYED_DATE_OLD_NEW || ascending == SortOrder.COMPLETED_DATE_OLD_NEW)
                 super.onAddItem(title, ascending, descending, ascendingIsDefault)
         }
-
         override fun onSelectionChanged() {
             super.onSelectionChanged()
             allEpisodesSortOrder = sortOrder

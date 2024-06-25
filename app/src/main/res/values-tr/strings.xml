@@ -165,7 +165,7 @@
   <string name="select_all_above">Üsttekilerin tümünü seç</string>
   <string name="select_all_below">Alttakilerin tümünü seç</string>
   <string name="filtered_label">Filtrelendi</string>
-  <string name="refresh_failed_msg">{fa-exclamation-circle} Son yenileme işlemi başarısız oldu. Ayrıntıları görüntülemek için dokunun.</string>
+  <string name="refresh_failed_msg">{faw_exclamation_circle} Son yenileme işlemi başarısız oldu. Ayrıntıları görüntülemek için dokunun.</string>
   <string name="open_podcast">Podcasti aç</string>
   <string name="please_wait_for_data">Please wait until the data is loaded</string>
   <string name="updates_disabled_label">Güncellemeler devre dışı</string>
@@ -627,7 +627,7 @@
   <string name="feed_tags_label">Etiketler</string>
   <string name="feed_tags_summary">Aboneliklerinizi düzenlemek için bu Podcast\'in etiketlerini değiştirin</string>
   <string name="feed_folders_include_root">Bu podcast ana listede gösterilsin</string>
-  <string name="multi_feed_common_tags_info">{fa-info-circle} Yalnızca seçilen aboneliklerdeki ortak etiketler gösterilir. Diğer etiketler etkilenmez.</string>
+  <string name="multi_feed_common_tags_info">{faw_info_circle} Yalnızca seçilen aboneliklerdeki ortak etiketler gösterilir. Diğer etiketler etkilenmez.</string>
   <string name="auto_download_settings_label">Otomatik indirme seçenekleri</string>
   <string name="episode_filters_label">Bölüm filtresi</string>
   <string name="episode_filters_description">List of terms used to decide if an episode should be included or excluded when auto downloading</string>

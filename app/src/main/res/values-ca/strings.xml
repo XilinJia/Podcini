@@ -630,7 +630,7 @@
   <string name="feed_tags_label">Etiquetes</string>
   <string name="feed_tags_summary">Canvia les etiquetes d\'aquest podcast per ajudar-vos a organitzar les subscripcions</string>
   <string name="feed_folders_include_root">Mostra aquest pòdcast a la llista principal</string>
-  <string name="multi_feed_common_tags_info">{fa-info-circle} Només es mostren les etiquetes comunes a diverses subscripcions. No afecta a altres etiquetes.</string>
+  <string name="multi_feed_common_tags_info">{faw_info_circle} Només es mostren les etiquetes comunes a diverses subscripcions. No afecta a altres etiquetes.</string>
   <string name="auto_download_settings_label">Descarregar les confguracions automàticament</string>
   <string name="episode_filters_label">Filtra els termes</string>
   <string name="episode_filters_description">Llistat de termes usats per decidir si un episodi s\'ha d\'incloure o excloure en descarregar automàticament</string>

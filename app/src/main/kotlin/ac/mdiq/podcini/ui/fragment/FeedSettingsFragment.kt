@@ -8,6 +8,7 @@ import ac.mdiq.podcini.databinding.PlaybackSpeedFeedSettingDialogBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
 import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
+import ac.mdiq.podcini.storage.database.RealmDB.unmanagedCopy
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.FeedPreferences
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
@@ -539,7 +540,7 @@ class FeedSettingsFragment : Fragment() {
     }
 
     fun setFeed(feed_: Feed) {
-        feed = feed_
+        feed = unmanagedCopy(feed_)
     }
 
     companion object {

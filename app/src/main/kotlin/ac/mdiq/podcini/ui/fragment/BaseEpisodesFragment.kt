@@ -287,23 +287,24 @@ import kotlinx.coroutines.flow.collectLatest
         Logd(TAG, "loadMoreItems() called $page")
 
         isLoadingMore = true
-        listAdapter.setDummyViews(1)
-        listAdapter.notifyItemInserted(listAdapter.itemCount - 1)
+//        listAdapter.setDummyViews(1)
+//        listAdapter.notifyItemInserted(listAdapter.itemCount - 1)
         lifecycleScope.launch {
             try {
                 val data = withContext(Dispatchers.IO) {
-                    loadMoreData(page)
+                    val data_ = loadMoreData(page)
+                    if (data_.size < EPISODES_PER_PAGE) hasMoreItems = false
+                    Logd(TAG, "loadMoreItems $page ${data_.size}")
+                    episodes.addAll(data_)
+                    data_
                 }
                 withContext(Dispatchers.Main) {
-                    if (data.size < EPISODES_PER_PAGE) hasMoreItems = false
-                    Logd(TAG, "loadMoreItems $page ${data.size}")
-                    episodes.addAll(data)
-                    listAdapter.setDummyViews(0)
+//                    listAdapter.setDummyViews(0)
                     listAdapter.updateItems(episodes)
                     if (listAdapter.shouldSelectLazyLoadedItems()) listAdapter.setSelected(episodes.size - data.size, episodes.size, true)
                 }
             } catch (e: Throwable) {
-                listAdapter.setDummyViews(0)
+//                listAdapter.setDummyViews(0)
                 listAdapter.updateItems(emptyList())
                 Log.e(TAG, Log.getStackTraceString(e))
             } finally {
@@ -434,14 +435,14 @@ import kotlinx.coroutines.flow.collectLatest
                     episodes = data.first
                     hasMoreItems = !(page == 1 && episodes.size < EPISODES_PER_PAGE)
                     progressBar.visibility = View.GONE
-                    listAdapter.setDummyViews(0)
+//                    listAdapter.setDummyViews(0)
                     listAdapter.updateItems(episodes)
                     listAdapter.setTotalNumberOfItems(data.second)
                     if (restoreScrollPosition) recyclerView.restoreScrollPosition(getPrefName())
                     updateToolbar()
                 }
             } catch (e: Throwable) {
-                listAdapter.setDummyViews(0)
+//                listAdapter.setDummyViews(0)
                 listAdapter.updateItems(emptyList())
                 Log.e(TAG, Log.getStackTraceString(e))
             }

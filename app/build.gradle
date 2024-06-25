@@ -111,9 +111,7 @@ android {
     lint {
         lintConfig = file("lint.xml")
 //         checkOnly += ['NewApi', 'InlinedApi']
-        checkOnly += ['NewApi', 'InlinedApi', 'UnusedResources', 'ObsoleteSdkInt',
-                        'Performance', 'ViewId', 'MissingTranslation',
-                        'Deprecation', 'DuplicateIds', 'UseSparseArrays']
+        checkOnly += ['NewApi', 'InlinedApi', 'Performance', 'DuplicateIds']
 
         disable += ['TypographyDashes', 'TypographyQuotes', 'ObsoleteLintCustomCheck', 'CheckResult', 'UnusedAttribute', 'BatteryLife', 'InflateParams',
                 'RestrictedApi', 'TrustAllX509TrustManager', 'ExportedReceiver', 'AllowBackup', 'VectorDrawableCompat',
@@ -127,8 +125,8 @@ android {
         buildConfig true
     }
     defaultConfig {
-        versionCode 3020201
-        versionName "6.0.1"
+        versionCode 3020202
+        versionName "6.0.2"
 
         applicationId "ac.mdiq.podcini.R"
         def commit = ""

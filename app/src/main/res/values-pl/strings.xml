@@ -632,7 +632,7 @@
   <string name="authentication_descr">Zmień swoją nazwę użytkownika oraz hasło dla tego podcastu i jego odcinków</string>
   <string name="feed_tags_label">Tagi</string>
   <string name="feed_tags_summary">Zmień tagi tego podcastu, żeby lepiej zorganizować swoje subskrypcje</string>
-  <string name="multi_feed_common_tags_info">{fa-info-circle} Tylko wspólne tagi wybranych subskrypcji są pokazane. Pozostałe tagi zostaną bez zmian.</string>
+  <string name="multi_feed_common_tags_info">{faw_info_circle} Tylko wspólne tagi wybranych subskrypcji są pokazane. Pozostałe tagi zostaną bez zmian.</string>
   <string name="auto_download_settings_label">Ustawienia automatycznego pobierania</string>
   <string name="episode_filters_label">Filtr odcinków</string>
   <string name="episode_filters_description">Wykaz terminów używanych aby zdecydować, czy odcinek powinien być włączony lub wyłączony podczas automatycznego pobierania.</string>

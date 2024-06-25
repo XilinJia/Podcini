@@ -46,7 +46,6 @@ object RemoveFeedDialog {
                     try {
                         withContext(Dispatchers.IO) {
                             for (feed in feeds) {
-//                                runBlocking { deleteFeed(context, feed.id).join() }
                                 deleteFeed(context, feed.id, false)
                             }
                             EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(feeds))

@@ -42,8 +42,6 @@ object Queues {
         return ids
     }
 
-//    --------------------- writer ----------------------------
-
     /**
      * Appends Episode objects to the end of the queue. The 'read'-attribute of all episodes will be set to true.
      * If a Episode is already in the queue, the Episode will not change its position in the queue.
@@ -100,7 +98,6 @@ object Queues {
     /**
      * Sorts the queue depending on the configured sort order.
      * If the queue is not in keep sorted mode, nothing happens.
-     *
      * @param queue  The queue to be sorted.
      * @param events Replaces the events by a single SORT event if the list has to be sorted automatically.
      */
@@ -237,7 +234,6 @@ object Queues {
     /**
      * Changes the position of a Episode in the queue.
      * This function must be run using the ExecutorService (dbExec).
-     *
      * @param from            Source index. Must be in range 0..queue.size()-1.
      * @param to              Destination index. Must be in range 0..queue.size()-1.
      * @param broadcastUpdate true if this operation should trigger a QueueUpdateBroadcast. This option should be set to

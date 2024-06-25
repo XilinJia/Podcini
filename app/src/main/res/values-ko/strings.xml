@@ -154,7 +154,7 @@
   <string name="select_all_above">위 모두 선택</string>
   <string name="select_all_below">아래 모두 선택</string>
   <string name="filtered_label">필터링함</string>
-  <string name="refresh_failed_msg">{fa-exclamation-circle} 최근 새로 고침 실패. 자세히 보려면 누르십시오.</string>
+  <string name="refresh_failed_msg">{faw_exclamation_circle} 최근 새로 고침 실패. 자세히 보려면 누르십시오.</string>
   <string name="open_podcast">팟캐스트 열기</string>
   <string name="please_wait_for_data">데이터를 읽어 들일 때까지 기다리십시오</string>
   <string name="updates_disabled_label">업데이트 사용하지 않음</string>
@@ -605,7 +605,7 @@
   <string name="feed_tags_label">태그</string>
   <string name="feed_tags_summary">구독 정리에 도움이 되도록 이 팟캐스트의 태그 바꾸기</string>
   <string name="feed_folders_include_root">주 목록에 이 팟캐스트 표시</string>
-  <string name="multi_feed_common_tags_info">{fa-info-circle} 선택한 구독에 들어 있는 공통 태그만 표시됩니다. 다른 태그는 변하지 않고 그대로 있습니다.</string>
+  <string name="multi_feed_common_tags_info">{faw_info_circle} 선택한 구독에 들어 있는 공통 태그만 표시됩니다. 다른 태그는 변하지 않고 그대로 있습니다.</string>
   <string name="auto_download_settings_label">자동 다운로드 설정</string>
   <string name="episode_filters_label">에피소드 필터</string>
   <string name="episode_filters_description">자동 다운로드를 할 때 에피소드가 포함되어야할지 제외되어야할지 결정하는 규칙의 목록</string>

@@ -343,7 +343,7 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
             res.recycle()
             val checking = context.getString(R.string.proxy_checking)
             txtvMessage.setTextColor(textColorPrimary)
-            txtvMessage.text = "{fa-circle-o-notch spin} $checking"
+            txtvMessage.text = "{faw_circle_o_notch spin} $checking"
             txtvMessage.visibility = View.VISIBLE
 
             val coroutineScope = CoroutineScope(Dispatchers.Main)

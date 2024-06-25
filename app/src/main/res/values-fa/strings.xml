@@ -167,7 +167,7 @@
   <string name="select_all_above">انتخاب همهٔ بالایی‌ها</string>
   <string name="select_all_below">انتخاب همهٔ پایینی‌ها</string>
   <string name="filtered_label">فیلتر شده</string>
-  <string name="refresh_failed_msg">{fa-exclamation-circle} آخرین تازه‌سازی شکست خورد. برای دیدن جزییات بزنید.</string>
+  <string name="refresh_failed_msg">{faw_exclamation_circle} آخرین تازه‌سازی شکست خورد. برای دیدن جزییات بزنید.</string>
   <string name="open_podcast">گشودن پادکست</string>
   <string name="please_wait_for_data">لطفا تا زمان دریافت اطلاعات منتظر بمانید</string>
   <string name="updates_disabled_label">به‌روزرسانی‌ها غیر فعال شده است</string>
@@ -629,7 +629,7 @@
   <string name="feed_tags_label">برچسب‌ها</string>
   <string name="feed_tags_summary">برای کمک به سازماندهی اشتراک های خود، برچسب های این پادکست را تغییر دهید</string>
   <string name="feed_folders_include_root">نمایش این قسمت در سیاههٔ اصلی</string>
-  <string name="multi_feed_common_tags_info">{fa-info-circle} تنها برجسب‌های مهمول از تمامی اشتراک‌های گزیده نشان داده می‌شوند. دیگر برچسب‌ها تأثیر نمی‌پذیرند.</string>
+  <string name="multi_feed_common_tags_info">{faw_info_circle} تنها برجسب‌های مهمول از تمامی اشتراک‌های گزیده نشان داده می‌شوند. دیگر برچسب‌ها تأثیر نمی‌پذیرند.</string>
   <string name="auto_download_settings_label">تنظیمات بارگیری خودکار</string>
   <string name="episode_filters_label">پالایهٔ قسمت</string>
   <string name="episode_filters_description">لیست اصطلاحاتی که برای تصمیم گیری در مورد درج یا حذف یک قسمت هنگام بارگیری خودکار استفاده می شود</string>

@@ -168,7 +168,7 @@
   <string name="select_all_above">选中上面所有</string>
   <string name="select_all_below">选中下面所有</string>
   <string name="filtered_label">已过滤的</string>
-  <string name="refresh_failed_msg">{fa-exclamation-circle} 上次刷新失败。轻按查看详情。</string>
+  <string name="refresh_failed_msg">{faw_exclamation_circle} 上次刷新失败。轻按查看详情。</string>
   <string name="open_podcast">打开播客</string>
   <string name="please_wait_for_data">请等待数据加载完成</string>
   <string name="updates_disabled_label">更新已禁用</string>
@@ -644,7 +644,7 @@
   <string name="feed_tags_label">标签</string>
   <string name="feed_tags_summary">更改此播客的标签，以帮助组织您的订阅</string>
   <string name="feed_folders_include_root">在主列表中显示此播客</string>
-  <string name="multi_feed_common_tags_info">{fa-info-circle} 只显示来自所有选定订阅的常见标记。其他标记不受影响。</string>
+  <string name="multi_feed_common_tags_info">{faw_info_circle} 只显示来自所有选定订阅的常见标记。其他标记不受影响。</string>
   <string name="auto_download_settings_label">“自动下载”设置</string>
   <string name="episode_filters_label">节目筛选器</string>
   <string name="episode_filters_description">用于确定是否应自动下载一期节目的术语列表</string>

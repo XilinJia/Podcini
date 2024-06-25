@@ -172,7 +172,7 @@
   <string name="select_all_above">Выбрать все выше</string>
   <string name="select_all_below">Выбрать все ниже</string>
   <string name="filtered_label">Отфильтровано</string>
-  <string name="refresh_failed_msg">{fa-exclamation-circle} Последнее обновление не удалось. Подробнее…</string>
+  <string name="refresh_failed_msg">{faw_exclamation_circle} Последнее обновление не удалось. Подробнее…</string>
   <string name="open_podcast">Открыть подкаст</string>
   <string name="please_wait_for_data">Подождите, пока загружаются данные</string>
   <string name="updates_disabled_label">Обновления отключены</string>
@@ -656,7 +656,7 @@
   <string name="feed_tags_label">Метки</string>
   <string name="feed_tags_summary">Используйте метки, чтобы организовать ваши подписки.</string>
   <string name="feed_folders_include_root">Показывать подкаст в основном списке</string>
-  <string name="multi_feed_common_tags_info">{fa-info-circle} Отображаются только общие метки для всех выбранных подписок. Другие не затрагиваются.</string>
+  <string name="multi_feed_common_tags_info">{faw_info_circle} Отображаются только общие метки для всех выбранных подписок. Другие не затрагиваются.</string>
   <string name="auto_download_settings_label">Настройки автозагрузки</string>
   <string name="episode_filters_label">Фильтр выпусков</string>
   <string name="episode_filters_description">Перечень условий по включению или исключению выпуска из списков автоматической загрузки</string>

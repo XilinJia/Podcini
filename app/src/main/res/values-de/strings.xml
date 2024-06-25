@@ -174,7 +174,7 @@
   <string name="select_all_above">Alles oberhalb auswählen</string>
   <string name="select_all_below">Alles unterhalb auswählen</string>
   <string name="filtered_label">Gefiltert</string>
-  <string name="refresh_failed_msg">{fa-exclamation-circle} Letzte Aktualisierung fehlgeschlagen. Tippen, um Details anzuzeigen.</string>
+  <string name="refresh_failed_msg">{faw_exclamation_circle} Letzte Aktualisierung fehlgeschlagen. Tippen, um Details anzuzeigen.</string>
   <string name="open_podcast">Podcast öffnen</string>
   <string name="please_wait_for_data">Bitte warte, bis die Daten geladen sind</string>
   <string name="updates_disabled_label">Updates deaktiviert</string>
@@ -665,7 +665,7 @@
   <string name="feed_tags_label">Tags</string>
   <string name="feed_tags_summary">Ändere die Schlagworte (Tags) dieses Podcasts, um deine Abonnements zu organisieren</string>
   <string name="feed_folders_include_root">Diesen Podcast in der Haupliste anzeigen</string>
-  <string name="multi_feed_common_tags_info">{fa-info-circle} Es werden nur gemeinsame Tags aus allen ausgewählten Abonnements angezeigt. Andere Tags bleiben davon unberührt.</string>
+  <string name="multi_feed_common_tags_info">{faw_info_circle} Es werden nur gemeinsame Tags aus allen ausgewählten Abonnements angezeigt. Andere Tags bleiben davon unberührt.</string>
   <string name="auto_download_settings_label">Einstellungen für Automatischen Download</string>
   <string name="episode_filters_label">Episoden-Filter</string>
   <string name="episode_filters_description">Liste von Begriffen, die dazu verwendet wird, Episoden beim automatischen Download einzubeziehen oder auszuschließen</string>

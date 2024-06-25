@@ -156,7 +156,7 @@
   <string name="select_all_above">Velg alle over</string>
   <string name="select_all_below">Velg alle under</string>
   <string name="filtered_label">Filtrert</string>
-  <string name="refresh_failed_msg">{fa-exclamation-circle} Siste oppdatering mislyktes. Trykk for å se detaljer.</string>
+  <string name="refresh_failed_msg">{faw_exclamation_circle} Siste oppdatering mislyktes. Trykk for å se detaljer.</string>
   <string name="open_podcast">Åpne podkast</string>
   <string name="please_wait_for_data">Vent til dataene er lastet inn</string>
   <string name="updates_disabled_label">Oppdateringer slått av.</string>
@@ -617,7 +617,7 @@
   <string name="feed_tags_label">Tagger</string>
   <string name="feed_tags_summary">Endre tagger av podcasten for å organisere abonnementene dine bedre</string>
   <string name="feed_folders_include_root">Vis pokasten i hoved lista</string>
-  <string name="multi_feed_common_tags_info">{fa-info-circle} Bare standard tagger fra alle valgte abonnementer er synlig.  Andre tagger blir ikke påvirket.</string>
+  <string name="multi_feed_common_tags_info">{faw_info_circle} Bare standard tagger fra alle valgte abonnementer er synlig.  Andre tagger blir ikke påvirket.</string>
   <string name="auto_download_settings_label">Innstillinger for automatisk nedlastning</string>
   <string name="episode_filters_label">Episodefiltrering</string>
   <string name="episode_filters_description">Nøkkelord som skal brukes for å avgjøre om en episode skal nedlastes automatisk eller ikke</string>

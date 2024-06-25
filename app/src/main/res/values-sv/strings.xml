@@ -170,7 +170,7 @@
   <string name="select_all_above">Välj alla ovanför</string>
   <string name="select_all_below">Välj alla nedanför</string>
   <string name="filtered_label">Filtrerad</string>
-  <string name="refresh_failed_msg">{fa-exclamation-circle} Senaste uppdateringen misslyckades. Tryck för att visa detaljer.</string>
+  <string name="refresh_failed_msg">{faw_exclamation_circle} Senaste uppdateringen misslyckades. Tryck för att visa detaljer.</string>
   <string name="open_podcast">Öppna podcast</string>
   <string name="please_wait_for_data">Vänta tills datan laddats</string>
   <string name="updates_disabled_label">Uppdateringar avstängt</string>
@@ -657,7 +657,7 @@
   <string name="feed_tags_label">Etiketter</string>
   <string name="feed_tags_summary">Ändra etiketterna för denna podcast för att organisera prenumerationerna</string>
   <string name="feed_folders_include_root">Visa denna podcast i huvudlistan</string>
-  <string name="multi_feed_common_tags_info">{fa-info-circle} Bara etiketter gemensamma med alla valda prenumerationer visas. Andra etiketter påverkas inte.</string>
+  <string name="multi_feed_common_tags_info">{faw_info_circle} Bara etiketter gemensamma med alla valda prenumerationer visas. Andra etiketter påverkas inte.</string>
   <string name="auto_download_settings_label">Inställningar för automatisk nedladdning</string>
   <string name="episode_filters_label">Episodfilter</string>
   <string name="episode_filters_description">Lista av termer som används för att avgöra om en episod ingår eller ej vid automatisk nedladdning</string>

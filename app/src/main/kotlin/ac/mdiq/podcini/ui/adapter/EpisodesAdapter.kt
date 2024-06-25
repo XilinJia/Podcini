@@ -1,6 +1,8 @@
 package ac.mdiq.podcini.ui.adapter
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.storage.database.RealmDB.realm
+import ac.mdiq.podcini.storage.database.RealmDB.unmanagedCopy
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
 import ac.mdiq.podcini.ui.activity.MainActivity
@@ -69,7 +71,7 @@ open class EpisodesAdapter(mainActivity: MainActivity)
 
         beforeBindViewHolder(holder, pos)
 
-        val item: Episode = episodes[pos]
+        val item: Episode = unmanagedCopy(episodes[pos])
         holder.bind(item)
 
 //        holder.infoCard.setOnCreateContextMenuListener(this)

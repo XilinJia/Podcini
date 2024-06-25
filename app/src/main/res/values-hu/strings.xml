@@ -520,7 +520,7 @@
   <string name="authentication_descr">A felhasználónév és jelszó módosítása ennél a podcastnál és az epizódoknál.</string>
   <string name="feed_tags_label">Címkék</string>
   <string name="feed_tags_summary">Módosítja a podcast címkéit, hogy segítsen a feliratkozásai rendszerezésében</string>
-  <string name="multi_feed_common_tags_info">{fa-info-circle} Csak a kiválasztott feliratkozások közös címkéi jelennek meg. A többi címke változatlan marad.</string>
+  <string name="multi_feed_common_tags_info">{faw_info_circle} Csak a kiválasztott feliratkozások közös címkéi jelennek meg. A többi címke változatlan marad.</string>
   <string name="episode_filters_description">A kulcsszavak, mely alapján eldől, hogy az automatikus letöltés beleveszi-e az epizódot, vagy sem</string>
   <string name="exclude_terms">A lenti kifejezések bármelyikét tartalmazó epizódok kizárása</string>
   <string name="include_terms">Csak a lenti kifejezések egyikét tartalmazó epizódok belevétele</string>

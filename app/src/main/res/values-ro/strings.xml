@@ -176,7 +176,7 @@
   <string name="select_all_above">Selectează toate deasupra</string>
   <string name="select_all_below">Selectează toate dedesubt</string>
   <string name="filtered_label">Filtrate</string>
-  <string name="refresh_failed_msg">{fa-exclamation-circle} Ultimul refresh a esuat. Apasă pentru detalii.</string>
+  <string name="refresh_failed_msg">{faw_exclamation_circle} Ultimul refresh a esuat. Apasă pentru detalii.</string>
   <string name="open_podcast">Deschide podcast</string>
   <string name="please_wait_for_data">Vă rugăm așteptați până când datele sunt încărcate</string>
   <string name="updates_disabled_label">Actualizările sunt oprite</string>
@@ -674,7 +674,7 @@
   <string name="feed_tags_label">Etichete</string>
   <string name="feed_tags_summary">Schimbă etichetele acestui podcast pentru a putea organiza abonamentele dumneavoastră</string>
   <string name="feed_folders_include_root">Arată acest podcast în lista principală</string>
-  <string name="multi_feed_common_tags_info">{fa-info-circle} Doar etichetele comune din toate abonamentele selectate sunt arătate. Alte etichete rămân neafectate.</string>
+  <string name="multi_feed_common_tags_info">{faw_info_circle} Doar etichetele comune din toate abonamentele selectate sunt arătate. Alte etichete rămân neafectate.</string>
   <string name="auto_download_settings_label">Descarcă automat setările</string>
   <string name="episode_filters_label">Filtru setări</string>
   <string name="episode_filters_description">Listă de termeni folosită pentru a decide dacă un episod va fi sau nu inclus când descărcarea automată este pornită</string>

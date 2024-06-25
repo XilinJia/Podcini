@@ -5,6 +5,7 @@ import ac.mdiq.podcini.databinding.EditTagsDialogBinding
 import ac.mdiq.podcini.storage.database.Feeds.buildTags
 import ac.mdiq.podcini.storage.database.Feeds.getTags
 import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
+import ac.mdiq.podcini.storage.database.RealmDB.unmanagedCopy
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.FeedPreferences
 import ac.mdiq.podcini.ui.adapter.SimpleChipAdapter
@@ -106,7 +107,8 @@ class TagSettingsDialog : DialogFragment() {
 //        if (binding.rootFolderCheckbox.isChecked) {
 //            displayedTags.add(FeedPreferences.TAG_ROOT)
 //        }
-        for (feed in feedList) {
+        for (feed_ in feedList) {
+            val feed = unmanagedCopy(feed_)
             if (feed.preferences != null) {
                 feed.preferences!!.tags.removeAll(commonTags)
                 feed.preferences!!.tags.addAll(displayedTags)

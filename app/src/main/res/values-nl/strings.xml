@@ -166,7 +166,7 @@
   <string name="select_all_above">Alles hierboven selecteren</string>
   <string name="select_all_below">Alles hieronder selecteren</string>
   <string name="filtered_label">Gefilterd</string>
-  <string name="refresh_failed_msg">{fa-exclamation-circle} Vernieuwen mislukt. Tik voor meer informatie.</string>
+  <string name="refresh_failed_msg">{faw_exclamation_circle} Vernieuwen mislukt. Tik voor meer informatie.</string>
   <string name="open_podcast">Podcast openen</string>
   <string name="please_wait_for_data">Wacht tot de gegevens geladen zijn</string>
   <string name="updates_disabled_label">Updates zijn uitgeschakeld</string>
@@ -579,7 +579,7 @@
   <string name="authentication_descr">Gebruikersnaam en wachtwoord wijzigen voor deze podcast en bijbehorende afleveringen.</string>
   <string name="feed_tags_label">Labels</string>
   <string name="feed_tags_summary">Wijzig de labels van deze podcast om abonnementen te organiseren</string>
-  <string name="multi_feed_common_tags_info">{fa-info-circle} Er worden alleen algemene labels getoond. Andere labels worden niet aangepast.</string>
+  <string name="multi_feed_common_tags_info">{faw_info_circle} Er worden alleen algemene labels getoond. Andere labels worden niet aangepast.</string>
   <string name="episode_filters_description">Lijst van zoektermen om te beslissen of een aflevering al of niet automatisch wordt gedownload</string>
   <string name="exclude_terms">Afleveringen die onderstaande termen bevatten uitsluiten</string>
   <string name="include_terms">Afleveringen die onderstaande termen bevatten opnemen</string>

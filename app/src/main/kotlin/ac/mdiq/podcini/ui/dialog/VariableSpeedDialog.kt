@@ -2,7 +2,6 @@ package ac.mdiq.podcini.ui.dialog
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.SpeedSelectDialogBinding
-import ac.mdiq.podcini.playback.PlaybackController
 import ac.mdiq.podcini.playback.PlaybackController.Companion.curSpeedMultiplier
 import ac.mdiq.podcini.playback.PlaybackController.Companion.playbackService
 import ac.mdiq.podcini.playback.base.InTheatre.curState
@@ -12,6 +11,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.preferences.UserPreferences.playbackSpeedArray
 import ac.mdiq.podcini.preferences.UserPreferences.videoPlaybackSpeed
 import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
+import ac.mdiq.podcini.storage.database.RealmDB.unmanagedCopy
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.utils.MediaType
 import ac.mdiq.podcini.ui.utils.ItemOffsetDecoration
@@ -50,7 +50,6 @@ import java.util.*
     private var _binding: SpeedSelectDialogBinding? = null
     private val binding get() = _binding!!
 
-    private var controller: PlaybackController? = null
     private val selectedSpeeds: MutableList<Float>
 
     private lateinit var settingCode: BooleanArray
@@ -63,30 +62,21 @@ import java.util.*
 
     @UnstableApi override fun onStart() {
         super.onStart()
-        controller = object : PlaybackController(requireActivity()) {
-            override fun loadMediaInfo() {
-                if (controller != null) updateSpeed(FlowEvent.SpeedChangedEvent(curSpeedMultiplier))
-            }
-            override fun onPlaybackServiceConnected() {
-                super.onPlaybackServiceConnected()
-                binding.currentAudio.visibility = View.VISIBLE
-                binding.currentPodcast.visibility = View.VISIBLE
+        Logd(TAG, "onStart: playbackService ready: ${playbackService?.isServiceReady()}")
 
-                if (!settingCode[0]) binding.currentAudio.visibility = View.INVISIBLE
-                if (!settingCode[1]) binding.currentPodcast.visibility = View.INVISIBLE
-                if (!settingCode[2]) binding.global.visibility = View.INVISIBLE
-            }
-        }
-        controller?.init()
+        binding.currentAudio.visibility = View.VISIBLE
+        binding.currentPodcast.visibility = View.VISIBLE
+
+        if (!settingCode[0]) binding.currentAudio.visibility = View.INVISIBLE
+        if (!settingCode[1]) binding.currentPodcast.visibility = View.INVISIBLE
+        if (!settingCode[2]) binding.global.visibility = View.INVISIBLE
 
         procFlowEvents()
-        if (controller != null) updateSpeed(FlowEvent.SpeedChangedEvent(curSpeedMultiplier))
+        updateSpeed(FlowEvent.SpeedChangedEvent(curSpeedMultiplier))
     }
 
     @UnstableApi override fun onStop() {
         super.onStop()
-        controller?.release()
-        controller = null
         cancelFlowEvents()
     }
 
@@ -107,7 +97,7 @@ import java.util.*
         }
     }
 
-    fun updateSpeed(event: FlowEvent.SpeedChangedEvent) {
+    private fun updateSpeed(event: FlowEvent.SpeedChangedEvent) {
         speedSeekBar.updateSpeed(event.newSpeed)
         addCurrentSpeedChip.text = String.format(Locale.getDefault(), "%1$.2f", event.newSpeed)
     }
@@ -205,11 +195,8 @@ import java.util.*
                 settingCode[1] = binding.currentPodcast.isChecked
                 settingCode[2] = binding.global.isChecked
                 Logd("VariableSpeedDialog", "holder.chip settingCode: ${settingCode[0]} ${settingCode[1]} ${settingCode[2]}")
-
-                if (controller != null) {
-                    dismiss()
-                    setPlaybackSpeed(speed, settingCode)
-                }
+                dismiss()
+                setPlaybackSpeed(speed, settingCode)
             }, 200) }
         }
 
@@ -221,7 +208,7 @@ import java.util.*
             return selectedSpeeds[position].hashCode().toLong()
         }
 
-        fun setPlaybackSpeed(speed: Float, codeArray: BooleanArray? = null) {
+        private fun setPlaybackSpeed(speed: Float, codeArray: BooleanArray? = null) {
             if (playbackService != null) {
 //                playbackService!!.setSpeed(speed, codeArray)
                 playbackService!!.isSpeedForward = false
@@ -237,15 +224,10 @@ import java.util.*
                         if (codeArray[2]) UserPreferences.setPlaybackSpeed(speed)
                         if (codeArray[1]) {
                             val episode = (playbackService!!.playable as? EpisodeMedia)?.episode ?: playbackService!!.currentitem
-//                    var item = (playable as EpisodeMedia).item
-//                    if (item == null) {
-//                        val itemId = (playable as? EpisodeMedia)?.itemId
-//                        if (itemId != null) item = DBReader.getFeedItem(itemId)
-//                    }
                             if (episode != null) {
-                                val feed = episode.feed
-//                        if (feed == null) feed = DBReader.getFeed(item.feedId)
+                                var feed = episode.feed
                                 if (feed != null) {
+                                    feed = unmanagedCopy(feed)
                                     val feedPrefs = feed.preferences
                                     if (feedPrefs != null) {
                                         feedPrefs.playSpeed = speed

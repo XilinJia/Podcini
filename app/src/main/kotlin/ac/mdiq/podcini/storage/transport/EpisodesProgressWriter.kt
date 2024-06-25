@@ -3,8 +3,8 @@ package ac.mdiq.podcini.storage.transport
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.model.SyncServiceException
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
-import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.utils.EpisodeFilter
 import ac.mdiq.podcini.storage.utils.SortOrder
 import ac.mdiq.podcini.util.Logd

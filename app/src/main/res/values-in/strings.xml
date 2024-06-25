@@ -531,7 +531,7 @@
   <string name="authentication_descr">Ubah nama pengguna dan kata sandi untuk podcast ini dan episodenya.</string>
   <string name="feed_tags_label">Label</string>
   <string name="feed_tags_summary">Ganti label podcast ini untuk membantu mengelola langganan Anda</string>
-  <string name="multi_feed_common_tags_info">{fa-info-circle} Hanya label biasa dari langganan yang sudah dipilih yang ditampilkan. Label yang lain tidak terpengaruh.</string>
+  <string name="multi_feed_common_tags_info">{faw_info_circle} Hanya label biasa dari langganan yang sudah dipilih yang ditampilkan. Label yang lain tidak terpengaruh.</string>
   <string name="episode_filters_description">Daftar ketentuan yang digunakan untuk memutuskan jika episode sebuah episode harus disertakan atau dikecualikan ketika mengunduh otomatis</string>
   <string name="exclude_terms">Kecualikan episode yang berisikan istilah yang ditentukan di bawah</string>
   <string name="include_terms">Masukkan hanya jika episode berisikan istilah yang ditentukan di bawah</string>

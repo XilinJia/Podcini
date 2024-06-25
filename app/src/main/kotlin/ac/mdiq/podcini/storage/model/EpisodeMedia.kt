@@ -1,5 +1,7 @@
 package ac.mdiq.podcini.storage.model
 
+import ac.mdiq.podcini.storage.database.RealmDB.realm
+import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.utils.MediaType
 import ac.mdiq.podcini.storage.utils.MediaMetadataRetrieverCompat
 import ac.mdiq.podcini.util.Logd
@@ -327,9 +329,8 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
     }
 
     fun checkEmbeddedPicture() {
-        if (!localFileAvailable()) {
-            hasEmbeddedPicture = false
-        } else {
+        if (!localFileAvailable()) hasEmbeddedPicture = false
+        else {
             try {
                 MediaMetadataRetrieverCompat().use { mmr ->
                     mmr.setDataSource(getLocalMediaUrl())

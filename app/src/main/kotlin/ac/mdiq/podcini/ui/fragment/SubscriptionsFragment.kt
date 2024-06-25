@@ -54,6 +54,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
 import io.realm.kotlin.query.RealmResults
+import io.realm.kotlin.query.Sort
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
@@ -350,7 +351,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 comparator(counterMap)
             }
             UserPreferences.FEED_ORDER_LAST_UPDATED -> {
-                val episodes = realm.query(Episode::class).find()
+                val episodes = realm.query(Episode::class).sort("pubDate", Sort.DESCENDING).find()
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
                 for (episode in episodes) {
                     val feedId = episode.feedId ?: continue
@@ -371,13 +372,13 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 comparator(counterMap)
             }
             UserPreferences.FEED_ORDER_DOWNLOADED -> {
-                val episodes = realm.query(Episode::class).query("media.downloaded == 1").find()
+                val episodes = realm.query(Episode::class).query("media.downloaded == true").find()
                 val counterMap = counterMap(episodes)
                 comparator(counterMap)
             }
             UserPreferences.FEED_ORDER_DOWNLOADED_UNPLAYED -> {
                 val episodes = realm.query(Episode::class)
-                    .query("(playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED}) AND media.downloaded == 1").find()
+                    .query("(playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED}) AND media.downloaded == true").find()
                 val counterMap = counterMap(episodes)
                 comparator(counterMap)
             }

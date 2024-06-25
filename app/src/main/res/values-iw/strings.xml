@@ -182,7 +182,7 @@
   <string name="select_all_above">בחירת כל אלו שלעיל</string>
   <string name="select_all_below">בחירת כל אלו שלהלן</string>
   <string name="filtered_label">מסונן</string>
-  <string name="refresh_failed_msg">{fa-exclamation-circle} הרענון האחרון נכשל. יופיעו פרטים בנגיעה.</string>
+  <string name="refresh_failed_msg">{faw_exclamation_circle} הרענון האחרון נכשל. יופיעו פרטים בנגיעה.</string>
   <string name="open_podcast">פתיחת פודקאסט</string>
   <string name="please_wait_for_data">נא להמתין לסיום טעינת הנתונים</string>
   <string name="updates_disabled_label">העדכונים מושבתים</string>
@@ -691,7 +691,7 @@
   <string name="feed_tags_label">תגיות</string>
   <string name="feed_tags_summary">ניתן לערוך את תגיות הפודקאסט הזה כדי לסייע בארגון המינויים שלך</string>
   <string name="feed_folders_include_root">הצגת הפודקאסט הזה ברשימה הראשית</string>
-  <string name="multi_feed_common_tags_info">{fa-info-circle} רק תגיות שמשותפות לכל המינויים הנבחרים מוצגות. תגיות אחרות לא משתתפות.</string>
+  <string name="multi_feed_common_tags_info">{faw_info_circle} רק תגיות שמשותפות לכל המינויים הנבחרים מוצגות. תגיות אחרות לא משתתפות.</string>
   <string name="auto_download_settings_label">הגדרות הורדה אוטומטית</string>
   <string name="episode_filters_label">מסנן פרקים</string>
   <string name="episode_filters_description">רשימת המונחים בהם יעשה שימוש כדי להחליט אם להכליל או להחריג פרק כלשהו במהלך הורדה אוטומטית</string>

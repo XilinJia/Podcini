@@ -182,7 +182,7 @@
   <string name="select_all_above">Vybrať všetky nad</string>
   <string name="select_all_below">Vybrať všetky pod</string>
   <string name="filtered_label">Filtrované</string>
-  <string name="refresh_failed_msg">{fa-exclamation-circle} Posledná aktualizácia zlyhala. Kliknite pre viac informácií.</string>
+  <string name="refresh_failed_msg">{faw_exclamation_circle} Posledná aktualizácia zlyhala. Kliknite pre viac informácií.</string>
   <string name="open_podcast">Otvoriť podcast</string>
   <string name="please_wait_for_data">Počkajte, kým sa dáta načítajú</string>
   <string name="updates_disabled_label">Obnovovanie vypnuté</string>
@@ -697,7 +697,7 @@
   <string name="feed_tags_label">Štítky</string>
   <string name="feed_tags_summary">Zmeňte si štítky tohto podcastu aby sa pomohlo usporiadaniu Vašich odberov</string>
   <string name="feed_folders_include_root">Zobraziť tento podcast v hlavnom zozname</string>
-  <string name="multi_feed_common_tags_info">{fa-info-circle} Len všeobecné štítky zo všetkých označených odberov sú zobrazené. Ostatné štítky ostávajú nezmenené.</string>
+  <string name="multi_feed_common_tags_info">{faw_info_circle} Len všeobecné štítky zo všetkých označených odberov sú zobrazené. Ostatné štítky ostávajú nezmenené.</string>
   <string name="auto_download_settings_label">Nastavenia automatického sťahovania</string>
   <string name="episode_filters_label">Filter epizód</string>
   <string name="episode_filters_description">Zoznam výrazov použitých na rozhodnutie, či má byť epizóda zahrnutá alebo vylúčená pri automatickom sťahovaní</string>

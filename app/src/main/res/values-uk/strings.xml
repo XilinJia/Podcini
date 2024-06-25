@@ -182,7 +182,7 @@
   <string name="select_all_above">Вибрати все вище</string>
   <string name="select_all_below">Вибрати все нижче</string>
   <string name="filtered_label">Фільтровані</string>
-  <string name="refresh_failed_msg">{fa-exclamation-circle} Останнє оновлення було невдалим. Натисніть, щоб переглянути деталі.</string>
+  <string name="refresh_failed_msg">{faw_exclamation_circle} Останнє оновлення було невдалим. Натисніть, щоб переглянути деталі.</string>
   <string name="open_podcast">Відкрити подкаст</string>
   <string name="please_wait_for_data">Зачекайте, поки завантажаться дані</string>
   <string name="updates_disabled_label">Оновлення вимкнено</string>
@@ -697,7 +697,7 @@
   <string name="feed_tags_label">Мітки</string>
   <string name="feed_tags_summary">Змініть теги цього подкасту, щоб упорядкувати ваші підписки</string>
   <string name="feed_folders_include_root">Відображати цей подкаст в основному списку підписок</string>
-  <string name="multi_feed_common_tags_info">{fa-info-circle} Показані лише спільні теги з усіх вибраних підписок. Інші теги залишаються без змін.</string>
+  <string name="multi_feed_common_tags_info">{faw_info_circle} Показані лише спільні теги з усіх вибраних підписок. Інші теги залишаються без змін.</string>
   <string name="auto_download_settings_label">Налаштування автозавантаження</string>
   <string name="episode_filters_label">Фільтр епізодів</string>
   <string name="episode_filters_description">Перелік термінів, що використовуються для вирішення чи слід завантажувати епізод автоматично</string>

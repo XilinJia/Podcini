@@ -1,5 +1,19 @@
 package de.test.podcini.playback
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.playback.PlaybackController
+import ac.mdiq.podcini.playback.base.InTheatre.curQueue
+import ac.mdiq.podcini.playback.base.MediaPlayerBase
+import ac.mdiq.podcini.playback.base.PlayerStatus
+import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.receiver.MediaButtonReceiver.Companion.createIntent
+import ac.mdiq.podcini.storage.database.Episodes.getEpisode
+import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
+import ac.mdiq.podcini.storage.database.Queues.clearQueue
+import ac.mdiq.podcini.storage.database.Queues.getInQueueEpisodeIds
+import ac.mdiq.podcini.storage.utils.EpisodeFilter.Companion.unfiltered
+import ac.mdiq.podcini.storage.utils.SortOrder
+import ac.mdiq.podcini.ui.activity.MainActivity
 import android.content.Context
 import android.content.Intent
 import android.view.KeyEvent
@@ -12,20 +26,6 @@ import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.ActivityTestRule
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.receiver.MediaButtonReceiver.Companion.createIntent
-import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
-import ac.mdiq.podcini.storage.database.Episodes.getEpisode
-import ac.mdiq.podcini.storage.database.Queues.getInQueueEpisodeIds
-import ac.mdiq.podcini.storage.database.Queues.clearQueue
-import ac.mdiq.podcini.playback.PlaybackController
-import ac.mdiq.podcini.playback.base.MediaPlayerBase
-import ac.mdiq.podcini.storage.utils.EpisodeFilter.Companion.unfiltered
-import ac.mdiq.podcini.storage.utils.SortOrder
-import ac.mdiq.podcini.playback.base.PlayerStatus
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import de.test.podcini.EspressoTestUtils
 import de.test.podcini.IgnoreOnCi
 import de.test.podcini.ui.UITestUtils
@@ -221,8 +221,7 @@ class PlaybackTest {
         EspressoTestUtils.openNavDrawer()
         EspressoTestUtils.onDrawerItem(ViewMatchers.withText(R.string.episodes_label)).perform(ViewActions.click())
 
-        val episodes = getEpisodes(0, 10,
-            unfiltered(), SortOrder.DATE_NEW_OLD)
+        val episodes = getEpisodes(0, 10, unfiltered(), SortOrder.DATE_NEW_OLD)
         val allEpisodesMatcher = Matchers.allOf(ViewMatchers.withId(R.id.recyclerView),
             ViewMatchers.isDisplayed(),
             ViewMatchers.hasMinimumChildCount(2))

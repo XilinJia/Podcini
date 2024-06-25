@@ -180,7 +180,7 @@
   <string name="select_all_above">Seleziona tutti in su</string>
   <string name="select_all_below">Seleziona tutti in giù</string>
   <string name="filtered_label">Filtrati</string>
-  <string name="refresh_failed_msg">{fa-exclamation-circle} Ultimo aggiornamento fallito. Tocca per i dettagli.</string>
+  <string name="refresh_failed_msg">{faw_exclamation_circle} Ultimo aggiornamento fallito. Tocca per i dettagli.</string>
   <string name="open_podcast">Apri podcast</string>
   <string name="please_wait_for_data">Attendi il caricamento dei dati</string>
   <string name="updates_disabled_label">Aggiornamenti disabilitati</string>
@@ -683,7 +683,7 @@
   <string name="feed_tags_label">Tag</string>
   <string name="feed_tags_summary">Cambia i tag di questo podcast per agevolare l\'organizzazione delle tue iscrizioni</string>
   <string name="feed_folders_include_root">Mostra il podcast nella lista principale</string>
-  <string name="multi_feed_common_tags_info">{fa-info-circle} Vengono mostrati solo i tag comuni alle iscrizioni selezionate. Gli altri tag non vengono modificati.</string>
+  <string name="multi_feed_common_tags_info">{faw_info_circle} Vengono mostrati solo i tag comuni alle iscrizioni selezionate. Gli altri tag non vengono modificati.</string>
   <string name="auto_download_settings_label">Impostazioni download automatico</string>
   <string name="episode_filters_label">Filtro degli episodi</string>
   <string name="episode_filters_description">Elenco di termini per filtrare gli episodi da includere o escludere dai download automatici.</string>

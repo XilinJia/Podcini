@@ -160,7 +160,7 @@
   <string name="select_all_above">Valitse kaikki yllä</string>
   <string name="select_all_below">Valitse kaikki alla</string>
   <string name="filtered_label">Suodatettu</string>
-  <string name="refresh_failed_msg">{fa-exclamation-circle} Viimeisin päivitys epäonnistui. Paina tästä saadaksesi lisätietoja.</string>
+  <string name="refresh_failed_msg">{faw_exclamation_circle} Viimeisin päivitys epäonnistui. Paina tästä saadaksesi lisätietoja.</string>
   <string name="open_podcast">Avaa podcast</string>
   <string name="please_wait_for_data">Odota kunnes tiedot ovat ladattu</string>
   <string name="updates_disabled_label">Päivitykset poistettu käytöstä</string>
@@ -609,7 +609,7 @@
   <string name="feed_tags_label">Tunnisteet</string>
   <string name="feed_tags_summary">Muokkaa tämän podcastin tunnisteita tilaustesi järjestelemisen avuksi.</string>
   <string name="feed_folders_include_root">Näytä tämä podcast päälistassa</string>
-  <string name="multi_feed_common_tags_info">{fa-info-circle} Vain kaikissa valituissa tilauksissa esiintyvät tunnisteet näytetään. Muita tunnisteita ei muuteta.</string>
+  <string name="multi_feed_common_tags_info">{faw_info_circle} Vain kaikissa valituissa tilauksissa esiintyvät tunnisteet näytetään. Muita tunnisteita ei muuteta.</string>
   <string name="auto_download_settings_label">Automaattisen latauksen asetukset</string>
   <string name="episode_filters_label">Jaksosuodin</string>
   <string name="episode_filters_description">Lista termeistä joilla valitaan jakso automaattiseen lataukseen</string>

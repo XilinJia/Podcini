@@ -1,14 +1,13 @@
 package ac.mdiq.podcini.storage.transport
 
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
-import android.content.Context
-import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.utils.EpisodeFilter
 import ac.mdiq.podcini.storage.utils.SortOrder
 import ac.mdiq.podcini.util.Logd
+import android.content.Context
 import org.apache.commons.io.IOUtils
-
 import java.io.IOException
 import java.io.Writer
 import java.util.*
@@ -30,8 +29,7 @@ class FavoritesWriter : ExportWriter {
         val feedTemplateStream = context.assets.open(FEED_TEMPLATE)
         val feedTemplate = IOUtils.toString(feedTemplateStream, UTF_8)
 
-        val allFavorites = getEpisodes(0, Int.MAX_VALUE,
-            EpisodeFilter(EpisodeFilter.IS_FAVORITE), SortOrder.DATE_NEW_OLD)
+        val allFavorites = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.IS_FAVORITE), SortOrder.DATE_NEW_OLD)
         val favoriteByFeed = getFeedMap(allFavorites)
 
         writer!!.append(templateParts[0])

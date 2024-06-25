@@ -223,7 +223,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
             try {
                 downloader!!.call()
             } catch (e: Exception) {
-                Log.e(TAG, "performDownload exception on downloader!!.call() ${e.message}")
+                Log.e(TAG, "failed performDownload exception on downloader!!.call() ${e.message}")
                 LogsAndStats.addDownloadStatus(downloader!!.result)
                 sendErrorNotification(request.title?:"")
                 return Result.failure()

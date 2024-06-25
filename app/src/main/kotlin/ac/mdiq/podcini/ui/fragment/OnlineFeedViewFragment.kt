@@ -548,7 +548,7 @@ import kotlin.concurrent.Volatile
                 binding.subscribeButton.setText(R.string.open)
                 if (didPressSubscribe) {
                     didPressSubscribe = false
-                    val feed1 = getFeed(feedId)?: return
+                    val feed1 = getFeed(feedId, true)?: return
                     if (feed1.preferences == null) {
                         feed1.preferences = FeedPreferences(feed1.id, false, FeedPreferences.AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
                     }

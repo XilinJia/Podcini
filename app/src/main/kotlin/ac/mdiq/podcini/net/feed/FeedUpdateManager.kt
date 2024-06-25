@@ -17,6 +17,7 @@ import ac.mdiq.podcini.net.utils.NetworkUtils.networkAvailable
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Feeds
 import ac.mdiq.podcini.storage.database.LogsAndStats
+import ac.mdiq.podcini.storage.database.RealmDB.unmanagedCopy
 import ac.mdiq.podcini.storage.model.DownloadResult
 import ac.mdiq.podcini.storage.model.FeedPreferences
 import ac.mdiq.podcini.storage.utils.VolumeAdaptionSetting
@@ -92,7 +93,7 @@ object FeedUpdateManager {
         val builder = Data.Builder()
         builder.putBoolean(EXTRA_EVEN_ON_MOBILE, true)
         if (feed != null) {
-            builder.putString(EXTRA_FEED_ID, feed.id.toString())
+            builder.putLong(EXTRA_FEED_ID, feed.id)
             builder.putBoolean(EXTRA_NEXT_PAGE, nextPage)
         }
         workRequest.setInputData(builder.build())
@@ -215,11 +216,13 @@ object FeedUpdateManager {
                 if (isStopped) return
 
                 notificationManager.notify(R.id.notification_updating_feeds, createNotification(toUpdate))
-                val feed = toUpdate[0]
+                val feed = unmanagedCopy(toUpdate[0])
                 try {
+                    Logd(TAG, "updating local feed? ${feed.isLocalFeed} ${feed.title}")
                     if (feed.isLocalFeed) LocalFeedUpdater.updateFeed(feed, applicationContext, null)
                     else refreshFeed(feed, force)
                 } catch (e: Exception) {
+                    Logd(TAG, "update failed ${e.message}")
                     Feeds.persistFeedLastUpdateFailed(feed, true)
                     val status = DownloadResult(feed.id, feed.title?:"", DownloadError.ERROR_IO_ERROR, false, e.message?:"")
                     LogsAndStats.addDownloadStatus(status)
@@ -240,12 +243,10 @@ object FeedUpdateManager {
             val request = builder.build()
 
             val downloader = DefaultDownloaderFactory().create(request) ?: throw Exception("Unable to create downloader")
-
             downloader.call()
-
             if (!downloader.result.isSuccessful) {
                 if (downloader.cancelled || downloader.result.reason == DownloadError.ERROR_DOWNLOAD_CANCELLED) return
-
+                Logd(TAG, "update failed: unsuccessful cancelled?")
                 Feeds.persistFeedLastUpdateFailed(feed, true)
                 LogsAndStats.addDownloadStatus(downloader.result)
                 return
@@ -255,6 +256,7 @@ object FeedUpdateManager {
             val success = feedSyncTask.run()
 
             if (!success) {
+                Logd(TAG, "update failed: unsuccessful")
                 Feeds.persistFeedLastUpdateFailed(feed, true)
                 LogsAndStats.addDownloadStatus(feedSyncTask.downloadStatus)
                 return
@@ -286,7 +288,6 @@ object FeedUpdateManager {
                 downloadStatus = DownloadResult(request.title?:"", 0L, request.feedfileType, false,
                     DownloadError.ERROR_REQUEST_ERROR, Date(), "Unknown error: Status not set")
             }
-
             override fun call(): FeedHandlerResult? {
                 Logd(TAG, "in call()")
                 val feed = Feed(request.source, request.lastModified)
@@ -342,7 +343,6 @@ object FeedUpdateManager {
                         Logd(TAG, "Deletion of file '" + feedFile.absolutePath + "' " + (if (deleted) "successful" else "FAILED"))
                     }
                 }
-
                 if (isSuccessful) {
                     downloadStatus = DownloadResult(feed.id, feed.getHumanReadableIdentifier()?:"", DownloadError.SUCCESS, isSuccessful, reasonDetailed?:"")
                     return result
@@ -383,7 +383,6 @@ object FeedUpdateManager {
             fun run(): Boolean {
                 feedHandlerResult = task.call()
                 if (!task.isSuccessful) return false
-
                 savedFeed = Feeds.updateFeed(context, feedHandlerResult!!.feed, false)
                 return true
             }

@@ -1,3 +1,11 @@
+## 6.0.2
+
+* filtered query for episodes is more efficient
+* fixed performance and crash issues in AllEpisodes view with large dataset
+* fixed performance issue in Downloads view
+* in FeedEpisodes view, refresh only performs on the single feed (rather than all feeds)
+* VariableSpeed dialog is no longer depends on the controller
+
 ## 6.0.1
 
 * removing a list of feeds is speedier

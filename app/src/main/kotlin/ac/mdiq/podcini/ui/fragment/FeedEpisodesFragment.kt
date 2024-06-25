@@ -659,7 +659,7 @@ import java.util.concurrent.Semaphore
         lifecycleScope.launch {
             try {
                 feed = withContext(Dispatchers.IO) {
-                    val feed_ = getFeed(feedID)
+                    val feed_ = getFeed(feedID, true)
                     if (feed_ != null) {
                         episodes.clear()
                         if (!feed_.preferences?.filterString.isNullOrEmpty()) {

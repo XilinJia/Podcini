@@ -479,7 +479,7 @@
   <string name="authentication_descr">このポッドキャストとそのエピソード用のユーザー名とパスワードを変更します。</string>
   <string name="feed_tags_label">タグ</string>
   <string name="feed_tags_summary">このPodcastのタグを変更すると、購読の整理がしやすくなります</string>
-  <string name="multi_feed_common_tags_info">{fa-info-circle} 選択したすべての購読に共通のタグのみが表示されます。その他のタグは影響を受けません。</string>
+  <string name="multi_feed_common_tags_info">{faw_info_circle} 選択したすべての購読に共通のタグのみが表示されます。その他のタグは影響を受けません。</string>
   <string name="episode_filters_description">自動ダウンロードのときに、エピソードを含めるか除外する必要があるかを決定するために使用される条件のリスト</string>
   <string name="exclude_terms">以下の用語のいずれかを含むエピソードを除外する</string>
   <string name="include_terms">以下の用語のいずれかを含むエピソードのみを含める</string>

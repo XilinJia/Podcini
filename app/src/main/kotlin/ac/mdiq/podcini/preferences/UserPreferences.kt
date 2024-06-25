@@ -749,7 +749,6 @@ object UserPreferences {
             appPrefs.edit().putString(PREF_SORT_ALL_EPISODES, "" + s!!.code).apply()
         }
 
-    
     var prefFilterAllEpisodes: String
         get() = appPrefs.getString(PREF_FILTER_ALL_EPISODES, "")?:""
         set(filter) {

@@ -97,7 +97,6 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
                 }
                 else -> {
                     checkIfRedirect(response)
-
                     connection = BufferedInputStream(responseBody!!.byteStream())
 
                     val contentRangeHeader = if ((fileExists)) response.header("Content-Range") else null

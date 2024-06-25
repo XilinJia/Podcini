@@ -179,7 +179,7 @@
   <string name="select_all_above">Seleccionar todo lo anterior</string>
   <string name="select_all_below">Seleccionar todo lo siguiente</string>
   <string name="filtered_label">Filtrados</string>
-  <string name="refresh_failed_msg">{fa-exclamation-circle} Error en la última actualización. Toca para ver detalles.</string>
+  <string name="refresh_failed_msg">{faw_exclamation_circle} Error en la última actualización. Toca para ver detalles.</string>
   <string name="open_podcast">Abrir pódcast</string>
   <string name="please_wait_for_data">Esperando a que los datos carguen</string>
   <string name="updates_disabled_label">Actualizaciones deshabilitadas</string>
@@ -682,7 +682,7 @@
   <string name="feed_tags_label">Etiquetas</string>
   <string name="feed_tags_summary">Cambia las etiquetas de este pódcast para ayudarte a organizar tus suscripciones</string>
   <string name="feed_folders_include_root">Mostrar este pódcast en la lista principal</string>
-  <string name="multi_feed_common_tags_info">{fa-info-circle} Solo se muestran las etiquetas comunes a las suscripciones seleccionadas. El resto se mantiene.</string>
+  <string name="multi_feed_common_tags_info">{faw_info_circle} Solo se muestran las etiquetas comunes a las suscripciones seleccionadas. El resto se mantiene.</string>
   <string name="auto_download_settings_label">Opciones de descarga automática</string>
   <string name="episode_filters_label">Filtro de episodios</string>
   <string name="episode_filters_description">Lista de términos usados para decidir si un episodio debe ser incluído o excluído de la descarga automática</string>

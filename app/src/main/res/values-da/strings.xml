@@ -170,7 +170,7 @@
   <string name="select_all_above">Vælg alt ovenfor</string>
   <string name="select_all_below">Vælg alt nedenfor</string>
   <string name="filtered_label">Filtrerede</string>
-  <string name="refresh_failed_msg">{fa-exclamation-circle} Sidste opdatering mislykkedes. Tryk for at se detaljer.</string>
+  <string name="refresh_failed_msg">{faw_exclamation_circle} Sidste opdatering mislykkedes. Tryk for at se detaljer.</string>
   <string name="open_podcast">Åbn podcast</string>
   <string name="please_wait_for_data">Vær venlig og vent til data\'et er indlæst</string>
   <string name="updates_disabled_label">Opdateringer deaktiveret</string>
@@ -661,7 +661,7 @@
   <string name="feed_tags_label">Etiketter</string>
   <string name="feed_tags_summary">Ændr etiketterne for denne podcast for at hjælpe med organiseringen af dine abonnementer</string>
   <string name="feed_folders_include_root">Vis denne podcast i hovedlisten</string>
-  <string name="multi_feed_common_tags_info">{fa-info-circle} Kun fælles etiketter fra alle valgte abonnementer vises. Andre etiketter forbliver upåvirkede.</string>
+  <string name="multi_feed_common_tags_info">{faw_info_circle} Kun fælles etiketter fra alle valgte abonnementer vises. Andre etiketter forbliver upåvirkede.</string>
   <string name="auto_download_settings_label">Indstillinger for automatisk overførsel</string>
   <string name="episode_filters_label">Afsnitsfilter</string>
   <string name="episode_filters_description">Liste af ord, der bliver brugt til at beslutte, om et afsnit skal medtages eller udelades ved automatisk overførsel</string>

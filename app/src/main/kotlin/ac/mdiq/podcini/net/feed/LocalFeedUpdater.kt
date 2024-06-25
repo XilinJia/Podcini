@@ -217,8 +217,7 @@ object LocalFeedUpdater {
     }
 
     @UnstableApi private fun reportError(feed: Feed, reasonDetailed: String?) {
-        val status = DownloadResult(feed.id, feed.title?:"",
-            DownloadError.ERROR_IO_ERROR, false, reasonDetailed?:"")
+        val status = DownloadResult(feed.id, feed.title?:"", DownloadError.ERROR_IO_ERROR, false, reasonDetailed?:"")
         LogsAndStats.addDownloadStatus(status)
         Feeds.persistFeedLastUpdateFailed(feed, true)
     }

@@ -82,7 +82,7 @@ object Feeds {
     }
 
 //    TODO: some callers don't need to copy
-    fun getFeed(feedId: Long, copy: Boolean = true): Feed? {
+    fun getFeed(feedId: Long, copy: Boolean = false): Feed? {
 //        Logd(TAG, "getFeed() called with: $feedId")
 //        val f = realm.query(Feed::class).query("id == $0", feedId).first().find()
 //        return if (f != null && f.isManaged()) realm.copyFromRealm(f) else null
@@ -93,27 +93,22 @@ object Feeds {
         } else null
     }
 
-    private fun searchFeedByIdentifyingValueOrID(feed: Feed): Feed? {
+    private fun searchFeedByIdentifyingValueOrID(feed: Feed, copy: Boolean = false): Feed? {
         Logd(TAG, "searchFeedByIdentifyingValueOrID called")
-        if (feed.id != 0L) return getFeed(feed.id)
+        if (feed.id != 0L) return getFeed(feed.id, copy)
         val feeds = getFeedList()
         for (f in feeds) {
-            if (f.identifyingValue == feed.identifyingValue) return f
+            if (f.identifyingValue == feed.identifyingValue) return if (copy) realm.copyFromRealm(f) else f
         }
         return null
     }
-
-// ------------------ writer ----------------------
 
     /**
      * Adds new Feeds to the database or updates the old versions if they already exists. If another Feed with the same
      * identifying value already exists, this method will add new FeedItems from the new Feed to the existing Feed.
      * These FeedItems will be marked as unread with the exception of the most recent FeedItem.
-     *
      * This method can update multiple feeds at once. Submitting a feed twice in the same method call can result in undefined behavior.
-     *
      * This method should NOT be executed on the GUI thread.
-     *
      * @param context Used for accessing the DB.
      * @param newFeed The new Feed object.
      * @param removeUnlistedItems The episode list in the new Feed object is considered to be exhaustive.
@@ -128,7 +123,7 @@ object Feeds {
         val unlistedItems: MutableList<Episode> = ArrayList()
 
         // Look up feed in the feedslist
-        val savedFeed = searchFeedByIdentifyingValueOrID(newFeed)
+        val savedFeed = searchFeedByIdentifyingValueOrID(newFeed, true)
         if (savedFeed == null) {
             Logd(TAG, "Found no existing Feed with title " + newFeed.title + ". Adding as new one.")
             Logd(TAG, "newFeed.episodes: ${newFeed.episodes.size}")
@@ -250,9 +245,7 @@ object Feeds {
                 addNewFeedsSync(context, newFeed)
                 // Update with default values that are set in database
                 resultFeed = searchFeedByIdentifyingValueOrID(newFeed)
-            } else {
-                persistFeedsSync(savedFeed)
-            }
+            } else persistFeedsSync(savedFeed)
             updateFeedMap()
             if (removeUnlistedItems) runBlocking { deleteEpisodes(context, unlistedItems).join() }
         } catch (e: InterruptedException) {
@@ -431,7 +424,6 @@ object Feeds {
     @JvmStatic
     fun shouldAutoDeleteItemsOnFeed(feed: Feed): Boolean {
         if (!UserPreferences.isAutoDelete) return false
-
         return !feed.isLocalFeed || UserPreferences.isAutoDeleteLocal
     }
 }

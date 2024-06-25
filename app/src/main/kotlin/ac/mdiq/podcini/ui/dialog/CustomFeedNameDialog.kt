@@ -2,6 +2,7 @@ package ac.mdiq.podcini.ui.dialog
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.EditTextDialogBinding
+import ac.mdiq.podcini.storage.database.RealmDB.unmanagedCopy
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Feed
 import android.app.Activity
@@ -28,6 +29,7 @@ class CustomFeedNameDialog(activity: Activity, private var feed: Feed) {
             .setView(binding.root)
             .setTitle(R.string.rename_feed_label)
             .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
+                feed = unmanagedCopy(feed)
                 val newTitle = binding.editText.text.toString()
                 feed.customTitle = newTitle
                 upsertBlk(feed) {}

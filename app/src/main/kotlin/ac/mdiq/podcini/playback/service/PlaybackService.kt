@@ -43,6 +43,7 @@ import ac.mdiq.podcini.storage.database.Episodes.persistEpisode
 import ac.mdiq.podcini.storage.database.Feeds.shouldAutoDeleteItemsOnFeed
 import ac.mdiq.podcini.storage.database.Queues.addToQueue
 import ac.mdiq.podcini.storage.database.RealmDB.realm
+import ac.mdiq.podcini.storage.database.RealmDB.unmanagedCopy
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.CurrentState.Companion.NO_MEDIA_PLAYING
 import ac.mdiq.podcini.storage.model.CurrentState.Companion.PLAYER_STATUS_OTHER
@@ -1107,6 +1108,7 @@ class PlaybackService : MediaSessionService() {
     private fun onFeedPrefsChanged(event: FlowEvent.FeedPrefsChangeEvent) {
         val item = (playable as? EpisodeMedia)?.episode ?: currentitem
         if (item?.feed?.id == event.prefs.feedID) {
+            item.feed = unmanagedCopy(item.feed!!)
             item.feed!!.preferences = event.prefs
         }
     }

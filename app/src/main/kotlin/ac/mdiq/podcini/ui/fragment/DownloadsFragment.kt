@@ -64,7 +64,7 @@ import java.util.*
     private var items: MutableList<Episode> = mutableListOf()
 
     private lateinit var infoBar: TextView
-    private lateinit var adapter: CompletedDownloadsListAdapter
+    private lateinit var adapter: DownloadsListAdapter
     private lateinit var toolbar: MaterialToolbar
     private lateinit var recyclerView: EpisodesRecyclerView
     private lateinit var swipeActions: SwipeActions
@@ -95,7 +95,7 @@ import java.util.*
 
         recyclerView = binding.recyclerView
         recyclerView.setRecycledViewPool((activity as MainActivity).recycledViewPool)
-        adapter = CompletedDownloadsListAdapter(activity as MainActivity)
+        adapter = DownloadsListAdapter()
         adapter.setOnSelectModeListener(this)
         recyclerView.adapter = adapter
         recyclerView.addOnScrollListener(LiftOnScrollListener(binding.appbar))
@@ -141,8 +141,7 @@ import java.util.*
         })
         speedDialView.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
             adapter.selectedItems.let {
-                EpisodeMultiSelectHandler((activity as MainActivity), actionItem.id)
-                    .handleAction(it.filterIsInstance<Episode>())
+                EpisodeMultiSelectHandler((activity as MainActivity), actionItem.id).handleAction(it.filterIsInstance<Episode>())
             }
             adapter.endSelectMode()
             true
@@ -192,7 +191,7 @@ import java.util.*
         return true
     }
 
-    fun onEventMainThread(event: FlowEvent.EpisodeDownloadEvent) {
+    private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
         val newRunningDownloads: MutableSet<String> = HashSet()
         for (url in event.urls) {
             if (DownloadServiceInterface.get()?.isDownloadingEpisode(url) == true) newRunningDownloads.add(url)
@@ -221,23 +220,24 @@ import java.util.*
             EventFlow.events.collectLatest { event ->
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
-                    is FlowEvent.EpisodeEvent -> onEventMainThread(event)
-                    is FlowEvent.PlaybackPositionEvent -> onEventMainThread(event)
+                    is FlowEvent.EpisodeEvent -> onEpisodeEvent(event)
+                    is FlowEvent.PlaybackPositionEvent -> onPlaybackPositionEvent(event)
                     is FlowEvent.PlayerSettingsEvent, is FlowEvent.DownloadLogEvent, is FlowEvent.EpisodePlayedEvent -> loadItems()
                     is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
+                    is FlowEvent.EpisodeDownloadEvent -> onEpisodeDownloadEvent(event)
                     else -> {}
                 }
             }
         }
-        if (eventStickySink == null) eventStickySink = lifecycleScope.launch {
-            EventFlow.stickyEvents.collectLatest { event ->
-                Logd(TAG, "Received sticky event: ${event.TAG}")
-                when (event) {
-                    is FlowEvent.EpisodeDownloadEvent -> onEventMainThread(event)
-                    else -> {}
-                }
-            }
-        }
+//        if (eventStickySink == null) eventStickySink = lifecycleScope.launch {
+//            EventFlow.stickyEvents.collectLatest { event ->
+//                Logd(TAG, "Received sticky event: ${event.TAG}")
+//                when (event) {
+//                    is FlowEvent.EpisodeDownloadEvent -> onEpisodeDownloadEvent(event)
+//                    else -> {}
+//                }
+//            }
+//        }
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
@@ -247,7 +247,6 @@ import java.util.*
             return super.onContextItemSelected(item)
         }
         if (adapter.onContextItemSelected(item)) return true
-
         return EpisodeMenuHandler.onMenuItemClicked(this, item.itemId, selectedItem)
     }
 
@@ -259,9 +258,8 @@ import java.util.*
         emptyView.attachToRecyclerView(recyclerView)
     }
 
-    fun onEventMainThread(event: FlowEvent.EpisodeEvent) {
-//        Logd(TAG, "onEventMainThread() called with ${event.TAG}")
-
+    private fun onEpisodeEvent(event: FlowEvent.EpisodeEvent) {
+//        Logd(TAG, "onEpisodeEvent() called with ${event.TAG}")
         var i = 0
         val size: Int = event.episodes.size
         while (i < size) {
@@ -281,18 +279,17 @@ import java.util.*
         }
 //        have to do this as adapter.notifyItemRemoved(pos) when pos == 0 causes crash
         if (size > 0) {
-            adapter.setDummyViews(0)
+//            adapter.setDummyViews(0)
             adapter.updateItems(items)
         }
         refreshInfoBar()
     }
 
-    fun onEventMainThread(event: FlowEvent.PlaybackPositionEvent) {
-//        Logd(TAG, "onEventMainThread() called with ${event.TAG}")
-        if (currentPlaying != null && currentPlaying!!.isCurMedia)
-            currentPlaying!!.notifyPlaybackPositionUpdated(event)
+    private fun onPlaybackPositionEvent(event: FlowEvent.PlaybackPositionEvent) {
+//        Logd(TAG, "onPlaybackPositionEvent called with ${event.TAG}")
+        if (currentPlaying != null && currentPlaying!!.isCurMedia) currentPlaying!!.notifyPlaybackPositionUpdated(event)
         else {
-            Logd(TAG, "onEventMainThread() ${event.TAG} search list")
+            Logd(TAG, "onPlaybackPositionEvent ${event.TAG} search list")
             for (i in 0 until adapter.itemCount) {
                 val holder: EpisodeViewHolder? = recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeViewHolder
                 if (holder != null && holder.isCurMedia) {
@@ -312,35 +309,37 @@ import java.util.*
 
     private fun loadItems() {
         emptyView.hide()
-
         lifecycleScope.launch {
             try {
                 val result = withContext(Dispatchers.IO) {
+                    Logd(TAG, "loading")
                     val sortOrder: SortOrder? = UserPreferences.downloadsSortedOrder
-                    val downloadedItems: List<Episode> = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(
-                        EpisodeFilter.DOWNLOADED), sortOrder)
-                    val mediaUrls: MutableList<String> = ArrayList()
-                    if (runningDownloads.isEmpty()) {
-                        downloadedItems
-                    } else {
+//                    val downloadedItems = realm.query(Episode::class).query("media.downloaded == true").find().toMutableList()
+//                    if (sortOrder != null) getPermutor(sortOrder).reorder(downloadedItems)
+                    val downloadedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.DOWNLOADED), sortOrder)
+                    Logd(TAG, "downloadedItems: ${downloadedItems.size}")
+                    if (runningDownloads.isEmpty()) downloadedItems
+                    else {
+                        Logd(TAG, "runningDownloads: ${runningDownloads.size}")
+                        val mediaUrls: MutableList<String> = ArrayList()
                         for (url in runningDownloads) {
                             if (EpisodeUtil.indexOfItemWithDownloadUrl(downloadedItems, url) != -1) continue
                             mediaUrls.add(url)
                         }
-                        val currentDownloads: MutableList<Episode> = getEpisdesWithUrl(mediaUrls).toMutableList()
+                        val currentDownloads = getEpisdesWithUrl(mediaUrls).toMutableList()
                         currentDownloads.addAll(downloadedItems)
                         currentDownloads
                     }
                 }
                 withContext(Dispatchers.Main) {
                     items = result.toMutableList()
-                    adapter.setDummyViews(0)
+//                    adapter.setDummyViews(0)
                     progressBar.visibility = View.GONE
                     adapter.updateItems(result)
                     refreshInfoBar()
                 }
             } catch (e: Throwable) {
-                adapter.setDummyViews(0)
+//                adapter.setDummyViews(0)
                 adapter.updateItems(emptyList())
                 Log.e(TAG, Log.getStackTraceString(e))
             }
@@ -382,7 +381,7 @@ import java.util.*
         swipeActions.attachTo(recyclerView)
     }
 
-    @UnstableApi private inner class CompletedDownloadsListAdapter(mainActivity: MainActivity) : EpisodesAdapter(mainActivity) {
+    @UnstableApi private inner class DownloadsListAdapter : EpisodesAdapter(activity as MainActivity) {
         @UnstableApi override fun afterBindViewHolder(holder: EpisodeViewHolder, pos: Int) {
             if (holder.episode != null && !inActionMode()) {
                 if (holder.episode!!.isDownloaded) {
@@ -392,7 +391,6 @@ import java.util.*
                 }
             }
         }
-
         override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
             super.onCreateContextMenu(menu, v, menuInfo)
 //            if (!inActionMode()) {

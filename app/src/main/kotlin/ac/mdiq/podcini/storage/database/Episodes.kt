@@ -69,25 +69,21 @@ object Episodes {
      * @param offset The first episode that should be loaded.
      * @param limit The maximum number of episodes that should be loaded.
      * @param filter The filter describing which episodes to filter out.
+     * TODO: filters of queued and notqueued don't work in this
      */
-    fun getEpisodes(offset: Int, limit: Int, filter: EpisodeFilter?, sortOrder: SortOrder?): List<Episode> {
+    fun getEpisodes(offset: Int, limit: Int, filter: EpisodeFilter?, sortOrder: SortOrder?, copy: Boolean = true): List<Episode> {
         Logd(TAG, "getEpisodes called with: offset=$offset, limit=$limit")
-        val items_ = realm.query(Episode::class).find().toMutableList()
-        var episodes = (if (filter == null) items_ else items_.filter { filter.matches(it) }).toMutableList()
-        if (offset < items_.size) {
-            if (sortOrder != null) getPermutor(sortOrder).reorder(episodes)
-            if (offset < episodes.size) {
-                episodes = episodes.subList(offset, min(episodes.size, offset + limit))
-            }
-        }
-        return realm.copyFromRealm(episodes)
+        val queryString = filter?.queryString()?:"id > 0"
+        var episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
+        if (sortOrder != null) getPermutor(sortOrder).reorder(episodes)
+        if (offset < episodes.size) episodes = episodes.subList(offset, min(episodes.size, offset + limit))
+        return if (copy) realm.copyFromRealm(episodes) else episodes
     }
 
     fun getEpisodesCount(filter: EpisodeFilter?): Int {
-        Logd(TAG, "getTotalEpisodeCount called")
-        val items_ = realm.query(Episode::class).find().toMutableList()
-        val episodes = if (filter == null) items_ else items_.filter { filter.matches(it) }
-        return episodes.size
+        Logd(TAG, "getEpisodesCount called")
+        val queryString = filter?.queryString()?:"id > 0"
+        return realm.query(Episode::class).query(queryString).count().find().toInt()
     }
 
 //    used in tests only
@@ -123,7 +119,6 @@ object Episodes {
      * 2. The device is charging or the user allows auto download on battery
      * 3. There is free space in the episode cache
      * This method is executed on an internal single thread executor.
-     *
      * @param context  Used for accessing the DB.
      * @return A Future that can be used for waiting for the methods completion.
      */
@@ -154,7 +149,6 @@ object Episodes {
          * 2. The device is charging or the user allows auto download on battery
          * 3. There is free space in the episode cache
          * This method is executed on an internal single thread executor.
-         *
          * @param context  Used for accessing the DB.
          * @return A Runnable that will be submitted to an ExecutorService.
          */
@@ -214,7 +208,6 @@ object Episodes {
         }
     }
 
-// -------------- writer --------------------------
 // @JvmStatic is needed because some Runnable blocks call this
     @OptIn(UnstableApi::class) @JvmStatic
     fun deleteMediaOfEpisode(context: Context, episode: Episode) : Job {

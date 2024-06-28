@@ -215,14 +215,6 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
             val podcast: PodcastSearchResult? = getItem(position)
             holder.imageView!!.contentDescription = podcast?.title
 
-//        if (!podcast?.imageUrl.isNullOrBlank()) Glide.with(mainActivityRef.get()!!)
-//            .load(podcast?.imageUrl)
-//            .apply(RequestOptions()
-//                .placeholder(R.color.light_gray)
-//                .transform(FitCenter(), RoundedCorners((8 * mainActivityRef.get()!!.resources.displayMetrics.density).toInt()))
-//                .dontAnimate())
-//            .into(holder.imageView!!)
-
             holder.imageView?.load(podcast?.imageUrl) {
                 placeholder(R.color.light_gray)
                 error(R.mipmap.ic_launcher)

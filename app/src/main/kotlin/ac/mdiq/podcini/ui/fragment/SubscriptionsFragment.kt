@@ -5,10 +5,10 @@ import ac.mdiq.podcini.databinding.*
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.feedOrder
+import ac.mdiq.podcini.preferences.UserPreferences.useGridLayout
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.getTags
 import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
-import ac.mdiq.podcini.storage.database.Feeds.updateFeedMap
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Feed
@@ -38,14 +38,12 @@ import android.widget.*
 import androidx.annotation.OptIn
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.Toolbar
-import androidx.cardview.widget.CardView
 import androidx.core.util.Consumer
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.elevation.SurfaceColors
@@ -72,14 +70,9 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
     private val binding get() = _binding!!
 
     private lateinit var subscriptionRecycler: RecyclerView
-    private lateinit var listAdapter: ListAdapter
+    private lateinit var listAdapter: SubscriptionsAdapter<*>
     private lateinit var emptyView: EmptyViewHandler
-    private lateinit var feedsInfoMsg: LinearLayout
-    private lateinit var feedsFilteredMsg: TextView
-    private lateinit var feedCount: TextView
     private lateinit var toolbar: MaterialToolbar
-    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
-    private lateinit var progressBar: ProgressBar
     private lateinit var speedDialView: SpeedDialView
 
     private var tagFilterIndex = 1
@@ -88,6 +81,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
 
     private var feedList: MutableList<Feed> = mutableListOf()
     private var feedListFiltered: List<Feed> = mutableListOf()
+
+    private var useGrid: Boolean? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -120,20 +115,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         subscriptionRecycler.addItemDecoration(GridDividerItemDecorator())
         registerForContextMenu(subscriptionRecycler)
         subscriptionRecycler.addOnScrollListener(LiftOnScrollListener(binding.appbar))
-//        subscriptionAdapter = object : SubscriptionsAdapter(activity as MainActivity) {
-//            override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
-//                super.onCreateContextMenu(menu, v, menuInfo)
-//                MenuItemUtils.setOnClickListeners(menu) { item: MenuItem ->
-//                    this@SubscriptionsFragment.onContextItemSelected(item)
-//                }
-//            }
-//        }
-        listAdapter = ListAdapter()
-        val gridLayoutManager = GridLayoutManager(context, 1, RecyclerView.VERTICAL, false)
-        subscriptionRecycler.layoutManager = gridLayoutManager
 
-        listAdapter.setOnSelectModeListener(this)
-        subscriptionRecycler.adapter = listAdapter
+        initAdapter()
         setupEmptyView()
 
         resetTags()
@@ -163,31 +146,19 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             } else false
         }
 
-        progressBar = binding.progressBar
-        progressBar.visibility = View.VISIBLE
+        binding.progressBar.visibility = View.VISIBLE
 
         val subscriptionAddButton: FloatingActionButton = binding.subscriptionsAdd
         subscriptionAddButton.setOnClickListener {
             if (activity is MainActivity) (activity as MainActivity).loadChildFragment(AddFeedFragment())
         }
 
-        feedsInfoMsg = binding.feedsInfoMessage
-//        feedsInfoMsg.setOnClickListener {
-//            SubscriptionsFilterDialog().show(
-//                childFragmentManager, "filter")
-//        }
-        feedsFilteredMsg = binding.feedsFilteredMessage
-        feedCount = binding.count
-        feedCount.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
-
-        swipeRefreshLayout = binding.swipeRefresh
-        swipeRefreshLayout.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
-        swipeRefreshLayout.setOnRefreshListener {
+        binding.count.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
+        binding.swipeRefresh.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
+        binding.swipeRefresh.setOnRefreshListener {
             FeedUpdateManager.runOnceOrAsk(requireContext())
         }
-
         val speedDialBinding = MultiSelectSpeedDialBinding.bind(binding.root)
-
         speedDialView = speedDialBinding.fabSD
         speedDialView.overlayLayout = speedDialBinding.fabSDOverlay
         speedDialView.inflate(R.menu.nav_feed_action_speeddial)
@@ -201,14 +172,28 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             FeedMultiSelectActionHandler(activity as MainActivity, listAdapter.selectedItems.filterIsInstance<Feed>()).handleAction(actionItem.id)
             true
         }
-
         loadSubscriptions()
-
         return binding.root
+    }
+
+    private fun initAdapter() {
+        if (useGrid != useGridLayout) {
+            useGrid = useGridLayout
+            var spanCount = 1
+            if (useGrid!!) {
+                listAdapter = GridAdapter()
+                spanCount = 3
+            } else listAdapter = ListAdapter()
+            subscriptionRecycler.layoutManager = GridLayoutManager(context, spanCount, RecyclerView.VERTICAL, false)
+            listAdapter.setOnSelectModeListener(this)
+            subscriptionRecycler.adapter = listAdapter
+            listAdapter.setItems(feedListFiltered)
+        }
     }
 
     override fun onStart() {
         super.onStart()
+        initAdapter()
         procFlowEvents()
     }
 
@@ -242,7 +227,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 }
             }
         }
-        feedCount.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
+        binding.count.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
         listAdapter.setItems(feedListFiltered)
     }
 
@@ -259,7 +244,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             EventFlow.events.collectLatest { event ->
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
-                    is FlowEvent.FeedListUpdateEvent -> onFeedListChanged(event)
+                    is FlowEvent.FeedListEvent -> onFeedListChanged(event)
                     is FlowEvent.EpisodePlayedEvent, is FlowEvent.FeedsSortedEvent -> loadSubscriptions()
                     is FlowEvent.FeedTagsChangedEvent -> resetTags()
                     else -> {}
@@ -270,7 +255,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             EventFlow.stickyEvents.collectLatest { event ->
                 Logd(TAG, "Received sticky event: ${event.TAG}")
                 when (event) {
-                    is FlowEvent.FeedUpdateRunningEvent -> swipeRefreshLayout.isRefreshing = event.isFeedUpdateRunning
+                    is FlowEvent.FeedUpdateRunningEvent -> binding.swipeRefresh.isRefreshing = event.isFeedUpdateRunning
                     else -> {}
                 }
             }
@@ -311,9 +296,9 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                     if ( feedListFiltered.size > result.size) listAdapter.endSelectMode()
                     feedList = result.toMutableList()
                     filterOnTag()
-                    progressBar.visibility = View.GONE
+                    binding.progressBar.visibility = View.GONE
                     listAdapter.setItems(feedListFiltered)
-                    feedCount.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
+                    binding.count.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
                     emptyView.updateVisibility()
                 }
             } catch (e: Throwable) {
@@ -416,7 +401,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
-        val feed: Feed = listAdapter.getSelectedItem() ?: return false
+        val feed: Feed = listAdapter.selectedItem ?: return false
         val itemId = item.itemId
         if (itemId == R.id.multi_select) {
             speedDialView.visibility = View.VISIBLE
@@ -426,8 +411,9 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         return FeedMenuHandler.onMenuItemClicked(this, item.itemId, feed) { this.loadSubscriptions() }
     }
 
-    private fun onFeedListChanged(event: FlowEvent.FeedListUpdateEvent?) {
-        updateFeedMap()
+    private fun onFeedListChanged(event: FlowEvent.FeedListEvent) {
+//        val feeds_ = realm.query(Feed::class,"id IN $0", event.feedIds).find()
+//        updateFeedMap(feeds_)
         loadSubscriptions()
     }
 
@@ -535,12 +521,11 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
     }
 
     @OptIn(UnstableApi::class)
-    private inner class ListAdapter
-        : SelectableAdapter<ListAdapter.ViewHolder?>(activity as MainActivity), View.OnCreateContextMenuListener {
+    private abstract inner class SubscriptionsAdapter<T : RecyclerView.ViewHolder?> : SelectableAdapter<T>(activity as MainActivity), View.OnCreateContextMenuListener {
 
-        private var feedList: List<Feed>
-        private var selectedItem: Feed? = null
-        private var longPressedPosition: Int = 0 // used to init actionMode
+        protected var feedList: List<Feed>
+        var selectedItem: Feed? = null
+        protected var longPressedPosition: Int = 0 // used to init actionMode
         val selectedItems: List<Any>
             get() {
                 val items = ArrayList<Feed>()
@@ -560,14 +545,49 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         fun getItem(position: Int): Any {
             return feedList[position]
         }
-        fun getSelectedItem(): Feed? {
-            return selectedItem
+        override fun getItemCount(): Int {
+            return feedList.size
         }
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        override fun getItemId(position: Int): Long {
+            if (position >= feedList.size) return RecyclerView.NO_ID // Dummy views
+            return feedList[position].id
+        }
+        @OptIn(UnstableApi::class)
+        override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
+            if (selectedItem == null) return
+            val mainActRef = (activity as MainActivity)
+            val inflater: MenuInflater = mainActRef.menuInflater
+            if (inActionMode()) {
+//            inflater.inflate(R.menu.multi_select_context_popup, menu)
+//            menu.findItem(R.id.multi_select).setVisible(true)
+            } else {
+                inflater.inflate(R.menu.nav_feed_context, menu)
+//            menu.findItem(R.id.multi_select).setVisible(true)
+                menu.setHeaderTitle(selectedItem?.title)
+            }
+            MenuItemUtils.setOnClickListeners(menu) { item: MenuItem ->
+                this@SubscriptionsFragment.onContextItemSelected(item)
+            }
+        }
+        fun onContextItemSelected(item: MenuItem): Boolean {
+            if (item.itemId == R.id.multi_select) {
+                startSelectMode(longPressedPosition)
+                return true
+            }
+            return false
+        }
+        fun setItems(listItems: List<Feed>) {
+            this.feedList = listItems
+            notifyDataSetChanged()
+        }
+    }
+
+    private inner class ListAdapter : SubscriptionsAdapter<ViewHolderExpanded>() {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolderExpanded {
             val itemView: View = LayoutInflater.from(activity).inflate(R.layout.subscription_item, parent, false)
-            return ViewHolder(itemView)
+            return ViewHolderExpanded(itemView)
         }
-        @UnstableApi override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        @UnstableApi override fun onBindViewHolder(holder: ViewHolderExpanded, position: Int) {
             val feed: Feed = feedList[position]
             holder.bind(feed)
             if (inActionMode()) {
@@ -622,89 +642,149 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 }
             }
         }
-        override fun getItemCount(): Int {
-            return feedList.size
+    }
+
+    private inner class GridAdapter : SubscriptionsAdapter<ViewHolderBrief>() {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolderBrief {
+            val itemView: View = LayoutInflater.from(activity).inflate(R.layout.subscription_item_brief, parent, false)
+            return ViewHolderBrief(itemView)
         }
-        override fun getItemId(position: Int): Long {
-            if (position >= feedList.size) return RecyclerView.NO_ID // Dummy views
-            return feedList[position].id
-        }
-        @OptIn(UnstableApi::class)
-        override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
-            if (selectedItem == null) return
-            val mainActRef = (activity as MainActivity)
-            val inflater: MenuInflater = mainActRef.menuInflater
+        @UnstableApi override fun onBindViewHolder(holder: ViewHolderBrief, position: Int) {
+            val feed: Feed = feedList[position]
+            holder.bind(feed)
             if (inActionMode()) {
-//            inflater.inflate(R.menu.multi_select_context_popup, menu)
-//            menu.findItem(R.id.multi_select).setVisible(true)
+                holder.selectCheckbox.visibility = View.VISIBLE
+                holder.selectView.visibility = View.VISIBLE
+
+                holder.selectCheckbox.setChecked(isSelected(position))
+                holder.selectCheckbox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
+                    setSelected(holder.bindingAdapterPosition, isChecked)
+                }
+                holder.coverImage.alpha = 0.6f
+                holder.count.visibility = View.GONE
             } else {
-                inflater.inflate(R.menu.nav_feed_context, menu)
-//            menu.findItem(R.id.multi_select).setVisible(true)
-                menu.setHeaderTitle(selectedItem?.title)
+                holder.selectView.visibility = View.GONE
+                holder.coverImage.alpha = 1.0f
             }
-            MenuItemUtils.setOnClickListeners(menu) { item: MenuItem ->
-                this@SubscriptionsFragment.onContextItemSelected(item)
+            holder.coverImage.setOnClickListener {
+                if (inActionMode()) holder.selectCheckbox.setChecked(!isSelected(holder.bindingAdapterPosition))
+                else {
+                    val fragment: Fragment = FeedEpisodesFragment.newInstance(feed.id)
+                    (activity as MainActivity).loadChildFragment(fragment)
+                }
             }
-        }
-        fun onContextItemSelected(item: MenuItem): Boolean {
-            if (item.itemId == R.id.multi_select) {
+            holder.coverImage.setOnLongClickListener {
+                longPressedPosition = holder.bindingAdapterPosition
+                selectedItem = feed
                 startSelectMode(longPressedPosition)
-                return true
+                true
             }
-            return false
-        }
-        fun setItems(listItems: List<Feed>) {
-            this.feedList = listItems
-            notifyDataSetChanged()
-        }
-
-        private inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            val binding = SubscriptionItemBinding.bind(itemView)
-            private val title = binding.titleLabel
-            private val producer = binding.producerLabel
-            val count: TextView = binding.countLabel
-
-            val coverImage: ImageView = binding.coverImage
-            val infoCard: LinearLayout = binding.infoCard
-            val selectView: FrameLayout = binding.selectContainer
-            val selectCheckbox: CheckBox = binding.selectCheckBox
-            private val card: CardView = binding.outerContainer
-
-            private val errorIcon: View = binding.errorIcon
-
-            fun bind(drawerItem: Feed) {
-                val drawable: Drawable? = AppCompatResources.getDrawable(selectView.context, R.drawable.ic_checkbox_background)
-                selectView.background = drawable // Setting this in XML crashes API <= 21
-                title.text = drawerItem.title
-                producer.text = drawerItem.author
-                coverImage.contentDescription = drawerItem.title
-                coverImage.setImageDrawable(null)
-
-                val counter = drawerItem.episodes.size
-                count.text = NumberFormat.getInstance().format(counter.toLong()) + " episodes"
-                count.visibility = View.VISIBLE
-
-                val mainActRef = (activity as MainActivity)
-                val coverLoader = CoverLoader(mainActRef)
-                val feed: Feed = drawerItem
-                coverLoader.withUri(feed.imageUrl)
-                errorIcon.visibility = if (feed.lastUpdateFailed) View.VISIBLE else View.GONE
-
-                coverLoader.withCoverView(coverImage)
-                coverLoader.load()
-
-                val density: Float = mainActRef.resources.displayMetrics.density
-                card.setCardBackgroundColor(SurfaceColors.getColorForElevation(mainActRef, 1 * density))
-
-                val textHPadding = 20
-                val textVPadding = 5
-                title.setPadding(textHPadding, textVPadding, textHPadding, textVPadding)
-                producer.setPadding(textHPadding, textVPadding, textHPadding, textVPadding)
-                count.setPadding(textHPadding, textVPadding, textHPadding, textVPadding)
-
-                val textSize = 14
-                title.textSize = textSize.toFloat()
+            holder.itemView.setOnTouchListener { _: View?, e: MotionEvent ->
+                if (e.isFromSource(InputDevice.SOURCE_MOUSE) && e.buttonState == MotionEvent.BUTTON_SECONDARY) {
+                    if (!inActionMode()) {
+                        longPressedPosition = holder.bindingAdapterPosition
+                        selectedItem = feed
+                    }
+                }
+                false
             }
+            holder.itemView.setOnClickListener {
+                if (inActionMode()) holder.selectCheckbox.setChecked(!isSelected(holder.bindingAdapterPosition))
+                else {
+//                    val fragment: Fragment = FeedEpisodesFragment.newInstance(feed.id)
+//                    mainActivityRef.get()?.loadChildFragment(fragment)
+                }
+            }
+        }
+    }
+
+    private inner class ViewHolderExpanded(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val binding = SubscriptionItemBinding.bind(itemView)
+        val count: TextView = binding.countLabel
+
+        val coverImage: ImageView = binding.coverImage
+        val infoCard: LinearLayout = binding.infoCard
+        val selectView: FrameLayout = binding.selectContainer
+        val selectCheckbox: CheckBox = binding.selectCheckBox
+
+        private val errorIcon: View = binding.errorIcon
+
+        fun bind(drawerItem: Feed) {
+            val drawable: Drawable? = AppCompatResources.getDrawable(selectView.context, R.drawable.ic_checkbox_background)
+            selectView.background = drawable // Setting this in XML crashes API <= 21
+            binding.titleLabel.text = drawerItem.title
+            binding.producerLabel.text = drawerItem.author
+            coverImage.contentDescription = drawerItem.title
+            coverImage.setImageDrawable(null)
+
+            val counter = drawerItem.episodes.size
+            count.text = NumberFormat.getInstance().format(counter.toLong()) + " episodes"
+            count.visibility = View.VISIBLE
+
+            val mainActRef = (activity as MainActivity)
+            val coverLoader = CoverLoader(mainActRef)
+            val feed: Feed = drawerItem
+            coverLoader.withUri(feed.imageUrl)
+            errorIcon.visibility = if (feed.lastUpdateFailed) View.VISIBLE else View.GONE
+
+            coverLoader.withCoverView(coverImage)
+            coverLoader.load()
+
+            val density: Float = mainActRef.resources.displayMetrics.density
+            binding.outerContainer.setCardBackgroundColor(SurfaceColors.getColorForElevation(mainActRef, 1 * density))
+
+            val textHPadding = 20
+            val textVPadding = 5
+            binding.titleLabel.setPadding(textHPadding, textVPadding, textHPadding, textVPadding)
+            binding.producerLabel.setPadding(textHPadding, textVPadding, textHPadding, textVPadding)
+            count.setPadding(textHPadding, textVPadding, textHPadding, textVPadding)
+
+            val textSize = 14
+            binding.titleLabel.textSize = textSize.toFloat()
+        }
+    }
+
+    private inner class ViewHolderBrief(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val binding = SubscriptionItemBriefBinding.bind(itemView)
+        private val title = binding.titleLabel
+        val count: TextView = binding.countLabel
+
+        val coverImage: ImageView = binding.coverImage
+        val selectView: FrameLayout = binding.selectContainer
+        val selectCheckbox: CheckBox = binding.selectCheckBox
+
+        private val errorIcon: View = binding.errorIcon
+
+        fun bind(drawerItem: Feed) {
+            val drawable: Drawable? = AppCompatResources.getDrawable(selectView.context, R.drawable.ic_checkbox_background)
+            selectView.background = drawable // Setting this in XML crashes API <= 21
+            title.text = drawerItem.title
+            coverImage.contentDescription = drawerItem.title
+            coverImage.setImageDrawable(null)
+
+            val counter = drawerItem.episodes.size
+            count.text = NumberFormat.getInstance().format(counter.toLong())
+            count.visibility = View.VISIBLE
+
+            val mainActRef = (activity as MainActivity)
+            val coverLoader = CoverLoader(mainActRef)
+            val feed: Feed = drawerItem
+            coverLoader.withUri(feed.imageUrl)
+            errorIcon.visibility = if (feed.lastUpdateFailed) View.VISIBLE else View.GONE
+
+            coverLoader.withCoverView(coverImage)
+            coverLoader.load()
+
+            val density: Float = mainActRef.resources.displayMetrics.density
+            binding.outerContainer.setCardBackgroundColor(SurfaceColors.getColorForElevation(mainActRef, 1 * density))
+
+            val textHPadding = 20
+            val textVPadding = 5
+            title.setPadding(textHPadding, textVPadding, textHPadding, textVPadding)
+            count.setPadding(textHPadding, textVPadding, textHPadding, textVPadding)
+
+            val textSize = 14
+            title.textSize = textSize.toFloat()
         }
     }
 

@@ -37,6 +37,7 @@ object UserPreferences {
     const val PREF_TINTED_COLORS: String = "prefTintedColors"
     const val PREF_HIDDEN_DRAWER_ITEMS: String = "prefHiddenDrawerItems"
     const val PREF_DRAWER_FEED_ORDER: String = "prefDrawerFeedOrder"
+    const val PREF_FEED_GRID_LAYOUT: String = "prefFeedGridLayout"
     const val PREF_DRAWER_FEED_COUNTER: String = "prefDrawerFeedIndicator"
     const val PREF_EXPANDED_NOTIFICATION: String = "prefExpandNotify"
     private const val PREF_USE_EPISODE_COVER: String = "prefEpisodeCover"
@@ -238,6 +239,9 @@ object UserPreferences {
             .putString(PREF_DRAWER_FEED_ORDER, selected)
             .apply()
     }
+
+    val useGridLayout: Boolean
+        get() = appPrefs.getBoolean(PREF_FEED_GRID_LAYOUT, false)
 
     /**
      * @return `true` if episodes should use their own cover, `false`  otherwise

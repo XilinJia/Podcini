@@ -29,7 +29,7 @@ class Feed : RealmObject {
 
     var fileUrl: String? = null
     var downloadUrl: String? = null
-    var downloaded: Boolean = false
+//    var downloaded: Boolean = false
 
     /**
      * title as defined by the feed.
@@ -156,64 +156,32 @@ class Feed : RealmObject {
         }
 
     /**
-     * This constructor is used for restoring a feed from the database.
+     * This constructor is used for test purposes.
      */
-    constructor(id: Long, lastUpdate: String?, title: String?, customTitle: String?, link: String?,
-                description: String?, paymentLinks: String?, author: String?, language: String?,
-                type: String?, feedIdentifier: String?, imageUrl: String?, fileUrl: String?,
-                downloadUrl: String?, downloaded: Boolean, paged: Boolean, nextPageLink: String?,
-                filter: String?, sortOrder: SortOrder?, lastUpdateFailed: Boolean) {
+    constructor(id: Long, lastUpdate: String?, title: String?, link: String?, description: String?, paymentLink: String?,
+                author: String?, language: String?, type: String?, feedIdentifier: String?, imageUrl: String?, fileUrl: String?,
+                downloadUrl: String?) {
         this.id = id
         this.fileUrl = fileUrl
         this.downloadUrl = downloadUrl
-        this.downloaded = downloaded
         this.eigenTitle = title
         this.customTitle = customTitle
         this.lastUpdate = lastUpdate
         this.link = link
         this.description = description
-        this.paymentLinks = extractPaymentLinks(paymentLinks)
+        this.paymentLinks = extractPaymentLinks(paymentLink)
         this.author = author
         this.language = language
         this.type = type
         this.identifier = feedIdentifier
         this.imageUrl = imageUrl
-        this.isPaged = paged
+        this.isPaged = false
         this.nextPageLink = nextPageLink
-//        if (filter != null) this.episodeFilter = EpisodeFilter(filter)
-//        else this.episodeFilter = EpisodeFilter()
-        this.preferences?.filterString = filter ?: ""
+        this.preferences?.filterString = ""
         this.sortOrder = sortOrder
         this.preferences?.sortOrderCode = sortOrder?.code ?: 0
         this.lastUpdateFailed = lastUpdateFailed
     }
-
-    /**
-     * This constructor is used for test purposes.
-     */
-    constructor(id: Long, lastUpdate: String?, title: String?, link: String?, description: String?, paymentLink: String?,
-                author: String?, language: String?, type: String?, feedIdentifier: String?, imageUrl: String?, fileUrl: String?,
-                downloadUrl: String?, downloaded: Boolean)
-            : this(id,
-        lastUpdate,
-        title,
-        null,
-        link,
-        description,
-        paymentLink,
-        author,
-        language,
-        type,
-        feedIdentifier,
-        imageUrl,
-        fileUrl,
-        downloadUrl,
-        downloaded,
-        false,
-        null,
-        null,
-        null,
-        false)
 
     /**
      * This constructor can be used when parsing feed data. Only the 'lastUpdate' and 'items' field are initialized.
@@ -228,7 +196,6 @@ class Feed : RealmObject {
         this.lastUpdate = lastUpdate
         fileUrl = null
         this.downloadUrl = url
-        downloaded = false
     }
 
     /**
@@ -247,7 +214,7 @@ class Feed : RealmObject {
         preferences = FeedPreferences(0, false, FeedPreferences.AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, username, password)
     }
 
-    fun getHumanReadableIdentifier(): String? {
+    fun getTextIdentifier(): String? {
         return when {
             !customTitle.isNullOrEmpty() -> customTitle
             !eigenTitle.isNullOrEmpty() -> eigenTitle

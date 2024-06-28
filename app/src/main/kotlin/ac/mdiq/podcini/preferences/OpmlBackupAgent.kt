@@ -1,12 +1,12 @@
-package ac.mdiq.podcini.storage.backup
+package ac.mdiq.podcini.preferences
 
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.preferences.UserPreferences.isAutoBackupOPML
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.transport.OpmlReader
-import ac.mdiq.podcini.storage.transport.OpmlWriter
+import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlReader
+import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlWriter
 import ac.mdiq.podcini.util.Logd
 import android.app.backup.BackupAgentHelper
 import android.app.backup.BackupDataInputStream
@@ -45,7 +45,7 @@ class OpmlBackupAgent : BackupAgentHelper() {
          */
         private var mChecksum: ByteArray = byteArrayOf()
 
-        override fun performBackup(oldState: ParcelFileDescriptor, data: BackupDataOutput, newState: ParcelFileDescriptor) {
+        override fun performBackup(oldState: ParcelFileDescriptor?, data: BackupDataOutput, newState: ParcelFileDescriptor) {
             Logd(TAG, "Performing backup")
             val byteStream = ByteArrayOutputStream()
             var digester: MessageDigest? = null
@@ -66,17 +66,14 @@ class OpmlBackupAgent : BackupAgentHelper() {
                 if (digester != null) {
                     val newChecksum = digester.digest()
                     Logd(TAG, "New checksum: " + BigInteger(1, newChecksum).toString(16))
-
                     // Get the old checksum
                     if (oldState != null) {
                         val inState = FileInputStream(oldState.fileDescriptor)
                         val len = inState.read()
-
                         if (len != -1) {
                             val oldChecksum = ByteArray(len)
                             IOUtils.read(inState, oldChecksum, 0, len)
                             Logd(TAG, "Old checksum: " + BigInteger(1, oldChecksum).toString(16))
-
                             if (oldChecksum.contentEquals(newChecksum)) {
                                 Logd(TAG, "Checksums are the same; won't backup")
                                 return
@@ -99,22 +96,18 @@ class OpmlBackupAgent : BackupAgentHelper() {
 
         @OptIn(UnstableApi::class) override fun restoreEntity(data: BackupDataInputStream) {
             Logd(TAG, "Backup restore")
-
             if (OPML_ENTITY_KEY != data.key) {
                 Logd(TAG, "Unknown entity key: " + data.key)
                 return
             }
-
             var digester: MessageDigest? = null
             var reader: Reader
-
             try {
                 digester = MessageDigest.getInstance("MD5")
                 reader = InputStreamReader(DigestInputStream(data, digester), Charset.forName("UTF-8"))
             } catch (e: NoSuchAlgorithmException) {
                 reader = InputStreamReader(data, Charset.forName("UTF-8"))
             }
-
             try {
                 val opmlElements = OpmlReader().readDocument(reader)
                 mChecksum = digester?.digest()?: byteArrayOf()
@@ -139,7 +132,6 @@ class OpmlBackupAgent : BackupAgentHelper() {
 
         /**
          * Writes the new state description, which is the checksum of the OPML file.
-         *
          * @param newState
          * @param checksum
          */

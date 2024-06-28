@@ -20,7 +20,19 @@ import kotlinx.coroutines.runBlocking
 import java.util.*
 import java.util.concurrent.ExecutionException
 
-object EpisodeCleanupAlgorithmFactory {
+object AutoCleanups {
+
+    /**
+     * Removed downloaded episodes outside of the queue if the episode cache is full. Episodes with a smaller
+     * 'playbackCompletionDate'-value will be deleted first.
+     * This method should NOT be executed on the GUI thread.
+     * @param context Used for accessing the DB.
+     */
+//    only used in tests
+    fun performAutoCleanup(context: Context) {
+        build().performCleanup(context)
+    }
+
     @JvmStatic
     fun build(): EpisodeCleanupAlgorithm {
         if (!isEnableAutodownload) return APNullCleanupAlgorithm()
@@ -37,18 +49,24 @@ object EpisodeCleanupAlgorithmFactory {
      * A cleanup algorithm that removes any item that isn't a favorite but only if space is needed.
      */
     class ExceptFavoriteCleanupAlgorithm : EpisodeCleanupAlgorithm() {
+        private val candidates: List<Episode>
+            get() {
+                val candidates: MutableList<Episode> = ArrayList()
+                val downloadedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.DOWNLOADED), SortOrder.DATE_NEW_OLD)
+                for (item in downloadedItems) {
+                    if (item.media != null && item.media!!.downloaded && !item.isFavorite) candidates.add(item)
+                }
+                return candidates
+            }
         /**
          * The maximum number of episodes that could be cleaned up.
-         *
          * @return the number of episodes that *could* be cleaned up, if needed
          */
         override fun getReclaimableItems(): Int {
             return candidates.size
         }
-
-        @OptIn(UnstableApi::class) public override fun performCleanup(context: Context, numberOfEpisodesToDelete: Int): Int {
+        @OptIn(UnstableApi::class) public override fun performCleanup(context: Context, numToRemove: Int): Int {
             var candidates = candidates
-
             // in the absence of better data, we'll sort by item publication date
             candidates = candidates.sortedWith { lhs: Episode, rhs: Episode ->
                 val l = lhs.getPubDate()
@@ -56,9 +74,7 @@ object EpisodeCleanupAlgorithmFactory {
                 if (l != null && r != null) return@sortedWith l.compareTo(r)
                 else return@sortedWith lhs.id.compareTo(rhs.id)  // No date - compare by id which should be always incremented
             }
-
-            val delete = if (candidates.size > numberOfEpisodesToDelete) candidates.subList(0, numberOfEpisodesToDelete) else candidates
-
+            val delete = if (candidates.size > numToRemove) candidates.subList(0, numToRemove) else candidates
             for (item in delete) {
                 if (item.media == null) continue
                 try {
@@ -69,23 +85,10 @@ object EpisodeCleanupAlgorithmFactory {
                     e.printStackTrace()
                 }
             }
-
             val counter = delete.size
-            Log.i(TAG, String.format(Locale.US, "Auto-delete deleted %d episodes (%d requested)", counter, numberOfEpisodesToDelete))
-
+            Log.i(TAG, String.format(Locale.US, "Auto-delete deleted %d episodes (%d requested)", counter, numToRemove))
             return counter
         }
-
-        private val candidates: List<Episode>
-            get() {
-                val candidates: MutableList<Episode> = ArrayList()
-                val downloadedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.DOWNLOADED), SortOrder.DATE_NEW_OLD)
-                for (item in downloadedItems) {
-                    if (item.media != null && item.media!!.downloaded && !item.isFavorite) candidates.add(item)
-                }
-                return candidates
-            }
-
         public override fun getDefaultCleanupParameter(): Int {
             val cacheSize = episodeCacheSize
             if (cacheSize != UserPreferences.EPISODE_CACHE_SIZE_UNLIMITED) {
@@ -94,7 +97,6 @@ object EpisodeCleanupAlgorithmFactory {
             }
             return 0
         }
-
         companion object {
             private val TAG: String = ExceptFavoriteCleanupAlgorithm::class.simpleName ?: "Anonymous"
         }
@@ -105,47 +107,6 @@ object EpisodeCleanupAlgorithmFactory {
      * but only if space is needed.
      */
     class APQueueCleanupAlgorithm : EpisodeCleanupAlgorithm() {
-        /**
-         * @return the number of episodes that *could* be cleaned up, if needed
-         */
-        override fun getReclaimableItems(): Int {
-            return candidates.size
-        }
-
-        @OptIn(UnstableApi::class) public override fun performCleanup(context: Context, numberOfEpisodesToDelete: Int): Int {
-            var candidates = candidates
-
-            // in the absence of better data, we'll sort by item publication date
-            candidates = candidates.sortedWith { lhs: Episode, rhs: Episode ->
-                var l = lhs.getPubDate()
-                var r = rhs.getPubDate()
-
-                if (l == null) l = Date()
-                if (r == null) r = Date()
-
-                l.compareTo(r)
-            }
-
-            val delete = if (candidates.size > numberOfEpisodesToDelete) candidates.subList(0, numberOfEpisodesToDelete) else candidates
-
-            for (item in delete) {
-                if (item.media == null) continue
-                try {
-                    runBlocking { deleteMediaOfEpisode(context, item).join() }
-                } catch (e: InterruptedException) {
-                    e.printStackTrace()
-                } catch (e: ExecutionException) {
-                    e.printStackTrace()
-                }
-            }
-
-            val counter = delete.size
-
-            Log.i(TAG, String.format(Locale.US, "Auto-delete deleted %d episodes (%d requested)", counter, numberOfEpisodesToDelete))
-
-            return counter
-        }
-
         private val candidates: List<Episode>
             get() {
                 val candidates: MutableList<Episode> = ArrayList()
@@ -157,11 +118,40 @@ object EpisodeCleanupAlgorithmFactory {
                 }
                 return candidates
             }
-
+        /**
+         * @return the number of episodes that *could* be cleaned up, if needed
+         */
+        override fun getReclaimableItems(): Int {
+            return candidates.size
+        }
+        @OptIn(UnstableApi::class) public override fun performCleanup(context: Context, numToRemove: Int): Int {
+            var candidates = candidates
+            // in the absence of better data, we'll sort by item publication date
+            candidates = candidates.sortedWith { lhs: Episode, rhs: Episode ->
+                var l = lhs.getPubDate()
+                var r = rhs.getPubDate()
+                if (l == null) l = Date()
+                if (r == null) r = Date()
+                l.compareTo(r)
+            }
+            val delete = if (candidates.size > numToRemove) candidates.subList(0, numToRemove) else candidates
+            for (item in delete) {
+                if (item.media == null) continue
+                try {
+                    runBlocking { deleteMediaOfEpisode(context, item).join() }
+                } catch (e: InterruptedException) {
+                    e.printStackTrace()
+                } catch (e: ExecutionException) {
+                    e.printStackTrace()
+                }
+            }
+            val counter = delete.size
+            Log.i(TAG, String.format(Locale.US, "Auto-delete deleted %d episodes (%d requested)", counter, numToRemove))
+            return counter
+        }
         public override fun getDefaultCleanupParameter(): Int {
             return getNumEpisodesToCleanup(0)
         }
-
         companion object {
             private val TAG: String = APQueueCleanupAlgorithm::class.simpleName ?: "Anonymous"
         }
@@ -171,20 +161,17 @@ object EpisodeCleanupAlgorithmFactory {
      * A cleanup algorithm that never removes anything
      */
     class APNullCleanupAlgorithm : EpisodeCleanupAlgorithm() {
-        public override fun performCleanup(context: Context, parameter: Int): Int {
+        public override fun performCleanup(context: Context, numToRemove: Int): Int {
             // never clean anything up
             Log.i(TAG, "performCleanup: Not removing anything")
             return 0
         }
-
         public override fun getDefaultCleanupParameter(): Int {
             return 0
         }
-
         override fun getReclaimableItems(): Int {
             return 0
         }
-
         companion object {
             private val TAG: String = APNullCleanupAlgorithm::class.simpleName ?: "Anonymous"
         }
@@ -197,49 +184,6 @@ object EpisodeCleanupAlgorithmFactory {
      * Fractional for number of hours, e.g., 0.5 = 12 hours, 0.0416 = 1 hour.   */
 
     class APCleanupAlgorithm(@JvmField @get:VisibleForTesting val numberOfHoursAfterPlayback: Int) : EpisodeCleanupAlgorithm() {
-        /**
-         * @return the number of episodes that *could* be cleaned up, if needed
-         */
-        override fun getReclaimableItems(): Int {
-            return candidates.size
-        }
-
-        @OptIn(UnstableApi::class) public override fun performCleanup(context: Context, numberOfEpisodesToDelete: Int): Int {
-            val candidates = candidates.toMutableList()
-
-            candidates.sortWith { lhs: Episode, rhs: Episode ->
-                var l = lhs.media!!.playbackCompletionDate
-                var r = rhs.media!!.playbackCompletionDate
-
-                if (l == null) l = Date()
-                if (r == null) r = Date()
-
-                l.compareTo(r)
-            }
-
-            val delete = if (candidates.size > numberOfEpisodesToDelete) candidates.subList(0, numberOfEpisodesToDelete) else candidates
-
-            for (item in delete) {
-                try {
-                    runBlocking { deleteMediaOfEpisode(context, item).join() }
-                } catch (e: InterruptedException) {
-                    e.printStackTrace()
-                } catch (e: ExecutionException) {
-                    e.printStackTrace()
-                }
-            }
-
-            val counter = delete.size
-            Log.i(TAG, String.format(Locale.US, "Auto-delete deleted %d episodes (%d requested)", counter, numberOfEpisodesToDelete))
-
-            return counter
-        }
-
-        @VisibleForTesting
-        fun calcMostRecentDateForDeletion(currentDate: Date): Date {
-            return minusHours(currentDate, numberOfHoursAfterPlayback)
-        }
-
         private val candidates: List<Episode>
             get() {
                 val candidates: MutableList<Episode> = ArrayList()
@@ -249,27 +193,54 @@ object EpisodeCleanupAlgorithmFactory {
                 for (item in downloadedItems) {
                     if (item.media != null && item.media!!.downloaded && !idsInQueues.contains(item.id) && item.isPlayed() && !item.isFavorite) {
                         val media = item.media
-                        // make sure this candidate was played at least the proper amount of days prior
-                        // to now
-                        if (media?.playbackCompletionDate != null && media.playbackCompletionDate!!.before(mostRecentDateForDeletion))
-                            candidates.add(item)
+                        // make sure this candidate was played at least the proper amount of days prior to now
+                        if (media?.playbackCompletionDate != null && media.playbackCompletionDate!!.before(mostRecentDateForDeletion)) candidates.add(item)
                     }
                 }
                 return candidates
             }
-
+        /**
+         * @return the number of episodes that *could* be cleaned up, if needed
+         */
+        override fun getReclaimableItems(): Int {
+            return candidates.size
+        }
+        @OptIn(UnstableApi::class) public override fun performCleanup(context: Context, numToRemove: Int): Int {
+            val candidates = candidates.toMutableList()
+            candidates.sortWith { lhs: Episode, rhs: Episode ->
+                var l = lhs.media!!.playbackCompletionDate
+                var r = rhs.media!!.playbackCompletionDate
+                if (l == null) l = Date()
+                if (r == null) r = Date()
+                l.compareTo(r)
+            }
+            val delete = if (candidates.size > numToRemove) candidates.subList(0, numToRemove) else candidates
+            for (item in delete) {
+                try {
+                    runBlocking { deleteMediaOfEpisode(context, item).join() }
+                } catch (e: InterruptedException) {
+                    e.printStackTrace()
+                } catch (e: ExecutionException) {
+                    e.printStackTrace()
+                }
+            }
+            val counter = delete.size
+            Log.i(TAG, String.format(Locale.US, "Auto-delete deleted %d episodes (%d requested)", counter, numToRemove))
+            return counter
+        }
+        @VisibleForTesting
+        fun calcMostRecentDateForDeletion(currentDate: Date): Date {
+            return minusHours(currentDate, numberOfHoursAfterPlayback)
+        }
         public override fun getDefaultCleanupParameter(): Int {
             return getNumEpisodesToCleanup(0)
         }
-
         companion object {
             private val TAG: String = APCleanupAlgorithm::class.simpleName ?: "Anonymous"
             private fun minusHours(baseDate: Date, numberOfHours: Int): Date {
                 val cal = Calendar.getInstance()
                 cal.time = baseDate
-
                 cal.add(Calendar.HOUR_OF_DAY, -1 * numberOfHours)
-
                 return cal.time
             }
         }
@@ -286,22 +257,17 @@ object EpisodeCleanupAlgorithmFactory {
          * @return The number of episodes that were deleted.
          */
         protected abstract fun performCleanup(context: Context, numToRemove: Int): Int
-
         fun performCleanup(context: Context): Int {
             return performCleanup(context, getDefaultCleanupParameter())
         }
-
-        protected abstract fun getDefaultCleanupParameter(): Int
         /**
          * Returns a parameter for performCleanup. The implementation of this interface should decide how much
          * space to free to satisfy the episode cache conditions. If the conditions are already satisfied, this
          * method should not have any effects.
          */
-
-
+        protected abstract fun getDefaultCleanupParameter(): Int
         /**
          * Cleans up just enough episodes to make room for the requested number
-         *
          * @param context            Can be used for accessing the database
          * @param amountOfRoomNeeded the number of episodes we need space for
          * @return The number of epiosdes that were deleted
@@ -309,12 +275,10 @@ object EpisodeCleanupAlgorithmFactory {
         fun makeRoomForEpisodes(context: Context, amountOfRoomNeeded: Int): Int {
             return performCleanup(context, getNumEpisodesToCleanup(amountOfRoomNeeded))
         }
-
         /**
          * @return the number of episodes/items that *could* be cleaned up, if needed
          */
         abstract fun getReclaimableItems(): Int
-
         /**
          * @param amountOfRoomNeeded the number of episodes we want to download
          * @return the number of episodes to delete in order to make room

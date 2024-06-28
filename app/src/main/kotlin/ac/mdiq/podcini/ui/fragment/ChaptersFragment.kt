@@ -11,7 +11,7 @@ import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.storage.utils.ChapterUtils.getCurrentChapterIndex
 import ac.mdiq.podcini.storage.utils.ChapterUtils.loadChapters
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
-import ac.mdiq.podcini.playback.PlaybackController.Companion.position
+import ac.mdiq.podcini.playback.PlaybackController.Companion.curPosition
 import ac.mdiq.podcini.playback.PlaybackController.Companion.seekTo
 import ac.mdiq.podcini.storage.model.Chapter
 import ac.mdiq.podcini.storage.utils.EmbeddedChapterImage
@@ -159,6 +159,7 @@ class ChaptersFragment : AppCompatDialogFragment() {
     }
 
     fun onEventMainThread(event: FlowEvent.PlaybackPositionEvent) {
+        if (event.media?.getIdentifier() != media?.getIdentifier()) return
         updateChapterSelection(getCurrentChapter(media), false)
         adapter.notifyTimeChanged(event.position.toLong())
     }
@@ -166,7 +167,7 @@ class ChaptersFragment : AppCompatDialogFragment() {
     private fun getCurrentChapter(media: Playable?): Int {
         if (controller == null) return -1
 
-        return getCurrentChapterIndex(media, position)
+        return getCurrentChapterIndex(media, curPosition)
     }
 
     private fun loadMediaInfo(forceRefresh: Boolean) {
@@ -274,12 +275,6 @@ class ChaptersFragment : AppCompatDialogFragment() {
                 } else {
                     if (media != null) {
                         val imgUrl = EmbeddedChapterImage.getModelFor(media!!,position)
-//                    if (imgUrl != null) Glide.with(context)
-//                        .load(imgUrl)
-//                        .apply(RequestOptions()
-//                            .dontAnimate()
-//                            .transform(FitCenter(), RoundedCorners((4 * context.resources.displayMetrics.density).toInt())))
-//                        .into(holder.image)
                         holder.image.load(imgUrl)
                     }
                 }

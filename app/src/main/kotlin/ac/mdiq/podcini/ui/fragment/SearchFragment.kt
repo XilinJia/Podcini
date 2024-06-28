@@ -253,7 +253,7 @@ import java.lang.ref.WeakReference
             EventFlow.events.collectLatest { event ->
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
-                    is FlowEvent.FeedListUpdateEvent, is FlowEvent.EpisodePlayedEvent, is FlowEvent.PlayerSettingsEvent -> search()
+                    is FlowEvent.FeedListEvent, is FlowEvent.EpisodePlayedEvent, is FlowEvent.PlayerSettingsEvent -> search()
                     is FlowEvent.EpisodeEvent -> onEventMainThread(event)
                     is FlowEvent.PlaybackPositionEvent -> onEventMainThread(event)
                     else -> {}
@@ -295,13 +295,13 @@ import java.lang.ref.WeakReference
     }
 
     fun onEventMainThread(event: FlowEvent.PlaybackPositionEvent) {
-        if (currentPlaying != null && currentPlaying!!.isCurMedia)
+        if (currentPlaying != null && event.media?.getIdentifier() == currentPlaying!!.episode?.media?.getIdentifier() && currentPlaying!!.isCurMedia)
             currentPlaying!!.notifyPlaybackPositionUpdated(event)
         else {
             Logd(TAG, "onEventMainThread() ${event.TAG} search list")
             for (i in 0 until adapter.itemCount) {
                 val holder: EpisodeViewHolder? = recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeViewHolder
-                if (holder != null && holder.isCurMedia) {
+                if (holder != null && event.media?.getIdentifier() == holder.episode?.media?.getIdentifier()) {
                     currentPlaying = holder
                     holder.notifyPlaybackPositionUpdated(event)
                     break
@@ -509,13 +509,6 @@ import java.lang.ref.WeakReference
                 false
             }
 
-//        if (!podcast.imageUrl.isNullOrBlank()) Glide.with(mainActivityRef.get()!!)
-//            .load(podcast.imageUrl)
-//            .apply(RequestOptions()
-//                .placeholder(R.color.light_gray)
-//                .fitCenter()
-//                .dontAnimate())
-//            .into(holder.imageView)
             holder.imageView.load(podcast.imageUrl) {
                 placeholder(R.color.light_gray)
                 error(R.mipmap.ic_launcher)

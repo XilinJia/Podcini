@@ -1,3 +1,18 @@
+## 6.0.3
+
+* minor class restructuring
+* PlayerDetailed view updates properly when new episode starts playing
+* on PlayerDetailed and EpisodeHome views the home button on action bar has a toggle
+* progressive loading in some episodes list views are more efficient
+* live monitoring feed changes in DB
+* re-worked some events related to feed changes
+* fixed issue of player skipping to next or fast-forwarding past the end
+* fixed issue of not properly handling widgets (existing since some release of version 5)
+* grid view is enabled for Subscriptions and can be switched on in Settings->User interface
+* on importing preferences, PlayerWidgetPrefs is ignored
+* position updates to widget is also set for every 5 seconds
+* further class restructuring and code cleaning
+
 ## 6.0.2
 
 * filtered query for episodes is more efficient

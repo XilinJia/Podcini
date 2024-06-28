@@ -50,14 +50,6 @@ abstract class StatisticsListAdapter protected constructor(@JvmField protected v
         } else {
             val holder = h as StatisticsHolder
             val statsItem = statisticsData!![position - 1]
-//            if (!statsItem.feed.imageUrl.isNullOrBlank()) Glide.with(context)
-//                .load(statsItem.feed.imageUrl)
-//                .apply(RequestOptions()
-//                    .placeholder(R.color.light_gray)
-//                    .error(R.color.light_gray)
-//                    .fitCenter()
-//                    .dontAnimate())
-//                .into(holder.image)
             holder.image.load(statsItem.feed.imageUrl) {
                 placeholder(R.color.light_gray)
                 error(R.mipmap.ic_launcher)

@@ -75,7 +75,7 @@ class CoverLoader(private val activity: MainActivity) {
             .data(uri)
             .setHeader("User-Agent", "Mozilla/5.0")
             .listener(object : ImageRequest.Listener {
-                override fun onError(request: ImageRequest, throwable: ErrorResult) {
+                override fun onError(request: ImageRequest, result: ErrorResult) {
                     Logd("CoverLoader", "Trying to get fallback image")
                     val fallbackImageRequest = ImageRequest.Builder(activity)
                         .data(fallbackUri)
@@ -99,13 +99,13 @@ class CoverLoader(private val activity: MainActivity) {
         override fun onStart(placeholder: Drawable?) {
 
         }
-        override fun onError(errorDrawable: Drawable?) {
+        override fun onError(error: Drawable?) {
             setTitleVisibility(fallbackTitle.get(), true)
         }
 
-        override fun onSuccess(resource: Drawable) {
+        override fun onSuccess(result: Drawable) {
             val ivCover = cover.get()
-            ivCover!!.setImageDrawable(resource)
+            ivCover!!.setImageDrawable(result)
             setTitleVisibility(fallbackTitle.get(), textAndImageCombined)
         }
 

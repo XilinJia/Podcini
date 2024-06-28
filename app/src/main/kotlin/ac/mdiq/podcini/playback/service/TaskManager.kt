@@ -351,7 +351,7 @@ class TaskManager(private val context: Context, private val callback: PSTMCallba
         /**
          * Notification interval of widget updater in milliseconds.
          */
-        const val WIDGET_UPDATER_NOTIFICATION_INTERVAL: Int = 1000
+        const val WIDGET_UPDATER_NOTIFICATION_INTERVAL: Int = 5000
         private const val SCHED_EX_POOL_SIZE = 2
         private const val UPDATE_INTERVAL = 1000L
         const val NOTIFICATION_THRESHOLD: Long = 10000

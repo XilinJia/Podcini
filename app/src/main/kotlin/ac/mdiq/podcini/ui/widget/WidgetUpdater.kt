@@ -14,6 +14,7 @@ import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.activity.starter.PlaybackSpeedActivityStarter
 import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
 import ac.mdiq.podcini.util.Converter.getDurationStringLong
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.TimeSpeedConverter
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
@@ -45,11 +46,12 @@ object WidgetUpdater {
      * Update the widgets with the given parameters. Must be called in a background thread.
      */
     fun updateWidget(context: Context, widgetState: WidgetState?) {
-        if (!isEnabled(context) || widgetState == null) return
+        if (!isEnabled() || widgetState == null) return
+        Logd(TAG, "in updateWidget")
 
-        val startMediaPlayer = if (widgetState.media != null && widgetState.media.getMediaType() === MediaType.VIDEO)
-            VideoPlayerActivityStarter(context).pendingIntent
-        else MainActivityStarter(context).withOpenPlayer().pendingIntent
+        val startMediaPlayer =
+            if (widgetState.media != null && widgetState.media.getMediaType() === MediaType.VIDEO) VideoPlayerActivityStarter(context).pendingIntent
+            else MainActivityStarter(context).withOpenPlayer().pendingIntent
 
         val startPlaybackSpeedDialog = PlaybackSpeedActivityStarter(context).pendingIntent
         val views = RemoteViews(context.packageName, R.layout.player_widget)
@@ -61,26 +63,9 @@ object WidgetUpdater {
             views.setOnClickPendingIntent(R.id.imgvCover, startMediaPlayer)
             views.setOnClickPendingIntent(R.id.butPlaybackSpeed, startPlaybackSpeedDialog)
 
-            val radius = context.resources.getDimensionPixelSize(R.dimen.widget_inner_radius)
-//            val options = RequestOptions()
-//                .dontAnimate()
-//                .transform(FitCenter(), RoundedCorners(radius))
-
             try {
                 val imgLoc = widgetState.media.getImageLocation()
                 val imgLoc1 = getFallbackImageLocation(widgetState.media)
-//                icon = Glide.with(context)
-//                    .asBitmap()
-//                    .load(imgLoc)
-//                    .error(Glide.with(context)
-//                        .asBitmap()
-//                        .load(imgLoc1)
-//                        .apply(options)
-//                        .submit(iconSize, iconSize)[500, TimeUnit.MILLISECONDS])
-//                    .apply(options)
-//                    .submit(iconSize, iconSize)
-//                    .get(500, TimeUnit.MILLISECONDS)
-
                 CoroutineScope(Dispatchers.IO).launch {
                     val request = ImageRequest.Builder(context)
                         .data(imgLoc)
@@ -162,6 +147,7 @@ object WidgetUpdater {
         val widgetIds = manager.getAppWidgetIds(playerWidget)
 
         for (id in widgetIds) {
+            Logd(TAG, "updating widget $id")
             val options = manager.getAppWidgetOptions(id)
 //            val prefs = context.getSharedPreferences(PlayerWidget.PREFS_NAME, Context.MODE_PRIVATE)
             val minWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)

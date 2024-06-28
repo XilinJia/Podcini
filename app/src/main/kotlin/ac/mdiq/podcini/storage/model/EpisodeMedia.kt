@@ -1,10 +1,10 @@
 package ac.mdiq.podcini.storage.model
 
-import ac.mdiq.podcini.storage.database.RealmDB.realm
-import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
-import ac.mdiq.podcini.storage.utils.MediaType
+import ac.mdiq.podcini.net.feed.parser.media.id3.ChapterReader
 import ac.mdiq.podcini.storage.utils.MediaMetadataRetrieverCompat
+import ac.mdiq.podcini.storage.utils.MediaType
 import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.showStackTrace
 import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
@@ -116,14 +116,14 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
         this.downloaded = downloaded
     }
 
-    constructor(id: Long, item: Episode?, duration: Int, position: Int,
-                size: Long, mime_type: String?, file_url: String?, download_url: String?,
-                downloaded: Boolean, playbackCompletionDate: Date?, played_duration: Int,
-                hasEmbeddedPicture: Boolean?, lastPlayedTime: Long)
-            : this(id, item, duration, position, size, mime_type, file_url, download_url, downloaded, playbackCompletionDate, played_duration, lastPlayedTime) {
-
-        this.hasEmbeddedPicture = hasEmbeddedPicture
-    }
+//    constructor(id: Long, item: Episode?, duration: Int, position: Int,
+//                size: Long, mime_type: String?, file_url: String?, download_url: String?,
+//                downloaded: Boolean, playbackCompletionDate: Date?, played_duration: Int,
+//                hasEmbeddedPicture: Boolean?, lastPlayedTime: Long)
+//            : this(id, item, duration, position, size, mime_type, file_url, download_url, downloaded, playbackCompletionDate, played_duration, lastPlayedTime) {
+//
+//        this.hasEmbeddedPicture = hasEmbeddedPicture
+//    }
 
     fun getHumanReadableIdentifier(): String? {
         return if (episode?.title != null) episode!!.title else downloadUrl
@@ -165,16 +165,16 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
         return duration
     }
 
-    override fun setDuration(duration: Int) {
-        this.duration = duration
+    override fun setDuration(newDuration: Int) {
+        this.duration = newDuration
     }
     override fun getPosition(): Int {
         return position
     }
 
-    override fun setPosition(position: Int) {
-        this.position = position
-        if (position > 0 && episode != null && episode!!.isNew) episode!!.setPlayed(false)
+    override fun setPosition(newPosition: Int) {
+        this.position = newPosition
+        if (newPosition > 0 && episode != null && episode!!.isNew) episode!!.setPlayed(false)
     }
 
     override fun getLastPlayedTime(): Long {
@@ -247,8 +247,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
 //    }
 
     override fun getEpisodeTitle(): String {
-        if (episode == null) return "No title"
-        return if (episode!!.title != null) episode!!.title!! else episode!!.identifyingValue?:"No title"
+        return episode?.title ?: episode?.identifyingValue ?: "No title"
     }
 
     override fun getChapters(): List<Chapter> {
@@ -264,8 +263,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
     }
 
     override fun getFeedTitle(): String {
-        if (episode == null) return ""
-        return episode!!.feed?.title?:""
+        return episode?.feed?.title?:""
     }
 
     override fun getIdentifier(): Any {
@@ -368,6 +366,8 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
     }
 
     companion object {
+        private val TAG: String = EpisodeMedia::class.simpleName ?: "Anonymous"
+
         const val FEEDFILETYPE_FEEDMEDIA: Int = 2
         const val PLAYABLE_TYPE_FEEDMEDIA: Int = 1
         const val FILENAME_PREFIX_EMBEDDED_COVER: String = "metadata-retriever:"

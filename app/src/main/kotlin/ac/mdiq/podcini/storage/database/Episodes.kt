@@ -5,18 +5,11 @@ import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.net.feed.LocalFeedUpdater.updateFeed
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
-import ac.mdiq.podcini.net.utils.NetworkUtils.isAutoDownloadAllowed
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.base.InTheatre.curState
-import ac.mdiq.podcini.playback.base.InTheatre.isCurMedia
 import ac.mdiq.podcini.playback.base.InTheatre.writeNoMediaPlaying
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.ACTION_SHUTDOWN_PLAYBACK_SERVICE
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.episodeCacheSize
-import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
-import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownloadOnBattery
 import ac.mdiq.podcini.preferences.UserPreferences.shouldDeleteRemoveFromQueue
-import ac.mdiq.podcini.storage.algorithms.EpisodeCleanupAlgorithmFactory
 import ac.mdiq.podcini.storage.database.Queues.removeFromAllQueues
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueueSync
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -29,7 +22,6 @@ import ac.mdiq.podcini.storage.utils.EpisodeFilter
 import ac.mdiq.podcini.storage.utils.SortOrder
 import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.PowerUtils.deviceCharging
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
 import ac.mdiq.podcini.util.sorting.EpisodesPermutors.getPermutor
@@ -43,27 +35,11 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.Job
 import java.io.File
-import java.text.DateFormat
 import java.util.*
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import java.util.concurrent.Future
-import kotlin.math.abs
 import kotlin.math.min
 
 object Episodes {
     private val TAG: String = Episodes::class.simpleName ?: "Anonymous"
-
-    /**
-     * Executor service used by the autodownloadUndownloadedEpisodes method.
-     */
-    private val autodownloadExec: ExecutorService = Executors.newSingleThreadExecutor { r: Runnable? ->
-        val t = Thread(r)
-        t.priority = Thread.MIN_PRIORITY
-        t
-    }
-
-    var downloadAlgorithm = AutomaticDownloadAlgorithm()
 
     /**
      * @param offset The first episode that should be loaded.
@@ -113,101 +89,6 @@ object Episodes {
         return if (media != null) realm.copyFromRealm(media) else null
     }
 
-    /**
-     * Looks for non-downloaded episodes in the queue or list of unread episodes and request a download if
-     * 1. Network is available
-     * 2. The device is charging or the user allows auto download on battery
-     * 3. There is free space in the episode cache
-     * This method is executed on an internal single thread executor.
-     * @param context  Used for accessing the DB.
-     * @return A Future that can be used for waiting for the methods completion.
-     */
-    @UnstableApi
-    fun autodownloadEpisodeMedia(context: Context): Future<*> {
-        Logd(TAG, "autodownloadEpisodeMedia")
-        return autodownloadExec.submit(downloadAlgorithm.autoDownloadEpisodeMedia(context))
-    }
-
-    /**
-     * Removed downloaded episodes outside of the queue if the episode cache is full. Episodes with a smaller
-     * 'playbackCompletionDate'-value will be deleted first.
-     * This method should NOT be executed on the GUI thread.
-     * @param context Used for accessing the DB.
-     */
-    fun performAutoCleanup(context: Context) {
-        EpisodeCleanupAlgorithmFactory.build().performCleanup(context)
-    }
-
-    /**
-     * Implements the automatic download algorithm used by Podcini. This class assumes that
-     * the client uses the [EpisodeCleanupAlgorithm].
-     */
-    open class AutomaticDownloadAlgorithm {
-        /**
-         * Looks for undownloaded episodes in the queue or list of new items and request a download if
-         * 1. Network is available
-         * 2. The device is charging or the user allows auto download on battery
-         * 3. There is free space in the episode cache
-         * This method is executed on an internal single thread executor.
-         * @param context  Used for accessing the DB.
-         * @return A Runnable that will be submitted to an ExecutorService.
-         */
-        @UnstableApi open fun autoDownloadEpisodeMedia(context: Context): Runnable? {
-            return Runnable {
-                // true if we should auto download based on network status
-//            val networkShouldAutoDl = (isAutoDownloadAllowed)
-                val networkShouldAutoDl = (isAutoDownloadAllowed && isEnableAutodownload)
-
-                // true if we should auto download based on power status
-                val powerShouldAutoDl = (deviceCharging(context) || isEnableAutodownloadOnBattery)
-                Logd(TAG, "prepare autoDownloadUndownloadedItems $networkShouldAutoDl $powerShouldAutoDl")
-
-                // we should only auto download if both network AND power are happy
-                if (networkShouldAutoDl && powerShouldAutoDl) {
-                    Logd(TAG, "Performing auto-dl of undownloaded episodes")
-
-                    val candidates: MutableList<Episode>
-                    val queue = curQueue.episodes
-
-                    val newItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.NEW), SortOrder.DATE_NEW_OLD)
-                    Logd(TAG, "newItems: ${newItems.size}")
-                    candidates = ArrayList(queue.size + newItems.size)
-                    candidates.addAll(queue)
-                    for (newItem in newItems) {
-                        val feedPrefs = newItem.feed!!.preferences
-                        if (feedPrefs!!.autoDownload && !candidates.contains(newItem) && feedPrefs.filter.shouldAutoDownload(newItem)) candidates.add(newItem)
-                    }
-
-                    // filter items that are not auto downloadable
-                    val it = candidates.iterator()
-                    while (it.hasNext()) {
-                        val item = it.next()
-                        if (!item.isAutoDownloadEnabled || item.isDownloaded || item.media == null || isCurMedia(item.media) || item.feed?.isLocalFeed == true)
-                            it.remove()
-                    }
-
-                    val autoDownloadableEpisodes = candidates.size
-                    val downloadedEpisodes = getEpisodesCount(EpisodeFilter(EpisodeFilter.DOWNLOADED))
-                    val deletedEpisodes = EpisodeCleanupAlgorithmFactory.build().makeRoomForEpisodes(context, autoDownloadableEpisodes)
-                    val cacheIsUnlimited = episodeCacheSize == UserPreferences.EPISODE_CACHE_SIZE_UNLIMITED
-                    val episodeCacheSize = episodeCacheSize
-                    val episodeSpaceLeft = if (cacheIsUnlimited || episodeCacheSize >= downloadedEpisodes + autoDownloadableEpisodes) autoDownloadableEpisodes
-                    else episodeCacheSize - (downloadedEpisodes - deletedEpisodes)
-
-                    val itemsToDownload: List<Episode> = candidates.subList(0, episodeSpaceLeft)
-                    if (itemsToDownload.isNotEmpty()) {
-                        Logd(TAG, "Enqueueing " + itemsToDownload.size + " items for download")
-                        for (episode in itemsToDownload) DownloadServiceInterface.get()?.download(context, episode)
-                    }
-                }
-                else Logd(TAG, "not auto downloaded networkShouldAutoDl: $networkShouldAutoDl powerShouldAutoDl $powerShouldAutoDl")
-            }
-        }
-        companion object {
-            private val TAG: String = AutomaticDownloadAlgorithm::class.simpleName ?: "Anonymous"
-        }
-    }
-
 // @JvmStatic is needed because some Runnable blocks call this
     @OptIn(UnstableApi::class) @JvmStatic
     fun deleteMediaOfEpisode(context: Context, episode: Episode) : Job {
@@ -228,7 +109,7 @@ object Episodes {
     private fun deleteMediaSync(context: Context, episode: Episode): Boolean {
         Logd(TAG, "deleteMediaSync called")
         val media = episode.media ?: return false
-        Log.i(TAG, String.format(Locale.US, "Requested to delete EpisodeMedia [id=%d, title=%s, downloaded=%s", media.id, media.getEpisodeTitle(), media.downloaded))
+        Logd(TAG, String.format(Locale.US, "Requested to delete EpisodeMedia [id=%d, title=%s, downloaded=%s", media.id, media.getEpisodeTitle(), media.downloaded))
         var localDelete = false
         val url = media.fileUrl
         when {
@@ -312,17 +193,7 @@ object Episodes {
                 }
             }
         }
-        if (removedFromQueue.isNotEmpty()) {
-            curQueue.episodes.clear()
-            curQueue.episodes.addAll(queueItems)
-//            upsertBlk(curQueue) {}
-        }
-//        TODO: need to update download logs?
-//        val adapter = getInstance()
-//        adapter.open()
-//        if (removedFromQueue.isNotEmpty()) adapter.setQueue(queueItems)
-//        adapter.removeFeedItems(episodes)
-//        adapter.close()
+        if (removedFromQueue.isNotEmpty()) removeFromAllQueues(*removedFromQueue.toTypedArray())
 
         for (episode in removedFromQueue) EventFlow.postEvent(FlowEvent.QueueEvent.irreversibleRemoved(episode))
 
@@ -372,7 +243,6 @@ object Episodes {
      * Adds a Episode object to the playback history. A Episode object is in the playback history if
      * its playback completion date is set to a non-null value. This method will set the playback completion date to the
      * current date regardless of the current value.
-     *
      * @param episode Episode that should be added to the playback history.
      * @param date PlaybackCompletionDate for `media`
      */
@@ -412,69 +282,6 @@ object Episodes {
                 if (played == Episode.PLAYED) removeFromAllQueues(episode)
                 EventFlow.postEvent(FlowEvent.EpisodePlayedEvent(episode))
             }
-        }
-    }
-
-    /**
-     * Publishers sometimes mess up their feed by adding episodes twice or by changing the ID of existing episodes.
-     * This class tries to guess if publishers actually meant another episode,
-     * even if their feed explicitly says that the episodes are different.
-     */
-    object EpisodeDuplicateGuesser {
-        fun seemDuplicates(item1: Episode, item2: Episode): Boolean {
-            if (sameAndNotEmpty(item1.identifier, item2.identifier)) return true
-
-            val media1 = item1.media
-            val media2 = item2.media
-            if (media1 == null || media2 == null) return false
-
-            if (sameAndNotEmpty(media1.getStreamUrl(), media2.getStreamUrl())) return true
-
-            return (titlesLookSimilar(item1, item2) && datesLookSimilar(item1, item2) && durationsLookSimilar(media1, media2) && mimeTypeLooksSimilar(media1, media2))
-        }
-
-        fun sameAndNotEmpty(string1: String?, string2: String?): Boolean {
-            if (string1.isNullOrEmpty() || string2.isNullOrEmpty()) return false
-            return string1 == string2
-        }
-
-        private fun datesLookSimilar(item1: Episode, item2: Episode): Boolean {
-            if (item1.getPubDate() == null || item2.getPubDate() == null) return false
-
-            val dateFormat = DateFormat.getDateInstance(DateFormat.SHORT, Locale.US) // MM/DD/YY
-            val dateOriginal = dateFormat.format(item2.getPubDate()!!)
-            val dateNew = dateFormat.format(item1.getPubDate()!!)
-            return dateOriginal == dateNew // Same date; time is ignored.
-        }
-
-        private fun durationsLookSimilar(media1: EpisodeMedia, media2: EpisodeMedia): Boolean {
-            return abs((media1.getDuration() - media2.getDuration()).toDouble()) < 10 * 60L * 1000L
-        }
-
-        private fun mimeTypeLooksSimilar(media1: EpisodeMedia, media2: EpisodeMedia): Boolean {
-            var mimeType1 = media1.mimeType
-            var mimeType2 = media2.mimeType
-            if (mimeType1 == null || mimeType2 == null) return true
-
-            if (mimeType1.contains("/") && mimeType2.contains("/")) {
-                mimeType1 = mimeType1.substring(0, mimeType1.indexOf("/"))
-                mimeType2 = mimeType2.substring(0, mimeType2.indexOf("/"))
-            }
-            return (mimeType1 == mimeType2)
-        }
-
-        private fun titlesLookSimilar(item1: Episode, item2: Episode): Boolean {
-            return sameAndNotEmpty(canonicalizeTitle(item1.title), canonicalizeTitle(item2.title))
-        }
-
-        private fun canonicalizeTitle(title: String?): String {
-            if (title == null) return ""
-            return title
-                .trim { it <= ' ' }
-                .replace('“', '"')
-                .replace('”', '"')
-                .replace('„', '"')
-                .replace('—', '-')
         }
     }
 }

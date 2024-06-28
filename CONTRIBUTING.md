@@ -24,7 +24,7 @@ How to submit a feature request
 Translating Podcini
 ----------------------
 
-If you would like to translate the app into another language or improve an existing translation, you can visit the [Transifex project page](to be announced/). From there, you can either join a language team if it already exists or create a new language team.
+If you would like to translate the app into another language or improve an existing translation, you can visit the [Transifex project page](https://app.transifex.com/xilinjia/podcini/dashboard/). From there, you can either join a language team if it already exists or create a new language team.
 
 Submit a pull request
 ---------------------

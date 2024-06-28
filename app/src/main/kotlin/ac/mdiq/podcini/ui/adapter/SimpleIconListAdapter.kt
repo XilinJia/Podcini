@@ -22,13 +22,6 @@ class SimpleIconListAdapter<T : SimpleIconListAdapter.ListItem>(private val cont
         val binding = SimpleIconListItemBinding.bind(view!!)
         binding.title.text = item.title
         binding.subtitle.text = item.subtitle
-//        if (item.imageUrl.isNotBlank()) Glide.with(context)
-//            .load(item.imageUrl)
-//            .apply(RequestOptions()
-//                .diskCacheStrategy(DiskCacheStrategy.NONE)
-//                .fitCenter()
-//                .dontAnimate())
-//            .into(binding.icon)
         binding.icon.load(item.imageUrl)
         return view
     }

@@ -48,7 +48,7 @@ object RemoveFeedDialog {
                             for (feed in feeds) {
                                 deleteFeed(context, feed.id, false)
                             }
-                            EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(feeds))
+//                            EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.REMOVED, feeds))
                         }
                         withContext(Dispatchers.Main) {
                             Logd(TAG, "Feed(s) deleted")

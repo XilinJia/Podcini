@@ -12,11 +12,11 @@ import androidx.test.filters.LargeTest
 import androidx.test.rule.ActivityTestRule
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
-import ac.mdiq.podcini.storage.algorithms.EpisodeCleanupAlgorithmFactory.APCleanupAlgorithm
-import ac.mdiq.podcini.storage.algorithms.EpisodeCleanupAlgorithmFactory.APNullCleanupAlgorithm
-import ac.mdiq.podcini.storage.algorithms.EpisodeCleanupAlgorithmFactory.APQueueCleanupAlgorithm
-import ac.mdiq.podcini.storage.algorithms.EpisodeCleanupAlgorithmFactory.build
-import ac.mdiq.podcini.storage.algorithms.EpisodeCleanupAlgorithmFactory.ExceptFavoriteCleanupAlgorithm
+import ac.mdiq.podcini.storage.algorithms.AutoCleanups.APCleanupAlgorithm
+import ac.mdiq.podcini.storage.algorithms.AutoCleanups.APNullCleanupAlgorithm
+import ac.mdiq.podcini.storage.algorithms.AutoCleanups.APQueueCleanupAlgorithm
+import ac.mdiq.podcini.storage.algorithms.AutoCleanups.build
+import ac.mdiq.podcini.storage.algorithms.AutoCleanups.ExceptFavoriteCleanupAlgorithm
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.EnqueueLocation
 import ac.mdiq.podcini.preferences.UserPreferences.enqueueLocation

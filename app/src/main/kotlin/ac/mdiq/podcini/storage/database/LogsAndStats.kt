@@ -42,9 +42,7 @@ object LogsAndStats {
         Logd(TAG, "getStatistics called")
 
         val medias = realm.query(EpisodeMedia::class).find()
-        val groupdMedias = medias.groupBy {
-            it.episode?.feedId ?: 0L
-        }
+        val groupdMedias = medias.groupBy { it.episode?.feedId ?: 0L }
         val result = StatisticsResult()
         result.oldestDate = Long.MAX_VALUE
         for (fid in groupdMedias.keys) {

@@ -4,6 +4,8 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.SpeedSelectDialogBinding
 import ac.mdiq.podcini.playback.PlaybackController.Companion.curSpeedMultiplier
 import ac.mdiq.podcini.playback.PlaybackController.Companion.playbackService
+import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
+import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.currentMediaType
 import ac.mdiq.podcini.preferences.UserPreferences
@@ -138,7 +140,7 @@ import java.util.*
         skipSilence.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
             isSkipSilence = isChecked
 //            setSkipSilence(isChecked)
-            playbackService?.mediaPlayer?.setPlaybackParams(playbackService!!.currentPlaybackSpeed, isChecked)
+            playbackService?.mPlayer?.setPlaybackParams(playbackService!!.curSpeed, isChecked)
         }
 
         return binding.root
@@ -217,13 +219,13 @@ import java.util.*
                 if (currentMediaType == MediaType.VIDEO) {
                     curState.curTempSpeed = speed
                     videoPlaybackSpeed = speed
-                    playbackService!!.mediaPlayer?.setPlaybackParams(speed, isSkipSilence)
+                    playbackService!!.mPlayer?.setPlaybackParams(speed, isSkipSilence)
                 } else {
                     if (codeArray != null && codeArray.size == 3) {
                         Logd(TAG, "setSpeed codeArray: ${codeArray[0]} ${codeArray[1]} ${codeArray[2]}")
                         if (codeArray[2]) UserPreferences.setPlaybackSpeed(speed)
                         if (codeArray[1]) {
-                            val episode = (playbackService!!.playable as? EpisodeMedia)?.episode ?: playbackService!!.currentitem
+                            val episode = (curMedia as? EpisodeMedia)?.episode ?: curEpisode
                             if (episode != null) {
                                 var feed = episode.feed
                                 if (feed != null) {
@@ -240,11 +242,11 @@ import java.util.*
                         }
                         if (codeArray[0]) {
                             curState.curTempSpeed = speed
-                            playbackService!!.mediaPlayer?.setPlaybackParams(speed, isSkipSilence)
+                            playbackService!!.mPlayer?.setPlaybackParams(speed, isSkipSilence)
                         }
                     } else {
                         curState.curTempSpeed = speed
-                        playbackService!!.mediaPlayer?.setPlaybackParams(speed, isSkipSilence)
+                        playbackService!!.mPlayer?.setPlaybackParams(speed, isSkipSilence)
                     }
                 }
             }

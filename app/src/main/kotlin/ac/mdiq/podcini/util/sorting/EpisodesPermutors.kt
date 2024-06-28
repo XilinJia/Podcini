@@ -19,64 +19,38 @@ object EpisodesPermutors {
         var permutor: Permutor<Episode>? = null
 
         when (sortOrder) {
-            SortOrder.EPISODE_TITLE_A_Z -> comparator = Comparator { f1: Episode?, f2: Episode? ->
-                itemTitle(f1).compareTo(itemTitle(f2))
-            }
-            SortOrder.EPISODE_TITLE_Z_A -> comparator = Comparator { f1: Episode?, f2: Episode? ->
-                itemTitle(f2).compareTo(itemTitle(f1))
-            }
-            SortOrder.DATE_OLD_NEW -> comparator = Comparator { f1: Episode?, f2: Episode? ->
-                pubDate(f1).compareTo(pubDate(f2))
-            }
-            SortOrder.DATE_NEW_OLD -> comparator = Comparator { f1: Episode?, f2: Episode? ->
-                pubDate(f2).compareTo(pubDate(f1))
-            }
-            SortOrder.DURATION_SHORT_LONG -> comparator = Comparator { f1: Episode?, f2: Episode? ->
-                duration(f1).compareTo(duration(f2))
-            }
-            SortOrder.DURATION_LONG_SHORT -> comparator = Comparator { f1: Episode?, f2: Episode? ->
-                duration(f2).compareTo(duration(f1))
-            }
-            SortOrder.EPISODE_FILENAME_A_Z -> comparator = Comparator { f1: Episode?, f2: Episode? ->
-                itemLink(f1).compareTo(itemLink(f2))
-            }
-            SortOrder.EPISODE_FILENAME_Z_A -> comparator = Comparator { f1: Episode?, f2: Episode? ->
-                itemLink(f2).compareTo(itemLink(f1))
-            }
-            SortOrder.PLAYED_DATE_OLD_NEW -> comparator = Comparator { f1: Episode?, f2: Episode? ->
-                playDate(f1).compareTo(playDate(f2))
-            }
-            SortOrder.PLAYED_DATE_NEW_OLD -> comparator = Comparator { f1: Episode?, f2: Episode? ->
-                playDate(f2).compareTo(playDate(f1))
-            }
-            SortOrder.COMPLETED_DATE_OLD_NEW -> comparator = Comparator { f1: Episode?, f2: Episode? ->
-                completeDate(f1).compareTo(completeDate(f2))
-            }
-            SortOrder.COMPLETED_DATE_NEW_OLD -> comparator = Comparator { f1: Episode?, f2: Episode? ->
-                completeDate(f2).compareTo(completeDate(f1))
-            }
+            SortOrder.EPISODE_TITLE_A_Z -> comparator = Comparator { f1: Episode?, f2: Episode? -> itemTitle(f1).compareTo(itemTitle(f2)) }
+            SortOrder.EPISODE_TITLE_Z_A -> comparator = Comparator { f1: Episode?, f2: Episode? -> itemTitle(f2).compareTo(itemTitle(f1)) }
+            SortOrder.DATE_OLD_NEW -> comparator = Comparator { f1: Episode?, f2: Episode? -> pubDate(f1).compareTo(pubDate(f2)) }
+            SortOrder.DATE_NEW_OLD -> comparator = Comparator { f1: Episode?, f2: Episode? -> pubDate(f2).compareTo(pubDate(f1)) }
+            SortOrder.DURATION_SHORT_LONG -> comparator = Comparator { f1: Episode?, f2: Episode? -> duration(f1).compareTo(duration(f2)) }
+            SortOrder.DURATION_LONG_SHORT -> comparator = Comparator { f1: Episode?, f2: Episode? -> duration(f2).compareTo(duration(f1)) }
+            SortOrder.EPISODE_FILENAME_A_Z -> comparator = Comparator { f1: Episode?, f2: Episode? -> itemLink(f1).compareTo(itemLink(f2)) }
+            SortOrder.EPISODE_FILENAME_Z_A -> comparator = Comparator { f1: Episode?, f2: Episode? -> itemLink(f2).compareTo(itemLink(f1)) }
+            SortOrder.PLAYED_DATE_OLD_NEW -> comparator = Comparator { f1: Episode?, f2: Episode? -> playDate(f1).compareTo(playDate(f2)) }
+            SortOrder.PLAYED_DATE_NEW_OLD -> comparator = Comparator { f1: Episode?, f2: Episode? -> playDate(f2).compareTo(playDate(f1)) }
+            SortOrder.COMPLETED_DATE_OLD_NEW -> comparator = Comparator { f1: Episode?, f2: Episode? -> completeDate(f1).compareTo(completeDate(f2)) }
+            SortOrder.COMPLETED_DATE_NEW_OLD -> comparator = Comparator { f1: Episode?, f2: Episode? -> completeDate(f2).compareTo(completeDate(f1)) }
 
-            SortOrder.FEED_TITLE_A_Z -> comparator = Comparator { f1: Episode?, f2: Episode? ->
-                feedTitle(f1).compareTo(feedTitle(f2))
-            }
-            SortOrder.FEED_TITLE_Z_A -> comparator = Comparator { f1: Episode?, f2: Episode? ->
-                feedTitle(f2).compareTo(feedTitle(f1))
-            }
+            SortOrder.FEED_TITLE_A_Z -> comparator = Comparator { f1: Episode?, f2: Episode? -> feedTitle(f1).compareTo(feedTitle(f2)) }
+            SortOrder.FEED_TITLE_Z_A -> comparator = Comparator { f1: Episode?, f2: Episode? -> feedTitle(f2).compareTo(feedTitle(f1)) }
             SortOrder.RANDOM -> permutor = object : Permutor<Episode> {
-                override fun reorder(queue: MutableList<Episode>?) {if (!queue.isNullOrEmpty()) queue.shuffle()}
+                override fun reorder(queue: MutableList<Episode>?) {
+                    if (!queue.isNullOrEmpty()) queue.shuffle()
+                }
             }
             SortOrder.SMART_SHUFFLE_OLD_NEW -> permutor = object : Permutor<Episode> {
-                override fun reorder(queue: MutableList<Episode>?) {if (!queue.isNullOrEmpty()) smartShuffle(queue as MutableList<Episode?>, true) }
+                override fun reorder(queue: MutableList<Episode>?) {
+                    if (!queue.isNullOrEmpty()) smartShuffle(queue as MutableList<Episode?>, true)
+                }
             }
             SortOrder.SMART_SHUFFLE_NEW_OLD -> permutor = object : Permutor<Episode> {
-                override fun reorder(queue: MutableList<Episode>?) {if (!queue.isNullOrEmpty()) smartShuffle(queue as MutableList<Episode?>, false)  }
+                override fun reorder(queue: MutableList<Episode>?) {
+                    if (!queue.isNullOrEmpty()) smartShuffle(queue as MutableList<Episode?>, false)
+                }
             }
-            SortOrder.SIZE_SMALL_LARGE -> comparator = Comparator { f1: Episode?, f2: Episode? ->
-                size(f1).compareTo(size(f2))
-            }
-            SortOrder.SIZE_LARGE_SMALL -> comparator = Comparator { f1: Episode?, f2: Episode? ->
-                size(f2).compareTo(size(f1))
-            }
+            SortOrder.SIZE_SMALL_LARGE -> comparator = Comparator { f1: Episode?, f2: Episode? -> size(f1).compareTo(size(f2)) }
+            SortOrder.SIZE_LARGE_SMALL -> comparator = Comparator { f1: Episode?, f2: Episode? -> size(f2).compareTo(size(f1)) }
         }
         if (comparator != null) {
             val comparator2: Comparator<Episode> = comparator
@@ -87,7 +61,6 @@ object EpisodesPermutors {
         return permutor!!
     }
 
-    // Null-safe accessors
     private fun pubDate(item: Episode?): Date {
         return if (item == null) Date() else Date(item.pubDate)
     }
@@ -154,9 +127,9 @@ object EpisodesPermutors {
         }
 
         // Sort each individual list by PubDate (ascending/descending)
-        val itemComparator: Comparator<Episode> = if (ascending)
-            Comparator { f1: Episode, f2: Episode -> f1.pubDate?.compareTo(f2.pubDate)?:-1 }
-        else Comparator { f1: Episode, f2: Episode -> f2.pubDate?.compareTo(f1.pubDate)?:-1 }
+        val itemComparator: Comparator<Episode> =
+            if (ascending) Comparator { f1: Episode, f2: Episode -> f1.pubDate?.compareTo(f2.pubDate)?:-1 }
+            else Comparator { f1: Episode, f2: Episode -> f2.pubDate?.compareTo(f1.pubDate)?:-1 }
 
         val feeds: MutableList<List<Episode>> = ArrayList()
         for ((_, value) in map) {
@@ -189,5 +162,19 @@ object EpisodesPermutors {
                 }
             }
         }
+    }
+
+    /**
+     * Interface for passing around list permutor method. This is used for cases where a simple comparator
+     * won't work (e.g. Random, Smart Shuffle, etc).
+     *
+     * @param <E> the type of elements in the list
+    </E> */
+    interface Permutor<E> {
+        /**
+         * Reorders the specified list.
+         * @param queue A (modifiable) list of elements to be reordered
+         */
+        fun reorder(queue: MutableList<E>?)
     }
 }

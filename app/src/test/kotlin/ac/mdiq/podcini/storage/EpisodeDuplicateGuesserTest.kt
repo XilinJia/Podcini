@@ -1,6 +1,6 @@
 package ac.mdiq.podcini.storage
 
-import ac.mdiq.podcini.storage.database.Episodes.EpisodeDuplicateGuesser.seemDuplicates
+import ac.mdiq.podcini.storage.database.Feeds.EpisodeDuplicateGuesser.seemDuplicates
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import org.junit.Assert

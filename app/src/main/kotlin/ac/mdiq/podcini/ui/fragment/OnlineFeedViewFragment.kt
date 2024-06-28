@@ -96,10 +96,6 @@ import kotlin.concurrent.Volatile
 
     private var dialog: Dialog? = null
 
-//    private var download: Disposable? = null
-//    private var parser: Disposable? = null
-//    private var updater: Disposable? = null
-
     @OptIn(UnstableApi::class) override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = OnlineFeedviewFragmentBinding.inflate(layoutInflater)
         binding.closeButton.visibility = View.INVISIBLE
@@ -170,9 +166,6 @@ import kotlin.concurrent.Volatile
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
-//        updater?.dispose()
-//        download?.dispose()
-//        parser?.dispose()
     }
 
     @OptIn(UnstableApi::class) override fun onSaveInstanceState(outState: Bundle) {
@@ -332,7 +325,7 @@ import kotlin.concurrent.Volatile
             EventFlow.events.collectLatest { event ->
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
-                    is FlowEvent.FeedListUpdateEvent -> onFeedListChanged(event)
+                    is FlowEvent.FeedListEvent -> onFeedListChanged(event)
                     else -> {}
                 }
             }
@@ -348,7 +341,7 @@ import kotlin.concurrent.Volatile
         }
     }
 
-    private fun onFeedListChanged(event: FlowEvent.FeedListUpdateEvent) {
+    private fun onFeedListChanged(event: FlowEvent.FeedListEvent) {
         lifecycleScope.launch {
             try {
                 val feeds = withContext(Dispatchers.IO) {

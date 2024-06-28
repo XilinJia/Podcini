@@ -152,7 +152,7 @@ class DownloadRequest private constructor(@JvmField val destination: String?,
                 feed.downloadUrl != null -> prepareUrl(feed.downloadUrl!!)
                 else -> null
             }
-            this.title = feed.getHumanReadableIdentifier()
+            this.title = feed.getTextIdentifier()
             this.feedfileId = feed.id
             this.feedfileType = feed.getTypeAsInt()
             arguments.putInt(REQUEST_ARG_PAGE_NR, feed.pageNr)

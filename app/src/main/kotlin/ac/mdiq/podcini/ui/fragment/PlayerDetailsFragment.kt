@@ -7,7 +7,7 @@ import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.net.utils.NetworkUtils.fetchHtmlSource
 import ac.mdiq.podcini.playback.PlaybackController.Companion.curSpeedMultiplier
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
-import ac.mdiq.podcini.playback.PlaybackController.Companion.position
+import ac.mdiq.podcini.playback.PlaybackController.Companion.curPosition
 import ac.mdiq.podcini.playback.PlaybackController.Companion.seekTo
 import ac.mdiq.podcini.storage.database.Episodes.persistEpisode
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
@@ -59,7 +59,7 @@ import org.apache.commons.lang3.StringUtils
  * Displays the description of a Playable object in a Webview.
  */
 @UnstableApi
-class  PlayerDetailsFragment : Fragment() {
+class PlayerDetailsFragment : Fragment() {
     private lateinit var shownoteView: ShownotesWebView
     private var shownotesCleaner: ShownotesCleaner? = null
 
@@ -67,8 +67,8 @@ class  PlayerDetailsFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var prevItem: Episode? = null
-    private var media: Playable? = null
-    private var item: Episode? = null
+    private var playable: Playable? = null
+    private var currentItem: Episode? = null
     private var displayedChapterIndex = -1
 
     private var cleanedNotes: String? = null
@@ -80,8 +80,8 @@ class  PlayerDetailsFragment : Fragment() {
 
     private val currentChapter: Chapter?
         get() {
-            if (media == null || media!!.getChapters().isEmpty() || displayedChapterIndex == -1) return null
-            return media!!.getChapters()[displayedChapterIndex]
+            if (playable == null || playable!!.getChapters().isEmpty() || displayedChapterIndex == -1) return null
+            return playable!!.getChapters()[displayedChapterIndex]
         }
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -115,11 +115,13 @@ class  PlayerDetailsFragment : Fragment() {
     }
 
     override fun onStart() {
+        Logd(TAG, "onStart()")
         super.onStart()
         procFlowEvents()
     }
 
     override fun onStop() {
+        Logd(TAG, "onStop()")
         super.onStop()
         cancelFlowEvents()
     }
@@ -136,34 +138,34 @@ class  PlayerDetailsFragment : Fragment() {
         return shownoteView.onContextItemSelected(item)
     }
 
-    internal fun load() {
+    internal fun updateInfo() {
 //        if (isLoading) return
         lifecycleScope.launch {
-            Logd(TAG, "in load()")
+            Logd(TAG, "in updateInfo")
             isLoading = true
             withContext(Dispatchers.IO) {
-                if (item == null) {
-                    media = curMedia
-                    if (media != null && media is EpisodeMedia) {
-                        val episodeMedia = media as EpisodeMedia
-                        item = episodeMedia.episode
+                if (currentItem == null) {
+                    playable = curMedia
+                    if (playable != null && playable is EpisodeMedia) {
+                        val episodeMedia = playable as EpisodeMedia
+                        currentItem = episodeMedia.episode
                         showHomeText = false
                         homeText = null
                     }
                 }
-                if (item != null) {
-                    media = item!!.media
-                    if (prevItem?.identifier != item!!.identifier) cleanedNotes = null
+                if (currentItem != null) {
+                    playable = currentItem!!.media
+                    if (prevItem?.identifier != currentItem!!.identifier) cleanedNotes = null
                     if (cleanedNotes == null) {
-                        Logd(TAG, "calling load description ${item!!.description==null} ${item!!.title}")
-                        cleanedNotes = shownotesCleaner?.processShownotes(item?.description ?: "", media?.getDuration()?:0)
+                        Logd(TAG, "calling load description ${currentItem!!.description==null} ${currentItem!!.title}")
+                        cleanedNotes = shownotesCleaner?.processShownotes(currentItem?.description ?: "", playable?.getDuration()?:0)
                     }
-                    prevItem = item
+                    prevItem = currentItem
                 }
             }
             withContext(Dispatchers.Main) {
-                Logd(TAG, "subscribe: ${media?.getEpisodeTitle()}")
-                displayMediaInfo(media!!)
+                Logd(TAG, "subscribe: ${playable?.getEpisodeTitle()}")
+                displayMediaInfo(playable!!)
                 shownoteView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes?:"No notes", "text/html", "utf-8", "about:blank")
                 Logd(TAG, "Webview loaded")
             }
@@ -177,17 +179,17 @@ class  PlayerDetailsFragment : Fragment() {
         showHomeText = !showHomeText
         runOnIOScope {
             if (showHomeText) {
-                homeText = item!!.transcript
-                if (homeText == null && item?.link != null) {
-                    val url = item!!.link!!
+                homeText = currentItem!!.transcript
+                if (homeText == null && currentItem?.link != null) {
+                    val url = currentItem!!.link!!
                     val htmlSource = fetchHtmlSource(url)
-                    val readability4J = Readability4J(item!!.link!!, htmlSource)
+                    val readability4J = Readability4J(currentItem!!.link!!, htmlSource)
                     val article = readability4J.parse()
                     readerhtml = article.contentWithDocumentsCharsetOrUtf8
                     if (!readerhtml.isNullOrEmpty()) {
-                        item!!.setTranscriptIfLonger(readerhtml)
-                        homeText = item!!.transcript
-                        persistEpisode(item)
+                        currentItem!!.setTranscriptIfLonger(readerhtml)
+                        homeText = currentItem!!.transcript
+                        persistEpisode(currentItem)
                     }
                 }
                 if (!homeText.isNullOrEmpty()) {
@@ -203,7 +205,7 @@ class  PlayerDetailsFragment : Fragment() {
                 } else withContext(Dispatchers.Main) { Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show() }
             } else {
 //                val shownotesCleaner = ShownotesCleaner(requireContext())
-                cleanedNotes = shownotesCleaner?.processShownotes(item?.description ?: "", media?.getDuration() ?: 0)
+                cleanedNotes = shownotesCleaner?.processShownotes(currentItem?.description ?: "", playable?.getDuration() ?: 0)
                 if (!cleanedNotes.isNullOrEmpty()) {
                     withContext(Dispatchers.Main) {
                         shownoteView.loadDataWithBaseURL("https://127.0.0.1",
@@ -218,12 +220,12 @@ class  PlayerDetailsFragment : Fragment() {
     }
 
     @UnstableApi private fun displayMediaInfo(media: Playable) {
-        Logd(TAG, "displayMediaInfo ${item?.title} ${media.getEpisodeTitle()}")
+        Logd(TAG, "displayMediaInfo ${currentItem?.title} ${media.getEpisodeTitle()}")
         val pubDateStr = DateFormatter.formatAbbrev(context, media.getPubDate())
         binding.txtvPodcastTitle.text = StringUtils.stripToEmpty(media.getFeedTitle())
         if (media is EpisodeMedia) {
-            if (item?.feedId != null) {
-                val openFeed: Intent = MainActivity.getIntentToOpenFeed(requireContext(), item!!.feedId!!)
+            if (currentItem?.feedId != null) {
+                val openFeed: Intent = MainActivity.getIntentToOpenFeed(requireContext(), currentItem!!.feedId!!)
                 binding.txtvPodcastTitle.setOnClickListener { startActivity(openFeed) }
             }
         } else {
@@ -231,8 +233,8 @@ class  PlayerDetailsFragment : Fragment() {
         }
         binding.txtvPodcastTitle.setOnLongClickListener { copyText(media.getFeedTitle()) }
         binding.episodeDate.text = StringUtils.stripToEmpty(pubDateStr)
-        binding.txtvEpisodeTitle.text = item?.title
-        binding.txtvEpisodeTitle.setOnLongClickListener { copyText(item?.title?:"") }
+        binding.txtvEpisodeTitle.text = currentItem?.title
+        binding.txtvEpisodeTitle.setOnLongClickListener { copyText(currentItem?.title?:"") }
         binding.txtvEpisodeTitle.setOnClickListener {
             val lines = binding.txtvEpisodeTitle.lineCount
             val animUnit = 1500
@@ -262,9 +264,9 @@ class  PlayerDetailsFragment : Fragment() {
     private fun updateChapterControlVisibility() {
         var chapterControlVisible = false
         when {
-            media?.getChapters() != null -> chapterControlVisible = media!!.getChapters().isNotEmpty()
-            media is EpisodeMedia -> {
-                val fm: EpisodeMedia? = (media as EpisodeMedia?)
+            playable?.getChapters() != null -> chapterControlVisible = playable!!.getChapters().isNotEmpty()
+            playable is EpisodeMedia -> {
+                val fm: EpisodeMedia? = (playable as EpisodeMedia?)
                 // If an item has chapters but they are not loaded yet, still display the button.
                 chapterControlVisible = fm?.episode != null && fm.episode!!.chapters.isNotEmpty()
             }
@@ -278,9 +280,9 @@ class  PlayerDetailsFragment : Fragment() {
     }
 
     private fun refreshChapterData(chapterIndex: Int) {
-        if (media != null && chapterIndex > -1) {
-            if (media!!.getPosition() > media!!.getDuration() || chapterIndex >= media!!.getChapters().size - 1) {
-                displayedChapterIndex = media!!.getChapters().size - 1
+        if (playable != null && chapterIndex > -1) {
+            if (playable!!.getPosition() > playable!!.getDuration() || chapterIndex >= playable!!.getChapters().size - 1) {
+                displayedChapterIndex = playable!!.getChapters().size - 1
                 binding.butNextChapter.visibility = View.INVISIBLE
             } else {
                 displayedChapterIndex = chapterIndex
@@ -291,17 +293,17 @@ class  PlayerDetailsFragment : Fragment() {
     }
 
     private fun displayCoverImage() {
-        if (media == null) return
-        if (displayedChapterIndex == -1 || media!!.getChapters().isEmpty() || media!!.getChapters()[displayedChapterIndex].imageUrl.isNullOrEmpty()) {
+        if (playable == null) return
+        if (displayedChapterIndex == -1 || playable!!.getChapters().isEmpty() || playable!!.getChapters()[displayedChapterIndex].imageUrl.isNullOrEmpty()) {
             val imageLoader = binding.imgvCover.context.imageLoader
             val imageRequest = ImageRequest.Builder(requireContext())
-                .data(media!!.getImageLocation())
+                .data(playable!!.getImageLocation())
                 .setHeader("User-Agent", "Mozilla/5.0")
                 .placeholder(R.color.light_gray)
                 .listener(object : ImageRequest.Listener {
                     override fun onError(request: ImageRequest, result: ErrorResult) {
                         val fallbackImageRequest = ImageRequest.Builder(requireContext())
-                            .data(ImageResourceUtils.getFallbackImageLocation(media!!))
+                            .data(ImageResourceUtils.getFallbackImageLocation(playable!!))
                             .setHeader("User-Agent", "Mozilla/5.0")
                             .error(R.mipmap.ic_launcher)
                             .target(binding.imgvCover)
@@ -314,7 +316,7 @@ class  PlayerDetailsFragment : Fragment() {
             imageLoader.enqueue(imageRequest)
 
         } else {
-            val imgLoc = EmbeddedChapterImage.getModelFor(media!!, displayedChapterIndex)
+            val imgLoc = EmbeddedChapterImage.getModelFor(playable!!, displayedChapterIndex)
             val imageLoader = binding.imgvCover.context.imageLoader
             val imageRequest = ImageRequest.Builder(requireContext())
                 .data(imgLoc)
@@ -323,7 +325,7 @@ class  PlayerDetailsFragment : Fragment() {
                 .listener(object : ImageRequest.Listener {
                     override fun onError(request: ImageRequest, result: ErrorResult) {
                         val fallbackImageRequest = ImageRequest.Builder(requireContext())
-                            .data(ImageResourceUtils.getFallbackImageLocation(media!!))
+                            .data(ImageResourceUtils.getFallbackImageLocation(playable!!))
                             .setHeader("User-Agent", "Mozilla/5.0")
                             .error(R.mipmap.ic_launcher)
                             .target(binding.imgvCover)
@@ -343,19 +345,19 @@ class  PlayerDetailsFragment : Fragment() {
 
         when {
             displayedChapterIndex < 1 -> seekTo(0)
-            (position - 10000 * curSpeedMultiplier) < curr.start -> {
+            (curPosition - 10000 * curSpeedMultiplier) < curr.start -> {
                 refreshChapterData(displayedChapterIndex - 1)
-                if (media != null) seekTo(media!!.getChapters()[displayedChapterIndex].start.toInt())
+                if (playable != null) seekTo(playable!!.getChapters()[displayedChapterIndex].start.toInt())
             }
             else -> seekTo(curr.start.toInt())
         }
     }
 
     @UnstableApi private fun seekToNextChapter() {
-        if (media == null || media!!.getChapters().isEmpty() || displayedChapterIndex == -1 || displayedChapterIndex + 1 >= media!!.getChapters().size) return
+        if (playable == null || playable!!.getChapters().isEmpty() || displayedChapterIndex == -1 || displayedChapterIndex + 1 >= playable!!.getChapters().size) return
 
         refreshChapterData(displayedChapterIndex + 1)
-        seekTo(media!!.getChapters()[displayedChapterIndex].start.toInt())
+        seekTo(playable!!.getChapters()[displayedChapterIndex].start.toInt())
     }
 
 
@@ -425,17 +427,18 @@ class  PlayerDetailsFragment : Fragment() {
         }
     }
 
-    fun onEventMainThread(event: FlowEvent.PlaybackPositionEvent) {
-        val newChapterIndex: Int = ChapterUtils.getCurrentChapterIndex(media, event.position)
-        if (newChapterIndex > -1 && newChapterIndex != displayedChapterIndex) {
+    private fun onEventMainThread(event: FlowEvent.PlaybackPositionEvent) {
+        if (playable?.getIdentifier() != event.media?.getIdentifier()) return
+        val newChapterIndex: Int = ChapterUtils.getCurrentChapterIndex(playable, event.position)
+        if (newChapterIndex >= 0 && newChapterIndex != displayedChapterIndex) {
             refreshChapterData(newChapterIndex)
         }
     }
 
     fun setItem(item_: Episode) {
         Logd(TAG, "setItem ${item_.title}")
-        if (item?.identifier != item_.identifier) {
-            item = item_
+        if (currentItem?.identifier != item_.identifier) {
+            currentItem = item_
             showHomeText = false
             homeText = null
         }

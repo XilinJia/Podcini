@@ -11,6 +11,7 @@ import ac.mdiq.podcini.playback.PlaybackController.Companion.seekTo
 import ac.mdiq.podcini.playback.base.InTheatre
 import ac.mdiq.podcini.preferences.UsageStatistics
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.storage.database.RealmDB.unmanagedCopy
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
@@ -79,20 +80,11 @@ import kotlin.math.max
 
     private lateinit var shownotesCleaner: ShownotesCleaner
     private lateinit var toolbar: MaterialToolbar
-    private lateinit var root: ViewGroup
     private lateinit var webvDescription: ShownotesWebView
-    private lateinit var txtvPodcast: TextView
-    private lateinit var txtvTitle: TextView
-    private lateinit var txtvDuration: TextView
-    private lateinit var txtvPublished: TextView
     private lateinit var imgvCover: ImageView
-    private lateinit var progbarDownload: CircularProgressBar
-    private lateinit var progbarLoading: ProgressBar
 
-    private lateinit var homeButtonAction: View
     private lateinit var butAction1: ImageView
     private lateinit var butAction2: ImageView
-    private lateinit var noMediaLabel: View
 
     private var actionButton1: EpisodeActionButton? = null
     private var actionButton2: EpisodeActionButton? = null
@@ -101,7 +93,7 @@ import kotlin.math.max
         super.onCreateView(inflater, container, savedInstanceState)
 
         _binding = EpisodeInfoFragmentBinding.inflate(inflater, container, false)
-        root = binding.root
+//        root = binding.root
         Logd(TAG, "fragment onCreateView")
 
         toolbar = binding.toolbar
@@ -110,13 +102,9 @@ import kotlin.math.max
         toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
         toolbar.setOnMenuItemClickListener(this)
 
-        txtvPodcast = binding.txtvPodcast
-        txtvPodcast.setOnClickListener { openPodcast() }
-        txtvTitle = binding.txtvTitle
-        txtvTitle.setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_FULL)
-        txtvDuration = binding.txtvDuration
-        txtvPublished = binding.txtvPublished
-        txtvTitle.ellipsize = TextUtils.TruncateAt.END
+        binding.txtvPodcast.setOnClickListener { openPodcast() }
+        binding.txtvTitle.setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_FULL)
+        binding.txtvTitle.ellipsize = TextUtils.TruncateAt.END
         webvDescription = binding.webvDescription
         webvDescription.setTimecodeSelectedListener { time: Int? ->
             val cMedia = curMedia
@@ -127,14 +115,10 @@ import kotlin.math.max
 
         imgvCover = binding.imgvCover
         imgvCover.setOnClickListener { openPodcast() }
-        progbarDownload = binding.circularProgressBar
-        progbarLoading = binding.progbarLoading
-        homeButtonAction = binding.homeButton
         butAction1 = binding.butAction1
         butAction2 = binding.butAction2
-        noMediaLabel = binding.noMediaLabel
 
-        homeButtonAction.setOnClickListener {
+        binding.homeButton.setOnClickListener {
             if (!item?.link.isNullOrEmpty()) {
                 homeFragment = EpisodeHomeFragment.newInstance(item!!)
                 (activity as MainActivity).loadChildFragment(homeFragment!!)
@@ -242,7 +226,7 @@ import kotlin.math.max
     @UnstableApi override fun onResume() {
         super.onResume()
         if (itemLoaded) {
-            progbarLoading.visibility = View.GONE
+            binding.progbarLoading.visibility = View.GONE
             updateAppearance()
         }
     }
@@ -250,13 +234,14 @@ import kotlin.math.max
     @OptIn(UnstableApi::class) override fun onDestroyView() {
         super.onDestroyView()
         Logd(TAG, "onDestroyView")
-        _binding = null
-        
-        root.removeView(webvDescription)
+
+        binding.root.removeView(webvDescription)
         webvDescription.clearHistory()
         webvDescription.clearCache(true)
         webvDescription.clearView()
         webvDescription.destroy()
+
+        _binding = null
     }
 
     @UnstableApi private fun onFragmentLoaded() {
@@ -276,14 +261,14 @@ import kotlin.math.max
         // these are already available via button1 and button2
         else EpisodeMenuHandler.onPrepareMenu(toolbar.menu, item, R.id.open_podcast, R.id.mark_read_item, R.id.visit_website_item)
 
-        if (item!!.feed != null) txtvPodcast.text = item!!.feed!!.title
-        txtvTitle.text = item!!.title
+        if (item!!.feed != null) binding.txtvPodcast.text = item!!.feed!!.title
+        binding.txtvTitle.text = item!!.title
         binding.itemLink.text = item!!.link
 
         if (item?.pubDate != null) {
             val pubDateStr = DateFormatter.formatAbbrev(context, Date(item!!.pubDate))
-            txtvPublished.text = pubDateStr
-            txtvPublished.setContentDescription(DateFormatter.formatForAccessibility(Date(item!!.pubDate)))
+            binding.txtvPublished.text = pubDateStr
+            binding.txtvPublished.setContentDescription(DateFormatter.formatForAccessibility(Date(item!!.pubDate)))
         }
 
         val media = item?.media
@@ -326,14 +311,14 @@ import kotlin.math.max
     }
 
     @UnstableApi private fun updateButtons() {
-        progbarDownload.visibility = View.GONE
+        binding.circularProgressBar.visibility = View.GONE
         val dls = DownloadServiceInterface.get()
         if (item != null && item!!.media != null && item!!.media!!.downloadUrl != null) {
             val url = item!!.media!!.downloadUrl!!
             if (dls != null && dls.isDownloadingEpisode(url)) {
-                progbarDownload.visibility = View.VISIBLE
-                progbarDownload.setPercentage(0.01f * max(1.0, dls.getProgress(url).toDouble()).toFloat(), item)
-                progbarDownload.setIndeterminate(dls.isEpisodeQueued(url))
+                binding.circularProgressBar.visibility = View.VISIBLE
+                binding.circularProgressBar.setPercentage(0.01f * max(1.0, dls.getProgress(url).toDouble()).toFloat(), item)
+                binding.circularProgressBar.setIndeterminate(dls.isEpisodeQueued(url))
             }
         }
 
@@ -344,12 +329,12 @@ import kotlin.math.max
                 butAction1.visibility = View.INVISIBLE
                 actionButton2 = VisitWebsiteActionButton(item!!)
             }
-            noMediaLabel.visibility = View.VISIBLE
+            binding.noMediaLabel.visibility = View.VISIBLE
         } else {
-            noMediaLabel.visibility = View.GONE
+            binding.noMediaLabel.visibility = View.GONE
             if (media.getDuration() > 0) {
-                txtvDuration.text = Converter.getDurationStringLong(media.getDuration())
-                txtvDuration.setContentDescription(Converter.getDurationStringLocalized(requireContext(), media.getDuration().toLong()))
+                binding.txtvDuration.text = Converter.getDurationStringLong(media.getDuration())
+                binding.txtvDuration.setContentDescription(Converter.getDurationStringLocalized(requireContext(), media.getDuration().toLong()))
             }
             if (item != null) {
                 actionButton1 = when {
@@ -439,7 +424,7 @@ import kotlin.math.max
     }
 
     @UnstableApi private fun load() {
-        if (!itemLoaded) progbarLoading.visibility = View.VISIBLE
+        if (!itemLoaded) binding.progbarLoading.visibility = View.VISIBLE
 
         Logd(TAG, "load() called")
         lifecycleScope.launch {
@@ -453,7 +438,7 @@ import kotlin.math.max
                     feedItem
                 }
                 withContext(Dispatchers.Main) {
-                    progbarLoading.visibility = View.GONE
+                    binding.progbarLoading.visibility = View.GONE
                     item = result
                     onFragmentLoaded()
                     itemLoaded = true
@@ -465,7 +450,7 @@ import kotlin.math.max
     }
 
     fun setItem(item_: Episode) {
-        item = item_
+        item = unmanagedCopy(item_)
     }
 
     companion object {

@@ -5,12 +5,12 @@ import ac.mdiq.podcini.databinding.AudioControlsBinding
 import ac.mdiq.podcini.databinding.VideoplayerActivityBinding
 import ac.mdiq.podcini.playback.PlaybackController
 import ac.mdiq.podcini.playback.PlaybackController.Companion.duration
+import ac.mdiq.podcini.playback.PlaybackController.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.playback.PlaybackController.Companion.playbackService
 import ac.mdiq.podcini.playback.PlaybackController.Companion.seekTo
 import ac.mdiq.podcini.playback.PlaybackController.Companion.sleepTimerActive
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.cast.CastEnabledActivity
-import ac.mdiq.podcini.playback.service.PlaybackService.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isCasting
 import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
 import ac.mdiq.podcini.storage.database.Episodes.setFavorite
@@ -83,7 +83,7 @@ class VideoplayerActivity : CastEnabledActivity() {
                 finish()
             }
             if (videoMode != VideoMode.FULL_SCREEN_VIEW && videoMode != VideoMode.WINDOW_VIEW) {
-                Log.i(TAG, "videoMode not selected, use window mode")
+                Logd(TAG, "videoMode not selected, use window mode")
                 videoMode = VideoMode.WINDOW_VIEW
             }
         }
@@ -434,7 +434,7 @@ class VideoplayerActivity : CastEnabledActivity() {
             butAudioTracks.text = audioTracks[selectedAudioTrack]
             butAudioTracks.setOnClickListener {
 //                setAudioTrack((selectedAudioTrack + 1) % audioTracks.size)
-                playbackService?.mediaPlayer?.setAudioTrack((selectedAudioTrack + 1) % audioTracks.size)
+                playbackService?.mPlayer?.setAudioTrack((selectedAudioTrack + 1) % audioTracks.size)
                 Handler(Looper.getMainLooper()).postDelayed({ this.setupAudioTracks() }, 500)
             }
         }
@@ -455,13 +455,13 @@ class VideoplayerActivity : CastEnabledActivity() {
 
         private val audioTracks: List<String>
             get() {
-                val tracks = playbackService?.mediaPlayer?.getAudioTracks()
+                val tracks = playbackService?.mPlayer?.getAudioTracks()
                 if (tracks.isNullOrEmpty()) return emptyList()
                 return tracks.filterNotNull().map { it }
             }
 
         private val selectedAudioTrack: Int
-            get() = playbackService?.mediaPlayer?.getSelectedAudioTrack() ?: -1
+            get() = playbackService?.mPlayer?.getSelectedAudioTrack() ?: -1
 
         private fun getWebsiteLinkWithFallback(media: Playable?): String? {
             return when {

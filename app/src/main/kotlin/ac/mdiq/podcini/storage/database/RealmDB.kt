@@ -16,9 +16,12 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.ContinuationInterceptor
 
 object RealmDB {
-    val TAG: String = RealmDB::class.simpleName ?: "Anonymous"
+    private val TAG: String = RealmDB::class.simpleName ?: "Anonymous"
 
-    val ioScope = CoroutineScope(Dispatchers.IO)
+    private const val SCHEMA_VERSION_NUMBER = 4L
+
+    private val ioScope = CoroutineScope(Dispatchers.IO)
+
     val realm: Realm
 
     init {
@@ -33,7 +36,7 @@ object RealmDB {
                 DownloadResult::class,
                 Chapter::class))
             .name("Podcini.realm")
-            .schemaVersion(3)
+            .schemaVersion(SCHEMA_VERSION_NUMBER)
             .build()
         realm = Realm.open(config)
     }

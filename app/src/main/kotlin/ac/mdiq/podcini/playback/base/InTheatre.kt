@@ -27,10 +27,6 @@ object InTheatre {
         }
 
     var curMedia: Playable? = null
-//        get() {
-//            if (field == null) field = loadPlayableFromPreferences()
-//            return field
-//        }
         set(value) {
             field = value
             if (field is EpisodeMedia) {

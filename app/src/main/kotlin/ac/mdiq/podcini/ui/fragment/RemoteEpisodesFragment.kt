@@ -23,7 +23,6 @@ import kotlin.math.min
  * Shows all episodes (possibly filtered by user).
  */
 @UnstableApi class RemoteEpisodesFragment : BaseEpisodesFragment() {
-//    val TAG = this::class.simpleName ?: "Anonymous"
 
     private val episodeList: MutableList<Episode> = mutableListOf()
 
@@ -31,17 +30,10 @@ import kotlin.math.min
         val root = super.onCreateView(inflater, container, savedInstanceState)
         Logd(TAG, "fragment onCreateView")
 
-//        val episodes_ = requireArguments().getSerializable(EXTRA_EPISODES) as? ArrayList<FeedItem>
-//        if (episodes_ != null) episodeList.addAll(episodes_)
-
         toolbar.inflateMenu(R.menu.episodes)
         toolbar.setTitle(R.string.episodes_label)
         updateToolbar()
         listAdapter.setOnSelectModeListener(null)
-//        updateFilterUi()
-//        txtvInformation.setOnClickListener {
-//            AllEpisodesFilterDialog.newInstance(getFilter()).show(childFragmentManager, null)
-//        }
         return root
     }
 
@@ -66,19 +58,14 @@ import kotlin.math.min
     }
 
     override fun loadMoreData(page: Int): List<Episode> {
-        return episodeList.subList((page - 1) * EPISODES_PER_PAGE, min(episodeList.size, page * EPISODES_PER_PAGE))
+        val offset = (page - 1) * EPISODES_PER_PAGE
+        if (offset >= episodeList.size) return listOf()
+        val toIndex = offset + EPISODES_PER_PAGE
+        return episodeList.subList(offset, min(episodeList.size, toIndex))
     }
 
     override fun loadTotalItemCount(): Int {
         return episodeList.size
-    }
-
-    override fun getFilter(): EpisodeFilter {
-        return EpisodeFilter.unfiltered()
-    }
-
-    override fun getFragmentTag(): String {
-        return TAG
     }
 
     override fun getPrefName(): String {
@@ -97,14 +84,6 @@ import kotlin.math.min
         if (super.onOptionsItemSelected(item)) return true
 
         when (item.itemId) {
-//            R.id.filter_items -> {
-//                AllEpisodesFilterDialog.newInstance(getFilter()).show(childFragmentManager, null)
-//                return true
-//            }
-//            R.id.episodes_sort -> {
-//                AllEpisodesSortDialog().show(childFragmentManager.beginTransaction(), "SortDialog")
-//                return true
-//            }
             else -> return false
         }
     }
@@ -127,44 +106,8 @@ import kotlin.math.min
         }
     }
 
-    private fun updateFilterUi() {
-//        swipeActions.setFilter(getFilter())
-//        when {
-//            getFilter().values.isNotEmpty() -> {
-//                txtvInformation.visibility = View.VISIBLE
-//                emptyView.setMessage(R.string.no_all_episodes_filtered_label)
-//            }
-//            else -> {
-//                txtvInformation.visibility = View.GONE
-//                emptyView.setMessage(R.string.no_all_episodes_label)
-//            }
-//        }
-//        toolbar.menu?.findItem(R.id.action_favorites)?.setIcon(
-//            if (getFilter().showIsFavorite) R.drawable.ic_star else R.drawable.ic_star_border)
-    }
-
-//    class AllEpisodesSortDialog : ItemSortDialog() {
-//        override fun onCreate(savedInstanceState: Bundle?) {
-//            super.onCreate(savedInstanceState)
-//            sortOrder = allEpisodesSortOrder
-//        }
-//
-//        override fun onAddItem(title: Int, ascending: SortOrder, descending: SortOrder, ascendingIsDefault: Boolean) {
-//            if (ascending == SortOrder.DATE_OLD_NEW || ascending == SortOrder.DURATION_SHORT_LONG) {
-//                super.onAddItem(title, ascending, descending, ascendingIsDefault)
-//            }
-//        }
-//
-//        override fun onSelectionChanged() {
-//            super.onSelectionChanged()
-//            allEpisodesSortOrder = sortOrder
-//            EventBus.getDefault().post(FeedListUpdateEvent(0))
-//        }
-//    }
-
     companion object {
         const val PREF_NAME: String = "EpisodesListFragment"
-        const val EXTRA_EPISODES: String = "episodes_list"
 
         fun newInstance(episodes: MutableList<Episode>): RemoteEpisodesFragment {
             val i = RemoteEpisodesFragment()

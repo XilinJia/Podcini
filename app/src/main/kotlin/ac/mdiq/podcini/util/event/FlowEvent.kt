@@ -5,12 +5,14 @@ import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.FeedPreferences
+import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.storage.utils.SortOrder
 import ac.mdiq.podcini.storage.utils.VolumeAdaptionSetting
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.view.KeyEvent
 import androidx.core.util.Consumer
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -26,7 +28,7 @@ import kotlin.math.max
 sealed class FlowEvent {
     val TAG = this::class.simpleName ?: "FlowEvent"
 
-    data class PlaybackPositionEvent(val position: Int, val duration: Int) : FlowEvent()
+    data class PlaybackPositionEvent(val media: Playable?, val position: Int, val duration: Int) : FlowEvent()
 
     data class PlaybackServiceEvent(val action: Action) : FlowEvent() {
         enum class Action { SERVICE_STARTED, SERVICE_SHUT_DOWN, }
@@ -124,34 +126,25 @@ sealed class FlowEvent {
         }
     }
 
-    data class FeedListUpdateEvent(val feedIds: List<Long> = emptyList()) : FlowEvent() {
-        constructor(feed: Feed) : this(listOf(feed.id))
-        constructor(feedId: Long) : this(listOf(feedId))
-        constructor(feeds: List<Feed>, junk: String = "") : this(feeds.map { it.id })
+    data class FeedListEvent(val action: Action, val feedIds: List<Long> = emptyList()) : FlowEvent() {
+        enum class Action { ADDED, REMOVED, ERROR, UNKNOWN }
+
+        constructor(action: Action, feedId: Long) : this(action, listOf(feedId))
 
         fun contains(feed: Feed): Boolean {
             return feedIds.contains(feed.id)
         }
     }
 
+    data class FeedsSortedEvent(val dummy: Unit = Unit) : FlowEvent()
+
 //    data class SkipIntroEndingChangedEvent(val skipIntro: Int, val skipEnding: Int, val feedId: Long) : FlowEvent()
 
-    data class VolumeAdaptionChangedEvent(val volumeAdaptionSetting: VolumeAdaptionSetting, val feedId: Long) : FlowEvent()
+//  handled together in FeedPrefsChangeEvent
+    //    data class VolumeAdaptionChangedEvent(val volumeAdaptionSetting: VolumeAdaptionSetting, val feedId: Long) : FlowEvent()
+    data class FeedPrefsChangeEvent(val feed: Feed) : FlowEvent()
 
-    //    TODO: consider merging the two
     data class SpeedChangedEvent(val newSpeed: Float) : FlowEvent()
-    data class FeedPrefsChangeEvent(val prefs: FeedPreferences) : FlowEvent()
-
-    data class EpisodesFilterOrSortEvent(val action: Action, val feed: Feed) : FlowEvent() {
-        enum class Action { FILTER_CHANGED, SORT_ORDER_CHANGED }
-
-        override fun toString(): String {
-            return ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .append("action", action)
-                .append("feedId", feed.id)
-                .toString()
-        }
-    }
 
     data class DownloadLogEvent(val dummy: Unit = Unit) : FlowEvent()
 
@@ -159,8 +152,6 @@ sealed class FlowEvent {
         val urls: Set<String>
             get() = map.keys
     }
-
-//    data class NewEpisodeDownloadEvent(val url: String) : FlowEvent() {}
 
     //    TODO: need better handling at receving end
     data class EpisodePlayedEvent(val episode: Episode? = null) : FlowEvent()
@@ -180,8 +171,6 @@ sealed class FlowEvent {
         }
     }
 
-    data class FeedsSortedEvent(val dummy: Unit = Unit) : FlowEvent()
-
     data class FeedTagsChangedEvent(val dummy: Unit = Unit) : FlowEvent()
 
     data class FeedUpdateRunningEvent(val isFeedUpdateRunning: Boolean) : FlowEvent()
@@ -195,12 +184,9 @@ sealed class FlowEvent {
     data class SyncServiceEvent(val messageResId: Int, val message: String = "") : FlowEvent()
 
     data class DiscoveryDefaultUpdateEvent(val dummy: Unit = Unit) : FlowEvent()
-
-    data class DiscoveryCompletedEvent(val dummy: Unit = Unit) : FlowEvent()
 }
 
 object EventFlow {
-    val collectorCount = MutableStateFlow(0)
     val events: MutableSharedFlow<FlowEvent> = MutableSharedFlow(replay = 0)
     val stickyEvents: MutableSharedFlow<FlowEvent> = MutableSharedFlow(replay = 1)
     val keyEvents: MutableSharedFlow<KeyEvent> = MutableSharedFlow(replay = 0)
@@ -211,7 +197,7 @@ object EventFlow {
             val caller = if (stackTrace.size > 3) stackTrace[3] else null
             Logd("EventFlow", "${caller?.className}.${caller?.methodName} posted: $event")
         }
-        GlobalScope.launch(Dispatchers.Default) {
+        CoroutineScope(Dispatchers.Default).launch {
             events.emit(event)
         }
     }
@@ -222,7 +208,7 @@ object EventFlow {
             val caller = if (stackTrace.size > 3) stackTrace[3] else null
             Logd("EventFlow", "${caller?.className}.${caller?.methodName} posted sticky: $event")
         }
-        GlobalScope.launch(Dispatchers.Default) {
+        CoroutineScope(Dispatchers.Default).launch {
             stickyEvents.emit(event)
         }
     }
@@ -233,7 +219,7 @@ object EventFlow {
             val caller = if (stackTrace.size > 3) stackTrace[3] else null
             Logd("EventFlow", "${caller?.className}.${caller?.methodName} posted key: $event")
         }
-        GlobalScope.launch(Dispatchers.Default) {
+        CoroutineScope(Dispatchers.Default).launch {
             keyEvents.emit(event)
         }
     }

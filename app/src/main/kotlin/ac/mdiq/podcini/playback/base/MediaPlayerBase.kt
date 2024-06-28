@@ -49,18 +49,6 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
         status = PlayerStatus.STOPPED
     }
 
-//     fun startWhenPrepared.get(): Boolean {
-//         return startWhenPrepared.get()
-//     }
-
-//    fun startWhenPrepared.set(startWhenPrepared: Boolean) {
-//        this.startWhenPrepared.set(startWhenPrepared)
-//    }
-
-//    open fun getPlayable(): Playable? {
-//        return curMedia
-//    }
-
     protected open fun setPlayable(playable: Playable?) {
         if (playable != null && playable !== curMedia) {
             curMedia = playable
@@ -154,12 +142,15 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
 
     /**
      * Seek a specific position from the current position
-     * @param d offset from current position (positive or negative)
+     * @param delta offset from current position (positive or negative)
      */
-    fun seekDelta(d: Int) {
-        val currentPosition = getPosition()
-        if (currentPosition != Playable.INVALID_TIME) seekTo(currentPosition + d)
-        else Log.e(TAG, "getPosition() returned INVALID_TIME in seekDelta")
+    fun seekDelta(delta: Int) {
+        val curPosition = getPosition()
+        if (curPosition != Playable.INVALID_TIME) {
+            val prevMedia = curMedia
+            seekTo(curPosition + delta)
+        }
+        else Log.e(TAG, "seekDelta getPosition() returned INVALID_TIME in seekDelta")
     }
 
     /**
@@ -268,18 +259,15 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
     @Synchronized
     protected fun setPlayerStatus(newStatus: PlayerStatus, newMedia: Playable?, position: Int = Playable.INVALID_TIME) {
         Logd(TAG, this.javaClass.simpleName + ": Setting player status to " + newStatus)
-
         this.oldStatus = status
         status = newStatus
         if (newMedia != null) setPlayable(newMedia)
-
         if (newMedia != null && newStatus != PlayerStatus.INDETERMINATE) {
             when {
                 oldStatus == PlayerStatus.PLAYING && newStatus != PlayerStatus.PLAYING -> callback.onPlaybackPause(newMedia, position)
                 oldStatus != PlayerStatus.PLAYING && newStatus == PlayerStatus.PLAYING -> callback.onPlaybackStart(newMedia, position)
             }
         }
-
         callback.statusChanged(MediaPlayerInfo(oldStatus, status, curMedia))
     }
 
@@ -288,29 +276,6 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
             val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
             return (audioManager.mode != AudioManager.MODE_NORMAL || audioManager.isMusicActive)
         }
-
-    interface MediaPlayerCallback {
-        fun statusChanged(newInfo: MediaPlayerInfo?)
-
-        // TODO: not used
-        fun shouldStop() {}
-
-        fun onMediaChanged(reloadUI: Boolean)
-
-        fun onPostPlayback(media: Playable?, ended: Boolean, skipped: Boolean, playingNext: Boolean)
-
-        fun onPlaybackStart(playable: Playable, position: Int)
-
-        fun onPlaybackPause(playable: Playable?, position: Int)
-
-        fun getNextInQueue(currentMedia: Playable?): Playable?
-
-        fun findMedia(url: String): Playable?
-
-        fun onPlaybackEnded(mediaType: MediaType?, stopPlaying: Boolean)
-
-        fun ensureMediaInfoLoaded(media: Playable)
-    }
 
     class MediaPlayerInfo(@JvmField val oldPlayerStatus: PlayerStatus?, @JvmField var playerStatus: PlayerStatus, @JvmField var playable: Playable?)
 
@@ -354,7 +319,6 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
                 val newPosition = currentPosition - rewindTime.toInt()
                 return max(newPosition.toDouble(), 0.0).toInt()
             } else return currentPosition
-
         }
 
         /**
@@ -363,19 +327,11 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
         @JvmStatic
         fun getCurrentPlaybackSpeed(media: Playable?): Float {
             var playbackSpeed = FeedPreferences.SPEED_USE_GLOBAL
-            var mediaType: MediaType? = null
+            val mediaType: MediaType? = media?.getMediaType()
             if (media != null) {
-                mediaType = media.getMediaType()
                 playbackSpeed = curState.curTempSpeed
                 if (playbackSpeed == FeedPreferences.SPEED_USE_GLOBAL && media is EpisodeMedia) {
-                    val item = media.episode
-                    if (item != null) {
-                        val feed = item.feed
-                        if (feed?.preferences != null) {
-                            playbackSpeed = feed.preferences!!.playSpeed
-                            Logd(TAG, "using feed speed $playbackSpeed")
-                        } else Logd(TAG, "Can not get feed specific playback speed: $feed")
-                    }
+                    if (media.episode?.feed?.preferences != null) playbackSpeed = media.episode!!.feed!!.preferences!!.playSpeed
                 }
             }
             if (mediaType != null && playbackSpeed == FeedPreferences.SPEED_USE_GLOBAL) playbackSpeed = UserPreferences.getPlaybackSpeed(mediaType)

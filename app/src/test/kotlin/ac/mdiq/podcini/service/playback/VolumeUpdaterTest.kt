@@ -21,14 +21,14 @@ class VolumeUpdaterTest {
 
     @Test
     fun noChangeIfNoFeedMediaPlaying() {
-        val volumeUpdater = PlaybackService.VolumeUpdater()
+//        val volumeUpdater = PlaybackService.VolumeUpdater()
 
         Mockito.`when`(MediaPlayerBase.status).thenReturn(PlayerStatus.PAUSED)
 
         val noFeedMedia = Mockito.mock(Playable::class.java)
         Mockito.`when`(curMedia).thenReturn(noFeedMedia)
 
-        volumeUpdater.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.OFF)
+        PlaybackService.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.OFF)
 
         Mockito.verify(mediaPlayer, Mockito.never())?.pause(ArgumentMatchers.anyBoolean(), ArgumentMatchers.anyBoolean())
         Mockito.verify(mediaPlayer, Mockito.never())?.resume()
@@ -36,14 +36,14 @@ class VolumeUpdaterTest {
 
     @Test
     fun noChangeIfPlayerStatusIsError() {
-        val volumeUpdater = PlaybackService.VolumeUpdater()
+//        val volumeUpdater = PlaybackService.VolumeUpdater()
 
         Mockito.`when`(MediaPlayerBase.status).thenReturn(PlayerStatus.ERROR)
 
         val feedMedia = mockFeedMedia()
         Mockito.`when`(curMedia).thenReturn(feedMedia)
 
-        volumeUpdater.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.OFF)
+        PlaybackService.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.OFF)
 
         Mockito.verify(mediaPlayer, Mockito.never())?.pause(ArgumentMatchers.anyBoolean(), ArgumentMatchers.anyBoolean())
         Mockito.verify(mediaPlayer, Mockito.never())?.resume()
@@ -51,14 +51,14 @@ class VolumeUpdaterTest {
 
     @Test
     fun noChangeIfPlayerStatusIsIndeterminate() {
-        val volumeUpdater = PlaybackService.VolumeUpdater()
+//        val volumeUpdater = PlaybackService.VolumeUpdater()
 
         Mockito.`when`(MediaPlayerBase.status).thenReturn(PlayerStatus.INDETERMINATE)
 
         val feedMedia = mockFeedMedia()
         Mockito.`when`(curMedia).thenReturn(feedMedia)
 
-        volumeUpdater.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.OFF)
+        PlaybackService.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.OFF)
 
         Mockito.verify(mediaPlayer, Mockito.never())?.pause(ArgumentMatchers.anyBoolean(), ArgumentMatchers.anyBoolean())
         Mockito.verify(mediaPlayer, Mockito.never())?.resume()
@@ -66,14 +66,14 @@ class VolumeUpdaterTest {
 
     @Test
     fun noChangeIfPlayerStatusIsStopped() {
-        val volumeUpdater = PlaybackService.VolumeUpdater()
+//        val volumeUpdater = PlaybackService.VolumeUpdater()
 
         Mockito.`when`(MediaPlayerBase.status).thenReturn(PlayerStatus.STOPPED)
 
         val feedMedia = mockFeedMedia()
         Mockito.`when`(curMedia).thenReturn(feedMedia)
 
-        volumeUpdater.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.OFF)
+        PlaybackService.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.OFF)
 
         Mockito.verify(mediaPlayer, Mockito.never())?.pause(ArgumentMatchers.anyBoolean(), ArgumentMatchers.anyBoolean())
         Mockito.verify(mediaPlayer, Mockito.never())?.resume()
@@ -87,8 +87,8 @@ class VolumeUpdaterTest {
         Mockito.`when`(curMedia).thenReturn(feedMedia)
         Mockito.`when`(feedMedia.episode?.feed?.id).thenReturn(FEED_ID + 1)
 
-        val volumeUpdater = PlaybackService.VolumeUpdater()
-        volumeUpdater.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.OFF)
+//        val volumeUpdater = PlaybackService.VolumeUpdater()
+        PlaybackService.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.OFF)
 
         Mockito.verify(mediaPlayer, Mockito.never())?.pause(ArgumentMatchers.anyBoolean(), ArgumentMatchers.anyBoolean())
         Mockito.verify(mediaPlayer, Mockito.never())?.resume()
@@ -96,7 +96,7 @@ class VolumeUpdaterTest {
 
     @Test
     fun updatesPreferencesForLoadedFeedMediaIfPlayerStatusIsPaused() {
-        val volumeUpdater = PlaybackService.VolumeUpdater()
+//        val volumeUpdater = PlaybackService.VolumeUpdater()
 
         Mockito.`when`(MediaPlayerBase.status).thenReturn(PlayerStatus.PAUSED)
 
@@ -104,7 +104,7 @@ class VolumeUpdaterTest {
         Mockito.`when`(curMedia).thenReturn(feedMedia)
         val feedPreferences: FeedPreferences = feedMedia.episode!!.feed!!.preferences!!
 
-        volumeUpdater.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.LIGHT_REDUCTION)
+        PlaybackService.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.LIGHT_REDUCTION)
 
         Mockito.verify(feedPreferences, Mockito.times(1))
             .volumeAdaptionSetting = (VolumeAdaptionSetting.LIGHT_REDUCTION)
@@ -115,7 +115,7 @@ class VolumeUpdaterTest {
 
     @Test
     fun updatesPreferencesForLoadedFeedMediaIfPlayerStatusIsPrepared() {
-        val volumeUpdater = PlaybackService.VolumeUpdater()
+//        val volumeUpdater = PlaybackService.VolumeUpdater()
 
         Mockito.`when`(MediaPlayerBase.status).thenReturn(PlayerStatus.PREPARED)
 
@@ -123,7 +123,7 @@ class VolumeUpdaterTest {
         Mockito.`when`(curMedia).thenReturn(feedMedia)
         val feedPreferences: FeedPreferences = feedMedia.episode!!.feed!!.preferences!!
 
-        volumeUpdater.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.LIGHT_REDUCTION)
+        PlaybackService.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.LIGHT_REDUCTION)
 
         Mockito.verify(feedPreferences, Mockito.times(1))
             .volumeAdaptionSetting = (VolumeAdaptionSetting.LIGHT_REDUCTION)
@@ -134,7 +134,7 @@ class VolumeUpdaterTest {
 
     @Test
     fun updatesPreferencesForLoadedFeedMediaIfPlayerStatusIsInitializing() {
-        val volumeUpdater = PlaybackService.VolumeUpdater()
+//        val volumeUpdater = PlaybackService.VolumeUpdater()
 
         Mockito.`when`(MediaPlayerBase.status).thenReturn(PlayerStatus.INITIALIZING)
 
@@ -142,7 +142,7 @@ class VolumeUpdaterTest {
         Mockito.`when`(curMedia).thenReturn(feedMedia)
         val feedPreferences: FeedPreferences = feedMedia.episode!!.feed!!.preferences!!
 
-        volumeUpdater.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.LIGHT_REDUCTION)
+        PlaybackService.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.LIGHT_REDUCTION)
 
         Mockito.verify(feedPreferences, Mockito.times(1))
             .volumeAdaptionSetting = (VolumeAdaptionSetting.LIGHT_REDUCTION)
@@ -153,7 +153,7 @@ class VolumeUpdaterTest {
 
     @Test
     fun updatesPreferencesForLoadedFeedMediaIfPlayerStatusIsPreparing() {
-        val volumeUpdater = PlaybackService.VolumeUpdater()
+//        val volumeUpdater = PlaybackService.VolumeUpdater()
 
         Mockito.`when`(MediaPlayerBase.status).thenReturn(PlayerStatus.PREPARING)
 
@@ -161,7 +161,7 @@ class VolumeUpdaterTest {
         Mockito.`when`(curMedia).thenReturn(feedMedia)
         val feedPreferences: FeedPreferences = feedMedia.episode!!.feed!!.preferences!!
 
-        volumeUpdater.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.LIGHT_REDUCTION)
+        PlaybackService.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.LIGHT_REDUCTION)
 
         Mockito.verify(feedPreferences, Mockito.times(1))
             .volumeAdaptionSetting = (VolumeAdaptionSetting.LIGHT_REDUCTION)
@@ -172,7 +172,7 @@ class VolumeUpdaterTest {
 
     @Test
     fun updatesPreferencesForLoadedFeedMediaIfPlayerStatusIsSeeking() {
-        val volumeUpdater = PlaybackService.VolumeUpdater()
+//        val volumeUpdater = PlaybackService.VolumeUpdater()
 
         Mockito.`when`(MediaPlayerBase.status).thenReturn(PlayerStatus.SEEKING)
 
@@ -180,7 +180,7 @@ class VolumeUpdaterTest {
         Mockito.`when`(curMedia).thenReturn(feedMedia)
         val feedPreferences: FeedPreferences = feedMedia.episode!!.feed!!.preferences!!
 
-        volumeUpdater.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.LIGHT_REDUCTION)
+        PlaybackService.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.LIGHT_REDUCTION)
 
         Mockito.verify(feedPreferences, Mockito.times(1))
             .volumeAdaptionSetting = (VolumeAdaptionSetting.LIGHT_REDUCTION)
@@ -191,7 +191,7 @@ class VolumeUpdaterTest {
 
     @Test
     fun updatesPreferencesAndForcesVolumeChangeForLoadedFeedMediaIfPlayerStatusIsPlaying() {
-        val volumeUpdater = PlaybackService.VolumeUpdater()
+//        val volumeUpdater = PlaybackService.VolumeUpdater()
 
         Mockito.`when`(MediaPlayerBase.status).thenReturn(PlayerStatus.PLAYING)
 
@@ -199,7 +199,7 @@ class VolumeUpdaterTest {
         Mockito.`when`(curMedia).thenReturn(feedMedia)
         val feedPreferences: FeedPreferences = feedMedia.episode!!.feed!!.preferences!!
 
-        volumeUpdater.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.HEAVY_REDUCTION)
+        PlaybackService.updateVolumeIfNecessary(mediaPlayer!!, FEED_ID, VolumeAdaptionSetting.HEAVY_REDUCTION)
 
         Mockito.verify(feedPreferences, Mockito.times(1))
             .volumeAdaptionSetting = (VolumeAdaptionSetting.HEAVY_REDUCTION)

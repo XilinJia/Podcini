@@ -35,8 +35,6 @@ class EpisodeHomeFragment : Fragment() {
     private var _binding: EpisodeHomeFragmentBinding? = null
     private val binding get() = _binding!!
 
-//    private val ioScope = CoroutineScope(Dispatchers.IO)  // IO dispatcher for initialization
-
     private var startIndex = 0
     private var ttsSpeed = 1.0f
 
@@ -181,6 +179,9 @@ class EpisodeHomeFragment : Fragment() {
             }
             menu.findItem(R.id.share_notes)?.setVisible(readMode)
             menu.findItem(R.id.switchJS)?.setVisible(!readMode)
+            val btn = menu.findItem(R.id.switch_home)
+            if (readMode) btn?.setIcon(R.drawable.baseline_home_24)
+            else btn?.setIcon(R.drawable.outline_home_24)
         }
 
         override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -191,12 +192,10 @@ class EpisodeHomeFragment : Fragment() {
         @OptIn(UnstableApi::class) override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
             when (menuItem.itemId) {
                 R.id.switch_home -> {
-                    Logd(TAG, "switch_home selected")
                     switchMode()
                     return true
                 }
                 R.id.switchJS -> {
-                    Logd(TAG, "switchJS selected")
                     jsEnabled = !jsEnabled
                     showWebContent()
                     return true
@@ -287,11 +286,7 @@ class EpisodeHomeFragment : Fragment() {
         fun newInstance(item: Episode): EpisodeHomeFragment {
             val fragment = EpisodeHomeFragment()
             Logd(TAG, "item.itemIdentifier ${item.identifier}")
-            if (item.identifier != currentItem?.identifier) {
-                currentItem = item
-            } else {
-//                currentItem?.feed = item.feed
-            }
+            if (item.identifier != currentItem?.identifier) currentItem = item
             return fragment
         }
     }

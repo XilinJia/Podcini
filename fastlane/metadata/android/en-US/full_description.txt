@@ -40,3 +40,5 @@ Podcini emphasizes on efficient battery usage, streamlined podcast management an
 Podcini is under active development by volunteers. You can contribute too, with code or with comment!
 https://github.com/XilinJia/Podcini
 
+Transifex is the place to help with translations:
+https://app.transifex.com/xilinjia/podcini/dashboard/

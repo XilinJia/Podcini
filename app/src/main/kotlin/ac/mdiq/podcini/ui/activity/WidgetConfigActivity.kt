@@ -18,6 +18,7 @@ import ac.mdiq.podcini.preferences.ThemeSwitcher.getTheme
 import ac.mdiq.podcini.receiver.PlayerWidget
 import ac.mdiq.podcini.receiver.PlayerWidget.Companion.prefs
 import ac.mdiq.podcini.ui.widget.WidgetUpdaterWorker
+import ac.mdiq.podcini.util.Logd
 
 class WidgetConfigActivity : AppCompatActivity() {
 
@@ -63,9 +64,7 @@ class WidgetConfigActivity : AppCompatActivity() {
                 val color = getColorWithAlpha(PlayerWidget.DEFAULT_COLOR, opacitySeekBar.progress)
                 widgetPreview.setBackgroundColor(color)
             }
-
             override fun onStartTrackingTouch(seekBar: SeekBar) {}
-
             override fun onStopTrackingTouch(seekBar: SeekBar) {}
         })
 
@@ -96,6 +95,8 @@ class WidgetConfigActivity : AppCompatActivity() {
     }
 
     private fun setInitialState() {
+        PlayerWidget.getSharedPrefs(this)
+
 //        val prefs = getSharedPreferences(PlayerWidget.PREFS_NAME, MODE_PRIVATE)
         ckPlaybackSpeed.isChecked = prefs!!.getBoolean(PlayerWidget.KEY_WIDGET_PLAYBACK_SPEED + appWidgetId, true)
         ckRewind.isChecked = prefs!!.getBoolean(PlayerWidget.KEY_WIDGET_REWIND + appWidgetId, true)
@@ -123,6 +124,7 @@ class WidgetConfigActivity : AppCompatActivity() {
     private fun confirmCreateWidget() {
         val backgroundColor = getColorWithAlpha(PlayerWidget.DEFAULT_COLOR, opacitySeekBar.progress)
 
+        Logd("WidgetConfigActivity", "confirmCreateWidget appWidgetId $appWidgetId")
 //        val prefs = getSharedPreferences(PlayerWidget.PREFS_NAME, MODE_PRIVATE)
         val editor = prefs!!.edit()
         editor.putInt(PlayerWidget.KEY_WIDGET_COLOR + appWidgetId, backgroundColor)

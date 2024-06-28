@@ -8,7 +8,7 @@ import ac.mdiq.podcini.playback.PlaybackController.Companion.duration
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.PlaybackController.Companion.isPlayingVideoLocally
 import ac.mdiq.podcini.playback.PlaybackController.Companion.playbackService
-import ac.mdiq.podcini.playback.PlaybackController.Companion.position
+import ac.mdiq.podcini.playback.PlaybackController.Companion.curPosition
 import ac.mdiq.podcini.playback.PlaybackController.Companion.seekTo
 import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.PlayerStatus
@@ -79,17 +79,40 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     var controller: PlaybackController? = null
     var isFavorite = false
 
+    private val onVideoviewTouched = View.OnTouchListener { v: View, event: MotionEvent ->
+        if (event.action != MotionEvent.ACTION_DOWN) return@OnTouchListener false
+        if (PictureInPictureUtil.isInPictureInPictureMode(requireActivity())) return@OnTouchListener true
+        videoControlsHider.removeCallbacks(hideVideoControls)
+        if (System.currentTimeMillis() - lastScreenTap < 300) {
+            if (event.x > v.measuredWidth / 2.0f) {
+                onFastForward()
+                showSkipAnimation(true)
+            } else {
+                onRewind()
+                showSkipAnimation(false)
+            }
+            if (videoControlsShowing) {
+                hideVideoControls(false)
+                if (videoMode == VideoplayerActivity.VideoMode.FULL_SCREEN_VIEW) (activity as AppCompatActivity).supportActionBar?.hide()
+                videoControlsShowing = false
+            }
+            return@OnTouchListener true
+        }
+        toggleVideoControlsVisibility()
+        if (videoControlsShowing) setupVideoControlsToggler()
+
+        lastScreenTap = System.currentTimeMillis()
+        true
+    }
+
     @OptIn(UnstableApi::class) override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         _binding = VideoEpisodeFragmentBinding.inflate(LayoutInflater.from(requireContext()))
         root = binding.root
-
         controller = newPlaybackController()
         controller!!.init()
 //        loadMediaInfo()
-
         setupView()
-
         return root
     }
 
@@ -104,15 +127,14 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
                     setupVideoAspectRatio()
                     if (videoSurfaceCreated && controller != null) {
                         Logd(TAG, "Videosurface already created, setting videosurface now")
-                        setVideoSurface(binding.videoView.holder)
+//                        setVideoSurface(binding.videoView.holder)
+                        playbackService?.mPlayer?.setVideoSurface(binding.videoView.holder)
                     }
                 }
             }
-
             override fun loadMediaInfo() {
                 this@VideoEpisodeFragment.loadMediaInfo()
             }
-
             override fun onPlaybackEnd() {
                 activity?.finish()
             }
@@ -131,7 +153,6 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         super.onStop()
         cancelFlowEvents()
         if (!PictureInPictureUtil.isInPictureInPictureMode(requireActivity())) videoControlsHider.removeCallbacks(hideVideoControls)
-
         // Controller released; we will not receive buffering updates
         binding.progressBar.visibility = View.GONE
     }
@@ -151,7 +172,6 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         _binding = null
         controller?.release()
         controller = null // prevent leak
-//        scope.cancel()
     }
 
     private var eventSink: Job?     = null
@@ -204,7 +224,6 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     @OptIn(UnstableApi::class) private fun loadMediaInfo() {
         Logd(TAG, "loadMediaInfo called")
         if (curMedia == null) return
-
         if (MediaPlayerBase.status == PlayerStatus.PLAYING && !isPlayingVideoLocally) {
             Logd(TAG, "Closing, no longer video")
             destroyingDueToReload = true
@@ -245,7 +264,6 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
                 Log.e(TAG, Log.getStackTraceString(e))
             }
         }
-
     }
 
     private fun loadInBackground(): Episode? {
@@ -266,11 +284,9 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     private fun setupView() {
         showTimeLeft = shouldShowRemainingTime()
         Logd(TAG, "setupView showTimeLeft: $showTimeLeft")
-
         binding.durationLabel.setOnClickListener {
             showTimeLeft = !showTimeLeft
             val media = curMedia ?: return@setOnClickListener
-
             val converter = TimeSpeedConverter(curSpeedMultiplier)
             val length: String
             if (showTimeLeft) {
@@ -281,7 +297,6 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
                 length = getDurationStringLong(duration)
             }
             binding.durationLabel.text = length
-
             setShowRemainTimeSetting(showTimeLeft)
             Logd("timeleft on click", if (showTimeLeft) "true" else "false")
         }
@@ -304,15 +319,12 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         binding.videoView.holder.addCallback(surfaceHolderCallback)
         binding.bottomControlsContainer.fitsSystemWindows = true
 //        binding.videoView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-
         setupVideoControlsToggler()
 //        (activity as AppCompatActivity).window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
-
         binding.videoPlayerContainer.setOnTouchListener(onVideoviewTouched)
         binding.videoPlayerContainer.viewTreeObserver.addOnGlobalLayoutListener {
             binding.videoView.setAvailableSize(binding.videoPlayerContainer.width.toFloat(), binding.videoPlayerContainer.height.toFloat())
         }
-
         webvDescription = binding.webvDescription
 //        webvDescription.setTimecodeSelectedListener { time: Int? ->
 //            val cMedia = getMedia
@@ -325,45 +337,11 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
 //        }
 //        registerForContextMenu(webvDescription)
 //        webvDescription.visibility = View.GONE
-
-        binding.toggleViews.setOnClickListener {
-            (activity as? VideoplayerActivity)?.toggleViews()
-        }
+        binding.toggleViews.setOnClickListener { (activity as? VideoplayerActivity)?.toggleViews() }
         binding.audioOnly.setOnClickListener {
             (activity as? VideoplayerActivity)?.switchToAudioOnly = true
             (activity as? VideoplayerActivity)?.finish()
         }
-
-    }
-
-    private val onVideoviewTouched = View.OnTouchListener { v: View, event: MotionEvent ->
-        if (event.action != MotionEvent.ACTION_DOWN) return@OnTouchListener false
-
-        if (PictureInPictureUtil.isInPictureInPictureMode(requireActivity())) return@OnTouchListener true
-
-        videoControlsHider.removeCallbacks(hideVideoControls)
-
-        if (System.currentTimeMillis() - lastScreenTap < 300) {
-            if (event.x > v.measuredWidth / 2.0f) {
-                onFastForward()
-                showSkipAnimation(true)
-            } else {
-                onRewind()
-                showSkipAnimation(false)
-            }
-            if (videoControlsShowing) {
-                hideVideoControls(false)
-                if (videoMode == VideoplayerActivity.VideoMode.FULL_SCREEN_VIEW) (activity as AppCompatActivity).supportActionBar?.hide()
-                videoControlsShowing = false
-            }
-            return@OnTouchListener true
-        }
-
-        toggleVideoControlsVisibility()
-        if (videoControlsShowing) setupVideoControlsToggler()
-
-        lastScreenTap = System.currentTimeMillis()
-        true
     }
 
     fun toggleVideoControlsVisibility() {
@@ -393,17 +371,14 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
             binding.skipAnimationImage.setImageResource(R.drawable.ic_fast_rewind_video_white)
             params.gravity = Gravity.LEFT or Gravity.CENTER_VERTICAL
         }
-
         binding.skipAnimationImage.visibility = View.VISIBLE
         binding.skipAnimationImage.layoutParams = params
         binding.skipAnimationImage.startAnimation(skipAnimation)
         skipAnimation.setAnimationListener(object : Animation.AnimationListener {
             override fun onAnimationStart(animation: Animation) {}
-
             override fun onAnimationEnd(animation: Animation) {
                 binding.skipAnimationImage.visibility = View.GONE
             }
-
             override fun onAnimationRepeat(animation: Animation) {}
         })
     }
@@ -417,7 +392,8 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         override fun surfaceCreated(holder: SurfaceHolder) {
             Logd(TAG, "Videoview holder created")
             videoSurfaceCreated = true
-            if (MediaPlayerBase.status == PlayerStatus.PLAYING) setVideoSurface(holder)
+//            if (MediaPlayerBase.status == PlayerStatus.PLAYING) setVideoSurface(holder)
+            if (MediaPlayerBase.status == PlayerStatus.PLAYING) playbackService?.mPlayer?.setVideoSurface(holder)
             setupVideoAspectRatio()
         }
 
@@ -431,27 +407,24 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
 
     fun notifyVideoSurfaceAbandoned() {
 //            playbackService?.notifyVideoSurfaceAbandoned()
-        playbackService?.mediaPlayer?.pause(abandonFocus = true, reinit = false)
-        playbackService?.mediaPlayer?.resetVideoSurface()
+        playbackService?.mPlayer?.pause(abandonFocus = true, reinit = false)
+        playbackService?.mPlayer?.resetVideoSurface()
     }
 
-    fun setVideoSurface(holder: SurfaceHolder?) {
-        playbackService?.mediaPlayer?.setVideoSurface(holder)
-    }
+//    fun setVideoSurface(holder: SurfaceHolder?) {
+//        playbackService?.mPlayer?.setVideoSurface(holder)
+//    }
 
     @UnstableApi
     fun onRewind() {
         if (controller == null) return
-
-        val curr = position
-        seekTo(curr - rewindSecs * 1000)
+        playbackService?.mPlayer?.seekDelta(-rewindSecs * 1000)
         setupVideoControlsToggler()
     }
 
     @UnstableApi
     fun onPlayPause() {
         if (controller == null) return
-
         controller!!.playPause()
         setupVideoControlsToggler()
     }
@@ -459,9 +432,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     @UnstableApi
     fun onFastForward() {
         if (controller == null) return
-
-        val curr = position
-        seekTo(curr + fastForwardSecs * 1000)
+        playbackService?.mPlayer?.seekDelta(fastForwardSecs * 1000)
         setupVideoControlsToggler()
     }
 
@@ -512,11 +483,10 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
 
     private fun onPositionObserverUpdate() {
         if (controller == null) return
-
         val converter = TimeSpeedConverter(curSpeedMultiplier)
-        val currentPosition = converter.convert(position)
+        val currentPosition = converter.convert(curPosition)
         val duration_ = converter.convert(duration)
-        val remainingTime = converter.convert(duration - position)
+        val remainingTime = converter.convert(duration - curPosition)
         //        Log.d(TAG, "currentPosition " + Converter.getDurationStringLong(currentPosition));
         if (currentPosition == Playable.INVALID_TIME || duration_ == Playable.INVALID_TIME) {
             Log.w(TAG, "Could not react to position observer update because of invalid time")
@@ -537,7 +507,6 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
 
     override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
         if (controller == null) return
-
         if (fromUser) {
             prog = progress / (seekBar.max.toFloat())
             val converter = TimeSpeedConverter(curSpeedMultiplier)
@@ -559,7 +528,6 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
 
     override fun onStopTrackingTouch(seekBar: SeekBar) {
         seekTo((prog * duration).toInt())
-
         binding.seekCardView.scaleX = 1f
         binding.seekCardView.scaleY = 1f
         binding.seekCardView.animate()
@@ -574,6 +542,6 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         val TAG: String = VideoEpisodeFragment::class.simpleName ?: "Anonymous"
 
         val videoSize: Pair<Int, Int>?
-            get() = playbackService?.mediaPlayer?.getVideoSize()
+            get() = playbackService?.mPlayer?.getVideoSize()
     }
 }

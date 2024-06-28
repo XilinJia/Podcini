@@ -1,30 +1,30 @@
 package ac.mdiq.podcini.receiver
 
-import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions.Companion.SWIPE_ACTIONS_PREF_NAME
+import ac.mdiq.podcini.ui.widget.WidgetUpdaterWorker
+import ac.mdiq.podcini.util.Logd
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
-import android.util.Log
+import android.content.SharedPreferences
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
-import ac.mdiq.podcini.ui.widget.WidgetUpdaterWorker
-import ac.mdiq.podcini.util.Logd
-import android.content.SharedPreferences
 import java.util.concurrent.TimeUnit
 
 class PlayerWidget : AppWidgetProvider() {
     override fun onEnabled(context: Context) {
         super.onEnabled(context)
+        getSharedPrefs(context)
         Logd(TAG, "Widget enabled")
-        setEnabled(context, true)
+        setEnabled(true)
         WidgetUpdaterWorker.enqueueWork(context)
         scheduleWorkaround(context)
     }
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         Logd(TAG, "onUpdate() called with: context = [$context], appWidgetManager = [$appWidgetManager], appWidgetIds = [${appWidgetIds.contentToString()}]")
+        getSharedPrefs(context)
         WidgetUpdaterWorker.enqueueWork(context)
 
         if (!prefs!!.getBoolean(KEY_WORKAROUND_ENABLED, false)) {
@@ -36,7 +36,7 @@ class PlayerWidget : AppWidgetProvider() {
     override fun onDisabled(context: Context) {
         super.onDisabled(context)
         Logd(TAG, "Widget disabled")
-        setEnabled(context, false)
+        setEnabled(false)
     }
 
     override fun onDeleted(context: Context, appWidgetIds: IntArray) {
@@ -57,7 +57,7 @@ class PlayerWidget : AppWidgetProvider() {
         super.onDeleted(context, appWidgetIds)
     }
 
-    private fun setEnabled(context: Context, enabled: Boolean) {
+    private fun setEnabled(enabled: Boolean) {
         prefs!!.edit().putBoolean(KEY_ENABLED, enabled).apply()
     }
 
@@ -91,8 +91,7 @@ class PlayerWidget : AppWidgetProvider() {
         }
 
         @JvmStatic
-        fun isEnabled(context: Context): Boolean {
-//            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        fun isEnabled(): Boolean {
             return prefs!!.getBoolean(KEY_ENABLED, false)
         }
     }

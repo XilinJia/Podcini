@@ -13,7 +13,7 @@ object FeedParserTestHelper {
      */
     @JvmStatic
     fun getFeedFile(fileName: String): File {
-        return File(FeedParserTestHelper::class.java.classLoader.getResource(fileName).file)
+        return File(FeedParserTestHelper::class.java.classLoader?.getResource(fileName)?.file?:"")
     }
 
     /**
@@ -25,7 +25,6 @@ object FeedParserTestHelper {
         val handler = FeedHandler()
         val parsedFeed = Feed("http://example.com/feed", null)
         parsedFeed.fileUrl = (feedFile.absolutePath)
-        parsedFeed.downloaded = (true)
         handler.parseFeed(parsedFeed)
         return parsedFeed
     }

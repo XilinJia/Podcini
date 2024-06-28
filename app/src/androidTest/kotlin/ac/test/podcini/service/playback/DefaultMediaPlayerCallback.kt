@@ -2,8 +2,8 @@ package de.test.podcini.service.playback
 
 import ac.mdiq.podcini.storage.utils.MediaType
 import ac.mdiq.podcini.storage.model.Playable
-import ac.mdiq.podcini.playback.base.MediaPlayerBase.MediaPlayerCallback
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.MediaPlayerInfo
+import ac.mdiq.podcini.playback.base.MediaPlayerCallback
 
 open class DefaultMediaPlayerCallback : MediaPlayerCallback {
     override fun statusChanged(newInfo: MediaPlayerInfo?) {

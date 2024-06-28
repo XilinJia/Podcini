@@ -4,7 +4,6 @@ import ac.mdiq.podcini.net.download.DownloadError
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.storage.database.Episodes.EpisodeDuplicateGuesser
 import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodes
 import ac.mdiq.podcini.storage.database.LogsAndStats.addDownloadStatus
 import ac.mdiq.podcini.storage.database.Queues.removeFromAllQueuesQuiet
@@ -12,30 +11,28 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
-import ac.mdiq.podcini.storage.model.DownloadResult
-import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.model.FeedPreferences
+import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.TAG_ROOT
 import ac.mdiq.podcini.storage.utils.VolumeAdaptionSetting
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
-import ac.mdiq.podcini.util.sorting.EpisodePubdateComparator
 import android.app.backup.BackupManager
 import android.content.Context
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.runBlocking
+import io.realm.kotlin.ext.asFlow
+import io.realm.kotlin.notifications.*
+import kotlinx.coroutines.*
 import java.io.File
+import java.text.DateFormat
 import java.util.*
 import java.util.concurrent.ExecutionException
+import kotlin.math.abs
 
 object Feeds {
     private val TAG: String = Feeds::class.simpleName ?: "Anonymous"
-//    internal val feeds: MutableList<Feed> = mutableListOf()
     private val feedMap: MutableMap<Long, Feed> = mutableMapOf()
     private val tags: MutableList<String> = mutableListOf()
 
@@ -47,11 +44,22 @@ object Feeds {
         return tags
     }
 
-    fun updateFeedMap() {
-        Logd(TAG, "updateFeedMap called")
-        val feeds_ = realm.query(Feed::class).find()
-        feedMap.clear()
-        feedMap.putAll(feeds_.associateBy { it.id })
+    fun updateFeedMap(feeds: List<Feed> = listOf(), wipe: Boolean = false) {
+        Logd(TAG, "updateFeedMap called feeds: ${feeds.size} wipe: $wipe")
+        when {
+            feeds.isEmpty() -> {
+                val feeds_ = realm.query(Feed::class).find()
+                feedMap.clear()
+                feedMap.putAll(feeds_.associateBy { it.id })
+            }
+            wipe -> {
+                feedMap.clear()
+                feedMap.putAll(feeds.associateBy { it.id })
+            }
+            else -> {
+                for (f in feeds) feedMap[f.id] = f
+            }
+        }
         buildTags()
     }
 
@@ -59,21 +67,87 @@ object Feeds {
         val tagsSet = mutableSetOf<String>()
         val feedsCopy = feedMap.values
         for (feed in feedsCopy) {
-            if (feed.preferences != null) {
-                for (tag in feed.preferences!!.tags) {
-                    if (tag != TAG_ROOT) tagsSet.add(tag)
-                }
-            }
+            if (feed.preferences != null) tagsSet.addAll(feed.preferences!!.tags.filter { it != TAG_ROOT })
         }
         tags.clear()
         tags.addAll(tagsSet)
         tags.sort()
     }
 
+    fun monitorFeeds() {
+        val feeds = realm.query(Feed::class).find()
+        for (f in feeds) monitorFeed(f)
+
+        val feedQuery = realm.query(Feed::class)
+        CoroutineScope(Dispatchers.Default).launch {
+            val feedsFlow = feedQuery.asFlow()
+            feedsFlow.collect { changes: ResultsChange<Feed> ->
+                when (changes) {
+                    is UpdatedResults -> {
+                        when {
+                            changes.insertions.isNotEmpty() -> {
+                                for (i in changes.insertions) {
+                                    Logd(TAG, "monitorFeeds inserted feed: ${changes.list[i].title}")
+                                    updateFeedMap(listOf(changes.list[i]))
+                                    monitorFeed(changes.list[i])
+                                    EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.ADDED, changes.list[i].id))
+                                }
+                            }
+//                            changes.changes.isNotEmpty() -> {
+//                                for (i in changes.changes) {
+//                                    Logd(TAG, "monitorFeeds feed changed: ${changes.list[i].title}")
+//                                }
+//                            }
+                            changes.deletions.isNotEmpty() -> {
+                                Logd(TAG, "monitorFeeds feed deleted: ${changes.deletions.size}")
+                                updateFeedMap(changes.list, true)
+                            }
+                        }
+                    }
+                    else -> {
+                        // types other than UpdatedResults are not changes -- ignore them
+                    }
+                }
+            }
+        }
+    }
+
+    private fun monitorFeed(feed: Feed) {
+        CoroutineScope(Dispatchers.Default).launch {
+            val feedPrefsFlow = feed.asFlow(listOf("preferences.*"))
+            feedPrefsFlow.collect { changes: SingleQueryChange<Feed> ->
+                when (changes) {
+                    is UpdatedObject -> {
+                        Logd(TAG, "monitorFeed UpdatedObject0 ${changes.obj.title} ${changes.changedFields.joinToString()}")
+                        updateFeedMap(listOf(changes.obj))
+                        if (changes.isFieldChanged("preferences")) EventFlow.postEvent(FlowEvent.FeedPrefsChangeEvent(changes.obj))
+                    }
+                    else -> {}
+                }
+            }
+        }
+        CoroutineScope(Dispatchers.Default).launch {
+            val feedFlow = feed.asFlow()
+            feedFlow.collect { changes: SingleQueryChange<Feed> ->
+                when (changes) {
+                    is UpdatedObject -> {
+                        Logd(TAG, "monitorFeed UpdatedObject ${changes.obj.title} ${changes.changedFields.joinToString()}")
+                        updateFeedMap(listOf(changes.obj))
+                        if (changes.isFieldChanged("preferences")) EventFlow.postEvent(FlowEvent.FeedPrefsChangeEvent(changes.obj))
+                    }
+                    is DeletedObject -> {
+                        Logd(TAG, "monitorFeed DeletedObject ${feed.title}")
+                        EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.REMOVED, feed.id))
+                    }
+                    else -> {}
+                }
+            }
+        }
+    }
+
     fun getFeedListDownloadUrls(): List<String> {
         Logd(TAG, "getFeedListDownloadUrls called")
         val result: MutableList<String> = mutableListOf()
-//        val feeds = realm.query(Feed::class).find()
         for (f in feedMap.values) {
             val url = f.downloadUrl
             if (url != null && !url.startsWith(Feed.PREFIX_LOCAL_FOLDER)) result.add(url)
@@ -81,11 +155,7 @@ object Feeds {
         return result
     }
 
-//    TODO: some callers don't need to copy
     fun getFeed(feedId: Long, copy: Boolean = false): Feed? {
-//        Logd(TAG, "getFeed() called with: $feedId")
-//        val f = realm.query(Feed::class).query("id == $0", feedId).first().find()
-//        return if (f != null && f.isManaged()) realm.copyFromRealm(f) else null
         val f = feedMap[feedId]
         return if (f != null) {
             if (copy) realm.copyFromRealm(f)
@@ -118,14 +188,13 @@ object Feeds {
     @Synchronized
     fun updateFeed(context: Context, newFeed: Feed, removeUnlistedItems: Boolean): Feed? {
         Logd(TAG, "updateFeed called")
-//        TODO: check further on enclosing in realm write block
         var resultFeed: Feed?
         val unlistedItems: MutableList<Episode> = ArrayList()
 
         // Look up feed in the feedslist
         val savedFeed = searchFeedByIdentifyingValueOrID(newFeed, true)
         if (savedFeed == null) {
-            Logd(TAG, "Found no existing Feed with title " + newFeed.title + ". Adding as new one.")
+            Logd(TAG, "Found no existing Feed with title ${newFeed.title}. Adding as new one.")
             Logd(TAG, "newFeed.episodes: ${newFeed.episodes.size}")
             resultFeed = newFeed
         } else {
@@ -217,7 +286,6 @@ object Feeds {
                         Logd(TAG, "Marking episode published on $pubDate new, prior most recent date = $priorMostRecentDate")
                         episode.setNew()
                     }
-//                    idLong += 1
                 }
             }
 
@@ -246,16 +314,16 @@ object Feeds {
                 // Update with default values that are set in database
                 resultFeed = searchFeedByIdentifyingValueOrID(newFeed)
             } else persistFeedsSync(savedFeed)
-            updateFeedMap()
+//            updateFeedMap()
             if (removeUnlistedItems) runBlocking { deleteEpisodes(context, unlistedItems).join() }
         } catch (e: InterruptedException) {
             e.printStackTrace()
         } catch (e: ExecutionException) {
             e.printStackTrace()
         }
-
-        if (savedFeed != null) EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(savedFeed))
-        else EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(emptyList<Long>()))
+//      TODO: feedMonitor likely takes care of this
+//        if (savedFeed != null) EventFlow.postEvent(FlowEvent.FeedListEvent(savedFeed))
+//        else EventFlow.postEvent(FlowEvent.FeedListEvent(emptyList<Long>()))
 
         return resultFeed
     }
@@ -302,7 +370,7 @@ object Feeds {
         return runOnIOScope {
             feed.lastUpdateFailed = lastUpdateFailed
             upsert(feed) {}
-            EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(feed.id))
+            EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.ERROR, feed.id))
         }
     }
 
@@ -339,32 +407,38 @@ object Feeds {
                 }
                 copyToRealm(feed)
             }
+//            updateFeedMap(feeds.toList())
         }
         for (feed in feeds) {
-            if (!feed.isLocalFeed && feed.downloadUrl != null)
-                SynchronizationQueueSink.enqueueFeedAddedIfSyncActive(context, feed.downloadUrl!!)
+            if (!feed.isLocalFeed && feed.downloadUrl != null) SynchronizationQueueSink.enqueueFeedAddedIfSyncActive(context, feed.downloadUrl!!)
         }
         val backupManager = BackupManager(context)
         backupManager.dataChanged()
     }
 
     private fun persistFeedsSync(vararg feeds: Feed) {
-        Logd(TAG, "persistCompleteFeeds called")
+        Logd(TAG, "persistFeedsSync called")
         for (feed in feeds) {
             upsertBlk(feed) {}
         }
     }
 
     fun persistFeedPreferences(feed: Feed) : Job {
-        Logd(TAG, "persistCompleteFeeds called")
+        Logd(TAG, "persistFeedPreferences called")
         return runOnIOScope {
             val feed_ = realm.query(Feed::class, "id == ${feed.id}").first().find()
             if (feed_ != null) {
                 realm.write {
-                    findLatest(feed_)?.let { it.preferences = feed.preferences }
+                    findLatest(feed_)?.let {
+                        it.preferences = feed.preferences
+//                        updateFeedMap(listOf(it))
+                    }
                 }
-            } else upsert(feed) {}
-            if (feed.preferences != null) EventFlow.postEvent(FlowEvent.FeedPrefsChangeEvent(feed.preferences!!))
+            } else {
+                upsert(feed) {}
+//                updateFeedMap(listOf(feed))
+            }
+//            if (feed.preferences != null) EventFlow.postEvent(FlowEvent.FeedPrefsChangeEvent(feed.preferences!!))
         }
     }
 
@@ -389,11 +463,14 @@ object Feeds {
                         val episodes = feed_.episodes.toList()
                         if (episodes.isNotEmpty()) episodes.forEach { e -> delete(e) }
                         val feedToDelete = findLatest(feed_)
-                        if (feedToDelete != null) delete(feedToDelete)
+                        if (feedToDelete != null) {
+                            delete(feedToDelete)
+                            feedMap.remove(feedId)
+                        }
                     }
                 }
                 if (!feed.isLocalFeed && feed.downloadUrl != null) SynchronizationQueueSink.enqueueFeedRemovedIfSyncActive(context, feed.downloadUrl!!)
-                if (postEvent) EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(feed))
+//                if (postEvent) EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.REMOVED, feed.id))
             }
         }
     }
@@ -426,4 +503,77 @@ object Feeds {
         if (!UserPreferences.isAutoDelete) return false
         return !feed.isLocalFeed || UserPreferences.isAutoDeleteLocal
     }
+
+    /**
+     * Compares the pubDate of two FeedItems for sorting in reverse order
+     */
+    class EpisodePubdateComparator : Comparator<Episode> {
+        override fun compare(lhs: Episode, rhs: Episode): Int {
+            return rhs.pubDate.compareTo(lhs.pubDate)
+        }
+    }
+
+    /**
+     * Publishers sometimes mess up their feed by adding episodes twice or by changing the ID of existing episodes.
+     * This class tries to guess if publishers actually meant another episode,
+     * even if their feed explicitly says that the episodes are different.
+     */
+    object EpisodeDuplicateGuesser {
+        fun seemDuplicates(item1: Episode, item2: Episode): Boolean {
+            if (sameAndNotEmpty(item1.identifier, item2.identifier)) return true
+
+            val media1 = item1.media
+            val media2 = item2.media
+            if (media1 == null || media2 == null) return false
+
+            if (sameAndNotEmpty(media1.getStreamUrl(), media2.getStreamUrl())) return true
+
+            return (titlesLookSimilar(item1, item2) && datesLookSimilar(item1, item2) && durationsLookSimilar(media1, media2) && mimeTypeLooksSimilar(media1, media2))
+        }
+
+        fun sameAndNotEmpty(string1: String?, string2: String?): Boolean {
+            if (string1.isNullOrEmpty() || string2.isNullOrEmpty()) return false
+            return string1 == string2
+        }
+
+        private fun datesLookSimilar(item1: Episode, item2: Episode): Boolean {
+            if (item1.getPubDate() == null || item2.getPubDate() == null) return false
+
+            val dateFormat = DateFormat.getDateInstance(DateFormat.SHORT, Locale.US) // MM/DD/YY
+            val dateOriginal = dateFormat.format(item2.getPubDate()!!)
+            val dateNew = dateFormat.format(item1.getPubDate()!!)
+            return dateOriginal == dateNew // Same date; time is ignored.
+        }
+
+        private fun durationsLookSimilar(media1: EpisodeMedia, media2: EpisodeMedia): Boolean {
+            return abs((media1.getDuration() - media2.getDuration()).toDouble()) < 10 * 60L * 1000L
+        }
+
+        private fun mimeTypeLooksSimilar(media1: EpisodeMedia, media2: EpisodeMedia): Boolean {
+            var mimeType1 = media1.mimeType
+            var mimeType2 = media2.mimeType
+            if (mimeType1 == null || mimeType2 == null) return true
+
+            if (mimeType1.contains("/") && mimeType2.contains("/")) {
+                mimeType1 = mimeType1.substring(0, mimeType1.indexOf("/"))
+                mimeType2 = mimeType2.substring(0, mimeType2.indexOf("/"))
+            }
+            return (mimeType1 == mimeType2)
+        }
+
+        private fun titlesLookSimilar(item1: Episode, item2: Episode): Boolean {
+            return sameAndNotEmpty(canonicalizeTitle(item1.title), canonicalizeTitle(item2.title))
+        }
+
+        private fun canonicalizeTitle(title: String?): String {
+            if (title == null) return ""
+            return title
+                .trim { it <= ' ' }
+                .replace('“', '"')
+                .replace('”', '"')
+                .replace('„', '"')
+                .replace('—', '-')
+        }
+    }
+
 }

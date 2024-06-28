@@ -6,6 +6,7 @@
         android:id="@+id/show_home_reader_view"
         android:icon="@drawable/baseline_home_24"
         android:title="@string/home_label"
+        android:checkable="true"
         custom:showAsAction="always">
     </item>
 

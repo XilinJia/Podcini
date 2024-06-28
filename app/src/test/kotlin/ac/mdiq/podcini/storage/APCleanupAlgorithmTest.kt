@@ -1,6 +1,6 @@
 package ac.mdiq.podcini.storage
 
-import ac.mdiq.podcini.storage.algorithms.EpisodeCleanupAlgorithmFactory.APCleanupAlgorithm
+import ac.mdiq.podcini.storage.algorithms.AutoCleanups.APCleanupAlgorithm
 import org.junit.Assert
 import org.junit.Test
 import java.text.SimpleDateFormat

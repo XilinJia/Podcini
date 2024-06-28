@@ -9,7 +9,7 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.UserPreferences.episodeCacheSize
 import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
-import ac.mdiq.podcini.storage.algorithms.EpisodeCleanupAlgorithmFactory
+import ac.mdiq.podcini.storage.algorithms.AutoCleanups
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodesCount
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.model.DatasetStats
@@ -413,7 +413,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
 //                queueSize = queue?.episodeIds?.size ?: 0
 //            }
             Logd(TAG, "getDatasetStats: queueSize: $queueSize")
-            return DatasetStats(queueSize, numDownloadedItems, EpisodeCleanupAlgorithmFactory.build().getReclaimableItems(), numItems, numFeeds)
+            return DatasetStats(queueSize, numDownloadedItems, AutoCleanups.build().getReclaimableItems(), numItems, numFeeds)
         }
     }
 }

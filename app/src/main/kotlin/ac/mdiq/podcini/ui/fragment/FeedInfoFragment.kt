@@ -3,8 +3,8 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.EditTextDialogBinding
 import ac.mdiq.podcini.databinding.FeedinfoBinding
-import ac.mdiq.podcini.net.feed.discovery.CombinedSearcher
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
+import ac.mdiq.podcini.net.feed.discovery.CombinedSearcher
 import ac.mdiq.podcini.net.utils.HtmlToPlainText
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.database.Feeds.updateFeedDownloadURL
@@ -32,7 +32,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.content.res.AppCompatResources
@@ -66,15 +65,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private lateinit var feed: Feed
     private lateinit var imgvCover: ImageView
-    private lateinit var txtvTitle: TextView
-    private lateinit var txtvDescription: TextView
-    private lateinit var txtvFundingUrl: TextView
-    private lateinit var lblSupport: TextView
-    private lateinit var txtvUrl: TextView
-    private lateinit var txtvAuthorHeader: TextView
     private lateinit var imgvBackground: ImageView
-    private lateinit var infoContainer: View
-    private lateinit var header: View
     private lateinit var toolbar: MaterialToolbar
 
     private val addLocalFolderLauncher = registerForActivityResult<Uri?, Uri>(AddLocalFolder()) {
@@ -115,18 +106,10 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         appBar.addOnOffsetChangedListener(iconTintManager)
 
         imgvCover = binding.header.imgvCover
-        txtvTitle = binding.header.txtvTitle
-        txtvAuthorHeader = binding.header.txtvAuthor
         imgvBackground = binding.imgvBackground
-        infoContainer = binding.infoContainer
-        header = binding.header.root
         // https://github.com/bumptech/glide/issues/529
 //        imgvBackground.colorFilter = LightingColorFilter(-0x7d7d7e, 0x000000)
 
-        txtvDescription = binding.txtvDescription
-        txtvUrl = binding.txtvUrl
-        lblSupport = binding.lblSupport
-        txtvFundingUrl = binding.txtvFundingUrl
         binding.header.episodes.text = feed.episodes.size.toString() + " episodes"
         binding.header.episodes.setOnClickListener {
             val fragment: Fragment = FeedEpisodesFragment.newInstance(feed.id)
@@ -134,13 +117,12 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
 
         binding.btnvRelatedFeeds.setOnClickListener {
-            val fragment = OnlineSearchFragment.newInstance(CombinedSearcher::class.java, "${txtvAuthorHeader.text} podcasts")
+            val fragment = OnlineSearchFragment.newInstance(CombinedSearcher::class.java, "${binding.header.txtvAuthor.text} podcasts")
             (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
         }
 
-        txtvUrl.setOnClickListener(copyUrlToClipboard)
+        binding.txtvUrl.setOnClickListener(copyUrlToClipboard)
 
-//        val feedId = requireArguments().getLong(EXTRA_FEED_ID)
         val feedId = feed.id
         parentFragmentManager.beginTransaction().replace(R.id.statisticsFragmentContainer,
             FeedStatisticsFragment.newInstance(feedId, false), "feed_statistics_fragment")
@@ -158,8 +140,8 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         val horizontalSpacing = resources.getDimension(R.dimen.additional_horizontal_spacing).toInt()
-        header.setPadding(horizontalSpacing, header.paddingTop, horizontalSpacing, header.paddingBottom)
-        infoContainer.setPadding(horizontalSpacing, infoContainer.paddingTop, horizontalSpacing, infoContainer.paddingBottom)
+        binding.header.root.setPadding(horizontalSpacing, binding.header.root.paddingTop, horizontalSpacing, binding.header.root.paddingBottom)
+        binding.infoContainer.setPadding(horizontalSpacing, binding.infoContainer.paddingTop, horizontalSpacing, binding.infoContainer.paddingBottom)
     }
 
     private fun showFeed() {
@@ -173,22 +155,22 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             error(R.mipmap.ic_launcher)
         }
 
-        txtvTitle.text = feed.title
-        txtvTitle.setMaxLines(6)
+        binding.header.txtvTitle.text = feed.title
+        binding.header.txtvTitle.setMaxLines(6)
 
         val description: String = HtmlToPlainText.getPlainText(feed.description?:"")
-        txtvDescription.text = description
+        binding.txtvDescription.text = description
 
-        if (!feed.author.isNullOrEmpty()) txtvAuthorHeader.text = feed.author
+        if (!feed.author.isNullOrEmpty()) binding.header.txtvAuthor.text = feed.author
 
-        txtvUrl.text = feed.downloadUrl
-        txtvUrl.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_paperclip, 0)
+        binding.txtvUrl.text = feed.downloadUrl
+        binding.txtvUrl.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_paperclip, 0)
 
         if (feed.paymentLinks.isEmpty()) {
-            lblSupport.visibility = View.GONE
-            txtvFundingUrl.visibility = View.GONE
+            binding.lblSupport.visibility = View.GONE
+            binding.txtvFundingUrl.visibility = View.GONE
         } else {
-            lblSupport.visibility = View.VISIBLE
+            binding.lblSupport.visibility = View.VISIBLE
             val fundingList: ArrayList<FeedFunding> = feed.paymentLinks
 
             // Filter for duplicates, but keep items in the order that they have in the feed.
@@ -212,7 +194,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 str.append("\n")
             }
             str = StringBuilder(StringUtils.trim(str.toString()))
-            txtvFundingUrl.text = str.toString()
+            binding.txtvFundingUrl.text = str.toString()
         }
         refreshToolbarState()
     }
@@ -260,8 +242,8 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 object : EditUrlSettingsDialog(activity as Activity, feed) {
                     override fun setUrl(url: String?) {
                         feed.downloadUrl = url
-                        txtvUrl.text = feed.downloadUrl
-                        txtvUrl.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_paperclip, 0)
+                        binding.txtvUrl.text = feed.downloadUrl
+                        binding.txtvUrl.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_paperclip, 0)
                     }
                 }.show()
             }

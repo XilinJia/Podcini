@@ -157,7 +157,7 @@ import kotlin.math.min
                 }
             }
         } else {
-            Log.w(TAG, "port $hostPort in use, ignored")
+            Logd(TAG, "port $hostPort in use, ignored")
             loginFail = true
         }
         EventFlow.postEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_in_progress, "5"))
@@ -316,11 +316,11 @@ import kotlin.math.min
         val guid = if (isValidGuid(action.guid)) action.guid else null
         val feedItem = getEpisodeByGuidOrUrl(guid, action.episode?:"")
         if (feedItem == null) {
-            Log.i(TAG, "Unknown feed item: $action")
+            Logd(TAG, "Unknown feed item: $action")
             return null
         }
         if (feedItem.media == null) {
-            Log.i(TAG, "Feed item has no media: $action")
+            Logd(TAG, "Feed item has no media: $action")
             return null
         }
 //        feedItem.media = getFeedMedia(feedItem.media!!.id)

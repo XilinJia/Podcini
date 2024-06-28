@@ -19,6 +19,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.defaultPage
 import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
 import ac.mdiq.podcini.receiver.MediaButtonReceiver.Companion.createIntent
 import ac.mdiq.podcini.receiver.PlayerWidget
+import ac.mdiq.podcini.storage.database.Feeds.monitorFeeds
 import ac.mdiq.podcini.storage.database.Feeds.updateFeedMap
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
@@ -95,7 +96,7 @@ class MainActivity : CastEnabledActivity() {
     private lateinit var mainView: View
     private lateinit var navDrawerFragment: NavDrawerFragment
     private lateinit var audioPlayerFragment: AudioPlayerFragment
-    private lateinit var audioPlayerFragmentView: View
+    private lateinit var audioPlayerView: View
     private lateinit var controllerFuture: ListenableFuture<MediaController>
     private lateinit var navDrawer: View
     private lateinit var dummyView : View
@@ -130,6 +131,7 @@ class MainActivity : CastEnabledActivity() {
             SwipeActions.getSharedPrefs(this@MainActivity)
             QueueFragment.getSharedPrefs(this@MainActivity)
             updateFeedMap()
+            monitorFeeds()
 //            InTheatre.apply { }
             PlayerDetailsFragment.getSharedPrefs(this@MainActivity)
             PlayerWidget.getSharedPrefs(this@MainActivity)
@@ -196,11 +198,11 @@ class MainActivity : CastEnabledActivity() {
         transaction.replace(R.id.audioplayerFragment, audioPlayerFragment, AudioPlayerFragment.TAG)
         transaction.commit()
         navDrawer = findViewById(R.id.navDrawerFragment)
-        audioPlayerFragmentView = findViewById(R.id.audioplayerFragment)
+        audioPlayerView = findViewById(R.id.audioplayerFragment)
 
         runOnIOScope {  checkFirstLaunch() }
 
-        this.bottomSheet = BottomSheetBehavior.from(audioPlayerFragmentView) as LockableBottomSheetBehavior<*>
+        this.bottomSheet = BottomSheetBehavior.from(audioPlayerView) as LockableBottomSheetBehavior<*>
         this.bottomSheet.isHideable = false
         this.bottomSheet.isDraggable = false
         this.bottomSheet.setBottomSheetCallback(bottomSheetCallback)
@@ -382,7 +384,7 @@ class MainActivity : CastEnabledActivity() {
         get() = drawerLayout?.isDrawerOpen(navDrawer)?:false
 
     private fun updateInsets() {
-        setPlayerVisible(audioPlayerFragmentView.visibility == View.VISIBLE)
+        setPlayerVisible(audioPlayerView.visibility == View.VISIBLE)
         val playerHeight = resources.getDimension(R.dimen.external_player_height).toInt()
         bottomSheet.peekHeight = playerHeight + navigationBarInsets.bottom
     }
@@ -403,7 +405,11 @@ class MainActivity : CastEnabledActivity() {
         val playerParams = playerView?.layoutParams as? MarginLayoutParams
         playerParams?.setMargins(navigationBarInsets.left, 0, navigationBarInsets.right, 0)
         playerView.layoutParams = playerParams
-        audioPlayerFragmentView.visibility = if (visible) View.VISIBLE else View.GONE
+        audioPlayerView.visibility = if (visible) View.VISIBLE else View.GONE
+    }
+
+    fun isPlayerVisible(): Boolean {
+        return audioPlayerView.visibility == View.VISIBLE
     }
 
     fun loadFragment(tag: String?, args: Bundle?) {
@@ -669,7 +675,7 @@ class MainActivity : CastEnabledActivity() {
         val s: Snackbar
         if (bottomSheet.state == BottomSheetBehavior.STATE_COLLAPSED) {
             s = Snackbar.make(mainView, text!!, duration)
-            if (audioPlayerFragmentView.visibility == View.VISIBLE) s.setAnchorView(audioPlayerFragmentView)
+            if (audioPlayerView.visibility == View.VISIBLE) s.setAnchorView(audioPlayerView)
         } else s = Snackbar.make(binding.root, text!!, duration)
 
         s.show()

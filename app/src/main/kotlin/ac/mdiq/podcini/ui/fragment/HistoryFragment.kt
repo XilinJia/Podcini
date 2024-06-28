@@ -37,9 +37,7 @@ import kotlin.math.min
     private var startDate : Long = 0L
     private var endDate : Long = Date().time
 
-    override fun getFragmentTag(): String {
-        return TAG
-    }
+    var allHistory: List<Episode> = listOf()
 
     override fun getPrefName(): String {
         return TAG
@@ -87,10 +85,6 @@ import kotlin.math.min
     override fun onStop() {
         super.onStop()
         cancelFlowEvents()
-    }
-
-    override fun getFilter(): EpisodeFilter {
-        return EpisodeFilter.unfiltered()
     }
 
     @OptIn(UnstableApi::class) override fun onMenuItemClick(item: MenuItem): Boolean {
@@ -157,15 +151,15 @@ import kotlin.math.min
     }
 
     override fun loadData(): List<Episode> {
-        val hList = getHistory(0, page * EPISODES_PER_PAGE, startDate, endDate, sortOrder).toMutableList()
-//        FeedItemPermutors.getPermutor(sortOrder).reorder(hList)
-        return hList
+        allHistory = getHistory(0, Int.MAX_VALUE, startDate, endDate, sortOrder).toMutableList()
+        return allHistory.subList(0, min(allHistory.size-1, page * EPISODES_PER_PAGE))
     }
 
     override fun loadMoreData(page: Int): List<Episode> {
-        val hList = getHistory((page - 1) * EPISODES_PER_PAGE, EPISODES_PER_PAGE, startDate, endDate, sortOrder).toMutableList()
-//        FeedItemPermutors.getPermutor(sortOrder).reorder(hList)
-        return hList
+        val offset = (page - 1) * EPISODES_PER_PAGE
+        if (offset >= allHistory.size) return listOf()
+        val toIndex = offset + EPISODES_PER_PAGE
+        return allHistory.subList(offset, min(allHistory.size, toIndex))
     }
 
     override fun loadTotalItemCount(): Int {
@@ -215,7 +209,7 @@ import kotlin.math.min
         fun getHistory(offset: Int, limit: Int, start: Long = 0L, end: Long = Date().time,
                        sortOrder: SortOrder = SortOrder.PLAYED_DATE_NEW_OLD): List<Episode> {
             Logd(TAG, "getHistory() called")
-            val medias = realm.query(EpisodeMedia::class).query("lastPlayedTime > 0 AND lastPlayedTime <= $1", start, end).find()
+            val medias = realm.query(EpisodeMedia::class).query("lastPlayedTime > $0 AND lastPlayedTime <= $1", start, end).find()
             var episodes: MutableList<Episode> = mutableListOf()
             for (m in medias) {
                 if (m.episode != null) episodes.add(m.episode!!)

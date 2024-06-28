@@ -7,7 +7,7 @@ import androidx.media3.common.util.UnstableApi
 import ac.mdiq.podcini.util.config.ClientConfigurator
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownloadOnBattery
-import ac.mdiq.podcini.storage.database.Episodes.autodownloadEpisodeMedia
+import ac.mdiq.podcini.storage.algorithms.AutoDownloads.autodownloadEpisodeMedia
 import ac.mdiq.podcini.util.Logd
 
 // modified from http://developer.android.com/training/monitoring-device-state/battery-monitoring.html

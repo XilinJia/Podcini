@@ -44,8 +44,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.CheckBox
-import android.widget.ProgressBar
-import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -74,15 +72,13 @@ import java.util.*
     private var _binding: QueueFragmentBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var infoBar: TextView
     private lateinit var recyclerView: EpisodesRecyclerView
     private lateinit var emptyView: EmptyViewHandler
     private lateinit var toolbar: MaterialToolbar
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var swipeActions: SwipeActions
     private lateinit var speedDialView: SpeedDialView
-    private lateinit var progressBar: ProgressBar
-    
+
     private var displayUpArrow = false
     private var queueItems: MutableList<Episode> = mutableListOf()
 
@@ -112,10 +108,8 @@ import java.util.*
         (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
         toolbar.inflateMenu(R.menu.queue)
         refreshToolbarState()
-        progressBar = binding.progressBar
-        progressBar.visibility = View.VISIBLE
+        binding.progressBar.visibility = View.VISIBLE
 
-        infoBar = binding.infoBar
         recyclerView = binding.recyclerView
         val animator: RecyclerView.ItemAnimator? = recyclerView.itemAnimator
         if (animator != null && animator is SimpleItemAnimator) animator.supportsChangeAnimations = false
@@ -335,12 +329,12 @@ import java.util.*
     private fun onPlaybackPositionEvent(event: FlowEvent.PlaybackPositionEvent) {
 //        Logd(TAG, "onEventMainThread() called with ${event.TAG}")
         if (adapter != null) {
-            if (currentPlaying != null && currentPlaying!!.isCurMedia) currentPlaying!!.notifyPlaybackPositionUpdated(event)
+            if (currentPlaying != null && event.media?.getIdentifier() == currentPlaying!!.episode?.media?.getIdentifier() && currentPlaying!!.isCurMedia) currentPlaying!!.notifyPlaybackPositionUpdated(event)
             else {
-                Logd(TAG, "onEventMainThread() ${event.TAG} search list")
+                Logd(TAG, "onPlaybackPositionEvent() ${event.TAG} search list")
                 for (i in 0 until adapter!!.itemCount) {
                     val holder: EpisodeViewHolder? = recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeViewHolder
-                    if (holder != null && holder.isCurMedia) {
+                    if (holder != null && event.media?.getIdentifier() == holder.episode?.media?.getIdentifier()) {
                         currentPlaying = holder
                         holder.notifyPlaybackPositionUpdated(event)
                         break
@@ -370,7 +364,7 @@ import java.util.*
     private fun onFeedPrefsChanged(event: FlowEvent.FeedPrefsChangeEvent) {
         Log.d(TAG,"speedPresetChanged called")
         for (item in queueItems) {
-            if (item.feed?.id == event.prefs.feedID) item.feed!!.preferences = event.prefs
+            if (item.feed?.id == event.feed.id) item.feed = null
         }
     }
 
@@ -470,14 +464,14 @@ import java.util.*
 
         val selectedItem: Episode? = adapter!!.longPressedItem
         if (selectedItem == null) {
-            Log.i(TAG, "Selected item was null, ignoring selection")
+            Logd(TAG, "Selected item was null, ignoring selection")
             return super.onContextItemSelected(item)
         }
         if (adapter!!.onContextItemSelected(item)) return true
 
         val pos: Int = EpisodeUtil.indexOfItemWithId(queueItems.toList(), selectedItem.id)
         if (pos < 0) {
-            Log.i(TAG, "Selected item no longer exist, ignoring selection")
+            Logd(TAG, "Selected item no longer exist, ignoring selection")
             return super.onContextItemSelected(item)
         }
 
@@ -536,7 +530,7 @@ import java.util.*
             info += " • "
             info += Converter.getDurationStringLocalized(requireActivity(), timeLeft)
         }
-        infoBar.text = info
+        binding.infoBar.text = info
         toolbar.title = "${getString(R.string.queue_label)}: ${curQueue.name}"
     }
 
@@ -551,7 +545,7 @@ import java.util.*
 
         queueItems.clear()
         queueItems.addAll(curQueue.episodes)
-        progressBar.visibility = View.GONE
+        binding.progressBar.visibility = View.GONE
         adapter?.setDummyViews(0)
         adapter?.updateItems(queueItems)
         if (restoreScrollPosition) recyclerView.restoreScrollPosition(TAG)
@@ -562,13 +556,13 @@ import java.util.*
         swipeActions.detach()
         speedDialView.visibility = View.VISIBLE
         refreshToolbarState()
-        infoBar.visibility = View.GONE
+        binding.infoBar.visibility = View.GONE
     }
 
     override fun onEndSelectMode() {
         speedDialView.close()
         speedDialView.visibility = View.GONE
-        infoBar.visibility = View.VISIBLE
+        binding.infoBar.visibility = View.VISIBLE
         swipeActions.attachTo(recyclerView)
     }
 
@@ -603,7 +597,7 @@ import java.util.*
         private fun reorderQueue(sortOrder: SortOrder?, broadcastUpdate: Boolean) : Job {
             Logd(TAG, "reorderQueue called")
             if (sortOrder == null) {
-                Log.w(TAG, "reorderQueue() - sortOrder is null. Do nothing.")
+                Logd(TAG, "reorderQueue() - sortOrder is null. Do nothing.")
                 return Job()
             }
             val permutor = getPermutor(sortOrder)

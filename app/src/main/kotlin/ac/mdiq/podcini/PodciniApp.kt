@@ -4,7 +4,7 @@ import ac.mdiq.podcini.preferences.PreferenceUpgrader
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.ui.activity.SplashActivity
 import ac.mdiq.podcini.util.SPAUtil
-import ac.mdiq.podcini.util.config.ApplicationCallbacksImpl
+import ac.mdiq.podcini.util.config.ApplicationCallbacks
 import ac.mdiq.podcini.util.config.ClientConfig
 import ac.mdiq.podcini.util.config.ClientConfigurator
 import ac.mdiq.podcini.util.error.CrashReportWriter
@@ -47,6 +47,12 @@ class PodciniApp : Application() {
         }
         SPAUtil.sendSPAppsQueryFeedsIntent(this)
         DynamicColors.applyToActivitiesIfAvailable(this)
+    }
+
+    class ApplicationCallbacksImpl : ApplicationCallbacks {
+        override fun getApplicationInstance(): Application {
+            return PodciniApp.getInstance()
+        }
     }
 
     companion object {

@@ -107,7 +107,7 @@ class UITestUtils(private val context: Context) {
         for (i in 0 until NUM_FEEDS) {
             val feed = Feed(0, null, "Title $i", "http://example.com/$i", "Description of feed $i",
                 "http://example.com/pay/feed$i", "author $i", "en", Feed.TYPE_RSS2, "feed$i", null, null,
-                "http://example.com/feed/src/$i", false)
+                "http://example.com/feed/src/$i")
 
             // create items
             val items: MutableList<Episode> = ArrayList()
@@ -147,11 +147,8 @@ class UITestUtils(private val context: Context) {
     /**
      * Adds feeds, images and episodes to the local database. This method will also call addHostedFeedData if it has not
      * been called yet.
-     *
      * Adds one item of each feed to the queue and to the playback history.
-     *
      * This method should NOT be called if the testing class wants to download the hosted feed data.
-     *
      * @param downloadEpisodes true if episodes should also be marked as downloaded.
      */
     @Throws(Exception::class)
@@ -161,13 +158,10 @@ class UITestUtils(private val context: Context) {
             // might be a flaky test, this is actually not that severe
             return
         }
-        if (!feedDataHosted) {
-            addHostedFeedData()
-        }
+        if (!feedDataHosted) addHostedFeedData()
 
         val queue: MutableList<Episode> = ArrayList()
         for (feed in hostedFeeds) {
-            feed.downloaded = (true)
             if (downloadEpisodes) {
                 for (item in feed.episodes) {
                     if (item.media != null) {
@@ -191,7 +185,7 @@ class UITestUtils(private val context: Context) {
 //        adapter.setCompleteFeed(*hostedFeeds.toTypedArray<Feed>())
 //        adapter.setQueue(queue)
 //        adapter.close()
-        EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(hostedFeeds))
+//        EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.UNKNOWN, hostedFeeds))
         EventFlow.postEvent(FlowEvent.QueueEvent.setQueue(queue))
     }
 

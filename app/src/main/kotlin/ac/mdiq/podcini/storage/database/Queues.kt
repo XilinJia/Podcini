@@ -7,7 +7,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.EnqueueLocation
 import ac.mdiq.podcini.preferences.UserPreferences.enqueueLocation
 import ac.mdiq.podcini.preferences.UserPreferences.isQueueKeepSorted
 import ac.mdiq.podcini.preferences.UserPreferences.queueKeepSortedOrder
-import ac.mdiq.podcini.storage.database.Episodes.autodownloadEpisodeMedia
+import ac.mdiq.podcini.storage.algorithms.AutoDownloads.autodownloadEpisodeMedia
 import ac.mdiq.podcini.storage.database.Episodes.markPlayed
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
@@ -186,7 +186,7 @@ object Queues {
                 queue.episodes.addAll(qItems)
             }
             for (event in events) EventFlow.postEvent(event)
-        } else Log.w(TAG, "Queue was not modified by call to removeQueueItem")
+        } else Logd(TAG, "Queue was not modified by call to removeQueueItem")
 
 //        TODO: what's this for?
         if (queue.id == curQueue.id && context != null) autodownloadEpisodeMedia(context)

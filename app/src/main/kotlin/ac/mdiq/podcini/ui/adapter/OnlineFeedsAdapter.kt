@@ -58,17 +58,6 @@ class OnlineFeedsAdapter(private val context: Context, objects: List<PodcastSear
             viewHolder.updateView.visibility = View.VISIBLE
         } else viewHolder.updateView.visibility = View.INVISIBLE
 
-        //Update the empty imageView with the image from the feed
-//        if (!podcast.imageUrl.isNullOrBlank()) Glide.with(context)
-//            .load(podcast.imageUrl)
-//            .apply(RequestOptions()
-//                .placeholder(R.color.light_gray)
-//                .diskCacheStrategy(DiskCacheStrategy.NONE)
-//                .transform(FitCenter(),
-//                    RoundedCorners((4 * context.resources.displayMetrics.density).toInt()))
-//                .dontAnimate())
-//            .into(viewHolder.coverView)
-
         viewHolder.coverView.load(podcast.imageUrl) {
             placeholder(R.color.light_gray)
             error(R.mipmap.ic_launcher)

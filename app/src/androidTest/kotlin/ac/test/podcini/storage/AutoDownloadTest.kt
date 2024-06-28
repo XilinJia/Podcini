@@ -4,8 +4,8 @@ import ac.mdiq.podcini.playback.PlaybackServiceStarter
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.preferences.UserPreferences.isAllowMobileStreaming
 import ac.mdiq.podcini.preferences.UserPreferences.isFollowQueue
-import ac.mdiq.podcini.storage.database.Episodes
-import ac.mdiq.podcini.storage.database.Episodes.downloadAlgorithm
+import ac.mdiq.podcini.storage.algorithms.AutoDownloads
+import ac.mdiq.podcini.storage.algorithms.AutoDownloads.downloadAlgorithm
 import ac.mdiq.podcini.storage.model.Episode
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
@@ -47,7 +47,7 @@ class AutoDownloadTest {
     @Throws(Exception::class)
     fun tearDown() {
 //        setDownloadAlgorithm(Episodes.AutomaticDownloadAlgorithm())
-        downloadAlgorithm = Episodes.AutomaticDownloadAlgorithm()
+        downloadAlgorithm = AutoDownloads.AutoDownloadAlgorithm()
         EspressoTestUtils.tryKillPlaybackService()
         stubFeedsServer!!.tearDown()
     }
@@ -103,11 +103,11 @@ class AutoDownloadTest {
 //            .until { item.media!!.id == currentlyPlayingFeedMediaId }
     }
 
-    private class StubDownloadAlgorithm : Episodes.AutomaticDownloadAlgorithm() {
+    private class StubDownloadAlgorithm : AutoDownloads.AutoDownloadAlgorithm() {
         var currentlyPlayingAtDownload: Long = -1
             private set
 
-        override fun autoDownloadEpisodeMedia(context: Context): Runnable? {
+        override fun autoDownloadEpisodeMedia(context: Context): Runnable {
             return Runnable {
                 if (currentlyPlayingAtDownload == -1L) {
 //                    currentlyPlayingAtDownload = currentlyPlayingFeedMediaId

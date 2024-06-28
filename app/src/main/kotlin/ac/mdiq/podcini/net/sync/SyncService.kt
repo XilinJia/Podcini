@@ -252,11 +252,11 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
         val guid = if (isValidGuid(action.guid)) action.guid else null
         val feedItem = getEpisodeByGuidOrUrl(guid, action.episode?:"")
         if (feedItem == null) {
-            Log.i(TAG, "Unknown feed item: $action")
+            Logd(TAG, "Unknown feed item: $action")
             return null
         }
         if (feedItem.media == null) {
-            Log.i(TAG, "Feed item has no media: $action")
+            Logd(TAG, "Feed item has no media: $action")
             return null
         }
         var idRemove: Long? = null

@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.storage.model
 
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
-import ac.mdiq.podcini.util.Logd
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.ext.realmSetOf
 import io.realm.kotlin.types.RealmList
@@ -13,7 +12,6 @@ import io.realm.kotlin.types.annotations.Index
 import io.realm.kotlin.types.annotations.PrimaryKey
 import org.apache.commons.lang3.builder.ToStringBuilder
 import org.apache.commons.lang3.builder.ToStringStyle
-
 import java.util.*
 
 /**
@@ -54,7 +52,6 @@ class Episode : RealmObject {
     @Ignore
     var feed: Feed? = null
         get() {
-//            Logd(TAG, "feed.get() ${field == null} ${title}")
             if (field == null && feedId != null) field = getFeed(feedId!!)
             return field
         }
@@ -137,26 +134,6 @@ class Episode : RealmObject {
         this.playState = UNPLAYED
 //        this.hasChapters = false
     }
-
-    /**
-     * This constructor is used by DBReader.
-     */
-//    constructor(id: Long, title: String?, link: String?, pubDate: Date?, paymentLink: String?, feedId: Long,
-//                hasChapters: Boolean, imageUrl: String?, state: Int,
-//                itemIdentifier: String?, autoDownloadEnabled: Boolean, podcastIndexChapterUrl: String?) {
-//        this.id = id
-//        this.title = title
-//        this.link = link
-//        this.pubDate = pubDate?.time ?: 0
-//        this.paymentLink = paymentLink
-//        this.feedId = feedId
-////        this.hasChapters = hasChapters
-//        this.imageUrl = imageUrl
-//        this.playState = state
-//        this.identifier = itemIdentifier
-//        this.isAutoDownloadEnabled = autoDownloadEnabled
-//        this.podcastIndexChapterUrl = podcastIndexChapterUrl
-//    }
 
     /**
      * This constructor should be used for creating test objects.

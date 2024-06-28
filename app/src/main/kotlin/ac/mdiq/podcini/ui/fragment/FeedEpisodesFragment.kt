@@ -10,7 +10,8 @@ import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.database.LogsAndStats.getFeedDownloadLog
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
-import ac.mdiq.podcini.storage.database.RealmDB.upsert
+import ac.mdiq.podcini.storage.database.RealmDB.unmanagedCopy
+import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.DownloadResult
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Feed
@@ -89,6 +90,7 @@ import java.util.concurrent.Semaphore
     private var enableFilter: Boolean = true
 
     private val ioScope = CoroutineScope(Dispatchers.IO)
+    private var onInit: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -194,7 +196,6 @@ import java.util.concurrent.Semaphore
         super.onStart()
         procFlowEvents()
         loadItems()
-//        realmFeedMonitor()
     }
 
     override fun onStop() {
@@ -269,11 +270,14 @@ import java.util.concurrent.Semaphore
             R.id.refresh_item -> FeedUpdateManager.runOnceOrAsk(requireContext(), feed)
             R.id.refresh_complete_item -> {
                 Thread {
-                    feed!!.nextPageLink = feed!!.downloadUrl
-                    feed!!.pageNr = 0
                     try {
-                        runBlocking { resetPagedFeedPage(feed).join() }
-                        FeedUpdateManager.runOnce(requireContext(), feed)
+                        if (feed != null) {
+                            val feed_ = unmanagedCopy(feed!!)
+                            feed_.nextPageLink = feed_.downloadUrl
+                            feed_.pageNr = 0
+                            upsertBlk(feed_) {}
+                            FeedUpdateManager.runOnce(requireContext(), feed_)
+                        }
                     } catch (e: ExecutionException) {
                         throw RuntimeException(e)
                     } catch (e: InterruptedException) {
@@ -302,19 +306,10 @@ import java.util.concurrent.Semaphore
         return true
     }
 
-    private fun resetPagedFeedPage(feed: Feed?) : Job {
-        return runOnIOScope {
-            if (feed != null) {
-                feed.nextPageLink = feed.downloadUrl
-                upsert(feed) {}
-            }
-        }
-    }
-
     override fun onContextItemSelected(item: MenuItem): Boolean {
         val selectedItem: Episode? = adapter.longPressedItem
         if (selectedItem == null) {
-            Log.i(TAG, "Selected item at current position was null, ignoring selection")
+            Logd(TAG, "Selected item at current position was null, ignoring selection")
             return super.onContextItemSelected(item)
         }
         if (adapter.onContextItemSelected(item)) return true
@@ -330,33 +325,6 @@ import java.util.concurrent.Semaphore
         }
     }
 
-    private fun onEpisodesFilterSortEvent(event: FlowEvent.EpisodesFilterOrSortEvent) {
-//        Logd(TAG, "onEvent() called with: event = [$event]")
-        if (event.feed.id == feed?.id) {
-            when (event.action) {
-                FlowEvent.EpisodesFilterOrSortEvent.Action.SORT_ORDER_CHANGED -> {
-                    val sortOrder = fromCode(feed!!.preferences?.sortOrderCode ?: 0)
-                    if (sortOrder != null) getPermutor(sortOrder).reorder(episodes)
-                    adapter.updateItems(episodes)
-                }
-                FlowEvent.EpisodesFilterOrSortEvent.Action.FILTER_CHANGED -> {
-                    episodes.clear()
-                    if (enableFilter) {
-                        feed!!.preferences?.filterString = event.feed.preferences?.filterString ?: ""
-                        val episodes_ = feed!!.episodes.filter { feed!!.episodeFilter.matches(it) }
-                        episodes.addAll(episodes_)
-                    } else {
-                        episodes.addAll(feed!!.episodes)
-                    }
-                    val sortOrder = fromCode(feed!!.preferences?.sortOrderCode ?: 0)
-                    if (sortOrder != null) getPermutor(sortOrder).reorder(episodes)
-                    binding.header.counts.text = episodes.size.toString()
-                    adapter.updateItems(episodes)
-                }
-            }
-        }
-    }
-
     private fun onEpisodeEvent(event: FlowEvent.EpisodeEvent) {
 //        Logd(TAG, "onEpisodeEvent() called with ${event.TAG}")
         if (feed == null || episodes.isEmpty()) return
@@ -367,19 +335,8 @@ import java.util.concurrent.Semaphore
         while (i < size) {
             val item = event.episodes[i]
             if (item.feedId != feed!!.id) continue
-//            Unmanaged embedded objects don't support parent access
-//            Logd(TAG, "item.media.parent: ${item.media?.parent<Episode>()?.title}")
             val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
             if (pos >= 0) {
-//                Logd(TAG, "replacing episode: ${item.title} ${item.media?.downloaded} ${item.media?.fileUrl}")
-//                val item_ = getEpisode(item.id)
-//                if (item_ != null) Logd(TAG, "episode in DB: ${item_.title} ${item_.media?.downloaded} ${item_.media?.fileUrl}")
-//                val feed_ = getFeed(item.feedId?:0)
-//                if (feed_ != null) {
-//                    for (item_1 in feed_.episodes) {
-//                        Logd(TAG, "episode in Feed: ${item_1.title} ${item_1.media?.downloaded} ${item_1.media?.fileUrl != null}")
-//                    }
-//                }
                 episodes.removeAt(pos)
                 episodes.add(pos, item)
                 adapter.notifyItemChangedCompat(pos)
@@ -449,12 +406,12 @@ import java.util.concurrent.Semaphore
 
     private fun onPlaybackPositionEvent(event: FlowEvent.PlaybackPositionEvent) {
 //        Logd(TAG, "onEventMainThread() called with ${event.TAG}")
-        if (currentPlaying != null && currentPlaying!!.isCurMedia) currentPlaying!!.notifyPlaybackPositionUpdated(event)
+        if (currentPlaying != null && event.media?.getIdentifier() == currentPlaying!!.episode?.media?.getIdentifier() && currentPlaying!!.isCurMedia) currentPlaying!!.notifyPlaybackPositionUpdated(event)
         else {
             Logd(TAG, "onEventMainThread() ${event.TAG} search list")
             for (i in 0 until adapter.itemCount) {
                 val holder: EpisodeViewHolder? = binding.recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeViewHolder
-                if (holder != null && holder.isCurMedia) {
+                if (holder != null && event.media?.getIdentifier() == holder.episode?.media?.getIdentifier()) {
                     currentPlaying = holder
                     holder.notifyPlaybackPositionUpdated(event)
                     break
@@ -483,12 +440,11 @@ import java.util.concurrent.Semaphore
                     is FlowEvent.FavoritesEvent -> onFavoriteEvent(event)
                     is FlowEvent.PlayEvent -> onEvenStartPlay(event)
                     is FlowEvent.PlaybackPositionEvent -> onPlaybackPositionEvent(event)
-                    is FlowEvent.FeedPrefsChangeEvent -> onFeedPrefsChanged(event)
+                    is FlowEvent.FeedPrefsChangeEvent -> if (feed?.id == event.feed.id) loadItems()
                     is FlowEvent.EpisodeEvent -> onEpisodeEvent(event)
-                    is FlowEvent.EpisodesFilterOrSortEvent -> onEpisodesFilterSortEvent(event)
                     is FlowEvent.PlayerSettingsEvent -> loadItems()
                     is FlowEvent.EpisodePlayedEvent -> onEpisodePlayedEvent(event)
-                    is FlowEvent.FeedListUpdateEvent -> onFeedListChanged(event)
+                    is FlowEvent.FeedListEvent -> if (feed != null && event.contains(feed!!)) loadItems()
                     is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
                     else -> {}
                 }
@@ -512,16 +468,6 @@ import java.util.concurrent.Semaphore
         }
     }
 
-    private fun onFeedPrefsChanged(event: FlowEvent.FeedPrefsChangeEvent) {
-        Log.d(TAG,"onFeedPrefsChanged called")
-        if (feed?.id == event.prefs.feedID) {
-            feed!!.preferences = event.prefs
-            for (item in episodes) {
-                item.feed?.preferences = event.prefs
-            }
-        }
-    }
-
     override fun onStartSelectMode() {
         swipeActions.detach()
         if (feed != null && feed!!.isLocalFeed) dialBinding.fabSD.removeActionItemById(R.id.download_batch)
@@ -540,13 +486,6 @@ import java.util.concurrent.Semaphore
         dialBinding.fabSD.close()
         dialBinding.fabSD.visibility = View.GONE
         swipeActions.attachTo(binding.recyclerView)
-    }
-
-    private fun onFeedListChanged(event: FlowEvent.FeedListUpdateEvent) {
-        if (feed != null && event.contains(feed!!)) {
-            Logd(TAG, "onFeedListChanged called")
-            loadItems()
-        }
     }
 
     private fun onFeedUpdateRunningEvent(event: FlowEvent.FeedUpdateRunningEvent) {
@@ -612,13 +551,22 @@ import java.util.concurrent.Semaphore
         binding.header.butFilter.setOnLongClickListener {
             if (feed != null) {
                 enableFilter = !enableFilter
-                if (enableFilter) binding.header.butFilter.setColorFilter(Color.WHITE)
-                else binding.header.butFilter.setColorFilter(Color.RED)
-                onEpisodesFilterSortEvent(FlowEvent.EpisodesFilterOrSortEvent(FlowEvent.EpisodesFilterOrSortEvent.Action.FILTER_CHANGED, feed!!))
+                episodes.clear()
+                if (enableFilter) {
+                    binding.header.butFilter.setColorFilter(Color.WHITE)
+                    val episodes_ = feed!!.episodes.filter { feed!!.episodeFilter.matches(it) }
+                    episodes.addAll(episodes_)
+                } else {
+                    binding.header.butFilter.setColorFilter(Color.RED)
+                    episodes.addAll(feed!!.episodes)
+                }
+                val sortOrder = fromCode(feed!!.preferences?.sortOrderCode ?: 0)
+                if (sortOrder != null) getPermutor(sortOrder).reorder(episodes)
+                binding.header.counts.text = episodes.size.toString()
+                adapter.updateItems(episodes, feed)
             }
             true
         }
-
         binding.header.txtvFailure.setOnClickListener { showErrorDetails() }
         binding.header.counts.text = adapter.itemCount.toString()
         headerCreated = true
@@ -659,31 +607,34 @@ import java.util.concurrent.Semaphore
         lifecycleScope.launch {
             try {
                 feed = withContext(Dispatchers.IO) {
-                    val feed_ = getFeed(feedID, true)
+                    val feed_ = getFeed(feedID)
                     if (feed_ != null) {
                         episodes.clear()
-                        if (!feed_.preferences?.filterString.isNullOrEmpty()) {
+                        if (enableFilter && !feed_.preferences?.filterString.isNullOrEmpty()) {
                             val episodes_ = feed_.episodes.filter { feed_.episodeFilter.matches(it) }
                             episodes.addAll(episodes_)
                         } else episodes.addAll(feed_.episodes)
                         val sortOrder = fromCode(feed_.preferences?.sortOrderCode?:0)
                         if (sortOrder != null) getPermutor(sortOrder).reorder(episodes)
-                        var hasNonMediaItems = false
-                        for (item in episodes) {
-//                            TODO: perhaps shouldn't set for all items, do it in the adaptor?
-                            item.feed = feed_
-                            if (item.media == null) hasNonMediaItems = true
-//                            Logd(TAG, "loadItems ${item.media?.downloaded} ${item.title}")
-                        }
-                        if (hasNonMediaItems) {
-                            ioScope.launch {
-                                withContext(Dispatchers.IO) {
-                                    if (!ttsReady) {
-                                        initializeTTS(requireContext())
-                                        semaphore.acquire()
+                        if (onInit) {
+                            var hasNonMediaItems = false
+                            for (item in episodes) {
+                                if (item.media == null) {
+                                    hasNonMediaItems = true
+                                    break
+                                }
+                            }
+                            if (hasNonMediaItems) {
+                                ioScope.launch {
+                                    withContext(Dispatchers.IO) {
+                                        if (!ttsReady) {
+                                            initializeTTS(requireContext())
+                                            semaphore.acquire()
+                                        }
                                     }
                                 }
                             }
+                            onInit = false
                         }
                     }
                     feed_
@@ -695,7 +646,7 @@ import java.util.concurrent.Semaphore
                     binding.progressBar.visibility = View.GONE
                     adapter.setDummyViews(0)
                     if (feed != null && episodes.isNotEmpty()) {
-                        adapter.updateItems(episodes)
+                        adapter.updateItems(episodes, feed)
                         binding.header.counts.text = episodes.size.toString()
                     }
                     updateToolbar()
@@ -737,14 +688,14 @@ import java.util.concurrent.Semaphore
             if (feed != null) {
                 Logd(TAG, "persist Episode Filter(): feedId = [$feed.id], filterValues = [$newFilterValues]")
                 runOnIOScope {
-                    feed.preferences?.filterString = newFilterValues.joinToString()
                     val feed_ = realm.query(Feed::class, "id == ${feed.id}").first().find()
                     if (feed_ != null) {
                         realm.write {
-                            findLatest(feed_)?.let { it.preferences?.filterString = feed.preferences?.filterString ?: "" }
+                            findLatest(feed_)?.let {
+                                it.preferences?.filterString = newFilterValues.joinToString()
+                            }
                         }
-                    } else upsert(feed) {}
-                    EventFlow.postEvent(FlowEvent.EpisodesFilterOrSortEvent(FlowEvent.EpisodesFilterOrSortEvent.Action.FILTER_CHANGED, feed))
+                    }
                 }
             }
         }
@@ -756,7 +707,6 @@ import java.util.concurrent.Semaphore
             sortOrder = if (feed?.sortOrder == null) SortOrder.DATE_NEW_OLD
             else feed.sortOrder
         }
-
         override fun onAddItem(title: Int, ascending: SortOrder, descending: SortOrder, ascendingIsDefault: Boolean) {
             if (ascending == SortOrder.DATE_OLD_NEW || ascending == SortOrder.PLAYED_DATE_OLD_NEW || ascending == SortOrder.COMPLETED_DATE_OLD_NEW
                     || ascending == SortOrder.DURATION_SHORT_LONG || ascending == SortOrder.RANDOM
@@ -765,24 +715,19 @@ import java.util.concurrent.Semaphore
                 super.onAddItem(title, ascending, descending, ascendingIsDefault)
             }
         }
-
         @UnstableApi override fun onSelectionChanged() {
             super.onSelectionChanged()
             if (feed != null) {
-//                val sortOrder = fromCode(feed.sortOrderCode)
-//                if (sortOrder != null) getPermutor(sortOrder).reorder(feed.episodes)
-//                EventFlow.postEvent(FlowEvent.EpisodesFilterOrSortEvent(FlowEvent.EpisodesFilterOrSortEvent.Action.SORT_ORDER_CHANGED, feed.id))
-//                persistEpisodeSortOrder(feed, sortOrder)
                 Logd(TAG, "persist Episode SortOrder")
                 runOnIOScope {
-                    feed.sortOrder = sortOrder
                     val feed_ = realm.query(Feed::class, "id == ${feed.id}").first().find()
                     if (feed_ != null) {
                         realm.write {
-                            findLatest(feed_)?.let { it.sortOrder = feed.sortOrder }
+                            findLatest(feed_)?.let {
+                                it.sortOrder = sortOrder
+                            }
                         }
-                    } else upsert(feed) {}
-                    EventFlow.postEvent(FlowEvent.EpisodesFilterOrSortEvent(FlowEvent.EpisodesFilterOrSortEvent.Action.SORT_ORDER_CHANGED, feed))
+                    }
                 }
             }
         }

@@ -275,8 +275,8 @@ class FeedSettingsFragment : Fragment() {
 //                    EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(feedPrefs!!.feedID))
                 }
                 updateVolumeAdaptationValue()
-                if (feed != null && feedPrefs!!.volumeAdaptionSetting != null)
-                    EventFlow.postEvent(FlowEvent.VolumeAdaptionChangedEvent(feedPrefs!!.volumeAdaptionSetting!!, feed!!.id))
+//                if (feed != null && feedPrefs!!.volumeAdaptionSetting != null)
+//                    EventFlow.postEvent(FlowEvent.VolumeAdaptionChangedEvent(feedPrefs!!.volumeAdaptionSetting!!, feed!!.id))
                 false
             }
         }
@@ -296,32 +296,6 @@ class FeedSettingsFragment : Fragment() {
                 else -> {}
             }
         }
-
-//        @OptIn(UnstableApi::class) private fun setupNewEpisodesAction() {
-//            if (feedPreferences == null) return
-//
-//            findPreference<Preference>(PREF_NEW_EPISODES_ACTION)!!.onPreferenceChangeListener =
-//                Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any ->
-//                    val code = (newValue as String).toInt()
-//                    feedPreferences!!.newEpisodesAction = NewEpisodesAction.fromCode(code)
-//                    DBWriter.setFeedPreferences(feedPreferences!!)
-//                    updateNewEpisodesAction()
-//                    false
-//                }
-//        }
-
-//        private fun updateNewEpisodesAction() {
-//            if (feedPreferences == null || feedPreferences!!.newEpisodesAction == null) return
-//            val newEpisodesAction = findPreference<ListPreference>(PREF_NEW_EPISODES_ACTION)
-//            newEpisodesAction!!.value = "" + feedPreferences!!.newEpisodesAction!!.code
-//
-//            when (feedPreferences!!.newEpisodesAction) {
-//                NewEpisodesAction.GLOBAL -> newEpisodesAction.setSummary(R.string.global_default)
-////                NewEpisodesAction.ADD_TO_INBOX -> newEpisodesAction.setSummary(R.string.feed_new_episodes_action_add_to_inbox)
-//                NewEpisodesAction.NOTHING -> newEpisodesAction.setSummary(R.string.feed_new_episodes_action_nothing)
-//                else -> {}
-//            }
-//        }
 
         @OptIn(UnstableApi::class) private fun setupKeepUpdatedPreference() {
             if (feedPrefs == null) return

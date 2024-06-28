@@ -62,7 +62,7 @@ class TaskManagerTest {
 
     private fun writeTestQueue(pref: String): List<Episode>? {
         val NUM_ITEMS = 10
-        val f = Feed(0, null, "title", "link", "d", null, null, null, null, "id", null, "null", "url", false)
+        val f = Feed(0, null, "title", "link", "d", null, null, null, null, "id", null, "null", "url")
         f.episodes.clear()
         for (i in 0 until NUM_ITEMS) {
             f.episodes.add(Episode(0, pref + i, pref + i, "link", Date(), Episode.PLAYED, f))

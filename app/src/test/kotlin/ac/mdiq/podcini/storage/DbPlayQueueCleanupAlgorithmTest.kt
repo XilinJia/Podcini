@@ -3,7 +3,7 @@ package ac.mdiq.podcini.storage
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.storage.database.Episodes.performAutoCleanup
+import ac.mdiq.podcini.storage.algorithms.AutoCleanups.performAutoCleanup
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith

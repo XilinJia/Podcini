@@ -5,8 +5,8 @@ import ac.mdiq.podcini.databinding.OpmlSelectionBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.preferences.ThemeSwitcher.getTheme
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
-import ac.mdiq.podcini.storage.transport.OpmlElement
-import ac.mdiq.podcini.storage.transport.OpmlReader
+import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlElement
+import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlReader
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.util.Logd
 import android.Manifest

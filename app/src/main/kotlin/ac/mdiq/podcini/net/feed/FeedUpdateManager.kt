@@ -14,6 +14,7 @@ import ac.mdiq.podcini.net.utils.NetworkUtils.isFeedRefreshAllowed
 import ac.mdiq.podcini.net.utils.NetworkUtils.isNetworkRestricted
 import ac.mdiq.podcini.net.utils.NetworkUtils.isVpnOverWifi
 import ac.mdiq.podcini.net.utils.NetworkUtils.networkAvailable
+import ac.mdiq.podcini.storage.algorithms.AutoDownloads.autodownloadEpisodeMedia
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Feeds
 import ac.mdiq.podcini.storage.database.LogsAndStats
@@ -23,7 +24,6 @@ import ac.mdiq.podcini.storage.model.FeedPreferences
 import ac.mdiq.podcini.storage.utils.VolumeAdaptionSetting
 import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.util.config.ClientConfigurator
-import ac.mdiq.podcini.util.error.InvalidFeedException
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
 import android.Manifest
@@ -129,14 +129,11 @@ object FeedUpdateManager {
 
     @OptIn(UnstableApi::class)
     class FeedUpdateWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
-        //    private val newEpisodesNotification = NewEpisodesNotification()
         private val notificationManager = NotificationManagerCompat.from(context)
 
         @UnstableApi
         override fun doWork(): Result {
             ClientConfigurator.initialize(applicationContext)
-//        newEpisodesNotification.loadCountersBeforeRefresh()
-
             val toUpdate: MutableList<Feed>
             val feedId = inputData.getLong(EXTRA_FEED_ID, -1L)
             var allAreLocal = true
@@ -158,7 +155,6 @@ object FeedUpdateManager {
                 toUpdate.add(feed) // Needs to be updatable, so no singletonList
                 force = true
             }
-
             if (!inputData.getBoolean(EXTRA_EVEN_ON_MOBILE, false) && !allAreLocal) {
                 if (!networkAvailable() || !isFeedRefreshAllowed) {
                     Logd(TAG, "Blocking automatic update")
@@ -166,12 +162,10 @@ object FeedUpdateManager {
                 }
             }
             refreshFeeds(toUpdate, force)
-
             notificationManager.cancel(R.id.notification_updating_feeds)
-            Episodes.autodownloadEpisodeMedia(applicationContext)
+            autodownloadEpisodeMedia(applicationContext)
             return Result.success()
         }
-
         private fun createNotification(toUpdate: List<Feed?>?): Notification {
             val context = applicationContext
             var contentText = ""
@@ -190,11 +184,9 @@ object FeedUpdateManager {
                 .addAction(R.drawable.ic_cancel, context.getString(R.string.cancel_label), WorkManager.getInstance(context).createCancelPendingIntent(id))
                 .build()
         }
-
         override fun getForegroundInfoAsync(): ListenableFuture<ForegroundInfo> {
             return Futures.immediateFuture(ForegroundInfo(R.id.notification_updating_feeds, createNotification(null)))
         }
-
         @UnstableApi
         private fun refreshFeeds(toUpdate: MutableList<Feed>, force: Boolean) {
             if (Build.VERSION.SDK_INT >= 33 && ActivityCompat.checkSelfPermission(this.applicationContext,
@@ -211,10 +203,8 @@ object FeedUpdateManager {
 //            Toast.makeText(applicationContext, R.string.notification_permission_text, Toast.LENGTH_LONG).show()
                 return
             }
-
             while (toUpdate.isNotEmpty()) {
                 if (isStopped) return
-
                 notificationManager.notify(R.id.notification_updating_feeds, createNotification(toUpdate))
                 val feed = unmanagedCopy(toUpdate[0])
                 try {
@@ -230,18 +220,15 @@ object FeedUpdateManager {
                 toUpdate.removeAt(0)
             }
         }
-
         @UnstableApi
         @Throws(Exception::class)
         fun refreshFeed(feed: Feed, force: Boolean) {
             val nextPage = (inputData.getBoolean(EXTRA_NEXT_PAGE, false) && feed.nextPageLink != null)
             if (nextPage) feed.pageNr += 1
-
             val builder = create(feed)
             builder.setForce(force || feed.lastUpdateFailed)
             if (nextPage) builder.source = feed.nextPageLink
             val request = builder.build()
-
             val downloader = DefaultDownloaderFactory().create(request) ?: throw Exception("Unable to create downloader")
             downloader.call()
             if (!downloader.result.isSuccessful) {
@@ -251,24 +238,18 @@ object FeedUpdateManager {
                 LogsAndStats.addDownloadStatus(downloader.result)
                 return
             }
-
             val feedSyncTask = FeedSyncTask(applicationContext, request)
             val success = feedSyncTask.run()
-
             if (!success) {
                 Logd(TAG, "update failed: unsuccessful")
                 Feeds.persistFeedLastUpdateFailed(feed, true)
                 LogsAndStats.addDownloadStatus(feedSyncTask.downloadStatus)
                 return
             }
-
             if (request.feedfileId == null) return  // No download logs for new subscriptions
-
             // we create a 'successful' download log if the feed's last refresh failed
             val log = LogsAndStats.getFeedDownloadLog(request.feedfileId)
             if (log.isNotEmpty() && !log[0].isSuccessful) LogsAndStats.addDownloadStatus(feedSyncTask.downloadStatus)
-
-//        newEpisodesNotification.showIfNeeded(applicationContext, feedSyncTask.savedFeed!!)
             if (!request.source.isNullOrEmpty()) {
                 when {
                     !downloader.permanentRedirectUrl.isNullOrEmpty() -> Feeds.updateFeedDownloadURL(request.source, downloader.permanentRedirectUrl!!)
@@ -289,20 +270,16 @@ object FeedUpdateManager {
                     DownloadError.ERROR_REQUEST_ERROR, Date(), "Unknown error: Status not set")
             }
             override fun call(): FeedHandlerResult? {
-                Logd(TAG, "in call()")
+                Logd(TAG, "in FeedParserTask call()")
                 val feed = Feed(request.source, request.lastModified)
                 feed.fileUrl = request.destination
                 feed.id = request.feedfileId
-                feed.downloaded = true
                 if (feed.preferences == null) feed.preferences = FeedPreferences(feed.id, false, FeedPreferences.AutoDeleteAction.GLOBAL,
                     VolumeAdaptionSetting.OFF, request.username, request.password)
-
                 if (request.arguments != null) feed.pageNr = request.arguments.getInt(DownloadRequest.REQUEST_ARG_PAGE_NR, 0)
-
                 var reason: DownloadError? = null
                 var reasonDetailed: String? = null
                 val feedHandler = FeedHandler()
-
                 var result: FeedHandlerResult? = null
                 try {
                     result = feedHandler.parseFeed(feed)
@@ -344,28 +321,30 @@ object FeedUpdateManager {
                     }
                 }
                 if (isSuccessful) {
-                    downloadStatus = DownloadResult(feed.id, feed.getHumanReadableIdentifier()?:"", DownloadError.SUCCESS, isSuccessful, reasonDetailed?:"")
+                    downloadStatus = DownloadResult(feed.id, feed.getTextIdentifier()?:"", DownloadError.SUCCESS, isSuccessful, reasonDetailed?:"")
                     return result
                 } else {
-                    downloadStatus = DownloadResult(feed.id, feed.getHumanReadableIdentifier()?:"", reason?: DownloadError.ERROR_NOT_FOUND,
-                        isSuccessful, reasonDetailed?:"")
+                    downloadStatus = DownloadResult(feed.id, feed.getTextIdentifier()?:"", reason?: DownloadError.ERROR_NOT_FOUND, isSuccessful, reasonDetailed?:"")
                     return null
                 }
             }
-
             /**
              * Checks if the feed was parsed correctly.
              */
             @Throws(InvalidFeedException::class)
             private fun checkFeedData(feed: Feed) {
                 if (feed.title == null) throw InvalidFeedException("Feed has no title")
-                checkFeedItems(feed)
-            }
-
-            @Throws(InvalidFeedException::class)
-            private fun checkFeedItems(feed: Feed) {
                 for (item in feed.episodes) {
                     if (item.title == null) throw InvalidFeedException("Item has no title: $item")
+                }
+            }
+
+            /**
+             * Thrown if a feed has invalid attribute values.
+             */
+            class InvalidFeedException(message: String?) : Exception(message) {
+                companion object {
+                    private const val serialVersionUID = 1L
                 }
             }
 
@@ -379,6 +358,10 @@ object FeedUpdateManager {
                 private set
             private val task = FeedParserTask(request)
             private var feedHandlerResult: FeedHandlerResult? = null
+            val downloadStatus: DownloadResult
+                get() = task.downloadStatus
+            val redirectUrl: String
+                get() = feedHandlerResult?.redirectUrl?:""
 
             fun run(): Boolean {
                 feedHandlerResult = task.call()
@@ -386,12 +369,6 @@ object FeedUpdateManager {
                 savedFeed = Feeds.updateFeed(context, feedHandlerResult!!.feed, false)
                 return true
             }
-
-            val downloadStatus: DownloadResult
-                get() = task.downloadStatus
-
-            val redirectUrl: String
-                get() = feedHandlerResult?.redirectUrl?:""
         }
 
         companion object {

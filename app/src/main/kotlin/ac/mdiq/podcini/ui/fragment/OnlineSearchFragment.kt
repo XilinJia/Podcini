@@ -56,7 +56,7 @@ class OnlineSearchFragment : Fragment() {
                 break
             }
         }
-        if (searchProvider == null) Log.i(TAG,"Podcast searcher not found")
+        if (searchProvider == null) Logd(TAG,"Podcast searcher not found")
     }
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {

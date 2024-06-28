@@ -11,8 +11,8 @@ import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.playback.base.InTheatre.loadPlayableFromPreferences
 import ac.mdiq.podcini.playback.base.InTheatre.writeNoMediaPlaying
 import ac.mdiq.podcini.playback.base.MediaPlayerBase
-import ac.mdiq.podcini.playback.base.MediaPlayerBase.MediaPlayerCallback
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.MediaPlayerInfo
+import ac.mdiq.podcini.playback.base.MediaPlayerCallback
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.cast.CastPsmp
 import ac.mdiq.podcini.playback.cast.CastStateListener
@@ -55,11 +55,8 @@ import ac.mdiq.podcini.storage.model.FeedPreferences
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
-import ac.mdiq.podcini.storage.utils.EpisodeUtil.indexOfItemWithId
 import ac.mdiq.podcini.storage.utils.MediaType
 import ac.mdiq.podcini.storage.utils.VolumeAdaptionSetting
-import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
-import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
 import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.ui.widget.WidgetUpdater.WidgetState
 import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
@@ -106,7 +103,7 @@ import kotlin.math.max
 @UnstableApi
 class PlaybackService : MediaSessionService() {
 
-    internal var mediaPlayer: MediaPlayerBase? = null
+    internal var mPlayer: MediaPlayerBase? = null
     internal lateinit var taskManager: TaskManager
     internal var isSpeedForward = false
     internal var isFallbackSpeed = false
@@ -130,19 +127,16 @@ class PlaybackService : MediaSessionService() {
     private val status: PlayerStatus
         get() = MediaPlayerBase.status
 
-    internal val playable: Playable?
-        get() = curMedia
+    val curSpeed: Float
+        get() = mPlayer?.getPlaybackSpeed() ?: 1.0f
 
-    val currentPlaybackSpeed: Float
-        get() = mediaPlayer?.getPlaybackSpeed() ?: 1.0f
+    val curDuration: Int
+        get() = mPlayer?.getDuration() ?: Playable.INVALID_TIME
 
-    val duration: Int
-        get() = mediaPlayer?.getDuration() ?: Playable.INVALID_TIME
+    val curPosition: Int
+        get() = mPlayer?.getPosition() ?: Playable.INVALID_TIME
 
-    val currentPosition: Int
-        get() = mediaPlayer?.getPosition() ?: Playable.INVALID_TIME
-
-    private var previousPosition: Int = -1
+    private var prevPosition: Int = -1
 
     private val autoStateUpdated: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -154,11 +148,11 @@ class PlaybackService : MediaSessionService() {
             } else {
                 val playerStatus = MediaPlayerBase.status
                 when (playerStatus) {
-                    PlayerStatus.PAUSED, PlayerStatus.PREPARED -> mediaPlayer?.resume()
-                    PlayerStatus.PREPARING -> mediaPlayer?.startWhenPrepared?.set(!mediaPlayer!!.startWhenPrepared.get())
+                    PlayerStatus.PAUSED, PlayerStatus.PREPARED -> mPlayer?.resume()
+                    PlayerStatus.PREPARING -> mPlayer?.startWhenPrepared?.set(!mPlayer!!.startWhenPrepared.get())
                     PlayerStatus.INITIALIZED -> {
-                        mediaPlayer?.startWhenPrepared?.set(true)
-                        mediaPlayer?.prepare()
+                        mPlayer?.startWhenPrepared?.set(true)
+                        mPlayer?.prepare()
                     }
                     else -> {}
                 }
@@ -212,6 +206,263 @@ class PlaybackService : MediaSessionService() {
             // sound is about to change, eg. bluetooth -> speaker
             Logd(TAG, "Pausing playback because audio is becoming noisy")
             pauseIfPauseOnDisconnect()
+        }
+    }
+
+    private val taskManagerCallback: PSTMCallback = object : PSTMCallback {
+        override fun positionSaverTick() {
+            if (curPosition != prevPosition) {
+//                Log.d(TAG, "positionSaverTick currentPosition: $currentPosition, currentPlaybackSpeed: $currentPlaybackSpeed")
+                if (curMedia != null) EventFlow.postEvent(FlowEvent.PlaybackPositionEvent(curMedia, curPosition, curDuration))
+                skipEndingIfNecessary()
+                saveCurrentPosition(true, null, Playable.INVALID_TIME)
+                prevPosition = curPosition
+            }
+        }
+        override fun requestWidgetState(): WidgetState {
+            return WidgetState(curMedia, status, curPosition, curDuration, curSpeed)
+        }
+        override fun onChapterLoaded(media: Playable?) {
+            sendNotificationBroadcast(NOTIFICATION_TYPE_RELOAD, 0)
+        }
+    }
+
+    private val mediaPlayerCallback: MediaPlayerCallback = object : MediaPlayerCallback {
+        override fun statusChanged(newInfo: MediaPlayerInfo?) {
+            currentMediaType = mPlayer?.mediaType ?: MediaType.UNKNOWN
+            Logd(TAG, "statusChanged called ${newInfo?.playerStatus}")
+            if (newInfo != null) {
+                when (newInfo.playerStatus) {
+                    PlayerStatus.INITIALIZED ->
+                        if (mPlayer != null) writeMediaPlaying(mPlayer!!.playerInfo.playable, mPlayer!!.playerInfo.playerStatus)
+                    PlayerStatus.PREPARED -> {
+                        if (mPlayer != null) writeMediaPlaying(mPlayer!!.playerInfo.playable, mPlayer!!.playerInfo.playerStatus)
+                        if (newInfo.playable != null) taskManager.startChapterLoader(newInfo.playable!!)
+                    }
+                    PlayerStatus.PAUSED -> writePlayerStatus(MediaPlayerBase.status)
+                    PlayerStatus.STOPPED -> {}
+                    PlayerStatus.PLAYING -> {
+                        writePlayerStatus(MediaPlayerBase.status)
+                        saveCurrentPosition(true, null, Playable.INVALID_TIME)
+                        recreateMediaSessionIfNeeded()
+                        // set sleep timer if auto-enabled
+                        var autoEnableByTime = true
+                        val fromSetting = autoEnableFrom()
+                        val toSetting = autoEnableTo()
+                        if (fromSetting != toSetting) {
+                            val now: Calendar = GregorianCalendar()
+                            now.timeInMillis = System.currentTimeMillis()
+                            val currentHour = now[Calendar.HOUR_OF_DAY]
+                            autoEnableByTime = isInTimeRange(fromSetting, toSetting, currentHour)
+                        }
+                        if (newInfo.oldPlayerStatus != null && newInfo.oldPlayerStatus != PlayerStatus.SEEKING && autoEnable() && autoEnableByTime && !taskManager.isSleepTimerActive) {
+//                            setSleepTimer(timerMillis())
+                            taskManager.setSleepTimer(timerMillis())
+                            EventFlow.postEvent(FlowEvent.MessageEvent(getString(R.string.sleep_timer_enabled_label), { taskManager.disableSleepTimer() }, getString(R.string.undo)))
+                        }
+                    }
+                    PlayerStatus.ERROR -> writeNoMediaPlaying()
+                    else -> {}
+                }
+            }
+            if (Build.VERSION.SDK_INT >= VERSION_CODES.N)
+                TileService.requestListeningState(applicationContext, ComponentName(applicationContext, QuickSettingsTileService::class.java))
+
+            sendLocalBroadcast(applicationContext, ACTION_PLAYER_STATUS_CHANGED)
+            bluetoothNotifyChange(newInfo, AVRCP_ACTION_PLAYER_STATUS_CHANGED)
+            bluetoothNotifyChange(newInfo, AVRCP_ACTION_META_CHANGED)
+            taskManager.requestWidgetUpdate()
+        }
+
+        override fun onMediaChanged(reloadUI: Boolean) {
+            Logd(TAG, "reloadUI callback reached")
+            if (reloadUI) sendNotificationBroadcast(NOTIFICATION_TYPE_RELOAD, 0)
+        }
+
+        override fun onPostPlayback(playable: Playable?, ended: Boolean, skipped: Boolean, playingNext: Boolean) {
+            if (playable == null) {
+                Log.e(TAG, "Cannot do post-playback processing: media was null")
+                return
+            }
+            Logd(TAG, "onPostPlayback(): ended=$ended skipped=$skipped playingNext=$playingNext media=${playable.getEpisodeTitle()} ")
+            if (playable !is EpisodeMedia) {
+                Logd(TAG, "Not doing post-playback processing: media not of type EpisodeMedia")
+                if (ended) playable.onPlaybackCompleted(applicationContext)
+                else playable.onPlaybackPause(applicationContext)
+//            TODO: test
+//            return
+            }
+            val item = (playable as? EpisodeMedia)?.episode ?: currentitem
+            val smartMarkAsPlayed = hasAlmostEnded(playable)
+            if (!ended && smartMarkAsPlayed) Logd(TAG, "smart mark as played")
+
+            var autoSkipped = false
+            if (autoSkippedFeedMediaId != null && autoSkippedFeedMediaId == item?.identifyingValue) {
+                autoSkippedFeedMediaId = null
+                autoSkipped = true
+            }
+            if (playable is EpisodeMedia) {
+                if (ended || smartMarkAsPlayed) {
+                    SynchronizationQueueSink.enqueueEpisodePlayedIfSyncActive(applicationContext, playable, true)
+                    playable.onPlaybackCompleted(applicationContext)
+                } else {
+                    SynchronizationQueueSink.enqueueEpisodePlayedIfSyncActive(applicationContext, playable, false)
+                    playable.onPlaybackPause(applicationContext)
+                }
+            }
+            if (item != null) {
+                if (ended || smartMarkAsPlayed || autoSkipped || (skipped && !shouldSkipKeepEpisode())) {
+                    Logd(TAG, "onPostPlayback ended: $ended smartMarkAsPlayed: $smartMarkAsPlayed autoSkipped: $autoSkipped skipped: $skipped")
+                    // only mark the item as played if we're not keeping it anyways
+                    markPlayed(Episode.PLAYED, ended || (skipped && smartMarkAsPlayed), item)
+                    // don't know if it actually matters to not autodownload when smart mark as played is triggered
+//                    removeFromQueue(this@PlaybackService, ended, item)
+                    // Delete episode if enabled
+                    val action = item.feed?.preferences?.currentAutoDelete
+                    val shouldAutoDelete = (action == AutoDeleteAction.ALWAYS
+                            || (action == AutoDeleteAction.GLOBAL && item.feed != null && shouldAutoDeleteItemsOnFeed(item.feed!!)))
+                    if (playable is EpisodeMedia && shouldAutoDelete && (!item.isFavorite || !shouldFavoriteKeepEpisode())) {
+                        deleteMediaOfEpisode(this@PlaybackService, item)
+                        Logd(TAG, "Episode Deleted")
+                    }
+                }
+                if (playable is EpisodeMedia && (ended || skipped || playingNext)) addToHistory(item)
+            }
+        }
+
+        override fun onPlaybackStart(playable: Playable, position: Int) {
+            Logd(TAG, "onPlaybackStart position: $position")
+            taskManager.startWidgetUpdater()
+            if (position != Playable.INVALID_TIME) playable.setPosition(position)
+            else skipIntro(playable)
+            playable.onPlaybackStart()
+            taskManager.startPositionSaver()
+        }
+
+        override fun onPlaybackPause(playable: Playable?, position: Int) {
+            Logd(TAG, "onPlaybackPause $position")
+            taskManager.cancelPositionSaver()
+            saveCurrentPosition(position == Playable.INVALID_TIME || playable == null, playable, position)
+            taskManager.cancelWidgetUpdater()
+            if (playable != null) {
+                if (playable is EpisodeMedia) SynchronizationQueueSink.enqueueEpisodePlayedIfSyncActive(applicationContext, playable, false)
+                playable.onPlaybackPause(applicationContext)
+            }
+        }
+
+        override fun getNextInQueue(currentMedia: Playable?): Playable? {
+            Logd(TAG, "call getNextInQueue currentMedia: ${currentMedia?.getEpisodeTitle()}")
+            if (currentMedia !is EpisodeMedia) {
+                Logd(TAG, "getNextInQueue(), but playable not an instance of EpisodeMedia, so not proceeding")
+                writeNoMediaPlaying()
+                return null
+            }
+            val item = currentMedia.episode
+            if (item == null) {
+                Logd(TAG, "getNextInQueue() with EpisodeMedia object whose FeedItem is null")
+                writeNoMediaPlaying()
+                return null
+            }
+            val nextItem = getNextInQueue(item)
+            if (nextItem?.media == null) {
+                Logd(TAG, "getNextInQueue nextItem: $nextItem media is null")
+                writeNoMediaPlaying()
+                return null
+            }
+
+            if (!isFollowQueue) {
+                Logd(TAG, "getNextInQueue(), but follow queue is not enabled.")
+                writeMediaPlaying(nextItem.media, PlayerStatus.STOPPED)
+                return null
+            }
+
+            if (!nextItem.media!!.localFileAvailable() && !isStreamingAllowed && isFollowQueue && nextItem.feed != null && !nextItem.feed!!.isLocalFeed) {
+                displayStreamingNotAllowedNotification(PlaybackServiceStarter(this@PlaybackService, nextItem.media!!).intent)
+                writeNoMediaPlaying()
+                return null
+            }
+            EventFlow.postEvent(FlowEvent.PlayEvent(item, FlowEvent.PlayEvent.Action.END))
+            EventFlow.postEvent(FlowEvent.PlayEvent(nextItem))
+            return nextItem.media
+        }
+
+        private fun getNextInQueue(episode: Episode): Episode? {
+            Logd(TAG, "getNextInQueue() with: itemId ${episode.id}")
+            if (curQueue.episodes.isEmpty()) return null
+
+            val i = curQueue.episodes.indexOf(episode)
+            var j = 0
+            if (i >= 0 && i < curQueue.episodes.size-1) j = i+1
+
+            val itemNew = curQueue.episodes[j]
+            return if (itemNew.isManaged()) realm.copyFromRealm(itemNew) else itemNew
+        }
+
+        override fun findMedia(url: String): Playable? {
+            val item = getEpisodeByGuidOrUrl(null, url)
+            return item?.media
+        }
+
+        override fun onPlaybackEnded(mediaType: MediaType?, stopPlaying: Boolean) {
+            Logd(TAG, "onPlaybackEnded mediaType: $mediaType stopPlaying: $stopPlaying")
+            clearCurTempSpeed()
+            if (stopPlaying) taskManager.cancelPositionSaver()
+
+            if (mediaType == null) sendNotificationBroadcast(NOTIFICATION_TYPE_PLAYBACK_END, 0)
+            else {
+                sendNotificationBroadcast(NOTIFICATION_TYPE_RELOAD,
+                    when {
+                        isCasting -> EXTRA_CODE_CAST
+                        mediaType == MediaType.VIDEO -> EXTRA_CODE_VIDEO
+                        else -> EXTRA_CODE_AUDIO
+                    })
+            }
+        }
+
+        override fun ensureMediaInfoLoaded(media: Playable) {
+//            if (media is EpisodeMedia && media.item == null) media.item = DBReader.getFeedItem(media.itemId)
+        }
+
+        fun writeMediaPlaying(playable: Playable?, playerStatus: PlayerStatus) {
+            Logd(InTheatre.TAG, "Writing playback preferences ${playable?.getIdentifier()}")
+            if (playable == null) {
+                writeNoMediaPlaying()
+            } else {
+                curState.curMediaType = playable.getPlayableType().toLong()
+                curState.curIsVideo = playable.getMediaType() == MediaType.VIDEO
+                if (playable is EpisodeMedia) {
+                    val feedId = playable.episode?.feed?.id
+                    if (feedId != null) curState.curFeedId = feedId
+                    curState.curMediaId = playable.id
+                } else {
+                    curState.curFeedId = NO_MEDIA_PLAYING
+                    curState.curMediaId = NO_MEDIA_PLAYING
+                }
+            }
+            curState.curPlayerStatus = getCurPlayerStatusAsInt(playerStatus)
+            upsertBlk(curState) {}
+        }
+
+        fun writePlayerStatus(playerStatus: PlayerStatus) {
+            Logd(InTheatre.TAG, "Writing player status playback preferences")
+            curState.curPlayerStatus = getCurPlayerStatusAsInt(playerStatus)
+            upsertBlk(curState) {}
+        }
+
+        private fun getCurPlayerStatusAsInt(playerStatus: PlayerStatus): Int {
+            val playerStatusAsInt = when (playerStatus) {
+                PlayerStatus.PLAYING -> PLAYER_STATUS_PLAYING
+                PlayerStatus.PAUSED -> PLAYER_STATUS_PAUSED
+                else -> PLAYER_STATUS_OTHER
+            }
+            return playerStatusAsInt
+        }
+    }
+
+    private val shutdownReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == ACTION_SHUTDOWN_PLAYBACK_SERVICE)
+                EventFlow.postEvent(FlowEvent.PlaybackServiceEvent(FlowEvent.PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN))
         }
     }
 
@@ -274,16 +525,16 @@ class PlaybackService : MediaSessionService() {
     fun recreateMediaPlayer() {
         val media = curMedia
         var wasPlaying = false
-        if (mediaPlayer != null) {
+        if (mPlayer != null) {
             wasPlaying = MediaPlayerBase.status == PlayerStatus.PLAYING || MediaPlayerBase.status == PlayerStatus.FALLBACK
-            mediaPlayer!!.pause(abandonFocus = true, reinit = false)
-            mediaPlayer!!.shutdown()
+            mPlayer!!.pause(abandonFocus = true, reinit = false)
+            mPlayer!!.shutdown()
         }
-        mediaPlayer = CastPsmp.getInstanceIfConnected(this, mediaPlayerCallback)
-        if (mediaPlayer == null) mediaPlayer = LocalMediaPlayer(applicationContext, mediaPlayerCallback) // Cast not supported or not connected
+        mPlayer = CastPsmp.getInstanceIfConnected(this, mediaPlayerCallback)
+        if (mPlayer == null) mPlayer = LocalMediaPlayer(applicationContext, mediaPlayerCallback) // Cast not supported or not connected
 
-        if (media != null) mediaPlayer!!.playMediaObject(media, !media.localFileAvailable(), wasPlaying, true)
-        isCasting = mediaPlayer!!.isCasting()
+        if (media != null) mPlayer!!.playMediaObject(media, !media.localFileAvailable(), wasPlaying, true)
+        isCasting = mPlayer!!.isCasting()
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
@@ -313,7 +564,7 @@ class PlaybackService : MediaSessionService() {
             mediaSession = null
         }
         LocalMediaPlayer.exoPlayer =  null
-        mediaPlayer?.shutdown()
+        mPlayer?.shutdown()
 
         cancelFlowEvents()
         unregisterReceiver(autoStateUpdated)
@@ -330,15 +581,16 @@ class PlaybackService : MediaSessionService() {
 
     private inner class MyCallback : MediaSession.Callback {
         override fun onConnect(session: MediaSession, controller: MediaSession.ControllerInfo): MediaSession.ConnectionResult {
-           Logd(TAG, "in onConnect")
+           Logd(TAG, "in MyCallback onConnect")
             val sessionCommands = MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS.buildUpon()
 //                        .add(NotificationCustomButton.REWIND)
 //                        .add(NotificationCustomButton.FORWARD)
             when {
                 session.isMediaNotificationController(controller) -> {
+                    Logd(TAG, "MyCallback onConnect isMediaNotificationController")
                     val playerCommands = MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS.buildUpon()
                     notificationCustomButtons.forEach { commandButton ->
-                        Logd(TAG, "onConnect commandButton ${commandButton.displayName}")
+                        Logd(TAG, "MyCallback onConnect commandButton ${commandButton.displayName}")
                         commandButton.sessionCommand?.let(sessionCommands::add)
                     }
                     return MediaSession.ConnectionResult.accept(
@@ -347,16 +599,21 @@ class PlaybackService : MediaSessionService() {
                     )
                 }
                 session.isAutoCompanionController(controller) -> {
+                    Logd(TAG, "MyCallback onConnect isAutoCompanionController")
                     return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
                         .setAvailableSessionCommands(sessionCommands.build())
                         .build()
                 }
-                else -> return MediaSession.ConnectionResult.AcceptedResultBuilder(session).build()
+                else -> {
+                    Logd(TAG, "MyCallback onConnect other controller")
+                    return MediaSession.ConnectionResult.AcceptedResultBuilder(session).build()
+                }
             }
         }
 
         override fun onPostConnect(session: MediaSession, controller: MediaSession.ControllerInfo) {
             super.onPostConnect(session, controller)
+            Logd(TAG, "MyCallback onPostConnect")
             if (notificationCustomButtons.isNotEmpty()) {
                 mediaSession?.setCustomLayout(notificationCustomButtons)
 //                mediaSession?.setCustomLayout(customMediaNotificationProvider.notificationMediaButtons)
@@ -364,17 +621,18 @@ class PlaybackService : MediaSessionService() {
         }
 
         override fun onCustomCommand(session: MediaSession, controller: MediaSession.ControllerInfo, customCommand: SessionCommand, args: Bundle): ListenableFuture<SessionResult> {
-            Logd(TAG, "onCustomCommand ${customCommand.customAction}")
+            Logd(TAG, "MyCallback onCustomCommand ${customCommand.customAction}")
             /* Handling custom command buttons from player notification. */
             when (customCommand.customAction) {
-                NotificationCustomButton.REWIND.customAction -> mediaPlayer?.seekDelta(-rewindSecs * 1000)
-                NotificationCustomButton.FORWARD.customAction -> mediaPlayer?.seekDelta(fastForwardSecs * 1000)
-                NotificationCustomButton.SKIP.customAction -> mediaPlayer?.skip()
+                NotificationCustomButton.REWIND.customAction -> mPlayer?.seekDelta(-rewindSecs * 1000)
+                NotificationCustomButton.FORWARD.customAction -> mPlayer?.seekDelta(fastForwardSecs * 1000)
+                NotificationCustomButton.SKIP.customAction -> mPlayer?.skip()
             }
             return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
         }
 
         override fun onPlaybackResumption(mediaSession: MediaSession, controller: MediaSession.ControllerInfo): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
+            Logd(TAG, "MyCallback onPlaybackResumption ")
             val settable = SettableFuture.create<MediaSession.MediaItemsWithStartPosition>()
 //            scope.launch {
 //                // Your app is responsible for storing the playlist and the start position
@@ -388,7 +646,7 @@ class PlaybackService : MediaSessionService() {
         override fun onMediaButtonEvent(mediaSession: MediaSession, controller: MediaSession.ControllerInfo, intent: Intent): Boolean {
             val keyEvent = if (Build.VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) intent.extras!!.getParcelable(EXTRA_KEY_EVENT, KeyEvent::class.java)
             else intent.extras!!.getParcelable(EXTRA_KEY_EVENT) as? KeyEvent
-            Logd(TAG, "onMediaButtonEvent ${keyEvent?.keyCode}")
+            Logd(TAG, "MyCallback onMediaButtonEvent ${keyEvent?.keyCode}")
 
             if (keyEvent != null && keyEvent.action == KeyEvent.ACTION_DOWN && keyEvent.repeatCount == 0) {
                 val keyCode = keyEvent.keyCode
@@ -398,8 +656,8 @@ class PlaybackService : MediaSessionService() {
                     clickHandler.postDelayed({
                         when (clickCount) {
                             1 -> handleKeycode(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, false)
-                            2 -> mediaPlayer?.seekDelta(fastForwardSecs * 1000)
-                            3 -> mediaPlayer?.seekDelta(-rewindSecs * 1000)
+                            2 -> mPlayer?.seekDelta(fastForwardSecs * 1000)
+                            3 -> mPlayer?.seekDelta(-rewindSecs * 1000)
                         }
                         clickCount = 0
                     }, ViewConfiguration.getDoubleTapTimeout().toLong())
@@ -416,11 +674,7 @@ class PlaybackService : MediaSessionService() {
 
     override fun onBind(intent: Intent?): IBinder? {
         Logd(TAG, "Received onBind event")
-        return if (intent?.action != null && intent.action == SERVICE_INTERFACE) {
-            super.onBind(intent)
-        } else {
-            mBinder
-        }
+        return if (intent?.action != null && intent.action == SERVICE_INTERFACE) super.onBind(intent) else mBinder
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -429,48 +683,38 @@ class PlaybackService : MediaSessionService() {
         val hardwareButton = intent?.getBooleanExtra(MediaButtonReceiver.EXTRA_HARDWAREBUTTON, false) ?: false
         val playable = curMedia
 
-        Logd(TAG, "onStartCommand flags=$flags startId=$startId $keycode $customAction $hardwareButton ${playable?.getEpisodeTitle()}")
+        Logd(TAG, "onStartCommand flags=$flags startId=$startId keycode=$keycode customAction=$customAction hardwareButton=$hardwareButton action=${intent?.action.toString()} ${playable?.getEpisodeTitle()}")
         if (keycode == -1 && playable == null && customAction == null) {
-            Log.e(TAG, "PlaybackService was started with no arguments")
+            Log.e(TAG, "onStartCommand PlaybackService was started with no arguments, return")
             return START_NOT_STICKY
         }
-
         if ((flags and START_FLAG_REDELIVERY) != 0) {
-            Logd(TAG, "onStartCommand is a redelivered intent, calling stopForeground now.")
-        } else {
-            when {
-                keycode != -1 -> {
-                    val notificationButton: Boolean
-                    if (hardwareButton) {
-                        Logd(TAG, "Received hardware button event")
-                        notificationButton = false
-                    } else {
-                        Logd(TAG, "Received media button event")
-                        notificationButton = true
-                    }
-                    val handled = handleKeycode(keycode, notificationButton)
-                    return super.onStartCommand(intent, flags, startId)
-                }
-                playable != null -> {
-                    if (status == PlayerStatus.PLAYING && mediaPlayer?.prevMedia?.getIdentifier() == playable.getIdentifier()) {
-                        Logd(TAG, "onStartCommand playing same media: $status")
-//                        pause button on notification also calls onStartCommand
-                        return super.onStartCommand(intent, flags, startId)
-                    } else {
-                        Logd(TAG, "onStartCommand status: $status")
-                        val allowStreamThisTime = intent?.getBooleanExtra(EXTRA_ALLOW_STREAM_THIS_TIME, false) ?: false
-                        val allowStreamAlways = intent?.getBooleanExtra(EXTRA_ALLOW_STREAM_ALWAYS, false) ?: false
-                        sendNotificationBroadcast(NOTIFICATION_TYPE_RELOAD, 0)
-                        if (allowStreamAlways) isAllowMobileStreaming = true
-                        startPlaying(allowStreamThisTime)
-                    }
-//                    return super.onStartCommand(intent, flags, startId)
-                    return START_NOT_STICKY
-                }
-                else -> {
-                    Logd(TAG, "onStartCommand case when not (keycode != -1 and playable != null)")
-                }
+            Logd(TAG, "onStartCommand is a redelivered intent, calling stopForeground now. return")
+            return START_NOT_STICKY
+        }
+        if (keycode == -1 && playable != null && status == PlayerStatus.PLAYING && mPlayer?.prevMedia?.getIdentifier() == playable.getIdentifier()) {
+//          pause button on notification also calls onStartCommand
+            Logd(TAG, "onStartCommand playing same media: $status, return")
+            return super.onStartCommand(intent, flags, startId)
+        }
+
+        when {
+            keycode != -1 -> {
+                Logd(TAG, "onStartCommand Received hardware button event: $hardwareButton")
+                val handled = handleKeycode(keycode, !hardwareButton)
+                return super.onStartCommand(intent, flags, startId)
             }
+            playable != null -> {
+                Logd(TAG, "onStartCommand status: $status")
+                val allowStreamThisTime = intent?.getBooleanExtra(EXTRA_ALLOW_STREAM_THIS_TIME, false) ?: false
+                val allowStreamAlways = intent?.getBooleanExtra(EXTRA_ALLOW_STREAM_ALWAYS, false) ?: false
+                sendNotificationBroadcast(NOTIFICATION_TYPE_RELOAD, 0)
+                if (allowStreamAlways) isAllowMobileStreaming = true
+                startPlaying(allowStreamThisTime)
+//                    return super.onStartCommand(intent, flags, startId)
+                return START_NOT_STICKY
+            }
+            else -> Logd(TAG, "onStartCommand case when not (keycode != -1 and playable != null)")
         }
 //        return super.onStartCommand(intent, flags, startId)
         return START_NOT_STICKY
@@ -484,10 +728,10 @@ class PlaybackService : MediaSessionService() {
         val skipIntro = preferences?.introSkip ?: 0
         val skipIntroMS = skipIntro * 1000
         if (skipIntro > 0 && playable.getPosition() < skipIntroMS) {
-            val duration = duration
+            val duration = curDuration
             if (skipIntroMS < duration || duration <= 0) {
                 Logd(TAG, "skipIntro " + playable.getEpisodeTitle())
-                mediaPlayer?.seekTo(skipIntroMS)
+                mPlayer?.seekTo(skipIntroMS)
                 val skipIntroMesg = applicationContext.getString(R.string.pref_feed_skip_intro_toast, skipIntro)
                 val toast = Toast.makeText(applicationContext, skipIntroMesg, Toast.LENGTH_LONG)
                 toast.show()
@@ -508,18 +752,18 @@ class PlaybackService : MediaSessionService() {
         intentAllowThisTime.putExtra(EXTRA_ALLOW_STREAM_THIS_TIME, true)
         val pendingIntentAllowThisTime =
             if (Build.VERSION.SDK_INT >= VERSION_CODES.O) PendingIntent.getForegroundService(this, R.id.pending_intent_allow_stream_this_time,
-                intentAllowThisTime, PendingIntent.FLAG_UPDATE_CURRENT or FLAG_IMMUTABLE)
+                intentAllowThisTime, FLAG_UPDATE_CURRENT or FLAG_IMMUTABLE)
             else PendingIntent.getService(this, R.id.pending_intent_allow_stream_this_time, intentAllowThisTime,
-                PendingIntent.FLAG_UPDATE_CURRENT or FLAG_IMMUTABLE)
+                FLAG_UPDATE_CURRENT or FLAG_IMMUTABLE)
 
         val intentAlwaysAllow = Intent(intentAllowThisTime)
         intentAlwaysAllow.setAction(EXTRA_ALLOW_STREAM_ALWAYS)
         intentAlwaysAllow.putExtra(EXTRA_ALLOW_STREAM_ALWAYS, true)
         val pendingIntentAlwaysAllow =
             if (Build.VERSION.SDK_INT >= VERSION_CODES.O) PendingIntent.getForegroundService(this, R.id.pending_intent_allow_stream_always,
-                intentAlwaysAllow, PendingIntent.FLAG_UPDATE_CURRENT or FLAG_IMMUTABLE)
+                intentAlwaysAllow, FLAG_UPDATE_CURRENT or FLAG_IMMUTABLE)
             else PendingIntent.getService(this, R.id.pending_intent_allow_stream_always, intentAlwaysAllow,
-                PendingIntent.FLAG_UPDATE_CURRENT or FLAG_IMMUTABLE)
+                FLAG_UPDATE_CURRENT or FLAG_IMMUTABLE)
 
         val builder = NotificationCompat.Builder(this, NotificationUtils.CHANNEL_ID_USER_ACTION)
             .setSmallIcon(R.drawable.ic_notification_stream)
@@ -541,17 +785,17 @@ class PlaybackService : MediaSessionService() {
      */
     private fun handleKeycode(keycode: Int, notificationButton: Boolean): Boolean {
         Logd(TAG, "Handling keycode: $keycode")
-        val info = mediaPlayer?.playerInfo
+        val info = mPlayer?.playerInfo
         val status = info?.playerStatus
         when (keycode) {
             KeyEvent.KEYCODE_HEADSETHOOK, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
                 when {
-                    status == PlayerStatus.PLAYING -> mediaPlayer?.pause(!isPersistNotify, false)
-                    status == PlayerStatus.FALLBACK || status == PlayerStatus.PAUSED || status == PlayerStatus.PREPARED -> mediaPlayer?.resume()
-                    status == PlayerStatus.PREPARING -> mediaPlayer?.startWhenPrepared?.set(!mediaPlayer!!.startWhenPrepared.get())
+                    status == PlayerStatus.PLAYING -> mPlayer?.pause(!isPersistNotify, false)
+                    status == PlayerStatus.FALLBACK || status == PlayerStatus.PAUSED || status == PlayerStatus.PREPARED -> mPlayer?.resume()
+                    status == PlayerStatus.PREPARING -> mPlayer?.startWhenPrepared?.set(!mPlayer!!.startWhenPrepared.get())
                     status == PlayerStatus.INITIALIZED -> {
-                        mediaPlayer?.startWhenPrepared?.set(true)
-                        mediaPlayer?.prepare()
+                        mPlayer?.startWhenPrepared?.set(true)
+                        mPlayer?.prepare()
                     }
                     curMedia == null -> startPlayingFromPreferences()
                     else -> return false
@@ -561,10 +805,10 @@ class PlaybackService : MediaSessionService() {
             }
             KeyEvent.KEYCODE_MEDIA_PLAY -> {
                 when {
-                    status == PlayerStatus.PAUSED || status == PlayerStatus.PREPARED -> mediaPlayer?.resume()
+                    status == PlayerStatus.PAUSED || status == PlayerStatus.PREPARED -> mPlayer?.resume()
                     status == PlayerStatus.INITIALIZED -> {
-                        mediaPlayer?.startWhenPrepared?.set(true)
-                        mediaPlayer?.prepare()
+                        mPlayer?.startWhenPrepared?.set(true)
+                        mPlayer?.prepare()
                     }
                     curMedia == null -> startPlayingFromPreferences()
                     else -> return false
@@ -574,7 +818,7 @@ class PlaybackService : MediaSessionService() {
             }
             KeyEvent.KEYCODE_MEDIA_PAUSE -> {
                 if (status == PlayerStatus.PLAYING) {
-                    mediaPlayer?.pause(!isPersistNotify, false)
+                    mPlayer?.pause(!isPersistNotify, false)
                     return true
                 }
             }
@@ -582,15 +826,15 @@ class PlaybackService : MediaSessionService() {
                 when {
                     // Handle remapped button as notification button which is not remapped again.
                     !notificationButton -> return handleKeycode(hardwareForwardButton, true)
-                    this.status == PlayerStatus.PLAYING || this.status == PlayerStatus.PAUSED -> {
-                        mediaPlayer?.skip()
+                    status == PlayerStatus.PLAYING || status == PlayerStatus.PAUSED -> {
+                        mPlayer?.skip()
                         return true
                     }
                 }
             }
             KeyEvent.KEYCODE_MEDIA_FAST_FORWARD -> {
-                if (this.status == PlayerStatus.FALLBACK || this.status == PlayerStatus.PLAYING || this.status == PlayerStatus.PAUSED) {
-                    mediaPlayer?.seekDelta(fastForwardSecs * 1000)
+                if (status == PlayerStatus.FALLBACK || status == PlayerStatus.PLAYING || status == PlayerStatus.PAUSED) {
+                    mPlayer?.seekDelta(fastForwardSecs * 1000)
                     return true
                 }
             }
@@ -598,21 +842,20 @@ class PlaybackService : MediaSessionService() {
                 when {
                     // Handle remapped button as notification button which is not remapped again.
                     !notificationButton -> return handleKeycode(hardwarePreviousButton, true)
-                    this.status == PlayerStatus.FALLBACK || this.status == PlayerStatus.PLAYING || this.status == PlayerStatus.PAUSED -> {
-                        mediaPlayer?.seekTo(0)
+                    status == PlayerStatus.FALLBACK || status == PlayerStatus.PLAYING || status == PlayerStatus.PAUSED -> {
+                        mPlayer?.seekTo(0)
                         return true
                     }
                 }
             }
             KeyEvent.KEYCODE_MEDIA_REWIND -> {
-                if (this.status == PlayerStatus.FALLBACK || this.status == PlayerStatus.PLAYING || this.status == PlayerStatus.PAUSED) {
-                    mediaPlayer?.seekDelta(-rewindSecs * 1000)
+                if (status == PlayerStatus.FALLBACK || status == PlayerStatus.PLAYING || status == PlayerStatus.PAUSED) {
+                    mPlayer?.seekDelta(-rewindSecs * 1000)
                     return true
                 }
             }
             KeyEvent.KEYCODE_MEDIA_STOP -> {
-                if (this.status == PlayerStatus.FALLBACK || status == PlayerStatus.PLAYING)
-                    mediaPlayer?.pause(abandonFocus = true, reinit = true)
+                if (status == PlayerStatus.FALLBACK || status == PlayerStatus.PLAYING) mPlayer?.pause(abandonFocus = true, reinit = true)
                 return true
             }
             else -> {
@@ -640,6 +883,7 @@ class PlaybackService : MediaSessionService() {
     }
 
     private fun startPlaying(allowStreamThisTime: Boolean) {
+        Logd(TAG, "startPlaying called $allowStreamThisTime")
         val media = curMedia ?: return
 
         val localFeed = URLUtil.isContentUrl(media.getStreamUrl())
@@ -652,276 +896,15 @@ class PlaybackService : MediaSessionService() {
 
         if (media.getIdentifier() != curState.curMediaId) clearCurTempSpeed()
 
-        mediaPlayer?.playMediaObject(media, stream, startWhenPrepared = true, true)
+        mPlayer?.playMediaObject(media, stream, startWhenPrepared = true, true)
         recreateMediaSessionIfNeeded()
         val episode = (media as? EpisodeMedia)?.episode
-        if (playable is EpisodeMedia && episode != null) addToQueue(true, episode)
-    }
-
-    private val taskManagerCallback: PSTMCallback = object : PSTMCallback {
-        override fun positionSaverTick() {
-            if (currentPosition != previousPosition) {
-//                Log.d(TAG, "positionSaverTick currentPosition: $currentPosition, currentPlaybackSpeed: $currentPlaybackSpeed")
-                if (curMedia != null) EventFlow.postEvent(FlowEvent.PlaybackPositionEvent(currentPosition, duration))
-                skipEndingIfNecessary()
-                saveCurrentPosition(true, null, Playable.INVALID_TIME)
-                previousPosition = currentPosition
-            }
-        }
-
-        override fun requestWidgetState(): WidgetState {
-            return WidgetState(this@PlaybackService.playable, this@PlaybackService.status,
-                this@PlaybackService.currentPosition, this@PlaybackService.duration, this@PlaybackService.currentPlaybackSpeed)
-        }
-
-        override fun onChapterLoaded(media: Playable?) {
-            sendNotificationBroadcast(NOTIFICATION_TYPE_RELOAD, 0)
-        }
+        if (curMedia is EpisodeMedia && episode != null) addToQueue(true, episode)
     }
 
     fun clearCurTempSpeed() {
         curState.curTempSpeed = FeedPreferences.SPEED_USE_GLOBAL
         upsertBlk(curState) {}
-    }
-
-    private val mediaPlayerCallback: MediaPlayerCallback = object : MediaPlayerCallback {
-        override fun statusChanged(newInfo: MediaPlayerInfo?) {
-            currentMediaType = mediaPlayer?.mediaType ?: MediaType.UNKNOWN
-            Logd(TAG, "statusChanged called ${newInfo?.playerStatus}")
-            if (newInfo != null) {
-                when (newInfo.playerStatus) {
-                    PlayerStatus.INITIALIZED ->
-                        if (mediaPlayer != null) writeMediaPlaying(mediaPlayer!!.playerInfo.playable, mediaPlayer!!.playerInfo.playerStatus, currentitem)
-                    PlayerStatus.PREPARED -> {
-                        if (mediaPlayer != null) writeMediaPlaying(mediaPlayer!!.playerInfo.playable, mediaPlayer!!.playerInfo.playerStatus, currentitem)
-                        taskManager.startChapterLoader(newInfo.playable!!)
-                    }
-                    PlayerStatus.PAUSED -> writePlayerStatus(MediaPlayerBase.status)
-                    PlayerStatus.STOPPED -> {}
-                    PlayerStatus.PLAYING -> {
-                        writePlayerStatus(MediaPlayerBase.status)
-
-                        saveCurrentPosition(true, null, Playable.INVALID_TIME)
-                        recreateMediaSessionIfNeeded()
-                        // set sleep timer if auto-enabled
-                        var autoEnableByTime = true
-                        val fromSetting = autoEnableFrom()
-                        val toSetting = autoEnableTo()
-                        if (fromSetting != toSetting) {
-                            val now: Calendar = GregorianCalendar()
-                            now.timeInMillis = System.currentTimeMillis()
-                            val currentHour = now[Calendar.HOUR_OF_DAY]
-                            autoEnableByTime = isInTimeRange(fromSetting, toSetting, currentHour)
-                        }
-
-                        if (newInfo.oldPlayerStatus != null && newInfo.oldPlayerStatus != PlayerStatus.SEEKING && autoEnable() && autoEnableByTime && !taskManager.isSleepTimerActive) {
-//                            setSleepTimer(timerMillis())
-                            taskManager.setSleepTimer(timerMillis())
-                            EventFlow.postEvent(FlowEvent.MessageEvent(
-                                getString(R.string.sleep_timer_enabled_label), { taskManager.disableSleepTimer() }, getString(R.string.undo)))
-                        }
-                    }
-                    PlayerStatus.ERROR -> writeNoMediaPlaying()
-                    else -> {}
-                }
-            }
-            if (Build.VERSION.SDK_INT >= VERSION_CODES.N)
-                TileService.requestListeningState(applicationContext, ComponentName(applicationContext, QuickSettingsTileService::class.java))
-
-            sendLocalBroadcast(applicationContext, ACTION_PLAYER_STATUS_CHANGED)
-            bluetoothNotifyChange(newInfo, AVRCP_ACTION_PLAYER_STATUS_CHANGED)
-            bluetoothNotifyChange(newInfo, AVRCP_ACTION_META_CHANGED)
-            taskManager.requestWidgetUpdate()
-        }
-
-        override fun onMediaChanged(reloadUI: Boolean) {
-            Logd(TAG, "reloadUI callback reached")
-            if (reloadUI) sendNotificationBroadcast(NOTIFICATION_TYPE_RELOAD, 0)
-        }
-
-        override fun onPostPlayback(playable: Playable?, ended: Boolean, skipped: Boolean, playingNext: Boolean) {
-            if (playable == null) {
-                Log.e(TAG, "Cannot do post-playback processing: media was null")
-                return
-            }
-            Logd(TAG, "onPostPlayback(): ended=$ended skipped=$skipped playingNext=$playingNext media=${playable.getEpisodeTitle()} ")
-
-            if (playable !is EpisodeMedia) {
-                Logd(TAG, "Not doing post-playback processing: media not of type EpisodeMedia")
-                if (ended) playable.onPlaybackCompleted(applicationContext)
-                else playable.onPlaybackPause(applicationContext)
-//            TODO: test
-//            return
-            }
-            val media = playable
-            val item = (media as? EpisodeMedia)?.episode ?: currentitem
-            val smartMarkAsPlayed = hasAlmostEnded(media)
-            if (!ended && smartMarkAsPlayed) Logd(TAG, "smart mark as played")
-
-            var autoSkipped = false
-            if (autoSkippedFeedMediaId != null && autoSkippedFeedMediaId == item?.identifyingValue) {
-                autoSkippedFeedMediaId = null
-                autoSkipped = true
-            }
-
-            if (media is EpisodeMedia) {
-                if (ended || smartMarkAsPlayed) {
-                    SynchronizationQueueSink.enqueueEpisodePlayedIfSyncActive(applicationContext, media, true)
-                    media.onPlaybackCompleted(applicationContext)
-                } else {
-                    SynchronizationQueueSink.enqueueEpisodePlayedIfSyncActive(applicationContext, media, false)
-                    media.onPlaybackPause(applicationContext)
-                }
-            }
-
-            if (item != null) {
-                if (ended || smartMarkAsPlayed || autoSkipped || (skipped && !shouldSkipKeepEpisode())) {
-                    Logd(TAG, "onPostPlayback ended: $ended smartMarkAsPlayed: $smartMarkAsPlayed autoSkipped: $autoSkipped skipped: $skipped")
-                    // only mark the item as played if we're not keeping it anyways
-                    markPlayed(Episode.PLAYED, ended || (skipped && smartMarkAsPlayed), item)
-                    // don't know if it actually matters to not autodownload when smart mark as played is triggered
-//                    removeFromQueue(this@PlaybackService, ended, item)
-                    // Delete episode if enabled
-                    val action = item.feed?.preferences?.currentAutoDelete
-                    val shouldAutoDelete = (action == AutoDeleteAction.ALWAYS
-                            || (action == AutoDeleteAction.GLOBAL && item.feed != null && shouldAutoDeleteItemsOnFeed(item.feed!!)))
-                    if (media is EpisodeMedia && shouldAutoDelete && (!item.isFavorite || !shouldFavoriteKeepEpisode())) {
-                        deleteMediaOfEpisode(this@PlaybackService, item)
-                        Logd(TAG, "Episode Deleted")
-                    }
-                }
-
-                if (media is EpisodeMedia && (ended || skipped || playingNext)) addToHistory(item)
-            }
-        }
-
-        override fun onPlaybackStart(playable: Playable, position: Int) {
-            Logd(TAG, "onPlaybackStart position: $position")
-            taskManager.startWidgetUpdater()
-            if (position != Playable.INVALID_TIME) playable.setPosition(position)
-            else skipIntro(playable)
-            playable.onPlaybackStart()
-            taskManager.startPositionSaver()
-        }
-
-        override fun onPlaybackPause(playable: Playable?, position: Int) {
-            Logd(TAG, "onPlaybackPause $position")
-            taskManager.cancelPositionSaver()
-            saveCurrentPosition(position == Playable.INVALID_TIME || playable == null, playable, position)
-            taskManager.cancelWidgetUpdater()
-            if (playable != null) {
-                if (playable is EpisodeMedia) SynchronizationQueueSink.enqueueEpisodePlayedIfSyncActive(applicationContext, playable, false)
-                playable.onPlaybackPause(applicationContext)
-            }
-        }
-
-        override fun getNextInQueue(currentMedia: Playable?): Playable? {
-            Logd(TAG, "call getNextInQueue currentMedia: ${currentMedia?.getEpisodeTitle()}")
-            if (currentMedia !is EpisodeMedia) {
-                Logd(TAG, "getNextInQueue(), but playable not an instance of EpisodeMedia, so not proceeding")
-                writeNoMediaPlaying()
-                return null
-            }
-            val item = currentMedia.episode
-            if (item == null) {
-                Log.w(TAG, "getNextInQueue() with EpisodeMedia object whose FeedItem is null")
-                writeNoMediaPlaying()
-                return null
-            }
-            val nextItem = getNextInQueue(item)
-            if (nextItem?.media == null) {
-                Logd(TAG, "getNextInQueue nextItem: $nextItem media is null")
-                writeNoMediaPlaying()
-                return null
-            }
-
-            if (!isFollowQueue) {
-                Logd(TAG, "getNextInQueue(), but follow queue is not enabled.")
-                writeMediaPlaying(nextItem.media, PlayerStatus.STOPPED, currentitem)
-                return null
-            }
-
-            if (!nextItem.media!!.localFileAvailable() && !isStreamingAllowed && isFollowQueue && nextItem.feed != null && !nextItem.feed!!.isLocalFeed) {
-                displayStreamingNotAllowedNotification(PlaybackServiceStarter(this@PlaybackService, nextItem.media!!).intent)
-                writeNoMediaPlaying()
-                return null
-            }
-            EventFlow.postEvent(FlowEvent.PlayEvent(item, FlowEvent.PlayEvent.Action.END))
-            EventFlow.postEvent(FlowEvent.PlayEvent(nextItem))
-            return nextItem.media
-        }
-
-        private fun getNextInQueue(episode: Episode): Episode? {
-            Logd(TAG, "getNextInQueue() with: itemId ${episode.id}")
-            if (curQueue.episodes.isEmpty()) return null
-
-            val i = curQueue.episodes.indexOf(episode)
-            var j = 0
-            if (i >= 0 && i < curQueue.episodes.size-1) j = i+1
-
-            val itemNew = curQueue.episodes[j]
-            return if (itemNew.isManaged()) realm.copyFromRealm(itemNew) else itemNew
-        }
-
-        override fun findMedia(url: String): Playable? {
-            val item = getEpisodeByGuidOrUrl(null, url)
-            return item?.media
-        }
-
-        override fun onPlaybackEnded(mediaType: MediaType?, stopPlaying: Boolean) {
-            Logd(TAG, "onPlaybackEnded mediaType: $mediaType stopPlaying: $stopPlaying")
-            clearCurTempSpeed()
-            if (stopPlaying) taskManager.cancelPositionSaver()
-
-            if (mediaType == null) sendNotificationBroadcast(NOTIFICATION_TYPE_PLAYBACK_END, 0)
-            else {
-                sendNotificationBroadcast(NOTIFICATION_TYPE_RELOAD,
-                    when {
-                        isCasting -> EXTRA_CODE_CAST
-                        mediaType == MediaType.VIDEO -> EXTRA_CODE_VIDEO
-                        else -> EXTRA_CODE_AUDIO
-                    })
-            }
-        }
-
-        override fun ensureMediaInfoLoaded(media: Playable) {
-//            if (media is EpisodeMedia && media.item == null) media.item = DBReader.getFeedItem(media.itemId)
-        }
-
-        fun writeMediaPlaying(playable: Playable?, playerStatus: PlayerStatus, item: Episode? = null) {
-            Logd(InTheatre.TAG, "Writing playback preferences ${playable?.getIdentifier()}")
-            if (playable == null) {
-                writeNoMediaPlaying()
-            } else {
-                curState.curMediaType = playable.getPlayableType().toLong()
-                curState.curIsVideo = playable.getMediaType() == MediaType.VIDEO
-                if (playable is EpisodeMedia) {
-                    val feedId = playable.episode?.feed?.id
-                    if (feedId != null) curState.curFeedId = feedId
-                    curState.curMediaId = playable.id
-                } else {
-                    curState.curFeedId = NO_MEDIA_PLAYING
-                    curState.curMediaId = NO_MEDIA_PLAYING
-                }
-            }
-            curState.curPlayerStatus = getCurPlayerStatusAsInt(playerStatus)
-            upsertBlk(curState) {}
-        }
-
-        fun writePlayerStatus(playerStatus: PlayerStatus) {
-            Logd(InTheatre.TAG, "Writing player status playback preferences")
-            curState.curPlayerStatus = getCurPlayerStatusAsInt(playerStatus)
-            upsertBlk(curState) {}
-        }
-
-        private fun getCurPlayerStatusAsInt(playerStatus: PlayerStatus): Int {
-            val playerStatusAsInt = when (playerStatus) {
-                PlayerStatus.PLAYING -> PLAYER_STATUS_PLAYING
-                PlayerStatus.PAUSED -> PLAYER_STATUS_PAUSED
-                else -> PLAYER_STATUS_OTHER
-            }
-            return playerStatusAsInt
-        }
     }
 
     private var eventSink: Job?     = null
@@ -938,7 +921,7 @@ class PlaybackService : MediaSessionService() {
                     is FlowEvent.PlayerErrorEvent -> onPlayerError(event)
                     is FlowEvent.BufferUpdateEvent -> onBufferUpdate(event)
                     is FlowEvent.SleepTimerUpdatedEvent -> onSleepTimerUpdate(event)
-                    is FlowEvent.VolumeAdaptionChangedEvent -> onVolumeAdaptionChanged(event)
+//                    is FlowEvent.VolumeAdaptionChangedEvent -> onVolumeAdaptionChanged(event)
                     is FlowEvent.FeedPrefsChangeEvent -> onFeedPrefsChanged(event)
 //                    is FlowEvent.SkipIntroEndingChangedEvent -> skipIntroEndingPresetChanged(event)
                     is FlowEvent.PlayEvent -> currentitem = event.episode
@@ -950,14 +933,14 @@ class PlaybackService : MediaSessionService() {
 
     private fun onPlayerError(event: FlowEvent.PlayerErrorEvent) {
         if (MediaPlayerBase.status == PlayerStatus.PLAYING || MediaPlayerBase.status == PlayerStatus.FALLBACK)
-            mediaPlayer!!.pause(abandonFocus = true, reinit = false)
+            mPlayer!!.pause(abandonFocus = true, reinit = false)
     }
 
     private fun onBufferUpdate(event: FlowEvent.BufferUpdateEvent) {
         if (event.hasEnded()) {
-            if (playable is EpisodeMedia && playable!!.getDuration() <= 0 && (mediaPlayer?.getDuration()?:0) > 0) {
+            if (curMedia is EpisodeMedia && curMedia!!.getDuration() <= 0 && (mPlayer?.getDuration()?:0) > 0) {
                 // Playable is being streamed and does not have a duration specified in the feed
-                playable!!.setDuration(mediaPlayer!!.getDuration())
+                curMedia!!.setDuration(mPlayer!!.getDuration())
 //                DBWriter.persistEpisodeMedia(playable as EpisodeMedia)
             }
         }
@@ -966,16 +949,16 @@ class PlaybackService : MediaSessionService() {
     private fun onSleepTimerUpdate(event: FlowEvent.SleepTimerUpdatedEvent) {
         when {
             event.isOver -> {
-                mediaPlayer?.pause(abandonFocus = true, reinit = true)
-                mediaPlayer?.setVolume(1.0f, 1.0f)
+                mPlayer?.pause(abandonFocus = true, reinit = true)
+                mPlayer?.setVolume(1.0f, 1.0f)
             }
             event.getTimeLeft() < TaskManager.NOTIFICATION_THRESHOLD -> {
                 val multiplicators = floatArrayOf(0.1f, 0.2f, 0.3f, 0.3f, 0.3f, 0.4f, 0.4f, 0.4f, 0.6f, 0.8f)
                 val multiplicator = multiplicators[max(0.0, (event.getTimeLeft().toInt() / 1000).toDouble()).toInt()]
                 Logd(TAG, "onSleepTimerAlmostExpired: $multiplicator")
-                mediaPlayer?.setVolume(multiplicator, multiplicator)
+                mPlayer?.setVolume(multiplicator, multiplicator)
             }
-            event.isCancelled -> mediaPlayer?.setVolume(1.0f, 1.0f)
+            event.isCancelled -> mPlayer?.setVolume(1.0f, 1.0f)
         }
     }
 
@@ -989,27 +972,20 @@ class PlaybackService : MediaSessionService() {
     }
 
     private fun skipEndingIfNecessary() {
-        val playable = curMedia as? EpisodeMedia
+        val remainingTime = curDuration - curPosition
+        val item = (curMedia as? EpisodeMedia)?.episode ?: currentitem ?: return
 
-        val duration = duration
-        val remainingTime = duration - currentPosition
-
-        val item = playable?.episode ?: currentitem ?: return
-        val feed = item.feed
-        val preferences = feed?.preferences
-
-        val skipEnd = preferences?.endingSkip?:0
+        val skipEnd = item.feed?.preferences?.endingSkip?:0
         val skipEndMS = skipEnd * 1000
 //        Log.d(TAG, "skipEndingIfNecessary: checking " + remainingTime + " " + skipEndMS + " speed " + currentPlaybackSpeed)
-        if (skipEnd > 0 && skipEndMS < this.duration && (remainingTime - skipEndMS < 0)) {
-            Logd(TAG, "skipEndingIfNecessary: Skipping the remaining $remainingTime $skipEndMS speed $currentPlaybackSpeed")
+        if (skipEnd > 0 && skipEndMS < curDuration && (remainingTime - skipEndMS < 0)) {
+            Logd(TAG, "skipEndingIfNecessary: Skipping the remaining $remainingTime $skipEndMS speed $curSpeed")
             val context = applicationContext
             val skipMesg = context.getString(R.string.pref_feed_skip_ending_toast, skipEnd)
             val toast = Toast.makeText(context, skipMesg, Toast.LENGTH_LONG)
             toast.show()
-
-            this.autoSkippedFeedMediaId = item.identifyingValue
-            mediaPlayer?.skip()
+            autoSkippedFeedMediaId = item.identifyingValue
+            mPlayer?.skip()
         }
     }
 
@@ -1017,37 +993,33 @@ class PlaybackService : MediaSessionService() {
     private fun saveCurrentPosition(fromMediaPlayer: Boolean, playable: Playable?, position: Int) {
         var playable = playable
         var position = position
-        val duration: Int
+        val duration_: Int
         if (fromMediaPlayer) {
-            position = currentPosition
-            duration = this.duration
+            position = curPosition
+            duration_ = this.curDuration
             playable = curMedia
-        } else duration = playable?.getDuration() ?: Playable.INVALID_TIME
+        } else duration_ = playable?.getDuration() ?: Playable.INVALID_TIME
 
-        if (position != Playable.INVALID_TIME && duration != Playable.INVALID_TIME && playable != null) {
+        if (position != Playable.INVALID_TIME && duration_ != Playable.INVALID_TIME && playable != null) {
 //            Log.d(TAG, "Saving current position to $position $duration")
             playable.setPosition(position)
             playable.setLastPlayedTime(System.currentTimeMillis())
 
             if (playable is EpisodeMedia) {
                 val item = playable.episode
-                if (item != null && item.isNew) {
-                    item.playState = Episode.UNPLAYED
-                }
+                if (item != null && item.isNew) item.playState = Episode.UNPLAYED
                 if (playable.startPosition >= 0 && playable.getPosition() > playable.startPosition)
                     playable.playedDuration = (playable.playedDurationWhenStarted + playable.getPosition() - playable.startPosition)
                 persistEpisode(item, true)
             }
-            previousPosition = position
+            prevPosition = position
         }
     }
 
     private fun bluetoothNotifyChange(info: MediaPlayerInfo?, whatChanged: String) {
         Logd(TAG, "bluetoothNotifyChange $whatChanged")
         var isPlaying = false
-
         if (info?.playerStatus == PlayerStatus.PLAYING || info?.playerStatus == PlayerStatus.FALLBACK) isPlaying = true
-
         if (info?.playable != null) {
             val i = Intent(whatChanged)
             i.putExtra("id", 1L)
@@ -1061,20 +1033,17 @@ class PlaybackService : MediaSessionService() {
         }
     }
 
-    /**
-     * Pauses playback if PREF_PAUSE_ON_HEADSET_DISCONNECT was set to true.
-     */
     private fun pauseIfPauseOnDisconnect() {
         Logd(TAG, "pauseIfPauseOnDisconnect()")
         transientPause = (MediaPlayerBase.status == PlayerStatus.PLAYING || MediaPlayerBase.status == PlayerStatus.FALLBACK)
-        if (isPauseOnHeadsetDisconnect && !isCasting) mediaPlayer?.pause(!isPersistNotify, false)
+        if (isPauseOnHeadsetDisconnect && !isCasting) mPlayer?.pause(!isPersistNotify, false)
     }
 
     /**
      * @param bluetooth true if the event for unpausing came from bluetooth
      */
     private fun unpauseIfPauseOnDisconnect(bluetooth: Boolean) {
-        if (mediaPlayer != null && mediaPlayer!!.isAudioChannelInUse) {
+        if (mPlayer != null && mPlayer!!.isAudioChannelInUse) {
             Logd(TAG, "unpauseIfPauseOnDisconnect() audio is in use")
             return
         }
@@ -1082,55 +1051,29 @@ class PlaybackService : MediaSessionService() {
             transientPause = false
             if (Build.VERSION.SDK_INT >= 31) return
             when {
-                !bluetooth && isUnpauseOnHeadsetReconnect -> mediaPlayer?.resume()
+                !bluetooth && isUnpauseOnHeadsetReconnect -> mPlayer?.resume()
                 bluetooth && isUnpauseOnBluetoothReconnect -> {
                     // let the user know we've started playback again...
                     val v = applicationContext.getSystemService(VIBRATOR_SERVICE) as? Vibrator
                     v?.vibrate(500)
-                    mediaPlayer?.resume()
+                    mPlayer?.resume()
                 }
             }
         }
     }
 
-    private val shutdownReceiver: BroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == ACTION_SHUTDOWN_PLAYBACK_SERVICE)
-                EventFlow.postEvent(FlowEvent.PlaybackServiceEvent(FlowEvent.PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN))
-        }
-    }
-
-    private fun onVolumeAdaptionChanged(event: FlowEvent.VolumeAdaptionChangedEvent) {
-        val volumeUpdater = VolumeUpdater()
-        if (mediaPlayer != null) volumeUpdater.updateVolumeIfNecessary(mediaPlayer!!, event.feedId, event.volumeAdaptionSetting)
-    }
+//    private fun onVolumeAdaptionChanged(event: FlowEvent.VolumeAdaptionChangedEvent) {
+//        if (mPlayer != null) updateVolumeIfNecessary(mPlayer!!, event.feedId, event.volumeAdaptionSetting)
+//    }
 
     private fun onFeedPrefsChanged(event: FlowEvent.FeedPrefsChangeEvent) {
-        val item = (playable as? EpisodeMedia)?.episode ?: currentitem
-        if (item?.feed?.id == event.prefs.feedID) {
-            item.feed = unmanagedCopy(item.feed!!)
-            item.feed!!.preferences = event.prefs
-        }
-    }
-
-    class VolumeUpdater {
-        fun updateVolumeIfNecessary(mediaPlayer: MediaPlayerBase, feedId: Long, volumeAdaptionSetting: VolumeAdaptionSetting) {
-            val playable = curMedia
-            if (playable is EpisodeMedia) updateFeedMediaVolumeIfNecessary(mediaPlayer, feedId, volumeAdaptionSetting, playable)
-        }
-
-        private fun updateFeedMediaVolumeIfNecessary(mediaPlayer: MediaPlayerBase, feedId: Long, volumeAdaptionSetting: VolumeAdaptionSetting, episodeMedia: EpisodeMedia) {
-            if (episodeMedia.episode?.feed?.id == feedId) {
-                val preferences = episodeMedia.episode!!.feed!!.preferences
-                if (preferences != null) preferences.volumeAdaptionSetting = volumeAdaptionSetting
-
-                if (MediaPlayerBase.status == PlayerStatus.PLAYING) forceUpdateVolume(mediaPlayer)
+        val item = (curMedia as? EpisodeMedia)?.episode ?: currentitem
+        if (item?.feed?.id == event.feed.id) {
+            item.feed = null
+            if (MediaPlayerBase.status == PlayerStatus.PLAYING) {
+                mPlayer?.pause(abandonFocus = false, reinit = false)
+                mPlayer?.resume()
             }
-        }
-
-        private fun forceUpdateVolume(mediaPlayer: MediaPlayerBase) {
-            mediaPlayer.pause(abandonFocus = false, reinit = false)
-            mediaPlayer.resume()
         }
     }
 
@@ -1232,28 +1175,17 @@ class PlaybackService : MediaSessionService() {
         var currentMediaType: MediaType? = MediaType.UNKNOWN
             private set
 
-        /**
-         * Returns an intent which starts an audio- or videoplayer, depending on the
-         * type of media that is being played. If the playbackservice is not
-         * running, the type of the last played media will be looked up.
-         */
-        @JvmStatic
-        fun getPlayerActivityIntent(context: Context): Intent {
-            val showVideoPlayer = if (isRunning) currentMediaType == MediaType.VIDEO && !isCasting
-            else curState.curIsVideo
-
-            return if (showVideoPlayer) VideoPlayerActivityStarter(context).intent
-            else MainActivityStarter(context).withOpenPlayer().getIntent()
-        }
-
-        /**
-         * Same as [.getPlayerActivityIntent], but here the type of activity
-         * depends on the medaitype that is provided as an argument.
-         */
-        @JvmStatic
-        fun getPlayerActivityIntent(context: Context, mediaType: MediaType?): Intent {
-            return if (mediaType == MediaType.VIDEO && !isCasting) VideoPlayerActivityStarter(context).intent
-            else MainActivityStarter(context).withOpenPlayer().getIntent()
+        fun updateVolumeIfNecessary(mediaPlayer: MediaPlayerBase, feedId: Long, volumeAdaptionSetting: VolumeAdaptionSetting) {
+            val playable = curMedia
+            if (playable is EpisodeMedia) {
+                if (playable.episode?.feed?.id == feedId) {
+                    playable.episode!!.feed!!.preferences?.volumeAdaptionSetting = volumeAdaptionSetting
+                    if (MediaPlayerBase.status == PlayerStatus.PLAYING) {
+                        mediaPlayer.pause(abandonFocus = false, reinit = false)
+                        mediaPlayer.resume()
+                    }
+                }
+            }
         }
     }
 }

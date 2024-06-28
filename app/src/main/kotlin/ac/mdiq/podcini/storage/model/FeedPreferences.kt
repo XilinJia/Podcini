@@ -22,9 +22,6 @@ class FeedPreferences(@Index var feedID: Long,
                       @Ignore @JvmField var volumeAdaptionSetting: VolumeAdaptionSetting?,
                       var username: String?,
                       var password: String?,
-                      /**
-                       * @return the filter for this feed
-                       */
                       @Ignore @JvmField var filter: FeedEpisodesFilter,
                       var playSpeed: Float,
                       var introSkip: Int,

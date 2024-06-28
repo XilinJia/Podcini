@@ -2,7 +2,6 @@ package ac.mdiq.podcini.ui.actions.actionbutton
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.playback.PlaybackServiceStarter
-import ac.mdiq.podcini.playback.service.PlaybackService.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.preferences.UsageStatistics
 import ac.mdiq.podcini.preferences.UsageStatistics.logAction
 import ac.mdiq.podcini.preferences.UserPreferences.isAllowMobileStreaming
@@ -11,6 +10,7 @@ import ac.mdiq.podcini.storage.utils.MediaType
 import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.storage.model.RemoteMedia
 import ac.mdiq.podcini.net.utils.NetworkUtils.isStreamingAllowed
+import ac.mdiq.podcini.playback.PlaybackController.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.Context

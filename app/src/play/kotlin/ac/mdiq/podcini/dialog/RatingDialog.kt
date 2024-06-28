@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import ac.mdiq.podcini.util.Logd
 import androidx.annotation.VisibleForTesting
 import com.google.android.play.core.review.ReviewInfo
 import com.google.android.play.core.review.ReviewManager
@@ -66,15 +67,15 @@ object RatingDialog {
                             .putInt(KEY_NUMBER_OF_REVIEWS, previousAttempts + 1)
                             .apply()
                     }
-                    Log.i("ReviewDialog", "Successfully finished in-app review")
+                    Logd("ReviewDialog", "Successfully finished in-app review")
                 }
                     .addOnFailureListener { error: Exception? ->
-                        Log.i("ReviewDialog", "failed in reviewing process")
+                        Logd("ReviewDialog", "failed in reviewing process")
                     }
             }
         }
             .addOnFailureListener { error: Exception? ->
-                Log.i("ReviewDialog", "failed to get in-app review request")
+                Logd("ReviewDialog", "failed to get in-app review request")
             }
     }
 

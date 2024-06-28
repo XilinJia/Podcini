@@ -62,20 +62,14 @@ import kotlin.math.min
 
     override fun loadData(): List<Episode> {
         allEpisodes = getEpisodes(0, Int.MAX_VALUE, getFilter(), allEpisodesSortOrder, false)
-        Logd(TAG, "loadData() allEpisodes.size ${allEpisodes.size}")
-        return allEpisodes.subList(0, page * EPISODES_PER_PAGE)
-//        return getEpisodes(0, page * EPISODES_PER_PAGE, getFilter(), allEpisodesSortOrder)
+        return allEpisodes.subList(0, min(allEpisodes.size-1, page * EPISODES_PER_PAGE))
     }
 
     override fun loadMoreData(page: Int): List<Episode> {
         val offset = (page - 1) * EPISODES_PER_PAGE
-        Logd(TAG, "loadMoreData() page: $page $offset ${allEpisodes.size}")
         if (offset >= allEpisodes.size) return listOf()
         val toIndex = offset + EPISODES_PER_PAGE
-        Logd(TAG, "loadMoreData() $offset $toIndex ${min(allEpisodes.size, toIndex)}")
         return allEpisodes.subList(offset, min(allEpisodes.size, toIndex))
-//        return allEpisodes.subList((page - 1) * EPISODES_PER_PAGE, EPISODES_PER_PAGE)
-//        return getEpisodes((page - 1) * EPISODES_PER_PAGE, EPISODES_PER_PAGE, getFilter(), allEpisodesSortOrder)
     }
 
     override fun loadTotalItemCount(): Int {
@@ -84,10 +78,6 @@ import kotlin.math.min
 
     override fun getFilter(): EpisodeFilter {
         return EpisodeFilter(prefFilterAllEpisodes)
-    }
-
-    override fun getFragmentTag(): String {
-        return TAG
     }
 
     override fun getPrefName(): String {
@@ -162,7 +152,7 @@ import kotlin.math.min
         override fun onSelectionChanged() {
             super.onSelectionChanged()
             allEpisodesSortOrder = sortOrder
-            EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(0))
+            EventFlow.postEvent(FlowEvent.FeedsSortedEvent())
         }
     }
 

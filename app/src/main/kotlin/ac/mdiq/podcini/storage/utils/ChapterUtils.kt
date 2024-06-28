@@ -67,10 +67,7 @@ object ChapterUtils {
         try {
             openStream(playable, context).use { inVal ->
                 val chapters = readId3ChaptersFrom(inVal)
-                if (chapters.isNotEmpty()) {
-                    Log.i(TAG, "Chapters loaded")
-                    return chapters
-                }
+                if (chapters.isNotEmpty()) return chapters
             }
         } catch (e: IOException) {
             Log.e(TAG, "Unable to load ID3 chapters: " + e.message)
@@ -81,10 +78,7 @@ object ChapterUtils {
         try {
             openStream(playable, context).use { inVal ->
                 val chapters = readOggChaptersFromInputStream(inVal)
-                if (chapters.isNotEmpty()) {
-                    Log.i(TAG, "Chapters loaded")
-                    return chapters
-                }
+                if (chapters.isNotEmpty()) return chapters
             }
         } catch (e: IOException) {
             Log.e(TAG, "Unable to load vorbis chapters: " + e.message)
@@ -151,7 +145,7 @@ object ChapterUtils {
         chapters = chapters.sortedWith(ChapterStartTimeComparator())
         enumerateEmptyChapterTitles(chapters)
         if (!chaptersValid(chapters)) {
-            Log.i(TAG, "Chapter data was invalid")
+            Logd(TAG, "Chapter data was invalid")
             return emptyList()
         }
         return chapters

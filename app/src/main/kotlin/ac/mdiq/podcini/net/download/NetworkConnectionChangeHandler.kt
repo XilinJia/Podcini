@@ -6,7 +6,7 @@ import androidx.media3.common.util.UnstableApi
 import ac.mdiq.podcini.net.utils.NetworkUtils.isAutoDownloadAllowed
 import ac.mdiq.podcini.net.utils.NetworkUtils.isNetworkRestricted
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
-import ac.mdiq.podcini.storage.database.Episodes.autodownloadEpisodeMedia
+import ac.mdiq.podcini.storage.algorithms.AutoDownloads.autodownloadEpisodeMedia
 import ac.mdiq.podcini.util.Logd
 
 @UnstableApi

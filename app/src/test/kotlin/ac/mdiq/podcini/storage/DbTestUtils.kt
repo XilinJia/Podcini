@@ -24,7 +24,7 @@ internal object DbTestUtils {
 //        adapter.open()
 //        for (i in 0 until numFeeds) {
 //            val f = Feed(0, null, "feed $i", "link$i", "descr", null, null,
-//                null, null, "id$i", null, null, "url$i", false)
+//                null, null, "id$i", null, null, "url$i")
 //            f.items.clear()
 //            for (j in 0 until numItems) {
 //                val item = FeedItem(0, "item $j", "id$j", "link$j", Date(),

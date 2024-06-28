@@ -100,7 +100,7 @@ class MediaPlayerBaseTest {
     }
 
     private fun writeTestPlayable(downloadUrl: String?, fileUrl: String?): Playable {
-        val f = Feed(0, null, "f", "l", "d", null, null, null, null, "i", null, null, "l", false)
+        val f = Feed(0, null, "f", "l", "d", null, null, null, null, "i", null, null, "l")
         val prefs = FeedPreferences(f.id, false, FeedPreferences.AutoDeleteAction.NEVER,
             VolumeAdaptionSetting.OFF, null, null)
         f.preferences = prefs

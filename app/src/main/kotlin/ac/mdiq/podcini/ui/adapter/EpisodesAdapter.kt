@@ -4,6 +4,7 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.unmanagedCopy
 import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.fragment.EpisodeInfoFragment
@@ -25,11 +26,26 @@ open class EpisodesAdapter(mainActivity: MainActivity)
     private val TAG: String = this::class.simpleName ?: "Anonymous"
 
     val mainActivityRef: WeakReference<MainActivity> = WeakReference<MainActivity>(mainActivity)
+    protected val activity: Activity?
+        get() = mainActivityRef.get()
 
     private var episodes: List<Episode> = ArrayList()
+    private var feed: Feed? = null
     var longPressedItem: Episode? = null
     private var longPressedPosition: Int = 0 // used to init actionMode
     private var dummyViews = 0
+
+    val selectedItems: List<Any>
+        get() {
+            val items: MutableList<Episode> = ArrayList()
+            for (i in 0 until itemCount) {
+                if (i < episodes.size && isSelected(i)) {
+                    val item = getItem(i)
+                    if (item != null) items.add(item)
+                }
+            }
+            return items
+        }
 
     init {
         setHasStableIds(true)
@@ -40,8 +56,9 @@ open class EpisodesAdapter(mainActivity: MainActivity)
         notifyDataSetChanged()
     }
 
-    fun updateItems(items: List<Episode>) {
+    fun updateItems(items: List<Episode>, feed_: Feed? = null) {
         episodes = items
+        feed = feed_
         notifyDataSetChanged()
         updateTitle()
     }
@@ -72,6 +89,7 @@ open class EpisodesAdapter(mainActivity: MainActivity)
         beforeBindViewHolder(holder, pos)
 
         val item: Episode = unmanagedCopy(episodes[pos])
+        if (feed != null) item.feed = feed
         holder.bind(item)
 
 //        holder.infoCard.setOnCreateContextMenuListener(this)
@@ -154,9 +172,6 @@ open class EpisodesAdapter(mainActivity: MainActivity)
         return item
     }
 
-    protected val activity: Activity?
-        get() = mainActivityRef.get()
-
     @UnstableApi override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
         val inflater: MenuInflater = activity!!.menuInflater
         if (inActionMode()) {
@@ -188,16 +203,4 @@ open class EpisodesAdapter(mainActivity: MainActivity)
             else -> return false
         }
     }
-
-    val selectedItems: List<Any>
-        get() {
-            val items: MutableList<Episode> = ArrayList()
-            for (i in 0 until itemCount) {
-                if (i < episodes.size && isSelected(i)) {
-                    val item = getItem(i)
-                    if (item != null) items.add(item)
-                }
-            }
-            return items
-        }
 }

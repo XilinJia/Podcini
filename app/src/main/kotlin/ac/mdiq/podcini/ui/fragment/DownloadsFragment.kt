@@ -33,8 +33,6 @@ import ac.mdiq.podcini.util.event.FlowEvent
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import android.widget.ProgressBar
-import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -63,13 +61,11 @@ import java.util.*
     private var runningDownloads: Set<String> = HashSet()
     private var items: MutableList<Episode> = mutableListOf()
 
-    private lateinit var infoBar: TextView
     private lateinit var adapter: DownloadsListAdapter
     private lateinit var toolbar: MaterialToolbar
     private lateinit var recyclerView: EpisodesRecyclerView
     private lateinit var swipeActions: SwipeActions
     private lateinit var speedDialView: SpeedDialView
-    private lateinit var progressBar: ProgressBar
     private lateinit var emptyView: EmptyViewHandler
     
     private var displayUpArrow = false
@@ -114,10 +110,7 @@ import java.util.*
         val animator: RecyclerView.ItemAnimator? = recyclerView.itemAnimator
         if (animator is SimpleItemAnimator) animator.supportsChangeAnimations = false
 
-        progressBar = binding.progLoading
-        progressBar.visibility = View.VISIBLE
-
-        infoBar = binding.infoBar
+        binding.progLoading.visibility = View.VISIBLE
 
         val multiSelectDial = MultiSelectSpeedDialBinding.bind(binding.root)
         speedDialView = multiSelectDial.fabSD
@@ -243,7 +236,7 @@ import java.util.*
     override fun onContextItemSelected(item: MenuItem): Boolean {
         val selectedItem: Episode? = adapter.longPressedItem
         if (selectedItem == null) {
-            Log.i(TAG, "Selected item at current position was null, ignoring selection")
+            Logd(TAG, "Selected item at current position was null, ignoring selection")
             return super.onContextItemSelected(item)
         }
         if (adapter.onContextItemSelected(item)) return true
@@ -287,12 +280,12 @@ import java.util.*
 
     private fun onPlaybackPositionEvent(event: FlowEvent.PlaybackPositionEvent) {
 //        Logd(TAG, "onPlaybackPositionEvent called with ${event.TAG}")
-        if (currentPlaying != null && currentPlaying!!.isCurMedia) currentPlaying!!.notifyPlaybackPositionUpdated(event)
+        if (currentPlaying != null && event.media?.getIdentifier() == currentPlaying!!.episode?.media?.getIdentifier() && currentPlaying!!.isCurMedia) currentPlaying!!.notifyPlaybackPositionUpdated(event)
         else {
             Logd(TAG, "onPlaybackPositionEvent ${event.TAG} search list")
             for (i in 0 until adapter.itemCount) {
                 val holder: EpisodeViewHolder? = recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeViewHolder
-                if (holder != null && holder.isCurMedia) {
+                if (holder != null && event.media?.getIdentifier() == holder.episode?.media?.getIdentifier()) {
                     currentPlaying = holder
                     holder.notifyPlaybackPositionUpdated(event)
                     break
@@ -334,7 +327,7 @@ import java.util.*
                 withContext(Dispatchers.Main) {
                     items = result.toMutableList()
 //                    adapter.setDummyViews(0)
-                    progressBar.visibility = View.GONE
+                    binding.progLoading.visibility = View.GONE
                     adapter.updateItems(result)
                     refreshInfoBar()
                 }
@@ -362,12 +355,10 @@ import java.util.*
         var info = String.format(Locale.getDefault(), "%d%s", items.size, getString(R.string.episodes_suffix))
         if (items.isNotEmpty()) {
             var sizeMB: Long = 0
-            for (item in items) {
-                sizeMB += item.media?.size?:0
-            }
+            for (item in items) sizeMB += item.media?.size ?: 0
             info += " • " + (sizeMB / 1000000) + " MB"
         }
-        infoBar.text = info
+        binding.infoBar.text = info
     }
 
     override fun onStartSelectMode() {

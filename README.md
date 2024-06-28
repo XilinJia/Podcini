@@ -66,6 +66,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 ### Podcast/Episode list
 
 * A whole new interface of the Subscriptions page showing only the feeds with tags as filters, no longer having tags as folders in the page,
+* Subscriptions page by default has a list layout and can be opted for a grid layout
 * New and efficient ways of click and long-click operations on lists:
   * click on title area opens the podcast/episode
   * long-press on title area automatically enters in selection mode

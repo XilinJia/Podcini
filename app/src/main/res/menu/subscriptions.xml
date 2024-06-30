@@ -22,9 +22,4 @@
         android:title="@string/refresh_label"
         android:menuCategory="container"
         custom:showAsAction="never" />
-    <item
-        android:id="@+id/subscriptions_filter"
-        android:title="@string/filter"
-        android:visible="false"
-        custom:showAsAction="never"/>
 </menu>

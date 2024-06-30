@@ -152,7 +152,6 @@ open class EpisodesAdapter(mainActivity: MainActivity)
      * Instead, we tell the adapter to use partial binding by calling [.notifyItemChanged].
      * We actually ignore the payload and always do a full bind but calling the partial bind method ensures
      * that ViewHolders are always re-used.
-     *
      * @param position Position of the item that has changed
      */
     fun notifyItemChangedCompat(position: Int) {

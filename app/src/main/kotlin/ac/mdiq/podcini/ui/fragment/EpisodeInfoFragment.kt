@@ -21,7 +21,6 @@ import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.utils.ThemeUtils
-import ac.mdiq.podcini.ui.view.CircularProgressBar
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.Converter
 import ac.mdiq.podcini.util.DateFormatter
@@ -75,7 +74,7 @@ import kotlin.math.max
     private var homeFragment: EpisodeHomeFragment? = null
 
     private var itemLoaded = false
-    private var item: Episode? = null
+    private var episode: Episode? = null
     private var webviewData: String? = null
 
     private lateinit var shownotesCleaner: ShownotesCleaner
@@ -93,7 +92,6 @@ import kotlin.math.max
         super.onCreateView(inflater, container, savedInstanceState)
 
         _binding = EpisodeInfoFragmentBinding.inflate(inflater, container, false)
-//        root = binding.root
         Logd(TAG, "fragment onCreateView")
 
         toolbar = binding.toolbar
@@ -108,7 +106,7 @@ import kotlin.math.max
         webvDescription = binding.webvDescription
         webvDescription.setTimecodeSelectedListener { time: Int? ->
             val cMedia = curMedia
-            if (item?.media?.getIdentifier() == cMedia?.getIdentifier()) seekTo(time ?: 0)
+            if (episode?.media?.getIdentifier() == cMedia?.getIdentifier()) seekTo(time ?: 0)
             else (activity as MainActivity).showSnackbarAbovePlayer(R.string.play_this_to_seek_position, Snackbar.LENGTH_LONG)
         }
         registerForContextMenu(webvDescription)
@@ -119,10 +117,10 @@ import kotlin.math.max
         butAction2 = binding.butAction2
 
         binding.homeButton.setOnClickListener {
-            if (!item?.link.isNullOrEmpty()) {
-                homeFragment = EpisodeHomeFragment.newInstance(item!!)
+            if (!episode?.link.isNullOrEmpty()) {
+                homeFragment = EpisodeHomeFragment.newInstance(episode!!)
                 (activity as MainActivity).loadChildFragment(homeFragment!!)
-            } else Toast.makeText(context, "Episode link is not valid ${item?.link}", Toast.LENGTH_LONG).show()
+            } else Toast.makeText(context, "Episode link is not valid ${episode?.link}", Toast.LENGTH_LONG).show()
         }
 
         butAction1.setOnClickListener(View.OnClickListener {
@@ -201,8 +199,8 @@ import kotlin.math.max
     @UnstableApi override fun onMenuItemClick(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
             R.id.share_notes -> {
-                if (item == null) return false
-                val notes = item!!.description
+                if (episode == null) return false
+                val notes = episode!!.description
                 if (!notes.isNullOrEmpty()) {
                     val shareText = if (Build.VERSION.SDK_INT >= 24) HtmlCompat.fromHtml(notes, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
                     else HtmlCompat.fromHtml(notes, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
@@ -217,8 +215,8 @@ import kotlin.math.max
                 return true
             }
             else -> {
-                if (item == null) return false
-                return EpisodeMenuHandler.onMenuItemClicked(this, menuItem.itemId, item!!)
+                if (episode == null) return false
+                return EpisodeMenuHandler.onMenuItemClicked(this, menuItem.itemId, episode!!)
             }
         }
     }
@@ -234,44 +232,45 @@ import kotlin.math.max
     @OptIn(UnstableApi::class) override fun onDestroyView() {
         super.onDestroyView()
         Logd(TAG, "onDestroyView")
-
         binding.root.removeView(webvDescription)
         webvDescription.clearHistory()
         webvDescription.clearCache(true)
         webvDescription.clearView()
         webvDescription.destroy()
-
         _binding = null
     }
 
     @UnstableApi private fun onFragmentLoaded() {
         if (webviewData != null && !itemLoaded)
             webvDescription.loadDataWithBaseURL("https://127.0.0.1", webviewData!!, "text/html", "utf-8", "about:blank")
-
 //        if (item?.link != null) binding.webView.loadUrl(item!!.link!!)
         updateAppearance()
     }
 
+    private fun prepareMenu() {
+        if (episode!!.media != null) EpisodeMenuHandler.onPrepareMenu(toolbar.menu, episode, R.id.open_podcast)
+        // these are already available via button1 and button2
+        else EpisodeMenuHandler.onPrepareMenu(toolbar.menu, episode, R.id.open_podcast, R.id.mark_read_item, R.id.visit_website_item)
+    }
+
     @UnstableApi private fun updateAppearance() {
-        if (item == null) {
+        if (episode == null) {
             Logd(TAG, "updateAppearance item is null")
             return
         }
-        if (item!!.media != null) EpisodeMenuHandler.onPrepareMenu(toolbar.menu, item, R.id.open_podcast)
-        // these are already available via button1 and button2
-        else EpisodeMenuHandler.onPrepareMenu(toolbar.menu, item, R.id.open_podcast, R.id.mark_read_item, R.id.visit_website_item)
+        prepareMenu()
 
-        if (item!!.feed != null) binding.txtvPodcast.text = item!!.feed!!.title
-        binding.txtvTitle.text = item!!.title
-        binding.itemLink.text = item!!.link
+        if (episode!!.feed != null) binding.txtvPodcast.text = episode!!.feed!!.title
+        binding.txtvTitle.text = episode!!.title
+        binding.itemLink.text = episode!!.link
 
-        if (item?.pubDate != null) {
-            val pubDateStr = DateFormatter.formatAbbrev(context, Date(item!!.pubDate))
+        if (episode?.pubDate != null) {
+            val pubDateStr = DateFormatter.formatAbbrev(context, Date(episode!!.pubDate))
             binding.txtvPublished.text = pubDateStr
-            binding.txtvPublished.setContentDescription(DateFormatter.formatForAccessibility(Date(item!!.pubDate)))
+            binding.txtvPublished.setContentDescription(DateFormatter.formatForAccessibility(Date(episode!!.pubDate)))
         }
 
-        val media = item?.media
+        val media = episode?.media
         when {
             media == null -> binding.txtvSize.text = ""
             media.size > 0 -> binding.txtvSize.text = Formatter.formatShortFileSize(activity, media.size)
@@ -279,7 +278,7 @@ import kotlin.math.max
                 binding.txtvSize.text = "{faw_spinner}"
 //                Iconify.addIcons(size)
                 lifecycleScope.launch {
-                    val sizeValue = getMediaSize(item)
+                    val sizeValue = getMediaSize(episode)
                     if (sizeValue <= 0) binding.txtvSize.text = ""
                     else binding.txtvSize.text = Formatter.formatShortFileSize(activity, sizeValue)
                 }
@@ -287,10 +286,10 @@ import kotlin.math.max
             else -> binding.txtvSize.text = ""
         }
 
-        val imgLocFB = ImageResourceUtils.getFallbackImageLocation(item!!)
+        val imgLocFB = ImageResourceUtils.getFallbackImageLocation(episode!!)
         val imageLoader = imgvCover.context.imageLoader
         val imageRequest = ImageRequest.Builder(requireContext())
-            .data(item!!.imageLocation)
+            .data(episode!!.imageLocation)
             .placeholder(R.color.light_gray)
             .listener(object : ImageRequest.Listener {
                 override fun onError(request: ImageRequest, result: ErrorResult) {
@@ -313,21 +312,21 @@ import kotlin.math.max
     @UnstableApi private fun updateButtons() {
         binding.circularProgressBar.visibility = View.GONE
         val dls = DownloadServiceInterface.get()
-        if (item != null && item!!.media != null && item!!.media!!.downloadUrl != null) {
-            val url = item!!.media!!.downloadUrl!!
+        if (episode != null && episode!!.media != null && episode!!.media!!.downloadUrl != null) {
+            val url = episode!!.media!!.downloadUrl!!
             if (dls != null && dls.isDownloadingEpisode(url)) {
                 binding.circularProgressBar.visibility = View.VISIBLE
-                binding.circularProgressBar.setPercentage(0.01f * max(1.0, dls.getProgress(url).toDouble()).toFloat(), item)
+                binding.circularProgressBar.setPercentage(0.01f * max(1.0, dls.getProgress(url).toDouble()).toFloat(), episode)
                 binding.circularProgressBar.setIndeterminate(dls.isEpisodeQueued(url))
             }
         }
 
-        val media: EpisodeMedia? = item?.media
+        val media: EpisodeMedia? = episode?.media
         if (media == null) {
-            if (item != null) {
+            if (episode != null) {
 //                actionButton1 = VisitWebsiteActionButton(item!!)
                 butAction1.visibility = View.INVISIBLE
-                actionButton2 = VisitWebsiteActionButton(item!!)
+                actionButton2 = VisitWebsiteActionButton(episode!!)
             }
             binding.noMediaLabel.visibility = View.VISIBLE
         } else {
@@ -336,19 +335,19 @@ import kotlin.math.max
                 binding.txtvDuration.text = Converter.getDurationStringLong(media.getDuration())
                 binding.txtvDuration.setContentDescription(Converter.getDurationStringLocalized(requireContext(), media.getDuration().toLong()))
             }
-            if (item != null) {
+            if (episode != null) {
                 actionButton1 = when {
-                    media.getMediaType() == MediaType.FLASH -> VisitWebsiteActionButton(item!!)
-                    InTheatre.isCurrentlyPlaying(media) -> PauseActionButton(item!!)
-                    item!!.feed != null && item!!.feed!!.isLocalFeed -> PlayLocalActionButton(item!!)
-                    media.downloaded -> PlayActionButton(item!!)
-                    else -> StreamActionButton(item!!)
+                    media.getMediaType() == MediaType.FLASH -> VisitWebsiteActionButton(episode!!)
+                    InTheatre.isCurrentlyPlaying(media) -> PauseActionButton(episode!!)
+                    episode!!.feed != null && episode!!.feed!!.isLocalFeed -> PlayLocalActionButton(episode!!)
+                    media.downloaded -> PlayActionButton(episode!!)
+                    else -> StreamActionButton(episode!!)
                 }
                 actionButton2 = when {
-                    media.getMediaType() == MediaType.FLASH -> VisitWebsiteActionButton(item!!)
-                    dls != null && media.downloadUrl != null && dls.isDownloadingEpisode(media.downloadUrl!!) -> CancelDownloadActionButton(item!!)
-                    !media.downloaded -> DownloadActionButton(item!!)
-                    else -> DeleteActionButton(item!!)
+                    media.getMediaType() == MediaType.FLASH -> VisitWebsiteActionButton(episode!!)
+                    dls != null && media.downloadUrl != null && dls.isDownloadingEpisode(media.downloadUrl!!) -> CancelDownloadActionButton(episode!!)
+                    !media.downloaded -> DownloadActionButton(episode!!)
+                    else -> DeleteActionButton(episode!!)
                 }
 //                if (actionButton2 != null && media.getMediaType() == MediaType.FLASH) actionButton2!!.visibility = View.GONE
             }
@@ -369,9 +368,9 @@ import kotlin.math.max
     }
 
     @OptIn(UnstableApi::class) private fun openPodcast() {
-        if (item?.feedId == null) return
+        if (episode?.feedId == null) return
 
-        val fragment: Fragment = FeedEpisodesFragment.newInstance(item!!.feedId!!)
+        val fragment: Fragment = FeedEpisodesFragment.newInstance(episode!!.feedId!!)
         (activity as MainActivity).loadChildFragment(fragment)
     }
 
@@ -388,6 +387,8 @@ import kotlin.math.max
             EventFlow.events.collectLatest { event ->
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
+                    is FlowEvent.QueueEvent -> onQueueEvent(event)
+                    is FlowEvent.FavoritesEvent -> onFavoriteEvent(event)
                     is FlowEvent.EpisodeEvent -> onEpisodeEvent(event)
                     is FlowEvent.PlayerSettingsEvent -> updateButtons()
                     is FlowEvent.EpisodePlayedEvent -> load()
@@ -406,11 +407,32 @@ import kotlin.math.max
         }
     }
 
+    private fun onFavoriteEvent(event: FlowEvent.FavoritesEvent) {
+        if (episode?.id == event.episode.id) {
+            episode = unmanagedCopy(event.episode)
+            prepareMenu()
+        }
+    }
+
+    private fun onQueueEvent(event: FlowEvent.QueueEvent) {
+        var i = 0
+        val size: Int = event.episodes.size
+        while (i < size) {
+            val item_ = event.episodes[i]
+            if (item_.id == episode?.id) {
+                episode = unmanagedCopy(item_)
+                prepareMenu()
+                break
+            }
+            i++
+        }
+    }
+
     private fun onEpisodeEvent(event: FlowEvent.EpisodeEvent) {
 //        Logd(TAG, "onEventMainThread() called with ${event.TAG}")
-        if (this.item == null) return
+        if (this.episode == null) return
         for (item in event.episodes) {
-            if (this.item!!.id == item.id) {
+            if (this.episode!!.id == item.id) {
                 load()
                 return
             }
@@ -418,8 +440,8 @@ import kotlin.math.max
     }
 
     private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
-        if (item == null || item!!.media == null) return
-        if (!event.urls.contains(item!!.media!!.downloadUrl)) return
+        if (episode == null || episode!!.media == null) return
+        if (!event.urls.contains(episode!!.media!!.downloadUrl)) return
         if (itemLoaded && activity != null) updateButtons()
     }
 
@@ -429,17 +451,14 @@ import kotlin.math.max
         Logd(TAG, "load() called")
         lifecycleScope.launch {
             try {
-                val result = withContext(Dispatchers.IO) {
-                    val feedItem = item
-                    if (feedItem != null) {
-                        val duration = feedItem.media?.getDuration()?: Int.MAX_VALUE
-                        webviewData = shownotesCleaner.processShownotes(feedItem.description?:"", duration)
+                withContext(Dispatchers.IO) {
+                    if (episode != null) {
+                        val duration = episode!!.media?.getDuration()?: Int.MAX_VALUE
+                        webviewData = shownotesCleaner.processShownotes(episode!!.description?:"", duration)
                     }
-                    feedItem
                 }
                 withContext(Dispatchers.Main) {
                     binding.progbarLoading.visibility = View.GONE
-                    item = result
                     onFragmentLoaded()
                     itemLoaded = true
                 }
@@ -450,7 +469,7 @@ import kotlin.math.max
     }
 
     fun setItem(item_: Episode) {
-        item = unmanagedCopy(item_)
+        episode = unmanagedCopy(item_)
     }
 
     companion object {
@@ -498,7 +517,6 @@ import kotlin.math.max
                 if (size <= 0) media.setCheckedOnSizeButUnknown()
                 else media.size = size
                 upsert(episode) {}
-
                 size
             }
         }

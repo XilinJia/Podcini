@@ -25,7 +25,6 @@ class ShareDialog : BottomSheetDialogFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
 
         ctx = requireContext()
-        item = requireArguments().getSerializable(ARGUMENT_FEED_ITEM) as Episode?
         prefs = requireActivity().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
 
         _binding = ShareEpisodeDialogBinding.inflate(inflater)
@@ -93,7 +92,7 @@ class ShareDialog : BottomSheetDialogFragment() {
     }
 
     companion object {
-        private const val ARGUMENT_FEED_ITEM = "feedItem"
+//        private const val ARGUMENT_FEED_ITEM = "feedItem"
         private const val PREF_NAME = "ShareDialog"
         private const val PREF_SHARE_EPISODE_START_AT = "prefShareEpisodeStartAt"
         private const val PREF_SHARE_EPISODE_TYPE = "prefShareEpisodeType"

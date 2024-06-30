@@ -18,7 +18,7 @@ import kotlin.coroutines.ContinuationInterceptor
 object RealmDB {
     private val TAG: String = RealmDB::class.simpleName ?: "Anonymous"
 
-    private const val SCHEMA_VERSION_NUMBER = 4L
+    private const val SCHEMA_VERSION_NUMBER = 6L
 
     private val ioScope = CoroutineScope(Dispatchers.IO)
 
@@ -93,21 +93,24 @@ object RealmDB {
             Logd(TAG, "${caller?.className}.${caller?.methodName} upsert: ${entity.javaClass.simpleName}")
         }
         return realm.write {
+            var result: T = entity
             if (entity.isManaged()) {
-                findLatest(entity)?.let {
+                result = findLatest(entity)?.let {
                     block(it)
-                }
+                    it
+                } ?: entity
             } else {
                 try {
-                    copyToRealm(entity, UpdatePolicy.ALL).let {
+                    result = copyToRealm(entity, UpdatePolicy.ALL).let {
                         block(it)
+                        it
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "copyToRealm error: ${e.message}")
                     showStackTrace()
                 }
             }
-            entity
+            result
         }
     }
 

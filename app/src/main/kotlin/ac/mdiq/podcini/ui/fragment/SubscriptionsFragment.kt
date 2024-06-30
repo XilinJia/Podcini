@@ -75,12 +75,16 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
     private lateinit var toolbar: MaterialToolbar
     private lateinit var speedDialView: SpeedDialView
 
+    private lateinit var catAdapter: ArrayAdapter<String>
+
     private var tagFilterIndex = 1
+//    TODO: currently not used
     private var displayedFolder: String = ""
     private var displayUpArrow = false
 
     private var feedList: MutableList<Feed> = mutableListOf()
     private var feedListFiltered: List<Feed> = mutableListOf()
+    private val tags: MutableList<String> = mutableListOf()
 
     private var useGrid: Boolean? = null
 
@@ -121,12 +125,11 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
 
         resetTags()
 
-        val catAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, tags)
+        catAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, tags)
         catAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        val catSpinner = binding.categorySpinner
-        catSpinner.setAdapter(catAdapter)
-        catSpinner.setSelection(catAdapter.getPosition("All"))
-        catSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        binding.categorySpinner.setAdapter(catAdapter)
+        binding.categorySpinner.setSelection(catAdapter.getPosition("All"))
+        binding.categorySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 tagFilterIndex = position
                 filterOnTag()
@@ -192,6 +195,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
     }
 
     override fun onStart() {
+        Logd(TAG, "onStart()")
         super.onStart()
         initAdapter()
         procFlowEvents()
@@ -231,6 +235,13 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         listAdapter.setItems(feedListFiltered)
     }
 
+    private fun resetTags() {
+        tags.clear()
+        tags.add("Untagged")
+        tags.add("All")
+        tags.addAll(getTags())
+    }
+
     private var eventSink: Job?     = null
     private var eventStickySink: Job? = null
     private fun cancelFlowEvents() {
@@ -244,9 +255,9 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             EventFlow.events.collectLatest { event ->
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
-                    is FlowEvent.FeedListEvent -> onFeedListChanged(event)
+                    is FlowEvent.FeedListEvent -> loadSubscriptions()
                     is FlowEvent.EpisodePlayedEvent, is FlowEvent.FeedsSortedEvent -> loadSubscriptions()
-                    is FlowEvent.FeedTagsChangedEvent -> resetTags()
+                    is FlowEvent.FeedTagsChangedEvent -> loadSubscriptions()
                     else -> {}
                 }
             }
@@ -267,7 +278,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         when (itemId) {
             R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
             R.id.subscriptions_sort -> FeedSortDialog.showDialog(requireContext())
-//            R.id.subscriptions_filter -> SubscriptionsFilterDialog().show(childFragmentManager, "filter")
             R.id.refresh_item -> FeedUpdateManager.runOnceOrAsk(requireContext())
             else -> return false
         }
@@ -286,15 +296,14 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         emptyView.hide()
         lifecycleScope.launch {
             try {
-                val result = withContext(Dispatchers.IO) {
+                withContext(Dispatchers.IO) {
+                    feedList = getFeedList().toMutableList()
                     sortFeeds()
-                    val fList: List<Feed> = getFeedList()
-                    fList
+                    resetTags()
                 }
                 withContext(Dispatchers.Main) {
                     // We have fewer items. This can result in items being selected that are no longer visible.
-                    if ( feedListFiltered.size > result.size) listAdapter.endSelectMode()
-                    feedList = result.toMutableList()
+                    if ( feedListFiltered.size > feedList.size) listAdapter.endSelectMode()
                     filterOnTag()
                     binding.progressBar.visibility = View.GONE
                     listAdapter.setItems(feedListFiltered)
@@ -374,7 +383,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 comparator(counterMap)
             }
         }
-        feedList.sortWith(comparator)
+        synchronized(feedList) { feedList.sortWith(comparator) }
     }
 
     private fun counterMap(episodes: RealmResults<Episode>): Map<Long, Long> {
@@ -411,12 +420,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         return FeedMenuHandler.onMenuItemClicked(this, item.itemId, feed) { this.loadSubscriptions() }
     }
 
-    private fun onFeedListChanged(event: FlowEvent.FeedListEvent) {
-//        val feeds_ = realm.query(Feed::class,"id IN $0", event.feedIds).find()
-//        updateFeedMap(feeds_)
-        loadSubscriptions()
-    }
-
     override fun onEndSelectMode() {
         speedDialView.close()
         speedDialView.visibility = View.GONE
@@ -425,10 +428,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
 
     override fun onStartSelectMode() {
         speedDialView.visibility = View.VISIBLE
-        val feedsOnly: MutableList<Feed> = ArrayList<Feed>()
-        for (item in feedListFiltered) {
-            feedsOnly.add(item)
-        }
+        val feedsOnly: MutableList<Feed> = ArrayList<Feed>(feedListFiltered)
+//        feedsOnly.addAll(feedListFiltered)
         listAdapter.setItems(feedsOnly)
     }
 
@@ -437,9 +438,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         fun handleAction(id: Int) {
             when (id) {
                 R.id.remove_feed -> RemoveFeedDialog.show(activity, selectedItems)
-//            R.id.notify_new_episodes -> {
-//                notifyNewEpisodesPrefHandler()
-//            }
                 R.id.keep_updated -> keepUpdatedPrefHandler()
                 R.id.autodownload -> autoDownloadPrefHandler()
                 R.id.autoDeleteDownload -> autoDeleteEpisodesPrefHandler()
@@ -458,22 +456,22 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             preferenceSwitchDialog.openDialog()
         }
         @UnstableApi private fun playbackSpeedPrefHandler() {
-            val viewBinding = PlaybackSpeedFeedSettingDialogBinding.inflate(activity.layoutInflater)
-            viewBinding.seekBar.setProgressChangedListener { speed: Float? ->
-                viewBinding.currentSpeedLabel.text = String.format(Locale.getDefault(), "%.2fx", speed)
+            val vBinding = PlaybackSpeedFeedSettingDialogBinding.inflate(activity.layoutInflater)
+            vBinding.seekBar.setProgressChangedListener { speed: Float? ->
+                vBinding.currentSpeedLabel.text = String.format(Locale.getDefault(), "%.2fx", speed)
             }
-            viewBinding.useGlobalCheckbox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
-                viewBinding.seekBar.isEnabled = !isChecked
-                viewBinding.seekBar.alpha = if (isChecked) 0.4f else 1f
-                viewBinding.currentSpeedLabel.alpha = if (isChecked) 0.4f else 1f
+            vBinding.useGlobalCheckbox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
+                vBinding.seekBar.isEnabled = !isChecked
+                vBinding.seekBar.alpha = if (isChecked) 0.4f else 1f
+                vBinding.currentSpeedLabel.alpha = if (isChecked) 0.4f else 1f
             }
-            viewBinding.seekBar.updateSpeed(1.0f)
+            vBinding.seekBar.updateSpeed(1.0f)
             MaterialAlertDialogBuilder(activity)
                 .setTitle(R.string.playback_speed)
-                .setView(viewBinding.root)
+                .setView(vBinding.root)
                 .setPositiveButton("OK") { _: DialogInterface?, _: Int ->
-                    val newSpeed = if (viewBinding.useGlobalCheckbox.isChecked) FeedPreferences.SPEED_USE_GLOBAL
-                    else viewBinding.seekBar.currentSpeed
+                    val newSpeed = if (vBinding.useGlobalCheckbox.isChecked) FeedPreferences.SPEED_USE_GLOBAL
+                    else vBinding.seekBar.currentSpeed
                     saveFeedPreferences { feedPreferences: FeedPreferences ->
                         feedPreferences.playSpeed = newSpeed
                     }
@@ -522,7 +520,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
 
     @OptIn(UnstableApi::class)
     private abstract inner class SubscriptionsAdapter<T : RecyclerView.ViewHolder?> : SelectableAdapter<T>(activity as MainActivity), View.OnCreateContextMenuListener {
-
         protected var feedList: List<Feed>
         var selectedItem: Feed? = null
         protected var longPressedPosition: Int = 0 // used to init actionMode
@@ -701,29 +698,25 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
     private inner class ViewHolderExpanded(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val binding = SubscriptionItemBinding.bind(itemView)
         val count: TextView = binding.countLabel
-
         val coverImage: ImageView = binding.coverImage
         val infoCard: LinearLayout = binding.infoCard
         val selectView: FrameLayout = binding.selectContainer
         val selectCheckbox: CheckBox = binding.selectCheckBox
-
         private val errorIcon: View = binding.errorIcon
 
-        fun bind(drawerItem: Feed) {
+        fun bind(feed: Feed) {
             val drawable: Drawable? = AppCompatResources.getDrawable(selectView.context, R.drawable.ic_checkbox_background)
             selectView.background = drawable // Setting this in XML crashes API <= 21
-            binding.titleLabel.text = drawerItem.title
-            binding.producerLabel.text = drawerItem.author
-            coverImage.contentDescription = drawerItem.title
+            binding.titleLabel.text = feed.title
+            binding.producerLabel.text = feed.author
+            coverImage.contentDescription = feed.title
             coverImage.setImageDrawable(null)
 
-            val counter = drawerItem.episodes.size
-            count.text = NumberFormat.getInstance().format(counter.toLong()) + " episodes"
+            count.text = NumberFormat.getInstance().format(feed.episodes.size.toLong()) + " episodes"
             count.visibility = View.VISIBLE
 
             val mainActRef = (activity as MainActivity)
             val coverLoader = CoverLoader(mainActRef)
-            val feed: Feed = drawerItem
             coverLoader.withUri(feed.imageUrl)
             errorIcon.visibility = if (feed.lastUpdateFailed) View.VISIBLE else View.GONE
 
@@ -755,20 +748,18 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
 
         private val errorIcon: View = binding.errorIcon
 
-        fun bind(drawerItem: Feed) {
+        fun bind(feed: Feed) {
             val drawable: Drawable? = AppCompatResources.getDrawable(selectView.context, R.drawable.ic_checkbox_background)
             selectView.background = drawable // Setting this in XML crashes API <= 21
-            title.text = drawerItem.title
-            coverImage.contentDescription = drawerItem.title
+            title.text = feed.title
+            coverImage.contentDescription = feed.title
             coverImage.setImageDrawable(null)
 
-            val counter = drawerItem.episodes.size
-            count.text = NumberFormat.getInstance().format(counter.toLong())
+            count.text = NumberFormat.getInstance().format(feed.episodes.size.toLong())
             count.visibility = View.VISIBLE
 
             val mainActRef = (activity as MainActivity)
             val coverLoader = CoverLoader(mainActRef)
-            val feed: Feed = drawerItem
             coverLoader.withUri(feed.imageUrl)
             errorIcon.visibility = if (feed.lastUpdateFailed) View.VISIBLE else View.GONE
 
@@ -797,30 +788,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         }
         private fun convertDpToPixel(context: Context, dp: Float): Float {
             return dp * context.resources.displayMetrics.density
-        }
-    }
-
-    companion object {
-        val TAG = SubscriptionsFragment::class.simpleName ?: "Anonymous"
-
-        private const val KEY_UP_ARROW = "up_arrow"
-        private const val ARGUMENT_FOLDER = "folder"
-
-        private val tags: MutableList<String> = mutableListOf()
-
-        fun newInstance(folderTitle: String?): SubscriptionsFragment {
-            val fragment = SubscriptionsFragment()
-            val args = Bundle()
-            args.putString(ARGUMENT_FOLDER, folderTitle)
-            fragment.arguments = args
-            return fragment
-        }
-
-        fun resetTags() {
-            tags.clear()
-            tags.add("Untagged")
-            tags.add("All")
-            tags.addAll(getTags())
         }
     }
 
@@ -880,6 +847,21 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         }
         fun setOnPreferenceChangedListener(onPreferenceChangedListener: OnPreferenceChangedListener?) {
             this.onPreferenceChangedListener = onPreferenceChangedListener
+        }
+    }
+
+    companion object {
+        val TAG = SubscriptionsFragment::class.simpleName ?: "Anonymous"
+
+        private const val KEY_UP_ARROW = "up_arrow"
+        private const val ARGUMENT_FOLDER = "folder"
+
+        fun newInstance(folderTitle: String?): SubscriptionsFragment {
+            val fragment = SubscriptionsFragment()
+            val args = Bundle()
+            args.putString(ARGUMENT_FOLDER, folderTitle)
+            fragment.arguments = args
+            return fragment
         }
     }
 }

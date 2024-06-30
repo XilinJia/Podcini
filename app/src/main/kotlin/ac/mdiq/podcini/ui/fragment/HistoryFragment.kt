@@ -152,6 +152,7 @@ import kotlin.math.min
 
     override fun loadData(): List<Episode> {
         allHistory = getHistory(0, Int.MAX_VALUE, startDate, endDate, sortOrder).toMutableList()
+        if (allHistory.isEmpty()) return listOf()
         return allHistory.subList(0, min(allHistory.size-1, page * EPISODES_PER_PAGE))
     }
 

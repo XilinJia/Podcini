@@ -42,4 +42,9 @@
         android:icon="@drawable/ic_star"
         android:title="@string/add_to_favorite_label" />
 
+    <item
+        android:id="@+id/remove_favorite_batch"
+        android:icon="@drawable/ic_star_border"
+        android:title="@string/remove_from_favorite_label" />
+
 </menu>

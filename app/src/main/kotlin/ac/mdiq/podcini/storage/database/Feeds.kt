@@ -36,6 +36,7 @@ object Feeds {
     private val feedMap: MutableMap<Long, Feed> = mutableMapOf()
     private val tags: MutableList<String> = mutableListOf()
 
+    @Synchronized
     fun getFeedList(): List<Feed> {
         return feedMap.values.toList()
     }
@@ -44,6 +45,7 @@ object Feeds {
         return tags
     }
 
+    @Synchronized
     fun updateFeedMap(feeds: List<Feed> = listOf(), wipe: Boolean = false) {
         Logd(TAG, "updateFeedMap called feeds: ${feeds.size} wipe: $wipe")
         when {
@@ -65,13 +67,17 @@ object Feeds {
 
     fun buildTags() {
         val tagsSet = mutableSetOf<String>()
-        val feedsCopy = feedMap.values
+        val feedsCopy = synchronized(feedMap) { feedMap.values.toList() }
         for (feed in feedsCopy) {
             if (feed.preferences != null) tagsSet.addAll(feed.preferences!!.tags.filter { it != TAG_ROOT })
         }
-        tags.clear()
-        tags.addAll(tagsSet)
-        tags.sort()
+        val newTags = tagsSet.intersect(tags.toSet())
+        if (newTags.isNotEmpty()) {
+            tags.clear()
+            tags.addAll(tagsSet)
+            tags.sort()
+            EventFlow.postEvent(FlowEvent.FeedTagsChangedEvent())
+        }
     }
 
     fun monitorFeeds() {
@@ -90,8 +96,8 @@ object Feeds {
                                     Logd(TAG, "monitorFeeds inserted feed: ${changes.list[i].title}")
                                     updateFeedMap(listOf(changes.list[i]))
                                     monitorFeed(changes.list[i])
-                                    EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.ADDED, changes.list[i].id))
                                 }
+                                EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.ADDED))
                             }
 //                            changes.changes.isNotEmpty() -> {
 //                                for (i in changes.changes) {
@@ -456,12 +462,20 @@ object Feeds {
 //                remove from queues
                 removeFromAllQueuesQuiet(eids)
 //                remove media files
-                deleteMediaFilesQuiet(context, feed.episodes)
+//                deleteMediaFilesQuiet(context, feed.episodes)
                 realm.write {
                     val feed_ = query(Feed::class).query("id == $0", feedId).first().find()
                     if (feed_ != null) {
                         val episodes = feed_.episodes.toList()
-                        if (episodes.isNotEmpty()) episodes.forEach { e -> delete(e) }
+                        if (episodes.isNotEmpty()) episodes.forEach { episode ->
+                            val url = episode.media?.fileUrl
+                            when {
+                                // Local feed
+                                url != null && url.startsWith("content://") -> DocumentFile.fromSingleUri(context, Uri.parse(url))?.delete()
+                                url != null -> File(url).delete()
+                            }
+                            delete(episode)
+                        }
                         val feedToDelete = findLatest(feed_)
                         if (feedToDelete != null) {
                             delete(feedToDelete)
@@ -475,28 +489,29 @@ object Feeds {
         }
     }
 
-    private fun deleteMediaFilesQuiet(context: Context, episodes: List<Episode>) {
-        for (episode in episodes) {
-            val media = episode.media ?: continue
-            val url = media.fileUrl
-            when {
-                url != null && url.startsWith("content://") -> {
-                    // Local feed
-                    val documentFile = DocumentFile.fromSingleUri(context, Uri.parse(media.fileUrl))
-                    documentFile?.delete()
-                    episode.media?.fileUrl = null
-                }
-                url != null -> {
-                    // delete downloaded media file
-                    val mediaFile = File(url)
-                    mediaFile.delete()
-                    episode.media?.downloaded = false
-                    episode.media?.fileUrl = null
-                    episode.media?.hasEmbeddedPicture = false
-                }
-            }
-        }
-    }
+//    private fun deleteMediaFilesQuiet(context: Context, episodes: List<Episode>) {
+//        for (episode in episodes) {
+//            val media = episode.media ?: continue
+//            val url = media.fileUrl
+//            when {
+//                url != null && url.startsWith("content://") -> {
+//                    // Local feed
+//                    val documentFile = DocumentFile.fromSingleUri(context, Uri.parse(media.fileUrl))
+//                    documentFile?.delete()
+////                    episode.media?.fileUrl = null
+//                }
+//                url != null -> {
+//                    // delete downloaded media file
+//                    val mediaFile = File(url)
+//                    mediaFile.delete()
+////                    since deleting entire feed, these are not necessary
+////                    episode.media?.downloaded = false
+////                    episode.media?.fileUrl = null
+////                    episode.media?.hasEmbeddedPicture = false
+//                }
+//            }
+//        }
+//    }
 
     @JvmStatic
     fun shouldAutoDeleteItemsOnFeed(feed: Feed): Boolean {

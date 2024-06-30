@@ -720,7 +720,6 @@ object UserPreferences {
         /**
          * Returns the sort order for the queue keep sorted mode.
          * Note: This value is stored independently from the keep sorted state.
-         *
          * @see .isQueueKeepSorted
          */
         get() {
@@ -729,7 +728,6 @@ object UserPreferences {
         }
         /**
          * Sets the sort order for the queue keep sorted mode.
-         *
          * @see .setQueueKeepSorted
          */
         set(sortOrder) {

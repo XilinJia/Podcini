@@ -59,7 +59,7 @@ import java.util.*
     private val binding get() = _binding!!
 
     private var runningDownloads: Set<String> = HashSet()
-    private var items: MutableList<Episode> = mutableListOf()
+    private var episodes: MutableList<Episode> = mutableListOf()
 
     private lateinit var adapter: DownloadsListAdapter
     private lateinit var toolbar: MaterialToolbar
@@ -124,7 +124,6 @@ import java.util.*
             override fun onMainActionSelected(): Boolean {
                 return false
             }
-
             override fun onToggleChanged(open: Boolean) {
                 if (open && adapter.selectedCount == 0) {
                     (activity as MainActivity).showSnackbarAbovePlayer(R.string.no_items_selected, Snackbar.LENGTH_SHORT)
@@ -143,7 +142,6 @@ import java.util.*
             DownloadLogFragment().show(childFragmentManager, null)
 
         addEmptyView()
-
         return binding.root
     }
 
@@ -195,7 +193,7 @@ import java.util.*
             return  // Refreshed anyway
         }
         for (downloadUrl in event.urls) {
-            val pos = EpisodeUtil.indexOfItemWithDownloadUrl(items.toList(), downloadUrl)
+            val pos = EpisodeUtil.indexOfItemWithDownloadUrl(episodes.toList(), downloadUrl)
             if (pos >= 0) adapter.notifyItemChangedCompat(pos)
         }
     }
@@ -215,7 +213,11 @@ import java.util.*
                 when (event) {
                     is FlowEvent.EpisodeEvent -> onEpisodeEvent(event)
                     is FlowEvent.PlaybackPositionEvent -> onPlaybackPositionEvent(event)
-                    is FlowEvent.PlayerSettingsEvent, is FlowEvent.DownloadLogEvent, is FlowEvent.EpisodePlayedEvent -> loadItems()
+                    is FlowEvent.FavoritesEvent -> onFavoriteEvent(event)
+                    is FlowEvent.PlayerSettingsEvent -> loadItems()
+                    is FlowEvent.DownloadLogEvent -> loadItems()
+                    is FlowEvent.EpisodePlayedEvent -> onEpisodePlayedEvent(event)
+                    is FlowEvent.QueueEvent -> loadItems()
                     is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
                     is FlowEvent.EpisodeDownloadEvent -> onEpisodeDownloadEvent(event)
                     else -> {}
@@ -231,6 +233,27 @@ import java.util.*
 //                }
 //            }
 //        }
+    }
+
+    private fun onFavoriteEvent(event: FlowEvent.FavoritesEvent) {
+        val item = event.episode
+        val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
+        if (pos >= 0) {
+            episodes.removeAt(pos)
+            episodes.add(pos, item)
+            adapter.notifyItemChangedCompat(pos)
+        }
+    }
+
+    private fun onEpisodePlayedEvent(event: FlowEvent.EpisodePlayedEvent) {
+        if (event.episode == null) return
+        val item = event.episode
+        val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
+        if (pos >= 0) {
+            episodes.removeAt(pos)
+            episodes.add(pos, item)
+            adapter.notifyItemChangedCompat(pos)
+        }
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
@@ -257,12 +280,12 @@ import java.util.*
         val size: Int = event.episodes.size
         while (i < size) {
             val item: Episode = event.episodes[i]
-            val pos = EpisodeUtil.indexOfItemWithId(items.toList(), item.id)
+            val pos = EpisodeUtil.indexOfItemWithId(episodes.toList(), item.id)
             if (pos >= 0) {
-                items.removeAt(pos)
+                episodes.removeAt(pos)
                 val media = item.media
                 if (media != null && media.downloaded) {
-                    items.add(pos, item)
+                    episodes.add(pos, item)
 //                    adapter.notifyItemChangedCompat(pos)
                 } else {
 //                    adapter.notifyItemRemoved(pos)
@@ -273,7 +296,7 @@ import java.util.*
 //        have to do this as adapter.notifyItemRemoved(pos) when pos == 0 causes crash
         if (size > 0) {
 //            adapter.setDummyViews(0)
-            adapter.updateItems(items)
+            adapter.updateItems(episodes)
         }
         refreshInfoBar()
     }
@@ -304,16 +327,11 @@ import java.util.*
         emptyView.hide()
         lifecycleScope.launch {
             try {
-                val result = withContext(Dispatchers.IO) {
-                    Logd(TAG, "loading")
+                withContext(Dispatchers.IO) {
                     val sortOrder: SortOrder? = UserPreferences.downloadsSortedOrder
-//                    val downloadedItems = realm.query(Episode::class).query("media.downloaded == true").find().toMutableList()
-//                    if (sortOrder != null) getPermutor(sortOrder).reorder(downloadedItems)
                     val downloadedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.DOWNLOADED), sortOrder)
-                    Logd(TAG, "downloadedItems: ${downloadedItems.size}")
-                    if (runningDownloads.isEmpty()) downloadedItems
+                    if (runningDownloads.isEmpty()) episodes = downloadedItems.toMutableList()
                     else {
-                        Logd(TAG, "runningDownloads: ${runningDownloads.size}")
                         val mediaUrls: MutableList<String> = ArrayList()
                         for (url in runningDownloads) {
                             if (EpisodeUtil.indexOfItemWithDownloadUrl(downloadedItems, url) != -1) continue
@@ -321,14 +339,13 @@ import java.util.*
                         }
                         val currentDownloads = getEpisdesWithUrl(mediaUrls).toMutableList()
                         currentDownloads.addAll(downloadedItems)
-                        currentDownloads
+                        episodes = currentDownloads
                     }
                 }
                 withContext(Dispatchers.Main) {
-                    items = result.toMutableList()
 //                    adapter.setDummyViews(0)
                     binding.progLoading.visibility = View.GONE
-                    adapter.updateItems(result)
+                    adapter.updateItems(episodes)
                     refreshInfoBar()
                 }
             } catch (e: Throwable) {
@@ -352,10 +369,10 @@ import java.util.*
     }
 
     private fun refreshInfoBar() {
-        var info = String.format(Locale.getDefault(), "%d%s", items.size, getString(R.string.episodes_suffix))
-        if (items.isNotEmpty()) {
+        var info = String.format(Locale.getDefault(), "%d%s", episodes.size, getString(R.string.episodes_suffix))
+        if (episodes.isNotEmpty()) {
             var sizeMB: Long = 0
-            for (item in items) sizeMB += item.media?.size ?: 0
+            for (item in episodes) sizeMB += item.media?.size ?: 0
             info += " • " + (sizeMB / 1000000) + " MB"
         }
         binding.infoBar.text = info

@@ -130,7 +130,6 @@ import kotlinx.coroutines.flow.collectLatest
             override fun onMainActionSelected(): Boolean {
                 return false
             }
-
             override fun onToggleChanged(open: Boolean) {
                 if (open && listAdapter.selectedCount == 0) {
                     (activity as MainActivity).showSnackbarAbovePlayer(R.string.no_items_selected, Snackbar.LENGTH_SHORT)
@@ -147,9 +146,8 @@ import kotlinx.coroutines.flow.collectLatest
                     R.id.mark_unread_batch -> confirmationString = R.string.multi_select_mark_unplayed_confirmation
                 }
             }
-            if (confirmationString == 0) {
-                performMultiSelectAction(actionItem.id)
-            } else {
+            if (confirmationString == 0) performMultiSelectAction(actionItem.id)
+            else {
                 object : ConfirmationDialog(activity as MainActivity, R.string.multi_select, confirmationString) {
                     override fun onConfirmButtonPressed(dialog: DialogInterface) {
                         performMultiSelectAction(actionItem.id)
@@ -158,7 +156,6 @@ import kotlinx.coroutines.flow.collectLatest
             }
             true
         }
-
         return binding.root
     }
 
@@ -384,7 +381,7 @@ import kotlinx.coroutines.flow.collectLatest
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
-                    is FlowEvent.FeedListEvent, is FlowEvent.EpisodePlayedEvent, is FlowEvent.PlayerSettingsEvent -> loadItems()
+                    is FlowEvent.FeedListEvent, is FlowEvent.EpisodePlayedEvent, is FlowEvent.PlayerSettingsEvent, is FlowEvent.FavoritesEvent -> loadItems()
                     is FlowEvent.PlaybackPositionEvent -> onPlaybackPositionEvent(event)
                     is FlowEvent.EpisodeEvent -> onEpisodeEvent(event)
                     else -> {}

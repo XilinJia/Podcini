@@ -45,7 +45,7 @@ class UserInterfacePreferencesFragment : PreferenceFragmentCompat() {
         findPreference<Preference>(UserPreferences.PREF_SHOW_TIME_LEFT)?.setOnPreferenceChangeListener { _: Preference?, newValue: Any? ->
             setShowRemainTimeSetting(newValue as Boolean?)
             //            TODO: need another event type?
-            EventFlow.postEvent(FlowEvent.EpisodePlayedEvent())
+//            EventFlow.postEvent(FlowEvent.EpisodePlayedEvent())
             EventFlow.postEvent(FlowEvent.PlayerSettingsEvent())
             true
         }

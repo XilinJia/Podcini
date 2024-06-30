@@ -408,10 +408,6 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
             val numFeeds = getFeedList().size
             while (curQueue.name.isEmpty()) runBlocking { delay(100) }
             val queueSize = curQueue.episodeIds.size
-//            if (queueSize == 0) {
-//                val queue = realm.query(PlayQueue::class).sort("updated", Sort.DESCENDING).first().find()
-//                queueSize = queue?.episodeIds?.size ?: 0
-//            }
             Logd(TAG, "getDatasetStats: queueSize: $queueSize")
             return DatasetStats(queueSize, numDownloadedItems, AutoCleanups.build().getReclaimableItems(), numItems, numFeeds)
         }

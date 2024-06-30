@@ -23,7 +23,8 @@ class EpisodeMultiSelectHandler(private val activity: MainActivity, private val 
 
     fun handleAction(items: List<Episode>) {
         when (actionId) {
-            R.id.add_to_favorite_batch -> markFavorite(items)
+            R.id.add_to_favorite_batch -> markFavorite(items, true)
+            R.id.remove_favorite_batch -> markFavorite(items, false)
             R.id.add_to_queue_batch -> queueChecked(items)
             R.id.remove_from_queue_batch -> removeFromQueueChecked(items)
             R.id.mark_read_batch -> {
@@ -68,7 +69,7 @@ class EpisodeMultiSelectHandler(private val activity: MainActivity, private val 
 //        showMessage(R.plurals.marked_unread_batch_label, items.size)
 //    }
 
-    private fun markFavorite(items: List<Episode>) {
+    private fun markFavorite(items: List<Episode>, stat: Boolean) {
         for (item in items) {
             Episodes.setFavorite(item, true)
         }

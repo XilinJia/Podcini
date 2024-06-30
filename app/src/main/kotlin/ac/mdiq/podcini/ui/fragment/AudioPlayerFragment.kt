@@ -13,6 +13,7 @@ import ac.mdiq.podcini.playback.PlaybackController.Companion.isPlayingVideoLocal
 import ac.mdiq.podcini.playback.PlaybackController.Companion.playbackService
 import ac.mdiq.podcini.playback.PlaybackController.Companion.seekTo
 import ac.mdiq.podcini.playback.PlaybackController.Companion.sleepTimerActive
+import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.getCurrentPlaybackSpeed
@@ -22,6 +23,7 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
+import ac.mdiq.podcini.storage.database.RealmDB.unmanagedCopy
 import ac.mdiq.podcini.storage.model.Chapter
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Playable
@@ -187,11 +189,11 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         playerUI?.butPlay?.setIsShowPlay(isShowPlay)
     }
 
-    private fun setChapterDividers(media: Playable?) {
-        if (media == null) return
+    private fun setChapterDividers() {
+        if (currentMedia == null) return
 
-        if (media.getChapters().isNotEmpty()) {
-            val chapters: List<Chapter> = media.getChapters()
+        if (currentMedia!!.getChapters().isNotEmpty()) {
+            val chapters: List<Chapter> = currentMedia!!.getChapters()
             val dividerPos = FloatArray(chapters.size)
 
             for (i in chapters.indices) {
@@ -213,22 +215,19 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             return
         }
         if (!actMain.isPlayerVisible()) actMain.setPlayerVisible(true)
-
         if (!isCollapsed && (currentMedia == null || curMedia?.getIdentifier() != currentMedia?.getIdentifier())) playerDetailsFragment?.updateInfo()
 
         if (currentMedia == null || curMedia?.getIdentifier() != currentMedia?.getIdentifier() || (includingChapters && !curMedia!!.chaptersLoaded())) {
             Logd(TAG, "loadMediaInfo loading details ${curMedia?.getIdentifier()} chapter: $includingChapters")
             lifecycleScope.launch {
-                val media: Playable = withContext(Dispatchers.IO) {
+                withContext(Dispatchers.IO) {
                     curMedia!!.apply {
                         if (includingChapters) ChapterUtils.loadChapters(this, requireContext(), false)
                     }
                 }
-                currentMedia = media
-                if (currentMedia is EpisodeMedia) {
-                    val item = (currentMedia as EpisodeMedia).episode
-                    if (item != null) playerDetailsFragment?.setItem(item)
-                }
+                currentMedia = curMedia
+                val item = (currentMedia as? EpisodeMedia)?.episode
+                if (item != null) playerDetailsFragment?.setItem(item)
                 updateUi()
                 playerUI?.updateUi(currentMedia)
 //                TODO: disable for now
@@ -263,8 +262,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
     private fun updateUi() {
         Logd(TAG, "updateUi called")
-        setChapterDividers(currentMedia)
-        setupOptionsMenu(currentMedia)
+        setChapterDividers()
+        setupOptionsMenu()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -339,10 +338,10 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                         playerUI?.onPlaybackServiceChanged(event)
                     }
                     is FlowEvent.PlayEvent -> onEvenStartPlay(event)
+                    is FlowEvent.FavoritesEvent -> onFavoriteEvent(event)
                     is FlowEvent.PlayerErrorEvent -> MediaPlayerErrorDialog.show(activity as Activity, event)
-                    is FlowEvent.FavoritesEvent -> loadMediaInfo(false)
                     is FlowEvent.SleepTimerUpdatedEvent ->  if (event.isCancelled || event.wasJustEnabled()) loadMediaInfo(false)
-                    is FlowEvent.PlaybackPositionEvent -> onPositionUpdate(event)
+                    is FlowEvent.PlaybackPositionEvent -> playerUI?.onPositionUpdate(event)
                     is FlowEvent.SpeedChangedEvent -> playerUI?.updatePlaybackSpeedButton(event)
                     else -> {}
                 }
@@ -350,9 +349,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         }
     }
 
-    private fun onPositionUpdate(event: FlowEvent.PlaybackPositionEvent) {
-//        if (!isCollapsed) loadMediaInfo(false)
-        playerUI?.onPositionUpdate(event)
+    private fun onFavoriteEvent(event: FlowEvent.FavoritesEvent) {
+        if (curEpisode?.id == event.episode.id) EpisodeMenuHandler.onPrepareMenu(toolbar.menu, event.episode)
     }
 
     override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
@@ -409,12 +407,12 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             ?.start()
     }
 
-    private fun setupOptionsMenu(media: Playable?) {
+    private fun setupOptionsMenu() {
         if (toolbar.menu.size() == 0) toolbar.inflateMenu(R.menu.mediaplayer)
 
-        val isEpisodeMedia = media is EpisodeMedia
+        val isEpisodeMedia = currentMedia is EpisodeMedia
         toolbar.menu?.findItem(R.id.open_feed_item)?.setVisible(isEpisodeMedia)
-        val item = if (isEpisodeMedia) (media as EpisodeMedia).episode else null
+        val item = if (isEpisodeMedia) (currentMedia as EpisodeMedia).episode else null
         EpisodeMenuHandler.onPrepareMenu(toolbar.menu, item)
 
         val mediaType = curMedia?.getMediaType()

@@ -249,19 +249,21 @@ object Episodes {
     fun addToHistory(episode: Episode, date: Date? = Date()) : Job {
         Logd(TAG, "addToHistory called")
         return runOnIOScope {
-            episode.media?.playbackCompletionDate = date
-            upsert(episode) {}
+            upsert(episode) {
+                it.media?.playbackCompletionDate = date
+            }
             EventFlow.postEvent(FlowEvent.HistoryEvent())
         }
     }
 
     @JvmStatic
     fun setFavorite(episode: Episode, stat: Boolean) : Job {
-        Logd(TAG, "setFavorite called")
+        Logd(TAG, "setFavorite called $stat")
         return runOnIOScope {
-            episode.isFavorite = stat
-            upsert(episode) {}
-            EventFlow.postEvent(FlowEvent.FavoritesEvent(episode))
+            val result = upsert(episode) {
+                it.isFavorite = stat
+            }
+            EventFlow.postEvent(FlowEvent.FavoritesEvent(result))
         }
     }
 
@@ -276,11 +278,12 @@ object Episodes {
         Logd(TAG, "markPlayed called")
         return runOnIOScope {
             for (episode in episodes) {
-                episode.playState = played
-                if (resetMediaPosition) episode.media?.setPosition(0)
-                upsert(episode) {}
+                val result = upsert(episode) {
+                    it.playState = played
+                    if (resetMediaPosition) it.media?.setPosition(0)
+                }
                 if (played == Episode.PLAYED) removeFromAllQueues(episode)
-                EventFlow.postEvent(FlowEvent.EpisodePlayedEvent(episode))
+                EventFlow.postEvent(FlowEvent.EpisodePlayedEvent(result))
             }
         }
     }

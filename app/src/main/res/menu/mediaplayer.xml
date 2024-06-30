@@ -13,7 +13,7 @@
     <item
         android:id="@+id/show_video"
         android:icon="@drawable/baseline_fullscreen_24"
-        android:title="@string/add_to_favorite_label"
+        android:title="@string/show_video_label"
         android:visible="false"
         custom:showAsAction="always">
     </item>

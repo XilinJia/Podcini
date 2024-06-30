@@ -183,8 +183,7 @@ import java.util.concurrent.Semaphore
             }
         })
         dialBinding.fabSD.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
-            EpisodeMultiSelectHandler((activity as MainActivity), actionItem.id)
-                .handleAction(adapter.selectedItems.filterIsInstance<Episode>())
+            EpisodeMultiSelectHandler((activity as MainActivity), actionItem.id).handleAction(adapter.selectedItems.filterIsInstance<Episode>())
             adapter.endSelectMode()
             true
         }
@@ -331,7 +330,6 @@ import java.util.concurrent.Semaphore
 
         var i = 0
         val size: Int = event.episodes.size
-//        feed = getFeed(feed!!.id) ?: error("Can't find latest for feed ${feed?.title}")
         while (i < size) {
             val item = event.episodes[i]
             if (item.feedId != feed!!.id) continue
@@ -354,8 +352,11 @@ import java.util.concurrent.Semaphore
             if (item.feedId != feed!!.id) continue
             val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
             if (pos >= 0) {
-                episodes[pos].playState = item.playState
+                episodes.removeAt(pos)
+                episodes.add(pos, item)
                 adapter.notifyItemChangedCompat(pos)
+//                episodes[pos].playState = item.playState
+//                adapter.notifyItemChangedCompat(pos)
             }
             i++
         }
@@ -374,8 +375,11 @@ import java.util.concurrent.Semaphore
         val item = event.episode
         val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
         if (pos >= 0) {
-            episodes[pos].playState = item.playState
+            episodes.removeAt(pos)
+            episodes.add(pos, item)
             adapter.notifyItemChangedCompat(pos)
+//            episodes[pos].playState = item.playState
+//            adapter.notifyItemChangedCompat(pos)
         }
     }
 
@@ -383,8 +387,11 @@ import java.util.concurrent.Semaphore
         val item = event.episode
         val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
         if (pos >= 0) {
-            episodes[pos].isFavorite = item.isFavorite
+            episodes.removeAt(pos)
+            episodes.add(pos, item)
             adapter.notifyItemChangedCompat(pos)
+//            episodes[pos].isFavorite = item.isFavorite
+//            adapter.notifyItemChangedCompat(pos)
         }
     }
 
@@ -396,9 +403,6 @@ import java.util.concurrent.Semaphore
             val pos: Int = EpisodeUtil.indexOfItemWithDownloadUrl(episodes, downloadUrl)
             if (pos >= 0) {
 //                TODO: need a better way
-                val item = episodes[pos]
-//                item.media?.downloaded = true
-                Logd(TAG, "onEpisodeDownloadEvent ${item.title}")
                 adapter.notifyItemChangedCompat(pos)
             }
         }
@@ -704,8 +708,7 @@ import java.util.concurrent.Semaphore
     class SingleFeedSortDialog(val feed: Feed?) : EpisodeSortDialog() {
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
-            sortOrder = if (feed?.sortOrder == null) SortOrder.DATE_NEW_OLD
-            else feed.sortOrder
+            sortOrder = feed?.sortOrder ?: SortOrder.DATE_NEW_OLD
         }
         override fun onAddItem(title: Int, ascending: SortOrder, descending: SortOrder, ascendingIsDefault: Boolean) {
             if (ascending == SortOrder.DATE_OLD_NEW || ascending == SortOrder.PLAYED_DATE_OLD_NEW || ascending == SortOrder.COMPLETED_DATE_OLD_NEW

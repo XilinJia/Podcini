@@ -62,6 +62,7 @@ import kotlin.math.min
 
     override fun loadData(): List<Episode> {
         allEpisodes = getEpisodes(0, Int.MAX_VALUE, getFilter(), allEpisodesSortOrder, false)
+        if (allEpisodes.isEmpty()) return listOf()
         return allEpisodes.subList(0, min(allEpisodes.size-1, page * EPISODES_PER_PAGE))
     }
 

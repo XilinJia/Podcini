@@ -48,7 +48,6 @@ object EpisodeMenuHandler {
     /**
      * This method should be called in the prepare-methods of menus. It changes
      * the visibility of the menu items depending on a FeedItem's attributes.
-     *
      * @param menu               An instance of Menu
      * @param selectedItem     The FeedItem for which the menu is supposed to be prepared
      * @return Returns true if selectedItem is not null.
@@ -101,7 +100,6 @@ object EpisodeMenuHandler {
      */
     private fun setItemVisibility(menu: Menu?, menuId: Int, visibility: Boolean) {
         if (menu == null) return
-
         val item = menu.findItem(menuId)
         item?.setVisible(visibility)
     }
@@ -120,26 +118,21 @@ object EpisodeMenuHandler {
     /**
      * The same method as [.onPrepareMenu], but lets the
      * caller also specify a list of menu items that should not be shown.
-     *
      * @param excludeIds Menu item that should be excluded
      * @return true if selectedItem is not null.
      */
     @UnstableApi
     fun onPrepareMenu(menu: Menu?, selectedItem: Episode?, vararg excludeIds: Int): Boolean {
         if (menu == null || selectedItem == null) return false
-
         val rc = onPrepareMenu(menu, selectedItem)
         if (rc && excludeIds.isNotEmpty()) {
-            for (id in excludeIds) {
-                setItemVisibility(menu, id, false)
-            }
+            for (id in excludeIds) setItemVisibility(menu, id, false)
         }
         return rc
     }
 
     /**
      * Default menu handling for the given FeedItem.
-     *
      * A Fragment instance, (rather than the more generic Context), is needed as a parameter
      * to support some UI operations, e.g., creating a Snackbar.
      */
@@ -204,14 +197,12 @@ object EpisodeMenuHandler {
                 return false
             }
         }
-
         // Refresh menu state
         return true
     }
 
     /**
      * Remove new flag with additional UI logic to allow undo with Snackbar.
-     *
      * Undo is useful for Remove new flag, given there is no UI to undo it otherwise
      * ,i.e., there is (context) menu item for add new flag
      */
@@ -219,7 +210,7 @@ object EpisodeMenuHandler {
     fun markReadWithUndo(fragment: Fragment, item: Episode?, playState: Int, showSnackbar: Boolean) {
         if (item == null) return
 
-        Logd(TAG, "markReadWithUndo(" + item.id + ")")
+        Logd(TAG, "markReadWithUndo( ${item.id} )")
         // we're marking it as unplayed since the user didn't actually play it
         // but they don't want it considered 'NEW' anymore
         markPlayed(playState, false, item)
@@ -228,8 +219,7 @@ object EpisodeMenuHandler {
         val r = Runnable {
             val media: EpisodeMedia? = item.media
             val shouldAutoDelete: Boolean = if (item.feed == null) false else shouldAutoDeleteItemsOnFeed(item.feed!!)
-            if (media != null && EpisodeUtil.hasAlmostEnded(media) && shouldAutoDelete)
-                deleteMediaOfEpisode(fragment.requireContext(), item)
+            if (media != null && EpisodeUtil.hasAlmostEnded(media) && shouldAutoDelete) deleteMediaOfEpisode(fragment.requireContext(), item)
         }
         val playStateStringRes: Int = when (playState) {
             Episode.UNPLAYED -> if (item.playState == Episode.NEW) R.string.removed_inbox_label    //was new
@@ -251,9 +241,5 @@ object EpisodeMenuHandler {
         }
 
         h.postDelayed(r, ceil((duration * 1.05f).toDouble()).toInt().toLong())
-    }
-
-    fun removeNewFlagWithUndo(fragment: Fragment, item: Episode?) {
-        markReadWithUndo(fragment, item, Episode.UNPLAYED, false)
     }
 }

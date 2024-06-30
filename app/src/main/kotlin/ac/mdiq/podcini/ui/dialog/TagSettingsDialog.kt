@@ -78,7 +78,7 @@ class TagSettingsDialog : DialogFragment() {
             addTag(binding.newTagEditText.text.toString().trim { it <= ' ' })
             updatePreferencesTags(commonTags)
             buildTags()
-            EventFlow.postEvent(FlowEvent.FeedTagsChangedEvent())
+//            EventFlow.postEvent(FlowEvent.FeedTagsChangedEvent())
         }
         dialog.setNegativeButton(R.string.cancel_label, null)
         return dialog.create()
@@ -113,7 +113,7 @@ class TagSettingsDialog : DialogFragment() {
                 feed.preferences!!.tags.removeAll(commonTags)
                 feed.preferences!!.tags.addAll(displayedTags)
                 persistFeedPreferences(feed)
-//                EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(feed.id))
+//                EventFlow.postEvent(FlowEvent.FeedPrefsChangeEvent(feed))
             }
         }
     }

@@ -1,0 +1,13 @@
+ 
+Version 6.0.4 brings several changes:
+
+* bug fix on ShareDialog having no argument
+* tuned and fixed menu issues in EpisodeIndo and PlayerDetailed views
+* corrected current order in FeedEpisode sort dialog
+* fixed sorting in Subscriptions view
+* fixed tags spinner update issue in Subscriptions view
+* made various episodes list views to reflect change on status changes of episodes
+* fixed DB write error when deleting a feed
+* fixed illegal index error in AllEpisodes and History views when the list is empty
+* synchronized feeds list update when adding or deleting multiple feeds
+* added "Remove from favorites" in speed-dial menu

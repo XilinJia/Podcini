@@ -90,6 +90,7 @@ open class EpisodeViewHolder(private val activity: MainActivity, parent: ViewGro
     }
 
     fun bind(item: Episode) {
+//        Logd(TAG, "in bind: ${item.title} ${item.isFavorite} ${item.isPlayed()}")
         this.episode = item
         placeholder.text = item.feed?.title
         title.text = item.title

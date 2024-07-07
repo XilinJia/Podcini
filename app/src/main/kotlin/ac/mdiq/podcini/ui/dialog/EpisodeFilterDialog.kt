@@ -32,10 +32,8 @@ abstract class EpisodeFilterDialog : BottomSheetDialogFragment() {
             val newFilterValues: MutableSet<String> = HashSet()
             for (i in 0 until rows.childCount) {
                 if (rows.getChildAt(i) !is MaterialButtonToggleGroup) continue
-
                 val group = rows.getChildAt(i) as MaterialButtonToggleGroup
                 if (group.checkedButtonId == View.NO_ID) continue
-
                 val tag = group.findViewById<View>(group.checkedButtonId).tag as? String ?: continue
                 newFilterValues.add(tag)
             }
@@ -51,21 +49,24 @@ abstract class EpisodeFilterDialog : BottomSheetDialogFragment() {
         //add filter rows
         for (item in FeedItemFilterGroup.entries) {
 //            Logd("EpisodeFilterDialog", "FeedItemFilterGroup: ${item.values[0].filterId} ${item.values[1].filterId}")
-            val rowBinding = FilterDialogRowBinding.inflate(inflater)
-            rowBinding.root.addOnButtonCheckedListener { _: MaterialButtonToggleGroup?, _: Int, _: Boolean ->
-                onFilterChanged(newFilterValues)
-            }
-            rowBinding.filterButton1.setText(item.values[0].displayName)
-            rowBinding.filterButton1.tag = item.values[0].filterId
-            buttonMap[item.values[0].filterId] = rowBinding.filterButton1
-            rowBinding.filterButton2.setText(item.values[1].displayName)
-            rowBinding.filterButton2.tag = item.values[1].filterId
-            buttonMap[item.values[1].filterId] = rowBinding.filterButton2
-            rowBinding.filterButton1.maxLines = 3
-            rowBinding.filterButton1.isSingleLine = false
-            rowBinding.filterButton2.maxLines = 3
-            rowBinding.filterButton2.isSingleLine = false
-            rows.addView(rowBinding.root, rows.childCount - 1)
+            val rBinding = FilterDialogRowBinding.inflate(inflater)
+//            rowBinding.root.addOnButtonCheckedListener { _: MaterialButtonToggleGroup?, _: Int, _: Boolean ->
+//                onFilterChanged(newFilterValues)
+//            }
+            rBinding.filterButton1.setOnClickListener { onFilterChanged(newFilterValues) }
+            rBinding.filterButton2.setOnClickListener { onFilterChanged(newFilterValues) }
+
+            rBinding.filterButton1.setText(item.values[0].displayName)
+            rBinding.filterButton1.tag = item.values[0].filterId
+            buttonMap[item.values[0].filterId] = rBinding.filterButton1
+            rBinding.filterButton2.setText(item.values[1].displayName)
+            rBinding.filterButton2.tag = item.values[1].filterId
+            buttonMap[item.values[1].filterId] = rBinding.filterButton2
+            rBinding.filterButton1.maxLines = 3
+            rBinding.filterButton1.isSingleLine = false
+            rBinding.filterButton2.maxLines = 3
+            rBinding.filterButton2.isSingleLine = false
+            rows.addView(rBinding.root, rows.childCount - 1)
         }
 
         binding.confirmFiltermenu.setOnClickListener { dismiss() }
@@ -121,7 +122,6 @@ abstract class EpisodeFilterDialog : BottomSheetDialogFragment() {
         QUEUED(ItemProperties(R.string.queued_label, EpisodeFilter.QUEUED), ItemProperties(R.string.not_queued_label, EpisodeFilter.NOT_QUEUED)),
         DOWNLOADED(ItemProperties(R.string.hide_downloaded_episodes_label, EpisodeFilter.DOWNLOADED), ItemProperties(R.string.hide_not_downloaded_episodes_label, EpisodeFilter.NOT_DOWNLOADED));
 
-        //            this.values = values as Array<ItemProperties>
         @JvmField
         val values: Array<ItemProperties> = arrayOf(*values)
 

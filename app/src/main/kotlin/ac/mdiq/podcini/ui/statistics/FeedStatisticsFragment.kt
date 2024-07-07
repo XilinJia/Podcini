@@ -29,9 +29,7 @@ class FeedStatisticsFragment : Fragment() {
         if (!requireArguments().getBoolean(EXTRA_DETAILED)) {
             for (i in 0 until binding.root.childCount) {
                 val child = binding.root.getChildAt(i)
-                if ("detailed" == child.tag) {
-                    child.visibility = View.GONE
-                }
+                if ("detailed" == child.tag) child.visibility = View.GONE
             }
         }
 
@@ -44,10 +42,10 @@ class FeedStatisticsFragment : Fragment() {
             try {
                 val statisticsData = withContext(Dispatchers.IO) {
                     val data = getStatistics(true, 0, Long.MAX_VALUE)
-                    data.feedTime.sortWith { item1: StatisticsItem, item2: StatisticsItem ->
+                    data.statsItems.sortWith { item1: StatisticsItem, item2: StatisticsItem ->
                         item2.timePlayed.compareTo(item1.timePlayed)
                     }
-                    for (statisticsItem in data.feedTime) {
+                    for (statisticsItem in data.statsItems) {
                         if (statisticsItem.feed.id == feedId) return@withContext statisticsItem
                     }
                     null
@@ -60,7 +58,7 @@ class FeedStatisticsFragment : Fragment() {
     }
 
     private fun showStats(s: StatisticsItem?) {
-        binding.startedTotalLabel.text = String.format(Locale.getDefault(), "%d / %d", s!!.episodesStarted, s.episodes)
+        binding.startedTotalLabel.text = String.format(Locale.getDefault(), "%d / %d", s!!.episodesStarted, s.numEpisodes)
         binding.timePlayedLabel.text = shortLocalizedDuration(requireContext(), s.timePlayed)
         binding.totalDurationLabel.text = shortLocalizedDuration(requireContext(), s.time)
         binding.onDeviceLabel.text = String.format(Locale.getDefault(), "%d", s.episodesDownloadCount)

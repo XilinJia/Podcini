@@ -20,7 +20,6 @@ import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
 import ac.mdiq.podcini.receiver.MediaButtonReceiver.Companion.createIntent
 import ac.mdiq.podcini.receiver.PlayerWidget
 import ac.mdiq.podcini.storage.database.Feeds.monitorFeeds
-import ac.mdiq.podcini.storage.database.Feeds.updateFeedMap
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
@@ -130,7 +129,7 @@ class MainActivity : CastEnabledActivity() {
             NavDrawerFragment.getSharedPrefs(this@MainActivity)
             SwipeActions.getSharedPrefs(this@MainActivity)
             QueueFragment.getSharedPrefs(this@MainActivity)
-            updateFeedMap()
+//            updateFeedMap()
             monitorFeeds()
 //            InTheatre.apply { }
             PlayerDetailsFragment.getSharedPrefs(this@MainActivity)
@@ -223,7 +222,7 @@ class MainActivity : CastEnabledActivity() {
                         }
                     }
                 }
-                EventFlow.postStickyEvent(FlowEvent.FeedUpdateRunningEvent(isRefreshingFeeds))
+                EventFlow.postStickyEvent(FlowEvent.FeedUpdatingEvent(isRefreshingFeeds))
             }
         observeDownloads()
     }

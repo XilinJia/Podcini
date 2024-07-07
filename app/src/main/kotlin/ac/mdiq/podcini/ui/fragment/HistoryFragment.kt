@@ -5,7 +5,6 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.utils.EpisodeFilter
 import ac.mdiq.podcini.storage.utils.SortOrder
 import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.activity.MainActivity
@@ -58,7 +57,7 @@ import kotlin.math.min
     }
 
     override fun createListAdaptor() {
-        listAdapter = object : EpisodesAdapter(activity as MainActivity) {
+        adapter = object : EpisodesAdapter(activity as MainActivity) {
             override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EpisodeViewHolder {
                 return object: EpisodeViewHolder(mainActivityRef.get()!!, parent) {
                     override fun setPubDate(item: Episode) {
@@ -73,8 +72,8 @@ import kotlin.math.min
                 MenuItemUtils.setOnClickListeners(menu) { item: MenuItem -> this@HistoryFragment.onContextItemSelected(item) }
             }
         }
-        listAdapter.setOnSelectModeListener(this)
-        recyclerView.adapter = listAdapter
+        adapter.setOnSelectModeListener(this)
+        recyclerView.adapter = adapter
     }
 
     override fun onStart() {
@@ -124,6 +123,18 @@ import kotlin.math.min
         toolbar.menu.findItem(R.id.episodes_sort).setVisible(episodes.isNotEmpty())
         toolbar.menu.findItem(R.id.filter_items).setVisible(episodes.isNotEmpty())
         toolbar.menu.findItem(R.id.clear_history_item).setVisible(episodes.isNotEmpty())
+
+        swipeActions.setFilter(getFilter())
+        if (getFilter().values.isNotEmpty()) {
+            txtvInformation.visibility = View.VISIBLE
+            txtvInformation.text = "${adapter.totalNumberOfItems} episodes - filtered"
+            emptyView.setMessage(R.string.no_all_episodes_filtered_label)
+        } else {
+            txtvInformation.visibility = View.VISIBLE
+            txtvInformation.text = "${adapter.totalNumberOfItems} episodes"
+            emptyView.setMessage(R.string.no_all_episodes_label)
+        }
+        toolbar.menu?.findItem(R.id.action_favorites)?.setIcon(if (getFilter().showIsFavorite) R.drawable.ic_star else R.drawable.ic_star_border)
     }
 
     private var eventSink: Job?     = null

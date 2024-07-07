@@ -2,7 +2,6 @@ package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.utils.EpisodeFilter
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
@@ -33,7 +32,7 @@ import kotlin.math.min
         toolbar.inflateMenu(R.menu.episodes)
         toolbar.setTitle(R.string.episodes_label)
         updateToolbar()
-        listAdapter.setOnSelectModeListener(null)
+        adapter.setOnSelectModeListener(null)
         return root
     }
 

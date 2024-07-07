@@ -1,10 +1,9 @@
 package ac.mdiq.podcini.storage.model
 
-import ac.mdiq.podcini.net.feed.parser.media.id3.ChapterReader
+import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.utils.MediaMetadataRetrieverCompat
 import ac.mdiq.podcini.storage.utils.MediaType
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.showStackTrace
 import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
@@ -214,8 +213,9 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
     }
 
     fun hasEmbeddedPicture(): Boolean {
+//        TODO: checkEmbeddedPicture needs to update current copy
         if (hasEmbeddedPicture == null) checkEmbeddedPicture()
-        return hasEmbeddedPicture!!
+        return hasEmbeddedPicture ?: false
     }
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
@@ -340,6 +340,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
                 hasEmbeddedPicture = false
             }
         }
+        upsertBlk(episode!!) {}
     }
 
     override fun equals(o: Any?): Boolean {

@@ -117,5 +117,11 @@
                 android:key="prefSkipKeepsEpisode"
                 android:summary="@string/pref_skip_keeps_episodes_sum"
                 android:title="@string/pref_skip_keeps_episodes_title"/>
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:enabled="true"
+            android:key="prefRemoveFromQueueMarkedPlayed"
+            android:summary="@string/pref_mark_played_removes_from_queue_sum"
+            android:title="@string/pref_mark_played_removes_from_queue_title"/>
     </PreferenceCategory>
 </PreferenceScreen>

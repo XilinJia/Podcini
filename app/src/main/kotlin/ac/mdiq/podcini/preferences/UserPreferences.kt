@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.preferences
 
+import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.ProxyConfig
 import ac.mdiq.podcini.storage.utils.SortOrder
 import ac.mdiq.podcini.storage.utils.MediaType
@@ -66,6 +67,7 @@ object UserPreferences {
     private const val PREF_HARDWARE_PREVIOUS_BUTTON: String = "prefHardwarePreviousButton"
     const val PREF_FOLLOW_QUEUE: String = "prefFollowQueue"
     const val PREF_SKIP_KEEPS_EPISODE: String = "prefSkipKeepsEpisode"
+    const val PREF_REMOVDE_FROM_QUEUE_MARKED_PLAYED: String = "prefRemoveFromQueueMarkedPlayed"
     private const val PREF_FAVORITE_KEEPS_EPISODE = "prefFavoriteKeepsEpisode"
     private const val PREF_AUTO_DELETE = "prefAutoDelete"
     private const val PREF_AUTO_DELETE_LOCAL = "prefAutoDeleteLocal"
@@ -139,18 +141,6 @@ object UserPreferences {
     private lateinit var context: Context
     lateinit var appPrefs: SharedPreferences
 
-    /**
-     * Sets up the UserPreferences class.
-     *
-     * @throws IllegalArgumentException if context is null
-     */
-    fun init(context: Context) {
-        Logd(TAG, "Creating new instance of UserPreferences")
-        UserPreferences.context = context.applicationContext
-        appPrefs = PreferenceManager.getDefaultSharedPreferences(context)
-
-        createNoMediaFile()
-    }
 
     var theme: ThemePreference
         get() = when (appPrefs.getString(PREF_THEME, "system")) {
@@ -203,42 +193,12 @@ object UserPreferences {
     val isAutoBackupOPML: Boolean
         get() = appPrefs.getBoolean(PREF_OPML_BACKUP, true)
 
-    /**
-     * Helper function to return whether the specified button should be shown on full
-     * notifications.
-     *
-     * @param buttonId Either NOTIFICATION_BUTTON_REWIND, NOTIFICATION_BUTTON_FAST_FORWARD,
-     * NOTIFICATION_BUTTON_SKIP, NOTIFICATION_BUTTON_PLAYBACK_SPEED
-     * or NOTIFICATION_BUTTON_NEXT_CHAPTER.
-     * @return `true` if button should be shown, `false`  otherwise
-     */
-    private fun showButtonOnFullNotification(buttonId: Int): Boolean {
-        return fullNotificationButtons.contains(buttonId)
-    }
-
-    fun showSkipOnFullNotification(): Boolean {
-        return showButtonOnFullNotification(NOTIFICATION_BUTTON_SKIP)
-    }
-
-    fun showNextChapterOnFullNotification(): Boolean {
-        return showButtonOnFullNotification(NOTIFICATION_BUTTON_NEXT_CHAPTER)
-    }
-    
-    fun showPlaybackSpeedOnFullNotification(): Boolean {
-        return showButtonOnFullNotification(NOTIFICATION_BUTTON_PLAYBACK_SPEED)
-    }
 
     val feedOrder: Int
         get() {
             val value = appPrefs.getString(PREF_DRAWER_FEED_ORDER, "" + FEED_ORDER_UNPLAYED)
             return value!!.toInt()
         }
-
-    fun setFeedOrder(selected: String?) {
-        appPrefs.edit()
-            .putString(PREF_DRAWER_FEED_ORDER, selected)
-            .apply()
-    }
 
     val useGridLayout: Boolean
         get() = appPrefs.getBoolean(PREF_FEED_GRID_LAYOUT, false)
@@ -248,24 +208,6 @@ object UserPreferences {
      */
     val useEpisodeCoverSetting: Boolean
         get() = appPrefs.getBoolean(PREF_USE_EPISODE_COVER, true)
-
-    /**
-     * @return `true` if we should show remaining time or the duration
-     */
-    fun shouldShowRemainingTime(): Boolean {
-        return appPrefs.getBoolean(PREF_SHOW_TIME_LEFT, false)
-    }
-
-    /**
-     * Sets the preference for whether we show the remain time, if not show the duration. This will
-     * send out events so the current playing screen, queue and the episode list would refresh
-     *
-     * @return `true` if we should show remaining time or the duration
-     */
-    
-    fun setShowRemainTimeSetting(showRemain: Boolean?) {
-        appPrefs.edit().putBoolean(PREF_SHOW_TIME_LEFT, showRemain!!).apply()
-    }
 
     /**
      * @return `true` if notifications are persistent, `false`  otherwise
@@ -278,10 +220,6 @@ object UserPreferences {
      */
     val showDownloadReportRaw: Boolean
         get() = appPrefs.getBoolean(PREF_SHOW_DOWNLOAD_REPORT, true)
-
-    fun enqueueDownloadedEpisodes(): Boolean {
-        return appPrefs.getBoolean(PREF_ENQUEUE_DOWNLOADED, true)
-    }
 
     var enqueueLocation: EnqueueLocation
         get() {
@@ -323,14 +261,6 @@ object UserPreferences {
             appPrefs.edit().putBoolean(PREF_FOLLOW_QUEUE, value).apply()
         }
 
-    fun shouldSkipKeepEpisode(): Boolean {
-        return appPrefs.getBoolean(PREF_SKIP_KEEPS_EPISODE, true)
-    }
-
-    fun shouldFavoriteKeepEpisode(): Boolean {
-        return appPrefs.getBoolean(PREF_FAVORITE_KEEPS_EPISODE, true)
-    }
-
     val isAutoDelete: Boolean
         get() = appPrefs.getBoolean(PREF_AUTO_DELETE, false)
 
@@ -339,14 +269,6 @@ object UserPreferences {
 
     val smartMarkAsPlayedSecs: Int
         get() = appPrefs.getString(PREF_SMART_MARK_AS_PLAYED_SECS, "30")!!.toInt()
-
-    fun shouldDeleteRemoveFromQueue(): Boolean {
-        return appPrefs.getBoolean(PREF_DELETE_REMOVES_FROM_QUEUE, false)
-    }
-    
-    fun getPlaybackSpeed(mediaType: MediaType): Float {
-        return if (mediaType == MediaType.VIDEO) videoPlaybackSpeed else audioPlaybackSpeed
-    }
 
     private val audioPlaybackSpeed: Float
         get() {
@@ -405,22 +327,11 @@ object UserPreferences {
             appPrefs.edit().putString(PREF_PLAYBACK_SPEED_ARRAY, jsonArray.toString()).apply()
         }
 
-    fun shouldPauseForFocusLoss(): Boolean {
-        return appPrefs.getBoolean(PREF_PAUSE_PLAYBACK_FOR_FOCUS_LOSS, true)
-    }
-
     val updateInterval: Long
         get() = appPrefs.getString(PREF_UPDATE_INTERVAL, "12")!!.toInt().toLong()
 
     val isAutoUpdateDisabled: Boolean
         get() = updateInterval == 0L
-
-    private fun isAllowMobileFor(type: String): Boolean {
-        val defaultValue = HashSet<String>()
-        defaultValue.add("images")
-        val allowed = appPrefs.getStringSet(PREF_MOBILE_UPDATE, defaultValue)
-        return allowed!!.contains(type)
-    }
 
     var isAllowMobileFeedRefresh: Boolean
         get() = isAllowMobileFor("feed_refresh")
@@ -457,17 +368,6 @@ object UserPreferences {
         set(allow) {
             setAllowMobileFor("images", allow)
         }
-
-    private fun setAllowMobileFor(type: String, allow: Boolean) {
-        val defaultValue = HashSet<String>()
-        defaultValue.add("images")
-        val getValueStringSet = appPrefs.getStringSet(PREF_MOBILE_UPDATE, defaultValue)
-        val allowed: MutableSet<String> = HashSet(getValueStringSet!!)
-        if (allow) allowed.add(type)
-        else allowed.remove(type)
-
-        appPrefs.edit().putStringSet(PREF_MOBILE_UPDATE, allowed).apply()
-    }
 
     /**
      * Returns the capacity of the episode cache. This method will return the
@@ -569,6 +469,203 @@ object UserPreferences {
             appPrefs.edit().putBoolean(PREF_QUEUE_LOCKED, locked).apply()
         }
 
+    /**
+     * Used for migration of the preference to system notification channels.
+     */
+    val gpodnetNotificationsEnabledRaw: Boolean
+        get() = appPrefs.getBoolean(PREF_GPODNET_NOTIFICATIONS, true)
+
+    var episodeCleanupValue: Int
+        get() = appPrefs.getString(PREF_EPISODE_CLEANUP, "" + EPISODE_CLEANUP_NULL)!!.toInt()
+        set(episodeCleanupValue) {
+            appPrefs.edit().putString(PREF_EPISODE_CLEANUP, episodeCleanupValue.toString()).apply()
+        }
+
+    var defaultPage: String?
+        get() = appPrefs.getString(PREF_DEFAULT_PAGE, "SubscriptionsFragment")
+        set(defaultPage) {
+            appPrefs.edit().putString(PREF_DEFAULT_PAGE, defaultPage).apply()
+        }
+
+    var isStreamOverDownload: Boolean
+        get() = appPrefs.getBoolean(PREF_STREAM_OVER_DOWNLOAD, false)
+        set(stream) {
+            appPrefs.edit().putBoolean(PREF_STREAM_OVER_DOWNLOAD, stream).apply()
+        }
+
+    var isQueueKeepSorted: Boolean
+        /**
+         * Returns if the queue is in keep sorted mode.
+         * @see .queueKeepSortedOrder
+         */
+        get() = appPrefs.getBoolean(PREF_QUEUE_KEEP_SORTED, false)
+        /**
+         * Enables/disables the keep sorted mode of the queue.
+         * @see .queueKeepSortedOrder
+         */
+        set(keepSorted) {
+            appPrefs.edit().putBoolean(PREF_QUEUE_KEEP_SORTED, keepSorted).apply()
+        }
+    
+    var queueKeepSortedOrder: SortOrder?
+        /**
+         * Returns the sort order for the queue keep sorted mode.
+         * Note: This value is stored independently from the keep sorted state.
+         * @see .isQueueKeepSorted
+         */
+        get() {
+            val sortOrderStr = appPrefs.getString(PREF_QUEUE_KEEP_SORTED_ORDER, "use-default")
+            return SortOrder.parseWithDefault(sortOrderStr, SortOrder.DATE_NEW_OLD)
+        }
+        /**
+         * Sets the sort order for the queue keep sorted mode.
+         * @see .setQueueKeepSorted
+         */
+        set(sortOrder) {
+            if (sortOrder == null) return
+            appPrefs.edit().putString(PREF_QUEUE_KEEP_SORTED_ORDER, sortOrder.name).apply()
+        }
+
+//    the sort order for the downloads.
+    var downloadsSortedOrder: SortOrder?
+        get() {
+            val sortOrderStr = appPrefs.getString(PREF_DOWNLOADS_SORTED_ORDER, "" + SortOrder.DATE_NEW_OLD.code)
+            return SortOrder.fromCodeString(sortOrderStr)
+        }
+        set(sortOrder) {
+            appPrefs.edit().putString(PREF_DOWNLOADS_SORTED_ORDER, "" + sortOrder!!.code).apply()
+        }
+
+    var allEpisodesSortOrder: SortOrder?
+        get() = SortOrder.fromCodeString(appPrefs.getString(PREF_SORT_ALL_EPISODES, "" + SortOrder.DATE_NEW_OLD.code))
+        set(s) {
+            appPrefs.edit().putString(PREF_SORT_ALL_EPISODES, "" + s!!.code).apply()
+        }
+
+    var prefFilterAllEpisodes: String
+        get() = appPrefs.getString(PREF_FILTER_ALL_EPISODES, "")?:""
+        set(filter) {
+            appPrefs.edit().putString(PREF_FILTER_ALL_EPISODES, filter).apply()
+        }
+
+    /**
+     * Sets up the UserPreferences class.
+     * @throws IllegalArgumentException if context is null
+     */
+    fun init(context: Context) {
+        Logd(TAG, "Creating new instance of UserPreferences")
+        UserPreferences.context = context.applicationContext
+        appPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+
+        createNoMediaFile()
+    }
+
+    /**
+     * Helper function to return whether the specified button should be shown on full
+     * notifications.
+     * @param buttonId Either NOTIFICATION_BUTTON_REWIND, NOTIFICATION_BUTTON_FAST_FORWARD,
+     * NOTIFICATION_BUTTON_SKIP, NOTIFICATION_BUTTON_PLAYBACK_SPEED
+     * or NOTIFICATION_BUTTON_NEXT_CHAPTER.
+     * @return `true` if button should be shown, `false`  otherwise
+     */
+    private fun showButtonOnFullNotification(buttonId: Int): Boolean {
+        return fullNotificationButtons.contains(buttonId)
+    }
+
+    @JvmStatic
+    fun shouldAutoDeleteItem(feed: Feed): Boolean {
+        if (!isAutoDelete) return false
+        return !feed.isLocalFeed || isAutoDeleteLocal
+    }
+
+    fun showSkipOnFullNotification(): Boolean {
+        return showButtonOnFullNotification(NOTIFICATION_BUTTON_SKIP)
+    }
+
+    fun showNextChapterOnFullNotification(): Boolean {
+        return showButtonOnFullNotification(NOTIFICATION_BUTTON_NEXT_CHAPTER)
+    }
+
+    fun showPlaybackSpeedOnFullNotification(): Boolean {
+        return showButtonOnFullNotification(NOTIFICATION_BUTTON_PLAYBACK_SPEED)
+    }
+
+    /**
+     * @return `true` if we should show remaining time or the duration
+     */
+    fun shouldShowRemainingTime(): Boolean {
+        return appPrefs.getBoolean(PREF_SHOW_TIME_LEFT, false)
+    }
+
+    fun setFeedOrder(selected: String?) {
+        appPrefs.edit()
+            .putString(PREF_DRAWER_FEED_ORDER, selected)
+            .apply()
+    }
+
+    fun enqueueDownloadedEpisodes(): Boolean {
+        return appPrefs.getBoolean(PREF_ENQUEUE_DOWNLOADED, true)
+    }
+
+    /**
+     * Sets the preference for whether we show the remain time, if not show the duration. This will
+     * send out events so the current playing screen, queue and the episode list would refresh
+     * @return `true` if we should show remaining time or the duration
+     */
+    fun setShowRemainTimeSetting(showRemain: Boolean?) {
+        appPrefs.edit().putBoolean(PREF_SHOW_TIME_LEFT, showRemain!!).apply()
+    }
+
+    fun shouldSkipKeepEpisode(): Boolean {
+        return appPrefs.getBoolean(PREF_SKIP_KEEPS_EPISODE, true)
+    }
+
+    fun shouldRemoveFromQueuesMarkPlayed(): Boolean {
+        return appPrefs.getBoolean(PREF_REMOVDE_FROM_QUEUE_MARKED_PLAYED, true)
+    }
+
+    fun shouldFavoriteKeepEpisode(): Boolean {
+        return appPrefs.getBoolean(PREF_FAVORITE_KEEPS_EPISODE, true)
+    }
+
+    fun shouldDeleteRemoveFromQueue(): Boolean {
+        return appPrefs.getBoolean(PREF_DELETE_REMOVES_FROM_QUEUE, false)
+    }
+
+    fun getPlaybackSpeed(mediaType: MediaType): Float {
+        return if (mediaType == MediaType.VIDEO) videoPlaybackSpeed else audioPlaybackSpeed
+    }
+
+    fun shouldPauseForFocusLoss(): Boolean {
+        return appPrefs.getBoolean(PREF_PAUSE_PLAYBACK_FOR_FOCUS_LOSS, true)
+    }
+
+    private fun isAllowMobileFor(type: String): Boolean {
+        val defaultValue = HashSet<String>()
+        defaultValue.add("images")
+        val allowed = appPrefs.getStringSet(PREF_MOBILE_UPDATE, defaultValue)
+        return allowed!!.contains(type)
+    }
+
+    private fun setAllowMobileFor(type: String, allow: Boolean) {
+        val defaultValue = HashSet<String>()
+        defaultValue.add("images")
+        val getValueStringSet = appPrefs.getStringSet(PREF_MOBILE_UPDATE, defaultValue)
+        val allowed: MutableSet<String> = HashSet(getValueStringSet!!)
+        if (allow) allowed.add(type)
+        else allowed.remove(type)
+
+        appPrefs.edit().putStringSet(PREF_MOBILE_UPDATE, allowed).apply()
+    }
+
+    fun backButtonOpensDrawer(): Boolean {
+        return appPrefs.getBoolean(PREF_BACK_OPENS_DRAWER, false)
+    }
+
+    fun timeRespectsSpeed(): Boolean {
+        return appPrefs.getBoolean(PREF_TIME_RESPECTS_SPEED, false)
+    }
+
     fun setPlaybackSpeed(speed: Float) {
         appPrefs.edit().putString(PREF_PLAYBACK_SPEED, speed.toString()).apply()
     }
@@ -580,17 +677,11 @@ object UserPreferences {
     fun setAutodownloadSelectedNetworks(value: Array<String?>?) {
         appPrefs.edit().putString(PREF_AUTODL_SELECTED_NETWORKS, value!!.joinToString()).apply()
     }
-    
+
     fun gpodnetNotificationsEnabled(): Boolean {
         if (Build.VERSION.SDK_INT >= 26) return true // System handles notification preferences
         return appPrefs.getBoolean(PREF_GPODNET_NOTIFICATIONS, true)
     }
-
-    /**
-     * Used for migration of the preference to system notification channels.
-     */
-    val gpodnetNotificationsEnabledRaw: Boolean
-        get() = appPrefs.getBoolean(PREF_GPODNET_NOTIFICATIONS, true)
 
     fun setGpodnetNotificationsEnabled() {
         appPrefs.edit().putBoolean(PREF_GPODNET_NOTIFICATIONS, true).apply()
@@ -614,16 +705,9 @@ object UserPreferences {
         return mutableListOf(1.0f, 1.25f, 1.5f)
     }
 
-    var episodeCleanupValue: Int
-        get() = appPrefs.getString(PREF_EPISODE_CLEANUP, "" + EPISODE_CLEANUP_NULL)!!.toInt()
-        set(episodeCleanupValue) {
-            appPrefs.edit().putString(PREF_EPISODE_CLEANUP, episodeCleanupValue.toString()).apply()
-        }
-
     /**
      * Return the folder where the app stores all of its data. This method will
      * return the standard data folder if none has been set by the user.
-     *
      * @param type The name of the folder inside the data folder. May be null
      * when accessing the root of the data folder.
      * @return The data folder that has been requested or null if the folder could not be created.
@@ -679,83 +763,6 @@ object UserPreferences {
             Logd(TAG, ".nomedia file created")
         }
     }
-
-    var defaultPage: String?
-        get() = appPrefs.getString(PREF_DEFAULT_PAGE, "SubscriptionsFragment")
-        set(defaultPage) {
-            appPrefs.edit().putString(PREF_DEFAULT_PAGE, defaultPage).apply()
-        }
-
-    fun backButtonOpensDrawer(): Boolean {
-        return appPrefs.getBoolean(PREF_BACK_OPENS_DRAWER, false)
-    }
-
-    fun timeRespectsSpeed(): Boolean {
-        return appPrefs.getBoolean(PREF_TIME_RESPECTS_SPEED, false)
-    }
-
-    var isStreamOverDownload: Boolean
-        get() = appPrefs.getBoolean(PREF_STREAM_OVER_DOWNLOAD, false)
-        set(stream) {
-            appPrefs.edit().putBoolean(PREF_STREAM_OVER_DOWNLOAD, stream).apply()
-        }
-
-    var isQueueKeepSorted: Boolean
-        /**
-         * Returns if the queue is in keep sorted mode.
-         *
-         * @see .queueKeepSortedOrder
-         */
-        get() = appPrefs.getBoolean(PREF_QUEUE_KEEP_SORTED, false)
-        /**
-         * Enables/disables the keep sorted mode of the queue.
-         *
-         * @see .queueKeepSortedOrder
-         */
-        set(keepSorted) {
-            appPrefs.edit().putBoolean(PREF_QUEUE_KEEP_SORTED, keepSorted).apply()
-        }
-    
-    var queueKeepSortedOrder: SortOrder?
-        /**
-         * Returns the sort order for the queue keep sorted mode.
-         * Note: This value is stored independently from the keep sorted state.
-         * @see .isQueueKeepSorted
-         */
-        get() {
-            val sortOrderStr = appPrefs.getString(PREF_QUEUE_KEEP_SORTED_ORDER, "use-default")
-            return SortOrder.parseWithDefault(sortOrderStr, SortOrder.DATE_NEW_OLD)
-        }
-        /**
-         * Sets the sort order for the queue keep sorted mode.
-         * @see .setQueueKeepSorted
-         */
-        set(sortOrder) {
-            if (sortOrder == null) return
-            appPrefs.edit().putString(PREF_QUEUE_KEEP_SORTED_ORDER, sortOrder.name).apply()
-        }
-
-//    the sort order for the downloads.
-    var downloadsSortedOrder: SortOrder?
-        get() {
-            val sortOrderStr = appPrefs.getString(PREF_DOWNLOADS_SORTED_ORDER, "" + SortOrder.DATE_NEW_OLD.code)
-            return SortOrder.fromCodeString(sortOrderStr)
-        }
-        set(sortOrder) {
-            appPrefs.edit().putString(PREF_DOWNLOADS_SORTED_ORDER, "" + sortOrder!!.code).apply()
-        }
-
-    var allEpisodesSortOrder: SortOrder?
-        get() = SortOrder.fromCodeString(appPrefs.getString(PREF_SORT_ALL_EPISODES, "" + SortOrder.DATE_NEW_OLD.code))
-        set(s) {
-            appPrefs.edit().putString(PREF_SORT_ALL_EPISODES, "" + s!!.code).apply()
-        }
-
-    var prefFilterAllEpisodes: String
-        get() = appPrefs.getString(PREF_FILTER_ALL_EPISODES, "")?:""
-        set(filter) {
-            appPrefs.edit().putString(PREF_FILTER_ALL_EPISODES, filter).apply()
-        }
 
     enum class ThemePreference {
         LIGHT, DARK, BLACK, SYSTEM

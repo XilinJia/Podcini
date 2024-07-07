@@ -56,6 +56,7 @@ import io.realm.kotlin.query.Sort
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.NumberFormat
@@ -69,8 +70,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
     private var _binding: FragmentSubscriptionsBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var subscriptionRecycler: RecyclerView
-    private lateinit var listAdapter: SubscriptionsAdapter<*>
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var adapter: SubscriptionsAdapter<*>
     private lateinit var emptyView: EmptyViewHandler
     private lateinit var toolbar: MaterialToolbar
     private lateinit var speedDialView: SpeedDialView
@@ -100,8 +101,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         toolbar = binding.toolbar
         toolbar.setOnMenuItemClickListener(this)
         toolbar.setOnLongClickListener {
-            subscriptionRecycler.scrollToPosition(5)
-            subscriptionRecycler.post { subscriptionRecycler.smoothScrollToPosition(0) }
+            recyclerView.scrollToPosition(5)
+            recyclerView.post { recyclerView.smoothScrollToPosition(0) }
             false
         }
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
@@ -115,10 +116,10 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             toolbar.title = displayedFolder
         }
 
-        subscriptionRecycler = binding.subscriptionsGrid
-        subscriptionRecycler.addItemDecoration(GridDividerItemDecorator())
-        registerForContextMenu(subscriptionRecycler)
-        subscriptionRecycler.addOnScrollListener(LiftOnScrollListener(binding.appbar))
+        recyclerView = binding.subscriptionsGrid
+        recyclerView.addItemDecoration(GridDividerItemDecorator())
+        registerForContextMenu(recyclerView)
+        recyclerView.addOnScrollListener(LiftOnScrollListener(binding.appbar))
 
         initAdapter()
         setupEmptyView()
@@ -144,7 +145,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 val resultList = feedListFiltered.filter {
                     it.title?.lowercase(Locale.getDefault())?.contains(text)?:false || it.author?.lowercase(Locale.getDefault())?.contains(text)?:false
                 }
-                listAdapter.setItems(resultList)
+                adapter.setItems(resultList)
                 true
             } else false
         }
@@ -172,7 +173,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             override fun onToggleChanged(isOpen: Boolean) {}
         })
         speedDialView.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
-            FeedMultiSelectActionHandler(activity as MainActivity, listAdapter.selectedItems.filterIsInstance<Feed>()).handleAction(actionItem.id)
+            FeedMultiSelectActionHandler(activity as MainActivity, adapter.selectedItems.filterIsInstance<Feed>()).handleAction(actionItem.id)
             true
         }
         loadSubscriptions()
@@ -184,13 +185,13 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             useGrid = useGridLayout
             var spanCount = 1
             if (useGrid!!) {
-                listAdapter = GridAdapter()
+                adapter = GridAdapter()
                 spanCount = 3
-            } else listAdapter = ListAdapter()
-            subscriptionRecycler.layoutManager = GridLayoutManager(context, spanCount, RecyclerView.VERTICAL, false)
-            listAdapter.setOnSelectModeListener(this)
-            subscriptionRecycler.adapter = listAdapter
-            listAdapter.setItems(feedListFiltered)
+            } else adapter = ListAdapter()
+            recyclerView.layoutManager = GridLayoutManager(context, spanCount, RecyclerView.VERTICAL, false)
+            adapter.setOnSelectModeListener(this)
+            recyclerView.adapter = adapter
+            adapter.setItems(feedListFiltered)
         }
     }
 
@@ -202,8 +203,9 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
     }
 
     override fun onStop() {
+        Logd(TAG, "onStop()")
         super.onStop()
-        listAdapter.endSelectMode()
+        adapter.endSelectMode()
         cancelFlowEvents()
     }
 
@@ -232,7 +234,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             }
         }
         binding.count.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
-        listAdapter.setItems(feedListFiltered)
+        adapter.setItems(feedListFiltered)
     }
 
     private fun resetTags() {
@@ -255,8 +257,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             EventFlow.events.collectLatest { event ->
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
-                    is FlowEvent.FeedListEvent -> loadSubscriptions()
-                    is FlowEvent.EpisodePlayedEvent, is FlowEvent.FeedsSortedEvent -> loadSubscriptions()
+                    is FlowEvent.FeedListEvent, is FlowEvent.FeedsSortedEvent -> loadSubscriptions()
+                    is FlowEvent.EpisodePlayedEvent -> loadSubscriptions()
                     is FlowEvent.FeedTagsChangedEvent -> loadSubscriptions()
                     else -> {}
                 }
@@ -266,7 +268,12 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             EventFlow.stickyEvents.collectLatest { event ->
                 Logd(TAG, "Received sticky event: ${event.TAG}")
                 when (event) {
-                    is FlowEvent.FeedUpdateRunningEvent -> binding.swipeRefresh.isRefreshing = event.isFeedUpdateRunning
+                    is FlowEvent.FeedUpdatingEvent -> {
+                        Logd(TAG, "FeedUpdateRunningEvent: ${event.isRunning}")
+                        binding.swipeRefresh.isRefreshing = event.isRunning
+                        if (!event.isRunning && event.id != prevFeedUpdatingEvent?.id) loadSubscriptions()
+                        prevFeedUpdatingEvent = event
+                    }
                     else -> {}
                 }
             }
@@ -289,7 +296,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         emptyView.setIcon(R.drawable.ic_subscriptions)
         emptyView.setTitle(R.string.no_subscriptions_head_label)
         emptyView.setMessage(R.string.no_subscriptions_label)
-        emptyView.attachToRecyclerView(subscriptionRecycler)
+        emptyView.attachToRecyclerView(recyclerView)
     }
 
     @OptIn(UnstableApi::class) private fun loadSubscriptions() {
@@ -303,10 +310,10 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 }
                 withContext(Dispatchers.Main) {
                     // We have fewer items. This can result in items being selected that are no longer visible.
-                    if ( feedListFiltered.size > feedList.size) listAdapter.endSelectMode()
+                    if ( feedListFiltered.size > feedList.size) adapter.endSelectMode()
                     filterOnTag()
                     binding.progressBar.visibility = View.GONE
-                    listAdapter.setItems(feedListFiltered)
+                    adapter.setItems(feedListFiltered)
                     binding.count.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
                     emptyView.updateVisibility()
                 }
@@ -410,11 +417,11 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
-        val feed: Feed = listAdapter.selectedItem ?: return false
+        val feed: Feed = adapter.selectedItem ?: return false
         val itemId = item.itemId
         if (itemId == R.id.multi_select) {
             speedDialView.visibility = View.VISIBLE
-            return listAdapter.onContextItemSelected(item)
+            return adapter.onContextItemSelected(item)
         }
 //        TODO: this appears not called
         return FeedMenuHandler.onMenuItemClicked(this, item.itemId, feed) { this.loadSubscriptions() }
@@ -423,14 +430,14 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
     override fun onEndSelectMode() {
         speedDialView.close()
         speedDialView.visibility = View.GONE
-        listAdapter.setItems(feedListFiltered)
+        adapter.setItems(feedListFiltered)
     }
 
     override fun onStartSelectMode() {
         speedDialView.visibility = View.VISIBLE
         val feedsOnly: MutableList<Feed> = ArrayList<Feed>(feedListFiltered)
 //        feedsOnly.addAll(feedListFiltered)
-        listAdapter.setItems(feedsOnly)
+        adapter.setItems(feedsOnly)
     }
 
     @UnstableApi
@@ -855,6 +862,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
 
         private const val KEY_UP_ARROW = "up_arrow"
         private const val ARGUMENT_FOLDER = "folder"
+
+        private var prevFeedUpdatingEvent: FlowEvent.FeedUpdatingEvent? = null
 
         fun newInstance(folderTitle: String?): SubscriptionsFragment {
             val fragment = SubscriptionsFragment()

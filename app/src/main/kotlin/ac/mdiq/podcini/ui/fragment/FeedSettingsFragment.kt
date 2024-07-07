@@ -8,7 +8,7 @@ import ac.mdiq.podcini.databinding.PlaybackSpeedFeedSettingDialogBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
 import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
-import ac.mdiq.podcini.storage.database.RealmDB.unmanagedCopy
+import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.FeedPreferences
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
@@ -19,8 +19,6 @@ import ac.mdiq.podcini.ui.dialog.AuthenticationDialog
 import ac.mdiq.podcini.ui.dialog.TagSettingsDialog
 import ac.mdiq.podcini.ui.utils.ItemOffsetDecoration
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -514,7 +512,7 @@ class FeedSettingsFragment : Fragment() {
     }
 
     fun setFeed(feed_: Feed) {
-        feed = unmanagedCopy(feed_)
+        feed = unmanaged(feed_)
     }
 
     companion object {

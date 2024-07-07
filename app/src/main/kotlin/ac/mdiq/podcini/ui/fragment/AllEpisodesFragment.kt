@@ -43,7 +43,6 @@ import kotlin.math.min
         toolbar.inflateMenu(R.menu.episodes)
         toolbar.setTitle(R.string.episodes_label)
         updateToolbar()
-        updateFilterUi()
         txtvInformation.setOnClickListener {
             AllEpisodesFilterDialog.newInstance(getFilter()).show(childFragmentManager, null)
         }
@@ -62,6 +61,7 @@ import kotlin.math.min
 
     override fun loadData(): List<Episode> {
         allEpisodes = getEpisodes(0, Int.MAX_VALUE, getFilter(), allEpisodesSortOrder, false)
+        Logd(TAG, "loadData ${allEpisodes.size}")
         if (allEpisodes.isEmpty()) return listOf()
         return allEpisodes.subList(0, min(allEpisodes.size-1, page * EPISODES_PER_PAGE))
     }
@@ -123,18 +123,19 @@ import kotlin.math.min
 
     private fun onFilterChanged(event: FlowEvent.AllEpisodesFilterEvent) {
         prefFilterAllEpisodes = StringUtils.join(event.filterValues, ",")
-        updateFilterUi()
         page = 1
         loadItems()
     }
 
-    private fun updateFilterUi() {
+    override fun updateToolbar() {
         swipeActions.setFilter(getFilter())
         if (getFilter().values.isNotEmpty()) {
             txtvInformation.visibility = View.VISIBLE
+            txtvInformation.text = "${adapter.totalNumberOfItems} episodes - filtered"
             emptyView.setMessage(R.string.no_all_episodes_filtered_label)
         } else {
-            txtvInformation.visibility = View.GONE
+            txtvInformation.visibility = View.VISIBLE
+            txtvInformation.text = "${adapter.totalNumberOfItems} episodes"
             emptyView.setMessage(R.string.no_all_episodes_label)
         }
         toolbar.menu?.findItem(R.id.action_favorites)?.setIcon(if (getFilter().showIsFavorite) R.drawable.ic_star else R.drawable.ic_star_border)

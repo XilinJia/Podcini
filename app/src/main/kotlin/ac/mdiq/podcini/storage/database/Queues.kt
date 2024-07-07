@@ -8,7 +8,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.enqueueLocation
 import ac.mdiq.podcini.preferences.UserPreferences.isQueueKeepSorted
 import ac.mdiq.podcini.preferences.UserPreferences.queueKeepSortedOrder
 import ac.mdiq.podcini.storage.algorithms.AutoDownloads.autodownloadEpisodeMedia
-import ac.mdiq.podcini.storage.database.Episodes.markPlayed
+import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
@@ -48,7 +48,7 @@ object Queues {
      * @param markAsUnplayed      true if the episodes should be marked as unplayed when enqueueing
      * @param episodes               the Episode objects that should be added to the queue.
      */
-    @UnstableApi @JvmStatic
+    @UnstableApi @JvmStatic @Synchronized
     fun addToQueue(markAsUnplayed: Boolean, vararg episodes: Episode) : Job {
         Logd(TAG, "addToQueue( ... ) called")
         return runOnIOScope {
@@ -59,7 +59,6 @@ object Queues {
             val events: MutableList<FlowEvent.QueueEvent> = ArrayList()
             val updatedItems: MutableList<Episode> = ArrayList()
             val positionCalculator = EnqueuePositionCalculator(enqueueLocation)
-//            val currentlyPlaying = loadPlayableFromPreferences()
             val currentlyPlaying = curMedia
             var insertPosition = positionCalculator.calcPosition(curQueue.episodes, currentlyPlaying)
 
@@ -67,9 +66,7 @@ object Queues {
             val items_ = episodes.toList()
             for (episode in items_) {
                 if (curQueue.episodeIds.contains(episode.id)) continue
-//                episode.isInAnyQueue = true
-                if (episode.isNew) markPlayed(Episode.UNPLAYED, false, episode)
-                upsert(episode) {}
+
                 events.add(FlowEvent.QueueEvent.added(episode, insertPosition))
                 curQueue.episodeIds.add(insertPosition, episode.id)
                 updatedItems.add(episode)
@@ -89,10 +86,31 @@ object Queues {
                     EventFlow.postEvent(event)
                 }
 //                EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(updatedItems))
-                if (markAsUnplayed && markAsUnplayeds.size > 0) markPlayed(Episode.UNPLAYED, false, *markAsUnplayeds.toTypedArray())
+                if (markAsUnplayed && markAsUnplayeds.size > 0) setPlayState(Episode.UNPLAYED, false, *markAsUnplayeds.toTypedArray())
 //                if (performAutoDownload) autodownloadEpisodeMedia(context)
             }
         }
+    }
+
+    suspend fun addToQueueSync(markAsUnplayed: Boolean, episode: Episode) {
+        Logd(TAG, "addToQueueSync( ... ) called")
+
+        val currentlyPlaying = curMedia
+        val positionCalculator = EnqueuePositionCalculator(enqueueLocation)
+        var insertPosition = positionCalculator.calcPosition(curQueue.episodes, currentlyPlaying)
+
+        if (curQueue.episodeIds.contains(episode.id)) return
+
+        curQueue.episodeIds.add(insertPosition, episode.id)
+        curQueue.episodes.add(insertPosition, episode)
+        insertPosition++
+        curQueue.update()
+        upsert(curQueue) {}
+
+        if (markAsUnplayed && episode.isNew) setPlayState(Episode.UNPLAYED, false, episode)
+
+        EventFlow.postEvent(FlowEvent.QueueEvent.added(episode, insertPosition))
+//                if (performAutoDownload) autodownloadEpisodeMedia(context)
     }
 
     /**
@@ -142,7 +160,7 @@ object Queues {
     }
 
     @OptIn(UnstableApi::class)
-    fun removeFromAllQueues(vararg episodes: Episode) {
+    fun removeFromAllQueuesSync(vararg episodes: Episode) {
         Logd(TAG, "removeFromAllQueues called ")
         val queues = realm.query(PlayQueue::class).find()
         for (q in queues) {
@@ -163,7 +181,6 @@ object Queues {
 
         val queue = queue_ ?: curQueue
         val events: MutableList<FlowEvent.QueueEvent> = ArrayList()
-        val updatedItems: MutableList<Episode> = ArrayList()
         val pos: MutableList<Int> = mutableListOf()
         val qItems = queue.episodes.toMutableList()
         for (i in qItems.indices) {
@@ -171,7 +188,6 @@ object Queues {
             if (episodes.contains(episode)) {
                 Logd(TAG, "removing from queue: ${episode.id} ${episode.title}")
                 pos.add(i)
-                updatedItems.add(episode)
                 if (queue.id == curQueue.id) events.add(FlowEvent.QueueEvent.removed(episode))
             }
         }
@@ -260,53 +276,47 @@ object Queues {
     class EnqueuePositionCalculator(private val enqueueLocation: EnqueueLocation) {
         /**
          * Determine the position (0-based) that the item(s) should be inserted to the named queue.
-         * @param curQueue           the queue to which the item is to be inserted
+         * @param queueItems           the queue to which the item is to be inserted
          * @param currentPlaying     the currently playing media
          */
-        fun calcPosition(curQueue: List<Episode>, currentPlaying: Playable?): Int {
+        fun calcPosition(queueItems: List<Episode>, currentPlaying: Playable?): Int {
             when (enqueueLocation) {
-                EnqueueLocation.BACK -> return curQueue.size
+                EnqueueLocation.BACK -> return queueItems.size
                 EnqueueLocation.FRONT ->                 // Return not necessarily 0, so that when a list of items are downloaded and enqueued
                     // in succession of calls (e.g., users manually tapping download one by one),
                     // the items enqueued are kept the same order.
                     // Simply returning 0 will reverse the order.
-                    return getPositionOfFirstNonDownloadingItem(0, curQueue)
+                    return getPositionOfFirstNonDownloadingItem(0, queueItems)
                 EnqueueLocation.AFTER_CURRENTLY_PLAYING -> {
-                    val currentlyPlayingPosition = getCurrentlyPlayingPosition(curQueue, currentPlaying)
-                    return getPositionOfFirstNonDownloadingItem(currentlyPlayingPosition + 1, curQueue)
+                    val currentlyPlayingPosition = getCurrentlyPlayingPosition(queueItems, currentPlaying)
+                    return getPositionOfFirstNonDownloadingItem(currentlyPlayingPosition + 1, queueItems)
                 }
                 EnqueueLocation.RANDOM -> {
                     val random = Random()
-                    return random.nextInt(curQueue.size + 1)
+                    return random.nextInt(queueItems.size + 1)
                 }
                 else -> throw AssertionError("calcPosition() : unrecognized enqueueLocation option: $enqueueLocation")
             }
         }
-
-        private fun getPositionOfFirstNonDownloadingItem(startPosition: Int, curQueue: List<Episode>): Int {
-            val curQueueSize = curQueue.size
+        private fun getPositionOfFirstNonDownloadingItem(startPosition: Int, queueItems: List<Episode>): Int {
+            val curQueueSize = queueItems.size
             for (i in startPosition until curQueueSize) {
-                if (!isItemAtPositionDownloading(i, curQueue)) return i
+                if (!isItemAtPositionDownloading(i, queueItems)) return i
             }
             return curQueueSize
         }
-
-        private fun isItemAtPositionDownloading(position: Int, curQueue: List<Episode>): Boolean {
-            val curItem = try { curQueue[position] } catch (e: IndexOutOfBoundsException) { null }
+        private fun isItemAtPositionDownloading(position: Int, queueItems: List<Episode>): Boolean {
+            val curItem = try { queueItems[position] } catch (e: IndexOutOfBoundsException) { null }
             if (curItem?.media?.downloadUrl == null) return false
             return curItem.media != null && DownloadServiceInterface.get()?.isDownloadingEpisode(curItem.media!!.downloadUrl!!)?:false
         }
-
-        companion object {
-            private fun getCurrentlyPlayingPosition(curQueue: List<Episode>, currentPlaying: Playable?): Int {
-                if (currentPlaying !is EpisodeMedia) return -1
-
-                val curPlayingItemId = currentPlaying.episode!!.id
-                for (i in curQueue.indices) {
-                    if (curPlayingItemId == curQueue[i].id) return i
-                }
-                return -1
+        private fun getCurrentlyPlayingPosition(queueItems: List<Episode>, currentPlaying: Playable?): Int {
+            if (currentPlaying !is EpisodeMedia) return -1
+            val curPlayingItemId = currentPlaying.episode!!.id
+            for (i in queueItems.indices) {
+                if (curPlayingItemId == queueItems[i].id) return i
             }
+            return -1
         }
     }
 }

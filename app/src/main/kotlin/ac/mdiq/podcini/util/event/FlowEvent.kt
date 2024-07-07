@@ -4,22 +4,16 @@ import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.FeedPreferences
 import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.storage.utils.SortOrder
-import ac.mdiq.podcini.storage.utils.VolumeAdaptionSetting
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.view.KeyEvent
 import androidx.core.util.Consumer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import org.apache.commons.lang3.builder.ToStringBuilder
-import org.apache.commons.lang3.builder.ToStringStyle
 
 import java.util.*
 import kotlin.math.abs
@@ -27,6 +21,7 @@ import kotlin.math.max
 
 sealed class FlowEvent {
     val TAG = this::class.simpleName ?: "FlowEvent"
+    val id: Long = Date().time
 
     data class PlaybackPositionEvent(val media: Playable?, val position: Int, val duration: Int) : FlowEvent()
 
@@ -173,7 +168,7 @@ sealed class FlowEvent {
 
     data class FeedTagsChangedEvent(val dummy: Unit = Unit) : FlowEvent()
 
-    data class FeedUpdateRunningEvent(val isFeedUpdateRunning: Boolean) : FlowEvent()
+    data class FeedUpdatingEvent(val isRunning: Boolean) : FlowEvent()
 
     data class MessageEvent(val message: String, val action: Consumer<Context>? = null, val actionText: String? = null) : FlowEvent()
 

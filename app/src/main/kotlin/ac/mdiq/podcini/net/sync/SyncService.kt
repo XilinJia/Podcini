@@ -21,7 +21,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.isAllowMobileSync
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.persistEpisodes
-import ac.mdiq.podcini.storage.database.Feeds.deleteFeed
+import ac.mdiq.podcini.storage.database.Feeds.deleteFeedSync
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.getFeedListDownloadUrls
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
@@ -44,11 +44,8 @@ import androidx.core.app.NotificationCompat
 import androidx.media3.common.util.UnstableApi
 import androidx.work.*
 import androidx.work.Constraints.Builder
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
@@ -168,7 +165,10 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
         }
         if (feedID != null) {
             try {
-                deleteFeed(context, feedID)
+                runBlocking {
+                    deleteFeedSync(context, feedID)
+                    EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.REMOVED, feedID))
+                }
             } catch (e: InterruptedException) {
                 e.printStackTrace()
             } catch (e: ExecutionException) {
@@ -185,7 +185,7 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
             EventFlow.stickyEvents.collectLatest { event ->
                 Logd(TAG, "Received sticky event: ${event.TAG}")
                 when (event) {
-                    is FlowEvent.FeedUpdateRunningEvent -> if (!event.isFeedUpdateRunning) return@collectLatest
+                    is FlowEvent.FeedUpdatingEvent -> if (!event.isRunning) return@collectLatest
                     else -> {}
                 }
             }

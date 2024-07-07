@@ -44,9 +44,8 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
         (activity as PreferenceActivity).supportActionBar!!.setTitle(R.string.playback_pref)
     }
 
-    @OptIn(UnstableApi::class) private fun setupPlaybackScreen() {
-        val activity: Activity? = activity
-
+    @OptIn(UnstableApi::class)
+    private fun setupPlaybackScreen() {
         findPreference<Preference>(PREF_PLAYBACK_SPEED_LAUNCHER)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             VariableSpeedDialog.newInstance(booleanArrayOf(false, false, true),2)?.show(childFragmentManager, null)
             true
@@ -84,7 +83,6 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
             findPreference<Preference>(UserPreferences.PREF_UNPAUSE_ON_HEADSET_RECONNECT)!!.isVisible = false
             findPreference<Preference>(UserPreferences.PREF_UNPAUSE_ON_BLUETOOTH_RECONNECT)!!.isVisible = false
         }
-
         buildEnqueueLocationPreference()
     }
 
@@ -101,7 +99,6 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
 
         val pref = requirePreference<ListPreference>(UserPreferences.PREF_ENQUEUE_LOCATION)
         pref.summary = res.getString(R.string.pref_enqueue_location_sum, options[pref.value])
-
         pref.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any? ->
             if (newValue !is String) return@OnPreferenceChangeListener false
             pref.summary = res.getString(R.string.pref_enqueue_location_sum, options[newValue])
@@ -111,8 +108,7 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
 
     private fun <T : Preference?> requirePreference(key: CharSequence): T {
         // Possibly put it to a common method in abstract base class
-        val result = findPreference<T>(key) ?: throw IllegalArgumentException("Preference with key '$key' is not found")
-        return result
+        return  findPreference<T>(key) ?: throw IllegalArgumentException("Preference with key '$key' is not found")
     }
 
     private fun buildSmartMarkAsPlayedPreference() {
@@ -140,12 +136,10 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
     @UnstableApi
     class EditFallbackSpeedDialog(activity: Activity) {
         val TAG = this::class.simpleName ?: "Anonymous"
-
         private val activityRef = WeakReference(activity)
 
         fun show() {
             val activity = activityRef.get() ?: return
-
             val binding = EditTextDialogBinding.inflate(LayoutInflater.from(activity))
             binding.editText.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
             binding.editText.text = Editable.Factory.getInstance().newEditable(fallbackSpeed.toString())
@@ -168,16 +162,13 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
     @UnstableApi
     class EditForwardSpeedDialog(activity: Activity) {
         val TAG = this::class.simpleName ?: "Anonymous"
-
         private val activityRef = WeakReference(activity)
 
         fun show() {
             val activity = activityRef.get() ?: return
-
             val binding = EditTextDialogBinding.inflate(LayoutInflater.from(activity))
             binding.editText.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
             binding.editText.text = Editable.Factory.getInstance().newEditable(speedforwardSpeed.toString())
-
             MaterialAlertDialogBuilder(activity)
                 .setView(binding.root)
                 .setTitle(R.string.edit_fast_forward_speed)
@@ -192,7 +183,6 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
                 .setNegativeButton(R.string.cancel_label, null)
                 .show()
         }
-
     }
 
     object VideoModeDialog {
@@ -200,11 +190,9 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
             val dialog = MaterialAlertDialogBuilder(context)
             dialog.setTitle(context.getString(R.string.pref_playback_video_mode))
             dialog.setNegativeButton(android.R.string.cancel) { d: DialogInterface, _: Int -> d.dismiss() }
-
             val selected = videoPlayMode
             val entryValues = listOf(*context.resources.getStringArray(R.array.video_mode_options_values))
             val selectedIndex =  entryValues.indexOf("" + selected)
-
             val items = context.resources.getStringArray(R.array.video_mode_options)
             dialog.setSingleChoiceItems(items, selectedIndex) { d: DialogInterface, which: Int ->
                 if (selectedIndex != which) setVideoMode(entryValues[which].toInt())

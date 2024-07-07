@@ -13,7 +13,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.preferences.UserPreferences.playbackSpeedArray
 import ac.mdiq.podcini.preferences.UserPreferences.videoPlaybackSpeed
 import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
-import ac.mdiq.podcini.storage.database.RealmDB.unmanagedCopy
+import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.utils.MediaType
 import ac.mdiq.podcini.ui.utils.ItemOffsetDecoration
@@ -229,7 +229,7 @@ import java.util.*
                             if (episode != null) {
                                 var feed = episode.feed
                                 if (feed != null) {
-                                    feed = unmanagedCopy(feed)
+                                    feed = unmanaged(feed)
                                     val feedPrefs = feed.preferences
                                     if (feedPrefs != null) {
                                         feedPrefs.playSpeed = speed

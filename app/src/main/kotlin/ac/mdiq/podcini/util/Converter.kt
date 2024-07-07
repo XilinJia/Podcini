@@ -75,11 +75,7 @@ object Converter {
      */
     @JvmStatic
     fun getDurationStringLocalized(context: Context, duration: Long): String {
-        return getDurationStringLocalized(context.resources, duration)
-    }
-
-    @JvmStatic
-    fun getDurationStringLocalized(resources: Resources, duration: Long): String {
+        val resources = context.resources
         var result = ""
         var h = (duration / HOURS_MIL).toInt()
         val d = h / 24
@@ -110,6 +106,6 @@ object Converter {
     @JvmStatic
     fun shortLocalizedDuration(context: Context, time: Long): String {
         val hours = time.toFloat() / 3600f
-        return String.format(Locale.getDefault(), "%.1f ", hours) + context.getString(R.string.time_hours)
+        return String.format(Locale.getDefault(), "%.2f ", hours) + context.getString(R.string.time_hours)
     }
 }

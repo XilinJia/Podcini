@@ -41,7 +41,7 @@ object RealmDB {
         realm = Realm.open(config)
     }
 
-    fun <T : RealmObject> unmanagedCopy(entity: T) : T {
+    fun <T : RealmObject> unmanaged(entity: T) : T {
         if (BuildConfig.DEBUG) {
             val stackTrace = Thread.currentThread().stackTrace
             val caller = if (stackTrace.size > 3) stackTrace[3] else null
@@ -70,19 +70,21 @@ object RealmDB {
 
     suspend fun <T : RealmObject> update(entity: T, block: MutableRealm.(T) -> Unit) : T {
         return realm.write {
-            findLatest(entity)?.let {
+            val result: T = findLatest(entity)?.let {
                 block(it)
-            }
-            entity
+                it
+            } ?: entity
+            result
         }
     }
 
     suspend fun <T : EmbeddedRealmObject> update(entity: T, block: MutableRealm.(T) -> Unit) : T {
         return realm.write {
-            findLatest(entity)?.let {
+            val result: T = findLatest(entity)?.let {
                 block(it)
-            }
-            entity
+                it
+            } ?: entity
+            result
         }
     }
 
@@ -121,21 +123,24 @@ object RealmDB {
             Logd(TAG, "${caller?.className}.${caller?.methodName} upsertBlk: ${entity.javaClass.simpleName}")
         }
         return realm.writeBlocking {
+            var result: T = entity
             if (entity.isManaged()) {
-                findLatest(entity)?.let {
+                result = findLatest(entity)?.let {
                     block(it)
-                }
+                    it
+                } ?: entity
             } else {
                 try {
-                    copyToRealm(entity, UpdatePolicy.ALL).let {
+                    result = copyToRealm(entity, UpdatePolicy.ALL).let {
                         block(it)
+                        it
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "copyToRealm error: ${e.message}")
                     showStackTrace()
                 }
             }
-            entity
+            result
         }
     }
 

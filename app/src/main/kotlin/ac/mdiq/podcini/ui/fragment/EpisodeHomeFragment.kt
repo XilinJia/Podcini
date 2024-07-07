@@ -61,7 +61,7 @@ class EpisodeHomeFragment : Fragment() {
         toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
         toolbar.addMenuProvider(menuProvider, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
-        if (!currentItem?.link.isNullOrEmpty()) showContent()
+        if (!episode?.link.isNullOrEmpty()) showContent()
         else {
             Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show()
             parentFragmentManager.popBackStack()
@@ -88,24 +88,24 @@ class EpisodeHomeFragment : Fragment() {
 
     @OptIn(UnstableApi::class) private fun showReaderContent() {
         runOnIOScope {
-            if (!currentItem?.link.isNullOrEmpty()) {
+            if (!episode?.link.isNullOrEmpty()) {
                 if (cleanedNotes == null) {
-                    if (currentItem?.transcript == null) {
-                        val url = currentItem!!.link!!
+                    if (episode?.transcript == null) {
+                        val url = episode!!.link!!
                         val htmlSource = fetchHtmlSource(url)
-                        val article = Readability4JExtended(currentItem?.link!!, htmlSource).parse()
+                        val article = Readability4JExtended(episode?.link!!, htmlSource).parse()
                         readerText = article.textContent
 //                    Log.d(TAG, "readability4J: ${article.textContent}")
                         readerhtml = article.contentWithDocumentsCharsetOrUtf8
                     } else {
-                        readerhtml = currentItem!!.transcript
+                        readerhtml = episode!!.transcript
                         readerText = HtmlCompat.fromHtml(readerhtml!!, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
                     }
                     if (!readerhtml.isNullOrEmpty()) {
                         val shownotesCleaner = ShownotesCleaner(requireContext())
                         cleanedNotes = shownotesCleaner.processShownotes(readerhtml!!, 0)
-                        currentItem!!.setTranscriptIfLonger(readerhtml)
-                        persistEpisode(currentItem)
+                        episode!!.setTranscriptIfLonger(readerhtml)
+                        persistEpisode(episode)
                     }
                 }
             }
@@ -133,12 +133,12 @@ class EpisodeHomeFragment : Fragment() {
         if (tts == null) {
             tts = TextToSpeech(context) { status: Int ->
                 if (status == TextToSpeech.SUCCESS) {
-                    if (currentItem?.feed?.language != null) {
-                        val result = tts?.setLanguage(Locale(currentItem!!.feed!!.language!!))
+                    if (episode?.feed?.language != null) {
+                        val result = tts?.setLanguage(Locale(episode!!.feed!!.language!!))
                         if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                            Log.w(TAG, "TTS language not supported ${currentItem?.feed?.language}")
+                            Log.w(TAG, "TTS language not supported ${episode?.feed?.language}")
                             requireActivity().runOnUiThread {
-                                Toast.makeText(context, getString(R.string.language_not_supported_by_tts) + " ${currentItem?.feed?.language}", Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, getString(R.string.language_not_supported_by_tts) + " ${episode?.feed?.language}", Toast.LENGTH_LONG).show()
                             }
                         }
                     }
@@ -154,10 +154,10 @@ class EpisodeHomeFragment : Fragment() {
     }
 
     private fun showWebContent() {
-        if (!currentItem?.link.isNullOrEmpty()) {
+        if (!episode?.link.isNullOrEmpty()) {
             binding.webView.settings.javaScriptEnabled = jsEnabled
-            Logd(TAG, "currentItem!!.link ${currentItem!!.link}")
-            binding.webView.loadUrl(currentItem!!.link!!)
+            Logd(TAG, "currentItem!!.link ${episode!!.link}")
+            binding.webView.loadUrl(episode!!.link!!)
             binding.readerView.visibility = View.GONE
             binding.webView.visibility = View.VISIBLE
         } else Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show()
@@ -207,7 +207,7 @@ class EpisodeHomeFragment : Fragment() {
                         if (!ttsPlaying) {
                             ttsPlaying = true
                             if (!readerText.isNullOrEmpty()) {
-                                ttsSpeed = currentItem?.feed?.preferences?.playSpeed ?: 1.0f
+                                ttsSpeed = episode?.feed?.preferences?.playSpeed ?: 1.0f
                                 tts?.setSpeechRate(ttsSpeed)
                                 while (startIndex < readerText!!.length) {
                                     val endIndex = minOf(startIndex + MAX_CHUNK_LENGTH, readerText!!.length)
@@ -237,7 +237,7 @@ class EpisodeHomeFragment : Fragment() {
                     return true
                 }
                 else -> {
-                    return currentItem != null
+                    return episode != null
                 }
             }
         }
@@ -268,7 +268,7 @@ class EpisodeHomeFragment : Fragment() {
     }
 
     @UnstableApi private fun updateAppearance() {
-        if (currentItem == null) {
+        if (episode == null) {
             Logd(TAG, "updateAppearance currentItem is null")
             return
         }
@@ -281,12 +281,12 @@ class EpisodeHomeFragment : Fragment() {
         private val TAG: String = EpisodeHomeFragment::class.simpleName ?: "Anonymous"
         private const val MAX_CHUNK_LENGTH = 2000
 
-        var currentItem: Episode? = null
+        var episode: Episode? = null    // unmanged
 
         fun newInstance(item: Episode): EpisodeHomeFragment {
             val fragment = EpisodeHomeFragment()
             Logd(TAG, "item.itemIdentifier ${item.identifier}")
-            if (item.identifier != currentItem?.identifier) currentItem = item
+            if (item.identifier != episode?.identifier) episode = item
             return fragment
         }
     }

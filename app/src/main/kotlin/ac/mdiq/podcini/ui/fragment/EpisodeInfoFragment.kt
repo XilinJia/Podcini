@@ -11,7 +11,7 @@ import ac.mdiq.podcini.playback.PlaybackController.Companion.seekTo
 import ac.mdiq.podcini.playback.base.InTheatre
 import ac.mdiq.podcini.preferences.UsageStatistics
 import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.storage.database.RealmDB.unmanagedCopy
+import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
@@ -74,7 +74,7 @@ import kotlin.math.max
     private var homeFragment: EpisodeHomeFragment? = null
 
     private var itemLoaded = false
-    private var episode: Episode? = null
+    private var episode: Episode? = null    // unmanaged
     private var webviewData: String? = null
 
     private lateinit var shownotesCleaner: ShownotesCleaner
@@ -409,7 +409,8 @@ import kotlin.math.max
 
     private fun onFavoriteEvent(event: FlowEvent.FavoritesEvent) {
         if (episode?.id == event.episode.id) {
-            episode = unmanagedCopy(event.episode)
+            episode = unmanaged(event.episode)
+//            episode = event.episode
             prepareMenu()
         }
     }
@@ -420,7 +421,8 @@ import kotlin.math.max
         while (i < size) {
             val item_ = event.episodes[i]
             if (item_.id == episode?.id) {
-                episode = unmanagedCopy(item_)
+                episode = unmanaged(item_)
+//                episode = item_
                 prepareMenu()
                 break
             }
@@ -469,7 +471,7 @@ import kotlin.math.max
     }
 
     fun setItem(item_: Episode) {
-        episode = unmanagedCopy(item_)
+        episode = unmanaged(item_)
     }
 
     companion object {

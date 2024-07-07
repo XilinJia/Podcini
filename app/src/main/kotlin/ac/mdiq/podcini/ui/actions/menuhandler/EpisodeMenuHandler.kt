@@ -7,35 +7,31 @@ import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.playback.base.InTheatre
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
-import ac.mdiq.podcini.receiver.MediaButtonReceiver
-import ac.mdiq.podcini.storage.utils.EpisodeUtil
-import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.playback.base.InTheatre.writeNoMediaPlaying
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.ACTION_SHUTDOWN_PLAYBACK_SERVICE
+import ac.mdiq.podcini.receiver.MediaButtonReceiver
 import ac.mdiq.podcini.storage.database.Episodes.deleteMediaOfEpisode
-import ac.mdiq.podcini.storage.database.Episodes.markPlayed
+import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.Episodes.setFavorite
-import ac.mdiq.podcini.storage.database.Feeds.shouldAutoDeleteItemsOnFeed
 import ac.mdiq.podcini.storage.database.Queues.addToQueue
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueue
-import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.ui.dialog.ShareDialog
 import ac.mdiq.podcini.ui.utils.LocalDeleteModal
-import ac.mdiq.podcini.util.*
-import android.os.Handler
+import ac.mdiq.podcini.util.IntentUtils
+import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.ShareUtils
 import android.view.KeyEvent
 import android.view.Menu
 import androidx.annotation.OptIn
 import androidx.fragment.app.Fragment
 import androidx.media3.common.util.UnstableApi
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.math.ceil
 
 
 /**
@@ -147,7 +143,7 @@ object EpisodeMenuHandler {
             }
             R.id.mark_read_item -> {
                 selectedItem.setPlayed(true)
-                markPlayed(Episode.PLAYED, true, selectedItem)
+                setPlayState(Episode.PLAYED, true, selectedItem)
                 if (selectedItem.feed?.isLocalFeed != true && (isProviderConnected || wifiSyncEnabledKey)) {
                     val media: EpisodeMedia? = selectedItem.media
                     // not all items have media, Gpodder only cares about those that do
@@ -164,7 +160,7 @@ object EpisodeMenuHandler {
             }
             R.id.mark_unread_item -> {
                 selectedItem.setPlayed(false)
-                markPlayed(Episode.UNPLAYED, false, selectedItem)
+                setPlayState(Episode.UNPLAYED, false, selectedItem)
                 if (selectedItem.feed?.isLocalFeed != true && selectedItem.media != null) {
                     val actionNew: EpisodeAction = EpisodeAction.Builder(selectedItem, EpisodeAction.NEW)
                         .currentTimestamp()
@@ -182,7 +178,7 @@ object EpisodeMenuHandler {
                     writeNoMediaPlaying()
                     IntentUtils.sendLocalBroadcast(context, ACTION_SHUTDOWN_PLAYBACK_SERVICE)
                 }
-                markPlayed(Episode.UNPLAYED, true, selectedItem)
+                setPlayState(Episode.UNPLAYED, true, selectedItem)
             }
             R.id.visit_website_item -> {
                 val url = selectedItem.getLinkWithFallback()
@@ -199,47 +195,5 @@ object EpisodeMenuHandler {
         }
         // Refresh menu state
         return true
-    }
-
-    /**
-     * Remove new flag with additional UI logic to allow undo with Snackbar.
-     * Undo is useful for Remove new flag, given there is no UI to undo it otherwise
-     * ,i.e., there is (context) menu item for add new flag
-     */
-    @JvmStatic
-    fun markReadWithUndo(fragment: Fragment, item: Episode?, playState: Int, showSnackbar: Boolean) {
-        if (item == null) return
-
-        Logd(TAG, "markReadWithUndo( ${item.id} )")
-        // we're marking it as unplayed since the user didn't actually play it
-        // but they don't want it considered 'NEW' anymore
-        markPlayed(playState, false, item)
-
-        val h = Handler(fragment.requireContext().mainLooper)
-        val r = Runnable {
-            val media: EpisodeMedia? = item.media
-            val shouldAutoDelete: Boolean = if (item.feed == null) false else shouldAutoDeleteItemsOnFeed(item.feed!!)
-            if (media != null && EpisodeUtil.hasAlmostEnded(media) && shouldAutoDelete) deleteMediaOfEpisode(fragment.requireContext(), item)
-        }
-        val playStateStringRes: Int = when (playState) {
-            Episode.UNPLAYED -> if (item.playState == Episode.NEW) R.string.removed_inbox_label    //was new
-            else R.string.marked_as_unplayed_label   //was played
-            Episode.PLAYED -> R.string.marked_as_played_label
-            else -> if (item.playState == Episode.NEW) R.string.removed_inbox_label
-            else R.string.marked_as_unplayed_label
-        }
-        val duration: Int = Snackbar.LENGTH_LONG
-
-        if (showSnackbar) {
-            (fragment.activity as MainActivity).showSnackbarAbovePlayer(
-                playStateStringRes, duration)
-                .setAction(fragment.getString(R.string.undo)) {
-                    markPlayed(item.playState, false, item)
-                    // don't forget to cancel the thing that's going to remove the media
-                    h.removeCallbacks(r)
-                }
-        }
-
-        h.postDelayed(r, ceil((duration * 1.05f).toDouble()).toInt().toLong())
     }
 }

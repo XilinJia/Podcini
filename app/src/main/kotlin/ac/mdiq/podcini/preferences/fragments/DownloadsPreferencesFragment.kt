@@ -146,10 +146,7 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
                 handlerFunc.accept(path)
             }
             recyclerView.adapter = adapter
-
-            if (adapter.itemCount != 0) {
-                dialog.show()
-            }
+            if (adapter.itemCount != 0) dialog.show()
         }
     }
 
@@ -161,14 +158,24 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
         private lateinit var etUsername: EditText
         private lateinit var etPassword: EditText
         private lateinit var txtvMessage: TextView
-
         private var testSuccessful = false
+        private val port: Int
+            get() {
+                val port = etPort.text.toString()
+                if (port.isNotEmpty()) {
+                    try {
+                        return port.toInt()
+                    } catch (e: NumberFormatException) {
+                        // ignore
+                    }
+                }
+                return 0
+            }
 
         fun show(): Dialog {
             val content = View.inflate(context, R.layout.proxy_settings, null)
             val binding = ProxySettingsBinding.bind(content)
             spType = binding.spType
-
             dialog = MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.pref_proxy_title)
                 .setView(content)
@@ -187,7 +194,6 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
                 reinit()
                 dialog.dismiss()
             }
-
             dialog.getButton(AlertDialog.BUTTON_NEUTRAL)?.setOnClickListener {
                 etHost.text.clear()
                 etPort.text.clear()
@@ -195,12 +201,10 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
                 etPassword.text.clear()
                 setProxyConfig()
             }
-
             val types: MutableList<String> = ArrayList()
             types.add(Proxy.Type.DIRECT.name)
             types.add(Proxy.Type.HTTP.name)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) types.add(Proxy.Type.SOCKS.name)
-
             val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, types)
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             spType.setAdapter(adapter)
@@ -208,19 +212,15 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
             spType.setSelection(adapter.getPosition(proxyConfig.type.name))
             etHost = binding.etHost
             if (!proxyConfig.host.isNullOrEmpty()) etHost.setText(proxyConfig.host)
-
             etHost.addTextChangedListener(requireTestOnChange)
             etPort = binding.etPort
             if (proxyConfig.port > 0) etPort.setText(proxyConfig.port.toString())
-
             etPort.addTextChangedListener(requireTestOnChange)
             etUsername = binding.etUsername
             if (!proxyConfig.username.isNullOrEmpty()) etUsername.setText(proxyConfig.username)
-
             etUsername.addTextChangedListener(requireTestOnChange)
             etPassword = binding.etPassword
             if (!proxyConfig.password.isNullOrEmpty()) etPassword.setText(proxyConfig.password)
-
             etPassword.addTextChangedListener(requireTestOnChange)
             if (proxyConfig.type == Proxy.Type.DIRECT) {
                 enableSettings(false)
@@ -232,7 +232,6 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
                     enableSettings(position > 0)
                     setTestRequired(position > 0)
                 }
-
                 override fun onNothingSelected(parent: AdapterView<*>?) {
                     enableSettings(false)
                 }
@@ -241,52 +240,40 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
             checkValidity()
             return dialog
         }
-
         private fun setProxyConfig() {
             val type = spType.selectedItem as String
             val typeEnum = Proxy.Type.valueOf(type)
             val host = etHost.text.toString()
             val port = etPort.text.toString()
-
             var username: String? = etUsername.text.toString()
             if (username.isNullOrEmpty()) username = null
-
             var password: String? = etPassword.text.toString()
             if (password.isNullOrEmpty()) password = null
-
             var portValue = 0
             if (port.isNotEmpty()) portValue = port.toInt()
-
             val config = ProxyConfig(typeEnum, host, portValue, username, password)
             proxyConfig = config
             PodciniHttpClient.setProxyConfig(config)
         }
-
         private val requireTestOnChange: TextWatcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
-
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
-
             override fun afterTextChanged(s: Editable) {
                 setTestRequired(true)
             }
         }
-
         private fun enableSettings(enable: Boolean) {
             etHost.isEnabled = enable
             etPort.isEnabled = enable
             etUsername.isEnabled = enable
             etPassword.isEnabled = enable
         }
-
         private fun checkValidity(): Boolean {
             var valid = true
             if (spType.selectedItemPosition > 0) valid = checkHost()
-
             valid = valid and checkPort()
             return valid
         }
-
         private fun checkHost(): Boolean {
             val host = etHost.text.toString()
             if (host.isEmpty()) {
@@ -299,7 +286,6 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
             }
             return true
         }
-
         private fun checkPort(): Boolean {
             val port = port
             if (port < 0 || port > 65535) {
@@ -308,20 +294,6 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
             }
             return true
         }
-
-        private val port: Int
-            get() {
-                val port = etPort.text.toString()
-                if (port.isNotEmpty()) {
-                    try {
-                        return port.toInt()
-                    } catch (e: NumberFormatException) {
-                        // ignore
-                    }
-                }
-                return 0
-            }
-
         private fun setTestRequired(required: Boolean) {
             if (required) {
                 testSuccessful = false
@@ -332,7 +304,6 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
             }
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = true
         }
-
         private fun test() {
             if (!checkValidity()) {
                 setTestRequired(true)
@@ -345,7 +316,6 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
             txtvMessage.setTextColor(textColorPrimary)
             txtvMessage.text = "{faw_circle_o_notch spin} $checking"
             txtvMessage.visibility = View.VISIBLE
-
             val coroutineScope = CoroutineScope(Dispatchers.Main)
             coroutineScope.launch(Dispatchers.IO) {
                 try {
@@ -356,7 +326,6 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
                     val password = etPassword.text.toString()
                     var portValue = 8080
                     if (port.isNotEmpty()) portValue = port.toInt()
-
                     val address: SocketAddress = InetSocketAddress.createUnresolved(host, portValue)
                     val proxyType = Proxy.Type.valueOf(type.uppercase())
                     val builder: OkHttpClient.Builder = newBuilder()
@@ -393,12 +362,10 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
                     setTestRequired(true)
                 }
             }
-
         }
     }
 
-    class DataFolderAdapter(context: Context, selectionHandler: Consumer<String>) : RecyclerView.Adapter<DataFolderAdapter.ViewHolder?>() {
-
+    private class DataFolderAdapter(context: Context, selectionHandler: Consumer<String>) : RecyclerView.Adapter<DataFolderAdapter.ViewHolder?>() {
         private val selectionHandler: Consumer<String>
         private val currentPath: String?
         private val entries: List<StoragePath>
@@ -410,19 +377,16 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
             this.selectionHandler = selectionHandler
             this.freeSpaceString = context.getString(R.string.choose_data_directory_available_space)
         }
-
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val inflater = LayoutInflater.from(parent.context)
             val entryView = inflater.inflate(R.layout.choose_data_folder_dialog_entry, parent, false)
             return ViewHolder(entryView)
         }
-
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val storagePath = entries[position]
             val context = holder.root.context
             val freeSpace = Formatter.formatShortFileSize(context, storagePath.availableSpace)
             val totalSpace = Formatter.formatShortFileSize(context, storagePath.totalSpace)
-
             holder.path.text = storagePath.shortPath
             holder.size.text = String.format(freeSpaceString, freeSpace, totalSpace)
             holder.progressBar.progress = storagePath.usagePercentage
@@ -431,19 +395,15 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
             }
             holder.root.setOnClickListener(selectListener)
             holder.radioButton.setOnClickListener(selectListener)
-
             if (storagePath.fullPath == currentPath) holder.radioButton.toggle()
         }
-
         override fun getItemCount(): Int {
             return entries.size
         }
-
         private fun getCurrentPath(): String? {
             val dataFolder = getDataFolder(null)
             return dataFolder?.absolutePath
         }
-
         private fun getStorageEntries(context: Context): List<StoragePath> {
             val mediaDirs = context.getExternalFilesDirs(null)
             val entries: MutableList<StoragePath> = ArrayList(mediaDirs.size)
@@ -454,12 +414,10 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
             if (entries.isEmpty() && isWritable(context.filesDir)) entries.add(StoragePath(context.filesDir.absolutePath))
             return entries
         }
-
         private fun isWritable(dir: File?): Boolean {
             return dir != null && dir.exists() && dir.canRead() && dir.canWrite()
         }
-
-        class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val binding = ChooseDataFolderDialogEntryBinding.bind(itemView)
             val root: View = binding.root
             val path: TextView = binding.path
@@ -467,20 +425,16 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
             val radioButton: RadioButton = binding.radioButton
             val progressBar: ProgressBar = binding.usedSpace
         }
-
-        internal class StoragePath(val fullPath: String) {
+        private class StoragePath(val fullPath: String) {
             val shortPath: String
                 get() {
                     val prefixIndex = fullPath.indexOf("Android")
                     return if ((prefixIndex > 0)) fullPath.substring(0, prefixIndex) else fullPath
                 }
-
             val availableSpace: Long
                 get() = getFreeSpaceAvailable(fullPath)
-
             val totalSpace: Long
                 get() = getTotalSpaceAvailable(fullPath)
-
             val usagePercentage: Int
                 get() = 100 - (100 * availableSpace / totalSpace.toFloat()).toInt()
         }

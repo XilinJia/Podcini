@@ -24,12 +24,9 @@ object ThemeSwitcher {
         val dynamic = UserPreferences.isThemeColorTinted
         return when (readThemeValue(context)) {
             UserPreferences.ThemePreference.DARK -> if (dynamic) R.style.Theme_Podcini_Dynamic_Dark_NoTitle else R.style.Theme_Podcini_Dark_NoTitle
-            UserPreferences.ThemePreference.BLACK -> if (dynamic) R.style.Theme_Podcini_Dynamic_TrueBlack_NoTitle
-            else R.style.Theme_Podcini_TrueBlack_NoTitle
-            UserPreferences.ThemePreference.LIGHT -> if (dynamic) R.style.Theme_Podcini_Dynamic_Light_NoTitle
-            else R.style.Theme_Podcini_Light_NoTitle
-            else -> if (dynamic) R.style.Theme_Podcini_Dynamic_Light_NoTitle
-            else R.style.Theme_Podcini_Light_NoTitle
+            UserPreferences.ThemePreference.BLACK -> if (dynamic) R.style.Theme_Podcini_Dynamic_TrueBlack_NoTitle else R.style.Theme_Podcini_TrueBlack_NoTitle
+            UserPreferences.ThemePreference.LIGHT -> if (dynamic) R.style.Theme_Podcini_Dynamic_Light_NoTitle else R.style.Theme_Podcini_Light_NoTitle
+            else -> if (dynamic) R.style.Theme_Podcini_Dynamic_Light_NoTitle else R.style.Theme_Podcini_Light_NoTitle
         }
     }
 
@@ -38,14 +35,10 @@ object ThemeSwitcher {
     fun getTranslucentTheme(context: Context): Int {
         val dynamic = UserPreferences.isThemeColorTinted
         return when (readThemeValue(context)) {
-            UserPreferences.ThemePreference.DARK -> if (dynamic) R.style.Theme_Podcini_Dynamic_Dark_Translucent
-            else R.style.Theme_Podcini_Dark_Translucent
-            UserPreferences.ThemePreference.BLACK -> if (dynamic) R.style.Theme_Podcini_Dynamic_TrueBlack_Translucent
-            else R.style.Theme_Podcini_TrueBlack_Translucent
-            UserPreferences.ThemePreference.LIGHT -> if (dynamic) R.style.Theme_Podcini_Dynamic_Light_Translucent
-            else R.style.Theme_Podcini_Light_Translucent
-            else -> if (dynamic) R.style.Theme_Podcini_Dynamic_Light_Translucent
-            else R.style.Theme_Podcini_Light_Translucent
+            UserPreferences.ThemePreference.DARK -> if (dynamic) R.style.Theme_Podcini_Dynamic_Dark_Translucent else R.style.Theme_Podcini_Dark_Translucent
+            UserPreferences.ThemePreference.BLACK -> if (dynamic) R.style.Theme_Podcini_Dynamic_TrueBlack_Translucent else R.style.Theme_Podcini_TrueBlack_Translucent
+            UserPreferences.ThemePreference.LIGHT -> if (dynamic) R.style.Theme_Podcini_Dynamic_Light_Translucent else R.style.Theme_Podcini_Light_Translucent
+            else -> if (dynamic) R.style.Theme_Podcini_Dynamic_Light_Translucent else R.style.Theme_Podcini_Light_Translucent
         }
     }
 

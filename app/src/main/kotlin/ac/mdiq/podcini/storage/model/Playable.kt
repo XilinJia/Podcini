@@ -66,7 +66,7 @@ interface Playable : Parcelable, Serializable {
      * if last played time is unknown.
      */
     /**
-     * @param lastPlayedTimestamp  timestamp in ms
+     * @param lastPlayedTime  timestamp in ms
      */
     fun getLastPlayedTime(): Long
 
@@ -137,7 +137,7 @@ interface Playable : Parcelable, Serializable {
 
     fun setDuration(newDuration: Int)
 
-    fun setLastPlayedTime(lastPlayedTimestamp: Long)
+    fun setLastPlayedTime(lastPlayedTime: Long)
 
     /**
      * Returns the location of the image or null if no image is available.

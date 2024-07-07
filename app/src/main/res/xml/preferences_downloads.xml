@@ -39,7 +39,7 @@
             android:summary="@string/pref_favorite_keeps_episodes_sum"
             android:title="@string/pref_favorite_keeps_episodes_title"/>
         <SwitchPreferenceCompat
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:enabled="true"
             android:key="prefDeleteRemovesFromQueue"
             android:summary="@string/pref_delete_removes_from_queue_sum"

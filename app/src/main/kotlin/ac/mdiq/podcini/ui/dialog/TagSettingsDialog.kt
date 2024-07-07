@@ -5,13 +5,11 @@ import ac.mdiq.podcini.databinding.EditTagsDialogBinding
 import ac.mdiq.podcini.storage.database.Feeds.buildTags
 import ac.mdiq.podcini.storage.database.Feeds.getTags
 import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
-import ac.mdiq.podcini.storage.database.RealmDB.unmanagedCopy
+import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.FeedPreferences
 import ac.mdiq.podcini.ui.adapter.SimpleChipAdapter
 import ac.mdiq.podcini.ui.utils.ItemOffsetDecoration
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
@@ -108,7 +106,7 @@ class TagSettingsDialog : DialogFragment() {
 //            displayedTags.add(FeedPreferences.TAG_ROOT)
 //        }
         for (feed_ in feedList) {
-            val feed = unmanagedCopy(feed_)
+            val feed = unmanaged(feed_)
             if (feed.preferences != null) {
                 feed.preferences!!.tags.removeAll(commonTags)
                 feed.preferences!!.tags.addAll(displayedTags)

@@ -30,10 +30,6 @@ class Chapter : EmbeddedRealmObject {
         this.imageUrl = imageUrl
     }
 
-    fun getHumanReadableIdentifier(): String? {
-        return title
-    }
-
     override fun toString(): String {
         return "ID3Chapter [title=$title, start=$start, url=$link]"
     }

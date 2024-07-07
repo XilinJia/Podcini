@@ -18,15 +18,15 @@ import kotlinx.coroutines.*
 object InTheatre {
     val TAG: String = InTheatre::class.simpleName ?: "Anonymous"
 
-    var curQueue: PlayQueue
+    var curQueue: PlayQueue     // unmanaged
 
-    var curEpisode: Episode? = null
+    var curEpisode: Episode? = null     // unmanged
         set(value) {
             field = value
             if (curMedia != field?.media) curMedia = field?.media
         }
 
-    var curMedia: Playable? = null
+    var curMedia: Playable? = null      // unmanged if EpisodeMedia
         set(value) {
             field = value
             if (field is EpisodeMedia) {
@@ -35,7 +35,7 @@ object InTheatre {
             }
         }
 
-    var curState: CurrentState
+    var curState: CurrentState      // unmanaged
 
     init {
         curQueue = PlayQueue()
@@ -60,9 +60,7 @@ object InTheatre {
                         curQueue_.id = i.toLong()
                         curQueue_.name = "Queue $i"
                     }
-                    realm.write {
-                        copyToRealm(curQueue_)
-                    }
+                    upsert(curQueue_) {}
                 }
                 curQueue.update()
                 upsert(curQueue) {}
@@ -75,9 +73,7 @@ object InTheatre {
                 Logd(TAG, "creating new curState")
                 curState_ = CurrentState()
                 curState = curState_
-                realm.write {
-                    copyToRealm(curState_)
-                }
+                upsert(curState_) {}
             }
             loadPlayableFromPreferences()
         }

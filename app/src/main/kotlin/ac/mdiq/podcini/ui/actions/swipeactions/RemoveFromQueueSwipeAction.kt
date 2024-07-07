@@ -2,7 +2,7 @@ package ac.mdiq.podcini.ui.actions.swipeactions
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
-import ac.mdiq.podcini.storage.database.Episodes.markPlayed
+import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueue
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
@@ -61,17 +61,12 @@ class RemoveFromQueueSwipeAction : SwipeAction {
     fun addToQueueAt(episode: Episode, index: Int) : Job {
         return runOnIOScope {
             if (curQueue.episodeIds.contains(episode.id)) return@runOnIOScope
-//            episode.queueId = curQueue.id
-//            episode.isInCurQueue = true
-            if (episode.isNew) markPlayed(Episode.UNPLAYED, false, episode)
-            upsert(episode) {}
+            if (episode.isNew) setPlayState(Episode.UNPLAYED, false, episode)
             curQueue.update()
             curQueue.episodeIds.add(index, episode.id)
             curQueue.episodes.add(index, episode)
             upsert(curQueue) {}
             EventFlow.postEvent(FlowEvent.QueueEvent.added(episode, index))
-//            EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(episode))
-
 //            if (performAutoDownload) autodownloadEpisodeMedia(context)
         }
     }

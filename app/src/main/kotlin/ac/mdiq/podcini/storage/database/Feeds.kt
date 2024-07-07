@@ -3,7 +3,6 @@ package ac.mdiq.podcini.storage.database
 import ac.mdiq.podcini.net.download.DownloadError
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
-import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodes
 import ac.mdiq.podcini.storage.database.LogsAndStats.addDownloadStatus
 import ac.mdiq.podcini.storage.database.Queues.removeFromAllQueuesQuiet
@@ -37,7 +36,8 @@ object Feeds {
     private val tags: MutableList<String> = mutableListOf()
 
     @Synchronized
-    fun getFeedList(): List<Feed> {
+    fun getFeedList(fromDB: Boolean = true): List<Feed> {
+        if (fromDB) return realm.query(Feed::class).find()
         return feedMap.values.toList()
     }
 
@@ -67,7 +67,7 @@ object Feeds {
 
     fun buildTags() {
         val tagsSet = mutableSetOf<String>()
-        val feedsCopy = synchronized(feedMap) { feedMap.values.toList() }
+        val feedsCopy = getFeedList()
         for (feed in feedsCopy) {
             if (feed.preferences != null) tagsSet.addAll(feed.preferences!!.tags.filter { it != TAG_ROOT })
         }
@@ -94,7 +94,7 @@ object Feeds {
                             changes.insertions.isNotEmpty() -> {
                                 for (i in changes.insertions) {
                                     Logd(TAG, "monitorFeeds inserted feed: ${changes.list[i].title}")
-                                    updateFeedMap(listOf(changes.list[i]))
+//                                    updateFeedMap(listOf(changes.list[i]))
                                     monitorFeed(changes.list[i])
                                 }
                                 EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.ADDED))
@@ -106,7 +106,8 @@ object Feeds {
 //                            }
                             changes.deletions.isNotEmpty() -> {
                                 Logd(TAG, "monitorFeeds feed deleted: ${changes.deletions.size}")
-                                updateFeedMap(changes.list, true)
+//                                updateFeedMap(changes.list, true)
+                                buildTags()
                             }
                         }
                     }
@@ -125,7 +126,7 @@ object Feeds {
                 when (changes) {
                     is UpdatedObject -> {
                         Logd(TAG, "monitorFeed UpdatedObject0 ${changes.obj.title} ${changes.changedFields.joinToString()}")
-                        updateFeedMap(listOf(changes.obj))
+//                        updateFeedMap(listOf(changes.obj))
                         if (changes.isFieldChanged("preferences")) EventFlow.postEvent(FlowEvent.FeedPrefsChangeEvent(changes.obj))
                     }
                     else -> {}
@@ -138,13 +139,13 @@ object Feeds {
                 when (changes) {
                     is UpdatedObject -> {
                         Logd(TAG, "monitorFeed UpdatedObject ${changes.obj.title} ${changes.changedFields.joinToString()}")
-                        updateFeedMap(listOf(changes.obj))
+//                        updateFeedMap(listOf(changes.obj))
                         if (changes.isFieldChanged("preferences")) EventFlow.postEvent(FlowEvent.FeedPrefsChangeEvent(changes.obj))
                     }
-                    is DeletedObject -> {
-                        Logd(TAG, "monitorFeed DeletedObject ${feed.title}")
-                        EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.REMOVED, feed.id))
-                    }
+//                    is DeletedObject -> {
+//                        Logd(TAG, "monitorFeed DeletedObject ${feed.title}")
+//                        EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.REMOVED, feed.id))
+//                    }
                     else -> {}
                 }
             }
@@ -154,15 +155,17 @@ object Feeds {
     fun getFeedListDownloadUrls(): List<String> {
         Logd(TAG, "getFeedListDownloadUrls called")
         val result: MutableList<String> = mutableListOf()
-        for (f in feedMap.values) {
+        val feeds = getFeedList()
+        for (f in feeds) {
             val url = f.downloadUrl
             if (url != null && !url.startsWith(Feed.PREFIX_LOCAL_FOLDER)) result.add(url)
         }
         return result
     }
 
-    fun getFeed(feedId: Long, copy: Boolean = false): Feed? {
-        val f = feedMap[feedId]
+    fun getFeed(feedId: Long, copy: Boolean = false, fromDB: Boolean = true): Feed? {
+        Logd(TAG, "getFeed called fromDB: $fromDB")
+        val f = if (fromDB) realm.query(Feed::class, "id == $feedId").first().find() else feedMap[feedId]
         return if (f != null) {
             if (copy) realm.copyFromRealm(f)
             else f
@@ -173,8 +176,9 @@ object Feeds {
         Logd(TAG, "searchFeedByIdentifyingValueOrID called")
         if (feed.id != 0L) return getFeed(feed.id, copy)
         val feeds = getFeedList()
+        val feedId = feed.identifyingValue
         for (f in feeds) {
-            if (f.identifyingValue == feed.identifyingValue) return if (copy) realm.copyFromRealm(f) else f
+            if (f.identifyingValue == feedId) return if (copy) realm.copyFromRealm(f) else f
         }
         return null
     }
@@ -229,7 +233,7 @@ object Feeds {
             for (idx in newFeed.episodes.indices) {
                 val episode = newFeed.episodes[idx]
 
-                val possibleDuplicate = searchEpisodeGuessDuplicate(newFeed.episodes, episode)
+                val possibleDuplicate = EpisodeAssistant.searchEpisodeGuessDuplicate(newFeed.episodes, episode)
                 if (!newFeed.isLocalFeed && possibleDuplicate != null && episode !== possibleDuplicate) {
                     // Canonical episode is the first one returned (usually oldest)
                     addDownloadStatus(DownloadResult(savedFeed.id, episode.title ?: "", DownloadError.ERROR_PARSER_EXCEPTION_DUPLICATE, false,
@@ -237,17 +241,17 @@ object Feeds {
                             The podcast host appears to have added the same episode twice. Podcini still refreshed the feed and attempted to repair it.
                             
                             Original episode:
-                            ${duplicateEpisodeDetails(episode)}
+                            ${EpisodeAssistant.duplicateEpisodeDetails(episode)}
                             
                             Second episode that is also in the feed:
-                            ${duplicateEpisodeDetails(possibleDuplicate)}
+                            ${EpisodeAssistant.duplicateEpisodeDetails(possibleDuplicate)}
                             """.trimIndent()))
                     continue
                 }
 
-                var oldItem = searchEpisodeByIdentifyingValue(savedFeed.episodes, episode)
+                var oldItem = EpisodeAssistant.searchEpisodeByIdentifyingValue(savedFeed.episodes, episode)
                 if (!newFeed.isLocalFeed && oldItem == null) {
-                    oldItem = searchEpisodeGuessDuplicate(savedFeed.episodes, episode)
+                    oldItem = EpisodeAssistant.searchEpisodeGuessDuplicate(savedFeed.episodes, episode)
                     if (oldItem != null) {
                         Logd(TAG, "Repaired duplicate: $oldItem, $episode")
                         addDownloadStatus(DownloadResult(savedFeed.id,
@@ -256,10 +260,10 @@ object Feeds {
                                 The podcast host changed the ID of an existing episode instead of just updating the episode itself. Podcini still refreshed the feed and attempted to repair it.
                                 
                                 Original episode:
-                                ${duplicateEpisodeDetails(oldItem)}
+                                ${EpisodeAssistant.duplicateEpisodeDetails(oldItem)}
                                 
                                 Now the feed contains:
-                                ${duplicateEpisodeDetails(episode)}
+                                ${EpisodeAssistant.duplicateEpisodeDetails(episode)}
                                 """.trimIndent()))
                         oldItem.identifier = episode.identifier
 
@@ -300,7 +304,7 @@ object Feeds {
                 val it = savedFeed.episodes.toMutableList().iterator()
                 while (it.hasNext()) {
                     val feedItem = it.next()
-                    if (searchEpisodeByIdentifyingValue(newFeed.episodes, feedItem) == null) {
+                    if (EpisodeAssistant.searchEpisodeByIdentifyingValue(newFeed.episodes, feedItem) == null) {
                         unlistedItems.add(feedItem)
                         it.remove()
                     }
@@ -334,43 +338,6 @@ object Feeds {
         return resultFeed
     }
 
-    /**
-     * Get an episode by its identifying value in the given list
-     */
-    private fun searchEpisodeByIdentifyingValue(episodes: List<Episode>?, searchItem: Episode): Episode? {
-        if (episodes.isNullOrEmpty()) return null
-        for (episode in episodes) {
-            if (episode.identifyingValue == searchItem.identifyingValue) return episode
-        }
-        return null
-    }
-
-    /**
-     * Guess if one of the episodes could actually mean the searched episode, even if it uses another identifying value.
-     * This is to work around podcasters breaking their GUIDs.
-     */
-    private fun searchEpisodeGuessDuplicate(episodes: List<Episode>?, searchItem: Episode): Episode? {
-        if (episodes.isNullOrEmpty()) return null
-        for (episode in episodes) {
-            if (EpisodeDuplicateGuesser.sameAndNotEmpty(episode.identifier, searchItem.identifier)) return episode
-        }
-        for (episode in episodes) {
-            if (EpisodeDuplicateGuesser.seemDuplicates(episode, searchItem)) return episode
-        }
-        return null
-    }
-
-    private fun duplicateEpisodeDetails(episode: Episode): String {
-        return ("""
-    Title: ${episode.title}
-    ID: ${episode.identifier}
-    """.trimIndent()
-                + (if ((episode.media == null)) "" else """
-     
-     URL: ${episode.media!!.downloadUrl}
-     """.trimIndent()))
-    }
-
     fun persistFeedLastUpdateFailed(feed: Feed, lastUpdateFailed: Boolean) : Job {
         Logd(TAG, "persistFeedLastUpdateFailed called")
         return runOnIOScope {
@@ -383,11 +350,10 @@ object Feeds {
     fun updateFeedDownloadURL(original: String, updated: String) : Job {
         Logd(TAG, "updateFeedDownloadURL(original: $original, updated: $updated)")
         return runOnIOScope {
-            realm.write {
-                val feed = query(Feed::class).query("downloadUrl == $0", original).first().find()
-                if (feed != null) {
-                    feed.downloadUrl = updated
-//                    upsert(feed) {}
+            val feed = realm.query(Feed::class).query("downloadUrl == $0", original).first().find()
+            if (feed != null) {
+                upsert(feed) {
+                    it.downloadUrl = updated
                 }
             }
         }
@@ -434,17 +400,10 @@ object Feeds {
         return runOnIOScope {
             val feed_ = realm.query(Feed::class, "id == ${feed.id}").first().find()
             if (feed_ != null) {
-                realm.write {
-                    findLatest(feed_)?.let {
-                        it.preferences = feed.preferences
-//                        updateFeedMap(listOf(it))
-                    }
+                upsert(feed_) {
+                    it.preferences = feed.preferences
                 }
-            } else {
-                upsert(feed) {}
-//                updateFeedMap(listOf(feed))
-            }
-//            if (feed.preferences != null) EventFlow.postEvent(FlowEvent.FeedPrefsChangeEvent(feed.preferences!!))
+            } else upsert(feed) {}
         }
     }
 
@@ -453,70 +412,37 @@ object Feeds {
      * @param context A context that is used for opening a database connection.
      * @param feedId  ID of the Feed that should be deleted.
      */
-    fun deleteFeed(context: Context, feedId: Long, postEvent: Boolean = true) : Job {
+    suspend fun deleteFeedSync(context: Context, feedId: Long, postEvent: Boolean = true) {
         Logd(TAG, "deleteFeed called")
-        return runOnIOScope {
-            val feed = getFeed(feedId)
-            if (feed != null) {
-                val eids = feed.episodes.map { it.id }
+        val feed = getFeed(feedId)
+        if (feed != null) {
+            val eids = feed.episodes.map { it.id }
 //                remove from queues
-                removeFromAllQueuesQuiet(eids)
+            removeFromAllQueuesQuiet(eids)
 //                remove media files
-//                deleteMediaFilesQuiet(context, feed.episodes)
-                realm.write {
-                    val feed_ = query(Feed::class).query("id == $0", feedId).first().find()
-                    if (feed_ != null) {
-                        val episodes = feed_.episodes.toList()
-                        if (episodes.isNotEmpty()) episodes.forEach { episode ->
-                            val url = episode.media?.fileUrl
-                            when {
-                                // Local feed
-                                url != null && url.startsWith("content://") -> DocumentFile.fromSingleUri(context, Uri.parse(url))?.delete()
-                                url != null -> File(url).delete()
-                            }
-                            delete(episode)
+            realm.write {
+                val feed_ = query(Feed::class).query("id == $0", feedId).first().find()
+                if (feed_ != null) {
+                    val episodes = feed_.episodes.toList()
+                    if (episodes.isNotEmpty()) episodes.forEach { episode ->
+                        val url = episode.media?.fileUrl
+                        when {
+                            // Local feed
+                            url != null && url.startsWith("content://") -> DocumentFile.fromSingleUri(context, Uri.parse(url))?.delete()
+                            url != null -> File(url).delete()
                         }
-                        val feedToDelete = findLatest(feed_)
-                        if (feedToDelete != null) {
-                            delete(feedToDelete)
-                            feedMap.remove(feedId)
-                        }
+                        delete(episode)
+                    }
+                    val feedToDelete = findLatest(feed_)
+                    if (feedToDelete != null) {
+                        delete(feedToDelete)
+                        feedMap.remove(feedId)
                     }
                 }
-                if (!feed.isLocalFeed && feed.downloadUrl != null) SynchronizationQueueSink.enqueueFeedRemovedIfSyncActive(context, feed.downloadUrl!!)
-//                if (postEvent) EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.REMOVED, feed.id))
             }
+            if (!feed.isLocalFeed && feed.downloadUrl != null) SynchronizationQueueSink.enqueueFeedRemovedIfSyncActive(context, feed.downloadUrl!!)
+//                if (postEvent) EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.REMOVED, feed.id))
         }
-    }
-
-//    private fun deleteMediaFilesQuiet(context: Context, episodes: List<Episode>) {
-//        for (episode in episodes) {
-//            val media = episode.media ?: continue
-//            val url = media.fileUrl
-//            when {
-//                url != null && url.startsWith("content://") -> {
-//                    // Local feed
-//                    val documentFile = DocumentFile.fromSingleUri(context, Uri.parse(media.fileUrl))
-//                    documentFile?.delete()
-////                    episode.media?.fileUrl = null
-//                }
-//                url != null -> {
-//                    // delete downloaded media file
-//                    val mediaFile = File(url)
-//                    mediaFile.delete()
-////                    since deleting entire feed, these are not necessary
-////                    episode.media?.downloaded = false
-////                    episode.media?.fileUrl = null
-////                    episode.media?.hasEmbeddedPicture = false
-//                }
-//            }
-//        }
-//    }
-
-    @JvmStatic
-    fun shouldAutoDeleteItemsOnFeed(feed: Feed): Boolean {
-        if (!UserPreferences.isAutoDelete) return false
-        return !feed.isLocalFeed || UserPreferences.isAutoDeleteLocal
     }
 
     /**
@@ -528,6 +454,39 @@ object Feeds {
         }
     }
 
+    private object EpisodeAssistant {
+        fun searchEpisodeByIdentifyingValue(episodes: List<Episode>?, searchItem: Episode): Episode? {
+            if (episodes.isNullOrEmpty()) return null
+            for (episode in episodes) {
+                if (episode.identifyingValue == searchItem.identifyingValue) return episode
+            }
+            return null
+        }
+        /**
+         * Guess if one of the episodes could actually mean the searched episode, even if it uses another identifying value.
+         * This is to work around podcasters breaking their GUIDs.
+         */
+        fun searchEpisodeGuessDuplicate(episodes: List<Episode>?, searchItem: Episode): Episode? {
+            if (episodes.isNullOrEmpty()) return null
+            for (episode in episodes) {
+                if (EpisodeDuplicateGuesser.sameAndNotEmpty(episode.identifier, searchItem.identifier)) return episode
+            }
+            for (episode in episodes) {
+                if (EpisodeDuplicateGuesser.seemDuplicates(episode, searchItem)) return episode
+            }
+            return null
+        }
+        fun duplicateEpisodeDetails(episode: Episode): String {
+            return ("""
+                Title: ${episode.title}
+                ID: ${episode.identifier}
+                """.trimIndent() + if (episode.media == null) "" else """
+                 
+                URL: ${episode.media!!.downloadUrl}
+                """.trimIndent())
+        }
+    }
+
     /**
      * Publishers sometimes mess up their feed by adding episodes twice or by changing the ID of existing episodes.
      * This class tries to guess if publishers actually meant another episode,
@@ -536,50 +495,39 @@ object Feeds {
     object EpisodeDuplicateGuesser {
         fun seemDuplicates(item1: Episode, item2: Episode): Boolean {
             if (sameAndNotEmpty(item1.identifier, item2.identifier)) return true
-
             val media1 = item1.media
             val media2 = item2.media
             if (media1 == null || media2 == null) return false
-
             if (sameAndNotEmpty(media1.getStreamUrl(), media2.getStreamUrl())) return true
-
             return (titlesLookSimilar(item1, item2) && datesLookSimilar(item1, item2) && durationsLookSimilar(media1, media2) && mimeTypeLooksSimilar(media1, media2))
         }
-
         fun sameAndNotEmpty(string1: String?, string2: String?): Boolean {
             if (string1.isNullOrEmpty() || string2.isNullOrEmpty()) return false
             return string1 == string2
         }
-
         private fun datesLookSimilar(item1: Episode, item2: Episode): Boolean {
             if (item1.getPubDate() == null || item2.getPubDate() == null) return false
-
             val dateFormat = DateFormat.getDateInstance(DateFormat.SHORT, Locale.US) // MM/DD/YY
             val dateOriginal = dateFormat.format(item2.getPubDate()!!)
             val dateNew = dateFormat.format(item1.getPubDate()!!)
             return dateOriginal == dateNew // Same date; time is ignored.
         }
-
         private fun durationsLookSimilar(media1: EpisodeMedia, media2: EpisodeMedia): Boolean {
             return abs((media1.getDuration() - media2.getDuration()).toDouble()) < 10 * 60L * 1000L
         }
-
         private fun mimeTypeLooksSimilar(media1: EpisodeMedia, media2: EpisodeMedia): Boolean {
             var mimeType1 = media1.mimeType
             var mimeType2 = media2.mimeType
             if (mimeType1 == null || mimeType2 == null) return true
-
             if (mimeType1.contains("/") && mimeType2.contains("/")) {
                 mimeType1 = mimeType1.substring(0, mimeType1.indexOf("/"))
                 mimeType2 = mimeType2.substring(0, mimeType2.indexOf("/"))
             }
             return (mimeType1 == mimeType2)
         }
-
         private fun titlesLookSimilar(item1: Episode, item2: Episode): Boolean {
             return sameAndNotEmpty(canonicalizeTitle(item1.title), canonicalizeTitle(item2.title))
         }
-
         private fun canonicalizeTitle(title: String?): String {
             if (title == null) return ""
             return title
@@ -590,5 +538,4 @@ object Feeds {
                 .replace('—', '-')
         }
     }
-
 }

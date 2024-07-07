@@ -32,18 +32,20 @@ import ac.mdiq.podcini.preferences.UserPreferences.isPersistNotify
 import ac.mdiq.podcini.preferences.UserPreferences.isUnpauseOnBluetoothReconnect
 import ac.mdiq.podcini.preferences.UserPreferences.isUnpauseOnHeadsetReconnect
 import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
+import ac.mdiq.podcini.preferences.UserPreferences.shouldAutoDeleteItem
+import ac.mdiq.podcini.preferences.UserPreferences.shouldDeleteRemoveFromQueue
 import ac.mdiq.podcini.preferences.UserPreferences.shouldFavoriteKeepEpisode
 import ac.mdiq.podcini.preferences.UserPreferences.shouldSkipKeepEpisode
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
 import ac.mdiq.podcini.storage.database.Episodes.addToHistory
-import ac.mdiq.podcini.storage.database.Episodes.deleteMediaOfEpisode
+import ac.mdiq.podcini.storage.database.Episodes.deleteMediaSync
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
-import ac.mdiq.podcini.storage.database.Episodes.markPlayed
+import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
 import ac.mdiq.podcini.storage.database.Episodes.persistEpisode
-import ac.mdiq.podcini.storage.database.Feeds.shouldAutoDeleteItemsOnFeed
 import ac.mdiq.podcini.storage.database.Queues.addToQueue
+import ac.mdiq.podcini.storage.database.Queues.removeFromQueueSync
 import ac.mdiq.podcini.storage.database.RealmDB.realm
-import ac.mdiq.podcini.storage.database.RealmDB.unmanagedCopy
+import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.CurrentState.Companion.NO_MEDIA_PLAYING
 import ac.mdiq.podcini.storage.model.CurrentState.Companion.PLAYER_STATUS_OTHER
@@ -292,7 +294,7 @@ class PlaybackService : MediaSessionService() {
 //            TODO: test
 //            return
             }
-            val item = (playable as? EpisodeMedia)?.episode ?: currentitem
+            var item = (playable as? EpisodeMedia)?.episode ?: currentitem
             val smartMarkAsPlayed = hasAlmostEnded(playable)
             if (!ended && smartMarkAsPlayed) Logd(TAG, "smart mark as played")
 
@@ -311,22 +313,21 @@ class PlaybackService : MediaSessionService() {
                 }
             }
             if (item != null) {
-                if (ended || smartMarkAsPlayed || autoSkipped || (skipped && !shouldSkipKeepEpisode())) {
-                    Logd(TAG, "onPostPlayback ended: $ended smartMarkAsPlayed: $smartMarkAsPlayed autoSkipped: $autoSkipped skipped: $skipped")
-                    // only mark the item as played if we're not keeping it anyways
-                    markPlayed(Episode.PLAYED, ended || (skipped && smartMarkAsPlayed), item)
-                    // don't know if it actually matters to not autodownload when smart mark as played is triggered
-//                    removeFromQueue(this@PlaybackService, ended, item)
-                    // Delete episode if enabled
-                    val action = item.feed?.preferences?.currentAutoDelete
-                    val shouldAutoDelete = (action == AutoDeleteAction.ALWAYS
-                            || (action == AutoDeleteAction.GLOBAL && item.feed != null && shouldAutoDeleteItemsOnFeed(item.feed!!)))
-                    if (playable is EpisodeMedia && shouldAutoDelete && (!item.isFavorite || !shouldFavoriteKeepEpisode())) {
-                        deleteMediaOfEpisode(this@PlaybackService, item)
-                        Logd(TAG, "Episode Deleted")
+                runOnIOScope {
+                    if (ended || smartMarkAsPlayed || autoSkipped || (skipped && !shouldSkipKeepEpisode())) {
+                        Logd(TAG, "onPostPlayback ended: $ended smartMarkAsPlayed: $smartMarkAsPlayed autoSkipped: $autoSkipped skipped: $skipped")
+                        // only mark the item as played if we're not keeping it anyways
+                        item = setPlayStateSync(Episode.PLAYED, ended || (skipped && smartMarkAsPlayed), item!!)
+                        val action = item?.feed?.preferences?.currentAutoDelete
+                        val shouldAutoDelete = (action == AutoDeleteAction.ALWAYS ||
+                                (action == AutoDeleteAction.GLOBAL && item?.feed != null && shouldAutoDeleteItem(item!!.feed!!)))
+                        if (playable is EpisodeMedia && shouldAutoDelete && (item?.isFavorite != true || !shouldFavoriteKeepEpisode())) {
+                            item = deleteMediaSync(this@PlaybackService, item!!)
+                            if (shouldDeleteRemoveFromQueue()) removeFromQueueSync(null, null, item!!)
+                        }
                     }
+                    if (playable is EpisodeMedia && (ended || skipped || playingNext)) addToHistory(item!!)
                 }
-                if (playable is EpisodeMedia && (ended || skipped || playingNext)) addToHistory(item)
             }
         }
 
@@ -425,9 +426,8 @@ class PlaybackService : MediaSessionService() {
 
         fun writeMediaPlaying(playable: Playable?, playerStatus: PlayerStatus) {
             Logd(InTheatre.TAG, "Writing playback preferences ${playable?.getIdentifier()}")
-            if (playable == null) {
-                writeNoMediaPlaying()
-            } else {
+            if (playable == null) writeNoMediaPlaying()
+            else {
                 curState.curMediaType = playable.getPlayableType().toLong()
                 curState.curIsVideo = playable.getMediaType() == MediaType.VIDEO
                 if (playable is EpisodeMedia) {

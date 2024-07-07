@@ -5,6 +5,7 @@ import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.databinding.SimpleListFragmentBinding
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
+import ac.mdiq.podcini.playback.base.InTheatre.isCurMedia
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -69,7 +70,7 @@ import java.util.*
     private lateinit var emptyView: EmptyViewHandler
     
     private var displayUpArrow = false
-    private var currentPlaying: EpisodeViewHolder? = null
+    private var curIndex = -1
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = SimpleListFragmentBinding.inflate(inflater)
@@ -239,8 +240,7 @@ import java.util.*
         val item = event.episode
         val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
         if (pos >= 0) {
-            episodes.removeAt(pos)
-            episodes.add(pos, item)
+            episodes[pos] = item
             adapter.notifyItemChangedCompat(pos)
         }
     }
@@ -250,8 +250,7 @@ import java.util.*
         val item = event.episode
         val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
         if (pos >= 0) {
-            episodes.removeAt(pos)
-            episodes.add(pos, item)
+            episodes[pos] = item
             adapter.notifyItemChangedCompat(pos)
         }
     }
@@ -302,18 +301,14 @@ import java.util.*
     }
 
     private fun onPlaybackPositionEvent(event: FlowEvent.PlaybackPositionEvent) {
-//        Logd(TAG, "onPlaybackPositionEvent called with ${event.TAG}")
-        if (currentPlaying != null && event.media?.getIdentifier() == currentPlaying!!.episode?.media?.getIdentifier() && currentPlaying!!.isCurMedia) currentPlaying!!.notifyPlaybackPositionUpdated(event)
-        else {
-            Logd(TAG, "onPlaybackPositionEvent ${event.TAG} search list")
-            for (i in 0 until adapter.itemCount) {
-                val holder: EpisodeViewHolder? = recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeViewHolder
-                if (holder != null && event.media?.getIdentifier() == holder.episode?.media?.getIdentifier()) {
-                    currentPlaying = holder
-                    holder.notifyPlaybackPositionUpdated(event)
-                    break
-                }
-            }
+        val item = (event.media as? EpisodeMedia)?.episode ?: return
+        val pos = if (curIndex in 0..<episodes.size && event.media.getIdentifier() == episodes[curIndex].media?.getIdentifier() && isCurMedia(episodes[curIndex].media))
+            curIndex else EpisodeUtil.indexOfItemWithId(episodes, item.id)
+
+        if (pos >= 0) {
+            episodes[pos] = item
+            curIndex = pos
+            adapter.notifyItemChanged(pos, Bundle().apply { putString("PositionUpdate", "PlaybackPositionEvent") })
         }
         refreshInfoBar()
     }

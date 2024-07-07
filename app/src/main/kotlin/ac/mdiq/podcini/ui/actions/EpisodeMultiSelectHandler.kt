@@ -9,7 +9,7 @@ import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Episodes.deleteMediaOfEpisode
-import ac.mdiq.podcini.storage.database.Episodes.markPlayed
+import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.Queues
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueue
 import ac.mdiq.podcini.ui.utils.LocalDeleteModal
@@ -28,11 +28,11 @@ class EpisodeMultiSelectHandler(private val activity: MainActivity, private val 
             R.id.add_to_queue_batch -> queueChecked(items)
             R.id.remove_from_queue_batch -> removeFromQueueChecked(items)
             R.id.mark_read_batch -> {
-                markPlayed(Episode.PLAYED, false, *items.toTypedArray())
+                setPlayState(Episode.PLAYED, false, *items.toTypedArray())
                 showMessage(R.plurals.marked_read_batch_label, items.size)
             }
             R.id.mark_unread_batch -> {
-                markPlayed(Episode.UNPLAYED, false, *items.toTypedArray())
+                setPlayState(Episode.UNPLAYED, false, *items.toTypedArray())
                 showMessage(R.plurals.marked_unread_batch_label, items.size)
             }
             R.id.download_batch -> downloadChecked(items)

@@ -3,7 +3,7 @@ package ac.mdiq.podcini.ui.actions.actionbutton
 import android.content.Context
 import android.view.View
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.storage.database.Episodes.markPlayed
+import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.model.Episode
 import androidx.media3.common.util.UnstableApi
 
@@ -15,7 +15,7 @@ class MarkAsPlayedActionButton(item: Episode) : EpisodeActionButton(item) {
         return R.drawable.ic_check
     }
     @UnstableApi override fun onClick(context: Context) {
-        if (!item.isPlayed()) markPlayed(Episode.PLAYED, true, item)
+        if (!item.isPlayed()) setPlayState(Episode.PLAYED, true, item)
     }
 
     override val visibility: Int

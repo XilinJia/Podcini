@@ -6,8 +6,10 @@ import ac.mdiq.podcini.databinding.HorizontalFeedItemBinding
 import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.databinding.SearchFragmentBinding
 import ac.mdiq.podcini.net.feed.discovery.CombinedSearcher
+import ac.mdiq.podcini.playback.base.InTheatre.isCurMedia
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectHandler
@@ -76,7 +78,8 @@ import java.lang.ref.WeakReference
     private lateinit var automaticSearchDebouncer: Handler
 
     private var results: MutableList<Episode> = mutableListOf()
-    private var currentPlaying: EpisodeViewHolder? = null
+    private var curIndex = -1
+
     private var lastQueryChange: Long = 0
     private var isOtherViewInFoucus = false
 
@@ -254,8 +257,8 @@ import java.lang.ref.WeakReference
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.FeedListEvent, is FlowEvent.EpisodePlayedEvent, is FlowEvent.PlayerSettingsEvent -> search()
-                    is FlowEvent.EpisodeEvent -> onEventMainThread(event)
-                    is FlowEvent.PlaybackPositionEvent -> onEventMainThread(event)
+                    is FlowEvent.EpisodeEvent -> onEpisodeEvent(event)
+                    is FlowEvent.PlaybackPositionEvent -> onPlaybackPositionEvent(event)
                     else -> {}
                 }
             }
@@ -264,14 +267,14 @@ import java.lang.ref.WeakReference
             EventFlow.stickyEvents.collectLatest { event ->
                 Logd(TAG, "Received sticky event: ${event.TAG}")
                 when (event) {
-                    is FlowEvent.EpisodeDownloadEvent -> onEventMainThread(event)
+                    is FlowEvent.EpisodeDownloadEvent -> onEpisodeDownloadEvent(event)
                     else -> {}
                 }
             }
         }
     }
 
-    fun onEventMainThread(event: FlowEvent.EpisodeEvent) {
+    private fun onEpisodeEvent(event: FlowEvent.EpisodeEvent) {
 //        Logd(TAG, "onEventMainThread() called with ${event.TAG}")
         var i = 0
         val size: Int = event.episodes.size
@@ -287,28 +290,25 @@ import java.lang.ref.WeakReference
         }
     }
 
-    fun onEventMainThread(event: FlowEvent.EpisodeDownloadEvent) {
+    private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
         for (downloadUrl in event.urls) {
             val pos: Int = EpisodeUtil.indexOfItemWithDownloadUrl(results, downloadUrl)
             if (pos >= 0) adapter.notifyItemChangedCompat(pos)
         }
     }
 
-    fun onEventMainThread(event: FlowEvent.PlaybackPositionEvent) {
-        if (currentPlaying != null && event.media?.getIdentifier() == currentPlaying!!.episode?.media?.getIdentifier() && currentPlaying!!.isCurMedia)
-            currentPlaying!!.notifyPlaybackPositionUpdated(event)
-        else {
-            Logd(TAG, "onEventMainThread() ${event.TAG} search list")
-            for (i in 0 until adapter.itemCount) {
-                val holder: EpisodeViewHolder? = recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeViewHolder
-                if (holder != null && event.media?.getIdentifier() == holder.episode?.media?.getIdentifier()) {
-                    currentPlaying = holder
-                    holder.notifyPlaybackPositionUpdated(event)
-                    break
-                }
-            }
+    private fun onPlaybackPositionEvent(event: FlowEvent.PlaybackPositionEvent) {
+        val item = (event.media as? EpisodeMedia)?.episode ?: return
+        val pos = if (curIndex in 0..<results.size && event.media.getIdentifier() == results[curIndex].media?.getIdentifier() && isCurMedia(results[curIndex].media))
+            curIndex else EpisodeUtil.indexOfItemWithId(results, item.id)
+
+        if (pos >= 0) {
+            results[pos] = item
+            curIndex = pos
+            adapter.notifyItemChanged(pos, Bundle().apply { putString("PositionUpdate", "PlaybackPositionEvent") })
         }
     }
+
 
     @UnstableApi private fun searchWithProgressBar() {
         progressBar.visibility = View.VISIBLE

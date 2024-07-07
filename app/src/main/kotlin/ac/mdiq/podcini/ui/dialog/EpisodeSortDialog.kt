@@ -41,7 +41,7 @@ open class EpisodeSortDialog : BottomSheetDialogFragment() {
         onAddItem(R.string.episode_title, SortOrder.EPISODE_TITLE_A_Z, SortOrder.EPISODE_TITLE_Z_A, true)
         onAddItem(R.string.feed_title, SortOrder.FEED_TITLE_A_Z, SortOrder.FEED_TITLE_Z_A, true)
         onAddItem(R.string.duration, SortOrder.DURATION_SHORT_LONG, SortOrder.DURATION_LONG_SHORT, true)
-        onAddItem(R.string.date, SortOrder.DATE_OLD_NEW, SortOrder.DATE_NEW_OLD, false)
+        onAddItem(R.string.publish_date, SortOrder.DATE_OLD_NEW, SortOrder.DATE_NEW_OLD, false)
         onAddItem(R.string.last_played_date, SortOrder.PLAYED_DATE_OLD_NEW, SortOrder.PLAYED_DATE_NEW_OLD, false)
         onAddItem(R.string.completed_date, SortOrder.COMPLETED_DATE_OLD_NEW, SortOrder.COMPLETED_DATE_NEW_OLD, false)
         onAddItem(R.string.size, SortOrder.SIZE_SMALL_LARGE, SortOrder.SIZE_LARGE_SMALL, false)

@@ -34,6 +34,7 @@ import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.text.format.Formatter
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -66,22 +67,30 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
 
     private val chooseOpmlExportPathLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         result: ActivityResult -> this.chooseOpmlExportPathResult(result) }
+
     private val chooseHtmlExportPathLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         result: ActivityResult -> this.chooseHtmlExportPathResult(result) }
+
     private val chooseFavoritesExportPathLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         result: ActivityResult -> this.chooseFavoritesExportPathResult(result) }
+
     private val chooseProgressExportPathLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         result: ActivityResult -> this.chooseProgressExportPathResult(result) }
+
     private val restoreProgressLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             result: ActivityResult -> this.restoreProgressResult(result) }
+
     private val restoreDatabaseLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         result: ActivityResult -> this.restoreDatabaseResult(result) }
+
     private val backupDatabaseLauncher = registerForActivityResult<String, Uri>(BackupDatabase()) { uri: Uri? -> this.backupDatabaseResult(uri) }
+
     private val chooseOpmlImportPathLauncher = registerForActivityResult<String, Uri>(ActivityResultContracts.GetContent()) {
         uri: Uri? -> this.chooseOpmlImportPathResult(uri) }
 
     private val restorePreferencesLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         result: ActivityResult -> this.restorePreferencesResult(result) }
+
     private val backupPreferencesLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if (it.resultCode == RESULT_OK) {
             val data: Uri? = it.data?.data
@@ -221,7 +230,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
     private fun importDatabase() {
         // setup the alert builder
         val builder = MaterialAlertDialogBuilder(requireActivity())
-        builder.setTitle(R.string.database_import_label)
+        builder.setTitle(R.string.realm_database_import_label)
         builder.setMessage(R.string.database_import_warning)
 
         // add a button
@@ -229,6 +238,8 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
             intent.setType("*/*")
+            intent.putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("application/octet-stream"))
+            intent.addCategory(Intent.CATEGORY_OPENABLE)
             restoreDatabaseLauncher.launch(intent)
         }
 
@@ -270,7 +281,8 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         builder.setNegativeButton(R.string.no, null)
         builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-            intent.setType("*/*")
+            intent.setType("application/octet-stream")
+            intent.addCategory(Intent.CATEGORY_OPENABLE)
             restoreProgressLauncher.launch(intent)
         }
         // create and show the alert dialog
@@ -304,42 +316,68 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
     private fun restoreProgressResult(result: ActivityResult) {
         if (result.resultCode != RESULT_OK || result.data?.data == null) return
         val uri = result.data!!.data!!
-        progressDialog!!.show()
-        lifecycleScope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    val inputStream: InputStream? = requireContext().contentResolver.openInputStream(uri)
-                    val reader = BufferedReader(InputStreamReader(inputStream))
-                    EpisodeProgressReader.readDocument(reader)
-                    reader.close()
+        uri?.let {
+            if (isJsonFile(uri)) {
+                progressDialog!!.show()
+                lifecycleScope.launch {
+                    try {
+                        withContext(Dispatchers.IO) {
+                            val inputStream: InputStream? = requireContext().contentResolver.openInputStream(uri)
+                            val reader = BufferedReader(InputStreamReader(inputStream))
+                            EpisodeProgressReader.readDocument(reader)
+                            reader.close()
+                        }
+                        withContext(Dispatchers.Main) {
+                            showDatabaseImportSuccessDialog()
+                            progressDialog!!.dismiss()
+                        }
+                    } catch (e: Throwable) {
+                        showExportErrorDialog(e)
+                    }
                 }
-                withContext(Dispatchers.Main) {
-                    showDatabaseImportSuccessDialog()
-                    progressDialog!!.dismiss()
-                }
-            } catch (e: Throwable) {
-                showExportErrorDialog(e)
+            } else {
+                val context = requireContext()
+                val message = context.getString(R.string.import_file_type_toast) + ".json"
+                showExportErrorDialog(Throwable(message))
             }
         }
+    }
+
+    private fun isJsonFile(uri: Uri): Boolean {
+        val fileName = uri.lastPathSegment ?: return false
+        return fileName.endsWith(".json", ignoreCase = true)
     }
 
     private fun restoreDatabaseResult(result: ActivityResult) {
         if (result.resultCode != RESULT_OK || result.data == null) return
         val uri = result.data!!.data
-        progressDialog!!.show()
-        lifecycleScope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    DatabaseTransporter.importBackup(uri, requireContext())
+        uri?.let {
+            if (isRealmFile(uri)) {
+                progressDialog!!.show()
+                lifecycleScope.launch {
+                    try {
+                        withContext(Dispatchers.IO) {
+                            DatabaseTransporter.importBackup(uri, requireContext())
+                        }
+                        withContext(Dispatchers.Main) {
+                            showDatabaseImportSuccessDialog()
+                            progressDialog!!.dismiss()
+                        }
+                    } catch (e: Throwable) {
+                        showExportErrorDialog(e)
+                    }
                 }
-                withContext(Dispatchers.Main) {
-                    showDatabaseImportSuccessDialog()
-                    progressDialog!!.dismiss()
-                }
-            } catch (e: Throwable) {
-                showExportErrorDialog(e)
+            } else {
+                val context = requireContext()
+                val message = context.getString(R.string.import_file_type_toast) + ".realm"
+                showExportErrorDialog(Throwable(message))
             }
         }
+    }
+
+    private fun isRealmFile(uri: Uri): Boolean {
+        val fileName = uri.lastPathSegment ?: return false
+        return fileName.endsWith(".realm", ignoreCase = true)
     }
 
     private fun restorePreferencesResult(result: ActivityResult) {
@@ -459,7 +497,6 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                     val success = output.delete()
                     Logd(TAG, "Overwriting previously exported file: $success")
                 }
-
                 var writer: OutputStreamWriter? = null
                 try {
                     writer = OutputStreamWriter(FileOutputStream(output), Charset.forName("UTF-8"))
@@ -619,9 +656,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                     val newDstSize = dst.size()
                     if (newDstSize != srcSize)
                         throw IOException(String.format("Unable to write entire database. Expected to write %s, but wrote %s.", Formatter.formatShortFileSize(context, srcSize), Formatter.formatShortFileSize(context, newDstSize)))
-                } else {
-                    throw IOException("Can not access current database")
-                }
+                } else throw IOException("Can not access current database")
             } catch (e: IOException) {
                 Log.e(TAG, Log.getStackTraceString(e))
                 throw e
@@ -659,33 +694,18 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         fun readDocument(reader: Reader) {
             val jsonString = reader.readText()
             val jsonArray = JSONArray(jsonString)
-            val remoteActions = mutableListOf<EpisodeAction>()
             for (i in 0 until jsonArray.length()) {
                 val jsonAction = jsonArray.getJSONObject(i)
                 Logd(TAG, "Loaded EpisodeActions message: $i $jsonAction")
                 val action = readFromJsonObject(jsonAction) ?: continue
-                remoteActions.add(action)
-            }
-            if (remoteActions.isEmpty()) return
-            val updatedItems: MutableList<Episode> = ArrayList()
-            for (action in remoteActions) {
                 Logd(TAG, "processing action: $action")
                 val result = processEpisodeAction(action) ?: continue
-                updatedItems.add(result.second)
+                upsertBlk(result.second) {}
             }
-//        loadAdditionalFeedItemListData(updatedItems)
-//        need to do it the sync way
-            for (episode in updatedItems) upsertBlk(episode) {}
-            Logd(TAG, "Parsing finished.")
-            return
         }
         private fun processEpisodeAction(action: EpisodeAction): Pair<Long, Episode>? {
             val guid = if (isValidGuid(action.guid)) action.guid else null
-            val feedItem = getEpisodeByGuidOrUrl(guid, action.episode?:"")
-            if (feedItem == null) {
-                Logd(TAG, "Unknown feed item: $action")
-                return null
-            }
+            val feedItem = getEpisodeByGuidOrUrl(guid, action.episode?:"") ?: return null
             if (feedItem.media == null) {
                 Logd(TAG, "Feed item has no media: $action")
                 return null
@@ -763,7 +783,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         @Throws(IllegalArgumentException::class, IllegalStateException::class, IOException::class)
         override fun writeDocument(feeds: List<Feed?>?, writer: Writer?, context: Context) {
             Logd(TAG, "Starting to write document")
-            val templateStream = context!!.assets.open("html-export-template.html")
+            val templateStream = context.assets.open("html-export-template.html")
             var template = IOUtils.toString(templateStream, UTF_8)
             template = template.replace("\\{TITLE\\}".toRegex(), "Favorites")
             val templateParts = template.split("\\{FEEDS\\}".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
@@ -840,12 +860,10 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         @Throws(IllegalArgumentException::class, IllegalStateException::class, IOException::class)
         override fun writeDocument(feeds: List<Feed?>?, writer: Writer?, context: Context) {
             Logd(TAG, "Starting to write document")
-
-            val templateStream = context!!.assets.open("html-export-template.html")
+            val templateStream = context.assets.open("html-export-template.html")
             var template = IOUtils.toString(templateStream, "UTF-8")
             template = template.replace("\\{TITLE\\}".toRegex(), "Subscriptions")
             val templateParts = template.split("\\{FEEDS\\}".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-
             writer!!.append(templateParts[0])
             for (feed in feeds!!) {
                 writer.append("<li><div><img src=\"")
@@ -861,11 +879,9 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
             writer.append(templateParts[1])
             Logd(TAG, "Finished writing document")
         }
-
         override fun fileExtension(): String {
             return "html"
         }
-
         companion object {
             private val TAG: String = HtmlWriter::class.simpleName ?: "Anonymous"
         }

@@ -4,7 +4,9 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.BaseEpisodesListFragmentBinding
 import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
+import ac.mdiq.podcini.playback.base.InTheatre.isCurMedia
 import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.utils.EpisodeFilter
 import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectHandler
 import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
@@ -17,7 +19,6 @@ import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.view.EpisodesRecyclerView
 import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
-import ac.mdiq.podcini.ui.view.viewholder.EpisodeViewHolder
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
@@ -63,10 +64,10 @@ import kotlinx.coroutines.flow.collectLatest
     lateinit var swipeRefreshLayout: SwipeRefreshLayout
     lateinit var swipeActions: SwipeActions
     private lateinit var progressBar: ProgressBar
-    lateinit var listAdapter: EpisodesAdapter
+    lateinit var adapter: EpisodesAdapter
     protected lateinit var txtvInformation: TextView
 
-    private var currentPlaying: EpisodeViewHolder? = null
+    private var curIndex = -1
 
     @JvmField
     var episodes: MutableList<Episode> = ArrayList()
@@ -119,7 +120,7 @@ import kotlinx.coroutines.flow.collectLatest
         emptyView.setIcon(R.drawable.ic_feed)
         emptyView.setTitle(R.string.no_all_episodes_head_label)
         emptyView.setMessage(R.string.no_all_episodes_label)
-        emptyView.updateAdapter(listAdapter)
+        emptyView.updateAdapter(adapter)
         emptyView.hide()
 
         val multiSelectDial = MultiSelectSpeedDialBinding.bind(binding.root)
@@ -131,7 +132,7 @@ import kotlinx.coroutines.flow.collectLatest
                 return false
             }
             override fun onToggleChanged(open: Boolean) {
-                if (open && listAdapter.selectedCount == 0) {
+                if (open && adapter.selectedCount == 0) {
                     (activity as MainActivity).showSnackbarAbovePlayer(R.string.no_items_selected, Snackbar.LENGTH_SHORT)
                     speedDialView.close()
                 }
@@ -139,7 +140,7 @@ import kotlinx.coroutines.flow.collectLatest
         })
         speedDialView.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
             var confirmationString = 0
-            if (listAdapter.selectedItems.size >= 25 || listAdapter.shouldSelectLazyLoadedItems()) {
+            if (adapter.selectedItems.size >= 25 || adapter.shouldSelectLazyLoadedItems()) {
                 // Should ask for confirmation
                 when (actionItem.id) {
                     R.id.mark_read_batch -> confirmationString = R.string.multi_select_mark_played_confirmation
@@ -160,7 +161,7 @@ import kotlinx.coroutines.flow.collectLatest
     }
 
     open fun createListAdaptor() {
-        listAdapter = object : EpisodesAdapter(activity as MainActivity) {
+        adapter = object : EpisodesAdapter(activity as MainActivity) {
             override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
                 super.onCreateContextMenu(menu, v, menuInfo)
 //                if (!inActionMode()) {
@@ -171,8 +172,8 @@ import kotlinx.coroutines.flow.collectLatest
                 }
             }
         }
-        listAdapter.setOnSelectModeListener(this)
-        recyclerView.adapter = listAdapter
+        adapter.setOnSelectModeListener(this)
+        recyclerView.adapter = adapter
     }
 
     override fun onStart() {
@@ -221,13 +222,13 @@ import kotlinx.coroutines.flow.collectLatest
             // The method is called on all fragments in a ViewPager, so this needs to be ignored in invisible ones.
             // Apparently, none of the visibility check method works reliably on its own, so we just use all.
             !userVisibleHint || !isVisible || !isMenuVisible -> return false
-            listAdapter.longPressedItem == null -> {
+            adapter.longPressedItem == null -> {
                 Logd(TAG, "Selected item or listAdapter was null, ignoring selection")
                 return super.onContextItemSelected(item)
             }
-            listAdapter.onContextItemSelected(item) -> return true
+            adapter.onContextItemSelected(item) -> return true
             else -> {
-                val selectedItem: Episode = listAdapter.longPressedItem ?: return false
+                val selectedItem: Episode = adapter.longPressedItem ?: return false
                 return EpisodeMenuHandler.onMenuItemClicked(this, item.itemId, selectedItem)
             }
         }
@@ -238,8 +239,8 @@ import kotlinx.coroutines.flow.collectLatest
         lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    handler.handleAction(listAdapter.selectedItems.filterIsInstance<Episode>())
-                    if (listAdapter.shouldSelectLazyLoadedItems()) {
+                    handler.handleAction(adapter.selectedItems.filterIsInstance<Episode>())
+                    if (adapter.shouldSelectLazyLoadedItems()) {
                         var applyPage = page + 1
                         var nextPage: List<Episode>
                         do {
@@ -249,7 +250,7 @@ import kotlinx.coroutines.flow.collectLatest
                         } while (nextPage.size == EPISODES_PER_PAGE)
                     }
                     withContext(Dispatchers.Main) {
-                        listAdapter.endSelectMode()
+                        adapter.endSelectMode()
                     }
                 }
             } catch (e: Throwable) {
@@ -290,12 +291,12 @@ import kotlinx.coroutines.flow.collectLatest
                 }
                 withContext(Dispatchers.Main) {
 //                    listAdapter.setDummyViews(0)
-                    listAdapter.updateItems(episodes)
-                    if (listAdapter.shouldSelectLazyLoadedItems()) listAdapter.setSelected(episodes.size - data.size, episodes.size, true)
+                    adapter.updateItems(episodes)
+                    if (adapter.shouldSelectLazyLoadedItems()) adapter.setSelected(episodes.size - data.size, episodes.size, true)
                 }
             } catch (e: Throwable) {
 //                listAdapter.setDummyViews(0)
-                listAdapter.updateItems(emptyList())
+                adapter.updateItems(emptyList())
                 Log.e(TAG, Log.getStackTraceString(e))
             } finally {
                 withContext(Dispatchers.Main) { recyclerView.post { isLoadingMore = false } }
@@ -306,7 +307,7 @@ import kotlinx.coroutines.flow.collectLatest
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        listAdapter.endSelectMode()
+        adapter.endSelectMode()
     }
 
     override fun onStartSelectMode() {
@@ -326,25 +327,21 @@ import kotlinx.coroutines.flow.collectLatest
                 episodes.removeAt(pos)
                 if (getFilter().matches(item)) {
                     episodes.add(pos, item)
-                    listAdapter.notifyItemChangedCompat(pos)
-                } else listAdapter.notifyItemRemoved(pos)
+                    adapter.notifyItemChangedCompat(pos)
+                } else adapter.notifyItemRemoved(pos)
             }
         }
     }
 
     private fun onPlaybackPositionEvent(event: FlowEvent.PlaybackPositionEvent) {
-//        Logd(TAG, "onEventMainThread() called with ${event.TAG}")
-        if (currentPlaying != null && event.media?.getIdentifier() == currentPlaying!!.episode?.media?.getIdentifier() && currentPlaying!!.isCurMedia) currentPlaying!!.notifyPlaybackPositionUpdated(event)
-        else {
-            Logd(TAG, "onEventMainThread() ${event.TAG} search list")
-            for (i in 0 until listAdapter.itemCount) {
-                val holder: EpisodeViewHolder? = recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeViewHolder
-                if (holder != null && event.media?.getIdentifier() == holder.episode?.media?.getIdentifier()) {
-                    currentPlaying = holder
-                    holder.notifyPlaybackPositionUpdated(event)
-                    break
-                }
-            }
+        val item = (event.media as? EpisodeMedia)?.episode ?: return
+        val pos = if (curIndex in 0..<episodes.size && event.media.getIdentifier() == episodes[curIndex].media?.getIdentifier() && isCurMedia(episodes[curIndex].media))
+            curIndex else EpisodeUtil.indexOfItemWithId(episodes, item.id)
+
+        if (pos >= 0) {
+            episodes[pos] = item
+            curIndex = pos
+            adapter.notifyItemChanged(pos, Bundle().apply { putString("PositionUpdate", "PlaybackPositionEvent") })
         }
     }
 
@@ -352,7 +349,7 @@ import kotlinx.coroutines.flow.collectLatest
         if (!isAdded || !isVisible || !isMenuVisible) return
         when (event.keyCode) {
             KeyEvent.KEYCODE_T -> recyclerView.smoothScrollToPosition(0)
-            KeyEvent.KEYCODE_B -> recyclerView.smoothScrollToPosition(listAdapter.itemCount)
+            KeyEvent.KEYCODE_B -> recyclerView.smoothScrollToPosition(adapter.itemCount)
             else -> {}
         }
     }
@@ -360,7 +357,7 @@ import kotlinx.coroutines.flow.collectLatest
     private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
         for (downloadUrl in event.urls) {
             val pos: Int = EpisodeUtil.indexOfItemWithDownloadUrl(episodes, downloadUrl)
-            if (pos >= 0) listAdapter.notifyItemChangedCompat(pos)
+            if (pos >= 0) adapter.notifyItemChangedCompat(pos)
         }
     }
 
@@ -393,7 +390,7 @@ import kotlinx.coroutines.flow.collectLatest
                 Logd(TAG, "Received sticky event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.EpisodeDownloadEvent -> onEpisodeDownloadEvent(event)
-                    is FlowEvent.FeedUpdateRunningEvent -> onFeedUpdateRunningEvent(event)
+                    is FlowEvent.FeedUpdatingEvent -> onFeedUpdateRunningEvent(event)
                     else -> {}
                 }
             }
@@ -424,14 +421,14 @@ import kotlinx.coroutines.flow.collectLatest
                     hasMoreItems = !(page == 1 && episodes.size < EPISODES_PER_PAGE)
                     progressBar.visibility = View.GONE
 //                    listAdapter.setDummyViews(0)
-                    listAdapter.updateItems(episodes)
-                    listAdapter.setTotalNumberOfItems(data.second)
+                    adapter.updateItems(episodes)
+                    adapter.setTotalNumberOfItems(data.second)
                     if (restoreScrollPosition) recyclerView.restoreScrollPosition(getPrefName())
                     updateToolbar()
                 }
             } catch (e: Throwable) {
 //                listAdapter.setDummyViews(0)
-                listAdapter.updateItems(emptyList())
+                adapter.updateItems(emptyList())
                 Log.e(TAG, Log.getStackTraceString(e))
             }
         }
@@ -452,8 +449,8 @@ import kotlinx.coroutines.flow.collectLatest
 
     protected open fun updateToolbar() {}
 
-    private fun onFeedUpdateRunningEvent(event: FlowEvent.FeedUpdateRunningEvent) {
-        swipeRefreshLayout.isRefreshing = event.isFeedUpdateRunning
+    private fun onFeedUpdateRunningEvent(event: FlowEvent.FeedUpdatingEvent) {
+        swipeRefreshLayout.isRefreshing = event.isRunning
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

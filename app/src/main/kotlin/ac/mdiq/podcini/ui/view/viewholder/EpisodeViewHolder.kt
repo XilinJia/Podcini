@@ -255,28 +255,21 @@ open class EpisodeViewHolder(private val activity: MainActivity, parent: ViewGro
         }
     }
 
-    private fun updateDuration(event: FlowEvent.PlaybackPositionEvent) {
-        val media = this.episode?.media
-        if (media != null) {
-            media.setPosition(event.position)
-            media.setDuration(event.duration)
-        }
-        val currentPosition: Int = event.position
-        val timeDuration: Int = event.duration
+    fun updatePlaybackPositionNew(item: Episode) {
+        Logd(TAG, "updatePlaybackPositionNew called")
+        this.episode = item
+        val currentPosition = item.media?.position ?: 0
+        val timeDuration = item.media?.duration ?: 0
+        progressBar.progress = (100.0 * currentPosition / timeDuration).toInt()
+        position.text = Converter.getDurationStringLong(currentPosition)
+
         val remainingTime = max((timeDuration - currentPosition).toDouble(), 0.0).toInt()
-        //        Log.d(TAG, "currentPosition " + Converter.getDurationStringLong(currentPosition));
         if (currentPosition == Playable.INVALID_TIME || timeDuration == Playable.INVALID_TIME) {
             Log.w(TAG, "Could not react to position observer update because of invalid time")
             return
         }
         if (UserPreferences.shouldShowRemainingTime()) duration.text = (if (remainingTime > 0) "-" else "") + Converter.getDurationStringLong(remainingTime)
         else duration.text = Converter.getDurationStringLong(timeDuration)
-    }
-
-    fun notifyPlaybackPositionUpdated(event: FlowEvent.PlaybackPositionEvent) {
-        progressBar.progress = (100.0 * event.position / event.duration).toInt()
-        position.text = Converter.getDurationStringLong(event.position)
-        updateDuration(event)
         duration.visibility = View.VISIBLE // Even if the duration was previously unknown, it is now known
     }
 

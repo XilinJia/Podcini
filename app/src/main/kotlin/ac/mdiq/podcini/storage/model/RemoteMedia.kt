@@ -156,8 +156,8 @@ class RemoteMedia : Playable {
         duration = newDuration
     }
 
-    override fun setLastPlayedTime(lastPlayedTimestamp: Long) {
-        lastPlayedTime = lastPlayedTimestamp
+    override fun setLastPlayedTime(lastPlayedTime: Long) {
+        this.lastPlayedTime = lastPlayedTime
     }
 
     override fun onPlaybackStart() {

@@ -10,7 +10,8 @@ import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.playback.base.InTheatre.writeNoMediaPlaying
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.ACTION_SHUTDOWN_PLAYBACK_SERVICE
 import ac.mdiq.podcini.preferences.UserPreferences.shouldDeleteRemoveFromQueue
-import ac.mdiq.podcini.storage.database.Queues.removeFromAllQueues
+import ac.mdiq.podcini.preferences.UserPreferences.shouldRemoveFromQueuesMarkPlayed
+import ac.mdiq.podcini.storage.database.Queues.removeFromAllQueuesSync
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueueSync
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
@@ -94,21 +95,16 @@ object Episodes {
     fun deleteMediaOfEpisode(context: Context, episode: Episode) : Job {
         Logd(TAG, "deleteMediaOfEpisode called ${episode.title}")
         return runOnIOScope {
-            val media = episode.media ?: return@runOnIOScope
-            val result = deleteMediaSync(context, episode)
-            if (media.downloadUrl.isNullOrEmpty()) {
-                episode.media = null
-                upsert(episode) {}
-                EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(episode))
-            }
-            if (result && shouldDeleteRemoveFromQueue()) removeFromQueueSync(null, null, episode)
+            if (episode.media == null) return@runOnIOScope
+            val episode_ = deleteMediaSync(context, episode)
+            if (shouldDeleteRemoveFromQueue()) removeFromQueueSync(null, null, episode_)
         }
     }
 
     @OptIn(UnstableApi::class)
-    private fun deleteMediaSync(context: Context, episode: Episode): Boolean {
+    fun deleteMediaSync(context: Context, episode: Episode): Episode {
         Logd(TAG, "deleteMediaSync called")
-        val media = episode.media ?: return false
+        val media = episode.media ?: return episode
         Logd(TAG, String.format(Locale.US, "Requested to delete EpisodeMedia [id=%d, title=%s, downloaded=%s", media.id, media.getEpisodeTitle(), media.downloaded))
         var localDelete = false
         val url = media.fileUrl
@@ -118,10 +114,12 @@ object Episodes {
                 val documentFile = DocumentFile.fromSingleUri(context, Uri.parse(media.fileUrl))
                 if (documentFile == null || !documentFile.exists() || !documentFile.delete()) {
                     EventFlow.postEvent(FlowEvent.MessageEvent(context.getString(R.string.delete_local_failed)))
-                    return false
+                    return episode
                 }
-                episode.media?.fileUrl = null
-                upsertBlk(episode) {}
+                upsertBlk(episode) {
+                    it.media?.fileUrl = null
+                    if (media.downloadUrl.isNullOrEmpty()) it.media = null
+                }
                 localDelete = true
             }
             url != null -> {
@@ -131,19 +129,20 @@ object Episodes {
                     Log.e(TAG, "delete media file failed: $url")
                     val evt = FlowEvent.MessageEvent(context.getString(R.string.delete_failed))
                     EventFlow.postEvent(evt)
-                    return false
+                    return episode
                 }
-                episode.media?.downloaded = false
-                episode.media?.fileUrl = null
-                episode.media?.hasEmbeddedPicture = false
-                upsertBlk(episode) {}
+                upsertBlk(episode) {
+                    it.media?.downloaded = false
+                    it.media?.fileUrl = null
+                    it.media?.hasEmbeddedPicture = false
+                    if (media.downloadUrl.isNullOrEmpty()) it.media = null
+                }
             }
         }
 
         if (media.id == curState.curMediaId) {
             writeNoMediaPlaying()
             sendLocalBroadcast(context, ACTION_SHUTDOWN_PLAYBACK_SERVICE)
-
             val nm = NotificationManagerCompat.from(context)
             nm.cancel(R.id.notification_playing)
         }
@@ -157,7 +156,7 @@ object Episodes {
             SynchronizationQueueSink.enqueueEpisodeActionIfSyncActive(context, action)
             EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(episode))
         }
-        return true
+        return episode
     }
 
     /**
@@ -166,44 +165,34 @@ object Episodes {
      */
     fun deleteEpisodes(context: Context, episodes: List<Episode>) : Job {
         return runOnIOScope {
-            deleteEpisodesSync(context, episodes)
-        }
-    }
-
-    /**
-     * Remove the listed episodes and their EpisodeMedia entries.
-     * Deleting media also removes the download log entries.
-     */
-    @OptIn(UnstableApi::class)
-    internal fun deleteEpisodesSync(context: Context, episodes: List<Episode>) {
-        Logd(TAG, "deleteEpisodesSync called")
-        val removedFromQueue: MutableList<Episode> = ArrayList()
-        val queueItems = curQueue.episodes.toMutableList()
-        for (episode in episodes) {
-            if (queueItems.remove(episode)) removedFromQueue.add(episode)
-            if (episode.media != null) {
-                if (episode.media?.id == curState.curMediaId) {
-                    // Applies to both downloaded and streamed media
-                    writeNoMediaPlaying()
-                    sendLocalBroadcast(context, ACTION_SHUTDOWN_PLAYBACK_SERVICE)
-                }
-                if (episode.feed != null && !episode.feed!!.isLocalFeed) {
-                    DownloadServiceInterface.get()?.cancel(context, episode.media!!)
-                    if (episode.media!!.downloaded) deleteMediaSync(context, episode)
+            val removedFromQueue: MutableList<Episode> = ArrayList()
+            val queueItems = curQueue.episodes.toMutableList()
+            for (episode in episodes) {
+                if (queueItems.remove(episode)) removedFromQueue.add(episode)
+                if (episode.media != null) {
+                    if (episode.media?.id == curState.curMediaId) {
+                        // Applies to both downloaded and streamed media
+                        writeNoMediaPlaying()
+                        sendLocalBroadcast(context, ACTION_SHUTDOWN_PLAYBACK_SERVICE)
+                    }
+                    if (episode.feed != null && !episode.feed!!.isLocalFeed) {
+                        DownloadServiceInterface.get()?.cancel(context, episode.media!!)
+                        if (episode.media!!.downloaded) deleteMediaSync(context, episode)
+                    }
                 }
             }
+            if (removedFromQueue.isNotEmpty()) removeFromAllQueuesSync(*removedFromQueue.toTypedArray())
+
+            for (episode in removedFromQueue) EventFlow.postEvent(FlowEvent.QueueEvent.irreversibleRemoved(episode))
+
+            // we assume we also removed download log entries for the feed or its media files.
+            // especially important if download or refresh failed, as the user should not be able
+            // to retry these
+            EventFlow.postEvent(FlowEvent.DownloadLogEvent())
+
+            val backupManager = BackupManager(context)
+            backupManager.dataChanged()
         }
-        if (removedFromQueue.isNotEmpty()) removeFromAllQueues(*removedFromQueue.toTypedArray())
-
-        for (episode in removedFromQueue) EventFlow.postEvent(FlowEvent.QueueEvent.irreversibleRemoved(episode))
-
-        // we assume we also removed download log entries for the feed or its media files.
-        // especially important if download or refresh failed, as the user should not be able
-        // to retry these
-        EventFlow.postEvent(FlowEvent.DownloadLogEvent())
-
-        val backupManager = BackupManager(context)
-        backupManager.dataChanged()
     }
 
     fun persistEpisodes(episodes: List<Episode>) : Job {
@@ -274,17 +263,24 @@ object Episodes {
      * @param resetMediaPosition true if this method should also reset the position of the Episode's EpisodeMedia object.
      */
     @OptIn(UnstableApi::class)
-    fun markPlayed(played: Int, resetMediaPosition: Boolean, vararg episodes: Episode) : Job {
-        Logd(TAG, "markPlayed called")
+    fun setPlayState(played: Int, resetMediaPosition: Boolean, vararg episodes: Episode) : Job {
+        Logd(TAG, "setPlayState called")
         return runOnIOScope {
             for (episode in episodes) {
-                val result = upsert(episode) {
-                    it.playState = played
-                    if (resetMediaPosition) it.media?.setPosition(0)
-                }
-                if (played == Episode.PLAYED) removeFromAllQueues(episode)
-                EventFlow.postEvent(FlowEvent.EpisodePlayedEvent(result))
+                setPlayStateSync(played, resetMediaPosition, episode)
             }
         }
+    }
+
+    @OptIn(UnstableApi::class)
+    suspend fun setPlayStateSync(played: Int, resetMediaPosition: Boolean, episode: Episode) : Episode {
+        Logd(TAG, "setPlayStateSync called resetMediaPosition: $resetMediaPosition")
+        val result = upsert(episode) {
+            it.playState = played
+            if (resetMediaPosition) it.media?.setPosition(0)
+        }
+        if (played == Episode.PLAYED && shouldRemoveFromQueuesMarkPlayed()) removeFromAllQueuesSync(result)
+        EventFlow.postEvent(FlowEvent.EpisodePlayedEvent(result))
+        return result
     }
 }

@@ -38,6 +38,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.apache.commons.io.FileUtils
 import java.io.File
 import java.io.IOException
@@ -114,7 +115,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 .addTag(WORK_TAG)
                 .addTag(WORK_TAG_EPISODE_URL + item.media!!.downloadUrl)
             if (UserPreferences.enqueueDownloadedEpisodes()) {
-                Queues.addToQueue(false, item)
+                runBlocking { Queues.addToQueueSync(false, item) }
                 workRequest.addTag(WORK_DATA_WAS_QUEUED)
             }
             workRequest.setInputData(Data.Builder().putLong(WORK_DATA_MEDIA_ID, item.media!!.id).build())
@@ -388,10 +389,11 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                     if (item != null) {
                         item.disableAutoDownload()
                         Logd(TAG, "persisting episode downloaded ${item.title} ${item.media?.fileUrl} ${item.media?.downloaded}")
-                        // setFeedItem() signals (via EventBus) that the item has been updated,
+                        // setFeedItem() signals that the item has been updated,
                         // so we do it after the enclosing media has been updated above,
                         // to ensure subscribers will get the updated EpisodeMedia as well
                         Episodes.persistEpisode(item)
+//                        TODO: should use different event?
                         if (broadcastUnreadStateUpdate) EventFlow.postEvent(FlowEvent.EpisodePlayedEvent(item))
                     }
                 } catch (e: InterruptedException) {

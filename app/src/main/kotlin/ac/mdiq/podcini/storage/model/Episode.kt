@@ -16,7 +16,6 @@ import java.util.*
 
 /**
  * Episode within a feed.
- *
  */
 class Episode : RealmObject {
 
@@ -52,7 +51,7 @@ class Episode : RealmObject {
     @Ignore
     var feed: Feed? = null
         get() {
-            if (field == null && feedId != null) field = getFeed(feedId!!)
+            if (field == null && feedId != null) field = getFeed(feedId!!, fromDB = true)
             return field
         }
 
@@ -63,14 +62,6 @@ class Episode : RealmObject {
     var playState: Int
 
     var paymentLink: String? = null
-
-    /**
-     * Is true if the database contains any chapters that belong to this item. This attribute is only
-     * written once by DBReader on initialization.
-     * The FeedItem might still have a non-null chapters value. In this case, the list of chapters
-     * has not been saved in the database yet.
-     */
-//    private var hasChapters: Boolean
 
     /**
      * Returns the image of this item, as specified in the feed.
@@ -132,7 +123,6 @@ class Episode : RealmObject {
 
     constructor() {
         this.playState = UNPLAYED
-//        this.hasChapters = false
     }
 
     /**
@@ -143,11 +133,10 @@ class Episode : RealmObject {
         this.title = title
         this.identifier = itemIdentifier
         this.link = link
-        this.pubDate = if (pubDate != null) pubDate.time else 0
+        this.pubDate = pubDate?.time ?: 0
         this.playState = state
         if (feed != null) this.feedId = feed.id
         this.feed = feed
-//        this.hasChapters = false
     }
 
     fun updateFromOther(other: Episode) {
@@ -218,7 +207,6 @@ class Episode : RealmObject {
      */
     fun setDescriptionIfLonger(newDescription: String?) {
         if (newDescription.isNullOrEmpty()) return
-
         when {
             this.description == null -> this.description = newDescription
             description!!.length < newDescription.length -> this.description = newDescription
@@ -227,24 +215,11 @@ class Episode : RealmObject {
 
     fun setTranscriptIfLonger(newTranscript: String?) {
         if (newTranscript.isNullOrEmpty()) return
-
         when {
             this.transcript == null -> this.transcript = newTranscript
             transcript!!.length < newTranscript.length -> this.transcript = newTranscript
         }
     }
-
-//    enum class State {
-//        UNREAD, IN_PROGRESS, READ, PLAYING
-//    }
-
-    fun getHumanReadableIdentifier(): String? {
-        return title
-    }
-
-//    fun hasChapters(): Boolean {
-//        return chapters.isNotEmpty()
-//    }
 
     /**
      * Get the link for the feed item for the purpose of Share. It fallbacks to

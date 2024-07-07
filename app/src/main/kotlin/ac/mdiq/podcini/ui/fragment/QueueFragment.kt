@@ -6,6 +6,7 @@ import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.databinding.QueueFragmentBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
+import ac.mdiq.podcini.playback.base.InTheatre.isCurMedia
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.getCurrentPlaybackSpeed
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.database.Queues.clearQueue
@@ -15,6 +16,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.utils.EpisodeFilter
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.storage.utils.SortOrder
@@ -83,7 +85,7 @@ import java.util.*
     private var queueItems: MutableList<Episode> = mutableListOf()
 
     private var adapter: QueueRecyclerAdapter? = null
-    private var currentPlaying: EpisodeViewHolder? = null
+    private var curIndex = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -220,7 +222,7 @@ import java.util.*
                 Logd(TAG, "Received sticky event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.EpisodeDownloadEvent -> onEpisodeDownloadEvent(event)
-                    is FlowEvent.FeedUpdateRunningEvent -> swipeRefreshLayout.isRefreshing = event.isFeedUpdateRunning
+                    is FlowEvent.FeedUpdatingEvent -> swipeRefreshLayout.isRefreshing = event.isRunning
                     else -> {}
                 }
             }
@@ -327,20 +329,14 @@ import java.util.*
     }
 
     private fun onPlaybackPositionEvent(event: FlowEvent.PlaybackPositionEvent) {
-//        Logd(TAG, "onEventMainThread() called with ${event.TAG}")
-        if (adapter != null) {
-            if (currentPlaying != null && event.media?.getIdentifier() == currentPlaying!!.episode?.media?.getIdentifier() && currentPlaying!!.isCurMedia) currentPlaying!!.notifyPlaybackPositionUpdated(event)
-            else {
-                Logd(TAG, "onPlaybackPositionEvent() ${event.TAG} search list")
-                for (i in 0 until adapter!!.itemCount) {
-                    val holder: EpisodeViewHolder? = recyclerView.findViewHolderForAdapterPosition(i) as? EpisodeViewHolder
-                    if (holder != null && event.media?.getIdentifier() == holder.episode?.media?.getIdentifier()) {
-                        currentPlaying = holder
-                        holder.notifyPlaybackPositionUpdated(event)
-                        break
-                    }
-                }
-            }
+        val item = (event.media as? EpisodeMedia)?.episode ?: return
+        val pos = if (curIndex in 0..<queueItems.size && event.media.getIdentifier() == queueItems[curIndex].media?.getIdentifier() && isCurMedia(queueItems[curIndex].media))
+            curIndex else EpisodeUtil.indexOfItemWithId(queueItems, item.id)
+
+        if (pos >= 0) {
+            queueItems[pos] = item
+            curIndex = pos
+            adapter?.notifyItemChanged(pos, Bundle().apply { putString("PositionUpdate", "PlaybackPositionEvent") })
         }
     }
 
@@ -546,7 +542,7 @@ import java.util.*
         queueItems.clear()
         queueItems.addAll(curQueue.episodes)
         binding.progressBar.visibility = View.GONE
-        adapter?.setDummyViews(0)
+//        adapter?.setDummyViews(0)
         adapter?.updateItems(queueItems)
         if (restoreScrollPosition) recyclerView.restoreScrollPosition(TAG)
         refreshInfoBar()

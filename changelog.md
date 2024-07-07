@@ -1,3 +1,19 @@
+## 6.0.5
+
+* fixed threading issue of downloading multiple episodes
+* tidied up and fixed the mal-functioning statistics view
+* tidied up routine of delete media
+* fixed issue of episode not properly marked after complete listening
+* fixed redundant double-pass processing in episodes filter
+* in episodes sort dialog, "Date" is changed to "Publish date"
+* in preference "Delete Removes From Queue" is set to true by default
+* added in preference "Remove from queue when marked as played" and set it to true by default
+* added episode counts in Episodes and History views
+* enhanced a bit on progress import
+* restricted file types for DB import to only a .realm file and Progress import to a .json file
+* enhanced play position updates in all episodes list views
+* remove feeds is performed in blocking way
+
 ## 6.0.4
 
 * bug fix on ShareDialog having no argument

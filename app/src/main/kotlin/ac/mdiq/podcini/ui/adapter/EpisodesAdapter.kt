@@ -1,8 +1,7 @@
 package ac.mdiq.podcini.ui.adapter
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.storage.database.RealmDB.realm
-import ac.mdiq.podcini.storage.database.RealmDB.unmanagedCopy
+import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
@@ -12,6 +11,7 @@ import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeViewHolder
 import android.R.color
 import android.app.Activity
+import android.os.Bundle
 import android.view.*
 import androidx.media3.common.util.UnstableApi
 
@@ -88,8 +88,10 @@ open class EpisodesAdapter(mainActivity: MainActivity)
 
         beforeBindViewHolder(holder, pos)
 
-        val item: Episode = unmanagedCopy(episodes[pos])
+        val item: Episode = unmanaged(episodes[pos])
+//        val item: Episode = episodes[pos]
         if (feed != null) item.feed = feed
+        else item.feed = episodes[pos].feed
         holder.bind(item)
 
 //        holder.infoCard.setOnCreateContextMenuListener(this)
@@ -126,6 +128,17 @@ open class EpisodesAdapter(mainActivity: MainActivity)
 
         afterBindViewHolder(holder, pos)
         holder.hideSeparatorIfNecessary()
+    }
+
+    override fun onBindViewHolder(holder: EpisodeViewHolder, pos: Int, payloads: MutableList<Any>) {
+        if (payloads.isEmpty()) onBindViewHolder(holder, pos)
+        else {
+            val payload = payloads[0]
+            when {
+                payload is String && payload == "foo" -> onBindViewHolder(holder, pos)
+                payload is Bundle && !payload.getString("PositionUpdate").isNullOrEmpty() -> holder.updatePlaybackPositionNew(unmanaged(episodes[pos]))
+            }
+        }
     }
 
     protected open fun beforeBindViewHolder(holder: EpisodeViewHolder, pos: Int) {}

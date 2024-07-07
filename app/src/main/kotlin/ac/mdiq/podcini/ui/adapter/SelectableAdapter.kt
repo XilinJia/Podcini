@@ -16,7 +16,7 @@ abstract class SelectableAdapter<T : RecyclerView.ViewHolder?>(private val activ
     private val selectedIds = HashSet<Long>()
     private var onSelectModeListener: OnSelectModeListener? = null
     var shouldSelectLazyLoadedItems: Boolean = false
-    private var totalNumberOfItems = COUNT_AUTOMATICALLY
+    internal var totalNumberOfItems = COUNT_AUTOMATICALLY
 
     fun startSelectMode(pos: Int) {
         if (inActionMode()) endSelectMode()

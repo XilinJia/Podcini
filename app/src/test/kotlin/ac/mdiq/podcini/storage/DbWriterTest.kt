@@ -2,13 +2,10 @@ package ac.mdiq.podcini.storage
 
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterfaceTestStub
+import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.enqueueLocation
 import ac.mdiq.podcini.preferences.UserPreferences.shouldDeleteRemoveFromQueue
-import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.storage.database.Episodes.addToHistory
 import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.deleteMediaOfEpisode
@@ -16,11 +13,14 @@ import ac.mdiq.podcini.storage.database.Episodes.getEpisode
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodeMedia
 import ac.mdiq.podcini.storage.database.Episodes.persistEpisode
 import ac.mdiq.podcini.storage.database.Episodes.persistEpisodeMedia
-import ac.mdiq.podcini.storage.database.Feeds.deleteFeed
+import ac.mdiq.podcini.storage.database.Feeds.deleteFeedSync
 import ac.mdiq.podcini.storage.database.Queues.addToQueue
 import ac.mdiq.podcini.storage.database.Queues.clearQueue
 import ac.mdiq.podcini.storage.database.Queues.moveInQueue
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueue
+import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.storage.model.EpisodeMedia
+import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.config.ApplicationCallbacks
 import ac.mdiq.podcini.util.config.ClientConfig
@@ -78,9 +78,9 @@ class DbWriterTest {
 //        PodDBAdapter.tearDownTests()
 //        DBWriter.tearDownTests()
 
-        val testDir = context.getExternalFilesDir(TEST_FOLDER)
-        Assert.assertNotNull(testDir)
-        for (f in testDir!!.listFiles()) {
+        val testDir = context.getExternalFilesDir(TEST_FOLDER) ?: return
+        val files = testDir.listFiles() ?: return
+        for (f in files) {
             f.delete()
         }
     }
@@ -241,8 +241,7 @@ class DbWriterTest {
         }
 
         runBlocking {
-            val job = deleteFeed(context, feed.id)
-            withTimeout(TIMEOUT*1000) { job.join() }
+            deleteFeedSync(context, feed.id)
         }
 
         // check if files still exist
@@ -284,8 +283,7 @@ class DbWriterTest {
         Assert.assertTrue(feed.id != 0L)
 
         runBlocking {
-            val job = deleteFeed(context, feed.id)
-            withTimeout(TIMEOUT*1000) { job.join() }
+            deleteFeedSync(context, feed.id)
         }
 
 //        adapter = getInstance()
@@ -324,8 +322,7 @@ class DbWriterTest {
         }
 
         runBlocking {
-            val job = deleteFeed(context, feed.id)
-            withTimeout(TIMEOUT*1000) { job.join() }
+            deleteFeedSync(context, feed.id)
         }
 
 //        adapter = getInstance()
@@ -383,8 +380,7 @@ class DbWriterTest {
 //
 //        adapter.close()
         runBlocking {
-            val job = deleteFeed(context, feed.id)
-            withTimeout(TIMEOUT*1000) { job.join() }
+            deleteFeedSync(context, feed.id)
         }
 //        adapter.open()
 //
@@ -438,8 +434,7 @@ class DbWriterTest {
         }
 
         runBlocking {
-            val job = deleteFeed(context, feed.id)
-            withTimeout(TIMEOUT*1000) { job.join() }
+            deleteFeedSync(context, feed.id)
         }
 
 //        adapter = getInstance()
@@ -522,7 +517,7 @@ class DbWriterTest {
             }
         }
         Assert.assertNotNull(media)
-        Assert.assertNotNull(media!!.playbackCompletionDate)
+        Assert.assertNotNull(media.playbackCompletionDate)
     }
 
     @Test
@@ -539,7 +534,7 @@ class DbWriterTest {
         }
 
         Assert.assertNotNull(media)
-        Assert.assertNotNull(media!!.playbackCompletionDate)
+        Assert.assertNotNull(media.playbackCompletionDate)
         Assert.assertNotEquals(media.playbackCompletionDate!!.time, oldDate)
     }
 
@@ -742,7 +737,7 @@ class DbWriterTest {
         assertQueueByItemIds("Average case - 2 items removed successfully", itemIds[0], itemIds[2])
 
         runBlocking {
-            val job = removeFromQueue(null,)
+            val job = removeFromQueue(null)
             withTimeout(TIMEOUT*1000) { job.join() }
         }
         assertQueueByItemIds("Boundary case - no items supplied. queue should see no change", itemIds[0], itemIds[2])

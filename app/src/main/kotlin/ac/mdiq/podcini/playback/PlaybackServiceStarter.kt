@@ -9,6 +9,7 @@ import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.EXTRA_ALLOW_STREAM_THIS_TIME
+import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
@@ -44,8 +45,12 @@ class PlaybackServiceStarter(private val context: Context, private val media: Pl
     fun start() {
         Logd("PlaybackServiceStarter", "starting PlaybackService")
         if (curEpisode != null) EventFlow.postEvent(FlowEvent.PlayEvent(curEpisode!!, FlowEvent.PlayEvent.Action.END))
-        curMedia = media
-        if (media is EpisodeMedia) curEpisode = media.episode
+        if (media is EpisodeMedia) {
+            curMedia = media
+//            curEpisode = if (media.episode != null) unmanaged(media.episode!!) else null
+            curEpisode = media.episode
+//            curMedia = curEpisode?.media
+        } else curMedia = media
 
         if (PlaybackService.isRunning && !callEvenIfRunning) return
         ContextCompat.startForegroundService(context, intent)

@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.ui.dialog
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.storage.database.Feeds.deleteFeed
+import ac.mdiq.podcini.storage.database.Feeds.deleteFeedSync
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
@@ -12,8 +12,10 @@ import android.content.DialogInterface
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
-import kotlinx.coroutines.*
-import java.lang.Runnable
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 object RemoveFeedDialog {
     private val TAG: String = RemoveFeedDialog::class.simpleName ?: "Anonymous"
@@ -46,9 +48,9 @@ object RemoveFeedDialog {
                     try {
                         withContext(Dispatchers.IO) {
                             for (feed in feeds) {
-                                deleteFeed(context, feed.id, false)
+                                deleteFeedSync(context, feed.id, false)
                             }
-//                            EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.REMOVED, feeds))
+                            EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.REMOVED, feeds.map { it.id }))
                         }
                         withContext(Dispatchers.Main) {
                             Logd(TAG, "Feed(s) deleted")

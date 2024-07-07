@@ -15,10 +15,9 @@ import ac.mdiq.podcini.net.utils.NetworkUtils.isNetworkRestricted
 import ac.mdiq.podcini.net.utils.NetworkUtils.isVpnOverWifi
 import ac.mdiq.podcini.net.utils.NetworkUtils.networkAvailable
 import ac.mdiq.podcini.storage.algorithms.AutoDownloads.autodownloadEpisodeMedia
-import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Feeds
 import ac.mdiq.podcini.storage.database.LogsAndStats
-import ac.mdiq.podcini.storage.database.RealmDB.unmanagedCopy
+import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.model.DownloadResult
 import ac.mdiq.podcini.storage.model.FeedPreferences
 import ac.mdiq.podcini.storage.utils.VolumeAdaptionSetting
@@ -206,7 +205,7 @@ object FeedUpdateManager {
             while (toUpdate.isNotEmpty()) {
                 if (isStopped) return
                 notificationManager.notify(R.id.notification_updating_feeds, createNotification(toUpdate))
-                val feed = unmanagedCopy(toUpdate[0])
+                val feed = unmanaged(toUpdate[0])
                 try {
                     Logd(TAG, "updating local feed? ${feed.isLocalFeed} ${feed.title}")
                     if (feed.isLocalFeed) LocalFeedUpdater.updateFeed(feed, applicationContext, null)

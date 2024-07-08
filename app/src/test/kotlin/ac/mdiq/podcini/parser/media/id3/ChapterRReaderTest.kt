@@ -4,7 +4,7 @@ import ac.mdiq.podcini.net.feed.parser.media.id3.ChapterReader
 import ac.mdiq.podcini.net.feed.parser.media.id3.ID3Reader
 import ac.mdiq.podcini.net.feed.parser.media.id3.ID3ReaderException
 import ac.mdiq.podcini.storage.model.Chapter
-import ac.mdiq.podcini.storage.utils.EmbeddedChapterImage.Companion.makeUrl
+import ac.mdiq.podcini.storage.model.EmbeddedChapterImage.Companion.makeUrl
 import ac.mdiq.podcini.net.feed.parser.media.id3.model.FrameHeader
 import org.apache.commons.io.input.CountingInputStream
 import org.junit.Assert

@@ -125,8 +125,8 @@ android {
         buildConfig true
     }
     defaultConfig {
-        versionCode 3020205
-        versionName "6.0.5"
+        versionCode 3020206
+        versionName "6.0.6"
 
         applicationId "ac.mdiq.podcini.R"
         def commit = ""
@@ -265,7 +265,7 @@ dependencies {
     testImplementation 'org.awaitility:awaitility:4.2.1'
     testImplementation "junit:junit:4.13.2"
     testImplementation 'org.mockito:mockito-inline:5.2.0'
-    testImplementation 'org.robolectric:robolectric:4.12'
+    testImplementation 'org.robolectric:robolectric:4.13'
     testImplementation 'javax.inject:javax.inject:1'
 
     playImplementation 'com.google.android.gms:play-services-base:18.5.0'

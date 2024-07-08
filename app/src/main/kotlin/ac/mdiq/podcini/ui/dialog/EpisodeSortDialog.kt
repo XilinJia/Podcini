@@ -4,7 +4,7 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.SortDialogBinding
 import ac.mdiq.podcini.databinding.SortDialogItemActiveBinding
 import ac.mdiq.podcini.databinding.SortDialogItemBinding
-import ac.mdiq.podcini.storage.utils.SortOrder
+import ac.mdiq.podcini.storage.model.SortOrder
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle

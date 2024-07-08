@@ -56,7 +56,6 @@ import io.realm.kotlin.query.Sort
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.NumberFormat
@@ -223,13 +222,13 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         when (tagFilterIndex) {
             1 -> feedListFiltered = feedList    // All feeds
             0 -> feedListFiltered = feedList.filter {   // feeds without tag
-                val tags = it.preferences?.getTags()
+                val tags = it.preferences?.tags
                 tags.isNullOrEmpty() || (tags.size == 1 && tags.toList()[0] == "#root")
             }
             else -> {   // feeds with the chosen tag
                 val tag = tags[tagFilterIndex]
                 feedListFiltered = feedList.filter {
-                    it.preferences?.getTags()?.contains(tag) ?: false
+                    it.preferences?.tags?.contains(tag) ?: false
                 }
             }
         }
@@ -260,6 +259,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                     is FlowEvent.FeedListEvent, is FlowEvent.FeedsSortedEvent -> loadSubscriptions()
                     is FlowEvent.EpisodePlayedEvent -> loadSubscriptions()
                     is FlowEvent.FeedTagsChangedEvent -> loadSubscriptions()
+//                    is FlowEvent.FeedPrefsChangeEvent -> onFeedPrefsChangeEvent(event)
                     else -> {}
                 }
             }
@@ -279,6 +279,10 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             }
         }
     }
+
+//    private fun onFeedPrefsChangeEvent(event: FlowEvent.FeedPrefsChangeEvent) {
+//        val feed = getFeed(event.feed.id)
+//    }
 
     @UnstableApi override fun onMenuItemClick(item: MenuItem): Boolean {
         val itemId = item.itemId
@@ -494,7 +498,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 @UnstableApi override fun preferenceChanged(pos: Int) {
                     val autoDeleteAction: FeedPreferences.AutoDeleteAction = FeedPreferences.AutoDeleteAction.fromCode(pos)
                     saveFeedPreferences { feedPreferences: FeedPreferences ->
-                        feedPreferences.currentAutoDelete = autoDeleteAction
+                        feedPreferences.autoDeleteAction = autoDeleteAction
                     }
                 }
             })

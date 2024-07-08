@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.EpisodeFilterDialogBinding
+import ac.mdiq.podcini.databinding.AutodownloadFilterDialogBinding
 import ac.mdiq.podcini.databinding.FeedPrefSkipDialogBinding
 import ac.mdiq.podcini.databinding.FeedsettingsBinding
 import ac.mdiq.podcini.databinding.PlaybackSpeedFeedSettingDialogBinding
@@ -12,8 +12,8 @@ import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.FeedPreferences
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
-import ac.mdiq.podcini.storage.utils.FeedEpisodesFilter
-import ac.mdiq.podcini.storage.utils.VolumeAdaptionSetting
+import ac.mdiq.podcini.storage.model.FeedAutoDownloadFilter
+import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting
 import ac.mdiq.podcini.ui.adapter.SimpleChipAdapter
 import ac.mdiq.podcini.ui.dialog.AuthenticationDialog
 import ac.mdiq.podcini.ui.dialog.TagSettingsDialog
@@ -72,7 +72,6 @@ class FeedSettingsFragment : Fragment() {
     class FeedSettingsPreferenceFragment : PreferenceFragmentCompat() {
         private var feed: Feed? = null
         private var feedPrefs: FeedPreferences? = null
-
         private var notificationPermissionDenied: Boolean = false
         private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) return@registerForActivityResult
@@ -95,34 +94,29 @@ class FeedSettingsFragment : Fragment() {
             view.layoutAnimation = null
             return view
         }
-
         @OptIn(UnstableApi::class) override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             addPreferencesFromResource(R.xml.feed_settings)
             // To prevent displaying partially loaded data
             findPreference<Preference>(PREF_SCREEN)!!.isVisible = false
-
             if (feed != null) {
                 if (feed!!.preferences == null) {
                     feed!!.preferences = FeedPreferences(feed!!.id, false, AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
                     persistFeedPreferences(feed!!)
                 }
                 feedPrefs = feed!!.preferences
-
                 setupAutoDownloadGlobalPreference()
                 setupAutoDownloadPreference()
                 setupKeepUpdatedPreference()
                 setupAutoDeletePreference()
                 setupVolumeAdaptationPreferences()
                 setupAuthentificationPreference()
-                setupEpisodeFilterPreference()
+                setupAutoDownloadFilterPreference()
                 setupPlaybackSpeedPreference()
                 setupFeedAutoSkipPreference()
                 setupTags()
-
                 updateAutoDeleteSummary()
                 updateVolumeAdaptationValue()
                 updateAutoDownloadEnabled()
-
                 if (feed!!.isLocalFeed) {
                     findPreference<Preference>(PREF_AUTHENTICATION)!!.isVisible = false
                     findPreference<Preference>(PREF_CATEGORY_AUTO_DOWNLOAD)!!.isVisible = false
@@ -130,23 +124,21 @@ class FeedSettingsFragment : Fragment() {
                 findPreference<Preference>(PREF_SCREEN)!!.isVisible = true
             }
         }
-
         private fun setupFeedAutoSkipPreference() {
-            if (feedPrefs == null) return
             findPreference<Preference>(PREF_AUTO_SKIP)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-                object : FeedPreferenceSkipDialog(requireContext(), feedPrefs!!.introSkip, feedPrefs!!.endingSkip) {
-                    @UnstableApi override fun onConfirmed(skipIntro: Int, skipEnding: Int) {
-                        feedPrefs!!.introSkip = skipIntro
-                        feedPrefs!!.endingSkip = skipEnding
-                        persistFeedPreferences(feed!!)
-//                        EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(feedPrefs!!.feedID))
-//                        EventFlow.postEvent(FlowEvent.SkipIntroEndingChangedEvent(feedPrefs!!.introSkip, feedPrefs!!.endingSkip, feed!!.id))
-                    }
-                }.show()
+                if (feedPrefs != null) {
+                    object : FeedPreferenceSkipDialog(requireContext(), feedPrefs!!.introSkip, feedPrefs!!.endingSkip) {
+                        @UnstableApi
+                        override fun onConfirmed(skipIntro: Int, skipEnding: Int) {
+                            feedPrefs!!.introSkip = skipIntro
+                            feedPrefs!!.endingSkip = skipEnding
+                            persistFeedPreferences(feed!!)
+                        }
+                    }.show()
+                }
                 false
             }
         }
-
         @UnstableApi private fun setupPlaybackSpeedPreference() {
             val feedPlaybackSpeedPreference = findPreference<Preference>(PREF_FEED_PLAYBACK_SPEED)
             feedPlaybackSpeedPreference!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
@@ -173,8 +165,6 @@ class FeedSettingsFragment : Fragment() {
                         if (feedPrefs != null) {
                             feedPrefs!!.playSpeed = newSpeed
                             persistFeedPreferences(feed!!)
-//                            EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(feedPrefs!!.feedID))
-//                            EventFlow.postEvent(FlowEvent.FeedPrefsChangeEvent(feedPrefs!!))
                         }
                     }
                     .setNegativeButton(R.string.cancel_label, null)
@@ -182,64 +172,59 @@ class FeedSettingsFragment : Fragment() {
                 true
             }
         }
-
-        private fun setupEpisodeFilterPreference() {
-            if (feedPrefs == null) return
+        private fun setupAutoDownloadFilterPreference() {
             findPreference<Preference>(PREF_EPISODE_FILTER)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-                object : EpisodeFilterPrefDialog(requireContext(), feedPrefs!!.filter) {
-                    @UnstableApi override fun onConfirmed(filter: FeedEpisodesFilter) {
-                        if (feedPrefs != null) {
-                            feedPrefs!!.filter = filter
-                            persistFeedPreferences(feed!!)
-//                            EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(feedPrefs!!.feedID))
+                if (feedPrefs != null) {
+                    object : AutoDownloadFilterPrefDialog(requireContext(), feedPrefs!!.autoDownloadFilter) {
+                        @UnstableApi
+                        override fun onConfirmed(filter: FeedAutoDownloadFilter) {
+                            if (feedPrefs != null) {
+                                feedPrefs!!.autoDownloadFilter = filter
+                                persistFeedPreferences(feed!!)
+                            }
                         }
-                    }
-                }.show()
+                    }.show()
+                }
                 false
             }
         }
-
         private fun setupAuthentificationPreference() {
-            if (feedPrefs == null) return
             findPreference<Preference>(PREF_AUTHENTICATION)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-                object : AuthenticationDialog(requireContext(), R.string.authentication_label, true, feedPrefs!!.username, feedPrefs!!.password) {
-                    @UnstableApi override fun onConfirmed(username: String, password: String) {
-                        if (feedPrefs != null) {
-                            feedPrefs!!.username = username
-                            feedPrefs!!.password = password
-                            persistFeedPreferences(feed!!)
-//                            EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(feedPrefs!!.feedID))
+                if (feedPrefs != null) {
+                    object : AuthenticationDialog(requireContext(), R.string.authentication_label, true, feedPrefs!!.username, feedPrefs!!.password) {
+                        @UnstableApi
+                        override fun onConfirmed(username: String, password: String) {
+                            if (feedPrefs != null) {
+                                feedPrefs!!.username = username
+                                feedPrefs!!.password = password
+                                persistFeedPreferences(feed!!)
+                                Thread({ runOnce(context, feed) }, "RefreshAfterCredentialChange").start()
+                            }
                         }
-                        Thread({ runOnce(context, feed) }, "RefreshAfterCredentialChange").start()
-                    }
-                }.show()
+                    }.show()
+                }
                 false
             }
         }
-
         @UnstableApi private fun setupAutoDeletePreference() {
-            if (feedPrefs == null) return
             findPreference<Preference>(PREF_AUTO_DELETE)!!.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any? ->
                 if (feedPrefs != null) {
-                    when (newValue as String?) {
-                        "global" -> feedPrefs!!.currentAutoDelete = AutoDeleteAction.GLOBAL
-                        "always" -> feedPrefs!!.currentAutoDelete = AutoDeleteAction.ALWAYS
-                        "never" -> feedPrefs!!.currentAutoDelete = AutoDeleteAction.NEVER
+                    when (newValue as? String) {
+                        "global" -> feedPrefs!!.autoDeleteAction = AutoDeleteAction.GLOBAL
+                        "always" -> feedPrefs!!.autoDeleteAction = AutoDeleteAction.ALWAYS
+                        "never" -> feedPrefs!!.autoDeleteAction = AutoDeleteAction.NEVER
                         else -> {}
                     }
                     persistFeedPreferences(feed!!)
-//                    EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(feedPrefs!!.feedID))
+                    updateAutoDeleteSummary()
                 }
-                updateAutoDeleteSummary()
                 false
             }
         }
-
         private fun updateAutoDeleteSummary() {
             if (feedPrefs == null) return
             val autoDeletePreference = findPreference<ListPreference>(PREF_AUTO_DELETE)
-
-            when (feedPrefs!!.currentAutoDelete) {
+            when (feedPrefs!!.autoDeleteAction) {
                 AutoDeleteAction.GLOBAL -> {
                     autoDeletePreference!!.setSummary(R.string.global_default)
                     autoDeletePreference.value = "global"
@@ -254,11 +239,9 @@ class FeedSettingsFragment : Fragment() {
                 }
             }
         }
-
         @UnstableApi private fun setupVolumeAdaptationPreferences() {
-            if (feedPrefs == null) return
-            val volumeAdaptationPreference = findPreference<ListPreference>("volumeReduction")
-            volumeAdaptationPreference!!.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any? ->
+            val volumeAdaptationPreference = findPreference<ListPreference>("volumeReduction") ?: return
+            volumeAdaptationPreference.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any? ->
                 if (feedPrefs != null) {
                     when (newValue as String?) {
                         "off" -> feedPrefs!!.volumeAdaptionSetting = VolumeAdaptionSetting.OFF
@@ -270,48 +253,37 @@ class FeedSettingsFragment : Fragment() {
                         else -> {}
                     }
                     persistFeedPreferences(feed!!)
-//                    EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(feedPrefs!!.feedID))
+                    updateVolumeAdaptationValue()
                 }
-                updateVolumeAdaptationValue()
-//                if (feed != null && feedPrefs!!.volumeAdaptionSetting != null)
-//                    EventFlow.postEvent(FlowEvent.VolumeAdaptionChangedEvent(feedPrefs!!.volumeAdaptionSetting!!, feed!!.id))
                 false
             }
         }
-
         private fun updateVolumeAdaptationValue() {
-            if (feedPrefs == null) return
-
-            val volumeAdaptationPreference = findPreference<ListPreference>("volumeReduction")
-
-            when (feedPrefs!!.volumeAdaptionSetting) {
-                VolumeAdaptionSetting.OFF -> volumeAdaptationPreference!!.value = "off"
-                VolumeAdaptionSetting.LIGHT_REDUCTION -> volumeAdaptationPreference!!.value = "light"
-                VolumeAdaptionSetting.HEAVY_REDUCTION -> volumeAdaptationPreference!!.value = "heavy"
-                VolumeAdaptionSetting.LIGHT_BOOST -> volumeAdaptationPreference!!.value = "light_boost"
-                VolumeAdaptionSetting.MEDIUM_BOOST -> volumeAdaptationPreference!!.value = "medium_boost"
-                VolumeAdaptionSetting.HEAVY_BOOST -> volumeAdaptationPreference!!.value = "heavy_boost"
+            val volumeAdaptationPreference = findPreference<ListPreference>("volumeReduction") ?: return
+            when (feedPrefs?.volumeAdaptionSetting) {
+                VolumeAdaptionSetting.OFF -> volumeAdaptationPreference.value = "off"
+                VolumeAdaptionSetting.LIGHT_REDUCTION -> volumeAdaptationPreference.value = "light"
+                VolumeAdaptionSetting.HEAVY_REDUCTION -> volumeAdaptationPreference.value = "heavy"
+                VolumeAdaptionSetting.LIGHT_BOOST -> volumeAdaptationPreference.value = "light_boost"
+                VolumeAdaptionSetting.MEDIUM_BOOST -> volumeAdaptationPreference.value = "medium_boost"
+                VolumeAdaptionSetting.HEAVY_BOOST -> volumeAdaptationPreference.value = "heavy_boost"
                 else -> {}
             }
         }
-
         @OptIn(UnstableApi::class) private fun setupKeepUpdatedPreference() {
             if (feedPrefs == null) return
             val pref = findPreference<SwitchPreferenceCompat>("keepUpdated")
-
             pref!!.isChecked = feedPrefs!!.keepUpdated
             pref.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any ->
                 val checked = newValue == true
                 if (feedPrefs != null) {
                     feedPrefs!!.keepUpdated = checked
                     persistFeedPreferences(feed!!)
-//                    EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(feedPrefs!!.feedID))
                 }
                 pref.isChecked = checked
                 false
             }
         }
-
         private fun setupAutoDownloadGlobalPreference() {
             if (!isEnableAutodownload) {
                 val autodl = findPreference<SwitchPreferenceCompat>("autoDownload")
@@ -321,47 +293,38 @@ class FeedSettingsFragment : Fragment() {
                 findPreference<Preference>(PREF_EPISODE_FILTER)!!.isEnabled = false
             }
         }
-
         @OptIn(UnstableApi::class) private fun setupAutoDownloadPreference() {
             if (feedPrefs == null) return
             val pref = findPreference<SwitchPreferenceCompat>("autoDownload")
-
             pref!!.isEnabled = isEnableAutodownload
-            if (isEnableAutodownload) {
-                pref.isChecked = feedPrefs!!.autoDownload
-            } else {
+            if (isEnableAutodownload) pref.isChecked = feedPrefs!!.autoDownload
+            else {
                 pref.isChecked = false
                 pref.setSummary(R.string.auto_download_disabled_globally)
             }
-
             pref.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any ->
                 val checked = newValue == true
                 if (feedPrefs != null) {
                     feedPrefs!!.autoDownload = checked
                     persistFeedPreferences(feed!!)
-//                    EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(feedPrefs!!.feedID))
+                    updateAutoDownloadEnabled()
+                    pref.isChecked = checked
                 }
-                updateAutoDownloadEnabled()
-                pref.isChecked = checked
                 false
             }
         }
-
         private fun updateAutoDownloadEnabled() {
-            if (feed != null && feed!!.preferences != null) {
+            if (feed?.preferences != null) {
                 val enabled = feed!!.preferences!!.autoDownload && isEnableAutodownload
                 findPreference<Preference>(PREF_EPISODE_FILTER)!!.isEnabled = enabled
             }
         }
-
         private fun setupTags() {
             findPreference<Preference>(PREF_TAGS)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-                if (feedPrefs != null) TagSettingsDialog.newInstance(listOf(feed!!))
-                    .show(childFragmentManager, TagSettingsDialog.TAG)
+                if (feedPrefs != null) TagSettingsDialog.newInstance(listOf(feed!!)).show(childFragmentManager, TagSettingsDialog.TAG)
                 true
             }
         }
-
         fun setFeed(feed_: Feed) {
             feed = feed_
         }
@@ -372,7 +335,6 @@ class FeedSettingsFragment : Fragment() {
             private val PREF_AUTHENTICATION: CharSequence = "authentication"
             private val PREF_AUTO_DELETE: CharSequence = "autoDelete"
             private val PREF_CATEGORY_AUTO_DOWNLOAD: CharSequence = "autoDownloadCategory"
-//            private val PREF_NEW_EPISODES_ACTION: CharSequence = "feedNewEpisodesAction"
             private const val PREF_FEED_PLAYBACK_SPEED = "feedPlaybackSpeed"
             private const val PREF_AUTO_SKIP = "feedAutoSkip"
             private const val PREF_TAGS = "tags"
@@ -388,52 +350,35 @@ class FeedSettingsFragment : Fragment() {
     /**
      * Displays a dialog with a username and password text field and an optional checkbox to save username and preferences.
      */
-    abstract class FeedPreferenceSkipDialog(context: Context, skipIntroInitialValue: Int, skipEndInitialValue: Int)
-        : MaterialAlertDialogBuilder(context) {
-
+    abstract class FeedPreferenceSkipDialog(context: Context, skipIntroInitialValue: Int, skipEndInitialValue: Int) : MaterialAlertDialogBuilder(context) {
         init {
             setTitle(R.string.pref_feed_skip)
             val binding = FeedPrefSkipDialogBinding.bind(View.inflate(context, R.layout.feed_pref_skip_dialog, null))
             setView(binding.root)
-
             val etxtSkipIntro = binding.etxtSkipIntro
             val etxtSkipEnd = binding.etxtSkipEnd
-
             etxtSkipIntro.setText(skipIntroInitialValue.toString())
             etxtSkipEnd.setText(skipEndInitialValue.toString())
-
             setNegativeButton(R.string.cancel_label, null)
             setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
-                val skipIntro = try {
-                    etxtSkipIntro.text.toString().toInt()
-                } catch (e: NumberFormatException) {
-                    0
-                }
-                val skipEnding = try {
-                    etxtSkipEnd.text.toString().toInt()
-                } catch (e: NumberFormatException) {
-                    0
-                }
+                val skipIntro = try { etxtSkipIntro.text.toString().toInt() } catch (e: NumberFormatException) { 0 }
+                val skipEnding = try { etxtSkipEnd.text.toString().toInt() } catch (e: NumberFormatException) { 0 }
                 onConfirmed(skipIntro, skipEnding)
             }
         }
-
-        protected abstract fun onConfirmed(skipIntro: Int, skipEndig: Int)
+        protected abstract fun onConfirmed(skipIntro: Int, skipEnding: Int)
     }
 
     /**
      * Displays a dialog with a text box for filtering episodes and two radio buttons for exclusion/inclusion
      */
-    abstract class EpisodeFilterPrefDialog(context: Context, filter: FeedEpisodesFilter) :
-        MaterialAlertDialogBuilder(context) {
-
-        private val binding = EpisodeFilterDialogBinding.inflate(LayoutInflater.from(context))
+    abstract class AutoDownloadFilterPrefDialog(context: Context, filter: FeedAutoDownloadFilter) : MaterialAlertDialogBuilder(context) {
+        private val binding = AutodownloadFilterDialogBinding.inflate(LayoutInflater.from(context))
         private val termList: MutableList<String>
 
         init {
             setTitle(R.string.episode_filters_label)
             setView(binding.root)
-
             binding.durationCheckBox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
                 binding.episodeFilterDurationText.isEnabled = isChecked
             }
@@ -442,7 +387,6 @@ class FeedSettingsFragment : Fragment() {
                 // Store minimal duration in seconds, show in minutes
                 binding.episodeFilterDurationText.setText((filter.minimalDurationFilter / 60).toString())
             } else binding.episodeFilterDurationText.isEnabled = false
-
             if (filter.excludeOnly()) {
                 termList = filter.getExcludeFilter().toMutableList()
                 binding.excludeRadio.isChecked = true
@@ -451,13 +395,11 @@ class FeedSettingsFragment : Fragment() {
                 binding.includeRadio.isChecked = true
             }
             setupWordsList()
-
             setNegativeButton(R.string.cancel_label, null)
             setPositiveButton(R.string.confirm_label) { dialog: DialogInterface, which: Int ->
                 this.onConfirmClick(dialog, which)
             }
         }
-
         private fun setupWordsList() {
             binding.termsRecycler.layoutManager = GridLayoutManager(context, 2)
             binding.termsRecycler.addItemDecoration(ItemOffsetDecoration(context, 4))
@@ -465,7 +407,6 @@ class FeedSettingsFragment : Fragment() {
                 override fun getChips(): List<String> {
                     return termList
                 }
-
                 override fun onRemoveClicked(position: Int) {
                     termList.removeAt(position)
                     notifyDataSetChanged()
@@ -475,15 +416,12 @@ class FeedSettingsFragment : Fragment() {
             binding.termsTextInput.setEndIconOnClickListener {
                 val newWord = binding.termsTextInput.editText!!.text.toString().replace("\"", "").trim { it <= ' ' }
                 if (newWord.isEmpty() || termList.contains(newWord)) return@setEndIconOnClickListener
-
                 termList.add(newWord)
                 binding.termsTextInput.editText!!.setText("")
                 adapter.notifyDataSetChanged()
             }
         }
-
-        protected abstract fun onConfirmed(filter: FeedEpisodesFilter)
-
+        protected abstract fun onConfirmed(filter: FeedAutoDownloadFilter)
         private fun onConfirmClick(dialog: DialogInterface, which: Int) {
             var minimalDuration = -1
             if (binding.durationCheckBox.isChecked) {
@@ -498,10 +436,8 @@ class FeedSettingsFragment : Fragment() {
             var includeFilter = ""
             if (binding.includeRadio.isChecked) includeFilter = toFilterString(termList)
             else excludeFilter = toFilterString(termList)
-
-            onConfirmed(FeedEpisodesFilter(includeFilter, excludeFilter, minimalDuration))
+            onConfirmed(FeedAutoDownloadFilter(includeFilter, excludeFilter, minimalDuration))
         }
-
         private fun toFilterString(words: List<String>?): String {
             val result = StringBuilder()
             for (word in words!!) {

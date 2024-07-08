@@ -17,7 +17,7 @@ import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.PlayQueue
 import ac.mdiq.podcini.storage.model.Playable
-import ac.mdiq.podcini.storage.utils.SortOrder
+import ac.mdiq.podcini.storage.model.SortOrder
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent

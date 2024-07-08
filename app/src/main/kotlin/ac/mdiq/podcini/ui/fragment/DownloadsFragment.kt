@@ -11,9 +11,9 @@ import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.utils.EpisodeFilter
+import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
-import ac.mdiq.podcini.storage.utils.SortOrder
+import ac.mdiq.podcini.storage.model.SortOrder
 import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectHandler
 import ac.mdiq.podcini.ui.actions.actionbutton.DeleteActionButton
 import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler

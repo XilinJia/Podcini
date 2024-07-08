@@ -1,7 +1,6 @@
-package ac.mdiq.podcini.storage.utils
+package ac.mdiq.podcini.storage.model
 
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
-import ac.mdiq.podcini.storage.model.Episode
 import java.io.Serializable
 
 class EpisodeFilter(vararg properties: String) : Serializable {

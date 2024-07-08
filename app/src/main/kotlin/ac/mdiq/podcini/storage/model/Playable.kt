@@ -1,6 +1,5 @@
 package ac.mdiq.podcini.storage.model
 
-import ac.mdiq.podcini.storage.utils.MediaType
 import android.content.Context
 import android.os.Parcelable
 import java.io.Serializable
@@ -64,9 +63,6 @@ interface Playable : Parcelable, Serializable {
     /**
      * Returns last time (in ms) when this playable was played or 0
      * if last played time is unknown.
-     */
-    /**
-     * @param lastPlayedTime  timestamp in ms
      */
     fun getLastPlayedTime(): Long
 

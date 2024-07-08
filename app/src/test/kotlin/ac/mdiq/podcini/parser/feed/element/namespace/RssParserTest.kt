@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.feed.parser.element.namespace
 
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.utils.MediaType
+import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.feed.parser.element.namespace.FeedParserTestHelper.getFeedFile
 import ac.mdiq.podcini.feed.parser.element.namespace.FeedParserTestHelper.runFeedParser
 import junit.framework.TestCase.assertEquals

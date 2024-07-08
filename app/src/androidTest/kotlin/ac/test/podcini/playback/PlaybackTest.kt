@@ -11,8 +11,8 @@ import ac.mdiq.podcini.storage.database.Episodes.getEpisode
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Queues.clearQueue
 import ac.mdiq.podcini.storage.database.Queues.getInQueueEpisodeIds
-import ac.mdiq.podcini.storage.utils.EpisodeFilter.Companion.unfiltered
-import ac.mdiq.podcini.storage.utils.SortOrder
+import ac.mdiq.podcini.storage.model.EpisodeFilter.Companion.unfiltered
+import ac.mdiq.podcini.storage.model.SortOrder
 import ac.mdiq.podcini.ui.activity.MainActivity
 import android.content.Context
 import android.content.Intent

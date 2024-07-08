@@ -17,9 +17,9 @@ import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.utils.EpisodeFilter
+import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
-import ac.mdiq.podcini.storage.utils.SortOrder
+import ac.mdiq.podcini.storage.model.SortOrder
 import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectHandler
 import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
 import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils

@@ -5,7 +5,7 @@ import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Playable
-import ac.mdiq.podcini.storage.utils.SortOrder
+import ac.mdiq.podcini.storage.model.SortOrder
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.view.KeyEvent

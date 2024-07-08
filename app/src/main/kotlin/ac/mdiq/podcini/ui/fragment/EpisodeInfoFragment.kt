@@ -15,7 +15,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.utils.MediaType
+import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.ui.actions.actionbutton.*
 import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
 import ac.mdiq.podcini.ui.activity.MainActivity

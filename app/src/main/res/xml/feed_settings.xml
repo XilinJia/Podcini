@@ -8,14 +8,6 @@
         android:summary="@string/keep_updated_summary"
         android:title="@string/keep_updated" />
 
-<!--    <SwitchPreferenceCompat-->
-<!--        android:defaultValue="false"-->
-<!--        android:dependency="keepUpdated"-->
-<!--        android:icon="@drawable/ic_notifications"-->
-<!--        android:key="episodeNotification"-->
-<!--        android:summary="@string/episode_notification_summary"-->
-<!--        android:title="@string/episode_notification" />-->
-
     <Preference
         android:icon="@drawable/ic_key"
         android:key="authentication"

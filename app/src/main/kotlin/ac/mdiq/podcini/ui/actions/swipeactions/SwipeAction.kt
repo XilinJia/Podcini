@@ -5,7 +5,7 @@ import androidx.annotation.AttrRes
 import androidx.annotation.DrawableRes
 import androidx.fragment.app.Fragment
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.utils.EpisodeFilter
+import ac.mdiq.podcini.storage.model.EpisodeFilter
 
 
 interface SwipeAction {

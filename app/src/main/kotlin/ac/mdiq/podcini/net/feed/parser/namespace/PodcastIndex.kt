@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.net.feed.parser.namespace
 
 import ac.mdiq.podcini.net.feed.parser.HandlerState
-import ac.mdiq.podcini.storage.utils.FeedFunding
+import ac.mdiq.podcini.storage.model.FeedFunding
 import ac.mdiq.podcini.net.feed.parser.element.SyndElement
 import org.xml.sax.Attributes
 

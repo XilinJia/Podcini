@@ -8,7 +8,7 @@ import ac.mdiq.podcini.receiver.MediaButtonReceiver.Companion.createPendingInten
 import ac.mdiq.podcini.receiver.PlayerWidget
 import ac.mdiq.podcini.receiver.PlayerWidget.Companion.isEnabled
 import ac.mdiq.podcini.receiver.PlayerWidget.Companion.prefs
-import ac.mdiq.podcini.storage.utils.MediaType
+import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.activity.starter.PlaybackSpeedActivityStarter

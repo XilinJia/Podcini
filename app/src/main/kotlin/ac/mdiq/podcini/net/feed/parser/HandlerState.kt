@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.net.feed.parser
 
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.utils.FeedFunding
+import ac.mdiq.podcini.storage.model.FeedFunding
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.net.feed.parser.element.SyndElement
 import ac.mdiq.podcini.net.feed.parser.namespace.Namespace

@@ -19,8 +19,8 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.utils.EpisodeFilter
-import ac.mdiq.podcini.storage.utils.SortOrder
+import ac.mdiq.podcini.storage.model.EpisodeFilter
+import ac.mdiq.podcini.storage.model.SortOrder
 import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow

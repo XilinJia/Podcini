@@ -20,7 +20,7 @@ import ac.mdiq.podcini.storage.database.LogsAndStats
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.model.DownloadResult
 import ac.mdiq.podcini.storage.model.FeedPreferences
-import ac.mdiq.podcini.storage.utils.VolumeAdaptionSetting
+import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting
 import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.util.config.ClientConfigurator
 import ac.mdiq.podcini.util.event.EventFlow

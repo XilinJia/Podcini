@@ -15,7 +15,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.videoPlaybackSpeed
 import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.utils.MediaType
+import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.ui.utils.ItemOffsetDecoration
 import ac.mdiq.podcini.ui.view.PlaybackSpeedSeekBar
 import ac.mdiq.podcini.util.Logd

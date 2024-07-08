@@ -1,11 +1,7 @@
 package ac.mdiq.podcini.storage.model
 
-import ac.mdiq.podcini.storage.utils.FeedFunding.Companion.extractPaymentLinks
-import ac.mdiq.podcini.storage.utils.EpisodeFilter
-import ac.mdiq.podcini.storage.utils.FeedFunding
-import ac.mdiq.podcini.storage.utils.SortOrder
-import ac.mdiq.podcini.storage.utils.SortOrder.Companion.fromCode
-import ac.mdiq.podcini.storage.utils.VolumeAdaptionSetting
+import ac.mdiq.podcini.storage.model.FeedFunding.Companion.extractPaymentLinks
+import ac.mdiq.podcini.storage.model.SortOrder.Companion.fromCode
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
@@ -178,11 +174,9 @@ class Feed : RealmObject {
         this.identifier = feedIdentifier
         this.imageUrl = imageUrl
         this.isPaged = false
-        this.nextPageLink = nextPageLink
         this.preferences?.filterString = ""
         this.sortOrder = sortOrder
         this.preferences?.sortOrderCode = sortOrder?.code ?: 0
-        this.lastUpdateFailed = lastUpdateFailed
     }
 
     /**

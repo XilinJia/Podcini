@@ -6,7 +6,7 @@ import ac.mdiq.podcini.preferences.UsageStatistics
 import ac.mdiq.podcini.preferences.UsageStatistics.logAction
 import ac.mdiq.podcini.preferences.UserPreferences.isAllowMobileStreaming
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.utils.MediaType
+import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.storage.model.RemoteMedia
 import ac.mdiq.podcini.net.utils.NetworkUtils.isStreamingAllowed

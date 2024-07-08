@@ -11,9 +11,9 @@ import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.persistEpisode
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.utils.EpisodeFilter
+import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
-import ac.mdiq.podcini.storage.utils.SortOrder
+import ac.mdiq.podcini.storage.model.SortOrder
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
@@ -256,8 +256,9 @@ import kotlin.math.min
                 val media = item.media ?: continue
                 val played = EpisodeAction.Builder(item, EpisodeAction.PLAY)
                     .timestamp(Date(media.getLastPlayedTime()))
-                    .started(media.getPosition() / 1000)
+                    .started(media.startPosition / 1000)
                     .position(media.getPosition() / 1000)
+                    .playedDuration(media.playedDuration / 1000)
                     .total(media.getDuration() / 1000)
                     .isFavorite(item.isFavorite)
                     .playState(item.playState)
@@ -327,7 +328,9 @@ import kotlin.math.min
         var idRemove: Long? = null
         Logd(TAG, "processEpisodeAction ${feedItem.media!!.getLastPlayedTime()} ${(action.timestamp?.time?:0L)} ${action.position} ${feedItem.title}")
         if (feedItem.media!!.getLastPlayedTime() < (action.timestamp?.time?:0L)) {
+            feedItem.media!!.startPosition = action.started * 1000
             feedItem.media!!.setPosition(action.position * 1000)
+            feedItem.media!!.playedDuration = action.playedDuration * 1000
             feedItem.media!!.setLastPlayedTime(action.timestamp!!.time)
             feedItem.isFavorite = action.isFavorite
             feedItem.playState = action.playState

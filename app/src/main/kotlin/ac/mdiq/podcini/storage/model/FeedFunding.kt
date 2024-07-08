@@ -1,4 +1,4 @@
-package ac.mdiq.podcini.storage.utils
+package ac.mdiq.podcini.storage.model
 
 import org.apache.commons.lang3.StringUtils
 
@@ -11,9 +11,9 @@ class FeedFunding(@JvmField var url: String?, @JvmField var content: String?) {
         this.url = url
     }
 
-    override fun equals(obj: Any?): Boolean {
-        if (obj == null || obj.javaClass != this.javaClass) return false
-        val funding = obj as FeedFunding
+    override fun equals(other: Any?): Boolean {
+        if (other == null || other.javaClass != this.javaClass) return false
+        val funding = other as FeedFunding
         if (url == null && funding.url == null && content == null && funding.content == null) return true
         if (url != null && url == funding.url && content != null && content == funding.content) return true
 

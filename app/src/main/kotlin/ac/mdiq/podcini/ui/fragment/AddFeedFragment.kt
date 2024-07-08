@@ -7,7 +7,7 @@ import ac.mdiq.podcini.net.feed.discovery.*
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.utils.SortOrder
+import ac.mdiq.podcini.storage.model.SortOrder
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.OpmlImportActivity
 import ac.mdiq.podcini.util.Logd

@@ -19,7 +19,7 @@ import ac.mdiq.podcini.storage.model.DownloadResult
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.FeedPreferences
-import ac.mdiq.podcini.storage.utils.VolumeAdaptionSetting
+import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.dialog.AuthenticationDialog
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr

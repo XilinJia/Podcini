@@ -2,7 +2,7 @@ package ac.mdiq.podcini.playback.base
 
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.MediaPlayerInfo
 import ac.mdiq.podcini.storage.model.Playable
-import ac.mdiq.podcini.storage.utils.MediaType
+import ac.mdiq.podcini.storage.model.MediaType
 
 interface MediaPlayerCallback {
     fun statusChanged(newInfo: MediaPlayerInfo?)

@@ -29,6 +29,8 @@ class EpisodeAction private constructor(builder: Builder) {
      */
     val position: Int
 
+    var playedDuration: Int
+
     /**
      * Returns the total length of the file in seconds.
      *
@@ -46,6 +48,7 @@ class EpisodeAction private constructor(builder: Builder) {
         this.timestamp = builder.timestamp
         this.started = builder.started
         this.position = builder.position
+        this.playedDuration = builder.playedDuration
         this.playState = builder.playState
         this.isFavorite = builder.isFavorite
         this.total = builder.total
@@ -60,7 +63,7 @@ class EpisodeAction private constructor(builder: Builder) {
         if (o !is EpisodeAction) return false
 
         val that = o
-        return started == that.started && position == that.position && total == that.total && playState == that.playState && isFavorite == that.isFavorite && action != that.action && podcast == that.podcast && episode == that.episode && timestamp == that.timestamp && guid == that.guid
+        return started == that.started && position == that.position && playedDuration == that.playedDuration && total == that.total && playState == that.playState && isFavorite == that.isFavorite && action != that.action && podcast == that.podcast && episode == that.episode && timestamp == that.timestamp && guid == that.guid
     }
 
     override fun hashCode(): Int {
@@ -71,6 +74,7 @@ class EpisodeAction private constructor(builder: Builder) {
         result = 31 * result + (timestamp?.hashCode() ?: 0)
         result = 31 * result + started
         result = 31 * result + position
+        result = 31 * result + playedDuration
         result = 31 * result + playState
         result = 31 * result + total
         return result
@@ -94,6 +98,7 @@ class EpisodeAction private constructor(builder: Builder) {
             if (this.action == Action.PLAY) {
                 obj.put("started", this.started)
                 obj.put("position", this.position)
+                obj.put("playedDuration", this.playedDuration)
                 obj.put("playState", this.playState)
                 obj.put("total", this.total)
                 obj.put("isFavorite", this.isFavorite)
@@ -119,6 +124,7 @@ class EpisodeAction private constructor(builder: Builder) {
         var timestamp: Date? = null
         var started: Int = -1
         var position: Int = -1
+        var playedDuration: Int = -1
         var total: Int = -1
         var playState: Int = 0
         var isFavorite: Boolean = false
@@ -149,6 +155,11 @@ class EpisodeAction private constructor(builder: Builder) {
 
         fun position(seconds: Int): Builder {
             if (action == Action.PLAY) this.position = seconds
+            return this
+        }
+
+        fun playedDuration(seconds: Int): Builder {
+            if (action == Action.PLAY) this.playedDuration = seconds
             return this
         }
 
@@ -217,11 +228,12 @@ class EpisodeAction private constructor(builder: Builder) {
             if (action == Action.PLAY) {
                 val started = `object`.optInt("started", -1)
                 val position = `object`.optInt("position", -1)
+                val playedDuration = `object`.optInt("playedDuration", -1)
                 val total = `object`.optInt("total", -1)
                 val playState = `object`.optInt("playState", 0)
                 val isFavorite = `object`.optBoolean("isFavorite", false)
                 builder.playState(playState).isFavorite(isFavorite)
-                if (started >= 0 && position > 0 && total > 0) builder.started(started).position(position).total(total)
+                if (started >= 0 && position >= 0 && playedDuration >= 0 && total > 0) builder.started(started).position(position).playedDuration(playedDuration).total(total)
             }
             return builder.build()
         }

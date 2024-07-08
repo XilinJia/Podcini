@@ -17,9 +17,9 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.preferences.OpmlTransporter.*
-import ac.mdiq.podcini.storage.utils.EpisodeFilter
+import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
-import ac.mdiq.podcini.storage.utils.SortOrder
+import ac.mdiq.podcini.storage.model.SortOrder
 import ac.mdiq.podcini.ui.activity.OpmlImportActivity
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.util.Logd
@@ -34,7 +34,6 @@ import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.text.format.Formatter
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -281,7 +280,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         builder.setNegativeButton(R.string.no, null)
         builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-            intent.setType("application/octet-stream")
+            intent.setType("*/*")
             intent.addCategory(Intent.CATEGORY_OPENABLE)
             restoreProgressLauncher.launch(intent)
         }
@@ -711,7 +710,9 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                 return null
             }
             var idRemove = 0L
+            feedItem.media!!.startPosition = action.started * 1000
             feedItem.media!!.setPosition(action.position * 1000)
+            feedItem.media!!.playedDuration = action.playedDuration * 1000
             feedItem.media!!.setLastPlayedTime(action.timestamp!!.time)
             feedItem.isFavorite = action.isFavorite
             feedItem.playState = action.playState
@@ -743,8 +744,9 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                 val media = item.media ?: continue
                 val played = EpisodeAction.Builder(item, EpisodeAction.PLAY)
                     .timestamp(Date(media.getLastPlayedTime()))
-                    .started(media.getPosition() / 1000)
+                    .started(media.startPosition / 1000)
                     .position(media.getPosition() / 1000)
+                    .playedDuration(media.playedDuration / 1000)
                     .total(media.getDuration() / 1000)
                     .isFavorite(item.isFavorite)
                     .playState(item.playState)

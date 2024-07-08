@@ -14,7 +14,7 @@ import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.PlaybackController.Companion.curPosition
 import ac.mdiq.podcini.playback.PlaybackController.Companion.seekTo
 import ac.mdiq.podcini.storage.model.Chapter
-import ac.mdiq.podcini.storage.utils.EmbeddedChapterImage
+import ac.mdiq.podcini.storage.model.EmbeddedChapterImage
 import ac.mdiq.podcini.ui.view.CircularProgressBar
 import ac.mdiq.podcini.util.Converter.getDurationStringLocalized
 import ac.mdiq.podcini.util.Converter.getDurationStringLong

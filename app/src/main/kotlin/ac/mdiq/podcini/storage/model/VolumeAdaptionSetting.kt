@@ -1,4 +1,4 @@
-package ac.mdiq.podcini.storage.utils
+package ac.mdiq.podcini.storage.model
 
 enum class VolumeAdaptionSetting(private val value: Int, @JvmField val adaptionFactor: Float) {
     OFF(0, 1.0f),
@@ -15,10 +15,7 @@ enum class VolumeAdaptionSetting(private val value: Int, @JvmField val adaptionF
     companion object {
         @JvmStatic
         fun fromInteger(value: Int): VolumeAdaptionSetting {
-            for (setting in entries) {
-                if (setting.value == value) return setting
-            }
-            throw IllegalArgumentException("Cannot map value to VolumeAdaptionSetting: $value")
+            return enumValues<VolumeAdaptionSetting>().firstOrNull { it.value == value } ?: throw IllegalArgumentException("Cannot map value to VolumeAdaptionSetting: $value")
         }
     }
 }

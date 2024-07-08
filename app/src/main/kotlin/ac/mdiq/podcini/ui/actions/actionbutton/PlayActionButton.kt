@@ -8,7 +8,7 @@ import ac.mdiq.podcini.playback.base.InTheatre
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.utils.MediaType
+import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent

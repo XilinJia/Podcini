@@ -2,7 +2,7 @@ package ac.mdiq.podcini.feed
 
 import ac.mdiq.podcini.feed.FeedMother.anyFeed
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.utils.SortOrder
+import ac.mdiq.podcini.storage.model.SortOrder
 import junit.framework.TestCase.assertEquals
 import org.junit.Assert
 import org.junit.Before

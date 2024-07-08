@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.storage.database
 
+import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.net.download.DownloadError
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
@@ -13,7 +14,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.TAG_ROOT
-import ac.mdiq.podcini.storage.utils.VolumeAdaptionSetting
+import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
@@ -164,7 +165,11 @@ object Feeds {
     }
 
     fun getFeed(feedId: Long, copy: Boolean = false, fromDB: Boolean = true): Feed? {
-        Logd(TAG, "getFeed called fromDB: $fromDB")
+        if (BuildConfig.DEBUG) {
+            val stackTrace = Thread.currentThread().stackTrace
+            val caller = if (stackTrace.size > 3) stackTrace[3] else null
+            Logd(TAG, "${caller?.className}.${caller?.methodName} getFeed called fromDB: $fromDB")
+        }
         val f = if (fromDB) realm.query(Feed::class, "id == $feedId").first().find() else feedMap[feedId]
         return if (f != null) {
             if (copy) realm.copyFromRealm(f)

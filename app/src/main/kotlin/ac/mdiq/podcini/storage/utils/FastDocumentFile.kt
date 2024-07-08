@@ -9,6 +9,7 @@ import android.provider.DocumentsContract
  * This queries the ContentResolver a single time with all the information.
  */
 class FastDocumentFile(val name: String, val type: String, val uri: Uri, val length: Long, val lastModified: Long) {
+
     companion object {
         @JvmStatic
         fun list(context: Context, folderUri: Uri?): List<FastDocumentFile> {

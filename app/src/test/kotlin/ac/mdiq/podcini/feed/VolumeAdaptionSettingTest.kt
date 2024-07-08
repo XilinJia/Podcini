@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.feed
 
-import ac.mdiq.podcini.storage.utils.VolumeAdaptionSetting
-import ac.mdiq.podcini.storage.utils.VolumeAdaptionSetting.Companion.fromInteger
+import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting
+import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting.Companion.fromInteger
 import org.hamcrest.MatcherAssert
 import org.hamcrest.Matchers
 import org.junit.Assert

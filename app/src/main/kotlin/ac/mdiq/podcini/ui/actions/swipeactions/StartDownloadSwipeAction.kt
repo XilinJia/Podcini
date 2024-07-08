@@ -5,7 +5,7 @@ import androidx.fragment.app.Fragment
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.ui.actions.actionbutton.DownloadActionButton
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.utils.EpisodeFilter
+import ac.mdiq.podcini.storage.model.EpisodeFilter
 
 class StartDownloadSwipeAction : SwipeAction {
     override fun getId(): String {

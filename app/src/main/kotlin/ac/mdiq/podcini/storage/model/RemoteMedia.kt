@@ -1,6 +1,5 @@
 package ac.mdiq.podcini.storage.model
 
-import ac.mdiq.podcini.storage.utils.MediaType
 import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable

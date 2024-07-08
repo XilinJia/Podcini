@@ -13,7 +13,7 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Playable
-import ac.mdiq.podcini.storage.utils.MediaType
+import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.config.ClientConfig
 import ac.mdiq.podcini.util.event.EventFlow

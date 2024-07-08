@@ -1,6 +1,5 @@
-package ac.mdiq.podcini.storage.utils
+package ac.mdiq.podcini.storage.model
 
-import ac.mdiq.podcini.storage.model.Episode
 import java.io.Serializable
 import java.util.*
 import java.util.regex.Pattern
@@ -10,7 +9,7 @@ import java.util.regex.Pattern
 //    (we don't have to recreate it)
 // 2. We don't know if we'll actually be asked to parse anything anyways.
 
-class FeedEpisodesFilter(val includeFilterRaw: String? = "", val excludeFilterRaw: String? = "", val minimalDurationFilter: Int = -1) : Serializable {
+class FeedAutoDownloadFilter(val includeFilterRaw: String? = "", val excludeFilterRaw: String? = "", val minimalDurationFilter: Int = -1) : Serializable {
 
     /**
      * Parses the text in to a list of single words or quoted strings.

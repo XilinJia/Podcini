@@ -5,7 +5,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.utils.SortOrder
+import ac.mdiq.podcini.storage.model.SortOrder
 import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.EpisodesAdapter

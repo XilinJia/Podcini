@@ -8,7 +8,7 @@ import ac.mdiq.podcini.net.feed.parser.utils.MimeTypeUtils.getMimeType
 import ac.mdiq.podcini.net.feed.parser.utils.MimeTypeUtils.isMediaFile
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.utils.FeedFunding
+import ac.mdiq.podcini.storage.model.FeedFunding
 import ac.mdiq.podcini.util.Logd
 import org.xml.sax.Attributes
 

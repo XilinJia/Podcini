@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.ui.actions.swipeactions
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.storage.utils.EpisodeFilter
+import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.ui.actions.swipeactions.SwipeAction.Companion.NO_ACTION
 import ac.mdiq.podcini.ui.dialog.SwipeActionsDialog
 import ac.mdiq.podcini.ui.fragment.AllEpisodesFragment

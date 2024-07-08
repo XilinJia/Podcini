@@ -6,8 +6,8 @@ import ac.mdiq.podcini.preferences.UserPreferences.prefFilterAllEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodesCount
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.utils.EpisodeFilter
-import ac.mdiq.podcini.storage.utils.SortOrder
+import ac.mdiq.podcini.storage.model.EpisodeFilter
+import ac.mdiq.podcini.storage.model.SortOrder
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.dialog.EpisodeFilterDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog

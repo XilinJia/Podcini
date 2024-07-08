@@ -1,15 +1,15 @@
 package ac.mdiq.podcini.feed
 
 import ac.mdiq.podcini.util.Converter.durationStringShortToMs
-import ac.mdiq.podcini.storage.utils.FeedEpisodesFilter
+import ac.mdiq.podcini.storage.model.FeedAutoDownloadFilter
 import ac.mdiq.podcini.storage.model.Episode
 import org.junit.Assert
 import org.junit.Test
 
-class FeedEpisodesFilterTest {
+class FeedAutoDownloadFilterTest {
     @Test
     fun testNullFilter() {
-        val filter = FeedEpisodesFilter()
+        val filter = FeedAutoDownloadFilter()
         val item = Episode()
         item.title = ("Hello world")
 
@@ -23,7 +23,7 @@ class FeedEpisodesFilterTest {
     @Test
     fun testBasicIncludeFilter() {
         val includeFilter = "Hello"
-        val filter = FeedEpisodesFilter(includeFilter, "")
+        val filter = FeedAutoDownloadFilter(includeFilter, "")
         val item = Episode()
         item.title = ("Hello world")
 
@@ -41,7 +41,7 @@ class FeedEpisodesFilterTest {
     @Test
     fun testBasicExcludeFilter() {
         val excludeFilter = "Hello"
-        val filter = FeedEpisodesFilter("", excludeFilter)
+        val filter = FeedAutoDownloadFilter("", excludeFilter)
         val item = Episode()
         item.title = ("Hello world")
 
@@ -59,7 +59,7 @@ class FeedEpisodesFilterTest {
     @Test
     fun testComplexIncludeFilter() {
         val includeFilter = "Hello \n\"Two words\""
-        val filter = FeedEpisodesFilter(includeFilter, "")
+        val filter = FeedAutoDownloadFilter(includeFilter, "")
         val item = Episode()
         item.title = ("hello world")
 
@@ -81,7 +81,7 @@ class FeedEpisodesFilterTest {
     @Test
     fun testComplexExcludeFilter() {
         val excludeFilter = "Hello \"Two words\""
-        val filter = FeedEpisodesFilter("", excludeFilter)
+        val filter = FeedAutoDownloadFilter("", excludeFilter)
         val item = Episode()
         item.title = ("hello world")
 
@@ -104,7 +104,7 @@ class FeedEpisodesFilterTest {
     fun testComboFilter() {
         val includeFilter = "Hello world"
         val excludeFilter = "dislike"
-        val filter = FeedEpisodesFilter(includeFilter, excludeFilter)
+        val filter = FeedAutoDownloadFilter(includeFilter, excludeFilter)
 
         val download = Episode()
         download.title = ("Hello everyone!")
@@ -142,7 +142,7 @@ class FeedEpisodesFilterTest {
         doNotDownload.setMedia(doNotDownloadMedia)
 
         val minimalDurationFilter = 3 * 60
-        val filter = FeedEpisodesFilter("", "", minimalDurationFilter)
+        val filter = FeedAutoDownloadFilter("", "", minimalDurationFilter)
 
         Assert.assertTrue(filter.hasMinimalDurationFilter())
         Assert.assertTrue(filter.shouldAutoDownload(download))

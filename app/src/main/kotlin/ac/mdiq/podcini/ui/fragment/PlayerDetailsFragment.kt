@@ -15,7 +15,7 @@ import ac.mdiq.podcini.storage.model.Chapter
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Playable
-import ac.mdiq.podcini.storage.utils.EmbeddedChapterImage
+import ac.mdiq.podcini.storage.model.EmbeddedChapterImage
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView

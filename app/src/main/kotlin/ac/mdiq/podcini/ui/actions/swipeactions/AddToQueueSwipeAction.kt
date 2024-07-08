@@ -5,7 +5,7 @@ import androidx.fragment.app.Fragment
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.database.Queues.addToQueue
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.utils.EpisodeFilter
+import ac.mdiq.podcini.storage.model.EpisodeFilter
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 

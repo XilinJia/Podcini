@@ -1,4 +1,4 @@
-package ac.mdiq.podcini.storage.utils
+package ac.mdiq.podcini.storage.model
 
 /**
  * Provides sort orders to sort a list of episodes.
@@ -56,11 +56,7 @@ enum class SortOrder(@JvmField val code: Int, @JvmField val scope: Scope) {
 
         @JvmStatic
         fun fromCode(code: Int): SortOrder? {
-            for (sortOrder in entries) {
-                if (sortOrder.code == code) return sortOrder
-            }
-            return null
-//            throw IllegalArgumentException("Unsupported code: $code")
+            return enumValues<SortOrder>().firstOrNull { it.code == code }
         }
 
         @JvmStatic

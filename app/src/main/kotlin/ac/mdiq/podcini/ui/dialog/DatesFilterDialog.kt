@@ -89,6 +89,7 @@ abstract class DatesFilterDialog(private val context: Context, oldestDate: Long)
         builder.setPositiveButton(android.R.string.ok) { dialog: DialogInterface?, which: Int ->
             includeMarkedAsPlayed = binding.includeMarkedCheckbox.isChecked
             if (includeMarkedAsPlayed) {
+//                TODO: what can be done with this?
                 // We do not know the date at which something was marked as played, so filtering does not make sense
                 timeFilterFrom = 0
                 timeFilterTo = Long.MAX_VALUE

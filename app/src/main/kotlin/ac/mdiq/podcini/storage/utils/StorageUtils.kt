@@ -7,11 +7,11 @@ import ac.mdiq.podcini.preferences.UserPreferences
  * Utility functions for handling storage errors
  */
 object StorageUtils {
+    /**
+     * Get the number of free bytes that are available on the external storage.
+     */
     @JvmStatic
     val freeSpaceAvailable: Long
-        /**
-         * Get the number of free bytes that are available on the external storage.
-         */
         get() {
             val dataFolder = UserPreferences.getDataFolder(null)
             return if (dataFolder != null) getFreeSpaceAvailable(dataFolder.absolutePath) else 0

@@ -3,7 +3,7 @@ package ac.mdiq.podcini.ui.actions.swipeactions
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.database.Episodes.addToHistory
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.utils.EpisodeFilter
+import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.ui.activity.MainActivity
 import android.content.Context
 import androidx.annotation.OptIn

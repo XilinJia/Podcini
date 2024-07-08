@@ -11,7 +11,7 @@ import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Episode.Companion.BUILDING
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Feed.Companion.PREFIX_GENERATIVE_COVER
-import ac.mdiq.podcini.storage.utils.MediaType
+import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.ui.actions.actionbutton.EpisodeActionButton
 import ac.mdiq.podcini.ui.actions.actionbutton.TTSActionButton
@@ -22,7 +22,6 @@ import ac.mdiq.podcini.ui.view.CircularProgressBar
 import ac.mdiq.podcini.util.Converter
 import ac.mdiq.podcini.util.DateFormatter
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.FlowEvent
 import android.text.Layout
 import android.text.format.Formatter
 import android.util.Log

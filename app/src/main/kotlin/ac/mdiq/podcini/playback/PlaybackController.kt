@@ -13,7 +13,7 @@ import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isRunning
 import ac.mdiq.podcini.playback.service.PlaybackService.LocalBinder
 import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.storage.model.Playable
-import ac.mdiq.podcini.storage.utils.MediaType
+import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
 import ac.mdiq.podcini.util.Logd

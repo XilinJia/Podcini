@@ -241,10 +241,10 @@ class Episode : RealmObject {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE)
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) return true
-        if (o !is Episode) return false
-        return id == o.id
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Episode) return false
+        return id == other.id
     }
 
     override fun hashCode(): Int {

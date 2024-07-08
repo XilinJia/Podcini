@@ -3,11 +3,8 @@ package ac.mdiq.podcini.ui.actions.actionbutton
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.preferences.UserPreferences.isStreamOverDownload
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.utils.MediaType
+import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.playback.base.InTheatre.isCurrentlyPlaying
-import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.playback.base.InTheatre.curMedia
-import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.view.View
 import android.widget.ImageView

@@ -2,7 +2,6 @@ package ac.mdiq.podcini.storage.model
 
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.utils.MediaMetadataRetrieverCompat
-import ac.mdiq.podcini.storage.utils.MediaType
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.os.Parcel
@@ -64,7 +63,6 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
         }
 
     var startPosition: Int = -1
-        private set
 
     var playedDurationWhenStarted: Int = 0
         private set
@@ -343,10 +341,10 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
         upsertBlk(episode!!) {}
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (o == null) return false
-        if (o is RemoteMedia) return o == this
-        return super.equals(o)
+    override fun equals(other: Any?): Boolean {
+        if (other == null) return false
+        if (other is RemoteMedia) return other == this
+        return super.equals(other)
     }
 
     override fun hashCode(): Int {

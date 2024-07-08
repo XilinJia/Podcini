@@ -57,8 +57,8 @@ import ac.mdiq.podcini.storage.model.FeedPreferences
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
-import ac.mdiq.podcini.storage.utils.MediaType
-import ac.mdiq.podcini.storage.utils.VolumeAdaptionSetting
+import ac.mdiq.podcini.storage.model.MediaType
+import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting
 import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.ui.widget.WidgetUpdater.WidgetState
 import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
@@ -318,7 +318,7 @@ class PlaybackService : MediaSessionService() {
                         Logd(TAG, "onPostPlayback ended: $ended smartMarkAsPlayed: $smartMarkAsPlayed autoSkipped: $autoSkipped skipped: $skipped")
                         // only mark the item as played if we're not keeping it anyways
                         item = setPlayStateSync(Episode.PLAYED, ended || (skipped && smartMarkAsPlayed), item!!)
-                        val action = item?.feed?.preferences?.currentAutoDelete
+                        val action = item?.feed?.preferences?.autoDeleteAction
                         val shouldAutoDelete = (action == AutoDeleteAction.ALWAYS ||
                                 (action == AutoDeleteAction.GLOBAL && item?.feed != null && shouldAutoDeleteItem(item!!.feed!!)))
                         if (playable is EpisodeMedia && shouldAutoDelete && (item?.isFavorite != true || !shouldFavoriteKeepEpisode())) {

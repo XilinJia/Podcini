@@ -28,9 +28,9 @@ import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueue
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.utils.EpisodeFilter
+import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
-import ac.mdiq.podcini.storage.utils.SortOrder
+import ac.mdiq.podcini.storage.model.SortOrder
 import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.*

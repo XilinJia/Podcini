@@ -2,7 +2,7 @@ package ac.mdiq.podcini.net.feed.parser.media.id3
 
 import android.util.Log
 import ac.mdiq.podcini.storage.model.Chapter
-import ac.mdiq.podcini.storage.utils.EmbeddedChapterImage.Companion.makeUrl
+import ac.mdiq.podcini.storage.model.EmbeddedChapterImage.Companion.makeUrl
 import ac.mdiq.podcini.net.feed.parser.media.id3.model.FrameHeader
 import ac.mdiq.podcini.util.Logd
 import org.apache.commons.io.input.CountingInputStream

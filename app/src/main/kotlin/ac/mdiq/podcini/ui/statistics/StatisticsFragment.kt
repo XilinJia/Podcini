@@ -187,9 +187,6 @@ class StatisticsFragment : Fragment() {
         }
     }
 
-    /**
-     * Displays the 'playback statistics' screen
-     */
     class SubscriptionStatisticsFragment : Fragment() {
         private var _binding: StatisticsFragmentBinding? = null
         private val binding get() = _binding!!

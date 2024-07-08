@@ -11,7 +11,7 @@ import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueueSync
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.utils.EpisodeFilter
+import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.util.Logd

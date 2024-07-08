@@ -1,6 +1,5 @@
-package ac.mdiq.podcini.storage.utils
+package ac.mdiq.podcini.storage.model
 
-import ac.mdiq.podcini.storage.model.Playable
 import java.util.regex.Pattern
 
 class EmbeddedChapterImage(@JvmField val media: Playable, private val imageUrl: String) {

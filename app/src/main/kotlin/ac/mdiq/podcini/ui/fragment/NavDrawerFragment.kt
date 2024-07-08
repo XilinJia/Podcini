@@ -13,8 +13,8 @@ import ac.mdiq.podcini.storage.algorithms.AutoCleanups
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodesCount
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.model.DatasetStats
-import ac.mdiq.podcini.storage.utils.EpisodeFilter
-import ac.mdiq.podcini.storage.utils.EpisodeFilter.Companion.unfiltered
+import ac.mdiq.podcini.storage.model.EpisodeFilter
+import ac.mdiq.podcini.storage.model.EpisodeFilter.Companion.unfiltered
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter

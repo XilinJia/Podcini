@@ -9,7 +9,7 @@ import ac.mdiq.podcini.net.utils.HtmlToPlainText
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.database.Feeds.updateFeedDownloadURL
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.utils.FeedFunding
+import ac.mdiq.podcini.storage.model.FeedFunding
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.statistics.FeedStatisticsFragment
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment

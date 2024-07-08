@@ -11,8 +11,8 @@ import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownloadOnBattery
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodesCount
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.utils.EpisodeFilter
-import ac.mdiq.podcini.storage.utils.SortOrder
+import ac.mdiq.podcini.storage.model.EpisodeFilter
+import ac.mdiq.podcini.storage.model.SortOrder
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.content.Intent
@@ -86,7 +86,7 @@ object AutoDownloads {
                     candidates.addAll(queue)
                     for (newItem in newItems) {
                         val feedPrefs = newItem.feed!!.preferences
-                        if (feedPrefs!!.autoDownload && !candidates.contains(newItem) && feedPrefs.filter.shouldAutoDownload(newItem)) candidates.add(newItem)
+                        if (feedPrefs!!.autoDownload && !candidates.contains(newItem) && feedPrefs.autoDownloadFilter.shouldAutoDownload(newItem)) candidates.add(newItem)
                     }
                     // filter items that are not auto downloadable
                     val it = candidates.iterator()

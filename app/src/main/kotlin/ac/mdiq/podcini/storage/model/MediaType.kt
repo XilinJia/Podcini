@@ -1,4 +1,4 @@
-package ac.mdiq.podcini.storage.utils
+package ac.mdiq.podcini.storage.model
 
 enum class MediaType {
     AUDIO, VIDEO, FLASH, UNKNOWN;

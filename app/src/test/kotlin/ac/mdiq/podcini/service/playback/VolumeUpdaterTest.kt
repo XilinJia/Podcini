@@ -5,7 +5,7 @@ import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.storage.model.*
-import ac.mdiq.podcini.storage.utils.VolumeAdaptionSetting
+import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting
 import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers

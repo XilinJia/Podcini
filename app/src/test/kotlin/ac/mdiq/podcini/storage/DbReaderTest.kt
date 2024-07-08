@@ -9,8 +9,8 @@ import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.getFeedListDownloadUrls
 import ac.mdiq.podcini.storage.database.Queues.getInQueueEpisodeIds
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.utils.EpisodeFilter
-import ac.mdiq.podcini.storage.utils.SortOrder
+import ac.mdiq.podcini.storage.model.EpisodeFilter
+import ac.mdiq.podcini.storage.model.SortOrder
 import ac.mdiq.podcini.ui.fragment.HistoryFragment.Companion.getHistory
 import ac.mdiq.podcini.ui.fragment.HistoryFragment.Companion.getNumberOfCompleted
 import ac.mdiq.podcini.ui.fragment.NavDrawerFragment.Companion.getDatasetStats

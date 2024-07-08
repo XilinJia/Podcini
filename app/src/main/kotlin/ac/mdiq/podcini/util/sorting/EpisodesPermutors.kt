@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.util.sorting
 
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.utils.SortOrder
+import ac.mdiq.podcini.storage.model.SortOrder
 import java.util.*
 
 /**

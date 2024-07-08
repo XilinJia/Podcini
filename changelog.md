@@ -1,10 +1,9 @@
 ## 6.0.6
 
 * minor class re-structuring
-* adjusted FeedPreferences to incoporate some previously ignored properties
+* adjusted FeedPreferences to incorporate some previously ignored properties
 * enabled selection of .json files when importing progress
-* in wifi sync and episode progress export/import, changed start position and added played duration for episodes (available from 5.5.3),
-this helps for the statistics view at the importer to correctly show imported progress without having to do "include marked played"
+* in wifi sync and episode progress export/import, changed start position and added played duration for episodes (available from 5.5.3), this helps for the statistics view at the importer to correctly show imported progress without having to do "include marked played"
 
 ## 6.0.5
 

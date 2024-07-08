@@ -23,3 +23,5 @@ Then your subscriptions, listening progress, favorites, and app preferences will
 Unfortunately, media files will need to be separately downloaded.
 
 * Note you can also export the progress from version 5.5.2 if you don't have 5.5.3, the difference is only that 5.5.3 includes the info about how far out an episode has been played, which can be useful when looking at statistics. Without that info, you can get similar (albeit not exactly the same) results by "Include marked played" in the filter of the statistics view.
+
+* Note also, if you have played some episodes using Podcini 6, importing progress from version 5 will not overwrite your progress new episodes in version 6.

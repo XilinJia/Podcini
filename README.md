@@ -11,7 +11,7 @@ Or download the latest APK from the [Releases Section](https://github.com/XilinJ
 
 ## Announcement
 
-### Podcini.R, or Podcini 6, is currently under pre-release for early evaluations.  The major overhaul is the replacement of SQLite DB with the object-based Realm DB. With a different application Id, it can be installed in parallel with a previous version. See [Podcini 6 migrations instroctions](migrationTo6.md)
+### Podcini.R, or Podcini 6, is currently under pre-release for early evaluations.  The major overhaul is the replacement of SQLite DB with the object-based Realm DB. With a different application Id, it can be installed in parallel with a previous version. See [Podcini 6 migrations instructions](migrationTo6.md)
 
 This project is based on a fork of [AntennaPod](<https://github.com/AntennaPod/AntennaPod>) as of Feb 5 2024.
 

@@ -60,15 +60,13 @@
   <string name="drawer_open">Abrir menú</string>
   <string name="drawer_close">Cerrar menú</string>
   <string name="drawer_preferences">Preferencias del cajón</string>
-  <string name="drawer_feed_order_unplayed_episodes">Ordenar por contador</string>
-  <string name="drawer_feed_order_alphabetical">Ordenar alfabéticamente</string>
-  <string name="drawer_feed_order_last_update">Ordenar por fecha de publicación</string>
-  <string name="drawer_feed_order_most_played">Ordenar por número de episodios reproducidos</string>
+  <string name="feed_order_alphabetical">Ordenar alfabéticamente</string>
+  <string name="feed_order_last_update">Ordenar por fecha de publicación</string>
+  <string name="feed_order_most_played">Ordenar por número de episodios reproducidos</string>
 
-  <string name="drawer_feed_order_unplayed">Número de episodios no reproducidos</string>
-  <string name="drawer_feed_counter_downloaded">Número de episodios descargados</string>
-  <string name="drawer_feed_counter_downloaded_unplayed">Número de episodios descargados y no reproducidos</string>
-  <string name="drawer_feed_counter_none">Ninguno</string>
+  <string name="feed_order_unplayed_count">Número de episodios no reproducidos</string>
+  <string name="feed_counter_downloaded">Número de episodios descargados</string>
+  <string name="feed_counter_downloaded_unplayed">Número de episodios descargados y no reproducidos</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">No se encontró ninguna aplicación compatible</string>
   <string name="export_logs_menu_title">Exportar registros detallados</string>

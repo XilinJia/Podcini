@@ -78,17 +78,15 @@
     <string name="drawer_open">Open menu</string>
     <string name="drawer_close">Close menu</string>
     <string name="drawer_preferences">Drawer preferences</string>
-    <string name="drawer_feed_order_unplayed_episodes">Counter</string>
-    <string name="drawer_feed_order_alphabetical">Title</string>
-    <string name="drawer_feed_order_last_update">Publication date</string>
-    <string name="drawer_feed_order_last_unread_update">Unread publication date</string>
-    <string name="drawer_feed_order_most_played">Number of played episodes</string>
-    <string name="drawer_feed_order_new_episodes">Number of new episodes</string>
 
-    <string name="drawer_feed_order_unplayed">Number of unplayed episodes</string>
-    <string name="drawer_feed_counter_downloaded">Number of downloaded episodes</string>
-    <string name="drawer_feed_counter_downloaded_unplayed">Number of downloaded and unplayed episodes</string>
-    <string name="drawer_feed_counter_none">None</string>
+    <string name="feed_order_alphabetical">Title</string>
+    <string name="feed_order_last_update">Publish date</string>
+    <string name="feed_order_last_unread_update">Unplayed publish date</string>
+    <string name="feed_order_most_played">Played count</string>
+    <string name="feed_order_new_episodes">New count</string>
+    <string name="feed_order_unplayed_count">Unplayed count</string>
+    <string name="feed_counter_downloaded">Download count</string>
+    <string name="feed_counter_downloaded_unplayed">Unplayed download count</string>
 
     <!-- Bug report activity -->
     <string name="log_file_share_exception">No compatible apps found</string>

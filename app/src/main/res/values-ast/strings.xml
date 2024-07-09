@@ -24,13 +24,11 @@
   <!--Main activity-->
   <string name="drawer_open">Abrir el menú</string>
   <string name="drawer_close">Zarrar el menú</string>
-  <string name="drawer_feed_order_unplayed_episodes">Pol contador</string>
-  <string name="drawer_feed_order_alphabetical">Alfabéticamente</string>
-  <string name="drawer_feed_order_last_update">Pola data d\'espublizamientu</string>
-  <string name="drawer_feed_order_most_played">Pol númberu d\'episodios reproducíos</string>
-  <string name="drawer_feed_order_unplayed">Episodios ensin reproducir</string>
-  <string name="drawer_feed_counter_downloaded">Episodios baxaos</string>
-  <string name="drawer_feed_counter_none">Nada</string>
+  <string name="feed_order_alphabetical">Alfabéticamente</string>
+  <string name="feed_order_last_update">Pola data d\'espublizamientu</string>
+  <string name="feed_order_most_played">Pol númberu d\'episodios reproducíos</string>
+  <string name="feed_order_unplayed_count">Episodios ensin reproducir</string>
+  <string name="feed_counter_downloaded">Episodios baxaos</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">Nun s\'atoparon aplicaciones compatibles</string>
   <string name="export_logs_menu_title">Esportar el rexistru detalláu</string>

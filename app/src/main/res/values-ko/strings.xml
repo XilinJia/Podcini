@@ -55,15 +55,13 @@
   <string name="drawer_open">메뉴 열기</string>
   <string name="drawer_close">메뉴 닫기</string>
   <string name="drawer_preferences">드로어 기본 설정</string>
-  <string name="drawer_feed_order_unplayed_episodes">카운터로 정렬</string>
-  <string name="drawer_feed_order_alphabetical">사전 순서로 정렬</string>
-  <string name="drawer_feed_order_last_update">공개 날짜 순서대로 정렬</string>
-  <string name="drawer_feed_order_most_played">재생한 에피소드 개수에 따라 정렬</string>
+  <string name="feed_order_alphabetical">사전 순서로 정렬</string>
+  <string name="feed_order_last_update">공개 날짜 순서대로 정렬</string>
+  <string name="feed_order_most_played">재생한 에피소드 개수에 따라 정렬</string>
 
-  <string name="drawer_feed_order_unplayed">재생하지 않은 에피소드 수</string>
-  <string name="drawer_feed_counter_downloaded">다운로드한 에피소드 수</string>
-  <string name="drawer_feed_counter_downloaded_unplayed">다운로드 개수 및 재생하지 않은 에피소드</string>
-  <string name="drawer_feed_counter_none">없음</string>
+  <string name="feed_order_unplayed_count">재생하지 않은 에피소드 수</string>
+  <string name="feed_counter_downloaded">다운로드한 에피소드 수</string>
+  <string name="feed_counter_downloaded_unplayed">다운로드 개수 및 재생하지 않은 에피소드</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">호환되는 앱이 없습니다</string>
   <string name="export_logs_menu_title">자세한 기록 내보내기</string>

@@ -55,15 +55,13 @@
   <string name="drawer_open">Открыть меню</string>
   <string name="drawer_close">Закрыть меню</string>
   <string name="drawer_preferences">Настройка бокового меню</string>
-  <string name="drawer_feed_order_unplayed_episodes">По количеству</string>
-  <string name="drawer_feed_order_alphabetical">По алфавиту</string>
-  <string name="drawer_feed_order_last_update">По дате выхода</string>
-  <string name="drawer_feed_order_most_played">По количеству прослушанных</string>
+  <string name="feed_order_alphabetical">По алфавиту</string>
+  <string name="feed_order_last_update">По дате выхода</string>
+  <string name="feed_order_most_played">По количеству прослушанных</string>
 
-  <string name="drawer_feed_order_unplayed">Количество непрослушанных выпусков</string>
-  <string name="drawer_feed_counter_downloaded">Количество загруженных выпусков</string>
-  <string name="drawer_feed_counter_downloaded_unplayed">Количество загруженных и непрослушанных выпусков</string>
-  <string name="drawer_feed_counter_none">Ничего</string>
+  <string name="feed_order_unplayed_count">Количество непрослушанных выпусков</string>
+  <string name="feed_counter_downloaded">Количество загруженных выпусков</string>
+  <string name="feed_counter_downloaded_unplayed">Количество загруженных и непрослушанных выпусков</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">Совместимых приложений не найдено</string>
   <string name="export_logs_menu_title">Экспортировать подробные журналы</string>

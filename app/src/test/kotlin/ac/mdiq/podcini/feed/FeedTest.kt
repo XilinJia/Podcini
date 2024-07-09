@@ -2,7 +2,7 @@ package ac.mdiq.podcini.feed
 
 import ac.mdiq.podcini.feed.FeedMother.anyFeed
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.model.SortOrder
+import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import junit.framework.TestCase.assertEquals
 import org.junit.Assert
 import org.junit.Before
@@ -67,8 +67,8 @@ class FeedTest {
     @Test
     @Throws(Exception::class)
     fun testSetSortOrder_OnlyIntraFeedSortAllowed() {
-        for (sortOrder in SortOrder.entries) {
-            if (sortOrder.scope == SortOrder.Scope.INTRA_FEED) {
+        for (sortOrder in EpisodeSortOrder.entries) {
+            if (sortOrder.scope == EpisodeSortOrder.Scope.INTRA_FEED) {
                 original!!.sortOrder = sortOrder // should be okay
             } else {
                 try {

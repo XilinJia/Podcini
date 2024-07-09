@@ -10,7 +10,7 @@ import ac.mdiq.podcini.storage.database.Episodes.getEpisodesCount
 import ac.mdiq.podcini.storage.database.Queues.getInQueueEpisodeIds
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
-import ac.mdiq.podcini.storage.model.SortOrder
+import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import android.content.Context
 import android.util.Log
 import androidx.annotation.OptIn
@@ -52,7 +52,7 @@ object AutoCleanups {
         private val candidates: List<Episode>
             get() {
                 val candidates: MutableList<Episode> = ArrayList()
-                val downloadedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.DOWNLOADED), SortOrder.DATE_NEW_OLD)
+                val downloadedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.DOWNLOADED), EpisodeSortOrder.DATE_NEW_OLD)
                 for (item in downloadedItems) {
                     if (item.media != null && item.media!!.downloaded && !item.isFavorite) candidates.add(item)
                 }
@@ -110,7 +110,7 @@ object AutoCleanups {
         private val candidates: List<Episode>
             get() {
                 val candidates: MutableList<Episode> = ArrayList()
-                val downloadedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.DOWNLOADED), SortOrder.DATE_NEW_OLD)
+                val downloadedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.DOWNLOADED), EpisodeSortOrder.DATE_NEW_OLD)
                 val idsInQueues = getInQueueEpisodeIds()
                 for (item in downloadedItems) {
                     if (item.media != null && item.media!!.downloaded && !idsInQueues.contains(item.id) && !item.isFavorite)
@@ -187,7 +187,7 @@ object AutoCleanups {
         private val candidates: List<Episode>
             get() {
                 val candidates: MutableList<Episode> = ArrayList()
-                val downloadedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.DOWNLOADED), SortOrder.DATE_NEW_OLD)
+                val downloadedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.DOWNLOADED), EpisodeSortOrder.DATE_NEW_OLD)
                 val idsInQueues = getInQueueEpisodeIds()
                 val mostRecentDateForDeletion = calcMostRecentDateForDeletion(Date())
                 for (item in downloadedItems) {

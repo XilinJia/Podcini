@@ -57,15 +57,13 @@
   <string name="drawer_open">Öppna meny</string>
   <string name="drawer_close">Stäng meny</string>
   <string name="drawer_preferences">Menyinställningar</string>
-  <string name="drawer_feed_order_unplayed_episodes">Sortera efter antal ospelade</string>
-  <string name="drawer_feed_order_alphabetical">Sortera alfabetiskt</string>
-  <string name="drawer_feed_order_last_update">Sortera efter publiceringsdatum</string>
-  <string name="drawer_feed_order_most_played">Sortera efter antal spelade episoder</string>
+  <string name="feed_order_alphabetical">Sortera alfabetiskt</string>
+  <string name="feed_order_last_update">Sortera efter publiceringsdatum</string>
+  <string name="feed_order_most_played">Sortera efter antal spelade episoder</string>
 
-  <string name="drawer_feed_order_unplayed">Antal ospelade episoder</string>
-  <string name="drawer_feed_counter_downloaded">Antal nedladdade episoder</string>
-  <string name="drawer_feed_counter_downloaded_unplayed">Antal nedladdade och ospelade avsnitt</string>
-  <string name="drawer_feed_counter_none">Inga</string>
+  <string name="feed_order_unplayed_count">Antal ospelade episoder</string>
+  <string name="feed_counter_downloaded">Antal nedladdade episoder</string>
+  <string name="feed_counter_downloaded_unplayed">Antal nedladdade och ospelade avsnitt</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">Hittade inga kompatibla appar</string>
   <string name="export_logs_menu_title">Exportera detaljerade loggar</string>

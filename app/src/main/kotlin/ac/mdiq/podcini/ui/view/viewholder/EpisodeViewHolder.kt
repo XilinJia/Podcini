@@ -18,10 +18,12 @@ import ac.mdiq.podcini.ui.actions.actionbutton.TTSActionButton
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.utils.CoverLoader
 import ac.mdiq.podcini.ui.utils.ThemeUtils
+import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import ac.mdiq.podcini.ui.view.CircularProgressBar
 import ac.mdiq.podcini.util.Converter
 import ac.mdiq.podcini.util.DateFormatter
 import ac.mdiq.podcini.util.Logd
+import android.graphics.PorterDuff
 import android.text.Layout
 import android.text.format.Formatter
 import android.util.Log
@@ -34,6 +36,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.elevation.SurfaceColors
@@ -93,21 +96,25 @@ open class EpisodeViewHolder(private val activity: MainActivity, parent: ViewGro
         this.episode = item
         placeholder.text = item.feed?.title
         title.text = item.title
-        container.alpha = if (item.isPlayed()) 0.75f else 1.0f
-        if (item.isPlayed()) {
-            leftPadding.contentDescription = item.title + ". " + activity.getString(R.string.is_played)
-            binding.playedMark.visibility = View.VISIBLE
-            binding.playedMark.alpha = 1.0f
-        } else {
-            leftPadding.contentDescription = item.title
-            binding.playedMark.visibility = View.GONE
+        container.alpha = if (item.isPlayed()) 0.7f else 1.0f
+        leftPadding.contentDescription = item.title
+        binding.playedMark.visibility = View.GONE
+        when {
+            item.isPlayed() -> {
+                leftPadding.contentDescription = item.title + ". " + activity.getString(R.string.is_played)
+                binding.playedMark.visibility = View.VISIBLE
+                binding.playedMark.alpha = 1.0f
+            }
+            item.isNew -> {
+                binding.txtvPubDate.setTextColor(getColorFromAttr(activity, androidx.appcompat.R.attr.colorAccent))
+            }
         }
 
         setPubDate(item)
 
         isFavorite.visibility = if (item.isFavorite) View.VISIBLE else View.GONE
         isInQueue.visibility = if (curQueue.isInQueue(item)) View.VISIBLE else View.GONE
-        container.alpha = if (item.isPlayed()) 0.75f else 1.0f
+//        container.alpha = if (item.isPlayed()) 0.7f else 1.0f
 
         val newButton = EpisodeActionButton.forItem(item)
 //        Logd(TAG, "Trying to bind button ${actionButton?.TAG} ${newButton.TAG} ${item.title}")
@@ -152,6 +159,7 @@ open class EpisodeViewHolder(private val activity: MainActivity, parent: ViewGro
                 Logd(TAG, "setting cover to ic_launcher")
                 cover.setImageDrawable(AppCompatResources.getDrawable(activity, R.drawable.ic_launcher_foreground))
             }
+//            if (item.isNew) cover.setColorFilter(ContextCompat.getColor(activity, R.color.gradient_100), PorterDuff.Mode.MULTIPLY)
         }
     }
 

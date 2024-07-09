@@ -57,15 +57,13 @@
   <string name="drawer_open">Abrir menú</string>
   <string name="drawer_close">Pechar menú</string>
   <string name="drawer_preferences">Preferencias do panel</string>
-  <string name="drawer_feed_order_unplayed_episodes">Ordenar polo contador</string>
-  <string name="drawer_feed_order_alphabetical">Ordenar alfabeticamente</string>
-  <string name="drawer_feed_order_last_update">Ordenar por data de publicación</string>
-  <string name="drawer_feed_order_most_played">Ordenar por número de episodios reproducidos</string>
+  <string name="feed_order_alphabetical">Ordenar alfabeticamente</string>
+  <string name="feed_order_last_update">Ordenar por data de publicación</string>
+  <string name="feed_order_most_played">Ordenar por número de episodios reproducidos</string>
 
-  <string name="drawer_feed_order_unplayed">Número de episodios non reproducidos</string>
-  <string name="drawer_feed_counter_downloaded">Número de episodios descargados</string>
-  <string name="drawer_feed_counter_downloaded_unplayed">Número de episodios descargados e non escoitados</string>
-  <string name="drawer_feed_counter_none">Ningún</string>
+  <string name="feed_order_unplayed_count">Número de episodios non reproducidos</string>
+  <string name="feed_counter_downloaded">Número de episodios descargados</string>
+  <string name="feed_counter_downloaded_unplayed">Número de episodios descargados e non escoitados</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">Non se atopan apps compatibles</string>
   <string name="export_logs_menu_title">Exportar rexistro detallado</string>

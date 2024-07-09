@@ -12,7 +12,7 @@ import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Queues.clearQueue
 import ac.mdiq.podcini.storage.database.Queues.getInQueueEpisodeIds
 import ac.mdiq.podcini.storage.model.EpisodeFilter.Companion.unfiltered
-import ac.mdiq.podcini.storage.model.SortOrder
+import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.ui.activity.MainActivity
 import android.content.Context
 import android.content.Intent
@@ -221,7 +221,7 @@ class PlaybackTest {
         EspressoTestUtils.openNavDrawer()
         EspressoTestUtils.onDrawerItem(ViewMatchers.withText(R.string.episodes_label)).perform(ViewActions.click())
 
-        val episodes = getEpisodes(0, 10, unfiltered(), SortOrder.DATE_NEW_OLD)
+        val episodes = getEpisodes(0, 10, unfiltered(), EpisodeSortOrder.DATE_NEW_OLD)
         val allEpisodesMatcher = Matchers.allOf(ViewMatchers.withId(R.id.recyclerView),
             ViewMatchers.isDisplayed(),
             ViewMatchers.hasMinimumChildCount(2))
@@ -262,7 +262,7 @@ class PlaybackTest {
         uiTestUtils!!.addLocalFeedData(true)
         runBlocking { clearQueue().join() }
         activityTestRule.launchActivity(Intent())
-        val episodes = getEpisodes(0, 10, unfiltered(), SortOrder.DATE_NEW_OLD)
+        val episodes = getEpisodes(0, 10, unfiltered(), EpisodeSortOrder.DATE_NEW_OLD)
 
         startLocalPlayback()
         val media = episodes[0].media

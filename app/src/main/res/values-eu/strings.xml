@@ -55,14 +55,12 @@
   <!--Main activity-->
   <string name="drawer_open">Ireki menua</string>
   <string name="drawer_close">Itxi menua</string>
-  <string name="drawer_feed_order_unplayed_episodes">Antolatu kontagailuaren arabera</string>
-  <string name="drawer_feed_order_alphabetical">Antolatu alfabetikoki</string>
-  <string name="drawer_feed_order_last_update">Antolatu argitaratze dataz</string>
-  <string name="drawer_feed_order_most_played">Antolatu ikusitako saioen arabera</string>
+  <string name="feed_order_alphabetical">Antolatu alfabetikoki</string>
+  <string name="feed_order_last_update">Antolatu argitaratze dataz</string>
+  <string name="feed_order_most_played">Antolatu ikusitako saioen arabera</string>
 
-  <string name="drawer_feed_order_unplayed">Entzun gabeko saioen zenbatekoa</string>
-  <string name="drawer_feed_counter_downloaded">Deskargatutako saio kopurua</string>
-  <string name="drawer_feed_counter_none">Bat ere ez</string>
+  <string name="feed_order_unplayed_count">Entzun gabeko saioen zenbatekoa</string>
+  <string name="feed_counter_downloaded">Deskargatutako saio kopurua</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">Ez dago app bateragarririk</string>
   <string name="export_logs_menu_title">Esportatu log zehatzak</string>

@@ -61,15 +61,13 @@
   <string name="drawer_open">打开菜单</string>
   <string name="drawer_close">关闭菜单</string>
   <string name="drawer_preferences">抽屉选项</string>
-  <string name="drawer_feed_order_unplayed_episodes">按数量排序</string>
-  <string name="drawer_feed_order_alphabetical">按名称排序</string>
-  <string name="drawer_feed_order_last_update">按出版日期排序</string>
-  <string name="drawer_feed_order_most_played">根据已播放节目的数量排序</string>
+  <string name="feed_order_alphabetical">按名称排序</string>
+  <string name="feed_order_last_update">按出版日期排序</string>
+  <string name="feed_order_most_played">根据已播放节目的数量排序</string>
 
-  <string name="drawer_feed_order_unplayed">未播曲目数</string>
-  <string name="drawer_feed_counter_downloaded">已下载节目数</string>
-  <string name="drawer_feed_counter_downloaded_unplayed">已下载但未播放的节目数</string>
-  <string name="drawer_feed_counter_none">无</string>
+  <string name="feed_order_unplayed_count">未播曲目数</string>
+  <string name="feed_counter_downloaded">已下载节目数</string>
+  <string name="feed_counter_downloaded_unplayed">已下载但未播放的节目数</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">没有找到兼容的应用程序</string>
   <string name="export_logs_menu_title">导出详细日志</string>

@@ -19,7 +19,7 @@ import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.preferences.OpmlTransporter.*
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
-import ac.mdiq.podcini.storage.model.SortOrder
+import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.ui.activity.OpmlImportActivity
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.util.Logd
@@ -732,9 +732,9 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         override fun writeDocument(feeds: List<Feed?>?, writer: Writer?, context: Context) {
             Logd(TAG, "Starting to write document")
             val queuedEpisodeActions: MutableList<EpisodeAction> = mutableListOf()
-            val pausedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.PAUSED), SortOrder.DATE_NEW_OLD)
-            val readItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.PLAYED), SortOrder.DATE_NEW_OLD)
-            val favoriteItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.IS_FAVORITE), SortOrder.DATE_NEW_OLD)
+            val pausedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.PAUSED), EpisodeSortOrder.DATE_NEW_OLD)
+            val readItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.PLAYED), EpisodeSortOrder.DATE_NEW_OLD)
+            val favoriteItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.IS_FAVORITE), EpisodeSortOrder.DATE_NEW_OLD)
             val comItems = mutableSetOf<Episode>()
             comItems.addAll(pausedItems)
             comItems.addAll(readItems)
@@ -793,7 +793,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
             val favTemplate = IOUtils.toString(favTemplateStream, UTF_8)
             val feedTemplateStream = context.assets.open(FEED_TEMPLATE)
             val feedTemplate = IOUtils.toString(feedTemplateStream, UTF_8)
-            val allFavorites = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.IS_FAVORITE), SortOrder.DATE_NEW_OLD)
+            val allFavorites = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.IS_FAVORITE), EpisodeSortOrder.DATE_NEW_OLD)
             val favoritesByFeed = buildFeedMap(allFavorites)
             writer!!.append(templateParts[0])
             for (feedId in favoritesByFeed.keys) {

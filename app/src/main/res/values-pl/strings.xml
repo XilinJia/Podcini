@@ -59,15 +59,13 @@
   <string name="drawer_open">Otwórz menu</string>
   <string name="drawer_close">Zamknij menu</string>
   <string name="drawer_preferences">Ustawienia panelu nawigacyjnego</string>
-  <string name="drawer_feed_order_unplayed_episodes">Sortuj wg licznika</string>
-  <string name="drawer_feed_order_alphabetical">Sortuj alfabetycznie</string>
-  <string name="drawer_feed_order_last_update">Sortuj wg daty publikacji</string>
-  <string name="drawer_feed_order_most_played">Sortuj wg liczby odtworzonych odcinków</string>
+  <string name="feed_order_alphabetical">Sortuj alfabetycznie</string>
+  <string name="feed_order_last_update">Sortuj wg daty publikacji</string>
+  <string name="feed_order_most_played">Sortuj wg liczby odtworzonych odcinków</string>
 
-  <string name="drawer_feed_order_unplayed">Liczba nieodtworzonych odcinków</string>
-  <string name="drawer_feed_counter_downloaded">Liczba pobranych odcinków</string>
-  <string name="drawer_feed_counter_downloaded_unplayed">Liczba pobranych i nieodtworzonych odcinków</string>
-  <string name="drawer_feed_counter_none">Brak</string>
+  <string name="feed_order_unplayed_count">Liczba nieodtworzonych odcinków</string>
+  <string name="feed_counter_downloaded">Liczba pobranych odcinków</string>
+  <string name="feed_counter_downloaded_unplayed">Liczba pobranych i nieodtworzonych odcinków</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">Nie znaleziono kompatybilnych aplikacji</string>
   <string name="export_logs_menu_title">Eksportuj szczegółowe logi</string>

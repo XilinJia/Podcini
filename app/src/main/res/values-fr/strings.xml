@@ -61,15 +61,13 @@
   <string name="drawer_open">Ouvrir le menu</string>
   <string name="drawer_close">Fermer le menu</string>
   <string name="drawer_preferences">Préférences du volet</string>
-  <string name="drawer_feed_order_unplayed_episodes">Trier par compteur</string>
-  <string name="drawer_feed_order_alphabetical">Trier par ordre alphabétique</string>
-  <string name="drawer_feed_order_last_update">Trier par date de publication</string>
-  <string name="drawer_feed_order_most_played">Trier par nombre lus</string>
+  <string name="feed_order_alphabetical">Trier par ordre alphabétique</string>
+  <string name="feed_order_last_update">Trier par date de publication</string>
+  <string name="feed_order_most_played">Trier par nombre lus</string>
 
-  <string name="drawer_feed_order_unplayed">Épisodes non lus</string>
-  <string name="drawer_feed_counter_downloaded">Épisodes téléchargés</string>
-  <string name="drawer_feed_counter_downloaded_unplayed">Épisodes téléchargés et non lus</string>
-  <string name="drawer_feed_counter_none">Aucun</string>
+  <string name="feed_order_unplayed_count">Épisodes non lus</string>
+  <string name="feed_counter_downloaded">Épisodes téléchargés</string>
+  <string name="feed_counter_downloaded_unplayed">Épisodes téléchargés et non lus</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">Aucune application compatible trouvée</string>
   <string name="export_logs_menu_title">Export détaillé des logs</string>

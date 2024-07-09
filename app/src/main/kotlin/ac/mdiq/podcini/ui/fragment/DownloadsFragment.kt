@@ -13,7 +13,7 @@ import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
-import ac.mdiq.podcini.storage.model.SortOrder
+import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectHandler
 import ac.mdiq.podcini.ui.actions.actionbutton.DeleteActionButton
 import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
@@ -323,7 +323,7 @@ import java.util.*
         lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    val sortOrder: SortOrder? = UserPreferences.downloadsSortedOrder
+                    val sortOrder: EpisodeSortOrder? = UserPreferences.downloadsSortedOrder
                     val downloadedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.DOWNLOADED), sortOrder)
                     if (runningDownloads.isEmpty()) episodes = downloadedItems.toMutableList()
                     else {
@@ -411,11 +411,11 @@ import java.util.*
             sortOrder = UserPreferences.downloadsSortedOrder
         }
 
-        override fun onAddItem(title: Int, ascending: SortOrder, descending: SortOrder, ascendingIsDefault: Boolean) {
-            if (ascending == SortOrder.DATE_OLD_NEW || ascending == SortOrder.PLAYED_DATE_OLD_NEW
-                    || ascending == SortOrder.COMPLETED_DATE_OLD_NEW
-                    || ascending == SortOrder.DURATION_SHORT_LONG || ascending == SortOrder.EPISODE_TITLE_A_Z
-                    || ascending == SortOrder.SIZE_SMALL_LARGE || ascending == SortOrder.FEED_TITLE_A_Z) {
+        override fun onAddItem(title: Int, ascending: EpisodeSortOrder, descending: EpisodeSortOrder, ascendingIsDefault: Boolean) {
+            if (ascending == EpisodeSortOrder.DATE_OLD_NEW || ascending == EpisodeSortOrder.PLAYED_DATE_OLD_NEW
+                    || ascending == EpisodeSortOrder.COMPLETED_DATE_OLD_NEW
+                    || ascending == EpisodeSortOrder.DURATION_SHORT_LONG || ascending == EpisodeSortOrder.EPISODE_TITLE_A_Z
+                    || ascending == EpisodeSortOrder.SIZE_SMALL_LARGE || ascending == EpisodeSortOrder.FEED_TITLE_A_Z) {
                 super.onAddItem(title, ascending, descending, ascendingIsDefault)
             }
         }

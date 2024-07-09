@@ -55,15 +55,13 @@
   <string name="drawer_open">Avaa menu</string>
   <string name="drawer_close">Sulje menu</string>
   <string name="drawer_preferences">Hyllyasetukset</string>
-  <string name="drawer_feed_order_unplayed_episodes">Järjestä kertojen mukaan</string>
-  <string name="drawer_feed_order_alphabetical">Järjestä aakkosellisesti</string>
-  <string name="drawer_feed_order_last_update">Järjestä julkaisupäivän mukaan</string>
-  <string name="drawer_feed_order_most_played">Järjestä toistettujen jaksojen mukaan</string>
+  <string name="feed_order_alphabetical">Järjestä aakkosellisesti</string>
+  <string name="feed_order_last_update">Järjestä julkaisupäivän mukaan</string>
+  <string name="feed_order_most_played">Järjestä toistettujen jaksojen mukaan</string>
 
-  <string name="drawer_feed_order_unplayed">Toistamattomia jaksoja</string>
-  <string name="drawer_feed_counter_downloaded">Ladattuja jaksoja</string>
-  <string name="drawer_feed_counter_downloaded_unplayed">Ladattuja ja toistamattomia jaksoja</string>
-  <string name="drawer_feed_counter_none">Ei yhtään</string>
+  <string name="feed_order_unplayed_count">Toistamattomia jaksoja</string>
+  <string name="feed_counter_downloaded">Ladattuja jaksoja</string>
+  <string name="feed_counter_downloaded_unplayed">Ladattuja ja toistamattomia jaksoja</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">Yhteensopivia sovelluksia ei löytynyt</string>
   <string name="export_logs_menu_title">Vie yksityiskohtaiset lokit</string>

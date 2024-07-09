@@ -48,14 +48,12 @@
   <!--Main activity-->
   <string name="drawer_open">Ava menüü</string>
   <string name="drawer_close">Sulge menüü</string>
-  <string name="drawer_feed_order_unplayed_episodes">Sorteeri arvu järgi</string>
-  <string name="drawer_feed_order_alphabetical">Sorteeri tähestiku järgi</string>
-  <string name="drawer_feed_order_last_update">Sorteeri avaldamise kuupäeva järgi</string>
-  <string name="drawer_feed_order_most_played">Sorteeri kuulatud saadete järgi</string>
-  <string name="drawer_feed_order_unplayed">Kuulamata saadete arv</string>
-  <string name="drawer_feed_counter_downloaded">Allalaaditud saadete arv</string>
-  <string name="drawer_feed_counter_downloaded_unplayed">Allalaaditud kuulamata saadete arv</string>
-  <string name="drawer_feed_counter_none">Pole</string>
+  <string name="feed_order_alphabetical">Sorteeri tähestiku järgi</string>
+  <string name="feed_order_last_update">Sorteeri avaldamise kuupäeva järgi</string>
+  <string name="feed_order_most_played">Sorteeri kuulatud saadete järgi</string>
+  <string name="feed_order_unplayed_count">Kuulamata saadete arv</string>
+  <string name="feed_counter_downloaded">Allalaaditud saadete arv</string>
+  <string name="feed_counter_downloaded_unplayed">Allalaaditud kuulamata saadete arv</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">Ühtegi ühilduvat rakendust ei leitud</string>
   <string name="export_logs_menu_title">Ekspordi täpne logi</string>

@@ -6,7 +6,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.fullNotificationButtons
 import ac.mdiq.podcini.preferences.UserPreferences.setShowRemainTimeSetting
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.ui.dialog.DrawerPreferencesDialog
-import ac.mdiq.podcini.ui.dialog.FeedSortDialog
+import ac.mdiq.podcini.ui.dialog.FeedSortDialogNew
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.Context
@@ -66,7 +66,8 @@ class UserInterfacePreferencesFragment : PreferenceFragmentCompat() {
 //            })
 
         findPreference<Preference>(UserPreferences.PREF_DRAWER_FEED_ORDER)?.onPreferenceClickListener = (Preference.OnPreferenceClickListener {
-            FeedSortDialog.showDialog(requireContext())
+//            FeedSortDialog.showDialog(requireContext())
+            FeedSortDialogNew().show(childFragmentManager, "FeedSortDialog")
             true
         })
         findPreference<Preference>(PREF_SWIPE)?.setOnPreferenceClickListener {

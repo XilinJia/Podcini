@@ -4,7 +4,14 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.SortDialogBinding
 import ac.mdiq.podcini.databinding.SortDialogItemActiveBinding
 import ac.mdiq.podcini.databinding.SortDialogItemBinding
-import ac.mdiq.podcini.storage.model.EpisodeSortOrder
+import ac.mdiq.podcini.preferences.UserPreferences.feedOrderBy
+import ac.mdiq.podcini.preferences.UserPreferences.feedOrderDir
+import ac.mdiq.podcini.preferences.UserPreferences.setFeedOrder
+import ac.mdiq.podcini.storage.model.FeedSortOrder
+import ac.mdiq.podcini.storage.model.FeedSortOrder.Companion.getSortOrder
+import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
@@ -18,16 +25,23 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
-open class EpisodeSortDialog : BottomSheetDialogFragment() {
+open class FeedSortDialogNew : BottomSheetDialogFragment() {
+    private val TAG: String = FeedSortDialogNew::class.simpleName ?: "Anonymous"
+
     protected var _binding: SortDialogBinding? = null
     protected val binding get() = _binding!!
 
-    protected var sortOrder: EpisodeSortOrder? = null
+    protected var sortOrder: FeedSortOrder? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        sortOrder = getSortOrder(feedOrderDir, feedOrderBy)
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = SortDialogBinding.inflate(inflater)
         populateList()
-        binding.keepSortedCheckbox.setOnCheckedChangeListener { _: CompoundButton?, _: Boolean -> this@EpisodeSortDialog.onSelectionChanged() }
+        binding.keepSortedCheckbox.setOnCheckedChangeListener { _: CompoundButton?, _: Boolean -> this@FeedSortDialogNew.onSelectionChanged() }
         return binding.root
     }
 
@@ -38,22 +52,21 @@ open class EpisodeSortDialog : BottomSheetDialogFragment() {
     
     private fun populateList() {
         binding.gridLayout.removeAllViews()
-        onAddItem(R.string.episode_title, EpisodeSortOrder.EPISODE_TITLE_A_Z, EpisodeSortOrder.EPISODE_TITLE_Z_A, true)
-        onAddItem(R.string.feed_title, EpisodeSortOrder.FEED_TITLE_A_Z, EpisodeSortOrder.FEED_TITLE_Z_A, true)
-        onAddItem(R.string.duration, EpisodeSortOrder.DURATION_SHORT_LONG, EpisodeSortOrder.DURATION_LONG_SHORT, true)
-        onAddItem(R.string.publish_date, EpisodeSortOrder.DATE_OLD_NEW, EpisodeSortOrder.DATE_NEW_OLD, false)
-        onAddItem(R.string.last_played_date, EpisodeSortOrder.PLAYED_DATE_OLD_NEW, EpisodeSortOrder.PLAYED_DATE_NEW_OLD, false)
-        onAddItem(R.string.completed_date, EpisodeSortOrder.COMPLETED_DATE_OLD_NEW, EpisodeSortOrder.COMPLETED_DATE_NEW_OLD, false)
-        onAddItem(R.string.size, EpisodeSortOrder.SIZE_SMALL_LARGE, EpisodeSortOrder.SIZE_LARGE_SMALL, false)
-        onAddItem(R.string.filename, EpisodeSortOrder.EPISODE_FILENAME_A_Z, EpisodeSortOrder.EPISODE_FILENAME_Z_A, true)
-        onAddItem(R.string.random, EpisodeSortOrder.RANDOM, EpisodeSortOrder.RANDOM, true)
-        onAddItem(R.string.smart_shuffle, EpisodeSortOrder.SMART_SHUFFLE_OLD_NEW, EpisodeSortOrder.SMART_SHUFFLE_NEW_OLD, false)
+        onAddItem(R.string.feed_order_unplayed_count, FeedSortOrder.UNPLAYED_OLD_NEW, FeedSortOrder.UNPLAYED_NEW_OLD, false)
+        onAddItem(R.string.feed_order_alphabetical, FeedSortOrder.ALPHABETIC_A_Z, FeedSortOrder.ALPHABETIC_Z_A, true)
+        onAddItem(R.string.feed_order_last_update, FeedSortOrder.LAST_UPDATED_OLD_NEW, FeedSortOrder.LAST_UPDATED_NEW_OLD, false)
+        onAddItem(R.string.feed_order_last_unread_update, FeedSortOrder.LAST_UPDATED_UNPLAYED_OLD_NEW, FeedSortOrder.LAST_UPDATED_UNPLAYED_NEW_OLD, false)
+        onAddItem(R.string.feed_order_most_played, FeedSortOrder.LEAST_PLAYED, FeedSortOrder.MOST_PLAYED, false)
+        onAddItem(R.string.feed_counter_downloaded, FeedSortOrder.LEAST_DOWNLAODED, FeedSortOrder.MOST_DOWNLOADED, false)
+        onAddItem(R.string.feed_counter_downloaded_unplayed, FeedSortOrder.LEAST_DOWNLAODED_UNPLAYED, FeedSortOrder.MOST_DOWNLOADED_UNPLAYED, false)
+        onAddItem(R.string.feed_order_new_episodes, FeedSortOrder.NEW_EPISODES_LEAST, FeedSortOrder.NEW_EPISODES_MOST, false)
     }
 
-    protected open fun onAddItem(title: Int, ascending: EpisodeSortOrder, descending: EpisodeSortOrder, ascendingIsDefault: Boolean) {
+    protected open fun onAddItem(title: Int, ascending: FeedSortOrder, descending: FeedSortOrder, ascendingIsDefault: Boolean) {
+        Logd(TAG, "onAddItem $title")
         if (sortOrder == ascending || sortOrder == descending) {
             val item = SortDialogItemActiveBinding.inflate(layoutInflater, binding.gridLayout, false)
-            val other: EpisodeSortOrder
+            val other: FeedSortOrder
             when {
                 ascending == descending -> {
                     item.button.setText(title)
@@ -69,9 +82,12 @@ open class EpisodeSortDialog : BottomSheetDialogFragment() {
                 }
             }
             item.button.setOnClickListener {
+                Logd(TAG, "button clicked: $title ${other.name} ${other.code}")
                 sortOrder = other
                 populateList()
+                setFeedOrder(sortOrder!!.index.toString(), if (sortOrder == ascending) 0 else 1)
                 onSelectionChanged()
+                EventFlow.postEvent(FlowEvent.FeedsSortedEvent())
             }
             binding.gridLayout.addView(item.root)
         } else {
@@ -79,8 +95,11 @@ open class EpisodeSortDialog : BottomSheetDialogFragment() {
             item.button.setText(title)
             item.button.setOnClickListener {
                 sortOrder = if (ascendingIsDefault) ascending else descending
+                Logd(TAG, "button clicked 1: ${getString(title)} ${sortOrder!!.name} ${sortOrder!!.code}")
                 populateList()
+                setFeedOrder(sortOrder!!.index.toString(), if (sortOrder == ascending) 0 else 1)
                 onSelectionChanged()
+                EventFlow.postEvent(FlowEvent.FeedsSortedEvent())
             }
             binding.gridLayout.addView(item.root)
         }

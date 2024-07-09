@@ -10,7 +10,7 @@ import ac.mdiq.podcini.storage.database.Feeds.getFeedListDownloadUrls
 import ac.mdiq.podcini.storage.database.Queues.getInQueueEpisodeIds
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
-import ac.mdiq.podcini.storage.model.SortOrder
+import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.ui.fragment.HistoryFragment.Companion.getHistory
 import ac.mdiq.podcini.ui.fragment.HistoryFragment.Companion.getNumberOfCompleted
 import ac.mdiq.podcini.ui.fragment.NavDrawerFragment.Companion.getDatasetStats
@@ -223,7 +223,7 @@ class DbReaderTest {
         fun testGetDownloadedItems() {
             val numItems = 10
             val downloaded = saveDownloadedItems(numItems)
-            val downloadedSaved = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.DOWNLOADED), SortOrder.DATE_NEW_OLD)
+            val downloadedSaved = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.DOWNLOADED), EpisodeSortOrder.DATE_NEW_OLD)
             Assert.assertNotNull(downloadedSaved)
             Assert.assertEquals(downloaded.size.toLong(), downloadedSaved.size.toLong())
             for (item in downloadedSaved) {
@@ -266,7 +266,7 @@ class DbReaderTest {
             for (i in newItems.indices) {
                 unreadIds[i] = newItems[i].id
             }
-            val newItemsSaved = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.NEW), SortOrder.DATE_NEW_OLD)
+            val newItemsSaved = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.NEW), EpisodeSortOrder.DATE_NEW_OLD)
             Assert.assertNotNull(newItemsSaved)
             Assert.assertEquals(newItemsSaved.size.toLong(), newItems.size.toLong())
             for (feedItem in newItemsSaved) {

@@ -61,15 +61,13 @@
   <string name="drawer_open">Menu openen</string>
   <string name="drawer_close">Menu sluiten</string>
   <string name="drawer_preferences">Menu instellen</string>
-  <string name="drawer_feed_order_unplayed_episodes">Op ingestelde teller</string>
-  <string name="drawer_feed_order_alphabetical">Op alfabetische volgorde</string>
-  <string name="drawer_feed_order_last_update">Op verschijningsdatum</string>
-  <string name="drawer_feed_order_most_played">Op aantal afgespeelde afleveringen</string>
+  <string name="feed_order_alphabetical">Op alfabetische volgorde</string>
+  <string name="feed_order_last_update">Op verschijningsdatum</string>
+  <string name="feed_order_most_played">Op aantal afgespeelde afleveringen</string>
 
-  <string name="drawer_feed_order_unplayed">Aantal niet afgespeelde afleveringen</string>
-  <string name="drawer_feed_counter_downloaded">Aantal gedownloade afleveringen</string>
-  <string name="drawer_feed_counter_downloaded_unplayed">Aantal gedownloade, onbeluisterde afleveringen</string>
-  <string name="drawer_feed_counter_none">Geen</string>
+  <string name="feed_order_unplayed_count">Aantal niet afgespeelde afleveringen</string>
+  <string name="feed_counter_downloaded">Aantal gedownloade afleveringen</string>
+  <string name="feed_counter_downloaded_unplayed">Aantal gedownloade, onbeluisterde afleveringen</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">Geen compatibele apps aangetroffen</string>
   <string name="export_logs_menu_title">Uitgebreide logboeken exporteren</string>

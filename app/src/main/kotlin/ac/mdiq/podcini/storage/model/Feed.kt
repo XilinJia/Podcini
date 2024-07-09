@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.storage.model
 
 import ac.mdiq.podcini.storage.model.FeedFunding.Companion.extractPaymentLinks
-import ac.mdiq.podcini.storage.model.SortOrder.Companion.fromCode
+import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.fromCode
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
@@ -122,7 +122,7 @@ class Feed : RealmObject {
         get() = EpisodeFilter(preferences?.filterString ?: "")
 
     @Ignore
-    var sortOrder: SortOrder? = null
+    var sortOrder: EpisodeSortOrder? = null
         get() = fromCode(preferences?.sortOrderCode ?: 0)
         set(value) {
             if (value == null) return

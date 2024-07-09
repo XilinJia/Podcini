@@ -78,6 +78,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * in episode list view, if episode has no media, TTS button is shown for fetching transcript (if not exist) and then generating audio file from the transcript. TTS audio files are playable in the same way as local media (with speed setting, pause and rewind/forward)
 * Long-press filter button in FeedEpisode view enables/disables filters without changing filter settings
 * Subscriptions view has various explicit measures for sorting
+* subscriptions sorting is now bi-directional
 * in Subscriptions view, click on cover image of a feed opens the FeedInfo view (not FeedEpisodes view)
 * History view shows time of last play, and allows filters and sorts
 * 5 queues are provided by default: Default queue, and Queues 1-4

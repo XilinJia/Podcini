@@ -4,7 +4,8 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.*
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.feedOrder
+import ac.mdiq.podcini.preferences.UserPreferences.feedOrderBy
+import ac.mdiq.podcini.preferences.UserPreferences.feedOrderDir
 import ac.mdiq.podcini.preferences.UserPreferences.useGridLayout
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.getTags
@@ -17,7 +18,7 @@ import ac.mdiq.podcini.ui.actions.menuhandler.FeedMenuHandler
 import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
-import ac.mdiq.podcini.ui.dialog.FeedSortDialog
+import ac.mdiq.podcini.ui.dialog.FeedSortDialogNew
 import ac.mdiq.podcini.ui.dialog.RemoveFeedDialog
 import ac.mdiq.podcini.ui.dialog.TagSettingsDialog
 import ac.mdiq.podcini.ui.utils.CoverLoader
@@ -288,7 +289,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         val itemId = item.itemId
         when (itemId) {
             R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
-            R.id.subscriptions_sort -> FeedSortDialog.showDialog(requireContext())
+            R.id.subscriptions_sort -> FeedSortDialogNew().show(childFragmentManager, "FeedSortDialog")
             R.id.refresh_item -> FeedUpdateManager.runOnceOrAsk(requireContext())
             else -> return false
         }
@@ -332,28 +333,29 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
 
     private fun sortFeeds() {
         Logd(TAG, "sortFeeds() called")
-        val feedOrder = feedOrder
+        val feedOrder = feedOrderBy
+        val dir = 1 - 2*feedOrderDir    // get from 0, 1 to 1, -1
         val comparator: Comparator<Feed> = when (feedOrder) {
             UserPreferences.FEED_ORDER_UNPLAYED -> {
                 val episodes = realm.query(Episode::class).query("(playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED})").find()
                 val counterMap = counterMap(episodes)
-                comparator(counterMap)
+                comparator(counterMap, dir)
             }
             UserPreferences.FEED_ORDER_ALPHABETICAL -> {
                 Comparator { lhs: Feed, rhs: Feed ->
                     val t1 = lhs.title
                     val t2 = rhs.title
                     when {
-                        t1 == null -> 1
-                        t2 == null -> -1
-                        else -> t1.compareTo(t2, ignoreCase = true)
+                        t1 == null -> dir
+                        t2 == null -> -dir
+                        else -> t1.compareTo(t2, ignoreCase = true) * dir
                     }
                 }
             }
             UserPreferences.FEED_ORDER_MOST_PLAYED -> {
                 val episodes = realm.query(Episode::class).query("playState == ${Episode.PLAYED}").find()
                 val counterMap = counterMap(episodes)
-                comparator(counterMap)
+                comparator(counterMap, dir)
             }
             UserPreferences.FEED_ORDER_LAST_UPDATED -> {
                 val episodes = realm.query(Episode::class).sort("pubDate", Sort.DESCENDING).find()
@@ -363,7 +365,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                     val pDateOld = counterMap[feedId] ?: 0
                     if (pDateOld < episode.pubDate) counterMap[feedId] = episode.pubDate
                 }
-                comparator(counterMap)
+                comparator(counterMap, dir)
             }
             UserPreferences.FEED_ORDER_LAST_UNREAD_UPDATED -> {
                 val episodes = realm.query(Episode::class)
@@ -374,24 +376,24 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                     val pDateOld = counterMap[feedId] ?: 0
                     if (pDateOld < episode.pubDate) counterMap[feedId] = episode.pubDate
                 }
-                comparator(counterMap)
+                comparator(counterMap, dir)
             }
             UserPreferences.FEED_ORDER_DOWNLOADED -> {
                 val episodes = realm.query(Episode::class).query("media.downloaded == true").find()
                 val counterMap = counterMap(episodes)
-                comparator(counterMap)
+                comparator(counterMap, dir)
             }
             UserPreferences.FEED_ORDER_DOWNLOADED_UNPLAYED -> {
                 val episodes = realm.query(Episode::class)
                     .query("(playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED}) AND media.downloaded == true").find()
                 val counterMap = counterMap(episodes)
-                comparator(counterMap)
+                comparator(counterMap, dir)
             }
             //            doing FEED_ORDER_NEW
             else -> {
                 val episodes = realm.query(Episode::class).query("playState == ${Episode.NEW}").find()
                 val counterMap = counterMap(episodes)
-                comparator(counterMap)
+                comparator(counterMap, dir)
             }
         }
         synchronized(feedList) { feedList.sortWith(comparator) }
@@ -407,15 +409,15 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         return counterMap
     }
 
-    private fun comparator(counterMap: Map<Long, Long>): Comparator<Feed> {
+    private fun comparator(counterMap: Map<Long, Long>, dir: Int): Comparator<Feed> {
         return Comparator { lhs: Feed, rhs: Feed ->
             val counterLhs = counterMap[lhs.id]?:0
             val counterRhs = counterMap[rhs.id]?:0
             when {
                 // reverse natural order: podcast with most unplayed episodes first
-                counterLhs > counterRhs -> -1
-                counterLhs == counterRhs -> lhs.title?.compareTo(rhs.title!!, ignoreCase = true) ?: -1
-                else -> 1
+                counterLhs > counterRhs -> -dir
+                counterLhs == counterRhs -> (lhs.title?.compareTo(rhs.title!!, ignoreCase = true) ?: -1) * dir
+                else -> dir
             }
         }
     }

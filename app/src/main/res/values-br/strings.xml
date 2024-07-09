@@ -55,15 +55,13 @@
   <string name="drawer_open">Digeriñ al lañser</string>
   <string name="drawer_close">Serriñ al lañser</string>
   <string name="drawer_preferences">Gwellvezioù ar stalaf</string>
-  <string name="drawer_feed_order_unplayed_episodes">Rummañ dre gonter</string>
-  <string name="drawer_feed_order_alphabetical">Rummañ dre urzh al lizherenneg</string>
-  <string name="drawer_feed_order_last_update">Rummañ dre an deiziad embann</string>
-  <string name="drawer_feed_order_most_played">Rummañ dre an niver a rannoù lennet</string>
+  <string name="feed_order_alphabetical">Rummañ dre urzh al lizherenneg</string>
+  <string name="feed_order_last_update">Rummañ dre an deiziad embann</string>
+  <string name="feed_order_most_played">Rummañ dre an niver a rannoù lennet</string>
 
-  <string name="drawer_feed_order_unplayed">Niver a rannoù n\'int ket bet lennet</string>
-  <string name="drawer_feed_counter_downloaded">Niver a rannoù pellgarget</string>
-  <string name="drawer_feed_counter_downloaded_unplayed">Niver a rannoù pellgarget n\'int ket bet lennet</string>
-  <string name="drawer_feed_counter_none">Hini ebet</string>
+  <string name="feed_order_unplayed_count">Niver a rannoù n\'int ket bet lennet</string>
+  <string name="feed_counter_downloaded">Niver a rannoù pellgarget</string>
+  <string name="feed_counter_downloaded_unplayed">Niver a rannoù pellgarget n\'int ket bet lennet</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">N\'eo ket bet kavet arloadoù keverlec\'h</string>
   <string name="export_logs_menu_title">Ezporzhiañ ar c\'herzhlevrioù dre ar munud</string>

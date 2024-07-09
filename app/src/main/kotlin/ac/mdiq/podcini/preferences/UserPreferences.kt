@@ -2,7 +2,7 @@ package ac.mdiq.podcini.preferences
 
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.ProxyConfig
-import ac.mdiq.podcini.storage.model.SortOrder
+import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
@@ -38,6 +38,7 @@ object UserPreferences {
     const val PREF_TINTED_COLORS: String = "prefTintedColors"
     const val PREF_HIDDEN_DRAWER_ITEMS: String = "prefHiddenDrawerItems"
     const val PREF_DRAWER_FEED_ORDER: String = "prefDrawerFeedOrder"
+    const val PREF_DRAWER_FEED_ORDER_DIRECTION: String = "prefDrawerFeedOrderDir"
     const val PREF_FEED_GRID_LAYOUT: String = "prefFeedGridLayout"
     const val PREF_DRAWER_FEED_COUNTER: String = "prefDrawerFeedIndicator"
     const val PREF_EXPANDED_NOTIFICATION: String = "prefExpandNotify"
@@ -194,10 +195,16 @@ object UserPreferences {
         get() = appPrefs.getBoolean(PREF_OPML_BACKUP, true)
 
 
-    val feedOrder: Int
+    val feedOrderBy: Int
         get() {
             val value = appPrefs.getString(PREF_DRAWER_FEED_ORDER, "" + FEED_ORDER_UNPLAYED)
             return value!!.toInt()
+        }
+
+    val feedOrderDir: Int
+        get() {
+            val value = appPrefs.getInt(PREF_DRAWER_FEED_ORDER_DIRECTION, 0)
+            return value
         }
 
     val useGridLayout: Boolean
@@ -507,7 +514,7 @@ object UserPreferences {
             appPrefs.edit().putBoolean(PREF_QUEUE_KEEP_SORTED, keepSorted).apply()
         }
     
-    var queueKeepSortedOrder: SortOrder?
+    var queueKeepSortedOrder: EpisodeSortOrder?
         /**
          * Returns the sort order for the queue keep sorted mode.
          * Note: This value is stored independently from the keep sorted state.
@@ -515,7 +522,7 @@ object UserPreferences {
          */
         get() {
             val sortOrderStr = appPrefs.getString(PREF_QUEUE_KEEP_SORTED_ORDER, "use-default")
-            return SortOrder.parseWithDefault(sortOrderStr, SortOrder.DATE_NEW_OLD)
+            return EpisodeSortOrder.parseWithDefault(sortOrderStr, EpisodeSortOrder.DATE_NEW_OLD)
         }
         /**
          * Sets the sort order for the queue keep sorted mode.
@@ -527,17 +534,17 @@ object UserPreferences {
         }
 
 //    the sort order for the downloads.
-    var downloadsSortedOrder: SortOrder?
+    var downloadsSortedOrder: EpisodeSortOrder?
         get() {
-            val sortOrderStr = appPrefs.getString(PREF_DOWNLOADS_SORTED_ORDER, "" + SortOrder.DATE_NEW_OLD.code)
-            return SortOrder.fromCodeString(sortOrderStr)
+            val sortOrderStr = appPrefs.getString(PREF_DOWNLOADS_SORTED_ORDER, "" + EpisodeSortOrder.DATE_NEW_OLD.code)
+            return EpisodeSortOrder.fromCodeString(sortOrderStr)
         }
         set(sortOrder) {
             appPrefs.edit().putString(PREF_DOWNLOADS_SORTED_ORDER, "" + sortOrder!!.code).apply()
         }
 
-    var allEpisodesSortOrder: SortOrder?
-        get() = SortOrder.fromCodeString(appPrefs.getString(PREF_SORT_ALL_EPISODES, "" + SortOrder.DATE_NEW_OLD.code))
+    var allEpisodesSortOrder: EpisodeSortOrder?
+        get() = EpisodeSortOrder.fromCodeString(appPrefs.getString(PREF_SORT_ALL_EPISODES, "" + EpisodeSortOrder.DATE_NEW_OLD.code))
         set(s) {
             appPrefs.edit().putString(PREF_SORT_ALL_EPISODES, "" + s!!.code).apply()
         }
@@ -597,9 +604,12 @@ object UserPreferences {
         return appPrefs.getBoolean(PREF_SHOW_TIME_LEFT, false)
     }
 
-    fun setFeedOrder(selected: String?) {
+    fun setFeedOrder(selected: String, dir: Int) {
         appPrefs.edit()
             .putString(PREF_DRAWER_FEED_ORDER, selected)
+            .apply()
+        appPrefs.edit()
+            .putInt(PREF_DRAWER_FEED_ORDER_DIRECTION, dir)
             .apply()
     }
 

@@ -19,6 +19,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.defaultPage
 import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
 import ac.mdiq.podcini.receiver.MediaButtonReceiver.Companion.createIntent
 import ac.mdiq.podcini.receiver.PlayerWidget
+import ac.mdiq.podcini.storage.database.Feeds.buildTags
 import ac.mdiq.podcini.storage.database.Feeds.monitorFeeds
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
@@ -130,6 +131,7 @@ class MainActivity : CastEnabledActivity() {
             SwipeActions.getSharedPrefs(this@MainActivity)
             QueueFragment.getSharedPrefs(this@MainActivity)
 //            updateFeedMap()
+            buildTags()
             monitorFeeds()
 //            InTheatre.apply { }
             PlayerDetailsFragment.getSharedPrefs(this@MainActivity)
@@ -403,7 +405,7 @@ class MainActivity : CastEnabledActivity() {
         val playerView = findViewById<FragmentContainerView>(R.id.playerFragment1)
         val playerParams = playerView?.layoutParams as? MarginLayoutParams
         playerParams?.setMargins(navigationBarInsets.left, 0, navigationBarInsets.right, 0)
-        playerView.layoutParams = playerParams
+        playerView?.layoutParams = playerParams
         audioPlayerView.visibility = if (visible) View.VISIBLE else View.GONE
     }
 

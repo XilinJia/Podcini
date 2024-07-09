@@ -57,15 +57,13 @@
   <string name="drawer_open">פתיחת תפריט</string>
   <string name="drawer_close">סגירת תפריט</string>
   <string name="drawer_preferences">העדפות מגירה</string>
-  <string name="drawer_feed_order_unplayed_episodes">מיון לפי מונה</string>
-  <string name="drawer_feed_order_alphabetical">מיון בסדר אלפביתי</string>
-  <string name="drawer_feed_order_last_update">מיון לפי תאריך פרסום</string>
-  <string name="drawer_feed_order_most_played">מיון לפי מספר פרקים שהושמעו </string>
+  <string name="feed_order_alphabetical">מיון בסדר אלפביתי</string>
+  <string name="feed_order_last_update">מיון לפי תאריך פרסום</string>
+  <string name="feed_order_most_played">מיון לפי מספר פרקים שהושמעו </string>
 
-  <string name="drawer_feed_order_unplayed">מספר פרקים שעוד לא התנגנו</string>
-  <string name="drawer_feed_counter_downloaded">מספר פרקים שהתקבלו</string>
-  <string name="drawer_feed_counter_downloaded_unplayed">מספר הפרקים שירדו אבל לא נוגנו</string>
-  <string name="drawer_feed_counter_none">ללא</string>
+  <string name="feed_order_unplayed_count">מספר פרקים שעוד לא התנגנו</string>
+  <string name="feed_counter_downloaded">מספר פרקים שהתקבלו</string>
+  <string name="feed_counter_downloaded_unplayed">מספר הפרקים שירדו אבל לא נוגנו</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">לא נמצאו יישומונים תואמים</string>
   <string name="export_logs_menu_title">ייצוא יומנים מפורטים</string>

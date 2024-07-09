@@ -57,15 +57,13 @@
   <string name="drawer_open">Åbn menu</string>
   <string name="drawer_close">Luk menu</string>
   <string name="drawer_preferences">Præferencer for panel</string>
-  <string name="drawer_feed_order_unplayed_episodes">Sorter efter tæller</string>
-  <string name="drawer_feed_order_alphabetical">Sorter alfabetisk</string>
-  <string name="drawer_feed_order_last_update">Sorter efter udgivelsesdato</string>
-  <string name="drawer_feed_order_most_played">Sorter efter antal afspillede afsnit</string>
+  <string name="feed_order_alphabetical">Sorter alfabetisk</string>
+  <string name="feed_order_last_update">Sorter efter udgivelsesdato</string>
+  <string name="feed_order_most_played">Sorter efter antal afspillede afsnit</string>
 
-  <string name="drawer_feed_order_unplayed">Antal uafspillede afsnit</string>
-  <string name="drawer_feed_counter_downloaded">Antal overførte afsnit</string>
-  <string name="drawer_feed_counter_downloaded_unplayed">Antal overførte og uafspillede afsnit</string>
-  <string name="drawer_feed_counter_none">Ingen</string>
+  <string name="feed_order_unplayed_count">Antal uafspillede afsnit</string>
+  <string name="feed_counter_downloaded">Antal overførte afsnit</string>
+  <string name="feed_counter_downloaded_unplayed">Antal overførte og uafspillede afsnit</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">Ingen kompatible apper fundet.</string>
   <string name="export_logs_menu_title">Eksporter detaljeret log</string>

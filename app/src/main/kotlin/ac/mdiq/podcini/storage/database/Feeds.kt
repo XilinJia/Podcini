@@ -72,7 +72,7 @@ object Feeds {
         for (feed in feedsCopy) {
             if (feed.preferences != null) tagsSet.addAll(feed.preferences!!.tags.filter { it != TAG_ROOT })
         }
-        val newTags = tagsSet.intersect(tags.toSet())
+        val newTags = tagsSet - tags.toSet()
         if (newTags.isNotEmpty()) {
             tags.clear()
             tags.addAll(tagsSet)

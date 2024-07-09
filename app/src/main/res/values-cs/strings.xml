@@ -57,15 +57,13 @@
   <string name="drawer_open">Otevřít menu</string>
   <string name="drawer_close">Zavřít menu</string>
   <string name="drawer_preferences">Nastavení postranního panelu</string>
-  <string name="drawer_feed_order_unplayed_episodes">Řadit dle čítače</string>
-  <string name="drawer_feed_order_alphabetical">Řadit abecedně</string>
-  <string name="drawer_feed_order_last_update">Řadit dle data zveřejnění</string>
-  <string name="drawer_feed_order_most_played">Řadit podle počtu poslechnutých epizod</string>
+  <string name="feed_order_alphabetical">Řadit abecedně</string>
+  <string name="feed_order_last_update">Řadit dle data zveřejnění</string>
+  <string name="feed_order_most_played">Řadit podle počtu poslechnutých epizod</string>
 
-  <string name="drawer_feed_order_unplayed">Počet nepřehraných epizod</string>
-  <string name="drawer_feed_counter_downloaded">Počet stažených epizod</string>
-  <string name="drawer_feed_counter_downloaded_unplayed">Počet stažených a nepřehraných epizod</string>
-  <string name="drawer_feed_counter_none">Žádné</string>
+  <string name="feed_order_unplayed_count">Počet nepřehraných epizod</string>
+  <string name="feed_counter_downloaded">Počet stažených epizod</string>
+  <string name="feed_counter_downloaded_unplayed">Počet stažených a nepřehraných epizod</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">Nenalezena kompatibilní aplikace</string>
   <string name="export_logs_menu_title">Exportovat detailní záznamy</string>

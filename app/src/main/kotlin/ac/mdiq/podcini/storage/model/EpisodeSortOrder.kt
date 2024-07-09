@@ -3,7 +3,7 @@ package ac.mdiq.podcini.storage.model
 /**
  * Provides sort orders to sort a list of episodes.
  */
-enum class SortOrder(@JvmField val code: Int, @JvmField val scope: Scope) {
+enum class EpisodeSortOrder(@JvmField val code: Int, @JvmField val scope: Scope) {
     DATE_OLD_NEW(1, Scope.INTRA_FEED),
     DATE_NEW_OLD(2, Scope.INTRA_FEED),
     EPISODE_TITLE_A_Z(3, Scope.INTRA_FEED),
@@ -35,7 +35,7 @@ enum class SortOrder(@JvmField val code: Int, @JvmField val scope: Scope) {
          * Converts the string representation to its enum value. If the string value is unknown,
          * the given default value is returned.
          */
-        fun parseWithDefault(value: String?, defaultValue: SortOrder): SortOrder {
+        fun parseWithDefault(value: String?, defaultValue: EpisodeSortOrder): EpisodeSortOrder {
             return try {
                 valueOf(value!!)
             } catch (e: IllegalArgumentException) {
@@ -44,7 +44,7 @@ enum class SortOrder(@JvmField val code: Int, @JvmField val scope: Scope) {
         }
 
         @JvmStatic
-        fun fromCodeString(codeStr: String?): SortOrder? {
+        fun fromCodeString(codeStr: String?): EpisodeSortOrder? {
             if (codeStr.isNullOrEmpty()) return null
 
             val code = codeStr.toInt()
@@ -55,17 +55,17 @@ enum class SortOrder(@JvmField val code: Int, @JvmField val scope: Scope) {
         }
 
         @JvmStatic
-        fun fromCode(code: Int): SortOrder? {
-            return enumValues<SortOrder>().firstOrNull { it.code == code }
+        fun fromCode(code: Int): EpisodeSortOrder? {
+            return enumValues<EpisodeSortOrder>().firstOrNull { it.code == code }
         }
 
         @JvmStatic
-        fun toCodeString(sortOrder: SortOrder?): String? {
+        fun toCodeString(sortOrder: EpisodeSortOrder?): String? {
             return sortOrder?.code?.toString()
         }
 
-        fun valuesOf(stringValues: Array<String?>): Array<SortOrder?> {
-            val values = arrayOfNulls<SortOrder>(stringValues.size)
+        fun valuesOf(stringValues: Array<String?>): Array<EpisodeSortOrder?> {
+            val values = arrayOfNulls<EpisodeSortOrder>(stringValues.size)
             for (i in stringValues.indices) {
                 values[i] = valueOf(stringValues[i]!!)
             }

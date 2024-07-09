@@ -60,15 +60,13 @@
   <string name="drawer_open">Münüyü aç</string>
   <string name="drawer_close">Menüyü kapat</string>
   <string name="drawer_preferences">İzni reddettiniz.</string>
-  <string name="drawer_feed_order_unplayed_episodes">Sayaca göre sırala</string>
-  <string name="drawer_feed_order_alphabetical">Alfabetik olarak sırala</string>
-  <string name="drawer_feed_order_last_update">Yayınlanma tarihine göre sırala</string>
-  <string name="drawer_feed_order_most_played">Oynatılan bölüm sayısına göre sırala</string>
+  <string name="feed_order_alphabetical">Alfabetik olarak sırala</string>
+  <string name="feed_order_last_update">Yayınlanma tarihine göre sırala</string>
+  <string name="feed_order_most_played">Oynatılan bölüm sayısına göre sırala</string>
 
-  <string name="drawer_feed_order_unplayed">Çalınmamış bölümlerin sayısı</string>
-  <string name="drawer_feed_counter_downloaded">İndirilen bölümlerin sayısı</string>
-  <string name="drawer_feed_counter_downloaded_unplayed">İndirilen ve oynatılmamış bölümlerin sayısı</string>
-  <string name="drawer_feed_counter_none">Hiçbiri</string>
+  <string name="feed_order_unplayed_count">Çalınmamış bölümlerin sayısı</string>
+  <string name="feed_counter_downloaded">İndirilen bölümlerin sayısı</string>
+  <string name="feed_counter_downloaded_unplayed">İndirilen ve oynatılmamış bölümlerin sayısı</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">Uyumlu uygulama bulunamadı</string>
   <string name="export_logs_menu_title">Ayrıntılı günlükleri dışa aktar</string>

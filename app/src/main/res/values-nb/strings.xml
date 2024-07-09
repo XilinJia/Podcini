@@ -55,15 +55,13 @@
   <string name="drawer_open">Åpne menyen</string>
   <string name="drawer_close">Lukk menyen</string>
   <string name="drawer_preferences">Skuff-innstillinger</string>
-  <string name="drawer_feed_order_unplayed_episodes">Sorter på teller</string>
-  <string name="drawer_feed_order_alphabetical">Sorter alfabetisk</string>
-  <string name="drawer_feed_order_last_update">Sorter etter utgivelsesdato</string>
-  <string name="drawer_feed_order_most_played">Sorter etter antall avspilte episoder</string>
+  <string name="feed_order_alphabetical">Sorter alfabetisk</string>
+  <string name="feed_order_last_update">Sorter etter utgivelsesdato</string>
+  <string name="feed_order_most_played">Sorter etter antall avspilte episoder</string>
 
-  <string name="drawer_feed_order_unplayed">Antall uavspilte episoder</string>
-  <string name="drawer_feed_counter_downloaded">Antall nedlastede episoder</string>
-  <string name="drawer_feed_counter_downloaded_unplayed">Antall of nedlastede og uavspilte episoder</string>
-  <string name="drawer_feed_counter_none">Ingen</string>
+  <string name="feed_order_unplayed_count">Antall uavspilte episoder</string>
+  <string name="feed_counter_downloaded">Antall nedlastede episoder</string>
+  <string name="feed_counter_downloaded_unplayed">Antall of nedlastede og uavspilte episoder</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">Fant ingen kompatible apper</string>
   <string name="export_logs_menu_title">Eksport detaljert logfiler</string>

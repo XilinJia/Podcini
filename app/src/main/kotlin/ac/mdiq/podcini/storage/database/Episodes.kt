@@ -20,7 +20,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.EpisodeFilter
-import ac.mdiq.podcini.storage.model.SortOrder
+import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
@@ -48,7 +48,7 @@ object Episodes {
      * @param filter The filter describing which episodes to filter out.
      * TODO: filters of queued and notqueued don't work in this
      */
-    fun getEpisodes(offset: Int, limit: Int, filter: EpisodeFilter?, sortOrder: SortOrder?, copy: Boolean = true): List<Episode> {
+    fun getEpisodes(offset: Int, limit: Int, filter: EpisodeFilter?, sortOrder: EpisodeSortOrder?, copy: Boolean = true): List<Episode> {
         Logd(TAG, "getEpisodes called with: offset=$offset, limit=$limit")
         val queryString = filter?.queryString()?:"id > 0"
         var episodes = realm.query(Episode::class).query(queryString).find().toMutableList()

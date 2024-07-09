@@ -5,7 +5,7 @@ import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Playable
-import ac.mdiq.podcini.storage.model.SortOrder
+import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.view.KeyEvent
@@ -93,7 +93,7 @@ sealed class FlowEvent {
         }
     }
 
-    data class HistoryEvent(val sortOrder: SortOrder = SortOrder.PLAYED_DATE_NEW_OLD, val startDate: Long = 0, val endDate: Long = Date().time) : FlowEvent()
+    data class HistoryEvent(val sortOrder: EpisodeSortOrder = EpisodeSortOrder.PLAYED_DATE_NEW_OLD, val startDate: Long = 0, val endDate: Long = Date().time) : FlowEvent()
 
     data class SleepTimerUpdatedEvent(private val timeLeft: Long) : FlowEvent() {
         val isOver: Boolean

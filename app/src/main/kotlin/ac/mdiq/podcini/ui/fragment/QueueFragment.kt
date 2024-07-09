@@ -19,7 +19,7 @@ import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
-import ac.mdiq.podcini.storage.model.SortOrder
+import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectHandler
 import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
 import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
@@ -572,14 +572,14 @@ import java.util.*
             binding.keepSortedCheckbox.setEnabled(UserPreferences.isQueueKeepSorted)
             return view
         }
-        override fun onAddItem(title: Int, ascending: SortOrder, descending: SortOrder, ascendingIsDefault: Boolean) {
-            if (ascending != SortOrder.EPISODE_FILENAME_A_Z && ascending != SortOrder.SIZE_SMALL_LARGE)
+        override fun onAddItem(title: Int, ascending: EpisodeSortOrder, descending: EpisodeSortOrder, ascendingIsDefault: Boolean) {
+            if (ascending != EpisodeSortOrder.EPISODE_FILENAME_A_Z && ascending != EpisodeSortOrder.SIZE_SMALL_LARGE)
                 super.onAddItem(title, ascending, descending, ascendingIsDefault)
         }
         @UnstableApi override fun onSelectionChanged() {
             super.onSelectionChanged()
-            binding.keepSortedCheckbox.setEnabled(sortOrder != SortOrder.RANDOM)
-            if (sortOrder == SortOrder.RANDOM) binding.keepSortedCheckbox.setChecked(false)
+            binding.keepSortedCheckbox.setEnabled(sortOrder != EpisodeSortOrder.RANDOM)
+            if (sortOrder == EpisodeSortOrder.RANDOM) binding.keepSortedCheckbox.setChecked(false)
             UserPreferences.isQueueKeepSorted = binding.keepSortedCheckbox.isChecked
             UserPreferences.queueKeepSortedOrder = sortOrder
             reorderQueue(sortOrder, true)
@@ -590,7 +590,7 @@ import java.util.*
          * QueueUpdateBroadcast. This option should be set to `false`
          * if the caller wants to avoid unexpected updates of the GUI.
          */
-        private fun reorderQueue(sortOrder: SortOrder?, broadcastUpdate: Boolean) : Job {
+        private fun reorderQueue(sortOrder: EpisodeSortOrder?, broadcastUpdate: Boolean) : Job {
             Logd(TAG, "reorderQueue called")
             if (sortOrder == null) {
                 Logd(TAG, "reorderQueue() - sortOrder is null. Do nothing.")
@@ -664,11 +664,11 @@ import java.util.*
         @UnstableApi
         override fun afterBindViewHolder(holder: EpisodeViewHolder, pos: Int) {
             if (inActionMode() || !dragDropEnabled) {
-                holder.dragHandle.setVisibility(View.GONE)
+                holder.dragHandle.visibility = View.GONE
                 holder.dragHandle.setOnTouchListener(null)
 //            holder.coverHolder.setOnTouchListener(null)
             } else {
-                holder.dragHandle.setVisibility(View.VISIBLE)
+                holder.dragHandle.visibility = View.VISIBLE
                 holder.dragHandle.setOnTouchListener { _: View?, event: MotionEvent ->
                     if (event.actionMasked == MotionEvent.ACTION_DOWN) swipeActions.startDrag(holder)
                     false

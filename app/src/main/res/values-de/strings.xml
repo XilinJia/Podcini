@@ -61,15 +61,13 @@
   <string name="drawer_open">Menü öffnen</string>
   <string name="drawer_close">Menü schließen</string>
   <string name="drawer_preferences">Seitenleisten-Einstellungen</string>
-  <string name="drawer_feed_order_unplayed_episodes">Nach Zähler sortieren </string>
-  <string name="drawer_feed_order_alphabetical">Alphabetisch sortieren</string>
-  <string name="drawer_feed_order_last_update">Nach Veröffentlichungsdatum sortieren</string>
-  <string name="drawer_feed_order_most_played">Nach Anzahl gespielter Episoden sortieren</string>
+  <string name="feed_order_alphabetical">Alphabetisch sortieren</string>
+  <string name="feed_order_last_update">Nach Veröffentlichungsdatum sortieren</string>
+  <string name="feed_order_most_played">Nach Anzahl gespielter Episoden sortieren</string>
 
-  <string name="drawer_feed_order_unplayed">Anzahl nicht abgespielter Episoden</string>
-  <string name="drawer_feed_counter_downloaded">Anzahl heruntergeladener Episoden</string>
-  <string name="drawer_feed_counter_downloaded_unplayed">Anzahl heruntergeladener und nicht abgespielter Episoden</string>
-  <string name="drawer_feed_counter_none">Keine</string>
+  <string name="feed_order_unplayed_count">Anzahl nicht abgespielter Episoden</string>
+  <string name="feed_counter_downloaded">Anzahl heruntergeladener Episoden</string>
+  <string name="feed_counter_downloaded_unplayed">Anzahl heruntergeladener und nicht abgespielter Episoden</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">Keine kompatiblen Apps gefunden</string>
   <string name="export_logs_menu_title">Detaillierte Logs exportieren</string>

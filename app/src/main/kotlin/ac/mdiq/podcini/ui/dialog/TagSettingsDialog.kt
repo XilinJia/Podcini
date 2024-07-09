@@ -6,10 +6,13 @@ import ac.mdiq.podcini.storage.database.Feeds.buildTags
 import ac.mdiq.podcini.storage.database.Feeds.getTags
 import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
+import ac.mdiq.podcini.storage.database.RealmDB.upsert
+import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.FeedPreferences
 import ac.mdiq.podcini.ui.adapter.SimpleChipAdapter
 import ac.mdiq.podcini.ui.utils.ItemOffsetDecoration
+import ac.mdiq.podcini.util.Logd
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
@@ -53,7 +56,6 @@ class TagSettingsDialog : DialogFragment() {
             }
         }
         binding.tagsRecycler.adapter = adapter
-//        binding.rootFolderCheckbox.isChecked = commonTags.contains(FeedPreferences.TAG_ROOT)
 
         binding.newTagTextInput.setEndIconOnClickListener {
             addTag(binding.newTagEditText.text.toString().trim { it <= ' ' })
@@ -76,14 +78,12 @@ class TagSettingsDialog : DialogFragment() {
             addTag(binding.newTagEditText.text.toString().trim { it <= ' ' })
             updatePreferencesTags(commonTags)
             buildTags()
-//            EventFlow.postEvent(FlowEvent.FeedTagsChangedEvent())
         }
         dialog.setNegativeButton(R.string.cancel_label, null)
         return dialog.create()
     }
 
     private fun loadTags() {
-//        val scope = CoroutineScope(Dispatchers.Main)
         val acAdapter = ArrayAdapter(requireContext(), R.layout.single_tag_text_view, getTags())
         binding.newTagEditText.setAdapter(acAdapter)
     }
@@ -102,16 +102,13 @@ class TagSettingsDialog : DialogFragment() {
     }
 
     @OptIn(UnstableApi::class) private fun updatePreferencesTags(commonTags: Set<String>) {
-//        if (binding.rootFolderCheckbox.isChecked) {
-//            displayedTags.add(FeedPreferences.TAG_ROOT)
-//        }
-        for (feed_ in feedList) {
-            val feed = unmanaged(feed_)
-            if (feed.preferences != null) {
-                feed.preferences!!.tags.removeAll(commonTags)
-                feed.preferences!!.tags.addAll(displayedTags)
-                persistFeedPreferences(feed)
-//                EventFlow.postEvent(FlowEvent.FeedPrefsChangeEvent(feed))
+        for (f in feedList) {
+            Logd(TAG, "${f.title} $displayedTags")
+            upsertBlk(f) {
+                if (it.preferences != null) {
+                    it.preferences!!.tags.removeAll(commonTags)
+                    it.preferences!!.tags.addAll(displayedTags)
+                }
             }
         }
     }

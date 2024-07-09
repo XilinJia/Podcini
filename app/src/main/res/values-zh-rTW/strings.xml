@@ -34,13 +34,11 @@
     </string>
     <string name="drawer_open">打開選單</string>
   <string name="drawer_close">關閉選單</string>
-  <string name="drawer_feed_order_unplayed_episodes">按計數器排序</string>
-  <string name="drawer_feed_order_alphabetical">按字母排序</string>
-  <string name="drawer_feed_order_last_update">按發布日期排序</string>
-  <string name="drawer_feed_order_most_played">按已播放的集數排序</string>
-  <string name="drawer_feed_order_unplayed">未播放集數</string>
-  <string name="drawer_feed_counter_downloaded">已下載集數</string>
-  <string name="drawer_feed_counter_none">沒有</string>
+  <string name="feed_order_alphabetical">按字母排序</string>
+  <string name="feed_order_last_update">按發布日期排序</string>
+  <string name="feed_order_most_played">按已播放的集數排序</string>
+  <string name="feed_order_unplayed_count">未播放集數</string>
+  <string name="feed_counter_downloaded">已下載集數</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">找不到相容的 App</string>
   <string name="export_logs_menu_title">匯出詳細記錄</string>

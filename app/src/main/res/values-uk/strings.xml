@@ -57,15 +57,13 @@
   <string name="drawer_open">Показати меню</string>
   <string name="drawer_close">Сховати меню</string>
   <string name="drawer_preferences">Налаштування шторки</string>
-  <string name="drawer_feed_order_unplayed_episodes">Сортувати за лічильником</string>
-  <string name="drawer_feed_order_alphabetical">Сортувати за абеткою</string>
-  <string name="drawer_feed_order_last_update">Сортувати за датою публікації</string>
-  <string name="drawer_feed_order_most_played">Сортувати за кількістю прослуханих епізодів</string>
+  <string name="feed_order_alphabetical">Сортувати за абеткою</string>
+  <string name="feed_order_last_update">Сортувати за датою публікації</string>
+  <string name="feed_order_most_played">Сортувати за кількістю прослуханих епізодів</string>
 
-  <string name="drawer_feed_order_unplayed">Кількість непрослуханих епізодів</string>
-  <string name="drawer_feed_counter_downloaded">Кількість завантажених епізодів</string>
-  <string name="drawer_feed_counter_downloaded_unplayed">Кількість завантажених але не прослуханих епізодів</string>
-  <string name="drawer_feed_counter_none">Немає</string>
+  <string name="feed_order_unplayed_count">Кількість непрослуханих епізодів</string>
+  <string name="feed_counter_downloaded">Кількість завантажених епізодів</string>
+  <string name="feed_counter_downloaded_unplayed">Кількість завантажених але не прослуханих епізодів</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">Сумісних програм не знайдено</string>
   <string name="export_logs_menu_title">Експорт детальних журналів</string>

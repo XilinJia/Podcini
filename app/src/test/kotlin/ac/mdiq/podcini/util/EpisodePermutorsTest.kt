@@ -4,7 +4,7 @@ import ac.mdiq.podcini.util.sorting.EpisodesPermutors.getPermutor
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.model.SortOrder
+import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import org.junit.Assert
 import org.junit.Test
 import java.util.*
@@ -15,7 +15,7 @@ import java.util.*
 class EpisodePermutorsTest {
     @Test
     fun testEnsureNonNullPermutors() {
-        for (sortOrder in SortOrder.entries) {
+        for (sortOrder in EpisodeSortOrder.entries) {
             Assert.assertNotNull("The permutor for SortOrder $sortOrder is unexpectedly null",
                 getPermutor(sortOrder))
         }
@@ -23,7 +23,7 @@ class EpisodePermutorsTest {
 
     @Test
     fun testPermutorForRule_EPISODE_TITLE_ASC() {
-        val permutor = getPermutor(SortOrder.EPISODE_TITLE_A_Z)
+        val permutor = getPermutor(EpisodeSortOrder.EPISODE_TITLE_A_Z)
 
         val itemList = testList
         Assert.assertTrue(checkIdOrder(itemList, 1, 3, 2)) // before sorting
@@ -33,7 +33,7 @@ class EpisodePermutorsTest {
 
     @Test
     fun testPermutorForRule_EPISODE_TITLE_ASC_NullTitle() {
-        val permutor = getPermutor(SortOrder.EPISODE_TITLE_A_Z)
+        val permutor = getPermutor(EpisodeSortOrder.EPISODE_TITLE_A_Z)
 
         val itemList = testList.toMutableList()
         itemList[2].title = (null)
@@ -45,7 +45,7 @@ class EpisodePermutorsTest {
 
     @Test
     fun testPermutorForRule_EPISODE_TITLE_DESC() {
-        val permutor = getPermutor(SortOrder.EPISODE_TITLE_Z_A)
+        val permutor = getPermutor(EpisodeSortOrder.EPISODE_TITLE_Z_A)
 
         val itemList = testList
         Assert.assertTrue(checkIdOrder(itemList, 1, 3, 2)) // before sorting
@@ -55,7 +55,7 @@ class EpisodePermutorsTest {
 
     @Test
     fun testPermutorForRule_DATE_ASC() {
-        val permutor = getPermutor(SortOrder.DATE_OLD_NEW)
+        val permutor = getPermutor(EpisodeSortOrder.DATE_OLD_NEW)
 
         val itemList = testList
         Assert.assertTrue(checkIdOrder(itemList, 1, 3, 2)) // before sorting
@@ -65,7 +65,7 @@ class EpisodePermutorsTest {
 
     @Test
     fun testPermutorForRule_DATE_ASC_NulPubDatel() {
-        val permutor = getPermutor(SortOrder.DATE_OLD_NEW)
+        val permutor = getPermutor(EpisodeSortOrder.DATE_OLD_NEW)
 
         val itemList = testList
         itemList[2] // itemId 2
@@ -77,7 +77,7 @@ class EpisodePermutorsTest {
 
     @Test
     fun testPermutorForRule_DATE_DESC() {
-        val permutor = getPermutor(SortOrder.DATE_NEW_OLD)
+        val permutor = getPermutor(EpisodeSortOrder.DATE_NEW_OLD)
 
         val itemList = testList
         Assert.assertTrue(checkIdOrder(itemList, 1, 3, 2)) // before sorting
@@ -87,7 +87,7 @@ class EpisodePermutorsTest {
 
     @Test
     fun testPermutorForRule_DURATION_ASC() {
-        val permutor = getPermutor(SortOrder.DURATION_SHORT_LONG)
+        val permutor = getPermutor(EpisodeSortOrder.DURATION_SHORT_LONG)
 
         val itemList = testList
         Assert.assertTrue(checkIdOrder(itemList, 1, 3, 2)) // before sorting
@@ -97,7 +97,7 @@ class EpisodePermutorsTest {
 
     @Test
     fun testPermutorForRule_DURATION_DESC() {
-        val permutor = getPermutor(SortOrder.DURATION_LONG_SHORT)
+        val permutor = getPermutor(EpisodeSortOrder.DURATION_LONG_SHORT)
 
         val itemList = testList
         Assert.assertTrue(checkIdOrder(itemList, 1, 3, 2)) // before sorting
@@ -107,7 +107,7 @@ class EpisodePermutorsTest {
 
     @Test
     fun testPermutorForRule_size_asc() {
-        val permutor = getPermutor(SortOrder.SIZE_SMALL_LARGE)
+        val permutor = getPermutor(EpisodeSortOrder.SIZE_SMALL_LARGE)
 
         val itemList = testList
         Assert.assertTrue(checkIdOrder(itemList, 1, 3, 2)) // before sorting
@@ -117,7 +117,7 @@ class EpisodePermutorsTest {
 
     @Test
     fun testPermutorForRule_size_desc() {
-        val permutor = getPermutor(SortOrder.SIZE_LARGE_SMALL)
+        val permutor = getPermutor(EpisodeSortOrder.SIZE_LARGE_SMALL)
 
         val itemList = testList
         Assert.assertTrue(checkIdOrder(itemList, 1, 3, 2)) // before sorting
@@ -127,7 +127,7 @@ class EpisodePermutorsTest {
 
     @Test
     fun testPermutorForRule_DURATION_DESC_NullMedia() {
-        val permutor = getPermutor(SortOrder.DURATION_LONG_SHORT)
+        val permutor = getPermutor(EpisodeSortOrder.DURATION_LONG_SHORT)
 
         val itemList = testList
         itemList[1] // itemId 3
@@ -139,7 +139,7 @@ class EpisodePermutorsTest {
 
     @Test
     fun testPermutorForRule_FEED_TITLE_ASC() {
-        val permutor = getPermutor(SortOrder.FEED_TITLE_A_Z)
+        val permutor = getPermutor(EpisodeSortOrder.FEED_TITLE_A_Z)
 
         val itemList = testList
         Assert.assertTrue(checkIdOrder(itemList, 1, 3, 2)) // before sorting
@@ -149,7 +149,7 @@ class EpisodePermutorsTest {
 
     @Test
     fun testPermutorForRule_FEED_TITLE_DESC() {
-        val permutor = getPermutor(SortOrder.FEED_TITLE_Z_A)
+        val permutor = getPermutor(EpisodeSortOrder.FEED_TITLE_Z_A)
 
         val itemList = testList
         Assert.assertTrue(checkIdOrder(itemList, 1, 3, 2)) // before sorting
@@ -159,7 +159,7 @@ class EpisodePermutorsTest {
 
     @Test
     fun testPermutorForRule_FEED_TITLE_DESC_NullTitle() {
-        val permutor = getPermutor(SortOrder.FEED_TITLE_Z_A)
+        val permutor = getPermutor(EpisodeSortOrder.FEED_TITLE_Z_A)
 
         val itemList = testList
         itemList[1].feed!!.title = (null)

@@ -20,8 +20,8 @@ import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
-import ac.mdiq.podcini.storage.model.SortOrder
-import ac.mdiq.podcini.storage.model.SortOrder.Companion.fromCode
+import ac.mdiq.podcini.storage.model.EpisodeSortOrder
+import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.fromCode
 import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectHandler
 import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
 import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
@@ -698,13 +698,13 @@ import java.util.concurrent.Semaphore
     class SingleFeedSortDialog(val feed: Feed?) : EpisodeSortDialog() {
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
-            sortOrder = feed?.sortOrder ?: SortOrder.DATE_NEW_OLD
+            sortOrder = feed?.sortOrder ?: EpisodeSortOrder.DATE_NEW_OLD
         }
-        override fun onAddItem(title: Int, ascending: SortOrder, descending: SortOrder, ascendingIsDefault: Boolean) {
-            if (ascending == SortOrder.DATE_OLD_NEW || ascending == SortOrder.PLAYED_DATE_OLD_NEW || ascending == SortOrder.COMPLETED_DATE_OLD_NEW
-                    || ascending == SortOrder.DURATION_SHORT_LONG || ascending == SortOrder.RANDOM
-                    || ascending == SortOrder.EPISODE_TITLE_A_Z
-                    || (feed?.isLocalFeed == true && ascending == SortOrder.EPISODE_FILENAME_A_Z)) {
+        override fun onAddItem(title: Int, ascending: EpisodeSortOrder, descending: EpisodeSortOrder, ascendingIsDefault: Boolean) {
+            if (ascending == EpisodeSortOrder.DATE_OLD_NEW || ascending == EpisodeSortOrder.PLAYED_DATE_OLD_NEW || ascending == EpisodeSortOrder.COMPLETED_DATE_OLD_NEW
+                    || ascending == EpisodeSortOrder.DURATION_SHORT_LONG || ascending == EpisodeSortOrder.RANDOM
+                    || ascending == EpisodeSortOrder.EPISODE_TITLE_A_Z
+                    || (feed?.isLocalFeed == true && ascending == EpisodeSortOrder.EPISODE_FILENAME_A_Z)) {
                 super.onAddItem(title, ascending, descending, ascendingIsDefault)
             }
         }

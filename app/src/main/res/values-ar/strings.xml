@@ -60,15 +60,13 @@
   <string name="drawer_open">افتح القائمة</string>
   <string name="drawer_close">اغلق القائمة</string>
   <string name="drawer_preferences">تفضيلات الدرج</string>
-  <string name="drawer_feed_order_unplayed_episodes">رتب بعدد الحلقات</string>
-  <string name="drawer_feed_order_alphabetical">رتب أبجديا</string>
-  <string name="drawer_feed_order_last_update">رتب بتاريخ النشر</string>
-  <string name="drawer_feed_order_most_played">رتب بعدد الحلقات المشغلة</string>
+  <string name="feed_order_alphabetical">رتب أبجديا</string>
+  <string name="feed_order_last_update">رتب بتاريخ النشر</string>
+  <string name="feed_order_most_played">رتب بعدد الحلقات المشغلة</string>
 
-  <string name="drawer_feed_order_unplayed">عدد الحلقات غير المشغلة</string>
-  <string name="drawer_feed_counter_downloaded">عدد الحلقات المنزلة</string>
-  <string name="drawer_feed_counter_downloaded_unplayed">عدد الحلقات المنزلة وغير المشغلة</string>
-  <string name="drawer_feed_counter_none">بدون</string>
+  <string name="feed_order_unplayed_count">عدد الحلقات غير المشغلة</string>
+  <string name="feed_counter_downloaded">عدد الحلقات المنزلة</string>
+  <string name="feed_counter_downloaded_unplayed">عدد الحلقات المنزلة وغير المشغلة</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">لا يوجد برنامج متوافق</string>
   <string name="export_logs_menu_title">اصدار سجلات مفصلة</string>

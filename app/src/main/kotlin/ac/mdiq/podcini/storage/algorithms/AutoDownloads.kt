@@ -12,7 +12,7 @@ import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodesCount
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
-import ac.mdiq.podcini.storage.model.SortOrder
+import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.content.Intent
@@ -80,7 +80,7 @@ object AutoDownloads {
                     Logd(TAG, "Performing auto-dl of undownloaded episodes")
                     val candidates: MutableList<Episode>
                     val queue = curQueue.episodes
-                    val newItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.NEW), SortOrder.DATE_NEW_OLD)
+                    val newItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.NEW), EpisodeSortOrder.DATE_NEW_OLD)
                     Logd(TAG, "newItems: ${newItems.size}")
                     candidates = ArrayList(queue.size + newItems.size)
                     candidates.addAll(queue)

@@ -57,15 +57,13 @@
   <string name="drawer_open">Deschide meniul</string>
   <string name="drawer_close">Închide meniul</string>
   <string name="drawer_preferences">Preferințe Sertar</string>
-  <string name="drawer_feed_order_unplayed_episodes">Sortează după număr</string>
-  <string name="drawer_feed_order_alphabetical">Sortează alfabetic</string>
-  <string name="drawer_feed_order_last_update">Sortează după data publicării</string>
-  <string name="drawer_feed_order_most_played">Sortează după numărul de episoade urmărite</string>
+  <string name="feed_order_alphabetical">Sortează alfabetic</string>
+  <string name="feed_order_last_update">Sortează după data publicării</string>
+  <string name="feed_order_most_played">Sortează după numărul de episoade urmărite</string>
 
-  <string name="drawer_feed_order_unplayed">Numărul de episoade neredate</string>
-  <string name="drawer_feed_counter_downloaded">Numărul de episoade descărcate</string>
-  <string name="drawer_feed_counter_downloaded_unplayed">Numărul de episoade descărcate și neredate</string>
-  <string name="drawer_feed_counter_none">Niciunul</string>
+  <string name="feed_order_unplayed_count">Numărul de episoade neredate</string>
+  <string name="feed_counter_downloaded">Numărul de episoade descărcate</string>
+  <string name="feed_counter_downloaded_unplayed">Numărul de episoade descărcate și neredate</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">Nicio aplicație compatibilă nu a fost găsită</string>
   <string name="export_logs_menu_title">Exportă log-uri detaliate</string>

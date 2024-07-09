@@ -57,15 +57,13 @@
   <string name="drawer_open">Otvoriť menu</string>
   <string name="drawer_close">Zatvoriť menu</string>
   <string name="drawer_preferences">Nastavenie navigačného panela</string>
-  <string name="drawer_feed_order_unplayed_episodes">Usporiadať podľa počítadla</string>
-  <string name="drawer_feed_order_alphabetical">Usporiadať abecedne</string>
-  <string name="drawer_feed_order_last_update">Usporiadať podľa dátumu zverejnenia</string>
-  <string name="drawer_feed_order_most_played">Usporiadať podľa počtu prehraných epizód</string>
+  <string name="feed_order_alphabetical">Usporiadať abecedne</string>
+  <string name="feed_order_last_update">Usporiadať podľa dátumu zverejnenia</string>
+  <string name="feed_order_most_played">Usporiadať podľa počtu prehraných epizód</string>
 
-  <string name="drawer_feed_order_unplayed">Počet neprehraných epizód</string>
-  <string name="drawer_feed_counter_downloaded">Počet stiahnutých epizód</string>
-  <string name="drawer_feed_counter_downloaded_unplayed">Počet stiahnutých a neprehratých epizód</string>
-  <string name="drawer_feed_counter_none">Žiadne</string>
+  <string name="feed_order_unplayed_count">Počet neprehraných epizód</string>
+  <string name="feed_counter_downloaded">Počet stiahnutých epizód</string>
+  <string name="feed_counter_downloaded_unplayed">Počet stiahnutých a neprehratých epizód</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">Žiadne kompatibilné aplikácie</string>
   <string name="export_logs_menu_title">Exportovať podrobné záznamy</string>

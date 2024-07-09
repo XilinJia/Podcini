@@ -7,7 +7,7 @@ import ac.mdiq.podcini.net.feed.discovery.*
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.model.SortOrder
+import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.OpmlImportActivity
 import ac.mdiq.podcini.util.Logd
@@ -193,7 +193,7 @@ class AddFeedFragment : Fragment() {
 
         val dirFeed = Feed(Feed.PREFIX_LOCAL_FOLDER + uri.toString(), null, title)
         dirFeed.episodes.clear()
-        dirFeed.sortOrder = SortOrder.EPISODE_TITLE_A_Z
+        dirFeed.sortOrder = EpisodeSortOrder.EPISODE_TITLE_A_Z
         val fromDatabase: Feed? = updateFeed(requireContext(), dirFeed, false)
         FeedUpdateManager.runOnce(requireContext(), fromDatabase)
         return fromDatabase

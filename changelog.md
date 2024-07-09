@@ -1,3 +1,10 @@
+## 6.0.7
+
+* feeds sorting is bi-directional and in the same style as episodes sorting
+* feed order names changed in English (other languages need update)
+* date of new episode is highlighted in episodes list views
+* fixed issue of tags not being properly handled
+
 ## 6.0.6
 
 * minor class re-structuring

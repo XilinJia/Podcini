@@ -51,15 +51,13 @@
   <!--Main activity-->
   <string name="drawer_open">Menü megnyitása</string>
   <string name="drawer_close">Menü bezárása</string>
-  <string name="drawer_feed_order_unplayed_episodes">Rendezés számláló szerint</string>
-  <string name="drawer_feed_order_alphabetical">Rendezés betűrendben</string>
-  <string name="drawer_feed_order_last_update">Rendezés közzététel dátuma szerint</string>
-  <string name="drawer_feed_order_most_played">Rendezés lejátszott epizódok szerint</string>
+  <string name="feed_order_alphabetical">Rendezés betűrendben</string>
+  <string name="feed_order_last_update">Rendezés közzététel dátuma szerint</string>
+  <string name="feed_order_most_played">Rendezés lejátszott epizódok szerint</string>
 
-  <string name="drawer_feed_order_unplayed">Nem játszott epizódok száma</string>
-  <string name="drawer_feed_counter_downloaded">Letöltött epizódok száma</string>
-  <string name="drawer_feed_counter_downloaded_unplayed">Letöltött és nem lejátszott epizódok száma</string>
-  <string name="drawer_feed_counter_none">Nincs</string>
+  <string name="feed_order_unplayed_count">Nem játszott epizódok száma</string>
+  <string name="feed_counter_downloaded">Letöltött epizódok száma</string>
+  <string name="feed_counter_downloaded_unplayed">Letöltött és nem lejátszott epizódok száma</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">Nem található kompatibilis alkalmazás</string>
   <string name="export_logs_menu_title">Részletes naplók exportálása</string>

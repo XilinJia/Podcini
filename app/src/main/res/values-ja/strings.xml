@@ -44,15 +44,13 @@
   <!--Main activity-->
   <string name="drawer_open">メニューを開く</string>
   <string name="drawer_close">メニューを閉じる</string>
-  <string name="drawer_feed_order_unplayed_episodes">カウンターで並べ替え</string>
-  <string name="drawer_feed_order_alphabetical">アルファベット順で並べ替え</string>
-  <string name="drawer_feed_order_last_update">公開日で並べ替え</string>
-  <string name="drawer_feed_order_most_played">再生したエピソードの数で並べ替え</string>
+  <string name="feed_order_alphabetical">アルファベット順で並べ替え</string>
+  <string name="feed_order_last_update">公開日で並べ替え</string>
+  <string name="feed_order_most_played">再生したエピソードの数で並べ替え</string>
 
-  <string name="drawer_feed_order_unplayed">未再生のエピソードの数</string>
-  <string name="drawer_feed_counter_downloaded">ダウンロード済のエピソードの数</string>
-  <string name="drawer_feed_counter_downloaded_unplayed">ダウンロード済と未再生のエピソードの数</string>
-  <string name="drawer_feed_counter_none">なし</string>
+  <string name="feed_order_unplayed_count">未再生のエピソードの数</string>
+  <string name="feed_counter_downloaded">ダウンロード済のエピソードの数</string>
+  <string name="feed_counter_downloaded_unplayed">ダウンロード済と未再生のエピソードの数</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">互換性のあるアプリが見つかりません</string>
   <string name="export_logs_menu_title">詳細ログを出力する</string>

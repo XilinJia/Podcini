@@ -35,13 +35,11 @@
   <!--Main activity-->
   <string name="drawer_open">Odpri meni</string>
   <string name="drawer_close">Zapri meni</string>
-  <string name="drawer_feed_order_unplayed_episodes">Razvrsti po števcu</string>
-  <string name="drawer_feed_order_alphabetical">Razvrsti po abecedi</string>
-  <string name="drawer_feed_order_last_update">Razvrsti po datumu objave</string>
-  <string name="drawer_feed_order_most_played">Razvrsti po številu predvajanih epizod</string>
-  <string name="drawer_feed_order_unplayed">Število nepredvajanih epizod</string>
-  <string name="drawer_feed_counter_downloaded">Število prenesenih epizod</string>
-  <string name="drawer_feed_counter_none">Nič</string>
+  <string name="feed_order_alphabetical">Razvrsti po abecedi</string>
+  <string name="feed_order_last_update">Razvrsti po datumu objave</string>
+  <string name="feed_order_most_played">Razvrsti po številu predvajanih epizod</string>
+  <string name="feed_order_unplayed_count">Število nepredvajanih epizod</string>
+  <string name="feed_counter_downloaded">Število prenesenih epizod</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">Ni bilo najdenih združljivih aplikacij</string>
   <string name="export_logs_menu_title">Izvozi podrobne dnevnike</string>

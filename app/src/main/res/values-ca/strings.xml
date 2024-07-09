@@ -56,15 +56,13 @@
   <string name="drawer_open">Obre menú</string>
   <string name="drawer_close">Tanca menú</string>
   <string name="drawer_preferences">Preferències</string>
-  <string name="drawer_feed_order_unplayed_episodes">Ordre per comptador</string>
-  <string name="drawer_feed_order_alphabetical">Ordre alfabètic</string>
-  <string name="drawer_feed_order_last_update">Ordre per data de publicació</string>
-  <string name="drawer_feed_order_most_played">Ordre per número d\'episodis reproduïts</string>
+  <string name="feed_order_alphabetical">Ordre alfabètic</string>
+  <string name="feed_order_last_update">Ordre per data de publicació</string>
+  <string name="feed_order_most_played">Ordre per número d\'episodis reproduïts</string>
 
-  <string name="drawer_feed_order_unplayed">Número d\'episodis per reproduir</string>
-  <string name="drawer_feed_counter_downloaded">Número d\'episodis descarregats</string>
-  <string name="drawer_feed_counter_downloaded_unplayed">Número de descàrregues i episodis sense reproduir</string>
-  <string name="drawer_feed_counter_none">Cap</string>
+  <string name="feed_order_unplayed_count">Número d\'episodis per reproduir</string>
+  <string name="feed_counter_downloaded">Número d\'episodis descarregats</string>
+  <string name="feed_counter_downloaded_unplayed">Número de descàrregues i episodis sense reproduir</string>
   <!--Bug report activity-->
   <string name="log_file_share_exception">No s\'han trobat aplicacions compatibles</string>
   <string name="export_logs_menu_title">Exporta registres detallats</string>

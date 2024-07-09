@@ -17,7 +17,7 @@ import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.PlayQueue
 import ac.mdiq.podcini.storage.model.Playable
-import ac.mdiq.podcini.storage.model.SortOrder
+import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
@@ -126,7 +126,7 @@ object Queues {
         // Sort queue by configured sort order
         val sortOrder = queueKeepSortedOrder
         // do not shuffle the list on every change
-        if (sortOrder == SortOrder.RANDOM) return
+        if (sortOrder == EpisodeSortOrder.RANDOM) return
 
         if (sortOrder != null) {
             val permutor = getPermutor(sortOrder)

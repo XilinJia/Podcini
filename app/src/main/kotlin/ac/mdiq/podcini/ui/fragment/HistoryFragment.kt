@@ -5,7 +5,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.model.SortOrder
+import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.EpisodesAdapter
@@ -32,7 +32,7 @@ import kotlin.math.min
 
 @UnstableApi class HistoryFragment : BaseEpisodesFragment() {
 
-    private var sortOrder : SortOrder = SortOrder.PLAYED_DATE_NEW_OLD
+    private var sortOrder : EpisodeSortOrder = EpisodeSortOrder.PLAYED_DATE_NEW_OLD
     private var startDate : Long = 0L
     private var endDate : Long = Date().time
 
@@ -190,17 +190,17 @@ import kotlin.math.min
     }
 
     class HistorySortDialog : EpisodeSortDialog() {
-        override fun onAddItem(title: Int, ascending: SortOrder, descending: SortOrder, ascendingIsDefault: Boolean) {
-            if (ascending == SortOrder.DATE_OLD_NEW || ascending == SortOrder.PLAYED_DATE_OLD_NEW
-                    || ascending == SortOrder.COMPLETED_DATE_OLD_NEW
-                    || ascending == SortOrder.DURATION_SHORT_LONG || ascending == SortOrder.EPISODE_TITLE_A_Z
-                    || ascending == SortOrder.SIZE_SMALL_LARGE || ascending == SortOrder.FEED_TITLE_A_Z) {
+        override fun onAddItem(title: Int, ascending: EpisodeSortOrder, descending: EpisodeSortOrder, ascendingIsDefault: Boolean) {
+            if (ascending == EpisodeSortOrder.DATE_OLD_NEW || ascending == EpisodeSortOrder.PLAYED_DATE_OLD_NEW
+                    || ascending == EpisodeSortOrder.COMPLETED_DATE_OLD_NEW
+                    || ascending == EpisodeSortOrder.DURATION_SHORT_LONG || ascending == EpisodeSortOrder.EPISODE_TITLE_A_Z
+                    || ascending == EpisodeSortOrder.SIZE_SMALL_LARGE || ascending == EpisodeSortOrder.FEED_TITLE_A_Z) {
                 super.onAddItem(title, ascending, descending, ascendingIsDefault)
             }
         }
         override fun onSelectionChanged() {
             super.onSelectionChanged()
-            EventFlow.postEvent(FlowEvent.HistoryEvent(sortOrder?: SortOrder.PLAYED_DATE_NEW_OLD))
+            EventFlow.postEvent(FlowEvent.HistoryEvent(sortOrder?: EpisodeSortOrder.PLAYED_DATE_NEW_OLD))
         }
     }
 
@@ -219,7 +219,7 @@ import kotlin.math.min
          * @return The playback history. The FeedItems are sorted by their media's playbackCompletionDate in descending order.
          */
         fun getHistory(offset: Int, limit: Int, start: Long = 0L, end: Long = Date().time,
-                       sortOrder: SortOrder = SortOrder.PLAYED_DATE_NEW_OLD): List<Episode> {
+                       sortOrder: EpisodeSortOrder = EpisodeSortOrder.PLAYED_DATE_NEW_OLD): List<Episode> {
             Logd(TAG, "getHistory() called")
             val medias = realm.query(EpisodeMedia::class).query("lastPlayedTime > $0 AND lastPlayedTime <= $1", start, end).find()
             var episodes: MutableList<Episode> = mutableListOf()

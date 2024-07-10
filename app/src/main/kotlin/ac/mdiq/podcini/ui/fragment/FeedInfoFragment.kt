@@ -11,6 +11,7 @@ import ac.mdiq.podcini.storage.database.Feeds.updateFeedDownloadURL
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.FeedFunding
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.statistics.FeedStatisticsFragment
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.ui.utils.ToolbarIconTintManager
@@ -204,9 +205,10 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        Logd(TAG, "onDestroyView")
         _binding = null
-//        feed = null
+        feed = Feed()
+        super.onDestroyView()
     }
 
     private fun refreshToolbarState() {

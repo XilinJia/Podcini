@@ -9,6 +9,8 @@ import ac.mdiq.podcini.preferences.UserPreferences.feedOrderDir
 import ac.mdiq.podcini.preferences.UserPreferences.setFeedOrder
 import ac.mdiq.podcini.storage.model.FeedSortOrder
 import ac.mdiq.podcini.storage.model.FeedSortOrder.Companion.getSortOrder
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
@@ -40,6 +42,7 @@ open class FeedSortDialogNew : BottomSheetDialogFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = SortDialogBinding.inflate(inflater)
+        binding.gridLayout.columnCount = 1
         populateList()
         binding.keepSortedCheckbox.setOnCheckedChangeListener { _: CompoundButton?, _: Boolean -> this@FeedSortDialogNew.onSelectionChanged() }
         return binding.root
@@ -117,8 +120,9 @@ open class FeedSortDialogNew : BottomSheetDialogFragment() {
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        Logd(TAG, "onDestroyView")
         _binding = null
+        super.onDestroyView()
     }
 
     private fun setupFullHeight(bottomSheetDialog: BottomSheetDialog) {

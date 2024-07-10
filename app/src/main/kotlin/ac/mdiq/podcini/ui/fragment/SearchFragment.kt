@@ -19,6 +19,7 @@ import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.EpisodesAdapter
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
 import ac.mdiq.podcini.ui.view.EpisodesRecyclerView
@@ -185,8 +186,11 @@ import java.lang.ref.WeakReference
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        Logd(TAG, "onDestroyView")
         _binding = null
+        adapter.clearData()
+        results = mutableListOf()
+        super.onDestroyView()
     }
 
     private fun setupToolbar(toolbar: MaterialToolbar) {
@@ -282,8 +286,7 @@ import java.lang.ref.WeakReference
             val item: Episode = event.episodes[i]
             val pos: Int = EpisodeUtil.indexOfItemWithId(results, item.id)
             if (pos >= 0) {
-                results.removeAt(pos)
-                results.add(pos, item)
+                results[pos] = item
                 adapter.notifyItemChangedCompat(pos)
             }
             i++

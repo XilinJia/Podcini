@@ -10,6 +10,7 @@ import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.OpmlImportActivity
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.util.Logd
 import android.content.*
 import android.net.Uri
@@ -150,8 +151,9 @@ class AddFeedFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        Logd(TAG, "onDestroyView")
         _binding = null
+        super.onDestroyView()
     }
 
     private fun chooseOpmlImportPathResult(uri: Uri?) {

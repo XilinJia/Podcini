@@ -89,9 +89,9 @@ class WidgetConfigActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         _binding = null
         _wpBinding = null
+        super.onDestroy()
     }
 
     private fun setInitialState() {

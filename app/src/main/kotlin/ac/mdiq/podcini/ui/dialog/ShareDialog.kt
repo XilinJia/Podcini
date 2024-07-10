@@ -13,6 +13,8 @@ import ac.mdiq.podcini.util.ShareUtils.shareFeedItemLinkWithDownloadLink
 import ac.mdiq.podcini.util.ShareUtils.shareMediaDownloadLink
 import ac.mdiq.podcini.databinding.ShareEpisodeDialogBinding
 import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion.TAG
+import ac.mdiq.podcini.util.Logd
 
 class ShareDialog : BottomSheetDialogFragment() {
     private lateinit var ctx: Context
@@ -83,8 +85,9 @@ class ShareDialog : BottomSheetDialogFragment() {
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        Logd(TAG, "onDestroyView")
         _binding = null
+        super.onDestroyView()
     }
 
     fun setItem(item_: Episode) {

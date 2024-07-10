@@ -605,8 +605,8 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
         }
 
         override fun onDestroy() {
-            super.onDestroy()
             cancelFlowEvents()
+            super.onDestroy()
         }
 
         @OptIn(UnstableApi::class) override fun onResume() {

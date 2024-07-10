@@ -64,7 +64,6 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var hidden = false
     private var needsConfirm = false
 
-
     /**
      * Replace adapter data with provided search results from SearchTask.
      *
@@ -131,9 +130,12 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         _binding = null
+        adapter?.clearData()
         adapter = null
+        searchResults = null
+        topList = null
+        super.onDestroy()
     }
 
     private fun loadToplist(country: String?) {

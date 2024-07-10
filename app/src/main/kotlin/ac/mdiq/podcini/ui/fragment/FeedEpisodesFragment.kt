@@ -30,6 +30,7 @@ import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.EpisodesAdapter
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.dialog.*
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.utils.ToolbarIconTintManager
 import ac.mdiq.podcini.ui.utils.TransitionEffect
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeViewHolder
@@ -226,18 +227,23 @@ import java.util.concurrent.Semaphore
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        Logd(TAG, "onDestroyView")
         _binding = null
         _dialBinding = null
-        
+
         ioScope.cancel()
         adapter.endSelectMode()
+        adapter.clearData()
+
+        feed = null
+        episodes = mutableListOf()
 
         tts?.stop()
         tts?.shutdown()
         ttsWorking = false
         ttsReady = false
         tts = null
+        super.onDestroyView()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -335,8 +341,8 @@ import java.util.concurrent.Semaphore
             if (item.feedId != feed!!.id) continue
             val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
             if (pos >= 0) {
-                episodes.removeAt(pos)
-                episodes.add(pos, item)
+                Logd(TAG, "episode event: ${item.title} ${item.playState}")
+                episodes[pos] = item
                 adapter.notifyItemChangedCompat(pos)
             }
             i++
@@ -352,8 +358,7 @@ import java.util.concurrent.Semaphore
             if (item.feedId != feed!!.id) continue
             val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
             if (pos >= 0) {
-                episodes.removeAt(pos)
-                episodes.add(pos, item)
+                episodes[pos] = item
                 adapter.notifyItemChangedCompat(pos)
 //                episodes[pos].playState = item.playState
 //                adapter.notifyItemChangedCompat(pos)
@@ -375,6 +380,7 @@ import java.util.concurrent.Semaphore
         val item = event.episode
         val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
         if (pos >= 0) {
+            Logd(TAG, "played item: ${item.title} ${item.playState}")
             episodes[pos] = item
             adapter.notifyItemChangedCompat(pos)
 //            episodes[pos].playState = item.playState

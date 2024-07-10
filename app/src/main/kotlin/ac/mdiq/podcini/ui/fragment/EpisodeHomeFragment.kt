@@ -8,6 +8,7 @@ import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.net.utils.NetworkUtils.fetchHtmlSource
 import ac.mdiq.podcini.storage.database.Episodes.persistEpisode
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import android.content.Context
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
@@ -257,7 +258,6 @@ class EpisodeHomeFragment : Fragment() {
     }
 
     @OptIn(UnstableApi::class) override fun onDestroyView() {
-        super.onDestroyView()
         Logd(TAG, "onDestroyView")
         cleatWebview(binding.webView)
         cleatWebview(binding.readerView)
@@ -265,6 +265,7 @@ class EpisodeHomeFragment : Fragment() {
         tts?.stop()
         tts?.shutdown()
         tts = null
+        super.onDestroyView()
     }
 
     @UnstableApi private fun updateAppearance() {

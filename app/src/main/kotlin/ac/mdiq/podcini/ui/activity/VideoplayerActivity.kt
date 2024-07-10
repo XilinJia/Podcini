@@ -21,6 +21,8 @@ import ac.mdiq.podcini.ui.dialog.ShareDialog
 import ac.mdiq.podcini.ui.dialog.SleepTimerDialog
 import ac.mdiq.podcini.ui.dialog.VariableSpeedDialog
 import ac.mdiq.podcini.ui.fragment.ChaptersFragment
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.fragment.VideoEpisodeFragment
 import ac.mdiq.podcini.ui.utils.PictureInPictureUtil
 import ac.mdiq.podcini.util.IntentUtils.openInBrowser
@@ -136,12 +138,12 @@ class VideoplayerActivity : CastEnabledActivity() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN)
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
         window.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN)
         _binding = null
+        super.onDestroy()
     }
 
 
@@ -419,8 +421,9 @@ class VideoplayerActivity : CastEnabledActivity() {
         }
 
         override fun onDestroyView() {
-            super.onDestroyView()
+            Logd(TAG, "onDestroyView")
             _binding = null
+            super.onDestroyView()
         }
 
         @UnstableApi private fun setupAudioTracks() {

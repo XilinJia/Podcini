@@ -5,6 +5,8 @@ import ac.mdiq.podcini.databinding.SortDialogBinding
 import ac.mdiq.podcini.databinding.SortDialogItemActiveBinding
 import ac.mdiq.podcini.databinding.SortDialogItemBinding
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion.TAG
+import ac.mdiq.podcini.util.Logd
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
@@ -98,8 +100,9 @@ open class EpisodeSortDialog : BottomSheetDialogFragment() {
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        Logd(TAG, "onDestroyView")
         _binding = null
+        super.onDestroyView()
     }
 
     private fun setupFullHeight(bottomSheetDialog: BottomSheetDialog) {

@@ -17,6 +17,7 @@ import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting
 import ac.mdiq.podcini.ui.adapter.SimpleChipAdapter
 import ac.mdiq.podcini.ui.dialog.AuthenticationDialog
 import ac.mdiq.podcini.ui.dialog.TagSettingsDialog
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.utils.ItemOffsetDecoration
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
@@ -65,8 +66,10 @@ class FeedSettingsFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        Logd(TAG, "onDestroyView")
         _binding = null
+        feed = null
+        super.onDestroyView()
     }
 
     class FeedSettingsPreferenceFragment : PreferenceFragmentCompat() {

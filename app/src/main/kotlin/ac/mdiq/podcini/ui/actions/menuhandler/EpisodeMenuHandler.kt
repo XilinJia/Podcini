@@ -137,9 +137,7 @@ object EpisodeMenuHandler {
         when (menuItemId) {
             R.id.skip_episode_item -> context.sendBroadcast(MediaButtonReceiver.createIntent(context, KeyEvent.KEYCODE_MEDIA_NEXT))
             R.id.remove_item -> {
-                LocalDeleteModal.showLocalFeedDeleteWarningIfNecessary(context, listOf(selectedItem)) {
-                    if (selectedItem.media != null) deleteMediaOfEpisode(context, selectedItem)
-                }
+                LocalDeleteModal.deleteEpisodesWarnLocal(context, listOf(selectedItem))
             }
             R.id.mark_read_item -> {
                 selectedItem.setPlayed(true)

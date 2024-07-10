@@ -1,11 +1,10 @@
 package ac.mdiq.podcini.ui.actions.actionbutton
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.ui.utils.LocalDeleteModal.deleteEpisodesWarnLocal
 import android.content.Context
 import android.view.View
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.storage.database.Episodes.deleteMediaOfEpisode
-import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.ui.utils.LocalDeleteModal.showLocalFeedDeleteWarningIfNecessary
 import androidx.media3.common.util.UnstableApi
 
 class DeleteActionButton(item: Episode) : EpisodeActionButton(item) {
@@ -16,7 +15,7 @@ class DeleteActionButton(item: Episode) : EpisodeActionButton(item) {
         return R.drawable.ic_delete
     }
     @UnstableApi override fun onClick(context: Context) {
-        showLocalFeedDeleteWarningIfNecessary(context, listOf(item)) { deleteMediaOfEpisode(context, item) }
+        deleteEpisodesWarnLocal(context, listOf(item))
     }
 
     override val visibility: Int

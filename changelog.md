@@ -1,3 +1,13 @@
+## 6.0.8
+
+* feeds sorting dialog layout is set to single column due to potential long text issue
+* fixed issue of not being able to copy text from player detailed view
+* fixed issue of some menu icon not correctly shown in dark theme
+* fixed issue of results not updated in views when deleting episodes
+* fixed issue of downloaded episode still showing as New
+* fixed sorting on All Episodes view
+* added more garbage collections
+
 ## 6.0.7
 
 * feeds sorting is bi-directional and in the same style as episodes sorting

@@ -15,6 +15,7 @@ import ac.mdiq.podcini.playback.PlaybackController.Companion.curPosition
 import ac.mdiq.podcini.playback.PlaybackController.Companion.seekTo
 import ac.mdiq.podcini.storage.model.Chapter
 import ac.mdiq.podcini.storage.model.EmbeddedChapterImage
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.view.CircularProgressBar
 import ac.mdiq.podcini.util.Converter.getDurationStringLocalized
 import ac.mdiq.podcini.util.Converter.getDurationStringLong
@@ -133,11 +134,11 @@ class ChaptersFragment : AppCompatDialogFragment() {
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        Logd(TAG, "onDestroyView")
         _binding = null
         controller?.release()
         controller = null
-        
+        super.onDestroyView()
     }
 
     private var eventSink: Job?     = null

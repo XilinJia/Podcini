@@ -12,6 +12,8 @@ import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.dialog.DatesFilterDialog
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.statistics.PieChartView.PieChartData
 import ac.mdiq.podcini.util.Converter.shortLocalizedDuration
 import ac.mdiq.podcini.util.Logd
@@ -92,8 +94,9 @@ class StatisticsFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        Logd(TAG, "onDestroyView")
         _binding = null
+        super.onDestroyView()
     }
 
     @Deprecated("Deprecated in Java")
@@ -218,8 +221,9 @@ class StatisticsFragment : Fragment() {
             cancelFlowEvents()
         }
         override fun onDestroyView() {
-            super.onDestroyView()
+            Logd(TAG, "onDestroyView")
             _binding = null
+            super.onDestroyView()
         }
         private var eventSink: Job?     = null
         private fun cancelFlowEvents() {
@@ -370,8 +374,9 @@ class StatisticsFragment : Fragment() {
             cancelFlowEvents()
         }
         override fun onDestroyView() {
-            super.onDestroyView()
+            Logd(TAG, "onDestroyView")
             _binding = null
+            super.onDestroyView()
         }
         private var eventSink: Job?     = null
         private fun cancelFlowEvents() {
@@ -561,8 +566,9 @@ class StatisticsFragment : Fragment() {
             return binding.root
         }
         override fun onDestroyView() {
-            super.onDestroyView()
+            Logd(TAG, "onDestroyView")
             _binding = null
+            super.onDestroyView()
         }
         @Deprecated("Deprecated in Java")
         override fun onPrepareOptionsMenu(menu: Menu) {

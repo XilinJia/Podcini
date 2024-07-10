@@ -132,7 +132,8 @@ class TTSActionButton(item: Episode) : EpisodeActionButton(item) {
                     Logd(TAG, "saving TTS to file $mFilename")
                     val media = EpisodeMedia(item, null, 0, "audio/*")
                     media.fileUrl = mFilename
-                    media.downloaded = true
+//                    media.downloaded = true
+                    media.setIsDownloaded()
                     item.media = media
 //                    DBWriter.persistFeedMedia(media)
                     item.setTranscriptIfLonger(readerText)

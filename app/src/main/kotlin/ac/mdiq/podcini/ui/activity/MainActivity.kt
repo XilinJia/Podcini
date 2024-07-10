@@ -364,11 +364,11 @@ class MainActivity : CastEnabledActivity() {
 
     override fun onDestroy() {
         Logd(TAG, "onDestroy")
-        super.onDestroy()
 //        WorkManager.getInstance(this).pruneWork()
         _binding = null
 //        realm.close()
         drawerLayout?.removeDrawerListener(drawerToggle!!)
+        super.onDestroy()
     }
 
     private fun checkFirstLaunch() {
@@ -391,6 +391,7 @@ class MainActivity : CastEnabledActivity() {
     }
 
     fun setPlayerVisible(visible_: Boolean?) {
+        Logd(TAG, "setPlayerVisible $visible_")
         val visible = visible_ ?: (bottomSheet.state != BottomSheetBehavior.STATE_COLLAPSED)
 
         bottomSheet.setLocked(!visible)

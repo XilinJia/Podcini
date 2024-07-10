@@ -12,6 +12,7 @@ import ac.mdiq.podcini.ui.adapter.EpisodesAdapter
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.dialog.DatesFilterDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeViewHolder
 import ac.mdiq.podcini.util.DateFormatter
 import ac.mdiq.podcini.util.Logd
@@ -84,6 +85,12 @@ import kotlin.math.min
     override fun onStop() {
         super.onStop()
         cancelFlowEvents()
+    }
+
+    override fun onDestroyView() {
+        allHistory = listOf()
+        adapter.clearData()
+        super.onDestroyView()
     }
 
     @OptIn(UnstableApi::class) override fun onMenuItemClick(item: MenuItem): Boolean {

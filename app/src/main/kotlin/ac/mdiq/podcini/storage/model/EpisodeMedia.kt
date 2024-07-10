@@ -19,18 +19,19 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
     var id: Long = 0L   // same as the episode id
 
     var fileUrl: String? = null
-        set(value) {
-            field = value
-            if (value == null) downloaded = false
-        }
+//        set(value) {
+//            field = value
+//            if (value == null) downloaded = false
+//        }
 
     var downloadUrl: String? = null
 
     var downloaded: Boolean = false
-        set(value) {
-            field = value
-            if (value && episode?.isNew == true) episode!!.setPlayed(false)
-        }
+//        set(value) {
+//            Logd(TAG, "setting downloaded: $value ${episode?.isNew}")
+//            field = value
+//            if (value && episode?.isNew == true) episode!!.setPlayed(false)
+//        }
 
     @get:JvmName("getDurationProperty")
     @set:JvmName("setDurationProperty")
@@ -88,9 +89,8 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
         this.episode = i
         this.size = size
         this.mimeType = mime_type
-        fileUrl = null
+        setfileUrlOrNull(null)
         this.downloadUrl = download_url
-        downloaded = false
     }
 
     constructor(id: Long, item: Episode?, duration: Int, position: Int,
@@ -108,19 +108,11 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
         this.playbackCompletionDate =  playbackCompletionDate?.clone() as? Date
         this.playbackCompletionTime =  playbackCompletionDate?.time ?: 0
         this.lastPlayedTime = lastPlayedTime
-        this.fileUrl = file_url
+        setfileUrlOrNull(file_url)
         this.downloadUrl = download_url
-        this.downloaded = downloaded
+        if (downloaded) setIsDownloaded()
+        else this.downloaded = downloaded
     }
-
-//    constructor(id: Long, item: Episode?, duration: Int, position: Int,
-//                size: Long, mime_type: String?, file_url: String?, download_url: String?,
-//                downloaded: Boolean, playbackCompletionDate: Date?, played_duration: Int,
-//                hasEmbeddedPicture: Boolean?, lastPlayedTime: Long)
-//            : this(id, item, duration, position, size, mime_type, file_url, download_url, downloaded, playbackCompletionDate, played_duration, lastPlayedTime) {
-//
-//        this.hasEmbeddedPicture = hasEmbeddedPicture
-//    }
 
     fun getHumanReadableIdentifier(): String? {
         return if (episode?.title != null) episode!!.title else downloadUrl
@@ -156,6 +148,16 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
 
     fun getTypeAsInt(): Int {
         return FEEDFILETYPE_FEEDMEDIA
+    }
+
+    fun setIsDownloaded() {
+        downloaded = true
+        if (episode?.isNew == true) episode!!.setPlayed(false)
+    }
+
+    fun setfileUrlOrNull(url: String?) {
+        fileUrl = url
+        if (url == null) downloaded = false
     }
 
     override fun getDuration(): Int {

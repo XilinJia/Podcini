@@ -12,6 +12,7 @@ import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.dialog.EpisodeFilterDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.ui.dialog.SwitchQueueDialog
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
@@ -47,6 +48,11 @@ import kotlin.math.min
             AllEpisodesFilterDialog.newInstance(getFilter()).show(childFragmentManager, null)
         }
         return root
+    }
+
+    override fun onDestroyView() {
+        allEpisodes = listOf()
+        super.onDestroyView()
     }
 
     override fun onStart() {
@@ -115,6 +121,10 @@ import kotlin.math.min
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.AllEpisodesFilterEvent -> onFilterChanged(event)
+                    is FlowEvent.AllEpisodesSortEvent -> {
+                        page = 1
+                        loadItems()
+                    }
                     else -> {}
                 }
             }
@@ -148,13 +158,14 @@ import kotlin.math.min
         }
         override fun onAddItem(title: Int, ascending: EpisodeSortOrder, descending: EpisodeSortOrder, ascendingIsDefault: Boolean) {
             if (ascending == EpisodeSortOrder.DATE_OLD_NEW || ascending == EpisodeSortOrder.DURATION_SHORT_LONG
-                    || ascending == EpisodeSortOrder.PLAYED_DATE_OLD_NEW || ascending == EpisodeSortOrder.COMPLETED_DATE_OLD_NEW)
+                    || ascending == EpisodeSortOrder.PLAYED_DATE_OLD_NEW || ascending == EpisodeSortOrder.COMPLETED_DATE_OLD_NEW
+                    || ascending == EpisodeSortOrder.EPISODE_TITLE_A_Z)
                 super.onAddItem(title, ascending, descending, ascendingIsDefault)
         }
         override fun onSelectionChanged() {
             super.onSelectionChanged()
             allEpisodesSortOrder = sortOrder
-            EventFlow.postEvent(FlowEvent.FeedsSortedEvent())
+            EventFlow.postEvent(FlowEvent.AllEpisodesSortEvent())
         }
     }
 
@@ -170,7 +181,6 @@ import kotlin.math.min
             }
         }
     }
-
     companion object {
         val TAG = AllEpisodesFragment::class.simpleName ?: "Anonymous"
         const val PREF_NAME: String = "PrefAllEpisodesFragment"

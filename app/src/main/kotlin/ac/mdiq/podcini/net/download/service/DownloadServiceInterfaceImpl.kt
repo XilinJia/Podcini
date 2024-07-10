@@ -52,7 +52,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
 
     override fun downloadNow(context: Context, item: Episode, ignoreConstraints: Boolean) {
         Logd(TAG, "starting downloadNow")
-        val workRequest: OneTimeWorkRequest.Builder = getRequest(context, item)
+        val workRequest: OneTimeWorkRequest.Builder = getRequest(item)
         workRequest.setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
         if (ignoreConstraints) workRequest.setConstraints(Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
         else workRequest.setConstraints(constraints)
@@ -63,7 +63,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
 
     override fun download(context: Context, item: Episode) {
         Logd(TAG, "starting download")
-        val workRequest: OneTimeWorkRequest.Builder = getRequest(context, item)
+        val workRequest: OneTimeWorkRequest.Builder = getRequest(item)
         workRequest.setConstraints(constraints)
         if (item.media?.downloadUrl != null)
             WorkManager.getInstance(context).enqueueUniqueWork(item.media!!.downloadUrl!!, ExistingWorkPolicy.KEEP, workRequest.build())
@@ -108,7 +108,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 return constraints.build()
             }
 
-        @OptIn(UnstableApi::class) private fun getRequest(context: Context, item: Episode): OneTimeWorkRequest.Builder {
+        @OptIn(UnstableApi::class) private fun getRequest(item: Episode): OneTimeWorkRequest.Builder {
             Logd(TAG, "starting getRequest")
             val workRequest: OneTimeWorkRequest.Builder = OneTimeWorkRequest.Builder(EpisodeDownloadWorker::class.java)
                 .setInitialDelay(0L, TimeUnit.MILLISECONDS)
@@ -208,7 +208,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
 
             if (dest.exists()) {
                 try {
-                    media.fileUrl = request.destination
+                    media.setfileUrlOrNull(request.destination)
                     Episodes.persistEpisodeMedia(media)
                 } catch (e: Exception) {
                     Log.e(TAG, "performDownload Exception in writeFileUrl: " + e.message)
@@ -353,8 +353,10 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 }
                 // media.setDownloaded modifies played state
                 val broadcastUnreadStateUpdate = media.episode != null && media.episode!!.isNew
-                media.downloaded = true
-                media.fileUrl = request.destination
+//                media.downloaded = true
+                media.setIsDownloaded()
+                Logd(TAG, "media.episode.isNew: ${media.episode?.isNew} ${media.episode?.playState}")
+                media.setfileUrlOrNull(request.destination)
                 if (request.destination != null) media.size = File(request.destination).length()
 
                 media.checkEmbeddedPicture() // enforce check
@@ -388,7 +390,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                     // we've received the media, we don't want to autodownload it again
                     if (item != null) {
                         item.disableAutoDownload()
-                        Logd(TAG, "persisting episode downloaded ${item.title} ${item.media?.fileUrl} ${item.media?.downloaded}")
+                        Logd(TAG, "persisting episode downloaded ${item.title} ${item.media?.fileUrl} ${item.media?.downloaded} ${item.isNew}")
                         // setFeedItem() signals that the item has been updated,
                         // so we do it after the enclosing media has been updated above,
                         // to ensure subscribers will get the updated EpisodeMedia as well

@@ -38,6 +38,7 @@ import ac.mdiq.podcini.ui.dialog.MediaPlayerErrorDialog
 import ac.mdiq.podcini.ui.dialog.SkipPreferenceDialog
 import ac.mdiq.podcini.ui.dialog.SleepTimerDialog
 import ac.mdiq.podcini.ui.dialog.VariableSpeedDialog
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.view.ChapterSeekBar
 import ac.mdiq.podcini.ui.view.PlayButton
 import ac.mdiq.podcini.util.Converter
@@ -145,39 +146,40 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         playerUIView2?.setBackgroundColor(SurfaceColors.getColorForElevation(requireContext(), 8 * resources.displayMetrics.density))
         onCollaped()
         cardViewSeek = binding.cardViewSeek
+
+        initDetailedView()
+
         return binding.root
     }
 
-//    fun initDetailedView() {
-//        if (playerDetailsFragment == null) {
-//            val fm = requireActivity().supportFragmentManager
-//            val transaction = fm.beginTransaction()
-//            playerDetailsFragment = PlayerDetailsFragment()
-//            transaction.replace(R.id.itemDescription, playerDetailsFragment!!).commit()
-//        }
-//    }
-
-    override fun onDestroyView() {
-        Logd(TAG, "Fragment destroyed")
-        super.onDestroyView()
-        _binding = null
-        controller?.release()
-        controller = null
-    }
-
-    fun onExpanded() {
-        Logd(TAG, "onExpanded()")
+    fun initDetailedView() {
         if (playerDetailsFragment == null) {
             val fm = requireActivity().supportFragmentManager
             val transaction = fm.beginTransaction()
             playerDetailsFragment = PlayerDetailsFragment()
             transaction.replace(R.id.itemDescription, playerDetailsFragment!!).commit()
         }
-        isCollapsed = false
-        playerUI = playerUI2
-        playerUI?.updateUi(currentMedia)
-        playerUI?.butPlay?.setIsShowPlay(isShowPlay)
-        playerDetailsFragment?.updateInfo()
+    }
+
+    override fun onDestroyView() {
+        Logd(TAG, "Fragment destroyed")
+        _binding = null
+        controller?.release()
+        controller = null
+        super.onDestroyView()
+    }
+
+    fun onExpanded() {
+        Logd(TAG, "onExpanded()")
+        initDetailedView()
+//        the function can also be called from MainActivity when a select menu pops up and closes
+        if (isCollapsed) {
+            isCollapsed = false
+            playerUI = playerUI2
+            playerUI?.updateUi(currentMedia)
+            playerUI?.butPlay?.setIsShowPlay(isShowPlay)
+            playerDetailsFragment?.updateInfo()
+        }
     }
 
     fun onCollaped() {
@@ -340,7 +342,10 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                     is FlowEvent.FavoritesEvent -> onFavoriteEvent(event)
                     is FlowEvent.PlayerErrorEvent -> MediaPlayerErrorDialog.show(activity as Activity, event)
                     is FlowEvent.SleepTimerUpdatedEvent ->  if (event.isCancelled || event.wasJustEnabled()) loadMediaInfo(false)
-                    is FlowEvent.PlaybackPositionEvent -> playerUI?.onPositionUpdate(event)
+                    is FlowEvent.PlaybackPositionEvent -> {
+                        playerUI?.onPositionUpdate(event)
+                        if (!isCollapsed) playerDetailsFragment?.onPlaybackPositionEvent(event)
+                    }
                     is FlowEvent.SpeedChangedEvent -> playerUI?.updatePlaybackSpeedButton(event)
                     else -> {}
                 }
@@ -528,8 +533,9 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             return binding.root
         }
         @OptIn(UnstableApi::class) override fun onDestroyView() {
-            super.onDestroyView()
+            Logd(TAG, "onDestroyView")
             _binding = null
+            super.onDestroyView()
         }
         @UnstableApi
         override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

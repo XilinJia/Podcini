@@ -155,6 +155,8 @@ sealed class FlowEvent {
 
     data class AllEpisodesFilterEvent(val filterValues: Set<String?>?) : FlowEvent()
 
+    data class AllEpisodesSortEvent(val dummy: Unit = Unit) : FlowEvent()
+
     data class EpisodeEvent(val episodes: List<Episode>) : FlowEvent() {
         companion object {
             fun updated(episodes: List<Episode>): EpisodeEvent {

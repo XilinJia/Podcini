@@ -4,6 +4,7 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.FilterDialogBinding
 import ac.mdiq.podcini.databinding.FilterDialogRowBinding
 import ac.mdiq.podcini.storage.model.EpisodeFilter
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion.TAG
 import ac.mdiq.podcini.util.Logd
 import android.app.Dialog
 import android.content.DialogInterface
@@ -98,8 +99,9 @@ abstract class EpisodeFilterDialog : BottomSheetDialogFragment() {
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        Logd(TAG, "onDestroyView")
         _binding = null
+        super.onDestroyView()
     }
 
     private fun setupFullHeight(bottomSheetDialog: BottomSheetDialog) {

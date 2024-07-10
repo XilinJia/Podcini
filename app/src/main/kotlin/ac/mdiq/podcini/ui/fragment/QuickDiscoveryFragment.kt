@@ -90,8 +90,8 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         _binding = null
+        super.onDestroy()
     }
 
     private var eventSink: Job?     = null

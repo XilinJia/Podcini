@@ -14,7 +14,6 @@ import android.app.Activity
 import android.os.Bundle
 import android.view.*
 import androidx.media3.common.util.UnstableApi
-
 import java.lang.ref.WeakReference
 
 /**
@@ -49,6 +48,12 @@ open class EpisodesAdapter(mainActivity: MainActivity)
 
     init {
         setHasStableIds(true)
+    }
+
+    fun clearData() {
+        episodes = listOf()
+        feed = null
+        notifyDataSetChanged()
     }
 
     fun setDummyViews(dummyViews: Int) {
@@ -90,8 +95,7 @@ open class EpisodesAdapter(mainActivity: MainActivity)
 
         val item: Episode = unmanaged(episodes[pos])
 //        val item: Episode = episodes[pos]
-        if (feed != null) item.feed = feed
-        else item.feed = episodes[pos].feed
+        item.feed = feed ?: episodes[pos].feed
         holder.bind(item)
 
 //        holder.infoCard.setOnCreateContextMenuListener(this)

@@ -23,6 +23,7 @@ import ac.mdiq.podcini.ui.activity.VideoplayerActivity
 import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.dialog.SkipPreferenceDialog
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.utils.PictureInPictureUtil
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
@@ -166,12 +167,13 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        Logd(TAG, "onDestroyView")
         root.removeView(webvDescription)
         webvDescription.destroy()
         _binding = null
         controller?.release()
         controller = null // prevent leak
+        super.onDestroyView()
     }
 
     private var eventSink: Job?     = null

@@ -2,6 +2,7 @@ package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
@@ -44,6 +45,11 @@ import kotlin.math.min
     override fun onStop() {
         super.onStop()
         cancelFlowEvents()
+    }
+
+    override fun onDestroyView() {
+        episodeList.clear()
+        super.onDestroyView()
     }
 
     fun setEpisodes(episodeList_: MutableList<Episode>) {

@@ -99,6 +99,7 @@ open class EpisodeViewHolder(private val activity: MainActivity, parent: ViewGro
         container.alpha = if (item.isPlayed()) 0.7f else 1.0f
         leftPadding.contentDescription = item.title
         binding.playedMark.visibility = View.GONE
+        binding.txtvPubDate.setTextColor(getColorFromAttr(activity, com.google.android.material.R.attr.colorOnSurfaceVariant))
         when {
             item.isPlayed() -> {
                 leftPadding.contentDescription = item.title + ". " + activity.getString(R.string.is_played)

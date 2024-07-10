@@ -246,5 +246,4 @@ object ChapterUtils {
         }
         return listOf()
     }
-
 }

@@ -271,7 +271,7 @@
     <string name="skip_episode_label">Skip episode</string>
     <string name="reset_position">Reset playback position</string>
     <string name="no_items_selected">No items selected</string>
-    <string name="delete_local_feed_warning_body">Deleting removes the episode from Podcini and deletes the media file from your device storage. It cannot be downloaded again through Podcini.</string>
+    <string name="delete_local_feed_warning_body">Warning: you are deleting local episodes. It will delete the media files from your device storage. It cannot be downloaded again through Podcini. Continue?</string>
 
     <!-- Download messages and labels -->
     <string name="download_successful">successful</string>

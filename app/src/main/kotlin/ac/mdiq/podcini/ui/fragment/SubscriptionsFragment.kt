@@ -210,8 +210,12 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        Logd(TAG, "onDestroyView")
+        feedList = mutableListOf()
+        feedListFiltered = mutableListOf()
+        adapter.clearData()
         _binding = null
+        super.onDestroyView()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -309,7 +313,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    feedList = getFeedList().toMutableList()
                     sortFeeds()
                     resetTags()
                 }
@@ -396,7 +399,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 comparator(counterMap, dir)
             }
         }
-        synchronized(feedList) { feedList.sortWith(comparator) }
+        val feedList_ = getFeedList().toMutableList()
+        synchronized(feedList_) { feedList = feedList_.sortedWith(comparator).toMutableList() }
     }
 
     private fun counterMap(episodes: RealmResults<Episode>): Map<Long, Long> {
@@ -551,6 +555,9 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         init {
             this.feedList = ArrayList()
             setHasStableIds(true)
+        }
+        fun clearData() {
+            feedList = listOf()
         }
         fun getItem(position: Int): Any {
             return feedList[position]

@@ -20,6 +20,7 @@ import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.view.EpisodesRecyclerView
 import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
@@ -305,9 +306,12 @@ import kotlinx.coroutines.flow.collectLatest
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        Logd(TAG, "onDestroyView")
         _binding = null
+        adapter.clearData()
         adapter.endSelectMode()
+        episodes.clear()
+        super.onDestroyView()
     }
 
     override fun onStartSelectMode() {

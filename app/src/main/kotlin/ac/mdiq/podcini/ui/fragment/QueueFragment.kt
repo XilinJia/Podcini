@@ -30,6 +30,7 @@ import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.ui.dialog.SwitchQueueDialog
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
 import ac.mdiq.podcini.ui.view.EpisodesRecyclerView
@@ -301,8 +302,7 @@ import java.util.*
             val item: Episode = event.episodes[i]
             val pos: Int = EpisodeUtil.indexOfItemWithId(queueItems, item.id)
             if (pos >= 0) {
-                queueItems.removeAt(pos)
-                queueItems.add(pos, item)
+                queueItems[pos] = item
                 adapter?.notifyItemChangedCompat(pos)
                 refreshInfoBar()
             }
@@ -322,7 +322,8 @@ import java.util.*
             val pos: Int = EpisodeUtil.indexOfItemWithDownloadUrl(queueItems.toList(), downloadUrl)
             if (pos >= 0) {
                 val item = queueItems[pos]
-                item.media?.downloaded = true
+//                item.media?.downloaded = true
+                item.media?.setIsDownloaded()
                 adapter?.notifyItemChangedCompat(pos)
             }
         }
@@ -380,12 +381,15 @@ import java.util.*
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        Logd(TAG, "onDestroyView")
         _binding = null
+        queueItems = mutableListOf()
         adapter?.endSelectMode()
+        adapter?.clearData()
         adapter = null
         toolbar.setOnMenuItemClickListener(null)
         toolbar.setOnLongClickListener(null)
+        super.onDestroyView()
     }
 
     private fun refreshToolbarState() {

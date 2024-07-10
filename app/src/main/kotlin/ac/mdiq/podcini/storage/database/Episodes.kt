@@ -108,6 +108,7 @@ object Episodes {
         Logd(TAG, String.format(Locale.US, "Requested to delete EpisodeMedia [id=%d, title=%s, downloaded=%s", media.id, media.getEpisodeTitle(), media.downloaded))
         var localDelete = false
         val url = media.fileUrl
+        var episode = episode
         when {
             url != null && url.startsWith("content://") -> {
                 // Local feed
@@ -116,8 +117,8 @@ object Episodes {
                     EventFlow.postEvent(FlowEvent.MessageEvent(context.getString(R.string.delete_local_failed)))
                     return episode
                 }
-                upsertBlk(episode) {
-                    it.media?.fileUrl = null
+                episode = upsertBlk(episode) {
+                    it.media?.setfileUrlOrNull(null)
                     if (media.downloadUrl.isNullOrEmpty()) it.media = null
                 }
                 localDelete = true
@@ -131,9 +132,9 @@ object Episodes {
                     EventFlow.postEvent(evt)
                     return episode
                 }
-                upsertBlk(episode) {
+                episode = upsertBlk(episode) {
                     it.media?.downloaded = false
-                    it.media?.fileUrl = null
+                    it.media?.setfileUrlOrNull(null)
                     it.media?.hasEmbeddedPicture = false
                     if (media.downloadUrl.isNullOrEmpty()) it.media = null
                 }
@@ -209,10 +210,10 @@ object Episodes {
     fun persistEpisodeMedia(media: EpisodeMedia) : Job {
         Logd(TAG, "persistEpisodeMedia called")
         return runOnIOScope {
-            val episode = media.episode
+            var episode = media.episode
             if (episode != null) {
                 episode.media = media
-                upsert(episode) {}
+                episode = upsert(episode) {}
                 EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(episode))
             } else Log.e(TAG, "persistEpisodeMedia media.episode is null")
         }

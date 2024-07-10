@@ -164,8 +164,9 @@ import kotlin.concurrent.Volatile
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         _binding = null
+        feeds = null
+        super.onDestroy()
     }
 
     @OptIn(UnstableApi::class) override fun onSaveInstanceState(outState: Bundle) {

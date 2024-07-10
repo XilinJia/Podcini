@@ -40,10 +40,10 @@ class Feed : RealmObject {
      */
     @FullText
     var customTitle: String? = null
-        set(value) {
-            field = if (value == null || value == eigenTitle) null
-            else value
-        }
+//        set(value) {
+//            field = if (value == null || value == eigenTitle) null
+//            else value
+//        }
 
     var link: String? = null
 
@@ -163,7 +163,7 @@ class Feed : RealmObject {
         this.fileUrl = fileUrl
         this.downloadUrl = downloadUrl
         this.eigenTitle = title
-        this.customTitle = customTitle
+        setCustomTitle1(customTitle)
         this.lastUpdate = lastUpdate
         this.link = link
         this.description = description
@@ -208,6 +208,10 @@ class Feed : RealmObject {
      */
     constructor(url: String?, lastUpdate: String?, title: String?, username: String?, password: String?) : this(url, lastUpdate, title) {
         preferences = FeedPreferences(0, false, FeedPreferences.AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, username, password)
+    }
+
+    fun setCustomTitle1(value: String?) {
+        customTitle = if (value == null || value == eigenTitle) null else value
     }
 
     fun getTextIdentifier(): String? {

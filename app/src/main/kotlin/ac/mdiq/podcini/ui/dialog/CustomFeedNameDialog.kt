@@ -31,7 +31,7 @@ class CustomFeedNameDialog(activity: Activity, private var feed: Feed) {
             .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
                 feed = unmanaged(feed)
                 val newTitle = binding.editText.text.toString()
-                feed.customTitle = newTitle
+                feed.setCustomTitle1(newTitle)
                 upsertBlk(feed) {}
             }
             .setNeutralButton(R.string.reset, null)

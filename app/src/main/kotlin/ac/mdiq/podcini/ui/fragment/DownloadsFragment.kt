@@ -24,6 +24,7 @@ import ac.mdiq.podcini.ui.adapter.EpisodesAdapter
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.ui.dialog.SwitchQueueDialog
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
 import ac.mdiq.podcini.ui.view.EpisodesRecyclerView
@@ -163,10 +164,13 @@ import java.util.*
     }
 
     override fun onDestroyView() {
+        Logd(TAG, "onDestroyView")
         _binding = null
         adapter.endSelectMode()
+        adapter.clearData()
         toolbar.setOnMenuItemClickListener(null)
         toolbar.setOnLongClickListener(null)
+        episodes = mutableListOf()
 
         super.onDestroyView()
     }
@@ -279,7 +283,7 @@ import java.util.*
         val size: Int = event.episodes.size
         while (i < size) {
             val item: Episode = event.episodes[i]
-            val pos = EpisodeUtil.indexOfItemWithId(episodes.toList(), item.id)
+            val pos = EpisodeUtil.indexOfItemWithId(episodes, item.id)
             if (pos >= 0) {
                 episodes.removeAt(pos)
                 val media = item.media

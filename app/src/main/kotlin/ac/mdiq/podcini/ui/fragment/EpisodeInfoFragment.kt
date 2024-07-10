@@ -19,6 +19,7 @@ import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.ui.actions.actionbutton.*
 import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.ui.view.ShownotesWebView
@@ -230,14 +231,15 @@ import kotlin.math.max
     }
 
     @OptIn(UnstableApi::class) override fun onDestroyView() {
-        super.onDestroyView()
         Logd(TAG, "onDestroyView")
         binding.root.removeView(webvDescription)
+        episode = null
         webvDescription.clearHistory()
         webvDescription.clearCache(true)
         webvDescription.clearView()
         webvDescription.destroy()
         _binding = null
+        super.onDestroyView()
     }
 
     @UnstableApi private fun onFragmentLoaded() {

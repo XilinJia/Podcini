@@ -19,6 +19,7 @@ import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.dialog.DrawerPreferencesDialog
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.util.Logd
@@ -127,9 +128,10 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        Logd(TAG, "onDestroyView")
         _binding = null
         prefs!!.unregisterOnSharedPreferenceChangeListener(this)
+        super.onDestroyView()
     }
 
     override fun onResume() {
@@ -276,7 +278,6 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
             } else return false
         }
         @UnstableApi private fun bindNavView(title: String, position: Int, holder: NavHolder) {
-            Logd(TAG, "bindNavView called")
             val context = activity ?: return
             holder.title.text = title
             // reset for re-use

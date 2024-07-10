@@ -36,7 +36,7 @@ class EpisodeMultiSelectHandler(private val activity: MainActivity, private val 
                 showMessage(R.plurals.marked_unread_batch_label, items.size)
             }
             R.id.download_batch -> downloadChecked(items)
-            R.id.delete_batch -> LocalDeleteModal.showLocalFeedDeleteWarningIfNecessary(activity, items) { deleteChecked(items) }
+            R.id.delete_batch -> deleteChecked(items)
             else -> Log.e(TAG, "Unrecognized speed dial action item. Do nothing. id=$actionId")
         }
     }
@@ -57,18 +57,6 @@ class EpisodeMultiSelectHandler(private val activity: MainActivity, private val 
         showMessage(R.plurals.removed_from_queue_batch_label, checkedIds.size)
     }
 
-//    private fun markedCheckedPlayed(items: List<FeedItem>) {
-////        val checkedIds = getSelectedIds(items)
-//        DBWriter.markItemsPlayed(FeedItem.PLAYED, *items.toTypedArray())
-//        showMessage(R.plurals.marked_read_batch_label, items.size)
-//    }
-//
-//    private fun markedCheckedUnplayed(items: List<FeedItem>) {
-////        val checkedIds = getSelectedIds(items)
-//        DBWriter.markItemsPlayed(FeedItem.UNPLAYED, *items.toTypedArray())
-//        showMessage(R.plurals.marked_unread_batch_label, items.size)
-//    }
-
     private fun markFavorite(items: List<Episode>, stat: Boolean) {
         for (item in items) {
             Episodes.setFavorite(item, true)
@@ -85,14 +73,8 @@ class EpisodeMultiSelectHandler(private val activity: MainActivity, private val 
     }
 
     private fun deleteChecked(items: List<Episode>) {
-        var countHasMedia = 0
-        for (feedItem in items) {
-            if (feedItem.media != null && feedItem.media!!.downloaded) {
-                countHasMedia++
-                deleteMediaOfEpisode(activity, feedItem)
-            }
-        }
-        showMessage(R.plurals.deleted_multi_episode_batch_label, countHasMedia)
+        LocalDeleteModal.deleteEpisodesWarnLocal(activity, items)
+        showMessage(R.plurals.deleted_multi_episode_batch_label, items.size)
     }
 
     private fun showMessage(@PluralsRes msgId: Int, numItems: Int) {

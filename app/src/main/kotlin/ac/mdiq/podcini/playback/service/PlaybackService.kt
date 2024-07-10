@@ -550,12 +550,13 @@ class PlaybackService : MediaSessionService() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         Logd(TAG, "Service is about to be destroyed")
 
         isRunning = false
         currentMediaType = MediaType.UNKNOWN
         castStateListener.destroy()
+
+        currentitem = null
 
         LocalMediaPlayer.cleanup()
         mediaSession?.run {
@@ -573,6 +574,8 @@ class PlaybackService : MediaSessionService() {
         unregisterReceiver(bluetoothStateUpdated)
         unregisterReceiver(audioBecomingNoisy)
         taskManager.shutdown()
+
+        super.onDestroy()
     }
 
     fun isServiceReady(): Boolean {

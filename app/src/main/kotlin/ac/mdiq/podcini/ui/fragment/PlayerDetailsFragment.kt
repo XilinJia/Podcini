@@ -2,26 +2,22 @@ package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.PlayerDetailsFragmentBinding
-import ac.mdiq.podcini.storage.utils.ChapterUtils
-import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.net.utils.NetworkUtils.fetchHtmlSource
-import ac.mdiq.podcini.playback.PlaybackController.Companion.curSpeedMultiplier
-import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.PlaybackController.Companion.curPosition
+import ac.mdiq.podcini.playback.PlaybackController.Companion.curSpeedMultiplier
 import ac.mdiq.podcini.playback.PlaybackController.Companion.seekTo
+import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.storage.database.Episodes.persistEpisode
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
-import ac.mdiq.podcini.storage.model.Chapter
-import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.model.Playable
-import ac.mdiq.podcini.storage.model.EmbeddedChapterImage
+import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.storage.utils.ChapterUtils
+import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.DateFormatter
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
@@ -50,8 +46,9 @@ import coil.request.ErrorResult
 import coil.request.ImageRequest
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.dankito.readability4j.Readability4J
 import org.apache.commons.lang3.StringUtils
 
@@ -117,21 +114,24 @@ class PlayerDetailsFragment : Fragment() {
     override fun onStart() {
         Logd(TAG, "onStart()")
         super.onStart()
-        procFlowEvents()
+//        procFlowEvents()
     }
 
     override fun onStop() {
         Logd(TAG, "onStop()")
         super.onStop()
-        cancelFlowEvents()
+//        cancelFlowEvents()
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        Logd(TAG, "onDestroyView")
         _binding = null
+        prevItem = null
+        currentItem = null
         Logd(TAG, "Fragment destroyed")
         shownoteView.removeAllViews()
         shownoteView.destroy()
+        super.onDestroyView()
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
@@ -280,6 +280,7 @@ class PlayerDetailsFragment : Fragment() {
     }
 
     private fun refreshChapterData(chapterIndex: Int) {
+        Logd(TAG, "in refreshChapterData $chapterIndex")
         if (playable != null && chapterIndex > -1) {
             if (playable!!.getPosition() > playable!!.getDuration() || chapterIndex >= playable!!.getChapters().size - 1) {
                 displayedChapterIndex = playable!!.getChapters().size - 1
@@ -409,25 +410,25 @@ class PlayerDetailsFragment : Fragment() {
         savePreference()
     }
 
-    private var eventSink: Job?     = null
-    private fun cancelFlowEvents() {
-        eventSink?.cancel()
-        eventSink = null
-    }
-    private fun procFlowEvents() {
-        if (eventSink != null) return
-        eventSink = lifecycleScope.launch {
-            EventFlow.events.collectLatest { event ->
-                Logd(TAG, "Received event: ${event.TAG}")
-                when (event) {
-                    is FlowEvent.PlaybackPositionEvent -> onEventMainThread(event)
-                    else -> {}
-                }
-            }
-        }
-    }
+//    private var eventSink: Job?     = null
+//    private fun cancelFlowEvents() {
+//        eventSink?.cancel()
+//        eventSink = null
+//    }
+//    private fun procFlowEvents() {
+//        if (eventSink != null) return
+//        eventSink = lifecycleScope.launch {
+//            EventFlow.events.collectLatest { event ->
+//                Logd(TAG, "Received event: ${event.TAG}")
+//                when (event) {
+//                    is FlowEvent.PlaybackPositionEvent -> onPlaybackPositionEvent(event)
+//                    else -> {}
+//                }
+//            }
+//        }
+//    }
 
-    private fun onEventMainThread(event: FlowEvent.PlaybackPositionEvent) {
+    fun onPlaybackPositionEvent(event: FlowEvent.PlaybackPositionEvent) {
         if (playable?.getIdentifier() != event.media?.getIdentifier()) return
         val newChapterIndex: Int = ChapterUtils.getCurrentChapterIndex(playable, event.position)
         if (newChapterIndex >= 0 && newChapterIndex != displayedChapterIndex) {

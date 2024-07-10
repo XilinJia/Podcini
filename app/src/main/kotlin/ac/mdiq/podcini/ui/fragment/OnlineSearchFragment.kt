@@ -97,10 +97,11 @@ class OnlineSearchFragment : Fragment() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         _binding = null
-//        disposable?.dispose()
+        searchResults = null
+        adapter?.clearData()
         adapter = null
+        super.onDestroy()
     }
 
     private fun setupToolbar(toolbar: MaterialToolbar) {

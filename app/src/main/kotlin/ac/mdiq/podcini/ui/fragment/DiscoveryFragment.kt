@@ -131,7 +131,6 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     override fun onDestroy() {
         _binding = null
-        adapter?.clearData()
         adapter = null
         searchResults = null
         topList = null

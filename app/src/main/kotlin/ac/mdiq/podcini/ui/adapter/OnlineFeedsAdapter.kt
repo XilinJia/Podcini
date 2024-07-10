@@ -17,7 +17,7 @@ class OnlineFeedsAdapter(private val context: Context, objects: List<PodcastSear
     : ArrayAdapter<PodcastSearchResult?>(context, 0, objects) {
 
 //    List holding the podcasts found in the search
-    private val data: MutableList<PodcastSearchResult> = objects.toMutableList()
+    private val data: List<PodcastSearchResult> = objects
 
     @UnstableApi override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val podcast: PodcastSearchResult = data[position]
@@ -63,10 +63,6 @@ class OnlineFeedsAdapter(private val context: Context, objects: List<PodcastSear
             error(R.mipmap.ic_launcher)
         }
         return view
-    }
-
-    fun clearData() {
-        data.clear()
     }
 
     internal class PodcastViewHolder(view: View) {

@@ -99,7 +99,6 @@ class OnlineSearchFragment : Fragment() {
     override fun onDestroy() {
         _binding = null
         searchResults = null
-        adapter?.clearData()
         adapter = null
         super.onDestroy()
     }

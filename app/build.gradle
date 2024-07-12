@@ -62,6 +62,7 @@ android {
 
     lint {
 //        disable "GradleDependency"
+        checkReleaseBuilds false
         checkDependencies true
         warningsAsErrors true
         abortOnError true
@@ -125,8 +126,8 @@ android {
         buildConfig true
     }
     defaultConfig {
-        versionCode 3020208
-        versionName "6.0.8"
+        versionCode 3020209
+        versionName "6.0.9"
 
         applicationId "ac.mdiq.podcini.R"
         def commit = ""

@@ -11,7 +11,7 @@ Or download the latest APK from the [Releases Section](https://github.com/XilinJ
 
 ## Announcement
 
-### Podcini.R, or Podcini 6, is currently under pre-release for early evaluations.  The major overhaul is the replacement of SQLite DB with the object-based Realm DB. With a different application Id, it can be installed in parallel with a previous version. See [Podcini 6 migrations instructions](migrationTo6.md)
+### Podcini.R version 6 is released.  It's not compatible with prior versions.  The major overhaul is the replacement of SQLite DB with the object-based Realm DB. With a different application Id, it is installed afresh and in parallel with a previous version. You can migrate certain assets from an earlier version, see [Podcini 6 migrations instructions](migrationTo6.md)
 
 This project is based on a fork of [AntennaPod](<https://github.com/AntennaPod/AntennaPod>) as of Feb 5 2024.
 
@@ -19,10 +19,10 @@ Compared to AntennaPod this project:
 
 1. Migrated all media routines to `androidx.media3`, with `AudioOffloadMode` enabled, nicer to device battery,
 2. Is purely `Kotlin` based and mono-modular, and targets Android 14,
-3. Iron-age celebrity SQLite is replaced with modern object-base Realm DB (Podcini.R)
-4. Removed the need for support libraries and jetifier
-5. Outfits with Viewbinding, Coil replacing Glide, coroutines replacing RxJava and threads, and SharedFlow replacing EventBus,
-6. Boasts new UI's including streamlined drawer, subscriptions view and player controller,
+3. Iron-age celebrity SQLite is replaced with modern object-base Realm DB (Podcini.R),
+4. Outfits with Viewbinding, Coil replacing Glide, coroutines replacing RxJava and threads, SharedFlow replacing EventBus, and jetifier removed,
+5. Boasts new UI's including streamlined drawer, subscriptions view and player controller,
+6. supports multiple and circular play queues
 7. Accepts podcast as well as plain RSS and YouTube feeds,
 8. Offers Readability and Text-to-Speech for RSS contents,
 9. Features `instant sync` across devices without a server.

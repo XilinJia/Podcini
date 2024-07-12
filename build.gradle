@@ -5,7 +5,6 @@ buildscript {
         gradlePluginPortal()
     }
     ext.kotlin_version = '2.0.0'
-//    ext.kotlin_version = '1.9.24'
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'com.android.tools.build:gradle:8.2.2'
@@ -15,9 +14,8 @@ buildscript {
 }
 
 plugins {
-//    id 'io.realm.kotlin' version '1.16.0' apply false
     id 'io.realm.kotlin' version '2.0.0' apply false
-//    id("io.realm.kotlin")
+//    id 'com.google.devtools.ksp' version '2.0.0-1.0.23' apply false
 }
 
 allprojects {

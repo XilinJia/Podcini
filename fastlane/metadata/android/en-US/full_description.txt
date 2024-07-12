@@ -1,6 +1,8 @@
 
 Podcini, an open source podcast instrument, attuned to Puccini, adorned with pasticcini and aromatized with porcini, invites your harmonious heartbeats.
 
+Podcini.R is a revamped version of Podcini version 5, uses a modern object-base database. Though newer features are provided, it works in similar ways as Podcini. This app installs afresh and in parallel with any older version of Podcini. Though incompatible with older versions, migration path is provided. If you need migration from an earlier version, see Github site for instructions.
+
 It allows you to subscribe to any RSS feed (with or without media), gives you instant access to millions of free and paid podcasts or plain RSS feeds, from independent podcasters to large publishing houses such as the BBC, NPR and CNN. Add, import and export their feeds hassle-free using the Apple Podcasts database, OPML files or simple RSS URLs.
 
 Download, stream or queue episodes and enjoy them the way you like with adjustable playback speeds, chapter support and a sleep timer.  In case the feed contains no media (plain RSS feed), Text-to-Speech engine (if available) is used to play the text.

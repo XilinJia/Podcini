@@ -120,6 +120,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * Disabled `usesCleartextTraffic`, so that all content transmission is more private and secure
 * Settings/Preferences can now be exported and imported
 * Play history/progress can be separately exported/imported as Json files
+* downloaded media files can be exported/imported
 * There is a setting to disable/enable auto backup OPML files to Google
 
 For more details of the changes, see the [Changelog](changelog.md)

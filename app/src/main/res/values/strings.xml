@@ -599,6 +599,7 @@
     <!-- import and export -->
     <string name="import_export_summary">Move subscriptions and queue to another device</string>
     <string name="preferences">Preferences</string>
+    <string name="media_files">Media files</string>
     <string name="database">Database</string>
     <string name="opml">OPML</string>
     <string name="html">HTML</string>
@@ -606,8 +607,10 @@
     <string name="html_export_summary">Show your subscriptions to a friend</string>
     <string name="opml_export_summary">Transfer your subscriptions to another podcast app</string>
     <string name="opml_import_summary">Import your subscriptions from another podcast app</string>
-    <string name="preferences_export_summary">Transfer Podcini preferences to Podcini on another device</string>
-    <string name="preferences_import_summary">Import Podcini preferences from another device</string>
+    <string name="preferences_export_summary">Export Podcini preferences</string>
+    <string name="preferences_import_summary">Import Podcini preferences</string>
+    <string name="media_files_export_summary">Export Podcini media files</string>
+    <string name="media_files_import_summary">Import Podcini media files</string>
     <string name="database_export_summary">Transfer subscriptions, listened episodes and queue to Podcini on another device</string>
     <string name="database_import_summary">Import Podcini database from another device</string>
     <string name="opml_import_label">OPML import</string>
@@ -623,13 +626,17 @@
     <string name="progress_import_warning">Importing episodes progress will replace all of your current playing history. You should export your current progress as a backup. Do you want to replace\? If yes, in the next screen, choose the desired .json file. The process can take a couple minutes depending on size. Once completed, a popup of either success or failure will be shown.</string>
     <string name="opml_export_label">OPML export</string>
     <string name="html_export_label">HTML export</string>
+    <string name="media_files_export_label">Media files export</string>
+    <string name="media_files_import_label">Media files import</string>
     <string name="preferences_export_label">Preferences export</string>
     <string name="preferences_import_label">Preferences import</string>
     <string name="preferences_import_warning">Importing preferences will replace all of your current preferences. If confirmed, choose a previously exported directory with name containing \"Podcini-Prefs\"</string>
+    <string name="media_files_import_notice">Choose a previously exported directory with name containing \"Podcini-MediaFiles\"</string>
     <string name="database_export_label">Database export</string>
     <string name="database_import_label">Database import</string>
     <string name="realm_database_import_label">Realm database import</string>
     <string name="database_import_warning">Importing a database will replace all of your current subscriptions and playing history. You should export your current database as a backup. Do you want to replace\? If yes, in the next screen, choose a file with extension .realm</string>
+    <string name="import_directory_toast">Only accepting directory name including: </string>
     <string name="import_file_type_toast">Only accepting file extension: </string>
     <string name="please_wait">Please wait&#8230;</string>
     <string name="export_error_label">Export error</string>

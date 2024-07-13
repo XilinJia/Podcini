@@ -97,6 +97,16 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         }
     }
 
+    private val restoreMediaFilesLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            result: ActivityResult -> this.restoreMediaFilesResult(result) }
+
+    private val backupMediaFilesLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if (it.resultCode == RESULT_OK) {
+            val data: Uri? = it.data?.data
+            if (data != null) MediaFilesTransporter.exportToDocument(data, requireContext())
+        }
+    }
+
     private var progressDialog: ProgressDialog? = null
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -155,6 +165,14 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         }
         findPreference<Preference>(PREF_PREFERENCES_EXPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             exportPreferences()
+            true
+        }
+        findPreference<Preference>(PREF_MEDIAFILES_IMPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            importMediaFiles()
+            true
+        }
+        findPreference<Preference>(PREF_MEDIAFILES_EXPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            exportMediaFiles()
             true
         }
         findPreference<Preference>(PREF_FAVORITE_EXPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
@@ -216,6 +234,31 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             intent.addCategory(Intent.CATEGORY_DEFAULT)
             restorePreferencesLauncher.launch(intent)
+        }
+
+        // create and show the alert dialog
+        builder.show()
+    }
+
+    private fun exportMediaFiles() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        intent.addCategory(Intent.CATEGORY_DEFAULT)
+        backupMediaFilesLauncher.launch(intent)
+    }
+
+    private fun importMediaFiles() {
+        val builder = MaterialAlertDialogBuilder(requireActivity())
+        builder.setTitle(R.string.media_files_import_label)
+        builder.setMessage(R.string.media_files_import_notice)
+
+        // add a button
+        builder.setNegativeButton(R.string.no, null)
+        builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            intent.addCategory(Intent.CATEGORY_DEFAULT)
+            restoreMediaFilesLauncher.launch(intent)
         }
 
         // create and show the alert dialog
@@ -314,7 +357,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
 
     private fun restoreProgressResult(result: ActivityResult) {
         if (result.resultCode != RESULT_OK || result.data?.data == null) return
-        val uri = result.data!!.data!!
+        val uri = result.data!!.data
         uri?.let {
             if (isJsonFile(uri)) {
                 progressDialog!!.show()
@@ -379,24 +422,66 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         return fileName.endsWith(".realm", ignoreCase = true)
     }
 
+    private fun isPrefDir(uri: Uri): Boolean {
+        val fileName = uri.lastPathSegment ?: return false
+        return fileName.contains("Podcini-Prefs", ignoreCase = true)
+    }
+
+    private fun isMediaFilesDir(uri: Uri): Boolean {
+        val fileName = uri.lastPathSegment ?: return false
+        return fileName.contains("Podcini-MediaFiles", ignoreCase = true)
+    }
+
     private fun restorePreferencesResult(result: ActivityResult) {
         if (result.resultCode != RESULT_OK || result.data?.data == null) return
         val uri = result.data!!.data!!
-        progressDialog!!.show()
-        lifecycleScope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    PreferencesTransporter.importBackup(uri, requireContext())
+        if (isPrefDir(uri)) {
+            progressDialog!!.show()
+            lifecycleScope.launch {
+                try {
+                    withContext(Dispatchers.IO) {
+                        PreferencesTransporter.importBackup(uri, requireContext())
+                    }
+                    withContext(Dispatchers.Main) {
+                        showDatabaseImportSuccessDialog()
+                        progressDialog!!.dismiss()
+                    }
+                } catch (e: Throwable) {
+                    showExportErrorDialog(e)
                 }
-                withContext(Dispatchers.Main) {
-                    showDatabaseImportSuccessDialog()
-                    progressDialog!!.dismiss()
-                }
-            } catch (e: Throwable) {
-                showExportErrorDialog(e)
             }
+        } else {
+            val context = requireContext()
+            val message = context.getString(R.string.import_directory_toast) + "Podcini-Prefs"
+            showExportErrorDialog(Throwable(message))
         }
     }
+
+    private fun restoreMediaFilesResult(result: ActivityResult) {
+        if (result.resultCode != RESULT_OK || result.data?.data == null) return
+        val uri = result.data!!.data!!
+        if (isMediaFilesDir(uri)) {
+            progressDialog!!.show()
+            lifecycleScope.launch {
+                try {
+                    withContext(Dispatchers.IO) {
+                        MediaFilesTransporter.importBackup(uri, requireContext())
+                    }
+                    withContext(Dispatchers.Main) {
+                        showDatabaseImportSuccessDialog()
+                        progressDialog!!.dismiss()
+                    }
+                } catch (e: Throwable) {
+                    showExportErrorDialog(e)
+                }
+            }
+        } else {
+            val context = requireContext()
+            val message = context.getString(R.string.import_directory_toast) + "Podcini-MediaFiles"
+            showExportErrorDialog(Throwable(message))
+        }
+    }
+
 
     private fun backupDatabaseResult(uri: Uri?) {
         if (uri == null) return
@@ -618,6 +703,96 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                 throw e
             } finally { }
 
+        }
+    }
+
+    object MediaFilesTransporter {
+        private val TAG: String = MediaFilesTransporter::class.simpleName ?: "Anonymous"
+        @Throws(IOException::class)
+        fun exportToDocument(uri: Uri, context: Context) {
+            try {
+                val mediaDir = context.getExternalFilesDir("media") ?: return
+                val chosenDir = DocumentFile.fromTreeUri(context, uri) ?: throw IOException("Destination directory is not valid")
+                val exportSubDir = chosenDir.createDirectory("Podcini-MediaFiles") ?: throw IOException("Error creating subdirectory Podcini-Prefs")
+                mediaDir.listFiles()?.forEach { file ->
+                    copyRecursive(context, file, mediaDir, exportSubDir)
+                }
+            } catch (e: IOException) {
+                Log.e(TAG, Log.getStackTraceString(e))
+                throw e
+            } finally { }
+        }
+        private fun copyRecursive(context: Context, srcFile: File, srcRootDir: File, destRootDir: DocumentFile) {
+            val relativePath = srcFile.absolutePath.substring(srcRootDir.absolutePath.length+1)
+            if (srcFile.isDirectory) {
+                val dirFiles = srcFile.listFiles()
+                if (!dirFiles.isNullOrEmpty()) {
+                    val destDir = destRootDir.findFile(relativePath) ?: destRootDir.createDirectory(relativePath) ?: return
+                    dirFiles.forEach { file ->
+                        copyRecursive(context, file, srcFile, destDir)
+                    }
+                }
+            } else {
+                val destFile = destRootDir.createFile("application/octet-stream", relativePath) ?: return
+                copyFile(srcFile, destFile, context)
+            }
+        }
+        private fun copyFile(sourceFile: File, destFile: DocumentFile, context: Context) {
+            try {
+                val outputStream = context.contentResolver.openOutputStream(destFile.uri) ?: return
+                val inputStream = FileInputStream(sourceFile)
+                copyStream(inputStream, outputStream)
+                inputStream.close()
+                outputStream.close()
+            } catch (e: IOException) {
+                Log.e("Error", "Error copying file: $e")
+                throw e
+            }
+        }
+        private fun copyRecursive(context: Context, srcFile: DocumentFile, srcRootDir: DocumentFile, destRootDir: File) {
+            val relativePath = srcFile.uri.path?.substring(srcRootDir.uri.path!!.length) ?: return
+            val destFile = File(destRootDir, relativePath)
+            if (srcFile.isDirectory) {
+                if (!destFile.exists()) destFile.mkdirs()
+                srcFile.listFiles().forEach { file ->
+                    copyRecursive(context, file, srcFile, destFile)
+                }
+            } else {
+                if (!destFile.exists()) copyFile(srcFile, destFile, context)
+            }
+        }
+        private fun copyFile(sourceFile: DocumentFile, destFile: File, context: Context) {
+            try {
+                val inputStream = context.contentResolver.openInputStream(sourceFile.uri) ?: return
+                val outputStream = FileOutputStream(destFile)
+                copyStream(inputStream, outputStream)
+                inputStream.close()
+                outputStream.close()
+            } catch (e: IOException) {
+                Log.e("Error", "Error copying file: $e")
+                throw e
+            }
+        }
+        private fun copyStream(inputStream: InputStream, outputStream: OutputStream) {
+            val buffer = ByteArray(1024)
+            var bytesRead: Int
+            while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                outputStream.write(buffer, 0, bytesRead)
+            }
+        }
+        @Throws(IOException::class)
+        fun importBackup(uri: Uri, context: Context) {
+            try {
+                val exportedDir = DocumentFile.fromTreeUri(context, uri) ?: throw IOException("Backup directory is not valid")
+                if (exportedDir.name?.contains("Podcini-MediaFiles") != true) return
+                val mediaDir = context.getExternalFilesDir("media") ?: return
+                exportedDir.listFiles().forEach { file ->
+                    copyRecursive(context, file, exportedDir, mediaDir)
+                }
+            } catch (e: IOException) {
+                Log.e(TAG, Log.getStackTraceString(e))
+                throw e
+            } finally { }
         }
     }
 
@@ -898,6 +1073,8 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         private const val PREF_HTML_EXPORT = "prefHtmlExport"
         private const val PREF_PREFERENCES_IMPORT = "prefPrefImport"
         private const val PREF_PREFERENCES_EXPORT = "prefPrefExport"
+        private const val PREF_MEDIAFILES_IMPORT = "prefMediaFilesImport"
+        private const val PREF_MEDIAFILES_EXPORT = "prefMediaFilesExport"
         private const val PREF_DATABASE_IMPORT = "prefDatabaseImport"
         private const val PREF_DATABASE_EXPORT = "prefDatabaseExport"
         private const val PREF_FAVORITE_EXPORT = "prefFavoritesExport"

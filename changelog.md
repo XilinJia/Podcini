@@ -1,3 +1,15 @@
+# 6.0.10
+
+* for better migrating from version 5, added export/import of downloaded media files: inter-operable with Podcini 5.5.4
+* importing media files is restricted to directory with name containing "Podcini-MediaFiles"
+* importing preferences is restricted directory with name containing "Podcini-Prefs"
+
+# 5.5.4
+
+* this is an extra minor release for better migration to Podcini 6
+* added export/import of downloaded media files which can then be imported in Podcini 6
+* this release is not updated to F-Droid due to Podcini 6 listing in progress
+
 # 6.0.9
 
 This is the first release of Podcini.R version 6. If you have an older version installed, this release installs afresh in parallel with and is not compatible with older versions.  Main changes are:
@@ -55,7 +67,7 @@ This is the first release of Podcini.R version 6. If you have an older version i
 * decade-old joanzapata iconify is replaced with mikepenz iconics
 * removed the need for support libraries and the need for the jetifier
 * Java tools checkstyle and spotbus are removed
-* the clumsy FeedDrawerItem class was removed and related compponents are based purely on feed objects
+* the clumsy FeedDrawerItem class was removed and related components are based purely on feed objects
 * code is now built with Kotlin 2.0.0
 * for more details, see the changelogs in pre-release versions
 
@@ -82,6 +94,13 @@ This is the first release of Podcini.R version 6. If you have an older version i
 * adjusted FeedPreferences to incorporate some previously ignored properties
 * enabled selection of .json files when importing progress
 * in wifi sync and episode progress export/import, changed start position and added played duration for episodes (available from 5.5.3), this helps for the statistics view at the importer to correctly show imported progress without having to do "include marked played"
+
+## 5.5.3
+
+* this is an extra minor release for better migration to Podcini 6
+* in wifi sync and episode progress export/import, changed start position and added played duration for episodes
+* this helps for the statistics view at the importer to correctly show imported progress without having to do "include marked played"
+* this release is not updated to F-Droid due to Podcini 6 release in progress
 
 ## 6.0.5
 

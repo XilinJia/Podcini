@@ -54,7 +54,6 @@ object UserPreferences {
     private const val PREF_QUEUE_KEEP_SORTED_ORDER: String = "prefQueueKeepSortedOrder"
     private const val PREF_DOWNLOADS_SORTED_ORDER = "prefDownloadSortedOrder"
     private const val PREF_HISTORY_SORTED_ORDER = "prefHistorySortedOrder"
-    private const val PREF_INBOX_SORTED_ORDER = "prefInboxSortedOrder"
 
     // Episodes
     private const val PREF_SORT_ALL_EPISODES: String = "prefEpisodesSort"
@@ -585,14 +584,17 @@ object UserPreferences {
         return !feed.isLocalFeed || isAutoDeleteLocal
     }
 
+//    only used in test
     fun showSkipOnFullNotification(): Boolean {
         return showButtonOnFullNotification(NOTIFICATION_BUTTON_SKIP)
     }
 
+    //    only used in test
     fun showNextChapterOnFullNotification(): Boolean {
         return showButtonOnFullNotification(NOTIFICATION_BUTTON_NEXT_CHAPTER)
     }
 
+    //    only used in test
     fun showPlaybackSpeedOnFullNotification(): Boolean {
         return showButtonOnFullNotification(NOTIFICATION_BUTTON_PLAYBACK_SPEED)
     }
@@ -646,6 +648,7 @@ object UserPreferences {
         return if (mediaType == MediaType.VIDEO) videoPlaybackSpeed else audioPlaybackSpeed
     }
 
+//   only used in test
     fun shouldPauseForFocusLoss(): Boolean {
         return appPrefs.getBoolean(PREF_PAUSE_PLAYBACK_FOR_FOCUS_LOSS, true)
     }

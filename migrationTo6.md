@@ -13,10 +13,11 @@ the following can be imported to it from Settings -> Import/Export:
 * preferences files
 * OPML file
 * json file of episodes progress
+* downloaded media files (5.5.4 only)
 
 An OPML file should be imported before importing episodes progress, but you can always re-do any of the above
 
-These files can be best exported in version 5.5.3 in Settings -> Import/Export
+These files can be best exported in version 5.5.4 (or 5.5.3, or 5.5.2) in Settings -> Import/Export
 
 Then your subscriptions, listening progress, favorites, and app preferences will be updated.
 

@@ -1,0 +1,6 @@
+ 
+Version 6.0.10 brings several changes:
+
+* added export/import of downloaded media files: inter-operable with Podcini 5.5.4
+* importing media files is restricted to directory with name containing "Podcini-MediaFiles"
+* importing preferences is restricted directory with name containing "Podcini-Prefs"

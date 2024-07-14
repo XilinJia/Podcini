@@ -24,7 +24,7 @@ object FileNameGenerator {
      */
     @JvmStatic
     fun generateFileName(string: String): String {
-        var string = StringUtils.stripAccents(string)
+        val string = StringUtils.stripAccents(string)
         val buf = StringBuilder()
         for (c in string) {
             if (Character.isSpaceChar(c) && (buf.isEmpty() || Character.isSpaceChar(buf[buf.length - 1]))) continue

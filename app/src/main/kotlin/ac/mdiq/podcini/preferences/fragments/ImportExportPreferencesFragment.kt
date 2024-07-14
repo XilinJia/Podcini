@@ -8,6 +8,7 @@ import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.model.EpisodeAction.Companion.readFromJsonObject
 import ac.mdiq.podcini.net.sync.model.SyncServiceException
 import ac.mdiq.podcini.preferences.ExportWriter
+import ac.mdiq.podcini.preferences.OpmlTransporter.*
 import ac.mdiq.podcini.preferences.UserPreferences.getDataFolder
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
@@ -15,12 +16,11 @@ import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.preferences.OpmlTransporter.*
-import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByTitle
 import ac.mdiq.podcini.storage.model.EpisodeFilter
-import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
+import ac.mdiq.podcini.storage.model.Feed
+import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
+import ac.mdiq.podcini.storage.utils.FileNameGenerator.generateFileName
 import ac.mdiq.podcini.ui.activity.OpmlImportActivity
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.util.Logd
@@ -709,6 +709,9 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
 
     object MediaFilesTransporter {
         private val TAG: String = MediaFilesTransporter::class.simpleName ?: "Anonymous"
+        var feed: Feed? = null
+        val nameFeedMap: MutableMap<String, Feed> = mutableMapOf()
+        val nameEpisodeMap: MutableMap<String, Episode> = mutableMapOf()
         @Throws(IOException::class)
         fun exportToDocument(uri: Uri, context: Context) {
             try {
@@ -753,6 +756,13 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         private fun copyRecursive(context: Context, srcFile: DocumentFile, srcRootDir: DocumentFile, destRootDir: File) {
             val relativePath = srcFile.uri.path?.substring(srcRootDir.uri.path!!.length+1) ?: return
             if (srcFile.isDirectory) {
+                Logd(TAG, "copyRecursive folder title: $relativePath")
+                feed = nameFeedMap[relativePath] ?: return
+                Logd(TAG, "copyRecursive found feed: ${feed?.title}")
+                nameEpisodeMap.clear()
+                feed!!.episodes.forEach { e ->
+                    if (!e.title.isNullOrEmpty()) nameEpisodeMap[generateFileName(e.title!!)] = e
+                }
                 val destFile = File(destRootDir, relativePath)
                 if (!destFile.exists()) destFile.mkdirs()
                 srcFile.listFiles().forEach { file ->
@@ -763,13 +773,18 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                 if (nameParts.size < 3) return
                 val ext = nameParts[nameParts.size-1]
                 val title = nameParts.dropLast(2).joinToString(".")
-                Logd(TAG, "copyRecursive title: $title")
-                val episode = getEpisodeByTitle(title) ?: return
+                Logd(TAG, "copyRecursive file title: $title")
+                val episode = nameEpisodeMap[title] ?: return
+                Logd(TAG, "copyRecursive found episode: ${episode.title}")
                 val destName = "$title.${episode.id}.$ext"
                 val destFile = File(destRootDir, destName)
                 if (!destFile.exists()) {
+                    Logd(TAG, "copyRecursive copying file to: ${destFile.absolutePath}")
                     copyFile(srcFile, destFile, context)
-                    upsertBlk(episode) { it.media?.setfileUrlOrNull(destFile.name)}
+                    upsertBlk(episode) {
+                        it.media?.fileUrl = destFile.absolutePath
+                        it.media?.setIsDownloaded()
+                    }
                 }
             }
         }
@@ -798,13 +813,24 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                 val exportedDir = DocumentFile.fromTreeUri(context, uri) ?: throw IOException("Backup directory is not valid")
                 if (exportedDir.name?.contains("Podcini-MediaFiles") != true) return
                 val mediaDir = context.getExternalFilesDir("media") ?: return
-                exportedDir.listFiles().forEach { file ->
-                    copyRecursive(context, file, exportedDir, mediaDir)
+                val fileList = exportedDir.listFiles()
+                if (fileList.isNotEmpty()) {
+                    val feeds = getFeedList()
+                    feeds.forEach { f ->
+                        if (!f.title.isNullOrEmpty()) nameFeedMap[generateFileName(f.title!!)] = f
+                    }
+                    fileList.forEach { file ->
+                        copyRecursive(context, file, exportedDir, mediaDir)
+                    }
                 }
             } catch (e: IOException) {
                 Log.e(TAG, Log.getStackTraceString(e))
                 throw e
-            } finally { }
+            } finally {
+                nameFeedMap.clear()
+                nameEpisodeMap.clear()
+                feed = null
+            }
         }
     }
 

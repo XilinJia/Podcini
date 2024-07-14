@@ -1,3 +1,9 @@
+# 6.0.12
+
+* re-enabled import of downloaded media files, which can be used to migrate from 5.5.4. Media files imported are restricted to existing feeds and episodes.
+* importing media files is only allowed from a directory with name containing "Podcini-MediaFiles"
+* if you have imported some media files exported from 5.5.4 using version 6.0.10, these files are junk. You can opt for clearing storage or re-installing version 6, or you can ignore them for now as I plan to provide media file management functionality in the near future.
+
 # 6.0.11
 
 * This is a minor release of subtraction: import of downloaded media files is temporarily disabled as it's more complicated than I thought. Imported file names from earlier versions aren't easily recognizable.

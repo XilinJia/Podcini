@@ -618,6 +618,9 @@ import java.util.concurrent.Semaphore
                         } else episodes.addAll(feed_.episodes)
                         val sortOrder = fromCode(feed_.preferences?.sortOrderCode?:0)
                         if (sortOrder != null) getPermutor(sortOrder).reorder(episodes)
+//                        episodes.forEach {
+//                            Logd(TAG, "Episode: ${it.title} ${it.media?.downloaded} ${it.media?.fileUrl}")
+//                        }
                         if (onInit) {
                             var hasNonMediaItems = false
                             for (item in episodes) {

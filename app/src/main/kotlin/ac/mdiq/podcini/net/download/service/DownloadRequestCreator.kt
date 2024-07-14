@@ -82,7 +82,7 @@ object DownloadRequestCreator {
 
     private fun getMediafilePath(media: EpisodeMedia): String {
         val item = media.episode ?: return ""
-        Logd(TAG, "item managed: ${item?.isManaged()}")
+        Logd(TAG, "item managed: ${item.isManaged()}")
         val title = item.feed?.title?:return ""
         val mediaPath = (MEDIA_DOWNLOADPATH + FileNameGenerator.generateFileName(title))
         return UserPreferences.getDataFolder(mediaPath).toString() + "/"

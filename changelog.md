@@ -1,6 +1,6 @@
 # 6.0.11
 
-* This is a minor release of subtraction: import of downloaded media files is temporarily disabled as it's more complicated than I thought. Although it works on files exported from Podcini.R, file names from earlier versions aren't easily recognizable.
+* This is a minor release of subtraction: import of downloaded media files is temporarily disabled as it's more complicated than I thought. Imported file names from earlier versions aren't easily recognizable.
 
 # 6.0.10
 

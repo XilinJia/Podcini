@@ -1,0 +1,4 @@
+ 
+Version 6.0.11 brings several changes:
+
+* This is a minor release of subtraction: import of downloaded media files is temporarily disabled as it's more complicated than I thought. Imported file names from earlier versions aren't easily recognizable.

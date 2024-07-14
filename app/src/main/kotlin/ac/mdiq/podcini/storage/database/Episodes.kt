@@ -84,6 +84,12 @@ object Episodes {
         return if (episode != null) realm.copyFromRealm(episode) else null
     }
 
+    fun getEpisodeByTitle(title: String): Episode? {
+        Logd(TAG, "getEpisodeByTitle called $title ")
+        val episode = realm.query(Episode::class).query("title == $0", title).first().find()
+        return if (episode != null) realm.copyFromRealm(episode) else null
+    }
+
     fun getEpisodeMedia(mediaId: Long): EpisodeMedia? {
         Logd(TAG, "getEpisodeMedia called $mediaId")
         val media = realm.query(EpisodeMedia::class).query("id == $0", mediaId).first().find()

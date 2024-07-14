@@ -369,7 +369,7 @@ class PlayerDetailsFragment : Fragment() {
 
     @UnstableApi private fun savePreference() {
         Logd(TAG, "Saving preferences")
-        val editor = prefs!!.edit()
+        val editor = prefs?.edit() ?: return
         if (curMedia != null) {
             Logd(TAG, "Saving scroll position: " + binding.itemDescriptionFragment.scrollY)
             editor.putInt(PREF_SCROLL_Y, binding.itemDescriptionFragment.scrollY)

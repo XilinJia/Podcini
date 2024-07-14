@@ -1,3 +1,7 @@
+# 6.0.11
+
+* This is a minor release of subtraction: import of downloaded media files is temporarily disabled as it's more complicated than I thought. Although it works on files exported from Podcini.R, file names from earlier versions aren't easily recognizable.
+
 # 6.0.10
 
 * for better migrating from version 5, added export/import of downloaded media files: inter-operable with Podcini 5.5.4

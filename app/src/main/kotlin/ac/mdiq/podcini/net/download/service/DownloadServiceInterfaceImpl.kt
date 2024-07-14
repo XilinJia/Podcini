@@ -130,7 +130,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
         override fun doWork(): Result {
             Logd(TAG, "starting doWork")
             ClientConfigurator.initialize(applicationContext)
-            val mediaId = inputData.getLong(DownloadServiceInterface.WORK_DATA_MEDIA_ID, 0)
+            val mediaId = inputData.getLong(WORK_DATA_MEDIA_ID, 0)
             val media = Episodes.getEpisodeMedia(mediaId)
             if (media == null) {
                 Log.e(TAG, "media is null for mediaId: $mediaId")
@@ -146,7 +146,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                                 if (isInterrupted) return
                                 notificationProgress.put(media.getEpisodeTitle(), request.progressPercent)
                             }
-                            setProgressAsync(Data.Builder().putInt(DownloadServiceInterface.WORK_DATA_PROGRESS, request.progressPercent).build()).get()
+                            setProgressAsync(Data.Builder().putInt(WORK_DATA_PROGRESS, request.progressPercent).build()).get()
                             val nm = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                             nm.notify(R.id.notification_downloading, generateProgressNotification())
                             sleep(1000)

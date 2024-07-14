@@ -13,7 +13,7 @@ the following can be imported to it from Settings -> Import/Export:
 * preferences files
 * OPML file
 * json file of episodes progress
-* downloaded media files (5.5.4 only)
+* downloaded media files (5.5.4 only, but currently not enabled for import)
 
 An OPML file should be imported before importing episodes progress, but you can always re-do any of the above
 

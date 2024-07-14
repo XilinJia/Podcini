@@ -22,11 +22,11 @@
             search:keywords="@string/import_export_search_keywords"
             android:title="@string/media_files_export_label"
             android:summary="@string/media_files_export_summary"/>
-        <Preference
-            android:key="prefMediaFilesImport"
-            search:keywords="@string/import_export_search_keywords"
-            android:title="@string/media_files_import_label"
-            android:summary="@string/media_files_import_summary"/>
+<!--        <Preference-->
+<!--            android:key="prefMediaFilesImport"-->
+<!--            search:keywords="@string/import_export_search_keywords"-->
+<!--            android:title="@string/media_files_import_label"-->
+<!--            android:summary="@string/media_files_import_summary"/>-->
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/preferences">

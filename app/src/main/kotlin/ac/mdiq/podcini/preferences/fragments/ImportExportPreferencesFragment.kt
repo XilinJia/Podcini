@@ -17,6 +17,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.preferences.OpmlTransporter.*
+import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByTitle
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
@@ -167,7 +168,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
             exportPreferences()
             true
         }
-        findPreference<Preference>(PREF_MEDIAFILES_IMPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(PREF_MEDIAFILES_IMPORT)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             importMediaFiles()
             true
         }
@@ -750,15 +751,26 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
             }
         }
         private fun copyRecursive(context: Context, srcFile: DocumentFile, srcRootDir: DocumentFile, destRootDir: File) {
-            val relativePath = srcFile.uri.path?.substring(srcRootDir.uri.path!!.length) ?: return
-            val destFile = File(destRootDir, relativePath)
+            val relativePath = srcFile.uri.path?.substring(srcRootDir.uri.path!!.length+1) ?: return
             if (srcFile.isDirectory) {
+                val destFile = File(destRootDir, relativePath)
                 if (!destFile.exists()) destFile.mkdirs()
                 srcFile.listFiles().forEach { file ->
                     copyRecursive(context, file, srcFile, destFile)
                 }
             } else {
-                if (!destFile.exists()) copyFile(srcFile, destFile, context)
+                val nameParts = relativePath.split(".")
+                if (nameParts.size < 3) return
+                val ext = nameParts[nameParts.size-1]
+                val title = nameParts.dropLast(2).joinToString(".")
+                Logd(TAG, "copyRecursive title: $title")
+                val episode = getEpisodeByTitle(title) ?: return
+                val destName = "$title.${episode.id}.$ext"
+                val destFile = File(destRootDir, destName)
+                if (!destFile.exists()) {
+                    copyFile(srcFile, destFile, context)
+                    upsertBlk(episode) { it.media?.setfileUrlOrNull(destFile.name)}
+                }
             }
         }
         private fun copyFile(sourceFile: DocumentFile, destFile: File, context: Context) {

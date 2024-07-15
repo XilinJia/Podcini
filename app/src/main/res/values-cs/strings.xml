@@ -573,7 +573,7 @@
   <string name="database_import_label">Import databáze</string>
   <string name="database_import_warning">Importem databáze nahradíte všechny své odběry a historii poslechu. Doporučujeme nejdříve exportovat současnou databázi pro případnou obnovu. Opravdu chcete databázi nahradit\?</string>
   <string name="please_wait">Čekejte prosím…</string>
-  <string name="export_error_label">Chyba exportu</string>
+  <string name="import_export_error_label">Chyba exportu</string>
   <string name="export_success_title">Export úspěšný</string>
   <string name="opml_import_ask_read_permission">Pro přečtení OPML souboru je vyžadován  přístup k externímu úložišti</string>
   <string name="successful_import_label">Import úspěšný</string>

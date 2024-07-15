@@ -10,16 +10,19 @@ import ac.mdiq.podcini.playback.base.InTheatre.isCurMedia
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.getCurrentPlaybackSpeed
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.database.Queues.clearQueue
+import ac.mdiq.podcini.storage.database.Queues.isQueueKeepSorted
+import ac.mdiq.podcini.storage.database.Queues.isQueueLocked
 import ac.mdiq.podcini.storage.database.Queues.moveInQueue
 import ac.mdiq.podcini.storage.database.Queues.moveInQueueSync
+import ac.mdiq.podcini.storage.database.Queues.queueKeepSortedOrder
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.EpisodeFilter
-import ac.mdiq.podcini.storage.utils.EpisodeUtil
+import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
+import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectHandler
 import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
 import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
@@ -30,7 +33,6 @@ import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.ui.dialog.SwitchQueueDialog
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
 import ac.mdiq.podcini.ui.view.EpisodesRecyclerView
@@ -393,8 +395,8 @@ import java.util.*
     }
 
     private fun refreshToolbarState() {
-        val keepSorted: Boolean = UserPreferences.isQueueKeepSorted
-        toolbar.menu?.findItem(R.id.queue_lock)?.setChecked(UserPreferences.isQueueLocked)
+        val keepSorted: Boolean = isQueueKeepSorted
+        toolbar.menu?.findItem(R.id.queue_lock)?.setChecked(isQueueLocked)
         toolbar.menu?.findItem(R.id.queue_lock)?.setVisible(!keepSorted)
     }
 
@@ -422,7 +424,7 @@ import java.util.*
     }
 
     @UnstableApi private fun toggleQueueLock() {
-        val isLocked: Boolean = UserPreferences.isQueueLocked
+        val isLocked: Boolean = isQueueLocked
         if (isLocked) setQueueLocked(false)
         else {
             val shouldShowLockWarning: Boolean = prefs!!.getBoolean(PREF_SHOW_LOCK_WARNING, true)
@@ -448,7 +450,7 @@ import java.util.*
     }
 
     @UnstableApi private fun setQueueLocked(locked: Boolean) {
-        UserPreferences.isQueueLocked = locked
+        isQueueLocked = locked
         refreshToolbarState()
         adapter?.updateDragDropEnabled()
 
@@ -568,12 +570,12 @@ import java.util.*
 
     class QueueSortDialog : EpisodeSortDialog() {
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-            if (UserPreferences.isQueueKeepSorted) sortOrder = UserPreferences.queueKeepSortedOrder
+            if (isQueueKeepSorted) sortOrder = queueKeepSortedOrder
             val view: View = super.onCreateView(inflater, container, savedInstanceState)!!
             binding.keepSortedCheckbox.visibility = View.VISIBLE
-            binding.keepSortedCheckbox.setChecked(UserPreferences.isQueueKeepSorted)
+            binding.keepSortedCheckbox.setChecked(isQueueKeepSorted)
             // Disable until something gets selected
-            binding.keepSortedCheckbox.setEnabled(UserPreferences.isQueueKeepSorted)
+            binding.keepSortedCheckbox.setEnabled(isQueueKeepSorted)
             return view
         }
         override fun onAddItem(title: Int, ascending: EpisodeSortOrder, descending: EpisodeSortOrder, ascendingIsDefault: Boolean) {
@@ -584,8 +586,8 @@ import java.util.*
             super.onSelectionChanged()
             binding.keepSortedCheckbox.setEnabled(sortOrder != EpisodeSortOrder.RANDOM)
             if (sortOrder == EpisodeSortOrder.RANDOM) binding.keepSortedCheckbox.setChecked(false)
-            UserPreferences.isQueueKeepSorted = binding.keepSortedCheckbox.isChecked
-            UserPreferences.queueKeepSortedOrder = sortOrder
+            isQueueKeepSorted = binding.keepSortedCheckbox.isChecked
+            queueKeepSortedOrder = sortOrder
             reorderQueue(sortOrder, true)
         }
         /**
@@ -659,10 +661,10 @@ import java.util.*
         private var dragDropEnabled: Boolean
 
         init {
-            dragDropEnabled = !(UserPreferences.isQueueKeepSorted || UserPreferences.isQueueLocked)
+            dragDropEnabled = !(isQueueKeepSorted || isQueueLocked)
         }
         fun updateDragDropEnabled() {
-            dragDropEnabled = !(UserPreferences.isQueueKeepSorted || UserPreferences.isQueueLocked)
+            dragDropEnabled = !(isQueueKeepSorted || isQueueLocked)
             notifyDataSetChanged()
         }
         @UnstableApi
@@ -701,7 +703,7 @@ import java.util.*
 
             if (!inActionMode()) {
 //            menu.findItem(R.id.multi_select).setVisible(true)
-                val keepSorted: Boolean = UserPreferences.isQueueKeepSorted
+                val keepSorted: Boolean = isQueueKeepSorted
                 if (getItem(0)?.id === longPressedItem?.id || keepSorted) menu.findItem(R.id.move_to_top_item).setVisible(false)
                 if (getItem(itemCount - 1)?.id === longPressedItem?.id || keepSorted) menu.findItem(R.id.move_to_bottom_item).setVisible(false)
             } else {

@@ -4,13 +4,13 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.SortDialogBinding
 import ac.mdiq.podcini.databinding.SortDialogItemActiveBinding
 import ac.mdiq.podcini.databinding.SortDialogItemBinding
-import ac.mdiq.podcini.preferences.UserPreferences.feedOrderBy
-import ac.mdiq.podcini.preferences.UserPreferences.feedOrderDir
-import ac.mdiq.podcini.preferences.UserPreferences.setFeedOrder
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_DRAWER_FEED_ORDER
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_DRAWER_FEED_ORDER_DIRECTION
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.model.FeedSortOrder
 import ac.mdiq.podcini.storage.model.FeedSortOrder.Companion.getSortOrder
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion.feedOrderBy
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion.feedOrderDir
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
@@ -133,5 +133,14 @@ open class FeedSortDialogNew : BottomSheetDialogFragment() {
             bottomSheet.layoutParams = layoutParams
             behavior.state = BottomSheetBehavior.STATE_EXPANDED
         }
+    }
+
+    private fun setFeedOrder(selected: String, dir: Int) {
+        appPrefs.edit()
+            .putString(PREF_DRAWER_FEED_ORDER, selected)
+            .apply()
+        appPrefs.edit()
+            .putInt(PREF_DRAWER_FEED_ORDER_DIRECTION, dir)
+            .apply()
     }
 }

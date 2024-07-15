@@ -532,7 +532,7 @@
   <string name="database_import_label">数据库导入</string>
   <string name="database_import_warning">导入数据库将替换所有当前订阅和播放历史记录。您应该将当前数据库导出为备份。您要替换吗？</string>
   <string name="please_wait">请等待…</string>
-  <string name="export_error_label">导出出错</string>
+  <string name="import_export_error_label">导出出错</string>
   <string name="export_success_title">成功导出</string>
   <string name="opml_import_ask_read_permission">读取 OPML 文件需要访问外部存储的权限</string>
   <string name="successful_import_label">导入成功</string>

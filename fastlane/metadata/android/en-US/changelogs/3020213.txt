@@ -1,0 +1,8 @@
+ 
+Version 6.0.13 brings several changes:
+
+* removed from preferences "Choose data folder", it's not suitable for newer Androids
+* some class restructuring, especially some functions moved out of Userpreferences
+* fixed issue of early termination when exporting a large set of media files
+* fixed the mal-functioning feeds and episodes search
+* updated realm.kotlin to 2.1.0

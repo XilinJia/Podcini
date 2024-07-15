@@ -524,7 +524,7 @@
   <string name="database_import_label">وارد کردن پایگاه داده</string>
   <string name="database_import_warning">وارد کردن یک پایگاه داده باعث جایگزین تمام اشتراکهای فعلی و سابقه پخش شما خواهد شد. شما باید پایگاه داده فعلی خود را به عنوان پشتیبان خارج کنید. آیا شما میخواهید جایگزین کنید؟</string>
   <string name="please_wait">صبر کنید لطفا …</string>
-  <string name="export_error_label">خطا در خارج کردن</string>
+  <string name="import_export_error_label">خطا در خارج کردن</string>
   <string name="export_success_title">خارج کردن موفقیت آمیز</string>
   <string name="opml_import_ask_read_permission">برای خواندن پروندهٔ OPML نباز به دسترسی حافظهٔ خارجی است</string>
   <string name="successful_import_label">وارد کردن موفقیت آمیز</string>

@@ -9,8 +9,9 @@ import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.playback.base.InTheatre.writeNoMediaPlaying
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.ACTION_SHUTDOWN_PLAYBACK_SERVICE
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_REMOVDE_FROM_QUEUE_MARKED_PLAYED
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.UserPreferences.shouldDeleteRemoveFromQueue
-import ac.mdiq.podcini.preferences.UserPreferences.shouldRemoveFromQueuesMarkPlayed
 import ac.mdiq.podcini.storage.database.Queues.removeFromAllQueuesSync
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueueSync
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -81,12 +82,6 @@ object Episodes {
         Logd(TAG, "getEpisodeByGuidOrUrl called $guid $episodeUrl")
         val episode = if (guid != null) realm.query(Episode::class).query("identifier == $0", guid).first().find()
         else realm.query(Episode::class).query("media.downloadUrl == $0", episodeUrl).first().find()
-        return if (episode != null) realm.copyFromRealm(episode) else null
-    }
-
-    fun getEpisodeByTitle(title: String): Episode? {
-        Logd(TAG, "getEpisodeByTitle called $title ")
-        val episode = realm.query(Episode::class).query("title == $0", title).first().find()
         return if (episode != null) realm.copyFromRealm(episode) else null
     }
 
@@ -289,5 +284,9 @@ object Episodes {
         if (played == Episode.PLAYED && shouldRemoveFromQueuesMarkPlayed()) removeFromAllQueuesSync(result)
         EventFlow.postEvent(FlowEvent.EpisodePlayedEvent(result))
         return result
+    }
+
+    private fun shouldRemoveFromQueuesMarkPlayed(): Boolean {
+        return appPrefs.getBoolean(PREF_REMOVDE_FROM_QUEUE_MARKED_PLAYED, true)
     }
 }

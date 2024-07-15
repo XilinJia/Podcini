@@ -519,7 +519,7 @@
   <string name="database_import_label">Importação do banco de dados</string>
   <string name="database_import_warning">A importação de um banco de dados substituirá todas as suas assinaturas atuais e histórico de reprodução. Você deve exportar seu banco de dados atual como um backup. Você quer substituir\?</string>
   <string name="please_wait">Por favor aguarde…</string>
-  <string name="export_error_label">Erro na exportação</string>
+  <string name="import_export_error_label">Erro na exportação</string>
   <string name="export_success_title">Exportado com sucesso</string>
   <string name="opml_import_ask_read_permission">É necessário acesso ao armazenamento externo para ler o arquivo OPML</string>
   <string name="successful_import_label">Importação bem sucedida</string>

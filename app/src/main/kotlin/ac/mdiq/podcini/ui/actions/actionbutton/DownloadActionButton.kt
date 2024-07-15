@@ -15,14 +15,16 @@ import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 
 class DownloadActionButton(item: Episode) : EpisodeActionButton(item) {
+    override val visibility: Int
+        get() = if (item.feed?.isLocalFeed == true) View.INVISIBLE else View.VISIBLE
+
     override fun getLabel(): Int {
         return R.string.download_label
     }
+
     override fun getDrawable(): Int {
         return R.drawable.ic_download
     }
-    override val visibility: Int
-        get() = if (item.feed?.isLocalFeed == true) View.INVISIBLE else View.VISIBLE
 
     override fun onClick(context: Context) {
         val media = item.media

@@ -9,7 +9,6 @@ import ac.mdiq.podcini.net.sync.model.EpisodeAction.Companion.readFromJsonObject
 import ac.mdiq.podcini.net.sync.model.SyncServiceException
 import ac.mdiq.podcini.preferences.ExportWriter
 import ac.mdiq.podcini.preferences.OpmlTransporter.*
-import ac.mdiq.podcini.preferences.UserPreferences.getDataFolder
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
@@ -21,6 +20,7 @@ import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
 import ac.mdiq.podcini.storage.utils.FileNameGenerator.generateFileName
+import ac.mdiq.podcini.storage.utils.FilesUtils.getDataFolder
 import ac.mdiq.podcini.ui.activity.OpmlImportActivity
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.util.Logd
@@ -102,10 +102,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
             result: ActivityResult -> this.restoreMediaFilesResult(result) }
 
     private val backupMediaFilesLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        if (it.resultCode == RESULT_OK) {
-            val data: Uri? = it.data?.data
-            if (data != null) MediaFilesTransporter.exportToDocument(data, requireContext())
-        }
+        result: ActivityResult -> this.exportMediaFilesResult(result)
     }
 
     private var progressDialog: ProgressDialog? = null
@@ -194,7 +191,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                         showExportSuccessSnackbar(fileUri, exportType.contentType)
                     }
                 } catch (e: Exception) {
-                     showExportErrorDialog(e)
+                     showTransportErrorDialog(e)
                 } finally {
                     progressDialog!!.dismiss()
                 }
@@ -208,7 +205,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                         showExportSuccessSnackbar(output.uri, exportType.contentType)
                     }
                 } catch (e: Exception) {
-                    showExportErrorDialog(e)
+                    showTransportErrorDialog(e)
                 } finally {
                     progressDialog!!.dismiss()
                 }
@@ -290,7 +287,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         builder.show()
     }
 
-    private fun showDatabaseImportSuccessDialog() {
+    private fun showImportSuccessDialog() {
         val builder = MaterialAlertDialogBuilder(requireContext())
         builder.setTitle(R.string.successful_import_label)
         builder.setMessage(R.string.import_ok)
@@ -305,11 +302,11 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
             .show()
     }
 
-    private fun showExportErrorDialog(error: Throwable) {
+    private fun showTransportErrorDialog(error: Throwable) {
         progressDialog!!.dismiss()
         val alert = MaterialAlertDialogBuilder(requireContext())
         alert.setPositiveButton(android.R.string.ok) { dialog: DialogInterface, _: Int -> dialog.dismiss() }
-        alert.setTitle(R.string.export_error_label)
+        alert.setTitle(R.string.import_export_error_label)
         alert.setMessage(error.message)
         alert.show()
     }
@@ -371,17 +368,17 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                             reader.close()
                         }
                         withContext(Dispatchers.Main) {
-                            showDatabaseImportSuccessDialog()
+                            showImportSuccessDialog()
                             progressDialog!!.dismiss()
                         }
                     } catch (e: Throwable) {
-                        showExportErrorDialog(e)
+                        showTransportErrorDialog(e)
                     }
                 }
             } else {
                 val context = requireContext()
                 val message = context.getString(R.string.import_file_type_toast) + ".json"
-                showExportErrorDialog(Throwable(message))
+                showTransportErrorDialog(Throwable(message))
             }
         }
     }
@@ -403,17 +400,17 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                             DatabaseTransporter.importBackup(uri, requireContext())
                         }
                         withContext(Dispatchers.Main) {
-                            showDatabaseImportSuccessDialog()
+                            showImportSuccessDialog()
                             progressDialog!!.dismiss()
                         }
                     } catch (e: Throwable) {
-                        showExportErrorDialog(e)
+                        showTransportErrorDialog(e)
                     }
                 }
             } else {
                 val context = requireContext()
                 val message = context.getString(R.string.import_file_type_toast) + ".realm"
-                showExportErrorDialog(Throwable(message))
+                showTransportErrorDialog(Throwable(message))
             }
         }
     }
@@ -444,17 +441,17 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                         PreferencesTransporter.importBackup(uri, requireContext())
                     }
                     withContext(Dispatchers.Main) {
-                        showDatabaseImportSuccessDialog()
+                        showImportSuccessDialog()
                         progressDialog!!.dismiss()
                     }
                 } catch (e: Throwable) {
-                    showExportErrorDialog(e)
+                    showTransportErrorDialog(e)
                 }
             }
         } else {
             val context = requireContext()
             val message = context.getString(R.string.import_directory_toast) + "Podcini-Prefs"
-            showExportErrorDialog(Throwable(message))
+            showTransportErrorDialog(Throwable(message))
         }
     }
 
@@ -469,20 +466,38 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                         MediaFilesTransporter.importBackup(uri, requireContext())
                     }
                     withContext(Dispatchers.Main) {
-                        showDatabaseImportSuccessDialog()
+                        showImportSuccessDialog()
                         progressDialog!!.dismiss()
                     }
                 } catch (e: Throwable) {
-                    showExportErrorDialog(e)
+                    showTransportErrorDialog(e)
                 }
             }
         } else {
             val context = requireContext()
             val message = context.getString(R.string.import_directory_toast) + "Podcini-MediaFiles"
-            showExportErrorDialog(Throwable(message))
+            showTransportErrorDialog(Throwable(message))
         }
     }
 
+    private fun exportMediaFilesResult(result: ActivityResult) {
+        if (result.resultCode != RESULT_OK || result.data?.data == null) return
+        val uri = result.data!!.data!!
+        progressDialog!!.show()
+        lifecycleScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    MediaFilesTransporter.exportToDocument(uri, requireContext())
+                }
+                withContext(Dispatchers.Main) {
+                    showExportSuccessSnackbar(uri, null)
+                    progressDialog!!.dismiss()
+                }
+            } catch (e: Throwable) {
+                showTransportErrorDialog(e)
+            }
+        }
+    }
 
     private fun backupDatabaseResult(uri: Uri?) {
         if (uri == null) return
@@ -497,7 +512,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                     progressDialog!!.dismiss()
                 }
             } catch (e: Throwable) {
-                showExportErrorDialog(e)
+                showTransportErrorDialog(e)
             }
         }
     }

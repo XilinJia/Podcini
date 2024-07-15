@@ -545,7 +545,7 @@
   <string name="database_import_label">Importar base de datos</string>
   <string name="database_import_warning">Ao importar a base de datos substituirás todas as subscricións actuais e historial de reprodución. Deberías exportar a base de datos actual como copia de apoio. Desexas substituíla?</string>
   <string name="please_wait">Agarda…</string>
-  <string name="export_error_label">Fallo ao exportar</string>
+  <string name="import_export_error_label">Fallo ao exportar</string>
   <string name="export_success_title">Exportado con éxito</string>
   <string name="opml_import_ask_read_permission">Precísase acceso ao almacenamento externo para ler o ficheiro OPML</string>
   <string name="successful_import_label">Importación correcta</string>

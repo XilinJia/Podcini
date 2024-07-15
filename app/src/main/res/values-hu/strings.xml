@@ -420,7 +420,7 @@
   <string name="database_import_label">Adatbázis importálása</string>
   <string name="database_import_warning">Az adatbázis importálása lecseréli a jelenlegi feliratkozásait és lejátszási előzményeit. Célszerű biztonsági mentésként exportálni a jelenlegi adatbázist. Biztos, hogy lecseréli\?</string>
   <string name="please_wait">Várjon…</string>
-  <string name="export_error_label">Exportálási hiba</string>
+  <string name="import_export_error_label">Exportálási hiba</string>
   <string name="export_success_title">Exportálás sikeres</string>
   <string name="opml_import_ask_read_permission">A külső tároló elérése szükséges az OPML fájl olvasásához</string>
   <string name="successful_import_label">Importálás sikeres</string>

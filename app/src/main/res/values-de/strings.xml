@@ -549,7 +549,7 @@
   <string name="database_import_label">Datenbank importieren</string>
   <string name="database_import_warning">Das Importieren einer Datenbank ersetzt alle Abonnements und abgespielte Episoden. Ein Export als Backup wird empfohlen. Möchtest du die Datenbank wirklich ersetzen\?</string>
   <string name="please_wait">Bitte warten…</string>
-  <string name="export_error_label">Exportfehler</string>
+  <string name="import_export_error_label">Exportfehler</string>
   <string name="export_success_title">Export erfolgreich</string>
   <string name="opml_import_ask_read_permission">Zugriff auf externen Speicher wird benötigt, um die OPML-Datei zu lesen</string>
   <string name="successful_import_label">Import erfolgreich</string>

@@ -8,6 +8,12 @@ import android.view.View
 import androidx.media3.common.util.UnstableApi
 
 class DeleteActionButton(item: Episode) : EpisodeActionButton(item) {
+    override val visibility: Int
+        get() {
+            if (item.media != null && (item.media!!.downloaded || item.feed?.isLocalFeed == true)) return View.VISIBLE
+            return View.INVISIBLE
+        }
+
     override fun getLabel(): Int {
         return R.string.delete_label
     }
@@ -17,10 +23,4 @@ class DeleteActionButton(item: Episode) : EpisodeActionButton(item) {
     @UnstableApi override fun onClick(context: Context) {
         deleteEpisodesWarnLocal(context, listOf(item))
     }
-
-    override val visibility: Int
-        get() {
-            if (item.media != null && (item.media!!.downloaded || item.feed?.isLocalFeed == true)) return View.VISIBLE
-            return View.INVISIBLE
-        }
 }

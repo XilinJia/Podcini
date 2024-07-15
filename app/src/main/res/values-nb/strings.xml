@@ -512,7 +512,7 @@
   <string name="database_import_label">Database-importering</string>
   <string name="database_import_warning">Å importere en database vil erstatte all dine abonnementer og avspillingshistorie. Det er anbefalt  å eksportere din eksisterende database som backup. Vil du importere nå\?</string>
   <string name="please_wait">Vennligst vent…</string>
-  <string name="export_error_label">Feil ved eksportering</string>
+  <string name="import_export_error_label">Feil ved eksportering</string>
   <string name="export_success_title">Eksportering vellykket!</string>
   <string name="opml_import_ask_read_permission">Tilgang til ekstern lagring er nødvendig for å lese OPML filen</string>
   <string name="successful_import_label">Eksportering vellykket</string>

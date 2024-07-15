@@ -3,6 +3,10 @@ package ac.mdiq.podcini.playback.base
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_PLAYBACK_SPEED
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.preferences.UserPreferences.setPlaybackSpeed
+import ac.mdiq.podcini.preferences.UserPreferences.videoPlaybackSpeed
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.FeedPreferences
 import ac.mdiq.podcini.storage.model.Playable
@@ -301,6 +305,17 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
         @JvmField
         val LONG_REWIND: Long = TimeUnit.SECONDS.toMillis(20)
 
+        val audioPlaybackSpeed: Float
+            get() {
+                try {
+                    return appPrefs.getString(PREF_PLAYBACK_SPEED, "1.00")!!.toFloat()
+                } catch (e: NumberFormatException) {
+                    Log.e(TAG, Log.getStackTraceString(e))
+                    setPlaybackSpeed(1.0f)
+                    return 1.0f
+                }
+            }
+
         /**
          * @param currentPosition  current position in a media file in ms
          * @param lastPlayedTime  timestamp when was media paused
@@ -334,8 +349,12 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
                     if (media.episode?.feed?.preferences != null) playbackSpeed = media.episode!!.feed!!.preferences!!.playSpeed
                 }
             }
-            if (mediaType != null && playbackSpeed == FeedPreferences.SPEED_USE_GLOBAL) playbackSpeed = UserPreferences.getPlaybackSpeed(mediaType)
+            if (mediaType != null && playbackSpeed == FeedPreferences.SPEED_USE_GLOBAL) playbackSpeed = getPlaybackSpeed(mediaType)
             return playbackSpeed
+        }
+
+        fun getPlaybackSpeed(mediaType: MediaType): Float {
+            return if (mediaType == MediaType.VIDEO) videoPlaybackSpeed else audioPlaybackSpeed
         }
     }
 }

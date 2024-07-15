@@ -126,8 +126,8 @@ android {
         buildConfig true
     }
     defaultConfig {
-        versionCode 3020212
-        versionName "6.0.12"
+        versionCode 3020213
+        versionName "6.0.13"
 
         applicationId "ac.mdiq.podcini.R"
         def commit = ""

@@ -7,6 +7,7 @@ import ac.mdiq.podcini.net.download.service.DownloadRequestCreator.create
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
 import ac.mdiq.podcini.net.feed.parser.FeedHandler
 import ac.mdiq.podcini.net.feed.parser.FeedHandlerResult
+import ac.mdiq.podcini.net.utils.NetworkUtils.isAllowMobileFeedRefresh
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.util.Logd
@@ -14,6 +15,8 @@ import ac.mdiq.podcini.net.utils.NetworkUtils.isFeedRefreshAllowed
 import ac.mdiq.podcini.net.utils.NetworkUtils.isNetworkRestricted
 import ac.mdiq.podcini.net.utils.NetworkUtils.isVpnOverWifi
 import ac.mdiq.podcini.net.utils.NetworkUtils.networkAvailable
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_UPDATE_INTERVAL
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.algorithms.AutoDownloads.autodownloadEpisodeMedia
 import ac.mdiq.podcini.storage.database.Feeds
 import ac.mdiq.podcini.storage.database.LogsAndStats
@@ -53,13 +56,20 @@ import java.util.concurrent.TimeUnit
 import javax.xml.parsers.ParserConfigurationException
 
 object FeedUpdateManager {
+    private val TAG: String = FeedUpdateManager::class.simpleName ?: "Anonymous"
+
     const val WORK_TAG_FEED_UPDATE: String = "feedUpdate"
     private const val WORK_ID_FEED_UPDATE = "ac.mdiq.podcini.service.download.FeedUpdateWorker"
     private const val WORK_ID_FEED_UPDATE_MANUAL = "feedUpdateManual"
     const val EXTRA_FEED_ID: String = "feed_id"
     const val EXTRA_NEXT_PAGE: String = "next_page"
     const val EXTRA_EVEN_ON_MOBILE: String = "even_on_mobile"
-    private val TAG: String = FeedUpdateManager::class.simpleName ?: "Anonymous"
+
+    val updateInterval: Long
+        get() = appPrefs.getString(PREF_UPDATE_INTERVAL, "12")!!.toInt().toLong()
+
+    val isAutoUpdateDisabled: Boolean
+        get() = updateInterval == 0L
 
     /**
      * Start / restart periodic auto feed refresh
@@ -67,12 +77,12 @@ object FeedUpdateManager {
      */
     @JvmStatic
     fun restartUpdateAlarm(context: Context, replace: Boolean) {
-        if (UserPreferences.isAutoUpdateDisabled) {
+        if (isAutoUpdateDisabled) {
             WorkManager.getInstance(context).cancelUniqueWork(WORK_ID_FEED_UPDATE)
         } else {
-            val workRequest: PeriodicWorkRequest = PeriodicWorkRequest.Builder(FeedUpdateWorker::class.java, UserPreferences.updateInterval, TimeUnit.HOURS)
+            val workRequest: PeriodicWorkRequest = PeriodicWorkRequest.Builder(FeedUpdateWorker::class.java, updateInterval, TimeUnit.HOURS)
                 .setConstraints(Builder()
-                    .setRequiredNetworkType(if (UserPreferences.isAllowMobileFeedRefresh) NetworkType.CONNECTED else NetworkType.UNMETERED)
+                    .setRequiredNetworkType(if (isAllowMobileFeedRefresh) NetworkType.CONNECTED else NetworkType.UNMETERED)
                     .build())
                 .build()
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(WORK_ID_FEED_UPDATE,
@@ -116,7 +126,7 @@ object FeedUpdateManager {
             .setTitle(R.string.feed_refresh_title)
             .setPositiveButton(R.string.confirm_mobile_streaming_button_once) { _: DialogInterface?, _: Int -> runOnce(context, feed) }
             .setNeutralButton(R.string.confirm_mobile_streaming_button_always) { _: DialogInterface?, _: Int ->
-                UserPreferences.isAllowMobileFeedRefresh = true
+                isAllowMobileFeedRefresh = true
                 runOnce(context, feed)
             }
             .setNegativeButton(R.string.no, null)

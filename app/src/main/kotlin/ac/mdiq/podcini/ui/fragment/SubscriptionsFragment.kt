@@ -4,9 +4,11 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.*
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.feedOrderBy
-import ac.mdiq.podcini.preferences.UserPreferences.feedOrderDir
-import ac.mdiq.podcini.preferences.UserPreferences.useGridLayout
+import ac.mdiq.podcini.preferences.UserPreferences.FEED_ORDER_UNPLAYED
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_DRAWER_FEED_ORDER
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_DRAWER_FEED_ORDER_DIRECTION
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_FEED_GRID_LAYOUT
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.getTags
 import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
@@ -88,6 +90,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
     private val tags: MutableList<String> = mutableListOf()
 
     private var useGrid: Boolean? = null
+    val useGridLayout: Boolean
+        get() = appPrefs.getBoolean(PREF_FEED_GRID_LAYOUT, false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -877,6 +881,18 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         private const val ARGUMENT_FOLDER = "folder"
 
         private var prevFeedUpdatingEvent: FlowEvent.FeedUpdatingEvent? = null
+
+        val feedOrderBy: Int
+            get() {
+                val value = appPrefs.getString(PREF_DRAWER_FEED_ORDER, "" + FEED_ORDER_UNPLAYED)
+                return value!!.toInt()
+            }
+
+        val feedOrderDir: Int
+            get() {
+                val value = appPrefs.getInt(PREF_DRAWER_FEED_ORDER_DIRECTION, 0)
+                return value
+            }
 
         fun newInstance(folderTitle: String?): SubscriptionsFragment {
             val fragment = SubscriptionsFragment()

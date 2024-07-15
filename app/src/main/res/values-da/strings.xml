@@ -545,7 +545,7 @@
   <string name="database_import_label">Importér database</string>
   <string name="database_import_warning">Import af database vil overskrive alle dine nuværende abonnementer og din afspilningshistorik. Du bør eksportere din nuværende database som en sikkerhedskopi først. Vil du overskrive\?</string>
   <string name="please_wait">Vent…</string>
-  <string name="export_error_label">Eksportfejl</string>
+  <string name="import_export_error_label">Eksportfejl</string>
   <string name="export_success_title">Eksport lykkedes</string>
   <string name="opml_import_ask_read_permission">Adgang til eksternt lager er påkrævet for at læse OPML-filen</string>
   <string name="successful_import_label">Importeret</string>

@@ -1,8 +1,5 @@
 package ac.mdiq.podcini.net.download
 
-import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
-import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction.NEVER
-
 /** Utility class for Download Errors.  */
 /** Get machine-readable code.  */
 enum class DownloadError(@JvmField val code: Int) {

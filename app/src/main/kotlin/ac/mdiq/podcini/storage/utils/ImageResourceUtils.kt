@@ -4,17 +4,25 @@ import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_USE_EPISODE_COVER
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 
 /**
  * Utility class to use the appropriate image resource based on [UserPreferences].
  */
 object ImageResourceUtils {
     /**
+     * @return `true` if episodes should use their own cover, `false`  otherwise
+     */
+    val useEpisodeCoverSetting: Boolean
+        get() = appPrefs.getBoolean(PREF_USE_EPISODE_COVER, true)
+
+    /**
      * returns the image location, does prefer the episode cover if available and enabled in settings.
      */
     @JvmStatic
     fun getEpisodeListImageLocation(playable: Playable): String? {
-        return if (UserPreferences.useEpisodeCoverSetting) playable.getImageLocation()
+        return if (useEpisodeCoverSetting) playable.getImageLocation()
         else getFallbackImageLocation(playable)
     }
 
@@ -23,7 +31,7 @@ object ImageResourceUtils {
      */
     @JvmStatic
     fun getEpisodeListImageLocation(episode: Episode): String? {
-        return if (UserPreferences.useEpisodeCoverSetting) episode.imageLocation
+        return if (useEpisodeCoverSetting) episode.imageLocation
         else getFallbackImageLocation(episode)
     }
 

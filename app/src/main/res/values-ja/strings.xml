@@ -383,7 +383,7 @@
   <string name="database_import_label">データベースのインポート</string>
   <string name="database_import_warning">データベースをインポートすると、現在の購読と再生履歴がすべて置き換えられます。現在のデータベースをバックアップとしてエクスポートする必要があります。それでも置き換えしますか？</string>
   <string name="please_wait">しばらくお待ちください…</string>
-  <string name="export_error_label">エクスポートエラー</string>
+  <string name="import_export_error_label">エクスポートエラー</string>
   <string name="export_success_title">エクスポートしました</string>
   <string name="opml_import_ask_read_permission">OPML ファイルを読み込むために、外部ストレージへのアクセスが必要です</string>
   <string name="successful_import_label">インポートしました</string>

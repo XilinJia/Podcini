@@ -562,7 +562,7 @@
   <string name="database_import_label">Importar base de datos</string>
   <string name="database_import_warning">La importación de una base de datos reemplazará todas las suscripciones actuales y el historial de reproducción. Debes exportar la base de datos actual como una copia de seguridad. ¿Quieres reemplazarla\?</string>
   <string name="please_wait">Por favor espera…</string>
-  <string name="export_error_label">Error en la exportación</string>
+  <string name="import_export_error_label">Error en la exportación</string>
   <string name="export_success_title">Exportación exitosa</string>
   <string name="opml_import_ask_read_permission">Necesita acceso al almacenamiento externo para leer archivos OPML</string>
   <string name="successful_import_label">Importación exitosa</string>

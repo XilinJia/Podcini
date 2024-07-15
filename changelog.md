@@ -1,3 +1,17 @@
+# 6.0.13
+
+* removed from preferences "Choose data folder", it's not suitable for newer Androids
+* some class restructuring, especially some functions moved out of Userpreferences
+* fixed issue of early termination when exporting a large set of media files
+* fixed the mal-functioning feeds and episodes search
+* updated realm.kotlin to 2.1.0
+
+# 5.5.5
+
+* this is an extra minor release for better migration to Podcini 6
+* fixed issue (in 5.5.4) of terminating pre-maturely when exporting a large set of media files
+* this release is not updated to F-Droid due to Podcini 6 listing in progress
+
 # 6.0.12
 
 * re-enabled import of downloaded media files, which can be used to migrate from 5.5.4. Media files imported are restricted to existing feeds and episodes.

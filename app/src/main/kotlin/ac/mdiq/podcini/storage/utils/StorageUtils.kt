@@ -2,6 +2,7 @@ package ac.mdiq.podcini.storage.utils
 
 import android.os.StatFs
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.storage.utils.FilesUtils.getDataFolder
 
 /**
  * Utility functions for handling storage errors
@@ -13,7 +14,7 @@ object StorageUtils {
     @JvmStatic
     val freeSpaceAvailable: Long
         get() {
-            val dataFolder = UserPreferences.getDataFolder(null)
+            val dataFolder = getDataFolder(null)
             return if (dataFolder != null) getFreeSpaceAvailable(dataFolder.absolutePath) else 0
         }
 

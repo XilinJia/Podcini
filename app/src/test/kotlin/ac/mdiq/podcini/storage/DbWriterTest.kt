@@ -4,7 +4,6 @@ import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterfaceTestStub
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.enqueueLocation
 import ac.mdiq.podcini.preferences.UserPreferences.shouldDeleteRemoveFromQueue
 import ac.mdiq.podcini.storage.database.Episodes.addToHistory
 import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodes
@@ -14,8 +13,10 @@ import ac.mdiq.podcini.storage.database.Episodes.getEpisodeMedia
 import ac.mdiq.podcini.storage.database.Episodes.persistEpisode
 import ac.mdiq.podcini.storage.database.Episodes.persistEpisodeMedia
 import ac.mdiq.podcini.storage.database.Feeds.deleteFeedSync
+import ac.mdiq.podcini.storage.database.Queues
 import ac.mdiq.podcini.storage.database.Queues.addToQueue
 import ac.mdiq.podcini.storage.database.Queues.clearQueue
+import ac.mdiq.podcini.storage.database.Queues.enqueueLocation
 import ac.mdiq.podcini.storage.database.Queues.moveInQueue
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueue
 import ac.mdiq.podcini.storage.model.Episode
@@ -540,7 +541,7 @@ class DbWriterTest {
 
     @Throws(Exception::class)
     private fun queueTestSetupMultipleItems(numItems: Int): Feed {
-        enqueueLocation = UserPreferences.EnqueueLocation.BACK
+        enqueueLocation = Queues.EnqueueLocation.BACK
         val feed = Feed("url", null, "title")
         feed.episodes.clear()
         for (i in 0 until numItems) {

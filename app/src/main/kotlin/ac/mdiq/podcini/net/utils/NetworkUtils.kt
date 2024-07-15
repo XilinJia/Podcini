@@ -1,10 +1,14 @@
 package ac.mdiq.podcini.net.utils
 
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_AUTODL_SELECTED_NETWORKS
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_ENABLE_AUTODL_WIFI_FILTER
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_MOBILE_UPDATE
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
-import ac.mdiq.podcini.preferences.UserPreferences
+import android.os.Build
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.BufferedReader
@@ -22,6 +26,39 @@ object NetworkUtils {
         NetworkUtils.context = context
     }
 
+    var isAllowMobileStreaming: Boolean
+        get() = isAllowMobileFor("streaming")
+        set(allow) {
+            setAllowMobileFor("streaming", allow)
+        }
+
+    var isAllowMobileAutoDownload: Boolean
+        get() = isAllowMobileFor("auto_download")
+        set(allow) {
+            setAllowMobileFor("auto_download", allow)
+        }
+
+    fun isAllowMobileFor(type: String): Boolean {
+        val defaultValue = HashSet<String>()
+        defaultValue.add("images")
+        val allowed = appPrefs.getStringSet(PREF_MOBILE_UPDATE, defaultValue)
+        return allowed!!.contains(type)
+    }
+
+    fun setAllowMobileFor(type: String, allow: Boolean) {
+        val defaultValue = HashSet<String>()
+        defaultValue.add("images")
+        val getValueStringSet = appPrefs.getStringSet(PREF_MOBILE_UPDATE, defaultValue)
+        val allowed: MutableSet<String> = HashSet(getValueStringSet!!)
+        if (allow) allowed.add(type)
+        else allowed.remove(type)
+
+        appPrefs.edit().putStringSet(PREF_MOBILE_UPDATE, allowed).apply()
+    }
+
+    val isEnableAutodownloadWifiFilter: Boolean
+        get() = Build.VERSION.SDK_INT < 29 && appPrefs.getBoolean(PREF_ENABLE_AUTODL_WIFI_FILTER, false)
+
     @JvmStatic
     val isAutoDownloadAllowed: Boolean
         get() {
@@ -29,11 +66,11 @@ object NetworkUtils {
             val networkInfo = cm.activeNetworkInfo ?: return false
             return when (networkInfo.type) {
                 ConnectivityManager.TYPE_WIFI -> {
-                    if (UserPreferences.isEnableAutodownloadWifiFilter) isInAllowedWifiNetwork
+                    if (isEnableAutodownloadWifiFilter) isInAllowedWifiNetwork
                     else !isNetworkMetered
                 }
                 ConnectivityManager.TYPE_ETHERNET -> true
-                else -> UserPreferences.isAllowMobileAutoDownload || !isNetworkRestricted
+                else -> isAllowMobileAutoDownload || !isNetworkRestricted
             }
         }
 
@@ -44,9 +81,21 @@ object NetworkUtils {
         return info != null && info.isConnected
     }
 
+    var isAllowMobileFeedRefresh: Boolean
+        get() = isAllowMobileFor("feed_refresh")
+        set(allow) {
+            setAllowMobileFor("feed_refresh", allow)
+        }
+
+    var isAllowMobileEpisodeDownload: Boolean
+        get() = isAllowMobileFor("episode_download")
+        set(allow) {
+            setAllowMobileFor("episode_download", allow)
+        }
+
     @JvmStatic
     val isEpisodeDownloadAllowed: Boolean
-        get() = UserPreferences.isAllowMobileEpisodeDownload || !isNetworkRestricted
+        get() = isAllowMobileEpisodeDownload || !isNetworkRestricted
 
     @JvmStatic
     val isEpisodeHeadDownloadAllowed: Boolean
@@ -54,17 +103,23 @@ object NetworkUtils {
         // that is probably not even considered a download by most users
         get() = isImageAllowed
 
+    var isAllowMobileImages: Boolean
+        get() = isAllowMobileFor("images")
+        set(allow) {
+            setAllowMobileFor("images", allow)
+        }
+
     @JvmStatic
     val isImageAllowed: Boolean
-        get() = UserPreferences.isAllowMobileImages || !isNetworkRestricted
+        get() = isAllowMobileImages || !isNetworkRestricted
 
     @JvmStatic
     val isStreamingAllowed: Boolean
-        get() = UserPreferences.isAllowMobileStreaming || !isNetworkRestricted
+        get() = isAllowMobileStreaming || !isNetworkRestricted
 
     @JvmStatic
     val isFeedRefreshAllowed: Boolean
-        get() = UserPreferences.isAllowMobileFeedRefresh || !isNetworkRestricted
+        get() = isAllowMobileFeedRefresh || !isNetworkRestricted
 
     @JvmStatic
     val isNetworkRestricted: Boolean
@@ -101,10 +156,16 @@ object NetworkUtils {
 //            }
         }
 
+    val autodownloadSelectedNetworks: Array<String>
+        get() {
+            val selectedNetWorks = appPrefs.getString(PREF_AUTODL_SELECTED_NETWORKS, "")
+            return selectedNetWorks?.split(",")?.toTypedArray() ?: arrayOf()
+        }
+
     private val isInAllowedWifiNetwork: Boolean
         get() {
             val wm = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-            val selectedNetworks = listOf(*UserPreferences.autodownloadSelectedNetworks)
+            val selectedNetworks = listOf(*autodownloadSelectedNetworks)
             return selectedNetworks.contains(wm.connectionInfo.networkId.toString())
         }
 

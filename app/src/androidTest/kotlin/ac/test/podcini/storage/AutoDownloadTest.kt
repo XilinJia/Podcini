@@ -1,9 +1,9 @@
 package de.test.podcini.storage
 
+import ac.mdiq.podcini.net.utils.NetworkUtils.isAllowMobileStreaming
 import ac.mdiq.podcini.playback.PlaybackServiceStarter
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
-import ac.mdiq.podcini.preferences.UserPreferences.isAllowMobileStreaming
-import ac.mdiq.podcini.preferences.UserPreferences.isFollowQueue
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isFollowQueue
 import ac.mdiq.podcini.storage.algorithms.AutoDownloads
 import ac.mdiq.podcini.storage.algorithms.AutoDownloads.downloadAlgorithm
 import ac.mdiq.podcini.storage.model.Episode

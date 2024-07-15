@@ -1,12 +1,13 @@
 package ac.mdiq.podcini.preferences
 
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
-import ac.mdiq.podcini.preferences.UserPreferences.isAutoBackupOPML
+import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlReader
+import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlWriter
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_OPML_BACKUP
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlReader
-import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlWriter
 import ac.mdiq.podcini.util.Logd
 import android.app.backup.BackupAgentHelper
 import android.app.backup.BackupDataInputStream
@@ -29,6 +30,9 @@ import java.security.NoSuchAlgorithmException
 
 
 class OpmlBackupAgent : BackupAgentHelper() {
+    val isAutoBackupOPML: Boolean
+        get() = appPrefs.getBoolean(PREF_OPML_BACKUP, true)
+
     override fun onCreate() {
         if (isAutoBackupOPML) {
             Logd(TAG, "Backup enabled in preferences")

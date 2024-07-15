@@ -13,10 +13,7 @@ object FileNameGenerator {
     const val MAX_FILENAME_LENGTH: Int = 242 // limited by CircleCI
     private const val MD5_HEX_LENGTH = 32
 
-    private val validChars = ("abcdefghijklmnopqrstuvwxyz"
-            + "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-            + "0123456789"
-            + " _-").toCharArray()
+    private val validChars = ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 _-").toCharArray()
 
     /**
      * This method will return a new string that doesn't contain any illegal

@@ -1,12 +1,13 @@
 package ac.mdiq.podcini.ui.utils
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_GPODNET_NOTIFICATIONS
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_SHOW_DOWNLOAD_REPORT
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import android.content.Context
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationChannelGroupCompat
 import androidx.core.app.NotificationManagerCompat
-import ac.mdiq.podcini.preferences.UserPreferences.gpodnetNotificationsEnabledRaw
-import ac.mdiq.podcini.preferences.UserPreferences.showDownloadReportRaw
 
 object NotificationUtils {
     const val CHANNEL_ID_USER_ACTION: String = "user_action"
@@ -18,6 +19,18 @@ object NotificationUtils {
 
     const val GROUP_ID_ERRORS: String = "group_errors"
     const val GROUP_ID_NEWS: String = "group_news"
+
+    /**
+     * Used for migration of the preference to system notification channels.
+     */
+    val showDownloadReportRaw: Boolean
+        get() = appPrefs.getBoolean(PREF_SHOW_DOWNLOAD_REPORT, true)
+
+    /**
+     * Used for migration of the preference to system notification channels.
+     */
+    val gpodnetNotificationsEnabledRaw: Boolean
+        get() = appPrefs.getBoolean(PREF_GPODNET_NOTIFICATIONS, true)
 
     fun createChannels(context: Context) {
         val mNotificationManager = NotificationManagerCompat.from(context)

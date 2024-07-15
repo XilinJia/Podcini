@@ -639,7 +639,7 @@
     <string name="import_directory_toast">Only accepting directory name including: </string>
     <string name="import_file_type_toast">Only accepting file extension: </string>
     <string name="please_wait">Please wait&#8230;</string>
-    <string name="export_error_label">Export error</string>
+    <string name="import_export_error_label">Import/Export error</string>
     <string name="export_success_title">Export successful</string>
     <string name="opml_import_ask_read_permission">Access to external storage is required to read the OPML file</string>
     <string name="successful_import_label">Import successful</string>

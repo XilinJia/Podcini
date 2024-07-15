@@ -563,7 +563,7 @@
   <string name="database_import_label">Importa database</string>
   <string name="database_import_warning">L\'importazione di un database sostituirà tutte le iscrizioni attuali e la cronologia di riproduzione. Dovresti eseguire un backup del tuo database attuale. Vuoi proseguire\?</string>
   <string name="please_wait">Attendi…</string>
-  <string name="export_error_label">Errore di esportazione</string>
+  <string name="import_export_error_label">Errore di esportazione</string>
   <string name="export_success_title">Esportazione eseguita</string>
   <string name="opml_import_ask_read_permission">Per leggere il file OPML è necessario l\'accesso alla memoria esterna</string>
   <string name="successful_import_label">Importazione eseguita</string>

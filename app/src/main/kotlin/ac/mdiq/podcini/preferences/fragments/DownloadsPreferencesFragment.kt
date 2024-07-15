@@ -4,16 +4,15 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.ChooseDataFolderDialogBinding
 import ac.mdiq.podcini.databinding.ChooseDataFolderDialogEntryBinding
 import ac.mdiq.podcini.databinding.ProxySettingsBinding
-import ac.mdiq.podcini.net.feed.FeedUpdateManager.restartUpdateAlarm
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.newBuilder
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.reinit
+import ac.mdiq.podcini.net.feed.FeedUpdateManager.restartUpdateAlarm
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
-import ac.mdiq.podcini.preferences.UserPreferences.getDataFolder
 import ac.mdiq.podcini.preferences.UserPreferences.proxyConfig
-import ac.mdiq.podcini.preferences.UserPreferences.setDataFolder
 import ac.mdiq.podcini.storage.model.ProxyConfig
+import ac.mdiq.podcini.storage.utils.FilesUtils.getDataFolder
 import ac.mdiq.podcini.storage.utils.StorageUtils.getFreeSpaceAvailable
 import ac.mdiq.podcini.storage.utils.StorageUtils.getTotalSpaceAvailable
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
@@ -79,7 +78,7 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
 
     override fun onResume() {
         super.onResume()
-        setDataFolderText()
+//        setDataFolderText()
     }
 
     private fun setupNetworkScreen() {
@@ -93,13 +92,13 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
             dialog.show()
             true
         }
-        findPreference<Preference>(PREF_CHOOSE_DATA_DIR)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            ChooseDataFolderDialog.showDialog(requireContext()) { path: String? ->
-                setDataFolder(path!!)
-                setDataFolderText()
-            }
-            true
-        }
+//        findPreference<Preference>(PREF_CHOOSE_DATA_DIR)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+//            ChooseDataFolderDialog.showDialog(requireContext()) { path: String? ->
+//                setDataFolder(path!!)
+////                setDataFolderText()
+//            }
+//            true
+//        }
         findPreference<Preference>(PREF_AUTO_DELETE_LOCAL)!!.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any ->
             if (blockAutoDeleteLocal && newValue as Boolean) {
                 showAutoDeleteEnableDialog()
@@ -108,10 +107,10 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
         }
     }
 
-    private fun setDataFolderText() {
-        val f = getDataFolder(null)
-        if (f != null) findPreference<Preference>(PREF_CHOOSE_DATA_DIR)!!.summary = f.absolutePath
-    }
+//    private fun setDataFolderText() {
+//        val f = getDataFolder(null)
+//        if (f != null) findPreference<Preference>(PREF_CHOOSE_DATA_DIR)!!.summary = f.absolutePath
+//    }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String?) {
         if (UserPreferences.PREF_UPDATE_INTERVAL == key) restartUpdateAlarm(requireContext(), true)
@@ -444,6 +443,6 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
         private const val PREF_SCREEN_AUTODL = "prefAutoDownloadSettings"
         private const val PREF_AUTO_DELETE_LOCAL = "prefAutoDeleteLocal"
         private const val PREF_PROXY = "prefProxy"
-        private const val PREF_CHOOSE_DATA_DIR = "prefChooseDataDir"
+//        private const val PREF_CHOOSE_DATA_DIR = "prefChooseDataDir"
     }
 }

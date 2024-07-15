@@ -545,7 +545,7 @@
   <string name="database_import_label">Импорт базы данных</string>
   <string name="database_import_warning">Импорт базы данных приведет к замене всех текущих подписок и истории воспроизведения. Следует экспортировать текущую базу данных, чтобы иметь резервную копию. Хотите заменить\?</string>
   <string name="please_wait">Подождите…</string>
-  <string name="export_error_label">Ошибка экспорта</string>
+  <string name="import_export_error_label">Ошибка экспорта</string>
   <string name="export_success_title">Экспорт выполнен</string>
   <string name="opml_import_ask_read_permission">Для чтения файла OPML необходим доступ к внешнему хранилищу</string>
   <string name="successful_import_label">Импорт успешен</string>

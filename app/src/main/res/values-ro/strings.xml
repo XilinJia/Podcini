@@ -559,7 +559,7 @@
   <string name="database_import_label">import bază de date</string>
   <string name="database_import_warning">Importarea unei baze de date va înlocui abonamentele tale și istoricul fișierelor redate. Ar trebui să exporți baza de date curentă ca un fișier de rezervă. Doreșți să înlocuieșți\?</string>
   <string name="please_wait">Vă rugăm așteptați…</string>
-  <string name="export_error_label">Eroare exportare</string>
+  <string name="import_export_error_label">Eroare exportare</string>
   <string name="export_success_title">Exportarea a reușit</string>
   <string name="opml_import_ask_read_permission">Accesarea memoriei externe este necesară pentru a citi fișierul OPML</string>
   <string name="successful_import_label">Importul a reușit</string>

@@ -573,7 +573,7 @@
   <string name="database_import_label">ייבוא מסד נתונים</string>
   <string name="database_import_warning">ייבוא מסד נתונים יחליף את כל המינויים הנוכחיים שלך לרבות היסטוריית הנגינה. עליך תחילה לייצא את מסד הנתונים הנוכחי שלך כגיבוי. להמשיך בהחלפה?</string>
   <string name="please_wait">נא להמתין…</string>
-  <string name="export_error_label">שגיאת ייצוא</string>
+  <string name="import_export_error_label">שגיאת ייצוא</string>
   <string name="export_success_title">הייצוא הצליח</string>
   <string name="opml_import_ask_read_permission">נדרשת גישה לאחסון חיצוני כדי לקרוא את קובץ ה־OPML</string>
   <string name="successful_import_label">הייבוא הצליח</string>

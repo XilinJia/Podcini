@@ -1,15 +1,14 @@
 package ac.mdiq.podcini.net.download.service
 
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.utils.FileNameGenerator
+import ac.mdiq.podcini.storage.model.Feed
+import ac.mdiq.podcini.storage.utils.FilesUtils.feedfilePath
+import ac.mdiq.podcini.storage.utils.FilesUtils.findUnusedFile
+import ac.mdiq.podcini.storage.utils.FilesUtils.getFeedfileName
+import ac.mdiq.podcini.storage.utils.FilesUtils.getMediafilePath
+import ac.mdiq.podcini.storage.utils.FilesUtils.getMediafilename
 import ac.mdiq.podcini.util.Logd
-import android.webkit.URLUtil
-import io.realm.kotlin.ext.isManaged
-import org.apache.commons.io.FilenameUtils
 import java.io.File
 
 /**
@@ -17,8 +16,6 @@ import java.io.File
  */
 object DownloadRequestCreator {
     private val TAG: String = DownloadRequestCreator::class.simpleName ?: "Anonymous"
-    private const val FEED_DOWNLOADPATH = "cache/"
-    private const val MEDIA_DOWNLOADPATH = "media/"
 
     @JvmStatic
     fun create(feed: Feed): DownloadRequest.Builder {
@@ -53,83 +50,4 @@ object DownloadRequestCreator {
 
         return DownloadRequest.Builder(dest.toString(), media).withAuthentication(username, password)
     }
-
-    private fun findUnusedFile(dest: File): File? {
-        // find different name
-        var newDest: File? = null
-        for (i in 1 until Int.MAX_VALUE) {
-            val newName = (FilenameUtils.getBaseName(dest.name) + "-" + i + FilenameUtils.EXTENSION_SEPARATOR + FilenameUtils.getExtension(dest.name))
-            Logd(TAG, "Testing filename $newName")
-            newDest = File(dest.parent, newName)
-            if (!newDest.exists()) {
-                Logd(TAG, "File doesn't exist yet. Using $newName")
-                break
-            }
-        }
-        return newDest
-    }
-
-    private val feedfilePath: String
-        get() = UserPreferences.getDataFolder(FEED_DOWNLOADPATH).toString() + "/"
-
-    private fun getFeedfileName(feed: Feed): String {
-        var filename = feed.downloadUrl
-        if (!feed.title.isNullOrEmpty()) filename = feed.title
-
-        if (filename == null) return ""
-        return "feed-" + FileNameGenerator.generateFileName(filename) + feed.id
-    }
-
-    private fun getMediafilePath(media: EpisodeMedia): String {
-        val item = media.episode ?: return ""
-        Logd(TAG, "item managed: ${item.isManaged()}")
-        val title = item.feed?.title?:return ""
-        val mediaPath = (MEDIA_DOWNLOADPATH + FileNameGenerator.generateFileName(title))
-        return UserPreferences.getDataFolder(mediaPath).toString() + "/"
-    }
-
-    private fun getMediafilename(media: EpisodeMedia): String {
-        var titleBaseFilename = ""
-
-        // Try to generate the filename by the item title
-        if (media.episode?.title != null) {
-            val title = media.episode!!.title!!
-            titleBaseFilename = FileNameGenerator.generateFileName(title)
-        }
-
-        val urlBaseFilename = URLUtil.guessFileName(media.downloadUrl, null, media.mimeType)
-
-        var baseFilename: String
-        baseFilename = if (titleBaseFilename != "") titleBaseFilename else urlBaseFilename
-        val filenameMaxLength = 220
-        if (baseFilename.length > filenameMaxLength) baseFilename = baseFilename.substring(0, filenameMaxLength)
-
-        return (baseFilename + FilenameUtils.EXTENSION_SEPARATOR + media.id + FilenameUtils.EXTENSION_SEPARATOR + FilenameUtils.getExtension(urlBaseFilename))
-    }
-
-    fun getMediafilePath(item: Episode): String {
-        val title = item.feed?.title?:return ""
-        val mediaPath = (MEDIA_DOWNLOADPATH + FileNameGenerator.generateFileName(title))
-        return UserPreferences.getDataFolder(mediaPath).toString() + "/"
-    }
-
-    fun getMediafilename(item: Episode): String {
-        var titleBaseFilename = ""
-
-        // Try to generate the filename by the item title
-        if (item.title != null) {
-            val title = item.title!!
-            titleBaseFilename = FileNameGenerator.generateFileName(title)
-        }
-
-//        val urlBaseFilename = URLUtil.guessFileName(media.download_url, null, media.mime_type)
-
-        var baseFilename: String
-        baseFilename = if (titleBaseFilename != "") titleBaseFilename else "NoTitle"
-        val filenameMaxLength = 220
-        if (baseFilename.length > filenameMaxLength) baseFilename = baseFilename.substring(0, filenameMaxLength)
-
-        return (baseFilename + FilenameUtils.EXTENSION_SEPARATOR + "noid" + FilenameUtils.EXTENSION_SEPARATOR + "wav")
-    }
-
 }

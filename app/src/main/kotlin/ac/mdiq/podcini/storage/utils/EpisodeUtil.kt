@@ -1,12 +1,14 @@
 package ac.mdiq.podcini.storage.utils
 
-import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_SMART_MARK_AS_PLAYED_SECS
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Playable
-import org.apache.commons.lang3.StringUtils
 
 object EpisodeUtil {
     private val TAG: String = EpisodeUtil::class.simpleName ?: "Anonymous"
+    val smartMarkAsPlayedSecs: Int
+        get() = appPrefs.getString(PREF_SMART_MARK_AS_PLAYED_SECS, "30")!!.toInt()
 
     @JvmStatic
     fun indexOfItemWithId(episodes: List<Episode?>, id: Long): Int {
@@ -43,7 +45,6 @@ object EpisodeUtil {
 
     @JvmStatic
     fun hasAlmostEnded(media: Playable): Boolean {
-        val smartMarkAsPlayedSecs = UserPreferences.smartMarkAsPlayedSecs
         return media.getDuration() > 0 && media.getPosition() >= media.getDuration() - smartMarkAsPlayedSecs * 1000
     }
 }

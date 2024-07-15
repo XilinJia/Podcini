@@ -1,8 +1,10 @@
 package ac.mdiq.podcini.storage.algorithms
 
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.EPISODE_CLEANUP_NULL
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_EPISODE_CLEANUP
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.UserPreferences.episodeCacheSize
-import ac.mdiq.podcini.preferences.UserPreferences.episodeCleanupValue
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
 import ac.mdiq.podcini.storage.database.Episodes.deleteMediaOfEpisode
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
@@ -21,6 +23,12 @@ import java.util.*
 import java.util.concurrent.ExecutionException
 
 object AutoCleanups {
+
+    var episodeCleanupValue: Int
+        get() = appPrefs.getString(PREF_EPISODE_CLEANUP, "" + EPISODE_CLEANUP_NULL)!!.toInt()
+        set(episodeCleanupValue) {
+            appPrefs.edit().putString(PREF_EPISODE_CLEANUP, episodeCleanupValue.toString()).apply()
+        }
 
     /**
      * Removed downloaded episodes outside of the queue if the episode cache is full. Episodes with a smaller

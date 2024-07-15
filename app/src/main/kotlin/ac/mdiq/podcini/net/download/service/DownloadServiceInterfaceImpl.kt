@@ -7,7 +7,10 @@ import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
+import ac.mdiq.podcini.net.utils.NetworkUtils.isAllowMobileEpisodeDownload
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_ENQUEUE_DOWNLOADED
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.LogsAndStats
 import ac.mdiq.podcini.storage.database.Queues
@@ -102,29 +105,35 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
         private val constraints: Constraints
             get() {
                 val constraints = Builder()
-                if (UserPreferences.isAllowMobileEpisodeDownload) constraints.setRequiredNetworkType(NetworkType.CONNECTED)
+                if (isAllowMobileEpisodeDownload) constraints.setRequiredNetworkType(NetworkType.CONNECTED)
                 else constraints.setRequiredNetworkType(NetworkType.UNMETERED)
 
                 return constraints.build()
             }
 
-        @OptIn(UnstableApi::class) private fun getRequest(item: Episode): OneTimeWorkRequest.Builder {
+        @OptIn(UnstableApi::class)
+        private fun getRequest(item: Episode): OneTimeWorkRequest.Builder {
             Logd(TAG, "starting getRequest")
             val workRequest: OneTimeWorkRequest.Builder = OneTimeWorkRequest.Builder(EpisodeDownloadWorker::class.java)
                 .setInitialDelay(0L, TimeUnit.MILLISECONDS)
                 .addTag(WORK_TAG)
                 .addTag(WORK_TAG_EPISODE_URL + item.media!!.downloadUrl)
-            if (UserPreferences.enqueueDownloadedEpisodes()) {
+            if (enqueueDownloadedEpisodes()) {
                 runBlocking { Queues.addToQueueSync(false, item) }
                 workRequest.addTag(WORK_DATA_WAS_QUEUED)
             }
             workRequest.setInputData(Data.Builder().putLong(WORK_DATA_MEDIA_ID, item.media!!.id).build())
             return workRequest
         }
+        private fun enqueueDownloadedEpisodes(): Boolean {
+            return appPrefs.getBoolean(PREF_ENQUEUE_DOWNLOADED, true)
+        }
     }
 
     class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
         private var downloader: Downloader? = null
+        private val isLastRunAttempt: Boolean
+            get() = runAttemptCount >= 2
 
         @UnstableApi
         override fun doWork(): Result {
@@ -136,7 +145,6 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 Log.e(TAG, "media is null for mediaId: $mediaId")
                 return Result.failure()
             }
-
             val request = create(media).build()
             val progressUpdaterThread: Thread = object : Thread() {
                 override fun run() {
@@ -168,7 +176,6 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
             }
             if (result == Result.failure() && downloader?.downloadRequest?.destination != null)
                 FileUtils.deleteQuietly(File(downloader!!.downloadRequest.destination!!))
-
             progressUpdaterThread.interrupt()
             try {
                 progressUpdaterThread.join()
@@ -185,17 +192,15 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
             Logd(TAG, "Worker for " + media.downloadUrl + " returned.")
             return result
         }
-
         override fun onStopped() {
             super.onStopped()
             downloader?.cancel()
         }
-
         override fun getForegroundInfoAsync(): ListenableFuture<ForegroundInfo> {
             return Futures.immediateFuture(ForegroundInfo(R.id.notification_downloading, generateProgressNotification()))
         }
-
-        @OptIn(UnstableApi::class) private fun performDownload(media: EpisodeMedia, request: DownloadRequest): Result {
+        @OptIn(UnstableApi::class)
+        private fun performDownload(media: EpisodeMedia, request: DownloadRequest): Result {
             Logd(TAG, "starting performDownload")
             val dest = File(request.destination)
             if (!dest.exists()) {
@@ -205,7 +210,6 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                     Log.e(TAG, "performDownload Unable to create file")
                 }
             }
-
             if (dest.exists()) {
                 try {
                     media.setfileUrlOrNull(request.destination)
@@ -214,13 +218,11 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                     Log.e(TAG, "performDownload Exception in writeFileUrl: " + e.message)
                 }
             }
-
             downloader = DefaultDownloaderFactory().create(request)
             if (downloader == null) {
                 Log.e(TAG, "performDownload Unable to create downloader")
                 return Result.failure()
             }
-
             try {
                 downloader!!.call()
             } catch (e: Exception) {
@@ -229,10 +231,8 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 sendErrorNotification(request.title?:"")
                 return Result.failure()
             }
-
             // This also happens when the worker was preempted, not just when the user cancelled it
             if (downloader!!.cancelled) return Result.success()
-
             val status = downloader!!.result
             if (status.isSuccessful) {
                 val handler = MediaDownloadedHandler(applicationContext, downloader!!.result, request)
@@ -240,14 +240,12 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 LogsAndStats.addDownloadStatus(handler.updatedStatus)
                 return Result.success()
             }
-
             if (status.reason == DownloadError.ERROR_HTTP_DATA_ERROR && status.reasonDetailed.toInt() == 416) {
                 Logd(TAG, "Requested invalid range, restarting download from the beginning")
                 if (downloader?.downloadRequest?.destination != null) FileUtils.deleteQuietly(File(downloader!!.downloadRequest.destination!!))
                 sendMessage(request.title?:"", false)
                 return retry3times()
             }
-
             Log.e(TAG, "Download failed ${request.title} ${status.reason}")
             LogsAndStats.addDownloadStatus(status)
             if (status.reason == DownloadError.ERROR_FORBIDDEN || status.reason == DownloadError.ERROR_NOT_FOUND
@@ -260,7 +258,6 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
             sendMessage(request.title?:"", false)
             return retry3times()
         }
-
         private fun retry3times(): Result {
             if (isLastRunAttempt) {
                 Log.e(TAG, "retry3times failure on isLastRunAttempt")
@@ -268,10 +265,6 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 return Result.failure()
             } else return Result.retry()
         }
-
-        private val isLastRunAttempt: Boolean
-            get() = runAttemptCount >= 2
-
         private fun sendMessage(episodeTitle: String, isImmediateFail: Boolean) {
             var episodeTitle = episodeTitle
             val retrying = !isLastRunAttempt && !isImmediateFail
@@ -282,26 +275,22 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 episodeTitle), { ctx: Context -> MainActivityStarter(ctx).withDownloadLogsOpen().start() }, applicationContext.getString(
                 R.string.download_error_details)))
         }
-
         private fun getDownloadLogsIntent(context: Context): PendingIntent {
             val intent = MainActivityStarter(context).withDownloadLogsOpen().getIntent()
             return PendingIntent.getActivity(context, R.id.pending_intent_download_service_report, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         }
-
         private fun getDownloadsIntent(context: Context): PendingIntent {
             val intent = MainActivityStarter(context).withFragmentLoaded("DownloadsFragment").getIntent()
             return PendingIntent.getActivity(context, R.id.pending_intent_download_service_notification, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         }
-
         private fun sendErrorNotification(title: String) {
 //        TODO: need to get number of subscribers in SharedFlow
 //        if (EventBus.getDefault().hasSubscriberForEvent(FlowEvent.MessageEvent::class.java)) {
 //            sendMessage(title, false)
 //            return
 //        }
-
             val builder = NotificationCompat.Builder(applicationContext, NotificationUtils.CHANNEL_ID_DOWNLOAD_ERROR)
             builder.setTicker(applicationContext.getString(R.string.download_report_title))
                 .setContentTitle(applicationContext.getString(R.string.download_report_title))
@@ -313,7 +302,6 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
             val nm = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             nm.notify(R.id.notification_download_report, builder.build())
         }
-
         private fun generateProgressNotification(): Notification {
             val bigTextB = StringBuilder()
             var progressCopy: Map<String, Int>
@@ -326,7 +314,6 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
             val bigText = bigTextB.toString().trim { it <= ' ' }
             val contentText = if (progressCopy.size == 1) bigText
             else applicationContext.resources.getQuantityString(R.plurals.downloads_left, progressCopy.size, progressCopy.size)
-
             val builder = NotificationCompat.Builder(applicationContext, NotificationUtils.CHANNEL_ID_DOWNLOADING)
             builder.setTicker(applicationContext.getString(R.string.download_notification_title_episodes))
                 .setContentTitle(applicationContext.getString(R.string.download_notification_title_episodes))
@@ -344,7 +331,6 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
         }
 
         class MediaDownloadedHandler(private val context: Context, var updatedStatus: DownloadResult, private val request: DownloadRequest) : Runnable {
-
             @UnstableApi override fun run() {
                 val media = Episodes.getEpisodeMedia(request.feedfileId)
                 if (media == null) {
@@ -358,16 +344,11 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 Logd(TAG, "media.episode.isNew: ${media.episode?.isNew} ${media.episode?.playState}")
                 media.setfileUrlOrNull(request.destination)
                 if (request.destination != null) media.size = File(request.destination).length()
-
                 media.checkEmbeddedPicture() // enforce check
-
                 // check if file has chapters
-                if (media.episode != null && media.episode!!.chapters.isEmpty())
-                    media.setChapters(ChapterUtils.loadChaptersFromMediaFile(media, context))
-
+                if (media.episode != null && media.episode!!.chapters.isEmpty()) media.setChapters(ChapterUtils.loadChaptersFromMediaFile(media, context))
                 if (media.episode?.podcastIndexChapterUrl != null)
                     ChapterUtils.loadChaptersFromUrl(media.episode!!.podcastIndexChapterUrl!!, false)
-
                 // Get duration
                 var durationStr: String? = null
                 try {
@@ -385,7 +366,6 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 }
                 val item = media.episode
                 item?.media = media
-
                 try {
                     // we've received the media, we don't want to autodownload it again
                     if (item != null) {
@@ -404,7 +384,6 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                     Log.e(TAG, "ExecutionException in MediaHandlerThread: " + e.message)
                     updatedStatus = DownloadResult(media.id, media.getEpisodeTitle(), DownloadError.ERROR_DB_ACCESS_ERROR, false, e.message?:"")
                 }
-
                 if (item != null) {
                     val action = EpisodeAction.Builder(item, EpisodeAction.DOWNLOAD)
                         .currentTimestamp()

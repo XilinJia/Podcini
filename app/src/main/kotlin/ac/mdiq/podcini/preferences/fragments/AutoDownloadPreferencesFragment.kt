@@ -13,12 +13,13 @@ import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.net.utils.NetworkUtils.autodownloadSelectedNetworks
+import ac.mdiq.podcini.net.utils.NetworkUtils.isEnableAutodownloadWifiFilter
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.autodownloadSelectedNetworks
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_AUTODL_SELECTED_NETWORKS
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
-import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownloadWifiFilter
-import ac.mdiq.podcini.preferences.UserPreferences.setAutodownloadSelectedNetworks
 import ac.mdiq.podcini.util.Logd
 import java.util.*
 
@@ -124,6 +125,10 @@ class AutoDownloadPreferencesFragment : PreferenceFragmentCompat() {
             selectedNetworks!![i] = pref
             prefScreen.addPreference(pref)
         }
+    }
+
+    fun setAutodownloadSelectedNetworks(value: Array<String?>?) {
+        appPrefs.edit().putString(PREF_AUTODL_SELECTED_NETWORKS, value!!.joinToString()).apply()
     }
 
     private fun clearAutodownloadSelectedNetworsPreference() {

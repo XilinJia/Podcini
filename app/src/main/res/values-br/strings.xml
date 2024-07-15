@@ -459,7 +459,7 @@
   <string name="database_import_label">Enporzhiañ ar stlennvon</string>
   <string name="database_import_warning">Enporzhiañ ur stlennvon a amsavo ho holl goumanantoù ha roll istor lenn. Erbediñ a reomp ezporzhiañ ho stlennvon en a-raok. Fellout a ra deoc\'h enporzhiañ?</string>
   <string name="please_wait">Gortozit un tamm…</string>
-  <string name="export_error_label">Fazi ezporzhiañ</string>
+  <string name="import_export_error_label">Fazi ezporzhiañ</string>
   <string name="export_success_title">Ezporzhiet gant berzh</string>
   <string name="opml_import_ask_read_permission">Ret eo aotren haeziñ ar c\'hadaviñ diavaez evit lenn ar restr OPML</string>
   <string name="successful_import_label">Enporzhiet gant berzh</string>

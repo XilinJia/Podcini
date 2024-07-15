@@ -503,7 +503,7 @@
   <string name="database_import_label">데이터베이스 가져오기</string>
   <string name="database_import_warning">데이터베이스 가져오기를 하면 모든 구독과 재생 히스토리가 가져온 내용으로 바뀝니다. 백업을 하려면 현재 데이터베이스를 내보내기 해야 합니다. 정말로 데이터베이스를 바꾸시겠습니까\?</string>
   <string name="please_wait">기다리십시오…</string>
-  <string name="export_error_label">내보내기 오류</string>
+  <string name="import_export_error_label">내보내기 오류</string>
   <string name="export_success_title">내보내기 성공</string>
   <string name="opml_import_ask_read_permission">OPML 파일을 읽으려면 외부 저장소 접근이 필요합니다</string>
   <string name="successful_import_label">가져오기 성공</string>

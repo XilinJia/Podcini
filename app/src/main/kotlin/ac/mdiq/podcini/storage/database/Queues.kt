@@ -3,21 +3,18 @@ package ac.mdiq.podcini.storage.database
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
-import ac.mdiq.podcini.preferences.UserPreferences.EnqueueLocation
-import ac.mdiq.podcini.preferences.UserPreferences.enqueueLocation
-import ac.mdiq.podcini.preferences.UserPreferences.isQueueKeepSorted
-import ac.mdiq.podcini.preferences.UserPreferences.queueKeepSortedOrder
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_ENQUEUE_LOCATION
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_QUEUE_KEEP_SORTED
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_QUEUE_KEEP_SORTED_ORDER
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_QUEUE_LOCKED
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.algorithms.AutoDownloads.autodownloadEpisodeMedia
 import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
-import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.model.PlayQueue
-import ac.mdiq.podcini.storage.model.Playable
-import ac.mdiq.podcini.storage.model.EpisodeSortOrder
+import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
@@ -31,6 +28,10 @@ import java.util.*
 
 object Queues {
     private val TAG: String = Queues::class.simpleName ?: "Anonymous"
+
+    enum class EnqueueLocation {
+        BACK, FRONT, AFTER_CURRENTLY_PLAYING, RANDOM
+    }
 
     fun getInQueueEpisodeIds(): Set<Long> {
         Logd(TAG, "getQueueIDList() called")
@@ -272,6 +273,60 @@ object Queues {
         for (e in curQueue.episodes) curQueue.episodeIds.add(e.id)
         upsertBlk(curQueue) {}
     }
+
+    var isQueueLocked: Boolean
+        get() = appPrefs.getBoolean(PREF_QUEUE_LOCKED, false)
+        set(locked) {
+            appPrefs.edit().putBoolean(PREF_QUEUE_LOCKED, locked).apply()
+        }
+
+    var isQueueKeepSorted: Boolean
+        /**
+         * Returns if the queue is in keep sorted mode.
+         * @see .queueKeepSortedOrder
+         */
+        get() = appPrefs.getBoolean(PREF_QUEUE_KEEP_SORTED, false)
+        /**
+         * Enables/disables the keep sorted mode of the queue.
+         * @see .queueKeepSortedOrder
+         */
+        set(keepSorted) {
+            appPrefs.edit().putBoolean(PREF_QUEUE_KEEP_SORTED, keepSorted).apply()
+        }
+
+    var queueKeepSortedOrder: EpisodeSortOrder?
+        /**
+         * Returns the sort order for the queue keep sorted mode.
+         * Note: This value is stored independently from the keep sorted state.
+         * @see .isQueueKeepSorted
+         */
+        get() {
+            val sortOrderStr = appPrefs.getString(PREF_QUEUE_KEEP_SORTED_ORDER, "use-default")
+            return EpisodeSortOrder.parseWithDefault(sortOrderStr, EpisodeSortOrder.DATE_NEW_OLD)
+        }
+        /**
+         * Sets the sort order for the queue keep sorted mode.
+         * @see .setQueueKeepSorted
+         */
+        set(sortOrder) {
+            if (sortOrder == null) return
+            appPrefs.edit().putString(PREF_QUEUE_KEEP_SORTED_ORDER, sortOrder.name).apply()
+        }
+
+    var enqueueLocation: EnqueueLocation
+        get() {
+            val valStr = appPrefs.getString(PREF_ENQUEUE_LOCATION, EnqueueLocation.BACK.name)
+            try {
+                return EnqueueLocation.valueOf(valStr!!)
+            } catch (t: Throwable) {
+                // should never happen but just in case
+                Log.e(TAG, "getEnqueueLocation: invalid value '$valStr' Use default.", t)
+                return EnqueueLocation.BACK
+            }
+        }
+        set(location) {
+            appPrefs.edit().putString(PREF_ENQUEUE_LOCATION, location.name).apply()
+        }
 
     class EnqueuePositionCalculator(private val enqueueLocation: EnqueueLocation) {
         /**

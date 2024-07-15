@@ -545,7 +545,7 @@
   <string name="database_import_label">Databasimport</string>
   <string name="database_import_warning">Importering av en databas kommer att ersätta alla dina befintliga prenumerationer och spelhistoriken. Du bör exportera din nuvarande databas som en backup. Vill du ersätta den\?</string>
   <string name="please_wait">Vänta…</string>
-  <string name="export_error_label">Exporteringsfel</string>
+  <string name="import_export_error_label">Exporteringsfel</string>
   <string name="export_success_title">Exporten lyckades</string>
   <string name="opml_import_ask_read_permission">Tillgång till extern lagring krävs för att läsa OPML-filen</string>
   <string name="successful_import_label">Importering lyckades</string>

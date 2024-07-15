@@ -1,18 +1,18 @@
 package ac.mdiq.podcini.ui.actions.actionbutton
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.net.download.service.DownloadRequestCreator.getMediafilePath
-import ac.mdiq.podcini.net.download.service.DownloadRequestCreator.getMediafilename
+import ac.mdiq.podcini.net.utils.NetworkUtils.fetchHtmlSource
+import ac.mdiq.podcini.storage.database.Episodes.persistEpisode
+import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
+import ac.mdiq.podcini.storage.utils.FilesUtils.getMediafilePath
+import ac.mdiq.podcini.storage.utils.FilesUtils.getMediafilename
 import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment.Companion.tts
 import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment.Companion.ttsReady
 import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment.Companion.ttsWorking
 import ac.mdiq.podcini.util.AudioMediaOperation.mergeAudios
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.net.utils.NetworkUtils.fetchHtmlSource
-import ac.mdiq.podcini.storage.database.Episodes.persistEpisode
-import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.Context
@@ -25,7 +25,10 @@ import android.widget.Toast
 import androidx.annotation.OptIn
 import androidx.core.text.HtmlCompat
 import androidx.media3.common.util.UnstableApi
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import net.dankito.readability4j.Readability4J
 import java.io.File
 import java.util.*
@@ -35,7 +38,9 @@ import kotlin.math.min
 class TTSActionButton(item: Episode) : EpisodeActionButton(item) {
 
     private var readerText: String? = null
-//    private val ioScope = CoroutineScope(Dispatchers.IO)
+
+    override val visibility: Int
+        get() = if (item.link.isNullOrEmpty()) View.INVISIBLE else View.VISIBLE
 
     override fun getLabel(): Int {
         return R.string.TTS_label
@@ -151,7 +156,4 @@ class TTSActionButton(item: Episode) : EpisodeActionButton(item) {
             EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(item))
         }
     }
-
-    override val visibility: Int
-        get() = if (item.link.isNullOrEmpty()) View.INVISIBLE else View.VISIBLE
 }

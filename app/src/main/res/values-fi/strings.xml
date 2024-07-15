@@ -506,7 +506,7 @@
   <string name="database_import_label">Tietokannan tuonti</string>
   <string name="database_import_warning">Tietokannan tuonti korvaa kaikki nykyiset tilauksesi ja toistohistoriasi. Vie nykyinen tietokanta halutessasi varmuuskopioksi ennen jatkamista. Haluatko korvata\?</string>
   <string name="please_wait">Ole hyvä ja odota…</string>
-  <string name="export_error_label">Vientivirhe</string>
+  <string name="import_export_error_label">Vientivirhe</string>
   <string name="export_success_title">Vienti onnistunut</string>
   <string name="opml_import_ask_read_permission">Pääsy ulkoiseen solvellukseen tarvitaan OPML tiedoston lukemiseen</string>
   <string name="successful_import_label">Tuonti onnistui</string>

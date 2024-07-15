@@ -13,16 +13,16 @@ import androidx.media3.common.util.UnstableApi
 abstract class EpisodeActionButton internal constructor(@JvmField var item: Episode) {
     val TAG = this::class.simpleName ?: "ItemActionButton"
 
+    open val visibility: Int
+        get() = View.VISIBLE
+
+    var processing: Float = -1f
+
     abstract fun getLabel(): Int
 
     abstract fun getDrawable(): Int
 
     abstract fun onClick(context: Context)
-
-    open val visibility: Int
-        get() = View.VISIBLE
-
-    var processing: Float = -1f
 
     fun configure(button: View, icon: ImageView, context: Context) {
         button.visibility = visibility

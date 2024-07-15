@@ -3,8 +3,8 @@ package ac.mdiq.podcini.storage
 import ac.mdiq.podcini.feed.FeedMother.anyFeed
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterfaceTestStub
-import ac.mdiq.podcini.preferences.UserPreferences.EnqueueLocation
 import ac.mdiq.podcini.storage.database.Queues
+import ac.mdiq.podcini.storage.database.Queues.EnqueueLocation
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Playable
@@ -74,7 +74,7 @@ open class BasicTest {
     var idsExpected: List<Long?>? = null
 
     @Parameterized.Parameter(2)
-    var options: EnqueueLocation? = null
+    var options: Queues.EnqueueLocation? = null
 
     @Parameterized.Parameter(3)
     var curQueue: List<Episode?>? = null

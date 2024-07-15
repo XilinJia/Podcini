@@ -3,7 +3,7 @@ package ac.mdiq.podcini.ui.activity
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.BugReportBinding
 import ac.mdiq.podcini.preferences.ThemeSwitcher.getTheme
-import ac.mdiq.podcini.preferences.UserPreferences.getDataFolder
+import ac.mdiq.podcini.storage.utils.FilesUtils.getDataFolder
 import ac.mdiq.podcini.util.IntentUtils.openInBrowser
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.error.CrashReportWriter

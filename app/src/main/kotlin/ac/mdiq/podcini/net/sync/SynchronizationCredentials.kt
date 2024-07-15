@@ -1,7 +1,8 @@
 package ac.mdiq.podcini.net.sync
 
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink.clearQueue
-import ac.mdiq.podcini.preferences.UserPreferences.setGpodnetNotificationsEnabled
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_GPODNET_NOTIFICATIONS
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.util.config.ClientConfig
 import android.content.Context
 import android.content.SharedPreferences
@@ -54,6 +55,10 @@ object SynchronizationCredentials {
         set(value) {
             preferences.edit().putInt(PREF_HOSTPORT, value).apply()
         }
+
+    fun setGpodnetNotificationsEnabled() {
+        appPrefs.edit().putBoolean(PREF_GPODNET_NOTIFICATIONS, true).apply()
+    }
 
     @Synchronized
     fun clear(context: Context) {

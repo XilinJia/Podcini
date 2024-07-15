@@ -1,8 +1,9 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.preferences.UserPreferences.allEpisodesSortOrder
-import ac.mdiq.podcini.preferences.UserPreferences.prefFilterAllEpisodes
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_FILTER_ALL_EPISODES
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_SORT_ALL_EPISODES
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodesCount
 import ac.mdiq.podcini.storage.model.Episode
@@ -12,7 +13,6 @@ import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.dialog.EpisodeFilterDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.ui.dialog.SwitchQueueDialog
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
@@ -35,7 +35,7 @@ import kotlin.math.min
  */
 @UnstableApi class AllEpisodesFragment : BaseEpisodesFragment() {
 
-    var allEpisodes: List<Episode> = listOf()
+    private var allEpisodes: List<Episode> = listOf()
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val root = super.onCreateView(inflater, container, savedInstanceState)
@@ -181,8 +181,19 @@ import kotlin.math.min
             }
         }
     }
+
     companion object {
         val TAG = AllEpisodesFragment::class.simpleName ?: "Anonymous"
         const val PREF_NAME: String = "PrefAllEpisodesFragment"
+        var allEpisodesSortOrder: EpisodeSortOrder?
+            get() = EpisodeSortOrder.fromCodeString(appPrefs.getString(PREF_SORT_ALL_EPISODES, "" + EpisodeSortOrder.DATE_NEW_OLD.code))
+            set(s) {
+                appPrefs.edit().putString(PREF_SORT_ALL_EPISODES, "" + s!!.code).apply()
+            }
+        var prefFilterAllEpisodes: String
+            get() = appPrefs.getString(PREF_FILTER_ALL_EPISODES, "")?:""
+            set(filter) {
+                appPrefs.edit().putString(PREF_FILTER_ALL_EPISODES, filter).apply()
+            }
     }
 }

@@ -521,7 +521,7 @@
   <string name="database_import_label">Importa base de dades</string>
   <string name="database_import_warning">Importar una base de dades reemplaçarà totes les teues subscripcions i històric de reproducció. Deuries exportar la teua base de dades com a còpia de seguretat. Vols reemplaçar\?</string>
   <string name="please_wait">Per favor, espera…</string>
-  <string name="export_error_label">Error d\'exportació</string>
+  <string name="import_export_error_label">Error d\'exportació</string>
   <string name="export_success_title">Exportació correcta</string>
   <string name="opml_import_ask_read_permission">Per llegir arxius OPML és necessari accés a la memòria externa</string>
   <string name="successful_import_label">Importació correcta</string>

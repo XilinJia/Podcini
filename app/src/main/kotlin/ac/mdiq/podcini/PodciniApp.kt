@@ -27,7 +27,6 @@ class PodciniApp : Application() {
         ClientConfig.applicationCallbacks = ApplicationCallbacksImpl()
 
         Thread.setDefaultUncaughtExceptionHandler(CrashReportWriter())
-//        RxJavaErrorHandlerSetup.setupRxJavaErrorHandler()
 
         if (BuildConfig.DEBUG) {
             val builder: StrictMode.VmPolicy.Builder = StrictMode.VmPolicy.Builder()

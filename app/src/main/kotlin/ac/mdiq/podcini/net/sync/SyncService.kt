@@ -15,9 +15,11 @@ import ac.mdiq.podcini.net.sync.model.ISyncService
 import ac.mdiq.podcini.net.sync.model.SyncServiceException
 import ac.mdiq.podcini.net.sync.nextcloud.NextcloudSyncService
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueStorage
+import ac.mdiq.podcini.net.utils.NetworkUtils.isAllowMobileFor
+import ac.mdiq.podcini.net.utils.NetworkUtils.setAllowMobileFor
 import ac.mdiq.podcini.net.utils.UrlChecker.containsUrl
-import ac.mdiq.podcini.preferences.UserPreferences.gpodnetNotificationsEnabled
-import ac.mdiq.podcini.preferences.UserPreferences.isAllowMobileSync
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_GPODNET_NOTIFICATIONS
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.persistEpisodes
@@ -27,16 +29,17 @@ import ac.mdiq.podcini.storage.database.Feeds.getFeedListDownloadUrls
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueue
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.EpisodeFilter
-import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
+import ac.mdiq.podcini.storage.model.Feed
+import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
 import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.*
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
+import android.os.Build
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.collection.ArrayMap
@@ -295,6 +298,11 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
         nm.cancel(R.id.notification_gpodnet_sync_autherror)
     }
 
+    fun gpodnetNotificationsEnabled(): Boolean {
+        if (Build.VERSION.SDK_INT >= 26) return true // System handles notification preferences
+        return appPrefs.getBoolean(PREF_GPODNET_NOTIFICATIONS, true)
+    }
+
     protected fun updateErrorNotification(exception: Exception) {
         Logd(TAG, "Posting sync error notification")
         val description = ("${applicationContext.getString(R.string.gpodnetsync_error_descr)}${exception.message}")
@@ -347,6 +355,11 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
         internal fun setCurrentlyActive(active: Boolean) {
             isCurrentlyActive = active
         }
+        var isAllowMobileSync: Boolean
+            get() = isAllowMobileFor("sync")
+            set(allow) {
+                setAllowMobileFor("sync", allow)
+            }
 
         private fun getWorkRequest(): OneTimeWorkRequest.Builder {
             val constraints = Builder()

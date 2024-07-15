@@ -403,7 +403,7 @@
   <string name="database_import_label">Andmebaasi import</string>
   <string name="database_import_warning">Andmebaasi importimine asendab kõik sinu praegused tellimused ja kuulamiste ajaloo. Peaksid oma praeguse andmebaasi varundamise eesmärgil enne eksportima. Kas soovid andmed asendada\?</string>
   <string name="please_wait">Palun oota…</string>
-  <string name="export_error_label">Viga eksportimisel</string>
+  <string name="import_export_error_label">Viga eksportimisel</string>
   <string name="export_success_title">Eksportimine edukas</string>
   <string name="opml_import_ask_read_permission">OPML faili lugemiseks on vajalik ligipääs välisele salvestusruumile</string>
   <string name="successful_import_label">Importimine oli edukas</string>

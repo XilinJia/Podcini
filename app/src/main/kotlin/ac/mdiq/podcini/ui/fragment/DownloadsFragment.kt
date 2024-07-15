@@ -6,14 +6,15 @@ import ac.mdiq.podcini.databinding.SimpleListFragmentBinding
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.playback.base.InTheatre.isCurMedia
-import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_DOWNLOADS_SORTED_ORDER
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.EpisodeFilter
-import ac.mdiq.podcini.storage.utils.EpisodeUtil
+import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
+import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectHandler
 import ac.mdiq.podcini.ui.actions.actionbutton.DeleteActionButton
 import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
@@ -24,7 +25,6 @@ import ac.mdiq.podcini.ui.adapter.EpisodesAdapter
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.ui.dialog.SwitchQueueDialog
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
 import ac.mdiq.podcini.ui.view.EpisodesRecyclerView
@@ -327,7 +327,7 @@ import java.util.*
         lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    val sortOrder: EpisodeSortOrder? = UserPreferences.downloadsSortedOrder
+                    val sortOrder: EpisodeSortOrder? = downloadsSortedOrder
                     val downloadedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.DOWNLOADED), sortOrder)
                     if (runningDownloads.isEmpty()) episodes = downloadedItems.toMutableList()
                     else {
@@ -412,7 +412,7 @@ import java.util.*
     class DownloadsSortDialog : EpisodeSortDialog() {
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
-            sortOrder = UserPreferences.downloadsSortedOrder
+            sortOrder = downloadsSortedOrder
         }
 
         override fun onAddItem(title: Int, ascending: EpisodeSortOrder, descending: EpisodeSortOrder, ascendingIsDefault: Boolean) {
@@ -426,7 +426,7 @@ import java.util.*
 
         override fun onSelectionChanged() {
             super.onSelectionChanged()
-            UserPreferences.downloadsSortedOrder = sortOrder
+            downloadsSortedOrder = sortOrder
             EventFlow.postEvent(FlowEvent.DownloadLogEvent())
         }
     }
@@ -436,5 +436,15 @@ import java.util.*
 
         const val ARG_SHOW_LOGS: String = "show_logs"
         private const val KEY_UP_ARROW = "up_arrow"
+
+        //    the sort order for the downloads.
+        var downloadsSortedOrder: EpisodeSortOrder?
+            get() {
+                val sortOrderStr = appPrefs.getString(PREF_DOWNLOADS_SORTED_ORDER, "" + EpisodeSortOrder.DATE_NEW_OLD.code)
+                return EpisodeSortOrder.fromCodeString(sortOrderStr)
+            }
+            set(sortOrder) {
+                appPrefs.edit().putString(PREF_DOWNLOADS_SORTED_ORDER, "" + sortOrder!!.code).apply()
+            }
     }
 }

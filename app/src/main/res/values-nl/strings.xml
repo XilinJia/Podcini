@@ -480,7 +480,7 @@
   <string name="database_import_label">Database importeren</string>
   <string name="database_import_warning">Bij het importeren van een database worden alle huidige abonnementen en de afspeelgeschiedenis vervangen. Exporteer ter back-up de huidige database. Doorgaan\?</string>
   <string name="please_wait">Even geduld…</string>
-  <string name="export_error_label">Exportfout</string>
+  <string name="import_export_error_label">Exportfout</string>
   <string name="export_success_title">Geëxporteerd</string>
   <string name="opml_import_ask_read_permission">Toegang tot externe locaties is nodig om het OPML-bestand te kunnen lezen</string>
   <string name="successful_import_label">Importeren voltooid</string>

@@ -578,7 +578,7 @@
   <string name="database_import_label">استيراد قاعدة البيانات</string>
   <string name="database_import_warning">استيراد قاعدة بيانات سيمسح كل اشتراكاتك الحالية وسجل الاستماع. الأفضل أن تصدر قاعدة البيانات الحالية لأرشيف. هل تريد تبديل البيانات؟</string>
   <string name="please_wait">يرجى الانتظار…</string>
-  <string name="export_error_label">حدث خطأ أثناء التصدير</string>
+  <string name="import_export_error_label">حدث خطأ أثناء التصدير</string>
   <string name="export_success_title">تم التصدير بنجاح</string>
   <string name="opml_import_ask_read_permission">الوصول الى مساحة التخزين الخارجية مطلوب لقراءة ملف الـ OPML</string>
   <string name="successful_import_label">استيراد ناجح</string>

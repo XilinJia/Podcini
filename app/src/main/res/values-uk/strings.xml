@@ -573,7 +573,7 @@
   <string name="database_import_label">Імпортувати базу даних</string>
   <string name="database_import_warning">Імпорт бази даних замінить усі ваші поточні підписки та історію відтворення. Ви повинні експортувати свою поточну базу даних як резервну копію. Бажаєте замінити\?</string>
   <string name="please_wait">Будь ласка, зачекайте…</string>
-  <string name="export_error_label">Помилка експорту</string>
+  <string name="import_export_error_label">Помилка експорту</string>
   <string name="export_success_title">Успішний експорт</string>
   <string name="opml_import_ask_read_permission">Щоб прочитати файл OPML потрібен доступ до зовнішнього носія</string>
   <string name="successful_import_label">Імпорт - успішний</string>

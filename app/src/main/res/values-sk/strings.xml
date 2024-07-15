@@ -573,7 +573,7 @@
   <string name="database_import_label">Import databázy</string>
   <string name="database_import_warning">Import databázy prepíše všetky vaše aktuálne odbery a históriu prehrávania. Aktuálnu databázu by ste mali exportovať ako zálohu. Chcete ju prepísať\?</string>
   <string name="please_wait">Prosím čakajte…</string>
-  <string name="export_error_label">Chyba exportu</string>
+  <string name="import_export_error_label">Chyba exportu</string>
   <string name="export_success_title">Export bol úspešný</string>
   <string name="opml_import_ask_read_permission">Na načítanie súboru OPML je potrebný prístup k externému úložisku</string>
   <string name="successful_import_label">Import úspešný</string>

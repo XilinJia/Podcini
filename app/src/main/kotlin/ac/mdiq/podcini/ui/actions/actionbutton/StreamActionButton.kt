@@ -1,10 +1,10 @@
 package ac.mdiq.podcini.ui.actions.actionbutton
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.net.utils.NetworkUtils.isAllowMobileStreaming
 import ac.mdiq.podcini.playback.PlaybackServiceStarter
 import ac.mdiq.podcini.preferences.UsageStatistics
 import ac.mdiq.podcini.preferences.UsageStatistics.logAction
-import ac.mdiq.podcini.preferences.UserPreferences.isAllowMobileStreaming
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.storage.model.Playable

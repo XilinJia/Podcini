@@ -311,7 +311,7 @@
   <string name="database_import_label">資料庫匯入</string>
   <string name="database_import_warning">匯入的資料將取代您目前的訂閱清單與播放歷史紀錄，您最好先匯出當前的資料庫以便備份。要取代目前的資料嗎？</string>
   <string name="please_wait">請稍候…</string>
-  <string name="export_error_label">匯出錯誤</string>
+  <string name="import_export_error_label">匯出錯誤</string>
   <string name="export_success_title">匯出成功</string>
   <string name="opml_import_ask_read_permission">讀取 OPML 檔需要存取外部儲存空間的權限</string>
   <string name="successful_import_label">匯入完畢</string>

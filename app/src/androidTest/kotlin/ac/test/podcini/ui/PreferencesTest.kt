@@ -11,6 +11,12 @@ import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.filters.LargeTest
 import androidx.test.rule.ActivityTestRule
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.playback.service.PlaybackService
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isFollowQueue
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isPauseOnHeadsetDisconnect
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isPersistNotify
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isUnpauseOnBluetoothReconnect
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isUnpauseOnHeadsetReconnect
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.storage.algorithms.AutoCleanups.APCleanupAlgorithm
 import ac.mdiq.podcini.storage.algorithms.AutoCleanups.APNullCleanupAlgorithm
@@ -18,8 +24,6 @@ import ac.mdiq.podcini.storage.algorithms.AutoCleanups.APQueueCleanupAlgorithm
 import ac.mdiq.podcini.storage.algorithms.AutoCleanups.build
 import ac.mdiq.podcini.storage.algorithms.AutoCleanups.ExceptFavoriteCleanupAlgorithm
 import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.EnqueueLocation
-import ac.mdiq.podcini.preferences.UserPreferences.enqueueLocation
 import ac.mdiq.podcini.preferences.UserPreferences.episodeCacheSize
 import ac.mdiq.podcini.preferences.UserPreferences.fastForwardSecs
 import ac.mdiq.podcini.preferences.UserPreferences.init
@@ -27,17 +31,14 @@ import ac.mdiq.podcini.preferences.UserPreferences.isAutoDelete
 import ac.mdiq.podcini.preferences.UserPreferences.isAutoDeleteLocal
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownloadOnBattery
-import ac.mdiq.podcini.preferences.UserPreferences.isFollowQueue
-import ac.mdiq.podcini.preferences.UserPreferences.isPauseOnHeadsetDisconnect
-import ac.mdiq.podcini.preferences.UserPreferences.isPersistNotify
-import ac.mdiq.podcini.preferences.UserPreferences.isUnpauseOnBluetoothReconnect
-import ac.mdiq.podcini.preferences.UserPreferences.isUnpauseOnHeadsetReconnect
 import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
 import ac.mdiq.podcini.preferences.UserPreferences.shouldDeleteRemoveFromQueue
 import ac.mdiq.podcini.preferences.UserPreferences.shouldPauseForFocusLoss
 import ac.mdiq.podcini.preferences.UserPreferences.showNextChapterOnFullNotification
 import ac.mdiq.podcini.preferences.UserPreferences.showPlaybackSpeedOnFullNotification
 import ac.mdiq.podcini.preferences.UserPreferences.showSkipOnFullNotification
+import ac.mdiq.podcini.storage.database.Queues
+import ac.mdiq.podcini.storage.database.Queues.enqueueLocation
 import de.test.podcini.EspressoTestUtils
 import org.awaitility.Awaitility
 import org.junit.Assert
@@ -104,13 +105,13 @@ class PreferencesTest {
     @Test
     fun testEnqueueLocation() {
         EspressoTestUtils.clickPreference(R.string.playback_pref)
-        doTestEnqueueLocation(R.string.enqueue_location_after_current, EnqueueLocation.AFTER_CURRENTLY_PLAYING)
-        doTestEnqueueLocation(R.string.enqueue_location_front, EnqueueLocation.FRONT)
-        doTestEnqueueLocation(R.string.enqueue_location_back, EnqueueLocation.BACK)
-        doTestEnqueueLocation(R.string.enqueue_location_random, EnqueueLocation.RANDOM)
+        doTestEnqueueLocation(R.string.enqueue_location_after_current, Queues.EnqueueLocation.AFTER_CURRENTLY_PLAYING)
+        doTestEnqueueLocation(R.string.enqueue_location_front, Queues.EnqueueLocation.FRONT)
+        doTestEnqueueLocation(R.string.enqueue_location_back, Queues.EnqueueLocation.BACK)
+        doTestEnqueueLocation(R.string.enqueue_location_random, Queues.EnqueueLocation.RANDOM)
     }
 
-    private fun doTestEnqueueLocation(@StringRes optionResId: Int, expected: EnqueueLocation) {
+    private fun doTestEnqueueLocation(@StringRes optionResId: Int, expected: Queues.EnqueueLocation) {
         EspressoTestUtils.clickPreference(R.string.pref_enqueue_location_title)
         Espresso.onView(ViewMatchers.withText(optionResId)).perform(ViewActions.click())
         Awaitility.await().atMost(1000, TimeUnit.MILLISECONDS)
@@ -138,7 +139,7 @@ class PreferencesTest {
             Espresso.onView(ViewMatchers.withText(R.string.pref_pauseOnHeadsetDisconnect_title))
                 .perform(ViewActions.click())
             Awaitility.await().atMost(1000, TimeUnit.MILLISECONDS)
-                .until(UserPreferences::isPauseOnHeadsetDisconnect)
+                .until(PlaybackService::isPauseOnHeadsetDisconnect)
         }
         val unpauseOnHeadsetReconnect = isUnpauseOnHeadsetReconnect
         Espresso.onView(ViewMatchers.withText(R.string.pref_unpauseOnHeadsetReconnect_title))
@@ -158,7 +159,7 @@ class PreferencesTest {
             Espresso.onView(ViewMatchers.withText(R.string.pref_pauseOnHeadsetDisconnect_title))
                 .perform(ViewActions.click())
             Awaitility.await().atMost(1000, TimeUnit.MILLISECONDS)
-                .until(UserPreferences::isPauseOnHeadsetDisconnect)
+                .until(PlaybackService::isPauseOnHeadsetDisconnect)
         }
         val unpauseOnBluetoothReconnect = isUnpauseOnBluetoothReconnect
         Espresso.onView(ViewMatchers.withText(R.string.pref_unpauseOnBluetoothReconnect_title))

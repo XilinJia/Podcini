@@ -522,7 +522,7 @@
   <string name="database_import_label">Veri tabanını içe aktarma</string>
   <string name="database_import_warning">Bir veritabanını içe aktarmak, mevcut tüm aboneliklerinizi ve çalma geçmişinizi değiştirecektir. Mevcut veritabanınızı yedek olarak dışa aktarmalısınız. Yerini değiştirmek istiyor musunuz\?</string>
   <string name="please_wait">Lütfen bekleyin…</string>
-  <string name="export_error_label">Dışa aktarma hatası</string>
+  <string name="import_export_error_label">Dışa aktarma hatası</string>
   <string name="export_success_title">Dışa aktarma başarılı</string>
   <string name="opml_import_ask_read_permission">OPML dosyasını okumak için harici depolama alanına erişim gereklidir</string>
   <string name="successful_import_label">İçe aktarma başarılı</string>

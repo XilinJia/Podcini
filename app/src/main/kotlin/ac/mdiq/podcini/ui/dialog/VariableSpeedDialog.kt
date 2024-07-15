@@ -9,15 +9,14 @@ import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.currentMediaType
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.PREF_PLAYBACK_SPEED_ARRAY
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
-import ac.mdiq.podcini.preferences.UserPreferences.playbackSpeedArray
 import ac.mdiq.podcini.preferences.UserPreferences.videoPlaybackSpeed
 import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.MediaType
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.utils.ItemOffsetDecoration
 import ac.mdiq.podcini.ui.view.PlaybackSpeedSeekBar
 import ac.mdiq.podcini.util.Logd
@@ -42,6 +41,9 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONException
+import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.*
 
@@ -175,6 +177,37 @@ import java.util.*
             playbackSpeedArray = selectedSpeeds
             adapter.notifyDataSetChanged()
         }
+    }
+
+    var playbackSpeedArray: List<Float>
+        get() = readPlaybackSpeedArray(appPrefs.getString(PREF_PLAYBACK_SPEED_ARRAY, null))
+        set(speeds) {
+            val format = DecimalFormatSymbols(Locale.US)
+            format.decimalSeparator = '.'
+            val speedFormat = DecimalFormat("0.00", format)
+            val jsonArray = JSONArray()
+            for (speed in speeds) {
+                jsonArray.put(speedFormat.format(speed.toDouble()))
+            }
+            appPrefs.edit().putString(PREF_PLAYBACK_SPEED_ARRAY, jsonArray.toString()).apply()
+        }
+
+    private fun readPlaybackSpeedArray(valueFromPrefs: String?): List<Float> {
+        if (valueFromPrefs != null) {
+            try {
+                val jsonArray = JSONArray(valueFromPrefs)
+                val selectedSpeeds: MutableList<Float> = ArrayList()
+                for (i in 0 until jsonArray.length()) {
+                    selectedSpeeds.add(jsonArray.getDouble(i).toFloat())
+                }
+                return selectedSpeeds
+            } catch (e: JSONException) {
+                Log.e(TAG, "Got JSON error when trying to get speeds from JSONArray")
+                e.printStackTrace()
+            }
+        }
+        // If this preference hasn't been set yet, return the default options
+        return mutableListOf(1.0f, 1.25f, 1.5f)
     }
 
     inner class SpeedSelectionAdapter : RecyclerView.Adapter<SpeedSelectionAdapter.ViewHolder>() {

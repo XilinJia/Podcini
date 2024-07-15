@@ -395,7 +395,7 @@
   <string name="database_import_label">Duomenų bazės importas</string>
   <string name="database_import_warning">Importuojant duomenų bazę bus pakeistos visos dabartinės jūsų prenumeratos ir atkūrimo istorija. Rekomenduojame eksportuoti dabartinę duomenų bazę kaip atsarginę kopiją. Ar norite pakeisti\?</string>
   <string name="please_wait">Prašome luktelėti…</string>
-  <string name="export_error_label">Eksporto klaida</string>
+  <string name="import_export_error_label">Eksporto klaida</string>
   <string name="export_success_title">Sėkmingai eksportuota</string>
   <string name="opml_import_ask_read_permission">Norint nuskaityti OPML failą reikalinga prieiga prie išorinės laikmenos</string>
   <string name="successful_import_label">Sėkmingai importuota</string>

@@ -118,13 +118,13 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 ### Automation
 
 * auto download algorithm is changed to individual feed based.
-	* When auto download is enabled in the Settings, feeds to be auto-downloaded need to be separately enabled in the feed settings.
-	* Each feed also has its own download policy (only new episodes, newest episodes, and oldest episodes. "newest episodes" meaning most recent episodes, new or old)
-	* Each feed has its own limit (Episode cache) for number of episodes downloaded, this limit rules in combination of the overall limit  for the app.
-	* After auto download run, episodes with New status is changed to Unplayed.
-	* auto download feed setting dialog is also changed:
-		* there are now separate dialogs for inclusive and exclusive filters where filter tokens can be specified independently
-		* on exclusive dialog, there are optional check boxes "Exclude episodes shorter than" and "Mark excluded episodes played"
+  * When auto download is enabled in the Settings, feeds to be auto-downloaded need to be separately enabled in the feed settings.
+  * Each feed also has its own download policy (only new episodes, newest episodes, and oldest episodes. "newest episodes" meaning most recent episodes, new or old)
+  * Each feed has its own limit (Episode cache) for number of episodes downloaded, this limit rules in combination of the overall limit  for the app.
+  * After auto download run, episodes with New status is changed to Unplayed.
+  * auto download feed setting dialog is also changed:
+    * there are now separate dialogs for inclusive and exclusive filters where filter tokens can be specified independently
+    * on exclusive dialog, there are optional check boxes "Exclude episodes shorter than" and "Mark excluded episodes played"
 
 
 ### Security and reliability

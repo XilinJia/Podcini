@@ -4,6 +4,8 @@ import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.net.download.DownloadError
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
+import ac.mdiq.podcini.preferences.UserPreferences.isAutoDelete
+import ac.mdiq.podcini.preferences.UserPreferences.isAutoDeleteLocal
 import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodes
 import ac.mdiq.podcini.storage.database.LogsAndStats.addDownloadStatus
 import ac.mdiq.podcini.storage.database.Queues.removeFromAllQueuesQuiet
@@ -40,6 +42,10 @@ object Feeds {
     fun getFeedList(fromDB: Boolean = true): List<Feed> {
         if (fromDB) return realm.query(Feed::class).find()
         return feedMap.values.toList()
+    }
+
+    fun getFeedCount(): Int {
+        return realm.query(Feed::class).count().find().toInt()
     }
 
     fun getTags(): List<String> {
@@ -374,7 +380,7 @@ object Feeds {
                     feed.preferences = FeedPreferences(feed.id, false, AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
                 else feed.preferences!!.feedID = feed.id
 
-                Logd(TAG, "feed.episodes: ${feed.episodes.size}")
+                Logd(TAG, "feed.episodes count: ${feed.episodes.size}")
                 for (episode in feed.episodes) {
                     episode.id = idLong++
                     episode.feedId = feed.id
@@ -448,6 +454,12 @@ object Feeds {
             if (!feed.isLocalFeed && feed.downloadUrl != null) SynchronizationQueueSink.enqueueFeedRemovedIfSyncActive(context, feed.downloadUrl!!)
 //                if (postEvent) EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.REMOVED, feed.id))
         }
+    }
+
+    @JvmStatic
+    fun shouldAutoDeleteItem(feed: Feed): Boolean {
+        if (!isAutoDelete) return false
+        return !feed.isLocalFeed || isAutoDeleteLocal
     }
 
     /**

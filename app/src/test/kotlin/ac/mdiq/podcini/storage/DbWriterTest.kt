@@ -4,7 +4,6 @@ import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterfaceTestStub
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.shouldDeleteRemoveFromQueue
 import ac.mdiq.podcini.storage.database.Episodes.addToHistory
 import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.deleteMediaOfEpisode
@@ -12,6 +11,7 @@ import ac.mdiq.podcini.storage.database.Episodes.getEpisode
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodeMedia
 import ac.mdiq.podcini.storage.database.Episodes.persistEpisode
 import ac.mdiq.podcini.storage.database.Episodes.persistEpisodeMedia
+import ac.mdiq.podcini.storage.database.Episodes.shouldDeleteRemoveFromQueue
 import ac.mdiq.podcini.storage.database.Feeds.deleteFeedSync
 import ac.mdiq.podcini.storage.database.Queues
 import ac.mdiq.podcini.storage.database.Queues.addToQueue
@@ -71,7 +71,7 @@ class DbWriterTest {
 
         val prefEdit = PreferenceManager.getDefaultSharedPreferences(
             context.applicationContext).edit()
-        prefEdit.putBoolean(UserPreferences.PREF_DELETE_REMOVES_FROM_QUEUE, true).commit()
+        prefEdit.putBoolean(UserPreferences.Prefs.prefDeleteRemovesFromQueue.name, true).commit()
     }
 
     @After

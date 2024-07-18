@@ -18,6 +18,8 @@ enum class EpisodeSortOrder(@JvmField val code: Int, @JvmField val scope: Scope)
     PLAYED_DATE_NEW_OLD(12, Scope.INTRA_FEED),
     COMPLETED_DATE_OLD_NEW(13, Scope.INTRA_FEED),
     COMPLETED_DATE_NEW_OLD(14, Scope.INTRA_FEED),
+    DOWNLOAD_DATE_OLD_NEW(15, Scope.INTRA_FEED),
+    DOWNLOAD_DATE_NEW_OLD(16, Scope.INTRA_FEED),
 
     FEED_TITLE_A_Z(101, Scope.INTER_FEED),
     FEED_TITLE_Z_A(102, Scope.INTER_FEED),

@@ -4,8 +4,7 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.SortDialogBinding
 import ac.mdiq.podcini.databinding.SortDialogItemActiveBinding
 import ac.mdiq.podcini.databinding.SortDialogItemBinding
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_DRAWER_FEED_ORDER
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_DRAWER_FEED_ORDER_DIRECTION
+import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.model.FeedSortOrder
 import ac.mdiq.podcini.storage.model.FeedSortOrder.Companion.getSortOrder
@@ -27,8 +26,8 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
-open class FeedSortDialogNew : BottomSheetDialogFragment() {
-    private val TAG: String = FeedSortDialogNew::class.simpleName ?: "Anonymous"
+open class FeedSortDialog : BottomSheetDialogFragment() {
+    private val TAG: String = FeedSortDialog::class.simpleName ?: "Anonymous"
 
     protected var _binding: SortDialogBinding? = null
     protected val binding get() = _binding!!
@@ -44,7 +43,7 @@ open class FeedSortDialogNew : BottomSheetDialogFragment() {
         _binding = SortDialogBinding.inflate(inflater)
         binding.gridLayout.columnCount = 1
         populateList()
-        binding.keepSortedCheckbox.setOnCheckedChangeListener { _: CompoundButton?, _: Boolean -> this@FeedSortDialogNew.onSelectionChanged() }
+        binding.keepSortedCheckbox.setOnCheckedChangeListener { _: CompoundButton?, _: Boolean -> this@FeedSortDialog.onSelectionChanged() }
         return binding.root
     }
 
@@ -55,14 +54,15 @@ open class FeedSortDialogNew : BottomSheetDialogFragment() {
     
     private fun populateList() {
         binding.gridLayout.removeAllViews()
-        onAddItem(R.string.feed_order_unplayed_count, FeedSortOrder.UNPLAYED_OLD_NEW, FeedSortOrder.UNPLAYED_NEW_OLD, false)
         onAddItem(R.string.feed_order_alphabetical, FeedSortOrder.ALPHABETIC_A_Z, FeedSortOrder.ALPHABETIC_Z_A, true)
         onAddItem(R.string.feed_order_last_update, FeedSortOrder.LAST_UPDATED_OLD_NEW, FeedSortOrder.LAST_UPDATED_NEW_OLD, false)
+        onAddItem(R.string.feed_order_last_download, FeedSortOrder.LAST_DOWNLOAD_OLD_NEW, FeedSortOrder.LAST_DOWNLOAD_NEW_OLD, false)
         onAddItem(R.string.feed_order_last_unread_update, FeedSortOrder.LAST_UPDATED_UNPLAYED_OLD_NEW, FeedSortOrder.LAST_UPDATED_UNPLAYED_NEW_OLD, false)
-        onAddItem(R.string.feed_order_most_played, FeedSortOrder.LEAST_PLAYED, FeedSortOrder.MOST_PLAYED, false)
-        onAddItem(R.string.feed_counter_downloaded, FeedSortOrder.LEAST_DOWNLAODED, FeedSortOrder.MOST_DOWNLOADED, false)
-        onAddItem(R.string.feed_counter_downloaded_unplayed, FeedSortOrder.LEAST_DOWNLAODED_UNPLAYED, FeedSortOrder.MOST_DOWNLOADED_UNPLAYED, false)
         onAddItem(R.string.feed_order_new_episodes, FeedSortOrder.NEW_EPISODES_LEAST, FeedSortOrder.NEW_EPISODES_MOST, false)
+        onAddItem(R.string.feed_order_unplayed_count, FeedSortOrder.UNPLAYED_OLD_NEW, FeedSortOrder.UNPLAYED_NEW_OLD, false)
+        onAddItem(R.string.feed_order_most_played, FeedSortOrder.LEAST_PLAYED, FeedSortOrder.MOST_PLAYED, false)
+        onAddItem(R.string.feed_counter_downloaded_unplayed, FeedSortOrder.LEAST_DOWNLAODED_UNPLAYED, FeedSortOrder.MOST_DOWNLOADED_UNPLAYED, false)
+        onAddItem(R.string.feed_counter_downloaded, FeedSortOrder.LEAST_DOWNLAODED, FeedSortOrder.MOST_DOWNLOADED, false)
     }
 
     protected open fun onAddItem(title: Int, ascending: FeedSortOrder, descending: FeedSortOrder, ascendingIsDefault: Boolean) {
@@ -137,10 +137,10 @@ open class FeedSortDialogNew : BottomSheetDialogFragment() {
 
     private fun setFeedOrder(selected: String, dir: Int) {
         appPrefs.edit()
-            .putString(PREF_DRAWER_FEED_ORDER, selected)
+            .putString(UserPreferences.Prefs.prefDrawerFeedOrder.name, selected)
             .apply()
         appPrefs.edit()
-            .putInt(PREF_DRAWER_FEED_ORDER_DIRECTION, dir)
+            .putInt(UserPreferences.Prefs.prefDrawerFeedOrderDir.name, dir)
             .apply()
     }
 }

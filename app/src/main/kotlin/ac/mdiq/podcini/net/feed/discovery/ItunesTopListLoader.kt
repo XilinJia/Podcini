@@ -18,6 +18,7 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 
 class ItunesTopListLoader(private val context: Context) {
+
     @Throws(JSONException::class, IOException::class)
     fun loadToplist(country: String, limit: Int, subscribed: List<Feed>): List<PodcastSearchResult> {
         val client = getHttpClient()

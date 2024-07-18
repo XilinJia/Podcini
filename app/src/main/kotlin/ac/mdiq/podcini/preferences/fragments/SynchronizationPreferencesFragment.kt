@@ -106,7 +106,7 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
 
     private fun setupScreen() {
         val activity: Activity? = activity
-        findPreference<Preference>(PREFERENCE_GPODNET_SETLOGIN_INFORMATION)?.setOnPreferenceClickListener {
+        findPreference<Preference>(Prefs.pref_gpodnet_setlogin_information.name)?.setOnPreferenceClickListener {
             val dialog: AuthenticationDialog = object : AuthenticationDialog(requireContext(), R.string.pref_gpodnet_setlogin_information_title,
                 false, SynchronizationCredentials.username, null) {
                 override fun onConfirmed(username: String, password: String) {
@@ -116,15 +116,15 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
             dialog.show()
             true
         }
-        findPreference<Preference>(PREFERENCE_SYNC)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.pref_synchronization_sync.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             SyncService.syncImmediately(requireActivity().applicationContext)
             true
         }
-        findPreference<Preference>(PREFERENCE_FORCE_FULL_SYNC)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.pref_synchronization_force_full_sync.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             SyncService.fullSync(requireContext())
             true
         }
-        findPreference<Preference>(PREFERENCE_LOGOUT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.pref_synchronization_logout.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             SynchronizationCredentials.clear(requireContext())
             Snackbar.make(requireView(), R.string.pref_synchronization_logout_toast, Snackbar.LENGTH_LONG).show()
             SynchronizationSettings.setSelectedSyncProvider(null)
@@ -134,14 +134,14 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
     }
 
     private fun updateScreen() {
-        val preferenceInstantSync = findPreference<Preference>(PREFERENCE_INSTANT_SYNC)
+        val preferenceInstantSync = findPreference<Preference>(Prefs.preference_instant_sync.name)
         preferenceInstantSync!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             WifiAuthenticationFragment().show(childFragmentManager, WifiAuthenticationFragment.TAG)
             true
         }
 
         val loggedIn = isProviderConnected
-        val preferenceHeader = findPreference<Preference>(PREFERENCE_SYNCHRONIZATION_DESCRIPTION)
+        val preferenceHeader = findPreference<Preference>(Prefs.preference_synchronization_description.name)
         if (loggedIn) {
             val selectedProvider = SynchronizationProviderViewData.fromIdentifier(selectedSyncProviderKey)
             preferenceHeader!!.title = ""
@@ -160,20 +160,20 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
             }
         }
 
-        val gpodnetSetLoginPreference = findPreference<Preference>(PREFERENCE_GPODNET_SETLOGIN_INFORMATION)
+        val gpodnetSetLoginPreference = findPreference<Preference>(Prefs.pref_gpodnet_setlogin_information.name)
         gpodnetSetLoginPreference!!.isVisible = isProviderSelected(SynchronizationProviderViewData.GPODDER_NET)
         gpodnetSetLoginPreference.isEnabled = loggedIn
-        findPreference<Preference>(PREFERENCE_SYNC)!!.isVisible = loggedIn
-        findPreference<Preference>(PREFERENCE_FORCE_FULL_SYNC)!!.isVisible = loggedIn
-        findPreference<Preference>(PREFERENCE_LOGOUT)!!.isVisible = loggedIn
+        findPreference<Preference>(Prefs.pref_synchronization_sync.name)!!.isVisible = loggedIn
+        findPreference<Preference>(Prefs.pref_synchronization_force_full_sync.name)!!.isVisible = loggedIn
+        findPreference<Preference>(Prefs.pref_synchronization_logout.name)!!.isVisible = loggedIn
         if (loggedIn) {
             val summary = getString(R.string.synchronization_login_status,
                 SynchronizationCredentials.username, SynchronizationCredentials.hosturl)
             val formattedSummary = HtmlCompat.fromHtml(summary, HtmlCompat.FROM_HTML_MODE_LEGACY)
-            findPreference<Preference>(PREFERENCE_LOGOUT)!!.summary = formattedSummary
+            findPreference<Preference>(Prefs.pref_synchronization_logout.name)!!.summary = formattedSummary
             updateLastSyncReport(SynchronizationSettings.isLastSyncSuccessful, SynchronizationSettings.lastSyncAttempt)
         } else {
-            findPreference<Preference>(PREFERENCE_LOGOUT)?.summary = ""
+            findPreference<Preference>(Prefs.pref_synchronization_logout.name)?.summary = ""
             (activity as PreferenceActivity).supportActionBar?.setSubtitle("")
         }
     }
@@ -674,12 +674,12 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
         }
     }
 
-    companion object {
-        private const val PREFERENCE_INSTANT_SYNC = "preference_instant_sync"
-        private const val PREFERENCE_SYNCHRONIZATION_DESCRIPTION = "preference_synchronization_description"
-        private const val PREFERENCE_GPODNET_SETLOGIN_INFORMATION = "pref_gpodnet_setlogin_information"
-        private const val PREFERENCE_SYNC = "pref_synchronization_sync"
-        private const val PREFERENCE_FORCE_FULL_SYNC = "pref_synchronization_force_full_sync"
-        private const val PREFERENCE_LOGOUT = "pref_synchronization_logout"
+    private enum class Prefs {
+        preference_instant_sync,
+        preference_synchronization_description,
+        pref_gpodnet_setlogin_information,
+        pref_synchronization_sync,
+        pref_synchronization_force_full_sync,
+        pref_synchronization_logout,
     }
 }

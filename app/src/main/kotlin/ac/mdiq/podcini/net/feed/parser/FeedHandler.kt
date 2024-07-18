@@ -259,30 +259,30 @@ class FeedHandler {
     }
 
     class UnsupportedFeedtypeException : Exception {
-        val type: FeedHandler.Type
+        val type: Type
         var rootElement: String? = null
             private set
         override var message: String? = null
             get() {
                 return when {
                     field != null -> field!!
-                    type == FeedHandler.Type.INVALID -> "Invalid type"
+                    type == Type.INVALID -> "Invalid type"
                     else -> "Type $type not supported"
                 }
             }
 
-        constructor(type: FeedHandler.Type) : super() {
+        constructor(type: Type) : super() {
             this.type = type
         }
 
-        constructor(type: FeedHandler.Type, rootElement: String?) {
+        constructor(type: Type, rootElement: String?) {
             this.type = type
             this.rootElement = rootElement
         }
 
         constructor(message: String?) {
             this.message = message
-            type = FeedHandler.Type.INVALID
+            type = Type.INVALID
         }
 
 //    fun getMessage(): String? {

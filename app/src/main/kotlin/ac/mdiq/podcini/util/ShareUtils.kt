@@ -4,7 +4,7 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.util.Converter.getDurationStringLong
+import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringLong
 import android.content.Context
 import android.util.Log
 import androidx.core.app.ShareCompat.IntentBuilder

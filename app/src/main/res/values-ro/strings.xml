@@ -719,8 +719,8 @@
   <string name="filter">Filtrează</string>
   <string name="hide_is_favorite_label">Este favorit</string>
   <string name="not_favorite">Nu este favorit</string>
-  <string name="hide_downloaded_episodes_label">Descărcat</string>
-  <string name="hide_not_downloaded_episodes_label">Nu este descărcat</string>
+  <string name="downloaded_label">Descărcat</string>
+  <string name="not_downloaded_label">Nu este descărcat</string>
   <string name="queued_label">În coada de redare</string>
   <string name="not_queued_label">Nu este în coada de redare</string>
   <string name="has_media">Are parte media</string>

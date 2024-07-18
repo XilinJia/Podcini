@@ -20,10 +20,9 @@ import ac.mdiq.podcini.ui.utils.CoverLoader
 import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import ac.mdiq.podcini.ui.view.CircularProgressBar
-import ac.mdiq.podcini.util.Converter
+import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.util.DateFormatter
 import ac.mdiq.podcini.util.Logd
-import android.graphics.PorterDuff
 import android.text.Layout
 import android.text.format.Formatter
 import android.util.Log
@@ -36,7 +35,6 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.cardview.widget.CardView
-import androidx.core.content.ContextCompat
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.elevation.SurfaceColors
@@ -195,22 +193,22 @@ open class EpisodeViewHolder(private val activity: MainActivity, parent: ViewGro
             }
         }
 
-        duration.text = Converter.getDurationStringLong(media.getDuration())
+        duration.text = DurationConverter.getDurationStringLong(media.getDuration())
         duration.setContentDescription(activity.getString(R.string.chapter_duration,
-            Converter.getDurationStringLocalized(activity, media.getDuration().toLong())))
+            DurationConverter.getDurationStringLocalized(activity, media.getDuration().toLong())))
         if (isCurMedia || this.episode?.isInProgress == true) {
             val progress: Int = (100.0 * media.getPosition() / media.getDuration()).toInt()
             val remainingTime = max((media.getDuration() - media.getPosition()).toDouble(), 0.0).toInt()
             progressBar.progress = progress
-            position.text = Converter.getDurationStringLong(media.getPosition())
+            position.text = DurationConverter.getDurationStringLong(media.getPosition())
             position.setContentDescription(activity.getString(R.string.position,
-                Converter.getDurationStringLocalized(activity, media.getPosition().toLong())))
+                DurationConverter.getDurationStringLocalized(activity, media.getPosition().toLong())))
             progressBar.visibility = View.VISIBLE
             position.visibility = View.VISIBLE
             if (UserPreferences.shouldShowRemainingTime()) {
-                duration.text = (if ((remainingTime > 0)) "-" else "") + Converter.getDurationStringLong(remainingTime)
+                duration.text = (if ((remainingTime > 0)) "-" else "") + DurationConverter.getDurationStringLong(remainingTime)
                 duration.setContentDescription(activity.getString(R.string.chapter_duration,
-                    Converter.getDurationStringLocalized(activity, (media.getDuration() - media.getPosition()).toLong())))
+                    DurationConverter.getDurationStringLocalized(activity, (media.getDuration() - media.getPosition()).toLong())))
             }
         } else {
             progressBar.visibility = View.GONE
@@ -269,15 +267,15 @@ open class EpisodeViewHolder(private val activity: MainActivity, parent: ViewGro
         val currentPosition = item.media?.position ?: 0
         val timeDuration = item.media?.duration ?: 0
         progressBar.progress = (100.0 * currentPosition / timeDuration).toInt()
-        position.text = Converter.getDurationStringLong(currentPosition)
+        position.text = DurationConverter.getDurationStringLong(currentPosition)
 
         val remainingTime = max((timeDuration - currentPosition).toDouble(), 0.0).toInt()
         if (currentPosition == Playable.INVALID_TIME || timeDuration == Playable.INVALID_TIME) {
             Log.w(TAG, "Could not react to position observer update because of invalid time")
             return
         }
-        if (UserPreferences.shouldShowRemainingTime()) duration.text = (if (remainingTime > 0) "-" else "") + Converter.getDurationStringLong(remainingTime)
-        else duration.text = Converter.getDurationStringLong(timeDuration)
+        if (UserPreferences.shouldShowRemainingTime()) duration.text = (if (remainingTime > 0) "-" else "") + DurationConverter.getDurationStringLong(remainingTime)
+        else duration.text = DurationConverter.getDurationStringLong(timeDuration)
         duration.visibility = View.VISIBLE // Even if the duration was previously unknown, it is now known
     }
 

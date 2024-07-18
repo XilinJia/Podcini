@@ -689,8 +689,8 @@
   <string name="filter">过滤器</string>
   <string name="hide_is_favorite_label">收藏的</string>
   <string name="not_favorite">未收藏</string>
-  <string name="hide_downloaded_episodes_label">已下载</string>
-  <string name="hide_not_downloaded_episodes_label">未下载</string>
+  <string name="downloaded_label">已下载</string>
+  <string name="not_downloaded_label">未下载</string>
   <string name="queued_label">已在播放列表中</string>
   <string name="not_queued_label">不在播放列表中</string>
   <string name="has_media">包含媒体</string>

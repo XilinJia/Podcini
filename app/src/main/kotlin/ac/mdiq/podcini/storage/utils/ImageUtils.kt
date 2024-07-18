@@ -1,4 +1,4 @@
-package ac.mdiq.podcini.util
+package ac.mdiq.podcini.storage.utils
 
 import android.graphics.Bitmap
 import kotlin.math.abs
@@ -274,5 +274,4 @@ class ImageUtils {
             return bitmap
         }
     }
-
 }

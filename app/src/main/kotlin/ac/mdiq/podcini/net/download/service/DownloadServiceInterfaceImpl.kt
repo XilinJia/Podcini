@@ -9,7 +9,6 @@ import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.net.utils.NetworkUtils.isAllowMobileEpisodeDownload
 import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_ENQUEUE_DOWNLOADED
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.LogsAndStats
@@ -126,7 +125,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
             return workRequest
         }
         private fun enqueueDownloadedEpisodes(): Boolean {
-            return appPrefs.getBoolean(PREF_ENQUEUE_DOWNLOADED, true)
+            return appPrefs.getBoolean(UserPreferences.Prefs.prefEnqueueDownloaded.name, true)
         }
     }
 
@@ -291,7 +290,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
 //            sendMessage(title, false)
 //            return
 //        }
-            val builder = NotificationCompat.Builder(applicationContext, NotificationUtils.CHANNEL_ID_DOWNLOAD_ERROR)
+            val builder = NotificationCompat.Builder(applicationContext, NotificationUtils.CHANNEL_ID.error.name)
             builder.setTicker(applicationContext.getString(R.string.download_report_title))
                 .setContentTitle(applicationContext.getString(R.string.download_report_title))
                 .setContentText(applicationContext.getString(R.string.download_error_tap_for_details))
@@ -314,7 +313,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
             val bigText = bigTextB.toString().trim { it <= ' ' }
             val contentText = if (progressCopy.size == 1) bigText
             else applicationContext.resources.getQuantityString(R.plurals.downloads_left, progressCopy.size, progressCopy.size)
-            val builder = NotificationCompat.Builder(applicationContext, NotificationUtils.CHANNEL_ID_DOWNLOADING)
+            val builder = NotificationCompat.Builder(applicationContext, NotificationUtils.CHANNEL_ID.downloading.name)
             builder.setTicker(applicationContext.getString(R.string.download_notification_title_episodes))
                 .setContentTitle(applicationContext.getString(R.string.download_notification_title_episodes))
                 .setContentText(contentText)

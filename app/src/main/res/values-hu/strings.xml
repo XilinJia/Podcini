@@ -558,8 +558,8 @@
   <string name="filter">Szűrő</string>
   <string name="hide_is_favorite_label">Kedvenc</string>
   <string name="not_favorite">Nem kedvenc</string>
-  <string name="hide_downloaded_episodes_label">Letöltött</string>
-  <string name="hide_not_downloaded_episodes_label">Nem letöltött</string>
+  <string name="downloaded_label">Letöltött</string>
+  <string name="not_downloaded_label">Nem letöltött</string>
   <string name="queued_label">Sorba állított</string>
   <string name="not_queued_label">Nem sorba állított</string>
   <string name="has_media">Médiát tartalmaz</string>

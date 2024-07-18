@@ -73,15 +73,15 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
   * operations are only on the selected (single or multiple)
 * List info is shown in Queue and Downloads views
 * Left and right swipe actions on lists now have telltales and can be configured on the spot
-* Played episodes have clearer markings
+* Played or new episodes have clearer markings
 * Sort dialog no longer dims the main view
+* download date can be used to sort both feeds and episodes
+* Subscriptions sorting is now bi-directional based on various explicit measures
 * in episode list view, if episode has no media, TTS button is shown for fetching transcript (if not exist) and then generating audio file from the transcript. TTS audio files are playable in the same way as local media (with speed setting, pause and rewind/forward)
 * Long-press filter button in FeedEpisode view enables/disables filters without changing filter settings
-* Subscriptions view has various explicit measures for sorting
-* subscriptions sorting is now bi-directional
 * in Subscriptions view, click on cover image of a feed opens the FeedInfo view (not FeedEpisodes view)
 * History view shows time of last play, and allows filters and sorts
-* 5 queues are provided by default: Default queue, and Queues 1-4
+* Multiple queues can be used: 5 queues are provided by default: Default queue, and Queues 1-4
 	* all queue operations are on the curQueue, which can be set in all episodes list views
 	* on app startup, the most recently updated queue is set to curQueue
 * queue is circular: if the final item in queue finished, the first item in queue (if exists) will get played
@@ -114,6 +114,18 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * Ability to sync between devices on the same wifi network without a server (experimental feature)
 * It syncs the play states (position and played) of episodes that exist in both devices (ensure to refresh first) and that have been played (completed or not)
 * So far, every sync is a full sync, no sync for subscriptions and media files
+
+### Automation
+
+* auto download algorithm is changed to individual feed based.
+	* When auto download is enabled in the Settings, feeds to be auto-downloaded need to be separately enabled in the feed settings.
+	* Each feed also has its own download policy (only new episodes, newest episodes, and oldest episodes. "newest episodes" meaning most recent episodes, new or old)
+	* Each feed has its own limit (Episode cache) for number of episodes downloaded, this limit rules in combination of the overall limit  for the app.
+	* After auto download run, episodes with New status is changed to Unplayed.
+	* auto download feed setting dialog is also changed:
+		* there are now separate dialogs for inclusive and exclusive filters where filter tokens can be specified independently
+		* on exclusive dialog, there are optional check boxes "Exclude episodes shorter than" and "Mark excluded episodes played"
+
 
 ### Security and reliability
 

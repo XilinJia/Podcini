@@ -46,32 +46,32 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
 
     @OptIn(UnstableApi::class)
     private fun setupPlaybackScreen() {
-        findPreference<Preference>(PREF_PLAYBACK_SPEED_LAUNCHER)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.prefPlaybackSpeedLauncher.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             VariableSpeedDialog.newInstance(booleanArrayOf(false, false, true),2)?.show(childFragmentManager, null)
             true
         }
-        findPreference<Preference>(PREF_PLAYBACK_REWIND_DELTA_LAUNCHER)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.prefPlaybackRewindDeltaLauncher.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_REWIND, null)
             true
         }
-        findPreference<Preference>(PREF_PLAYBACK_VIDEO_MODE_LAUNCHER)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.prefPlaybackVideoModeLauncher.name)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             VideoModeDialog.showDialog(requireContext())
             true
         }
 
-        findPreference<Preference>(PREF_PLAYBACK_SPEED_FORWARD_LAUNCHER)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.prefPlaybackSpeedForwardLauncher.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             EditForwardSpeedDialog(requireActivity()).show()
             true
         }
-        findPreference<Preference>(PREF_PLAYBACK_FALLBACK_SPEED_LAUNCHER)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.prefPlaybackFallbackSpeedLauncher.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             EditFallbackSpeedDialog(requireActivity()).show()
             true
         }
-        findPreference<Preference>(PREF_PLAYBACK_FAST_FORWARD_DELTA_LAUNCHER)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.prefPlaybackFastForwardDeltaLauncher.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_FORWARD, null)
             true
         }
-        findPreference<Preference>(PREF_PLAYBACK_PREFER_STREAMING)!!.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, _: Any? ->
+        findPreference<Preference>(Prefs.prefStreamOverDownload.name)!!.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, _: Any? ->
             // Update all visible lists to reflect new streaming action button
 //            TODO: need another event type?
             EventFlow.postEvent(FlowEvent.EpisodePlayedEvent())
@@ -80,8 +80,8 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
             true
         }
         if (Build.VERSION.SDK_INT >= 31) {
-            findPreference<Preference>(UserPreferences.PREF_UNPAUSE_ON_HEADSET_RECONNECT)!!.isVisible = false
-            findPreference<Preference>(UserPreferences.PREF_UNPAUSE_ON_BLUETOOTH_RECONNECT)!!.isVisible = false
+            findPreference<Preference>(UserPreferences.Prefs.prefUnpauseOnHeadsetReconnect.name)!!.isVisible = false
+            findPreference<Preference>(UserPreferences.Prefs.prefUnpauseOnBluetoothReconnect.name)!!.isVisible = false
         }
         buildEnqueueLocationPreference()
     }
@@ -97,7 +97,7 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
             }
         }
 
-        val pref = requirePreference<ListPreference>(UserPreferences.PREF_ENQUEUE_LOCATION)
+        val pref = requirePreference<ListPreference>(UserPreferences.Prefs.prefEnqueueLocation.name)
         pref.summary = res.getString(R.string.pref_enqueue_location_sum, options[pref.value])
         pref.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any? ->
             if (newValue !is String) return@OnPreferenceChangeListener false
@@ -114,7 +114,7 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
     private fun buildSmartMarkAsPlayedPreference() {
         val res = requireActivity().resources
 
-        val pref = findPreference<ListPreference>(UserPreferences.PREF_SMART_MARK_AS_PLAYED_SECS)
+        val pref = findPreference<ListPreference>(UserPreferences.Prefs.prefSmartMarkAsPlayedSecs.name)
         val values = res.getStringArray(R.array.smart_mark_as_played_values)
         val entries = arrayOfNulls<String>(values.size)
         for (x in values.indices) {
@@ -202,13 +202,13 @@ class PlaybackPreferencesFragment : PreferenceFragmentCompat() {
         }
     }
 
-    companion object {
-        private const val PREF_PLAYBACK_SPEED_LAUNCHER = "prefPlaybackSpeedLauncher"
-        private const val PREF_PLAYBACK_REWIND_DELTA_LAUNCHER = "prefPlaybackRewindDeltaLauncher"
-        private const val PREF_PLAYBACK_FALLBACK_SPEED_LAUNCHER = "prefPlaybackFallbackSpeedLauncher"
-        private const val PREF_PLAYBACK_SPEED_FORWARD_LAUNCHER = "prefPlaybackSpeedForwardLauncher"
-        private const val PREF_PLAYBACK_FAST_FORWARD_DELTA_LAUNCHER = "prefPlaybackFastForwardDeltaLauncher"
-        private const val PREF_PLAYBACK_PREFER_STREAMING = "prefStreamOverDownload"
-        private const val PREF_PLAYBACK_VIDEO_MODE_LAUNCHER = "prefPlaybackVideoModeLauncher"
+    private enum class Prefs {
+        prefPlaybackSpeedLauncher,
+        prefPlaybackRewindDeltaLauncher,
+        prefPlaybackFallbackSpeedLauncher,
+        prefPlaybackSpeedForwardLauncher,
+        prefPlaybackFastForwardDeltaLauncher,
+        prefStreamOverDownload,
+        prefPlaybackVideoModeLauncher,
     }
 }

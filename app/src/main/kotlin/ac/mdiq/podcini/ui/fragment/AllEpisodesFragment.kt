@@ -1,8 +1,7 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_FILTER_ALL_EPISODES
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_SORT_ALL_EPISODES
+import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodesCount
@@ -65,9 +64,14 @@ import kotlin.math.min
         cancelFlowEvents()
     }
 
+    private var loadItemsRunning = false
     override fun loadData(): List<Episode> {
-        allEpisodes = getEpisodes(0, Int.MAX_VALUE, getFilter(), allEpisodesSortOrder, false)
-        Logd(TAG, "loadData ${allEpisodes.size}")
+        if (!loadItemsRunning) {
+            loadItemsRunning = true
+            allEpisodes = getEpisodes(0, Int.MAX_VALUE, getFilter(), allEpisodesSortOrder, false)
+            Logd(TAG, "loadData ${allEpisodes.size}")
+            loadItemsRunning = false
+        }
         if (allEpisodes.isEmpty()) return listOf()
         return allEpisodes.subList(0, min(allEpisodes.size-1, page * EPISODES_PER_PAGE))
     }
@@ -98,8 +102,8 @@ import kotlin.math.min
             R.id.filter_items -> AllEpisodesFilterDialog.newInstance(getFilter()).show(childFragmentManager, null)
             R.id.action_favorites -> {
                 val filter = ArrayList(getFilter().valuesList)
-                if (filter.contains(EpisodeFilter.IS_FAVORITE)) filter.remove(EpisodeFilter.IS_FAVORITE)
-                else filter.add(EpisodeFilter.IS_FAVORITE)
+                if (filter.contains(EpisodeFilter.States.is_favorite.name)) filter.remove(EpisodeFilter.States.is_favorite.name)
+                else filter.add(EpisodeFilter.States.is_favorite.name)
                 onFilterChanged(FlowEvent.AllEpisodesFilterEvent(HashSet(filter)))
             }
             R.id.episodes_sort -> AllEpisodesSortDialog().show(childFragmentManager.beginTransaction(), "SortDialog")
@@ -157,8 +161,11 @@ import kotlin.math.min
             sortOrder = allEpisodesSortOrder
         }
         override fun onAddItem(title: Int, ascending: EpisodeSortOrder, descending: EpisodeSortOrder, ascendingIsDefault: Boolean) {
-            if (ascending == EpisodeSortOrder.DATE_OLD_NEW || ascending == EpisodeSortOrder.DURATION_SHORT_LONG
-                    || ascending == EpisodeSortOrder.PLAYED_DATE_OLD_NEW || ascending == EpisodeSortOrder.COMPLETED_DATE_OLD_NEW
+            if (ascending == EpisodeSortOrder.DATE_OLD_NEW
+                    || ascending == EpisodeSortOrder.DURATION_SHORT_LONG
+                    || ascending == EpisodeSortOrder.PLAYED_DATE_OLD_NEW
+                    || ascending == EpisodeSortOrder.DOWNLOAD_DATE_OLD_NEW
+                    || ascending == EpisodeSortOrder.COMPLETED_DATE_OLD_NEW
                     || ascending == EpisodeSortOrder.EPISODE_TITLE_A_Z)
                 super.onAddItem(title, ascending, descending, ascendingIsDefault)
         }
@@ -186,14 +193,14 @@ import kotlin.math.min
         val TAG = AllEpisodesFragment::class.simpleName ?: "Anonymous"
         const val PREF_NAME: String = "PrefAllEpisodesFragment"
         var allEpisodesSortOrder: EpisodeSortOrder?
-            get() = EpisodeSortOrder.fromCodeString(appPrefs.getString(PREF_SORT_ALL_EPISODES, "" + EpisodeSortOrder.DATE_NEW_OLD.code))
+            get() = EpisodeSortOrder.fromCodeString(appPrefs.getString(UserPreferences.Prefs.prefEpisodesSort.name, "" + EpisodeSortOrder.DATE_NEW_OLD.code))
             set(s) {
-                appPrefs.edit().putString(PREF_SORT_ALL_EPISODES, "" + s!!.code).apply()
+                appPrefs.edit().putString(UserPreferences.Prefs.prefEpisodesSort.name, "" + s!!.code).apply()
             }
         var prefFilterAllEpisodes: String
-            get() = appPrefs.getString(PREF_FILTER_ALL_EPISODES, "")?:""
+            get() = appPrefs.getString(UserPreferences.Prefs.prefEpisodesFilter.name, "")?:""
             set(filter) {
-                appPrefs.edit().putString(PREF_FILTER_ALL_EPISODES, filter).apply()
+                appPrefs.edit().putString(UserPreferences.Prefs.prefEpisodesFilter.name, filter).apply()
             }
     }
 }

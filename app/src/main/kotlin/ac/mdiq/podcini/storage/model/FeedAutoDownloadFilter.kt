@@ -9,8 +9,12 @@ import java.util.regex.Pattern
 //    (we don't have to recreate it)
 // 2. We don't know if we'll actually be asked to parse anything anyways.
 
-class FeedAutoDownloadFilter(val includeFilterRaw: String? = "", val excludeFilterRaw: String? = "", val minimalDurationFilter: Int = -1) : Serializable {
+class FeedAutoDownloadFilter(val includeFilterRaw: String? = "", val excludeFilterRaw: String? = "", val minimalDurationFilter: Int = -1, val markExcludedPlayed: Boolean = false) : Serializable {
 
+    var includeTerms: List<String>? = null
+        get() = field ?: parseTerms(includeFilterRaw)
+    var excludeTerms: List<String>? = null
+        get() = field ?: parseTerms(excludeFilterRaw)
     /**
      * Parses the text in to a list of single words or quoted strings.
      * Example: "One "Two Three"" returns ["One", "Two Three"]
@@ -32,11 +36,11 @@ class FeedAutoDownloadFilter(val includeFilterRaw: String? = "", val excludeFilt
      * @return true if the item should be downloaded
      */
     fun shouldAutoDownload(item: Episode): Boolean {
-        val includeTerms = parseTerms(includeFilterRaw)
-        val excludeTerms = parseTerms(excludeFilterRaw)
+//        if (includeTerms == null) includeTerms = parseTerms(includeFilterRaw)
+//        if (excludeTerms == null)  excludeTerms = parseTerms(excludeFilterRaw)
 
         // nothing has been specified, so include everything
-        if (includeTerms.isEmpty() && excludeTerms.isEmpty() && minimalDurationFilter <= -1) return true
+        if (includeTerms.isNullOrEmpty() && excludeTerms.isNullOrEmpty() && minimalDurationFilter <= -1) return true
 
         // Check if the episode is long enough if minimal duration filter is on
         if (hasMinimalDurationFilter() && item.media != null) {
@@ -50,11 +54,11 @@ class FeedAutoDownloadFilter(val includeFilterRaw: String? = "", val excludeFilt
 
         // if it's explicitly excluded, it shouldn't be autodownloaded
         // even if it has include terms
-        for (term in excludeTerms) {
+        for (term in excludeTerms!!) {
             if (title.contains(term.trim { it <= ' ' }.lowercase(Locale.getDefault()))) return false
         }
 
-        for (term in includeTerms) {
+        for (term in includeTerms!!) {
             if (title.contains(term.trim { it <= ' ' }.lowercase(Locale.getDefault()))) return true
         }
 
@@ -71,11 +75,13 @@ class FeedAutoDownloadFilter(val includeFilterRaw: String? = "", val excludeFilt
     }
 
     fun getIncludeFilter(): List<String> {
-        return if (includeFilterRaw == null) ArrayList() else parseTerms(includeFilterRaw)
+        return includeTerms!!
+//        return if (includeFilterRaw == null) ArrayList() else parseTerms(includeFilterRaw)
     }
 
     fun getExcludeFilter(): List<String> {
-        return if (excludeFilterRaw == null) ArrayList() else parseTerms(excludeFilterRaw)
+        return excludeTerms!!
+//        return if (excludeFilterRaw == null) ArrayList() else parseTerms(excludeFilterRaw)
     }
 
     /**

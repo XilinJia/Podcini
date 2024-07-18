@@ -8,31 +8,35 @@ class EpisodeFilter(vararg properties: String) : Serializable {
     private val properties: Array<String> = arrayOf(*properties.filter { it.isNotEmpty() }.map {it.trim()}.toTypedArray())
 
     @JvmField
-    val showPlayed: Boolean = hasProperty(PLAYED)
+    val showPlayed: Boolean = hasProperty(States.played.name)
     @JvmField
-    val showUnplayed: Boolean = hasProperty(UNPLAYED)
+    val showUnplayed: Boolean = hasProperty(States.unplayed.name)
     @JvmField
-    val showPaused: Boolean = hasProperty(PAUSED)
+    val showPaused: Boolean = hasProperty(States.paused.name)
     @JvmField
-    val showNotPaused: Boolean = hasProperty(NOT_PAUSED)
+    val showNotPaused: Boolean = hasProperty(States.not_paused.name)
     @JvmField
-    val showNew: Boolean = hasProperty(NEW)
+    val showNew: Boolean = hasProperty(States.new.name)
     @JvmField
-    val showQueued: Boolean = hasProperty(QUEUED)
+    val showQueued: Boolean = hasProperty(States.queued.name)
     @JvmField
-    val showNotQueued: Boolean = hasProperty(NOT_QUEUED)
+    val showNotQueued: Boolean = hasProperty(States.not_queued.name)
     @JvmField
-    val showDownloaded: Boolean = hasProperty(DOWNLOADED)
+    val showDownloaded: Boolean = hasProperty(States.downloaded.name)
     @JvmField
-    val showNotDownloaded: Boolean = hasProperty(NOT_DOWNLOADED)
+    val showNotDownloaded: Boolean = hasProperty(States.not_downloaded.name)
     @JvmField
-    val showHasMedia: Boolean = hasProperty(HAS_MEDIA)
+    val showAutoDownloadable: Boolean = hasProperty(States.auto_downloadable.name)
     @JvmField
-    val showNoMedia: Boolean = hasProperty(NO_MEDIA)
+    val showNotAutoDownloadable: Boolean = hasProperty(States.not_auto_downloadable.name)
     @JvmField
-    val showIsFavorite: Boolean = hasProperty(IS_FAVORITE)
+    val showHasMedia: Boolean = hasProperty(States.has_media.name)
     @JvmField
-    val showNotFavorite: Boolean = hasProperty(NOT_FAVORITE)
+    val showNoMedia: Boolean = hasProperty(States.no_media.name)
+    @JvmField
+    val showIsFavorite: Boolean = hasProperty(States.is_favorite.name)
+    @JvmField
+    val showNotFavorite: Boolean = hasProperty(States.not_favorite.name)
 
     constructor(properties: String) : this(*(properties.split(",").toTypedArray()))
 
@@ -55,6 +59,8 @@ class EpisodeFilter(vararg properties: String) : Serializable {
             showNotPaused && item.isInProgress -> return false
             showDownloaded && !item.isDownloaded -> return false
             showNotDownloaded && item.isDownloaded -> return false
+            showAutoDownloadable && !item.isAutoDownloadEnabled -> return false
+            showNotAutoDownloadable && item.isAutoDownloadEnabled -> return false
             showHasMedia && item.media == null -> return false
             showNoMedia && item.media != null -> return false
             showIsFavorite && !item.isFavorite -> return false
@@ -85,6 +91,10 @@ class EpisodeFilter(vararg properties: String) : Serializable {
             showNotDownloaded -> statements.add("media.downloaded == false ")
         }
         when {
+            showAutoDownloadable -> statements.add("isAutoDownloadEnabled == true ")
+            showNotAutoDownloadable -> statements.add("isAutoDownloadEnabled == false ")
+        }
+        when {
             showHasMedia -> statements.add("media != nil ")
             showNoMedia -> statements.add("media == nil ")
         }
@@ -104,21 +114,25 @@ class EpisodeFilter(vararg properties: String) : Serializable {
 
         return query.toString()
     }
-    
+
+    enum class States {
+        played,
+        unplayed,
+        new,
+        paused,
+        not_paused,
+        is_favorite,
+        not_favorite,
+        has_media,
+        no_media,
+        queued,
+        not_queued,
+        downloaded,
+        not_downloaded,
+        auto_downloadable,
+        not_auto_downloadable
+    }
     companion object {
-        const val PLAYED: String = "played"
-        const val UNPLAYED: String = "unplayed"
-        const val NEW: String = "new"
-        const val PAUSED: String = "paused"
-        const val NOT_PAUSED: String = "not_paused"
-        const val IS_FAVORITE: String = "is_favorite"
-        const val NOT_FAVORITE: String = "not_favorite"
-        const val HAS_MEDIA: String = "has_media"
-        const val NO_MEDIA: String = "no_media"
-        const val QUEUED: String = "queued"
-        const val NOT_QUEUED: String = "not_queued"
-        const val DOWNLOADED: String = "downloaded"
-        const val NOT_DOWNLOADED: String = "not_downloaded"
 
         @JvmStatic
         fun unfiltered(): EpisodeFilter {

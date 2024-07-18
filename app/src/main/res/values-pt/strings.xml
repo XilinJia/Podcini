@@ -722,8 +722,8 @@
   <string name="filter">Filtro</string>
   <string name="hide_is_favorite_label">Favorito</string>
   <string name="not_favorite">Não favorito</string>
-  <string name="hide_downloaded_episodes_label">Descarregado</string>
-  <string name="hide_not_downloaded_episodes_label">Não descarregado</string>
+  <string name="downloaded_label">Descarregado</string>
+  <string name="not_downloaded_label">Não descarregado</string>
   <string name="queued_label">Na fila</string>
   <string name="not_queued_label">Não na fila</string>
   <string name="has_media">Tem ficheiro</string>

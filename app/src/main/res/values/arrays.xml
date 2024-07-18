@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <string-array name="spnAutoDLPolicyItems">
+        <item>@string/feed_auto_download_new</item>
+        <item>@string/feed_auto_download_newer</item>
+        <item>@string/feed_auto_download_older</item>
+    </string-array>
+    <string-array name="spnAutoDLPolicyValues">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
     <string-array name="spnAutoDeleteItems">
         <item>@string/global_default</item>
         <item>@string/feed_auto_download_always</item>
@@ -89,6 +100,27 @@
         <item>50</item>
         <item>100</item>
         <item>500</item>
+        <item>-1</item>
+    </string-array>
+
+    <string-array name="feed_episode_cache_size_entries">
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>10</item>
+        <item>15</item>
+        <item>20</item>
+        <item>@string/pref_episode_cache_unlimited</item>
+    </string-array>
+    <string-array name="feed_episode_cache_size_values">
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>10</item>
+        <item>15</item>
+        <item>20</item>
         <item>-1</item>
     </string-array>
 
@@ -187,27 +219,6 @@
         <item>2</item>
         <item>3</item>
     </string-array>
-
-<!--    <string-array name="nav_drawer_feed_order_options">-->
-<!--        <item>@string/feed_order_unplayed_count</item>-->
-<!--        <item>@string/feed_order_alphabetical</item>-->
-<!--        <item>@string/feed_order_last_update</item>-->
-<!--        <item>@string/feed_order_last_unread_update</item>-->
-<!--        <item>@string/feed_order_most_played</item>-->
-<!--        <item>@string/feed_counter_downloaded</item>-->
-<!--        <item>@string/feed_counter_downloaded_unplayed</item>-->
-<!--        <item>@string/feed_order_new_episodes</item>-->
-<!--    </string-array>-->
-<!--    <string-array name="nav_drawer_feed_order_values">-->
-<!--        <item>0</item>-->
-<!--        <item>1</item>-->
-<!--        <item>2</item>-->
-<!--        <item>3</item>-->
-<!--        <item>4</item>-->
-<!--        <item>5</item>-->
-<!--        <item>6</item>-->
-<!--        <item>7</item>-->
-<!--    </string-array>-->
 
     <string-array name="full_notification_buttons_options">
         <item>@string/skip_episode_label</item>

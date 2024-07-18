@@ -15,10 +15,9 @@ import ac.mdiq.podcini.playback.PlaybackController.Companion.curPosition
 import ac.mdiq.podcini.playback.PlaybackController.Companion.seekTo
 import ac.mdiq.podcini.storage.model.Chapter
 import ac.mdiq.podcini.storage.model.EmbeddedChapterImage
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.view.CircularProgressBar
-import ac.mdiq.podcini.util.Converter.getDurationStringLocalized
-import ac.mdiq.podcini.util.Converter.getDurationStringLong
+import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringLocalized
+import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringLong
 import ac.mdiq.podcini.util.IntentUtils.openInBrowser
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow

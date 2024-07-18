@@ -33,6 +33,8 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
 //            if (value && episode?.isNew == true) episode!!.setPlayed(false)
 //        }
 
+    var downloadTime: Long = 0
+
     @get:JvmName("getDurationProperty")
     @set:JvmName("setDurationProperty")
     var duration = 0
@@ -93,6 +95,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
         this.downloadUrl = download_url
     }
 
+    // mostly used in tests
     constructor(id: Long, item: Episode?, duration: Int, position: Int,
                 size: Long, mime_type: String?, file_url: String?, download_url: String?,
                 downloaded: Boolean, playbackCompletionDate: Date?, played_duration: Int,
@@ -152,6 +155,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
 
     fun setIsDownloaded() {
         downloaded = true
+        downloadTime = Date().time
         if (episode?.isNew == true) episode!!.setPlayed(false)
     }
 

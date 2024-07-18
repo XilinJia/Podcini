@@ -1,4 +1,4 @@
-package ac.mdiq.podcini.util
+package ac.mdiq.podcini.storage.utils
 
 import ac.mdiq.podcini.preferences.UserPreferences
 

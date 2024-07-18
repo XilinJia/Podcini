@@ -10,15 +10,21 @@ import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownloadOnBattery
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodesCount
-import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.EpisodeFilter
-import ac.mdiq.podcini.storage.model.EpisodeSortOrder
+import ac.mdiq.podcini.storage.database.Episodes.setPlayState
+import ac.mdiq.podcini.storage.database.Feeds.getFeedList
+import ac.mdiq.podcini.storage.database.RealmDB.realm
+import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
+import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
+import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
 import androidx.media3.common.util.UnstableApi
+import io.realm.kotlin.Realm
+import io.realm.kotlin.UpdatePolicy
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
@@ -35,7 +41,7 @@ object AutoDownloads {
         t
     }
 
-    var downloadAlgorithm = AutoDownloadAlgorithm()
+    var downloadAlgorithm = FeedBasedAutoDLAlgorithm()
 
     /**
      * Looks for non-downloaded episodes in the queue or list of unread episodes and request a download if
@@ -47,9 +53,9 @@ object AutoDownloads {
      * @return A Future that can be used for waiting for the methods completion.
      */
     @UnstableApi
-    fun autodownloadEpisodeMedia(context: Context): Future<*> {
+    fun autodownloadEpisodeMedia(context: Context, feeds: List<Feed>? = null): Future<*> {
         Logd(TAG, "autodownloadEpisodeMedia")
-        return autodownloadExec.submit(downloadAlgorithm.autoDownloadEpisodeMedia(context))
+        return autodownloadExec.submit(downloadAlgorithm.autoDownloadEpisodeMedia(context, feeds))
     }
 
     /**
@@ -66,8 +72,9 @@ object AutoDownloads {
          * @param context  Used for accessing the DB.
          * @return A Runnable that will be submitted to an ExecutorService.
          */
+//        likely not needed
         @UnstableApi
-        open fun autoDownloadEpisodeMedia(context: Context): Runnable? {
+        open fun autoDownloadEpisodeMedia(context: Context, feeds: List<Feed>? = null): Runnable? {
             return Runnable {
                 // true if we should auto download based on network status
 //            val networkShouldAutoDl = (isAutoDownloadAllowed)
@@ -78,15 +85,14 @@ object AutoDownloads {
                 // we should only auto download if both network AND power are happy
                 if (networkShouldAutoDl && powerShouldAutoDl) {
                     Logd(TAG, "Performing auto-dl of undownloaded episodes")
-                    val candidates: MutableList<Episode>
-                    val queue = curQueue.episodes
-                    val newItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.NEW), EpisodeSortOrder.DATE_NEW_OLD)
+                    val queueItems = curQueue.episodes
+                    val newItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.new.name), EpisodeSortOrder.DATE_NEW_OLD)
                     Logd(TAG, "newItems: ${newItems.size}")
-                    candidates = ArrayList(queue.size + newItems.size)
-                    candidates.addAll(queue)
+                    val candidates: MutableList<Episode> = ArrayList(queueItems.size + newItems.size)
+                    candidates.addAll(queueItems)
                     for (newItem in newItems) {
                         val feedPrefs = newItem.feed!!.preferences
-                        if (feedPrefs!!.autoDownload && !candidates.contains(newItem) && feedPrefs.autoDownloadFilter.shouldAutoDownload(newItem)) candidates.add(newItem)
+                        if (feedPrefs!!.autoDownload && !candidates.contains(newItem) && feedPrefs.autoDownloadFilter!!.shouldAutoDownload(newItem)) candidates.add(newItem)
                     }
                     // filter items that are not auto downloadable
                     val it = candidates.iterator()
@@ -96,7 +102,7 @@ object AutoDownloads {
                             it.remove()
                     }
                     val autoDownloadableEpisodes = candidates.size
-                    val downloadedEpisodes = getEpisodesCount(EpisodeFilter(EpisodeFilter.DOWNLOADED))
+                    val downloadedEpisodes = getEpisodesCount(EpisodeFilter(EpisodeFilter.States.downloaded.name))
                     val deletedEpisodes = AutoCleanups.build().makeRoomForEpisodes(context, autoDownloadableEpisodes)
                     val cacheIsUnlimited = episodeCacheSize == UserPreferences.EPISODE_CACHE_SIZE_UNLIMITED
                     val episodeCacheSize = episodeCacheSize
@@ -112,10 +118,11 @@ object AutoDownloads {
                 else Logd(TAG, "not auto downloaded networkShouldAutoDl: $networkShouldAutoDl powerShouldAutoDl $powerShouldAutoDl")
             }
         }
+
         /**
          * @return true if the device is charging
          */
-        private fun deviceCharging(context: Context): Boolean {
+        protected fun deviceCharging(context: Context): Boolean {
             // from http://developer.android.com/training/monitoring-device-state/battery-monitoring.html
             val iFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
             val batteryStatus = context.registerReceiver(null, iFilter)
@@ -125,6 +132,101 @@ object AutoDownloads {
         }
         companion object {
             private val TAG: String = AutoDownloadAlgorithm::class.simpleName ?: "Anonymous"
+        }
+    }
+
+    class FeedBasedAutoDLAlgorithm : AutoDownloadAlgorithm() {
+
+        @UnstableApi
+        override fun autoDownloadEpisodeMedia(context: Context, feeds: List<Feed>?): Runnable {
+            return Runnable {
+                // true if we should auto download based on network status
+                val networkShouldAutoDl = (isAutoDownloadAllowed && isEnableAutodownload)
+                // true if we should auto download based on power status
+                val powerShouldAutoDl = (deviceCharging(context) || isEnableAutodownloadOnBattery)
+                Logd(Companion.TAG, "autoDownloadEpisodeMedia prepare $networkShouldAutoDl $powerShouldAutoDl")
+                // we should only auto download if both network AND power are happy
+                if (networkShouldAutoDl && powerShouldAutoDl) {
+                    Logd(Companion.TAG, "autoDownloadEpisodeMedia Performing auto-dl of undownloaded episodes")
+                    val candidates: MutableSet<Episode> = mutableSetOf()
+                    val queueItems = curQueue.episodes.filter { it.media?.downloaded != true }
+                    if (queueItems.isNotEmpty()) candidates.addAll(queueItems)
+                    val feeds = feeds ?: getFeedList()
+                    feeds.forEach { f ->
+                        if (f.preferences?.autoDownload == true && !f.isLocalFeed) {
+                            var episodes = mutableListOf<Episode>()
+                            val downloadedCount = getEpisodesCount(EpisodeFilter(EpisodeFilter.States.downloaded.name), f.id)
+                            val toDLCount = (f.preferences?.autoDLMaxEpisodes?:0) - downloadedCount
+                            if (toDLCount > 0) {
+                                var queryString = "feedId == ${f.id} AND isAutoDownloadEnabled == true AND media != nil AND media.downloaded == false"
+                                when (f.preferences?.autoDLPolicy) {
+                                    FeedPreferences.AutoDLPolicy.ONLY_NEW -> {
+                                        queryString += " AND playState == -1 SORT(pubDate DESC) LIMIT(${3*toDLCount})"
+                                        episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
+                                    }
+                                    FeedPreferences.AutoDLPolicy.NEWER -> {
+                                        queryString += " AND playState != 1 SORT(pubDate DESC) LIMIT(${3*toDLCount})"
+                                        episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
+                                    }
+                                    FeedPreferences.AutoDLPolicy.OLDER -> {
+                                        queryString += " AND playState != 1 SORT(pubDate ASC) LIMIT(${3*toDLCount})"
+                                        episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
+                                    }
+                                    else -> {}
+                                }
+                                if (episodes.isNotEmpty()) {
+                                    var count = 0
+                                    for (e in episodes) {
+                                        if (f.preferences?.autoDownloadFilter?.shouldAutoDownload(e) == true) {
+                                            candidates.add(e)
+                                            if (++count >= toDLCount) break
+                                        } else upsertBlk(e) { it.setPlayed(true)}
+                                    }
+                                }
+                            }
+                            episodes.clear()
+                            Logd(TAG, "autoDownloadEpisodeMedia ${f.title} candidate size: ${candidates.size}")
+                        }
+                        runOnIOScope {
+                            realm.write {
+                                while (true) {
+                                    val episodesNew = query(Episode::class, "feedId == ${f.id} AND playState == -1 LIMIT(20)").find()
+                                    if (episodesNew.isEmpty()) break
+                                    Logd(TAG, "autoDownloadEpisodeMedia episodesNew: ${episodesNew.size}")
+                                    episodesNew.map { e ->
+                                        e.setPlayed(false)
+                                        Logd(TAG, "autoDownloadEpisodeMedia reset NEW ${e.title} ${e.playState}")
+                                        copyToRealm(e, UpdatePolicy.ALL)
+                                    }
+                                }
+                            }
+//                            TODO: need to send an event
+                        }
+                    }
+                    if (candidates.isNotEmpty()) {
+                        val autoDownloadableCount = candidates.size
+                        val downloadedCount = getEpisodesCount(EpisodeFilter(EpisodeFilter.States.downloaded.name))
+                        val deletedCount = AutoCleanups.build().makeRoomForEpisodes(context, autoDownloadableCount)
+                        val cacheIsUnlimited = episodeCacheSize == UserPreferences.EPISODE_CACHE_SIZE_UNLIMITED
+                        val allowedCount =
+                            if (cacheIsUnlimited || episodeCacheSize >= downloadedCount + autoDownloadableCount) autoDownloadableCount
+                            else episodeCacheSize - (downloadedCount - deletedCount)
+                        if (allowedCount in 0..candidates.size) {
+                            val itemsToDownload: MutableList<Episode> = candidates.toMutableList().subList(0, allowedCount)
+                            if (itemsToDownload.isNotEmpty()) {
+                                Logd(TAG, "Enqueueing " + itemsToDownload.size + " items for download")
+                                for (episode in itemsToDownload) DownloadServiceInterface.get()?.download(context, episode)
+                            }
+                            itemsToDownload.clear()
+                        }
+                        candidates.clear()
+                    }
+                }
+                else Logd(TAG, "not auto downloaded networkShouldAutoDl: $networkShouldAutoDl powerShouldAutoDl $powerShouldAutoDl")
+            }
+        }
+        companion object {
+            private val TAG: String = FeedBasedAutoDLAlgorithm::class.simpleName ?: "Anonymous"
         }
     }
 }

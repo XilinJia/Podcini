@@ -2,11 +2,11 @@ package ac.mdiq.podcini.net.feed.discovery
 
 interface PodcastSearcher {
 
-    fun urlNeedsLookup(resultUrl: String): Boolean
+    fun urlNeedsLookup(url: String): Boolean
 
-    suspend fun search1(query: String): List<PodcastSearchResult?>?
+    suspend fun search(query: String): List<PodcastSearchResult?>?
 
-    suspend fun lookupUrl1(resultUrl: String): String
+    suspend fun lookupUrl(url: String): String
 
     val name: String?
 }

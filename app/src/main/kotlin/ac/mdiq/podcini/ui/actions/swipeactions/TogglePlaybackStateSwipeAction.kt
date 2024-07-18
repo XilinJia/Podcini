@@ -3,11 +3,11 @@ package ac.mdiq.podcini.ui.actions.swipeactions
 import android.content.Context
 import androidx.fragment.app.Fragment
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.preferences.UserPreferences.shouldAutoDeleteItem
-import ac.mdiq.podcini.preferences.UserPreferences.shouldDeleteRemoveFromQueue
 import ac.mdiq.podcini.storage.database.Episodes.deleteMediaSync
 import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
+import ac.mdiq.podcini.storage.database.Episodes.shouldDeleteRemoveFromQueue
+import ac.mdiq.podcini.storage.database.Feeds.shouldAutoDeleteItem
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueueSync
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia

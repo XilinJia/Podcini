@@ -81,6 +81,7 @@
 
     <string name="feed_order_alphabetical">Title</string>
     <string name="feed_order_last_update">Publish date</string>
+    <string name="feed_order_last_download">Download date</string>
     <string name="feed_order_last_unread_update">Unplayed publish date</string>
     <string name="feed_order_most_played">Played count</string>
     <string name="feed_order_new_episodes">New count</string>
@@ -139,6 +140,11 @@
     <string name="feed_volume_boost_heavy">Heavy boost</string>
     <string name="feed_auto_download_always">Always</string>
     <string name="feed_auto_download_never">Never</string>
+
+    <string name="feed_auto_download_policy">Auto download policy</string>
+    <string name="feed_auto_download_new">Only new items</string>
+    <string name="feed_auto_download_newer">Newest unplayed</string>
+    <string name="feed_auto_download_older">Oldest unplayed</string>
 
     <string name="feed_new_episodes_action_nothing">Nothing</string>
     <string name="episode_cleanup_never">Never</string>
@@ -354,6 +360,7 @@
     <string name="sort">Sort</string>
     <string name="keep_sorted">Keep sorted</string>
     <string name="publish_date">Publish date</string>
+    <string name="download_date">Download date</string>
     <string name="date">Date</string>
     <string name="last_played_date">Played date</string>
     <string name="completed_date">Completed date</string>
@@ -392,7 +399,7 @@
     <string name="synchronization_pref">Synchronization</string>
     <string name="synchronization_sum">Synchronize with other devices</string>
     <string name="pref_backup_on_google_title">Auto backup of OPML</string>
-    <string name="pref_backup_on_google_sum">Auto backup OPML files to Google. Once enabled, after Podcini is uninstalled and re-installed, the subscriptions will be automatically restored.</string>
+    <string name="pref_backup_on_google_sum">Auto backup OPML files to Google. Once enabled, after Podcini is uninstalled and re-installed, the subscriptions can be restored. Toggle this setting will restart Podcini.</string>
     <string name="automation">Automation</string>
     <string name="download_pref_details">Details</string>
     <string name="import_export_pref">Import/Export</string>
@@ -648,6 +655,9 @@
     <string name="favorites_export_label">Favorites export</string>
     <string name="favorites_export_summary">Export saved favorites to file</string>
 
+    <string name="restore_subscriptions_label">Restore subscriptions</string>
+    <string name="restore_subscriptions_summary">Previous podcasts subscriptions can be restores.  Would you like to restore them?</string>
+
     <!-- Sleep timer -->
     <string name="set_sleeptimer_label">Set sleep timer</string>
     <string name="disable_sleeptimer_label">Disable sleep timer</string>
@@ -774,11 +784,14 @@
     <string name="multi_feed_common_tags_info">{faw_info_circle} Only common tags from all selected subscriptions are shown. Other tags stay unaffected.</string>
     <string name="auto_download_settings_label">Auto download settings</string>
     <string name="episode_filters_label">Episode filter</string>
+    <string name="episode_inclusive_filters_label">Episode inclusive filter</string>
+    <string name="episode_exclusive_filters_label">Episode exclusive filter</string>
     <string name="episode_filters_description">List of terms used to decide if an episode should be included or excluded when auto downloading</string>
     <string name="add_term">Add term</string>
     <string name="exclude_terms">Exclude episodes containing any of the terms below</string>
     <string name="include_terms">Include only episodes containing any of the terms below</string>
     <string name="exclude_episodes_shorter_than">Exclude episodes shorter than</string>
+    <string name="mark_excluded_episodes_played">Mark excluded episodes played</string>
     <string name="keep_updated">Keep updated</string>
     <string name="keep_updated_summary">Include this podcast when (auto-)refreshing all podcasts</string>
     <string name="auto_download_disabled_globally">Auto download is disabled in the main Podcini settings</string>
@@ -827,8 +840,10 @@
     <string name="filter">Filter</string>
     <string name="hide_is_favorite_label">Is favorite</string>
     <string name="not_favorite">Not favorite</string>
-    <string name="hide_downloaded_episodes_label">Downloaded</string>
-    <string name="hide_not_downloaded_episodes_label">Not downloaded</string>
+    <string name="downloaded_label">Downloaded</string>
+    <string name="not_downloaded_label">Not downloaded</string>
+    <string name="auto_downloadable_label">Auto downloadable</string>
+    <string name="not_auto_downloadable_label">Not auto downloadable</string>
     <string name="queued_label">Queued</string>
     <string name="not_queued_label">Not queued</string>
     <string name="has_media">Has media</string>

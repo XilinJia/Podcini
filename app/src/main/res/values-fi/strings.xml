@@ -651,8 +651,8 @@
   <string name="filter">Suodin</string>
   <string name="hide_is_favorite_label">On suosikki</string>
   <string name="not_favorite">Ei suosikki</string>
-  <string name="hide_downloaded_episodes_label">Ladattu</string>
-  <string name="hide_not_downloaded_episodes_label">Ei ladattu</string>
+  <string name="downloaded_label">Ladattu</string>
+  <string name="not_downloaded_label">Ei ladattu</string>
   <string name="queued_label">Jonossa</string>
   <string name="not_queued_label">Ei jonossa</string>
   <string name="has_media">On media</string>

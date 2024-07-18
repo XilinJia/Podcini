@@ -30,7 +30,6 @@ import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.EpisodesAdapter
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.dialog.*
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.utils.ToolbarIconTintManager
 import ac.mdiq.podcini.ui.utils.TransitionEffect
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeViewHolder
@@ -39,7 +38,7 @@ import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.ShareUtils
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
-import ac.mdiq.podcini.util.sorting.EpisodesPermutors.getPermutor
+import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import android.app.Activity
 import android.content.Context
 import android.content.res.Configuration
@@ -341,7 +340,7 @@ import java.util.concurrent.Semaphore
             if (item.feedId != feed!!.id) continue
             val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
             if (pos >= 0) {
-                Logd(TAG, "episode event: ${item.title} ${item.playState}")
+                Logd(TAG, "episode event: ${item.title} ${item.playState} ${item.isDownloaded}")
                 episodes[pos] = item
                 adapter.notifyItemChangedCompat(pos)
             }
@@ -358,7 +357,7 @@ import java.util.concurrent.Semaphore
             if (item.feedId != feed!!.id) continue
             val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
             if (pos >= 0) {
-                episodes[pos] = item
+//                episodes[pos] = item
                 adapter.notifyItemChangedCompat(pos)
 //                episodes[pos].playState = item.playState
 //                adapter.notifyItemChangedCompat(pos)
@@ -367,8 +366,8 @@ import java.util.concurrent.Semaphore
         }
     }
 
-    private fun onEvenStartPlay(event: FlowEvent.PlayEvent) {
-        Logd(TAG, "onEvenStartPlay ${event.episode.title}")
+    private fun onPlayEvent(event: FlowEvent.PlayEvent) {
+        Logd(TAG, "onPlayEvent ${event.episode.title}")
         if (feed != null) {
             val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, event.episode.id)
             if (pos >= 0) adapter.notifyItemChangedCompat(pos)
@@ -381,8 +380,13 @@ import java.util.concurrent.Semaphore
         val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
         if (pos >= 0) {
             Logd(TAG, "played item: ${item.title} ${item.playState}")
-            episodes[pos] = item
-            adapter.notifyItemChangedCompat(pos)
+            if (enableFilter && ((feed!!.episodeFilter.showUnplayed && item.isPlayed()) || feed!!.episodeFilter.showPlayed && !item.isPlayed())) {
+                episodes.removeAt(pos)
+                adapter.updateItems(episodes)
+            } else {
+                episodes[pos] = item
+                adapter.notifyItemChangedCompat(pos)
+            }
 //            episodes[pos].playState = item.playState
 //            adapter.notifyItemChangedCompat(pos)
         }
@@ -412,6 +416,7 @@ import java.util.concurrent.Semaphore
 
     private fun onPlaybackPositionEvent(event: FlowEvent.PlaybackPositionEvent) {
         val item = (event.media as? EpisodeMedia)?.episode ?: return
+        if (loadItemsRunning) return
         val pos = if (curIndex in 0..<episodes.size && event.media.getIdentifier() == episodes[curIndex].media?.getIdentifier() && isCurMedia(episodes[curIndex].media))
             curIndex else EpisodeUtil.indexOfItemWithId(episodes, item.id)
 
@@ -440,7 +445,7 @@ import java.util.concurrent.Semaphore
                 when (event) {
                     is FlowEvent.QueueEvent -> onQueueEvent(event)
                     is FlowEvent.FavoritesEvent -> onFavoriteEvent(event)
-                    is FlowEvent.PlayEvent -> onEvenStartPlay(event)
+                    is FlowEvent.PlayEvent -> onPlayEvent(event)
                     is FlowEvent.PlaybackPositionEvent -> onPlaybackPositionEvent(event)
                     is FlowEvent.FeedPrefsChangeEvent -> if (feed?.id == event.feed.id) loadItems()
                     is FlowEvent.EpisodeEvent -> onEpisodeEvent(event)
@@ -553,6 +558,8 @@ import java.util.concurrent.Semaphore
         binding.header.butFilter.setOnLongClickListener {
             if (feed != null) {
                 enableFilter = !enableFilter
+                waitForLoading()
+                loadItemsRunning = true
                 episodes.clear()
                 if (enableFilter) {
                     binding.header.butFilter.setColorFilter(Color.WHITE)
@@ -566,6 +573,7 @@ import java.util.concurrent.Semaphore
                 if (sortOrder != null) getPermutor(sortOrder).reorder(episodes)
                 binding.header.counts.text = episodes.size.toString()
                 adapter.updateItems(episodes, feed)
+                loadItemsRunning = false
             }
             true
         }
@@ -605,64 +613,73 @@ import java.util.concurrent.Semaphore
         }
     }
 
-    @UnstableApi private fun loadItems() {
-        lifecycleScope.launch {
-            try {
-                feed = withContext(Dispatchers.IO) {
-                    val feed_ = getFeed(feedID, fromDB = true)
-                    if (feed_ != null) {
-                        episodes.clear()
-                        if (enableFilter && !feed_.preferences?.filterString.isNullOrEmpty()) {
-                            val episodes_ = feed_.episodes.filter { feed_.episodeFilter.matches(it) }
-                            episodes.addAll(episodes_)
-                        } else episodes.addAll(feed_.episodes)
-                        val sortOrder = fromCode(feed_.preferences?.sortOrderCode?:0)
-                        if (sortOrder != null) getPermutor(sortOrder).reorder(episodes)
-//                        episodes.forEach {
-//                            Logd(TAG, "Episode: ${it.title} ${it.media?.downloaded} ${it.media?.fileUrl}")
-//                        }
-                        if (onInit) {
-                            var hasNonMediaItems = false
-                            for (item in episodes) {
-                                if (item.media == null) {
-                                    hasNonMediaItems = true
-                                    break
+    private var loadItemsRunning = false
+    private fun waitForLoading() {
+        while (loadItemsRunning) Thread.sleep(50)
+    }
+
+    @UnstableApi
+    private fun loadItems() {
+        if (!loadItemsRunning) {
+            loadItemsRunning = true
+            lifecycleScope.launch {
+                try {
+                    feed = withContext(Dispatchers.IO) {
+                        val feed_ = getFeed(feedID, fromDB = true)
+                        if (feed_ != null) {
+                            Logd(TAG, "loadItems feed_.episodes.size: ${feed_.episodes.size}")
+                            episodes.clear()
+                            if (enableFilter && !feed_.preferences?.filterString.isNullOrEmpty()) {
+                                val episodes_ = feed_.episodes.filter { feed_.episodeFilter.matches(it) }
+                                episodes.addAll(episodes_)
+                            } else episodes.addAll(feed_.episodes)
+                            val sortOrder = fromCode(feed_.preferences?.sortOrderCode ?: 0)
+                            if (sortOrder != null) getPermutor(sortOrder).reorder(episodes)
+                            if (onInit) {
+                                var hasNonMediaItems = false
+                                for (item in episodes) {
+                                    if (item.media == null) {
+                                        hasNonMediaItems = true
+                                        break
+                                    }
                                 }
-                            }
-                            if (hasNonMediaItems) {
-                                ioScope.launch {
-                                    withContext(Dispatchers.IO) {
-                                        if (!ttsReady) {
-                                            initializeTTS(requireContext())
-                                            semaphore.acquire()
+                                if (hasNonMediaItems) {
+                                    ioScope.launch {
+                                        withContext(Dispatchers.IO) {
+                                            if (!ttsReady) {
+                                                initializeTTS(requireContext())
+                                                semaphore.acquire()
+                                            }
                                         }
                                     }
                                 }
+                                onInit = false
                             }
-                            onInit = false
                         }
+                        feed_
                     }
-                    feed_
-                }
-                withContext(Dispatchers.Main) {
-                    Logd(TAG, "loadItems subscribe called ${feed?.title}")
-                    swipeActions.setFilter(feed?.episodeFilter)
-                    refreshHeaderView()
-                    binding.progressBar.visibility = View.GONE
+                    withContext(Dispatchers.Main) {
+                        Logd(TAG, "loadItems subscribe called ${feed?.title}")
+                        swipeActions.setFilter(feed?.episodeFilter)
+                        refreshHeaderView()
+                        binding.progressBar.visibility = View.GONE
 //                    adapter.setDummyViews(0)
-                    if (feed != null) {
-                        adapter.updateItems(episodes, feed)
-                        binding.header.counts.text = episodes.size.toString()
+                        if (feed != null) {
+                            adapter.updateItems(episodes, feed)
+                            binding.header.counts.text = episodes.size.toString()
+                        }
+                        updateToolbar()
                     }
-                    updateToolbar()
-                }
-            } catch (e: Throwable) {
-                feed = null
-                refreshHeaderView()
+                } catch (e: Throwable) {
+                    feed = null
+                    refreshHeaderView()
 //                adapter.setDummyViews(0)
-                adapter.updateItems(emptyList())
-                updateToolbar()
-                Log.e(TAG, Log.getStackTraceString(e))
+                    adapter.updateItems(emptyList())
+                    updateToolbar()
+                    Log.e(TAG, Log.getStackTraceString(e))
+                } finally {
+                    loadItemsRunning = false
+                }
             }
         }
     }
@@ -710,8 +727,12 @@ import java.util.concurrent.Semaphore
             sortOrder = feed?.sortOrder ?: EpisodeSortOrder.DATE_NEW_OLD
         }
         override fun onAddItem(title: Int, ascending: EpisodeSortOrder, descending: EpisodeSortOrder, ascendingIsDefault: Boolean) {
-            if (ascending == EpisodeSortOrder.DATE_OLD_NEW || ascending == EpisodeSortOrder.PLAYED_DATE_OLD_NEW || ascending == EpisodeSortOrder.COMPLETED_DATE_OLD_NEW
-                    || ascending == EpisodeSortOrder.DURATION_SHORT_LONG || ascending == EpisodeSortOrder.RANDOM
+            if (ascending == EpisodeSortOrder.DATE_OLD_NEW
+                    || ascending == EpisodeSortOrder.PLAYED_DATE_OLD_NEW
+                    || ascending == EpisodeSortOrder.DOWNLOAD_DATE_OLD_NEW
+                    || ascending == EpisodeSortOrder.COMPLETED_DATE_OLD_NEW
+                    || ascending == EpisodeSortOrder.DURATION_SHORT_LONG
+                    || ascending == EpisodeSortOrder.RANDOM
                     || ascending == EpisodeSortOrder.EPISODE_TITLE_A_Z
                     || (feed?.isLocalFeed == true && ascending == EpisodeSortOrder.EPISODE_FILENAME_A_Z)) {
                 super.onAddItem(title, ascending, descending, ascendingIsDefault)

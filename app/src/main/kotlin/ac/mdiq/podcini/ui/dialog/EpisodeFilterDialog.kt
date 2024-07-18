@@ -117,12 +117,13 @@ abstract class EpisodeFilterDialog : BottomSheetDialogFragment() {
     abstract fun onFilterChanged(newFilterValues: Set<String>)
 
     enum class FeedItemFilterGroup(vararg values: ItemProperties) {
-        PLAYED(ItemProperties(R.string.hide_played_episodes_label, EpisodeFilter.PLAYED), ItemProperties(R.string.not_played, EpisodeFilter.UNPLAYED)),
-        PAUSED(ItemProperties(R.string.hide_paused_episodes_label, EpisodeFilter.PAUSED), ItemProperties(R.string.not_paused, EpisodeFilter.NOT_PAUSED)),
-        FAVORITE(ItemProperties(R.string.hide_is_favorite_label, EpisodeFilter.IS_FAVORITE), ItemProperties(R.string.not_favorite, EpisodeFilter.NOT_FAVORITE)),
-        MEDIA(ItemProperties(R.string.has_media, EpisodeFilter.HAS_MEDIA), ItemProperties(R.string.no_media, EpisodeFilter.NO_MEDIA)),
-        QUEUED(ItemProperties(R.string.queued_label, EpisodeFilter.QUEUED), ItemProperties(R.string.not_queued_label, EpisodeFilter.NOT_QUEUED)),
-        DOWNLOADED(ItemProperties(R.string.hide_downloaded_episodes_label, EpisodeFilter.DOWNLOADED), ItemProperties(R.string.hide_not_downloaded_episodes_label, EpisodeFilter.NOT_DOWNLOADED));
+        PLAYED(ItemProperties(R.string.hide_played_episodes_label, EpisodeFilter.States.played.name), ItemProperties(R.string.not_played, EpisodeFilter.States.unplayed.name)),
+        PAUSED(ItemProperties(R.string.hide_paused_episodes_label, EpisodeFilter.States.paused.name), ItemProperties(R.string.not_paused, EpisodeFilter.States.not_paused.name)),
+        FAVORITE(ItemProperties(R.string.hide_is_favorite_label, EpisodeFilter.States.is_favorite.name), ItemProperties(R.string.not_favorite, EpisodeFilter.States.not_favorite.name)),
+        MEDIA(ItemProperties(R.string.has_media, EpisodeFilter.States.has_media.name), ItemProperties(R.string.no_media, EpisodeFilter.States.no_media.name)),
+        QUEUED(ItemProperties(R.string.queued_label, EpisodeFilter.States.queued.name), ItemProperties(R.string.not_queued_label, EpisodeFilter.States.not_queued.name)),
+        DOWNLOADED(ItemProperties(R.string.downloaded_label, EpisodeFilter.States.downloaded.name), ItemProperties(R.string.not_downloaded_label, EpisodeFilter.States.not_downloaded.name)),
+        AUTO_DOWNLOADABLE(ItemProperties(R.string.auto_downloadable_label, EpisodeFilter.States.auto_downloadable.name), ItemProperties(R.string.not_auto_downloadable_label, EpisodeFilter.States.not_auto_downloadable.name));
 
         @JvmField
         val values: Array<ItemProperties> = arrayOf(*values)

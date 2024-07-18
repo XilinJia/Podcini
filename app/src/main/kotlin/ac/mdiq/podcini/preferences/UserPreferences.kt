@@ -1,6 +1,5 @@
 package ac.mdiq.podcini.preferences
 
-import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.ProxyConfig
 import ac.mdiq.podcini.storage.utils.FilesUtils
 import ac.mdiq.podcini.storage.utils.FilesUtils.createNoMediaFile
@@ -22,87 +21,89 @@ import java.net.Proxy
 object UserPreferences {
     private val TAG: String = UserPreferences::class.simpleName ?: "Anonymous"
 
-    const val PREF_OPML_BACKUP = "prefOPMLBackup"
+    @Suppress("EnumEntryName")
+    enum class Prefs {
+        prefOPMLBackup,
+        prefOPMLRestore,
 
-    // User Interface
-    const val PREF_THEME: String = "prefTheme"
-    const val PREF_THEME_BLACK: String = "prefThemeBlack"
-    const val PREF_TINTED_COLORS: String = "prefTintedColors"
-    const val PREF_HIDDEN_DRAWER_ITEMS: String = "prefHiddenDrawerItems"
-    const val PREF_DRAWER_FEED_ORDER: String = "prefDrawerFeedOrder"
-    const val PREF_DRAWER_FEED_ORDER_DIRECTION: String = "prefDrawerFeedOrderDir"
-    const val PREF_FEED_GRID_LAYOUT: String = "prefFeedGridLayout"
-//    const val PREF_DRAWER_FEED_COUNTER: String = "prefDrawerFeedIndicator"
-    const val PREF_EXPANDED_NOTIFICATION: String = "prefExpandNotify"
-    const val PREF_USE_EPISODE_COVER: String = "prefEpisodeCover"
-    const val PREF_SHOW_TIME_LEFT: String = "showTimeLeft"
-    const val PREF_PERSISTENT_NOTIFICATION = "prefPersistNotify"
-    const val PREF_FULL_NOTIFICATION_BUTTONS: String = "prefFullNotificationButtons"
-    const val PREF_SHOW_DOWNLOAD_REPORT = "prefShowDownloadReport"
-    const val PREF_DEFAULT_PAGE: String = "prefDefaultPage"
-    private const val PREF_BACK_OPENS_DRAWER: String = "prefBackButtonOpensDrawer"
+        // User Interface
+        prefTheme,
+        prefThemeBlack,
+        prefTintedColors,
+        prefHiddenDrawerItems,
+        prefDrawerFeedOrder,
+        prefDrawerFeedOrderDir,
+        prefFeedGridLayout,
+        prefExpandNotify,
+        prefEpisodeCover,
+        showTimeLeft,
+        prefPersistNotify,
+        prefFullNotificationButtons,
+        prefShowDownloadReport,
+        prefDefaultPage,
+        prefBackButtonOpensDrawer,
 
-    const val PREF_QUEUE_KEEP_SORTED: String = "prefQueueKeepSorted"
-    const val PREF_QUEUE_KEEP_SORTED_ORDER: String = "prefQueueKeepSortedOrder"
-    const val PREF_DOWNLOADS_SORTED_ORDER = "prefDownloadSortedOrder"
-//    private const val PREF_HISTORY_SORTED_ORDER = "prefHistorySortedOrder"
+        prefQueueKeepSorted,
+        prefQueueKeepSortedOrder,
+        prefDownloadSortedOrder,
 
-    // Episodes
-    const val PREF_SORT_ALL_EPISODES: String = "prefEpisodesSort"
-    const val PREF_FILTER_ALL_EPISODES: String = "prefEpisodesFilter"
+        // Episodes
+        prefEpisodesSort,
+        prefEpisodesFilter,
 
-    // Playback
-    const val PREF_PAUSE_ON_HEADSET_DISCONNECT: String = "prefPauseOnHeadsetDisconnect"
-    const val PREF_UNPAUSE_ON_HEADSET_RECONNECT: String = "prefUnpauseOnHeadsetReconnect"
-    const val PREF_UNPAUSE_ON_BLUETOOTH_RECONNECT: String = "prefUnpauseOnBluetoothReconnect"
-    const val PREF_HARDWARE_FORWARD_BUTTON: String = "prefHardwareForwardButton"
-    const val PREF_HARDWARE_PREVIOUS_BUTTON: String = "prefHardwarePreviousButton"
-    const val PREF_FOLLOW_QUEUE: String = "prefFollowQueue"
-    const val PREF_SKIP_KEEPS_EPISODE: String = "prefSkipKeepsEpisode"
-    const val PREF_REMOVDE_FROM_QUEUE_MARKED_PLAYED: String = "prefRemoveFromQueueMarkedPlayed"
-    const val PREF_FAVORITE_KEEPS_EPISODE = "prefFavoriteKeepsEpisode"
-    private const val PREF_AUTO_DELETE = "prefAutoDelete"
-    private const val PREF_AUTO_DELETE_LOCAL = "prefAutoDeleteLocal"
-    const val PREF_SMART_MARK_AS_PLAYED_SECS: String = "prefSmartMarkAsPlayedSecs"
-    const val PREF_PLAYBACK_SPEED_ARRAY = "prefPlaybackSpeedArray"
-    private const val PREF_FALLBACK_SPEED = "prefFallbackSpeed"
-    private const val PREF_PAUSE_PLAYBACK_FOR_FOCUS_LOSS: String = "prefPauseForFocusLoss"
-    private const val PREF_TIME_RESPECTS_SPEED = "prefPlaybackTimeRespectsSpeed"
-    private const val PREF_STREAM_OVER_DOWNLOAD: String = "prefStreamOverDownload"
-    private const val PREF_SPEEDFORWRD_SPEED = "prefSpeedforwardSpeed"
+        // Playback
+        prefPauseOnHeadsetDisconnect,
+        prefUnpauseOnHeadsetReconnect,
+        prefUnpauseOnBluetoothReconnect,
+        prefHardwareForwardButton,
+        prefHardwarePreviousButton,
+        prefFollowQueue,
+        prefSkipKeepsEpisode,
+        prefRemoveFromQueueMarkedPlayed,
+        prefFavoriteKeepsEpisode,
+        prefAutoDelete,
+        prefAutoDeleteLocal,
+        prefSmartMarkAsPlayedSecs,
+        prefPlaybackSpeedArray,
+        prefFallbackSpeed,
+        prefPauseForFocusLoss,
+        prefPlaybackTimeRespectsSpeed,
+        prefStreamOverDownload,
+        prefSpeedforwardSpeed,
 
-    // Network
-    const val PREF_ENQUEUE_DOWNLOADED = "prefEnqueueDownloaded"
-    const val PREF_ENQUEUE_LOCATION: String = "prefEnqueueLocation"
-    const val PREF_UPDATE_INTERVAL: String = "prefAutoUpdateIntervall"
-    const val PREF_MOBILE_UPDATE = "prefMobileUpdateTypes"
-    const val PREF_EPISODE_CLEANUP: String = "prefEpisodeCleanup"
-    const val PREF_EPISODE_CACHE_SIZE: String = "prefEpisodeCacheSize"
-    const val PREF_ENABLE_AUTODL: String = "prefEnableAutoDl"
-    const val PREF_ENABLE_AUTODL_ON_BATTERY: String = "prefEnableAutoDownloadOnBattery"
-    const val PREF_ENABLE_AUTODL_WIFI_FILTER: String = "prefEnableAutoDownloadWifiFilter"
-    const val PREF_AUTODL_SELECTED_NETWORKS = "prefAutodownloadSelectedNetworks"
-    private const val PREF_PROXY_TYPE = "prefProxyType"
-    private const val PREF_PROXY_HOST = "prefProxyHost"
-    private const val PREF_PROXY_PORT = "prefProxyPort"
-    private const val PREF_PROXY_USER = "prefProxyUser"
-    private const val PREF_PROXY_PASSWORD = "prefProxyPassword"
+        // Network
+        prefEnqueueDownloaded,
+        prefEnqueueLocation,
+        prefAutoUpdateIntervall,
+        prefMobileUpdateTypes,
+        prefEpisodeCleanup,
+        prefEpisodeCacheSize,
+        prefEnableAutoDl,
+        prefEnableAutoDownloadOnBattery,
+        prefEnableAutoDownloadWifiFilter,
+        prefAutodownloadSelectedNetworks,
+        prefProxyType,
+        prefProxyHost,
+        prefProxyPort,
+        prefProxyUser,
+        prefProxyPassword,
 
-    // Services
-    const val PREF_GPODNET_NOTIFICATIONS = "pref_gpodnet_notifications"
+        // Services
+        pref_gpodnet_notifications,
 
-    // Other
-//    const val PREF_DATA_FOLDER = "prefDataFolder"
-    const val PREF_DELETE_REMOVES_FROM_QUEUE: String = "prefDeleteRemovesFromQueue"
+        // Other
+//    prefDataFolder
+        prefDeleteRemovesFromQueue,
 
-    // Mediaplayer
-    const val PREF_PLAYBACK_SPEED = "prefPlaybackSpeed"
-    private const val PREF_VIDEO_PLAYBACK_SPEED = "prefVideoPlaybackSpeed"
-    private const val PREF_PLAYBACK_SKIP_SILENCE: String = "prefSkipSilence"
-    private const val PREF_FAST_FORWARD_SECS = "prefFastForwardSecs"
-    private const val PREF_REWIND_SECS = "prefRewindSecs"
-    const val PREF_QUEUE_LOCKED = "prefQueueLocked"
-    private const val PREF_VIDEO_MODE = "prefVideoPlaybackMode"
+        // Mediaplayer
+        prefPlaybackSpeed,
+        prefVideoPlaybackSpeed,
+        prefSkipSilence,
+        prefFastForwardSecs,
+        prefRewindSecs,
+        prefQueueLocked,
+        prefVideoPlaybackMode,
+    }
 
     // Experimental
     const val EPISODE_CLEANUP_QUEUE: Int = -1
@@ -111,63 +112,56 @@ object UserPreferences {
     const val EPISODE_CLEANUP_DEFAULT: Int = 0
 
     // Constants
-    const val NOTIFICATION_BUTTON_REWIND: Int = 0
-    const val NOTIFICATION_BUTTON_FAST_FORWARD: Int = 1
-    private const val NOTIFICATION_BUTTON_SKIP: Int = 2
+    enum class NOTIFICATION_BUTTON {
+        REWIND,
+        FAST_FORWARD,
+        SKIP,
+        NEXT_CHAPTER,
+        PLAYBACK_SPEED,
+    }
 
-    private const val NOTIFICATION_BUTTON_NEXT_CHAPTER: Int = 3
-    private const val NOTIFICATION_BUTTON_PLAYBACK_SPEED: Int = 4
     const val EPISODE_CACHE_SIZE_UNLIMITED: Int = -1
-//    should match those defined in arrays
-//    const val FEED_ORDER_COUNTER: Int = 0
-    const val FEED_ORDER_UNPLAYED: Int = 0
-    const val FEED_ORDER_ALPHABETICAL: Int = 1
-    const val FEED_ORDER_LAST_UPDATED: Int = 2
-    const val FEED_ORDER_LAST_UNREAD_UPDATED: Int = 3
-    const val FEED_ORDER_MOST_PLAYED: Int = 4
-    const val FEED_ORDER_DOWNLOADED: Int = 5
-    const val FEED_ORDER_DOWNLOADED_UNPLAYED: Int = 6
-    const val FEED_ORDER_NEW: Int = 7
+
     const val DEFAULT_PAGE_REMEMBER: String = "remember"
 
     private lateinit var context: Context
     lateinit var appPrefs: SharedPreferences
 
     var theme: ThemePreference
-        get() = when (appPrefs.getString(PREF_THEME, "system")) {
+        get() = when (appPrefs.getString(Prefs.prefTheme.name, "system")) {
             "0" -> ThemePreference.LIGHT
             "1" -> ThemePreference.DARK
             else -> ThemePreference.SYSTEM
         }
         set(theme) {
             when (theme) {
-                ThemePreference.LIGHT -> appPrefs.edit().putString(PREF_THEME, "0").apply()
-                ThemePreference.DARK -> appPrefs.edit().putString(PREF_THEME, "1").apply()
-                else -> appPrefs.edit().putString(PREF_THEME, "system").apply()
+                ThemePreference.LIGHT -> appPrefs.edit().putString(Prefs.prefTheme.name, "0").apply()
+                ThemePreference.DARK -> appPrefs.edit().putString(Prefs.prefTheme.name, "1").apply()
+                else -> appPrefs.edit().putString(Prefs.prefTheme.name, "system").apply()
             }
         }
 
     val isBlackTheme: Boolean
-        get() = appPrefs.getBoolean(PREF_THEME_BLACK, false)
+        get() = appPrefs.getBoolean(Prefs.prefThemeBlack.name, false)
 
     val isThemeColorTinted: Boolean
-        get() = Build.VERSION.SDK_INT >= 31 && appPrefs.getBoolean(PREF_TINTED_COLORS, false)
+        get() = Build.VERSION.SDK_INT >= 31 && appPrefs.getBoolean(Prefs.prefTintedColors.name, false)
 
     var hiddenDrawerItems: List<String>
         get() {
-            val hiddenItems = appPrefs.getString(PREF_HIDDEN_DRAWER_ITEMS, "")
+            val hiddenItems = appPrefs.getString(Prefs.prefHiddenDrawerItems.name, "")
             return hiddenItems?.split(",") ?: listOf()
         }
         set(items) {
             val str = items.joinToString()
             appPrefs.edit()
-                .putString(PREF_HIDDEN_DRAWER_ITEMS, str)
+                .putString(Prefs.prefHiddenDrawerItems.name, str)
                 .apply()
         }
 
     var fullNotificationButtons: List<Int>
         get() {
-            val buttons = appPrefs.getString(PREF_FULL_NOTIFICATION_BUTTONS, "$NOTIFICATION_BUTTON_SKIP,$NOTIFICATION_BUTTON_PLAYBACK_SPEED")?.split(",") ?: listOf()
+            val buttons = appPrefs.getString(Prefs.prefFullNotificationButtons.name, "${NOTIFICATION_BUTTON.SKIP.ordinal},${NOTIFICATION_BUTTON.PLAYBACK_SPEED.ordinal}")?.split(",") ?: listOf()
             val notificationButtons: MutableList<Int> = ArrayList()
             for (button in buttons) {
                 notificationButtons.add(button.toInt())
@@ -177,20 +171,20 @@ object UserPreferences {
         set(items) {
             val str = items.joinToString()
             appPrefs.edit()
-                .putString(PREF_FULL_NOTIFICATION_BUTTONS, str)
+                .putString(Prefs.prefFullNotificationButtons.name, str)
                 .apply()
         }
 
     val isAutoDelete: Boolean
-        get() = appPrefs.getBoolean(PREF_AUTO_DELETE, false)
+        get() = appPrefs.getBoolean(Prefs.prefAutoDelete.name, false)
 
     val isAutoDeleteLocal: Boolean
-        get() = appPrefs.getBoolean(PREF_AUTO_DELETE_LOCAL, false)
+        get() = appPrefs.getBoolean(Prefs.prefAutoDeleteLocal.name, false)
 
     val videoPlayMode: Int
         get() {
             try {
-                return appPrefs.getString(PREF_VIDEO_MODE, "1")!!.toInt()
+                return appPrefs.getString(Prefs.prefVideoPlaybackMode.name, "1")!!.toInt()
             } catch (e: NumberFormatException) {
                 Log.e(TAG, Log.getStackTraceString(e))
                 setVideoMode(1)
@@ -201,7 +195,7 @@ object UserPreferences {
     var videoPlaybackSpeed: Float
         get() {
             try {
-                return appPrefs.getString(PREF_VIDEO_PLAYBACK_SPEED, "1.00")!!.toFloat()
+                return appPrefs.getString(Prefs.prefVideoPlaybackSpeed.name, "1.00")!!.toFloat()
             } catch (e: NumberFormatException) {
                 Log.e(TAG, Log.getStackTraceString(e))
                 videoPlaybackSpeed = 1.0f
@@ -210,14 +204,14 @@ object UserPreferences {
         }
         set(speed) {
             appPrefs.edit()
-                .putString(PREF_VIDEO_PLAYBACK_SPEED, speed.toString())
+                .putString(Prefs.prefVideoPlaybackSpeed.name, speed.toString())
                 .apply()
         }
 
     var isSkipSilence: Boolean
-        get() = appPrefs.getBoolean(PREF_PLAYBACK_SKIP_SILENCE, false)
+        get() = appPrefs.getBoolean(Prefs.prefSkipSilence.name, false)
         set(skipSilence) {
-            appPrefs.edit().putBoolean(PREF_PLAYBACK_SKIP_SILENCE, skipSilence).apply()
+            appPrefs.edit().putBoolean(Prefs.prefSkipSilence.name, skipSilence).apply()
         }
 
     /**
@@ -226,22 +220,22 @@ object UserPreferences {
      * 'unlimited'.
      */
     val episodeCacheSize: Int
-        get() = appPrefs.getString(PREF_EPISODE_CACHE_SIZE, "20")!!.toInt()
+        get() = appPrefs.getString(Prefs.prefEpisodeCacheSize.name, "20")!!.toInt()
 
     @set:VisibleForTesting
     var isEnableAutodownload: Boolean
-        get() = appPrefs.getBoolean(PREF_ENABLE_AUTODL, false)
+        get() = appPrefs.getBoolean(Prefs.prefEnableAutoDl.name, false)
         set(enabled) {
-            appPrefs.edit().putBoolean(PREF_ENABLE_AUTODL, enabled).apply()
+            appPrefs.edit().putBoolean(Prefs.prefEnableAutoDl.name, enabled).apply()
         }
 
     val isEnableAutodownloadOnBattery: Boolean
-        get() = appPrefs.getBoolean(PREF_ENABLE_AUTODL_ON_BATTERY, true)
+        get() = appPrefs.getBoolean(Prefs.prefEnableAutoDownloadOnBattery.name, true)
 
     var speedforwardSpeed: Float
         get() {
             try {
-                return appPrefs.getString(PREF_SPEEDFORWRD_SPEED, "0.00")!!.toFloat()
+                return appPrefs.getString(Prefs.prefSpeedforwardSpeed.name, "0.00")!!.toFloat()
             } catch (e: NumberFormatException) {
                 Log.e(TAG, Log.getStackTraceString(e))
                 speedforwardSpeed = 0.0f
@@ -249,13 +243,13 @@ object UserPreferences {
             }
         }
         set(speed) {
-            appPrefs.edit().putString(PREF_SPEEDFORWRD_SPEED, speed.toString()).apply()
+            appPrefs.edit().putString(Prefs.prefSpeedforwardSpeed.name, speed.toString()).apply()
         }
 
     var fallbackSpeed: Float
         get() {
             try {
-                return appPrefs.getString(PREF_FALLBACK_SPEED, "0.00")!!.toFloat()
+                return appPrefs.getString(Prefs.prefFallbackSpeed.name, "0.00")!!.toFloat()
             } catch (e: NumberFormatException) {
                 Log.e(TAG, Log.getStackTraceString(e))
                 fallbackSpeed = 0.0f
@@ -263,58 +257,58 @@ object UserPreferences {
             }
         }
         set(speed) {
-            appPrefs.edit().putString(PREF_FALLBACK_SPEED, speed.toString()).apply()
+            appPrefs.edit().putString(Prefs.prefFallbackSpeed.name, speed.toString()).apply()
         }
 
     var fastForwardSecs: Int
-        get() = appPrefs.getInt(PREF_FAST_FORWARD_SECS, 30)
+        get() = appPrefs.getInt(Prefs.prefFastForwardSecs.name, 30)
         set(secs) {
-            appPrefs.edit().putInt(PREF_FAST_FORWARD_SECS, secs).apply()
+            appPrefs.edit().putInt(Prefs.prefFastForwardSecs.name, secs).apply()
         }
 
     var rewindSecs: Int
-        get() = appPrefs.getInt(PREF_REWIND_SECS, 10)
+        get() = appPrefs.getInt(Prefs.prefRewindSecs.name, 10)
         set(secs) {
-            appPrefs.edit().putInt(PREF_REWIND_SECS, secs).apply()
+            appPrefs.edit().putInt(Prefs.prefRewindSecs.name, secs).apply()
         }
 
     var proxyConfig: ProxyConfig
         get() {
-            val type = Proxy.Type.valueOf(appPrefs.getString(PREF_PROXY_TYPE, Proxy.Type.DIRECT.name)!!)
-            val host = appPrefs.getString(PREF_PROXY_HOST, null)
-            val port = appPrefs.getInt(PREF_PROXY_PORT, 0)
-            val username = appPrefs.getString(PREF_PROXY_USER, null)
-            val password = appPrefs.getString(PREF_PROXY_PASSWORD, null)
+            val type = Proxy.Type.valueOf(appPrefs.getString(Prefs.prefProxyType.name, Proxy.Type.DIRECT.name)!!)
+            val host = appPrefs.getString(Prefs.prefProxyHost.name, null)
+            val port = appPrefs.getInt(Prefs.prefProxyPort.name, 0)
+            val username = appPrefs.getString(Prefs.prefProxyUser.name, null)
+            val password = appPrefs.getString(Prefs.prefProxyPassword.name, null)
             return ProxyConfig(type, host, port, username, password)
         }
         set(config) {
             val editor = appPrefs.edit()
-            editor.putString(PREF_PROXY_TYPE, config.type.name)
-            if (config.host.isNullOrEmpty()) editor.remove(PREF_PROXY_HOST)
-            else editor.putString(PREF_PROXY_HOST, config.host)
+            editor.putString(Prefs.prefProxyType.name, config.type.name)
+            if (config.host.isNullOrEmpty()) editor.remove(Prefs.prefProxyHost.name)
+            else editor.putString(Prefs.prefProxyHost.name, config.host)
 
-            if (config.port <= 0 || config.port > 65535) editor.remove(PREF_PROXY_PORT)
-            else editor.putInt(PREF_PROXY_PORT, config.port)
+            if (config.port <= 0 || config.port > 65535) editor.remove(Prefs.prefProxyPort.name)
+            else editor.putInt(Prefs.prefProxyPort.name, config.port)
 
-            if (config.username.isNullOrEmpty()) editor.remove(PREF_PROXY_USER)
-            else editor.putString(PREF_PROXY_USER, config.username)
+            if (config.username.isNullOrEmpty()) editor.remove(Prefs.prefProxyUser.name)
+            else editor.putString(Prefs.prefProxyUser.name, config.username)
 
-            if (config.password.isNullOrEmpty()) editor.remove(PREF_PROXY_PASSWORD)
-            else editor.putString(PREF_PROXY_PASSWORD, config.password)
+            if (config.password.isNullOrEmpty()) editor.remove(Prefs.prefProxyPassword.name)
+            else editor.putString(Prefs.prefProxyPassword.name, config.password)
 
             editor.apply()
         }
 
     var defaultPage: String?
-        get() = appPrefs.getString(PREF_DEFAULT_PAGE, "SubscriptionsFragment")
+        get() = appPrefs.getString(Prefs.prefDefaultPage.name, "SubscriptionsFragment")
         set(defaultPage) {
-            appPrefs.edit().putString(PREF_DEFAULT_PAGE, defaultPage).apply()
+            appPrefs.edit().putString(Prefs.prefDefaultPage.name, defaultPage).apply()
         }
 
     var isStreamOverDownload: Boolean
-        get() = appPrefs.getBoolean(PREF_STREAM_OVER_DOWNLOAD, false)
+        get() = appPrefs.getBoolean(Prefs.prefStreamOverDownload.name, false)
         set(stream) {
-            appPrefs.edit().putBoolean(PREF_STREAM_OVER_DOWNLOAD, stream).apply()
+            appPrefs.edit().putBoolean(Prefs.prefStreamOverDownload.name, stream).apply()
         }
 
     /**
@@ -334,40 +328,34 @@ object UserPreferences {
      * Helper function to return whether the specified button should be shown on full
      * notifications.
      * @param buttonId Either NOTIFICATION_BUTTON_REWIND, NOTIFICATION_BUTTON_FAST_FORWARD,
-     * NOTIFICATION_BUTTON_SKIP, NOTIFICATION_BUTTON_PLAYBACK_SPEED
-     * or NOTIFICATION_BUTTON_NEXT_CHAPTER.
+     * NOTIFICATION_BUTTON.SKIP.ordinal, NOTIFICATION_BUTTON.PLAYBACK_SPEED.ordinal
+     * or NOTIFICATION_BUTTON.NEXT_CHAPTER.ordinal.
      * @return `true` if button should be shown, `false`  otherwise
      */
     private fun showButtonOnFullNotification(buttonId: Int): Boolean {
         return fullNotificationButtons.contains(buttonId)
     }
 
-    @JvmStatic
-    fun shouldAutoDeleteItem(feed: Feed): Boolean {
-        if (!isAutoDelete) return false
-        return !feed.isLocalFeed || isAutoDeleteLocal
-    }
-
 //    only used in test
     fun showSkipOnFullNotification(): Boolean {
-        return showButtonOnFullNotification(NOTIFICATION_BUTTON_SKIP)
+        return showButtonOnFullNotification(NOTIFICATION_BUTTON.SKIP.ordinal)
     }
 
     //    only used in test
     fun showNextChapterOnFullNotification(): Boolean {
-        return showButtonOnFullNotification(NOTIFICATION_BUTTON_NEXT_CHAPTER)
+        return showButtonOnFullNotification(NOTIFICATION_BUTTON.NEXT_CHAPTER.ordinal)
     }
 
     //    only used in test
     fun showPlaybackSpeedOnFullNotification(): Boolean {
-        return showButtonOnFullNotification(NOTIFICATION_BUTTON_PLAYBACK_SPEED)
+        return showButtonOnFullNotification(NOTIFICATION_BUTTON.PLAYBACK_SPEED.ordinal)
     }
 
     /**
      * @return `true` if we should show remaining time or the duration
      */
     fun shouldShowRemainingTime(): Boolean {
-        return appPrefs.getBoolean(PREF_SHOW_TIME_LEFT, false)
+        return appPrefs.getBoolean(Prefs.showTimeLeft.name, false)
     }
 
     /**
@@ -376,32 +364,28 @@ object UserPreferences {
      * @return `true` if we should show remaining time or the duration
      */
     fun setShowRemainTimeSetting(showRemain: Boolean?) {
-        appPrefs.edit().putBoolean(PREF_SHOW_TIME_LEFT, showRemain!!).apply()
-    }
-
-    fun shouldDeleteRemoveFromQueue(): Boolean {
-        return appPrefs.getBoolean(PREF_DELETE_REMOVES_FROM_QUEUE, false)
+        appPrefs.edit().putBoolean(Prefs.showTimeLeft.name, showRemain!!).apply()
     }
 
 //   only used in test
     fun shouldPauseForFocusLoss(): Boolean {
-        return appPrefs.getBoolean(PREF_PAUSE_PLAYBACK_FOR_FOCUS_LOSS, true)
+        return appPrefs.getBoolean(Prefs.prefPauseForFocusLoss.name, true)
     }
 
     fun backButtonOpensDrawer(): Boolean {
-        return appPrefs.getBoolean(PREF_BACK_OPENS_DRAWER, false)
+        return appPrefs.getBoolean(Prefs.prefBackButtonOpensDrawer.name, false)
     }
 
     fun timeRespectsSpeed(): Boolean {
-        return appPrefs.getBoolean(PREF_TIME_RESPECTS_SPEED, false)
+        return appPrefs.getBoolean(Prefs.prefPlaybackTimeRespectsSpeed.name, false)
     }
 
     fun setPlaybackSpeed(speed: Float) {
-        appPrefs.edit().putString(PREF_PLAYBACK_SPEED, speed.toString()).apply()
+        appPrefs.edit().putString(Prefs.prefPlaybackSpeed.name, speed.toString()).apply()
     }
 
     fun setVideoMode(mode: Int) {
-        appPrefs.edit().putString(PREF_VIDEO_MODE, mode.toString()).apply()
+        appPrefs.edit().putString(Prefs.prefVideoPlaybackMode.name, mode.toString()).apply()
     }
 
     enum class ThemePreference {

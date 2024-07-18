@@ -517,8 +517,8 @@
   <string name="filter">フィルター</string>
   <string name="hide_is_favorite_label">お気に入り</string>
   <string name="not_favorite">お気に入り外</string>
-  <string name="hide_downloaded_episodes_label">ダウンロード済</string>
-  <string name="hide_not_downloaded_episodes_label">未ダウンロード</string>
+  <string name="downloaded_label">ダウンロード済</string>
+  <string name="not_downloaded_label">未ダウンロード</string>
   <string name="queued_label">キューに追加済</string>
   <string name="not_queued_label">キューに未追加</string>
   <string name="has_media">メディア有り</string>

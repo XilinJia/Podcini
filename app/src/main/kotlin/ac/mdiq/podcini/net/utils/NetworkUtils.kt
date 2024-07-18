@@ -1,8 +1,6 @@
 package ac.mdiq.podcini.net.utils
 
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_AUTODL_SELECTED_NETWORKS
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_ENABLE_AUTODL_WIFI_FILTER
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_MOBILE_UPDATE
+import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import android.content.Context
 import android.net.ConnectivityManager
@@ -41,23 +39,23 @@ object NetworkUtils {
     fun isAllowMobileFor(type: String): Boolean {
         val defaultValue = HashSet<String>()
         defaultValue.add("images")
-        val allowed = appPrefs.getStringSet(PREF_MOBILE_UPDATE, defaultValue)
+        val allowed = appPrefs.getStringSet(UserPreferences.Prefs.prefMobileUpdateTypes.name, defaultValue)
         return allowed!!.contains(type)
     }
 
     fun setAllowMobileFor(type: String, allow: Boolean) {
         val defaultValue = HashSet<String>()
         defaultValue.add("images")
-        val getValueStringSet = appPrefs.getStringSet(PREF_MOBILE_UPDATE, defaultValue)
+        val getValueStringSet = appPrefs.getStringSet(UserPreferences.Prefs.prefMobileUpdateTypes.name, defaultValue)
         val allowed: MutableSet<String> = HashSet(getValueStringSet!!)
         if (allow) allowed.add(type)
         else allowed.remove(type)
 
-        appPrefs.edit().putStringSet(PREF_MOBILE_UPDATE, allowed).apply()
+        appPrefs.edit().putStringSet(UserPreferences.Prefs.prefMobileUpdateTypes.name, allowed).apply()
     }
 
     val isEnableAutodownloadWifiFilter: Boolean
-        get() = Build.VERSION.SDK_INT < 29 && appPrefs.getBoolean(PREF_ENABLE_AUTODL_WIFI_FILTER, false)
+        get() = Build.VERSION.SDK_INT < 29 && appPrefs.getBoolean(UserPreferences.Prefs.prefEnableAutoDownloadWifiFilter.name, false)
 
     @JvmStatic
     val isAutoDownloadAllowed: Boolean
@@ -158,7 +156,7 @@ object NetworkUtils {
 
     val autodownloadSelectedNetworks: Array<String>
         get() {
-            val selectedNetWorks = appPrefs.getString(PREF_AUTODL_SELECTED_NETWORKS, "")
+            val selectedNetWorks = appPrefs.getString(UserPreferences.Prefs.prefAutodownloadSelectedNetworks.name, "")
             return selectedNetWorks?.split(",")?.toTypedArray() ?: arrayOf()
         }
 

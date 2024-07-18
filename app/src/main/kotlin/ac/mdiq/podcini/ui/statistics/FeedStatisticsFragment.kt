@@ -3,7 +3,7 @@ package ac.mdiq.podcini.ui.statistics
 import ac.mdiq.podcini.databinding.FeedStatisticsBinding
 import ac.mdiq.podcini.storage.database.LogsAndStats.getStatistics
 import ac.mdiq.podcini.storage.model.StatisticsItem
-import ac.mdiq.podcini.util.Converter.shortLocalizedDuration
+import ac.mdiq.podcini.storage.utils.DurationConverter.shortLocalizedDuration
 import android.os.Bundle
 import android.text.format.Formatter
 import android.view.LayoutInflater

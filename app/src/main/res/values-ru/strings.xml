@@ -701,8 +701,8 @@
   <string name="filter">Фильтровать</string>
   <string name="hide_is_favorite_label">В избранном</string>
   <string name="not_favorite">Не в избранном</string>
-  <string name="hide_downloaded_episodes_label">Загружено</string>
-  <string name="hide_not_downloaded_episodes_label">Не загружено</string>
+  <string name="downloaded_label">Загружено</string>
+  <string name="not_downloaded_label">Не загружено</string>
   <string name="queued_label">В очереди</string>
   <string name="not_queued_label">Не в очереди</string>
   <string name="has_media">С медиа</string>

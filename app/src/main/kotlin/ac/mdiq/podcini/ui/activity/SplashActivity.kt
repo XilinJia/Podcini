@@ -26,8 +26,6 @@ class SplashActivity : Activity() {
         val scope = CoroutineScope(Dispatchers.IO)
         scope.launch(Dispatchers.IO) {
             try {
-//                PodDBAdapter.getInstance().open()
-//                PodDBAdapter.getInstance().close()
                 withContext(Dispatchers.Main) {
                     val intent = Intent(this@SplashActivity, MainActivity::class.java)
                     startActivity(intent)

@@ -6,7 +6,7 @@ import ac.mdiq.podcini.databinding.SimpleListFragmentBinding
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.playback.base.InTheatre.isCurMedia
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_DOWNLOADS_SORTED_ORDER
+import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -100,7 +100,7 @@ import java.util.*
 
         swipeActions = SwipeActions(this, TAG).attachTo(recyclerView)
         lifecycle.addObserver(swipeActions)
-        swipeActions.setFilter(EpisodeFilter(EpisodeFilter.DOWNLOADED))
+        swipeActions.setFilter(EpisodeFilter(EpisodeFilter.States.downloaded.name))
         refreshSwipeTelltale()
         binding.leftActionIcon.setOnClickListener {
             swipeActions.showDialog()
@@ -322,35 +322,41 @@ import java.util.*
         if (swipeActions.actions?.right != null) binding.rightActionIcon.setImageResource(swipeActions.actions!!.right!!.getActionIcon())
     }
 
+    private var loadItemsRunning = false
     private fun loadItems() {
         emptyView.hide()
-        lifecycleScope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    val sortOrder: EpisodeSortOrder? = downloadsSortedOrder
-                    val downloadedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.DOWNLOADED), sortOrder)
-                    if (runningDownloads.isEmpty()) episodes = downloadedItems.toMutableList()
-                    else {
-                        val mediaUrls: MutableList<String> = ArrayList()
-                        for (url in runningDownloads) {
-                            if (EpisodeUtil.indexOfItemWithDownloadUrl(downloadedItems, url) != -1) continue
-                            mediaUrls.add(url)
+        if (!loadItemsRunning) {
+            loadItemsRunning = true
+            lifecycleScope.launch {
+                try {
+                    withContext(Dispatchers.IO) {
+                        val sortOrder: EpisodeSortOrder? = downloadsSortedOrder
+                        val downloadedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.downloaded.name), sortOrder)
+                        if (runningDownloads.isEmpty()) episodes = downloadedItems.toMutableList()
+                        else {
+                            val mediaUrls: MutableList<String> = ArrayList()
+                            for (url in runningDownloads) {
+                                if (EpisodeUtil.indexOfItemWithDownloadUrl(downloadedItems, url) != -1) continue
+                                mediaUrls.add(url)
+                            }
+                            val currentDownloads = getEpisdesWithUrl(mediaUrls).toMutableList()
+                            currentDownloads.addAll(downloadedItems)
+                            episodes = currentDownloads
                         }
-                        val currentDownloads = getEpisdesWithUrl(mediaUrls).toMutableList()
-                        currentDownloads.addAll(downloadedItems)
-                        episodes = currentDownloads
                     }
-                }
-                withContext(Dispatchers.Main) {
+                    withContext(Dispatchers.Main) {
 //                    adapter.setDummyViews(0)
-                    binding.progLoading.visibility = View.GONE
-                    adapter.updateItems(episodes)
-                    refreshInfoBar()
-                }
-            } catch (e: Throwable) {
+                        binding.progLoading.visibility = View.GONE
+                        adapter.updateItems(episodes)
+                        refreshInfoBar()
+                    }
+                } catch (e: Throwable) {
 //                adapter.setDummyViews(0)
-                adapter.updateItems(emptyList())
-                Log.e(TAG, Log.getStackTraceString(e))
+                    adapter.updateItems(emptyList())
+                    Log.e(TAG, Log.getStackTraceString(e))
+                } finally {
+                    loadItemsRunning = false
+                }
             }
         }
     }
@@ -416,10 +422,14 @@ import java.util.*
         }
 
         override fun onAddItem(title: Int, ascending: EpisodeSortOrder, descending: EpisodeSortOrder, ascendingIsDefault: Boolean) {
-            if (ascending == EpisodeSortOrder.DATE_OLD_NEW || ascending == EpisodeSortOrder.PLAYED_DATE_OLD_NEW
+            if (ascending == EpisodeSortOrder.DATE_OLD_NEW
+                    || ascending == EpisodeSortOrder.PLAYED_DATE_OLD_NEW
                     || ascending == EpisodeSortOrder.COMPLETED_DATE_OLD_NEW
-                    || ascending == EpisodeSortOrder.DURATION_SHORT_LONG || ascending == EpisodeSortOrder.EPISODE_TITLE_A_Z
-                    || ascending == EpisodeSortOrder.SIZE_SMALL_LARGE || ascending == EpisodeSortOrder.FEED_TITLE_A_Z) {
+                    || ascending == EpisodeSortOrder.DOWNLOAD_DATE_OLD_NEW
+                    || ascending == EpisodeSortOrder.DURATION_SHORT_LONG
+                    || ascending == EpisodeSortOrder.EPISODE_TITLE_A_Z
+                    || ascending == EpisodeSortOrder.SIZE_SMALL_LARGE
+                    || ascending == EpisodeSortOrder.FEED_TITLE_A_Z) {
                 super.onAddItem(title, ascending, descending, ascendingIsDefault)
             }
         }
@@ -440,11 +450,11 @@ import java.util.*
         //    the sort order for the downloads.
         var downloadsSortedOrder: EpisodeSortOrder?
             get() {
-                val sortOrderStr = appPrefs.getString(PREF_DOWNLOADS_SORTED_ORDER, "" + EpisodeSortOrder.DATE_NEW_OLD.code)
+                val sortOrderStr = appPrefs.getString(UserPreferences.Prefs.prefDownloadSortedOrder.name, "" + EpisodeSortOrder.DATE_NEW_OLD.code)
                 return EpisodeSortOrder.fromCodeString(sortOrderStr)
             }
             set(sortOrder) {
-                appPrefs.edit().putString(PREF_DOWNLOADS_SORTED_ORDER, "" + sortOrder!!.code).apply()
+                appPrefs.edit().putString(UserPreferences.Prefs.prefDownloadSortedOrder.name, "" + sortOrder!!.code).apply()
             }
     }
 }

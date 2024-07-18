@@ -39,7 +39,7 @@ class OnlineFeedViewActivity : AppCompatActivity() {
             Logd(TAG, "Activity was started with url $feedUrl")
 
             val intent = MainActivity.showOnlineFeed(this, feedUrl)
-            intent.putExtra(MainActivity.EXTRA_STARTED_FROM_SEARCH, getIntent().getBooleanExtra(MainActivity.EXTRA_STARTED_FROM_SEARCH, false))
+            intent.putExtra(MainActivity.Extras.started_from_search.name, getIntent().getBooleanExtra(MainActivity.Extras.started_from_search.name, false))
             startActivity(intent)
             finish()
         }

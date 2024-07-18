@@ -736,8 +736,8 @@
   <string name="filter">Filtr</string>
   <string name="hide_is_favorite_label">Je mezi oblíbenými</string>
   <string name="not_favorite">Není mezi oblíbenými</string>
-  <string name="hide_downloaded_episodes_label">Stažené</string>
-  <string name="hide_not_downloaded_episodes_label">Nestažené</string>
+  <string name="downloaded_label">Stažené</string>
+  <string name="not_downloaded_label">Nestažené</string>
   <string name="queued_label">Ve frontě</string>
   <string name="not_queued_label">Mimo frontu</string>
   <string name="has_media">Obsahuje média</string>

@@ -675,8 +675,8 @@
   <string name="filter">Filtra</string>
   <string name="hide_is_favorite_label">És favorit</string>
   <string name="not_favorite">No és favorit</string>
-  <string name="hide_downloaded_episodes_label">Baixat</string>
-  <string name="hide_not_downloaded_episodes_label">No baixat</string>
+  <string name="downloaded_label">Baixat</string>
+  <string name="not_downloaded_label">No baixat</string>
   <string name="queued_label">En cua</string>
   <string name="not_queued_label">No encuat</string>
   <string name="has_media">Té mitjans</string>

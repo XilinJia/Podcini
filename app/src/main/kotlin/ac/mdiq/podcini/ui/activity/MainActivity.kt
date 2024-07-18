@@ -3,12 +3,12 @@ package ac.mdiq.podcini.ui.activity
 import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.MainActivityBinding
-import ac.mdiq.podcini.net.feed.discovery.ItunesTopListLoader
 import ac.mdiq.podcini.net.download.DownloadStatus
+import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.restartUpdateAlarm
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnceOrAsk
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.net.feed.discovery.ItunesTopListLoader
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.playback.cast.CastEnabledActivity
 import ac.mdiq.podcini.playback.service.PlaybackService
@@ -80,7 +80,6 @@ import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
 import org.apache.commons.lang3.ArrayUtils
-import java.util.*
 import kotlin.math.min
 
 /**
@@ -141,7 +140,7 @@ class MainActivity : CastEnabledActivity() {
             ItunesTopListLoader.getSharedPrefs(this@MainActivity)
         }
 
-        if (savedInstanceState != null) ensureGeneratedViewIdGreaterThan(savedInstanceState.getInt(KEY_GENERATED_VIEW_ID, 0))
+        if (savedInstanceState != null) ensureGeneratedViewIdGreaterThan(savedInstanceState.getInt(Extras.generated_view_id.name, 0))
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
@@ -306,7 +305,7 @@ class MainActivity : CastEnabledActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putInt(KEY_GENERATED_VIEW_ID, View.generateViewId())
+        outState.putInt(Extras.generated_view_id.name, View.generateViewId())
     }
 
     private var prevState: Int = 0
@@ -373,10 +372,10 @@ class MainActivity : CastEnabledActivity() {
 
     private fun checkFirstLaunch() {
         val prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE)
-        if (prefs.getBoolean(PREF_IS_FIRST_LAUNCH, true)) {
+        if (prefs.getBoolean(Extras.prefMainActivityIsFirstLaunch.name, true)) {
             restartUpdateAlarm(this, true)
             val edit = prefs.edit()
-            edit.putBoolean(PREF_IS_FIRST_LAUNCH, false)
+            edit.putBoolean(Extras.prefMainActivityIsFirstLaunch.name, false)
             edit.apply()
         }
     }
@@ -602,13 +601,15 @@ class MainActivity : CastEnabledActivity() {
     }
 
     private var eventSink: Job?     = null
+    private var eventStickySink: Job? = null
     private fun cancelFlowEvents() {
         eventSink?.cancel()
         eventSink = null
+        eventStickySink?.cancel()
+        eventStickySink = null
     }
     private fun procFlowEvents() {
-        if (eventSink != null) return
-        eventSink = lifecycleScope.launch {
+        if (eventSink == null) eventSink = lifecycleScope.launch {
             EventFlow.events.collectLatest { event ->
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
@@ -620,25 +621,33 @@ class MainActivity : CastEnabledActivity() {
                 }
             }
         }
+        if (eventStickySink == null) eventStickySink = lifecycleScope.launch {
+            EventFlow.stickyEvents.collectLatest { event ->
+                Logd(TAG, "Received sticky event: ${event.TAG}")
+//                when (event) {
+//                    else -> {}
+//                }
+            }
+        }
     }
 
     private fun handleNavIntent() {
         Logd(TAG, "handleNavIntent()")
         val intent = intent
         when {
-            intent.hasExtra(EXTRA_FEED_ID) -> {
-                val feedId = intent.getLongExtra(EXTRA_FEED_ID, 0)
+            intent.hasExtra(Extras.fragment_feed_id.name) -> {
+                val feedId = intent.getLongExtra(Extras.fragment_feed_id.name, 0)
                 val args = intent.getBundleExtra(MainActivityStarter.EXTRA_FRAGMENT_ARGS)
                 if (feedId > 0) {
-                    val startedFromSearch = intent.getBooleanExtra(EXTRA_STARTED_FROM_SEARCH, false)
-                    val addToBackStack = intent.getBooleanExtra(EXTRA_ADD_TO_BACK_STACK, false)
+                    val startedFromSearch = intent.getBooleanExtra(Extras.started_from_search.name, false)
+                    val addToBackStack = intent.getBooleanExtra(Extras.add_to_back_stack.name, false)
                     if (startedFromSearch || addToBackStack) loadChildFragment(FeedEpisodesFragment.newInstance(feedId))
                     else loadFeedFragmentById(feedId, args)
                 }
                 bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
             }
-            intent.hasExtra(EXTRA_FEED_URL) -> {
-                val feedurl = intent.getStringExtra(EXTRA_FEED_URL)
+            intent.hasExtra(Extras.fragment_feed_url.name) -> {
+                val feedurl = intent.getStringExtra(Extras.fragment_feed_url.name)
                 if (feedurl != null) loadChildFragment(OnlineFeedViewFragment.newInstance(feedurl))
             }
             intent.hasExtra(MainActivityStarter.EXTRA_FRAGMENT_TAG) -> {
@@ -660,7 +669,7 @@ class MainActivity : CastEnabledActivity() {
         if (intent.getBooleanExtra(MainActivityStarter.EXTRA_OPEN_DOWNLOAD_LOGS, false))
             DownloadLogFragment().show(supportFragmentManager, null)
 
-        if (intent.getBooleanExtra(EXTRA_REFRESH_ON_START, false)) runOnceOrAsk(this)
+        if (intent.getBooleanExtra(Extras.refresh_on_start.name, false)) runOnceOrAsk(this)
 
         // to avoid handling the intent twice when the configuration changes
         setIntent(Intent(this@MainActivity, MainActivity::class.java))
@@ -756,24 +765,26 @@ class MainActivity : CastEnabledActivity() {
         return super.onKeyUp(keyCode, event)
     }
 
+    @Suppress("EnumEntryName")
+    enum class Extras {
+        prefMainActivityIsFirstLaunch,
+        fragment_feed_id,
+        fragment_feed_url,
+        refresh_on_start,
+        started_from_search,
+        add_to_back_stack,
+        generated_view_id,
+    }
+
     companion object {
         private val TAG: String = MainActivity::class.simpleName ?: "Anonymous"
         const val MAIN_FRAGMENT_TAG: String = "main"
-
         const val PREF_NAME: String = "MainActivityPrefs"
-        const val PREF_IS_FIRST_LAUNCH: String = "prefMainActivityIsFirstLaunch"
-
-        const val EXTRA_FEED_ID: String = "fragment_feed_id"
-        const val EXTRA_FEED_URL: String = "fragment_feed_url"
-        const val EXTRA_REFRESH_ON_START: String = "refresh_on_start"
-        const val EXTRA_STARTED_FROM_SEARCH: String = "started_from_search"
-        const val EXTRA_ADD_TO_BACK_STACK: String = "add_to_back_stack"
-        const val KEY_GENERATED_VIEW_ID: String = "generated_view_id"
 
         @JvmStatic
         fun getIntentToOpenFeed(context: Context, feedId: Long): Intent {
             val intent = Intent(context.applicationContext, MainActivity::class.java)
-            intent.putExtra(EXTRA_FEED_ID, feedId)
+            intent.putExtra(Extras.fragment_feed_id.name, feedId)
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             return intent
         }
@@ -781,7 +792,7 @@ class MainActivity : CastEnabledActivity() {
         @JvmStatic
         fun showOnlineFeed(context: Context, feedUrl: String): Intent {
             val intent = Intent(context.applicationContext, MainActivity::class.java)
-            intent.putExtra(EXTRA_FEED_URL, feedUrl)
+            intent.putExtra(Extras.fragment_feed_url.name, feedUrl)
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             return intent
         }

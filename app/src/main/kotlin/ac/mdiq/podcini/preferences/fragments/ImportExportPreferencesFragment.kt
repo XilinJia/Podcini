@@ -125,23 +125,23 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
     }
 
     private fun setupStorageScreen() {
-        findPreference<Preference>(PREF_OPML_EXPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(IExport.prefOpmlExport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             openExportPathPicker(Export.OPML, chooseOpmlExportPathLauncher, OpmlWriter())
             true
         }
-        findPreference<Preference>(PREF_HTML_EXPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(IExport.prefHtmlExport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             openExportPathPicker(Export.HTML, chooseHtmlExportPathLauncher, HtmlWriter())
             true
         }
-        findPreference<Preference>(PREF_PROGRESS_EXPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(IExport.prefProgressExport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             openExportPathPicker(Export.PROGRESS, chooseProgressExportPathLauncher, EpisodesProgressWriter())
             true
         }
-        findPreference<Preference>(PREF_PROGRESS_IMPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(IExport.prefProgressImport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             importEpisodeProgress()
             true
         }
-        findPreference<Preference>(PREF_OPML_IMPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(IExport.prefOpmlImport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             try {
                 chooseOpmlImportPathLauncher.launch("*/*")
             } catch (e: ActivityNotFoundException) {
@@ -149,31 +149,31 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
             }
             true
         }
-        findPreference<Preference>(PREF_DATABASE_IMPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(IExport.prefDatabaseImport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             importDatabase()
             true
         }
-        findPreference<Preference>(PREF_DATABASE_EXPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(IExport.prefDatabaseExport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             exportDatabase()
             true
         }
-        findPreference<Preference>(PREF_PREFERENCES_IMPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(IExport.prefPrefImport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             importPreferences()
             true
         }
-        findPreference<Preference>(PREF_PREFERENCES_EXPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(IExport.prefPrefExport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             exportPreferences()
             true
         }
-        findPreference<Preference>(PREF_MEDIAFILES_IMPORT)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(IExport.prefMediaFilesImport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             importMediaFiles()
             true
         }
-        findPreference<Preference>(PREF_MEDIAFILES_EXPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(IExport.prefMediaFilesExport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             exportMediaFiles()
             true
         }
-        findPreference<Preference>(PREF_FAVORITE_EXPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(IExport.prefFavoritesExport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             openExportPathPicker(Export.FAVORITES, chooseFavoritesExportPathLauncher, FavoritesWriter())
             true
         }
@@ -960,9 +960,9 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         override fun writeDocument(feeds: List<Feed?>?, writer: Writer?, context: Context) {
             Logd(TAG, "Starting to write document")
             val queuedEpisodeActions: MutableList<EpisodeAction> = mutableListOf()
-            val pausedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.PAUSED), EpisodeSortOrder.DATE_NEW_OLD)
-            val readItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.PLAYED), EpisodeSortOrder.DATE_NEW_OLD)
-            val favoriteItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.IS_FAVORITE), EpisodeSortOrder.DATE_NEW_OLD)
+            val pausedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.paused.name), EpisodeSortOrder.DATE_NEW_OLD)
+            val readItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.played.name), EpisodeSortOrder.DATE_NEW_OLD)
+            val favoriteItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.is_favorite.name), EpisodeSortOrder.DATE_NEW_OLD)
             val comItems = mutableSetOf<Episode>()
             comItems.addAll(pausedItems)
             comItems.addAll(readItems)
@@ -1021,7 +1021,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
             val favTemplate = IOUtils.toString(favTemplateStream, UTF_8)
             val feedTemplateStream = context.assets.open(FEED_TEMPLATE)
             val feedTemplate = IOUtils.toString(feedTemplateStream, UTF_8)
-            val allFavorites = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.IS_FAVORITE), EpisodeSortOrder.DATE_NEW_OLD)
+            val allFavorites = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.is_favorite.name), EpisodeSortOrder.DATE_NEW_OLD)
             val favoritesByFeed = buildFeedMap(allFavorites)
             writer!!.append(templateParts[0])
             for (feedId in favoritesByFeed.keys) {
@@ -1117,20 +1117,24 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         }
     }
 
+    private enum class IExport {
+        prefOpmlExport,
+        prefOpmlImport,
+        prefProgressExport,
+        prefProgressImport,
+        prefHtmlExport,
+        prefPrefImport,
+        prefPrefExport,
+        prefMediaFilesImport,
+        prefMediaFilesExport,
+        prefDatabaseImport,
+        prefDatabaseExport,
+        prefFavoritesExport,
+    }
+
     companion object {
         private val TAG: String = ImportExportPreferencesFragment::class.simpleName ?: "Anonymous"
-        private const val PREF_OPML_EXPORT = "prefOpmlExport"
-        private const val PREF_OPML_IMPORT = "prefOpmlImport"
-        private const val PREF_PROGRESS_EXPORT = "prefProgressExport"
-        private const val PREF_PROGRESS_IMPORT = "prefProgressImport"
-        private const val PREF_HTML_EXPORT = "prefHtmlExport"
-        private const val PREF_PREFERENCES_IMPORT = "prefPrefImport"
-        private const val PREF_PREFERENCES_EXPORT = "prefPrefExport"
-        private const val PREF_MEDIAFILES_IMPORT = "prefMediaFilesImport"
-        private const val PREF_MEDIAFILES_EXPORT = "prefMediaFilesExport"
-        private const val PREF_DATABASE_IMPORT = "prefDatabaseImport"
-        private const val PREF_DATABASE_EXPORT = "prefDatabaseExport"
-        private const val PREF_FAVORITE_EXPORT = "prefFavoritesExport"
+
         private const val DEFAULT_OPML_OUTPUT_NAME = "podcini-feeds-%s.opml"
         private const val CONTENT_TYPE_OPML = "text/x-opml"
         private const val DEFAULT_HTML_OUTPUT_NAME = "podcini-feeds-%s.html"

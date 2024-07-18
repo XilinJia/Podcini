@@ -628,8 +628,8 @@
   <string name="filter">Iragazia</string>
   <string name="hide_is_favorite_label">Gogokoa da</string>
   <string name="not_favorite">Ez da gogokoa</string>
-  <string name="hide_downloaded_episodes_label">Deskargatuta</string>
-  <string name="hide_not_downloaded_episodes_label">Deskargatu gabe</string>
+  <string name="downloaded_label">Deskargatuta</string>
+  <string name="not_downloaded_label">Deskargatu gabe</string>
   <string name="queued_label">Ilaran</string>
   <string name="not_queued_label">Ez dago ilaran</string>
   <string name="has_media">Media du</string>

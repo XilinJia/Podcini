@@ -55,9 +55,25 @@
         <SwitchPreferenceCompat
             android:key="autoDownload"
             android:title="@string/auto_download_label" />
+        <ac.mdiq.podcini.preferences.MaterialListPreference
+            android:entries="@array/spnAutoDLPolicyItems"
+            android:entryValues="@array/spnAutoDLPolicyValues"
+            android:key="feedAutoDownloadPolicy"
+            android:title="@string/feed_auto_download_policy" />
+        <ac.mdiq.podcini.preferences.MaterialListPreference
+            android:defaultValue="3"
+            android:entries="@array/feed_episode_cache_size_entries"
+            android:key="feedEpisodeCacheSize"
+            android:title="@string/pref_episode_cache_title"
+            android:summary="@string/pref_episode_cache_summary"
+            android:entryValues="@array/feed_episode_cache_size_values"/>
         <Preference
-            android:key="episodeFilter"
+            android:key="episodeInclusiveFilter"
             android:summary="@string/episode_filters_description"
-            android:title="@string/episode_filters_label" />
+            android:title="@string/episode_inclusive_filters_label" />
+        <Preference
+            android:key="episodeExclusiveFilter"
+            android:summary="@string/episode_filters_description"
+            android:title="@string/episode_exclusive_filters_label" />
     </PreferenceCategory>
 </PreferenceScreen>

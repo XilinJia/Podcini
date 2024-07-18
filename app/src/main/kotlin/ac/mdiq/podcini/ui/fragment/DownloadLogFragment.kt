@@ -15,14 +15,13 @@ import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.ui.actions.actionbutton.DownloadActionButton
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.dialog.DownloadLogDetailsDialog
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.error.DownloadErrorLabel
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
-import ac.mdiq.podcini.util.sorting.DownloadResultComparator
+import ac.mdiq.podcini.storage.utils.DownloadResultComparator
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle

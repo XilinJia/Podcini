@@ -9,7 +9,7 @@ import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.currentMediaType
 import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_PLAYBACK_SPEED_ARRAY
+import ac.mdiq.podcini.preferences.UserPreferences.Prefs.prefPlaybackSpeedArray
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.preferences.UserPreferences.videoPlaybackSpeed
@@ -180,7 +180,7 @@ import java.util.*
     }
 
     var playbackSpeedArray: List<Float>
-        get() = readPlaybackSpeedArray(appPrefs.getString(PREF_PLAYBACK_SPEED_ARRAY, null))
+        get() = readPlaybackSpeedArray(appPrefs.getString(UserPreferences.Prefs.prefPlaybackSpeedArray.name, null))
         set(speeds) {
             val format = DecimalFormatSymbols(Locale.US)
             format.decimalSeparator = '.'
@@ -189,7 +189,7 @@ import java.util.*
             for (speed in speeds) {
                 jsonArray.put(speedFormat.format(speed.toDouble()))
             }
-            appPrefs.edit().putString(PREF_PLAYBACK_SPEED_ARRAY, jsonArray.toString()).apply()
+            appPrefs.edit().putString(UserPreferences.Prefs.prefPlaybackSpeedArray.name, jsonArray.toString()).apply()
         }
 
     private fun readPlaybackSpeedArray(valueFromPrefs: String?): List<Float> {

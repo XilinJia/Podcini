@@ -11,7 +11,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.episodeCacheSize
 import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
 import ac.mdiq.podcini.storage.algorithms.AutoCleanups
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodesCount
-import ac.mdiq.podcini.storage.database.Feeds.getFeedList
+import ac.mdiq.podcini.storage.database.Feeds.getFeedCount
 import ac.mdiq.podcini.storage.model.DatasetStats
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeFilter.Companion.unfiltered
@@ -19,7 +19,6 @@ import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.dialog.DrawerPreferencesDialog
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.util.Logd
@@ -170,12 +169,12 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
             appPrefs.registerOnSharedPreferenceChangeListener(this@NavListAdapter)
         }
         override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String?) {
-            if (UserPreferences.PREF_HIDDEN_DRAWER_ITEMS == key) loadItems()
+            if (UserPreferences.Prefs.prefHiddenDrawerItems.name == key) loadItems()
         }
         @OptIn(UnstableApi::class) private fun loadItems() {
             val newTags: MutableList<String?> = ArrayList(listOf(*NAV_DRAWER_TAGS))
             val hiddenFragments = hiddenDrawerItems
-            newTags.removeAll(hiddenFragments)
+            newTags.removeAll(hiddenFragments.map { it.trim() })
             fragmentTags.clear()
             fragmentTags.addAll(newTags)
             notifyDataSetChanged()
@@ -368,6 +367,8 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
         const val PREF_NAME: String = "NavDrawerPrefs"
         var prefs: SharedPreferences? = null
 
+        var feedCount: Int = 0
+
         fun getSharedPrefs(context: Context) {
             if (prefs == null) prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         }
@@ -404,13 +405,13 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
          */
         fun getDatasetStats(): DatasetStats {
             Logd(TAG, "getNavDrawerData() called")
-            val numDownloadedItems = getEpisodesCount(EpisodeFilter(EpisodeFilter.DOWNLOADED))
+            val numDownloadedItems = getEpisodesCount(EpisodeFilter(EpisodeFilter.States.downloaded.name))
             val numItems = getEpisodesCount(unfiltered())
-            val numFeeds = getFeedList().size
+            feedCount = getFeedCount()
             while (curQueue.name.isEmpty()) runBlocking { delay(100) }
             val queueSize = curQueue.episodeIds.size
             Logd(TAG, "getDatasetStats: queueSize: $queueSize")
-            return DatasetStats(queueSize, numDownloadedItems, AutoCleanups.build().getReclaimableItems(), numItems, numFeeds)
+            return DatasetStats(queueSize, numDownloadedItems, AutoCleanups.build().getReclaimableItems(), numItems, feedCount)
         }
     }
 }

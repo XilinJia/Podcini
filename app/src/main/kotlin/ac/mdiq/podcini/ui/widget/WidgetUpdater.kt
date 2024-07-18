@@ -13,9 +13,9 @@ import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.activity.starter.PlaybackSpeedActivityStarter
 import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
-import ac.mdiq.podcini.util.Converter.getDurationStringLong
+import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringLong
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.TimeSpeedConverter
+import ac.mdiq.podcini.storage.utils.TimeSpeedConverter
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
@@ -155,10 +155,10 @@ object WidgetUpdater {
             if (columns < 3) views.setViewVisibility(R.id.layout_center, View.INVISIBLE)
             else views.setViewVisibility(R.id.layout_center, View.VISIBLE)
 
-            val showPlaybackSpeed = prefs!!.getBoolean(PlayerWidget.KEY_WIDGET_PLAYBACK_SPEED + id, true)
-            val showRewind = prefs!!.getBoolean(PlayerWidget.KEY_WIDGET_REWIND + id, true)
-            val showFastForward = prefs!!.getBoolean(PlayerWidget.KEY_WIDGET_FAST_FORWARD + id, true)
-            val showSkip = prefs!!.getBoolean(PlayerWidget.KEY_WIDGET_SKIP + id, true)
+            val showPlaybackSpeed = prefs!!.getBoolean(PlayerWidget.Prefs.widget_playback_speed.name + id, true)
+            val showRewind = prefs!!.getBoolean(PlayerWidget.Prefs.widget_rewind.name + id, true)
+            val showFastForward = prefs!!.getBoolean(PlayerWidget.Prefs.widget_fast_forward.name + id, true)
+            val showSkip = prefs!!.getBoolean(PlayerWidget.Prefs.widget_skip.name + id, true)
 
             if (showPlaybackSpeed || showRewind || showSkip || showFastForward) {
                 views.setInt(R.id.extendedButtonsContainer, "setVisibility", View.VISIBLE)
@@ -172,7 +172,7 @@ object WidgetUpdater {
                 views.setInt(R.id.butPlay, "setVisibility", View.VISIBLE)
             }
 
-            val backgroundColor = prefs!!.getInt(PlayerWidget.KEY_WIDGET_COLOR + id, PlayerWidget.DEFAULT_COLOR)
+            val backgroundColor = prefs!!.getInt(PlayerWidget.Prefs.widget_color.name + id, PlayerWidget.DEFAULT_COLOR)
             views.setInt(R.id.widgetLayout, "setBackgroundColor", backgroundColor)
 
             manager.updateAppWidget(id, views)

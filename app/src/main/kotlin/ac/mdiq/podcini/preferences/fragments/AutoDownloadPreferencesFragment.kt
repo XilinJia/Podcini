@@ -1,5 +1,13 @@
 package ac.mdiq.podcini.preferences.fragments
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.net.utils.NetworkUtils.autodownloadSelectedNetworks
+import ac.mdiq.podcini.net.utils.NetworkUtils.isEnableAutodownloadWifiFilter
+import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
+import ac.mdiq.podcini.ui.activity.PreferenceActivity
+import ac.mdiq.podcini.util.Logd
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
@@ -12,16 +20,6 @@ import androidx.preference.CheckBoxPreference
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.net.utils.NetworkUtils.autodownloadSelectedNetworks
-import ac.mdiq.podcini.net.utils.NetworkUtils.isEnableAutodownloadWifiFilter
-import ac.mdiq.podcini.ui.activity.PreferenceActivity
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_AUTODL_SELECTED_NETWORKS
-import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
-import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
-import ac.mdiq.podcini.util.Logd
-import java.util.*
 
 class AutoDownloadPreferencesFragment : PreferenceFragmentCompat() {
     private var selectedNetworks: Array<CheckBoxPreference?>? = null
@@ -46,14 +44,14 @@ class AutoDownloadPreferencesFragment : PreferenceFragmentCompat() {
     }
 
     private fun setupAutoDownloadScreen() {
-        findPreference<Preference>(UserPreferences.PREF_ENABLE_AUTODL)!!.onPreferenceChangeListener =
+        findPreference<Preference>(UserPreferences.Prefs.prefEnableAutoDl.name)!!.onPreferenceChangeListener =
             Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any? ->
                 if (newValue is Boolean) checkAutodownloadItemVisibility(newValue)
                 true
             }
-        if (Build.VERSION.SDK_INT >= 29) findPreference<Preference>(UserPreferences.PREF_ENABLE_AUTODL_WIFI_FILTER)!!.isVisible = false
+        if (Build.VERSION.SDK_INT >= 29) findPreference<Preference>(UserPreferences.Prefs.prefEnableAutoDownloadWifiFilter.name)!!.isVisible = false
 
-        findPreference<Preference>(UserPreferences.PREF_ENABLE_AUTODL_WIFI_FILTER)?.onPreferenceChangeListener =
+        findPreference<Preference>(UserPreferences.Prefs.prefEnableAutoDownloadWifiFilter.name)?.onPreferenceChangeListener =
             Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any? ->
                 if (newValue is Boolean) {
                     setSelectedNetworksEnabled(newValue)
@@ -63,10 +61,10 @@ class AutoDownloadPreferencesFragment : PreferenceFragmentCompat() {
     }
 
     private fun checkAutodownloadItemVisibility(autoDownload: Boolean) {
-        findPreference<Preference>(UserPreferences.PREF_EPISODE_CACHE_SIZE)!!.isEnabled = autoDownload
-        findPreference<Preference>(UserPreferences.PREF_ENABLE_AUTODL_ON_BATTERY)!!.isEnabled = autoDownload
-        findPreference<Preference>(UserPreferences.PREF_ENABLE_AUTODL_WIFI_FILTER)!!.isEnabled = autoDownload
-        findPreference<Preference>(UserPreferences.PREF_EPISODE_CLEANUP)!!.isEnabled = autoDownload
+        findPreference<Preference>(UserPreferences.Prefs.prefEpisodeCacheSize.name)!!.isEnabled = autoDownload
+        findPreference<Preference>(UserPreferences.Prefs.prefEnableAutoDownloadOnBattery.name)!!.isEnabled = autoDownload
+        findPreference<Preference>(UserPreferences.Prefs.prefEnableAutoDownloadWifiFilter.name)!!.isEnabled = autoDownload
+        findPreference<Preference>(UserPreferences.Prefs.prefEpisodeCleanup.name)!!.isEnabled = autoDownload
         setSelectedNetworksEnabled(autoDownload && isEnableAutodownloadWifiFilter)
     }
 
@@ -127,8 +125,8 @@ class AutoDownloadPreferencesFragment : PreferenceFragmentCompat() {
         }
     }
 
-    fun setAutodownloadSelectedNetworks(value: Array<String?>?) {
-        appPrefs.edit().putString(PREF_AUTODL_SELECTED_NETWORKS, value!!.joinToString()).apply()
+    private fun setAutodownloadSelectedNetworks(value: Array<String?>?) {
+        appPrefs.edit().putString(UserPreferences.Prefs.prefAutodownloadSelectedNetworks.name, value!!.joinToString()).apply()
     }
 
     private fun clearAutodownloadSelectedNetworsPreference() {
@@ -144,7 +142,7 @@ class AutoDownloadPreferencesFragment : PreferenceFragmentCompat() {
     private fun buildEpisodeCleanupPreference() {
         val res = requireActivity().resources
 
-        val pref = findPreference<ListPreference>(UserPreferences.PREF_EPISODE_CLEANUP)
+        val pref = findPreference<ListPreference>(UserPreferences.Prefs.prefEpisodeCleanup.name)
         val values = res.getStringArray(R.array.episode_cleanup_values)
         val entries = arrayOfNulls<String>(values.size)
         for (x in values.indices) {

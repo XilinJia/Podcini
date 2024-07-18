@@ -23,26 +23,18 @@ import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnableFrom
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnableTo
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.isInTimeRange
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.timerMillis
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_FAVORITE_KEEPS_EPISODE
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_FOLLOW_QUEUE
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_HARDWARE_FORWARD_BUTTON
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_HARDWARE_PREVIOUS_BUTTON
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_PAUSE_ON_HEADSET_DISCONNECT
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_PERSISTENT_NOTIFICATION
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_SKIP_KEEPS_EPISODE
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_UNPAUSE_ON_BLUETOOTH_RECONNECT
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_UNPAUSE_ON_HEADSET_RECONNECT
+import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.UserPreferences.fastForwardSecs
 import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
-import ac.mdiq.podcini.preferences.UserPreferences.shouldAutoDeleteItem
-import ac.mdiq.podcini.preferences.UserPreferences.shouldDeleteRemoveFromQueue
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
 import ac.mdiq.podcini.storage.database.Episodes.addToHistory
 import ac.mdiq.podcini.storage.database.Episodes.deleteMediaSync
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
 import ac.mdiq.podcini.storage.database.Episodes.persistEpisode
 import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
+import ac.mdiq.podcini.storage.database.Episodes.shouldDeleteRemoveFromQueue
+import ac.mdiq.podcini.storage.database.Feeds.shouldAutoDeleteItem
 import ac.mdiq.podcini.storage.database.Queues.addToQueue
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueueSync
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -329,11 +321,11 @@ class PlaybackService : MediaSessionService() {
         }
 
         fun shouldSkipKeepEpisode(): Boolean {
-            return appPrefs.getBoolean(PREF_SKIP_KEEPS_EPISODE, true)
+            return appPrefs.getBoolean(UserPreferences.Prefs.prefSkipKeepsEpisode.name, true)
         }
 
         fun shouldFavoriteKeepEpisode(): Boolean {
-            return appPrefs.getBoolean(PREF_FAVORITE_KEEPS_EPISODE, true)
+            return appPrefs.getBoolean(UserPreferences.Prefs.prefFavoriteKeepsEpisode.name, true)
         }
 
         override fun onPlaybackStart(playable: Playable, position: Int) {
@@ -773,7 +765,7 @@ class PlaybackService : MediaSessionService() {
             else PendingIntent.getService(this, R.id.pending_intent_allow_stream_always, intentAlwaysAllow,
                 FLAG_UPDATE_CURRENT or FLAG_IMMUTABLE)
 
-        val builder = NotificationCompat.Builder(this, NotificationUtils.CHANNEL_ID_USER_ACTION)
+        val builder = NotificationCompat.Builder(this, NotificationUtils.CHANNEL_ID.user_action.name)
             .setSmallIcon(R.drawable.ic_notification_stream)
             .setContentTitle(getString(R.string.confirm_mobile_streaming_notification_title))
             .setContentText(getString(R.string.confirm_mobile_streaming_notification_message))
@@ -1078,10 +1070,11 @@ class PlaybackService : MediaSessionService() {
         val item = (curMedia as? EpisodeMedia)?.episode ?: currentitem
         if (item?.feed?.id == event.feed.id) {
             item.feed = null
-            if (MediaPlayerBase.status == PlayerStatus.PLAYING) {
-                mPlayer?.pause(abandonFocus = false, reinit = false)
-                mPlayer?.resume()
-            }
+//            seems no need to pause??
+//            if (MediaPlayerBase.status == PlayerStatus.PLAYING) {
+//                mPlayer?.pause(abandonFocus = false, reinit = false)
+//                mPlayer?.resume()
+//            }
         }
     }
 
@@ -1187,31 +1180,31 @@ class PlaybackService : MediaSessionService() {
          * @return `true` if notifications are persistent, `false`  otherwise
          */
         val isPersistNotify: Boolean
-            get() = appPrefs.getBoolean(PREF_PERSISTENT_NOTIFICATION, true)
+            get() = appPrefs.getBoolean(UserPreferences.Prefs.prefPersistNotify.name, true)
 
         val isPauseOnHeadsetDisconnect: Boolean
-            get() = appPrefs.getBoolean(PREF_PAUSE_ON_HEADSET_DISCONNECT, true)
+            get() = appPrefs.getBoolean(UserPreferences.Prefs.prefPauseOnHeadsetDisconnect.name, true)
 
         val isUnpauseOnHeadsetReconnect: Boolean
-            get() = appPrefs.getBoolean(PREF_UNPAUSE_ON_HEADSET_RECONNECT, true)
+            get() = appPrefs.getBoolean(UserPreferences.Prefs.prefUnpauseOnHeadsetReconnect.name, true)
 
         val isUnpauseOnBluetoothReconnect: Boolean
-            get() = appPrefs.getBoolean(PREF_UNPAUSE_ON_BLUETOOTH_RECONNECT, false)
+            get() = appPrefs.getBoolean(UserPreferences.Prefs.prefUnpauseOnBluetoothReconnect.name, false)
 
         val hardwareForwardButton: Int
-            get() = appPrefs.getString(PREF_HARDWARE_FORWARD_BUTTON, KeyEvent.KEYCODE_MEDIA_FAST_FORWARD.toString())!!.toInt()
+            get() = appPrefs.getString(UserPreferences.Prefs.prefHardwareForwardButton.name, KeyEvent.KEYCODE_MEDIA_FAST_FORWARD.toString())!!.toInt()
 
         val hardwarePreviousButton: Int
-            get() = appPrefs.getString(PREF_HARDWARE_PREVIOUS_BUTTON, KeyEvent.KEYCODE_MEDIA_REWIND.toString())!!.toInt()
+            get() = appPrefs.getString(UserPreferences.Prefs.prefHardwarePreviousButton.name, KeyEvent.KEYCODE_MEDIA_REWIND.toString())!!.toInt()
 
         /**
          * Set to true to enable Continuous Playback
          */
         @set:VisibleForTesting
         var isFollowQueue: Boolean
-            get() = appPrefs.getBoolean(PREF_FOLLOW_QUEUE, true)
+            get() = appPrefs.getBoolean(UserPreferences.Prefs.prefFollowQueue.name, true)
             set(value) {
-                appPrefs.edit().putBoolean(PREF_FOLLOW_QUEUE, value).apply()
+                appPrefs.edit().putBoolean(UserPreferences.Prefs.prefFollowQueue.name, value).apply()
             }
 
         fun updateVolumeIfNecessary(mediaPlayer: MediaPlayerBase, feedId: Long, volumeAdaptionSetting: VolumeAdaptionSetting) {

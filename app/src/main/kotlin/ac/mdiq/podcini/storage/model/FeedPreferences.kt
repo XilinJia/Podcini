@@ -5,16 +5,13 @@ import io.realm.kotlin.ext.realmSetOf
 import io.realm.kotlin.types.EmbeddedRealmObject
 import io.realm.kotlin.types.RealmSet
 import io.realm.kotlin.types.annotations.Ignore
-import io.realm.kotlin.types.annotations.Index
 
 /**
  * Contains preferences for a single feed.
  */
 class FeedPreferences : EmbeddedRealmObject {
 
-    @Index var feedID: Long = 0L
-
-    var autoDownload: Boolean = false
+    var feedID: Long = 0L
 
     /**
      * @return true if this feed should be refreshed when everything else is being refreshed
@@ -48,36 +45,63 @@ class FeedPreferences : EmbeddedRealmObject {
         }
     var volumeAdaption: Int = 0
 
-    var tags: RealmSet<String> = realmSetOf()
-
     @Ignore
     val tagsAsString: String
         get() = tags.joinToString(TAG_SEPARATOR)
+    var tags: RealmSet<String> = realmSetOf()
+
+    var autoDownload: Boolean = false
 
     @Ignore
-    var autoDownloadFilter: FeedAutoDownloadFilter = FeedAutoDownloadFilter()
-        get() = FeedAutoDownloadFilter(autoDLInclude, autoDLExclude, autoDLMinDuration)
+    var autoDownloadFilter: FeedAutoDownloadFilter? = null
+        get() = field ?: FeedAutoDownloadFilter(autoDLInclude, autoDLExclude, autoDLMinDuration, markExcludedPlayed)
         set(value) {
             field = value
-            autoDLInclude = field.includeFilterRaw
-            autoDLExclude = field.excludeFilterRaw
-            autoDLMinDuration = field.minimalDurationFilter
+            autoDLInclude = value?.includeFilterRaw ?: ""
+            autoDLExclude = value?.excludeFilterRaw ?: ""
+            autoDLMinDuration = value?.minimalDurationFilter ?: -1
+            markExcludedPlayed = value?.markExcludedPlayed ?: false
         }
     var autoDLInclude: String? = ""
     var autoDLExclude: String? = ""
     var autoDLMinDuration: Int = -1
+    var markExcludedPlayed: Boolean = false
+
+    var autoDLMaxEpisodes: Int = 3
+
+    @Ignore
+    var autoDLPolicy: AutoDLPolicy = AutoDLPolicy.ONLY_NEW
+        get() = AutoDLPolicy.fromCode(autoDLPolicyCode)
+        set(value) {
+            field = value
+            autoDLPolicyCode = value.code
+        }
+    var autoDLPolicyCode: Int = 0
 
     var filterString: String = ""
 
     var sortOrderCode: Int = 0
 
-    enum class AutoDeleteAction(@JvmField val code: Int) {
+    var sortOrderAuxCode: Int = 0
+
+    enum class AutoDLPolicy(val code: Int) {
+        ONLY_NEW(0),
+        NEWER(1),
+        OLDER(2);
+
+        companion object {
+            fun fromCode(code: Int): AutoDLPolicy {
+                return enumValues<AutoDLPolicy>().firstOrNull { it.code == code } ?: ONLY_NEW
+            }
+        }
+    }
+
+    enum class AutoDeleteAction(val code: Int) {
         GLOBAL(0),
         ALWAYS(1),
         NEVER(2);
 
         companion object {
-            @JvmStatic
             fun fromCode(code: Int): AutoDeleteAction {
                 return enumValues<AutoDeleteAction>().firstOrNull { it.code == code } ?: NEVER
             }

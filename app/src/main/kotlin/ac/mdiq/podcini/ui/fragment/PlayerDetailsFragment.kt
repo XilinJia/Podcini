@@ -410,24 +410,6 @@ class PlayerDetailsFragment : Fragment() {
         savePreference()
     }
 
-//    private var eventSink: Job?     = null
-//    private fun cancelFlowEvents() {
-//        eventSink?.cancel()
-//        eventSink = null
-//    }
-//    private fun procFlowEvents() {
-//        if (eventSink != null) return
-//        eventSink = lifecycleScope.launch {
-//            EventFlow.events.collectLatest { event ->
-//                Logd(TAG, "Received event: ${event.TAG}")
-//                when (event) {
-//                    is FlowEvent.PlaybackPositionEvent -> onPlaybackPositionEvent(event)
-//                    else -> {}
-//                }
-//            }
-//        }
-//    }
-
     fun onPlaybackPositionEvent(event: FlowEvent.PlaybackPositionEvent) {
         if (playable?.getIdentifier() != event.media?.getIdentifier()) return
         val newChapterIndex: Int = ChapterUtils.getCurrentChapterIndex(playable, event.position)

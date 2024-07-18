@@ -14,6 +14,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.SwitchPreferenceCompat
 import com.bytehamster.lib.preferencesearch.SearchPreference
 
 class MainPreferencesFragment : PreferenceFragmentCompat() {
@@ -33,7 +34,7 @@ class MainPreferencesFragment : PreferenceFragmentCompat() {
 //        Logd("MainPreferencesFragment", "$packageHash ${"ac.mdiq.podcini.R".hashCode()}")
         when {
             packageHash != 1329568231 && packageHash != 1297601420 -> {
-                findPreference<Preference>(PREF_CATEGORY_PROJECT)!!.isVisible = false
+                findPreference<Preference>(Prefs.project.name)!!.isVisible = false
                 val copyrightNotice = Preference(requireContext())
                 copyrightNotice.setIcon(R.drawable.ic_info_white)
                 copyrightNotice.icon!!.mutate().colorFilter = PorterDuffColorFilter(-0x340000, PorterDuff.Mode.MULTIPLY)
@@ -41,7 +42,7 @@ class MainPreferencesFragment : PreferenceFragmentCompat() {
                         + " The Podcini team does NOT provide support for this unofficial version."
                         + " If you can read this message, the developers of this modification"
                         + " violate the GNU General Public License (GPL).")
-                findPreference<Preference>(PREF_CATEGORY_PROJECT)!!.parent!!.addPreference(copyrightNotice)
+                findPreference<Preference>(Prefs.project.name)!!.parent!!.addPreference(copyrightNotice)
             }
             packageHash == 1297601420 -> {
                 val debugNotice = Preference(requireContext())
@@ -49,7 +50,7 @@ class MainPreferencesFragment : PreferenceFragmentCompat() {
                 debugNotice.icon!!.mutate().colorFilter = PorterDuffColorFilter(-0x340000, PorterDuff.Mode.MULTIPLY)
                 debugNotice.order = -1
                 debugNotice.summary = "This is a development version of Podcini and not meant for daily use"
-                findPreference<Preference>(PREF_CATEGORY_PROJECT)!!.parent!!.addPreference(debugNotice)
+                findPreference<Preference>(Prefs.project.name)!!.parent!!.addPreference(debugNotice)
             }
         }
     }
@@ -61,73 +62,64 @@ class MainPreferencesFragment : PreferenceFragmentCompat() {
 
     @SuppressLint("CommitTransaction")
     private fun setupMainScreen() {
-        findPreference<Preference>(PREF_SCREEN_USER_INTERFACE)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.prefScreenInterface.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             (activity as PreferenceActivity).openScreen(R.xml.preferences_user_interface)
             true
         }
-        findPreference<Preference>(PREF_SCREEN_PLAYBACK)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.prefScreenPlayback.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             (activity as PreferenceActivity).openScreen(R.xml.preferences_playback)
             true
         }
-        findPreference<Preference>(PREF_SCREEN_DOWNLOADS)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.prefScreenDownloads.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             (activity as PreferenceActivity).openScreen(R.xml.preferences_downloads)
             true
         }
-        findPreference<Preference>(PREF_SCREEN_SYNCHRONIZATION)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.prefScreenSynchronization.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             (activity as PreferenceActivity).openScreen(R.xml.preferences_synchronization)
             true
         }
-        findPreference<Preference>(PREF_SCREEN_IMPORT_EXPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.prefScreenImportExport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             (activity as PreferenceActivity).openScreen(R.xml.preferences_import_export)
             true
         }
-        findPreference<Preference>(PREF_NOTIFICATION)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.notifications.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             (activity as PreferenceActivity).openScreen(R.xml.preferences_notifications)
             true
         }
-        findPreference<Preference>(PREF_ABOUT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        val switchPreference = findPreference<SwitchPreferenceCompat>("prefOPMLBackup")
+        switchPreference?.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, newValue ->
+            if (newValue is Boolean) {
+                // Restart the app
+                val intent = context?.packageManager?.getLaunchIntentForPackage(requireContext().packageName)
+                intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                context?.startActivity(intent)
+            }
+            true
+        }
+        findPreference<Preference>(Prefs.prefAbout.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.settingsContainer, AboutFragment())
                 .addToBackStack(getString(R.string.about_pref))
                 .commit()
             true
         }
-        findPreference<Preference>(PREF_DOCUMENTATION)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.prefDocumentation.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini")
             true
         }
-        findPreference<Preference>(PREF_VIEW_FORUM)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.prefViewForum.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini/discussions")
             true
         }
-        findPreference<Preference>(PREF_CONTRIBUTE)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.prefContribute.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             openInBrowser(requireContext(), "https://github.com/XilinJia/Podcini")
             true
         }
-        findPreference<Preference>(PREF_SEND_BUG_REPORT)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.prefSendBugReport.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             startActivity(Intent(activity, BugReportActivity::class.java))
             true
         }
     }
-
-//    private val localizedWebsiteLink: String
-//        get() {
-//            try {
-//                requireContext().assets.open("website-languages.txt").use { `is` ->
-//                    val languages = IOUtils.toString(`is`, StandardCharsets.UTF_8.name()).split("\n".toRegex())
-//                        .dropLastWhile { it.isEmpty() }
-//                        .toTypedArray()
-//                    val deviceLanguage = Locale.getDefault().language
-//                    return if (ArrayUtils.contains(languages, deviceLanguage) && "en" != deviceLanguage) {
-//                        "https://podcini.org/$deviceLanguage"
-//                    } else {
-//                        "https://podcini.org"
-//                    }
-//                }
-//            } catch (e: IOException) {
-//                throw RuntimeException(e)
-//            }
-//        }
 
     private fun setupSearch() {
         val searchPreference = findPreference<SearchPreference>("searchPreference")
@@ -152,18 +144,19 @@ class MainPreferencesFragment : PreferenceFragmentCompat() {
             .addBreadcrumb(getTitleOfPage(R.xml.preferences_swipe))
     }
 
-    companion object {
-        private const val PREF_SCREEN_USER_INTERFACE = "prefScreenInterface"
-        private const val PREF_SCREEN_PLAYBACK = "prefScreenPlayback"
-        private const val PREF_SCREEN_DOWNLOADS = "prefScreenDownloads"
-        private const val PREF_SCREEN_IMPORT_EXPORT = "prefScreenImportExport"
-        private const val PREF_SCREEN_SYNCHRONIZATION = "prefScreenSynchronization"
-        private const val PREF_DOCUMENTATION = "prefDocumentation"
-        private const val PREF_VIEW_FORUM = "prefViewForum"
-        private const val PREF_SEND_BUG_REPORT = "prefSendBugReport"
-        private const val PREF_CATEGORY_PROJECT = "project"
-        private const val PREF_ABOUT = "prefAbout"
-        private const val PREF_NOTIFICATION = "notifications"
-        private const val PREF_CONTRIBUTE = "prefContribute"
+    @Suppress("EnumEntryName")
+    private enum class Prefs {
+        prefScreenInterface,
+        prefScreenPlayback,
+        prefScreenDownloads,
+        prefScreenImportExport,
+        prefScreenSynchronization,
+        prefDocumentation,
+        prefViewForum,
+        prefSendBugReport,
+        project,
+        prefAbout,
+        notifications,
+        prefContribute,
     }
 }

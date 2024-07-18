@@ -49,17 +49,10 @@ open class DbCleanupTests {
         Assert.assertTrue(destFolder.exists())
         Assert.assertTrue(destFolder.canWrite())
 
-        // create new database
-//        PodDBAdapter.init(context)
-//        deleteDatabase()
-//        val adapter = getInstance()
-//        adapter.open()
-//        adapter.close()
-
         val prefEdit = PreferenceManager.getDefaultSharedPreferences(context.applicationContext).edit()
-        prefEdit.putString(UserPreferences.PREF_EPISODE_CACHE_SIZE, EPISODE_CACHE_SIZE.toString())
-        prefEdit.putString(UserPreferences.PREF_EPISODE_CLEANUP, cleanupAlgorithm.toString())
-        prefEdit.putBoolean(UserPreferences.PREF_ENABLE_AUTODL, true)
+        prefEdit.putString(UserPreferences.Prefs.prefEpisodeCacheSize.name, EPISODE_CACHE_SIZE.toString())
+        prefEdit.putString(UserPreferences.Prefs.prefEpisodeCleanup.name, cleanupAlgorithm.toString())
+        prefEdit.putBoolean(UserPreferences.Prefs.prefEnableAutoDl.name, true)
         prefEdit.commit()
 
         UserPreferences.init(context)

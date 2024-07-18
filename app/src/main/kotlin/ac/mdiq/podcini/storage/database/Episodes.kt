@@ -9,9 +9,9 @@ import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.playback.base.InTheatre.writeNoMediaPlaying
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.ACTION_SHUTDOWN_PLAYBACK_SERVICE
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_REMOVDE_FROM_QUEUE_MARKED_PLAYED
+import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.Prefs
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
-import ac.mdiq.podcini.preferences.UserPreferences.shouldDeleteRemoveFromQueue
 import ac.mdiq.podcini.storage.database.Queues.removeFromAllQueuesSync
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueueSync
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -26,7 +26,7 @@ import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
-import ac.mdiq.podcini.util.sorting.EpisodesPermutors.getPermutor
+import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import android.app.backup.BackupManager
 import android.content.Context
 import android.net.Uri
@@ -58,9 +58,10 @@ object Episodes {
         return if (copy) realm.copyFromRealm(episodes) else episodes
     }
 
-    fun getEpisodesCount(filter: EpisodeFilter?): Int {
+    fun getEpisodesCount(filter: EpisodeFilter?, feedId: Long = -1): Int {
         Logd(TAG, "getEpisodesCount called")
-        val queryString = filter?.queryString()?:"id > 0"
+        var queryString = filter?.queryString()?:"id > 0"
+        if (feedId >= 0) queryString += " AND feedId == $feedId "
         return realm.query(Episode::class).query(queryString).count().find().toInt()
     }
 
@@ -100,6 +101,10 @@ object Episodes {
             val episode_ = deleteMediaSync(context, episode)
             if (shouldDeleteRemoveFromQueue()) removeFromQueueSync(null, null, episode_)
         }
+    }
+
+    fun shouldDeleteRemoveFromQueue(): Boolean {
+        return appPrefs.getBoolean(Prefs.prefDeleteRemovesFromQueue.name, false)
     }
 
     @OptIn(UnstableApi::class)
@@ -287,6 +292,6 @@ object Episodes {
     }
 
     private fun shouldRemoveFromQueuesMarkPlayed(): Boolean {
-        return appPrefs.getBoolean(PREF_REMOVDE_FROM_QUEUE_MARKED_PLAYED, true)
+        return appPrefs.getBoolean(UserPreferences.Prefs.prefRemoveFromQueueMarkedPlayed.name, true)
     }
 }

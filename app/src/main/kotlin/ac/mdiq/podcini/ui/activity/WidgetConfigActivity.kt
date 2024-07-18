@@ -98,12 +98,12 @@ class WidgetConfigActivity : AppCompatActivity() {
         PlayerWidget.getSharedPrefs(this)
 
 //        val prefs = getSharedPreferences(PlayerWidget.PREFS_NAME, MODE_PRIVATE)
-        ckPlaybackSpeed.isChecked = prefs!!.getBoolean(PlayerWidget.KEY_WIDGET_PLAYBACK_SPEED + appWidgetId, true)
-        ckRewind.isChecked = prefs!!.getBoolean(PlayerWidget.KEY_WIDGET_REWIND + appWidgetId, true)
-        ckFastForward.isChecked = prefs!!.getBoolean(PlayerWidget.KEY_WIDGET_FAST_FORWARD + appWidgetId, true)
-        ckSkip.isChecked = prefs!!.getBoolean(PlayerWidget.KEY_WIDGET_SKIP + appWidgetId, true)
+        ckPlaybackSpeed.isChecked = prefs!!.getBoolean(PlayerWidget.Prefs.widget_playback_speed.name + appWidgetId, true)
+        ckRewind.isChecked = prefs!!.getBoolean(PlayerWidget.Prefs.widget_rewind.name + appWidgetId, true)
+        ckFastForward.isChecked = prefs!!.getBoolean(PlayerWidget.Prefs.widget_fast_forward.name + appWidgetId, true)
+        ckSkip.isChecked = prefs!!.getBoolean(PlayerWidget.Prefs.widget_skip.name + appWidgetId, true)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            val color = prefs!!.getInt(PlayerWidget.KEY_WIDGET_COLOR + appWidgetId, PlayerWidget.DEFAULT_COLOR)
+            val color = prefs!!.getInt(PlayerWidget.Prefs.widget_color.name + appWidgetId, PlayerWidget.DEFAULT_COLOR)
             val opacity = Color.alpha(color) * 100 / 0xFF
 
             opacitySeekBar.setProgress(opacity, false)
@@ -127,11 +127,11 @@ class WidgetConfigActivity : AppCompatActivity() {
         Logd("WidgetConfigActivity", "confirmCreateWidget appWidgetId $appWidgetId")
 //        val prefs = getSharedPreferences(PlayerWidget.PREFS_NAME, MODE_PRIVATE)
         val editor = prefs!!.edit()
-        editor.putInt(PlayerWidget.KEY_WIDGET_COLOR + appWidgetId, backgroundColor)
-        editor.putBoolean(PlayerWidget.KEY_WIDGET_PLAYBACK_SPEED + appWidgetId, ckPlaybackSpeed.isChecked)
-        editor.putBoolean(PlayerWidget.KEY_WIDGET_SKIP + appWidgetId, ckSkip.isChecked)
-        editor.putBoolean(PlayerWidget.KEY_WIDGET_REWIND + appWidgetId, ckRewind.isChecked)
-        editor.putBoolean(PlayerWidget.KEY_WIDGET_FAST_FORWARD + appWidgetId, ckFastForward.isChecked)
+        editor.putInt(PlayerWidget.Prefs.widget_color.name + appWidgetId, backgroundColor)
+        editor.putBoolean(PlayerWidget.Prefs.widget_playback_speed.name + appWidgetId, ckPlaybackSpeed.isChecked)
+        editor.putBoolean(PlayerWidget.Prefs.widget_skip.name + appWidgetId, ckSkip.isChecked)
+        editor.putBoolean(PlayerWidget.Prefs.widget_rewind.name + appWidgetId, ckRewind.isChecked)
+        editor.putBoolean(PlayerWidget.Prefs.widget_fast_forward.name + appWidgetId, ckFastForward.isChecked)
         editor.apply()
 
         val resultValue = Intent()

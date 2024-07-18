@@ -672,8 +672,8 @@
   <string name="filter">Filtre</string>
   <string name="hide_is_favorite_label">Favori</string>
   <string name="not_favorite">Favori değil</string>
-  <string name="hide_downloaded_episodes_label">İndirildi</string>
-  <string name="hide_not_downloaded_episodes_label">İndirilmedi</string>
+  <string name="downloaded_label">İndirildi</string>
+  <string name="not_downloaded_label">İndirilmedi</string>
   <string name="queued_label">Kuyrukta</string>
   <string name="not_queued_label">Kuyrukta değil</string>
   <string name="has_media">Medya var</string>

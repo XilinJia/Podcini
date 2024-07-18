@@ -39,7 +39,7 @@ class FeedSettingsTest {
         uiTestUtils!!.addLocalFeedData(false)
         feed = uiTestUtils!!.hostedFeeds[0]
         val intent = Intent(InstrumentationRegistry.getInstrumentation().targetContext, MainActivity::class.java)
-        intent.putExtra(MainActivity.EXTRA_FEED_ID, feed!!.id)
+        intent.putExtra(MainActivity.Extras.fragment_feed_id.name, feed!!.id)
         activityRule.launchActivity(intent)
     }
 

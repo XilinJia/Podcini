@@ -39,14 +39,12 @@ class AutoDownloadTest {
         // Setup: enable automatic download
         // it is not needed, as the actual automatic download is stubbed.
         stubDownloadAlgorithm = StubDownloadAlgorithm()
-//        setDownloadAlgorithm(stubDownloadAlgorithm!!)
         downloadAlgorithm = stubDownloadAlgorithm!!
     }
 
     @After
     @Throws(Exception::class)
     fun tearDown() {
-//        setDownloadAlgorithm(Episodes.AutomaticDownloadAlgorithm())
         downloadAlgorithm = AutoDownloads.AutoDownloadAlgorithm()
         EspressoTestUtils.tryKillPlaybackService()
         stubFeedsServer!!.tearDown()
@@ -54,7 +52,6 @@ class AutoDownloadTest {
 
     /**
      * A cross-functional test, ensuring playback's behavior works with Auto Download in boundary condition.
-     *
      * Scenario:
      * - For setting enqueue location AFTER_CURRENTLY_PLAYING
      * - when playback of an episode is complete and the app advances to the next episode (continuous playback on)
@@ -107,7 +104,7 @@ class AutoDownloadTest {
         var currentlyPlayingAtDownload: Long = -1
             private set
 
-        override fun autoDownloadEpisodeMedia(context: Context): Runnable {
+        override fun autoDownloadEpisodeMediaNew(context: Context): Runnable {
             return Runnable {
                 if (currentlyPlayingAtDownload == -1L) {
 //                    currentlyPlayingAtDownload = currentlyPlayingFeedMediaId

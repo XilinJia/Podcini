@@ -8,7 +8,7 @@ import kotlinx.coroutines.supervisorScope
 
 class CombinedSearcher : PodcastSearcher {
 
-    override suspend fun search1(query: String): List<PodcastSearchResult?> {
+    override suspend fun search(query: String): List<PodcastSearchResult?> {
         val searchProviders = PodcastSearcherRegistry.searchProviders
         val searchResults = MutableList<List<PodcastSearchResult?>?>(searchProviders.size) { null }
 
@@ -19,7 +19,7 @@ class CombinedSearcher : PodcastSearcher {
                 if (searchProviderInfo.weight > 0.00001f && searcher.javaClass != CombinedSearcher::class.java) {
                     async(Dispatchers.IO) {
                         try {
-                            val results = searcher.search1(query)
+                            val results = searcher.search(query)
                             searchResults[index] = results
                         } catch (e: Throwable) {
                             Log.d(TAG, Log.getStackTraceString(e))
@@ -70,7 +70,7 @@ class CombinedSearcher : PodcastSearcher {
 //        return PodcastSearcherRegistry.lookupUrl(url)
 //    }
 
-    override suspend fun lookupUrl1(resultUrl: String): String {
+    override suspend fun lookupUrl(resultUrl: String): String {
         return PodcastSearcherRegistry.lookupUrl1(resultUrl)
     }
 

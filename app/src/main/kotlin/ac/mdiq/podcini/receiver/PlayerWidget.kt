@@ -27,9 +27,9 @@ class PlayerWidget : AppWidgetProvider() {
         getSharedPrefs(context)
         WidgetUpdaterWorker.enqueueWork(context)
 
-        if (!prefs!!.getBoolean(KEY_WORKAROUND_ENABLED, false)) {
+        if (!prefs!!.getBoolean(Prefs.WorkaroundEnabled.name, false)) {
             scheduleWorkaround(context)
-            prefs!!.edit().putBoolean(KEY_WORKAROUND_ENABLED, true).apply()
+            prefs!!.edit().putBoolean(Prefs.WorkaroundEnabled.name, true).apply()
         }
     }
 
@@ -42,37 +42,41 @@ class PlayerWidget : AppWidgetProvider() {
     override fun onDeleted(context: Context, appWidgetIds: IntArray) {
         Logd(TAG, "OnDeleted")
         for (appWidgetId in appWidgetIds) {
-            prefs!!.edit().remove(KEY_WIDGET_COLOR + appWidgetId).apply()
-            prefs!!.edit().remove(KEY_WIDGET_PLAYBACK_SPEED + appWidgetId).apply()
-            prefs!!.edit().remove(KEY_WIDGET_REWIND + appWidgetId).apply()
-            prefs!!.edit().remove(KEY_WIDGET_FAST_FORWARD + appWidgetId).apply()
-            prefs!!.edit().remove(KEY_WIDGET_SKIP + appWidgetId).apply()
+            prefs!!.edit().remove(Prefs.widget_color.name + appWidgetId).apply()
+            prefs!!.edit().remove(Prefs.widget_playback_speed.name + appWidgetId).apply()
+            prefs!!.edit().remove(Prefs.widget_rewind.name + appWidgetId).apply()
+            prefs!!.edit().remove(Prefs.widget_fast_forward.name + appWidgetId).apply()
+            prefs!!.edit().remove(Prefs.widget_skip.name + appWidgetId).apply()
         }
         val manager = AppWidgetManager.getInstance(context)
         val widgetIds = manager.getAppWidgetIds(ComponentName(context, PlayerWidget::class.java))
         if (widgetIds.isEmpty()) {
-            prefs!!.edit().putBoolean(KEY_WORKAROUND_ENABLED, false).apply()
-            WorkManager.getInstance(context).cancelUniqueWork(WORKAROUND_WORK_NAME)
+            prefs!!.edit().putBoolean(Prefs.WorkaroundEnabled.name, false).apply()
+            WorkManager.getInstance(context).cancelUniqueWork(Prefs.WidgetUpdaterWorkaround.name)
         }
         super.onDeleted(context, appWidgetIds)
     }
 
     private fun setEnabled(enabled: Boolean) {
-        prefs!!.edit().putBoolean(KEY_ENABLED, enabled).apply()
+        prefs!!.edit().putBoolean(Prefs.WidgetEnabled.name, enabled).apply()
+    }
+
+    enum class Prefs {
+        widget_color,
+        widget_playback_speed,
+        widget_skip,
+        widget_fast_forward,
+        widget_rewind,
+        WidgetUpdaterWorkaround,
+        WorkaroundEnabled,
+        WidgetEnabled
     }
 
     companion object {
         private val TAG: String = PlayerWidget::class.simpleName ?: "Anonymous"
-        const val PREFS_NAME: String = "PlayerWidgetPrefs"
-        private const val KEY_WORKAROUND_ENABLED = "WorkaroundEnabled"
-        private const val KEY_ENABLED = "WidgetEnabled"
-        const val KEY_WIDGET_COLOR: String = "widget_color"
-        const val KEY_WIDGET_PLAYBACK_SPEED: String = "widget_playback_speed"
-        const val KEY_WIDGET_SKIP: String = "widget_skip"
-        const val KEY_WIDGET_FAST_FORWARD: String = "widget_fast_forward"
-        const val KEY_WIDGET_REWIND: String = "widget_rewind"
+        private const val PREFS_NAME: String = "PlayerWidgetPrefs"
+
         const val DEFAULT_COLOR: Int = -0xd9d3cf
-        private const val WORKAROUND_WORK_NAME = "WidgetUpdaterWorkaround"
 
         var prefs: SharedPreferences? = null
 
@@ -87,12 +91,12 @@ class PlayerWidget : AppWidgetProvider() {
             val workRequest: OneTimeWorkRequest = OneTimeWorkRequest.Builder(WidgetUpdaterWorker::class.java)
                 .setInitialDelay((100 * 356).toLong(), TimeUnit.DAYS)
                 .build()
-            WorkManager.getInstance(context).enqueueUniqueWork(WORKAROUND_WORK_NAME, ExistingWorkPolicy.REPLACE, workRequest)
+            WorkManager.getInstance(context).enqueueUniqueWork(Prefs.WidgetUpdaterWorkaround.name, ExistingWorkPolicy.REPLACE, workRequest)
         }
 
         @JvmStatic
         fun isEnabled(): Boolean {
-            return prefs!!.getBoolean(KEY_ENABLED, false)
+            return prefs!!.getBoolean(Prefs.WidgetEnabled.name, false)
         }
     }
 }

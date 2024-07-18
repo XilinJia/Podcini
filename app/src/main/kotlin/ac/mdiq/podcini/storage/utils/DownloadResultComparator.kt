@@ -1,4 +1,4 @@
-package ac.mdiq.podcini.util.sorting
+package ac.mdiq.podcini.storage.utils
 
 import ac.mdiq.podcini.storage.model.DownloadResult
 

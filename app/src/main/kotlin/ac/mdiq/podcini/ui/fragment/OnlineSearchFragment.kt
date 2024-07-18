@@ -149,7 +149,7 @@ class OnlineSearchFragment : Fragment() {
         showOnlyProgressBar()
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val result = searchProvider?.search1(query)
+                val result = searchProvider?.search(query)
                 withContext(Dispatchers.Main) {
                     searchResults = result
                     progressBar.visibility = View.GONE

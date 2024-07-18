@@ -4,7 +4,7 @@ import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_USE_EPISODE_COVER
+import ac.mdiq.podcini.preferences.UserPreferences.Prefs.prefEpisodeCover
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 
 /**
@@ -15,7 +15,7 @@ object ImageResourceUtils {
      * @return `true` if episodes should use their own cover, `false`  otherwise
      */
     val useEpisodeCoverSetting: Boolean
-        get() = appPrefs.getBoolean(PREF_USE_EPISODE_COVER, true)
+        get() = appPrefs.getBoolean(UserPreferences.Prefs.prefEpisodeCover.name, true)
 
     /**
      * returns the image location, does prefer the episode cover if available and enabled in settings.

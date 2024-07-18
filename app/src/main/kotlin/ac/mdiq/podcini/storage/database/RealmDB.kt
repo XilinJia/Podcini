@@ -18,7 +18,7 @@ import kotlin.coroutines.ContinuationInterceptor
 object RealmDB {
     private val TAG: String = RealmDB::class.simpleName ?: "Anonymous"
 
-    private const val SCHEMA_VERSION_NUMBER = 7L
+    private const val SCHEMA_VERSION_NUMBER = 10L
 
     private val ioScope = CoroutineScope(Dispatchers.IO)
 
@@ -29,6 +29,7 @@ object RealmDB {
             schema = setOf(
                 Feed::class,
                 FeedPreferences::class,
+                FeedMeasures::class,
                 Episode::class,
                 EpisodeMedia::class,
                 CurrentState::class,

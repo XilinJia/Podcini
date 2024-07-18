@@ -53,10 +53,8 @@ class EpisodeHomeFragment : Fragment() {
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
-
         _binding = EpisodeHomeFragmentBinding.inflate(inflater, container, false)
         Logd(TAG, "fragment onCreateView")
-
         toolbar = binding.toolbar
         toolbar.title = ""
         toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
@@ -67,7 +65,6 @@ class EpisodeHomeFragment : Fragment() {
             Toast.makeText(context, R.string.web_content_not_available, Toast.LENGTH_LONG).show()
             parentFragmentManager.popBackStack()
         }
-
         binding.webView.apply {
             webViewClient = object : WebViewClient() {
                 override fun onPageFinished(view: WebView?, url: String?) {
@@ -76,7 +73,6 @@ class EpisodeHomeFragment : Fragment() {
                 }
             }
         }
-
         updateAppearance()
         return binding.root
     }

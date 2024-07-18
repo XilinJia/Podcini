@@ -412,8 +412,8 @@
   <string name="filter">篩選</string>
   <string name="hide_is_favorite_label">為最愛</string>
   <string name="not_favorite">未標記為最愛的</string>
-  <string name="hide_downloaded_episodes_label">已下載</string>
-  <string name="hide_not_downloaded_episodes_label">未下載</string>
+  <string name="downloaded_label">已下載</string>
+  <string name="not_downloaded_label">未下載</string>
   <string name="queued_label">已列入待播清單</string>
   <string name="not_queued_label">未列入待播清單</string>
   <string name="has_media">有額外媒體檔</string>

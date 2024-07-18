@@ -37,11 +37,11 @@ import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
 import ac.mdiq.podcini.ui.view.EpisodesRecyclerView
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeViewHolder
-import ac.mdiq.podcini.util.Converter
+import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
-import ac.mdiq.podcini.util.sorting.EpisodesPermutors.getPermutor
+import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import android.content.Context
 import android.content.DialogInterface
 import android.content.SharedPreferences
@@ -125,7 +125,7 @@ import java.util.*
 
         swipeActions = QueueSwipeActions()
         lifecycle.addObserver(swipeActions)
-        swipeActions.setFilter(EpisodeFilter(EpisodeFilter.QUEUED))
+        swipeActions.setFilter(EpisodeFilter(EpisodeFilter.States.queued.name))
         swipeActions.attachTo(recyclerView)
         refreshSwipeTelltale()
         binding.leftActionIcon.setOnClickListener { swipeActions.showDialog() }
@@ -530,28 +530,33 @@ import java.util.*
                 }
             }
             info += " • "
-            info += Converter.getDurationStringLocalized(requireActivity(), timeLeft)
+            info += DurationConverter.getDurationStringLocalized(requireActivity(), timeLeft)
         }
         binding.infoBar.text = info
         toolbar.title = "${getString(R.string.queue_label)}: ${curQueue.name}"
     }
 
+    private var loadItemsRunning = false
     private fun loadItems(restoreScrollPosition: Boolean) {
-        Logd(TAG, "loadItems() called")
-        while (curQueue.name.isEmpty()) runBlocking { delay(100) }
-        curQueue.episodes.clear()
-        curQueue.episodes.addAll(realm.copyFromRealm(realm.query(Episode::class, "id IN $0", curQueue.episodeIds)
-            .find().sortedBy { curQueue.episodeIds.indexOf(it.id) }))
+        if (!loadItemsRunning) {
+            loadItemsRunning = true
+            Logd(TAG, "loadItems() called")
+            while (curQueue.name.isEmpty()) runBlocking { delay(100) }
+            curQueue.episodes.clear()
+            curQueue.episodes.addAll(realm.copyFromRealm(realm.query(Episode::class, "id IN $0", curQueue.episodeIds)
+                .find().sortedBy { curQueue.episodeIds.indexOf(it.id) }))
 
-        if (queueItems.isEmpty()) emptyView.hide()
+            if (queueItems.isEmpty()) emptyView.hide()
 
-        queueItems.clear()
-        queueItems.addAll(curQueue.episodes)
-        binding.progressBar.visibility = View.GONE
+            queueItems.clear()
+            queueItems.addAll(curQueue.episodes)
+            binding.progressBar.visibility = View.GONE
 //        adapter?.setDummyViews(0)
-        adapter?.updateItems(queueItems)
-        if (restoreScrollPosition) recyclerView.restoreScrollPosition(TAG)
-        refreshInfoBar()
+            adapter?.updateItems(queueItems)
+            if (restoreScrollPosition) recyclerView.restoreScrollPosition(TAG)
+            refreshInfoBar()
+            loadItemsRunning = false
+        }
     }
 
     override fun onStartSelectMode() {

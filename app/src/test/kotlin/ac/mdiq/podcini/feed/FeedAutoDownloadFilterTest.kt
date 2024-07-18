@@ -1,6 +1,6 @@
 package ac.mdiq.podcini.feed
 
-import ac.mdiq.podcini.util.Converter.durationStringShortToMs
+import ac.mdiq.podcini.storage.utils.DurationConverter.durationStringShortToMs
 import ac.mdiq.podcini.storage.model.FeedAutoDownloadFilter
 import ac.mdiq.podcini.storage.model.Episode
 import org.junit.Assert

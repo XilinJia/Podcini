@@ -1,3 +1,30 @@
+# 6.1.0
+
+* in FeedEpisode view fixed filtering after an episode's play state is changed
+* fixed refreshing a feed causes duplicate episodes in FeedEpisodes view
+* fixed the non-functioning of "Set navigation drawer items"
+* fixed crash when changing filter during media playing
+* item selection in list views only updates the selected item (rather than the whole list)
+* fixed episode action button not updated when deleting the media in episode list views
+* skipped concurrent calls for loading data in multiple views
+* toggle "Auto backup of OPML" in Settings will restart Podcini
+* automatically restoring backup of OPML upon new install is disabled. Instead, in AddFeed view, when subscription is empty and OPML backup is available, a dialog is shown to ask about restoring.
+* added audo downloadable to episodes filter
+* added download date to episodes sorting
+* added download date to feed sorting
+* auto download algorithm is changed to individual feed based.
+	* When auto download is enabled in the Settings, feeds to be auto-downloaded need to be separately enabled in the feed settings.
+	* Each feed also has its own download policy (only new episodes, newest episodes, and oldest episodes. newest episodes meaning most recent episodes new or old)
+	* Each feed has its own limit (Episode cache) for number of episodes downloaded, this limit rules in combination of the overall limit  for the app.
+	* After auto download run, episodes with New status is changed to Unplayed.
+	* auto download feed setting dialog is also changed:
+		* there are now separate dialogs for inclusive and exclusive filters where filter tokens can be specified independently
+		* on exclusive dialog, there are optional check boxes "Exclude episodes shorter than" and "Mark excluded episodes played"
+* set default value of "Include in auto downloads" in feed setting to false
+* remove an episode from queue no longer triggers auto download
+* got rid of many string delegates, in favor of enums
+* some class restructuring
+
 # 6.0.13
 
 * removed from preferences "Choose data folder", it's not suitable for newer Androids

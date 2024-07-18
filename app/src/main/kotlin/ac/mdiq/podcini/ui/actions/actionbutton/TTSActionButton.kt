@@ -11,7 +11,7 @@ import ac.mdiq.podcini.storage.utils.FilesUtils.getMediafilename
 import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment.Companion.tts
 import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment.Companion.ttsReady
 import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment.Companion.ttsWorking
-import ac.mdiq.podcini.util.AudioMediaOperation.mergeAudios
+import ac.mdiq.podcini.storage.utils.AudioMediaTools.mergeAudios
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent

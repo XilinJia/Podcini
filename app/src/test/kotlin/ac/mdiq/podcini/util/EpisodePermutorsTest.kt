@@ -1,6 +1,6 @@
 package ac.mdiq.podcini.util
 
-import ac.mdiq.podcini.util.sorting.EpisodesPermutors.getPermutor
+import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia

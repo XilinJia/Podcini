@@ -13,7 +13,7 @@ import kotlin.math.abs
  * when called.
  */
 object UsageStatistics {
-    private const val PREF_DB_NAME = "UsageStatistics"
+    private const val PREF_NAME = "UsageStatistics"
     private const val MOVING_AVERAGE_WEIGHT = 0.8f
     private const val MOVING_AVERAGE_BIAS_THRESHOLD = 0.1f
     private const val SUFFIX_HIDDEN = "_hidden"
@@ -31,7 +31,7 @@ object UsageStatistics {
      */
     @JvmStatic
     fun init(context: Context) {
-        prefs = context.getSharedPreferences(PREF_DB_NAME, Context.MODE_PRIVATE)
+        prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
     }
 
     @JvmStatic

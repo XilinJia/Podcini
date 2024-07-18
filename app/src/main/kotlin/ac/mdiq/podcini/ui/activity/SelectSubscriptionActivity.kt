@@ -5,7 +5,6 @@ import ac.mdiq.podcini.databinding.SubscriptionSelectionActivityBinding
 import ac.mdiq.podcini.preferences.ThemeSwitcher
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.ui.activity.MainActivity.Companion.EXTRA_FEED_ID
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
@@ -77,7 +76,7 @@ class SelectSubscriptionActivity : AppCompatActivity() {
         val intent = Intent(this, MainActivity::class.java)
         intent.setAction(Intent.ACTION_MAIN)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        intent.putExtra(EXTRA_FEED_ID, feed.id.toString())
+        intent.putExtra(MainActivity.Extras.fragment_feed_id.name, feed.id.toString())
         val id = "subscription-" + feed.id
 
         val icon: IconCompat = if (bitmap != null) IconCompat.createWithAdaptiveBitmap(bitmap)

@@ -26,7 +26,8 @@ abstract class SelectableAdapter<T : RecyclerView.ViewHolder?>(private val activ
         shouldSelectLazyLoadedItems = false
         selectedIds.clear()
         selectedIds.add(getItemId(pos))
-        notifyDataSetChanged()
+        notifyItemChanged(pos, "foo")
+//        notifyDataSetChanged()
 
         actionMode = activity.startActionMode(object : ActionMode.Callback {
             override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {

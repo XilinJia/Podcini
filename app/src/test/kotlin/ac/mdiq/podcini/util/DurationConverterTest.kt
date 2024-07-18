@@ -1,16 +1,16 @@
 package ac.mdiq.podcini.util
 
-import ac.mdiq.podcini.util.Converter.durationStringLongToMs
-import ac.mdiq.podcini.util.Converter.durationStringShortToMs
-import ac.mdiq.podcini.util.Converter.getDurationStringLong
-import ac.mdiq.podcini.util.Converter.getDurationStringShort
+import ac.mdiq.podcini.storage.utils.DurationConverter.durationStringLongToMs
+import ac.mdiq.podcini.storage.utils.DurationConverter.durationStringShortToMs
+import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringLong
+import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringShort
 import org.junit.Assert
 import org.junit.Test
 
 /**
  * Test class for converter
  */
-class ConverterTest {
+class DurationConverterTest {
     @Test
     fun testGetDurationStringLong() {
         val expected = "13:05:10"

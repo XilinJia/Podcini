@@ -8,14 +8,15 @@ import java.util.concurrent.TimeUnit
 object SleepTimerPreferences {
     private val TAG: String = SleepTimerPreferences::class.simpleName ?: "Anonymous"
 
-    const val PREF_NAME: String = "SleepTimerDialog"
-    private const val PREF_VALUE = "LastValue"
-
-    private const val PREF_VIBRATE = "Vibrate"
-    private const val PREF_SHAKE_TO_RESET = "ShakeToReset"
-    private const val PREF_AUTO_ENABLE = "AutoEnable"
-    private const val PREF_AUTO_ENABLE_FROM = "AutoEnableFrom"
-    private const val PREF_AUTO_ENABLE_TO = "AutoEnableTo"
+    private enum class Prefs {
+        SleepTimerDialog,
+        LastValue,
+        Vibrate,
+        ShakeToReset,
+        AutoEnable,
+        AutoEnableFrom,
+        AutoEnableTo
+    }
 
     private const val DEFAULT_LAST_TIMER = "15"
     private const val DEFAULT_AUTO_ENABLE_FROM = 22
@@ -31,17 +32,17 @@ object SleepTimerPreferences {
     @JvmStatic
     fun init(context: Context) {
         Logd(TAG, "Creating new instance of SleepTimerPreferences")
-        prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        prefs = context.getSharedPreferences(Prefs.SleepTimerDialog.name, Context.MODE_PRIVATE)
     }
 
     @JvmStatic
     fun setLastTimer(value: String?) {
-        prefs!!.edit().putString(PREF_VALUE, value).apply()
+        prefs!!.edit().putString(Prefs.LastValue.name, value).apply()
     }
 
     @JvmStatic
     fun lastTimerValue(): String? {
-        return prefs!!.getString(PREF_VALUE, DEFAULT_LAST_TIMER)
+        return prefs!!.getString(Prefs.LastValue.name, DEFAULT_LAST_TIMER)
     }
 
     @JvmStatic
@@ -52,52 +53,52 @@ object SleepTimerPreferences {
 
     @JvmStatic
     fun setVibrate(vibrate: Boolean) {
-        prefs!!.edit().putBoolean(PREF_VIBRATE, vibrate).apply()
+        prefs!!.edit().putBoolean(Prefs.Vibrate.name, vibrate).apply()
     }
 
     @JvmStatic
     fun vibrate(): Boolean {
-        return prefs!!.getBoolean(PREF_VIBRATE, false)
+        return prefs!!.getBoolean(Prefs.Vibrate.name, false)
     }
 
     @JvmStatic
     fun setShakeToReset(shakeToReset: Boolean) {
-        prefs!!.edit().putBoolean(PREF_SHAKE_TO_RESET, shakeToReset).apply()
+        prefs!!.edit().putBoolean(Prefs.ShakeToReset.name, shakeToReset).apply()
     }
 
     @JvmStatic
     fun shakeToReset(): Boolean {
-        return prefs!!.getBoolean(PREF_SHAKE_TO_RESET, true)
+        return prefs!!.getBoolean(Prefs.ShakeToReset.name, true)
     }
 
     @JvmStatic
     fun setAutoEnable(autoEnable: Boolean) {
-        prefs!!.edit().putBoolean(PREF_AUTO_ENABLE, autoEnable).apply()
+        prefs!!.edit().putBoolean(Prefs.AutoEnable.name, autoEnable).apply()
     }
 
     @JvmStatic
     fun autoEnable(): Boolean {
-        return prefs!!.getBoolean(PREF_AUTO_ENABLE, false)
+        return prefs!!.getBoolean(Prefs.AutoEnable.name, false)
     }
 
     @JvmStatic
     fun setAutoEnableFrom(hourOfDay: Int) {
-        prefs!!.edit().putInt(PREF_AUTO_ENABLE_FROM, hourOfDay).apply()
+        prefs!!.edit().putInt(Prefs.AutoEnableFrom.name, hourOfDay).apply()
     }
 
     @JvmStatic
     fun autoEnableFrom(): Int {
-        return prefs!!.getInt(PREF_AUTO_ENABLE_FROM, DEFAULT_AUTO_ENABLE_FROM)
+        return prefs!!.getInt(Prefs.AutoEnableFrom.name, DEFAULT_AUTO_ENABLE_FROM)
     }
 
     @JvmStatic
     fun setAutoEnableTo(hourOfDay: Int) {
-        prefs!!.edit().putInt(PREF_AUTO_ENABLE_TO, hourOfDay).apply()
+        prefs!!.edit().putInt(Prefs.AutoEnableTo.name, hourOfDay).apply()
     }
 
     @JvmStatic
     fun autoEnableTo(): Int {
-        return prefs!!.getInt(PREF_AUTO_ENABLE_TO, DEFAULT_AUTO_ENABLE_TO)
+        return prefs!!.getInt(Prefs.AutoEnableTo.name, DEFAULT_AUTO_ENABLE_TO)
     }
 
     @JvmStatic

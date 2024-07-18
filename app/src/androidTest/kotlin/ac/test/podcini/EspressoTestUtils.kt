@@ -140,12 +140,12 @@ object EspressoTestUtils {
         InstrumentationRegistry.getInstrumentation().targetContext
             .getSharedPreferences(MainActivity.PREF_NAME, Context.MODE_PRIVATE)
             .edit()
-            .putBoolean(MainActivity.PREF_IS_FIRST_LAUNCH, false)
+            .putBoolean(MainActivity.Extras.prefMainActivityIsFirstLaunch.name, false)
             .commit()
 
         PreferenceManager.getDefaultSharedPreferences(InstrumentationRegistry.getInstrumentation().targetContext)
             .edit()
-            .putString(UserPreferences.PREF_UPDATE_INTERVAL, "0")
+            .putString(UserPreferences.Prefs.prefAutoUpdateIntervall.name, "0")
             .commit()
 
         RatingDialog.init(InstrumentationRegistry.getInstrumentation().targetContext)
@@ -160,7 +160,7 @@ object EspressoTestUtils {
             .commit()
         PreferenceManager.getDefaultSharedPreferences(InstrumentationRegistry.getInstrumentation().targetContext)
             .edit()
-            .putString(UserPreferences.PREF_DEFAULT_PAGE, UserPreferences.DEFAULT_PAGE_REMEMBER)
+            .putString(UserPreferences.Prefs.prefDefaultPage.name, UserPreferences.DEFAULT_PAGE_REMEMBER)
             .commit()
     }
 

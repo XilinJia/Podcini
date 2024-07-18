@@ -16,7 +16,9 @@ enum class FeedSortOrder(val code: Int, val index: Int) {
     MOST_DOWNLOADED_UNPLAYED(13, 6),
     LEAST_DOWNLAODED_UNPLAYED(14, 6),
     NEW_EPISODES_MOST(15, 7),
-    NEW_EPISODES_LEAST(16, 7);
+    NEW_EPISODES_LEAST(16, 7),
+    LAST_DOWNLOAD_NEW_OLD(17, 8),
+    LAST_DOWNLOAD_OLD_NEW(18, 8);
 
     companion object {
         fun getSortOrder(dir: Int, index: Int): FeedSortOrder? {

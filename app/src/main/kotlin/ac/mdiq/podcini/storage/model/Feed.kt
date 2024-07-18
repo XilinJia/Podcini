@@ -92,6 +92,8 @@ class Feed : RealmObject {
 
     var preferences: FeedPreferences? = null
 
+    var measures: FeedMeasures? = null
+
     /**
      * Returns the value that uniquely identifies this Feed. If the
      * feedIdentifier attribute is not null, it will be returned. Else it will
@@ -128,6 +130,15 @@ class Feed : RealmObject {
             if (value == null) return
             field = value
             preferences?.sortOrderCode = value.code
+        }
+
+    @Ignore
+    var sortOrderAux: EpisodeSortOrder? = null
+        get() = fromCode(preferences?.sortOrderAuxCode ?: 0)
+        set(value) {
+            if (value == null) return
+            field = value
+            preferences?.sortOrderAuxCode = value.code
         }
 
     @Ignore

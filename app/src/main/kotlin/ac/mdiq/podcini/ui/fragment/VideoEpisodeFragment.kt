@@ -23,13 +23,12 @@ import ac.mdiq.podcini.ui.activity.VideoplayerActivity
 import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.dialog.SkipPreferenceDialog
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.utils.PictureInPictureUtil
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
-import ac.mdiq.podcini.util.Converter.getDurationStringLong
+import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringLong
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.TimeSpeedConverter
+import ac.mdiq.podcini.storage.utils.TimeSpeedConverter
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
 import android.os.Bundle
@@ -243,43 +242,45 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         }
     }
 
+    private var loadItemsRunning = false
     @UnstableApi private fun load() {
         Logd(TAG, "load() called")
-        lifecycleScope.launch {
-            try {
-                item = withContext(Dispatchers.IO) {
-                    loadInBackground()
-                }
-                withContext(Dispatchers.Main) {
-                    Logd(TAG, "load() item ${item?.id}")
-                    if (item != null) {
-                        val isFav = item!!.isFavorite
-                        if (isFavorite != isFav) {
-                            isFavorite = isFav
-                            invalidateOptionsMenu(requireActivity())
+        if (!loadItemsRunning) {
+            loadItemsRunning = true
+            lifecycleScope.launch {
+                try {
+                    item = withContext(Dispatchers.IO) {
+                        val feedItem = (curMedia as? EpisodeMedia)?.episode
+                        if (feedItem != null) {
+                            val duration = feedItem.media?.getDuration() ?: Int.MAX_VALUE
+                            webviewData = ShownotesCleaner(requireContext()).processShownotes(feedItem.description ?: "", duration)
                         }
+                        feedItem
                     }
-                    onFragmentLoaded()
-                    itemsLoaded = true
+                    withContext(Dispatchers.Main) {
+                        Logd(TAG, "load() item ${item?.id}")
+                        if (item != null) {
+                            val isFav = item!!.isFavorite
+                            if (isFavorite != isFav) {
+                                isFavorite = isFav
+                                invalidateOptionsMenu(requireActivity())
+                            }
+                        }
+                        if (webviewData != null && !itemsLoaded)
+                            webvDescription.loadDataWithBaseURL("https://127.0.0.1",
+                                webviewData!!,
+                                "text/html",
+                                "utf-8",
+                                "about:blank")
+                        itemsLoaded = true
+                    }
+                } catch (e: Throwable) {
+                    Log.e(TAG, Log.getStackTraceString(e))
+                } finally {
+                    loadItemsRunning = false
                 }
-            } catch (e: Throwable) {
-                Log.e(TAG, Log.getStackTraceString(e))
             }
         }
-    }
-
-    private fun loadInBackground(): Episode? {
-        val feedItem = (curMedia as? EpisodeMedia)?.episode
-        if (feedItem != null) {
-            val duration = feedItem.media?.getDuration()?: Int.MAX_VALUE
-            webviewData = ShownotesCleaner(requireContext()).processShownotes(feedItem.description?:"", duration)
-        }
-        return feedItem
-    }
-
-    @UnstableApi private fun onFragmentLoaded() {
-        if (webviewData != null && !itemsLoaded)
-            webvDescription.loadDataWithBaseURL("https://127.0.0.1", webviewData!!, "text/html", "utf-8", "about:blank")
     }
 
     @UnstableApi

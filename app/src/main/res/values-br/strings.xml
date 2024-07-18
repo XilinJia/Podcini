@@ -600,8 +600,8 @@
   <string name="filter">Sil</string>
   <string name="hide_is_favorite_label">Ur sined eo</string>
   <string name="not_favorite">N\'eo ket ur sined</string>
-  <string name="hide_downloaded_episodes_label">Pellgarget</string>
-  <string name="hide_not_downloaded_episodes_label">N\'eo ket pellgarget</string>
+  <string name="downloaded_label">Pellgarget</string>
+  <string name="not_downloaded_label">N\'eo ket pellgarget</string>
   <string name="queued_label">Lakaet el lost</string>
   <string name="not_queued_label">N\'emañ ket el lost</string>
   <string name="has_media">Gant ur media</string>

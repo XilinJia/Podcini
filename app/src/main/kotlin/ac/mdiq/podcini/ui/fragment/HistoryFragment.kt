@@ -12,13 +12,12 @@ import ac.mdiq.podcini.ui.adapter.EpisodesAdapter
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.dialog.DatesFilterDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeViewHolder
 import ac.mdiq.podcini.util.DateFormatter
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
-import ac.mdiq.podcini.util.sorting.EpisodesPermutors.getPermutor
+import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.*
@@ -168,8 +167,13 @@ import kotlin.math.min
         }
     }
 
+    private var loadItemsRunning = false
     override fun loadData(): List<Episode> {
-        allHistory = getHistory(0, Int.MAX_VALUE, startDate, endDate, sortOrder).toMutableList()
+        if (!loadItemsRunning) {
+            loadItemsRunning = true
+            allHistory = getHistory(0, Int.MAX_VALUE, startDate, endDate, sortOrder).toMutableList()
+            loadItemsRunning = false
+        }
         if (allHistory.isEmpty()) return listOf()
         return allHistory.subList(0, min(allHistory.size-1, page * EPISODES_PER_PAGE))
     }
@@ -198,10 +202,14 @@ import kotlin.math.min
 
     class HistorySortDialog : EpisodeSortDialog() {
         override fun onAddItem(title: Int, ascending: EpisodeSortOrder, descending: EpisodeSortOrder, ascendingIsDefault: Boolean) {
-            if (ascending == EpisodeSortOrder.DATE_OLD_NEW || ascending == EpisodeSortOrder.PLAYED_DATE_OLD_NEW
+            if (ascending == EpisodeSortOrder.DATE_OLD_NEW
+                    || ascending == EpisodeSortOrder.PLAYED_DATE_OLD_NEW
                     || ascending == EpisodeSortOrder.COMPLETED_DATE_OLD_NEW
-                    || ascending == EpisodeSortOrder.DURATION_SHORT_LONG || ascending == EpisodeSortOrder.EPISODE_TITLE_A_Z
-                    || ascending == EpisodeSortOrder.SIZE_SMALL_LARGE || ascending == EpisodeSortOrder.FEED_TITLE_A_Z) {
+                    || ascending == EpisodeSortOrder.DOWNLOAD_DATE_OLD_NEW
+                    || ascending == EpisodeSortOrder.DURATION_SHORT_LONG
+                    || ascending == EpisodeSortOrder.EPISODE_TITLE_A_Z
+                    || ascending == EpisodeSortOrder.SIZE_SMALL_LARGE
+                    || ascending == EpisodeSortOrder.FEED_TITLE_A_Z) {
                 super.onAddItem(title, ascending, descending, ascendingIsDefault)
             }
         }

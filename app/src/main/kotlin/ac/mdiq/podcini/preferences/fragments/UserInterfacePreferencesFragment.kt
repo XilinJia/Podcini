@@ -6,7 +6,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.fullNotificationButtons
 import ac.mdiq.podcini.preferences.UserPreferences.setShowRemainTimeSetting
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.ui.dialog.DrawerPreferencesDialog
-import ac.mdiq.podcini.ui.dialog.FeedSortDialogNew
+import ac.mdiq.podcini.ui.dialog.FeedSortDialog
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.Context
@@ -37,12 +37,12 @@ class UserInterfacePreferencesFragment : PreferenceFragmentCompat() {
             ActivityCompat.recreate(requireActivity())
             true
         }
-        findPreference<Preference>(UserPreferences.PREF_THEME)!!.onPreferenceChangeListener = restartApp
-        findPreference<Preference>(UserPreferences.PREF_THEME_BLACK)!!.onPreferenceChangeListener = restartApp
-        findPreference<Preference>(UserPreferences.PREF_TINTED_COLORS)!!.onPreferenceChangeListener = restartApp
-        if (Build.VERSION.SDK_INT < 31) findPreference<Preference>(UserPreferences.PREF_TINTED_COLORS)!!.isVisible = false
+        findPreference<Preference>(UserPreferences.Prefs.prefTheme.name)!!.onPreferenceChangeListener = restartApp
+        findPreference<Preference>(UserPreferences.Prefs.prefThemeBlack.name)!!.onPreferenceChangeListener = restartApp
+        findPreference<Preference>(UserPreferences.Prefs.prefTintedColors.name)!!.onPreferenceChangeListener = restartApp
+        if (Build.VERSION.SDK_INT < 31) findPreference<Preference>(UserPreferences.Prefs.prefTintedColors.name)!!.isVisible = false
 
-        findPreference<Preference>(UserPreferences.PREF_SHOW_TIME_LEFT)?.setOnPreferenceChangeListener { _: Preference?, newValue: Any? ->
+        findPreference<Preference>(UserPreferences.Prefs.showTimeLeft.name)?.setOnPreferenceChangeListener { _: Preference?, newValue: Any? ->
             setShowRemainTimeSetting(newValue as Boolean?)
             //            TODO: need another event type?
 //            EventFlow.postEvent(FlowEvent.EpisodePlayedEvent())
@@ -50,12 +50,12 @@ class UserInterfacePreferencesFragment : PreferenceFragmentCompat() {
             true
         }
 
-        findPreference<Preference>(UserPreferences.PREF_HIDDEN_DRAWER_ITEMS)?.setOnPreferenceClickListener {
+        findPreference<Preference>(UserPreferences.Prefs.prefHiddenDrawerItems.name)?.setOnPreferenceClickListener {
             DrawerPreferencesDialog.show(requireContext(), null)
             true
         }
 
-        findPreference<Preference>(UserPreferences.PREF_FULL_NOTIFICATION_BUTTONS)?.setOnPreferenceClickListener {
+        findPreference<Preference>(UserPreferences.Prefs.prefFullNotificationButtons.name)?.setOnPreferenceClickListener {
             showFullNotificationButtonsDialog()
             true
         }
@@ -65,16 +65,16 @@ class UserInterfacePreferencesFragment : PreferenceFragmentCompat() {
 //                true
 //            })
 
-        findPreference<Preference>(UserPreferences.PREF_DRAWER_FEED_ORDER)?.onPreferenceClickListener = (Preference.OnPreferenceClickListener {
+        findPreference<Preference>(UserPreferences.Prefs.prefDrawerFeedOrder.name)?.onPreferenceClickListener = (Preference.OnPreferenceClickListener {
 //            FeedSortDialog.showDialog(requireContext())
-            FeedSortDialogNew().show(childFragmentManager, "FeedSortDialog")
+            FeedSortDialog().show(childFragmentManager, "FeedSortDialog")
             true
         })
         findPreference<Preference>(PREF_SWIPE)?.setOnPreferenceClickListener {
             (activity as PreferenceActivity).openScreen(R.xml.preferences_swipe)
             true
         }
-        if (Build.VERSION.SDK_INT >= 26) findPreference<Preference>(UserPreferences.PREF_EXPANDED_NOTIFICATION)!!.isVisible = false
+        if (Build.VERSION.SDK_INT >= 26) findPreference<Preference>(UserPreferences.Prefs.prefExpandNotify.name)!!.isVisible = false
     }
 
 

@@ -1,8 +1,8 @@
 package ac.mdiq.podcini.ui.utils
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.util.Converter.durationStringLongToMs
-import ac.mdiq.podcini.util.Converter.durationStringShortToMs
+import ac.mdiq.podcini.storage.utils.DurationConverter.durationStringLongToMs
+import ac.mdiq.podcini.storage.utils.DurationConverter.durationStringShortToMs
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.graphics.Color

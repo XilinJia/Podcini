@@ -66,6 +66,7 @@
             android:background="?android:attr/listDivider" />
 
         <LinearLayout
+            android:id="@+id/durationBlock"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -93,5 +94,12 @@
                 android:layout_height="wrap_content"
                 android:text="@string/time_minutes" />
         </LinearLayout>
+
+        <CheckBox
+            android:id="@+id/markPlayedCheckBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/mark_excluded_episodes_played" />
+
     </LinearLayout>
 </ScrollView>

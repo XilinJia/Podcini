@@ -76,18 +76,18 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
         appPrefs.unregisterOnSharedPreferenceChangeListener(this)
     }
 
-    override fun onResume() {
-        super.onResume()
-//        setDataFolderText()
-    }
+//    override fun onResume() {
+//        super.onResume()
+////        setDataFolderText()
+//    }
 
     private fun setupNetworkScreen() {
-        findPreference<Preference>(PREF_SCREEN_AUTODL)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.prefAutoDownloadSettings.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             (activity as PreferenceActivity).openScreen(R.xml.preferences_autodownload)
             true
         }
         // validate and set correct value: number of downloads between 1 and 50 (inclusive)
-        findPreference<Preference>(PREF_PROXY)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.prefProxy.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             val dialog = ProxyDialog(requireContext())
             dialog.show()
             true
@@ -99,7 +99,7 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
 //            }
 //            true
 //        }
-        findPreference<Preference>(PREF_AUTO_DELETE_LOCAL)!!.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any ->
+        findPreference<Preference>(Prefs.prefAutoDeleteLocal.name)!!.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any ->
             if (blockAutoDeleteLocal && newValue as Boolean) {
                 showAutoDeleteEnableDialog()
                 return@OnPreferenceChangeListener false
@@ -113,7 +113,7 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
 //    }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String?) {
-        if (UserPreferences.PREF_UPDATE_INTERVAL == key) restartUpdateAlarm(requireContext(), true)
+        if (UserPreferences.Prefs.prefAutoUpdateIntervall.name == key) restartUpdateAlarm(requireContext(), true)
     }
 
     private fun showAutoDeleteEnableDialog() {
@@ -121,7 +121,7 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
             .setMessage(R.string.pref_auto_local_delete_dialog_body)
             .setPositiveButton(R.string.yes) { _: DialogInterface?, _: Int ->
                 blockAutoDeleteLocal = false
-                (findPreference<Preference>(PREF_AUTO_DELETE_LOCAL) as TwoStatePreference?)!!.isChecked = true
+                (findPreference<Preference>(Prefs.prefAutoDeleteLocal.name) as TwoStatePreference?)!!.isChecked = true
                 blockAutoDeleteLocal = true
             }
             .setNegativeButton(R.string.cancel_label, null)
@@ -439,10 +439,11 @@ class DownloadsPreferencesFragment : PreferenceFragmentCompat(), OnSharedPrefere
         }
     }
 
-    companion object {
-        private const val PREF_SCREEN_AUTODL = "prefAutoDownloadSettings"
-        private const val PREF_AUTO_DELETE_LOCAL = "prefAutoDeleteLocal"
-        private const val PREF_PROXY = "prefProxy"
-//        private const val PREF_CHOOSE_DATA_DIR = "prefChooseDataDir"
+    @Suppress("EnumEntryName")
+    private enum class Prefs {
+        prefAutoDownloadSettings,
+        prefAutoDeleteLocal,
+        prefProxy,
+//        prefChooseDataDir,
     }
 }

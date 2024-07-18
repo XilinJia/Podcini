@@ -8,14 +8,13 @@ import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
 import ac.mdiq.podcini.net.feed.parser.FeedHandler
 import ac.mdiq.podcini.net.feed.parser.FeedHandlerResult
 import ac.mdiq.podcini.net.utils.NetworkUtils.isAllowMobileFeedRefresh
-import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.net.utils.NetworkUtils.isFeedRefreshAllowed
 import ac.mdiq.podcini.net.utils.NetworkUtils.isNetworkRestricted
 import ac.mdiq.podcini.net.utils.NetworkUtils.isVpnOverWifi
 import ac.mdiq.podcini.net.utils.NetworkUtils.networkAvailable
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_UPDATE_INTERVAL
+import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.algorithms.AutoDownloads.autodownloadEpisodeMedia
 import ac.mdiq.podcini.storage.database.Feeds
@@ -66,7 +65,7 @@ object FeedUpdateManager {
     const val EXTRA_EVEN_ON_MOBILE: String = "even_on_mobile"
 
     val updateInterval: Long
-        get() = appPrefs.getString(PREF_UPDATE_INTERVAL, "12")!!.toInt().toLong()
+        get() = appPrefs.getString(UserPreferences.Prefs.prefAutoUpdateIntervall.name, "12")!!.toInt().toLong()
 
     val isAutoUpdateDisabled: Boolean
         get() = updateInterval == 0L
@@ -77,9 +76,8 @@ object FeedUpdateManager {
      */
     @JvmStatic
     fun restartUpdateAlarm(context: Context, replace: Boolean) {
-        if (isAutoUpdateDisabled) {
-            WorkManager.getInstance(context).cancelUniqueWork(WORK_ID_FEED_UPDATE)
-        } else {
+        if (isAutoUpdateDisabled) WorkManager.getInstance(context).cancelUniqueWork(WORK_ID_FEED_UPDATE)
+        else {
             val workRequest: PeriodicWorkRequest = PeriodicWorkRequest.Builder(FeedUpdateWorker::class.java, updateInterval, TimeUnit.HOURS)
                 .setConstraints(Builder()
                     .setRequiredNetworkType(if (isAllowMobileFeedRefresh) NetworkType.CONNECTED else NetworkType.UNMETERED)
@@ -172,7 +170,8 @@ object FeedUpdateManager {
             }
             refreshFeeds(toUpdate, force)
             notificationManager.cancel(R.id.notification_updating_feeds)
-            autodownloadEpisodeMedia(applicationContext)
+            autodownloadEpisodeMedia(applicationContext, toUpdate.toList())
+            toUpdate.clear()
             return Result.success()
         }
         private fun createNotification(toUpdate: List<Feed?>?): Notification {
@@ -184,7 +183,7 @@ object FeedUpdateManager {
                     toUpdate.size, toUpdate.size)
                 bigText = Stream.of(toUpdate).map { feed: Feed? -> "• " + feed!!.title }.collect(Collectors.joining("\n"))
             }
-            return NotificationCompat.Builder(context, NotificationUtils.CHANNEL_ID_DOWNLOADING)
+            return NotificationCompat.Builder(context, NotificationUtils.CHANNEL_ID.downloading.name)
                 .setContentTitle(context.getString(R.string.download_notification_title_feeds))
                 .setContentText(contentText)
                 .setStyle(NotificationCompat.BigTextStyle().bigText(bigText))
@@ -212,10 +211,11 @@ object FeedUpdateManager {
 //            Toast.makeText(applicationContext, R.string.notification_permission_text, Toast.LENGTH_LONG).show()
                 return
             }
-            while (toUpdate.isNotEmpty()) {
+            var i = 0
+            while (i < toUpdate.size) {
                 if (isStopped) return
                 notificationManager.notify(R.id.notification_updating_feeds, createNotification(toUpdate))
-                val feed = unmanaged(toUpdate[0])
+                val feed = unmanaged(toUpdate[i++])
                 try {
                     Logd(TAG, "updating local feed? ${feed.isLocalFeed} ${feed.title}")
                     if (feed.isLocalFeed) LocalFeedUpdater.updateFeed(feed, applicationContext, null)
@@ -226,7 +226,7 @@ object FeedUpdateManager {
                     val status = DownloadResult(feed.id, feed.title?:"", DownloadError.ERROR_IO_ERROR, false, e.message?:"")
                     LogsAndStats.addDownloadStatus(status)
                 }
-                toUpdate.removeAt(0)
+//                toUpdate.removeAt(0)
             }
         }
         @UnstableApi
@@ -363,8 +363,8 @@ object FeedUpdateManager {
         }
 
         class FeedSyncTask(private val context: Context, request: DownloadRequest) {
-            var savedFeed: Feed? = null
-                private set
+//            var savedFeed: Feed? = null
+//                private set
             private val task = FeedParserTask(request)
             private var feedHandlerResult: FeedHandlerResult? = null
             val downloadStatus: DownloadResult
@@ -375,7 +375,7 @@ object FeedUpdateManager {
             fun run(): Boolean {
                 feedHandlerResult = task.call()
                 if (!task.isSuccessful) return false
-                savedFeed = Feeds.updateFeed(context, feedHandlerResult!!.feed, false)
+                Feeds.updateFeed(context, feedHandlerResult!!.feed, false)
                 return true
             }
         }

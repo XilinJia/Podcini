@@ -12,10 +12,8 @@ import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.dialog.DatesFilterDialog
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.statistics.PieChartView.PieChartData
-import ac.mdiq.podcini.util.Converter.shortLocalizedDuration
+import ac.mdiq.podcini.storage.utils.DurationConverter.shortLocalizedDuration
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent

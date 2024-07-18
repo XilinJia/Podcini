@@ -194,17 +194,17 @@ class PlaybackTest {
 
     protected fun setContinuousPlaybackPreference(value: Boolean) {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        prefs.edit().putBoolean(UserPreferences.PREF_FOLLOW_QUEUE, value).commit()
+        prefs.edit().putBoolean(UserPreferences.Prefs.prefFollowQueue.name, value).commit()
     }
 
     protected fun setSkipKeepsEpisodePreference(value: Boolean) {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        prefs.edit().putBoolean(UserPreferences.PREF_SKIP_KEEPS_EPISODE, value).commit()
+        prefs.edit().putBoolean(UserPreferences.Prefs.prefSkipKeepsEpisode.name, value).commit()
     }
 
     protected fun setSmartMarkAsPlayedPreference(smartMarkAsPlayedSecs: Int) {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        prefs.edit().putString(UserPreferences.PREF_SMART_MARK_AS_PLAYED_SECS,
+        prefs.edit().putString(UserPreferences.Prefs.prefSmartMarkAsPlayedSecs.name,
             smartMarkAsPlayedSecs.toString(10))
             .commit()
     }

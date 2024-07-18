@@ -1,12 +1,11 @@
-package ac.mdiq.podcini.util
+package ac.mdiq.podcini.storage.utils
 
 import ac.mdiq.podcini.R
 import android.content.Context
-import android.content.res.Resources
 import java.util.*
 
 /** Provides methods for converting various units.  */
-object Converter {
+object DurationConverter {
     private const val HOURS_MIL = 3600000
     private const val MINUTES_MIL = 60000
     private const val SECONDS_MIL = 1000
@@ -64,9 +63,7 @@ object Converter {
     fun durationStringShortToMs(input: String, durationIsInHours: Boolean): Int {
         val parts = input.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         if (parts.size != 2) return 0
-
         val modifier = if (durationIsInHours) 60 else 1
-
         return (parts[0].toInt() * 60 * 1000 * modifier + parts[1].toInt() * 1000 * modifier)
     }
 

@@ -115,7 +115,7 @@ android {
         checkOnly += ['NewApi', 'InlinedApi', 'Performance', 'DuplicateIds']
 
         disable += ['TypographyDashes', 'TypographyQuotes', 'ObsoleteLintCustomCheck', 'CheckResult', 'UnusedAttribute', 'BatteryLife', 'InflateParams',
-                'RestrictedApi', 'TrustAllX509TrustManager', 'ExportedReceiver', 'AllowBackup', 'VectorDrawableCompat',
+                'RestrictedApi', 'TrustAllX509TrustManager', 'ExportedReceiver', 'VectorDrawableCompat',
                 'StaticFieldLeak', 'UseCompoundDrawables', 'NestedWeights', 'Overdraw', 'UselessParent', 'TextFields',
                 'AlwaysShowAction', 'Autofill', 'ClickableViewAccessibility', 'ContentDescription',
                 'KeyboardInaccessibleWidget', 'LabelFor', 'SetTextI18n', 'HardcodedText', 'RelativeOverlap',
@@ -126,8 +126,8 @@ android {
         buildConfig true
     }
     defaultConfig {
-        versionCode 3020213
-        versionName "6.0.13"
+        versionCode 3020214
+        versionName "6.1.0"
 
         applicationId "ac.mdiq.podcini.R"
         def commit = ""

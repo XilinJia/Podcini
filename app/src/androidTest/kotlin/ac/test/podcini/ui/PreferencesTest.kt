@@ -32,11 +32,11 @@ import ac.mdiq.podcini.preferences.UserPreferences.isAutoDeleteLocal
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownloadOnBattery
 import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
-import ac.mdiq.podcini.preferences.UserPreferences.shouldDeleteRemoveFromQueue
 import ac.mdiq.podcini.preferences.UserPreferences.shouldPauseForFocusLoss
 import ac.mdiq.podcini.preferences.UserPreferences.showNextChapterOnFullNotification
 import ac.mdiq.podcini.preferences.UserPreferences.showPlaybackSpeedOnFullNotification
 import ac.mdiq.podcini.preferences.UserPreferences.showSkipOnFullNotification
+import ac.mdiq.podcini.storage.database.Episodes.shouldDeleteRemoveFromQueue
 import ac.mdiq.podcini.storage.database.Queues
 import ac.mdiq.podcini.storage.database.Queues.enqueueLocation
 import de.test.podcini.EspressoTestUtils
@@ -65,7 +65,7 @@ class PreferencesTest {
         EspressoTestUtils.clearPreferences()
         activityTestRule.launchActivity(Intent())
         val prefs = PreferenceManager.getDefaultSharedPreferences(activityTestRule.activity)
-        prefs.edit().putBoolean(UserPreferences.PREF_ENABLE_AUTODL, true).commit()
+        prefs.edit().putBoolean(UserPreferences.Prefs.prefEnableAutoDl.name, true).commit()
 
         res = activityTestRule.activity.resources
         init(activityTestRule.activity)

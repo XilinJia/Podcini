@@ -617,8 +617,8 @@
   <string name="filter">Filter</string>
   <string name="hide_is_favorite_label">Gemarkeerd als favoriet</string>
   <string name="not_favorite">Geen favoriet</string>
-  <string name="hide_downloaded_episodes_label">Gedownload</string>
-  <string name="hide_not_downloaded_episodes_label">Niet gedownload</string>
+  <string name="downloaded_label">Gedownload</string>
+  <string name="not_downloaded_label">Niet gedownload</string>
   <string name="queued_label">In de wachtrij</string>
   <string name="not_queued_label">Niet in de wachtrij</string>
   <string name="has_media">Bevat media</string>

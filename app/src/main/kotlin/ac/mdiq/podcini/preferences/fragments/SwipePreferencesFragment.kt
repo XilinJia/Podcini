@@ -14,31 +14,31 @@ class SwipePreferencesFragment : PreferenceFragmentCompat() {
     @OptIn(UnstableApi::class) override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.preferences_swipe)
 
-        findPreference<Preference>(PREF_SWIPE_QUEUE)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.prefSwipeQueue.name)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             SwipeActionsDialog(requireContext(), QueueFragment.TAG).show(object : SwipeActionsDialog.Callback {
                 override fun onCall() {}
             })
             true
         }
-        findPreference<Preference>(PREF_SWIPE_EPISODES)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.prefSwipeEpisodes.name)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             SwipeActionsDialog(requireContext(), AllEpisodesFragment.TAG).show (object : SwipeActionsDialog.Callback {
                 override fun onCall() {}
             })
             true
         }
-        findPreference<Preference>(PREF_SWIPE_DOWNLOADS)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.prefSwipeDownloads.name)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             SwipeActionsDialog(requireContext(), DownloadsFragment.TAG).show (object : SwipeActionsDialog.Callback {
                 override fun onCall() {}
             })
             true
         }
-        findPreference<Preference>(PREF_SWIPE_FEED)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.prefSwipeFeed.name)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             SwipeActionsDialog(requireContext(), FeedEpisodesFragment.TAG).show (object : SwipeActionsDialog.Callback {
                 override fun onCall() {}
             })
             true
         }
-        findPreference<Preference>(PREF_SWIPE_HISTORY)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        findPreference<Preference>(Prefs.prefSwipeHistory.name)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             SwipeActionsDialog(requireContext(), HistoryFragment.TAG).show (object : SwipeActionsDialog.Callback {
                 override fun onCall() {}
             })
@@ -51,12 +51,12 @@ class SwipePreferencesFragment : PreferenceFragmentCompat() {
         (activity as PreferenceActivity).supportActionBar?.setTitle(R.string.swipeactions_label)
     }
 
-    companion object {
-        private const val PREF_SWIPE_QUEUE = "prefSwipeQueue"
-//        private const val PREF_SWIPE_STATISTICS = "prefSwipeStatistics"
-        private const val PREF_SWIPE_EPISODES = "prefSwipeEpisodes"
-        private const val PREF_SWIPE_DOWNLOADS = "prefSwipeDownloads"
-        private const val PREF_SWIPE_FEED = "prefSwipeFeed"
-        private const val PREF_SWIPE_HISTORY = "prefSwipeHistory"
+    private enum class Prefs {
+        prefSwipeQueue,
+//        prefSwipeStatistics,
+        prefSwipeEpisodes,
+        prefSwipeDownloads,
+        prefSwipeFeed,
+        prefSwipeHistory
     }
 }

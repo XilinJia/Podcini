@@ -650,8 +650,8 @@
   <string name="filter">필터</string>
   <string name="hide_is_favorite_label">즐겨찾기 포함</string>
   <string name="not_favorite">즐겨찾기 아님</string>
-  <string name="hide_downloaded_episodes_label">다운로드함</string>
-  <string name="hide_not_downloaded_episodes_label">다운로드 안 함</string>
+  <string name="downloaded_label">다운로드함</string>
+  <string name="not_downloaded_label">다운로드 안 함</string>
   <string name="queued_label">대기열에 있음</string>
   <string name="not_queued_label">대기열에 없음</string>
   <string name="has_media">미디어 있음</string>

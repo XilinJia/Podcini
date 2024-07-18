@@ -52,10 +52,10 @@ class HandlerState(@JvmField var feed: Feed) {
     @JvmField
     val tempObjects: MutableMap<String, Any> = HashMap()
 
+    /**
+     * Returns the SyndElement that comes after the top element of the tagstack.
+     */
     val secondTag: SyndElement
-        /**
-         * Returns the SyndElement that comes after the top element of the tagstack.
-         */
         get() {
             val top = tagstack.pop()
             val second = tagstack.peek()

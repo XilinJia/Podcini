@@ -1,8 +1,7 @@
 package ac.mdiq.podcini.ui.utils
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_GPODNET_NOTIFICATIONS
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_SHOW_DOWNLOAD_REPORT
+import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import android.content.Context
 import androidx.core.app.NotificationChannelCompat
@@ -10,27 +9,31 @@ import androidx.core.app.NotificationChannelGroupCompat
 import androidx.core.app.NotificationManagerCompat
 
 object NotificationUtils {
-    const val CHANNEL_ID_USER_ACTION: String = "user_action"
-    const val CHANNEL_ID_DOWNLOADING: String = "downloading"
-    const val CHANNEL_ID_PLAYING: String = "playing"
-    const val CHANNEL_ID_DOWNLOAD_ERROR: String = "error"
-    const val CHANNEL_ID_SYNC_ERROR: String = "sync_error"
-    const val CHANNEL_ID_EPISODE_NOTIFICATIONS: String = "episode_notifications"
+    enum class CHANNEL_ID {
+        user_action,
+        downloading,
+        playing,
+        error,
+        sync_error,
+        episode_notifications
+    }
 
-    const val GROUP_ID_ERRORS: String = "group_errors"
-    const val GROUP_ID_NEWS: String = "group_news"
+    enum class GROUP_ID {
+        group_errors,
+        group_news
+    }
 
     /**
      * Used for migration of the preference to system notification channels.
      */
     val showDownloadReportRaw: Boolean
-        get() = appPrefs.getBoolean(PREF_SHOW_DOWNLOAD_REPORT, true)
+        get() = appPrefs.getBoolean(UserPreferences.Prefs.prefShowDownloadReport.name, true)
 
     /**
      * Used for migration of the preference to system notification channels.
      */
     val gpodnetNotificationsEnabledRaw: Boolean
-        get() = appPrefs.getBoolean(PREF_GPODNET_NOTIFICATIONS, true)
+        get() = appPrefs.getBoolean(UserPreferences.Prefs.pref_gpodnet_notifications.name, true)
 
     fun createChannels(context: Context) {
         val mNotificationManager = NotificationManagerCompat.from(context)
@@ -51,22 +54,22 @@ object NotificationUtils {
         )
         mNotificationManager.createNotificationChannelsCompat(channels)
 
-        mNotificationManager.deleteNotificationChannelGroup(GROUP_ID_NEWS)
-        mNotificationManager.deleteNotificationChannel(CHANNEL_ID_EPISODE_NOTIFICATIONS)
+        mNotificationManager.deleteNotificationChannelGroup(GROUP_ID.group_news.name)
+        mNotificationManager.deleteNotificationChannel(CHANNEL_ID.episode_notifications.name)
     }
 
     private fun createChannelUserAction(c: Context): NotificationChannelCompat {
         return NotificationChannelCompat.Builder(
-            CHANNEL_ID_USER_ACTION, NotificationManagerCompat.IMPORTANCE_HIGH)
+            CHANNEL_ID.user_action.name, NotificationManagerCompat.IMPORTANCE_HIGH)
             .setName(c.getString(R.string.notification_channel_user_action))
             .setDescription(c.getString(R.string.notification_channel_user_action_description))
-            .setGroup(GROUP_ID_ERRORS)
+            .setGroup(GROUP_ID.group_errors.name)
             .build()
     }
 
     private fun createChannelDownloading(c: Context): NotificationChannelCompat {
         return NotificationChannelCompat.Builder(
-            CHANNEL_ID_DOWNLOADING, NotificationManagerCompat.IMPORTANCE_LOW)
+            CHANNEL_ID.downloading.name, NotificationManagerCompat.IMPORTANCE_LOW)
             .setName(c.getString(R.string.notification_channel_downloading))
             .setDescription(c.getString(R.string.notification_channel_downloading_description))
             .setShowBadge(false)
@@ -75,7 +78,7 @@ object NotificationUtils {
 
     private fun createChannelPlaying(c: Context): NotificationChannelCompat {
         return NotificationChannelCompat.Builder(
-            CHANNEL_ID_PLAYING, NotificationManagerCompat.IMPORTANCE_LOW)
+            CHANNEL_ID.playing.name, NotificationManagerCompat.IMPORTANCE_LOW)
             .setName(c.getString(R.string.notification_channel_playing))
             .setDescription(c.getString(R.string.notification_channel_playing_description))
             .setShowBadge(false)
@@ -84,10 +87,10 @@ object NotificationUtils {
 
     private fun createChannelError(c: Context): NotificationChannelCompat {
         val notificationChannel = NotificationChannelCompat.Builder(
-            CHANNEL_ID_DOWNLOAD_ERROR, NotificationManagerCompat.IMPORTANCE_HIGH)
+            CHANNEL_ID.error.name, NotificationManagerCompat.IMPORTANCE_HIGH)
             .setName(c.getString(R.string.notification_channel_download_error))
             .setDescription(c.getString(R.string.notification_channel_download_error_description))
-            .setGroup(GROUP_ID_ERRORS)
+            .setGroup(GROUP_ID.group_errors.name)
 
         if (!showDownloadReportRaw) {
             // Migration from app managed setting: disable notification
@@ -98,10 +101,10 @@ object NotificationUtils {
 
     private fun createChannelSyncError(c: Context): NotificationChannelCompat {
         val notificationChannel = NotificationChannelCompat.Builder(
-            CHANNEL_ID_SYNC_ERROR, NotificationManagerCompat.IMPORTANCE_HIGH)
+            CHANNEL_ID.sync_error.name, NotificationManagerCompat.IMPORTANCE_HIGH)
             .setName(c.getString(R.string.notification_channel_sync_error))
             .setDescription(c.getString(R.string.notification_channel_sync_error_description))
-            .setGroup(GROUP_ID_ERRORS)
+            .setGroup(GROUP_ID.group_errors.name)
 
         if (!gpodnetNotificationsEnabledRaw) {
             // Migration from app managed setting: disable notification
@@ -120,7 +123,7 @@ object NotificationUtils {
 //    }
 
     private fun createGroupErrors(c: Context): NotificationChannelGroupCompat {
-        return NotificationChannelGroupCompat.Builder(GROUP_ID_ERRORS)
+        return NotificationChannelGroupCompat.Builder(GROUP_ID.group_errors.name)
             .setName(c.getString(R.string.notification_group_errors))
             .build()
     }

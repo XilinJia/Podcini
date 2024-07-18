@@ -18,7 +18,7 @@ import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueStorage
 import ac.mdiq.podcini.net.utils.NetworkUtils.isAllowMobileFor
 import ac.mdiq.podcini.net.utils.NetworkUtils.setAllowMobileFor
 import ac.mdiq.podcini.net.utils.UrlChecker.containsUrl
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_GPODNET_NOTIFICATIONS
+import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
@@ -213,7 +213,7 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
         val queuedEpisodeActions: MutableList<EpisodeAction> = synchronizationQueueStorage.queuedEpisodeActions
         if (lastSync == 0L) {
             EventFlow.postStickyEvent(FlowEvent.SyncServiceEvent(R.string.sync_status_upload_played))
-            val readItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.PLAYED), EpisodeSortOrder.DATE_NEW_OLD)
+            val readItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.played.name), EpisodeSortOrder.DATE_NEW_OLD)
             Logd(TAG, "First sync. Upload state for all " + readItems.size + " played episodes")
             for (item in readItems) {
                 val media = item.media ?: continue
@@ -300,7 +300,7 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
 
     fun gpodnetNotificationsEnabled(): Boolean {
         if (Build.VERSION.SDK_INT >= 26) return true // System handles notification preferences
-        return appPrefs.getBoolean(PREF_GPODNET_NOTIFICATIONS, true)
+        return appPrefs.getBoolean(UserPreferences.Prefs.pref_gpodnet_notifications.name, true)
     }
 
     protected fun updateErrorNotification(exception: Exception) {
@@ -317,12 +317,11 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
 //            return
 //        }
 
-        val intent = applicationContext.packageManager.getLaunchIntentForPackage(
-            applicationContext.packageName)
+        val intent = applicationContext.packageManager.getLaunchIntentForPackage(applicationContext.packageName)
         val pendingIntent = PendingIntent.getActivity(applicationContext,
             R.id.pending_intent_sync_error, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         val notification = NotificationCompat.Builder(applicationContext,
-            NotificationUtils.CHANNEL_ID_SYNC_ERROR)
+            NotificationUtils.CHANNEL_ID.sync_error.name)
             .setContentTitle(applicationContext.getString(R.string.gpodnetsync_error_title))
             .setContentText(description)
             .setStyle(NotificationCompat.BigTextStyle().bigText(description))

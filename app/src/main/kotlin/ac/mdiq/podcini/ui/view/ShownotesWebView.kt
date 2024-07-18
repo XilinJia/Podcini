@@ -2,6 +2,7 @@ package ac.mdiq.podcini.ui.view
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.utils.NetworkUtils
+import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
@@ -136,7 +137,7 @@ class ShownotesWebView : WebView, View.OnLongClickListener {
 
         if (ShownotesCleaner.isTimecodeLink(selectedUrl)) {
             menu.add(Menu.NONE, R.id.go_to_position_item, Menu.NONE, R.string.go_to_position_label)
-            menu.setHeaderTitle(Converter.getDurationStringLong(ShownotesCleaner.getTimecodeLinkTime(selectedUrl)))
+            menu.setHeaderTitle(DurationConverter.getDurationStringLong(ShownotesCleaner.getTimecodeLinkTime(selectedUrl)))
         } else {
             val uri = Uri.parse(selectedUrl)
             val intent = Intent(Intent.ACTION_VIEW, uri)

@@ -3,14 +3,16 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.AddfeedBinding
 import ac.mdiq.podcini.databinding.EditTextDialogBinding
-import ac.mdiq.podcini.net.feed.discovery.*
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
+import ac.mdiq.podcini.net.feed.discovery.*
+import ac.mdiq.podcini.preferences.OpmlBackupAgent.Companion.isOPMLRestared
+import ac.mdiq.podcini.preferences.OpmlBackupAgent.Companion.performRestore
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
-import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
+import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.OpmlImportActivity
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
+import ac.mdiq.podcini.ui.fragment.NavDrawerFragment.Companion.feedCount
 import ac.mdiq.podcini.util.Logd
 import android.content.*
 import android.net.Uri
@@ -23,6 +25,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
 import androidx.media3.common.util.UnstableApi
@@ -45,11 +48,10 @@ class AddFeedFragment : Fragment() {
     private var activity: MainActivity? = null
     private var displayUpArrow = false
 
-    private val chooseOpmlImportPathLauncher = registerForActivityResult<String, Uri>(ActivityResultContracts.GetContent())
-    { uri: Uri? -> this.chooseOpmlImportPathResult(uri) }
+    private val chooseOpmlImportPathLauncher = registerForActivityResult<String, Uri>(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        this.chooseOpmlImportPathResult(uri) }
 
-    private val addLocalFolderLauncher = registerForActivityResult<Uri?, Uri>(AddLocalFolder())
-    { uri: Uri? -> this.addLocalFolderResult(uri) }
+    private val addLocalFolderLauncher = registerForActivityResult<Uri?, Uri>(AddLocalFolder()) { uri: Uri? -> this.addLocalFolderResult(uri) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
@@ -100,6 +102,20 @@ class AddFeedFragment : Fragment() {
             }
         }
         binding.searchButton.setOnClickListener { performSearch() }
+
+        if (isOPMLRestared && feedCount == 0) {
+            AlertDialog.Builder(requireContext())
+                .setTitle(R.string.restore_subscriptions_label)
+                .setMessage(R.string.restore_subscriptions_summary)
+                .setPositiveButton("Yes") { dialog, _ ->
+                    performRestore(requireContext())
+                    dialog.dismiss()
+                }
+                .setNegativeButton("No") { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .show()
+        }
 
         return binding.root
     }

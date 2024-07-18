@@ -38,12 +38,11 @@ import ac.mdiq.podcini.ui.dialog.MediaPlayerErrorDialog
 import ac.mdiq.podcini.ui.dialog.SkipPreferenceDialog
 import ac.mdiq.podcini.ui.dialog.SleepTimerDialog
 import ac.mdiq.podcini.ui.dialog.VariableSpeedDialog
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.view.ChapterSeekBar
 import ac.mdiq.podcini.ui.view.PlayButton
-import ac.mdiq.podcini.util.Converter
+import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.TimeSpeedConverter
+import ac.mdiq.podcini.storage.utils.TimeSpeedConverter
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
 import android.app.Activity
@@ -209,33 +208,38 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 //        updatePosition(PlaybackPositionEvent(position, duration))
 //    }
 
+    private var loadItemsRunning = false
     fun loadMediaInfo(includingChapters: Boolean) {
         val actMain = (activity as MainActivity)
         if (curMedia == null) {
             if (actMain.isPlayerVisible()) actMain.setPlayerVisible(false)
             return
         }
-        if (!actMain.isPlayerVisible()) actMain.setPlayerVisible(true)
-        if (!isCollapsed && (currentMedia == null || curMedia?.getIdentifier() != currentMedia?.getIdentifier())) playerDetailsFragment?.updateInfo()
+        if (!loadItemsRunning) {
+            loadItemsRunning = true
+            if (!actMain.isPlayerVisible()) actMain.setPlayerVisible(true)
+            if (!isCollapsed && (currentMedia == null || curMedia?.getIdentifier() != currentMedia?.getIdentifier())) playerDetailsFragment?.updateInfo()
 
-        if (currentMedia == null || curMedia?.getIdentifier() != currentMedia?.getIdentifier() || (includingChapters && !curMedia!!.chaptersLoaded())) {
-            Logd(TAG, "loadMediaInfo loading details ${curMedia?.getIdentifier()} chapter: $includingChapters")
-            lifecycleScope.launch {
-                withContext(Dispatchers.IO) {
-                    curMedia!!.apply {
-                        if (includingChapters) ChapterUtils.loadChapters(this, requireContext(), false)
+            if (currentMedia == null || curMedia?.getIdentifier() != currentMedia?.getIdentifier() || (includingChapters && !curMedia!!.chaptersLoaded())) {
+                Logd(TAG, "loadMediaInfo loading details ${curMedia?.getIdentifier()} chapter: $includingChapters")
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) {
+                        curMedia!!.apply {
+                            if (includingChapters) ChapterUtils.loadChapters(this, requireContext(), false)
+                        }
                     }
-                }
-                currentMedia = curMedia
-                val item = (currentMedia as? EpisodeMedia)?.episode
-                if (item != null) playerDetailsFragment?.setItem(item)
-                updateUi()
-                playerUI?.updateUi(currentMedia)
+                    currentMedia = curMedia
+                    val item = (currentMedia as? EpisodeMedia)?.episode
+                    if (item != null) playerDetailsFragment?.setItem(item)
+                    updateUi()
+                    playerUI?.updateUi(currentMedia)
 //                TODO: disable for now
 //                if (!includingChapters) loadMediaInfo(true)
-            }.invokeOnCompletion { throwable ->
-                if (throwable!= null) {
-                    Log.e(TAG, Log.getStackTraceString(throwable))
+                }.invokeOnCompletion { throwable ->
+                    if (throwable != null) {
+                        Log.e(TAG, Log.getStackTraceString(throwable))
+                    }
+                    loadItemsRunning = false
                 }
             }
         }
@@ -310,8 +314,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 //        }
 //    }
 
-    private fun onEvenStartPlay(event: FlowEvent.PlayEvent) {
-        Logd(TAG, "onEvenStartPlay ${event.episode.title}")
+    private fun onPlayEvent(event: FlowEvent.PlayEvent) {
+        Logd(TAG, "onPlayEvent ${event.episode.title}")
         val currentitem = event.episode
         if (currentMedia?.getIdentifier() == null || currentitem.media?.getIdentifier() != currentMedia?.getIdentifier()) {
             currentMedia = currentitem.media
@@ -338,7 +342,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                             (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_EXPANDED
                         playerUI?.onPlaybackServiceChanged(event)
                     }
-                    is FlowEvent.PlayEvent -> onEvenStartPlay(event)
+                    is FlowEvent.PlayEvent -> onPlayEvent(event)
                     is FlowEvent.FavoritesEvent -> onFavoriteEvent(event)
                     is FlowEvent.PlayerErrorEvent -> MediaPlayerErrorDialog.show(activity as Activity, event)
                     is FlowEvent.SleepTimerUpdatedEvent ->  if (event.isCancelled || event.wasJustEnabled()) loadMediaInfo(false)
@@ -375,8 +379,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 //                        updateUi(controller!!.getMedia)
 //                        sbPosition.highlightCurrentChapter()
 //                    }
-                    binding.txtvSeek.text = curMedia?.getChapters()?.get(newChapterIndex)?.title ?: ("\n${Converter.getDurationStringLong(position)}")
-                } else binding.txtvSeek.text = Converter.getDurationStringLong(position)
+                    binding.txtvSeek.text = curMedia?.getChapters()?.get(newChapterIndex)?.title ?: ("\n${DurationConverter.getDurationStringLong(position)}")
+                } else binding.txtvSeek.text = DurationConverter.getDurationStringLong(position)
             }
             duration != playbackService?.curDuration -> updateUi()
         }
@@ -628,18 +632,18 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 Log.w(TAG, "Could not react to position observer update because of invalid time")
                 return
             }
-            binding.txtvPosition.text = Converter.getDurationStringLong(currentPosition)
+            binding.txtvPosition.text = DurationConverter.getDurationStringLong(currentPosition)
             binding.txtvPosition.setContentDescription(getString(R.string.position,
-                Converter.getDurationStringLocalized(requireContext(), currentPosition.toLong())))
+                DurationConverter.getDurationStringLocalized(requireContext(), currentPosition.toLong())))
             val showTimeLeft = UserPreferences.shouldShowRemainingTime()
             if (showTimeLeft) {
                 txtvLength.setContentDescription(getString(R.string.remaining_time,
-                    Converter.getDurationStringLocalized(requireContext(), remainingTime.toLong())))
-                txtvLength.text = (if (remainingTime > 0) "-" else "") + Converter.getDurationStringLong(remainingTime)
+                    DurationConverter.getDurationStringLocalized(requireContext(), remainingTime.toLong())))
+                txtvLength.text = (if (remainingTime > 0) "-" else "") + DurationConverter.getDurationStringLong(remainingTime)
             } else {
                 txtvLength.setContentDescription(getString(R.string.chapter_duration,
-                    Converter.getDurationStringLocalized(requireContext(), duration.toLong())))
-                txtvLength.text = Converter.getDurationStringLong(duration)
+                    DurationConverter.getDurationStringLocalized(requireContext(), duration.toLong())))
+                txtvLength.text = DurationConverter.getDurationStringLong(duration)
             }
             if (sbPosition.visibility == View.INVISIBLE && playbackService?.isServiceReady() == true) sbPosition.visibility = View.VISIBLE
 

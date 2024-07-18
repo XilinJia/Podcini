@@ -44,8 +44,8 @@ class DbNullCleanupAlgorithmTest {
 //        adapter.close()
 
         val prefEdit = PreferenceManager.getDefaultSharedPreferences(context!!.applicationContext).edit()
-        prefEdit.putString(UserPreferences.PREF_EPISODE_CACHE_SIZE, EPISODE_CACHE_SIZE.toString())
-        prefEdit.putString(UserPreferences.PREF_EPISODE_CLEANUP, UserPreferences.EPISODE_CLEANUP_NULL.toString())
+        prefEdit.putString(UserPreferences.Prefs.prefEpisodeCacheSize.name, EPISODE_CACHE_SIZE.toString())
+        prefEdit.putString(UserPreferences.Prefs.prefEpisodeCleanup.name, UserPreferences.EPISODE_CLEANUP_NULL.toString())
         prefEdit.commit()
 
         UserPreferences.init(context!!)

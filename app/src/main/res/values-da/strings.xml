@@ -706,8 +706,8 @@
   <string name="filter">Filtrér</string>
   <string name="hide_is_favorite_label">Er favorit</string>
   <string name="not_favorite">Ikke favorit</string>
-  <string name="hide_downloaded_episodes_label">Overførte</string>
-  <string name="hide_not_downloaded_episodes_label">Ikke overførte</string>
+  <string name="downloaded_label">Overførte</string>
+  <string name="not_downloaded_label">Ikke overførte</string>
   <string name="queued_label">Sat i kø</string>
   <string name="not_queued_label">Ikke sat i kø</string>
   <string name="has_media">Har medier</string>

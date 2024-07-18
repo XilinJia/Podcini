@@ -728,8 +728,8 @@
   <string name="filter">Filtra</string>
   <string name="hide_is_favorite_label">Preferiti</string>
   <string name="not_favorite">Non preferiti</string>
-  <string name="hide_downloaded_episodes_label">Scaricati</string>
-  <string name="hide_not_downloaded_episodes_label">Non scaricati</string>
+  <string name="downloaded_label">Scaricati</string>
+  <string name="not_downloaded_label">Non scaricati</string>
   <string name="queued_label">In coda</string>
   <string name="not_queued_label">Non in coda</string>
   <string name="has_media">Con media</string>

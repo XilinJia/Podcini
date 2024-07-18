@@ -702,8 +702,8 @@
   <string name="filter">Filtrera</string>
   <string name="hide_is_favorite_label">Är favorit</string>
   <string name="not_favorite">Ej favorit</string>
-  <string name="hide_downloaded_episodes_label">Nedladdade</string>
-  <string name="hide_not_downloaded_episodes_label">Ej nedladdade</string>
+  <string name="downloaded_label">Nedladdade</string>
+  <string name="not_downloaded_label">Ej nedladdade</string>
   <string name="queued_label">Köad</string>
   <string name="not_queued_label">Ej köad</string>
   <string name="has_media">Har media</string>

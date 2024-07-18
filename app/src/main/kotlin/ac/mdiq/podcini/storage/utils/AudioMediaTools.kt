@@ -1,11 +1,11 @@
-package ac.mdiq.podcini.util
+package ac.mdiq.podcini.storage.utils
 
 import java.io.*
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 // converted to Kotlin from the java file: https://gist.github.com/DrustZ/d3d3fc8fcc1067433db4dd3079f8d187
-object AudioMediaOperation {
+object AudioMediaTools {
 
     fun mergeAudios(selection: Array<String>, outpath: String?, callback: OperationCallbacks?) {
         var RECORDER_SAMPLERATE = 0
@@ -192,9 +192,8 @@ object AudioMediaOperation {
         }
     }
 
-
     @Throws(IOException::class)
-    fun fullyReadFileToBytes(f: File): ByteArray {
+    private fun fullyReadFileToBytes(f: File): ByteArray {
         val size = f.length().toInt()
         val bytes = ByteArray(size)
         val tmpBuff = ByteArray(size)
@@ -214,12 +213,11 @@ object AudioMediaOperation {
         } finally {
             fis.close()
         }
-
         return bytes
     }
 
     @Throws(IOException::class)
-    fun writeInt(output: DataOutputStream, value: Int) {
+    private fun writeInt(output: DataOutputStream, value: Int) {
         output.write(value shr 0)
         output.write(value shr 8)
         output.write(value shr 16)
@@ -227,13 +225,13 @@ object AudioMediaOperation {
     }
 
     @Throws(IOException::class)
-    fun writeShort(output: DataOutputStream, value: Short) {
+    private fun writeShort(output: DataOutputStream, value: Short) {
         output.write(value.toInt() shr 0)
         output.write(value.toInt() shr 8)
     }
 
     @Throws(IOException::class)
-    fun writeString(output: DataOutputStream, value: String) {
+    private fun writeString(output: DataOutputStream, value: String) {
         for (element in value) {
             output.write(element.code)
         }

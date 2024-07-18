@@ -19,11 +19,10 @@ import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.ui.actions.actionbutton.*
 import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.ui.view.ShownotesWebView
-import ac.mdiq.podcini.util.Converter
+import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.util.DateFormatter
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
@@ -161,7 +160,8 @@ import kotlin.math.max
         cancelFlowEvents()
     }
 
-    @OptIn(UnstableApi::class) private fun showOnDemandConfigBalloon(offerStreaming: Boolean) {
+    @OptIn(UnstableApi::class)
+    private fun showOnDemandConfigBalloon(offerStreaming: Boolean) {
         val isLocaleRtl = (TextUtils.getLayoutDirectionFromLocale(Locale.getDefault()) == View.LAYOUT_DIRECTION_RTL)
         val balloon: Balloon = Balloon.Builder(requireContext())
             .setArrowOrientation(ArrowOrientation.TOP)
@@ -334,8 +334,8 @@ import kotlin.math.max
         } else {
             binding.noMediaLabel.visibility = View.GONE
             if (media.getDuration() > 0) {
-                binding.txtvDuration.text = Converter.getDurationStringLong(media.getDuration())
-                binding.txtvDuration.setContentDescription(Converter.getDurationStringLocalized(requireContext(), media.getDuration().toLong()))
+                binding.txtvDuration.text = DurationConverter.getDurationStringLong(media.getDuration())
+                binding.txtvDuration.setContentDescription(DurationConverter.getDurationStringLocalized(requireContext(), media.getDuration().toLong()))
             }
             if (episode != null) {
                 actionButton1 = when {
@@ -449,25 +449,30 @@ import kotlin.math.max
         if (itemLoaded && activity != null) updateButtons()
     }
 
+    private var loadItemsRunning = false
     @UnstableApi private fun load() {
         if (!itemLoaded) binding.progbarLoading.visibility = View.VISIBLE
-
         Logd(TAG, "load() called")
-        lifecycleScope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    if (episode != null) {
-                        val duration = episode!!.media?.getDuration()?: Int.MAX_VALUE
-                        webviewData = shownotesCleaner.processShownotes(episode!!.description?:"", duration)
+        if (!loadItemsRunning) {
+            loadItemsRunning = true
+            lifecycleScope.launch {
+                try {
+                    withContext(Dispatchers.IO) {
+                        if (episode != null) {
+                            val duration = episode!!.media?.getDuration() ?: Int.MAX_VALUE
+                            webviewData = shownotesCleaner.processShownotes(episode!!.description ?: "", duration)
+                        }
                     }
+                    withContext(Dispatchers.Main) {
+                        binding.progbarLoading.visibility = View.GONE
+                        onFragmentLoaded()
+                        itemLoaded = true
+                    }
+                } catch (e: Throwable) {
+                    Log.e(TAG, Log.getStackTraceString(e))
+                } finally {
+                    loadItemsRunning = false
                 }
-                withContext(Dispatchers.Main) {
-                    binding.progbarLoading.visibility = View.GONE
-                    onFragmentLoaded()
-                    itemLoaded = true
-                }
-            } catch (e: Throwable) {
-                Log.e(TAG, Log.getStackTraceString(e))
             }
         }
     }

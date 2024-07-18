@@ -506,8 +506,8 @@
   <string name="filter">Filter</string>
   <string name="hide_is_favorite_label">Je med priljubljenimi</string>
   <string name="not_favorite">Ni priljubljeno</string>
-  <string name="hide_downloaded_episodes_label">Prenešeno</string>
-  <string name="hide_not_downloaded_episodes_label">Ni prenešeno</string>
+  <string name="downloaded_label">Prenešeno</string>
+  <string name="not_downloaded_label">Ni prenešeno</string>
   <string name="queued_label">V čakalni vrsti</string>
   <string name="not_queued_label">Ni v čakalni vrsti</string>
   <string name="has_media">Ima predstavnostno vsebino</string>

@@ -2,7 +2,6 @@ package ac.mdiq.podcini.storage.algorithms
 
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.EPISODE_CLEANUP_NULL
-import ac.mdiq.podcini.preferences.UserPreferences.PREF_EPISODE_CLEANUP
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.UserPreferences.episodeCacheSize
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
@@ -25,9 +24,9 @@ import java.util.concurrent.ExecutionException
 object AutoCleanups {
 
     var episodeCleanupValue: Int
-        get() = appPrefs.getString(PREF_EPISODE_CLEANUP, "" + EPISODE_CLEANUP_NULL)!!.toInt()
+        get() = appPrefs.getString(UserPreferences.Prefs.prefEpisodeCleanup.name, "" + EPISODE_CLEANUP_NULL)!!.toInt()
         set(episodeCleanupValue) {
-            appPrefs.edit().putString(PREF_EPISODE_CLEANUP, episodeCleanupValue.toString()).apply()
+            appPrefs.edit().putString(UserPreferences.Prefs.prefEpisodeCleanup.name, episodeCleanupValue.toString()).apply()
         }
 
     /**
@@ -48,7 +47,7 @@ object AutoCleanups {
         return when (val cleanupValue = episodeCleanupValue) {
             UserPreferences.EPISODE_CLEANUP_EXCEPT_FAVORITE -> ExceptFavoriteCleanupAlgorithm()
             UserPreferences.EPISODE_CLEANUP_QUEUE -> APQueueCleanupAlgorithm()
-            UserPreferences.EPISODE_CLEANUP_NULL -> APNullCleanupAlgorithm()
+            EPISODE_CLEANUP_NULL -> APNullCleanupAlgorithm()
             else -> APCleanupAlgorithm(cleanupValue)
         }
     }
@@ -60,16 +59,12 @@ object AutoCleanups {
         private val candidates: List<Episode>
             get() {
                 val candidates: MutableList<Episode> = ArrayList()
-                val downloadedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.DOWNLOADED), EpisodeSortOrder.DATE_NEW_OLD)
+                val downloadedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.downloaded.name), EpisodeSortOrder.DATE_NEW_OLD)
                 for (item in downloadedItems) {
                     if (item.media != null && item.media!!.downloaded && !item.isFavorite) candidates.add(item)
                 }
                 return candidates
             }
-        /**
-         * The maximum number of episodes that could be cleaned up.
-         * @return the number of episodes that *could* be cleaned up, if needed
-         */
         override fun getReclaimableItems(): Int {
             return candidates.size
         }
@@ -100,7 +95,7 @@ object AutoCleanups {
         public override fun getDefaultCleanupParameter(): Int {
             val cacheSize = episodeCacheSize
             if (cacheSize != UserPreferences.EPISODE_CACHE_SIZE_UNLIMITED) {
-                val downloadedEpisodes = getEpisodesCount(EpisodeFilter(EpisodeFilter.DOWNLOADED))
+                val downloadedEpisodes = getEpisodesCount(EpisodeFilter(EpisodeFilter.States.downloaded.name))
                 if (downloadedEpisodes > cacheSize) return downloadedEpisodes - cacheSize
             }
             return 0
@@ -118,7 +113,7 @@ object AutoCleanups {
         private val candidates: List<Episode>
             get() {
                 val candidates: MutableList<Episode> = ArrayList()
-                val downloadedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.DOWNLOADED), EpisodeSortOrder.DATE_NEW_OLD)
+                val downloadedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.downloaded.name), EpisodeSortOrder.DATE_NEW_OLD)
                 val idsInQueues = getInQueueEpisodeIds()
                 for (item in downloadedItems) {
                     if (item.media != null && item.media!!.downloaded && !idsInQueues.contains(item.id) && !item.isFavorite)
@@ -126,9 +121,6 @@ object AutoCleanups {
                 }
                 return candidates
             }
-        /**
-         * @return the number of episodes that *could* be cleaned up, if needed
-         */
         override fun getReclaimableItems(): Int {
             return candidates.size
         }
@@ -185,9 +177,6 @@ object AutoCleanups {
         }
     }
 
-    /**
-     * Implementation of the EpisodeCleanupAlgorithm interface used by Podcini.
-     */
     /** the number of days after playback to wait before an item is eligible to be cleaned up.
      * Fractional for number of hours, e.g., 0.5 = 12 hours, 0.0416 = 1 hour.   */
 
@@ -195,7 +184,7 @@ object AutoCleanups {
         private val candidates: List<Episode>
             get() {
                 val candidates: MutableList<Episode> = ArrayList()
-                val downloadedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.DOWNLOADED), EpisodeSortOrder.DATE_NEW_OLD)
+                val downloadedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.downloaded.name), EpisodeSortOrder.DATE_NEW_OLD)
                 val idsInQueues = getInQueueEpisodeIds()
                 val mostRecentDateForDeletion = calcMostRecentDateForDeletion(Date())
                 for (item in downloadedItems) {
@@ -207,9 +196,6 @@ object AutoCleanups {
                 }
                 return candidates
             }
-        /**
-         * @return the number of episodes that *could* be cleaned up, if needed
-         */
         override fun getReclaimableItems(): Int {
             return candidates.size
         }
@@ -258,7 +244,6 @@ object AutoCleanups {
         /**
          * Deletes downloaded episodes that are no longer needed. What episodes are deleted and how many
          * of them depends on the implementation.
-         *
          * @param context     Can be used for accessing the database
          * @param numToRemove An additional parameter. This parameter is either returned by getDefaultCleanupParameter
          * or getPerformCleanupParameter.
@@ -293,7 +278,7 @@ object AutoCleanups {
          */
         fun getNumEpisodesToCleanup(amountOfRoomNeeded: Int): Int {
             if (amountOfRoomNeeded >= 0 && episodeCacheSize != UserPreferences.EPISODE_CACHE_SIZE_UNLIMITED) {
-                val downloadedEpisodes = getEpisodesCount(EpisodeFilter(EpisodeFilter.DOWNLOADED))
+                val downloadedEpisodes = getEpisodesCount(EpisodeFilter(EpisodeFilter.States.downloaded.name))
                 if (downloadedEpisodes + amountOfRoomNeeded >= episodeCacheSize) return (downloadedEpisodes + amountOfRoomNeeded - episodeCacheSize)
             }
             return 0

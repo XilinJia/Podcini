@@ -360,8 +360,8 @@
   <string name="unable_to_start_system_file_manager">Nun ye posible aniciar el xestor de ficheros del sistema</string>
   <string name="filter">Peñera</string>
   <string name="hide_is_favorite_label">Ta en Favoritos</string>
-  <string name="hide_downloaded_episodes_label">Baxó</string>
-  <string name="hide_not_downloaded_episodes_label">Nun baxó</string>
+  <string name="downloaded_label">Baxó</string>
+  <string name="not_downloaded_label">Nun baxó</string>
   <string name="queued_label">Na cola</string>
   <string name="not_queued_label">Nun ta na cola</string>
   <string name="has_media">Tien multimedia</string>

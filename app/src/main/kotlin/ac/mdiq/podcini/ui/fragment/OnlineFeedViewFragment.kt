@@ -199,7 +199,7 @@ import kotlin.concurrent.Volatile
             var url: String? = null
             val searcher = CombinedSearcher()
             val query = "${error.trackName} ${error.artistName}"
-            val results = searcher.search1(query)
+            val results = searcher.search(query)
             if (results.isEmpty()) return@launch
             for (result in results) {
                 if (result?.feedUrl != null && result.author != null && result.author.equals(error.artistName,

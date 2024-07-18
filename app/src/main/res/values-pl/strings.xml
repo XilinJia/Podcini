@@ -676,8 +676,8 @@
   <string name="filter">Filtruj</string>
   <string name="hide_is_favorite_label">Ulubione</string>
   <string name="not_favorite">Nie oznaczone jako ulubione</string>
-  <string name="hide_downloaded_episodes_label">Pobrane</string>
-  <string name="hide_not_downloaded_episodes_label">Nie pobrane</string>
+  <string name="downloaded_label">Pobrane</string>
+  <string name="not_downloaded_label">Nie pobrane</string>
   <string name="queued_label">W kolejce</string>
   <string name="not_queued_label">Nie w kolejce</string>
   <string name="has_media">Ma media</string>

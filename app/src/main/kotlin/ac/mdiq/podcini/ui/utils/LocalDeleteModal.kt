@@ -12,9 +12,8 @@ object LocalDeleteModal {
     fun deleteEpisodesWarnLocal(context: Context, items: Iterable<Episode>) {
         val localItems: MutableList<Episode> = mutableListOf()
         for (item in items) {
-            if (item.feed?.isLocalFeed == true) {
-                localItems.add(item)
-            } else deleteMediaOfEpisode(context, item)
+            if (item.feed?.isLocalFeed == true) localItems.add(item)
+            else deleteMediaOfEpisode(context, item)
         }
 
         if (localItems.isNotEmpty()) {

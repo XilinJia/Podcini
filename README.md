@@ -22,7 +22,8 @@ Compared to AntennaPod this project:
 3. Iron-age celebrity SQLite is replaced with modern object-base Realm DB (Podcini.R),
 4. Outfits with Viewbinding, Coil replacing Glide, coroutines replacing RxJava and threads, SharedFlow replacing EventBus, and jetifier removed,
 5. Boasts new UI's including streamlined drawer, subscriptions view and player controller,
-6. supports multiple and circular play queues
+6. Supports multiple and circular play queues
+7. Auto-download is governed by policy and limit settings of individual feed
 7. Accepts podcast as well as plain RSS and YouTube feeds,
 8. Offers Readability and Text-to-Speech for RSS contents,
 9. Features `instant sync` across devices without a server.

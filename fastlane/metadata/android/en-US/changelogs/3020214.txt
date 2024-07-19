@@ -1,5 +1,5 @@
  
-Version 6.0.14 brings several changes:
+Version 6.1.0 brings several changes:
 
 * in FeedEpisode view fixed filtering after an episode's play state is changed
 * fixed refreshing a feed causes duplicate episodes in FeedEpisodes view

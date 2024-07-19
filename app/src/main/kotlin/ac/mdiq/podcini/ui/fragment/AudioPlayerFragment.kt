@@ -324,6 +324,17 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         (activity as MainActivity).setPlayerVisible(true)
     }
 
+    private fun onPlaybackPositionEvent(event: FlowEvent.PlaybackPositionEvent) {
+//        Logd(TAG, "onPlayEvent ${event.episode.title}")
+        val media = event.media
+        if (currentMedia?.getIdentifier() == null || media?.getIdentifier() != currentMedia?.getIdentifier()) {
+            currentMedia = media
+            playerDetailsFragment?.setItem(curEpisode!!)
+        }
+        playerUI?.onPositionUpdate(event)
+        if (!isCollapsed) playerDetailsFragment?.onPlaybackPositionEvent(event)
+    }
+
     private var eventSink: Job?     = null
     private fun cancelFlowEvents() {
         Logd(TAG, "cancelFlowEvents")
@@ -346,10 +357,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                     is FlowEvent.FavoritesEvent -> onFavoriteEvent(event)
                     is FlowEvent.PlayerErrorEvent -> MediaPlayerErrorDialog.show(activity as Activity, event)
                     is FlowEvent.SleepTimerUpdatedEvent ->  if (event.isCancelled || event.wasJustEnabled()) loadMediaInfo(false)
-                    is FlowEvent.PlaybackPositionEvent -> {
-                        playerUI?.onPositionUpdate(event)
-                        if (!isCollapsed) playerDetailsFragment?.onPlaybackPositionEvent(event)
-                    }
+                    is FlowEvent.PlaybackPositionEvent -> onPlaybackPositionEvent(event)
                     is FlowEvent.SpeedChangedEvent -> playerUI?.updatePlaybackSpeedButton(event)
                     else -> {}
                 }

@@ -10,6 +10,7 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.RealmDB.realm
+import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeMedia
@@ -310,7 +311,8 @@ import java.util.*
             curIndex else EpisodeUtil.indexOfItemWithId(episodes, item.id)
 
         if (pos >= 0) {
-            episodes[pos] = item
+            episodes[pos] = unmanaged(episodes[pos])
+            episodes[pos].media?.position = event.media.position
             curIndex = pos
             adapter.notifyItemChanged(pos, Bundle().apply { putString("PositionUpdate", "PlaybackPositionEvent") })
         }

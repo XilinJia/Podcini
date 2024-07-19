@@ -1,0 +1,8 @@
+ 
+Version 6.1.1 brings several changes:
+
+* fixed player UI not updating on change of episode
+* fixed the mal-function of restoring previously backed-up OPML
+* reduced reactions to PlaybackPositionEvent
+* tuned AutoCleanup a bit
+* tuned and fixed some some issues in audo-downloaded

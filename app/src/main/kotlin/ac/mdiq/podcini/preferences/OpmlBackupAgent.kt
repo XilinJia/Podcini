@@ -95,7 +95,8 @@ class OpmlBackupAgent : BackupAgentHelper() {
                 IOUtils.closeQuietly(writer)
             }
         }
-        @OptIn(UnstableApi::class) override fun restoreEntity(data: BackupDataInputStream) {
+        @OptIn(UnstableApi::class)
+        override fun restoreEntity(data: BackupDataInputStream) {
             Logd(TAG, "Backup restore")
             if (OPML_ENTITY_KEY != data.key) {
                 Logd(TAG, "Unknown entity key: " + data.key)
@@ -103,6 +104,7 @@ class OpmlBackupAgent : BackupAgentHelper() {
             }
             var digester: MessageDigest? = null
             var reader: Reader
+            var linesRead = 0
             try {
                 digester = MessageDigest.getInstance("MD5")
                 reader = InputStreamReader(DigestInputStream(data, digester), Charset.forName("UTF-8"))
@@ -112,25 +114,30 @@ class OpmlBackupAgent : BackupAgentHelper() {
             try {
                 mChecksum = digester?.digest() ?: byteArrayOf()
                 BufferedReader(reader).use { bufferedReader ->
-                    val tempFile = File.createTempFile("opml_restored", ".tmp", mContext.filesDir)
+                    val tempFile = File(mContext.filesDir, "opml_restored.txt")
+//                    val tempFile = File.createTempFile("opml_restored", ".tmp", mContext.filesDir)
                     FileWriter(tempFile).use { fileWriter ->
                         while (true) {
                             val line = bufferedReader.readLine() ?: break
+                            Logd(TAG, "restoreEntity: $linesRead $line")
+                            linesRead++
                             fileWriter.write(line)
                             fileWriter.write(System.lineSeparator()) // Write a newline character
                         }
                     }
-                }
-                val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext)
-                with(sharedPreferences.edit()) {
-                    putBoolean(UserPreferences.Prefs.prefOPMLRestore.name, true)
-                    apply()
                 }
             } catch (e: XmlPullParserException) {
                 Log.e(TAG, "Error while parsing the OPML file", e)
             } catch (e: IOException) {
                 Log.e(TAG, "Failed to restore OPML backup", e)
             } finally {
+                if (linesRead > 0) {
+                    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext)
+                    with(sharedPreferences.edit()) {
+                        putBoolean(UserPreferences.Prefs.prefOPMLRestore.name, true)
+                        apply()
+                    }
+                }
                 IOUtils.closeQuietly(reader)
             }
         }
@@ -166,11 +173,12 @@ class OpmlBackupAgent : BackupAgentHelper() {
         private const val OPML_BACKUP_KEY = "opml"
 
         val isOPMLRestared: Boolean
-            get() = appPrefs.getBoolean(UserPreferences.Prefs.prefOPMLRestore.name, true)
+            get() = appPrefs.getBoolean(UserPreferences.Prefs.prefOPMLRestore.name, false)
 
         fun performRestore(context: Context) {
             Logd(TAG, "performRestore")
-            val tempFile = File.createTempFile("opml_restored", ".tmp", context.filesDir)
+            val tempFile = File(context.filesDir, "opml_restored.txt")
+//            val tempFile = File.createTempFile("opml_restored", ".tmp", context.filesDir)
             if (tempFile.exists()) {
                 val reader = FileReader(tempFile)
                 val opmlElements = OpmlReader().readDocument(reader)
@@ -179,6 +187,7 @@ class OpmlBackupAgent : BackupAgentHelper() {
                     feed.episodes.clear()
                     updateFeed(context, feed, false)
                 }
+                Toast.makeText(context, "${opmlElements.size} feeds were restored", Toast.LENGTH_SHORT).show()
                 runOnce(context)
             } else {
                 Toast.makeText(context, "No backup data found", Toast.LENGTH_SHORT).show()

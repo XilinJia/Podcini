@@ -17,6 +17,7 @@ import ac.mdiq.podcini.storage.database.Queues.moveInQueueSync
 import ac.mdiq.podcini.storage.database.Queues.queueKeepSortedOrder
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
+import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
@@ -337,7 +338,8 @@ import java.util.*
             curIndex else EpisodeUtil.indexOfItemWithId(queueItems, item.id)
 
         if (pos >= 0) {
-            queueItems[pos] = item
+            queueItems[pos] = unmanaged(queueItems[pos])
+            queueItems[pos].media?.position = event.media.position
             curIndex = pos
             adapter?.notifyItemChanged(pos, Bundle().apply { putString("PositionUpdate", "PlaybackPositionEvent") })
         }

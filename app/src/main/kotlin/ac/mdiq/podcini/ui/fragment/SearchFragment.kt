@@ -8,6 +8,7 @@ import ac.mdiq.podcini.databinding.SearchFragmentBinding
 import ac.mdiq.podcini.net.feed.discovery.CombinedSearcher
 import ac.mdiq.podcini.playback.base.InTheatre.isCurMedia
 import ac.mdiq.podcini.storage.database.RealmDB.realm
+import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Feed
@@ -300,7 +301,8 @@ import java.lang.ref.WeakReference
             curIndex else EpisodeUtil.indexOfItemWithId(results, item.id)
 
         if (pos >= 0) {
-            results[pos] = item
+            results[pos] = unmanaged(results[pos])
+            results[pos].media?.position = event.media.position
             curIndex = pos
             adapter.notifyItemChanged(pos, Bundle().apply { putString("PositionUpdate", "PlaybackPositionEvent") })
         }

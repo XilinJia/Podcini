@@ -421,7 +421,8 @@ import java.util.concurrent.Semaphore
             curIndex else EpisodeUtil.indexOfItemWithId(episodes, item.id)
 
         if (pos >= 0) {
-            episodes[pos] = item
+            episodes[pos] = unmanaged(episodes[pos])
+            episodes[pos].media?.position = event.media.position
             curIndex = pos
             adapter.notifyItemChanged(pos, Bundle().apply { putString("PositionUpdate", "PlaybackPositionEvent") })
         }

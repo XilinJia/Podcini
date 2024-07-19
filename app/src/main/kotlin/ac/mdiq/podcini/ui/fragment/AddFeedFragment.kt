@@ -110,6 +110,7 @@ class AddFeedFragment : Fragment() {
                 .setPositiveButton("Yes") { dialog, _ ->
                     performRestore(requireContext())
                     dialog.dismiss()
+                    parentFragmentManager.popBackStack()
                 }
                 .setNegativeButton("No") { dialog, _ ->
                     dialog.dismiss()

@@ -12,6 +12,7 @@ import ac.mdiq.podcini.storage.database.Queues.getInQueueEpisodeIds
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
+import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.util.Log
 import androidx.annotation.OptIn
@@ -68,7 +69,8 @@ object AutoCleanups {
         override fun getReclaimableItems(): Int {
             return candidates.size
         }
-        @OptIn(UnstableApi::class) public override fun performCleanup(context: Context, numToRemove: Int): Int {
+        @OptIn(UnstableApi::class)
+        public override fun performCleanup(context: Context, numToRemove: Int): Int {
             var candidates = candidates
             // in the absence of better data, we'll sort by item publication date
             candidates = candidates.sortedWith { lhs: Episode, rhs: Episode ->
@@ -250,8 +252,12 @@ object AutoCleanups {
          * @return The number of episodes that were deleted.
          */
         protected abstract fun performCleanup(context: Context, numToRemove: Int): Int
+
+        //    only used in tests
         fun performCleanup(context: Context): Int {
-            return performCleanup(context, getDefaultCleanupParameter())
+            val numToRemove = getDefaultCleanupParameter()
+            if (numToRemove <= 0) return 0
+            return performCleanup(context, numToRemove)
         }
         /**
          * Returns a parameter for performCleanup. The implementation of this interface should decide how much
@@ -266,7 +272,10 @@ object AutoCleanups {
          * @return The number of epiosdes that were deleted
          */
         fun makeRoomForEpisodes(context: Context, amountOfRoomNeeded: Int): Int {
-            return performCleanup(context, getNumEpisodesToCleanup(amountOfRoomNeeded))
+            val numToRemove = getNumEpisodesToCleanup(amountOfRoomNeeded)
+            Logd("EpisodeCleanupAlgorithm", "makeRoomForEpisodes: $numToRemove")
+            if (numToRemove <= 0) return 0
+            return performCleanup(context, numToRemove)
         }
         /**
          * @return the number of episodes/items that *could* be cleaned up, if needed

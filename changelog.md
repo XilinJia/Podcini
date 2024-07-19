@@ -1,3 +1,11 @@
+# 6.1.1
+
+* fixed player UI not updating on change of episode
+* fixed the mal-function of restoring previously backed-up OPML
+* reduced reactions to PlaybackPositionEvent
+* tuned AutoCleanup a bit
+* tuned and fixed some some issues in audo-downloaded
+
 # 6.1.0
 
 * in FeedEpisode view fixed filtering after an episode's play state is changed

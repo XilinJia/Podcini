@@ -5,6 +5,7 @@ import ac.mdiq.podcini.databinding.BaseEpisodesListFragmentBinding
 import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.playback.base.InTheatre.isCurMedia
+import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.EpisodeFilter
@@ -343,7 +344,8 @@ import kotlinx.coroutines.flow.collectLatest
             curIndex else EpisodeUtil.indexOfItemWithId(episodes, item.id)
 
         if (pos >= 0) {
-            episodes[pos] = item
+            episodes[pos] = unmanaged(episodes[pos])
+            episodes[pos].media?.position = event.media.position
             curIndex = pos
             adapter.notifyItemChanged(pos, Bundle().apply { putString("PositionUpdate", "PlaybackPositionEvent") })
         }

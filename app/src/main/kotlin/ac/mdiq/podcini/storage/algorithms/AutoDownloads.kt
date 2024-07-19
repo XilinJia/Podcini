@@ -10,20 +10,17 @@ import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownloadOnBattery
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodesCount
-import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
-import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
 import androidx.media3.common.util.UnstableApi
-import io.realm.kotlin.Realm
 import io.realm.kotlin.UpdatePolicy
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -149,27 +146,28 @@ object AutoDownloads {
                 if (networkShouldAutoDl && powerShouldAutoDl) {
                     Logd(Companion.TAG, "autoDownloadEpisodeMedia Performing auto-dl of undownloaded episodes")
                     val candidates: MutableSet<Episode> = mutableSetOf()
-                    val queueItems = curQueue.episodes.filter { it.media?.downloaded != true }
+                    val queueItems = realm.query(Episode::class).query("id IN $0 AND media.downloaded == false", curQueue.episodeIds).find()
+                    Logd(TAG, "autoDownloadEpisodeMedia add from queue: ${queueItems.size}")
                     if (queueItems.isNotEmpty()) candidates.addAll(queueItems)
                     val feeds = feeds ?: getFeedList()
                     feeds.forEach { f ->
                         if (f.preferences?.autoDownload == true && !f.isLocalFeed) {
                             var episodes = mutableListOf<Episode>()
                             val downloadedCount = getEpisodesCount(EpisodeFilter(EpisodeFilter.States.downloaded.name), f.id)
-                            val toDLCount = (f.preferences?.autoDLMaxEpisodes?:0) - downloadedCount
-                            if (toDLCount > 0) {
+                            val allowedDLCount = (f.preferences?.autoDLMaxEpisodes?:0) - downloadedCount
+                            if (allowedDLCount > 0) {
                                 var queryString = "feedId == ${f.id} AND isAutoDownloadEnabled == true AND media != nil AND media.downloaded == false"
                                 when (f.preferences?.autoDLPolicy) {
                                     FeedPreferences.AutoDLPolicy.ONLY_NEW -> {
-                                        queryString += " AND playState == -1 SORT(pubDate DESC) LIMIT(${3*toDLCount})"
+                                        queryString += " AND playState == -1 SORT(pubDate DESC) LIMIT(${3*allowedDLCount})"
                                         episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
                                     }
                                     FeedPreferences.AutoDLPolicy.NEWER -> {
-                                        queryString += " AND playState != 1 SORT(pubDate DESC) LIMIT(${3*toDLCount})"
+                                        queryString += " AND playState != 1 SORT(pubDate DESC) LIMIT(${3*allowedDLCount})"
                                         episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
                                     }
                                     FeedPreferences.AutoDLPolicy.OLDER -> {
-                                        queryString += " AND playState != 1 SORT(pubDate ASC) LIMIT(${3*toDLCount})"
+                                        queryString += " AND playState != 1 SORT(pubDate ASC) LIMIT(${3*allowedDLCount})"
                                         episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
                                     }
                                     else -> {}
@@ -177,9 +175,11 @@ object AutoDownloads {
                                 if (episodes.isNotEmpty()) {
                                     var count = 0
                                     for (e in episodes) {
+                                        if (isCurMedia(e.media)) continue
                                         if (f.preferences?.autoDownloadFilter?.shouldAutoDownload(e) == true) {
+                                            Logd(TAG, "autoDownloadEpisodeMedia add to cadidates: ${e.title} ${e.isDownloaded}")
                                             candidates.add(e)
-                                            if (++count >= toDLCount) break
+                                            if (++count >= allowedDLCount) break
                                         } else upsertBlk(e) { it.setPlayed(true)}
                                     }
                                 }

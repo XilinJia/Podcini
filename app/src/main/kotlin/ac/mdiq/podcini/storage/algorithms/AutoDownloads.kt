@@ -127,9 +127,6 @@ object AutoDownloads {
             val status = batteryStatus!!.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
             return (status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL)
         }
-        companion object {
-            private val TAG: String = AutoDownloadAlgorithm::class.simpleName ?: "Anonymous"
-        }
     }
 
     class FeedBasedAutoDLAlgorithm : AutoDownloadAlgorithm() {
@@ -141,10 +138,10 @@ object AutoDownloads {
                 val networkShouldAutoDl = (isAutoDownloadAllowed && isEnableAutodownload)
                 // true if we should auto download based on power status
                 val powerShouldAutoDl = (deviceCharging(context) || isEnableAutodownloadOnBattery)
-                Logd(Companion.TAG, "autoDownloadEpisodeMedia prepare $networkShouldAutoDl $powerShouldAutoDl")
+                Logd(TAG, "autoDownloadEpisodeMedia prepare $networkShouldAutoDl $powerShouldAutoDl")
                 // we should only auto download if both network AND power are happy
                 if (networkShouldAutoDl && powerShouldAutoDl) {
-                    Logd(Companion.TAG, "autoDownloadEpisodeMedia Performing auto-dl of undownloaded episodes")
+                    Logd(TAG, "autoDownloadEpisodeMedia Performing auto-dl of undownloaded episodes")
                     val candidates: MutableSet<Episode> = mutableSetOf()
                     val queueItems = realm.query(Episode::class).query("id IN $0 AND media.downloaded == false", curQueue.episodeIds).find()
                     Logd(TAG, "autoDownloadEpisodeMedia add from queue: ${queueItems.size}")
@@ -155,6 +152,7 @@ object AutoDownloads {
                             var episodes = mutableListOf<Episode>()
                             val downloadedCount = getEpisodesCount(EpisodeFilter(EpisodeFilter.States.downloaded.name), f.id)
                             val allowedDLCount = (f.preferences?.autoDLMaxEpisodes?:0) - downloadedCount
+                            Logd(TAG, "autoDownloadEpisodeMedia ${f.preferences?.autoDLMaxEpisodes} downloadedCount: $downloadedCount allowedDLCount: $allowedDLCount")
                             if (allowedDLCount > 0) {
                                 var queryString = "feedId == ${f.id} AND isAutoDownloadEnabled == true AND media != nil AND media.downloaded == false"
                                 when (f.preferences?.autoDLPolicy) {
@@ -224,9 +222,6 @@ object AutoDownloads {
                 }
                 else Logd(TAG, "not auto downloaded networkShouldAutoDl: $networkShouldAutoDl powerShouldAutoDl $powerShouldAutoDl")
             }
-        }
-        companion object {
-            private val TAG: String = FeedBasedAutoDLAlgorithm::class.simpleName ?: "Anonymous"
         }
     }
 }

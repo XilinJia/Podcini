@@ -7,6 +7,12 @@
         custom:showAsAction="always"
         android:title="@string/search_label"/>
     <item
+        android:id="@+id/subscriptions_filter"
+        android:icon="@drawable/ic_filter"
+        android:menuCategory="container"
+        android:title="@string/filter"
+        custom:showAsAction="always"/>
+    <item
         android:id="@+id/subscriptions_sort"
         android:title="@string/sort"
         android:icon="@drawable/arrows_sort"

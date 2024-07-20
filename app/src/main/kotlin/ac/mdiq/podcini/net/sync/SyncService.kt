@@ -287,7 +287,7 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
 //            if (result.first != null) queueToBeRemoved.add(result.second)
             updatedItems.add(result.second)
         }
-        removeFromQueue(null, *updatedItems.toTypedArray())
+        removeFromQueue(*updatedItems.toTypedArray())
 //        loadAdditionalFeedItemListData(updatedItems)
         persistEpisodes(updatedItems)
     }

@@ -4,38 +4,22 @@ import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import java.io.Serializable
 
 class EpisodeFilter(vararg properties: String) : Serializable {
-
     private val properties: Array<String> = arrayOf(*properties.filter { it.isNotEmpty() }.map {it.trim()}.toTypedArray())
 
-    @JvmField
     val showPlayed: Boolean = hasProperty(States.played.name)
-    @JvmField
     val showUnplayed: Boolean = hasProperty(States.unplayed.name)
-    @JvmField
     val showPaused: Boolean = hasProperty(States.paused.name)
-    @JvmField
     val showNotPaused: Boolean = hasProperty(States.not_paused.name)
-    @JvmField
     val showNew: Boolean = hasProperty(States.new.name)
-    @JvmField
     val showQueued: Boolean = hasProperty(States.queued.name)
-    @JvmField
     val showNotQueued: Boolean = hasProperty(States.not_queued.name)
-    @JvmField
     val showDownloaded: Boolean = hasProperty(States.downloaded.name)
-    @JvmField
     val showNotDownloaded: Boolean = hasProperty(States.not_downloaded.name)
-    @JvmField
     val showAutoDownloadable: Boolean = hasProperty(States.auto_downloadable.name)
-    @JvmField
     val showNotAutoDownloadable: Boolean = hasProperty(States.not_auto_downloadable.name)
-    @JvmField
     val showHasMedia: Boolean = hasProperty(States.has_media.name)
-    @JvmField
     val showNoMedia: Boolean = hasProperty(States.no_media.name)
-    @JvmField
     val showIsFavorite: Boolean = hasProperty(States.is_favorite.name)
-    @JvmField
     val showNotFavorite: Boolean = hasProperty(States.not_favorite.name)
 
     constructor(properties: String) : this(*(properties.split(",").toTypedArray()))
@@ -115,6 +99,7 @@ class EpisodeFilter(vararg properties: String) : Serializable {
         return query.toString()
     }
 
+    @Suppress("EnumEntryName")
     enum class States {
         played,
         unplayed,

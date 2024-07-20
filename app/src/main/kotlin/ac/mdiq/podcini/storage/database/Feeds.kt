@@ -4,6 +4,7 @@ import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.net.download.DownloadError
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
+import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink.needSynch
 import ac.mdiq.podcini.preferences.UserPreferences.isAutoDelete
 import ac.mdiq.podcini.preferences.UserPreferences.isAutoDeleteLocal
 import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodes
@@ -39,8 +40,11 @@ object Feeds {
     private val tags: MutableList<String> = mutableListOf()
 
     @Synchronized
-    fun getFeedList(fromDB: Boolean = true): List<Feed> {
-        if (fromDB) return realm.query(Feed::class).find()
+    fun getFeedList(queryString: String = "", fromDB: Boolean = true): List<Feed> {
+        if (fromDB) {
+            return if (queryString.isEmpty()) realm.query(Feed::class).find()
+            else realm.query(Feed::class, queryString).find()
+        }
         return feedMap.values.toList()
     }
 
@@ -278,7 +282,7 @@ object Feeds {
                                 """.trimIndent()))
                         oldItem.identifier = episode.identifier
 
-                        if (oldItem.isPlayed() && oldItem.media != null) {
+                        if (needSynch() && oldItem.isPlayed() && oldItem.media != null) {
                             val durs = oldItem.media!!.getDuration() / 1000
                             val action = EpisodeAction.Builder(oldItem, EpisodeAction.PLAY)
                                 .currentTimestamp()

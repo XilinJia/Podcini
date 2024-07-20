@@ -5,6 +5,7 @@ import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.net.feed.LocalFeedUpdater.updateFeed
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
+import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink.needSynch
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.playback.base.InTheatre.writeNoMediaPlaying
@@ -99,7 +100,7 @@ object Episodes {
         return runOnIOScope {
             if (episode.media == null) return@runOnIOScope
             val episode_ = deleteMediaSync(context, episode)
-            if (shouldDeleteRemoveFromQueue()) removeFromQueueSync(null, null, episode_)
+            if (shouldDeleteRemoveFromQueue()) removeFromQueueSync(null, episode_)
         }
     }
 
@@ -158,9 +159,11 @@ object Episodes {
             // Do full update of this feed to get rid of the episode
             if (episode.feed != null) updateFeed(episode.feed!!, context.applicationContext, null)
         } else {
-            // Gpodder: queue delete action for synchronization
-            val action = EpisodeAction.Builder(episode, EpisodeAction.DELETE).currentTimestamp().build()
-            SynchronizationQueueSink.enqueueEpisodeActionIfSyncActive(context, action)
+            if (needSynch()) {
+                // Gpodder: queue delete action for synchronization
+                val action = EpisodeAction.Builder(episode, EpisodeAction.DELETE).currentTimestamp().build()
+                SynchronizationQueueSink.enqueueEpisodeActionIfSyncActive(context, action)
+            }
             EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(episode))
         }
         return episode
@@ -292,6 +295,6 @@ object Episodes {
     }
 
     private fun shouldRemoveFromQueuesMarkPlayed(): Boolean {
-        return appPrefs.getBoolean(UserPreferences.Prefs.prefRemoveFromQueueMarkedPlayed.name, true)
+        return appPrefs.getBoolean(Prefs.prefRemoveFromQueueMarkedPlayed.name, true)
     }
 }

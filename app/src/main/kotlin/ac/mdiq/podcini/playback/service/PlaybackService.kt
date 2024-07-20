@@ -312,7 +312,7 @@ class PlaybackService : MediaSessionService() {
                                 (action == AutoDeleteAction.GLOBAL && item?.feed != null && shouldAutoDeleteItem(item!!.feed!!)))
                         if (playable is EpisodeMedia && shouldAutoDelete && (item?.isFavorite != true || !shouldFavoriteKeepEpisode())) {
                             item = deleteMediaSync(this@PlaybackService, item!!)
-                            if (shouldDeleteRemoveFromQueue()) removeFromQueueSync(null, null, item!!)
+                            if (shouldDeleteRemoveFromQueue()) removeFromQueueSync(null, item!!)
                         }
                     }
                     if (playable is EpisodeMedia && (ended || skipped || playingNext)) addToHistory(item!!)

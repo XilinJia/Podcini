@@ -329,6 +329,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         val media = event.media
         if (currentMedia?.getIdentifier() == null || media?.getIdentifier() != currentMedia?.getIdentifier()) {
             currentMedia = media
+            playerUI?.updateUi(currentMedia)
             playerDetailsFragment?.setItem(curEpisode!!)
         }
         playerUI?.onPositionUpdate(event)

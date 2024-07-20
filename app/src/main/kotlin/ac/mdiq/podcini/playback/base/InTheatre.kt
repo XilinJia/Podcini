@@ -3,6 +3,7 @@ package ac.mdiq.podcini.playback.base
 import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodeMedia
 import ac.mdiq.podcini.storage.database.RealmDB.realm
+import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
@@ -45,7 +46,7 @@ object InTheatre {
             Logd(TAG, "starting curQueue")
             var curQueue_ = realm.query(PlayQueue::class).sort("updated", Sort.DESCENDING).first().find()
             if (curQueue_ != null) {
-                curQueue = realm.copyFromRealm(curQueue_)
+                curQueue = unmanaged(curQueue_)
                 curQueue.episodes.addAll(realm.copyFromRealm(realm.query(Episode::class, "id IN $0", curQueue.episodeIds)
                     .find().sortedBy { curQueue.episodeIds.indexOf(it.id) }))
             }
@@ -68,7 +69,7 @@ object InTheatre {
 
             Logd(TAG, "starting curState")
             var curState_ = realm.query(CurrentState::class).first().find()
-            if (curState_ != null) curState = realm.copyFromRealm(curState_)
+            if (curState_ != null) curState = unmanaged(curState_)
             else {
                 Logd(TAG, "creating new curState")
                 curState_ = CurrentState()

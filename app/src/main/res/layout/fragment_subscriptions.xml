@@ -43,6 +43,24 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"/>
 
+            <com.mikepenz.iconics.view.IconicsTextView
+                android:id="@+id/txtvInformation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="2dp"
+                android:background="?android:attr/colorBackground"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:visibility="gone"
+                android:gravity="center"
+                android:textColor="?attr/colorAccent"
+                tools:visibility="visible"
+                tools:text="(i) Information" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"/>
+
             <TextView
                 android:id="@+id/count"
                 android:layout_width="wrap_content"

@@ -23,8 +23,9 @@ import java.util.*
 import java.util.concurrent.ExecutionException
 
 object AutoCleanups {
+    private val TAG: String = AutoCleanups::class.simpleName ?: "Anonymous"
 
-    var episodeCleanupValue: Int
+    private var episodeCleanupValue: Int
         get() = appPrefs.getString(UserPreferences.Prefs.prefEpisodeCleanup.name, "" + EPISODE_CLEANUP_NULL)!!.toInt()
         set(episodeCleanupValue) {
             appPrefs.edit().putString(UserPreferences.Prefs.prefEpisodeCleanup.name, episodeCleanupValue.toString()).apply()
@@ -102,9 +103,6 @@ object AutoCleanups {
             }
             return 0
         }
-        companion object {
-            private val TAG: String = ExceptFavoriteCleanupAlgorithm::class.simpleName ?: "Anonymous"
-        }
     }
 
     /**
@@ -154,9 +152,6 @@ object AutoCleanups {
         public override fun getDefaultCleanupParameter(): Int {
             return getNumEpisodesToCleanup(0)
         }
-        companion object {
-            private val TAG: String = APQueueCleanupAlgorithm::class.simpleName ?: "Anonymous"
-        }
     }
 
     /**
@@ -173,9 +168,6 @@ object AutoCleanups {
         }
         override fun getReclaimableItems(): Int {
             return 0
-        }
-        companion object {
-            private val TAG: String = APNullCleanupAlgorithm::class.simpleName ?: "Anonymous"
         }
     }
 
@@ -232,7 +224,6 @@ object AutoCleanups {
             return getNumEpisodesToCleanup(0)
         }
         companion object {
-            private val TAG: String = APCleanupAlgorithm::class.simpleName ?: "Anonymous"
             private fun minusHours(baseDate: Date, numberOfHours: Int): Date {
                 val cal = Calendar.getInstance()
                 cal.time = baseDate

@@ -131,6 +131,7 @@ class FeedSettingsFragment : Fragment() {
         override fun onDestroyView() {
             Logd(TAG, "onDestroyView")
             feed = null
+            feedPrefs = null
             super.onDestroyView()
         }
         private fun setupFeedAutoSkipPreference() {

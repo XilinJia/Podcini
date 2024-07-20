@@ -38,7 +38,6 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 
 * More convenient player control displayed on all pages
 * Revamped and more efficient expanded player view showing episode description on the front
-* External player class is merged into the player
 * Playback speed setting has been straightened up, three speed can be set separately or combined: current audio, podcast, and global
 * Added preference "Fast Forward Speed" under "Playback" in settings with default value of 0.0, dialog allows setting a number between 0.0 and 10.0
 * The "Skip to next episode" button on the player
@@ -50,9 +49,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
     * single tap not during play has no effect
 * Added preference "Fallback Speed" under "Playback" in settings with default value of 0.0, dialog allows setting a float number (capped between 0.0 and 1.5)
 * if the user customizes "Fallback speed" to a value greater than 0.1, long-press the Play button during play enters the fallback mode and plays at the set fallback speed, single tap exits the fallback mode
-* Various efficiency improvements, including removal of:
-  * redundant media loadings and ui updates
-  * frequent list search during audio play
+* Various efficiency improvements
 * streamed media somewhat equivalent to downloaded media
   * enabled episode description on player detailed view
   * enabled intro- and end- skipping
@@ -77,6 +74,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * Played or new episodes have clearer markings
 * Sort dialog no longer dims the main view
 * download date can be used to sort both feeds and episodes
+* Subscriptions view has a filter based on feed preferences, in the same style as episodes filter
 * Subscriptions sorting is now bi-directional based on various explicit measures
 * in episode list view, if episode has no media, TTS button is shown for fetching transcript (if not exist) and then generating audio file from the transcript. TTS audio files are playable in the same way as local media (with speed setting, pause and rewind/forward)
 * Long-press filter button in FeedEpisode view enables/disables filters without changing filter settings
@@ -106,8 +104,6 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * Ability to open podcast from webpage address
 * Online feed info display is handled in similar ways as any local feed, and offers options to subscribe or view episodes
 * Online feed episodes can be freely played (streamed) without a subscription
-* externally shared feed opens in the new online feed view fragment
-* OnlineFeedView` activity is stripped down to only receive externally shared feeds
 * Youtube channels are accepted from external share or paste of address in podcast search view, and can be subscribed as a normal podcast, though video play is handled externally
 
 ### Instant (or Wifi) sync
@@ -122,6 +118,8 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
   * When auto download is enabled in the Settings, feeds to be auto-downloaded need to be separately enabled in the feed settings.
   * Each feed also has its own download policy (only new episodes, newest episodes, and oldest episodes. "newest episodes" meaning most recent episodes, new or old)
   * Each feed has its own limit (Episode cache) for number of episodes downloaded, this limit rules in combination of the overall limit  for the app.
+  * Auto downloads run feeds or feed refreshes, scheduled or manual
+  * auto download always includes any undownloaded episodes (regardless of feeds) added in the current queue
   * After auto download run, episodes with New status is changed to Unplayed.
   * auto download feed setting dialog is also changed:
     * there are now separate dialogs for inclusive and exclusive filters where filter tokens can be specified independently

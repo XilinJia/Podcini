@@ -52,7 +52,7 @@ class TogglePlaybackStateSwipeAction : SwipeAction {
             val shouldAutoDelete = if (item.feed == null) false else shouldAutoDeleteItem(item.feed!!)
             if (media != null && EpisodeUtil.hasAlmostEnded(media) && shouldAutoDelete) {
                 item = deleteMediaSync(fragment.requireContext(), item)
-                if (shouldDeleteRemoveFromQueue()) removeFromQueueSync(null, null, item)   }
+                if (shouldDeleteRemoveFromQueue()) removeFromQueueSync(null, item)   }
         }
         val playStateStringRes: Int = when (newState) {
             Episode.UNPLAYED -> if (item.playState == Episode.NEW) R.string.removed_inbox_label    //was new
@@ -83,7 +83,7 @@ class TogglePlaybackStateSwipeAction : SwipeAction {
         if (media != null && EpisodeUtil.hasAlmostEnded(media) && shouldAutoDelete) {
 //                deleteMediaOfEpisode(fragment.requireContext(), item)
             var item = deleteMediaSync(fragment.requireContext(), item)
-            if (shouldDeleteRemoveFromQueue()) removeFromQueueSync(null, null, item)   }
+            if (shouldDeleteRemoveFromQueue()) removeFromQueueSync(null, item)   }
     }
 
     override fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {

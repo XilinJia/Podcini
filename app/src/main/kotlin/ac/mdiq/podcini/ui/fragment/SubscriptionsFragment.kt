@@ -9,17 +9,13 @@ import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.getTags
 import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
 import ac.mdiq.podcini.storage.database.RealmDB.realm
-import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.model.FeedPreferences
-import ac.mdiq.podcini.storage.model.FeedSortOrder
+import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.ui.actions.menuhandler.FeedMenuHandler
 import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
-import ac.mdiq.podcini.ui.dialog.FeedSortDialog
-import ac.mdiq.podcini.ui.dialog.RemoveFeedDialog
-import ac.mdiq.podcini.ui.dialog.TagSettingsDialog
+import ac.mdiq.podcini.ui.dialog.*
+import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment.FeedEpisodeFilterDialog
 import ac.mdiq.podcini.ui.utils.CoverLoader
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
@@ -134,7 +130,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         binding.categorySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 tagFilterIndex = position
-                filterOnTag()
+//                filterOnTag()
+                loadSubscriptions()
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
@@ -224,23 +221,40 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         super.onSaveInstanceState(outState)
     }
 
-    fun filterOnTag() {
-        when (tagFilterIndex) {
-            1 -> feedListFiltered = feedList    // All feeds
-            0 -> feedListFiltered = feedList.filter {   // feeds without tag
-                val tags = it.preferences?.tags
-                tags.isNullOrEmpty() || (tags.size == 1 && tags.toList()[0] == "#root")
-            }
+    fun queryStringOfTags() : String {
+        return when (tagFilterIndex) {
+            1 ->  ""    // All feeds
+            0 ->  " preferences.tags.@count == 0 OR (preferences.tags.@count == 0 AND ALL preferences.tags == '#root' ) "
             else -> {   // feeds with the chosen tag
                 val tag = tags[tagFilterIndex]
-                feedListFiltered = feedList.filter {
-                    it.preferences?.tags?.contains(tag) ?: false
-                }
+                " ANY preferences.tags == '$tag' "
             }
         }
+    }
+
+    fun filterOnTag() {
+        feedListFiltered = feedList
         binding.count.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
         adapter.setItems(feedListFiltered)
     }
+
+//    fun filterOnTag() {
+//        when (tagFilterIndex) {
+//            1 -> feedListFiltered = feedList    // All feeds
+//            0 -> feedListFiltered = feedList.filter {   // feeds without tag
+//                val tags = it.preferences?.tags
+//                tags.isNullOrEmpty() || (tags.size == 1 && tags.toList()[0] == "#root")
+//            }
+//            else -> {   // feeds with the chosen tag
+//                val tag = tags[tagFilterIndex]
+//                feedListFiltered = feedList.filter {
+//                    it.preferences?.tags?.contains(tag) ?: false
+//                }
+//            }
+//        }
+//        binding.count.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
+//        adapter.setItems(feedListFiltered)
+//    }
 
     private fun resetTags() {
         tags.clear()
@@ -263,6 +277,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.FeedListEvent, is FlowEvent.FeedsSortedEvent -> loadSubscriptions()
+                    is FlowEvent.FeedsFilterEvent -> loadSubscriptions()
                     is FlowEvent.EpisodePlayedEvent -> loadSubscriptions()
                     is FlowEvent.FeedTagsChangedEvent -> loadSubscriptions()
 //                    is FlowEvent.FeedPrefsChangeEvent -> onFeedPrefsChangeEvent(event)
@@ -293,6 +308,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
     @UnstableApi override fun onMenuItemClick(item: MenuItem): Boolean {
         val itemId = item.itemId
         when (itemId) {
+            R.id.subscriptions_filter -> FeedFilterDialog.newInstance(FeedFilter(feedsFilter)).show(childFragmentManager, null)
             R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
             R.id.subscriptions_sort -> FeedSortDialog().show(childFragmentManager, "FeedSortDialog")
             R.id.refresh_item -> FeedUpdateManager.runOnceOrAsk(requireContext())
@@ -318,7 +334,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             lifecycleScope.launch {
                 try {
                     withContext(Dispatchers.IO) {
-                        sortFeeds()
+                        filterAndSort()
                         resetTags()
                     }
                     withContext(Dispatchers.Main) {
@@ -328,6 +344,15 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                         binding.progressBar.visibility = View.GONE
                         adapter.setItems(feedListFiltered)
                         binding.count.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
+                        if (feedsFilter.isNotEmpty()) {
+                            val filter = FeedFilter(feedsFilter)
+                            binding.txtvInformation.text = ("{gmo-info} " + getString(R.string.filtered_label))
+                            binding.txtvInformation.setOnClickListener {
+                                val dialog = FeedFilterDialog.newInstance(filter)
+                                dialog.show(childFragmentManager, null)
+                            }
+                            binding.txtvInformation.visibility = View.VISIBLE
+                        } else binding.txtvInformation.visibility = View.GONE
                         emptyView.updateVisibility()
                     }
                 } catch (e: Throwable) {
@@ -339,13 +364,17 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         }
     }
 
-    private fun sortFeeds() {
-        Logd(TAG, "sortFeeds() called")
+    private fun filterAndSort() {
+        val tagsQueryStr = queryStringOfTags()
+        val fQueryStr = if (tagsQueryStr.isEmpty()) FeedFilter(feedsFilter).queryString() else FeedFilter(feedsFilter).queryString() + " AND " + tagsQueryStr
+        Logd(TAG, "sortFeeds() called $feedsFilter $fQueryStr")
+        val feedIds = getFeedList(fQueryStr).map { id }
         val feedOrder = feedOrderBy
         val dir = 1 - 2*feedOrderDir    // get from 0, 1 to 1, -1
         val comparator: Comparator<Feed> = when (feedOrder) {
             FeedSortOrder.UNPLAYED_NEW_OLD.index -> {
-                val episodes = realm.query(Episode::class).query("(playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED})").find()
+                val queryString = "feedId IN $0 AND (playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED})"
+                val episodes = realm.query(Episode::class).query(queryString, feedIds).find()
                 val counterMap = counterMap(episodes)
                 comparator(counterMap, dir)
             }
@@ -361,12 +390,14 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 }
             }
             FeedSortOrder.MOST_PLAYED.index -> {
-                val episodes = realm.query(Episode::class).query("playState == ${Episode.PLAYED}").find()
+                val queryString = "feedId IN $0 AND playState == ${Episode.PLAYED}"
+                val episodes = realm.query(Episode::class).query(queryString, feedIds).find()
                 val counterMap = counterMap(episodes)
                 comparator(counterMap, dir)
             }
             FeedSortOrder.LAST_UPDATED_NEW_OLD.index -> {
-                val episodes = realm.query(Episode::class).sort("pubDate", Sort.DESCENDING).find()
+                val queryString = "feedId IN $0"
+                val episodes = realm.query(Episode::class, queryString, feedIds).sort("pubDate", Sort.DESCENDING).find()
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
                 for (episode in episodes) {
                     val feedId = episode.feedId ?: continue
@@ -376,7 +407,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 comparator(counterMap, dir)
             }
             FeedSortOrder.LAST_DOWNLOAD_NEW_OLD.index -> {
-                val episodes = realm.query(Episode::class).sort("media.downloadTime", Sort.DESCENDING).find()
+                val queryString = "feedId IN $0"
+                val episodes = realm.query(Episode::class, queryString, feedIds).sort("media.downloadTime", Sort.DESCENDING).find()
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
                 for (episode in episodes) {
                     val feedId = episode.feedId ?: continue
@@ -386,8 +418,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 comparator(counterMap, dir)
             }
             FeedSortOrder.LAST_UPDATED_UNPLAYED_NEW_OLD.index -> {
-                val episodes = realm.query(Episode::class)
-                    .query("playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED}").find()
+                val queryString = "feedId IN $0 AND (playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED})"
+                val episodes = realm.query(Episode::class).query(queryString, feedIds).find()
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
                 for (episode in episodes) {
                     val feedId = episode.feedId ?: continue
@@ -397,24 +429,26 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 comparator(counterMap, dir)
             }
             FeedSortOrder.MOST_DOWNLOADED.index -> {
-                val episodes = realm.query(Episode::class).query("media.downloaded == true").find()
+                val queryString = "feedId IN $0 AND media.downloaded == true"
+                val episodes = realm.query(Episode::class).query(queryString, feedIds).find()
                 val counterMap = counterMap(episodes)
                 comparator(counterMap, dir)
             }
             FeedSortOrder.MOST_DOWNLOADED_UNPLAYED.index -> {
-                val episodes = realm.query(Episode::class)
-                    .query("(playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED}) AND media.downloaded == true").find()
+                val queryString = "feedId IN $0 AND (playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED}) AND media.downloaded == true"
+                val episodes = realm.query(Episode::class).query(queryString, feedIds).find()
                 val counterMap = counterMap(episodes)
                 comparator(counterMap, dir)
             }
             //            doing FEED_ORDER_NEW
             else -> {
-                val episodes = realm.query(Episode::class).query("playState == ${Episode.NEW}").find()
+                val queryString = "feedId IN $0 AND playState == ${Episode.NEW}"
+                val episodes = realm.query(Episode::class).query(queryString, feedIds).find()
                 val counterMap = counterMap(episodes)
                 comparator(counterMap, dir)
             }
         }
-        val feedList_ = getFeedList().toMutableList()
+        val feedList_ = getFeedList(fQueryStr).toMutableList()
         synchronized(feedList_) { feedList = feedList_.sortedWith(comparator).toMutableList() }
     }
 
@@ -903,6 +937,12 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             get() {
                 val value = appPrefs.getInt(UserPreferences.Prefs.prefDrawerFeedOrderDir.name, 0)
                 return value
+            }
+
+        var feedsFilter: String
+            get() = appPrefs.getString(UserPreferences.Prefs.prefFeedFilter.name, "")?:""
+            set(filter) {
+                appPrefs.edit().putString(UserPreferences.Prefs.prefFeedFilter.name, filter).apply()
             }
 
         fun newInstance(folderTitle: String?): SubscriptionsFragment {

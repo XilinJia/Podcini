@@ -7,6 +7,7 @@ import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
+import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink.needSynch
 import ac.mdiq.podcini.net.utils.NetworkUtils.isAllowMobileEpisodeDownload
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
@@ -83,7 +84,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 val workInfoList = future.get() // Wait for the completion of the future operation and retrieve the result
                 workInfoList.forEach { workInfo ->
                     if (workInfo.tags.contains(WORK_DATA_WAS_QUEUED)) {
-                        if (media.episode != null) Queues.removeFromQueue(null, media.episode!!)
+                        if (media.episode != null) Queues.removeFromQueue(media.episode!!)
                     }
                 }
                 WorkManager.getInstance(context).cancelAllWorkByTag(tag)
@@ -383,7 +384,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                     Log.e(TAG, "ExecutionException in MediaHandlerThread: " + e.message)
                     updatedStatus = DownloadResult(media.id, media.getEpisodeTitle(), DownloadError.ERROR_DB_ACCESS_ERROR, false, e.message?:"")
                 }
-                if (item != null) {
+                if (needSynch() && item != null) {
                     val action = EpisodeAction.Builder(item, EpisodeAction.DOWNLOAD)
                         .currentTimestamp()
                         .build()

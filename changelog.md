@@ -1,10 +1,19 @@
+# 6.1.2
+
+* fixed crash issue when setting the inclusive or exclusive filters in feed auto-download setting
+* fixed player UI not updating on change of episode
+* changed title of Queues view to a spinner for easily switching queues
+* added "Put to queue" in multi-select menu putting selected episodes to a queue, this would also remove the episodes from any previous queues.
+* added condition checks for preparing enqueuing sync actions
+* in Subscriptions view added feeds filter based on feed preferences, in the same style as episodes filter
+
 # 6.1.1
 
 * fixed player UI not updating on change of episode
 * fixed the mal-function of restoring previously backed-up OPML
 * reduced reactions to PlaybackPositionEvent
 * tuned AutoCleanup a bit
-* tuned and fixed some some issues in audo-downloaded
+* tuned and fixed some some issues in auto-downloaded
 
 # 6.1.0
 
@@ -17,7 +26,7 @@
 * skipped concurrent calls for loading data in multiple views
 * toggle "Auto backup of OPML" in Settings will restart Podcini
 * automatically restoring backup of OPML upon new install is disabled. Instead, in AddFeed view, when subscription is empty and OPML backup is available, a dialog is shown to ask about restoring.
-* added audo downloadable to episodes filter
+* added auto downloadable to episodes filter
 * added download date to episodes sorting
 * added download date to feed sorting
 * auto download algorithm is changed to individual feed based.

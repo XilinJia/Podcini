@@ -693,7 +693,7 @@ class DbWriterTest {
 //            adapter.close()
 
             runBlocking {
-                val job = removeFromQueue(null, item)
+                val job = removeFromQueue(item)
                 withTimeout(TIMEOUT*1000) { job.join() }
             }
 //            adapter = getInstance()
@@ -732,25 +732,25 @@ class DbWriterTest {
         val itemIds = toItemIds(feed.episodes).toTypedArray<Long>()
 
         runBlocking {
-            val job = removeFromQueue(null, feed.episodes[1], feed.episodes[3])
+            val job = removeFromQueue(feed.episodes[1], feed.episodes[3])
             withTimeout(TIMEOUT*1000) { job.join() }
         }
         assertQueueByItemIds("Average case - 2 items removed successfully", itemIds[0], itemIds[2])
 
         runBlocking {
-            val job = removeFromQueue(null)
+            val job = removeFromQueue()
             withTimeout(TIMEOUT*1000) { job.join() }
         }
         assertQueueByItemIds("Boundary case - no items supplied. queue should see no change", itemIds[0], itemIds[2])
 
         runBlocking {
-            val job = removeFromQueue(null, feed.episodes[0], feed.episodes[4])
+            val job = removeFromQueue( feed.episodes[0], feed.episodes[4])
             withTimeout(TIMEOUT*1000) { job.join() }
         }
         assertQueueByItemIds("Boundary case - items not in queue ignored", itemIds[2])
 
         runBlocking {
-            val job = removeFromQueue(null, feed.episodes[2])
+            val job = removeFromQueue( feed.episodes[2])
             withTimeout(TIMEOUT*1000) { job.join() }
         }
         assertQueueByItemIds("Boundary case - invalid itemIds ignored") // the queue is empty

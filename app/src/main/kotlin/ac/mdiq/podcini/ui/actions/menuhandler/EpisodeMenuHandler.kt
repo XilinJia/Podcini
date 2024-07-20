@@ -5,15 +5,15 @@ import ac.mdiq.podcini.net.sync.SynchronizationSettings.isProviderConnected
 import ac.mdiq.podcini.net.sync.SynchronizationSettings.wifiSyncEnabledKey
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
+import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink.needSynch
 import ac.mdiq.podcini.playback.base.InTheatre
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.playback.base.InTheatre.writeNoMediaPlaying
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.ACTION_SHUTDOWN_PLAYBACK_SERVICE
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
-import ac.mdiq.podcini.storage.database.Episodes.deleteMediaOfEpisode
-import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.Episodes.setFavorite
+import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.Queues.addToQueue
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueue
 import ac.mdiq.podcini.storage.model.Episode
@@ -145,7 +145,7 @@ object EpisodeMenuHandler {
                 if (selectedItem.feed?.isLocalFeed != true && (isProviderConnected || wifiSyncEnabledKey)) {
                     val media: EpisodeMedia? = selectedItem.media
                     // not all items have media, Gpodder only cares about those that do
-                    if (media != null) {
+                    if (needSynch() && media != null) {
                         val actionPlay: EpisodeAction = EpisodeAction.Builder(selectedItem, EpisodeAction.PLAY)
                             .currentTimestamp()
                             .started(media.getDuration() / 1000)
@@ -159,7 +159,7 @@ object EpisodeMenuHandler {
             R.id.mark_unread_item -> {
                 selectedItem.setPlayed(false)
                 setPlayState(Episode.UNPLAYED, false, selectedItem)
-                if (selectedItem.feed?.isLocalFeed != true && selectedItem.media != null) {
+                if (needSynch() && selectedItem.feed?.isLocalFeed != true && selectedItem.media != null) {
                     val actionNew: EpisodeAction = EpisodeAction.Builder(selectedItem, EpisodeAction.NEW)
                         .currentTimestamp()
                         .build()
@@ -167,7 +167,7 @@ object EpisodeMenuHandler {
                 }
             }
             R.id.add_to_queue_item -> addToQueue(true, selectedItem)
-            R.id.remove_from_queue_item -> removeFromQueue(context, selectedItem)
+            R.id.remove_from_queue_item -> removeFromQueue(selectedItem)
             R.id.add_to_favorites_item -> setFavorite(selectedItem, true)
             R.id.remove_from_favorites_item -> setFavorite(selectedItem, false)
             R.id.reset_position -> {

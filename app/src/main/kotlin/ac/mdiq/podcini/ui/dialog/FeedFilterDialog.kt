@@ -3,9 +3,12 @@ package ac.mdiq.podcini.ui.dialog
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.FilterDialogBinding
 import ac.mdiq.podcini.databinding.FilterDialogRowBinding
-import ac.mdiq.podcini.storage.model.EpisodeFilter
+import ac.mdiq.podcini.storage.model.FeedFilter
 import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion.TAG
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion.feedsFilter
 import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
@@ -19,13 +22,14 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButtonToggleGroup
+import org.apache.commons.lang3.StringUtils
 
-abstract class EpisodeFilterDialog : BottomSheetDialogFragment() {
+class FeedFilterDialog : BottomSheetDialogFragment() {
     private lateinit var rows: LinearLayout
     private var _binding: FilterDialogBinding? = null
     private val binding get() = _binding!!
 
-    var filter: EpisodeFilter? = null
+    var filter: FeedFilter? = null
     private val buttonMap: MutableMap<String, Button> = mutableMapOf()
 
     private val newFilterValues: Set<String>
@@ -45,10 +49,10 @@ abstract class EpisodeFilterDialog : BottomSheetDialogFragment() {
         val layout = inflater.inflate(R.layout.filter_dialog, null, false)
         _binding = FilterDialogBinding.bind(layout)
         rows = binding.filterRows
-        Logd("EpisodeFilterDialog", "fragment onCreateView")
+        Logd("FeedFilterDialog", "fragment onCreateView")
 
         //add filter rows
-        for (item in FeedItemFilterGroup.entries) {
+        for (item in FeedFilterGroup.entries) {
 //            Logd("EpisodeFilterDialog", "FeedItemFilterGroup: ${item.values[0].filterId} ${item.values[1].filterId}")
             val rBinding = FilterDialogRowBinding.inflate(inflater)
 //            rowBinding.root.addOnButtonCheckedListener { _: MaterialButtonToggleGroup?, _: Int, _: Boolean ->
@@ -114,20 +118,30 @@ abstract class EpisodeFilterDialog : BottomSheetDialogFragment() {
         }
     }
 
-    abstract fun onFilterChanged(newFilterValues: Set<String>)
+    fun onFilterChanged(newFilterValues: Set<String>) {
+        feedsFilter = StringUtils.join(newFilterValues, ",")
+        Logd(TAG, "onFilterChanged: $feedsFilter")
+        EventFlow.postEvent(FlowEvent.FeedsFilterEvent(newFilterValues))
+    }
 
-    enum class FeedItemFilterGroup(vararg values: ItemProperties) {
-        PLAYED(ItemProperties(R.string.hide_played_episodes_label, EpisodeFilter.States.played.name), ItemProperties(R.string.not_played, EpisodeFilter.States.unplayed.name)),
-        PAUSED(ItemProperties(R.string.hide_paused_episodes_label, EpisodeFilter.States.paused.name), ItemProperties(R.string.not_paused, EpisodeFilter.States.not_paused.name)),
-        FAVORITE(ItemProperties(R.string.hide_is_favorite_label, EpisodeFilter.States.is_favorite.name), ItemProperties(R.string.not_favorite, EpisodeFilter.States.not_favorite.name)),
-        MEDIA(ItemProperties(R.string.has_media, EpisodeFilter.States.has_media.name), ItemProperties(R.string.no_media, EpisodeFilter.States.no_media.name)),
-        QUEUED(ItemProperties(R.string.queued_label, EpisodeFilter.States.queued.name), ItemProperties(R.string.not_queued_label, EpisodeFilter.States.not_queued.name)),
-        DOWNLOADED(ItemProperties(R.string.downloaded_label, EpisodeFilter.States.downloaded.name), ItemProperties(R.string.not_downloaded_label, EpisodeFilter.States.not_downloaded.name)),
-        AUTO_DOWNLOADABLE(ItemProperties(R.string.auto_downloadable_label, EpisodeFilter.States.auto_downloadable.name), ItemProperties(R.string.not_auto_downloadable_label, EpisodeFilter.States.not_auto_downloadable.name));
+    enum class FeedFilterGroup(vararg values: ItemProperties) {
+        KEEP_UPDATED(ItemProperties(R.string.keep_updated, FeedFilter.States.keepUpdated.name), ItemProperties(R.string.not_keep_updated, FeedFilter.States.not_keepUpdated.name)),
+        PLAY_SPEED(ItemProperties(R.string.global_speed, FeedFilter.States.global_playSpeed.name), ItemProperties(R.string.custom_speed, FeedFilter.States.custom_playSpeed.name)),
+        SKIPS(ItemProperties(R.string.has_skips, FeedFilter.States.has_skips.name), ItemProperties(R.string.no_skips, FeedFilter.States.no_skips.name)),
+        AUTO_DELETE(ItemProperties(R.string.always_auto_delete, FeedFilter.States.always_auto_delete.name), ItemProperties(R.string.never_auto_delete, FeedFilter.States.never_auto_delete.name)),
+        AUTO_DOWNLOAD(ItemProperties(R.string.auto_download, FeedFilter.States.autoDownload.name), ItemProperties(R.string.not_auto_download, FeedFilter.States.not_autoDownload.name));
 
         @JvmField
         val values: Array<ItemProperties> = arrayOf(*values)
 
         class ItemProperties(@JvmField val displayName: Int, @JvmField val filterId: String)
+    }
+
+    companion object {
+        fun newInstance(filter: FeedFilter?): FeedFilterDialog {
+            val dialog = FeedFilterDialog()
+            dialog.filter = filter
+            return dialog
+        }
     }
 }

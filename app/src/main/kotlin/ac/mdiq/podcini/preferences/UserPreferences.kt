@@ -43,6 +43,8 @@ object UserPreferences {
         prefDefaultPage,
         prefBackButtonOpensDrawer,
 
+        prefFeedFilter,
+
         prefQueueKeepSorted,
         prefQueueKeepSortedOrder,
         prefDownloadSortedOrder,

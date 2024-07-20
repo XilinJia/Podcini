@@ -99,11 +99,11 @@ class FeedAutoDownloadFilter(val includeFilterRaw: String? = "", val excludeFilt
     }
 
     fun hasIncludeFilter(): Boolean {
-        return includeFilterRaw!!.isNotEmpty()
+        return !includeFilterRaw.isNullOrEmpty()
     }
 
     fun hasExcludeFilter(): Boolean {
-        return excludeFilterRaw!!.isNotEmpty()
+        return !excludeFilterRaw.isNullOrEmpty()
     }
 
     fun hasMinimalDurationFilter(): Boolean {

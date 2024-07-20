@@ -37,7 +37,7 @@ class RemoveFromQueueSwipeAction : SwipeAction {
 
     @OptIn(UnstableApi::class) override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
         val position: Int = curQueue.episodes.indexOf(item)
-        removeFromQueue(fragment.requireActivity(), item)
+        removeFromQueue(item)
         if (willRemove(filter, item)) {
             (fragment.requireActivity() as MainActivity).showSnackbarAbovePlayer(fragment.resources.getQuantityString(R.plurals.removed_from_queue_batch_label, 1, 1), Snackbar.LENGTH_LONG)
                 .setAction(fragment.getString(R.string.undo)) {

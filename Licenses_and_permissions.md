@@ -24,8 +24,6 @@ Apache License 2.0
 
 [com.squareup.okhttp3](https://github.com/square/okhttp/blob/master/LICENSE.txt) Apache License 2.0
 
-[//]: # ([io.reactivex.rxjava2]&#40;https://github.com/ReactiveX/RxJava/blob/3.x/LICENSE&#41; Apache License 2.0)
-
 [com.mikepenz:iconics-core](https://github.com/mikepenz/Android-Iconics/blob/develop/LICENSE) Apache License 2.0
 
 [com.leinardi.android](https://github.com/leinardi/FloatingActionButtonSpeedDial/blob/release/LICENSE) Apache License 2.0

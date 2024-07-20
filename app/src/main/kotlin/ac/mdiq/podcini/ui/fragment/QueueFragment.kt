@@ -19,10 +19,8 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
-import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.EpisodeFilter
-import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.model.EpisodeSortOrder
+import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
+import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectHandler
 import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
@@ -49,7 +47,10 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.CheckBox
+import android.widget.Spinner
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -110,6 +111,23 @@ import java.util.*
         }
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
+
+        val queues = realm.query(PlayQueue::class).find()
+        val queueNames = queues.map { it.name }.toTypedArray()
+        val spinnerLayout = inflater.inflate(R.layout.queue_title_spinner, null)
+        val spinner = spinnerLayout.findViewById<Spinner>(R.id.queue_spinner)
+        toolbar.addView(spinnerLayout)
+        val sAdaptor = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, queueNames)
+        sAdaptor.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinner.adapter = sAdaptor
+        spinner.setSelection(sAdaptor.getPosition(curQueue.name))
+        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                curQueue = unmanaged(upsertBlk(queues[position]) { it.updated })
+                loadItems(true)
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
 
         (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
         toolbar.inflateMenu(R.menu.queue)
@@ -324,7 +342,7 @@ import java.util.*
         for (downloadUrl in event.urls) {
             val pos: Int = EpisodeUtil.indexOfItemWithDownloadUrl(queueItems.toList(), downloadUrl)
             if (pos >= 0) {
-                val item = queueItems[pos]
+                val item = unmanaged(queueItems[pos])
 //                item.media?.downloaded = true
                 item.media?.setIsDownloaded()
                 adapter?.notifyItemChangedCompat(pos)
@@ -535,7 +553,7 @@ import java.util.*
             info += DurationConverter.getDurationStringLocalized(requireActivity(), timeLeft)
         }
         binding.infoBar.text = info
-        toolbar.title = "${getString(R.string.queue_label)}: ${curQueue.name}"
+//        toolbar.title = "${getString(R.string.queue_label)}: ${curQueue.name}"
     }
 
     private var loadItemsRunning = false

@@ -1,0 +1,9 @@
+ 
+Version 6.1.2 brings several changes:
+
+* fixed crash issue when setting the inclusive or exclusive filters in feed auto-download setting
+* fixed player UI not updating on change of episode
+* changed title of Queues view to a spinner for easily switching queues
+* added "Put to queue" in multi-select menu putting selected episodes to a queue, this would also remove the episodes from any previous queues.
+* added condition checks for preparing enqueuing sync actions
+* in Subscriptions view added feeds filter based on feed preferences, in the same style as episodes filter

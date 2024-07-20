@@ -15,7 +15,6 @@ import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
-import android.content.Context
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
@@ -28,6 +27,60 @@ object Queues {
     enum class EnqueueLocation {
         BACK, FRONT, AFTER_CURRENTLY_PLAYING, RANDOM
     }
+
+    var isQueueLocked: Boolean
+        get() = appPrefs.getBoolean(UserPreferences.Prefs.prefQueueLocked.name, false)
+        set(locked) {
+            appPrefs.edit().putBoolean(UserPreferences.Prefs.prefQueueLocked.name, locked).apply()
+        }
+
+    var isQueueKeepSorted: Boolean
+        /**
+         * Returns if the queue is in keep sorted mode.
+         * @see .queueKeepSortedOrder
+         */
+        get() = appPrefs.getBoolean(UserPreferences.Prefs.prefQueueKeepSorted.name, false)
+        /**
+         * Enables/disables the keep sorted mode of the queue.
+         * @see .queueKeepSortedOrder
+         */
+        set(keepSorted) {
+            appPrefs.edit().putBoolean(UserPreferences.Prefs.prefQueueKeepSorted.name, keepSorted).apply()
+        }
+
+    var queueKeepSortedOrder: EpisodeSortOrder?
+        /**
+         * Returns the sort order for the queue keep sorted mode.
+         * Note: This value is stored independently from the keep sorted state.
+         * @see .isQueueKeepSorted
+         */
+        get() {
+            val sortOrderStr = appPrefs.getString(UserPreferences.Prefs.prefQueueKeepSortedOrder.name, "use-default")
+            return EpisodeSortOrder.parseWithDefault(sortOrderStr, EpisodeSortOrder.DATE_NEW_OLD)
+        }
+        /**
+         * Sets the sort order for the queue keep sorted mode.
+         * @see .setQueueKeepSorted
+         */
+        set(sortOrder) {
+            if (sortOrder == null) return
+            appPrefs.edit().putString(UserPreferences.Prefs.prefQueueKeepSortedOrder.name, sortOrder.name).apply()
+        }
+
+    var enqueueLocation: EnqueueLocation
+        get() {
+            val valStr = appPrefs.getString(UserPreferences.Prefs.prefEnqueueLocation.name, EnqueueLocation.BACK.name)
+            try {
+                return EnqueueLocation.valueOf(valStr!!)
+            } catch (t: Throwable) {
+                // should never happen but just in case
+                Log.e(TAG, "getEnqueueLocation: invalid value '$valStr' Use default.", t)
+                return EnqueueLocation.BACK
+            }
+        }
+        set(location) {
+            appPrefs.edit().putString(UserPreferences.Prefs.prefEnqueueLocation.name, location.name).apply()
+        }
 
     fun getInQueueEpisodeIds(): Set<Long> {
         Logd(TAG, "getQueueIDList() called")
@@ -89,24 +142,25 @@ object Queues {
         }
     }
 
-    suspend fun addToQueueSync(markAsUnplayed: Boolean, episode: Episode) {
+    suspend fun addToQueueSync(markAsUnplayed: Boolean, episode: Episode, queue_: PlayQueue? = null) {
         Logd(TAG, "addToQueueSync( ... ) called")
 
+        val queue = queue_ ?: curQueue
         val currentlyPlaying = curMedia
         val positionCalculator = EnqueuePositionCalculator(enqueueLocation)
-        var insertPosition = positionCalculator.calcPosition(curQueue.episodes, currentlyPlaying)
+        var insertPosition = positionCalculator.calcPosition(queue.episodes, currentlyPlaying)
 
-        if (curQueue.episodeIds.contains(episode.id)) return
+        if (queue.episodeIds.contains(episode.id)) return
 
-        curQueue.episodeIds.add(insertPosition, episode.id)
-        curQueue.episodes.add(insertPosition, episode)
+        queue.episodeIds.add(insertPosition, episode.id)
+        queue.episodes.add(insertPosition, episode)
         insertPosition++
-        curQueue.update()
-        upsert(curQueue) {}
+        queue.update()
+        upsert(queue) {}
 
         if (markAsUnplayed && episode.isNew) setPlayState(Episode.UNPLAYED, false, episode)
 
-        EventFlow.postEvent(FlowEvent.QueueEvent.added(episode, insertPosition))
+        if (queue_?.id == curQueue.id) EventFlow.postEvent(FlowEvent.QueueEvent.added(episode, insertPosition))
 //                if (performAutoDownload) autodownloadEpisodeMedia(context)
     }
 
@@ -147,13 +201,11 @@ object Queues {
 
     /**
      * Removes a Episode object from the queue.
-     * @param context             A context that is used for opening a database connection.
-     *                              perform autodownloadEpisodeMedia only if context is not null
      * @param episodes                FeedItems that should be removed.
      */
     @OptIn(UnstableApi::class) @JvmStatic
-    fun removeFromQueue(context: Context?, vararg episodes: Episode) : Job {
-        return runOnIOScope { removeFromQueueSync(curQueue, context, *episodes) }
+    fun removeFromQueue(vararg episodes: Episode) : Job {
+        return runOnIOScope { removeFromQueueSync(curQueue, *episodes) }
     }
 
     @OptIn(UnstableApi::class)
@@ -161,22 +213,21 @@ object Queues {
         Logd(TAG, "removeFromAllQueues called ")
         val queues = realm.query(PlayQueue::class).find()
         for (q in queues) {
-            if (q.id != curQueue.id) removeFromQueueSync(q, null, *episodes)
+            if (q.id != curQueue.id) removeFromQueueSync(q, *episodes)
         }
 //        ensure curQueue is last updated
-        removeFromQueueSync(curQueue, null, *episodes)
+        removeFromQueueSync(curQueue, *episodes)
     }
 
     /**
      * @param queue_    if null, use curQueue
-     * @param context   perform autodownloadEpisodeMedia only if context is not null and queue_ is curQueue
      */
     @UnstableApi
-    internal fun removeFromQueueSync(queue_: PlayQueue?, context: Context?, vararg episodes: Episode) {
+    internal fun removeFromQueueSync(queue_: PlayQueue?, vararg episodes: Episode) {
         Logd(TAG, "removeFromQueueSync called ")
         if (episodes.isEmpty()) return
 
-        val queue = queue_ ?: curQueue
+        var queue = queue_ ?: curQueue
         val events: MutableList<FlowEvent.QueueEvent> = ArrayList()
         val pos: MutableList<Int> = mutableListOf()
         val qItems = queue.episodes.toMutableList()
@@ -200,9 +251,6 @@ object Queues {
             }
             for (event in events) EventFlow.postEvent(event)
         } else Logd(TAG, "Queue was not modified by call to removeQueueItem")
-
-//        TODO: what's this for?
-//        if (queue.id == curQueue.id && context != null) autodownloadEpisodeMedia(context)
     }
 
     suspend fun removeFromAllQueuesQuiet(episodeIds: List<Long>) {
@@ -214,10 +262,11 @@ object Queues {
             eidsInQueues = q.episodeIds.intersect(episodeIds.toSet()).toMutableSet()
             if (eidsInQueues.isNotEmpty()) {
                 val qeids = q.episodeIds.minus(eidsInQueues)
-                q.episodeIds.clear()
-                q.episodeIds.addAll(qeids)
-                q.update()
-                upsert(q) {}
+                upsert(q) {
+                    it.episodeIds.clear()
+                    it.episodeIds.addAll(qeids)
+                    it.update()
+                }
             }
         }
         //        ensure curQueue is last updated
@@ -225,10 +274,11 @@ object Queues {
         eidsInQueues = q.episodeIds.intersect(episodeIds.toSet()).toMutableSet()
         if (eidsInQueues.isNotEmpty()) {
             val qeids = q.episodeIds.minus(eidsInQueues)
-            q.episodeIds.clear()
-            q.episodeIds.addAll(qeids)
-            q.update()
-            upsert(q) {}
+            upsert(q) {
+                it.episodeIds.clear()
+                it.episodeIds.addAll(qeids)
+                it.update()
+            }
         }
     }
 
@@ -269,60 +319,6 @@ object Queues {
         for (e in curQueue.episodes) curQueue.episodeIds.add(e.id)
         upsertBlk(curQueue) {}
     }
-
-    var isQueueLocked: Boolean
-        get() = appPrefs.getBoolean(UserPreferences.Prefs.prefQueueLocked.name, false)
-        set(locked) {
-            appPrefs.edit().putBoolean(UserPreferences.Prefs.prefQueueLocked.name, locked).apply()
-        }
-
-    var isQueueKeepSorted: Boolean
-        /**
-         * Returns if the queue is in keep sorted mode.
-         * @see .queueKeepSortedOrder
-         */
-        get() = appPrefs.getBoolean(UserPreferences.Prefs.prefQueueKeepSorted.name, false)
-        /**
-         * Enables/disables the keep sorted mode of the queue.
-         * @see .queueKeepSortedOrder
-         */
-        set(keepSorted) {
-            appPrefs.edit().putBoolean(UserPreferences.Prefs.prefQueueKeepSorted.name, keepSorted).apply()
-        }
-
-    var queueKeepSortedOrder: EpisodeSortOrder?
-        /**
-         * Returns the sort order for the queue keep sorted mode.
-         * Note: This value is stored independently from the keep sorted state.
-         * @see .isQueueKeepSorted
-         */
-        get() {
-            val sortOrderStr = appPrefs.getString(UserPreferences.Prefs.prefQueueKeepSortedOrder.name, "use-default")
-            return EpisodeSortOrder.parseWithDefault(sortOrderStr, EpisodeSortOrder.DATE_NEW_OLD)
-        }
-        /**
-         * Sets the sort order for the queue keep sorted mode.
-         * @see .setQueueKeepSorted
-         */
-        set(sortOrder) {
-            if (sortOrder == null) return
-            appPrefs.edit().putString(UserPreferences.Prefs.prefQueueKeepSortedOrder.name, sortOrder.name).apply()
-        }
-
-    var enqueueLocation: EnqueueLocation
-        get() {
-            val valStr = appPrefs.getString(UserPreferences.Prefs.prefEnqueueLocation.name, EnqueueLocation.BACK.name)
-            try {
-                return EnqueueLocation.valueOf(valStr!!)
-            } catch (t: Throwable) {
-                // should never happen but just in case
-                Log.e(TAG, "getEnqueueLocation: invalid value '$valStr' Use default.", t)
-                return EnqueueLocation.BACK
-            }
-        }
-        set(location) {
-            appPrefs.edit().putString(UserPreferences.Prefs.prefEnqueueLocation.name, location.name).apply()
-        }
 
     class EnqueuePositionCalculator(private val enqueueLocation: EnqueueLocation) {
         /**

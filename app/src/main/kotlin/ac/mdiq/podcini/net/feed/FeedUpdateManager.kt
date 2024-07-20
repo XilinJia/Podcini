@@ -356,15 +356,9 @@ object FeedUpdateManager {
                     private const val serialVersionUID = 1L
                 }
             }
-
-            companion object {
-                private val TAG: String = FeedParserTask::class.simpleName ?: "Anonymous"
-            }
         }
 
         class FeedSyncTask(private val context: Context, request: DownloadRequest) {
-//            var savedFeed: Feed? = null
-//                private set
             private val task = FeedParserTask(request)
             private var feedHandlerResult: FeedHandlerResult? = null
             val downloadStatus: DownloadResult
@@ -378,10 +372,6 @@ object FeedUpdateManager {
                 Feeds.updateFeed(context, feedHandlerResult!!.feed, false)
                 return true
             }
-        }
-
-        companion object {
-            private val TAG: String = FeedUpdateWorker::class.simpleName ?: "Anonymous"
         }
     }
 }

@@ -11,6 +11,10 @@ object SynchronizationQueueSink {
     // To avoid a dependency loop of every class to SyncService, and from SyncService back to every class.
     private var serviceStarterImpl = Runnable {}
 
+    fun needSynch() : Boolean {
+        return isProviderConnected
+    }
+
     fun setServiceStarterImpl(serviceStarter: Runnable) {
         serviceStarterImpl = serviceStarter
     }
@@ -57,9 +61,9 @@ object SynchronizationQueueSink {
 
     fun enqueueEpisodePlayedIfSyncActive(context: Context, media: EpisodeMedia, completed: Boolean) {
         if (!isProviderConnected) return
+
         if (media.episode?.feed == null || media.episode!!.feed!!.isLocalFeed) return
         if (media.startPosition < 0 || (!completed && media.startPosition >= media.getPosition())) return
-
         val action = EpisodeAction.Builder(media.episode!!, EpisodeAction.PLAY)
             .currentTimestamp()
             .started(media.startPosition / 1000)

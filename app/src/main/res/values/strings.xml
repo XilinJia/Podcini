@@ -146,6 +146,8 @@
     <string name="feed_auto_download_newer">Newest unplayed</string>
     <string name="feed_auto_download_older">Oldest unplayed</string>
 
+    <string name="put_to_queue_label">Put to queue</string>
+
     <string name="feed_new_episodes_action_nothing">Nothing</string>
     <string name="episode_cleanup_never">Never</string>
     <string name="episode_cleanup_except_favorite_removal">When not favorited</string>
@@ -853,6 +855,16 @@
     <string name="hide_played_episodes_label">Played</string>
     <string name="not_played">Not played</string>
     <string name="filename">File name</string>
+
+    <string name="not_keep_updated">Not keep updated</string>
+    <string name="global_speed">Global play speed</string>
+    <string name="custom_speed">Custom play speed</string>
+    <string name="has_skips">Skips set</string>
+    <string name="no_skips">No Skips set</string>
+    <string name="always_auto_delete">Always auto delete</string>
+    <string name="never_auto_delete">Never auto delete</string>
+    <string name="auto_download">Auto download enabled</string>
+    <string name="not_auto_download">Auto download disabled</string>
 
     <!-- Share episode dialog -->
     <string name="share_playback_position_dialog_label">Include playback position</string>

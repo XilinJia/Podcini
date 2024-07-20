@@ -1,19 +1,36 @@
 package ac.mdiq.podcini.ui.actions
 
-import ac.mdiq.podcini.ui.activity.MainActivity
-import android.util.Log
-import androidx.annotation.PluralsRes
-import com.google.android.material.snackbar.Snackbar
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.databinding.SwitchQueueDialogBinding
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.storage.database.Episodes
-import ac.mdiq.podcini.storage.database.Episodes.deleteMediaOfEpisode
 import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.Queues
+import ac.mdiq.podcini.storage.database.Queues.addToQueueSync
+import ac.mdiq.podcini.storage.database.Queues.removeFromAllQueuesQuiet
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueue
+import ac.mdiq.podcini.storage.database.RealmDB.realm
+import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
+import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.storage.model.PlayQueue
+import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.utils.LocalDeleteModal
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
+import android.app.Activity
+import android.content.DialogInterface
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import androidx.annotation.PluralsRes
 import androidx.media3.common.util.UnstableApi
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.runBlocking
+import java.lang.ref.WeakReference
 
 
 @UnstableApi
@@ -26,6 +43,7 @@ class EpisodeMultiSelectHandler(private val activity: MainActivity, private val 
             R.id.add_to_favorite_batch -> markFavorite(items, true)
             R.id.remove_favorite_batch -> markFavorite(items, false)
             R.id.add_to_queue_batch -> queueChecked(items)
+            R.id.put_to_queue_batch -> putToQueue(items)
             R.id.remove_from_queue_batch -> removeFromQueueChecked(items)
             R.id.mark_read_batch -> {
                 setPlayState(Episode.PLAYED, false, *items.toTypedArray())
@@ -53,7 +71,7 @@ class EpisodeMultiSelectHandler(private val activity: MainActivity, private val 
 
     private fun removeFromQueueChecked(items: List<Episode>) {
         val checkedIds = getSelectedIds(items)
-        removeFromQueue(activity, *items.toTypedArray())
+        removeFromQueue(*items.toTypedArray())
         showMessage(R.plurals.removed_from_queue_batch_label, checkedIds.size)
     }
 
@@ -94,6 +112,59 @@ class EpisodeMultiSelectHandler(private val activity: MainActivity, private val 
             checkedIds.add(items[i].id)
         }
         return checkedIds
+    }
+
+    private fun putToQueue(items: List<Episode>) {
+        PutToQueueDialog(activity as MainActivity, items).show()
+    }
+
+    class PutToQueueDialog(activity: Activity, val items: List<Episode>) {
+        private val activityRef: WeakReference<Activity> = WeakReference(activity)
+
+        fun show() {
+            val activity = activityRef.get() ?: return
+            val binding = SwitchQueueDialogBinding.inflate(LayoutInflater.from(activity))
+            val queues = realm.query(PlayQueue::class).find()
+            val queueNames = queues.map { it.name }.toTypedArray()
+            val adaptor = ArrayAdapter(activity, android.R.layout.simple_spinner_item, queueNames)
+            adaptor.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            val catSpinner = binding.queueSpinner
+            catSpinner.setAdapter(adaptor)
+            catSpinner.setSelection(adaptor.getPosition(curQueue.name))
+            var toQueue: PlayQueue = curQueue
+            catSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                    toQueue = unmanaged(queues[position])
+                }
+                override fun onNothingSelected(parent: AdapterView<*>?) {}
+            }
+            MaterialAlertDialogBuilder(activity)
+                .setView(binding.root)
+                .setTitle(R.string.switch_queue_label)
+                .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
+                    val queues = realm.query(PlayQueue::class).find()
+                    val toRemove = mutableSetOf<Long>()
+                    val toRemoveCur = mutableListOf<Episode>()
+                    items.forEach { e ->
+                        if (curQueue.isInQueue(e)) toRemoveCur.add(e)
+                    }
+                    items.forEach { e ->
+                        for (q in queues) {
+                            if (q.isInQueue(e)) {
+                                toRemove.add(e.id)
+                                break
+                            }
+                        }
+                    }
+                    if (toRemove.isNotEmpty()) runBlocking { removeFromAllQueuesQuiet(toRemove.toList()) }
+                    if (toRemoveCur.isNotEmpty()) EventFlow.postEvent(FlowEvent.QueueEvent.removed(toRemoveCur))
+                    items.forEach { e ->
+                        runBlocking { addToQueueSync(false, e, toQueue) }
+                    }
+                }
+                .setNegativeButton(R.string.cancel_label, null)
+                .show()
+        }
     }
 
     companion object {

@@ -155,12 +155,12 @@ object Queues {
         queue.episodeIds.add(insertPosition, episode.id)
         queue.episodes.add(insertPosition, episode)
         insertPosition++
-        queue.update()
+        if (queue.id == curQueue.id) queue.update()
         upsert(queue) {}
 
         if (markAsUnplayed && episode.isNew) setPlayState(Episode.UNPLAYED, false, episode)
 
-        if (queue_?.id == curQueue.id) EventFlow.postEvent(FlowEvent.QueueEvent.added(episode, insertPosition))
+        if (queue.id == curQueue.id) EventFlow.postEvent(FlowEvent.QueueEvent.added(episode, insertPosition))
 //                if (performAutoDownload) autodownloadEpisodeMedia(context)
     }
 

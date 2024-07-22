@@ -67,6 +67,10 @@
             android:title="@string/pref_episode_cache_title"
             android:summary="@string/pref_episode_cache_summary"
             android:entryValues="@array/feed_episode_cache_size_values"/>
+        <SwitchPreferenceCompat
+            android:key="countingPlayed"
+            android:summary="@string/pref_auto_download_counting_played_summary"
+            android:title="@string/pref_auto_download_counting_played_title" />
         <Preference
             android:key="episodeInclusiveFilter"
             android:summary="@string/episode_filters_description"

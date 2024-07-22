@@ -1,3 +1,16 @@
+# 6.1.3
+
+* added feed setting in the header of FeedInfo view
+* in all episodes list views, click on an episode image brings up the FeedInfo view
+* added countingPlayed for auto download in feed setting, when set to false, downloaded episodes that have been played are not counted as downloaded to the limit of auto-download
+* fixed possible mal-function of feed sorting
+* improved feed sorting efficiency
+* improved feed update efficiency
+* in Subscriptions view added sorting info on every feed (List Layout only)
+* "Put to queue" text changed to "Put in queue"
+* in dialogs "Put in queue" and "Switch queue" the spinner is changed to lisst of radio buttons
+* likely fixed hang when switching queue sometimes
+
 # 6.1.2
 
 * fixed crash issue when setting the inclusive or exclusive filters in feed auto-download setting

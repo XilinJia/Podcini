@@ -51,7 +51,7 @@ class Episode : RealmObject {
     @Ignore
     var feed: Feed? = null
         get() {
-            if (field == null && feedId != null) field = getFeed(feedId!!, fromDB = true)
+            if (field == null && feedId != null) field = getFeed(feedId!!)
             return field
         }
 

@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.ui.actions
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.SwitchQueueDialogBinding
+import ac.mdiq.podcini.databinding.SelectQueueDialogBinding
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.storage.database.Episodes
@@ -22,9 +22,7 @@ import android.app.Activity
 import android.content.DialogInterface
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
+import android.widget.RadioButton
 import androidx.annotation.PluralsRes
 import androidx.media3.common.util.UnstableApi
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -43,7 +41,7 @@ class EpisodeMultiSelectHandler(private val activity: MainActivity, private val 
             R.id.add_to_favorite_batch -> markFavorite(items, true)
             R.id.remove_favorite_batch -> markFavorite(items, false)
             R.id.add_to_queue_batch -> queueChecked(items)
-            R.id.put_to_queue_batch -> putToQueue(items)
+            R.id.put_in_queue_batch -> PutToQueueDialog(activity, items).show()
             R.id.remove_from_queue_batch -> removeFromQueueChecked(items)
             R.id.mark_read_batch -> {
                 setPlayState(Episode.PLAYED, false, *items.toTypedArray())
@@ -114,33 +112,29 @@ class EpisodeMultiSelectHandler(private val activity: MainActivity, private val 
         return checkedIds
     }
 
-    private fun putToQueue(items: List<Episode>) {
-        PutToQueueDialog(activity as MainActivity, items).show()
-    }
-
     class PutToQueueDialog(activity: Activity, val items: List<Episode>) {
         private val activityRef: WeakReference<Activity> = WeakReference(activity)
 
         fun show() {
             val activity = activityRef.get() ?: return
-            val binding = SwitchQueueDialogBinding.inflate(LayoutInflater.from(activity))
+            val binding = SelectQueueDialogBinding.inflate(LayoutInflater.from(activity))
             val queues = realm.query(PlayQueue::class).find()
-            val queueNames = queues.map { it.name }.toTypedArray()
-            val adaptor = ArrayAdapter(activity, android.R.layout.simple_spinner_item, queueNames)
-            adaptor.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            val catSpinner = binding.queueSpinner
-            catSpinner.setAdapter(adaptor)
-            catSpinner.setSelection(adaptor.getPosition(curQueue.name))
+            for (i in queues.indices) {
+                val radioButton = RadioButton(activity)
+                radioButton.text = queues[i].name
+                radioButton.textSize = 20f
+                radioButton.tag = i
+                binding.radioGroup.addView(radioButton)
+            }
             var toQueue: PlayQueue = curQueue
-            catSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                    toQueue = unmanaged(queues[position])
-                }
-                override fun onNothingSelected(parent: AdapterView<*>?) {}
+            binding.radioGroup.setOnCheckedChangeListener { group, checkedId ->
+                val radioButton = group.findViewById<RadioButton>(checkedId)
+                val selectedIndex = radioButton.tag as Int
+                toQueue = unmanaged(queues[selectedIndex])
             }
             MaterialAlertDialogBuilder(activity)
                 .setView(binding.root)
-                .setTitle(R.string.switch_queue_label)
+                .setTitle(R.string.put_in_queue_label)
                 .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
                     val queues = realm.query(PlayQueue::class).find()
                     val toRemove = mutableSetOf<Long>()

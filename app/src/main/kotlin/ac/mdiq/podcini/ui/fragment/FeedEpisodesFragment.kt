@@ -336,7 +336,7 @@ import java.util.concurrent.Semaphore
         var i = 0
         val size: Int = event.episodes.size
         while (i < size) {
-            val item = event.episodes[i]
+            val item = event.episodes[i++]
             if (item.feedId != feed!!.id) continue
             val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
             if (pos >= 0) {
@@ -344,7 +344,6 @@ import java.util.concurrent.Semaphore
                 episodes[pos] = item
                 adapter.notifyItemChangedCompat(pos)
             }
-            i++
         }
     }
 
@@ -353,16 +352,10 @@ import java.util.concurrent.Semaphore
         var i = 0
         val size: Int = event.episodes.size
         while (i < size) {
-            val item = event.episodes[i]
+            val item = event.episodes[i++]
             if (item.feedId != feed!!.id) continue
-            val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
-            if (pos >= 0) {
-//                episodes[pos] = item
-                adapter.notifyItemChangedCompat(pos)
-//                episodes[pos].playState = item.playState
-//                adapter.notifyItemChangedCompat(pos)
-            }
-            i++
+            adapter.notifyDataSetChanged()
+            break
         }
     }
 
@@ -396,7 +389,9 @@ import java.util.concurrent.Semaphore
         val item = event.episode
         val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
         if (pos >= 0) {
-            episodes[pos] = item
+            episodes[pos] = unmanaged(episodes[pos])
+            episodes[pos].isFavorite = item.isFavorite
+//            episodes[pos] = item
             adapter.notifyItemChangedCompat(pos)
         }
     }
@@ -626,7 +621,7 @@ import java.util.concurrent.Semaphore
             lifecycleScope.launch {
                 try {
                     feed = withContext(Dispatchers.IO) {
-                        val feed_ = getFeed(feedID, fromDB = true)
+                        val feed_ = getFeed(feedID)
                         if (feed_ != null) {
                             Logd(TAG, "loadItems feed_.episodes.size: ${feed_.episodes.size}")
                             episodes.clear()

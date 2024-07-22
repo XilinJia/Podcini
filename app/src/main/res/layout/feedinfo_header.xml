@@ -36,6 +36,21 @@
                 android:text="@string/episodes_label"/>
 
             <View
+                android:layout_width="15dp"
+                android:layout_height="match_parent"/>
+
+            <ImageButton
+                android:id="@+id/butShowSettings"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackground"
+                android:contentDescription="@string/show_feed_settings_label"
+                android:scaleType="fitXY"
+                android:padding="3dp"
+                app:srcCompat="@drawable/ic_settings_white"
+                tools:visibility="visible" />
+
+            <View
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="0.3"/>

@@ -332,10 +332,9 @@ object FeedUpdateManager {
                 if (isSuccessful) {
                     downloadStatus = DownloadResult(feed.id, feed.getTextIdentifier()?:"", DownloadError.SUCCESS, isSuccessful, reasonDetailed?:"")
                     return result
-                } else {
-                    downloadStatus = DownloadResult(feed.id, feed.getTextIdentifier()?:"", reason?: DownloadError.ERROR_NOT_FOUND, isSuccessful, reasonDetailed?:"")
-                    return null
                 }
+                downloadStatus = DownloadResult(feed.id, feed.getTextIdentifier()?:"", reason?: DownloadError.ERROR_NOT_FOUND, isSuccessful, reasonDetailed?:"")
+                return null
             }
             /**
              * Checks if the feed was parsed correctly.

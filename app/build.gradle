@@ -126,8 +126,8 @@ android {
         buildConfig true
     }
     defaultConfig {
-        versionCode 3020216
-        versionName "6.1.2"
+        versionCode 3020217
+        versionName "6.1.3"
 
         applicationId "ac.mdiq.podcini.R"
         def commit = ""
@@ -244,6 +244,8 @@ dependencies {
     implementation 'com.github.mfietz:fyydlin:v0.5.0'
 
     implementation "net.dankito.readability4j:readability4j:1.0.8"
+
+//    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.14'
 
     // Non-free dependencies:
     playImplementation 'com.google.android.play:core-ktx:1.8.1'

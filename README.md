@@ -75,10 +75,11 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * Sort dialog no longer dims the main view
 * download date can be used to sort both feeds and episodes
 * Subscriptions view has a filter based on feed preferences, in the same style as episodes filter
-* Subscriptions sorting is now bi-directional based on various explicit measures
+* Subscriptions sorting is now bi-directional based on various explicit measures, and sorting info is shown on every feed (List Layout only)
+* in Subscriptions view, click on cover image of a feed opens the FeedInfo view (not FeedEpisodes view)
+* in all episodes list views, click on an episode image brings up the FeedInfo view
 * in episode list view, if episode has no media, TTS button is shown for fetching transcript (if not exist) and then generating audio file from the transcript. TTS audio files are playable in the same way as local media (with speed setting, pause and rewind/forward)
 * Long-press filter button in FeedEpisode view enables/disables filters without changing filter settings
-* in Subscriptions view, click on cover image of a feed opens the FeedInfo view (not FeedEpisodes view)
 * History view shows time of last play, and allows filters and sorts
 * Multiple queues can be used: 5 queues are provided by default: Default queue, and Queues 1-4
 	* all queue operations are on the curQueue, which can be set in all episodes list views
@@ -90,8 +91,9 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 ### Podcast/Episode
 
 * New share notes menu option on various episode views
-* Feed info view offers a link for direct search of feeds related to author
+* FeedInfo view offers a link for direct search of feeds related to author
 * FeedInfo view has button showing number of episodes to open the FeedEpisodes view
+* FeedInfo view has feed setting in the header
 * in EpisodeInfo view, "mark played/unplayed", "add to/remove from queue", and "favoraite/unfovorite" are at the action bar
 * New episode home view with two display modes: webpage or reader
 * In episode, in addition to "description" there is a new "transcript" field to save text (if any) fetched from the episode's website

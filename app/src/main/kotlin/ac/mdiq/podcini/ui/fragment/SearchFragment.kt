@@ -278,13 +278,12 @@ import java.lang.ref.WeakReference
         var i = 0
         val size: Int = event.episodes.size
         while (i < size) {
-            val item: Episode = event.episodes[i]
+            val item: Episode = event.episodes[i++]
             val pos: Int = EpisodeUtil.indexOfItemWithId(results, item.id)
             if (pos >= 0) {
                 results[pos] = item
                 adapter.notifyItemChangedCompat(pos)
             }
-            i++
         }
     }
 

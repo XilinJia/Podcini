@@ -36,16 +36,12 @@ import kotlin.math.abs
 
 object Feeds {
     private val TAG: String = Feeds::class.simpleName ?: "Anonymous"
-    private val feedMap: MutableMap<Long, Feed> = mutableMapOf()
     private val tags: MutableList<String> = mutableListOf()
 
     @Synchronized
-    fun getFeedList(queryString: String = "", fromDB: Boolean = true): List<Feed> {
-        if (fromDB) {
-            return if (queryString.isEmpty()) realm.query(Feed::class).find()
-            else realm.query(Feed::class, queryString).find()
-        }
-        return feedMap.values.toList()
+    fun getFeedList(queryString: String = ""): List<Feed> {
+        return if (queryString.isEmpty()) realm.query(Feed::class).find()
+        else realm.query(Feed::class, queryString).find()
     }
 
     fun getFeedCount(): Int {
@@ -54,26 +50,6 @@ object Feeds {
 
     fun getTags(): List<String> {
         return tags
-    }
-
-    @Synchronized
-    fun updateFeedMap(feeds: List<Feed> = listOf(), wipe: Boolean = false) {
-        Logd(TAG, "updateFeedMap called feeds: ${feeds.size} wipe: $wipe")
-        when {
-            feeds.isEmpty() -> {
-                val feeds_ = realm.query(Feed::class).find()
-                feedMap.clear()
-                feedMap.putAll(feeds_.associateBy { it.id })
-            }
-            wipe -> {
-                feedMap.clear()
-                feedMap.putAll(feeds.associateBy { it.id })
-            }
-            else -> {
-                for (f in feeds) feedMap[f.id] = f
-            }
-        }
-        buildTags()
     }
 
     fun buildTags() {
@@ -174,13 +150,13 @@ object Feeds {
         return result
     }
 
-    fun getFeed(feedId: Long, copy: Boolean = false, fromDB: Boolean = true): Feed? {
+    fun getFeed(feedId: Long, copy: Boolean = false): Feed? {
         if (BuildConfig.DEBUG) {
             val stackTrace = Thread.currentThread().stackTrace
             val caller = if (stackTrace.size > 3) stackTrace[3] else null
-            Logd(TAG, "${caller?.className}.${caller?.methodName} getFeed called fromDB: $fromDB")
+            Logd(TAG, "${caller?.className}.${caller?.methodName} getFeed called")
         }
-        val f = if (fromDB) realm.query(Feed::class, "id == $feedId").first().find() else feedMap[feedId]
+        val f = realm.query(Feed::class, "id == $feedId").first().find()
         return if (f != null) {
             if (copy) realm.copyFromRealm(f)
             else f
@@ -247,7 +223,6 @@ object Feeds {
             // Look for new or updated Items
             for (idx in newFeed.episodes.indices) {
                 val episode = newFeed.episodes[idx]
-
                 val possibleDuplicate = EpisodeAssistant.searchEpisodeGuessDuplicate(newFeed.episodes, episode)
                 if (!newFeed.isLocalFeed && possibleDuplicate != null && episode !== possibleDuplicate) {
                     // Canonical episode is the first one returned (usually oldest)
@@ -263,7 +238,6 @@ object Feeds {
                             """.trimIndent()))
                     continue
                 }
-
                 var oldItem = EpisodeAssistant.searchEpisodeByIdentifyingValue(savedFeed.episodes, episode)
                 if (!newFeed.isLocalFeed && oldItem == null) {
                     oldItem = EpisodeAssistant.searchEpisodeGuessDuplicate(savedFeed.episodes, episode)
@@ -394,7 +368,6 @@ object Feeds {
                 }
                 copyToRealm(feed)
             }
-//            updateFeedMap(feeds.toList())
         }
         for (feed in feeds) {
             if (!feed.isLocalFeed && feed.downloadUrl != null) SynchronizationQueueSink.enqueueFeedAddedIfSyncActive(context, feed.downloadUrl!!)
@@ -451,7 +424,7 @@ object Feeds {
                     val feedToDelete = findLatest(feed_)
                     if (feedToDelete != null) {
                         delete(feedToDelete)
-                        feedMap.remove(feedId)
+//                        feedMap.remove(feedId)
                     }
                 }
             }

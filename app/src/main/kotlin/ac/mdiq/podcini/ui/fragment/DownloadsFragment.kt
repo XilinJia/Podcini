@@ -245,7 +245,9 @@ import java.util.*
         val item = event.episode
         val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
         if (pos >= 0) {
-            episodes[pos] = item
+            episodes[pos] = unmanaged(episodes[pos])
+            episodes[pos].isFavorite = item.isFavorite
+//            episodes[pos] = item
             adapter.notifyItemChangedCompat(pos)
         }
     }
@@ -283,7 +285,7 @@ import java.util.*
         var i = 0
         val size: Int = event.episodes.size
         while (i < size) {
-            val item: Episode = event.episodes[i]
+            val item: Episode = event.episodes[i++]
             val pos = EpisodeUtil.indexOfItemWithId(episodes, item.id)
             if (pos >= 0) {
                 episodes.removeAt(pos)
@@ -295,7 +297,6 @@ import java.util.*
 //                    adapter.notifyItemRemoved(pos)
                 }
             }
-            i++
         }
 //        have to do this as adapter.notifyItemRemoved(pos) when pos == 0 causes crash
         if (size > 0) {

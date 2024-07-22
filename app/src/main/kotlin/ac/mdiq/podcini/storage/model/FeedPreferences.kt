@@ -45,6 +45,13 @@ class FeedPreferences : EmbeddedRealmObject {
         }
     var volumeAdaption: Int = 0
 
+    var filterString: String = ""
+
+    var sortOrderCode: Int = 0      // in EpisodeSortOrder
+
+//    seems not too useful
+//    var sortOrderAuxCode: Int = 0      // in EpisodeSortOrder
+
     @Ignore
     val tagsAsString: String
         get() = tags.joinToString(TAG_SEPARATOR)
@@ -69,6 +76,8 @@ class FeedPreferences : EmbeddedRealmObject {
 
     var autoDLMaxEpisodes: Int = 3
 
+    var countingPlayed: Boolean = true
+
     @Ignore
     var autoDLPolicy: AutoDLPolicy = AutoDLPolicy.ONLY_NEW
         get() = AutoDLPolicy.fromCode(autoDLPolicyCode)
@@ -77,12 +86,6 @@ class FeedPreferences : EmbeddedRealmObject {
             autoDLPolicyCode = value.code
         }
     var autoDLPolicyCode: Int = 0
-
-    var filterString: String = ""
-
-    var sortOrderCode: Int = 0
-
-    var sortOrderAuxCode: Int = 0
 
     enum class AutoDLPolicy(val code: Int) {
         ONLY_NEW(0),

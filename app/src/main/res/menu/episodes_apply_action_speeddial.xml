@@ -38,9 +38,9 @@
         android:title="@string/add_to_queue_label" />
 
     <item
-        android:id="@+id/put_to_queue_batch"
+        android:id="@+id/put_in_queue_batch"
         android:icon="@drawable/ic_playlist_play"
-        android:title="@string/put_to_queue_label" />
+        android:title="@string/put_in_queue_label" />
 
     <item
         android:id="@+id/add_to_favorite_batch"

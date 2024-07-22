@@ -7,6 +7,7 @@ import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.fragment.EpisodeInfoFragment
+import ac.mdiq.podcini.ui.fragment.FeedInfoFragment
 import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeViewHolder
 import android.R.color
@@ -78,7 +79,8 @@ open class EpisodesAdapter(mainActivity: MainActivity)
         return EpisodeViewHolder(mainActivityRef.get()!!, parent)
     }
 
-    @UnstableApi override fun onBindViewHolder(holder: EpisodeViewHolder, pos: Int) {
+    @UnstableApi
+    override fun onBindViewHolder(holder: EpisodeViewHolder, pos: Int) {
         if (pos >= episodes.size || pos < 0) {
             beforeBindViewHolder(holder, pos)
             holder.bindDummy()
@@ -112,7 +114,7 @@ open class EpisodesAdapter(mainActivity: MainActivity)
         }
         holder.coverHolder.setOnClickListener {
             val activity: MainActivity? = mainActivityRef.get()
-            if (!inActionMode()) activity?.loadChildFragment(EpisodeInfoFragment.newInstance(episodes[pos]))
+            if (!inActionMode() && episodes[pos].feed != null) activity?.loadChildFragment(FeedInfoFragment.newInstance(episodes[pos].feed!!))
             else toggleSelection(holder.bindingAdapterPosition)
         }
         holder.itemView.setOnTouchListener(View.OnTouchListener { _: View?, e: MotionEvent ->
@@ -149,6 +151,11 @@ open class EpisodesAdapter(mainActivity: MainActivity)
 
     protected open fun afterBindViewHolder(holder: EpisodeViewHolder, pos: Int) {}
 
+    override fun onViewDetachedFromWindow(holder: EpisodeViewHolder) {
+        super.onViewDetachedFromWindow(holder)
+//        visibleItemsPositions.remove(holder.adapterPosition)
+    }
+
     @UnstableApi override fun onViewRecycled(holder: EpisodeViewHolder) {
         super.onViewRecycled(holder)
         // Set all listeners to null. This is required to prevent leaking fragments that have set a listener.
@@ -160,6 +167,7 @@ open class EpisodesAdapter(mainActivity: MainActivity)
         holder.secondaryActionButton.setOnClickListener(null)
         holder.dragHandle.setOnTouchListener(null)
         holder.coverHolder.setOnTouchListener(null)
+        holder.episode = null
     }
 
     /**

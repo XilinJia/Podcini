@@ -306,6 +306,7 @@ import java.util.*
         val item = event.episode
         val pos: Int = EpisodeUtil.indexOfItemWithId(queueItems, item.id)
         if (pos >= 0) {
+            queueItems[pos] = unmanaged(queueItems[pos])
             queueItems[pos].isFavorite = item.isFavorite
             adapter?.notifyItemChangedCompat(pos)
         }
@@ -320,14 +321,13 @@ import java.util.*
         var i = 0
         val size: Int = event.episodes.size
         while (i < size) {
-            val item: Episode = event.episodes[i]
+            val item: Episode = event.episodes[i++]
             val pos: Int = EpisodeUtil.indexOfItemWithId(queueItems, item.id)
             if (pos >= 0) {
                 queueItems[pos] = item
                 adapter?.notifyItemChangedCompat(pos)
                 refreshInfoBar()
             }
-            i++
         }
     }
 
@@ -418,6 +418,7 @@ import java.util.*
         val keepSorted: Boolean = isQueueKeepSorted
         toolbar.menu?.findItem(R.id.queue_lock)?.setChecked(isQueueLocked)
         toolbar.menu?.findItem(R.id.queue_lock)?.setVisible(!keepSorted)
+        toolbar.menu.findItem(R.id.switch_queue).setVisible(false)
     }
 
     @UnstableApi override fun onMenuItemClick(item: MenuItem): Boolean {
@@ -437,7 +438,7 @@ import java.util.*
                 conDialog.createNewDialog().show()
             }
             R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
-            R.id.switch_queue -> SwitchQueueDialog(activity as MainActivity).show()
+//            R.id.switch_queue -> SwitchQueueDialog(activity as MainActivity).show()
             else -> return false
         }
         return true

@@ -116,6 +116,10 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             val fragment: Fragment = FeedEpisodesFragment.newInstance(feed.id)
             (activity as MainActivity).loadChildFragment(fragment)
         }
+        binding.header.butShowSettings.setOnClickListener {
+            val fragment = FeedSettingsFragment.newInstance(feed)
+            (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
+        }
 
         binding.btnvRelatedFeeds.setOnClickListener {
             val fragment = OnlineSearchFragment.newInstance(CombinedSearcher::class.java, "${binding.header.txtvAuthor.text} podcasts")

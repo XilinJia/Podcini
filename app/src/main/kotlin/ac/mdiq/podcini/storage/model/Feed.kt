@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.storage.model
 
+import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.FeedFunding.Companion.extractPaymentLinks
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.fromCode
 import io.realm.kotlin.ext.realmListOf
@@ -132,29 +133,30 @@ class Feed : RealmObject {
             preferences?.sortOrderCode = value.code
         }
 
-    @Ignore
-    var sortOrderAux: EpisodeSortOrder? = null
-        get() = fromCode(preferences?.sortOrderAuxCode ?: 0)
-        set(value) {
-            if (value == null) return
-            field = value
-            preferences?.sortOrderAuxCode = value.code
-        }
+//    @Ignore
+//    var sortOrderAux: EpisodeSortOrder? = null
+//        get() = fromCode(preferences?.sortOrderAuxCode ?: 0)
+//        set(value) {
+//            if (value == null) return
+//            field = value
+//            preferences?.sortOrderAuxCode = value.code
+//        }
 
     @Ignore
     val mostRecentItem: Episode?
         get() {
-            // we could sort, but we don't need to, a simple search is fine...
-            var mostRecentDate = Date(0)
-            var mostRecentItem: Episode? = null
-            for (item in episodes) {
-                val date = item.getPubDate()
-                if (date != null && date.after(mostRecentDate)) {
-                    mostRecentDate = date
-                    mostRecentItem = item
-                }
-            }
-            return mostRecentItem
+//            // we could sort, but we don't need to, a simple search is fine...
+//            var mostRecentDate = Date(0)
+//            var mostRecentItem: Episode? = null
+//            for (item in episodes) {
+//                val date = item.getPubDate()
+//                if (date != null && date.after(mostRecentDate)) {
+//                    mostRecentDate = date
+//                    mostRecentItem = item
+//                }
+//            }
+//            return mostRecentItem
+            return realm.query(Episode::class).query("feedId == $id SORT(pubDate DESC)").first().find()
         }
 
     @Ignore
@@ -163,6 +165,9 @@ class Feed : RealmObject {
         set(value) {
             this.eigenTitle = value
         }
+
+    @Ignore
+    var sortInfo: String = ""
 
     /**
      * This constructor is used for test purposes.

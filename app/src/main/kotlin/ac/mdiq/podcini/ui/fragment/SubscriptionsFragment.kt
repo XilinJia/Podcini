@@ -14,8 +14,10 @@ import ac.mdiq.podcini.ui.actions.menuhandler.FeedMenuHandler
 import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
-import ac.mdiq.podcini.ui.dialog.*
-import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment.FeedEpisodeFilterDialog
+import ac.mdiq.podcini.ui.dialog.FeedFilterDialog
+import ac.mdiq.podcini.ui.dialog.FeedSortDialog
+import ac.mdiq.podcini.ui.dialog.RemoveFeedDialog
+import ac.mdiq.podcini.ui.dialog.TagSettingsDialog
 import ac.mdiq.podcini.ui.utils.CoverLoader
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
@@ -48,13 +50,13 @@ import com.google.android.material.snackbar.Snackbar
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
 import io.realm.kotlin.query.RealmResults
-import io.realm.kotlin.query.Sort
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.NumberFormat
+import java.text.SimpleDateFormat
 import java.util.*
 
 /**
@@ -238,24 +240,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         adapter.setItems(feedListFiltered)
     }
 
-//    fun filterOnTag() {
-//        when (tagFilterIndex) {
-//            1 -> feedListFiltered = feedList    // All feeds
-//            0 -> feedListFiltered = feedList.filter {   // feeds without tag
-//                val tags = it.preferences?.tags
-//                tags.isNullOrEmpty() || (tags.size == 1 && tags.toList()[0] == "#root")
-//            }
-//            else -> {   // feeds with the chosen tag
-//                val tag = tags[tagFilterIndex]
-//                feedListFiltered = feedList.filter {
-//                    it.preferences?.tags?.contains(tag) ?: false
-//                }
-//            }
-//        }
-//        binding.count.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
-//        adapter.setItems(feedListFiltered)
-//    }
-
     private fun resetTags() {
         tags.clear()
         tags.add("Untagged")
@@ -368,17 +352,23 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         val tagsQueryStr = queryStringOfTags()
         val fQueryStr = if (tagsQueryStr.isEmpty()) FeedFilter(feedsFilter).queryString() else FeedFilter(feedsFilter).queryString() + " AND " + tagsQueryStr
         Logd(TAG, "sortFeeds() called $feedsFilter $fQueryStr")
-        val feedIds = getFeedList(fQueryStr).map { id }
+        val feedList_ = getFeedList(fQueryStr).toMutableList()
+        val feeds_ = feedList_
         val feedOrder = feedOrderBy
         val dir = 1 - 2*feedOrderDir    // get from 0, 1 to 1, -1
         val comparator: Comparator<Feed> = when (feedOrder) {
             FeedSortOrder.UNPLAYED_NEW_OLD.index -> {
-                val queryString = "feedId IN $0 AND (playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED})"
-                val episodes = realm.query(Episode::class).query(queryString, feedIds).find()
-                val counterMap = counterMap(episodes)
+                val queryString = "feedId == $0 AND (playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED})"
+                val counterMap: MutableMap<Long, Long> = mutableMapOf()
+                for (f in feeds_) {
+                    val c = realm.query(Episode::class).query(queryString, f.id).count().find()
+                    counterMap[f.id] = c
+                    f.sortInfo = c.toString() + " unplayed"
+                }
                 comparator(counterMap, dir)
             }
             FeedSortOrder.ALPHABETIC_A_Z.index -> {
+                for (f in feeds_) f.sortInfo = ""
                 Comparator { lhs: Feed, rhs: Feed ->
                     val t1 = lhs.title
                     val t2 = rhs.title
@@ -390,76 +380,81 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 }
             }
             FeedSortOrder.MOST_PLAYED.index -> {
-                val queryString = "feedId IN $0 AND playState == ${Episode.PLAYED}"
-                val episodes = realm.query(Episode::class).query(queryString, feedIds).find()
-                val counterMap = counterMap(episodes)
+                val queryString = "feedId == $0 AND playState == ${Episode.PLAYED}"
+                val counterMap: MutableMap<Long, Long> = mutableMapOf()
+                for (f in feeds_) {
+                    val c = realm.query(Episode::class).query(queryString, f.id).count().find()
+                    counterMap[f.id] = c
+                    f.sortInfo = c.toString() + " played"
+                }
                 comparator(counterMap, dir)
             }
             FeedSortOrder.LAST_UPDATED_NEW_OLD.index -> {
-                val queryString = "feedId IN $0"
-                val episodes = realm.query(Episode::class, queryString, feedIds).sort("pubDate", Sort.DESCENDING).find()
+                val queryString = "feedId == $0 SORT(pubDate DESC)"
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
-                for (episode in episodes) {
-                    val feedId = episode.feedId ?: continue
-                    val pDateOld = counterMap[feedId] ?: 0
-                    if (pDateOld < episode.pubDate) counterMap[feedId] = episode.pubDate
+                for (f in feeds_) {
+                    val d = realm.query(Episode::class).query(queryString, f.id).first().find()?.pubDate ?: 0L
+                    counterMap[f.id] = d
+                    val dateFormat = SimpleDateFormat("yy-MM-dd HH:mm", Locale.getDefault())
+                    f.sortInfo = "Updated on " + dateFormat.format(Date(d))
                 }
                 comparator(counterMap, dir)
             }
             FeedSortOrder.LAST_DOWNLOAD_NEW_OLD.index -> {
-                val queryString = "feedId IN $0"
-                val episodes = realm.query(Episode::class, queryString, feedIds).sort("media.downloadTime", Sort.DESCENDING).find()
+                val queryString = "feedId == $0 SORT(media.downloadTime DESC)"
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
-                for (episode in episodes) {
-                    val feedId = episode.feedId ?: continue
-                    val pDownloadOld = counterMap[feedId] ?: 0
-                    if (pDownloadOld < (episode.media?.downloadTime?:0)) counterMap[feedId] = episode.media?.downloadTime ?: 0
+                for (f in feeds_) {
+                    val d = realm.query(Episode::class).query(queryString, f.id).first().find()?.media?.downloadTime ?: 0L
+                    counterMap[f.id] = d
+                    val dateFormat = SimpleDateFormat("yy-MM-dd HH:mm", Locale.getDefault())
+                    f.sortInfo = "Downloaded on " + dateFormat.format(Date(d))
                 }
                 comparator(counterMap, dir)
             }
             FeedSortOrder.LAST_UPDATED_UNPLAYED_NEW_OLD.index -> {
-                val queryString = "feedId IN $0 AND (playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED})"
-                val episodes = realm.query(Episode::class).query(queryString, feedIds).find()
+                val queryString = "feedId == $0 AND (playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED}) SORT(pubDate DESC)"
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
-                for (episode in episodes) {
-                    val feedId = episode.feedId ?: continue
-                    val pDateOld = counterMap[feedId] ?: 0
-                    if (pDateOld < episode.pubDate) counterMap[feedId] = episode.pubDate
+                for (f in feeds_) {
+                    val d = realm.query(Episode::class).query(queryString, f.id).first().find()?.pubDate ?: 0L
+                    counterMap[f.id] = d
+                    val dateFormat = SimpleDateFormat("yy-MM-dd HH:mm", Locale.getDefault())
+                    f.sortInfo = "Unplayed since " + dateFormat.format(Date(d))
                 }
                 comparator(counterMap, dir)
             }
             FeedSortOrder.MOST_DOWNLOADED.index -> {
-                val queryString = "feedId IN $0 AND media.downloaded == true"
-                val episodes = realm.query(Episode::class).query(queryString, feedIds).find()
-                val counterMap = counterMap(episodes)
+                val queryString = "feedId == $0 AND media.downloaded == true"
+                val counterMap: MutableMap<Long, Long> = mutableMapOf()
+                for (f in feeds_) {
+                    val c = realm.query(Episode::class).query(queryString, f.id).count().find()
+                    counterMap[f.id] = c
+                    f.sortInfo = c.toString() + " downloaded"
+                }
                 comparator(counterMap, dir)
             }
             FeedSortOrder.MOST_DOWNLOADED_UNPLAYED.index -> {
-                val queryString = "feedId IN $0 AND (playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED}) AND media.downloaded == true"
-                val episodes = realm.query(Episode::class).query(queryString, feedIds).find()
-                val counterMap = counterMap(episodes)
+                val queryString = "feedId == $0 AND (playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED}) AND media.downloaded == true"
+                val counterMap: MutableMap<Long, Long> = mutableMapOf()
+                for (f in feeds_) {
+                    val c = realm.query(Episode::class).query(queryString, f.id).count().find()
+                    counterMap[f.id] = c
+                    f.sortInfo = c.toString() + " downloaded unplayed"
+                }
                 comparator(counterMap, dir)
             }
             //            doing FEED_ORDER_NEW
             else -> {
-                val queryString = "feedId IN $0 AND playState == ${Episode.NEW}"
-                val episodes = realm.query(Episode::class).query(queryString, feedIds).find()
-                val counterMap = counterMap(episodes)
+                val queryString = "feedId == $0 AND playState == ${Episode.NEW}"
+                val counterMap: MutableMap<Long, Long> = mutableMapOf()
+                for (f in feeds_) {
+                    val c = realm.query(Episode::class).query(queryString, f.id).count().find()
+                    counterMap[f.id] = c
+                    f.sortInfo = c.toString() + " new"
+                }
                 comparator(counterMap, dir)
             }
         }
-        val feedList_ = getFeedList(fQueryStr).toMutableList()
         synchronized(feedList_) { feedList = feedList_.sortedWith(comparator).toMutableList() }
-    }
-
-    private fun counterMap(episodes: RealmResults<Episode>): Map<Long, Long> {
-        val counterMap: MutableMap<Long, Long> = mutableMapOf()
-        for (episode in episodes) {
-            val feedId = episode.feedId ?: continue
-            val count = counterMap[feedId] ?: 0
-            counterMap[feedId] = count + 1
-        }
-        return counterMap
     }
 
     private fun comparator(counterMap: Map<Long, Long>, dir: Int): Comparator<Feed> {
@@ -766,7 +761,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
 
     private inner class ViewHolderExpanded(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val binding = SubscriptionItemBinding.bind(itemView)
-        val count: TextView = binding.countLabel
+        val count: TextView = binding.episodeCount
         val coverImage: ImageView = binding.coverImage
         val infoCard: LinearLayout = binding.infoCard
         val selectView: FrameLayout = binding.selectContainer
@@ -778,6 +773,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             selectView.background = drawable // Setting this in XML crashes API <= 21
             binding.titleLabel.text = feed.title
             binding.producerLabel.text = feed.author
+            binding.sortInfo.text = feed.sortInfo
             coverImage.contentDescription = feed.title
             coverImage.setImageDrawable(null)
 
@@ -809,7 +805,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
     private inner class ViewHolderBrief(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val binding = SubscriptionItemBriefBinding.bind(itemView)
         private val title = binding.titleLabel
-        val count: TextView = binding.countLabel
+        val count: TextView = binding.episodeCount
 
         val coverImage: ImageView = binding.coverImage
         val selectView: FrameLayout = binding.selectContainer

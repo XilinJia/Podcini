@@ -112,8 +112,8 @@ class FeedSettingsFragment : Fragment() {
                 setupAuthentificationPreference()
                 updateAutoDownloadPolicy()
                 setupAutoDownloadPolicy()
-                updateAutoDownloadCacheSize()
                 setupAutoDownloadCacheSize()
+                setupCountingPlayedPreference()
                 setupAutoDownloadFilterPreference()
                 setupPlaybackSpeedPreference()
                 setupFeedAutoSkipPreference()
@@ -203,20 +203,30 @@ class FeedSettingsFragment : Fragment() {
             }
         }
         @UnstableApi private fun setupAutoDownloadCacheSize() {
-            val cachePref = findPreference<Preference>(Prefs.feedEpisodeCacheSize.name)
-            cachePref!!.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any? ->
+            val cachePref = findPreference<ListPreference>(Prefs.feedEpisodeCacheSize.name)
+            cachePref!!.value = feedPrefs!!.autoDLMaxEpisodes.toString()
+            cachePref.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any? ->
                 if (feedPrefs != null) {
                     feedPrefs!!.autoDLMaxEpisodes = newValue.toString().toInt()
+                    cachePref.value = feedPrefs!!.autoDLMaxEpisodes.toString()
                     persistFeedPreferences(feed!!)
-                    updateAutoDownloadCacheSize()
                 }
                 false
             }
         }
-        private fun updateAutoDownloadCacheSize() {
+        @OptIn(UnstableApi::class) private fun setupCountingPlayedPreference() {
             if (feedPrefs == null) return
-            val cachePref = findPreference<ListPreference>(Prefs.feedEpisodeCacheSize.name)
-            cachePref!!.value = feedPrefs!!.autoDLMaxEpisodes.toString()
+            val pref = findPreference<SwitchPreferenceCompat>(Prefs.countingPlayed.name)
+            pref!!.isChecked = feedPrefs!!.countingPlayed
+            pref.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any ->
+                val checked = newValue == true
+                if (feedPrefs != null) {
+                    feedPrefs!!.countingPlayed = checked
+                    persistFeedPreferences(feed!!)
+                }
+                pref.isChecked = checked
+                false
+            }
         }
         private fun setupAutoDownloadFilterPreference() {
             findPreference<Preference>(Prefs.episodeInclusiveFilter.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
@@ -332,7 +342,7 @@ class FeedSettingsFragment : Fragment() {
         }
         @OptIn(UnstableApi::class) private fun setupKeepUpdatedPreference() {
             if (feedPrefs == null) return
-            val pref = findPreference<SwitchPreferenceCompat>("keepUpdated")
+            val pref = findPreference<SwitchPreferenceCompat>(Prefs.keepUpdated.name)
             pref!!.isChecked = feedPrefs!!.keepUpdated
             pref.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any ->
                 val checked = newValue == true
@@ -351,9 +361,10 @@ class FeedSettingsFragment : Fragment() {
                 autodl.isEnabled = false
                 autodl.setSummary(R.string.auto_download_disabled_globally)
                 findPreference<Preference>(Prefs.feedAutoDownloadPolicy.name)!!.isEnabled = false
+                findPreference<Preference>(Prefs.feedEpisodeCacheSize.name)!!.isEnabled = false
+                findPreference<Preference>(Prefs.countingPlayed.name)!!.isEnabled = false
                 findPreference<Preference>(Prefs.episodeInclusiveFilter.name)!!.isEnabled = false
                 findPreference<Preference>(Prefs.episodeExclusiveFilter.name)!!.isEnabled = false
-                findPreference<Preference>(Prefs.feedEpisodeCacheSize.name)!!.isEnabled = false
             }
         }
         @OptIn(UnstableApi::class) private fun setupAutoDownloadPreference() {
@@ -380,9 +391,10 @@ class FeedSettingsFragment : Fragment() {
             if (feed?.preferences != null) {
                 val enabled = feed!!.preferences!!.autoDownload && isEnableAutodownload
                 findPreference<Preference>(Prefs.feedAutoDownloadPolicy.name)!!.isEnabled = enabled
+                findPreference<Preference>(Prefs.feedEpisodeCacheSize.name)!!.isEnabled = enabled
+                findPreference<Preference>(Prefs.countingPlayed.name)!!.isEnabled = enabled
                 findPreference<Preference>(Prefs.episodeInclusiveFilter.name)!!.isEnabled = enabled
                 findPreference<Preference>(Prefs.episodeExclusiveFilter.name)!!.isEnabled = enabled
-                findPreference<Preference>(Prefs.feedEpisodeCacheSize.name)!!.isEnabled = enabled
             }
         }
         private fun setupTags() {
@@ -397,6 +409,7 @@ class FeedSettingsFragment : Fragment() {
 
         private enum class Prefs {
             feedSettingsScreen,
+            keepUpdated,
             authentication,
             autoDelete,
             feedPlaybackSpeed,
@@ -404,10 +417,11 @@ class FeedSettingsFragment : Fragment() {
             tags,
             autoDownloadCategory,
             autoDownload,
+            feedAutoDownloadPolicy,
+            feedEpisodeCacheSize,
+            countingPlayed,
             episodeInclusiveFilter,
             episodeExclusiveFilter,
-            feedEpisodeCacheSize,
-            feedAutoDownloadPolicy
         }
 
         companion object {

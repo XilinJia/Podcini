@@ -479,6 +479,7 @@ class FeedSettingsFragment : Fragment() {
                     termList = filter.getExcludeFilter().toMutableList()
                     binding.excludeRadio.isChecked = true
                 }
+                binding.markPlayedCheckBox.isChecked = filter.markExcludedPlayed
                 binding.includeRadio.visibility = View.GONE
             } else {
 //                inclusive

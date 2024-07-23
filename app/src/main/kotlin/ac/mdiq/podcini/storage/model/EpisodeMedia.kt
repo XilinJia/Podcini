@@ -344,7 +344,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
                 hasEmbeddedPicture = false
             }
         }
-        upsertBlk(episode!!) {}
+        if (episode != null) upsertBlk(episode!!) {}
     }
 
     override fun equals(other: Any?): Boolean {

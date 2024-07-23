@@ -164,7 +164,7 @@ object Episodes {
                 val action = EpisodeAction.Builder(episode, EpisodeAction.DELETE).currentTimestamp().build()
                 SynchronizationQueueSink.enqueueEpisodeActionIfSyncActive(context, action)
             }
-            EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(episode))
+            EventFlow.postEvent(FlowEvent.EpisodeMediaEvent.removed(episode))
         }
         return episode
     }
@@ -223,7 +223,7 @@ object Episodes {
             if (episode != null) {
                 episode.media = media
                 episode = upsert(episode) {}
-                EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(episode))
+                EventFlow.postEvent(FlowEvent.EpisodeMediaEvent.updated(episode))
             } else Log.e(TAG, "persistEpisodeMedia media.episode is null")
         }
     }

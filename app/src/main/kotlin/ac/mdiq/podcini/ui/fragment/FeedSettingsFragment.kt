@@ -355,7 +355,7 @@ class FeedSettingsFragment : Fragment() {
             }
         }
         private fun setupAutoDownloadGlobalPreference() {
-            if (!isEnableAutodownload) {
+            if (!isEnableAutodownload || feedPrefs?.autoDownload != true) {
                 val autodl = findPreference<SwitchPreferenceCompat>(Prefs.autoDownload.name)
                 autodl!!.isChecked = false
                 autodl.isEnabled = false

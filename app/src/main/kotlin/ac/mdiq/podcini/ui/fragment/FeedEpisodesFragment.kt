@@ -335,6 +335,7 @@ import java.util.concurrent.Semaphore
 
         var i = 0
         val size: Int = event.episodes.size
+        val poses: MutableList<Int> = mutableListOf()
         while (i < size) {
             val item = event.episodes[i++]
             if (item.feedId != feed!!.id) continue
@@ -342,8 +343,42 @@ import java.util.concurrent.Semaphore
             if (pos >= 0) {
                 Logd(TAG, "episode event: ${item.title} ${item.playState} ${item.isDownloaded}")
                 episodes[pos] = item
-                adapter.notifyItemChangedCompat(pos)
+                poses.add(pos)
             }
+        }
+        if (poses.size == 1) {
+            if (filterOutEpisode(episodes[poses[0]])) adapter.updateItems(episodes)
+            else adapter.notifyItemChangedCompat(poses[0])
+        } else if (poses.size > 1) {
+            redoFilter()
+            adapter.notifyDataSetChanged()
+        }
+    }
+
+    private fun onEpisodeMediaEvent(event: FlowEvent.EpisodeMediaEvent) {
+//        Logd(TAG, "onEpisodeEvent() called with ${event.TAG}")
+        if (feed == null || episodes.isEmpty()) return
+
+        var i = 0
+        val size: Int = event.episodes.size
+        val poses: MutableList<Int> = mutableListOf()
+        while (i < size) {
+            val item = event.episodes[i++]
+            if (item.feedId != feed!!.id) continue
+            val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
+            if (pos >= 0) {
+                Logd(TAG, "episode event: ${item.title} ${item.playState} ${item.isDownloaded}")
+                episodes[pos] = unmanaged(episodes[pos])
+                episodes[pos].media = item.media
+                poses.add(pos)
+            }
+        }
+        if (poses.size == 1) {
+            if (filterOutEpisode(episodes[poses[0]])) adapter.updateItems(episodes)
+            else adapter.notifyItemChangedCompat(poses[0])
+        } else if (poses.size > 1) {
+            redoFilter()
+            adapter.notifyDataSetChanged()
         }
     }
 
@@ -363,7 +398,10 @@ import java.util.concurrent.Semaphore
         Logd(TAG, "onPlayEvent ${event.episode.title}")
         if (feed != null) {
             val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, event.episode.id)
-            if (pos >= 0) adapter.notifyItemChangedCompat(pos)
+            if (pos >= 0) {
+                if (filterOutEpisode(event.episode)) adapter.updateItems(episodes)
+                else adapter.notifyItemChangedCompat(pos)
+            }
         }
     }
 
@@ -373,15 +411,11 @@ import java.util.concurrent.Semaphore
         val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
         if (pos >= 0) {
             Logd(TAG, "played item: ${item.title} ${item.playState}")
-            if (enableFilter && ((feed!!.episodeFilter.showUnplayed && item.isPlayed()) || feed!!.episodeFilter.showPlayed && !item.isPlayed())) {
-                episodes.removeAt(pos)
-                adapter.updateItems(episodes)
-            } else {
+            if (filterOutEpisode(item)) adapter.updateItems(episodes)
+            else {
                 episodes[pos] = item
                 adapter.notifyItemChangedCompat(pos)
             }
-//            episodes[pos].playState = item.playState
-//            adapter.notifyItemChangedCompat(pos)
         }
     }
 
@@ -391,8 +425,8 @@ import java.util.concurrent.Semaphore
         if (pos >= 0) {
             episodes[pos] = unmanaged(episodes[pos])
             episodes[pos].isFavorite = item.isFavorite
-//            episodes[pos] = item
-            adapter.notifyItemChangedCompat(pos)
+            if (filterOutEpisode(item)) adapter.updateItems(episodes)
+            else adapter.notifyItemChangedCompat(pos)
         }
     }
 
@@ -404,7 +438,8 @@ import java.util.concurrent.Semaphore
             val pos: Int = EpisodeUtil.indexOfItemWithDownloadUrl(episodes, downloadUrl)
             if (pos >= 0) {
 //                TODO: need a better way
-                adapter.notifyItemChangedCompat(pos)
+                if (filterOutEpisode(episodes[pos])) adapter.updateItems(episodes)
+                else adapter.notifyItemChangedCompat(pos)
             }
         }
     }
@@ -445,6 +480,7 @@ import java.util.concurrent.Semaphore
                     is FlowEvent.PlaybackPositionEvent -> onPlaybackPositionEvent(event)
                     is FlowEvent.FeedPrefsChangeEvent -> if (feed?.id == event.feed.id) loadItems()
                     is FlowEvent.EpisodeEvent -> onEpisodeEvent(event)
+                    is FlowEvent.EpisodeMediaEvent -> onEpisodeMediaEvent(event)
                     is FlowEvent.PlayerSettingsEvent -> loadItems()
                     is FlowEvent.EpisodePlayedEvent -> onEpisodePlayedEvent(event)
                     is FlowEvent.FeedListEvent -> if (feed != null && event.contains(feed!!)) loadItems()
@@ -612,6 +648,22 @@ import java.util.concurrent.Semaphore
     private var loadItemsRunning = false
     private fun waitForLoading() {
         while (loadItemsRunning) Thread.sleep(50)
+    }
+
+    private fun filterOutEpisode(episode: Episode): Boolean {
+        if (enableFilter && !feed?.preferences?.filterString.isNullOrEmpty() && !feed!!.episodeFilter.matches(episode)) {
+            episodes.remove(episode)
+            return true
+        }
+        return false
+    }
+
+    private fun redoFilter() {
+        if (enableFilter && !feed?.preferences?.filterString.isNullOrEmpty()) {
+            val episodes_ = episodes.toList()
+            episodes.clear()
+            episodes.addAll(episodes_.filter { feed!!.episodeFilter.matches(it) })
+        }
     }
 
     @UnstableApi

@@ -228,6 +228,7 @@ import java.util.*
                 when (event) {
                     is FlowEvent.QueueEvent -> onQueueEvent(event)
                     is FlowEvent.EpisodeEvent -> onEpisodeEvent(event)
+                    is FlowEvent.EpisodeMediaEvent -> onEpisodeMediaEvent(event)
                     is FlowEvent.FavoritesEvent -> onFavoriteEvent(event)
                     is FlowEvent.PlayEvent -> onPlayEvent(event)
                     is FlowEvent.PlaybackPositionEvent -> onPlaybackPositionEvent(event)
@@ -320,14 +321,44 @@ import java.util.*
         }
         var i = 0
         val size: Int = event.episodes.size
+        val poses: MutableList<Int> = mutableListOf()
         while (i < size) {
             val item: Episode = event.episodes[i++]
             val pos: Int = EpisodeUtil.indexOfItemWithId(queueItems, item.id)
             if (pos >= 0) {
                 queueItems[pos] = item
-                adapter?.notifyItemChangedCompat(pos)
-                refreshInfoBar()
+                poses.add(pos)
             }
+        }
+        if (poses.isNotEmpty()) {
+            if (poses.size == 1) adapter?.notifyItemChangedCompat(poses[0])
+            else adapter?.notifyDataSetChanged()
+            refreshInfoBar()
+        }
+    }
+
+    private fun onEpisodeMediaEvent(event: FlowEvent.EpisodeMediaEvent) {
+//        Logd(TAG, "onEventMainThread() called with ${event.TAG}")
+        if (adapter == null) {
+            loadItems(true)
+            return
+        }
+        var i = 0
+        val size: Int = event.episodes.size
+        val poses: MutableList<Int> = mutableListOf()
+        while (i < size) {
+            val item: Episode = event.episodes[i++]
+            val pos: Int = EpisodeUtil.indexOfItemWithId(queueItems, item.id)
+            if (pos >= 0) {
+                queueItems[pos] = unmanaged(queueItems[pos])
+                queueItems[pos].media = item.media
+                poses.add(pos)
+            }
+        }
+        if (poses.isNotEmpty()) {
+            if (poses.size == 1) adapter?.notifyItemChangedCompat(poses[0])
+            else adapter?.notifyDataSetChanged()
+            refreshInfoBar()
         }
     }
 

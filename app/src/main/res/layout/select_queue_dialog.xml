@@ -11,7 +11,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="30dp">
-
     </RadioGroup>
+
+    <CheckBox
+        android:id="@+id/remove_checkbox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:checked="true"
+        android:visibility="gone"
+        android:text="@string/remove_from_other_queues" />
 
 </LinearLayout>

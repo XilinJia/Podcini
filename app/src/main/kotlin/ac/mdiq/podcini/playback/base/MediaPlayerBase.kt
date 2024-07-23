@@ -221,7 +221,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
      *
      * @return a Future, just for the purpose of tracking its execution.
      */
-    protected abstract fun endPlayback(hasEnded: Boolean, wasSkipped: Boolean, shouldContinue: Boolean, toStoppedState: Boolean)
+    internal abstract fun endPlayback(hasEnded: Boolean, wasSkipped: Boolean, shouldContinue: Boolean, toStoppedState: Boolean)
 
     /**
      * @return `true` if the WifiLock feature should be used, `false` otherwise.

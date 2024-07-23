@@ -146,7 +146,8 @@
     <string name="feed_auto_download_newer">Newest unplayed</string>
     <string name="feed_auto_download_older">Oldest unplayed</string>
 
-    <string name="put_in_queue_label">Put in queue</string>
+    <string name="put_in_queue_label">Add to queue...</string>
+    <string name="remove_from_other_queues">Remove from other queues</string>
 
     <string name="feed_new_episodes_action_nothing">Nothing</string>
     <string name="episode_cleanup_never">Never</string>
@@ -262,12 +263,12 @@
         <item quantity="one">%d episode marked as unplayed.</item>
         <item quantity="other">%d episodes marked as unplayed.</item>
     </plurals>
-    <string name="add_to_queue_label">Add to queue</string>
+    <string name="add_to_queue_label">Add to active queue</string>
     <plurals name="added_to_queue_batch_label">
         <item quantity="one">%d episode added to queue.</item>
         <item quantity="other">%d episodes added to queue.</item>
     </plurals>
-    <string name="remove_from_queue_label">Remove from queue</string>
+    <string name="remove_from_queue_label">Remove from active queue</string>
     <plurals name="removed_from_queue_batch_label">
         <item quantity="one">%d episode removed from queue.</item>
         <item quantity="other">%d episodes removed from queue.</item>

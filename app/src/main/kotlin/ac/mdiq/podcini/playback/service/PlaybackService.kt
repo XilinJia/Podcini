@@ -6,6 +6,7 @@ import ac.mdiq.podcini.net.utils.NetworkUtils.isAllowMobileStreaming
 import ac.mdiq.podcini.net.utils.NetworkUtils.isStreamingAllowed
 import ac.mdiq.podcini.playback.PlaybackServiceStarter
 import ac.mdiq.podcini.playback.base.InTheatre
+import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.base.InTheatre.curState
@@ -37,8 +38,8 @@ import ac.mdiq.podcini.storage.database.Episodes.shouldDeleteRemoveFromQueue
 import ac.mdiq.podcini.storage.database.Feeds.shouldAutoDeleteItem
 import ac.mdiq.podcini.storage.database.Queues.addToQueue
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueueSync
-import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
+import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.CurrentState.Companion.NO_MEDIA_PLAYING
@@ -81,7 +82,6 @@ import androidx.work.impl.utils.futures.SettableFuture
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
-import io.realm.kotlin.ext.isManaged
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
 import java.util.*
@@ -361,8 +361,17 @@ class PlaybackService : MediaSessionService() {
                 writeNoMediaPlaying()
                 return null
             }
-            val nextItem = getNextInQueue(item)
-            if (nextItem?.media == null) {
+//            val nextItem = getNextInQueue(item)
+            if (curQueue.episodes.isEmpty()) {
+                Logd(TAG, "getNextInQueue queue is empty")
+                writeNoMediaPlaying()
+                return null
+            }
+            val i = curQueue.episodes.indexOf(item)
+            var j = 0
+            if (i >= 0 && i < curQueue.episodes.size-1) j = i+1
+            val nextItem = unmanaged(curQueue.episodes[j])
+            if (nextItem.media == null) {
                 Logd(TAG, "getNextInQueue nextItem: $nextItem media is null")
                 writeNoMediaPlaying()
                 return null
@@ -384,17 +393,17 @@ class PlaybackService : MediaSessionService() {
             return nextItem.media
         }
 
-        private fun getNextInQueue(episode: Episode): Episode? {
-            Logd(TAG, "getNextInQueue() with: itemId ${episode.id}")
-            if (curQueue.episodes.isEmpty()) return null
-
-            val i = curQueue.episodes.indexOf(episode)
-            var j = 0
-            if (i >= 0 && i < curQueue.episodes.size-1) j = i+1
-
-            val itemNew = curQueue.episodes[j]
-            return if (itemNew.isManaged()) realm.copyFromRealm(itemNew) else itemNew
-        }
+//        private fun getNextInQueue(episode: Episode): Episode? {
+//            Logd(TAG, "getNextInQueue() with: itemId ${episode.id}")
+//            if (curQueue.episodes.isEmpty()) return null
+//
+//            val i = curQueue.episodes.indexOf(episode)
+//            var j = 0
+//            if (i >= 0 && i < curQueue.episodes.size-1) j = i+1
+//
+//            val itemNew = curQueue.episodes[j]
+//            return unmanaged(itemNew)
+//        }
 
         override fun findMedia(url: String): Playable? {
             val item = getEpisodeByGuidOrUrl(null, url)
@@ -918,6 +927,7 @@ class PlaybackService : MediaSessionService() {
             EventFlow.events.collectLatest { event ->
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
+                    is FlowEvent.QueueEvent -> onQueueEvent(event)
                     is FlowEvent.PlayerErrorEvent -> onPlayerError(event)
                     is FlowEvent.BufferUpdateEvent -> onBufferUpdate(event)
                     is FlowEvent.SleepTimerUpdatedEvent -> onSleepTimerUpdate(event)
@@ -925,9 +935,50 @@ class PlaybackService : MediaSessionService() {
                     is FlowEvent.FeedPrefsChangeEvent -> onFeedPrefsChanged(event)
 //                    is FlowEvent.SkipIntroEndingChangedEvent -> skipIntroEndingPresetChanged(event)
                     is FlowEvent.PlayEvent -> currentitem = event.episode
+                    is FlowEvent.EpisodeMediaEvent -> onEpisodeMediaEvent(event)
                     else -> {}
                 }
             }
+        }
+    }
+
+    private fun onEpisodeMediaEvent(event: FlowEvent.EpisodeMediaEvent) {
+        if (event.action == FlowEvent.EpisodeMediaEvent.Action.REMOVED) {
+            for (e in event.episodes) {
+                if (e.id == curEpisode?.id) {
+                    curEpisode = unmanaged(e)
+                    curMedia = curEpisode!!.media
+                    mPlayer?.endPlayback(hasEnded = false, wasSkipped = true, shouldContinue = true, toStoppedState = true)
+                    break
+                }
+            }
+        }
+    }
+
+    private fun onQueueEvent(event: FlowEvent.QueueEvent) {
+        if (event.action == FlowEvent.QueueEvent.Action.REMOVED) {
+            for (e in event.episodes) {
+                if (e.id == curEpisode?.id) {
+                    mPlayer?.endPlayback(hasEnded = false, wasSkipped = true, shouldContinue = true, toStoppedState = true)
+                    break
+                }
+            }
+        }
+    }
+
+    //    private fun onVolumeAdaptionChanged(event: FlowEvent.VolumeAdaptionChangedEvent) {
+//        if (mPlayer != null) updateVolumeIfNecessary(mPlayer!!, event.feedId, event.volumeAdaptionSetting)
+//    }
+
+    private fun onFeedPrefsChanged(event: FlowEvent.FeedPrefsChangeEvent) {
+        val item = (curMedia as? EpisodeMedia)?.episode ?: currentitem
+        if (item?.feed?.id == event.feed.id) {
+            item.feed = null
+//            seems no need to pause??
+//            if (MediaPlayerBase.status == PlayerStatus.PLAYING) {
+//                mPlayer?.pause(abandonFocus = false, reinit = false)
+//                mPlayer?.resume()
+//            }
         }
     }
 
@@ -1059,22 +1110,6 @@ class PlaybackService : MediaSessionService() {
                     mPlayer?.resume()
                 }
             }
-        }
-    }
-
-//    private fun onVolumeAdaptionChanged(event: FlowEvent.VolumeAdaptionChangedEvent) {
-//        if (mPlayer != null) updateVolumeIfNecessary(mPlayer!!, event.feedId, event.volumeAdaptionSetting)
-//    }
-
-    private fun onFeedPrefsChanged(event: FlowEvent.FeedPrefsChangeEvent) {
-        val item = (curMedia as? EpisodeMedia)?.episode ?: currentitem
-        if (item?.feed?.id == event.feed.id) {
-            item.feed = null
-//            seems no need to pause??
-//            if (MediaPlayerBase.status == PlayerStatus.PLAYING) {
-//                mPlayer?.pause(abandonFocus = false, reinit = false)
-//                mPlayer?.resume()
-//            }
         }
     }
 

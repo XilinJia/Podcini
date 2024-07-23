@@ -329,11 +329,30 @@ import kotlinx.coroutines.flow.collectLatest
         for (item in event.episodes) {
             val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
             if (pos >= 0) {
-                episodes.removeAt(pos)
                 if (getFilter().matches(item)) {
-                    episodes.add(pos, item)
+                    episodes[pos] = item
                     adapter.notifyItemChangedCompat(pos)
-                } else adapter.notifyItemRemoved(pos)
+                } else {
+                    episodes.removeAt(pos)
+                    adapter.notifyItemRemoved(pos)
+                }
+            }
+        }
+    }
+
+    private fun onEpisodeMediaEvent(event: FlowEvent.EpisodeMediaEvent) {
+//        Logd(TAG, "onEventMainThread() called with ${event.TAG}")
+        for (item in event.episodes) {
+            val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
+            if (pos >= 0) {
+                episodes[pos] = unmanaged(episodes[pos])
+                episodes[pos].media = item.media
+                if (getFilter().matches(item)) {
+                    adapter.notifyItemChangedCompat(pos)
+                } else {
+//                    episodes.removeAt(pos)
+//                    adapter.notifyItemRemoved(pos)
+                }
             }
         }
     }
@@ -387,6 +406,7 @@ import kotlinx.coroutines.flow.collectLatest
                     is FlowEvent.FeedListEvent, is FlowEvent.EpisodePlayedEvent, is FlowEvent.PlayerSettingsEvent, is FlowEvent.FavoritesEvent -> loadItems()
                     is FlowEvent.PlaybackPositionEvent -> onPlaybackPositionEvent(event)
                     is FlowEvent.EpisodeEvent -> onEpisodeEvent(event)
+                    is FlowEvent.EpisodeMediaEvent -> onEpisodeMediaEvent(event)
                     else -> {}
                 }
             }

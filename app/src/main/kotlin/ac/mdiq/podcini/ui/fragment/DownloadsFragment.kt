@@ -218,6 +218,7 @@ import java.util.*
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.EpisodeEvent -> onEpisodeEvent(event)
+                    is FlowEvent.EpisodeMediaEvent -> onEpisodeMediaEvent(event)
                     is FlowEvent.PlaybackPositionEvent -> onPlaybackPositionEvent(event)
                     is FlowEvent.FavoritesEvent -> onFavoriteEvent(event)
                     is FlowEvent.PlayerSettingsEvent -> loadItems()
@@ -290,12 +291,28 @@ import java.util.*
             if (pos >= 0) {
                 episodes.removeAt(pos)
                 val media = item.media
-                if (media != null && media.downloaded) {
-                    episodes.add(pos, item)
-//                    adapter.notifyItemChangedCompat(pos)
-                } else {
-//                    adapter.notifyItemRemoved(pos)
-                }
+                if (media != null && media.downloaded) episodes.add(pos, item)
+            }
+        }
+//        have to do this as adapter.notifyItemRemoved(pos) when pos == 0 causes crash
+        if (size > 0) {
+//            adapter.setDummyViews(0)
+            adapter.updateItems(episodes)
+        }
+        refreshInfoBar()
+    }
+
+    private fun onEpisodeMediaEvent(event: FlowEvent.EpisodeMediaEvent) {
+//        Logd(TAG, "onEpisodeEvent() called with ${event.TAG}")
+        var i = 0
+        val size: Int = event.episodes.size
+        while (i < size) {
+            val item: Episode = event.episodes[i++]
+            val pos = EpisodeUtil.indexOfItemWithId(episodes, item.id)
+            if (pos >= 0) {
+                episodes.removeAt(pos)
+                val media = item.media
+                if (media != null && media.downloaded) episodes.add(pos, item)
             }
         }
 //        have to do this as adapter.notifyItemRemoved(pos) when pos == 0 causes crash

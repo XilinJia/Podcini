@@ -1,3 +1,14 @@
+# 6.1.4
+
+* fixed issue of "mark excluded episodes played" checkbox not being reflected from the setting
+* in FeedSetting, fixed issue of auto-download options being enabled even if auto-download is not enabled
+* "Put in queue" changed to "Add to queue..." and added checkbox for removing from other queues
+* refined some handling on events
+* fixed issue of deleted episodes not being correctly handled in some lists
+* fixed issue of current media kept being played when removed or when removed from queue
+* in FeedEpisodes view, fixed (mostly) issue of not being promptly filtered when an episode state changes
+* when screen is turned back on during playback, PlayerUI is promptly updated
+
 # 6.1.3
 
 * added feed setting in the header of FeedInfo view

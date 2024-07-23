@@ -7,6 +7,7 @@ import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.event.FlowEvent.FeedListEvent.Action
 import android.content.Context
 import android.view.KeyEvent
 import androidx.core.util.Consumer
@@ -169,6 +170,24 @@ sealed class FlowEvent {
             }
             fun updated(vararg episodes: Episode): EpisodeEvent {
                 return EpisodeEvent(listOf(*episodes))
+            }
+        }
+    }
+
+    data class EpisodeMediaEvent(val action: Action, val episodes: List<Episode>) : FlowEvent() {
+        enum class Action { ADDED, REMOVED, UPDATED, ERROR, UNKNOWN }
+        companion object {
+            fun added(vararg episodes: Episode): EpisodeMediaEvent {
+                return EpisodeMediaEvent(Action.ADDED, listOf(*episodes))
+            }
+            fun updated(episodes: List<Episode>): EpisodeMediaEvent {
+                return EpisodeMediaEvent(Action.UPDATED, episodes)
+            }
+            fun updated(vararg episodes: Episode): EpisodeMediaEvent {
+                return EpisodeMediaEvent(Action.UPDATED, listOf(*episodes))
+            }
+            fun removed(vararg episodes: Episode): EpisodeMediaEvent {
+                return EpisodeMediaEvent(Action.REMOVED, listOf(*episodes))
             }
         }
     }

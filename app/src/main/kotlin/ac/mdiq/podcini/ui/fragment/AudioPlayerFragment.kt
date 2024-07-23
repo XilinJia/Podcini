@@ -279,6 +279,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
     override fun onResume() {
         Logd(TAG, "onResume() isCollapsed: $isCollapsed")
         super.onResume()
+        loadMediaInfo(false)
     }
 
     override fun onStart() {

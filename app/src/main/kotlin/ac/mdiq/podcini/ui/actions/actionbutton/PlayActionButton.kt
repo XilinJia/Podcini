@@ -63,7 +63,7 @@ class PlayActionButton(item: Episode) : EpisodeActionButton(item) {
             episode.media?.downloaded = false
             episode.media?.fileUrl = null
             upsertBlk(episode) {}
-            EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(episode))
+            EventFlow.postEvent(FlowEvent.EpisodeMediaEvent.removed(episode))
         }
         EventFlow.postEvent(FlowEvent.MessageEvent(context.getString(R.string.error_file_not_found)))
     }

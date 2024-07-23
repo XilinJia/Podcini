@@ -22,6 +22,7 @@ import android.app.Activity
 import android.content.DialogInterface
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.RadioButton
 import androidx.annotation.PluralsRes
 import androidx.media3.common.util.UnstableApi
@@ -118,6 +119,8 @@ class EpisodeMultiSelectHandler(private val activity: MainActivity, private val 
         fun show() {
             val activity = activityRef.get() ?: return
             val binding = SelectQueueDialogBinding.inflate(LayoutInflater.from(activity))
+            binding.removeCheckbox.visibility = View.VISIBLE
+
             val queues = realm.query(PlayQueue::class).find()
             for (i in queues.indices) {
                 val radioButton = RadioButton(activity)
@@ -137,21 +140,23 @@ class EpisodeMultiSelectHandler(private val activity: MainActivity, private val 
                 .setTitle(R.string.put_in_queue_label)
                 .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
                     val queues = realm.query(PlayQueue::class).find()
-                    val toRemove = mutableSetOf<Long>()
-                    val toRemoveCur = mutableListOf<Episode>()
-                    items.forEach { e ->
-                        if (curQueue.isInQueue(e)) toRemoveCur.add(e)
-                    }
-                    items.forEach { e ->
-                        for (q in queues) {
-                            if (q.isInQueue(e)) {
-                                toRemove.add(e.id)
-                                break
+                    if (binding.removeCheckbox.isChecked) {
+                        val toRemove = mutableSetOf<Long>()
+                        val toRemoveCur = mutableListOf<Episode>()
+                        items.forEach { e ->
+                            if (curQueue.isInQueue(e)) toRemoveCur.add(e)
+                        }
+                        items.forEach { e ->
+                            for (q in queues) {
+                                if (q.isInQueue(e)) {
+                                    toRemove.add(e.id)
+                                    break
+                                }
                             }
                         }
+                        if (toRemove.isNotEmpty()) runBlocking { removeFromAllQueuesQuiet(toRemove.toList()) }
+                        if (toRemoveCur.isNotEmpty()) EventFlow.postEvent(FlowEvent.QueueEvent.removed(toRemoveCur))
                     }
-                    if (toRemove.isNotEmpty()) runBlocking { removeFromAllQueuesQuiet(toRemove.toList()) }
-                    if (toRemoveCur.isNotEmpty()) EventFlow.postEvent(FlowEvent.QueueEvent.removed(toRemoveCur))
                     items.forEach { e ->
                         runBlocking { addToQueueSync(false, e, toQueue) }
                     }

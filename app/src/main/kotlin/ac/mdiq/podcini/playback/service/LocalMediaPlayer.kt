@@ -550,7 +550,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
                 callback.onPlaybackEnded(nextMedia.getMediaType(), false)
                 // setting media to null signals to playMediaObject that we're taking care of post-playback processing
                 curMedia = null
-                playMediaObject(nextMedia, !nextMedia.localFileAvailable(), isPlaying, isPlaying)
+                if(nextMedia != null) playMediaObject(nextMedia, !nextMedia.localFileAvailable(), isPlaying, isPlaying)
             }
         }
         when {

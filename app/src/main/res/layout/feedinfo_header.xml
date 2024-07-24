@@ -79,7 +79,7 @@
             android:layout_marginBottom="24dp"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
-            android:layout_alignParentBottom="true"
+            android:layout_alignParentTop="true"
             app:cardBackgroundColor="@color/non_square_icon_background"
             app:cardCornerRadius="8dp"
             app:cardPreventCornerOverlap="false"

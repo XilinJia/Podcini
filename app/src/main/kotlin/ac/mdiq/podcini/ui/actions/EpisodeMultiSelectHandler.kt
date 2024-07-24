@@ -39,19 +39,24 @@ class EpisodeMultiSelectHandler(private val activity: MainActivity, private val 
 
     fun handleAction(items: List<Episode>) {
         when (actionId) {
-            R.id.add_to_favorite_batch -> markFavorite(items, true)
-            R.id.remove_favorite_batch -> markFavorite(items, false)
+            R.id.toggle_favorite_batch -> toggleFavorite(items)
+//            R.id.add_to_favorite_batch -> markFavorite(items, true)
+//            R.id.remove_favorite_batch -> markFavorite(items, false)
             R.id.add_to_queue_batch -> queueChecked(items)
             R.id.put_in_queue_batch -> PutToQueueDialog(activity, items).show()
             R.id.remove_from_queue_batch -> removeFromQueueChecked(items)
-            R.id.mark_read_batch -> {
-                setPlayState(Episode.PLAYED, false, *items.toTypedArray())
-                showMessage(R.plurals.marked_read_batch_label, items.size)
+            R.id.toggle_played_batch -> {
+                setPlayState(-2, false, *items.toTypedArray())
+//                showMessage(R.plurals.marked_read_batch_label, items.size)
             }
-            R.id.mark_unread_batch -> {
-                setPlayState(Episode.UNPLAYED, false, *items.toTypedArray())
-                showMessage(R.plurals.marked_unread_batch_label, items.size)
-            }
+//            R.id.mark_read_batch -> {
+//                setPlayState(Episode.PLAYED, false, *items.toTypedArray())
+//                showMessage(R.plurals.marked_read_batch_label, items.size)
+//            }
+//            R.id.mark_unread_batch -> {
+//                setPlayState(Episode.UNPLAYED, false, *items.toTypedArray())
+//                showMessage(R.plurals.marked_unread_batch_label, items.size)
+//            }
             R.id.download_batch -> downloadChecked(items)
             R.id.delete_batch -> deleteChecked(items)
             else -> Log.e(TAG, "Unrecognized speed dial action item. Do nothing. id=$actionId")
@@ -74,9 +79,9 @@ class EpisodeMultiSelectHandler(private val activity: MainActivity, private val 
         showMessage(R.plurals.removed_from_queue_batch_label, checkedIds.size)
     }
 
-    private fun markFavorite(items: List<Episode>, stat: Boolean) {
+    private fun toggleFavorite(items: List<Episode>) {
         for (item in items) {
-            Episodes.setFavorite(item, true)
+            Episodes.setFavorite(item, null)
         }
         showMessage(R.plurals.marked_favorite_batch_label, items.size)
     }

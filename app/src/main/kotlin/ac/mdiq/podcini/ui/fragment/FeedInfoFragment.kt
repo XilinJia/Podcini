@@ -11,7 +11,6 @@ import ac.mdiq.podcini.storage.database.Feeds.updateFeedDownloadURL
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.FeedFunding
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.statistics.FeedStatisticsFragment
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.ui.utils.ToolbarIconTintManager
@@ -23,6 +22,7 @@ import android.R.string
 import android.app.Activity
 import android.content.*
 import android.content.res.Configuration
+import android.graphics.LightingColorFilter
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -32,7 +32,6 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.content.res.AppCompatResources
@@ -65,8 +64,8 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private val binding get() = _binding!!
 
     private lateinit var feed: Feed
-    private lateinit var imgvCover: ImageView
-    private lateinit var imgvBackground: ImageView
+//    private lateinit var imgvCover: ImageView
+//    private lateinit var imgvBackground: ImageView
     private lateinit var toolbar: MaterialToolbar
 
     private val addLocalFolderLauncher = registerForActivityResult<Uri?, Uri>(AddLocalFolder()) {
@@ -96,48 +95,38 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
         val appBar: AppBarLayout = binding.appBar
         val collapsingToolbar: CollapsingToolbarLayout = binding.collapsingToolbar
-        val iconTintManager: ToolbarIconTintManager =
-            object : ToolbarIconTintManager(requireContext(), toolbar, collapsingToolbar) {
-                override fun doTint(themedContext: Context) {
-                    toolbar.menu.findItem(R.id.visit_website_item).setIcon(AppCompatResources.getDrawable(themedContext, R.drawable.ic_web))
-                    toolbar.menu.findItem(R.id.share_item).setIcon(AppCompatResources.getDrawable(themedContext, R.drawable.ic_share))
-                }
+        val iconTintManager: ToolbarIconTintManager = object : ToolbarIconTintManager(requireContext(), toolbar, collapsingToolbar) {
+            override fun doTint(themedContext: Context) {
+                toolbar.menu.findItem(R.id.visit_website_item).setIcon(AppCompatResources.getDrawable(themedContext, R.drawable.ic_web))
+                toolbar.menu.findItem(R.id.share_item).setIcon(AppCompatResources.getDrawable(themedContext, R.drawable.ic_share))
             }
+        }
         iconTintManager.updateTint()
         appBar.addOnOffsetChangedListener(iconTintManager)
 
-        imgvCover = binding.header.imgvCover
-        imgvBackground = binding.imgvBackground
+//        imgvCover = binding.header.imgvCover
+//        imgvBackground = binding.imgvBackground
         // https://github.com/bumptech/glide/issues/529
-//        imgvBackground.colorFilter = LightingColorFilter(-0x7d7d7e, 0x000000)
+        binding.imgvBackground.colorFilter = LightingColorFilter(-0x7d7d7e, 0x000000)
 
         binding.header.episodes.text = feed.episodes.size.toString() + " episodes"
         binding.header.episodes.setOnClickListener {
-            val fragment: Fragment = FeedEpisodesFragment.newInstance(feed.id)
-            (activity as MainActivity).loadChildFragment(fragment)
+            (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
         }
         binding.header.butShowSettings.setOnClickListener {
-            val fragment = FeedSettingsFragment.newInstance(feed)
-            (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
+            (activity as MainActivity).loadChildFragment(FeedSettingsFragment.newInstance(feed), TransitionEffect.SLIDE)
         }
 
         binding.btnvRelatedFeeds.setOnClickListener {
             val fragment = OnlineSearchFragment.newInstance(CombinedSearcher::class.java, "${binding.header.txtvAuthor.text} podcasts")
             (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
         }
-
         binding.txtvUrl.setOnClickListener(copyUrlToClipboard)
-
-        val feedId = feed.id
         parentFragmentManager.beginTransaction().replace(R.id.statisticsFragmentContainer,
-            FeedStatisticsFragment.newInstance(feedId, false), "feed_statistics_fragment")
-            .commitAllowingStateLoss()
-
+            FeedStatisticsFragment.newInstance(feed.id, false), "feed_statistics_fragment").commitAllowingStateLoss()
         binding.btnvOpenStatistics.setOnClickListener {
-            val fragment = StatisticsFragment()
-            (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
+            (activity as MainActivity).loadChildFragment(StatisticsFragment(), TransitionEffect.SLIDE)
         }
-
         showFeed()
         return binding.root
     }
@@ -150,21 +139,21 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     private fun showFeed() {
-        Logd(TAG, "Language is " + feed.language)
-        Logd(TAG, "Author is " + feed.author)
-        Logd(TAG, "URL is " + feed.downloadUrl)
+        Logd(TAG, "Language: ${feed.language} Author: ${feed.author}")
+        Logd(TAG, "URL: ${feed.downloadUrl}")
 
 //        TODO: need to generate blurred image for background
-        imgvCover.load(feed.imageUrl) {
+        binding.header.imgvCover.load(feed.imageUrl) {
             placeholder(R.color.light_gray)
             error(R.mipmap.ic_launcher)
         }
-
         binding.header.txtvTitle.text = feed.title
-        binding.header.txtvTitle.setMaxLines(6)
+        binding.header.txtvTitle.setMaxLines(3)
 
-        val description: String = HtmlToPlainText.getPlainText(feed.description?:"")
-        binding.txtvDescription.text = description
+        binding.txtvDescription.text = HtmlToPlainText.getPlainText(feed.description?:"")
+
+        binding.feedTitle.text = feed.title
+        binding.feedAuthor.text = feed.author
 
         if (!feed.author.isNullOrEmpty()) binding.header.txtvAuthor.text = feed.author
 
@@ -224,10 +213,6 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     override fun onMenuItemClick(item: MenuItem): Boolean {
-//        if (feed == null) {
-//            (activity as MainActivity).showSnackbarAbovePlayer(R.string.please_wait_for_data, Toast.LENGTH_LONG)
-//            return false
-//        }
         when (item.itemId) {
             R.id.visit_website_item -> if (feed.link != null) IntentUtils.openInBrowser(requireContext(), feed.link!!)
             R.id.share_item -> ShareUtils.shareFeedLink(requireContext(), feed)
@@ -264,7 +249,6 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     @UnstableApi private fun reconnectLocalFolder(uri: Uri) {
-//        if (feed == null) return
         lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {

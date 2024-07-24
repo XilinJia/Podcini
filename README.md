@@ -79,14 +79,14 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * in Subscriptions view, click on cover image of a feed opens the FeedInfo view (not FeedEpisodes view)
 * in all episodes list views, click on an episode image brings up the FeedInfo view
 * in episode list view, if episode has no media, TTS button is shown for fetching transcript (if not exist) and then generating audio file from the transcript. TTS audio files are playable in the same way as local media (with speed setting, pause and rewind/forward)
-* Long-press filter button in FeedEpisode view enables/disables filters without changing filter settings
+* on action bar of FeedEpisodes view there is a direct access to Queue
+* Long-press filter button in FeedEpisodes view enables/disables filters without changing filter settings
 * History view shows time of last play, and allows filters and sorts
 * Multiple queues can be used: 5 queues are provided by default: Default queue, and Queues 1-4
 	* all queue operations are on the curQueue, which can be set in all episodes list views
 	* on app startup, the most recently updated queue is set to curQueue
-* queue is circular: if the final item in queue finished, the first item in queue (if exists) will get played
-* on action bar of FeedEpisodes view there is a direct access to Queue
-
+* Every queue is circular: if the final item in queue finished, the first item in queue (if exists) will get played
+* Every queue has a bin of past episodes added to the queue
 
 ### Podcast/Episode
 
@@ -133,8 +133,9 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * Disabled `usesCleartextTraffic`, so that all content transmission is more private and secure
 * Settings/Preferences can now be exported and imported
 * Play history/progress can be separately exported/imported as Json files
-* downloaded media files can be exported/imported
-* There is a setting to disable/enable auto backup OPML files to Google
+* Downloaded media files can be exported/imported
+* There is a setting to disable/enable auto backup of OPML files to Google
+* Upon re-install of Podcini, the OPML file previously backed up to Google is not imported automatically but based on user confirmation.
 
 For more details of the changes, see the [Changelog](changelog.md)
 

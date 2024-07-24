@@ -70,8 +70,8 @@ import java.util.concurrent.Semaphore
 /**
  * Displays a list of FeedItems.
  */
-@UnstableApi class FeedEpisodesFragment : Fragment(),
-    AdapterView.OnItemClickListener, Toolbar.OnMenuItemClickListener, SelectableAdapter.OnSelectModeListener {
+@UnstableApi class FeedEpisodesFragment
+    : Fragment(), AdapterView.OnItemClickListener, Toolbar.OnMenuItemClickListener, SelectableAdapter.OnSelectModeListener {
 
     private var _binding: FeedItemListFragmentBinding? = null
     private val binding get() = _binding!!

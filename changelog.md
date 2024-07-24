@@ -1,3 +1,13 @@
+# 6.1.5
+
+* minor adjustments on FeedInfo page, especially for handling long feed title
+* disabled feed updates via menu or down-swipe in Queue, AllEpisodes, History, and Downloads views
+* in multi-select menu, replaced add/remove favorite with "toggle favorites" and mark read/unread with "Toggle played"
+* added a bin for every queue for all removed episodes
+* added Bin view in Queue and action bar item to switch to/from Bin view.
+* in menu of Queue view added "Clean bin"  and removed "Switch queue"
+* updated some dependencies
+
 # 6.1.4
 
 * fixed issue of "mark excluded episodes played" checkbox not being reflected from the setting

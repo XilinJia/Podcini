@@ -4,7 +4,6 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.CheckboxDoNotShowAgainBinding
 import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.databinding.QueueFragmentBinding
-import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.base.InTheatre.isCurMedia
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.getCurrentPlaybackSpeed
@@ -21,7 +20,9 @@ import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
+import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectHandler
 import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
 import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
@@ -31,16 +32,13 @@ import ac.mdiq.podcini.ui.adapter.EpisodesAdapter
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
-import ac.mdiq.podcini.ui.dialog.SwitchQueueDialog
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
 import ac.mdiq.podcini.ui.view.EpisodesRecyclerView
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeViewHolder
-import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
-import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import android.content.Context
 import android.content.DialogInterface
 import android.content.SharedPreferences
@@ -91,6 +89,9 @@ import java.util.*
 
     private var adapter: QueueRecyclerAdapter? = null
     private var curIndex = -1
+
+    private var showBin: Boolean = false
+    private var addToQueueActionItem: SpeedDialActionItem? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -156,7 +157,7 @@ import java.util.*
 
         swipeRefreshLayout = binding.swipeRefresh
         swipeRefreshLayout.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
-        swipeRefreshLayout.setOnRefreshListener { FeedUpdateManager.runOnceOrAsk(requireContext()) }
+//        swipeRefreshLayout.setOnRefreshListener { FeedUpdateManager.runOnceOrAsk(requireContext()) }
 
         emptyView = EmptyViewHandler(requireContext())
         emptyView.attachToRecyclerView(recyclerView)
@@ -169,7 +170,7 @@ import java.util.*
         speedDialView = multiSelectDial.fabSD
         speedDialView.overlayLayout = multiSelectDial.fabSDOverlay
         speedDialView.inflate(R.menu.episodes_apply_action_speeddial)
-        speedDialView.removeActionItemById(R.id.add_to_queue_batch)
+        addToQueueActionItem = speedDialView.removeActionItemById(R.id.add_to_queue_batch)
         speedDialView.setOnChangeListener(object : SpeedDialView.OnChangeListener {
             override fun onMainActionSelected(): Boolean {
                 return false
@@ -182,8 +183,7 @@ import java.util.*
             }
         })
         speedDialView.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
-            EpisodeMultiSelectHandler((activity as MainActivity), actionItem.id)
-                .handleAction(adapter!!.selectedItems.filterIsInstance<Episode>())
+            EpisodeMultiSelectHandler((activity as MainActivity), actionItem.id).handleAction(adapter!!.selectedItems.filterIsInstance<Episode>())
             adapter?.endSelectMode()
             true
         }
@@ -260,6 +260,7 @@ import java.util.*
 
     private fun onQueueEvent(event: FlowEvent.QueueEvent) {
         Logd(TAG, "onQueueEvent() called with ${event.action.name}")
+        if (showBin) return
         if (adapter == null) {
             loadItems(true)
             return
@@ -395,7 +396,8 @@ import java.util.*
     }
 
     private fun onPlayerStatusChanged(event: FlowEvent.PlayerSettingsEvent) {
-//        Logd(TAG, "onPlayerStatusChanged() called with event = [$event]")
+        if (showBin) return
+        //        Logd(TAG, "onPlayerStatusChanged() called with event = [$event]")
         loadItems(false)
         refreshToolbarState()
     }
@@ -403,8 +405,9 @@ import java.util.*
     private fun onEpisodePlayedEvent(event: FlowEvent.EpisodePlayedEvent) {
         // Sent when playback position is reset
         Logd(TAG, "onUnreadItemsChanged() called with event = [$event]")
-        if (event.episode == null) loadItems(false)
-        else {
+        if (event.episode == null) {
+            if (!showBin) loadItems(false)
+        } else {
             val pos: Int = EpisodeUtil.indexOfItemWithId(queueItems, event.episode.id)
             if (pos >= 0) queueItems[pos].setPlayed(event.episode.isPlayed())
         }
@@ -449,15 +452,29 @@ import java.util.*
         val keepSorted: Boolean = isQueueKeepSorted
         toolbar.menu?.findItem(R.id.queue_lock)?.setChecked(isQueueLocked)
         toolbar.menu?.findItem(R.id.queue_lock)?.setVisible(!keepSorted)
-        toolbar.menu.findItem(R.id.switch_queue).setVisible(false)
+//        toolbar.menu.findItem(R.id.switch_queue).setVisible(false)
+        toolbar.menu.findItem(R.id.refresh_item).setVisible(false)
     }
 
     @UnstableApi override fun onMenuItemClick(item: MenuItem): Boolean {
         val itemId = item.itemId
         when (itemId) {
+            R.id.show_bin -> {
+                showBin = !showBin
+                if (showBin) {
+                    item.setIcon(R.drawable.ic_delete)
+                    speedDialView.addActionItem(addToQueueActionItem)
+                    swipeActions.detach()
+                } else {
+                    item.setIcon(R.drawable.trash_can_arrow_up_solid)
+                    speedDialView.removeActionItem(addToQueueActionItem)
+                    swipeActions.attachTo(recyclerView)
+                }
+                loadItems(false)
+            }
             R.id.queue_lock -> toggleQueueLock()
             R.id.queue_sort -> QueueSortDialog().show(childFragmentManager.beginTransaction(), "SortDialog")
-            R.id.refresh_item -> FeedUpdateManager.runOnceOrAsk(requireContext())
+//            R.id.refresh_item -> FeedUpdateManager.runOnceOrAsk(requireContext())
             R.id.clear_queue -> {
                 // make sure the user really wants to clear the queue
                 val conDialog: ConfirmationDialog = object : ConfirmationDialog(requireContext(), R.string.clear_queue_label, R.string.clear_queue_confirmation_msg) {
@@ -467,6 +484,10 @@ import java.util.*
                     }
                 }
                 conDialog.createNewDialog().show()
+            }
+            R.id.clear_bin -> {
+                curQueue.idsBin.clear()
+                upsertBlk(curQueue) {}
             }
             R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
 //            R.id.switch_queue -> SwitchQueueDialog(activity as MainActivity).show()
@@ -594,14 +615,17 @@ import java.util.*
             loadItemsRunning = true
             Logd(TAG, "loadItems() called")
             while (curQueue.name.isEmpty()) runBlocking { delay(100) }
-            curQueue.episodes.clear()
-            curQueue.episodes.addAll(realm.copyFromRealm(realm.query(Episode::class, "id IN $0", curQueue.episodeIds)
-                .find().sortedBy { curQueue.episodeIds.indexOf(it.id) }))
-
             if (queueItems.isEmpty()) emptyView.hide()
-
             queueItems.clear()
-            queueItems.addAll(curQueue.episodes)
+            if (showBin) {
+                queueItems.addAll(realm.copyFromRealm(realm.query(Episode::class, "id IN $0", curQueue.idsBin)
+                    .find().sortedBy { curQueue.idsBin.indexOf(it.id) }))
+            } else {
+                curQueue.episodes.clear()
+                curQueue.episodes.addAll(realm.copyFromRealm(realm.query(Episode::class, "id IN $0", curQueue.episodeIds)
+                    .find().sortedBy { curQueue.episodeIds.indexOf(it.id) }))
+                queueItems.addAll(curQueue.episodes)
+            }
             binding.progressBar.visibility = View.GONE
 //        adapter?.setDummyViews(0)
             adapter?.updateItems(queueItems)

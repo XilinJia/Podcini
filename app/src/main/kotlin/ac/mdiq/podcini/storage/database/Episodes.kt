@@ -10,7 +10,6 @@ import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.playback.base.InTheatre.writeNoMediaPlaying
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.ACTION_SHUTDOWN_PLAYBACK_SERVICE
-import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.Prefs
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Queues.removeFromAllQueuesSync
@@ -20,14 +19,18 @@ import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.EpisodeMedia
+import ac.mdiq.podcini.storage.model.Episode.Companion.BUILDING
+import ac.mdiq.podcini.storage.model.Episode.Companion.NEW
+import ac.mdiq.podcini.storage.model.Episode.Companion.PLAYED
+import ac.mdiq.podcini.storage.model.Episode.Companion.UNPLAYED
 import ac.mdiq.podcini.storage.model.EpisodeFilter
+import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
+import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
-import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import android.app.backup.BackupManager
 import android.content.Context
 import android.net.Uri
@@ -256,11 +259,11 @@ object Episodes {
     }
 
     @JvmStatic
-    fun setFavorite(episode: Episode, stat: Boolean) : Job {
+    fun setFavorite(episode: Episode, stat: Boolean?) : Job {
         Logd(TAG, "setFavorite called $stat")
         return runOnIOScope {
             val result = upsert(episode) {
-                it.isFavorite = stat
+                it.isFavorite = stat ?: !it.isFavorite
             }
             EventFlow.postEvent(FlowEvent.FavoritesEvent(result))
         }
@@ -286,10 +289,14 @@ object Episodes {
     suspend fun setPlayStateSync(played: Int, resetMediaPosition: Boolean, episode: Episode) : Episode {
         Logd(TAG, "setPlayStateSync called resetMediaPosition: $resetMediaPosition")
         val result = upsert(episode) {
-            it.playState = played
+            if (played >= NEW && played <= BUILDING) it.playState = played
+            else {
+                if (it.playState == UNPLAYED) it.playState = PLAYED
+                else if (it.playState == PLAYED) it.playState = UNPLAYED
+            }
             if (resetMediaPosition) it.media?.setPosition(0)
         }
-        if (played == Episode.PLAYED && shouldRemoveFromQueuesMarkPlayed()) removeFromAllQueuesSync(result)
+        if (played == PLAYED && shouldRemoveFromQueuesMarkPlayed()) removeFromAllQueuesSync(result)
         EventFlow.postEvent(FlowEvent.EpisodePlayedEvent(result))
         return result
     }

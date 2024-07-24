@@ -4,7 +4,6 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.databinding.SimpleListFragmentBinding
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
-import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.playback.base.InTheatre.isCurMedia
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
@@ -120,8 +119,6 @@ import java.util.*
         speedDialView.overlayLayout = multiSelectDial.fabSDOverlay
         speedDialView.inflate(R.menu.episodes_apply_action_speeddial)
         speedDialView.removeActionItemById(R.id.download_batch)
-//        speedDialView.removeActionItemById(R.id.mark_read_batch)
-//        speedDialView.removeActionItemById(R.id.mark_unread_batch)
         speedDialView.removeActionItemById(R.id.remove_from_queue_batch)
         speedDialView.setOnChangeListener(object : SpeedDialView.OnChangeListener {
             override fun onMainActionSelected(): Boolean {
@@ -178,7 +175,7 @@ import java.util.*
 
     @UnstableApi override fun onMenuItemClick(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.refresh_item -> FeedUpdateManager.runOnceOrAsk(requireContext())
+//            R.id.refresh_item -> FeedUpdateManager.runOnceOrAsk(requireContext())
             R.id.action_download_logs -> DownloadLogFragment().show(childFragmentManager, null)
             R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
             R.id.downloads_sort -> DownloadsSortDialog().show(childFragmentManager, "SortDialog")

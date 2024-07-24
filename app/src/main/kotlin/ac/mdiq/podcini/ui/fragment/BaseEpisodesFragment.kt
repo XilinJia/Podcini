@@ -110,7 +110,7 @@ import kotlinx.coroutines.flow.collectLatest
 
         swipeRefreshLayout = binding.swipeRefresh
         swipeRefreshLayout.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
-        swipeRefreshLayout.setOnRefreshListener { FeedUpdateManager.runOnceOrAsk(requireContext()) }
+//        swipeRefreshLayout.setOnRefreshListener { FeedUpdateManager.runOnceOrAsk(requireContext()) }
 
         createListAdaptor()
 
@@ -145,8 +145,9 @@ import kotlinx.coroutines.flow.collectLatest
             if (adapter.selectedItems.size >= 25 || adapter.shouldSelectLazyLoadedItems()) {
                 // Should ask for confirmation
                 when (actionItem.id) {
-                    R.id.mark_read_batch -> confirmationString = R.string.multi_select_mark_played_confirmation
-                    R.id.mark_unread_batch -> confirmationString = R.string.multi_select_mark_unplayed_confirmation
+//                    R.id.mark_read_batch -> confirmationString = R.string.multi_select_mark_played_confirmation
+//                    R.id.mark_unread_batch -> confirmationString = R.string.multi_select_mark_unplayed_confirmation
+                    R.id.toggle_played_batch -> confirmationString = R.string.multi_select_toggle_played_confirmation
                 }
             }
             if (confirmationString == 0) performMultiSelectAction(actionItem.id)
@@ -206,10 +207,10 @@ import kotlinx.coroutines.flow.collectLatest
 
         val itemId = item.itemId
         when (itemId) {
-            R.id.refresh_item -> {
-                FeedUpdateManager.runOnceOrAsk(requireContext())
-                return true
-            }
+//            R.id.refresh_item -> {
+//                FeedUpdateManager.runOnceOrAsk(requireContext())
+//                return true
+//            }
             R.id.action_search -> {
                 (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
                 return true

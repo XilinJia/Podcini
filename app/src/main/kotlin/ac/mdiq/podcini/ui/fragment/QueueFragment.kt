@@ -465,7 +465,7 @@ import java.util.*
                     item.setIcon(R.drawable.playlist_play)
                     speedDialView.addActionItem(addToQueueActionItem)
                 } else {
-                    item.setIcon(R.drawable.trash_can_arrow_up_solid)
+                    item.setIcon(R.drawable.ic_history)
                     speedDialView.removeActionItem(addToQueueActionItem)
                 }
                 loadItems(false)

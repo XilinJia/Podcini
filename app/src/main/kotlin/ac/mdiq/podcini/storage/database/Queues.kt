@@ -193,7 +193,7 @@ object Queues {
         return runOnIOScope {
             curQueue.update()
             curQueue.episodes.clear()
-            curQueue.idsBin.addAll(curQueue.episodeIds)
+            curQueue.idsBinList.addAll(curQueue.episodeIds)
             curQueue.episodeIds.clear()
             upsert(curQueue) {}
             EventFlow.postEvent(FlowEvent.QueueEvent.cleared())
@@ -242,7 +242,9 @@ object Queues {
         }
         if (indicesToRemove.isNotEmpty()) {
             for (i in indicesToRemove.indices.reversed()) {
-                queue.idsBin.add(qItems[indicesToRemove[i]].id)
+                val id = qItems[indicesToRemove[i]].id
+                queue.idsBinList.remove(id)
+                queue.idsBinList.add(id)
                 qItems.removeAt(indicesToRemove[i])
             }
             queue.update()
@@ -265,7 +267,8 @@ object Queues {
             if (q.id == curQueue.id) continue
             idsInQueuesToRemove = q.episodeIds.intersect(episodeIds.toSet()).toMutableSet()
             if (idsInQueuesToRemove.isNotEmpty()) {
-                q.idsBin.addAll(idsInQueuesToRemove)
+                q.idsBinList.removeAll(idsInQueuesToRemove)
+                q.idsBinList.addAll(idsInQueuesToRemove)
                 val qeids = q.episodeIds.minus(idsInQueuesToRemove)
                 upsert(q) {
                     it.episodeIds.clear()
@@ -278,7 +281,8 @@ object Queues {
         val q = curQueue
         idsInQueuesToRemove = q.episodeIds.intersect(episodeIds.toSet()).toMutableSet()
         if (idsInQueuesToRemove.isNotEmpty()) {
-            q.idsBin.addAll(idsInQueuesToRemove)
+            q.idsBinList.removeAll(idsInQueuesToRemove)
+            q.idsBinList.addAll(idsInQueuesToRemove)
             val qeids = q.episodeIds.minus(idsInQueuesToRemove)
             upsert(q) {
                 it.episodeIds.clear()

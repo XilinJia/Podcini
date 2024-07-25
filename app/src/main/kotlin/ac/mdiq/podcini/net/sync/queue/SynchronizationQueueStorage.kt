@@ -124,7 +124,7 @@ class SynchronizationQueueStorage(context: Context) {
         val json = sharedPreferences.getString(QUEUED_EPISODE_ACTIONS, "[]")
         try {
             val queue = JSONArray(json)
-            queue.put(action.writeToJsonObject())
+            queue.put(action.writeToJsonObjectForServer())
             sharedPreferences.edit().putString(QUEUED_EPISODE_ACTIONS, queue.toString()).apply()
         } catch (jsonException: JSONException) {
             jsonException.printStackTrace()

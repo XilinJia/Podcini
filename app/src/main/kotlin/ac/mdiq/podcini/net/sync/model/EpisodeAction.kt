@@ -17,14 +17,12 @@ class EpisodeAction private constructor(builder: Builder) {
 
     /**
      * Returns the position (in seconds) at which the client started playback.
-     *
      * @return start position (in seconds)
      */
     val started: Int
 
     /**
      * Returns the position (in seconds) at which the client stopped playback.
-     *
      * @return stop position (in seconds)
      */
     val position: Int
@@ -33,7 +31,6 @@ class EpisodeAction private constructor(builder: Builder) {
 
     /**
      * Returns the total length of the file in seconds.
-     *
      * @return total length in seconds
      */
     val total: Int
@@ -82,7 +79,6 @@ class EpisodeAction private constructor(builder: Builder) {
 
     /**
      * Returns a JSON object representation of this object.
-     *
      * @return JSON object representation, or null if the object is invalid
      */
     fun writeToJsonObject(): JSONObject? {
@@ -102,6 +98,32 @@ class EpisodeAction private constructor(builder: Builder) {
                 obj.put("playState", this.playState)
                 obj.put("total", this.total)
                 obj.put("isFavorite", this.isFavorite)
+            }
+        } catch (e: JSONException) {
+            Log.e(TAG, "writeToJSONObject(): " + e.message)
+            return null
+        }
+        return obj
+    }
+
+    /**
+     * Returns a JSON object representation of this object.
+     * @return JSON object representation, or null if the object is invalid
+     */
+    fun writeToJsonObjectForServer(): JSONObject? {
+        val obj = JSONObject()
+        try {
+            obj.putOpt("podcast", this.podcast)
+            obj.putOpt("episode", this.episode)
+            obj.putOpt("guid", this.guid)
+            obj.put("action", this.actionString)
+            val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
+            formatter.timeZone = TimeZone.getTimeZone("UTC")
+            if (this.timestamp != null) obj.put("timestamp", formatter.format(this.timestamp))
+            if (this.action == Action.PLAY) {
+                obj.put("started", this.started)
+                obj.put("position", this.position)
+                obj.put("total", this.total)
             }
         } catch (e: JSONException) {
             Log.e(TAG, "writeToJSONObject(): " + e.message)

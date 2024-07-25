@@ -24,10 +24,7 @@ class PlayQueue : RealmObject {
     @Ignore
     val episodes: MutableList<Episode> = mutableListOf()
 
-    var idsBin: RealmSet<Long> = realmSetOf()
-
-//    @Ignore
-//    val episodesBin: MutableList<Episode> = mutableListOf()
+    var idsBinList: RealmList<Long> = realmListOf()
 
     fun isInQueue(episode: Episode): Boolean {
         return episodeIds.contains(episode.id)

@@ -453,7 +453,7 @@ import java.util.*
         toolbar.menu?.findItem(R.id.queue_lock)?.setChecked(isQueueLocked)
         toolbar.menu?.findItem(R.id.queue_lock)?.setVisible(!keepSorted)
 //        toolbar.menu.findItem(R.id.switch_queue).setVisible(false)
-        toolbar.menu.findItem(R.id.refresh_item).setVisible(false)
+//        toolbar.menu.findItem(R.id.refresh_item).setVisible(false)
     }
 
     @UnstableApi override fun onMenuItemClick(item: MenuItem): Boolean {
@@ -462,13 +462,11 @@ import java.util.*
             R.id.show_bin -> {
                 showBin = !showBin
                 if (showBin) {
-                    item.setIcon(R.drawable.ic_delete)
+                    item.setIcon(R.drawable.playlist_play)
                     speedDialView.addActionItem(addToQueueActionItem)
-                    swipeActions.detach()
                 } else {
                     item.setIcon(R.drawable.trash_can_arrow_up_solid)
                     speedDialView.removeActionItem(addToQueueActionItem)
-                    swipeActions.attachTo(recyclerView)
                 }
                 loadItems(false)
             }
@@ -486,8 +484,9 @@ import java.util.*
                 conDialog.createNewDialog().show()
             }
             R.id.clear_bin -> {
-                curQueue.idsBin.clear()
+                curQueue.idsBinList.clear()
                 upsertBlk(curQueue) {}
+                if (showBin) loadItems(false)
             }
             R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
 //            R.id.switch_queue -> SwitchQueueDialog(activity as MainActivity).show()
@@ -618,8 +617,8 @@ import java.util.*
             if (queueItems.isEmpty()) emptyView.hide()
             queueItems.clear()
             if (showBin) {
-                queueItems.addAll(realm.copyFromRealm(realm.query(Episode::class, "id IN $0", curQueue.idsBin)
-                    .find().sortedBy { curQueue.idsBin.indexOf(it.id) }))
+                queueItems.addAll(realm.copyFromRealm(realm.query(Episode::class, "id IN $0", curQueue.idsBinList)
+                    .find().sortedBy { curQueue.idsBinList.indexOf(it.id) }))
             } else {
                 curQueue.episodes.clear()
                 curQueue.episodes.addAll(realm.copyFromRealm(realm.query(Episode::class, "id IN $0", curQueue.episodeIds)

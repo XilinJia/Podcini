@@ -50,7 +50,6 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
 
     /**
      * Searches the podcast directory for a given string.
-     *
      * @param query          The search query
      * @param scaledLogoSize The size of the logos that are returned by the search query.
      * Must be in range 1..256. If the value is out of range, the
@@ -82,10 +81,7 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
     val devices: List<GpodnetDevice>
         /**
          * Returns all devices of a given user.
-         *
-         *
          * This method requires authentication.
-         *
          * @throws GpodnetServiceAuthenticationException If there is an authentication error.
          */
         get() {
@@ -110,10 +106,7 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
 
     /**
      * Configures the device of a given user.
-     *
-     *
      * This method requires authentication.
-     *
      * @param deviceId The ID of the device that should be configured.
      * @throws GpodnetServiceAuthenticationException If there is an authentication error.
      */
@@ -147,13 +140,9 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
 
     /**
      * Uploads the subscriptions of a specific device.
-     *
-     *
      * This method requires authentication.
-     *
      * @param deviceId      The ID of the device whose subscriptions should be updated.
-     * @param subscriptions A list of feed URLs containing all subscriptions of the
-     * device.
+     * @param subscriptions A list of feed URLs containing all subscriptions of the device.
      * @throws IllegalArgumentException              If username, deviceId or subscriptions is null.
      * @throws GpodnetServiceAuthenticationException If there is an authentication error.
      */
@@ -181,16 +170,11 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
 
     /**
      * Updates the subscription list of a specific device.
-     *
-     *
      * This method requires authentication.
-     *
      * @param added    Collection of feed URLs of added feeds. This Collection MUST NOT contain any duplicates
      * @param removed  Collection of feed URLs of removed feeds. This Collection MUST NOT contain any duplicates
-     * @return a GpodnetUploadChangesResponse. See [GpodnetUploadChangesResponse]
-     * for details.
-     * @throws GpodnetServiceException            if added or removed contain duplicates or if there
-     * is an authentication error.
+     * @return a GpodnetUploadChangesResponse. See [GpodnetUploadChangesResponse] for details.
+     * @throws GpodnetServiceException  if added or removed contain duplicates or if there is an authentication error.
      */
     @Throws(GpodnetServiceException::class)
     override fun uploadSubscriptionChanges(added: List<String>, removed: List<String>): UploadChangesResponse {
@@ -220,13 +204,8 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
     }
 
     /**
-     * Returns all subscription changes of a specific device.
-     *
-     *
-     * This method requires authentication.
-     *
-     * @param timestamp A timestamp that can be used to receive all changes since a
-     * specific point in time.
+     * Returns all subscription changes of a specific device. This method requires authentication.
+     * @param timestamp A timestamp that can be used to receive all changes since a specific point in time.
      * @throws GpodnetServiceAuthenticationException If there is an authentication error.
      */
     @Throws(GpodnetServiceException::class)
@@ -254,16 +233,10 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
     }
 
     /**
-     * Updates the episode actions
-     *
-     *
-     * This method requires authentication.
-     *
+     * Updates the episode actions. This method requires authentication.
      * @param episodeActions Collection of episode actions.
-     * @return a GpodnetUploadChangesResponse. See [GpodnetUploadChangesResponse]
-     * for details.
-     * @throws GpodnetServiceException            if added or removed contain duplicates or if there
-     * is an authentication error.
+     * @return a GpodnetUploadChangesResponse. See [GpodnetUploadChangesResponse] for details.
+     * @throws GpodnetServiceException  if added or removed contain duplicates or if there is an authentication error.
      */
     @Throws(SyncServiceException::class)
     override fun uploadEpisodeActions(episodeActions: List<EpisodeAction>): UploadChangesResponse? {
@@ -287,7 +260,7 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
             val list = JSONArray()
             for (i in from until to) {
                 val episodeAction = episodeActions[i]
-                val obj = episodeAction!!.writeToJsonObject()
+                val obj = episodeAction!!.writeToJsonObjectForServer()
                 if (obj != null) {
                     obj.put("device", deviceId)
                     list.put(obj)
@@ -312,13 +285,8 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
     }
 
     /**
-     * Returns all subscription changes of a specific device.
-     *
-     *
-     * This method requires authentication.
-     *
-     * @param timestamp A timestamp that can be used to receive all changes since a
-     * specific point in time.
+     * Returns all subscription changes of a specific device. This method requires authentication.
+     * @param timestamp A timestamp that can be used to receive all changes since a specific point in time.
      * @throws SyncServiceException If there is an authentication error.
      */
     @Throws(SyncServiceException::class)
@@ -346,9 +314,7 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
     }
 
     /**
-     * Logs in a specific user. This method must be called if any of the methods
-     * that require authentication is used.
-     *
+     * Logs in a specific user. This method must be called if any of the methods that require authentication is used.
      * @throws IllegalArgumentException If username or password is null.
      */
     @Throws(GpodnetServiceException::class)
@@ -508,9 +474,7 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
 
     open class GpodnetServiceException : SyncServiceException {
         constructor(message: String?) : super(message)
-
         constructor(e: Throwable?) : super(e)
-
         companion object {
             private const val serialVersionUID = 1L
         }

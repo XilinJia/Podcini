@@ -9,12 +9,15 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.RealmDB.realm
+import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
+import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
+import ac.mdiq.podcini.storage.utils.FileNameGenerator.generateFileName
 import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectHandler
 import ac.mdiq.podcini.ui.actions.actionbutton.DeleteActionButton
 import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
@@ -35,7 +38,9 @@ import ac.mdiq.podcini.util.event.FlowEvent
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
+import androidx.core.app.ShareCompat.IntentBuilder
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
@@ -50,6 +55,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.util.*
 
 /**
@@ -180,9 +186,56 @@ import java.util.*
             R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
             R.id.downloads_sort -> DownloadsSortDialog().show(childFragmentManager, "SortDialog")
             R.id.switch_queue -> SwitchQueueDialog(activity as MainActivity).show()
+            R.id.reconsile -> reconsile()
             else -> return false
         }
         return true
+    }
+
+    private val nameEpisodeMap: MutableMap<String, Episode> = mutableMapOf()
+    private val filesRemoved: MutableList<String> = mutableListOf()
+    private fun reconsile() {
+        runOnIOScope {
+            nameEpisodeMap.clear()
+            episodes.forEach { e ->
+                var fileUrl = e.media?.fileUrl ?: return@forEach
+                fileUrl = fileUrl.substring(fileUrl.lastIndexOf('/') + 1)
+                Logd(TAG, "reconsile: fileUrl: $fileUrl")
+                nameEpisodeMap[fileUrl] = e
+            }
+            val mediaDir = requireContext().getExternalFilesDir("media") ?: return@runOnIOScope
+            mediaDir.listFiles()?.forEach { file -> traverse(file, mediaDir) }
+            Logd(TAG, "reconsile: end, episodes missing file: ${nameEpisodeMap.size}")
+            if (nameEpisodeMap.isNotEmpty()) {
+                for (e in nameEpisodeMap.values) {
+                    upsertBlk(e) {
+                        e.media?.setfileUrlOrNull(null)
+                    }
+                }
+            }
+            withContext(Dispatchers.Main) {
+                Toast.makeText(requireContext(), "Episodes reconsiled: ${nameEpisodeMap.size}\nFiles removed: ${filesRemoved.size}", Toast.LENGTH_LONG)
+            }
+        }
+    }
+
+    private fun traverse(srcFile: File, srcRootDir: File) {
+        val relativePath = srcFile.absolutePath.substring(srcRootDir.absolutePath.length+1)
+        if (srcFile.isDirectory) {
+            Logd(TAG, "traverse folder title: $relativePath")
+            val dirFiles = srcFile.listFiles()
+            dirFiles?.forEach { file -> traverse(file, srcFile) }
+        } else {
+            Logd(TAG, "traverse: $srcFile")
+            val episode = nameEpisodeMap.remove(relativePath)
+            if (episode == null) {
+                Logd(TAG, "traverse: error: episode not exist in map: $relativePath")
+                filesRemoved.add(relativePath)
+                srcFile.delete()
+                return
+            }
+            Logd(TAG, "traverse found episode: ${episode.title}")
+        }
     }
 
     private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {

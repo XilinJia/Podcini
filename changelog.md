@@ -1,3 +1,11 @@
+# 6.1.6
+
+* enabled swipe actions in Queue bin view (same actions as in Queue)
+* both icons of show bin and back to queue are changed to be more intuitive
+* bin items are sorted based on the update time
+* added a reconsile feature in Downloads view that verifies episodes' download status with media files in system and performs cleanup
+* likely fixed syncing with nextcloud and gpoddernet servers.
+
 # 6.1.5
 
 * minor adjustments on FeedInfo page, especially for handling long feed title

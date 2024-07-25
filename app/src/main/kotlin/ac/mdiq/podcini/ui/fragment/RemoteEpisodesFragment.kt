@@ -79,7 +79,7 @@ import kotlin.math.min
 
     override fun updateToolbar() {
         binding.toolbar.menu.findItem(R.id.episodes_sort).setVisible(false)
-        binding.toolbar.menu.findItem(R.id.refresh_item).setVisible(false)
+//        binding.toolbar.menu.findItem(R.id.refresh_item).setVisible(false)
         binding.toolbar.menu.findItem(R.id.action_search).setVisible(false)
         binding.toolbar.menu.findItem(R.id.action_favorites).setVisible(false)
         binding.toolbar.menu.findItem(R.id.filter_items).setVisible(false)

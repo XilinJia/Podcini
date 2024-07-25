@@ -94,7 +94,7 @@ class NextcloudSyncService(private val httpClient: OkHttpClient, baseHosturl: St
             val list = JSONArray()
             for (i in from until to) {
                 val episodeAction = queuedEpisodeActions!![i]
-                val obj = episodeAction!!.writeToJsonObject()
+                val obj = episodeAction!!.writeToJsonObjectForServer()
                 if (obj != null) list.put(obj)
             }
             val url: HttpUrl.Builder = makeUrl("/index.php/apps/gpoddersync/episode_action/create")

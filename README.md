@@ -83,10 +83,10 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * Long-press filter button in FeedEpisodes view enables/disables filters without changing filter settings
 * History view shows time of last play, and allows filters and sorts
 * Multiple queues can be used: 5 queues are provided by default: Default queue, and Queues 1-4
-	* all queue operations are on the curQueue, which can be set in all episodes list views
-	* on app startup, the most recently updated queue is set to curQueue
+  * all queue operations are on the curQueue, which can be set in all episodes list views
+  * on app startup, the most recently updated queue is set to curQueue
 * Every queue is circular: if the final item in queue finished, the first item in queue (if exists) will get played
-* Every queue has a bin of past episodes added to the queue
+* Every queue has a bin containing past episodes removed from the queue
 
 ### Podcast/Episode
 
@@ -127,13 +127,13 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
     * there are now separate dialogs for inclusive and exclusive filters where filter tokens can be specified independently
     * on exclusive dialog, there are optional check boxes "Exclude episodes shorter than" and "Mark excluded episodes played"
 
-
 ### Security and reliability
 
 * Disabled `usesCleartextTraffic`, so that all content transmission is more private and secure
 * Settings/Preferences can now be exported and imported
 * Play history/progress can be separately exported/imported as Json files
 * Downloaded media files can be exported/imported
+* Reconsile feature (accessed from Downloads view) is added to ensure downloaded media files are in sync with specs in DB
 * There is a setting to disable/enable auto backup of OPML files to Google
 * Upon re-install of Podcini, the OPML file previously backed up to Google is not imported automatically but based on user confirmation.
 

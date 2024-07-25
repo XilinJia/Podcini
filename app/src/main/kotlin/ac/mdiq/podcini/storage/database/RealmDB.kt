@@ -18,7 +18,7 @@ import kotlin.coroutines.ContinuationInterceptor
 object RealmDB {
     private val TAG: String = RealmDB::class.simpleName ?: "Anonymous"
 
-    private const val SCHEMA_VERSION_NUMBER = 13L
+    private const val SCHEMA_VERSION_NUMBER = 14L
 
     private val ioScope = CoroutineScope(Dispatchers.IO)
 

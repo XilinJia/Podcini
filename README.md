@@ -22,11 +22,11 @@ Compared to AntennaPod this project:
 3. Iron-age celebrity SQLite is replaced with modern object-base Realm DB (Podcini.R),
 4. Outfits with Viewbinding, Coil replacing Glide, coroutines replacing RxJava and threads, SharedFlow replacing EventBus, and jetifier removed,
 5. Boasts new UI's including streamlined drawer, subscriptions view and player controller,
-6. Supports multiple and circular play queues
+6. Supports multiple and circular play queues associable to any podcast
 7. Auto-download is governed by policy and limit settings of individual feed
-7. Accepts podcast as well as plain RSS and YouTube feeds,
-8. Offers Readability and Text-to-Speech for RSS contents,
-9. Features `instant sync` across devices without a server.
+8. Accepts podcast as well as plain RSS and YouTube feeds,
+9. Offers Readability and Text-to-Speech for RSS contents,
+10. Features `instant sync` across devices without a server.
 
 The project aims to profit from modern frameworks, improve efficiency and provide more useful and user-friendly features.
 
@@ -82,8 +82,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * on action bar of FeedEpisodes view there is a direct access to Queue
 * Long-press filter button in FeedEpisodes view enables/disables filters without changing filter settings
 * History view shows time of last play, and allows filters and sorts
-* Multiple queues can be used: 5 queues are provided by default: Default queue, and Queues 1-4
-  * all queue operations are on the curQueue, which can be set in all episodes list views
+* Multiple queues can be used: 5 queues are provided by default, user can add up to 10 queues
   * on app startup, the most recently updated queue is set to curQueue
 * Every queue is circular: if the final item in queue finished, the first item in queue (if exists) will get played
 * Every queue has a bin containing past episodes removed from the queue
@@ -91,6 +90,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 ### Podcast/Episode
 
 * New share notes menu option on various episode views
+* Every feed can be associated with a queue allowing downloaded media to be added to the queue
 * FeedInfo view offers a link for direct search of feeds related to author
 * FeedInfo view has button showing number of episodes to open the FeedEpisodes view
 * FeedInfo view has feed setting in the header

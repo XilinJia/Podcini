@@ -1,9 +1,27 @@
+# 6.2.0
+
+* first foot into Jetpack Compose, various views are in Compose
+* in Queue view, added menu option to change the name of the active queue, with a Compose dialog
+	* Default queue can not be changed, only unique names are allowed
+* in Queue view, added menu option to add a new queue, maximum number of queues allowed is 10
+* in Downloads view, revealed the message toaster for Reconsile operation
+* added associated queue setting for feed, with three choices: Default, Active and Custom
+	* the default queue for every feed is Default
+* episodes added to queue upon downloading are added to the respective queues associated with the feed
+* fixed crash issue when multi-select actions in Subscriptions
+* added associated queue setting in multi-select actions in Subscriptions
+* playing an episode from an episodes list other than the queue is now a one-off play: no "next episode" to play, unless the episode is on the active queue, in which case, the next episode in the queue will be played
+* corrected the wrong displays in DownloadLog view
+* likely fixed crash issue when Podcini comes back from background during download
+* likely fixed a crash issue when deleting the last playing media in queue
+* updated various dependencies, media3 is up at 1.4.0
+
 # 6.1.6
 
 * enabled swipe actions in Queue bin view (same actions as in Queue)
 * both icons of show bin and back to queue are changed to be more intuitive
 * bin items are sorted based on the update time
-* added a reconsile feature in Downloads view that verifies episodes' download status with media files in system and performs cleanup
+* added a Reconsile feature in Downloads view that verifies episodes' download status with media files in system and performs cleanup
 * likely fixed syncing with nextcloud and gpoddernet servers.
 
 # 6.1.5

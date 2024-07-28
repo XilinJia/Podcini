@@ -37,7 +37,7 @@ object AutoDownloads {
         t
     }
 
-    var downloadAlgorithm = FeedBasedAutoDLAlgorithm()
+    var downloadAlgorithm: AutoDownloadAlgorithm = FeedBasedAutoDLAlgorithm()
 
     /**
      * Looks for non-downloaded episodes in the queue or list of unread episodes and request a download if

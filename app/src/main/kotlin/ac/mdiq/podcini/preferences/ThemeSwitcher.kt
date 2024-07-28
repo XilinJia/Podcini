@@ -42,7 +42,7 @@ object ThemeSwitcher {
         }
     }
 
-    private fun readThemeValue(context: Context): UserPreferences.ThemePreference {
+    fun readThemeValue(context: Context): UserPreferences.ThemePreference {
         var theme = UserPreferences.theme
         if (theme == UserPreferences.ThemePreference.SYSTEM) {
             val nightMode = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK

@@ -99,7 +99,7 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
                     checkIfRedirect(response)
                     connection = BufferedInputStream(responseBody!!.byteStream())
 
-                    val contentRangeHeader = if ((fileExists)) response.header("Content-Range") else null
+                    val contentRangeHeader = if (fileExists) response.header("Content-Range") else null
                     if (fileExists && response.code == HttpURLConnection.HTTP_PARTIAL && !contentRangeHeader.isNullOrEmpty()) {
                         val start = contentRangeHeader.substring("bytes ".length, contentRangeHeader.indexOf("-"))
                         downloadRequest.soFar = start.toLong()

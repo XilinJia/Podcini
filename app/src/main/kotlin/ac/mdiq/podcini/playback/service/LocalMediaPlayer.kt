@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.playback.service
 
+import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.download.service.HttpCredentialEncoder
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient

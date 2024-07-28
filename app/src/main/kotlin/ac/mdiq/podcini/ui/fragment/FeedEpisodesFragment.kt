@@ -61,6 +61,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
+import io.realm.kotlin.ext.isManaged
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
 import org.apache.commons.lang3.StringUtils
@@ -190,6 +191,7 @@ import java.util.concurrent.Semaphore
             adapter.endSelectMode()
             true
         }
+        loadItems()
         return binding.root
     }
 
@@ -197,7 +199,7 @@ import java.util.concurrent.Semaphore
         Logd(TAG, "onStart() called")
         super.onStart()
         procFlowEvents()
-        loadItems()
+//        loadItems()
     }
 
     override fun onStop() {
@@ -433,13 +435,21 @@ import java.util.concurrent.Semaphore
     private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
 //        Logd(TAG, "onEpisodeDownloadEvent() called with ${event.TAG}")
         if (feed == null || episodes.isEmpty()) return
-
         for (downloadUrl in event.urls) {
             val pos: Int = EpisodeUtil.indexOfItemWithDownloadUrl(episodes, downloadUrl)
             if (pos >= 0) {
-//                TODO: need a better way
-                if (filterOutEpisode(episodes[pos])) adapter.updateItems(episodes)
-                else adapter.notifyItemChangedCompat(pos)
+//                episodes[pos] = upsertBlk(episodes[pos]) {
+//                    it.media?.setIsDownloaded()
+//                }
+                val item = unmanaged(episodes[pos])
+                if (item.media != null) {
+                    val m = unmanaged(item.media!!)
+                    m.downloaded = true
+                    item.media = m
+                    episodes[pos] = item
+                    if (filterOutEpisode(episodes[pos])) adapter.updateItems(episodes)
+                    else adapter.notifyItemChangedCompat(pos)
+                }
             }
         }
     }

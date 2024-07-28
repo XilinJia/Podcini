@@ -8,16 +8,17 @@ import ac.mdiq.podcini.databinding.PlaybackSpeedFeedSettingDialogBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
 import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
+import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
-import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.model.FeedAutoDownloadFilter
-import ac.mdiq.podcini.storage.model.FeedPreferences
+import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
-import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting
+import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.FeedAutoDeleteOptions
 import ac.mdiq.podcini.ui.adapter.SimpleChipAdapter
 import ac.mdiq.podcini.ui.dialog.AuthenticationDialog
 import ac.mdiq.podcini.ui.dialog.TagSettingsDialog
 import ac.mdiq.podcini.ui.utils.ItemOffsetDecoration
+import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.ui.compose.Spinner
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.content.DialogInterface
@@ -32,6 +33,20 @@ import android.widget.CompoundButton
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.OptIn
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.fragment.app.Fragment
 import androidx.media3.common.util.UnstableApi
 import androidx.preference.ListPreference
@@ -47,6 +62,10 @@ class FeedSettingsFragment : Fragment() {
     private var _binding: FeedsettingsBinding? = null
     private val binding get() = _binding!!
     private var feed: Feed? = null
+    private var feedPrefs: FeedPreferences? = null
+    private var autoDeleteSummaryResId by mutableIntStateOf(R.string.global_default)
+    private var autoDeletePolicy = "global"
+    private var queues: List<PlayQueue>? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FeedsettingsBinding.inflate(inflater)
@@ -54,7 +73,112 @@ class FeedSettingsFragment : Fragment() {
 
         val toolbar = binding.toolbar
         toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
+        feedPrefs = feed?.preferences
 
+        getAutoDeletePolicy()
+
+        binding.composeView.setContent {
+            CustomTheme(requireContext()) {
+                val textColor = MaterialTheme.colors.onSurface
+                Column(
+                    modifier = Modifier.padding(start = 20.dp, end = 16.dp, top = 10.dp, bottom = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Column {
+                        Row(Modifier.fillMaxWidth()) {
+                            Icon(ImageVector.vectorResource(id = R.drawable.ic_refresh), "", tint = textColor)
+                            Spacer(modifier = Modifier.width(20.dp))
+                            Text(
+                                text = stringResource(R.string.keep_updated),
+                                style = MaterialTheme.typography.h6,
+                                color = textColor
+                            )
+                            Spacer(modifier = Modifier.weight(1f))
+                            var checked by remember { mutableStateOf(feedPrefs?.keepUpdated ?: true) }
+                            Switch(
+                                checked = checked,
+                                onCheckedChange = {
+                                    checked = it
+                                    if (feedPrefs != null) {
+                                        feedPrefs!!.keepUpdated = checked
+                                        persistFeedPreferences(feed!!)
+                                    }
+                                }
+                            )
+                        }
+                        Text(
+                            text = stringResource(R.string.keep_updated_summary),
+                            style = MaterialTheme.typography.body2,
+                            color = textColor
+                        )
+                    }
+                    Column {
+                        Row(Modifier.fillMaxWidth()) {
+                            Icon(ImageVector.vectorResource(id = R.drawable.ic_playlist_play), "", tint = textColor)
+                            Spacer(modifier = Modifier.width(20.dp))
+                            Text(
+                                text = stringResource(R.string.pref_feed_associated_queue),
+                                style = MaterialTheme.typography.h6,
+                                color = textColor,
+                                modifier = Modifier.clickable(onClick = {
+                                    if (feedPrefs != null) {
+//                                    queues = realm.query(PlayQueue::class).find()
+                                        val selectedOption = when (feedPrefs?.queueId) {
+                                            null, 0L -> "Default"
+                                            -1L -> "Active"
+                                            else -> "Custom"
+                                        }
+                                        val composeView = ComposeView(requireContext()).apply {
+                                            setContent {
+                                                val showDialog = remember { mutableStateOf(true) }
+                                                CustomTheme(requireContext()) {
+                                                    SetAssociatedQueue(showDialog.value, selectedOption = selectedOption, onDismissRequest = { showDialog.value = false })
+                                                }
+                                            }
+                                        }
+                                        (view as? ViewGroup)?.addView(composeView)
+                                    }
+                                })
+                            )
+                        }
+                        Text(
+                            text = stringResource(R.string.pref_feed_associated_queue_sum),
+                            style = MaterialTheme.typography.body2,
+                            color = textColor
+                        )
+                    }
+                    Column {
+                        Row(Modifier.fillMaxWidth()) {
+                            Icon(ImageVector.vectorResource(id = R.drawable.ic_delete), "", tint = textColor)
+                            Spacer(modifier = Modifier.width(20.dp))
+                            Text(
+                                text = stringResource(R.string.auto_delete_label),
+                                style = MaterialTheme.typography.h6,
+                                color = textColor,
+                                modifier = Modifier.clickable(onClick = {
+                                    if (feedPrefs != null) {
+                                        val composeView = ComposeView(requireContext()).apply {
+                                            setContent {
+                                                val showDialog = remember { mutableStateOf(true) }
+                                                CustomTheme(requireContext()) {
+                                                    AutoDeleteDialog(showDialog.value, onDismissRequest = { showDialog.value = false })
+                                                }
+                                            }
+                                        }
+                                        (view as? ViewGroup)?.addView(composeView)
+                                    }
+                                })
+                            )
+                        }
+                        Text(
+                            text = stringResource(autoDeleteSummaryResId),
+                            style = MaterialTheme.typography.body2,
+                            color = textColor
+                        )
+                    }
+                }
+            }
+        }
         if (feed != null) {
             toolbar.subtitle = feed!!.title
             parentFragmentManager.beginTransaction()
@@ -68,7 +192,146 @@ class FeedSettingsFragment : Fragment() {
         Logd(TAG, "onDestroyView")
         _binding = null
         feed = null
+        queues = null
         super.onDestroyView()
+    }
+
+    private fun getAutoDeletePolicy() {
+        when (feedPrefs!!.autoDeleteAction) {
+            AutoDeleteAction.GLOBAL -> {
+                autoDeleteSummaryResId = R.string.global_default
+                autoDeletePolicy = "global"
+            }
+            AutoDeleteAction.ALWAYS -> {
+                autoDeleteSummaryResId = R.string.feed_auto_download_always
+                autoDeletePolicy = "always"
+            }
+            AutoDeleteAction.NEVER -> {
+                autoDeleteSummaryResId = R.string.feed_auto_download_never
+                autoDeletePolicy = "never"
+            }
+        }
+    }
+    @Composable
+    fun AutoDeleteDialog(showDialog: Boolean, onDismissRequest: () -> Unit) {
+        if (showDialog) {
+            val (selectedOption, onOptionSelected) = remember { mutableStateOf(autoDeletePolicy) }
+            Dialog(onDismissRequest = { onDismissRequest() }) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(400.dp)
+                        .padding(16.dp),
+                    shape = RoundedCornerShape(16.dp),
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Column {
+                            FeedAutoDeleteOptions.forEach { text ->
+                                Row(
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .selectable(
+                                            selected = (text == selectedOption),
+                                            onClick = {
+                                                if (text != selectedOption) {
+                                                    Logd(TAG, "row clicked: $text")
+                                                    onOptionSelected(text)
+                                                    when (text) {
+                                                        "global" -> feedPrefs!!.autoDeleteAction =
+                                                            AutoDeleteAction.GLOBAL
+                                                        "always" -> feedPrefs!!.autoDeleteAction =
+                                                            AutoDeleteAction.ALWAYS
+                                                        "never" -> feedPrefs!!.autoDeleteAction = AutoDeleteAction.NEVER
+                                                    }
+                                                    persistFeedPreferences(feed!!)
+                                                    getAutoDeletePolicy()
+                                                    onDismissRequest()
+                                                }
+                                            }
+                                        )
+                                        .padding(horizontal = 16.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    RadioButton(
+                                        selected = (text == selectedOption),
+                                        onClick = { }
+                                    )
+                                    Text(
+                                        text = text,
+                                        style = MaterialTheme.typography.body1.merge(),
+//                                        color = textColor,
+                                        modifier = Modifier.padding(start = 16.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun SetAssociatedQueue(showDialog: Boolean, selectedOption: String, onDismissRequest: () -> Unit) {
+        var selected by remember {mutableStateOf(selectedOption)}
+        if (showDialog) {
+            Dialog(onDismissRequest = { onDismissRequest() }) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(400.dp)
+                        .padding(16.dp),
+                    shape = RoundedCornerShape(16.dp),
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        queueSettingOptions.forEach { option ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Checkbox(
+                                    checked = option == selected,
+                                    onCheckedChange = { isChecked ->
+                                        selected = option
+                                        if (isChecked) Logd(TAG, "$option is checked")
+                                        when (selected) {
+                                            "Default" -> {
+                                                feedPrefs?.queueId = 0L
+                                                persistFeedPreferences(feed!!)
+                                                onDismissRequest()
+                                            }
+                                            "Active" -> {
+                                                feedPrefs?.queueId = -1L
+                                                persistFeedPreferences(feed!!)
+                                                onDismissRequest()
+                                            }
+                                            "Custom" -> {}
+                                        }
+                                    }
+                                )
+                                Text(option)
+                            }
+                        }
+                        if (selected == "Custom") {
+                            if (queues == null) queues = realm.query(PlayQueue::class).find()
+                            Spinner(items = queues!!.map { it.name }, selectedItem = feedPrefs?.queue?.name ?: "Default") { name ->
+                                Logd(TAG, "Queue selected: $name")
+                                val q = queues?.firstOrNull { it.name == name }
+                                feedPrefs?.queue = q
+                                persistFeedPreferences(feed!!)
+                                onDismissRequest()
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     class FeedSettingsPreferenceFragment : PreferenceFragmentCompat() {
@@ -104,10 +367,11 @@ class FeedSettingsFragment : Fragment() {
                     persistFeedPreferences(feed!!)
                 }
                 feedPrefs = feed!!.preferences
+//                setupAssociatedQueue()
                 setupAutoDownloadGlobalPreference()
                 setupAutoDownloadPreference()
-                setupKeepUpdatedPreference()
-                setupAutoDeletePreference()
+//                setupKeepUpdatedPreference()
+//                setupAutoDeletePreference()
                 setupVolumeAdaptationPreferences()
                 setupAuthentificationPreference()
                 updateAutoDownloadPolicy()
@@ -118,7 +382,7 @@ class FeedSettingsFragment : Fragment() {
                 setupPlaybackSpeedPreference()
                 setupFeedAutoSkipPreference()
                 setupTags()
-                updateAutoDeleteSummary()
+//                updateAutoDeleteSummary()
                 updateVolumeAdaptationValue()
                 updateAutoDownloadEnabled()
                 if (feed!!.isLocalFeed) {
@@ -276,39 +540,6 @@ class FeedSettingsFragment : Fragment() {
                 false
             }
         }
-        @UnstableApi private fun setupAutoDeletePreference() {
-            findPreference<Preference>(Prefs.autoDelete.name)!!.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any? ->
-                if (feedPrefs != null) {
-                    when (newValue as? String) {
-                        "global" -> feedPrefs!!.autoDeleteAction = AutoDeleteAction.GLOBAL
-                        "always" -> feedPrefs!!.autoDeleteAction = AutoDeleteAction.ALWAYS
-                        "never" -> feedPrefs!!.autoDeleteAction = AutoDeleteAction.NEVER
-                        else -> {}
-                    }
-                    persistFeedPreferences(feed!!)
-                    updateAutoDeleteSummary()
-                }
-                false
-            }
-        }
-        private fun updateAutoDeleteSummary() {
-            if (feedPrefs == null) return
-            val autoDeletePreference = findPreference<ListPreference>(Prefs.autoDelete.name)
-            when (feedPrefs!!.autoDeleteAction) {
-                AutoDeleteAction.GLOBAL -> {
-                    autoDeletePreference!!.setSummary(R.string.global_default)
-                    autoDeletePreference.value = "global"
-                }
-                AutoDeleteAction.ALWAYS -> {
-                    autoDeletePreference!!.setSummary(R.string.feed_auto_download_always)
-                    autoDeletePreference.value = "always"
-                }
-                AutoDeleteAction.NEVER -> {
-                    autoDeletePreference!!.setSummary(R.string.feed_auto_download_never)
-                    autoDeletePreference.value = "never"
-                }
-            }
-        }
         @UnstableApi private fun setupVolumeAdaptationPreferences() {
             val volumeAdaptationPreference = findPreference<ListPreference>("volumeReduction") ?: return
             volumeAdaptationPreference.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any? ->
@@ -338,20 +569,6 @@ class FeedSettingsFragment : Fragment() {
                 VolumeAdaptionSetting.MEDIUM_BOOST -> volumeAdaptationPreference.value = "medium_boost"
                 VolumeAdaptionSetting.HEAVY_BOOST -> volumeAdaptationPreference.value = "heavy_boost"
                 else -> {}
-            }
-        }
-        @OptIn(UnstableApi::class) private fun setupKeepUpdatedPreference() {
-            if (feedPrefs == null) return
-            val pref = findPreference<SwitchPreferenceCompat>(Prefs.keepUpdated.name)
-            pref!!.isChecked = feedPrefs!!.keepUpdated
-            pref.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any ->
-                val checked = newValue == true
-                if (feedPrefs != null) {
-                    feedPrefs!!.keepUpdated = checked
-                    persistFeedPreferences(feed!!)
-                }
-                pref.isChecked = checked
-                false
             }
         }
         private fun setupAutoDownloadGlobalPreference() {
@@ -403,14 +620,17 @@ class FeedSettingsFragment : Fragment() {
                 true
             }
         }
+
         fun setFeed(feed_: Feed) {
             feed = feed_
         }
 
+        @Suppress("EnumEntryName")
         private enum class Prefs {
             feedSettingsScreen,
             keepUpdated,
             authentication,
+            associatedQueue,
             autoDelete,
             feedPlaybackSpeed,
             feedAutoSkip,
@@ -530,12 +750,10 @@ class FeedSettingsFragment : Fragment() {
                         // Do not change anything on error
                     }
                 }
-                var excludeFilter = ""
-                excludeFilter = toFilterString(termList)
+                val excludeFilter = toFilterString(termList)
                 onConfirmed(FeedAutoDownloadFilter(filter.includeFilterRaw, excludeFilter, minimalDuration, binding.markPlayedCheckBox.isChecked))
             } else {
-                var includeFilter = ""
-                includeFilter = toFilterString(termList)
+                val includeFilter = toFilterString(termList)
                 onConfirmed(FeedAutoDownloadFilter(includeFilter, filter.excludeFilterRaw, filter.minimalDurationFilter, filter.markExcludedPlayed))
             }
         }
@@ -555,6 +773,8 @@ class FeedSettingsFragment : Fragment() {
     companion object {
         private val TAG: String = FeedSettingsFragment::class.simpleName ?: "Anonymous"
         private const val EXTRA_FEED_ID = "ac.mdiq.podcini.extra.feedId"
+
+        val queueSettingOptions = listOf("Default", "Active", "Custom")
 
         fun newInstance(feed: Feed): FeedSettingsFragment {
             val fragment = FeedSettingsFragment()

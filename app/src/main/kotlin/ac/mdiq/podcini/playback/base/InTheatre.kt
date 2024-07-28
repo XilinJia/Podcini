@@ -29,7 +29,7 @@ object InTheatre {
 
     var curMedia: Playable? = null      // unmanged if EpisodeMedia
         set(value) {
-            field = value
+            field = if (value != null && value is EpisodeMedia) unmanaged(value) else value
             if (field is EpisodeMedia) {
                 val media = (field as EpisodeMedia)
                 if (curEpisode != media.episode) curEpisode = media.episode
@@ -49,8 +49,7 @@ object InTheatre {
                 curQueue = unmanaged(curQueue_)
                 curQueue.episodes.addAll(realm.copyFromRealm(realm.query(Episode::class, "id IN $0", curQueue.episodeIds)
                     .find().sortedBy { curQueue.episodeIds.indexOf(it.id) }))
-            }
-            else {
+            } else {
                 Logd(TAG, "creating new curQueue")
                 for (i in 0..4) {
                     curQueue_ = PlayQueue()

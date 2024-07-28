@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.storage.model
 
+import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting.Companion.fromInteger
 import io.realm.kotlin.ext.realmSetOf
 import io.realm.kotlin.types.EmbeddedRealmObject
@@ -60,6 +61,15 @@ class FeedPreferences : EmbeddedRealmObject {
     var autoDownload: Boolean = false
 
     @Ignore
+    var queue: PlayQueue? = null
+        get() = if(queueId >= 0) realm.query(PlayQueue::class).query("id == $queueId").first().find() else null
+        set(value) {
+            field = value
+            queueId = value?.id ?: -1L
+        }
+    var queueId: Long = 0L
+
+    @Ignore
     var autoDownloadFilter: FeedAutoDownloadFilter? = null
         get() = field ?: FeedAutoDownloadFilter(autoDLInclude, autoDLExclude, autoDLMinDuration, markExcludedPlayed)
         set(value) {
@@ -99,14 +109,17 @@ class FeedPreferences : EmbeddedRealmObject {
         }
     }
 
-    enum class AutoDeleteAction(val code: Int) {
-        GLOBAL(0),
-        ALWAYS(1),
-        NEVER(2);
+    enum class AutoDeleteAction(val code: Int, val tag: String) {
+        GLOBAL(0, "global"),
+        ALWAYS(1, "always"),
+        NEVER(2, "never");
 
         companion object {
             fun fromCode(code: Int): AutoDeleteAction {
                 return enumValues<AutoDeleteAction>().firstOrNull { it.code == code } ?: NEVER
+            }
+            fun fromTag(tag: String): AutoDeleteAction {
+                return enumValues<AutoDeleteAction>().firstOrNull { it.tag == tag } ?: NEVER
             }
         }
     }
@@ -151,5 +164,7 @@ class FeedPreferences : EmbeddedRealmObject {
         const val SPEED_USE_GLOBAL: Float = -1f
         const val TAG_ROOT: String = "#root"
         const val TAG_SEPARATOR: String = "\u001e"
+
+        val FeedAutoDeleteOptions = AutoDeleteAction.values().map { it.tag }
     }
 }

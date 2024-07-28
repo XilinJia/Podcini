@@ -7,17 +7,23 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.getTags
-import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
 import ac.mdiq.podcini.storage.database.RealmDB.realm
+import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
+import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
+import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.FeedAutoDeleteOptions
 import ac.mdiq.podcini.ui.actions.menuhandler.FeedMenuHandler
 import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
+import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.ui.compose.Spinner
 import ac.mdiq.podcini.ui.dialog.FeedFilterDialog
 import ac.mdiq.podcini.ui.dialog.FeedSortDialog
 import ac.mdiq.podcini.ui.dialog.RemoveFeedDialog
 import ac.mdiq.podcini.ui.dialog.TagSettingsDialog
+import ac.mdiq.podcini.ui.fragment.FeedSettingsFragment.Companion.queueSettingOptions
 import ac.mdiq.podcini.ui.utils.CoverLoader
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
@@ -36,6 +42,19 @@ import android.widget.*
 import androidx.annotation.OptIn
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.Toolbar
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.core.util.Consumer
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -49,7 +68,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
-import io.realm.kotlin.query.RealmResults
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
@@ -223,7 +241,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         super.onSaveInstanceState(outState)
     }
 
-    fun queryStringOfTags() : String {
+    private fun queryStringOfTags() : String {
         return when (tagFilterIndex) {
             1 ->  ""    // All feeds
             0 ->  " preferences.tags.@count == 0 OR (preferences.tags.@count == 0 AND ALL preferences.tags == '#root' ) "
@@ -234,7 +252,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         }
     }
 
-    fun filterOnTag() {
+    private fun filterOnTag() {
         feedListFiltered = feedList
         binding.count.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
         adapter.setItems(feedListFiltered)
@@ -353,22 +371,21 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         val fQueryStr = if (tagsQueryStr.isEmpty()) FeedFilter(feedsFilter).queryString() else FeedFilter(feedsFilter).queryString() + " AND " + tagsQueryStr
         Logd(TAG, "sortFeeds() called $feedsFilter $fQueryStr")
         val feedList_ = getFeedList(fQueryStr).toMutableList()
-        val feeds_ = feedList_
         val feedOrder = feedOrderBy
         val dir = 1 - 2*feedOrderDir    // get from 0, 1 to 1, -1
         val comparator: Comparator<Feed> = when (feedOrder) {
             FeedSortOrder.UNPLAYED_NEW_OLD.index -> {
                 val queryString = "feedId == $0 AND (playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED})"
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
-                for (f in feeds_) {
+                for (f in feedList_) {
                     val c = realm.query(Episode::class).query(queryString, f.id).count().find()
                     counterMap[f.id] = c
-                    f.sortInfo = c.toString() + " unplayed"
+                    f.sortInfo = "$c unplayed"
                 }
                 comparator(counterMap, dir)
             }
             FeedSortOrder.ALPHABETIC_A_Z.index -> {
-                for (f in feeds_) f.sortInfo = ""
+                for (f in feedList_) f.sortInfo = ""
                 Comparator { lhs: Feed, rhs: Feed ->
                     val t1 = lhs.title
                     val t2 = rhs.title
@@ -382,63 +399,66 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             FeedSortOrder.MOST_PLAYED.index -> {
                 val queryString = "feedId == $0 AND playState == ${Episode.PLAYED}"
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
-                for (f in feeds_) {
+                for (f in feedList_) {
                     val c = realm.query(Episode::class).query(queryString, f.id).count().find()
                     counterMap[f.id] = c
-                    f.sortInfo = c.toString() + " played"
+                    f.sortInfo = "$c played"
                 }
                 comparator(counterMap, dir)
             }
             FeedSortOrder.LAST_UPDATED_NEW_OLD.index -> {
                 val queryString = "feedId == $0 SORT(pubDate DESC)"
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
-                for (f in feeds_) {
+                for (f in feedList_) {
                     val d = realm.query(Episode::class).query(queryString, f.id).first().find()?.pubDate ?: 0L
                     counterMap[f.id] = d
                     val dateFormat = SimpleDateFormat("yy-MM-dd HH:mm", Locale.getDefault())
-                    f.sortInfo = "Updated on " + dateFormat.format(Date(d))
+                    f.sortInfo = "Updated: " + dateFormat.format(Date(d))
                 }
                 comparator(counterMap, dir)
             }
             FeedSortOrder.LAST_DOWNLOAD_NEW_OLD.index -> {
                 val queryString = "feedId == $0 SORT(media.downloadTime DESC)"
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
-                for (f in feeds_) {
-                    val d = realm.query(Episode::class).query(queryString, f.id).first().find()?.media?.downloadTime ?: 0L
+                for (f in feedList_) {
+                    val d =
+                        realm.query(Episode::class).query(queryString, f.id).first().find()?.media?.downloadTime ?: 0L
                     counterMap[f.id] = d
                     val dateFormat = SimpleDateFormat("yy-MM-dd HH:mm", Locale.getDefault())
-                    f.sortInfo = "Downloaded on " + dateFormat.format(Date(d))
+                    f.sortInfo = "Downloaded: " + dateFormat.format(Date(d))
                 }
                 comparator(counterMap, dir)
             }
             FeedSortOrder.LAST_UPDATED_UNPLAYED_NEW_OLD.index -> {
-                val queryString = "feedId == $0 AND (playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED}) SORT(pubDate DESC)"
+                val queryString =
+                    "feedId == $0 AND (playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED}) SORT(pubDate DESC)"
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
-                for (f in feeds_) {
+                for (f in feedList_) {
                     val d = realm.query(Episode::class).query(queryString, f.id).first().find()?.pubDate ?: 0L
                     counterMap[f.id] = d
                     val dateFormat = SimpleDateFormat("yy-MM-dd HH:mm", Locale.getDefault())
-                    f.sortInfo = "Unplayed since " + dateFormat.format(Date(d))
+                    f.sortInfo = "Unplayed: " + dateFormat.format(Date(d))
                 }
                 comparator(counterMap, dir)
             }
             FeedSortOrder.MOST_DOWNLOADED.index -> {
                 val queryString = "feedId == $0 AND media.downloaded == true"
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
-                for (f in feeds_) {
+                for (f in feedList_) {
                     val c = realm.query(Episode::class).query(queryString, f.id).count().find()
                     counterMap[f.id] = c
-                    f.sortInfo = c.toString() + " downloaded"
+                    f.sortInfo = "$c downloaded"
                 }
                 comparator(counterMap, dir)
             }
             FeedSortOrder.MOST_DOWNLOADED_UNPLAYED.index -> {
-                val queryString = "feedId == $0 AND (playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED}) AND media.downloaded == true"
+                val queryString =
+                    "feedId == $0 AND (playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED}) AND media.downloaded == true"
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
-                for (f in feeds_) {
+                for (f in feedList_) {
                     val c = realm.query(Episode::class).query(queryString, f.id).count().find()
                     counterMap[f.id] = c
-                    f.sortInfo = c.toString() + " downloaded unplayed"
+                    f.sortInfo = "$c downloaded unplayed"
                 }
                 comparator(counterMap, dir)
             }
@@ -446,10 +466,10 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             else -> {
                 val queryString = "feedId == $0 AND playState == ${Episode.NEW}"
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
-                for (f in feeds_) {
+                for (f in feedList_) {
                     val c = realm.query(Episode::class).query(queryString, f.id).count().find()
                     counterMap[f.id] = c
-                    f.sortInfo = c.toString() + " new"
+                    f.sortInfo = "$c new"
                 }
                 comparator(counterMap, dir)
             }
@@ -495,7 +515,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
     }
 
     @UnstableApi
-    class FeedMultiSelectActionHandler(private val activity: MainActivity, private val selectedItems: List<Feed>) {
+    private class FeedMultiSelectActionHandler(private val activity: MainActivity, private val selectedItems: List<Feed>) {
         fun handleAction(id: Int) {
             when (id) {
                 R.id.remove_feed -> RemoveFeedDialog.show(activity, selectedItems)
@@ -503,6 +523,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 R.id.autodownload -> autoDownloadPrefHandler()
                 R.id.autoDeleteDownload -> autoDeleteEpisodesPrefHandler()
                 R.id.playback_speed -> playbackSpeedPrefHandler()
+                R.id.associate_queue -> associatedQueuePrefHandler()
                 R.id.edit_tags -> TagSettingsDialog.newInstance(selectedItems).show(activity.supportFragmentManager, TAG)
                 else -> Log.e(TAG, "Unrecognized speed dial action item. Do nothing. id=$id")
             }
@@ -511,7 +532,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             val preferenceSwitchDialog = PreferenceSwitchDialog(activity, activity.getString(R.string.auto_download_settings_label), activity.getString(R.string.auto_download_label))
             preferenceSwitchDialog.setOnPreferenceChangedListener(@UnstableApi object: PreferenceSwitchDialog.OnPreferenceChangedListener {
                 override fun preferenceChanged(enabled: Boolean) {
-//                saveFeedPreferences { feedPreferences: FeedPreferences -> feedPreferences.autoDownload = enabled }
+                saveFeedPreferences { it: FeedPreferences -> it.autoDownload = enabled }
                 }
             })
             preferenceSwitchDialog.openDialog()
@@ -533,49 +554,217 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 .setPositiveButton("OK") { _: DialogInterface?, _: Int ->
                     val newSpeed = if (vBinding.useGlobalCheckbox.isChecked) FeedPreferences.SPEED_USE_GLOBAL
                     else vBinding.seekBar.currentSpeed
-                    saveFeedPreferences { feedPreferences: FeedPreferences ->
-                        feedPreferences.playSpeed = newSpeed
+                    saveFeedPreferences { it: FeedPreferences ->
+                        it.playSpeed = newSpeed
                     }
                 }
                 .setNegativeButton(R.string.cancel_label, null)
                 .show()
         }
         private fun autoDeleteEpisodesPrefHandler() {
-            val preferenceListDialog = PreferenceListDialog(activity, activity.getString(R.string.auto_delete_label))
-            val items: Array<String> = activity.resources.getStringArray(R.array.spnAutoDeleteItems)
-            preferenceListDialog.openDialog(items)
-            preferenceListDialog.setOnPreferenceChangedListener(object: PreferenceListDialog.OnPreferenceChangedListener {
-                @UnstableApi override fun preferenceChanged(pos: Int) {
-                    val autoDeleteAction: FeedPreferences.AutoDeleteAction = FeedPreferences.AutoDeleteAction.fromCode(pos)
-                    saveFeedPreferences { feedPreferences: FeedPreferences ->
-                        feedPreferences.autoDeleteAction = autoDeleteAction
+            val composeView = ComposeView(activity).apply {
+                setContent {
+                    val showDialog = remember { mutableStateOf(true) }
+                    CustomTheme(activity) {
+                        AutoDeleteDialog(showDialog.value, onDismissRequest = { showDialog.value = false })
                     }
                 }
-            })
+            }
+            (activity.window.decorView as ViewGroup).addView(composeView)
+        }
+        private fun associatedQueuePrefHandler() {
+            val composeView = ComposeView(activity).apply {
+                setContent {
+                    val showDialog = remember { mutableStateOf(true) }
+                    CustomTheme(activity) {
+                        SetAssociatedQueue(showDialog.value, onDismissRequest = { showDialog.value = false })
+                    }
+                }
+            }
+            (activity.window.decorView as ViewGroup).addView(composeView)
         }
         private fun keepUpdatedPrefHandler() {
-            val preferenceSwitchDialog = PreferenceSwitchDialog(activity, activity.getString(R.string.kept_updated), activity.getString(R.string.keep_updated_summary))
-            preferenceSwitchDialog.setOnPreferenceChangedListener(object: PreferenceSwitchDialog.OnPreferenceChangedListener {
-                @UnstableApi override fun preferenceChanged(enabled: Boolean) {
-                    saveFeedPreferences { feedPreferences: FeedPreferences ->
-                        feedPreferences.keepUpdated = enabled
+            val composeView = ComposeView(activity).apply {
+                setContent {
+                    val showDialog = remember { mutableStateOf(true) }
+                    CustomTheme(activity) {
+                        KeepUpdatedDialog(showDialog.value, onDismissRequest = { showDialog.value = false })
                     }
                 }
-            })
-            preferenceSwitchDialog.openDialog()
+            }
+            (activity.window.decorView as ViewGroup).addView(composeView)
         }
         @UnstableApi private fun saveFeedPreferences(preferencesConsumer: Consumer<FeedPreferences>) {
             for (feed in selectedItems) {
                 if (feed.preferences == null) continue
-                preferencesConsumer.accept(feed.preferences!!)
-                persistFeedPreferences(feed)
-//                EventFlow.postEvent(FlowEvent.FeedListUpdateEvent(feed.preferences!!.feedID))
+                runOnIOScope {
+                    upsert(feed) {
+                        preferencesConsumer.accept(it.preferences!!)
+                    }
+                }
             }
             val numItems = selectedItems.size
             activity.showSnackbarAbovePlayer(activity.resources.getQuantityString(R.plurals.updated_feeds_batch_label, numItems, numItems), Snackbar.LENGTH_LONG)
         }
-        companion object {
-            private val TAG: String = FeedMultiSelectActionHandler::class.simpleName ?: "Anonymous"
+        @Composable
+        fun KeepUpdatedDialog(showDialog: Boolean, onDismissRequest: () -> Unit) {
+            if (showDialog) {
+                Dialog(onDismissRequest = { onDismissRequest() }) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                            .padding(16.dp),
+                        shape = RoundedCornerShape(16.dp),
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Row(Modifier.fillMaxWidth()) {
+                                Icon(ImageVector.vectorResource(id = R.drawable.ic_refresh), "")
+                                Spacer(modifier = Modifier.width(20.dp))
+                                Text(
+                                    text = stringResource(R.string.keep_updated),
+                                    style = MaterialTheme.typography.h6
+                                )
+                                Spacer(modifier = Modifier.weight(1f))
+                                var checked by remember { mutableStateOf(false) }
+                                Switch(
+                                    checked = checked,
+                                    onCheckedChange = {
+                                        checked = it
+                                        saveFeedPreferences { pref: FeedPreferences ->
+                                            pref.keepUpdated = checked
+                                        }
+                                    }
+                                )
+                            }
+                            Text(
+                                text = stringResource(R.string.keep_updated_summary),
+                                style = MaterialTheme.typography.body2
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        @Composable
+        fun AutoDeleteDialog(showDialog: Boolean, onDismissRequest: () -> Unit) {
+            if (showDialog) {
+                val (selectedOption, onOptionSelected) = remember { mutableStateOf("") }
+                Dialog(onDismissRequest = { onDismissRequest() }) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(400.dp)
+                            .padding(16.dp),
+                        shape = RoundedCornerShape(16.dp),
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Column {
+                                FeedAutoDeleteOptions.forEach { text ->
+                                    Row(
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .selectable(
+                                                selected = (text == selectedOption),
+                                                onClick = {
+                                                    if (text != selectedOption) {
+                                                        val autoDeleteAction: AutoDeleteAction = AutoDeleteAction.fromTag(text)
+                                                        saveFeedPreferences { it: FeedPreferences ->
+                                                            it.autoDeleteAction = autoDeleteAction
+                                                        }
+                                                        onDismissRequest()
+                                                    }
+                                                }
+                                            )
+                                            .padding(horizontal = 16.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        RadioButton(
+                                            selected = (text == selectedOption),
+                                            onClick = { }
+                                        )
+                                        Text(
+                                            text = text,
+                                            style = MaterialTheme.typography.body1.merge(),
+                                            modifier = Modifier.padding(start = 16.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        @Composable
+        private fun SetAssociatedQueue(showDialog: Boolean, onDismissRequest: () -> Unit) {
+            var selected by remember {mutableStateOf("")}
+            if (showDialog) {
+                Dialog(onDismissRequest = { onDismissRequest() }) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(400.dp)
+                            .padding(16.dp),
+                        shape = RoundedCornerShape(16.dp),
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            queueSettingOptions.forEach { option ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Checkbox(
+                                        checked = option == selected,
+                                        onCheckedChange = { isChecked ->
+                                            selected = option
+                                            if (isChecked) Logd(TAG, "$option is checked")
+                                            when (selected) {
+                                                "Default" -> {
+                                                    saveFeedPreferences { it: FeedPreferences ->
+                                                        it.queueId = 0L
+                                                    }
+                                                    onDismissRequest()
+                                                }
+                                                "Active" -> {
+                                                    saveFeedPreferences { it: FeedPreferences ->
+                                                        it.queueId = -1L
+                                                    }
+                                                    onDismissRequest()
+                                                }
+                                                "Custom" -> {}
+                                            }
+                                        }
+                                    )
+                                    Text(option)
+                                }
+                            }
+                            if (selected == "Custom") {
+                                val queues = realm.query(PlayQueue::class).find()
+                                Spinner(items = queues.map { it.name }, selectedItem = "Default") { name ->
+                                    Logd(TAG, "Queue selected: $name")
+                                    val q = queues.firstOrNull { it.name == name }
+                                    if (q != null) {
+                                        saveFeedPreferences { it: FeedPreferences ->
+                                            it.queueId = q.id
+                                        }
+                                        onDismissRequest()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -853,34 +1042,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         }
         private fun convertDpToPixel(context: Context, dp: Float): Float {
             return dp * context.resources.displayMetrics.density
-        }
-    }
-
-    class PreferenceListDialog(private var context: Context, private val title: String) {
-        private var onPreferenceChangedListener: OnPreferenceChangedListener? = null
-        private var selectedPos = 0
-
-        interface OnPreferenceChangedListener {
-            /**
-             * Notified when user confirms preference
-             * @param pos The index of the item that was selected
-             */
-            fun preferenceChanged(pos: Int)
-        }
-        fun openDialog(items: Array<String>?) {
-            val builder = MaterialAlertDialogBuilder(context)
-            builder.setTitle(title)
-            builder.setSingleChoiceItems(items, selectedPos) { _: DialogInterface?, which: Int ->
-                selectedPos = which
-            }
-            builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
-                if (onPreferenceChangedListener != null && selectedPos >= 0) onPreferenceChangedListener!!.preferenceChanged(selectedPos)
-            }
-            builder.setNegativeButton(R.string.cancel_label, null)
-            builder.create().show()
-        }
-        fun setOnPreferenceChangedListener(onPreferenceChangedListener: OnPreferenceChangedListener?) {
-            this.onPreferenceChangedListener = onPreferenceChangedListener
         }
     }
 

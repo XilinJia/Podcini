@@ -2,11 +2,11 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     android:key="feedSettingsScreen">
 
-    <SwitchPreferenceCompat
-        android:icon="@drawable/ic_refresh"
-        android:key="keepUpdated"
-        android:summary="@string/keep_updated_summary"
-        android:title="@string/keep_updated" />
+<!--    <SwitchPreferenceCompat-->
+<!--        android:icon="@drawable/ic_refresh"-->
+<!--        android:key="keepUpdated"-->
+<!--        android:summary="@string/keep_updated_summary"-->
+<!--        android:title="@string/keep_updated" />-->
 
     <Preference
         android:icon="@drawable/ic_key"
@@ -20,6 +20,12 @@
         android:summary="@string/feed_tags_summary"
         android:title="@string/feed_tags_label" />
 
+<!--    <Preference-->
+<!--        android:icon="@drawable/ic_playlist_play"-->
+<!--        android:key="associatedQueue"-->
+<!--        android:summary="@string/pref_feed_associated_queue_sum"-->
+<!--        android:title="@string/pref_feed_associated_queue" />-->
+
     <Preference
         android:icon="@drawable/ic_playback_speed"
         android:key="feedPlaybackSpeed"
@@ -32,13 +38,13 @@
         android:summary="@string/pref_feed_skip_sum"
         android:title="@string/pref_feed_skip" />
 
-    <ac.mdiq.podcini.preferences.MaterialListPreference
-        android:entries="@array/spnAutoDeleteItems"
-        android:entryValues="@array/spnAutoDeleteValues"
-        android:icon="@drawable/ic_delete"
-        android:key="autoDelete"
-        android:summary="@string/global_default"
-        android:title="@string/auto_delete_label" />
+<!--    <ac.mdiq.podcini.preferences.MaterialListPreference-->
+<!--        android:entries="@array/spnAutoDeleteItems"-->
+<!--        android:entryValues="@array/spnAutoDeleteValues"-->
+<!--        android:icon="@drawable/ic_delete"-->
+<!--        android:key="autoDelete"-->
+<!--        android:summary="@string/global_default"-->
+<!--        android:title="@string/auto_delete_label" />-->
 
     <ac.mdiq.podcini.preferences.MaterialListPreference
         android:defaultValue="off"

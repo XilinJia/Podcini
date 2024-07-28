@@ -7,6 +7,7 @@ import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isFollowQueue
 import ac.mdiq.podcini.storage.algorithms.AutoDownloads
 import ac.mdiq.podcini.storage.algorithms.AutoDownloads.downloadAlgorithm
 import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.storage.model.Feed
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import de.test.podcini.EspressoTestUtils
@@ -104,7 +105,7 @@ class AutoDownloadTest {
         var currentlyPlayingAtDownload: Long = -1
             private set
 
-        override fun autoDownloadEpisodeMediaNew(context: Context): Runnable {
+        override fun autoDownloadEpisodeMedia(context: Context, feeds: List<Feed>?): Runnable {
             return Runnable {
                 if (currentlyPlayingAtDownload == -1L) {
 //                    currentlyPlayingAtDownload = currentlyPlayingFeedMediaId

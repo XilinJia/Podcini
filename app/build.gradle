@@ -2,9 +2,17 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id 'org.jetbrains.kotlin.android'
+    alias(libs.plugins.compose.compiler)
     id 'io.realm.kotlin'
-//    id 'com.google.devtools.ksp'
     id('com.github.triplet.play') version '3.8.3' apply false
+}
+
+//apply plugin: 'org.jetbrains.compose'
+
+composeCompiler {
+    enableStrongSkippingMode = true
+    reportsDestination = layout.buildDirectory.dir("compose_compiler")
+//    stabilityConfigurationFile = rootProject.layout.projectDirectory.file("stability_config.conf")
 }
 
 // from common.gradle
@@ -17,21 +25,37 @@ android {
         kotlinOptions {
             jvmTarget = '17'
         }
-
+        composeOptions {
+            kotlinCompilerExtensionVersion = "1.5.14"
+        }
         vectorDrawables.useSupportLibrary false
         vectorDrawables.generatedDensities = []
 
         testApplicationId "ac.mdiq.podcini.tests"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-    }
 
-    buildTypes {
-        release {
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard.cfg"
-            resValue "string", "app_name", "Podcini.R"
-        }
-        debug {
-            resValue "string", "app_name", "Podcini.R Debug"
+        versionCode 3020221
+        versionName "6.2.0"
+
+        applicationId "ac.mdiq.podcini.R"
+        def commit = ""
+//        try {
+//            def hashStdOut = new ByteArrayOutputStream()
+//            exec {
+//                commandLine "git", "rev-parse", "--short", "HEAD"
+//                standardOutput = hashStdOut
+//            }
+//            commit = hashStdOut.toString().trim()
+//        } catch (Exception ignore) {
+//        }
+        buildConfigField "String", "COMMIT_HASH", ('"' + (commit.isEmpty() ? "Unknown commit" : commit) + '"')
+
+        if (project.hasProperty("podcastindexApiKey")) {
+            buildConfigField "String", "PODCASTINDEX_API_KEY", '"' + podcastindexApiKey + '"'
+            buildConfigField "String", "PODCASTINDEX_API_SECRET", '"' + podcastindexApiSecret + '"'
+        } else {
+            buildConfigField "String", "PODCASTINDEX_API_KEY", '"QT2RYHSUZ3UC9GDJ5MFY"'
+            buildConfigField "String", "PODCASTINDEX_API_SECRET", '"Zw2NL74ht5aCtx5zFL$#MY$##qdVCX7x37jq95Sz"'
         }
     }
 
@@ -60,41 +84,13 @@ android {
         }
     }
 
-    lint {
-//        disable "GradleDependency"
-        checkReleaseBuilds false
-        checkDependencies true
-        warningsAsErrors true
-        abortOnError true
-        checkGeneratedSources = true
-    }
-
     buildFeatures {
         viewBinding true
         buildConfig true
+        compose true
     }
-}
-
-//tasks.withType(Test).configureEach {
-//    testLogging {
-//        exceptionFormat "full"
-//        events "skipped", "passed", "failed"
-//        showStandardStreams true
-//        displayGranularity 2
-//    }
-//}
-
-//gradle.projectsEvaluated {
-//    tasks.withType(JavaCompile).tap {
-//        configureEach {
-//            options.compilerArgs << "-Xlint"
-//        }
-//    }
-//}
-
 
 // from playFlavor.gradle
-android {
     flavorDimensions += ["market"]
     productFlavors {
         free {
@@ -104,52 +100,36 @@ android {
             dimension "market"
         }
     }
-}
 
 // start of the app build.gradle
-android {
     namespace "ac.mdiq.podcini"
     lint {
         lintConfig = file("lint.xml")
-//         checkOnly += ['NewApi', 'InlinedApi']
-        checkOnly += ['NewApi', 'InlinedApi', 'Performance', 'DuplicateIds']
 
-        disable += ['TypographyDashes', 'TypographyQuotes', 'ObsoleteLintCustomCheck', 'CheckResult', 'UnusedAttribute', 'BatteryLife', 'InflateParams',
-                'RestrictedApi', 'TrustAllX509TrustManager', 'ExportedReceiver', 'VectorDrawableCompat',
-                'StaticFieldLeak', 'UseCompoundDrawables', 'NestedWeights', 'Overdraw', 'UselessParent', 'TextFields',
-                'AlwaysShowAction', 'Autofill', 'ClickableViewAccessibility', 'ContentDescription',
-                'KeyboardInaccessibleWidget', 'LabelFor', 'SetTextI18n', 'HardcodedText', 'RelativeOverlap',
-                'RtlCompat', 'RtlHardcoded', 'MissingMediaBrowserServiceIntentFilter', 'VectorPath',
-                'InvalidPeriodicWorkRequestInterval', 'NotifyDataSetChanged', 'RtlEnabled']
-    }
-    buildFeatures {
-        buildConfig true
-    }
-    defaultConfig {
-        versionCode 3020220
-        versionName "6.1.6"
+        //        disable "GradleDependency"
+        checkReleaseBuilds false
+        checkDependencies true
+        warningsAsErrors true
+        abortOnError true
+        checkGeneratedSources = true
 
-        applicationId "ac.mdiq.podcini.R"
-        def commit = ""
-//        try {
-//            def hashStdOut = new ByteArrayOutputStream()
-//            exec {
-//                commandLine "git", "rev-parse", "--short", "HEAD"
-//                standardOutput = hashStdOut
-//            }
-//            commit = hashStdOut.toString().trim()
-//        } catch (Exception ignore) {
-//        }
-        buildConfigField "String", "COMMIT_HASH", ('"' + (commit.isEmpty() ? "Unknown commit" : commit) + '"')
+//        checkOnly += ['NewApi', 'InlinedApi', 'Performance', 'DuplicateIds']
 
-        if (project.hasProperty("podcastindexApiKey")) {
-            buildConfigField "String", "PODCASTINDEX_API_KEY", '"' + podcastindexApiKey + '"'
-            buildConfigField "String", "PODCASTINDEX_API_SECRET", '"' + podcastindexApiSecret + '"'
-        } else {
-            buildConfigField "String", "PODCASTINDEX_API_KEY", '"QT2RYHSUZ3UC9GDJ5MFY"'
-            buildConfigField "String", "PODCASTINDEX_API_SECRET", '"Zw2NL74ht5aCtx5zFL$#MY$##qdVCX7x37jq95Sz"'
-        }
+//        disable += ['TypographyDashes', 'TypographyQuotes', 'ObsoleteLintCustomCheck', 'CheckResult', 'UnusedAttribute', 'BatteryLife', 'InflateParams',
+//                'RestrictedApi', 'TrustAllX509TrustManager', 'ExportedReceiver', 'VectorDrawableCompat',
+//                'StaticFieldLeak', 'UseCompoundDrawables', 'NestedWeights', 'Overdraw', 'UselessParent', 'TextFields',
+//                'AlwaysShowAction', 'Autofill', 'ClickableViewAccessibility', 'ContentDescription',
+//                'KeyboardInaccessibleWidget', 'LabelFor', 'SetTextI18n', 'HardcodedText', 'RelativeOverlap',
+//                'RtlCompat', 'RtlHardcoded', 'MissingMediaBrowserServiceIntentFilter', 'VectorPath',
+//                'InvalidPeriodicWorkRequestInterval', 'NotifyDataSetChanged', 'RtlEnabled']
+        disable += ['TypographyDashes', 'TypographyQuotes', 'ObsoleteLintCustomCheck', 'BatteryLife',
+                    'ExportedReceiver', 'VectorDrawableCompat', 'NestedWeights', 'Overdraw', 'TextFields',
+                    'AlwaysShowAction', 'Autofill', 'ClickableViewAccessibility', 'ContentDescription',
+                    'KeyboardInaccessibleWidget', 'LabelFor', 'RelativeOverlap',
+                    'RtlCompat', 'RtlHardcoded', 'VectorPath', 'RtlEnabled']
+
     }
+
     signingConfigs {
         releaseConfig {
             enableV1Signing true
@@ -160,12 +140,10 @@ android {
             keyPassword project.getProperties().getOrDefault("releaseKeyPassword", "password")
         }
     }
+
     buildTypes {
-        debug {
-            applicationIdSuffix ".debug"
-            resValue "string", "provider_authority", "ac.mdiq.podcini.R.debug.provider"
-        }
         release {
+            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard.cfg"
             resValue "string", "app_name", "Podcini.R"
             resValue "string", "provider_authority", "ac.mdiq.podcini.R.provider"
             minifyEnabled true
@@ -173,7 +151,13 @@ android {
             signingConfig signingConfigs.releaseConfig
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard.cfg"
         }
+        debug {
+            resValue "string", "app_name", "Podcini.R Debug"
+            applicationIdSuffix ".debug"
+            resValue "string", "provider_authority", "ac.mdiq.podcini.R.debug.provider"
+        }
     }
+
     applicationVariants.configureEach { variant ->
         variant.outputs.configureEach { output ->
             def applicationName = "Podcini.R"
@@ -187,22 +171,39 @@ android {
 }
 
 dependencies {
+    def composeBom = platform('androidx.compose:compose-bom:2024.06.00')
+    implementation composeBom
+    androidTestImplementation composeBom
+
+//    implementation 'androidx.compose.material3:material3:1.2.0'
+    implementation 'androidx.compose.material:material:1.6.8'
+//    implementation 'androidx.compose.foundation:foundation:1.6.2'
+
+    implementation 'androidx.compose.ui:ui-tooling-preview:1.6.8'
+    debugImplementation 'androidx.compose.ui:ui-tooling:1.6.8'
+
+    // Optional - Add full set of material icons
+//    implementation 'androidx.compose.material:material-icons-extended'
+    // Optional - Add window size utils
+//    implementation 'androidx.compose.material3:material3-window-size-class'
+
+    implementation 'androidx.activity:activity-compose:1.9.1'
+
     implementation "androidx.core:core-ktx:1.13.1"
-//    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
 
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.2"
-    implementation "androidx.annotation:annotation:1.8.0"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.4"
+    implementation "androidx.annotation:annotation:1.8.1"
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.coordinatorlayout:coordinatorlayout:1.2.0'
-    implementation "androidx.fragment:fragment-ktx:1.8.0"
+    implementation "androidx.fragment:fragment-ktx:1.8.2"
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
     implementation "androidx.media:media:1.7.0"
-    implementation "androidx.media3:media3-exoplayer:1.3.1"
-    implementation "androidx.media3:media3-ui:1.3.1"
-    implementation "androidx.media3:media3-datasource-okhttp:1.3.1"
-    implementation "androidx.media3:media3-common:1.3.1"
-    implementation "androidx.media3:media3-session:1.3.1"
+    implementation "androidx.media3:media3-exoplayer:1.4.0"
+    implementation "androidx.media3:media3-ui:1.4.0"
+    implementation "androidx.media3:media3-datasource-okhttp:1.4.0"
+    implementation "androidx.media3:media3-common:1.4.0"
+    implementation "androidx.media3:media3-session:1.4.0"
     implementation "androidx.palette:palette-ktx:1.0.0"
     implementation "androidx.preference:preference-ktx:1.2.1"
     implementation "androidx.recyclerview:recyclerview:1.3.2"
@@ -229,8 +230,8 @@ dependencies {
 //    implementation "io.reactivex.rxjava2:rxandroid:2.1.1"
     implementation "io.reactivex.rxjava2:rxjava:2.2.21"
 
-    implementation 'com.mikepenz:iconics-core:5.5.0-compose01'
-    implementation 'com.mikepenz:iconics-views:5.5.0-compose01'
+    implementation 'com.mikepenz:iconics-core:5.5.0-b01'
+    implementation 'com.mikepenz:iconics-views:5.5.0-b01'
     implementation 'com.mikepenz:google-material-typeface:4.0.0.3-kotlin@aar'
     implementation 'com.mikepenz:google-material-typeface-outlined:4.0.0.2-kotlin@aar'
     implementation 'com.mikepenz:fontawesome-typeface:5.13.3.0-kotlin@aar'
@@ -254,17 +255,17 @@ dependencies {
 //    this one can not be updated?   TODO: need to get an alternative
     androidTestImplementation 'com.nanohttpd:nanohttpd:2.1.1'
 
-    androidTestImplementation "androidx.test.espresso:espresso-core:3.5.1"
-    androidTestImplementation "androidx.test.espresso:espresso-contrib:3.5.1"
-    androidTestImplementation "androidx.test.espresso:espresso-intents:3.5.1"
-    androidTestImplementation "androidx.test:runner:1.5.2"
-    androidTestImplementation "androidx.test:rules:1.5.0"
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation "androidx.test.espresso:espresso-core:3.6.1"
+    androidTestImplementation "androidx.test.espresso:espresso-contrib:3.6.1"
+    androidTestImplementation "androidx.test.espresso:espresso-intents:3.6.1"
+    androidTestImplementation "androidx.test:runner:1.6.1"
+    androidTestImplementation "androidx.test:rules:1.6.1"
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'org.awaitility:awaitility:4.2.1'
 
     // Non-free dependencies:
 
-    testImplementation "androidx.test:core:1.5.0"
+    testImplementation "androidx.test:core:1.6.1"
     testImplementation 'org.awaitility:awaitility:4.2.1'
     testImplementation "junit:junit:4.13.2"
     testImplementation 'org.mockito:mockito-inline:5.2.0'

@@ -127,7 +127,7 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
         findPreference<Preference>(Prefs.pref_synchronization_logout.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             SynchronizationCredentials.clear(requireContext())
             Snackbar.make(requireView(), R.string.pref_synchronization_logout_toast, Snackbar.LENGTH_LONG).show()
-            SynchronizationSettings.setSelectedSyncProvider(null)
+            setSelectedSyncProvider(null)
             updateScreen()
             true
         }
@@ -243,8 +243,7 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
      * Guides the user through the authentication process.
      */
     class NextcloudAuthenticationFragment : DialogFragment(), NextcloudLoginFlow.AuthenticationCallback {
-
-        private var viewBinding: NextcloudAuthDialogBinding? = null
+        private var binding: NextcloudAuthDialogBinding? = null
         private var nextcloudLoginFlow: NextcloudLoginFlow? = null
         private var shouldDismiss = false
 
@@ -255,44 +254,39 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
             dialog.setCancelable(false)
             this.isCancelable = false
 
-            viewBinding = NextcloudAuthDialogBinding.inflate(layoutInflater)
-            dialog.setView(viewBinding!!.root)
+            binding = NextcloudAuthDialogBinding.inflate(layoutInflater)
+            dialog.setView(binding!!.root)
 
-            viewBinding!!.chooseHostButton.setOnClickListener {
-                nextcloudLoginFlow = NextcloudLoginFlow(getHttpClient(), viewBinding!!.serverUrlText.text.toString(), requireContext(), this)
+            binding!!.chooseHostButton.setOnClickListener {
+                nextcloudLoginFlow = NextcloudLoginFlow(getHttpClient(), binding!!.serverUrlText.text.toString(), requireContext(), this)
                 startLoginFlow()
             }
             if (savedInstanceState?.getStringArrayList(EXTRA_LOGIN_FLOW) != null) {
-                nextcloudLoginFlow = NextcloudLoginFlow.fromInstanceState(getHttpClient(), requireContext(), this, savedInstanceState.getStringArrayList(
-                    EXTRA_LOGIN_FLOW)!!)
+                nextcloudLoginFlow = NextcloudLoginFlow.fromInstanceState(getHttpClient(), requireContext(), this,
+                    savedInstanceState.getStringArrayList(EXTRA_LOGIN_FLOW)!!)
                 startLoginFlow()
             }
             return dialog.create()
         }
-
         private fun startLoginFlow() {
-            viewBinding!!.errorText.visibility = View.GONE
-            viewBinding!!.chooseHostButton.visibility = View.GONE
-            viewBinding!!.loginProgressContainer.visibility = View.VISIBLE
-            viewBinding!!.serverUrlText.isEnabled = false
+            binding!!.errorText.visibility = View.GONE
+            binding!!.chooseHostButton.visibility = View.GONE
+            binding!!.loginProgressContainer.visibility = View.VISIBLE
+            binding!!.serverUrlText.isEnabled = false
             nextcloudLoginFlow!!.start()
         }
-
         override fun onSaveInstanceState(outState: Bundle) {
             super.onSaveInstanceState(outState)
             if (nextcloudLoginFlow != null) outState.putStringArrayList(EXTRA_LOGIN_FLOW, nextcloudLoginFlow!!.saveInstanceState())
         }
-
         override fun onDismiss(dialog: DialogInterface) {
             super.onDismiss(dialog)
             nextcloudLoginFlow?.cancel()
         }
-
         override fun onResume() {
             super.onResume()
             if (shouldDismiss) dismiss()
         }
-
         override fun onNextcloudAuthenticated(server: String, username: String, password: String) {
             setSelectedSyncProvider(SynchronizationProviderViewData.NEXTCLOUD_GPODDER)
             SynchronizationCredentials.clear(requireContext())
@@ -303,13 +297,12 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
             if (isResumed) dismiss()
             else shouldDismiss = true
         }
-
         override fun onNextcloudAuthError(errorMessage: String?) {
-            viewBinding!!.loginProgressContainer.visibility = View.GONE
-            viewBinding!!.errorText.visibility = View.VISIBLE
-            viewBinding!!.errorText.text = errorMessage
-            viewBinding!!.chooseHostButton.visibility = View.VISIBLE
-            viewBinding!!.serverUrlText.isEnabled = true
+            binding!!.loginProgressContainer.visibility = View.GONE
+            binding!!.errorText.visibility = View.VISIBLE
+            binding!!.errorText.text = errorMessage
+            binding!!.chooseHostButton.visibility = View.VISIBLE
+            binding!!.serverUrlText.isEnabled = true
         }
 
         companion object {
@@ -322,19 +315,13 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
      * Guides the user through the authentication process.
      */
     class GpodderAuthenticationFragment : DialogFragment() {
-
         private var viewFlipper: ViewFlipper? = null
-
         private var currentStep = -1
-
         private var service: GpodnetService? = null
-
         @Volatile
         private var username: String? = null
-
         @Volatile
         private var password: String? = null
-
         @Volatile
         private var selectedDevice: GpodnetDevice? = null
         private var devices: List<GpodnetDevice>? = null
@@ -353,7 +340,6 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
 
             return dialog.create()
         }
-
         private fun setupHostView(view: View) {
             val binding = GpodnetauthHostBinding.bind(view)
             val selectHost = binding.chooseHostButton
@@ -369,7 +355,6 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
                 advance()
             }
         }
-
         private fun setupLoginView(view: View) {
             val binding = GpodnetauthCredentialsBinding.bind(view)
             val username = binding.etxtUsername
@@ -423,7 +408,6 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
                 }
             }
         }
-
         private fun setupDeviceView(view: View) {
             val binding = GpodnetauthDeviceBinding.bind(view)
             val deviceName = binding.deviceName
@@ -445,7 +429,6 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
                 devicesContainer.addView(rBinding.root)
             }
         }
-
         private fun createDevice(view: View) {
             val binding = GpodnetauthDeviceBinding.bind(view)
             val deviceName = binding.deviceName
@@ -479,7 +462,6 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
                 }
             }
         }
-
         private fun generateDeviceName(): String {
             val baseName = getString(R.string.gpodnetauth_device_name_default, Build.MODEL)
             var name = baseName
@@ -490,13 +472,11 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
             }
             return name
         }
-
         private fun generateDeviceId(name: String): String {
             // devices names must be of a certain form:
             // https://gpoddernet.readthedocs.org/en/latest/api/reference/general.html#devices
             return generateFileName(name).replace("\\W".toRegex(), "_").lowercase()
         }
-
         private fun isDeviceInList(name: String): Boolean {
             if (devices == null) return false
 
@@ -506,7 +486,6 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
             }
             return false
         }
-
         private fun setupFinishView(view: View) {
             val binding = GpodnetauthFinishBinding.bind(view)
             val sync = binding.butSyncNow
@@ -516,7 +495,6 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
                 SyncService.sync(requireContext())
             }
         }
-
         private fun advance() {
             if (currentStep < STEP_FINISH) {
                 val view = viewFlipper!!.getChildAt(currentStep + 1)
@@ -540,7 +518,6 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
                 currentStep++
             } else dismiss()
         }
-
         private fun usernameHasUnwantedChars(username: String): Boolean {
             val special = Pattern.compile("[!@#$%&*()+=|<>?{}\\[\\]~]")
             val containsUnwantedChars = special.matcher(username)
@@ -559,7 +536,6 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
     }
 
     @OptIn(UnstableApi::class) class WifiAuthenticationFragment : DialogFragment() {
-
         private var binding: WifiSyncDialogBinding? = null
         private var portNum = 0
         private var isGuest: Boolean? = null
@@ -603,12 +579,10 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
             procFlowEvents()
             return dialog.create()
         }
-
         override fun onDestroy() {
             cancelFlowEvents()
             super.onDestroy()
         }
-
         @OptIn(UnstableApi::class) override fun onResume() {
             super.onResume()
             val d = dialog as? AlertDialog
@@ -648,7 +622,6 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
                 }
             }
         }
-
         fun syncStatusChanged(event: FlowEvent.SyncServiceEvent) {
             when (event.messageResId) {
                 R.string.sync_status_error -> {
@@ -674,6 +647,7 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
         }
     }
 
+    @Suppress("EnumEntryName")
     private enum class Prefs {
         preference_instant_sync,
         preference_synchronization_description,

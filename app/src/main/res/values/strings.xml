@@ -365,6 +365,8 @@
     <string name="move_to_top_label">Move to top</string>
     <string name="move_to_bottom_label">Move to bottom</string>
     <string name="sort">Sort</string>
+    <string name="rename">Rename</string>
+    <string name="add_queue">Add queue</string>
     <string name="keep_sorted">Keep sorted</string>
     <string name="publish_date">Publish date</string>
     <string name="download_date">Download date</string>
@@ -509,6 +511,8 @@
     <string name="pref_feed_playback_speed_sum">The speed to use when starting audio playback for episodes in this podcast</string>
     <string name="pref_feed_skip">Auto skip</string>
     <string name="pref_feed_skip_sum">Skip introductions and ending credits.</string>
+    <string name="pref_feed_associated_queue">Associated queue</string>
+    <string name="pref_feed_associated_queue_sum">Set the queue to which epiosdes in the feed will added by default.</string>
     <string name="pref_feed_skip_ending">Skip last</string>
     <string name="pref_feed_skip_intro">Skip first</string>
     <string name="pref_feed_skip_ending_toast">Skipped last %d seconds</string>

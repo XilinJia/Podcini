@@ -35,4 +35,9 @@
         android:menuCategory="container"
         android:title="@string/edit_tags"
         android:icon="@drawable/ic_tag"/>
+    <item
+        android:id="@+id/associate_queue"
+        android:menuCategory="container"
+        android:title="@string/pref_feed_associated_queue"
+        android:icon="@drawable/ic_playlist_play"/>
 </menu>

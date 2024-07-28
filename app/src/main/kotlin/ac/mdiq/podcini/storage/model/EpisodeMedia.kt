@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.storage.model
 
+import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.utils.MediaMetadataRetrieverCompat
 import ac.mdiq.podcini.util.Logd
@@ -49,12 +50,13 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
 
     var playedDuration: Int = 0 // How many ms of this file have been played
 
-    var size: Long // File size in Byte
+    // File size in Byte
+    var size: Long = 0L
 
-    var mimeType: String?
+    var mimeType: String? = ""
         private set
 
-    var episode: Episode?
+    var episode: Episode? = null
 
     var playbackCompletionTime: Long = 0
     @Ignore
@@ -81,11 +83,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
     val isInProgress: Boolean
         get() = (this.position > 0)
 
-    constructor() {
-        this.size = 0
-        this.mimeType = ""
-        this.episode = null
-    }
+    constructor() {}
 
     constructor(i: Episode?, download_url: String?, size: Long, mime_type: String?) {
         this.episode = i
@@ -368,6 +366,10 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
         result = 31 * result + (hasEmbeddedPicture?.hashCode() ?: 0)
         result = 31 * result + episodeId.hashCode()
         return result
+    }
+
+    fun getTheEpisode(): Episode? {
+        return if (episode != null) episode else realm.query(Episode::class).query("id == $id").first().find()
     }
 
     companion object {

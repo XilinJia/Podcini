@@ -35,8 +35,7 @@ class DownloadLogDetailsDialog(context: Context, status: DownloadResult) : Mater
         var message = context.getString(R.string.download_successful)
         if (!status.isSuccessful) message = status.reasonDetailed
 
-        val messageFull = context.getString(R.string.download_log_details_message,
-            context.getString(from(status.reason)), message, url)
+        val messageFull = context.getString(R.string.download_log_details_message, context.getString(from(status.reason)), message, url)
         setTitle(R.string.download_error_details)
         setMessage(messageFull)
         setPositiveButton("OK", null)

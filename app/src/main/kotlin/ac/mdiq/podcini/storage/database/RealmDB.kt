@@ -12,13 +12,14 @@ import io.realm.kotlin.UpdatePolicy
 import io.realm.kotlin.ext.isManaged
 import io.realm.kotlin.types.EmbeddedRealmObject
 import io.realm.kotlin.types.RealmObject
+import io.realm.kotlin.types.TypedRealmObject
 import kotlinx.coroutines.*
 import kotlin.coroutines.ContinuationInterceptor
 
 object RealmDB {
     private val TAG: String = RealmDB::class.simpleName ?: "Anonymous"
 
-    private const val SCHEMA_VERSION_NUMBER = 14L
+    private const val SCHEMA_VERSION_NUMBER = 16L
 
     private val ioScope = CoroutineScope(Dispatchers.IO)
 
@@ -42,7 +43,7 @@ object RealmDB {
         realm = Realm.open(config)
     }
 
-    fun <T : RealmObject> unmanaged(entity: T) : T {
+    fun <T : TypedRealmObject> unmanaged(entity: T) : T {
         if (BuildConfig.DEBUG) {
             val stackTrace = Thread.currentThread().stackTrace
             val caller = if (stackTrace.size > 3) stackTrace[3] else null
@@ -69,7 +70,7 @@ object RealmDB {
 //        }
 //    }
 
-    suspend fun <T : RealmObject> update(entity: T, block: MutableRealm.(T) -> Unit) : T {
+    suspend fun <T : TypedRealmObject> update(entity: T, block: MutableRealm.(T) -> Unit) : T {
         return realm.write {
             val result: T = findLatest(entity)?.let {
                 block(it)
@@ -79,15 +80,15 @@ object RealmDB {
         }
     }
 
-    suspend fun <T : EmbeddedRealmObject> update(entity: T, block: MutableRealm.(T) -> Unit) : T {
-        return realm.write {
-            val result: T = findLatest(entity)?.let {
-                block(it)
-                it
-            } ?: entity
-            result
-        }
-    }
+//    suspend fun <T : EmbeddedRealmObject> update(entity: T, block: MutableRealm.(T) -> Unit) : T {
+//        return realm.write {
+//            val result: T = findLatest(entity)?.let {
+//                block(it)
+//                it
+//            } ?: entity
+//            result
+//        }
+//    }
 
     suspend fun <T : RealmObject> upsert(entity: T, block: MutableRealm.(T) -> Unit) : T {
         if (BuildConfig.DEBUG) {

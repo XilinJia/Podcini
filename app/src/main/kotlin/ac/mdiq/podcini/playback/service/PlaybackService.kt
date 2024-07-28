@@ -368,8 +368,12 @@ class PlaybackService : MediaSessionService() {
                 return null
             }
             val i = curQueue.episodes.indexOf(item)
+            if (i < 0) {
+                writeNoMediaPlaying()
+                return null
+            }
             var j = 0
-            if (i >= 0 && i < curQueue.episodes.size-1) j = i+1
+            if (i < curQueue.episodes.size-1) j = i+1
             val nextItem = unmanaged(curQueue.episodes[j])
             if (nextItem.media == null) {
                 Logd(TAG, "getNextInQueue nextItem: $nextItem media is null")
@@ -908,7 +912,7 @@ class PlaybackService : MediaSessionService() {
         mPlayer?.playMediaObject(media, stream, startWhenPrepared = true, true)
         recreateMediaSessionIfNeeded()
         val episode = (media as? EpisodeMedia)?.episode
-        if (curMedia is EpisodeMedia && episode != null) addToQueue(true, episode)
+//        if (curMedia is EpisodeMedia && episode != null) addToQueue(true, episode)
     }
 
     fun clearCurTempSpeed() {

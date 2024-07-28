@@ -47,13 +47,12 @@ object FilesUtils {
     }
 
     fun getMediafilePath(media: EpisodeMedia): String {
-        val item = media.episode ?: return ""
-        Logd(TAG, "item managed: ${item.isManaged()}")
-        val title = item.feed?.title?:return ""
+        val item = media.getTheEpisode() ?: return ""
+        Logd(TAG, "item managed: ${item?.isManaged()}")
+        val title = item?.feed?.title?:return ""
         val mediaPath = (MEDIA_DOWNLOADPATH + FileNameGenerator.generateFileName(title))
         return getDataFolder(mediaPath).toString() + "/"
     }
-
 
     fun getMediafilename(media: EpisodeMedia): String {
         var titleBaseFilename = ""

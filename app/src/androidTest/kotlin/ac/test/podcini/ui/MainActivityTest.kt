@@ -55,7 +55,7 @@ class MainActivityTest {
         EspressoTestUtils.openNavDrawer()
         Espresso.onView(ViewMatchers.withText(R.string.add_feed_label)).perform(ViewActions.click())
         Espresso.onView(ViewMatchers.withId(R.id.addViaUrlButton)).perform(ViewActions.scrollTo(), ViewActions.click())
-        Espresso.onView(ViewMatchers.withId(R.id.editText)).perform(ViewActions.replaceText(feed.downloadUrl))
+        Espresso.onView(ViewMatchers.withId(R.id.editText)).perform(ViewActions.replaceText(feed.downloadUrl!!))
         Espresso.onView(ViewMatchers.withText(R.string.confirm_label))
             .perform(ViewActions.scrollTo(), ViewActions.click())
 

@@ -34,6 +34,7 @@ import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
+import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.view.EpisodesRecyclerView
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeViewHolder
 import ac.mdiq.podcini.util.Logd
@@ -50,6 +51,17 @@ import android.widget.ArrayAdapter
 import android.widget.CheckBox
 import android.widget.Spinner
 import androidx.appcompat.widget.Toolbar
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
+import androidx.compose.material.Card
+import androidx.compose.material.Text
+import androidx.compose.material.TextField
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
@@ -84,6 +96,10 @@ import java.util.*
     private lateinit var swipeActions: SwipeActions
     private lateinit var speedDialView: SpeedDialView
 
+    private lateinit var queueNames: Array<String>
+    private lateinit var queueSpinner: Spinner
+    private lateinit var spinnerAdaptor: ArrayAdapter<String>
+
     private var displayUpArrow = false
     private var queueItems: MutableList<Episode> = mutableListOf()
 
@@ -114,17 +130,18 @@ import java.util.*
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
 
         val queues = realm.query(PlayQueue::class).find()
-        val queueNames = queues.map { it.name }.toTypedArray()
+        queueNames = queues.map { it.name }.toTypedArray()
         val spinnerLayout = inflater.inflate(R.layout.queue_title_spinner, null)
-        val spinner = spinnerLayout.findViewById<Spinner>(R.id.queue_spinner)
+        queueSpinner = spinnerLayout.findViewById(R.id.queue_spinner)
         toolbar.addView(spinnerLayout)
-        val sAdaptor = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, queueNames)
-        sAdaptor.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinner.adapter = sAdaptor
-        spinner.setSelection(sAdaptor.getPosition(curQueue.name))
-        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        spinnerAdaptor = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, queueNames)
+        spinnerAdaptor.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        queueSpinner.adapter = spinnerAdaptor
+        queueSpinner.setSelection(spinnerAdaptor.getPosition(curQueue.name))
+        queueSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 curQueue = unmanaged(upsertBlk(queues[position]) { it.updated })
+                toolbar.menu?.findItem(R.id.rename_queue)?.setVisible(curQueue.name != "Default")
                 loadItems(true)
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -452,8 +469,8 @@ import java.util.*
         val keepSorted: Boolean = isQueueKeepSorted
         toolbar.menu?.findItem(R.id.queue_lock)?.setChecked(isQueueLocked)
         toolbar.menu?.findItem(R.id.queue_lock)?.setVisible(!keepSorted)
-//        toolbar.menu.findItem(R.id.switch_queue).setVisible(false)
-//        toolbar.menu.findItem(R.id.refresh_item).setVisible(false)
+        toolbar.menu?.findItem(R.id.rename_queue)?.setVisible(curQueue.name != "Default")
+        toolbar.menu?.findItem(R.id.add_queue)?.setVisible(queueNames.size<9)
     }
 
     @UnstableApi override fun onMenuItemClick(item: MenuItem): Boolean {
@@ -472,6 +489,8 @@ import java.util.*
             }
             R.id.queue_lock -> toggleQueueLock()
             R.id.queue_sort -> QueueSortDialog().show(childFragmentManager.beginTransaction(), "SortDialog")
+            R.id.rename_queue -> renameQueue()
+            R.id.add_queue -> addQueue()
 //            R.id.refresh_item -> FeedUpdateManager.runOnceOrAsk(requireContext())
             R.id.clear_queue -> {
                 // make sure the user really wants to clear the queue
@@ -493,6 +512,113 @@ import java.util.*
             else -> return false
         }
         return true
+    }
+
+    private fun renameQueue() {
+        val composeView = ComposeView(requireContext()).apply {
+            setContent {
+                val showDialog = remember { mutableStateOf(true) }
+                CustomTheme(requireContext()) {
+                    RenameQueueDialog(showDialog = showDialog.value, onDismiss = { showDialog.value = false })
+                }
+            }
+        }
+        (view as? ViewGroup)?.addView(composeView)
+    }
+
+    private fun addQueue() {
+        val composeView = ComposeView(requireContext()).apply {
+            setContent {
+                val showDialog = remember { mutableStateOf(true) }
+                CustomTheme(requireContext()) {
+                    AddQueueDialog(showDialog = showDialog.value, onDismiss = { showDialog.value = false })
+                }
+            }
+        }
+        (view as? ViewGroup)?.addView(composeView)
+    }
+
+    @Composable
+    fun RenameQueueDialog(showDialog: Boolean, onDismiss: () -> Unit) {
+        if (showDialog) {
+            Dialog(onDismissRequest = onDismiss) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(160.dp)
+                        .padding(16.dp),
+                    shape = RoundedCornerShape(16.dp),
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        var newName by remember { mutableStateOf(curQueue.name) }
+                        TextField(
+                            value = newName,
+                            onValueChange = { newName = it },
+                            label = { Text("Rename (Unique name only)") }
+                        )
+                        Button(onClick = {
+                            if (newName.isNotEmpty() && curQueue.name != newName && queueNames.indexOf(newName) < 0) {
+                                val oldName = curQueue.name
+                                curQueue.name = newName
+                                runOnIOScope { upsert(curQueue) {} }
+                                queueNames[queueNames.indexOf(oldName)] = newName
+                                spinnerAdaptor.notifyDataSetChanged()
+                                onDismiss()
+                            }
+                        }) {
+                            Text("Confirm")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun AddQueueDialog(showDialog: Boolean, onDismiss: () -> Unit) {
+        if (showDialog) {
+            Dialog(onDismissRequest = onDismiss) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(160.dp)
+                        .padding(16.dp),
+                    shape = RoundedCornerShape(16.dp),
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        var newName by remember { mutableStateOf("") }
+                        TextField(
+                            value = newName,
+                            onValueChange = { newName = it },
+                            label = { Text("Add queue (Unique name only)") }
+                        )
+                        Button(onClick = {
+                            if (newName.isNotEmpty() && queueNames.indexOf(newName) < 0) {
+                                val newQueue = PlayQueue()
+                                newQueue.id = queueNames.size.toLong()
+                                newQueue.name = newName
+                                upsertBlk(newQueue) {}
+                                val queues = realm.query(PlayQueue::class).find()
+                                queueNames = queues.map { it.name }.toTypedArray()
+                                spinnerAdaptor = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, queueNames)
+                                spinnerAdaptor.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                                queueSpinner.adapter = spinnerAdaptor
+                                queueSpinner.setSelection(spinnerAdaptor.getPosition(curQueue.name))
+                                onDismiss()
+                            }
+                        }) {
+                            Text("Confirm")
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @UnstableApi private fun toggleQueueLock() {

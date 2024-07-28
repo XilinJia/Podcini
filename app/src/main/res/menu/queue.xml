@@ -14,12 +14,6 @@
         custom:showAsAction="ifRoom"
         android:title="@string/search_label"/>
 
-<!--    <item-->
-<!--        android:id="@+id/refresh_item"-->
-<!--        android:title="@string/refresh_label"-->
-<!--        android:menuCategory="container"-->
-<!--        custom:showAsAction="never" />-->
-
     <item
         android:id="@+id/queue_lock"
         android:title="@string/lock_queue"
@@ -29,6 +23,14 @@
     <item
         android:id="@+id/queue_sort"
         android:title="@string/sort" />
+
+    <item
+        android:id="@+id/rename_queue"
+        android:title="@string/rename" />
+
+    <item
+        android:id="@+id/add_queue"
+        android:title="@string/add_queue" />
 
     <item
         android:id="@+id/clear_queue"
@@ -41,9 +43,4 @@
         android:title="@string/clear_bin_label"
         custom:showAsAction="collapseActionView"
         android:icon="@drawable/ic_check"/>
-
-    <!--    <item-->
-<!--        android:id="@+id/switch_queue"-->
-<!--        android:title="@string/switch_queue" />-->
-
 </menu>

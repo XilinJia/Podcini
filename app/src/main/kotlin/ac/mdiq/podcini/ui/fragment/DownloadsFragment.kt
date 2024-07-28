@@ -213,8 +213,9 @@ import java.util.*
                     }
                 }
             }
+            Logd(TAG, "Episodes reconsiled: ${nameEpisodeMap.size}\nFiles removed: ${filesRemoved.size}")
             withContext(Dispatchers.Main) {
-                Toast.makeText(requireContext(), "Episodes reconsiled: ${nameEpisodeMap.size}\nFiles removed: ${filesRemoved.size}", Toast.LENGTH_LONG)
+                Toast.makeText(requireContext().applicationContext, "Episodes reconsiled: ${nameEpisodeMap.size}\nFiles removed: ${filesRemoved.size}", Toast.LENGTH_LONG).show()
             }
         }
     }

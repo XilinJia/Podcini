@@ -8,6 +8,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
+import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
@@ -82,6 +83,10 @@ object Queues {
             appPrefs.edit().putString(UserPreferences.Prefs.prefEnqueueLocation.name, location.name).apply()
         }
 
+    fun queueFromName(name: String): PlayQueue? {
+        return realm.query(PlayQueue::class).query("name == $0", name).first().find()
+    }
+
     fun getInQueueEpisodeIds(): Set<Long> {
         Logd(TAG, "getQueueIDList() called")
         val queues = realm.query(PlayQueue::class).find()
@@ -145,7 +150,7 @@ object Queues {
     suspend fun addToQueueSync(markAsUnplayed: Boolean, episode: Episode, queue_: PlayQueue? = null) {
         Logd(TAG, "addToQueueSync( ... ) called")
 
-        val queue = queue_ ?: curQueue
+        val queue = if (queue_ != null) unmanaged(queue_) else curQueue
         val currentlyPlaying = curMedia
         val positionCalculator = EnqueuePositionCalculator(enqueueLocation)
         var insertPosition = positionCalculator.calcPosition(queue.episodes, currentlyPlaying)

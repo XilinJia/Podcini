@@ -30,11 +30,11 @@ import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.EpisodesAdapter
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
+import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
-import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.view.EpisodesRecyclerView
 import ac.mdiq.podcini.ui.view.viewholder.EpisodeViewHolder
 import ac.mdiq.podcini.util.Logd
@@ -68,7 +68,6 @@ import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
@@ -92,7 +91,7 @@ import java.util.*
     private lateinit var recyclerView: EpisodesRecyclerView
     private lateinit var emptyView: EmptyViewHandler
     private lateinit var toolbar: MaterialToolbar
-    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+//    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var swipeActions: SwipeActions
     private lateinit var speedDialView: SpeedDialView
 
@@ -172,8 +171,8 @@ import java.util.*
         adapter?.setOnSelectModeListener(this)
         recyclerView.adapter = adapter
 
-        swipeRefreshLayout = binding.swipeRefresh
-        swipeRefreshLayout.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
+//        swipeRefreshLayout = binding.swipeRefresh
+//        swipeRefreshLayout.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
 //        swipeRefreshLayout.setOnRefreshListener { FeedUpdateManager.runOnceOrAsk(requireContext()) }
 
         emptyView = EmptyViewHandler(requireContext())
@@ -262,7 +261,7 @@ import java.util.*
                 Logd(TAG, "Received sticky event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.EpisodeDownloadEvent -> onEpisodeDownloadEvent(event)
-                    is FlowEvent.FeedUpdatingEvent -> swipeRefreshLayout.isRefreshing = event.isRunning
+//                    is FlowEvent.FeedUpdatingEvent -> swipeRefreshLayout.isRefreshing = event.isRunning
                     else -> {}
                 }
             }
@@ -392,9 +391,17 @@ import java.util.*
             val pos: Int = EpisodeUtil.indexOfItemWithDownloadUrl(queueItems.toList(), downloadUrl)
             if (pos >= 0) {
                 val item = unmanaged(queueItems[pos])
-//                item.media?.downloaded = true
-                item.media?.setIsDownloaded()
-                adapter?.notifyItemChangedCompat(pos)
+                if (item.media != null) {
+                    val m = unmanaged(item.media!!)
+                    m.downloaded = true
+                    item.media = m
+                    queueItems[pos] = item
+                    adapter?.notifyItemChangedCompat(pos)
+                }
+//                val item = unmanaged(queueItems[pos])
+////                item.media?.downloaded = true
+//                item.media?.setIsDownloaded()
+//                adapter?.notifyItemChangedCompat(pos)
             }
         }
     }

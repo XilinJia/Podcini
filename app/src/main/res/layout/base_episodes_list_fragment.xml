@@ -77,19 +77,26 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/swipeRefresh"
+    <ac.mdiq.podcini.ui.view.EpisodesRecyclerView
+        android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/appbar">
+        android:paddingHorizontal="@dimen/additional_horizontal_spacing"
+        android:layout_below="@id/appbar"/>
 
-        <ac.mdiq.podcini.ui.view.EpisodesRecyclerView
-            android:id="@+id/recyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:paddingHorizontal="@dimen/additional_horizontal_spacing" />
+<!--    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout-->
+<!--        android:id="@+id/swipeRefresh"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:layout_below="@id/appbar">-->
 
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+<!--        <ac.mdiq.podcini.ui.view.EpisodesRecyclerView-->
+<!--            android:id="@+id/recyclerView"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:paddingHorizontal="@dimen/additional_horizontal_spacing" />-->
+
+<!--    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>-->
 
     <ProgressBar
         android:id="@+id/progressBar"

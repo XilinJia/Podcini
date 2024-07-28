@@ -3,12 +3,12 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.BaseEpisodesListFragmentBinding
 import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
-import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.playback.base.InTheatre.isCurMedia
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.EpisodeFilter
+import ac.mdiq.podcini.storage.model.EpisodeMedia
+import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectHandler
 import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
 import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
@@ -18,10 +18,8 @@ import ac.mdiq.podcini.ui.adapter.EpisodesAdapter
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
-import ac.mdiq.podcini.ui.view.EpisodesRecyclerView
 import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
-import ac.mdiq.podcini.storage.utils.EpisodeUtil
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
+import ac.mdiq.podcini.ui.view.EpisodesRecyclerView
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
@@ -38,13 +36,15 @@ import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.snackbar.Snackbar
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 @UnstableApi abstract class BaseEpisodesFragment : Fragment(), SelectableAdapter.OnSelectModeListener, Toolbar.OnMenuItemClickListener {
@@ -63,7 +63,7 @@ import kotlinx.coroutines.flow.collectLatest
     lateinit var emptyView: EmptyViewHandler
     lateinit var speedDialView: SpeedDialView
     lateinit var toolbar: MaterialToolbar
-    lateinit var swipeRefreshLayout: SwipeRefreshLayout
+//    lateinit var swipeRefreshLayout: SwipeRefreshLayout
     lateinit var swipeActions: SwipeActions
     private lateinit var progressBar: ProgressBar
     lateinit var adapter: EpisodesAdapter
@@ -108,8 +108,8 @@ import kotlinx.coroutines.flow.collectLatest
         val animator: RecyclerView.ItemAnimator? = recyclerView.itemAnimator
         if (animator is SimpleItemAnimator) animator.supportsChangeAnimations = false
 
-        swipeRefreshLayout = binding.swipeRefresh
-        swipeRefreshLayout.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
+//        swipeRefreshLayout = binding.swipeRefresh
+//        swipeRefreshLayout.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
 //        swipeRefreshLayout.setOnRefreshListener { FeedUpdateManager.runOnceOrAsk(requireContext()) }
 
         createListAdaptor()
@@ -417,7 +417,7 @@ import kotlinx.coroutines.flow.collectLatest
                 Logd(TAG, "Received sticky event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.EpisodeDownloadEvent -> onEpisodeDownloadEvent(event)
-                    is FlowEvent.FeedUpdatingEvent -> onFeedUpdateRunningEvent(event)
+//                    is FlowEvent.FeedUpdatingEvent -> onFeedUpdateRunningEvent(event)
                     else -> {}
                 }
             }
@@ -476,9 +476,9 @@ import kotlinx.coroutines.flow.collectLatest
 
     protected open fun updateToolbar() {}
 
-    private fun onFeedUpdateRunningEvent(event: FlowEvent.FeedUpdatingEvent) {
-        swipeRefreshLayout.isRefreshing = event.isRunning
-    }
+//    private fun onFeedUpdateRunningEvent(event: FlowEvent.FeedUpdatingEvent) {
+//        swipeRefreshLayout.isRefreshing = event.isRunning
+//    }
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putBoolean(KEY_UP_ARROW, displayUpArrow)

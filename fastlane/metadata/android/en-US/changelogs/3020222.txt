@@ -1,0 +1,5 @@
+ 
+Version 6.2.1 brings several changes:
+
+* likely fixed crash issue in Queue view during download
+* fully disabled down-swipe in Queue, AllEpisodes, History, and Downloads views

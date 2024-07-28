@@ -1,3 +1,8 @@
+# 6.2.1
+
+* likely fixed crash issue in Queue view during download
+* fully disabled down-swipe in Queue, AllEpisodes, History, and Downloads views
+
 # 6.2.0
 
 * first foot into Jetpack Compose, various views are in Compose

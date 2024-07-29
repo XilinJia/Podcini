@@ -19,20 +19,23 @@ import kotlinx.coroutines.*
 object InTheatre {
     val TAG: String = InTheatre::class.simpleName ?: "Anonymous"
 
+    var curIndexInQueue = -1
+
     var curQueue: PlayQueue     // unmanaged
 
     var curEpisode: Episode? = null     // unmanged
         set(value) {
-            field = value
-            if (curMedia != field?.media) curMedia = field?.media
+            field = if (value != null) unmanaged(value) else null
+            if (field?.media != null && curMedia?.getIdentifier() != field?.media?.getIdentifier()) curMedia = unmanaged(field!!.media!!)
         }
 
     var curMedia: Playable? = null      // unmanged if EpisodeMedia
         set(value) {
-            field = if (value != null && value is EpisodeMedia) unmanaged(value) else value
-            if (field is EpisodeMedia) {
-                val media = (field as EpisodeMedia)
-                if (curEpisode != media.episode) curEpisode = media.episode
+            if (value is EpisodeMedia) {
+                field = unmanaged(value)
+                if (value.episode != null && curEpisode?.id != value.episode?.id) curEpisode = unmanaged(value.episode!!)
+            } else {
+                field = value
             }
         }
 
@@ -115,7 +118,7 @@ object InTheatre {
                 val mediaId = curState.curMediaId
                 if (mediaId != 0L) {
                     curMedia = getEpisodeMedia(mediaId)
-                    if (curEpisode != null) curEpisode = (curMedia as EpisodeMedia).episode
+                    if (curEpisode != null) curEpisode = (curMedia as EpisodeMedia).episodeOrFetch()
                 }
             } else Log.e(TAG, "Could not restore Playable object from preferences")
         }

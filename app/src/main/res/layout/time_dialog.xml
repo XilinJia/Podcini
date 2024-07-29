@@ -20,6 +20,12 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <CheckBox
+                android:id="@+id/end_episode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/end_episode" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -68,7 +74,8 @@
                 android:layout_gravity="center"
                 android:gravity="center"
                 android:textSize="32sp"
-                android:textColor="?android:attr/textColorPrimary" />
+                android:textColor="?android:attr/textColorPrimary"
+                tools:ignore="HardcodedText"/>
 
             <Button
                 android:id="@+id/disableSleeptimerButton"

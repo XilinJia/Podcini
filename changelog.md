@@ -1,3 +1,14 @@
+# 6.2.2
+
+* added EpisodeMedia null relationship handling
+* in sleep timer setting, added "to end of episode" option
+* frequency of sleep timer check is reduced to every 10 seconds (from 1 second)
+* in Queue bin view, items' order is changed to descending
+* in Queue bin view, disabled some menu items
+* refined "remove from queue" operation when an episode ended playing
+* eliminated the double starts when playing the next episode in queue
+* re-ensured circular queue
+
 # 6.2.1
 
 * likely fixed crash issue in Queue view during download

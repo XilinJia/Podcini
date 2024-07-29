@@ -222,7 +222,7 @@ object Episodes {
     fun persistEpisodeMedia(media: EpisodeMedia) : Job {
         Logd(TAG, "persistEpisodeMedia called")
         return runOnIOScope {
-            var episode = media.episode
+            var episode = media.episodeOrFetch()
             if (episode != null) {
                 episode.media = media
                 episode = upsert(episode) {}

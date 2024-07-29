@@ -32,5 +32,9 @@ class PlayQueue : RealmObject {
         updated = Date().time
     }
 
+    fun size() : Int {
+        return episodeIds.size
+    }
+
     constructor() {}
 }

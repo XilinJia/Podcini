@@ -244,7 +244,8 @@ class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, To
                                     Log.e(TAG, "Could not find feed media for feed id: " + status.feedfileId)
                                     return@OnClickListener
                                 }
-                                if (media.episode != null) DownloadActionButton(media.episode!!).onClick(context)
+                                val item_ = media.episodeOrFetch()
+                                if (item_ != null) DownloadActionButton(item_).onClick(context)
                                 (context as MainActivity).showSnackbarAbovePlayer(R.string.status_downloading_label, Toast.LENGTH_SHORT)
                             })
                         }

@@ -216,13 +216,14 @@ object Queues {
 
     @OptIn(UnstableApi::class)
     fun removeFromAllQueuesSync(vararg episodes: Episode) {
-        Logd(TAG, "removeFromAllQueues called ")
+        Logd(TAG, "removeFromAllQueuesSync called ")
         val queues = realm.query(PlayQueue::class).find()
         for (q in queues) {
             if (q.id != curQueue.id) removeFromQueueSync(q, *episodes)
         }
 //        ensure curQueue is last updated
-        removeFromQueueSync(curQueue, *episodes)
+        if (curQueue.size() > 0) removeFromQueueSync(curQueue, *episodes)
+        else upsertBlk(curQueue) { it.update() }
     }
 
     /**
@@ -232,8 +233,9 @@ object Queues {
     internal fun removeFromQueueSync(queue_: PlayQueue?, vararg episodes: Episode) {
         Logd(TAG, "removeFromQueueSync called ")
         if (episodes.isEmpty()) return
-
         var queue = queue_ ?: curQueue
+        if (queue.size() == 0) return
+
         val events: MutableList<FlowEvent.QueueEvent> = ArrayList()
         val indicesToRemove: MutableList<Int> = mutableListOf()
         val qItems = queue.episodes.toMutableList()
@@ -269,7 +271,7 @@ object Queues {
         var idsInQueuesToRemove: MutableSet<Long>
         val queues = realm.query(PlayQueue::class).find()
         for (q in queues) {
-            if (q.id == curQueue.id) continue
+            if (q.size() == 0 || q.id == curQueue.id) continue
             idsInQueuesToRemove = q.episodeIds.intersect(episodeIds.toSet()).toMutableSet()
             if (idsInQueuesToRemove.isNotEmpty()) {
                 q.idsBinList.removeAll(idsInQueuesToRemove)
@@ -284,6 +286,10 @@ object Queues {
         }
         //        ensure curQueue is last updated
         val q = curQueue
+        if (q.size() == 0) {
+            upsert(q) { it.update() }
+            return
+        }
         idsInQueuesToRemove = q.episodeIds.intersect(episodeIds.toSet()).toMutableSet()
         if (idsInQueuesToRemove.isNotEmpty()) {
             q.idsBinList.removeAll(idsInQueuesToRemove)
@@ -374,7 +380,7 @@ object Queues {
         }
         private fun getCurrentlyPlayingPosition(queueItems: List<Episode>, currentPlaying: Playable?): Int {
             if (currentPlaying !is EpisodeMedia) return -1
-            val curPlayingItemId = currentPlaying.episode!!.id
+            val curPlayingItemId = currentPlaying.episodeOrFetch()?.id
             for (i in queueItems.indices) {
                 if (curPlayingItemId == queueItems[i].id) return i
             }

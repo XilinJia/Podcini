@@ -2,7 +2,9 @@ package ac.mdiq.podcini.ui.dialog
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.TimeDialogBinding
+import ac.mdiq.podcini.playback.PlaybackController.Companion.curSpeedMultiplier
 import ac.mdiq.podcini.playback.PlaybackController.Companion.playbackService
+import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnable
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnableFrom
@@ -21,6 +23,7 @@ import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion.TAG
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringLong
+import ac.mdiq.podcini.storage.utils.TimeSpeedConverter
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
@@ -46,19 +49,15 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.*
-import kotlin.math.abs
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.sin
+import java.util.concurrent.TimeUnit
+import kotlin.math.*
+import kotlin.time.DurationUnit
 
 class SleepTimerDialog : DialogFragment() {
     private var _binding: TimeDialogBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var etxtTime: EditText
-    private lateinit var timeSetup: LinearLayout
-    private lateinit var timeDisplay: LinearLayout
-    private lateinit var time: TextView
     private lateinit var chAutoEnable: CheckBox
 
     @UnstableApi override fun onStart() {
@@ -74,17 +73,13 @@ class SleepTimerDialog : DialogFragment() {
     @UnstableApi override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         _binding = TimeDialogBinding.inflate(layoutInflater)
         val content = binding.root
-//        val content = View.inflate(context, R.layout.time_dialog, null)
         val builder = MaterialAlertDialogBuilder(requireContext())
         builder.setTitle(R.string.sleep_timer_label)
         builder.setView(binding.root)
         builder.setPositiveButton(R.string.close_label, null)
 
         etxtTime = binding.etxtTime
-        timeSetup = binding.timeSetup
-        timeDisplay = binding.timeDisplay
-        timeDisplay.visibility = View.GONE
-        time = binding.time
+        binding.timeDisplay.visibility = View.GONE
         val extendSleepFiveMinutesButton = binding.extendSleepFiveMinutesButton
         extendSleepFiveMinutesButton.text = getString(R.string.extend_sleep_timer_label, 5)
         val extendSleepTenMinutesButton = binding.extendSleepTenMinutesButton
@@ -101,27 +96,30 @@ class SleepTimerDialog : DialogFragment() {
             extendSleepTimer((20 * 1000 * 60).toLong())
         }
 
+        binding.endEpisode.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
+            if (isChecked) etxtTime.visibility = View.GONE
+            else etxtTime.visibility = View.VISIBLE
+        }
+
         etxtTime.setText(lastTimerValue())
         etxtTime.postDelayed({
             val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.showSoftInput(etxtTime, InputMethodManager.SHOW_IMPLICIT)
         }, 100)
 
-        val cbShakeToReset = binding.cbShakeToReset
-        val cbVibrate = binding.cbVibrate
         chAutoEnable = binding.chAutoEnable
         val changeTimesButton = binding.changeTimesButton
 
-        cbShakeToReset.isChecked = shakeToReset()
-        cbVibrate.isChecked = vibrate()
+        binding.cbShakeToReset.isChecked = shakeToReset()
+        binding.cbVibrate.isChecked = vibrate()
         chAutoEnable.setChecked(autoEnable())
         changeTimesButton.isEnabled = chAutoEnable.isChecked
         changeTimesButton.alpha = if (chAutoEnable.isChecked) 1.0f else 0.5f
 
-        cbShakeToReset.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
+        binding.cbShakeToReset.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
             setShakeToReset(isChecked)
         }
-        cbVibrate.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean -> setVibrate(isChecked) }
+        binding.cbVibrate.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean -> setVibrate(isChecked) }
         chAutoEnable.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
             setAutoEnable(isChecked)
             changeTimesButton.isEnabled = isChecked
@@ -135,23 +133,26 @@ class SleepTimerDialog : DialogFragment() {
             showTimeRangeDialog(from, to)
         }
 
-        val disableButton = binding.disableSleeptimerButton
-        disableButton.setOnClickListener {
+        binding.disableSleeptimerButton.setOnClickListener {
             playbackService?.taskManager?.disableSleepTimer()
         }
-        val setButton = binding.setSleeptimerButton
-        setButton.setOnClickListener {
+
+        binding.setSleeptimerButton.setOnClickListener {
             if (!PlaybackService.isRunning) {
                 Snackbar.make(content, R.string.no_media_playing_label, Snackbar.LENGTH_LONG).show()
                 return@setOnClickListener
             }
             try {
-                val time = etxtTime.getText().toString().toLong()
+                val time = if (binding.endEpisode.isChecked) {
+                    val curPosition = curMedia?.getPosition() ?: 0
+                    val duration = curMedia?.getDuration() ?: 0
+                    val converter = TimeSpeedConverter(curSpeedMultiplier)
+                    TimeUnit.MILLISECONDS.toMinutes(converter.convert(max((duration - curPosition).toDouble(), 0.0).toInt()).toLong()) // ms to minutes
+                } else etxtTime.getText().toString().toLong()
+                Logd(TAG, "Sleep timer set: $time")
                 if (time == 0L) throw NumberFormatException("Timer must not be zero")
-
-                setLastTimer(etxtTime.getText().toString())
+                setLastTimer(time.toString())
                 setSleepTimer(timerMillis())
-                
                 closeKeyboard(content)
             } catch (e: NumberFormatException) {
                 e.printStackTrace()
@@ -167,12 +168,12 @@ class SleepTimerDialog : DialogFragment() {
         super.onDestroyView()
     }
 
-    fun extendSleepTimer(extendTime: Long) {
+    private fun extendSleepTimer(extendTime: Long) {
         val timeLeft = playbackService?.taskManager?.sleepTimerTimeLeft ?: Playable.INVALID_TIME.toLong()
         if (timeLeft != Playable.INVALID_TIME.toLong()) setSleepTimer(timeLeft + extendTime)
     }
 
-    fun setSleepTimer(time: Long) {
+    private fun setSleepTimer(time: Long) {
         playbackService?.taskManager?.setSleepTimer(time)
     }
 
@@ -224,10 +225,10 @@ class SleepTimerDialog : DialogFragment() {
         }
     }
 
-    fun timerUpdated(event: FlowEvent.SleepTimerUpdatedEvent) {
-        timeDisplay.visibility = if (event.isOver || event.isCancelled) View.GONE else View.VISIBLE
-        timeSetup.visibility = if (event.isOver || event.isCancelled) View.VISIBLE else View.GONE
-        time.text = getDurationStringLong(event.getTimeLeft().toInt())
+    private fun timerUpdated(event: FlowEvent.SleepTimerUpdatedEvent) {
+        binding.timeDisplay.visibility = if (event.isOver || event.isCancelled) View.GONE else View.VISIBLE
+        binding.timeSetup.visibility = if (event.isOver || event.isCancelled) View.VISIBLE else View.GONE
+        binding.time.text = getDurationStringLong(event.getTimeLeft().toInt())
     }
 
     private fun closeKeyboard(content: View) {
@@ -254,7 +255,7 @@ class SleepTimerDialog : DialogFragment() {
             private val paintSelected = Paint()
             private val paintText = Paint()
             private val bounds = RectF()
-            var touching: Int = 0
+            private var touching: Int = 0
 
             init {
                 setup()

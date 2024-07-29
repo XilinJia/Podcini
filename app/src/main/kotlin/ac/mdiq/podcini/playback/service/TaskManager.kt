@@ -56,8 +56,7 @@ class TaskManager(private val context: Context, private val callback: PSTMCallba
      */
     @get:Synchronized
     val isSleepTimerActive: Boolean
-        get() = (sleepTimer != null && sleepTimerFuture != null && !sleepTimerFuture!!.isCancelled
-                && !sleepTimerFuture!!.isDone) && sleepTimer!!.getWaitingTime() > 0
+        get() = sleepTimerFuture?.isCancelled == false && sleepTimerFuture?.isDone == false && (sleepTimer?.getWaitingTime() ?: 0) > 0
 
     /**
      * Returns the current sleep timer time or 0 if the sleep timer is not active.
@@ -248,7 +247,7 @@ class TaskManager(private val context: Context, private val callback: PSTMCallba
             EventFlow.postEvent(FlowEvent.SleepTimerUpdatedEvent.updated(timeLeft))
             while (timeLeft > 0) {
                 try {
-                    Thread.sleep(UPDATE_INTERVAL)
+                    Thread.sleep(SLEEP_TIMER_UPDATE_INTERVAL)
                 } catch (e: InterruptedException) {
                     Logd(TAG, "Thread was interrupted while waiting")
                     e.printStackTrace()
@@ -344,16 +343,12 @@ class TaskManager(private val context: Context, private val callback: PSTMCallba
 
     companion object {
         private val TAG: String = TaskManager::class.simpleName ?: "Anonymous"
-        /**
-         * Update interval of position saver in milliseconds.
-         */
-        const val POSITION_SAVER_WAITING_INTERVAL: Int = 5000
-        /**
-         * Notification interval of widget updater in milliseconds.
-         */
-        const val WIDGET_UPDATER_NOTIFICATION_INTERVAL: Int = 5000
+
         private const val SCHED_EX_POOL_SIZE = 2
-        private const val UPDATE_INTERVAL = 1000L
-        const val NOTIFICATION_THRESHOLD: Long = 10000
+
+        private const val SLEEP_TIMER_UPDATE_INTERVAL = 10000L  // in millisoconds
+        const val POSITION_SAVER_WAITING_INTERVAL: Int = 5000   // in millisoconds
+        const val WIDGET_UPDATER_NOTIFICATION_INTERVAL: Int = 5000  // in millisoconds
+        const val NOTIFICATION_THRESHOLD: Long = 10000  // in millisoconds
     }
 }

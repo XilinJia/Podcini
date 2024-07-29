@@ -5,6 +5,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.isStreamOverDownload
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.playback.base.InTheatre.isCurrentlyPlaying
+import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.view.View
 import android.widget.ImageView
@@ -38,7 +39,7 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
                 null -> false
                 else -> DownloadServiceInterface.get()?.isDownloadingEpisode(media.downloadUrl!!)?:false
             }
-//            Logd("ItemActionButton", "forItem: ${episode.feedId} ${episode.feed?.isLocalFeed} ${media.downloaded} ${isCurrentlyPlaying(media)} ${curMedia is EpisodeMedia} ${media.id == (curMedia as? EpisodeMedia)?.id} ${episode.title} ")
+//            Logd("ItemActionButton", "forItem: ${episode.feedId} ${episode.feed?.isLocalFeed} ${media.downloaded} ${isCurrentlyPlaying(media)}  ${episode.title} ")
             return when {
                 media.getMediaType() == MediaType.FLASH -> VisitWebsiteActionButton(episode)
                 isCurrentlyPlaying(media) -> PauseActionButton(episode)

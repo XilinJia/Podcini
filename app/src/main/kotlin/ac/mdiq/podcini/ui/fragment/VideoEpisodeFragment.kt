@@ -250,7 +250,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
             lifecycleScope.launch {
                 try {
                     item = withContext(Dispatchers.IO) {
-                        val feedItem = (curMedia as? EpisodeMedia)?.episode
+                        val feedItem = (curMedia as? EpisodeMedia)?.episodeOrFetch()
                         if (feedItem != null) {
                             val duration = feedItem.media?.getDuration() ?: Int.MAX_VALUE
                             webviewData = ShownotesCleaner(requireContext()).processShownotes(feedItem.description ?: "", duration)

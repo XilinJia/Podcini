@@ -261,7 +261,7 @@ import java.util.*
                         Logd(TAG, "setSpeed codeArray: ${codeArray[0]} ${codeArray[1]} ${codeArray[2]}")
                         if (codeArray[2]) UserPreferences.setPlaybackSpeed(speed)
                         if (codeArray[1]) {
-                            val episode = (curMedia as? EpisodeMedia)?.episode ?: curEpisode
+                            val episode = (curMedia as? EpisodeMedia)?.episodeOrFetch() ?: curEpisode
                             if (episode != null) {
                                 var feed = episode.feed
                                 if (feed != null) {

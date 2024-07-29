@@ -239,7 +239,8 @@ import kotlin.math.min
             val medias = realm.query(EpisodeMedia::class).query("lastPlayedTime > $0 AND lastPlayedTime <= $1", start, end).find()
             var episodes: MutableList<Episode> = mutableListOf()
             for (m in medias) {
-                if (m.episode != null) episodes.add(m.episode!!)
+                val item_ = m.episodeOrFetch()
+                if (item_ != null) episodes.add(item_)
             }
             getPermutor(sortOrder).reorder(episodes)
             if (episodes.size > offset) episodes = episodes.subList(offset, min(episodes.size, offset+limit))

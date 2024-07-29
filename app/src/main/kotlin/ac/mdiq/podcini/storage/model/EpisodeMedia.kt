@@ -1,12 +1,15 @@
 package ac.mdiq.podcini.storage.model
 
 import ac.mdiq.podcini.storage.database.RealmDB.realm
+import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
+import ac.mdiq.podcini.storage.database.RealmDB.update
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.utils.MediaMetadataRetrieverCompat
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
+import io.realm.kotlin.ext.isManaged
 import io.realm.kotlin.types.EmbeddedRealmObject
 import io.realm.kotlin.types.annotations.Ignore
 import io.realm.kotlin.types.annotations.Index
@@ -38,11 +41,11 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
 
     @get:JvmName("getDurationProperty")
     @set:JvmName("setDurationProperty")
-    var duration = 0
+    var duration = 0    // in milliseconds
 
     @get:JvmName("getPositionProperty")
     @set:JvmName("setPositionProperty")
-    var position = 0 // Current position in file
+    var position = 0 // Current position in file, in milliseconds
 
     @get:JvmName("getLastPlayedTimeProperty")
     @set:JvmName("setLastPlayedTimeProperty")
@@ -58,7 +61,6 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
 
     var episode: Episode? = null
 
-    var playbackCompletionTime: Long = 0
     @Ignore
     var playbackCompletionDate: Date? = null
         get() = field?.clone() as? Date
@@ -66,6 +68,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
             field = value?.clone() as? Date
             this.playbackCompletionTime = value?.time ?: 0
         }
+    var playbackCompletionTime: Long = 0
 
     var startPosition: Int = -1
 
@@ -76,8 +79,8 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
     var hasEmbeddedPicture: Boolean? = null
 
     /* Used for loading item when restoring from parcel. */
-    var episodeId: Long = 0
-        private set
+//    var episodeId: Long = 0
+//        private set
 
     @Ignore
     val isInProgress: Boolean
@@ -116,7 +119,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
     }
 
     fun getHumanReadableIdentifier(): String? {
-        return if (episode?.title != null) episode!!.title else downloadUrl
+        return episode?.title ?: downloadUrl
     }
 
     /**
@@ -175,7 +178,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
 
     override fun setPosition(newPosition: Int) {
         this.position = newPosition
-        if (newPosition > 0 && episode != null && episode!!.isNew) episode!!.setPlayed(false)
+        if (newPosition > 0 && episode?.isNew == true) episode!!.setPlayed(false)
     }
 
     override fun getLastPlayedTime(): Long {
@@ -235,18 +238,6 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
         dest.writeInt(playedDuration)
         dest.writeLong(lastPlayedTime)
     }
-
-//    no longer needed
-//    override fun writeToPreferences(prefEditor: SharedPreferences.Editor) {
-//        if (episode == null) prefEditor.putLong(PREF_FEED_ID, 0L)
-//        else {
-//            val f = episode!!.feed
-//            if (f != null) prefEditor.putLong(PREF_FEED_ID, f.id)
-//            else prefEditor.putLong(PREF_FEED_ID, 0L)
-//        }
-//
-//        prefEditor.putLong(PREF_MEDIA_ID, id)
-//    }
 
     override fun getEpisodeTitle(): String {
         return episode?.title ?: episode?.identifyingValue ?: "No title"
@@ -364,12 +355,22 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
         result = 31 * result + startPosition
         result = 31 * result + playedDurationWhenStarted
         result = 31 * result + (hasEmbeddedPicture?.hashCode() ?: 0)
-        result = 31 * result + episodeId.hashCode()
+//        result = 31 * result + episodeId.hashCode()
         return result
     }
 
-    fun getTheEpisode(): Episode? {
-        return if (episode != null) episode else realm.query(Episode::class).query("id == $id").first().find()
+    fun episodeOrFetch(): Episode? {
+        return if (episode != null) episode else {
+            var item = realm.query(Episode::class).query("id == $id").first().find()
+            Logd(TAG, "episodeOrFetch warning: episode of media is null: ${id} ${item?.title}")
+            if (item != null) {
+                item = upsertBlk(item) {
+                    it.media = this@EpisodeMedia
+                    it.media!!.episode = it
+                }
+            }
+            if (item == null || isManaged()) item else unmanaged(item)
+        }
     }
 
     companion object {
@@ -408,7 +409,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
                     Date(inVal.readLong()),
                     inVal.readInt(),
                     inVal.readLong())
-                result.episodeId = itemID
+//                result.episodeId = itemID
                 return result
             }
 

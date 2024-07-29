@@ -232,7 +232,7 @@ class VideoplayerActivity : CastEnabledActivity() {
         val hasWebsiteLink = getWebsiteLinkWithFallback(media) != null
         menu.findItem(R.id.visit_website_item).setVisible(hasWebsiteLink)
 
-        val isItemAndHasLink = isEpisodeMedia && hasLinkToShare((media as EpisodeMedia).episode)
+        val isItemAndHasLink = isEpisodeMedia && hasLinkToShare((media as EpisodeMedia).episodeOrFetch())
         val isItemHasDownloadLink = isEpisodeMedia && (media as EpisodeMedia?)?.downloadUrl != null
         menu.findItem(R.id.share_item).setVisible(hasWebsiteLink || isItemAndHasLink || isItemHasDownloadLink)
 
@@ -287,7 +287,7 @@ class VideoplayerActivity : CastEnabledActivity() {
 //            controller == null -> return false
             else -> {
                 val media = curMedia ?: return false
-                val feedItem = (media as? EpisodeMedia)?.episode
+                val feedItem = (media as? EpisodeMedia)?.episodeOrFetch()
                 when {
                     item.itemId == R.id.add_to_favorites_item && feedItem != null -> {
                         setFavorite(feedItem, true)
@@ -470,7 +470,7 @@ class VideoplayerActivity : CastEnabledActivity() {
             return when {
                 media == null -> null
                 !media.getWebsiteLink().isNullOrBlank() -> media.getWebsiteLink()
-                media is EpisodeMedia -> media.episode?.getLinkWithFallback()
+                media is EpisodeMedia -> media.episodeOrFetch()?.getLinkWithFallback()
                 else -> null
             }
         }

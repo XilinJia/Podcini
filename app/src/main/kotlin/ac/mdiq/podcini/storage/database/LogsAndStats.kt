@@ -40,7 +40,7 @@ object LogsAndStats {
         Logd(TAG, "getStatistics called")
 
         val medias = realm.query(EpisodeMedia::class).find()
-        val groupdMedias = medias.groupBy { it.episode?.feedId ?: 0L }
+        val groupdMedias = medias.groupBy { it.episodeOrFetch()?.feedId ?: 0L }
         val result = StatisticsResult()
         result.oldestDate = Long.MAX_VALUE
         for ((fid, feedMedias) in groupdMedias) {
@@ -56,7 +56,7 @@ object LogsAndStats {
                 feedTotalTime += m.duration
                 if (m.lastPlayedTime in timeFilterFrom..<timeFilterTo) {
                     if (includeMarkedAsPlayed) {
-                        if ((m.playbackCompletionTime > 0 && m.playedDuration > 0) || m.episode?.playState == Episode.PLAYED || m.position > 0) {
+                        if ((m.playbackCompletionTime > 0 && m.playedDuration > 0) || m.episodeOrFetch()?.playState == Episode.PLAYED || m.position > 0) {
                             episodesStarted += 1
                             feedPlayedTime += m.duration
                         }

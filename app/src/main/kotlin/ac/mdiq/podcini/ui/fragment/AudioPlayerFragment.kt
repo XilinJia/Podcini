@@ -23,6 +23,7 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
+import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.model.Chapter
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Playable
@@ -229,7 +230,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                         }
                     }
                     currentMedia = curMedia
-                    val item = (currentMedia as? EpisodeMedia)?.episode
+                    val item = (currentMedia as? EpisodeMedia)?.episodeOrFetch()
                     if (item != null) playerDetailsFragment?.setItem(item)
                     updateUi()
                     playerUI?.updateUi(currentMedia)
@@ -327,8 +328,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
     private fun onPlaybackPositionEvent(event: FlowEvent.PlaybackPositionEvent) {
 //        Logd(TAG, "onPlayEvent ${event.episode.title}")
-        val media = event.media
-        if (currentMedia?.getIdentifier() == null || media?.getIdentifier() != currentMedia?.getIdentifier()) {
+        val media = event.media ?: return
+        if (currentMedia?.getIdentifier() == null || media.getIdentifier() != currentMedia?.getIdentifier()) {
             currentMedia = media
             playerUI?.updateUi(currentMedia)
             playerDetailsFragment?.setItem(curEpisode!!)
@@ -430,7 +431,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
         val isEpisodeMedia = currentMedia is EpisodeMedia
         toolbar.menu?.findItem(R.id.open_feed_item)?.setVisible(isEpisodeMedia)
-        val item = if (isEpisodeMedia) (currentMedia as EpisodeMedia).episode else null
+        val item = if (isEpisodeMedia) (currentMedia as EpisodeMedia).episodeOrFetch() else null
         EpisodeMenuHandler.onPrepareMenu(toolbar.menu, item)
 
         val mediaType = curMedia?.getMediaType()
@@ -445,7 +446,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
     override fun onMenuItemClick(menuItem: MenuItem): Boolean {
         val media: Playable = curMedia ?: return false
-        val feedItem = if (media is EpisodeMedia) media.episode else null
+        val feedItem = if (media is EpisodeMedia) media.episodeOrFetch() else null
         if (feedItem != null && EpisodeMenuHandler.onMenuItemClicked(this, menuItem.itemId, feedItem)) return true
 
         val itemId = menuItem.itemId

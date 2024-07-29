@@ -34,7 +34,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 
 ## Notable new features & enhancements
 
-### Player
+### Player and Queues
 
 * More convenient player control displayed on all pages
 * Revamped and more efficient expanded player view showing episode description on the front
@@ -59,6 +59,14 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * easy switches on video player to other video mode or audio only
 * default video player mode setting in preferences
 * when video mode is set to audio only, click on image on audio player on a video episode brings up the normal player detailed view
+* Multiple queues can be used: 5 queues are provided by default, user can rename or add up to 10 queues
+  * on app startup, the most recently updated queue is set to curQueue
+  * any episodes can be easily added/moved to the active or any designated queues
+  * any queue can be associated with any feed for customized playing experience
+* Every queue is circular: if the final item in queue finished, the first item in queue (if exists) will get played
+* Every queue has a bin containing past episodes removed from the queue
+* Episode played from a list other than the queue is now a one-off play, unless the episode is on the active queue, in which case, the next episode in the queue will be played
+
 
 ### Podcast/Episode list
 
@@ -82,11 +90,6 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * on action bar of FeedEpisodes view there is a direct access to Queue
 * Long-press filter button in FeedEpisodes view enables/disables filters without changing filter settings
 * History view shows time of last play, and allows filters and sorts
-* Multiple queues can be used: 5 queues are provided by default, user can add up to 10 queues
-  * on app startup, the most recently updated queue is set to curQueue
-* Every queue is circular: if the final item in queue finished, the first item in queue (if exists) will get played
-* Every queue has a bin containing past episodes removed from the queue
-
 ### Podcast/Episode
 
 * New share notes menu option on various episode views
@@ -121,11 +124,12 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
   * Each feed also has its own download policy (only new episodes, newest episodes, and oldest episodes. "newest episodes" meaning most recent episodes, new or old)
   * Each feed has its own limit (Episode cache) for number of episodes downloaded, this limit rules in combination of the overall limit  for the app.
   * Auto downloads run feeds or feed refreshes, scheduled or manual
-  * auto download always includes any undownloaded episodes (regardless of feeds) added in the current queue
+  * auto download always includes any undownloaded episodes (regardless of feeds) added in the Default queue
   * After auto download run, episodes with New status is changed to Unplayed.
   * auto download feed setting dialog is also changed:
     * there are now separate dialogs for inclusive and exclusive filters where filter tokens can be specified independently
     * on exclusive dialog, there are optional check boxes "Exclude episodes shorter than" and "Mark excluded episodes played"
+* Sleep timer has a new option of "To the end of episode"
 
 ### Security and reliability
 

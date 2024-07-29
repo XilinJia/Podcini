@@ -48,7 +48,7 @@ class PlaybackServiceStarter(private val context: Context, private val media: Pl
         if (media is EpisodeMedia) {
             curMedia = media
 //            curEpisode = if (media.episode != null) unmanaged(media.episode!!) else null
-            curEpisode = media.episode
+            curEpisode = media.episodeOrFetch()
 //            curMedia = curEpisode?.media
         } else curMedia = media
 

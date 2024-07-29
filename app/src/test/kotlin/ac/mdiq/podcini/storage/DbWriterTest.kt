@@ -511,9 +511,10 @@ class DbWriterTest {
     @Throws(Exception::class)
     fun testAddItemToPlaybackHistoryNotPlayedYet() {
         val media: EpisodeMedia = playbackHistorySetup(null)
-        if (media.episode != null) {
+        val item_ = media.episodeOrFetch()
+        if (item_ != null) {
             runBlocking {
-                val job = addToHistory(media.episode!!)
+                val job = addToHistory(item_)
                 withTimeout(TIMEOUT * 1000) { job.join() }
             }
         }
@@ -527,9 +528,10 @@ class DbWriterTest {
         val oldDate: Long = 0
 
         val media: EpisodeMedia = playbackHistorySetup(Date(oldDate))
-        if (media.episode != null) {
+        val item_ = media.episodeOrFetch()
+        if (item_ != null) {
             runBlocking {
-                val job = addToHistory(media.episode!!)
+                val job = addToHistory(item_)
                 withTimeout(TIMEOUT*1000) { job.join() }
             }
         }

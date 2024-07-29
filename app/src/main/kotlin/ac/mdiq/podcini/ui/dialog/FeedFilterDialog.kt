@@ -46,7 +46,7 @@ class FeedFilterDialog : BottomSheetDialogFragment() {
         }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val layout = inflater.inflate(R.layout.filter_dialog, null, false)
+        val layout = inflater.inflate(R.layout.filter_dialog, container, false)
         _binding = FilterDialogBinding.bind(layout)
         rows = binding.filterRows
         Logd("FeedFilterDialog", "fragment onCreateView")

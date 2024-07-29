@@ -75,7 +75,8 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
     @OptIn(UnstableApi::class) override fun cancel(context: Context, media: EpisodeMedia) {
         Logd(TAG, "starting cancel")
         // This needs to be done here, not in the worker. Reason: The worker might or might not be running.
-        if (media.episode != null) Episodes.deleteMediaOfEpisode(context, media.episode!!) // Remove partially downloaded file
+        val item_ = media.episodeOrFetch()
+        if (item_ != null) Episodes.deleteMediaOfEpisode(context, item_) // Remove partially downloaded file
         val tag = WORK_TAG_EPISODE_URL + media.downloadUrl
         val future: Future<List<WorkInfo>> = WorkManager.getInstance(context).getWorkInfosByTag(tag)
 
@@ -83,8 +84,10 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
             try {
                 val workInfoList = future.get() // Wait for the completion of the future operation and retrieve the result
                 workInfoList.forEach { workInfo ->
+//                    TODO: why cancel so many times??
                     if (workInfo.tags.contains(WORK_DATA_WAS_QUEUED)) {
-                        if (media.episode != null) Queues.removeFromQueue(media.episode!!)
+                        val item_ = media.episodeOrFetch()
+                        if (item_ != null) Queues.removeFromQueue(item_)
                     }
                 }
                 WorkManager.getInstance(context).cancelAllWorkByTag(tag)
@@ -202,6 +205,10 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
         @OptIn(UnstableApi::class)
         private fun performDownload(media: EpisodeMedia, request: DownloadRequest): Result {
             Logd(TAG, "starting performDownload")
+            if (request.destination == null) {
+                Log.e(TAG, "performDownload request.destination is null")
+                return Result.failure()
+            }
             val dest = File(request.destination)
             if (!dest.exists()) {
                 try {
@@ -338,17 +345,19 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                     return
                 }
                 // media.setDownloaded modifies played state
-                val broadcastUnreadStateUpdate = media.episode != null && media.episode!!.isNew
+                var item_ = media.episodeOrFetch()
+                val broadcastUnreadStateUpdate = item_?.isNew == true
 //                media.downloaded = true
                 media.setIsDownloaded()
-                Logd(TAG, "media.episode.isNew: ${media.episode?.isNew} ${media.episode?.playState}")
+                item_ = media.episodeOrFetch()
+                Logd(TAG, "media.episode.isNew: ${item_?.isNew} ${item_?.playState}")
                 media.setfileUrlOrNull(request.destination)
                 if (request.destination != null) media.size = File(request.destination).length()
                 media.checkEmbeddedPicture() // enforce check
                 // check if file has chapters
-                if (media.episode != null && media.episode!!.chapters.isEmpty()) media.setChapters(ChapterUtils.loadChaptersFromMediaFile(media, context))
-                if (media.episode?.podcastIndexChapterUrl != null)
-                    ChapterUtils.loadChaptersFromUrl(media.episode!!.podcastIndexChapterUrl!!, false)
+                if (item_?.chapters.isNullOrEmpty()) media.setChapters(ChapterUtils.loadChaptersFromMediaFile(media, context))
+                if (item_?.podcastIndexChapterUrl != null)
+                    ChapterUtils.loadChaptersFromUrl(item_.podcastIndexChapterUrl!!, false)
                 // Get duration
                 var durationStr: String? = null
                 try {
@@ -364,7 +373,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                     Log.e(TAG, "Get duration failed", e)
                     media.setDuration(30000)
                 }
-                val item = media.episode
+                val item = media.episodeOrFetch()
                 item?.media = media
                 try {
                     // we've received the media, we don't want to autodownload it again

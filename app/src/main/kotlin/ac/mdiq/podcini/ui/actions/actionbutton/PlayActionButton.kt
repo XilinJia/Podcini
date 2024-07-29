@@ -57,7 +57,7 @@ class PlayActionButton(item: Episode) : EpisodeActionButton(item) {
     fun notifyMissingEpisodeMediaFile(context: Context, media: EpisodeMedia) {
         Logd(TAG, "notifyMissingEpisodeMediaFile called")
         Log.i(TAG, "The feedmanager was notified about a missing episode. It will update its database now.")
-        val episode = media.episode
+        val episode = media.episodeOrFetch()
         if (episode != null) {
             episode.media = media
             episode.media?.downloaded = false

@@ -295,7 +295,7 @@ import java.lang.ref.WeakReference
     }
 
     private fun onPlaybackPositionEvent(event: FlowEvent.PlaybackPositionEvent) {
-        val item = (event.media as? EpisodeMedia)?.episode ?: return
+        val item = (event.media as? EpisodeMedia)?.episodeOrFetch() ?: return
         val pos = if (curIndex in 0..<results.size && event.media.getIdentifier() == results[curIndex].media?.getIdentifier() && isCurMedia(results[curIndex].media))
             curIndex else EpisodeUtil.indexOfItemWithId(results, item.id)
 

@@ -4,6 +4,7 @@ import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.util.Logd
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import android.webkit.URLUtil
@@ -12,6 +13,7 @@ import org.apache.commons.io.FilenameUtils
 import java.io.File
 import java.io.IOException
 
+@SuppressLint("StaticFieldLeak")
 object FilesUtils {
     private val TAG: String = FilesUtils::class.simpleName ?: "Anonymous"
 
@@ -47,9 +49,9 @@ object FilesUtils {
     }
 
     fun getMediafilePath(media: EpisodeMedia): String {
-        val item = media.getTheEpisode() ?: return ""
-        Logd(TAG, "item managed: ${item?.isManaged()}")
-        val title = item?.feed?.title?:return ""
+        val item = media.episodeOrFetch() ?: return ""
+        Logd(TAG, "item managed: ${item.isManaged()}")
+        val title = item.feed?.title?:return ""
         val mediaPath = (MEDIA_DOWNLOADPATH + FileNameGenerator.generateFileName(title))
         return getDataFolder(mediaPath).toString() + "/"
     }
@@ -58,10 +60,8 @@ object FilesUtils {
         var titleBaseFilename = ""
 
         // Try to generate the filename by the item title
-        if (media.episode?.title != null) {
-            val title = media.episode!!.title!!
-            titleBaseFilename = FileNameGenerator.generateFileName(title)
-        }
+        val item_ = media.episodeOrFetch()
+        if (item_?.title != null) titleBaseFilename = FileNameGenerator.generateFileName(item_.title!!)
 
         val urlBaseFilename = URLUtil.guessFileName(media.downloadUrl, null, media.mimeType)
 

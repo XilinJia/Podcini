@@ -47,7 +47,7 @@ object ChapterUtils {
         var chaptersFromDatabase: List<Chapter>? = null
         var chaptersFromPodcastIndex: List<Chapter>? = null
         if (playable is EpisodeMedia) {
-            val item = playable.episode
+            val item = playable.episodeOrFetch()
             if (item != null) {
                 if (item.chapters.isNotEmpty()) chaptersFromDatabase = item.chapters
                 if (!item.podcastIndexChapterUrl.isNullOrEmpty()) chaptersFromPodcastIndex = loadChaptersFromUrl(item.podcastIndexChapterUrl!!, forceRefresh)

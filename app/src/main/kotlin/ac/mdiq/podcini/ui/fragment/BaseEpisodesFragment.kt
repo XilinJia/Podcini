@@ -359,7 +359,7 @@ import kotlinx.coroutines.withContext
     }
 
     private fun onPlaybackPositionEvent(event: FlowEvent.PlaybackPositionEvent) {
-        val item = (event.media as? EpisodeMedia)?.episode ?: return
+        val item = (event.media as? EpisodeMedia)?.episodeOrFetch() ?: return
         val pos = if (curIndex in 0..<episodes.size && event.media.getIdentifier() == episodes[curIndex].media?.getIdentifier() && isCurMedia(episodes[curIndex].media))
             curIndex else EpisodeUtil.indexOfItemWithId(episodes, item.id)
 

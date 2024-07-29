@@ -10,7 +10,6 @@ import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.UpdatePolicy
 import io.realm.kotlin.ext.isManaged
-import io.realm.kotlin.types.EmbeddedRealmObject
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.TypedRealmObject
 import kotlinx.coroutines.*
@@ -19,7 +18,7 @@ import kotlin.coroutines.ContinuationInterceptor
 object RealmDB {
     private val TAG: String = RealmDB::class.simpleName ?: "Anonymous"
 
-    private const val SCHEMA_VERSION_NUMBER = 16L
+    private const val SCHEMA_VERSION_NUMBER = 17L
 
     private val ioScope = CoroutineScope(Dispatchers.IO)
 

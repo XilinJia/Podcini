@@ -6,7 +6,9 @@ import ac.mdiq.podcini.net.download.service.HttpCredentialEncoder
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient
 import ac.mdiq.podcini.net.utils.NetworkUtils.wasDownloadBlocked
 import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
+import ac.mdiq.podcini.playback.base.InTheatre.curIndexInQueue
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
+import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.MediaPlayerCallback
 import ac.mdiq.podcini.playback.base.PlayerStatus
@@ -15,11 +17,13 @@ import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.storage.model.MediaType
+import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.config.ClientConfig
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
 import ac.mdiq.podcini.util.event.FlowEvent.PlayEvent.Action
+import ac.mdiq.podcini.util.showStackTrace
 import android.app.UiModeManager
 import android.content.Context
 import android.content.res.Configuration
@@ -225,11 +229,18 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
      */
     override fun playMediaObject(playable: Playable, stream: Boolean, startWhenPrepared: Boolean, prepareImmediately: Boolean, forceReset: Boolean) {
        Logd(TAG, "playMediaObject status=$status stream=$stream startWhenPrepared=$startWhenPrepared prepareImmediately=$prepareImmediately forceReset=$forceReset ${playable.getEpisodeTitle()} ")
+//       showStackTrace()
         if (curMedia != null) {
+            Logd(TAG, "playMediaObject: curMedia exist status=$status")
             if (!forceReset && curMedia!!.getIdentifier() == prevMedia?.getIdentifier() && status == PlayerStatus.PLAYING) {
                 Logd(TAG, "Method call to playMediaObject was ignored: media file already playing.")
                 return
             }
+            if (curMedia is EpisodeMedia) {
+                val media_ = curMedia as EpisodeMedia
+                curIndexInQueue = EpisodeUtil.indexOfItemWithId(curQueue.episodes, media_.id)
+            } else curIndexInQueue = -1
+
             Logd(TAG, "playMediaObject starts new media playable:${playable.getIdentifier()} curMedia:${curMedia!!.getIdentifier()} prevMedia:${prevMedia?.getIdentifier()}")
             // set temporarily to pause in order to update list with current position
             if (status == PlayerStatus.PLAYING) {
@@ -241,12 +252,12 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
             if (status == PlayerStatus.PAUSED || status == PlayerStatus.PLAYING || status == PlayerStatus.PREPARED) exoPlayer?.stop()
 //            if (prevMedia != null && curMedia!!.getIdentifier() != prevMedia?.getIdentifier())
 //                callback.onPostPlayback(prevMedia, ended = false, skipped = false, true)
-            prevMedia = curMedia
             setPlayerStatus(PlayerStatus.INDETERMINATE, null)
         }
 
         Logd(TAG, "playMediaObject preparing for playable:${playable.getIdentifier()} ${playable.getEpisodeTitle()}")
         curMedia = playable
+        prevMedia = curMedia
         this.isStreaming = stream
         mediaType = curMedia!!.getMediaType()
         videoSize = null
@@ -264,7 +275,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
                     if (streamurl != null) {
                         val media = curMedia
                         if (media is EpisodeMedia) {
-                            val preferences = media.episode?.feed?.preferences
+                            val preferences = media.episodeOrFetch()?.feed?.preferences
                             setDataSource(metadata, streamurl, preferences?.username, preferences?.password)
                         } else setDataSource(metadata, streamurl, null, null)
                     }
@@ -289,6 +300,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
             e.printStackTrace()
             setPlayerStatus(PlayerStatus.ERROR, null)
             EventFlow.postStickyEvent(FlowEvent.PlayerErrorEvent(e.localizedMessage ?: ""))
+        } finally {
         }
     }
 
@@ -431,13 +443,15 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
         var volumeLeft = volumeLeft
         var volumeRight = volumeRight
         val playable = curMedia
-        if (playable is EpisodeMedia && playable.episode?.feed?.preferences != null) {
-            val preferences = playable.episode!!.feed!!.preferences!!
-            val volumeAdaptionSetting = preferences.volumeAdaptionSetting
-            if (volumeAdaptionSetting != null) {
-                val adaptionFactor = volumeAdaptionSetting.adaptionFactor
-                volumeLeft *= adaptionFactor
-                volumeRight *= adaptionFactor
+        if (playable is EpisodeMedia) {
+            val preferences = playable.episodeOrFetch()?.feed?.preferences
+            if (preferences != null) {
+                val volumeAdaptionSetting = preferences.volumeAdaptionSetting
+                if (volumeAdaptionSetting != null) {
+                    val adaptionFactor = volumeAdaptionSetting.adaptionFactor
+                    volumeLeft *= adaptionFactor
+                    volumeRight *= adaptionFactor
+                }
             }
         }
         if (volumeLeft > 1) {
@@ -532,6 +546,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
 
     override fun endPlayback(hasEnded: Boolean, wasSkipped: Boolean, shouldContinue: Boolean, toStoppedState: Boolean) {
         releaseWifiLockIfNecessary()
+        if (curMedia == null) return
 
         val isPlaying = status == PlayerStatus.PLAYING
         // we're relying on the position stored in the Playable object for post-playback processing
@@ -566,7 +581,8 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
                     else Logd(TAG, "Ignored call to stop: Current player state is: $status")
                 }
                 val hasNext = nextMedia != null
-                callback.onPostPlayback(currentMedia, hasEnded, wasSkipped, hasNext)
+                if (currentMedia != null) callback.onPostPlayback(currentMedia, hasEnded, wasSkipped, hasNext)
+//                curMedia = nextMedia
             }
             isPlaying -> callback.onPlaybackPause(currentMedia, currentMedia!!.getPosition())
         }

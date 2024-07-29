@@ -7,10 +7,12 @@ import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.playback.base.InTheatre.isCurMedia
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
+import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
@@ -196,6 +198,13 @@ import java.util.*
     private val filesRemoved: MutableList<String> = mutableListOf()
     private fun reconsile() {
         runOnIOScope {
+            val items = realm.query(Episode::class).query("media.episode == nil").find()
+            Logd(TAG, "number of episode with null backlink: ${items.size}")
+            for (item in items) {
+                upsert(item) {
+                    it.media!!.episode = it
+                }
+            }
             nameEpisodeMap.clear()
             episodes.forEach { e ->
                 var fileUrl = e.media?.fileUrl ?: return@forEach
@@ -375,7 +384,7 @@ import java.util.*
     }
 
     private fun onPlaybackPositionEvent(event: FlowEvent.PlaybackPositionEvent) {
-        val item = (event.media as? EpisodeMedia)?.episode ?: return
+        val item = (event.media as? EpisodeMedia)?.episodeOrFetch() ?: return
         val pos = if (curIndex in 0..<episodes.size && event.media.getIdentifier() == episodes[curIndex].media?.getIdentifier() && isCurMedia(episodes[curIndex].media))
             curIndex else EpisodeUtil.indexOfItemWithId(episodes, item.id)
 
@@ -439,7 +448,8 @@ import java.util.*
         for (url in urls) {
             if (url == null) continue
             val media = realm.query(EpisodeMedia::class).query("downloadUrl == $0", url).first().find() ?: continue
-            if (media.episode != null) episodes.add(media.episode!!)
+            val item_ = media.episodeOrFetch()
+            if (item_ != null) episodes.add(item_)
         }
         return realm.copyFromRealm(episodes)
     }

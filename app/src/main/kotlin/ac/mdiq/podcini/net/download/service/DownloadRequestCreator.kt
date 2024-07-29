@@ -44,7 +44,7 @@ object DownloadRequestCreator {
 
         Logd(TAG, "Requesting download media from url " + media.downloadUrl)
 
-        val feed = media.episode?.feed
+        val feed = media.episodeOrFetch()?.feed
         val username = feed?.preferences?.username
         val password = feed?.preferences?.password
 

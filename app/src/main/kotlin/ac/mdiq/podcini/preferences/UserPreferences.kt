@@ -4,6 +4,7 @@ import ac.mdiq.podcini.storage.model.ProxyConfig
 import ac.mdiq.podcini.storage.utils.FilesUtils
 import ac.mdiq.podcini.storage.utils.FilesUtils.createNoMediaFile
 import ac.mdiq.podcini.util.Logd
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
@@ -18,6 +19,7 @@ import java.net.Proxy
  * init() or otherwise every public method will throw an Exception
  * when called.
  */
+@SuppressLint("StaticFieldLeak")
 object UserPreferences {
     private val TAG: String = UserPreferences::class.simpleName ?: "Anonymous"
 

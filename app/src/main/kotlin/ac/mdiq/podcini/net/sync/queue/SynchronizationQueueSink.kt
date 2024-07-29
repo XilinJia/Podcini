@@ -62,9 +62,10 @@ object SynchronizationQueueSink {
     fun enqueueEpisodePlayedIfSyncActive(context: Context, media: EpisodeMedia, completed: Boolean) {
         if (!isProviderConnected) return
 
-        if (media.episode?.feed == null || media.episode!!.feed!!.isLocalFeed) return
+        val item_ = media.episodeOrFetch()
+        if (item_?.feed?.isLocalFeed == true) return
         if (media.startPosition < 0 || (!completed && media.startPosition >= media.getPosition())) return
-        val action = EpisodeAction.Builder(media.episode!!, EpisodeAction.PLAY)
+        val action = EpisodeAction.Builder(item_!!, EpisodeAction.PLAY)
             .currentTimestamp()
             .started(media.startPosition / 1000)
             .position((if (completed) media.getDuration() else media.getPosition()) / 1000)

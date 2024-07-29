@@ -36,12 +36,12 @@ object SleepTimerPreferences {
     }
 
     @JvmStatic
-    fun setLastTimer(value: String?) {
+    fun setLastTimer(value: String?) {  // in minutes
         prefs!!.edit().putString(Prefs.LastValue.name, value).apply()
     }
 
     @JvmStatic
-    fun lastTimerValue(): String? {
+    fun lastTimerValue(): String? { // in minutes
         return prefs!!.getString(Prefs.LastValue.name, DEFAULT_LAST_TIMER)
     }
 

@@ -130,8 +130,10 @@ import java.util.*
 
         val queues = realm.query(PlayQueue::class).find()
         queueNames = queues.map { it.name }.toTypedArray()
-        val spinnerLayout = inflater.inflate(R.layout.queue_title_spinner, null)
+        val spinnerLayout = inflater.inflate(R.layout.queue_title_spinner, toolbar, false)
         queueSpinner = spinnerLayout.findViewById(R.id.queue_spinner)
+        val params = Toolbar.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        params.gravity = Gravity.CENTER_VERTICAL
         toolbar.addView(spinnerLayout)
         spinnerAdaptor = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, queueNames)
         spinnerAdaptor.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -148,7 +150,7 @@ import java.util.*
 
         (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
         toolbar.inflateMenu(R.menu.queue)
-        refreshToolbarState()
+        refreshMenuItems()
         binding.progressBar.visibility = View.VISIBLE
 
         recyclerView = binding.recyclerView
@@ -314,7 +316,7 @@ import java.util.*
             FlowEvent.QueueEvent.Action.MOVED, FlowEvent.QueueEvent.Action.DELETED_MEDIA -> return
         }
         adapter?.updateDragDropEnabled()
-        refreshToolbarState()
+        refreshMenuItems()
         recyclerView.saveScrollPosition(TAG)
         refreshInfoBar()
     }
@@ -407,7 +409,7 @@ import java.util.*
     }
 
     private fun onPlaybackPositionEvent(event: FlowEvent.PlaybackPositionEvent) {
-        val item = (event.media as? EpisodeMedia)?.episode ?: return
+        val item = (event.media as? EpisodeMedia)?.episodeOrFetch() ?: return
         val pos = if (curIndex in 0..<queueItems.size && event.media.getIdentifier() == queueItems[curIndex].media?.getIdentifier() && isCurMedia(queueItems[curIndex].media))
             curIndex else EpisodeUtil.indexOfItemWithId(queueItems, item.id)
 
@@ -423,7 +425,7 @@ import java.util.*
         if (showBin) return
         //        Logd(TAG, "onPlayerStatusChanged() called with event = [$event]")
         loadItems(false)
-        refreshToolbarState()
+        refreshMenuItems()
     }
 
     private fun onEpisodePlayedEvent(event: FlowEvent.EpisodePlayedEvent) {
@@ -435,7 +437,7 @@ import java.util.*
             val pos: Int = EpisodeUtil.indexOfItemWithId(queueItems, event.episode.id)
             if (pos >= 0) queueItems[pos].setPlayed(event.episode.isPlayed())
         }
-        refreshToolbarState()
+        refreshMenuItems()
     }
 
     private fun onFeedPrefsChanged(event: FlowEvent.FeedPrefsChangeEvent) {
@@ -472,12 +474,21 @@ import java.util.*
         super.onDestroyView()
     }
 
-    private fun refreshToolbarState() {
-        val keepSorted: Boolean = isQueueKeepSorted
-        toolbar.menu?.findItem(R.id.queue_lock)?.setChecked(isQueueLocked)
-        toolbar.menu?.findItem(R.id.queue_lock)?.setVisible(!keepSorted)
-        toolbar.menu?.findItem(R.id.rename_queue)?.setVisible(curQueue.name != "Default")
-        toolbar.menu?.findItem(R.id.add_queue)?.setVisible(queueNames.size<9)
+    private fun refreshMenuItems() {
+        if (showBin) {
+            toolbar.menu?.findItem(R.id.queue_sort)?.setVisible(false)
+            toolbar.menu?.findItem(R.id.rename_queue)?.setVisible(false)
+            toolbar.menu?.findItem(R.id.add_queue)?.setVisible(false)
+            toolbar.menu?.findItem(R.id.queue_lock)?.setVisible(false)
+            toolbar.menu?.findItem(R.id.action_search)?.setVisible(false)
+        } else {
+            toolbar.menu?.findItem(R.id.action_search)?.setVisible(true)
+            toolbar.menu?.findItem(R.id.queue_sort)?.setVisible(true)
+            toolbar.menu?.findItem(R.id.queue_lock)?.setChecked(isQueueLocked)
+            toolbar.menu?.findItem(R.id.queue_lock)?.setVisible(!isQueueKeepSorted)
+            toolbar.menu?.findItem(R.id.rename_queue)?.setVisible(curQueue.name != "Default")
+            toolbar.menu?.findItem(R.id.add_queue)?.setVisible(queueNames.size < 9)
+        }
     }
 
     @UnstableApi override fun onMenuItemClick(item: MenuItem): Boolean {
@@ -485,6 +496,7 @@ import java.util.*
         when (itemId) {
             R.id.show_bin -> {
                 showBin = !showBin
+                refreshMenuItems()
                 if (showBin) {
                     item.setIcon(R.drawable.playlist_play)
                     speedDialView.addActionItem(addToQueueActionItem)
@@ -656,7 +668,7 @@ import java.util.*
 
     @UnstableApi private fun setQueueLocked(locked: Boolean) {
         isQueueLocked = locked
-        refreshToolbarState()
+        refreshMenuItems()
         adapter?.updateDragDropEnabled()
 
         if (queueItems.size == 0) {
@@ -751,7 +763,7 @@ import java.util.*
             queueItems.clear()
             if (showBin) {
                 queueItems.addAll(realm.copyFromRealm(realm.query(Episode::class, "id IN $0", curQueue.idsBinList)
-                    .find().sortedBy { curQueue.idsBinList.indexOf(it.id) }))
+                    .find().sortedByDescending { curQueue.idsBinList.indexOf(it.id) }))
             } else {
                 curQueue.episodes.clear()
                 curQueue.episodes.addAll(realm.copyFromRealm(realm.query(Episode::class, "id IN $0", curQueue.episodeIds)
@@ -770,7 +782,7 @@ import java.util.*
     override fun onStartSelectMode() {
         swipeActions.detach()
         speedDialView.visibility = View.VISIBLE
-        refreshToolbarState()
+        refreshMenuItems()
         binding.infoBar.visibility = View.GONE
     }
 

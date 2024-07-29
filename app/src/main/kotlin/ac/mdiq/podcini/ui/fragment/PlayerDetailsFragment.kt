@@ -148,7 +148,7 @@ class PlayerDetailsFragment : Fragment() {
                     playable = curMedia
                     if (playable != null && playable is EpisodeMedia) {
                         val episodeMedia = playable as EpisodeMedia
-                        currentItem = episodeMedia.episode
+                        currentItem = episodeMedia.episodeOrFetch()
                         showHomeText = false
                         homeText = null
                     }
@@ -266,9 +266,9 @@ class PlayerDetailsFragment : Fragment() {
         when {
             playable?.getChapters() != null -> chapterControlVisible = playable!!.getChapters().isNotEmpty()
             playable is EpisodeMedia -> {
-                val fm: EpisodeMedia? = (playable as EpisodeMedia?)
+                val item_ = (playable as EpisodeMedia).episodeOrFetch()
                 // If an item has chapters but they are not loaded yet, still display the button.
-                chapterControlVisible = fm?.episode != null && fm.episode!!.chapters.isNotEmpty()
+                chapterControlVisible = !item_?.chapters.isNullOrEmpty()
             }
         }
         val newVisibility = if (chapterControlVisible) View.VISIBLE else View.GONE

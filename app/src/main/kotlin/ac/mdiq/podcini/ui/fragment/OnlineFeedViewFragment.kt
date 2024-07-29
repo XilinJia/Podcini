@@ -459,9 +459,7 @@ import kotlin.concurrent.Volatile
                             item.id = 0L
                             item.feed = feed
                             val media = item.media
-                            if (media != null) {
-                                media.episode = item
-                            }
+                            media?.episode = item
                         }
                         val fo = updateFeed(requireContext(), feed, false)
                         Logd(TAG, "fo.id: ${fo?.id} feed.id: ${feed.id}")

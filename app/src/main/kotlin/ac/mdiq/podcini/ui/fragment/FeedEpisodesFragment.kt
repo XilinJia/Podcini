@@ -5,26 +5,18 @@ import ac.mdiq.podcini.databinding.FeedItemListFragmentBinding
 import ac.mdiq.podcini.databinding.MoreContentListFooterBinding
 import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
-import ac.mdiq.podcini.playback.base.InTheatre.isCurMedia
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.database.LogsAndStats.getFeedDownloadLog
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
-import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
-import ac.mdiq.podcini.storage.model.DownloadResult
-import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.model.EpisodeFilter
-import ac.mdiq.podcini.storage.utils.EpisodeUtil
-import ac.mdiq.podcini.storage.model.EpisodeSortOrder
+import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.fromCode
+import ac.mdiq.podcini.storage.utils.EpisodeUtil
+import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectHandler
-import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
-import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.EpisodesAdapter
@@ -32,13 +24,11 @@ import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.dialog.*
 import ac.mdiq.podcini.ui.utils.ToolbarIconTintManager
 import ac.mdiq.podcini.ui.utils.TransitionEffect
-import ac.mdiq.podcini.ui.view.viewholder.EpisodeViewHolder
 import ac.mdiq.podcini.util.IntentUtils
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.ShareUtils
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
-import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import android.app.Activity
 import android.content.Context
 import android.content.res.Configuration
@@ -47,7 +37,6 @@ import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.view.*
-import android.widget.AdapterView
 import android.widget.Toast
 import androidx.annotation.OptIn
 import androidx.appcompat.content.res.AppCompatResources
@@ -61,7 +50,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
-import io.realm.kotlin.ext.isManaged
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
 import org.apache.commons.lang3.StringUtils
@@ -71,15 +59,14 @@ import java.util.concurrent.Semaphore
 /**
  * Displays a list of FeedItems.
  */
-@UnstableApi class FeedEpisodesFragment
-    : Fragment(), AdapterView.OnItemClickListener, Toolbar.OnMenuItemClickListener, SelectableAdapter.OnSelectModeListener {
+@UnstableApi class FeedEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAdapter.OnSelectModeListener {
 
     private var _binding: FeedItemListFragmentBinding? = null
     private val binding get() = _binding!!
     private var _dialBinding: MultiSelectSpeedDialBinding? = null
     private val dialBinding get() = _dialBinding!!
 
-    private lateinit var adapter: FeedEpisodesAdapter
+    private lateinit var adapter: EpisodesAdapter
     private lateinit var swipeActions: SwipeActions
     private lateinit var nextPageLoader: MoreContentListFooterUtil
 
@@ -88,8 +75,6 @@ import java.util.concurrent.Semaphore
     private var feedID: Long = 0
     private var feed: Feed? = null
     private var episodes: MutableList<Episode> = mutableListOf()
-
-    private var curIndex = -1
 
     private var enableFilter: Boolean = true
 
@@ -124,19 +109,20 @@ import java.util.concurrent.Semaphore
         updateToolbar()
 
         binding.recyclerView.setRecycledViewPool((activity as MainActivity).recycledViewPool)
-        adapter = FeedEpisodesAdapter(activity as MainActivity)
+        adapter = EpisodesAdapter(activity as MainActivity) { pos, episode ->
+            Logd(TAG, "FeedEpisode refreshPosCallback: $pos ${episode.title}")
+//        if (pos >= 0 && pos < episodes.size) episodes[pos] = episode
+            redoFilter()
+//        adapter.notifyDataSetChanged()
+        }
         adapter.setOnSelectModeListener(this)
         binding.recyclerView.adapter = adapter
 
         swipeActions = SwipeActions(this, TAG).attachTo(binding.recyclerView)
         lifecycle.addObserver(swipeActions)
         refreshSwipeTelltale()
-        binding.header.leftActionIcon.setOnClickListener {
-            swipeActions.showDialog()
-        }
-        binding.header.rightActionIcon.setOnClickListener {
-            swipeActions.showDialog()
-        }
+        binding.header.leftActionIcon.setOnClickListener { swipeActions.showDialog() }
+        binding.header.rightActionIcon.setOnClickListener { swipeActions.showDialog() }
 
         binding.progressBar.visibility = View.VISIBLE
 
@@ -191,20 +177,22 @@ import java.util.concurrent.Semaphore
             adapter.endSelectMode()
             true
         }
-        loadItems()
+//        loadItems()
         return binding.root
     }
 
     override fun onStart() {
         Logd(TAG, "onStart() called")
         super.onStart()
+//        adapter.refreshFragPosCallback = ::refreshPosCallback
+        loadFeed()
         procFlowEvents()
-//        loadItems()
     }
 
     override fun onStop() {
         Logd(TAG, "onStop() called")
         super.onStop()
+//        adapter.refreshFragPosCallback = null
         cancelFlowEvents()
     }
 
@@ -229,6 +217,8 @@ import java.util.concurrent.Semaphore
 
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
+        binding.toolbar.setOnMenuItemClickListener(null)
+        binding.toolbar.setOnLongClickListener(null)
         _binding = null
         _dialBinding = null
 
@@ -244,8 +234,17 @@ import java.util.concurrent.Semaphore
         ttsWorking = false
         ttsReady = false
         tts = null
+
         super.onDestroyView()
     }
+
+//    @UnstableApi
+//    private fun refreshPosCallback(pos: Int, episode: Episode) {
+//        Logd(TAG, "FeedEpisode refreshPosCallback: $pos ${episode.title}")
+////        if (pos >= 0 && pos < episodes.size) episodes[pos] = episode
+//        redoFilter()
+////        adapter.notifyDataSetChanged()
+//    }
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putBoolean(KEY_UP_ARROW, displayUpArrow)
@@ -281,10 +280,14 @@ import java.util.concurrent.Semaphore
                 Thread {
                     try {
                         if (feed != null) {
-                            val feed_ = unmanaged(feed!!)
-                            feed_.nextPageLink = feed_.downloadUrl
-                            feed_.pageNr = 0
-                            upsertBlk(feed_) {}
+                            val feed_ = upsertBlk(feed!!) {
+                                it.nextPageLink = it.downloadUrl
+                                it.pageNr = 0
+                            }
+//                            val feed_ = unmanaged(feed!!)
+//                            feed_.nextPageLink = feed_.downloadUrl
+//                            feed_.pageNr = 0
+//                            upsertBlk(feed_) {}
                             FeedUpdateManager.runOnce(requireContext(), feed_)
                         }
                     } catch (e: ExecutionException) {
@@ -315,75 +318,6 @@ import java.util.concurrent.Semaphore
         return true
     }
 
-    override fun onContextItemSelected(item: MenuItem): Boolean {
-        val selectedItem: Episode? = adapter.longPressedItem
-        if (selectedItem == null) {
-            Logd(TAG, "Selected item at current position was null, ignoring selection")
-            return super.onContextItemSelected(item)
-        }
-        if (adapter.onContextItemSelected(item)) return true
-
-        return EpisodeMenuHandler.onMenuItemClicked(this, item.itemId, selectedItem)
-    }
-
-    @UnstableApi override fun onItemClick(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
-        val activity: MainActivity = activity as MainActivity
-        if (feed != null) activity.loadChildFragment(EpisodeInfoFragment.newInstance(episodes[position]))
-    }
-
-    private fun onEpisodeEvent(event: FlowEvent.EpisodeEvent) {
-//        Logd(TAG, "onEpisodeEvent() called with ${event.TAG}")
-        if (feed == null || episodes.isEmpty()) return
-
-        var i = 0
-        val size: Int = event.episodes.size
-        val poses: MutableList<Int> = mutableListOf()
-        while (i < size) {
-            val item = event.episodes[i++]
-            if (item.feedId != feed!!.id) continue
-            val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
-            if (pos >= 0) {
-                Logd(TAG, "episode event: ${item.title} ${item.playState} ${item.isDownloaded}")
-                episodes[pos] = item
-                poses.add(pos)
-            }
-        }
-        if (poses.size == 1) {
-            if (filterOutEpisode(episodes[poses[0]])) adapter.updateItems(episodes)
-            else adapter.notifyItemChangedCompat(poses[0])
-        } else if (poses.size > 1) {
-            redoFilter()
-            adapter.notifyDataSetChanged()
-        }
-    }
-
-    private fun onEpisodeMediaEvent(event: FlowEvent.EpisodeMediaEvent) {
-//        Logd(TAG, "onEpisodeEvent() called with ${event.TAG}")
-        if (feed == null || episodes.isEmpty()) return
-
-        var i = 0
-        val size: Int = event.episodes.size
-        val poses: MutableList<Int> = mutableListOf()
-        while (i < size) {
-            val item = event.episodes[i++]
-            if (item.feedId != feed!!.id) continue
-            val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
-            if (pos >= 0) {
-                Logd(TAG, "episode event: ${item.title} ${item.playState} ${item.isDownloaded}")
-                episodes[pos] = unmanaged(episodes[pos])
-                episodes[pos].media = item.media
-                poses.add(pos)
-            }
-        }
-        if (poses.size == 1) {
-            if (filterOutEpisode(episodes[poses[0]])) adapter.updateItems(episodes)
-            else adapter.notifyItemChangedCompat(poses[0])
-        } else if (poses.size > 1) {
-            redoFilter()
-            adapter.notifyDataSetChanged()
-        }
-    }
-
     private fun onQueueEvent(event: FlowEvent.QueueEvent) {
         if (feed == null || episodes.isEmpty()) return
         var i = 0
@@ -407,64 +341,16 @@ import java.util.concurrent.Semaphore
         }
     }
 
-    private fun onEpisodePlayedEvent(event: FlowEvent.EpisodePlayedEvent) {
-        if (event.episode == null) return
-        val item = event.episode
-        val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
-        if (pos >= 0) {
-            Logd(TAG, "played item: ${item.title} ${item.playState}")
-            if (filterOutEpisode(item)) adapter.updateItems(episodes)
-            else {
-                episodes[pos] = item
-                adapter.notifyItemChangedCompat(pos)
-            }
-        }
-    }
-
-    private fun onFavoriteEvent(event: FlowEvent.FavoritesEvent) {
-        val item = event.episode
-        val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
-        if (pos >= 0) {
-            episodes[pos] = unmanaged(episodes[pos])
-            episodes[pos].isFavorite = item.isFavorite
-            if (filterOutEpisode(item)) adapter.updateItems(episodes)
-            else adapter.notifyItemChangedCompat(pos)
-        }
-    }
-
     private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
 //        Logd(TAG, "onEpisodeDownloadEvent() called with ${event.TAG}")
+        if (loadItemsRunning) return
         if (feed == null || episodes.isEmpty()) return
         for (downloadUrl in event.urls) {
             val pos: Int = EpisodeUtil.indexOfItemWithDownloadUrl(episodes, downloadUrl)
             if (pos >= 0) {
-//                episodes[pos] = upsertBlk(episodes[pos]) {
-//                    it.media?.setIsDownloaded()
-//                }
-                val item = unmanaged(episodes[pos])
-                if (item.media != null) {
-                    val m = unmanaged(item.media!!)
-                    m.downloaded = true
-                    item.media = m
-                    episodes[pos] = item
-                    if (filterOutEpisode(episodes[pos])) adapter.updateItems(episodes)
-                    else adapter.notifyItemChangedCompat(pos)
-                }
+                Logd(TAG, "onEpisodeDownloadEvent $pos ${episodes[pos].title}")
+                adapter.notifyItemChangedCompat(pos)
             }
-        }
-    }
-
-    private fun onPlaybackPositionEvent(event: FlowEvent.PlaybackPositionEvent) {
-        val item = (event.media as? EpisodeMedia)?.episodeOrFetch() ?: return
-        if (loadItemsRunning) return
-        val pos = if (curIndex in 0..<episodes.size && event.media.getIdentifier() == episodes[curIndex].media?.getIdentifier() && isCurMedia(episodes[curIndex].media))
-            curIndex else EpisodeUtil.indexOfItemWithId(episodes, item.id)
-
-        if (pos >= 0) {
-            episodes[pos] = unmanaged(episodes[pos])
-            episodes[pos].media?.position = event.media.position
-            curIndex = pos
-            adapter.notifyItemChanged(pos, Bundle().apply { putString("PositionUpdate", "PlaybackPositionEvent") })
         }
     }
 
@@ -485,15 +371,10 @@ import java.util.concurrent.Semaphore
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.QueueEvent -> onQueueEvent(event)
-                    is FlowEvent.FavoritesEvent -> onFavoriteEvent(event)
                     is FlowEvent.PlayEvent -> onPlayEvent(event)
-                    is FlowEvent.PlaybackPositionEvent -> onPlaybackPositionEvent(event)
-                    is FlowEvent.FeedPrefsChangeEvent -> if (feed?.id == event.feed.id) loadItems()
-                    is FlowEvent.EpisodeEvent -> onEpisodeEvent(event)
-                    is FlowEvent.EpisodeMediaEvent -> onEpisodeMediaEvent(event)
-                    is FlowEvent.PlayerSettingsEvent -> loadItems()
-                    is FlowEvent.EpisodePlayedEvent -> onEpisodePlayedEvent(event)
-                    is FlowEvent.FeedListEvent -> if (feed != null && event.contains(feed!!)) loadItems()
+                    is FlowEvent.FeedPrefsChangeEvent -> if (feed?.id == event.feed.id) loadFeed()
+                    is FlowEvent.PlayerSettingsEvent -> loadFeed()
+                    is FlowEvent.FeedListEvent -> if (feed != null && event.contains(feed!!)) loadFeed()
                     is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
                     else -> {}
                 }
@@ -668,18 +549,19 @@ import java.util.concurrent.Semaphore
         return false
     }
 
-    private fun redoFilter() {
+    private fun redoFilter(list: List<Episode>? = null) {
         if (enableFilter && !feed?.preferences?.filterString.isNullOrEmpty()) {
-            val episodes_ = episodes.toList()
+            val episodes_ = list ?: episodes.toList()
             episodes.clear()
             episodes.addAll(episodes_.filter { feed!!.episodeFilter.matches(it) })
         }
     }
 
     @UnstableApi
-    private fun loadItems() {
+    private fun loadFeed() {
         if (!loadItemsRunning) {
             loadItemsRunning = true
+            adapter.updateItems(mutableListOf())
             lifecycleScope.launch {
                 try {
                     feed = withContext(Dispatchers.IO) {
@@ -732,8 +614,10 @@ import java.util.concurrent.Semaphore
                     feed = null
                     refreshHeaderView()
 //                adapter.setDummyViews(0)
-                    adapter.updateItems(emptyList())
+                    adapter.updateItems(mutableListOf())
                     updateToolbar()
+                    Log.e(TAG, Log.getStackTraceString(e))
+                } catch (e: Exception) {
                     Log.e(TAG, Log.getStackTraceString(e))
                 } finally {
                     loadItemsRunning = false
@@ -751,17 +635,11 @@ import java.util.concurrent.Semaphore
         }
     }
 
-    private inner class FeedEpisodesAdapter(mainActivity: MainActivity) : EpisodesAdapter(mainActivity) {
-        @UnstableApi override fun beforeBindViewHolder(holder: EpisodeViewHolder, pos: Int) {
-//            holder.coverHolder.visibility = View.GONE
-        }
-        @UnstableApi override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
-            super.onCreateContextMenu(menu, v, menuInfo)
-            MenuItemUtils.setOnClickListeners(menu) { item: MenuItem ->
-                this@FeedEpisodesFragment.onContextItemSelected(item)
-            }
-        }
-    }
+//    private inner class FeedEpisodesAdapter(mainActivity: MainActivity) : EpisodesAdapter(mainActivity, ::refreshPosCallback) {
+//        @UnstableApi override fun beforeBindViewHolder(holder: EpisodeViewHolder, pos: Int) {
+////            holder.coverHolder.visibility = View.GONE
+//        }
+//    }
 
     class FeedEpisodeFilterDialog(val feed: Feed?) : EpisodeFilterDialog() {
         @OptIn(UnstableApi::class) override fun onFilterChanged(newFilterValues: Set<String>) {

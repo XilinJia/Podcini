@@ -18,6 +18,9 @@ abstract class SelectableAdapter<T : RecyclerView.ViewHolder?>(private val activ
     var shouldSelectLazyLoadedItems: Boolean = false
     internal var totalNumberOfItems = COUNT_AUTOMATICALLY
 
+    val selectedCount: Int
+        get() = selectedIds.size
+
     fun startSelectMode(pos: Int) {
         if (inActionMode()) endSelectMode()
 
@@ -90,20 +93,17 @@ abstract class SelectableAdapter<T : RecyclerView.ViewHolder?>(private val activ
 
     /**
      * Set the selected state of item at given position
-     *
      * @param pos      the position to select
      * @param selected true for selected state and false for unselected
      */
     open fun setSelected(pos: Int, selected: Boolean) {
         if (selected) selectedIds.add(getItemId(pos))
         else selectedIds.remove(getItemId(pos))
-
         updateTitle()
     }
 
     /**
      * Set the selected state of item for a given range
-     *
      * @param startPos start position of range, inclusive
      * @param endPos   end position of range, inclusive
      * @param selected indicates the selection state
@@ -138,9 +138,6 @@ abstract class SelectableAdapter<T : RecyclerView.ViewHolder?>(private val activ
     fun inActionMode(): Boolean {
         return actionMode != null
     }
-
-    val selectedCount: Int
-        get() = selectedIds.size
 
     private fun toggleSelectAllIcon(selectAllItem: MenuItem, allSelected: Boolean) {
         if (allSelected) {

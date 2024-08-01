@@ -330,8 +330,9 @@ object Feeds {
     fun persistFeedLastUpdateFailed(feed: Feed, lastUpdateFailed: Boolean) : Job {
         Logd(TAG, "persistFeedLastUpdateFailed called")
         return runOnIOScope {
-            feed.lastUpdateFailed = lastUpdateFailed
-            upsert(feed) {}
+            upsert(feed) {
+                it.lastUpdateFailed = lastUpdateFailed
+            }
             EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.ERROR, feed.id))
         }
     }

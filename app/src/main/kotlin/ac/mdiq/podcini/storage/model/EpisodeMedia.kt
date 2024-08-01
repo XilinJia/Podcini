@@ -2,7 +2,6 @@ package ac.mdiq.podcini.storage.model
 
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
-import ac.mdiq.podcini.storage.database.RealmDB.update
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.utils.MediaMetadataRetrieverCompat
 import ac.mdiq.podcini.util.Logd
@@ -88,32 +87,32 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
 
     constructor() {}
 
-    constructor(i: Episode?, download_url: String?, size: Long, mime_type: String?) {
+    constructor(i: Episode?, downloadUrl: String?, size: Long, mimeType: String?) {
         this.episode = i
         this.size = size
-        this.mimeType = mime_type
+        this.mimeType = mimeType
         setfileUrlOrNull(null)
-        this.downloadUrl = download_url
+        this.downloadUrl = downloadUrl
     }
 
     // mostly used in tests
     constructor(id: Long, item: Episode?, duration: Int, position: Int,
-                size: Long, mime_type: String?, file_url: String?, download_url: String?,
-                downloaded: Boolean, playbackCompletionDate: Date?, played_duration: Int,
+                size: Long, mimeType: String?, fileUrl: String?, downloadUrl: String?,
+                downloaded: Boolean, playbackCompletionDate: Date?, playedDuration: Int,
                 lastPlayedTime: Long) {
         this.id = id
         this.episode = item
         this.duration = duration
         this.position = position
-        this.playedDuration = played_duration
-        this.playedDurationWhenStarted = played_duration
+        this.playedDuration = playedDuration
+        this.playedDurationWhenStarted = playedDuration
         this.size = size
-        this.mimeType = mime_type
+        this.mimeType = mimeType
         this.playbackCompletionDate =  playbackCompletionDate?.clone() as? Date
         this.playbackCompletionTime =  playbackCompletionDate?.time ?: 0
         this.lastPlayedTime = lastPlayedTime
-        setfileUrlOrNull(file_url)
-        this.downloadUrl = download_url
+        setfileUrlOrNull(fileUrl)
+        this.downloadUrl = downloadUrl
         if (downloaded) setIsDownloaded()
         else this.downloaded = downloaded
     }
@@ -319,7 +318,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
         }
     }
 
-    fun checkEmbeddedPicture() {
+    fun checkEmbeddedPicture(persist: Boolean = true) {
         if (!localFileAvailable()) hasEmbeddedPicture = false
         else {
             try {
@@ -333,7 +332,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
                 hasEmbeddedPicture = false
             }
         }
-        if (episode != null) upsertBlk(episode!!) {}
+        if (persist && episode != null) upsertBlk(episode!!) {}
     }
 
     override fun equals(other: Any?): Boolean {
@@ -362,7 +361,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
     fun episodeOrFetch(): Episode? {
         return if (episode != null) episode else {
             var item = realm.query(Episode::class).query("id == $id").first().find()
-            Logd(TAG, "episodeOrFetch warning: episode of media is null: ${id} ${item?.title}")
+            Logd(TAG, "episodeOrFetch warning: episode of media is null: $id ${item?.title}")
             if (item != null) {
                 item = upsertBlk(item) {
                     it.media = this@EpisodeMedia

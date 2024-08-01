@@ -2,12 +2,11 @@ package ac.mdiq.podcini.util.event
 
 import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.net.download.DownloadStatus
-import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
+import ac.mdiq.podcini.storage.model.Feed
+import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.FlowEvent.FeedListEvent.Action
 import android.content.Context
 import android.view.KeyEvent
 import androidx.core.util.Consumer
@@ -15,7 +14,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
-
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.max
@@ -149,7 +147,7 @@ sealed class FlowEvent {
 
     data class DownloadLogEvent(val dummy: Unit = Unit) : FlowEvent()
 
-    data class EpisodeDownloadEvent(private val map: Map<String, DownloadStatus>) : FlowEvent() {
+    data class EpisodeDownloadEvent(val map: Map<String, DownloadStatus>) : FlowEvent() {
         val urls: Set<String>
             get() = map.keys
     }
@@ -165,9 +163,6 @@ sealed class FlowEvent {
 
     data class EpisodeEvent(val episodes: List<Episode>) : FlowEvent() {
         companion object {
-            fun updated(episodes: List<Episode>): EpisodeEvent {
-                return EpisodeEvent(episodes)
-            }
             fun updated(vararg episodes: Episode): EpisodeEvent {
                 return EpisodeEvent(listOf(*episodes))
             }

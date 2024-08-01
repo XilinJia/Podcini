@@ -8,6 +8,8 @@ import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.net.utils.NetworkUtils.fetchHtmlSource
 import ac.mdiq.podcini.storage.database.Episodes.persistEpisode
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
+import ac.mdiq.podcini.storage.database.RealmDB.upsert
+import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import android.content.Context
 import android.os.Bundle
@@ -101,8 +103,10 @@ class EpisodeHomeFragment : Fragment() {
                     if (!readerhtml.isNullOrEmpty()) {
                         val shownotesCleaner = ShownotesCleaner(requireContext())
                         cleanedNotes = shownotesCleaner.processShownotes(readerhtml!!, 0)
-                        episode!!.setTranscriptIfLonger(readerhtml)
-                        persistEpisode(episode)
+                        episode = upsertBlk(episode!!) {
+                            it.setTranscriptIfLonger(readerhtml)
+                        }
+//                        persistEpisode(episode)
                     }
                 }
             }

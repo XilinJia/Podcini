@@ -208,24 +208,25 @@ object Episodes {
         }
     }
 
-    fun persistEpisodes(episodes: List<Episode>) : Job {
-        Logd(TAG, "persistEpisodes called")
-        return runOnIOScope {
-            for (episode in episodes) {
-                Logd(TAG, "persistEpisodes: ${episode.playState} ${episode.title}")
-                upsert(episode) {}
-            }
-            EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(episodes))
-        }
-    }
+//    fun persistEpisodes(episodes: List<Episode>) : Job {
+//        Logd(TAG, "persistEpisodes called")
+//        return runOnIOScope {
+//            for (episode in episodes) {
+//                Logd(TAG, "persistEpisodes: ${episode.playState} ${episode.title}")
+//                upsert(episode) {}
+//            }
+//            EventFlow.postEvent(FlowEvent.EpisodeEvent(episodes))
+//        }
+//    }
 
     fun persistEpisodeMedia(media: EpisodeMedia) : Job {
         Logd(TAG, "persistEpisodeMedia called")
         return runOnIOScope {
             var episode = media.episodeOrFetch()
             if (episode != null) {
-                episode.media = media
-                episode = upsert(episode) {}
+                episode = upsert(episode) {
+                    it.media = media
+                }
                 EventFlow.postEvent(FlowEvent.EpisodeMediaEvent.updated(episode))
             } else Log.e(TAG, "persistEpisodeMedia media.episode is null")
         }
@@ -291,8 +292,8 @@ object Episodes {
         val result = upsert(episode) {
             if (played >= NEW && played <= BUILDING) it.playState = played
             else {
-                if (it.playState == UNPLAYED) it.playState = PLAYED
-                else if (it.playState == PLAYED) it.playState = UNPLAYED
+                if (it.playState == PLAYED) it.playState = UNPLAYED
+                else it.playState = PLAYED
             }
             if (resetMediaPosition) it.media?.setPosition(0)
         }

@@ -15,15 +15,14 @@ import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.storage.model.MediaType
+import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.config.ClientConfig
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
 import ac.mdiq.podcini.util.event.FlowEvent.PlayEvent.Action
-import ac.mdiq.podcini.util.showStackTrace
 import android.app.UiModeManager
 import android.content.Context
 import android.content.res.Configuration
@@ -236,12 +235,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
                 Logd(TAG, "Method call to playMediaObject was ignored: media file already playing.")
                 return
             }
-            if (curMedia is EpisodeMedia) {
-                val media_ = curMedia as EpisodeMedia
-                curIndexInQueue = EpisodeUtil.indexOfItemWithId(curQueue.episodes, media_.id)
-            } else curIndexInQueue = -1
-
-            Logd(TAG, "playMediaObject starts new media playable:${playable.getIdentifier()} curMedia:${curMedia!!.getIdentifier()} prevMedia:${prevMedia?.getIdentifier()}")
+            Logd(TAG, "playMediaObject starts new playable:${playable.getIdentifier()} curMedia:${curMedia!!.getIdentifier()} prevMedia:${prevMedia?.getIdentifier()}")
             // set temporarily to pause in order to update list with current position
             if (status == PlayerStatus.PLAYING) {
                 val pos = curMedia?.getPosition() ?: -1
@@ -257,6 +251,10 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
 
         Logd(TAG, "playMediaObject preparing for playable:${playable.getIdentifier()} ${playable.getEpisodeTitle()}")
         curMedia = playable
+        if (curMedia is EpisodeMedia) {
+            val media_ = curMedia as EpisodeMedia
+            curIndexInQueue = EpisodeUtil.indexOfItemWithId(curQueue.episodes, media_.id)
+        } else curIndexInQueue = -1
         prevMedia = curMedia
         this.isStreaming = stream
         mediaType = curMedia!!.getMediaType()

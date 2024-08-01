@@ -6,20 +6,19 @@ import ac.mdiq.podcini.databinding.HorizontalFeedItemBinding
 import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.databinding.SearchFragmentBinding
 import ac.mdiq.podcini.net.feed.discovery.CombinedSearcher
-import ac.mdiq.podcini.playback.base.InTheatre.isCurMedia
 import ac.mdiq.podcini.storage.database.RealmDB.realm
-import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectHandler
 import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
-import ac.mdiq.podcini.ui.actions.menuhandler.FeedMenuHandler
 import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.EpisodesAdapter
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
+import ac.mdiq.podcini.ui.dialog.CustomFeedNameDialog
+import ac.mdiq.podcini.ui.dialog.RemoveFeedDialog
+import ac.mdiq.podcini.ui.dialog.TagSettingsDialog
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
 import ac.mdiq.podcini.ui.view.EpisodesRecyclerView
@@ -27,6 +26,7 @@ import ac.mdiq.podcini.ui.view.SquareImageView
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
+import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.os.Handler
@@ -78,7 +78,6 @@ import java.lang.ref.WeakReference
     private lateinit var automaticSearchDebouncer: Handler
 
     private var results: MutableList<Episode> = mutableListOf()
-    private var curIndex = -1
 
     private var lastQueryChange: Long = 0
     private var isOtherViewInFoucus = false
@@ -99,13 +98,7 @@ import java.lang.ref.WeakReference
         recyclerView = binding.recyclerView
         recyclerView.setRecycledViewPool((activity as MainActivity).recycledViewPool)
         registerForContextMenu(recyclerView)
-        adapter = object : EpisodesAdapter(activity as MainActivity) {
-            override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
-                super.onCreateContextMenu(menu, v, menuInfo)
-                if (!inActionMode()) menu.findItem(R.id.multi_select).setVisible(true)
-                MenuItemUtils.setOnClickListeners(menu) { item: MenuItem -> this@SearchFragment.onContextItemSelected(item) }
-            }
-        }
+        adapter = object : EpisodesAdapter(activity as MainActivity) {}
         adapter.setOnSelectModeListener(this)
         recyclerView.adapter = adapter
         recyclerView.addOnScrollListener(LiftOnScrollListener(binding.appbar))
@@ -232,14 +225,27 @@ import java.lang.ref.WeakReference
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
         val selectedFeedItem: Feed? = adapterFeeds.longPressedItem
-        if (selectedFeedItem != null && FeedMenuHandler.onMenuItemClicked(this, item.itemId, selectedFeedItem) {}) return true
+        if (selectedFeedItem != null && onMenuItemClicked(this, item.itemId, selectedFeedItem) {}) return true
 
         val selectedItem: Episode? = adapter.longPressedItem
         if (selectedItem != null) {
-            if (adapter.onContextItemSelected(item)) return true
+//            if (adapter.onContextItemSelected(item)) return true
             if (EpisodeMenuHandler.onMenuItemClicked(this, item.itemId, selectedItem)) return true
         }
         return super.onContextItemSelected(item)
+    }
+
+    private fun onMenuItemClicked(fragment: Fragment, menuItemId: Int, selectedFeed: Feed, callback: Runnable): Boolean {
+        val context = fragment.requireContext()
+        when (menuItemId) {
+            R.id.rename_folder_item -> CustomFeedNameDialog(fragment.activity as Activity, selectedFeed).show()
+            R.id.edit_tags -> if (selectedFeed.preferences != null) TagSettingsDialog.newInstance(listOf(selectedFeed))
+                .show(fragment.childFragmentManager, TagSettingsDialog.TAG)
+            R.id.rename_item -> CustomFeedNameDialog(fragment.activity as Activity, selectedFeed).show()
+            R.id.remove_feed -> RemoveFeedDialog.show(context, selectedFeed, null)
+            else -> return false
+        }
+        return true
     }
 
     private var eventSink: Job?     = null
@@ -256,8 +262,6 @@ import java.lang.ref.WeakReference
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.FeedListEvent, is FlowEvent.EpisodePlayedEvent, is FlowEvent.PlayerSettingsEvent -> search()
-                    is FlowEvent.EpisodeEvent -> onEpisodeEvent(event)
-                    is FlowEvent.PlaybackPositionEvent -> onPlaybackPositionEvent(event)
                     else -> {}
                 }
             }
@@ -273,40 +277,12 @@ import java.lang.ref.WeakReference
         }
     }
 
-    private fun onEpisodeEvent(event: FlowEvent.EpisodeEvent) {
-//        Logd(TAG, "onEventMainThread() called with ${event.TAG}")
-        var i = 0
-        val size: Int = event.episodes.size
-        while (i < size) {
-            val item: Episode = event.episodes[i++]
-            val pos: Int = EpisodeUtil.indexOfItemWithId(results, item.id)
-            if (pos >= 0) {
-                results[pos] = item
-                adapter.notifyItemChangedCompat(pos)
-            }
-        }
-    }
-
     private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
         for (downloadUrl in event.urls) {
             val pos: Int = EpisodeUtil.indexOfItemWithDownloadUrl(results, downloadUrl)
             if (pos >= 0) adapter.notifyItemChangedCompat(pos)
         }
     }
-
-    private fun onPlaybackPositionEvent(event: FlowEvent.PlaybackPositionEvent) {
-        val item = (event.media as? EpisodeMedia)?.episodeOrFetch() ?: return
-        val pos = if (curIndex in 0..<results.size && event.media.getIdentifier() == results[curIndex].media?.getIdentifier() && isCurMedia(results[curIndex].media))
-            curIndex else EpisodeUtil.indexOfItemWithId(results, item.id)
-
-        if (pos >= 0) {
-            results[pos] = unmanaged(results[pos])
-            results[pos].media?.position = event.media.position
-            curIndex = pos
-            adapter.notifyItemChanged(pos, Bundle().apply { putString("PositionUpdate", "PlaybackPositionEvent") })
-        }
-    }
-
 
     @UnstableApi private fun searchWithProgressBar() {
         progressBar.visibility = View.VISIBLE
@@ -326,8 +302,9 @@ import java.lang.ref.WeakReference
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
                     if (results.first != null) {
-                        this@SearchFragment.results = results.first!!.toMutableList()
-                        adapter.updateItems(results.first!!)
+                        val first_ = results.first!!.toMutableList()
+                        this@SearchFragment.results = first_
+                        adapter.updateItems(first_)
                     }
                     if (requireArguments().getLong(ARG_FEED, 0) == 0L) {
                         if (results.second != null) adapterFeeds.updateData(results.second!!)
@@ -426,7 +403,6 @@ import java.lang.ref.WeakReference
 
     override fun onStartSelectMode() {
         searchViewFocusOff()
-//        speedDialBinding.fabSD.removeActionItemById(R.id.remove_from_inbox_batch)
         sdBinding.fabSD.removeActionItemById(R.id.remove_from_queue_batch)
         sdBinding.fabSD.removeActionItemById(R.id.delete_batch)
         sdBinding.fabSD.visibility = View.VISIBLE
@@ -459,9 +435,9 @@ import java.lang.ref.WeakReference
         private var endButtonText = 0
         private var endButtonAction: Runnable? = null
 
-        fun setDummyViews(dummyViews: Int) {
-            this.dummyViews = dummyViews
-        }
+//        fun setDummyViews(dummyViews: Int) {
+//            this.dummyViews = dummyViews
+//        }
         fun updateData(newData: List<Feed>?) {
             data.clear()
             data.addAll(newData!!)

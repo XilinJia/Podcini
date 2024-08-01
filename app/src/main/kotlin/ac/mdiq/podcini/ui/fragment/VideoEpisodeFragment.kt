@@ -222,6 +222,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         }
     }
 
+    private var loadItemsRunning = false
     @OptIn(UnstableApi::class) private fun loadMediaInfo() {
         Logd(TAG, "loadMediaInfo called")
         if (curMedia == null) return
@@ -234,17 +235,6 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         }
         showTimeLeft = shouldShowRemainingTime()
         onPositionObserverUpdate()
-        load()
-        val media = curMedia
-        if (media != null) {
-            (activity as AppCompatActivity).supportActionBar!!.subtitle = media.getEpisodeTitle()
-            (activity as AppCompatActivity).supportActionBar!!.title = media.getFeedTitle()
-        }
-    }
-
-    private var loadItemsRunning = false
-    @UnstableApi private fun load() {
-        Logd(TAG, "load() called")
         if (!loadItemsRunning) {
             loadItemsRunning = true
             lifecycleScope.launch {
@@ -281,7 +271,13 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
                 }
             }
         }
+        val media = curMedia
+        if (media != null) {
+            (activity as AppCompatActivity).supportActionBar!!.subtitle = media.getEpisodeTitle()
+            (activity as AppCompatActivity).supportActionBar!!.title = media.getFeedTitle()
+        }
     }
+
 
     @UnstableApi
     private fun setupView() {

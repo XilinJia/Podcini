@@ -1,3 +1,15 @@
+# 6.3.0
+
+* improved handling of playing next in queue when some items have been removed from the queue
+* changed toggle play state logic: New or Unplayed -> Played, Played -> Unplayed
+* episodes list views are more efficient and less error-prone, reduced dependence on events and relying more on DB live updates
+* added episode counts in queues list spinner in Queue view
+* resorted handling of various DB objects to managed type
+* took out the long-useless context menu codes from episodes list views
+* fixed crash when toggling Podcini during downloads
+* calmed some complaints on StrictMode policy UntaggedSocketViolation
+* adjusted some Composable sizes
+
 # 6.2.2
 
 * added EpisodeMedia null relationship handling

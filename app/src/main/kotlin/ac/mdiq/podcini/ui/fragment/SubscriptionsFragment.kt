@@ -13,8 +13,6 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.FeedAutoDeleteOptions
-import ac.mdiq.podcini.ui.actions.menuhandler.FeedMenuHandler
-import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.compose.CustomTheme
@@ -490,17 +488,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         }
     }
 
-    override fun onContextItemSelected(item: MenuItem): Boolean {
-        val feed: Feed = adapter.selectedItem ?: return false
-        val itemId = item.itemId
-        if (itemId == R.id.multi_select) {
-            speedDialView.visibility = View.VISIBLE
-            return adapter.onContextItemSelected(item)
-        }
-//        TODO: this appears not called
-        return FeedMenuHandler.onMenuItemClicked(this, item.itemId, feed) { this.loadSubscriptions() }
-    }
-
     override fun onEndSelectMode() {
         speedDialView.close()
         speedDialView.visibility = View.GONE
@@ -612,8 +599,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 Dialog(onDismissRequest = { onDismissRequest() }) {
                     Card(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp)
+                            .wrapContentSize(align = Alignment.Center)
                             .padding(16.dp),
                         shape = RoundedCornerShape(16.dp),
                     ) {
@@ -656,8 +642,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 Dialog(onDismissRequest = { onDismissRequest() }) {
                     Card(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(400.dp)
+                            .wrapContentSize(align = Alignment.Center)
                             .padding(16.dp),
                         shape = RoundedCornerShape(16.dp),
                     ) {
@@ -709,8 +694,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 Dialog(onDismissRequest = { onDismissRequest() }) {
                     Card(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(400.dp)
+                            .wrapContentSize(align = Alignment.Center)
                             .padding(16.dp),
                         shape = RoundedCornerShape(16.dp),
                     ) {
@@ -769,7 +753,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
     }
 
     @OptIn(UnstableApi::class)
-    private abstract inner class SubscriptionsAdapter<T : RecyclerView.ViewHolder?> : SelectableAdapter<T>(activity as MainActivity), View.OnCreateContextMenuListener {
+    private abstract inner class SubscriptionsAdapter<T : RecyclerView.ViewHolder?> : SelectableAdapter<T>(activity as MainActivity) {
         protected var feedList: List<Feed>
         var selectedItem: Feed? = null
         protected var longPressedPosition: Int = 0 // used to init actionMode
@@ -801,30 +785,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         override fun getItemId(position: Int): Long {
             if (position >= feedList.size) return RecyclerView.NO_ID // Dummy views
             return feedList[position].id
-        }
-        @OptIn(UnstableApi::class)
-        override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
-            if (selectedItem == null) return
-            val mainActRef = (activity as MainActivity)
-            val inflater: MenuInflater = mainActRef.menuInflater
-            if (inActionMode()) {
-//            inflater.inflate(R.menu.multi_select_context_popup, menu)
-//            menu.findItem(R.id.multi_select).setVisible(true)
-            } else {
-                inflater.inflate(R.menu.nav_feed_context, menu)
-//            menu.findItem(R.id.multi_select).setVisible(true)
-                menu.setHeaderTitle(selectedItem?.title)
-            }
-            MenuItemUtils.setOnClickListeners(menu) { item: MenuItem ->
-                this@SubscriptionsFragment.onContextItemSelected(item)
-            }
-        }
-        fun onContextItemSelected(item: MenuItem): Boolean {
-            if (item.itemId == R.id.multi_select) {
-                startSelectMode(longPressedPosition)
-                return true
-            }
-            return false
         }
         fun setItems(listItems: List<Feed>) {
             this.feedList = listItems
@@ -957,6 +917,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         val selectCheckbox: CheckBox = binding.selectCheckBox
         private val errorIcon: View = binding.errorIcon
 
+        @UnstableApi
         fun bind(feed: Feed) {
             val drawable: Drawable? = AppCompatResources.getDrawable(selectView.context, R.drawable.ic_checkbox_background)
             selectView.background = drawable // Setting this in XML crashes API <= 21
@@ -1002,6 +963,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
 
         private val errorIcon: View = binding.errorIcon
 
+        @UnstableApi
         fun bind(feed: Feed) {
             val drawable: Drawable? = AppCompatResources.getDrawable(selectView.context, R.drawable.ic_checkbox_background)
             selectView.background = drawable // Setting this in XML crashes API <= 21

@@ -254,6 +254,7 @@ class Episode : RealmObject {
     companion object {
         val TAG: String = Episode::class.simpleName ?: "Anonymous"
 
+        const val UNSPECIFIED: Int = -2
         const val NEW: Int = -1
         const val UNPLAYED: Int = 0
         const val PLAYED: Int = 1

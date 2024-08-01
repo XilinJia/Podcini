@@ -33,11 +33,11 @@ import ac.mdiq.podcini.receiver.MediaButtonReceiver
 import ac.mdiq.podcini.storage.database.Episodes.addToHistory
 import ac.mdiq.podcini.storage.database.Episodes.deleteMediaSync
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
-import ac.mdiq.podcini.storage.database.Episodes.persistEpisode
 import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
 import ac.mdiq.podcini.storage.database.Episodes.shouldDeleteRemoveFromQueue
 import ac.mdiq.podcini.storage.database.Feeds.shouldAutoDeleteItem
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueueSync
+import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
@@ -376,15 +376,8 @@ class PlaybackService : MediaSessionService() {
             var j = 0
             val i = EpisodeUtil.indexOfItemWithId(curQueue.episodes, item.id)
             if (i < 0) {
-                if (curIndexInQueue >= 0) {
-                    if (curIndexInQueue < curQueue.episodes.size) j = curIndexInQueue
-                    else j = curQueue.episodes.size-1
-                }
-                else {
-                    Logd(TAG, "getNextInQueue curMedia is not in queue ${item.title}")
-                    writeNoMediaPlaying()
-                    return null
-                }
+                if (curIndexInQueue < curQueue.episodes.size) j = curIndexInQueue
+                else j = curQueue.episodes.size-1
             } else if (i < curQueue.episodes.size-1) j = i+1
 
             val nextItem = unmanaged(curQueue.episodes[j])
@@ -408,20 +401,8 @@ class PlaybackService : MediaSessionService() {
             }
             EventFlow.postEvent(FlowEvent.PlayEvent(item, FlowEvent.PlayEvent.Action.END))
             EventFlow.postEvent(FlowEvent.PlayEvent(nextItem))
-            return nextItem.media
+            return if (nextItem.media == null) nextItem.media else unmanaged(nextItem.media!!)
         }
-
-//        private fun getNextInQueue(episode: Episode): Episode? {
-//            Logd(TAG, "getNextInQueue() with: itemId ${episode.id}")
-//            if (curQueue.episodes.isEmpty()) return null
-//
-//            val i = curQueue.episodes.indexOf(episode)
-//            var j = 0
-//            if (i >= 0 && i < curQueue.episodes.size-1) j = i+1
-//
-//            val itemNew = curQueue.episodes[j]
-//            return unmanaged(itemNew)
-//        }
 
         override fun findMedia(url: String): Playable? {
             val item = getEpisodeByGuidOrUrl(null, url)
@@ -452,25 +433,27 @@ class PlaybackService : MediaSessionService() {
             Logd(InTheatre.TAG, "Writing playback preferences ${playable?.getIdentifier()}")
             if (playable == null) writeNoMediaPlaying()
             else {
-                curState.curMediaType = playable.getPlayableType().toLong()
-                curState.curIsVideo = playable.getMediaType() == MediaType.VIDEO
-                if (playable is EpisodeMedia) {
-                    val feedId = playable.episodeOrFetch()?.feed?.id
-                    if (feedId != null) curState.curFeedId = feedId
-                    curState.curMediaId = playable.id
-                } else {
-                    curState.curFeedId = NO_MEDIA_PLAYING
-                    curState.curMediaId = NO_MEDIA_PLAYING
+                curState = upsertBlk(curState) {
+                    it.curMediaType = playable.getPlayableType().toLong()
+                    it.curIsVideo = playable.getMediaType() == MediaType.VIDEO
+                    if (playable is EpisodeMedia) {
+                        val feedId = playable.episodeOrFetch()?.feed?.id
+                        if (feedId != null) it.curFeedId = feedId
+                        it.curMediaId = playable.id
+                    } else {
+                        it.curFeedId = NO_MEDIA_PLAYING
+                        it.curMediaId = NO_MEDIA_PLAYING
+                    }
+                    it.curPlayerStatus = getCurPlayerStatusAsInt(playerStatus)
                 }
             }
-            curState.curPlayerStatus = getCurPlayerStatusAsInt(playerStatus)
-            upsertBlk(curState) {}
         }
 
         fun writePlayerStatus(playerStatus: PlayerStatus) {
             Logd(InTheatre.TAG, "Writing player status playback preferences")
-            curState.curPlayerStatus = getCurPlayerStatusAsInt(playerStatus)
-            upsertBlk(curState) {}
+            curState = upsertBlk(curState) {
+                it.curPlayerStatus = getCurPlayerStatusAsInt(playerStatus)
+            }
         }
 
         private fun getCurPlayerStatusAsInt(playerStatus: PlayerStatus): Int {
@@ -930,8 +913,9 @@ class PlaybackService : MediaSessionService() {
     }
 
     fun clearCurTempSpeed() {
-        curState.curTempSpeed = FeedPreferences.SPEED_USE_GLOBAL
-        upsertBlk(curState) {}
+        curState = upsertBlk(curState) {
+            it.curTempSpeed = FeedPreferences.SPEED_USE_GLOBAL
+        }
     }
 
     private var eventSink: Job?     = null
@@ -975,9 +959,10 @@ class PlaybackService : MediaSessionService() {
 
     private fun onQueueEvent(event: FlowEvent.QueueEvent) {
         if (event.action == FlowEvent.QueueEvent.Action.REMOVED) {
+            Logd(TAG, "onQueueEvent: ending playback curEpisode ${curEpisode?.title}")
             for (e in event.episodes) {
+                Logd(TAG, "onQueueEvent: ending playback event ${e?.title}")
                 if (e.id == curEpisode?.id) {
-                    Logd(TAG, "onQueueEvent: ending playback ${curEpisode?.title}")
                     mPlayer?.endPlayback(hasEnded = false, wasSkipped = true, shouldContinue = true, toStoppedState = true)
                     break
                 }
@@ -1076,11 +1061,26 @@ class PlaybackService : MediaSessionService() {
             playable.setLastPlayedTime(System.currentTimeMillis())
 
             if (playable is EpisodeMedia) {
-                val item = playable.episodeOrFetch()
-                if (item != null && item.isNew) item.playState = Episode.UNPLAYED
-                if (playable.startPosition >= 0 && playable.getPosition() > playable.startPosition)
-                    playable.playedDuration = (playable.playedDurationWhenStarted + playable.getPosition() - playable.startPosition)
-                persistEpisode(item, true)
+//                val item = playable.episodeOrFetch()
+//                if (item != null && item.isNew) item.playState = Episode.UNPLAYED
+//                if (playable.startPosition >= 0 && playable.getPosition() > playable.startPosition)
+//                    playable.playedDuration = (playable.playedDurationWhenStarted + playable.getPosition() - playable.startPosition)
+//                persistEpisode(item, true)
+
+                var item = realm.query(Episode::class, "id == ${playable.id}").first().find()
+                if (item != null) {
+                    item = upsertBlk(item) {
+                        val media = it.media
+                        if (media != null) {
+                            media.setPosition(position)
+                            media.setLastPlayedTime(System.currentTimeMillis())
+                            if (it.isNew) it.playState = Episode.UNPLAYED
+                            if (media.startPosition >= 0 && media.getPosition() > media.startPosition)
+                                media.playedDuration = (media.playedDurationWhenStarted + media.getPosition() - media.startPosition)
+                        }
+                    }
+                    EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(item))
+                }
             }
             prevPosition = position
         }

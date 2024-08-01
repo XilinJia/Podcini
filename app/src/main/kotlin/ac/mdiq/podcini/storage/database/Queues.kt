@@ -8,7 +8,6 @@ import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
-import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
@@ -118,12 +117,13 @@ object Queues {
             var insertPosition = positionCalculator.calcPosition(curQueue.episodes, currentlyPlaying)
 
             val qItems = curQueue.episodes.toMutableList()
+            val qItemIds = curQueue.episodeIds.toMutableList()
             val items_ = episodes.toList()
             for (episode in items_) {
                 if (curQueue.episodeIds.contains(episode.id)) continue
 
                 events.add(FlowEvent.QueueEvent.added(episode, insertPosition))
-                curQueue.episodeIds.add(insertPosition, episode.id)
+                if (qItemIds.contains(episode.id)) qItemIds.add(insertPosition, episode.id)
                 updatedItems.add(episode)
                 qItems.add(insertPosition, episode)
                 queueModified = true
@@ -131,11 +131,16 @@ object Queues {
                 insertPosition++
             }
             if (queueModified) {
+//                TODO: handle sorting
                 applySortOrder(qItems, events)
-                curQueue.update()
-                curQueue.episodes.clear()
-                curQueue.episodes.addAll(qItems)
-                upsert(curQueue) {}
+//                curQueue.episodes.clear()
+//                curQueue.episodes.addAll(qItems)
+                curQueue = upsert(curQueue) {
+                    it.episodeIds.clear()
+                    it.episodeIds.addAll(qItemIds)
+                    it.update()
+                }
+//                curQueue.episodes.addAll(qItems)
 
                 for (event in events) {
                     EventFlow.postEvent(event)
@@ -150,21 +155,24 @@ object Queues {
     suspend fun addToQueueSync(markAsUnplayed: Boolean, episode: Episode, queue_: PlayQueue? = null) {
         Logd(TAG, "addToQueueSync( ... ) called")
 
-        val queue = if (queue_ != null) unmanaged(queue_) else curQueue
+//        val queue = if (queue_ != null) unmanaged(queue_) else curQueue
+        val queue = queue_ ?: curQueue
         val currentlyPlaying = curMedia
         val positionCalculator = EnqueuePositionCalculator(enqueueLocation)
         var insertPosition = positionCalculator.calcPosition(queue.episodes, currentlyPlaying)
 
         if (queue.episodeIds.contains(episode.id)) return
 
-        queue.episodeIds.add(insertPosition, episode.id)
-        queue.episodes.add(insertPosition, episode)
-        insertPosition++
-        if (queue.id == curQueue.id) queue.update()
-        upsert(queue) {}
+        val queueNew = upsert(queue) {
+            it.episodeIds.add(insertPosition, episode.id)
+            insertPosition++
+            if (it.id == curQueue.id) it.update()
+        }
+//        queueNew.episodes.addAll(queue.episodes)
+//        queueNew.episodes.add(insertPosition, episode)
+        if (queue.id == curQueue.id) curQueue = queueNew
 
         if (markAsUnplayed && episode.isNew) setPlayState(Episode.UNPLAYED, false, episode)
-
         if (queue.id == curQueue.id) EventFlow.postEvent(FlowEvent.QueueEvent.added(episode, insertPosition))
 //                if (performAutoDownload) autodownloadEpisodeMedia(context)
     }
@@ -172,10 +180,10 @@ object Queues {
     /**
      * Sorts the queue depending on the configured sort order.
      * If the queue is not in keep sorted mode, nothing happens.
-     * @param queue  The queue to be sorted.
+     * @param queueItems  The queue to be sorted.
      * @param events Replaces the events by a single SORT event if the list has to be sorted automatically.
      */
-    private fun applySortOrder(queue: MutableList<Episode>, events: MutableList<FlowEvent.QueueEvent>) {
+    private fun applySortOrder(queueItems: MutableList<Episode>, events: MutableList<FlowEvent.QueueEvent>) {
         // queue is not in keep sorted mode, there's nothing to do
         if (!isQueueKeepSorted) return
 
@@ -186,21 +194,22 @@ object Queues {
 
         if (sortOrder != null) {
             val permutor = getPermutor(sortOrder)
-            permutor.reorder(queue)
+            permutor.reorder(queueItems)
         }
         // Replace ADDED events by a single SORTED event
         events.clear()
-        events.add(FlowEvent.QueueEvent.sorted(queue))
+        events.add(FlowEvent.QueueEvent.sorted(queueItems))
     }
 
     fun clearQueue() : Job {
         Logd(TAG, "clearQueue called")
         return runOnIOScope {
-            curQueue.update()
+            curQueue = upsert(curQueue) {
+                it.idsBinList.addAll(it.episodeIds)
+                it.episodeIds.clear()
+                it.update()
+            }
             curQueue.episodes.clear()
-            curQueue.idsBinList.addAll(curQueue.episodeIds)
-            curQueue.episodeIds.clear()
-            upsert(curQueue) {}
             EventFlow.postEvent(FlowEvent.QueueEvent.cleared())
         }
     }
@@ -248,19 +257,21 @@ object Queues {
             }
         }
         if (indicesToRemove.isNotEmpty()) {
-            for (i in indicesToRemove.indices.reversed()) {
-                val id = qItems[indicesToRemove[i]].id
-                queue.idsBinList.remove(id)
-                queue.idsBinList.add(id)
-                qItems.removeAt(indicesToRemove[i])
+            val queueNew = upsertBlk(queue) {
+                for (i in indicesToRemove.indices.reversed()) {
+                    val id = qItems[indicesToRemove[i]].id
+                    it.idsBinList.remove(id)
+                    it.idsBinList.add(id)
+                    qItems.removeAt(indicesToRemove[i])
+                }
+                it.update()
+                it.episodeIds.clear()
+                for (e in qItems) it.episodeIds.add(e.id)
             }
-            queue.update()
-            queue.episodeIds.clear()
-            for (e in qItems) queue.episodeIds.add(e.id)
-            upsertBlk(queue) {}
-            if (queue.id == curQueue.id) {
-                queue.episodes.clear()
-                queue.episodes.addAll(qItems)
+            if (queueNew.id == curQueue.id) {
+                queueNew.episodes.clear()
+//                queueNew.episodes.addAll(qItems)
+                curQueue = queueNew
             }
             for (event in events) EventFlow.postEvent(event)
         } else Logd(TAG, "Queue was not modified by call to removeQueueItem")
@@ -292,12 +303,11 @@ object Queues {
         }
         idsInQueuesToRemove = q.episodeIds.intersect(episodeIds.toSet()).toMutableSet()
         if (idsInQueuesToRemove.isNotEmpty()) {
-            q.idsBinList.removeAll(idsInQueuesToRemove)
-            q.idsBinList.addAll(idsInQueuesToRemove)
-            val qeids = q.episodeIds.minus(idsInQueuesToRemove)
-            upsert(q) {
+            curQueue = upsert(q) {
+                it.idsBinList.removeAll(idsInQueuesToRemove)
+                it.idsBinList.addAll(idsInQueuesToRemove)
                 it.episodeIds.clear()
-                it.episodeIds.addAll(qeids)
+                it.episodeIds.addAll(it.episodeIds.minus(idsInQueuesToRemove))
                 it.update()
             }
         }
@@ -333,12 +343,13 @@ object Queues {
                 if (broadcastUpdate) EventFlow.postEvent(FlowEvent.QueueEvent.moved(episode, to))
             }
         } else Log.e(TAG, "moveQueueItemHelper: Could not load queue")
-        curQueue.update()
         curQueue.episodes.clear()
-        curQueue.episodes.addAll(episodes)
-        curQueue.episodeIds.clear()
-        for (e in curQueue.episodes) curQueue.episodeIds.add(e.id)
-        upsertBlk(curQueue) {}
+//        curQueue.episodes.addAll(episodes)
+        upsertBlk(curQueue) {
+            it.episodeIds.clear()
+            for (e in episodes) it.episodeIds.add(e.id)
+            it.update()
+        }
     }
 
     class EnqueuePositionCalculator(private val enqueueLocation: EnqueueLocation) {

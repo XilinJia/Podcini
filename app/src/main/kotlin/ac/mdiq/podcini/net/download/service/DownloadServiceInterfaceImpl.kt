@@ -345,26 +345,25 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                     return
                 }
                 // media.setDownloaded modifies played state
-                var item_ = media.episodeOrFetch()
-                val broadcastUnreadStateUpdate = item_?.isNew == true
+                var item = media.episodeOrFetch()
+                val broadcastUnreadStateUpdate = item?.isNew == true
 //                media.downloaded = true
                 media.setIsDownloaded()
-                item_ = media.episodeOrFetch()
-                Logd(TAG, "media.episode.isNew: ${item_?.isNew} ${item_?.playState}")
+//                item = media.episodeOrFetch()
+                Logd(TAG, "media.episode.isNew: ${item?.isNew} ${item?.playState}")
                 media.setfileUrlOrNull(request.destination)
                 if (request.destination != null) media.size = File(request.destination).length()
-                media.checkEmbeddedPicture() // enforce check
+                media.checkEmbeddedPicture(false) // enforce check
                 // check if file has chapters
-                if (item_?.chapters.isNullOrEmpty()) media.setChapters(ChapterUtils.loadChaptersFromMediaFile(media, context))
-                if (item_?.podcastIndexChapterUrl != null)
-                    ChapterUtils.loadChaptersFromUrl(item_.podcastIndexChapterUrl!!, false)
+                if (item?.chapters.isNullOrEmpty()) media.setChapters(ChapterUtils.loadChaptersFromMediaFile(media, context))
+                if (item?.podcastIndexChapterUrl != null) ChapterUtils.loadChaptersFromUrl(item.podcastIndexChapterUrl!!, false)
                 // Get duration
                 var durationStr: String? = null
                 try {
                     MediaMetadataRetrieverCompat().use { mmr ->
                         mmr.setDataSource(media.fileUrl)
                         durationStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-                        media.setDuration(durationStr!!.toInt())
+                        if (durationStr != null) media.setDuration(durationStr!!.toInt())
                         Logd(TAG, "Duration of file is " + media.getDuration())
                     }
                 } catch (e: NumberFormatException) {
@@ -373,7 +372,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                     Log.e(TAG, "Get duration failed", e)
                     media.setDuration(30000)
                 }
-                val item = media.episodeOrFetch()
+//                val item = media.episodeOrFetch()
                 item?.media = media
                 try {
                     // we've received the media, we don't want to autodownload it again

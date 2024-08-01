@@ -10,6 +10,8 @@ import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
 import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
+import ac.mdiq.podcini.storage.database.RealmDB.upsert
+import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.FeedAutoDeleteOptions
@@ -38,6 +40,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,7 +69,6 @@ class FeedSettingsFragment : Fragment() {
     private var _binding: FeedsettingsBinding? = null
     private val binding get() = _binding!!
     private var feed: Feed? = null
-    private var feedPrefs: FeedPreferences? = null
     private var autoDeleteSummaryResId by mutableIntStateOf(R.string.global_default)
     private var autoDeletePolicy = "global"
     private var queues: List<PlayQueue>? = null
@@ -73,7 +79,6 @@ class FeedSettingsFragment : Fragment() {
 
         val toolbar = binding.toolbar
         toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
-        feedPrefs = feed?.preferences
 
         getAutoDeletePolicy()
 
@@ -94,14 +99,13 @@ class FeedSettingsFragment : Fragment() {
                                 color = textColor
                             )
                             Spacer(modifier = Modifier.weight(1f))
-                            var checked by remember { mutableStateOf(feedPrefs?.keepUpdated ?: true) }
+                            var checked by remember { mutableStateOf(feed?.preferences?.keepUpdated ?: true) }
                             Switch(
                                 checked = checked,
                                 onCheckedChange = {
                                     checked = it
-                                    if (feedPrefs != null) {
-                                        feedPrefs!!.keepUpdated = checked
-                                        persistFeedPreferences(feed!!)
+                                    feed = upsertBlk(feed!!) {
+                                        it.preferences?.keepUpdated = checked
                                     }
                                 }
                             )
@@ -121,9 +125,8 @@ class FeedSettingsFragment : Fragment() {
                                 style = MaterialTheme.typography.h6,
                                 color = textColor,
                                 modifier = Modifier.clickable(onClick = {
-                                    if (feedPrefs != null) {
 //                                    queues = realm.query(PlayQueue::class).find()
-                                        val selectedOption = when (feedPrefs?.queueId) {
+                                        val selectedOption = when (feed?.preferences?.queueId) {
                                             null, 0L -> "Default"
                                             -1L -> "Active"
                                             else -> "Custom"
@@ -137,7 +140,7 @@ class FeedSettingsFragment : Fragment() {
                                             }
                                         }
                                         (view as? ViewGroup)?.addView(composeView)
-                                    }
+
                                 })
                             )
                         }
@@ -156,7 +159,6 @@ class FeedSettingsFragment : Fragment() {
                                 style = MaterialTheme.typography.h6,
                                 color = textColor,
                                 modifier = Modifier.clickable(onClick = {
-                                    if (feedPrefs != null) {
                                         val composeView = ComposeView(requireContext()).apply {
                                             setContent {
                                                 val showDialog = remember { mutableStateOf(true) }
@@ -166,7 +168,7 @@ class FeedSettingsFragment : Fragment() {
                                             }
                                         }
                                         (view as? ViewGroup)?.addView(composeView)
-                                    }
+
                                 })
                             )
                         }
@@ -197,7 +199,7 @@ class FeedSettingsFragment : Fragment() {
     }
 
     private fun getAutoDeletePolicy() {
-        when (feedPrefs!!.autoDeleteAction) {
+        when (feed?.preferences!!.autoDeleteAction) {
             AutoDeleteAction.GLOBAL -> {
                 autoDeleteSummaryResId = R.string.global_default
                 autoDeletePolicy = "global"
@@ -219,8 +221,7 @@ class FeedSettingsFragment : Fragment() {
             Dialog(onDismissRequest = { onDismissRequest() }) {
                 Card(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(400.dp)
+                        .wrapContentSize(align = Alignment.Center)
                         .padding(16.dp),
                     shape = RoundedCornerShape(16.dp),
                 ) {
@@ -236,17 +237,18 @@ class FeedSettingsFragment : Fragment() {
                                         .selectable(
                                             selected = (text == selectedOption),
                                             onClick = {
+                                                Logd(TAG, "row clicked: $text $selectedOption")
                                                 if (text != selectedOption) {
-                                                    Logd(TAG, "row clicked: $text")
                                                     onOptionSelected(text)
-                                                    when (text) {
-                                                        "global" -> feedPrefs!!.autoDeleteAction =
-                                                            AutoDeleteAction.GLOBAL
-                                                        "always" -> feedPrefs!!.autoDeleteAction =
-                                                            AutoDeleteAction.ALWAYS
-                                                        "never" -> feedPrefs!!.autoDeleteAction = AutoDeleteAction.NEVER
+                                                    val action_ = when (text) {
+                                                        "global" -> AutoDeleteAction.GLOBAL
+                                                        "always" -> AutoDeleteAction.ALWAYS
+                                                        "never" -> AutoDeleteAction.NEVER
+                                                        else -> AutoDeleteAction.GLOBAL
                                                     }
-                                                    persistFeedPreferences(feed!!)
+                                                    feed = upsertBlk(feed!!) {
+                                                        it.preferences?.autoDeleteAction = action_
+                                                    }
                                                     getAutoDeletePolicy()
                                                     onDismissRequest()
                                                 }
@@ -281,8 +283,7 @@ class FeedSettingsFragment : Fragment() {
             Dialog(onDismissRequest = { onDismissRequest() }) {
                 Card(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(400.dp)
+                        .wrapContentSize(align = Alignment.Center)
                         .padding(16.dp),
                     shape = RoundedCornerShape(16.dp),
                 ) {
@@ -302,13 +303,15 @@ class FeedSettingsFragment : Fragment() {
                                         if (isChecked) Logd(TAG, "$option is checked")
                                         when (selected) {
                                             "Default" -> {
-                                                feedPrefs?.queueId = 0L
-                                                persistFeedPreferences(feed!!)
+                                                feed = upsertBlk(feed!!) {
+                                                    it.preferences?.queueId = 0L
+                                                }
                                                 onDismissRequest()
                                             }
                                             "Active" -> {
-                                                feedPrefs?.queueId = -1L
-                                                persistFeedPreferences(feed!!)
+                                                feed = upsertBlk(feed!!) {
+                                                    it.preferences?.queueId = 1L
+                                                }
                                                 onDismissRequest()
                                             }
                                             "Custom" -> {}
@@ -320,11 +323,12 @@ class FeedSettingsFragment : Fragment() {
                         }
                         if (selected == "Custom") {
                             if (queues == null) queues = realm.query(PlayQueue::class).find()
-                            Spinner(items = queues!!.map { it.name }, selectedItem = feedPrefs?.queue?.name ?: "Default") { name ->
+                            Spinner(items = queues!!.map { it.name }, selectedItem = feed?.preferences?.queue?.name ?: "Default") { name ->
                                 Logd(TAG, "Queue selected: $name")
                                 val q = queues?.firstOrNull { it.name == name }
-                                feedPrefs?.queue = q
-                                persistFeedPreferences(feed!!)
+                                feed = upsertBlk(feed!!) {
+                                    it.preferences?.queue = q
+                                }
                                 onDismissRequest()
                             }
                         }
@@ -336,7 +340,6 @@ class FeedSettingsFragment : Fragment() {
 
     class FeedSettingsPreferenceFragment : PreferenceFragmentCompat() {
         private var feed: Feed? = null
-        private var feedPrefs: FeedPreferences? = null
         private var notificationPermissionDenied: Boolean = false
         private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) return@registerForActivityResult
@@ -366,12 +369,8 @@ class FeedSettingsFragment : Fragment() {
                     feed!!.preferences = FeedPreferences(feed!!.id, false, AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
                     persistFeedPreferences(feed!!)
                 }
-                feedPrefs = feed!!.preferences
-//                setupAssociatedQueue()
                 setupAutoDownloadGlobalPreference()
                 setupAutoDownloadPreference()
-//                setupKeepUpdatedPreference()
-//                setupAutoDeletePreference()
                 setupVolumeAdaptationPreferences()
                 setupAuthentificationPreference()
                 updateAutoDownloadPolicy()
@@ -382,7 +381,6 @@ class FeedSettingsFragment : Fragment() {
                 setupPlaybackSpeedPreference()
                 setupFeedAutoSkipPreference()
                 setupTags()
-//                updateAutoDeleteSummary()
                 updateVolumeAdaptationValue()
                 updateAutoDownloadEnabled()
                 if (feed!!.isLocalFeed) {
@@ -395,21 +393,20 @@ class FeedSettingsFragment : Fragment() {
         override fun onDestroyView() {
             Logd(TAG, "onDestroyView")
             feed = null
-            feedPrefs = null
             super.onDestroyView()
         }
         private fun setupFeedAutoSkipPreference() {
             findPreference<Preference>(Prefs.feedAutoSkip.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-                if (feedPrefs != null) {
-                    object : FeedPreferenceSkipDialog(requireContext(), feedPrefs!!.introSkip, feedPrefs!!.endingSkip) {
+                    object : FeedPreferenceSkipDialog(requireContext(), feed?.preferences!!.introSkip, feed?.preferences!!.endingSkip) {
                         @UnstableApi
                         override fun onConfirmed(skipIntro: Int, skipEnding: Int) {
-                            feedPrefs!!.introSkip = skipIntro
-                            feedPrefs!!.endingSkip = skipEnding
-                            persistFeedPreferences(feed!!)
+                            feed = upsertBlk(feed!!) {
+                                it.preferences?.introSkip = skipIntro
+                                it.preferences?.endingSkip = skipEnding
+                            }
                         }
                     }.show()
-                }
+
                 false
             }
         }
@@ -425,20 +422,18 @@ class FeedSettingsFragment : Fragment() {
                     binding.seekBar.alpha = if (isChecked) 0.4f else 1f
                     binding.currentSpeedLabel.alpha = if (isChecked) 0.4f else 1f
                 }
-                if (feedPrefs != null) {
-                    val speed = feedPrefs!!.playSpeed
+                    val speed = feed?.preferences!!.playSpeed
                     binding.useGlobalCheckbox.isChecked = speed == FeedPreferences.SPEED_USE_GLOBAL
                     binding.seekBar.updateSpeed(if (speed == FeedPreferences.SPEED_USE_GLOBAL) 1f else speed)
-                }
+
                 MaterialAlertDialogBuilder(requireContext())
                     .setTitle(R.string.playback_speed)
                     .setView(binding.root)
                     .setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int ->
                         val newSpeed = if (binding.useGlobalCheckbox.isChecked) FeedPreferences.SPEED_USE_GLOBAL
                         else binding.seekBar.currentSpeed
-                        if (feedPrefs != null) {
-                            feedPrefs!!.playSpeed = newSpeed
-                            persistFeedPreferences(feed!!)
+                        feed = upsertBlk(feed!!) {
+                            it.preferences?.playSpeed = newSpeed
                         }
                     }
                     .setNegativeButton(R.string.cancel_label, null)
@@ -449,18 +444,16 @@ class FeedSettingsFragment : Fragment() {
         @UnstableApi private fun setupAutoDownloadPolicy() {
             val policyPref = findPreference<Preference>(Prefs.feedAutoDownloadPolicy.name)
             policyPref!!.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any? ->
-                if (feedPrefs != null) {
-                    feedPrefs!!.autoDLPolicyCode = newValue.toString().toInt()
-                    persistFeedPreferences(feed!!)
-                    updateAutoDownloadPolicy()
+                feed = upsertBlk(feed!!) {
+                    it.preferences?.autoDLPolicyCode = newValue.toString().toInt()
                 }
+                updateAutoDownloadPolicy()
                 false
             }
         }
         private fun updateAutoDownloadPolicy() {
-            if (feedPrefs == null) return
             val policyPref = findPreference<ListPreference>(Prefs.feedAutoDownloadPolicy.name)
-            when (feedPrefs!!.autoDLPolicy) {
+            when (feed?.preferences!!.autoDLPolicy) {
                 FeedPreferences.AutoDLPolicy.ONLY_NEW -> policyPref!!.value = FeedPreferences.AutoDLPolicy.ONLY_NEW.ordinal.toString()
                 FeedPreferences.AutoDLPolicy.NEWER -> policyPref!!.value = FeedPreferences.AutoDLPolicy.NEWER.ordinal.toString()
                 FeedPreferences.AutoDLPolicy.OLDER -> policyPref!!.value = FeedPreferences.AutoDLPolicy.OLDER.ordinal.toString()
@@ -468,25 +461,22 @@ class FeedSettingsFragment : Fragment() {
         }
         @UnstableApi private fun setupAutoDownloadCacheSize() {
             val cachePref = findPreference<ListPreference>(Prefs.feedEpisodeCacheSize.name)
-            cachePref!!.value = feedPrefs!!.autoDLMaxEpisodes.toString()
+            cachePref!!.value = feed?.preferences!!.autoDLMaxEpisodes.toString()
             cachePref.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any? ->
-                if (feedPrefs != null) {
-                    feedPrefs!!.autoDLMaxEpisodes = newValue.toString().toInt()
-                    cachePref.value = feedPrefs!!.autoDLMaxEpisodes.toString()
-                    persistFeedPreferences(feed!!)
+                feed = upsertBlk(feed!!) {
+                    it.preferences?.autoDLMaxEpisodes = newValue.toString().toInt()
                 }
+                cachePref.value = newValue.toString()
                 false
             }
         }
         @OptIn(UnstableApi::class) private fun setupCountingPlayedPreference() {
-            if (feedPrefs == null) return
             val pref = findPreference<SwitchPreferenceCompat>(Prefs.countingPlayed.name)
-            pref!!.isChecked = feedPrefs!!.countingPlayed
+            pref!!.isChecked = feed?.preferences!!.countingPlayed
             pref.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any ->
                 val checked = newValue == true
-                if (feedPrefs != null) {
-                    feedPrefs!!.countingPlayed = checked
-                    persistFeedPreferences(feed!!)
+                feed = upsertBlk(feed!!) {
+                    it.preferences?.countingPlayed = checked
                 }
                 pref.isChecked = checked
                 false
@@ -494,74 +484,65 @@ class FeedSettingsFragment : Fragment() {
         }
         private fun setupAutoDownloadFilterPreference() {
             findPreference<Preference>(Prefs.episodeInclusiveFilter.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-                if (feedPrefs != null) {
-                    object : AutoDownloadFilterPrefDialog(requireContext(), feedPrefs!!.autoDownloadFilter!!, 1) {
+                    object : AutoDownloadFilterPrefDialog(requireContext(), feed?.preferences!!.autoDownloadFilter!!, 1) {
                         @UnstableApi
                         override fun onConfirmed(filter: FeedAutoDownloadFilter) {
-                            if (feedPrefs != null) {
-                                feedPrefs!!.autoDownloadFilter = filter
-                                persistFeedPreferences(feed!!)
+                            feed = upsertBlk(feed!!) {
+                                it.preferences?.autoDownloadFilter = filter
                             }
                         }
                     }.show()
-                }
                 false
             }
             findPreference<Preference>(Prefs.episodeExclusiveFilter.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-                if (feedPrefs != null) {
-                    object : AutoDownloadFilterPrefDialog(requireContext(), feedPrefs!!.autoDownloadFilter!!, -1) {
+                    object : AutoDownloadFilterPrefDialog(requireContext(), feed?.preferences!!.autoDownloadFilter!!, -1) {
                         @UnstableApi
                         override fun onConfirmed(filter: FeedAutoDownloadFilter) {
-                            if (feedPrefs != null) {
-                                feedPrefs!!.autoDownloadFilter = filter
-                                persistFeedPreferences(feed!!)
+                            feed = upsertBlk(feed!!) {
+                                it.preferences?.autoDownloadFilter = filter
                             }
                         }
                     }.show()
-                }
                 false
             }
         }
         private fun setupAuthentificationPreference() {
             findPreference<Preference>(Prefs.authentication.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-                if (feedPrefs != null) {
-                    object : AuthenticationDialog(requireContext(), R.string.authentication_label, true, feedPrefs!!.username, feedPrefs!!.password) {
+                    object : AuthenticationDialog(requireContext(), R.string.authentication_label, true, feed?.preferences!!.username, feed?.preferences!!.password) {
                         @UnstableApi
                         override fun onConfirmed(username: String, password: String) {
-                            if (feedPrefs != null) {
-                                feedPrefs!!.username = username
-                                feedPrefs!!.password = password
-                                persistFeedPreferences(feed!!)
-                                Thread({ runOnce(context, feed) }, "RefreshAfterCredentialChange").start()
+                            feed = upsertBlk(feed!!) {
+                                it.preferences?.username = username
+                                it.preferences?.password = password
                             }
+                            Thread({ runOnce(context, feed) }, "RefreshAfterCredentialChange").start()
                         }
                     }.show()
-                }
                 false
             }
         }
         @UnstableApi private fun setupVolumeAdaptationPreferences() {
             val volumeAdaptationPreference = findPreference<ListPreference>("volumeReduction") ?: return
             volumeAdaptationPreference.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any? ->
-                if (feedPrefs != null) {
-                    when (newValue as String?) {
-                        "off" -> feedPrefs!!.volumeAdaptionSetting = VolumeAdaptionSetting.OFF
-                        "light" -> feedPrefs!!.volumeAdaptionSetting = VolumeAdaptionSetting.LIGHT_REDUCTION
-                        "heavy" -> feedPrefs!!.volumeAdaptionSetting = VolumeAdaptionSetting.HEAVY_REDUCTION
-                        "light_boost" -> feedPrefs!!.volumeAdaptionSetting = VolumeAdaptionSetting.LIGHT_BOOST
-                        "medium_boost" -> feedPrefs!!.volumeAdaptionSetting = VolumeAdaptionSetting.MEDIUM_BOOST
-                        "heavy_boost" -> feedPrefs!!.volumeAdaptionSetting = VolumeAdaptionSetting.HEAVY_BOOST
-                        else -> {}
+                    val vAdapt = when (newValue as String?) {
+                        "off" -> VolumeAdaptionSetting.OFF
+                        "light" -> VolumeAdaptionSetting.LIGHT_REDUCTION
+                        "heavy" -> VolumeAdaptionSetting.HEAVY_REDUCTION
+                        "light_boost" -> VolumeAdaptionSetting.LIGHT_BOOST
+                        "medium_boost" -> VolumeAdaptionSetting.MEDIUM_BOOST
+                        "heavy_boost" -> VolumeAdaptionSetting.HEAVY_BOOST
+                        else -> VolumeAdaptionSetting.OFF
                     }
-                    persistFeedPreferences(feed!!)
+                    feed = upsertBlk(feed!!) {
+                        it.preferences?.volumeAdaptionSetting = vAdapt
+                    }
                     updateVolumeAdaptationValue()
-                }
                 false
             }
         }
         private fun updateVolumeAdaptationValue() {
             val volumeAdaptationPreference = findPreference<ListPreference>("volumeReduction") ?: return
-            when (feedPrefs?.volumeAdaptionSetting) {
+            when (feed?.preferences?.volumeAdaptionSetting) {
                 VolumeAdaptionSetting.OFF -> volumeAdaptationPreference.value = "off"
                 VolumeAdaptionSetting.LIGHT_REDUCTION -> volumeAdaptationPreference.value = "light"
                 VolumeAdaptionSetting.HEAVY_REDUCTION -> volumeAdaptationPreference.value = "heavy"
@@ -572,7 +553,7 @@ class FeedSettingsFragment : Fragment() {
             }
         }
         private fun setupAutoDownloadGlobalPreference() {
-            if (!isEnableAutodownload || feedPrefs?.autoDownload != true) {
+            if (!isEnableAutodownload || feed?.preferences?.autoDownload != true) {
                 val autodl = findPreference<SwitchPreferenceCompat>(Prefs.autoDownload.name)
                 autodl!!.isChecked = false
                 autodl.isEnabled = false
@@ -585,22 +566,20 @@ class FeedSettingsFragment : Fragment() {
             }
         }
         @OptIn(UnstableApi::class) private fun setupAutoDownloadPreference() {
-            if (feedPrefs == null) return
             val pref = findPreference<SwitchPreferenceCompat>(Prefs.autoDownload.name)
             pref!!.isEnabled = isEnableAutodownload
-            if (isEnableAutodownload) pref.isChecked = feedPrefs!!.autoDownload
+            if (isEnableAutodownload) pref.isChecked = feed?.preferences!!.autoDownload
             else {
                 pref.isChecked = false
                 pref.setSummary(R.string.auto_download_disabled_globally)
             }
             pref.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any ->
                 val checked = newValue == true
-                if (feedPrefs != null) {
-                    feedPrefs!!.autoDownload = checked
-                    persistFeedPreferences(feed!!)
-                    updateAutoDownloadEnabled()
-                    pref.isChecked = checked
+                feed = upsertBlk(feed!!) {
+                    it.preferences?.autoDownload = checked
                 }
+                updateAutoDownloadEnabled()
+                pref.isChecked = checked
                 false
             }
         }
@@ -616,7 +595,7 @@ class FeedSettingsFragment : Fragment() {
         }
         private fun setupTags() {
             findPreference<Preference>(Prefs.tags.name)!!.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-                if (feedPrefs != null) TagSettingsDialog.newInstance(listOf(feed!!)).show(childFragmentManager, TagSettingsDialog.TAG)
+                TagSettingsDialog.newInstance(listOf(feed!!)).show(childFragmentManager, TagSettingsDialog.TAG)
                 true
             }
         }
@@ -767,7 +746,7 @@ class FeedSettingsFragment : Fragment() {
     }
 
     fun setFeed(feed_: Feed) {
-        feed = unmanaged(feed_)
+        feed = feed_
     }
 
     companion object {

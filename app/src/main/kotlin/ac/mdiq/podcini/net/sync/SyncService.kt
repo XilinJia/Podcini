@@ -22,12 +22,13 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
-import ac.mdiq.podcini.storage.database.Episodes.persistEpisodes
 import ac.mdiq.podcini.storage.database.Feeds.deleteFeedSync
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.getFeedListDownloadUrls
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueue
+import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
+import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
@@ -289,7 +290,13 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
         }
         removeFromQueue(*updatedItems.toTypedArray())
 //        loadAdditionalFeedItemListData(updatedItems)
-        persistEpisodes(updatedItems)
+//        persistEpisodes(updatedItems)
+        runOnIOScope {
+            for (episode in updatedItems) {
+                upsert(episode) {}
+            }
+            EventFlow.postEvent(FlowEvent.EpisodeEvent(updatedItems))
+        }
     }
 
     protected fun clearErrorNotifications() {

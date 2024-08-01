@@ -4,14 +4,11 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.databinding.SimpleListFragmentBinding
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
-import ac.mdiq.podcini.playback.base.InTheatre.isCurMedia
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
-import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
-import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
@@ -19,30 +16,30 @@ import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
-import ac.mdiq.podcini.storage.utils.FileNameGenerator.generateFileName
 import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectHandler
 import ac.mdiq.podcini.ui.actions.actionbutton.DeleteActionButton
-import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
-import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.EpisodesAdapter
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.ui.dialog.SwitchQueueDialog
+import ac.mdiq.podcini.ui.fragment.QueueFragment.Companion
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
+import ac.mdiq.podcini.ui.view.EpisodeViewHolder
 import ac.mdiq.podcini.ui.view.EpisodesRecyclerView
-import ac.mdiq.podcini.ui.view.viewholder.EpisodeViewHolder
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
 import android.os.Bundle
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
-import androidx.core.app.ShareCompat.IntentBuilder
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
@@ -79,7 +76,7 @@ import java.util.*
     private lateinit var emptyView: EmptyViewHandler
     
     private var displayUpArrow = false
-    private var curIndex = -1
+//    private var curIndex = -1
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = SimpleListFragmentBinding.inflate(inflater)
@@ -279,11 +276,8 @@ import java.util.*
                 when (event) {
                     is FlowEvent.EpisodeEvent -> onEpisodeEvent(event)
                     is FlowEvent.EpisodeMediaEvent -> onEpisodeMediaEvent(event)
-                    is FlowEvent.PlaybackPositionEvent -> onPlaybackPositionEvent(event)
-                    is FlowEvent.FavoritesEvent -> onFavoriteEvent(event)
                     is FlowEvent.PlayerSettingsEvent -> loadItems()
                     is FlowEvent.DownloadLogEvent -> loadItems()
-                    is FlowEvent.EpisodePlayedEvent -> onEpisodePlayedEvent(event)
                     is FlowEvent.QueueEvent -> loadItems()
                     is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
                     is FlowEvent.EpisodeDownloadEvent -> onEpisodeDownloadEvent(event)
@@ -300,37 +294,6 @@ import java.util.*
 //                }
 //            }
 //        }
-    }
-
-    private fun onFavoriteEvent(event: FlowEvent.FavoritesEvent) {
-        val item = event.episode
-        val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
-        if (pos >= 0) {
-            episodes[pos] = unmanaged(episodes[pos])
-            episodes[pos].isFavorite = item.isFavorite
-//            episodes[pos] = item
-            adapter.notifyItemChangedCompat(pos)
-        }
-    }
-
-    private fun onEpisodePlayedEvent(event: FlowEvent.EpisodePlayedEvent) {
-        if (event.episode == null) return
-        val item = event.episode
-        val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, item.id)
-        if (pos >= 0) {
-            episodes[pos] = item
-            adapter.notifyItemChangedCompat(pos)
-        }
-    }
-
-    override fun onContextItemSelected(item: MenuItem): Boolean {
-        val selectedItem: Episode? = adapter.longPressedItem
-        if (selectedItem == null) {
-            Logd(TAG, "Selected item at current position was null, ignoring selection")
-            return super.onContextItemSelected(item)
-        }
-        if (adapter.onContextItemSelected(item)) return true
-        return EpisodeMenuHandler.onMenuItemClicked(this, item.itemId, selectedItem)
     }
 
     private fun addEmptyView() {
@@ -383,20 +346,6 @@ import java.util.*
         refreshInfoBar()
     }
 
-    private fun onPlaybackPositionEvent(event: FlowEvent.PlaybackPositionEvent) {
-        val item = (event.media as? EpisodeMedia)?.episodeOrFetch() ?: return
-        val pos = if (curIndex in 0..<episodes.size && event.media.getIdentifier() == episodes[curIndex].media?.getIdentifier() && isCurMedia(episodes[curIndex].media))
-            curIndex else EpisodeUtil.indexOfItemWithId(episodes, item.id)
-
-        if (pos >= 0) {
-            episodes[pos] = unmanaged(episodes[pos])
-            episodes[pos].media?.position = event.media.position
-            curIndex = pos
-            adapter.notifyItemChanged(pos, Bundle().apply { putString("PositionUpdate", "PlaybackPositionEvent") })
-        }
-        refreshInfoBar()
-    }
-
     private fun refreshSwipeTelltale() {
         if (swipeActions.actions?.left != null) binding.leftActionIcon.setImageResource(swipeActions.actions!!.left!!.getActionIcon())
         if (swipeActions.actions?.right != null) binding.rightActionIcon.setImageResource(swipeActions.actions!!.right!!.getActionIcon())
@@ -432,7 +381,7 @@ import java.util.*
                     }
                 } catch (e: Throwable) {
 //                adapter.setDummyViews(0)
-                    adapter.updateItems(emptyList())
+                    adapter.updateItems(mutableListOf())
                     Log.e(TAG, Log.getStackTraceString(e))
                 } finally {
                     loadItemsRunning = false
@@ -485,15 +434,6 @@ import java.util.*
                 }
             }
         }
-        override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
-            super.onCreateContextMenu(menu, v, menuInfo)
-//            if (!inActionMode()) {
-//                menu.findItem(R.id.multi_select).setVisible(true)
-//            }
-            MenuItemUtils.setOnClickListeners(menu) { item: MenuItem ->
-                this@DownloadsFragment.onContextItemSelected(item)
-            }
-        }
     }
 
     class DownloadsSortDialog : EpisodeSortDialog() {
@@ -501,7 +441,6 @@ import java.util.*
             super.onCreate(savedInstanceState)
             sortOrder = downloadsSortedOrder
         }
-
         override fun onAddItem(title: Int, ascending: EpisodeSortOrder, descending: EpisodeSortOrder, ascendingIsDefault: Boolean) {
             if (ascending == EpisodeSortOrder.DATE_OLD_NEW
                     || ascending == EpisodeSortOrder.PLAYED_DATE_OLD_NEW
@@ -514,7 +453,6 @@ import java.util.*
                 super.onAddItem(title, ascending, descending, ascendingIsDefault)
             }
         }
-
         override fun onSelectionChanged() {
             super.onSelectionChanged()
             downloadsSortedOrder = sortOrder

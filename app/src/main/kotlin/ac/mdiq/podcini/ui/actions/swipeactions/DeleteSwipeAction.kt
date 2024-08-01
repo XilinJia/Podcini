@@ -27,7 +27,6 @@ class DeleteSwipeAction : SwipeAction {
 
     @UnstableApi override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
         if (!item.isDownloaded && item.feed?.isLocalFeed != true) return
-
         deleteEpisodesWarnLocal(fragment.requireContext(), listOf(item))
     }
 

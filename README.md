@@ -18,7 +18,7 @@ This project is based on a fork of [AntennaPod](<https://github.com/AntennaPod/A
 Compared to AntennaPod this project:
 
 1. Migrated all media routines to `androidx.media3`, with `AudioOffloadMode` enabled, nicer to device battery,
-2. Is purely `Kotlin` based and mono-modular, and targets Android 14,
+2. Is purely `Kotlin` based and mono-modular, and being migrated to Jetpack Compose,
 3. Iron-age celebrity SQLite is replaced with modern object-base Realm DB (Podcini.R),
 4. Outfits with Viewbinding, Coil replacing Glide, coroutines replacing RxJava and threads, SharedFlow replacing EventBus, and jetifier removed,
 5. Boasts new UI's including streamlined drawer, subscriptions view and player controller,

@@ -1,26 +1,27 @@
-package ac.mdiq.podcini.ui.view.viewholder
+package ac.mdiq.podcini.ui.view
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.FeeditemlistItemBinding
-import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.playback.base.InTheatre
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.storage.database.RealmDB.realm
+import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Episode.Companion.BUILDING
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Feed.Companion.PREFIX_GENERATIVE_COVER
 import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.storage.model.Playable
+import ac.mdiq.podcini.storage.utils.DurationConverter
+import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.ui.actions.actionbutton.EpisodeActionButton
 import ac.mdiq.podcini.ui.actions.actionbutton.TTSActionButton
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.utils.CoverLoader
 import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
-import ac.mdiq.podcini.ui.view.CircularProgressBar
-import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.util.DateFormatter
 import ac.mdiq.podcini.util.Logd
 import android.text.Layout
@@ -38,48 +39,56 @@ import androidx.cardview.widget.CardView
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.elevation.SurfaceColors
+import io.realm.kotlin.notifications.SingleQueryChange
+import io.realm.kotlin.notifications.UpdatedObject
+import kotlinx.coroutines.*
 import kotlin.math.max
 
 /**
  * Holds the view which shows FeedItems.
  */
 @UnstableApi
-open class EpisodeViewHolder(private val activity: MainActivity, parent: ViewGroup)
+open class EpisodeViewHolder(private val activity: MainActivity, parent: ViewGroup, var refreshAdapterPosCallback: ((Int, Episode) -> Unit)? = null)
     : RecyclerView.ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.feeditemlist_item, parent, false)) {
 
     val binding: FeeditemlistItemBinding = FeeditemlistItemBinding.bind(itemView)
 
-    private val container: View = binding.container
-    @JvmField
-    val dragHandle: ImageView = binding.dragHandle
     private val placeholder: TextView = binding.txtvPlaceholder
     private val cover: ImageView = binding.imgvCover
     private val title: TextView = binding.txtvTitle
-    protected val pubDate: TextView = binding.txtvPubDate
     private val position: TextView = binding.txtvPosition
     private val duration: TextView = binding.txtvDuration
-    private val size: TextView = binding.size
-    @JvmField
-    val isInQueue: ImageView = binding.ivInPlaylist
     private val isVideo: ImageView = binding.ivIsVideo
-    private val isFavorite: ImageView = binding.isFavorite
     private val progressBar: ProgressBar = binding.progressBar
 
+    private var posIndex: Int = -1
+
     private var actionButton: EpisodeActionButton? = null
+    private val secondaryActionProgress: CircularProgressBar = binding.secondaryActionButton.secondaryActionProgress
+
+    protected val pubDate: TextView = binding.txtvPubDate
+
+    @JvmField
+    val dragHandle: ImageView = binding.dragHandle
+
+    @JvmField
+    val isInQueue: ImageView = binding.ivInPlaylist
 
     @JvmField
     val secondaryActionButton: View = binding.secondaryActionButton.root
     @JvmField
     val secondaryActionIcon: ImageView = binding.secondaryActionButton.secondaryActionIcon
-    private val secondaryActionProgress: CircularProgressBar = binding.secondaryActionButton.secondaryActionProgress
-    private val separatorIcons: TextView = binding.separatorIcons
-    private val leftPadding: View = binding.leftPadding
+
     @JvmField
     val coverHolder: CardView = binding.coverHolder
     @JvmField
     val infoCard: LinearLayout = binding.infoCard
 
     var episode: Episode? = null
+
+    private var episodeMonitor: Job? = null
+    private var mediaMonitor: Job? = null
+    private var notBond: Boolean = true
 
     val isCurMedia: Boolean
         get() = InTheatre.isCurMedia(this.episode?.media)
@@ -91,16 +100,53 @@ open class EpisodeViewHolder(private val activity: MainActivity, parent: ViewGro
 
     fun bind(item: Episode) {
 //        Logd(TAG, "in bind: ${item.title} ${item.isFavorite} ${item.isPlayed()}")
+        if (episodeMonitor == null) {
+            val item_ = realm.query(Episode::class).query("id == ${item.id}").first()
+            episodeMonitor = CoroutineScope(Dispatchers.Default).launch {
+                val episodeFlow = item_.asFlow()
+                episodeFlow.collect { changes: SingleQueryChange<Episode> ->
+                    when (changes) {
+                        is UpdatedObject -> {
+                            Logd(TAG, "episodeMonitor UpdatedObject ${changes.obj.title} ${changes.changedFields.joinToString()}")
+                            withContext(Dispatchers.Main) {
+                                bind(changes.obj)
+                                if (posIndex >= 0) refreshAdapterPosCallback?.invoke(posIndex, changes.obj)
+                            }
+                        }
+                        else -> {}
+                    }
+                }
+            }
+        }
+        if (mediaMonitor == null) {
+            val item_ = realm.query(Episode::class).query("id == ${item.id}").first()
+            mediaMonitor = CoroutineScope(Dispatchers.Default).launch {
+                val episodeFlow = item_.asFlow(listOf("media.*"))
+                episodeFlow.collect { changes: SingleQueryChange<Episode> ->
+                    when (changes) {
+                        is UpdatedObject -> {
+                            Logd(TAG, "mediaMonitor UpdatedObject ${changes.obj.title} ${changes.changedFields.joinToString()}")
+                            withContext(Dispatchers.Main) {
+                                updatePlaybackPositionNew(changes.obj)
+//                                bind(changes.obj)
+                                if (posIndex >= 0) refreshAdapterPosCallback?.invoke(posIndex, changes.obj)
+                            }
+                        }
+                        else -> {}
+                    }
+                }
+            }
+        }
         this.episode = item
         placeholder.text = item.feed?.title
         title.text = item.title
-        container.alpha = if (item.isPlayed()) 0.7f else 1.0f
-        leftPadding.contentDescription = item.title
+        binding.container.alpha = if (item.isPlayed()) 0.7f else 1.0f
+        binding.leftPadding.contentDescription = item.title
         binding.playedMark.visibility = View.GONE
         binding.txtvPubDate.setTextColor(getColorFromAttr(activity, com.google.android.material.R.attr.colorOnSurfaceVariant))
         when {
             item.isPlayed() -> {
-                leftPadding.contentDescription = item.title + ". " + activity.getString(R.string.is_played)
+                binding.leftPadding.contentDescription = item.title + ". " + activity.getString(R.string.is_played)
                 binding.playedMark.visibility = View.VISIBLE
                 binding.playedMark.alpha = 1.0f
             }
@@ -111,7 +157,7 @@ open class EpisodeViewHolder(private val activity: MainActivity, parent: ViewGro
 
         setPubDate(item)
 
-        isFavorite.visibility = if (item.isFavorite) View.VISIBLE else View.GONE
+        binding.isFavorite.visibility = if (item.isFavorite) View.VISIBLE else View.GONE
         isInQueue.visibility = if (curQueue.isInQueue(item)) View.VISIBLE else View.GONE
 //        container.alpha = if (item.isPlayed()) 0.7f else 1.0f
 
@@ -143,7 +189,7 @@ open class EpisodeViewHolder(private val activity: MainActivity, parent: ViewGro
             }
         }
 
-        if (coverHolder.visibility == View.VISIBLE) {
+        if (notBond && coverHolder.visibility == View.VISIBLE) {
             cover.setImageDrawable(null)
             val imgLoc = ImageResourceUtils.getEpisodeListImageLocation(item)
 //            Logd(TAG, "imgLoc $imgLoc ${item.feed?.imageUrl} ${item.title}")
@@ -160,6 +206,29 @@ open class EpisodeViewHolder(private val activity: MainActivity, parent: ViewGro
             }
 //            if (item.isNew) cover.setColorFilter(ContextCompat.getColor(activity, R.color.gradient_100), PorterDuff.Mode.MULTIPLY)
         }
+        notBond = false
+    }
+
+    internal fun setPosIndex(index: Int) {
+        posIndex = index
+    }
+
+    fun unbind() {
+        // Cancel coroutine here
+        itemView.setOnClickListener(null)
+        itemView.setOnCreateContextMenuListener(null)
+        itemView.setOnLongClickListener(null)
+        itemView.setOnTouchListener(null)
+        secondaryActionButton.setOnClickListener(null)
+        dragHandle.setOnTouchListener(null)
+        coverHolder.setOnTouchListener(null)
+        posIndex = -1
+        episode = null
+        notBond = true
+        episodeMonitor?.cancel()
+        episodeMonitor = null
+        mediaMonitor?.cancel()
+        mediaMonitor = null
     }
 
     open fun setPubDate(item: Episode) {
@@ -216,30 +285,17 @@ open class EpisodeViewHolder(private val activity: MainActivity, parent: ViewGro
         }
 
         when {
-            media.size > 0 -> size.text = Formatter.formatShortFileSize(activity, media.size)
-//            TODO: might be better to do it elsewhere
-//            NetworkUtils.isEpisodeHeadDownloadAllowed && !media.checkedOnSizeButUnknown() -> {
-//                size.text = "{fa-spinner}"
-////                Iconify.addIcons(size)
-//                MediaSizeLoader.getFeedMediaSizeObservable(media).subscribe(Consumer<Long?> { sizeValue: Long? ->
-//                    if (sizeValue == null) return@Consumer
-//                    if (sizeValue > 0) size.text = Formatter.formatShortFileSize(activity, sizeValue)
-//                    else size.text = ""
-//                }) { error: Throwable? ->
-//                    size.text = ""
-//                    Log.e(TAG, Log.getStackTraceString(error))
-//                }
-//            }
-            else -> size.text = ""
+            media.size > 0 -> binding.size.text = Formatter.formatShortFileSize(activity, media.size)
+            else -> binding.size.text = ""
         }
     }
 
     fun bindDummy() {
         this.episode = Episode()
-        container.alpha = 0.1f
+        binding.container.alpha = 0.1f
         secondaryActionIcon.setImageDrawable(null)
         isVideo.visibility = View.GONE
-        isFavorite.visibility = View.GONE
+        binding.isFavorite.visibility = View.GONE
         isInQueue.visibility = View.GONE
         title.text = "███████"
         pubDate.text = "████"
@@ -249,7 +305,7 @@ open class EpisodeViewHolder(private val activity: MainActivity, parent: ViewGro
         progressBar.visibility = View.GONE
         position.visibility = View.GONE
         dragHandle.visibility = View.GONE
-        size.text = ""
+        binding.size.text = ""
         itemView.setBackgroundResource(ThemeUtils.getDrawableFromAttr(activity, androidx.appcompat.R.attr.selectableItemBackground))
         placeholder.text = ""
         if (coverHolder.visibility == View.VISIBLE) {
@@ -283,8 +339,8 @@ open class EpisodeViewHolder(private val activity: MainActivity, parent: ViewGro
      * Hides the separator dot between icons and text if there are no icons.
      */
     fun hideSeparatorIfNecessary() {
-        val hasIcons = isInQueue.visibility == View.VISIBLE || isVideo.visibility == View.VISIBLE || isFavorite.visibility == View.VISIBLE
-        separatorIcons.visibility = if (hasIcons) View.VISIBLE else View.GONE
+        val hasIcons = isInQueue.visibility == View.VISIBLE || isVideo.visibility == View.VISIBLE || binding.isFavorite.visibility == View.VISIBLE
+        binding.separatorIcons.visibility = if (hasIcons) View.VISIBLE else View.GONE
     }
 
     companion object {

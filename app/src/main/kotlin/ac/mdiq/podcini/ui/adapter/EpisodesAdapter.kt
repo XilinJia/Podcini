@@ -4,24 +4,27 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.fragment.EpisodeInfoFragment
 import ac.mdiq.podcini.ui.fragment.FeedInfoFragment
 import ac.mdiq.podcini.ui.utils.ThemeUtils
-import ac.mdiq.podcini.ui.view.viewholder.EpisodeViewHolder
+import ac.mdiq.podcini.ui.view.EpisodeViewHolder
+import ac.mdiq.podcini.util.Logd
 import android.R.color
 import android.app.Activity
 import android.os.Bundle
-import android.view.*
+import android.view.InputDevice
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
 import androidx.media3.common.util.UnstableApi
 import java.lang.ref.WeakReference
 
 /**
  * List adapter for the list of new episodes.
  */
-open class EpisodesAdapter(mainActivity: MainActivity)
-    : SelectableAdapter<EpisodeViewHolder?>(mainActivity), View.OnCreateContextMenuListener {
+open class EpisodesAdapter(mainActivity: MainActivity, var refreshFragPosCallback: ((Int, Episode) -> Unit)? = null)
+    : SelectableAdapter<EpisodeViewHolder?>(mainActivity) {
 
     private val TAG: String = this::class.simpleName ?: "Anonymous"
 
@@ -29,7 +32,7 @@ open class EpisodesAdapter(mainActivity: MainActivity)
     protected val activity: Activity?
         get() = mainActivityRef.get()
 
-    private var episodes: List<Episode> = ArrayList()
+    private var episodes: MutableList<Episode> = ArrayList()
     private var feed: Feed? = null
     var longPressedItem: Episode? = null
     private var longPressedPosition: Int = 0 // used to init actionMode
@@ -51,18 +54,26 @@ open class EpisodesAdapter(mainActivity: MainActivity)
         setHasStableIds(true)
     }
 
+    @UnstableApi
+    fun refreshPosCallback(pos: Int, episode: Episode) {
+        Logd(TAG, "refreshPosCallback: $pos ${episode.title}")
+        if (pos >= 0 && pos < episodes.size) episodes[pos] = episode
+//        notifyItemChanged(pos, "foo")
+        refreshFragPosCallback?.invoke(pos, episode)
+    }
+
     fun clearData() {
-        episodes = listOf()
+        episodes = mutableListOf()
         feed = null
         notifyDataSetChanged()
     }
 
-    fun setDummyViews(dummyViews: Int) {
-        this.dummyViews = dummyViews
-        notifyDataSetChanged()
-    }
+//    fun setDummyViews(dummyViews: Int) {
+//        this.dummyViews = dummyViews
+//        notifyDataSetChanged()
+//    }
 
-    fun updateItems(items: List<Episode>, feed_: Feed? = null) {
+    fun updateItems(items: MutableList<Episode>, feed_: Feed? = null) {
         episodes = items
         feed = feed_
         notifyDataSetChanged()
@@ -89,37 +100,38 @@ open class EpisodesAdapter(mainActivity: MainActivity)
             return
         }
 
+        holder.refreshAdapterPosCallback = ::refreshPosCallback
+        holder.setPosIndex(pos)
+
         // Reset state of recycled views
         holder.coverHolder.visibility = View.VISIBLE
         holder.dragHandle.visibility = View.GONE
 
         beforeBindViewHolder(holder, pos)
 
-        val item: Episode = unmanaged(episodes[pos])
-//        val item: Episode = episodes[pos]
+        val item: Episode = episodes[pos]
         item.feed = feed ?: episodes[pos].feed
         holder.bind(item)
 
-//        holder.infoCard.setOnCreateContextMenuListener(this)
         holder.infoCard.setOnLongClickListener {
-            longPressedItem = item
+            longPressedItem = holder.episode
             longPressedPosition = holder.bindingAdapterPosition
             startSelectMode(longPressedPosition)
             true
         }
         holder.infoCard.setOnClickListener {
             val activity: MainActivity? = mainActivityRef.get()
-            if (!inActionMode()) activity?.loadChildFragment(EpisodeInfoFragment.newInstance(episodes[pos]))
+            if (!inActionMode() && holder.episode != null) activity?.loadChildFragment(EpisodeInfoFragment.newInstance(holder.episode!!))
             else toggleSelection(holder.bindingAdapterPosition)
         }
         holder.coverHolder.setOnClickListener {
             val activity: MainActivity? = mainActivityRef.get()
-            if (!inActionMode() && episodes[pos].feed != null) activity?.loadChildFragment(FeedInfoFragment.newInstance(episodes[pos].feed!!))
+            if (!inActionMode() && holder.episode?.feed != null) activity?.loadChildFragment(FeedInfoFragment.newInstance(holder.episode!!.feed!!))
             else toggleSelection(holder.bindingAdapterPosition)
         }
         holder.itemView.setOnTouchListener(View.OnTouchListener { _: View?, e: MotionEvent ->
             if (e.isFromSource(InputDevice.SOURCE_MOUSE) && e.buttonState == MotionEvent.BUTTON_SECONDARY) {
-                longPressedItem = item
+                longPressedItem = holder.episode
                 longPressedPosition = holder.bindingAdapterPosition
                 return@OnTouchListener false
             }
@@ -136,13 +148,14 @@ open class EpisodesAdapter(mainActivity: MainActivity)
         holder.hideSeparatorIfNecessary()
     }
 
+    @UnstableApi
     override fun onBindViewHolder(holder: EpisodeViewHolder, pos: Int, payloads: MutableList<Any>) {
         if (payloads.isEmpty()) onBindViewHolder(holder, pos)
         else {
             val payload = payloads[0]
             when {
                 payload is String && payload == "foo" -> onBindViewHolder(holder, pos)
-                payload is Bundle && !payload.getString("PositionUpdate").isNullOrEmpty() -> holder.updatePlaybackPositionNew(unmanaged(episodes[pos]))
+                payload is Bundle && !payload.getString("PositionUpdate").isNullOrEmpty() -> holder.updatePlaybackPositionNew(episodes[pos])
             }
         }
     }
@@ -151,23 +164,10 @@ open class EpisodesAdapter(mainActivity: MainActivity)
 
     protected open fun afterBindViewHolder(holder: EpisodeViewHolder, pos: Int) {}
 
-    override fun onViewDetachedFromWindow(holder: EpisodeViewHolder) {
-        super.onViewDetachedFromWindow(holder)
-//        visibleItemsPositions.remove(holder.adapterPosition)
-    }
-
     @UnstableApi override fun onViewRecycled(holder: EpisodeViewHolder) {
         super.onViewRecycled(holder)
-        // Set all listeners to null. This is required to prevent leaking fragments that have set a listener.
-        // Activity -> recycledViewPool -> EpisodeItemViewHolder -> Listener -> Fragment (can not be garbage collected)
-        holder.itemView.setOnClickListener(null)
-        holder.itemView.setOnCreateContextMenuListener(null)
-        holder.itemView.setOnLongClickListener(null)
-        holder.itemView.setOnTouchListener(null)
-        holder.secondaryActionButton.setOnClickListener(null)
-        holder.dragHandle.setOnTouchListener(null)
-        holder.coverHolder.setOnTouchListener(null)
-        holder.episode = null
+        holder.refreshAdapterPosCallback = null
+        holder.unbind()
     }
 
     /**
@@ -194,37 +194,5 @@ open class EpisodesAdapter(mainActivity: MainActivity)
     protected fun getItem(index: Int): Episode? {
         val item = if (index in episodes.indices) episodes[index] else null
         return item
-    }
-
-    @UnstableApi override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
-        val inflater: MenuInflater = activity!!.menuInflater
-        if (inActionMode()) {
-//            inflater.inflate(R.menu.multi_select_context_popup, menu)
-        } else {
-            if (longPressedItem == null) return
-
-            inflater.inflate(R.menu.feeditemlist_context, menu)
-            menu.setHeaderTitle(longPressedItem!!.title)
-            EpisodeMenuHandler.onPrepareMenu(menu, longPressedItem, R.id.skip_episode_item)
-        }
-    }
-
-    fun onContextItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.multi_select -> {
-                startSelectMode(longPressedPosition)
-                return true
-            }
-            R.id.select_all_above -> {
-                setSelected(0, longPressedPosition, true)
-                return true
-            }
-            R.id.select_all_below -> {
-                shouldSelectLazyLoadedItems = true
-                setSelected(longPressedPosition + 1, itemCount, true)
-                return true
-            }
-            else -> return false
-        }
     }
 }

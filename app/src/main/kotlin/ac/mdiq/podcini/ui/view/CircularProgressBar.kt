@@ -2,6 +2,7 @@ package ac.mdiq.podcini.ui.view
 
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet

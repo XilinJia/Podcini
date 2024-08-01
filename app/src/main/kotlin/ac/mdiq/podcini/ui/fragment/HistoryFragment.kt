@@ -6,21 +6,23 @@ import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
-import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
+import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.EpisodesAdapter
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.dialog.DatesFilterDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
-import ac.mdiq.podcini.ui.view.viewholder.EpisodeViewHolder
+import ac.mdiq.podcini.ui.view.EpisodeViewHolder
 import ac.mdiq.podcini.util.DateFormatter
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
-import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import android.content.DialogInterface
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import androidx.annotation.OptIn
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
@@ -36,7 +38,7 @@ import kotlin.math.min
     private var startDate : Long = 0L
     private var endDate : Long = Date().time
 
-    var allHistory: List<Episode> = listOf()
+    private var allHistory: List<Episode> = listOf()
 
     override fun getPrefName(): String {
         return TAG
@@ -66,10 +68,6 @@ import kotlin.math.min
                         pubDate.setContentDescription(DateFormatter.formatForAccessibility(playDate))
                     }
                 }
-            }
-            override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
-                super.onCreateContextMenu(menu, v, menuInfo)
-                MenuItemUtils.setOnClickListeners(menu) { item: MenuItem -> this@HistoryFragment.onContextItemSelected(item) }
             }
         }
         adapter.setOnSelectModeListener(this)

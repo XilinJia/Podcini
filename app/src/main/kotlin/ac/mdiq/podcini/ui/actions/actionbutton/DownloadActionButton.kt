@@ -32,9 +32,8 @@ class DownloadActionButton(item: Episode) : EpisodeActionButton(item) {
 
         logAction(UsageStatistics.ACTION_DOWNLOAD)
 
-        if (isEpisodeDownloadAllowed) {
-            DownloadServiceInterface.get()?.downloadNow(context, item, false)
-        } else {
+        if (isEpisodeDownloadAllowed) DownloadServiceInterface.get()?.downloadNow(context, item, false)
+        else {
             val builder = MaterialAlertDialogBuilder(context)
                 .setTitle(R.string.confirm_mobile_download_dialog_title)
                 .setPositiveButton(R.string.confirm_mobile_download_dialog_download_later) { _: DialogInterface?, _: Int ->

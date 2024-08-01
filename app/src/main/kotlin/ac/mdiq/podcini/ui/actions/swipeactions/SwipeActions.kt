@@ -9,7 +9,7 @@ import ac.mdiq.podcini.ui.fragment.DownloadsFragment
 import ac.mdiq.podcini.ui.fragment.HistoryFragment
 import ac.mdiq.podcini.ui.fragment.QueueFragment
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
-import ac.mdiq.podcini.ui.view.viewholder.EpisodeViewHolder
+import ac.mdiq.podcini.ui.view.EpisodeViewHolder
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.Context

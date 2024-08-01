@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.storage.model
 
+import ac.mdiq.podcini.storage.database.RealmDB.realm
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
@@ -21,6 +22,11 @@ class PlayQueue : RealmObject {
 
     @Ignore
     val episodes: MutableList<Episode> = mutableListOf()
+        get() {
+            if (field.isEmpty() && episodeIds.isNotEmpty())
+                field.addAll(realm.query(Episode::class, "id IN $0", episodeIds).find().sortedBy { episodeIds.indexOf(it.id) })
+            return field
+        }
 
     var idsBinList: RealmList<Long> = realmListOf()
 

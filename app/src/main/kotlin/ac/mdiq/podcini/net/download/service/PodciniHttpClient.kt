@@ -9,6 +9,7 @@ import ac.mdiq.podcini.storage.model.ProxyConfig
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.config.ClientConfig
 import android.annotation.SuppressLint
+import android.net.TrafficStats
 import android.util.Log
 import okhttp3.*
 import okhttp3.Credentials.basic
@@ -27,8 +28,10 @@ import java.security.cert.CertificateException
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 import java.util.concurrent.TimeUnit
+import javax.net.SocketFactory
 import javax.net.ssl.*
 import kotlin.concurrent.Volatile
+
 
 /**
  * Provides access to a HttpClient singleton.
@@ -123,6 +126,7 @@ object PodciniHttpClient {
     class UserAgentInterceptor : Interceptor {
         @Throws(IOException::class)
         override fun intercept(chain: Chain): Response {
+            TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt())
             return chain.proceed(chain.request().newBuilder()
                 .header("User-Agent", ClientConfig.USER_AGENT?:"")
                 .build())
@@ -214,6 +218,7 @@ object PodciniHttpClient {
         private fun configureSocket(s: SSLSocket) {
             // TLS 1.0 is enabled by default on some old systems, which causes connection errors. This disables that.
             try {
+                TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt())
                 s.enabledProtocols = arrayOf("TLSv1.3", "TLSv1.2")
             } catch (e: IllegalArgumentException) {
                 e.printStackTrace()
@@ -227,8 +232,9 @@ object PodciniHttpClient {
     class BasicAuthorizationInterceptor : Interceptor {
         @Throws(IOException::class)
         override fun intercept(chain: Chain): Response {
-            val request: Request = chain.request()
+            TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt())
 
+            val request: Request = chain.request()
             var response: Response = chain.proceed(request)
 
             if (response.code != HttpURLConnection.HTTP_UNAUTHORIZED) return response

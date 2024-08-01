@@ -411,7 +411,8 @@ import kotlin.math.max
 
     private fun onFavoriteEvent(event: FlowEvent.FavoritesEvent) {
         if (episode?.id == event.episode.id) {
-            episode = unmanaged(event.episode)
+            episode = unmanaged(episode!!)
+            episode!!.isFavorite = event.episode.isFavorite
 //            episode = event.episode
             prepareMenu()
         }
@@ -423,7 +424,7 @@ import kotlin.math.max
         while (i < size) {
             val item_ = event.episodes[i]
             if (item_.id == episode?.id) {
-                episode = unmanaged(item_)
+//                episode = unmanaged(item_)
 //                episode = item_
                 prepareMenu()
                 break
@@ -478,7 +479,7 @@ import kotlin.math.max
     }
 
     fun setItem(item_: Episode) {
-        episode = unmanaged(item_)
+        episode = item_
     }
 
     companion object {

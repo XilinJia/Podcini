@@ -5,27 +5,26 @@ import ac.mdiq.podcini.databinding.CheckboxDoNotShowAgainBinding
 import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.databinding.QueueFragmentBinding
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
-import ac.mdiq.podcini.playback.base.InTheatre.isCurMedia
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.getCurrentPlaybackSpeed
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.database.Queues.clearQueue
 import ac.mdiq.podcini.storage.database.Queues.isQueueKeepSorted
 import ac.mdiq.podcini.storage.database.Queues.isQueueLocked
 import ac.mdiq.podcini.storage.database.Queues.moveInQueue
-import ac.mdiq.podcini.storage.database.Queues.moveInQueueSync
 import ac.mdiq.podcini.storage.database.Queues.queueKeepSortedOrder
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
-import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.storage.model.EpisodeFilter
+import ac.mdiq.podcini.storage.model.EpisodeSortOrder
+import ac.mdiq.podcini.storage.model.PlayQueue
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectHandler
-import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
-import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
 import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.EpisodesAdapter
@@ -35,8 +34,8 @@ import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
+import ac.mdiq.podcini.ui.view.EpisodeViewHolder
 import ac.mdiq.podcini.ui.view.EpisodesRecyclerView
-import ac.mdiq.podcini.ui.view.viewholder.EpisodeViewHolder
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
@@ -58,6 +57,7 @@ import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
@@ -73,11 +73,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.util.*
 
 /**
@@ -91,11 +88,11 @@ import java.util.*
     private lateinit var recyclerView: EpisodesRecyclerView
     private lateinit var emptyView: EmptyViewHandler
     private lateinit var toolbar: MaterialToolbar
-//    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var swipeActions: SwipeActions
     private lateinit var speedDialView: SpeedDialView
 
     private lateinit var queueNames: Array<String>
+    private lateinit var spinnerTexts: MutableList<String>
     private lateinit var queueSpinner: Spinner
     private lateinit var spinnerAdaptor: ArrayAdapter<String>
 
@@ -103,7 +100,6 @@ import java.util.*
     private var queueItems: MutableList<Episode> = mutableListOf()
 
     private var adapter: QueueRecyclerAdapter? = null
-    private var curIndex = -1
 
     private var showBin: Boolean = false
     private var addToQueueActionItem: SpeedDialActionItem? = null
@@ -130,24 +126,34 @@ import java.util.*
 
         val queues = realm.query(PlayQueue::class).find()
         queueNames = queues.map { it.name }.toTypedArray()
+        spinnerTexts = queues.map { "${it.name} : ${it.episodeIds.size}" }.toMutableList()
         val spinnerLayout = inflater.inflate(R.layout.queue_title_spinner, toolbar, false)
         queueSpinner = spinnerLayout.findViewById(R.id.queue_spinner)
         val params = Toolbar.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
         params.gravity = Gravity.CENTER_VERTICAL
         toolbar.addView(spinnerLayout)
-        spinnerAdaptor = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, queueNames)
+        spinnerAdaptor = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, spinnerTexts)
         spinnerAdaptor.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         queueSpinner.adapter = spinnerAdaptor
         queueSpinner.setSelection(spinnerAdaptor.getPosition(curQueue.name))
         queueSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                curQueue = unmanaged(upsertBlk(queues[position]) { it.updated })
+                curQueue = upsertBlk(queues[position]) { it.updated }
                 toolbar.menu?.findItem(R.id.rename_queue)?.setVisible(curQueue.name != "Default")
-                loadItems(true)
+                loadCurQueue(true)
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
-
+        queueSpinner.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                Logd(TAG, "Spinner is opening")
+                val queues = realm.query(PlayQueue::class).find()
+                spinnerTexts.clear()
+                spinnerTexts.addAll(queues.map { "${it.name} : ${it.episodeIds.size}" })
+                spinnerAdaptor.notifyDataSetChanged()
+            }
+            false
+        }
         (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
         toolbar.inflateMenu(R.menu.queue)
         refreshMenuItems()
@@ -172,10 +178,6 @@ import java.util.*
         adapter = QueueRecyclerAdapter()
         adapter?.setOnSelectModeListener(this)
         recyclerView.adapter = adapter
-
-//        swipeRefreshLayout = binding.swipeRefresh
-//        swipeRefreshLayout.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
-//        swipeRefreshLayout.setOnRefreshListener { FeedUpdateManager.runOnceOrAsk(requireContext()) }
 
         emptyView = EmptyViewHandler(requireContext())
         emptyView.attachToRecyclerView(recyclerView)
@@ -211,14 +213,16 @@ import java.util.*
     override fun onStart() {
         Logd(TAG, "onStart() called")
         super.onStart()
-        loadItems(true)
+        adapter?.refreshFragPosCallback = ::refreshPosCallback
+        loadCurQueue(true)
         procFlowEvents()
-        if (queueItems.isNotEmpty()) recyclerView.restoreScrollPosition(TAG)
+//        if (queueItems.isNotEmpty()) recyclerView.restoreScrollPosition(TAG)
     }
 
     override fun onStop() {
         Logd(TAG, "onStop() called")
         super.onStop()
+        adapter?.refreshFragPosCallback = null
         cancelFlowEvents()
     }
 
@@ -245,12 +249,8 @@ import java.util.*
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.QueueEvent -> onQueueEvent(event)
-                    is FlowEvent.EpisodeEvent -> onEpisodeEvent(event)
-                    is FlowEvent.EpisodeMediaEvent -> onEpisodeMediaEvent(event)
-                    is FlowEvent.FavoritesEvent -> onFavoriteEvent(event)
                     is FlowEvent.PlayEvent -> onPlayEvent(event)
-                    is FlowEvent.PlaybackPositionEvent -> onPlaybackPositionEvent(event)
-                    is FlowEvent.PlayerSettingsEvent -> onPlayerStatusChanged(event)
+                    is FlowEvent.PlayerSettingsEvent -> onPlayerSettingsEvent(event)
                     is FlowEvent.FeedPrefsChangeEvent -> onFeedPrefsChanged(event)
                     is FlowEvent.EpisodePlayedEvent -> onEpisodePlayedEvent(event)
                     is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
@@ -276,11 +276,16 @@ import java.util.*
         }
     }
 
+    private fun refreshPosCallback(pos: Int, episode: Episode) {
+        Logd(TAG, "Queue refreshPosCallback: $pos ${episode.title}")
+        if (isAdded && activity != null) refreshInfoBar()
+    }
+
     private fun onQueueEvent(event: FlowEvent.QueueEvent) {
         Logd(TAG, "onQueueEvent() called with ${event.action.name}")
         if (showBin) return
         if (adapter == null) {
-            loadItems(true)
+            loadCurQueue(true)
             return
         }
         when (event.action) {
@@ -291,7 +296,7 @@ import java.util.*
             FlowEvent.QueueEvent.Action.SET_QUEUE, FlowEvent.QueueEvent.Action.SORTED -> {
                 queueItems.clear()
                 queueItems.addAll(event.episodes)
-                adapter?.updateItems(event.episodes)
+                adapter?.updateItems(queueItems)
             }
             FlowEvent.QueueEvent.Action.REMOVED, FlowEvent.QueueEvent.Action.IRREVERSIBLE_REMOVED -> {
                 if (event.episodes.isNotEmpty()) {
@@ -308,7 +313,7 @@ import java.util.*
                     }
                 }
             }
-            FlowEvent.QueueEvent.Action.SWITCH_QUEUE -> loadItems(false)
+            FlowEvent.QueueEvent.Action.SWITCH_QUEUE -> loadCurQueue(false)
             FlowEvent.QueueEvent.Action.CLEARED -> {
                 queueItems.clear()
                 adapter?.updateItems(queueItems)
@@ -321,66 +326,6 @@ import java.util.*
         refreshInfoBar()
     }
 
-    private fun onFavoriteEvent(event: FlowEvent.FavoritesEvent) {
-        var i = 0
-        val item = event.episode
-        val pos: Int = EpisodeUtil.indexOfItemWithId(queueItems, item.id)
-        if (pos >= 0) {
-            queueItems[pos] = unmanaged(queueItems[pos])
-            queueItems[pos].isFavorite = item.isFavorite
-            adapter?.notifyItemChangedCompat(pos)
-        }
-    }
-
-    private fun onEpisodeEvent(event: FlowEvent.EpisodeEvent) {
-//        Logd(TAG, "onEventMainThread() called with ${event.TAG}")
-        if (adapter == null) {
-            loadItems(true)
-            return
-        }
-        var i = 0
-        val size: Int = event.episodes.size
-        val poses: MutableList<Int> = mutableListOf()
-        while (i < size) {
-            val item: Episode = event.episodes[i++]
-            val pos: Int = EpisodeUtil.indexOfItemWithId(queueItems, item.id)
-            if (pos >= 0) {
-                queueItems[pos] = item
-                poses.add(pos)
-            }
-        }
-        if (poses.isNotEmpty()) {
-            if (poses.size == 1) adapter?.notifyItemChangedCompat(poses[0])
-            else adapter?.notifyDataSetChanged()
-            refreshInfoBar()
-        }
-    }
-
-    private fun onEpisodeMediaEvent(event: FlowEvent.EpisodeMediaEvent) {
-//        Logd(TAG, "onEventMainThread() called with ${event.TAG}")
-        if (adapter == null) {
-            loadItems(true)
-            return
-        }
-        var i = 0
-        val size: Int = event.episodes.size
-        val poses: MutableList<Int> = mutableListOf()
-        while (i < size) {
-            val item: Episode = event.episodes[i++]
-            val pos: Int = EpisodeUtil.indexOfItemWithId(queueItems, item.id)
-            if (pos >= 0) {
-                queueItems[pos] = unmanaged(queueItems[pos])
-                queueItems[pos].media = item.media
-                poses.add(pos)
-            }
-        }
-        if (poses.isNotEmpty()) {
-            if (poses.size == 1) adapter?.notifyItemChangedCompat(poses[0])
-            else adapter?.notifyDataSetChanged()
-            refreshInfoBar()
-        }
-    }
-
     private fun onPlayEvent(event: FlowEvent.PlayEvent) {
         Logd(TAG, "onPlayEvent ${event.episode.title}")
         val pos: Int = EpisodeUtil.indexOfItemWithId(queueItems, event.episode.id)
@@ -389,42 +334,19 @@ import java.util.*
 
     private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
 //        Logd(TAG, "onEventMainThread() called with ${event.TAG}")
+        if (loadItemsRunning) return
         for (downloadUrl in event.urls) {
             val pos: Int = EpisodeUtil.indexOfItemWithDownloadUrl(queueItems.toList(), downloadUrl)
             if (pos >= 0) {
-                val item = unmanaged(queueItems[pos])
-                if (item.media != null) {
-                    val m = unmanaged(item.media!!)
-                    m.downloaded = true
-                    item.media = m
-                    queueItems[pos] = item
-                    adapter?.notifyItemChangedCompat(pos)
-                }
-//                val item = unmanaged(queueItems[pos])
-////                item.media?.downloaded = true
-//                item.media?.setIsDownloaded()
-//                adapter?.notifyItemChangedCompat(pos)
+                adapter?.notifyItemChangedCompat(pos)
             }
         }
     }
 
-    private fun onPlaybackPositionEvent(event: FlowEvent.PlaybackPositionEvent) {
-        val item = (event.media as? EpisodeMedia)?.episodeOrFetch() ?: return
-        val pos = if (curIndex in 0..<queueItems.size && event.media.getIdentifier() == queueItems[curIndex].media?.getIdentifier() && isCurMedia(queueItems[curIndex].media))
-            curIndex else EpisodeUtil.indexOfItemWithId(queueItems, item.id)
-
-        if (pos >= 0) {
-            queueItems[pos] = unmanaged(queueItems[pos])
-            queueItems[pos].media?.position = event.media.position
-            curIndex = pos
-            adapter?.notifyItemChanged(pos, Bundle().apply { putString("PositionUpdate", "PlaybackPositionEvent") })
-        }
-    }
-
-    private fun onPlayerStatusChanged(event: FlowEvent.PlayerSettingsEvent) {
+    private fun onPlayerSettingsEvent(event: FlowEvent.PlayerSettingsEvent) {
         if (showBin) return
         //        Logd(TAG, "onPlayerStatusChanged() called with event = [$event]")
-        loadItems(false)
+        loadCurQueue(false)
         refreshMenuItems()
     }
 
@@ -432,10 +354,7 @@ import java.util.*
         // Sent when playback position is reset
         Logd(TAG, "onUnreadItemsChanged() called with event = [$event]")
         if (event.episode == null) {
-            if (!showBin) loadItems(false)
-        } else {
-            val pos: Int = EpisodeUtil.indexOfItemWithId(queueItems, event.episode.id)
-            if (pos >= 0) queueItems[pos].setPlayed(event.episode.isPlayed())
+            if (!showBin) loadCurQueue(false)
         }
         refreshMenuItems()
     }
@@ -504,13 +423,12 @@ import java.util.*
                     item.setIcon(R.drawable.ic_history)
                     speedDialView.removeActionItem(addToQueueActionItem)
                 }
-                loadItems(false)
+                loadCurQueue(false)
             }
             R.id.queue_lock -> toggleQueueLock()
             R.id.queue_sort -> QueueSortDialog().show(childFragmentManager.beginTransaction(), "SortDialog")
             R.id.rename_queue -> renameQueue()
             R.id.add_queue -> addQueue()
-//            R.id.refresh_item -> FeedUpdateManager.runOnceOrAsk(requireContext())
             R.id.clear_queue -> {
                 // make sure the user really wants to clear the queue
                 val conDialog: ConfirmationDialog = object : ConfirmationDialog(requireContext(), R.string.clear_queue_label, R.string.clear_queue_confirmation_msg) {
@@ -522,12 +440,13 @@ import java.util.*
                 conDialog.createNewDialog().show()
             }
             R.id.clear_bin -> {
-                curQueue.idsBinList.clear()
-                upsertBlk(curQueue) {}
-                if (showBin) loadItems(false)
+                curQueue = upsertBlk(curQueue) {
+                    it.idsBinList.clear()
+                    it.update()
+                }
+                if (showBin) loadCurQueue(false)
             }
             R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
-//            R.id.switch_queue -> SwitchQueueDialog(activity as MainActivity).show()
             else -> return false
         }
         return true
@@ -563,8 +482,7 @@ import java.util.*
             Dialog(onDismissRequest = onDismiss) {
                 Card(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(160.dp)
+                        .wrapContentSize(align = Alignment.Center)
                         .padding(16.dp),
                     shape = RoundedCornerShape(16.dp),
                 ) {
@@ -581,9 +499,14 @@ import java.util.*
                         Button(onClick = {
                             if (newName.isNotEmpty() && curQueue.name != newName && queueNames.indexOf(newName) < 0) {
                                 val oldName = curQueue.name
-                                curQueue.name = newName
-                                runOnIOScope { upsert(curQueue) {} }
-                                queueNames[queueNames.indexOf(oldName)] = newName
+                                runOnIOScope {
+                                    curQueue = upsertBlk(curQueue) {
+                                        it.name = newName
+                                    }
+                                }
+                                val index_ = queueNames.indexOf(oldName)
+                                queueNames[index_] = newName
+                                spinnerTexts[index_] = newName + " : " + curQueue.episodeIds.size
                                 spinnerAdaptor.notifyDataSetChanged()
                                 onDismiss()
                             }
@@ -602,8 +525,7 @@ import java.util.*
             Dialog(onDismissRequest = onDismiss) {
                 Card(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(160.dp)
+                        .wrapContentSize(align = Alignment.Center)
                         .padding(16.dp),
                     shape = RoundedCornerShape(16.dp),
                 ) {
@@ -625,8 +547,10 @@ import java.util.*
                                 upsertBlk(newQueue) {}
                                 val queues = realm.query(PlayQueue::class).find()
                                 queueNames = queues.map { it.name }.toTypedArray()
-                                spinnerAdaptor = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, queueNames)
-                                spinnerAdaptor.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                                spinnerTexts.addAll(queues.map { "${it.name} : ${it.episodeIds.size}" })
+//                                spinnerAdaptor = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, spinnerTexts)
+//                                spinnerAdaptor.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                                spinnerAdaptor.notifyDataSetChanged()
                                 queueSpinner.adapter = spinnerAdaptor
                                 queueSpinner.setSelection(spinnerAdaptor.getPosition(curQueue.name))
                                 onDismiss()
@@ -677,57 +601,6 @@ import java.util.*
         }
     }
 
-    @UnstableApi override fun onContextItemSelected(item: MenuItem): Boolean {
-        Logd(TAG, "onContextItemSelected() called with: item = [$item]")
-        if (!isVisible || adapter == null) return false
-
-        val selectedItem: Episode? = adapter!!.longPressedItem
-        if (selectedItem == null) {
-            Logd(TAG, "Selected item was null, ignoring selection")
-            return super.onContextItemSelected(item)
-        }
-        if (adapter!!.onContextItemSelected(item)) return true
-
-        val pos: Int = EpisodeUtil.indexOfItemWithId(queueItems.toList(), selectedItem.id)
-        if (pos < 0) {
-            Logd(TAG, "Selected item no longer exist, ignoring selection")
-            return super.onContextItemSelected(item)
-        }
-
-        val itemId = item.itemId
-        return when (itemId) {
-            R.id.move_to_top_item -> {
-                queueItems.add(0, queueItems.removeAt(pos))
-                adapter?.notifyItemMoved(pos, 0)
-                moveToQueueTop(selectedItem, true)
-                true
-            }
-            R.id.move_to_bottom_item -> {
-                queueItems.add(queueItems.size - 1, queueItems.removeAt(pos))
-                adapter?.notifyItemMoved(pos, queueItems.size - 1)
-                moveToQueueBottom(selectedItem, true)
-                true
-            }
-            else -> EpisodeMenuHandler.onMenuItemClicked(this, item.itemId, selectedItem)
-        }
-    }
-
-    private fun moveToQueueTop(episode: Episode, broadcastUpdate: Boolean) : Job {
-        return runOnIOScope {
-            val index = curQueue.episodes.indexOf(episode)
-            if (index >= 0) moveInQueueSync(index, 0, broadcastUpdate)
-            else Log.e(TAG, "moveQueueItemToTop: episode not found")
-        }
-    }
-
-    private fun moveToQueueBottom(episode: Episode, broadcastUpdate: Boolean) : Job {
-        return runOnIOScope {
-            val index = curQueue.episodes.indexOf(episode)
-            if (index >= 0) moveInQueueSync(index, curQueue.episodes.size - 1, broadcastUpdate)
-            else Log.e(TAG, "moveQueueItemToBottom: episode not found")
-        }
-    }
-
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putBoolean(KEY_UP_ARROW, displayUpArrow)
         super.onSaveInstanceState(outState)
@@ -754,22 +627,26 @@ import java.util.*
     }
 
     private var loadItemsRunning = false
-    private fun loadItems(restoreScrollPosition: Boolean) {
+    private fun loadCurQueue(restoreScrollPosition: Boolean) {
         if (!loadItemsRunning) {
             loadItemsRunning = true
-            Logd(TAG, "loadItems() called")
+            adapter?.updateItems(mutableListOf())
+            Logd(TAG, "loadCurQueue() called ${curQueue.name}")
             while (curQueue.name.isEmpty()) runBlocking { delay(100) }
             if (queueItems.isEmpty()) emptyView.hide()
             queueItems.clear()
+            Logd(TAG, "loadCurQueue() showBin: $showBin")
             if (showBin) {
-                queueItems.addAll(realm.copyFromRealm(realm.query(Episode::class, "id IN $0", curQueue.idsBinList)
-                    .find().sortedByDescending { curQueue.idsBinList.indexOf(it.id) }))
+                queueItems.addAll(realm.query(Episode::class, "id IN $0", curQueue.idsBinList)
+                    .find().sortedByDescending { curQueue.idsBinList.indexOf(it.id) })
             } else {
                 curQueue.episodes.clear()
-                curQueue.episodes.addAll(realm.copyFromRealm(realm.query(Episode::class, "id IN $0", curQueue.episodeIds)
-                    .find().sortedBy { curQueue.episodeIds.indexOf(it.id) }))
+//                curQueue.episodes.addAll(realm.query(Episode::class, "id IN $0", curQueue.episodeIds)
+//                    .find().sortedBy { curQueue.episodeIds.indexOf(it.id) })
                 queueItems.addAll(curQueue.episodes)
             }
+            Logd(TAG, "loadCurQueue() curQueue.episodes: ${curQueue.episodes.size}")
+
             binding.progressBar.visibility = View.GONE
 //        adapter?.setDummyViews(0)
             adapter?.updateItems(queueItems)
@@ -830,17 +707,18 @@ import java.util.*
             val permutor = getPermutor(sortOrder)
             return runOnIOScope {
                 permutor.reorder(curQueue.episodes)
-                curQueue.update()
-                curQueue.episodeIds.clear()
-                for (e in curQueue.episodes) curQueue.episodeIds.add(e.id)
-                upsert(curQueue) {}
+                val episodes_ = curQueue.episodes.toMutableList()
+                curQueue = upsert(curQueue) {
+                    it.episodeIds.clear()
+                    for (e in episodes_) it.episodeIds.add(e.id)
+                    it.update()
+                }
                 if (broadcastUpdate) EventFlow.postEvent(FlowEvent.QueueEvent.sorted(curQueue.episodes))
             }
         }
     }
 
-    private inner class QueueSwipeActions
-        : SwipeActions(ItemTouchHelper.UP or ItemTouchHelper.DOWN, this@QueueFragment, TAG) {
+    private inner class QueueSwipeActions : SwipeActions(ItemTouchHelper.UP or ItemTouchHelper.DOWN, this@QueueFragment, TAG) {
         // Position tracking whilst dragging
         var dragFrom: Int = -1
         var dragTo: Int = -1
@@ -918,24 +796,7 @@ import java.util.*
                 holder.dragHandle.setOnTouchListener(null)
 //            holder.coverHolder.setOnTouchListener(null)
             }
-
             holder.isInQueue.setVisibility(View.GONE)
-        }
-        @UnstableApi override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
-            val inflater: MenuInflater = activity!!.getMenuInflater()
-            inflater.inflate(R.menu.queue_context, menu)
-            super.onCreateContextMenu(menu, v, menuInfo)
-
-            if (!inActionMode()) {
-//            menu.findItem(R.id.multi_select).setVisible(true)
-                val keepSorted: Boolean = isQueueKeepSorted
-                if (getItem(0)?.id === longPressedItem?.id || keepSorted) menu.findItem(R.id.move_to_top_item).setVisible(false)
-                if (getItem(itemCount - 1)?.id === longPressedItem?.id || keepSorted) menu.findItem(R.id.move_to_bottom_item).setVisible(false)
-            } else {
-                menu.findItem(R.id.move_to_top_item).setVisible(false)
-                menu.findItem(R.id.move_to_bottom_item).setVisible(false)
-            }
-            MenuItemUtils.setOnClickListeners(menu) { item: MenuItem -> onContextItemSelected(item) }
         }
     }
 

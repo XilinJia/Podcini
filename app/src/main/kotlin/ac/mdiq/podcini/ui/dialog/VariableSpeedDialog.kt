@@ -9,12 +9,10 @@ import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.currentMediaType
 import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.Prefs.prefPlaybackSpeedArray
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.preferences.UserPreferences.videoPlaybackSpeed
-import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
-import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
+import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.ui.utils.ItemOffsetDecoration
@@ -112,9 +110,9 @@ import java.util.*
         _binding = SpeedSelectDialogBinding.inflate(inflater)
 
         settingCode = (arguments?.getBooleanArray("settingCode") ?: BooleanArray(3) {true})
-        val index_default = arguments?.getInt("index_default")
+        val indexDefault = arguments?.getInt(INDEX_DEFAULT)
 
-        when (index_default) {
+        when (indexDefault) {
             null, 0 -> binding.currentAudio.isChecked = true
             1 -> binding.currentPodcast.isChecked = true
             else -> binding.global.isChecked = true
@@ -253,7 +251,7 @@ import java.util.*
                 playbackService!!.isFallbackSpeed = false
 
                 if (currentMediaType == MediaType.VIDEO) {
-                    curState.curTempSpeed = speed
+                    setCurTempSpeed(speed)
                     videoPlaybackSpeed = speed
                     playbackService!!.mPlayer?.setPlaybackParams(speed, isSkipSilence)
                 } else {
@@ -262,26 +260,18 @@ import java.util.*
                         if (codeArray[2]) UserPreferences.setPlaybackSpeed(speed)
                         if (codeArray[1]) {
                             val episode = (curMedia as? EpisodeMedia)?.episodeOrFetch() ?: curEpisode
-                            if (episode != null) {
-                                var feed = episode.feed
-                                if (feed != null) {
-                                    feed = unmanaged(feed)
-                                    val feedPrefs = feed.preferences
-                                    if (feedPrefs != null) {
-                                        feedPrefs.playSpeed = speed
-                                        persistFeedPreferences(feed)
-                                        Logd(TAG, "persisted feed speed ${feed.title} $speed")
-//                                EventFlow.postEvent(FlowEvent.FeedPrefsChangeEvent(feedPrefs))
-                                    }
+                            if (episode?.feed?.preferences != null) {
+                                upsertBlk(episode.feed!!) {
+                                    it.preferences!!.playSpeed = speed
                                 }
                             }
                         }
                         if (codeArray[0]) {
-                            curState.curTempSpeed = speed
+                            setCurTempSpeed(speed)
                             playbackService!!.mPlayer?.setPlaybackParams(speed, isSkipSilence)
                         }
                     } else {
-                        curState.curTempSpeed = speed
+                        setCurTempSpeed(speed)
                         playbackService!!.mPlayer?.setPlaybackParams(speed, isSkipSilence)
                     }
                 }
@@ -291,18 +281,23 @@ import java.util.*
                 EventFlow.postEvent(FlowEvent.SpeedChangedEvent(speed))
             }
         }
-
+        private fun setCurTempSpeed(speed: Float) {
+            curState = upsertBlk(curState) {
+                it.curTempSpeed = speed
+            }
+        }
         inner class ViewHolder internal constructor(var chip: Chip) : RecyclerView.ViewHolder(chip)
     }
 
     companion object {
         private val TAG: String = VariableSpeedDialog::class.simpleName ?: "Anonymous"
+        private const val INDEX_DEFAULT = "index_default"
 
         /**
          *  @param settingCode_ array at input indicate which categories can be set, at output which categories are changed
-        * @param index_default indicates which category is checked by default
+        * @param indexDefault indicates which category is checked by default
          */
-        fun newInstance(settingCode_: BooleanArray? = null, index_default: Int? = null): VariableSpeedDialog? {
+        fun newInstance(settingCode_: BooleanArray? = null, indexDefault: Int? = null): VariableSpeedDialog? {
             val settingCode = settingCode_ ?: BooleanArray(3){true}
             Logd("VariableSpeedDialog", "newInstance settingCode: ${settingCode[0]} ${settingCode[1]} ${settingCode[2]}")
             if (settingCode.size != 3) {
@@ -312,7 +307,7 @@ import java.util.*
             val dialog = VariableSpeedDialog()
             val args = Bundle()
             args.putBooleanArray("settingCode", settingCode)
-            if (index_default != null) args.putInt("index_default", index_default)
+            if (indexDefault != null) args.putInt(INDEX_DEFAULT, indexDefault)
             dialog.arguments = args
 
             return dialog

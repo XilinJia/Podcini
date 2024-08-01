@@ -62,10 +62,11 @@ class RemoveFromQueueSwipeAction : SwipeAction {
         return runOnIOScope {
             if (curQueue.episodeIds.contains(episode.id)) return@runOnIOScope
             if (episode.isNew) setPlayState(Episode.UNPLAYED, false, episode)
-            curQueue.update()
-            curQueue.episodeIds.add(index, episode.id)
-            curQueue.episodes.add(index, episode)
-            upsert(curQueue) {}
+            curQueue = upsert(curQueue) {
+                it.episodeIds.add(index, episode.id)
+                it.update()
+            }
+//            curQueue.episodes.add(index, episode)
             EventFlow.postEvent(FlowEvent.QueueEvent.added(episode, index))
 //            if (performAutoDownload) autodownloadEpisodeMedia(context)
         }

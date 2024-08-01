@@ -31,8 +31,8 @@ android {
         testApplicationId "ac.mdiq.podcini.tests"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        versionCode 3020223
-        versionName "6.2.2"
+        versionCode 3020224
+        versionName "6.3.0"
 
         applicationId "ac.mdiq.podcini.R"
         def commit = ""
@@ -122,9 +122,8 @@ android {
         disable += ['TypographyDashes', 'TypographyQuotes', 'ObsoleteLintCustomCheck', 'BatteryLife',
                     'ExportedReceiver', 'VectorDrawableCompat', 'NestedWeights', 'Overdraw', 'TextFields',
                     'AlwaysShowAction', 'Autofill', 'ClickableViewAccessibility', 'ContentDescription',
-                    'KeyboardInaccessibleWidget', 'LabelFor', 'RelativeOverlap',
+                    'KeyboardInaccessibleWidget', 'LabelFor', 'RelativeOverlap', 'SetTextI18n',
                     'RtlCompat', 'RtlHardcoded', 'VectorPath', 'RtlEnabled']
-
     }
 
     signingConfigs {
@@ -235,7 +234,7 @@ dependencies {
 
     implementation 'com.leinardi.android:speed-dial:3.3.0'
     implementation 'com.github.ByteHamster:SearchPreference:v2.5.0'
-    implementation 'com.github.skydoves:balloon:1.6.5'
+    implementation 'com.github.skydoves:balloon:1.6.6'
     implementation 'com.github.xabaras:RecyclerViewSwipeDecorator:1.3'
     implementation "com.annimon:stream:1.2.2"
 

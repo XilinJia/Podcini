@@ -13,6 +13,7 @@ import ac.mdiq.podcini.storage.database.Queues.removeFromQueue
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.storage.model.Episode.Companion.UNSPECIFIED
 import ac.mdiq.podcini.storage.model.PlayQueue
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.utils.LocalDeleteModal
@@ -46,7 +47,7 @@ class EpisodeMultiSelectHandler(private val activity: MainActivity, private val 
             R.id.put_in_queue_batch -> PutToQueueDialog(activity, items).show()
             R.id.remove_from_queue_batch -> removeFromQueueChecked(items)
             R.id.toggle_played_batch -> {
-                setPlayState(-2, false, *items.toTypedArray())
+                setPlayState(UNSPECIFIED, false, *items.toTypedArray())
 //                showMessage(R.plurals.marked_read_batch_label, items.size)
             }
 //            R.id.mark_read_batch -> {
@@ -138,13 +139,13 @@ class EpisodeMultiSelectHandler(private val activity: MainActivity, private val 
             binding.radioGroup.setOnCheckedChangeListener { group, checkedId ->
                 val radioButton = group.findViewById<RadioButton>(checkedId)
                 val selectedIndex = radioButton.tag as Int
-                toQueue = unmanaged(queues[selectedIndex])
+                toQueue = queues[selectedIndex]
             }
             MaterialAlertDialogBuilder(activity)
                 .setView(binding.root)
                 .setTitle(R.string.put_in_queue_label)
                 .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
-                    val queues = realm.query(PlayQueue::class).find()
+//                    val queues = realm.query(PlayQueue::class).find()
                     if (binding.removeCheckbox.isChecked) {
                         val toRemove = mutableSetOf<Long>()
                         val toRemoveCur = mutableListOf<Episode>()

@@ -21,7 +21,7 @@ object InTheatre {
 
     var curIndexInQueue = -1
 
-    var curQueue: PlayQueue     // unmanaged
+    var curQueue: PlayQueue     // managed
 
     var curEpisode: Episode? = null     // unmanged
         set(value) {
@@ -39,7 +39,7 @@ object InTheatre {
             }
         }
 
-    var curState: CurrentState      // unmanaged
+    var curState: CurrentState      // managed
 
     init {
         curQueue = PlayQueue()
@@ -49,9 +49,9 @@ object InTheatre {
             Logd(TAG, "starting curQueue")
             var curQueue_ = realm.query(PlayQueue::class).sort("updated", Sort.DESCENDING).first().find()
             if (curQueue_ != null) {
-                curQueue = unmanaged(curQueue_)
-                curQueue.episodes.addAll(realm.copyFromRealm(realm.query(Episode::class, "id IN $0", curQueue.episodeIds)
-                    .find().sortedBy { curQueue.episodeIds.indexOf(it.id) }))
+                curQueue = curQueue_
+//                curQueue.episodes.addAll(realm.copyFromRealm(realm.query(Episode::class, "id IN $0", curQueue.episodeIds)
+//                    .find().sortedBy { curQueue.episodeIds.indexOf(it.id) }))
             } else {
                 Logd(TAG, "creating new curQueue")
                 for (i in 0..4) {
@@ -65,13 +65,15 @@ object InTheatre {
                     }
                     upsert(curQueue_) {}
                 }
-                curQueue.update()
-                upsert(curQueue) {}
+                upsert(curQueue) {
+                    it.update()
+                }
             }
 
             Logd(TAG, "starting curState")
             var curState_ = realm.query(CurrentState::class).first().find()
-            if (curState_ != null) curState = unmanaged(curState_)
+//            if (curState_ != null) curState = unmanaged(curState_)
+            if (curState_ != null) curState = curState_
             else {
                 Logd(TAG, "creating new curState")
                 curState_ = CurrentState()
@@ -98,11 +100,12 @@ object InTheatre {
     }
 
     fun writeNoMediaPlaying() {
-        curState.curMediaType = NO_MEDIA_PLAYING
-        curState.curFeedId = NO_MEDIA_PLAYING
-        curState.curMediaId = NO_MEDIA_PLAYING
-        curState.curPlayerStatus = PLAYER_STATUS_OTHER
-        upsertBlk(curState) {}
+        curState = upsertBlk(curState) {
+            it.curMediaType = NO_MEDIA_PLAYING
+            it.curFeedId = NO_MEDIA_PLAYING
+            it.curMediaId = NO_MEDIA_PLAYING
+            it.curPlayerStatus = PLAYER_STATUS_OTHER
+        }
     }
 
     /**

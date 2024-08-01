@@ -120,10 +120,9 @@ object Queues {
             val qItemIds = curQueue.episodeIds.toMutableList()
             val items_ = episodes.toList()
             for (episode in items_) {
-                if (curQueue.episodeIds.contains(episode.id)) continue
-
+                if (qItemIds.contains(episode.id)) continue
                 events.add(FlowEvent.QueueEvent.added(episode, insertPosition))
-                if (qItemIds.contains(episode.id)) qItemIds.add(insertPosition, episode.id)
+                qItemIds.add(insertPosition, episode.id)
                 updatedItems.add(episode)
                 qItems.add(insertPosition, episode)
                 queueModified = true
@@ -142,9 +141,8 @@ object Queues {
                 }
 //                curQueue.episodes.addAll(qItems)
 
-                for (event in events) {
-                    EventFlow.postEvent(event)
-                }
+                for (event in events) EventFlow.postEvent(event)
+
 //                EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(updatedItems))
                 if (markAsUnplayed && markAsUnplayeds.size > 0) setPlayState(Episode.UNPLAYED, false, *markAsUnplayeds.toTypedArray())
 //                if (performAutoDownload) autodownloadEpisodeMedia(context)
@@ -164,9 +162,9 @@ object Queues {
         if (queue.episodeIds.contains(episode.id)) return
 
         val queueNew = upsert(queue) {
-            it.episodeIds.add(insertPosition, episode.id)
+            if (!it.episodeIds.contains(episode.id)) it.episodeIds.add(insertPosition, episode.id)
             insertPosition++
-            if (it.id == curQueue.id) it.update()
+            it.update()
         }
 //        queueNew.episodes.addAll(queue.episodes)
 //        queueNew.episodes.add(insertPosition, episode)
@@ -285,10 +283,10 @@ object Queues {
             if (q.size() == 0 || q.id == curQueue.id) continue
             idsInQueuesToRemove = q.episodeIds.intersect(episodeIds.toSet()).toMutableSet()
             if (idsInQueuesToRemove.isNotEmpty()) {
-                q.idsBinList.removeAll(idsInQueuesToRemove)
-                q.idsBinList.addAll(idsInQueuesToRemove)
-                val qeids = q.episodeIds.minus(idsInQueuesToRemove)
                 upsert(q) {
+                    it.idsBinList.removeAll(idsInQueuesToRemove)
+                    it.idsBinList.addAll(idsInQueuesToRemove)
+                    val qeids = it.episodeIds.minus(idsInQueuesToRemove)
                     it.episodeIds.clear()
                     it.episodeIds.addAll(qeids)
                     it.update()
@@ -306,8 +304,9 @@ object Queues {
             curQueue = upsert(q) {
                 it.idsBinList.removeAll(idsInQueuesToRemove)
                 it.idsBinList.addAll(idsInQueuesToRemove)
+                val qeids = it.episodeIds.minus(idsInQueuesToRemove)
                 it.episodeIds.clear()
-                it.episodeIds.addAll(it.episodeIds.minus(idsInQueuesToRemove))
+                it.episodeIds.addAll(qeids)
                 it.update()
             }
         }
@@ -345,7 +344,7 @@ object Queues {
         } else Log.e(TAG, "moveQueueItemHelper: Could not load queue")
         curQueue.episodes.clear()
 //        curQueue.episodes.addAll(episodes)
-        upsertBlk(curQueue) {
+        curQueue = upsertBlk(curQueue) {
             it.episodeIds.clear()
             for (e in episodes) it.episodeIds.add(e.id)
             it.update()

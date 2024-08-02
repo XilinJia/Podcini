@@ -1,3 +1,8 @@
+# 6.3.1
+
+* fixed crash when playing episode with missing media file
+* fixed Queue view not opening the current queue
+
 # 6.3.0
 
 * improved handling of playing next in queue when some items have been removed from the queue

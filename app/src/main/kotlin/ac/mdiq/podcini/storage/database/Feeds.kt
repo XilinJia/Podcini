@@ -312,8 +312,8 @@ object Feeds {
                 addNewFeedsSync(context, newFeed)
                 // Update with default values that are set in database
                 resultFeed = searchFeedByIdentifyingValueOrID(newFeed)
-            } else persistFeedsSync(savedFeed)
-//            updateFeedMap()
+            } else upsertBlk(savedFeed) {}
+
             if (removeUnlistedItems) runBlocking { deleteEpisodes(context, unlistedItems).join() }
         } catch (e: InterruptedException) {
             e.printStackTrace()
@@ -377,12 +377,12 @@ object Feeds {
         backupManager.dataChanged()
     }
 
-    private fun persistFeedsSync(vararg feeds: Feed) {
-        Logd(TAG, "persistFeedsSync called")
-        for (feed in feeds) {
-            upsertBlk(feed) {}
-        }
-    }
+//    private fun persistFeedsSync(vararg feeds: Feed) {
+//        Logd(TAG, "persistFeedsSync called")
+//        for (feed in feeds) {
+//            upsertBlk(feed) {}
+//        }
+//    }
 
     fun persistFeedPreferences(feed: Feed) : Job {
         Logd(TAG, "persistFeedPreferences called")

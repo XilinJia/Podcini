@@ -135,10 +135,10 @@ import java.util.*
         spinnerAdaptor = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, spinnerTexts)
         spinnerAdaptor.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         queueSpinner.adapter = spinnerAdaptor
-        queueSpinner.setSelection(spinnerAdaptor.getPosition(curQueue.name))
+        queueSpinner.setSelection(queueNames.indexOf(curQueue.name))
         queueSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                curQueue = upsertBlk(queues[position]) { it.updated }
+                curQueue = upsertBlk(queues[position]) { it.update() }
                 toolbar.menu?.findItem(R.id.rename_queue)?.setVisible(curQueue.name != "Default")
                 loadCurQueue(true)
             }

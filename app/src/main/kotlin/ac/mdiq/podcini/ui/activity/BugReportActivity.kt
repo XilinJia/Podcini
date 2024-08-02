@@ -45,7 +45,6 @@ class BugReportActivity : AppCompatActivity() {
             val crashFile = CrashReportWriter.file
             if (crashFile.exists()) stacktrace = IOUtils.toString(FileInputStream(crashFile), Charset.forName("UTF-8"))
             else Logd(TAG, stacktrace)
-
         } catch (e: IOException) {
             e.printStackTrace()
         }
@@ -112,8 +111,7 @@ class BugReportActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 e.printStackTrace()
                 val strResId = R.string.log_file_share_exception
-                Snackbar.make(binding.root, strResId, Snackbar.LENGTH_LONG)
-                    .show()
+                Snackbar.make(binding.root, strResId, Snackbar.LENGTH_LONG).show()
             }
         } catch (e: IOException) {
             e.printStackTrace()

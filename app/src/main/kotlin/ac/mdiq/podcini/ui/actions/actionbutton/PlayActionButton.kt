@@ -59,11 +59,12 @@ class PlayActionButton(item: Episode) : EpisodeActionButton(item) {
         Log.i(TAG, "The feedmanager was notified about a missing episode. It will update its database now.")
         val episode = media.episodeOrFetch()
         if (episode != null) {
-            episode.media = media
-            episode.media?.downloaded = false
-            episode.media?.fileUrl = null
-            upsertBlk(episode) {}
-            EventFlow.postEvent(FlowEvent.EpisodeMediaEvent.removed(episode))
+            val episode_ = upsertBlk(episode) {
+                it.media = media
+                it.media?.downloaded = false
+                it.media?.fileUrl = null
+            }
+            EventFlow.postEvent(FlowEvent.EpisodeMediaEvent.removed(episode_))
         }
         EventFlow.postEvent(FlowEvent.MessageEvent(context.getString(R.string.error_file_not_found)))
     }

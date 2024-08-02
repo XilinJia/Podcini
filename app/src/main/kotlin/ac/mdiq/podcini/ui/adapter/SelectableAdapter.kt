@@ -157,9 +157,7 @@ abstract class SelectableAdapter<T : RecyclerView.ViewHolder?>(private val activ
             totalCount = totalNumberOfItems
             if (shouldSelectLazyLoadedItems) selectedCount += (totalNumberOfItems - itemCount)
         }
-        actionMode!!.title = activity.resources
-            .getQuantityString(R.plurals.num_selected_label, selectedIds.size,
-                selectedCount, totalCount)
+        actionMode!!.title = activity.resources.getQuantityString(R.plurals.num_selected_label, selectedIds.size, selectedCount, totalCount)
     }
 
     fun setOnSelectModeListener(onSelectModeListener: OnSelectModeListener?) {

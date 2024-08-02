@@ -138,6 +138,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * Play history/progress can be separately exported/imported as Json files
 * Downloaded media files can be exported/imported
 * Reconsile feature (accessed from Downloads view) is added to ensure downloaded media files are in sync with specs in DB
+* Podcasts can be selectively exported from Subscriptions view
 * There is a setting to disable/enable auto backup of OPML files to Google
 * Upon re-install of Podcini, the OPML file previously backed up to Google is not imported automatically but based on user confirmation.
 

@@ -313,7 +313,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
     override fun getImageLocation(): String? {
         return when {
             episode != null -> episode!!.imageLocation
-            hasEmbeddedPicture() -> FILENAME_PREFIX_EMBEDDED_COVER + getLocalMediaUrl()
+            unmanaged(this).hasEmbeddedPicture() -> FILENAME_PREFIX_EMBEDDED_COVER + getLocalMediaUrl()
             else -> null
         }
     }

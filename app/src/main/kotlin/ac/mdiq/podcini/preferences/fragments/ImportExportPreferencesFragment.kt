@@ -23,6 +23,8 @@ import ac.mdiq.podcini.storage.utils.FileNameGenerator.generateFileName
 import ac.mdiq.podcini.storage.utils.FilesUtils.getDataFolder
 import ac.mdiq.podcini.ui.activity.OpmlImportActivity
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment
+import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.util.Logd
 import android.app.Activity.RESULT_OK
 import android.app.ProgressDialog
@@ -264,7 +266,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
     }
 
     private fun exportDatabase() {
-        backupDatabaseLauncher.launch(dateStampFilename(DATABASE_EXPORT_FILENAME))
+        backupDatabaseLauncher.launch(dateStampFilename("PodciniBackup-%s.realm"))
     }
 
     private fun importDatabase() {
@@ -554,15 +556,16 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         }
     }
 
-    private enum class Export(val contentType: String, val outputNameTemplate: String, @field:StringRes val labelResId: Int) {
-        OPML(CONTENT_TYPE_OPML, DEFAULT_OPML_OUTPUT_NAME, R.string.opml_export_label),
-        HTML(CONTENT_TYPE_HTML, DEFAULT_HTML_OUTPUT_NAME, R.string.html_export_label),
-        FAVORITES(CONTENT_TYPE_HTML, DEFAULT_FAVORITES_OUTPUT_NAME, R.string.favorites_export_label),
-        PROGRESS(CONTENT_TYPE_PROGRESS, DEFAULT_PROGRESS_OUTPUT_NAME, R.string.progress_export_label),
+    enum class Export(val contentType: String, val outputNameTemplate: String, @field:StringRes val labelResId: Int) {
+        OPML(CONTENT_TYPE_OPML, "podcini-feeds-%s.opml", R.string.opml_export_label),
+        OPML_SELECTED(CONTENT_TYPE_OPML, "podcini-feeds-selected-%s.opml", R.string.opml_export_label),
+        HTML(CONTENT_TYPE_HTML, "podcini-feeds-%s.html", R.string.html_export_label),
+        FAVORITES(CONTENT_TYPE_HTML, "podcini-favorites-%s.html", R.string.favorites_export_label),
+        PROGRESS(CONTENT_TYPE_PROGRESS, "podcini-progress-%s.json", R.string.progress_export_label),
     }
 
     class DocumentFileExportWorker(private val exportWriter: ExportWriter, private val context: Context, private val outputFileUri: Uri) {
-        suspend fun exportFile(): DocumentFile {
+        suspend fun exportFile(feeds: List<Feed>? = null): DocumentFile {
             return withContext(Dispatchers.IO) {
                 val output = DocumentFile.fromSingleUri(context, outputFileUri)
                 var outputStream: OutputStream? = null
@@ -573,7 +576,9 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                     outputStream = context.contentResolver.openOutputStream(uri, "wt")
                     if (outputStream == null) throw IOException()
                     writer = OutputStreamWriter(outputStream, Charset.forName("UTF-8"))
-                    exportWriter.writeDocument(getFeedList(), writer, context)
+                    val feeds_ = feeds ?: getFeedList()
+                    Logd(TAG, "feeds_: ${feeds_.size}")
+                    exportWriter.writeDocument(feeds_, writer, context)
                     output
                 } catch (e: IOException) {
                     throw e
@@ -591,7 +596,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
     class ExportWorker private constructor(private val exportWriter: ExportWriter, private val output: File, private val context: Context) {
         constructor(exportWriter: ExportWriter, context: Context) : this(exportWriter, File(getDataFolder(EXPORT_DIR),
             DEFAULT_OUTPUT_NAME + "." + exportWriter.fileExtension()), context)
-        suspend fun exportFile(): File? {
+        suspend fun exportFile(feeds: List<Feed>? = null): File? {
             return withContext(Dispatchers.IO) {
                 if (output.exists()) {
                     val success = output.delete()
@@ -600,7 +605,9 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                 var writer: OutputStreamWriter? = null
                 try {
                     writer = OutputStreamWriter(FileOutputStream(output), Charset.forName("UTF-8"))
-                    exportWriter.writeDocument(getFeedList(), writer, context)
+                    val feeds_ = feeds ?: getFeedList()
+                    Logd(TAG, "feeds_: ${feeds_.size}")
+                    exportWriter.writeDocument(feeds_, writer, context)
                     output // return the output file
                 } catch (e: IOException) {
                     Log.e(TAG, "Error during file export", e)
@@ -1135,13 +1142,8 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
     companion object {
         private val TAG: String = ImportExportPreferencesFragment::class.simpleName ?: "Anonymous"
 
-        private const val DEFAULT_OPML_OUTPUT_NAME = "podcini-feeds-%s.opml"
         private const val CONTENT_TYPE_OPML = "text/x-opml"
-        private const val DEFAULT_HTML_OUTPUT_NAME = "podcini-feeds-%s.html"
         private const val CONTENT_TYPE_HTML = "text/html"
-        private const val DEFAULT_FAVORITES_OUTPUT_NAME = "podcini-favorites-%s.html"
         private const val CONTENT_TYPE_PROGRESS = "text/x-json"
-        private const val DEFAULT_PROGRESS_OUTPUT_NAME = "podcini-progress-%s.json"
-        private const val DATABASE_EXPORT_FILENAME = "PodciniBackup-%s.realm"
     }
 }

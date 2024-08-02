@@ -1,3 +1,11 @@
+# 6.3.2
+
+* fixed crash of opening FeedEpisode view when "Use episode cover" is set
+* fixed crash of opening EpisodeInfo view on episode with unknown media size
+* fixed crash when cancelling download in a auto-download enabled feed
+* fixed mis-behavior of "Untagged" filter in combination with other filters in Subscriptions view
+* added "export selected feeds" in multi-select menu in Subscriptions view
+
 # 6.3.1
 
 * fixed crash when playing episode with missing media file

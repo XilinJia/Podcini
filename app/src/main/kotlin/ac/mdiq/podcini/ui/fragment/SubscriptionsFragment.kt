@@ -3,8 +3,10 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.*
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
+import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlWriter
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import ac.mdiq.podcini.preferences.fragments.ImportExportPreferencesFragment.*
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.getTags
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -28,15 +30,21 @@ import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
+import android.app.Activity.RESULT_OK
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.*
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.OptIn
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.Toolbar
@@ -66,11 +74,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -80,6 +85,14 @@ import java.util.*
  */
 class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAdapter.OnSelectModeListener {
 
+    private val chooseOpmlExportPathLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            result: ActivityResult ->
+        if (result.resultCode != RESULT_OK || result.data == null) return@registerForActivityResult
+        val uri = result.data!!.data
+        multiSelectHandler?.exportOPML(uri)
+    }
+
+    private var multiSelectHandler: FeedMultiSelectActionHandler? = null
     private var _binding: FragmentSubscriptionsBinding? = null
     private val binding get() = _binding!!
 
@@ -181,7 +194,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         val speedDialBinding = MultiSelectSpeedDialBinding.bind(binding.root)
         speedDialView = speedDialBinding.fabSD
         speedDialView.overlayLayout = speedDialBinding.fabSDOverlay
-        speedDialView.inflate(R.menu.nav_feed_action_speeddial)
+        speedDialView.inflate(R.menu.feed_action_speeddial)
         speedDialView.setOnChangeListener(object : SpeedDialView.OnChangeListener {
             override fun onMainActionSelected(): Boolean {
                 return false
@@ -189,7 +202,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             override fun onToggleChanged(isOpen: Boolean) {}
         })
         speedDialView.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
-            FeedMultiSelectActionHandler(activity as MainActivity, adapter.selectedItems.filterIsInstance<Feed>()).handleAction(actionItem.id)
+            multiSelectHandler = FeedMultiSelectActionHandler(activity as MainActivity, adapter.selectedItems.filterIsInstance<Feed>())
+            multiSelectHandler?.handleAction(actionItem.id)
             true
         }
         loadSubscriptions()
@@ -242,7 +256,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
     private fun queryStringOfTags() : String {
         return when (tagFilterIndex) {
             1 ->  ""    // All feeds
-            0 ->  " preferences.tags.@count == 0 OR (preferences.tags.@count == 0 AND ALL preferences.tags == '#root' ) "
+//            TODO: #root appears not used in RealmDB, is it a SQLite specialty
+            0 ->  " (preferences.tags.@count == 0 OR (preferences.tags.@count != 0 AND ALL preferences.tags == '#root' )) "
             else -> {   // feeds with the chosen tag
                 val tag = tags[tagFilterIndex]
                 " ANY preferences.tags == '$tag' "
@@ -334,8 +349,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             lifecycleScope.launch {
                 try {
                     withContext(Dispatchers.IO) {
-                        filterAndSort()
                         resetTags()
+                        filterAndSort()
                     }
                     withContext(Dispatchers.Main) {
                         // We have fewer items. This can result in items being selected that are no longer visible.
@@ -502,7 +517,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
     }
 
     @UnstableApi
-    private class FeedMultiSelectActionHandler(private val activity: MainActivity, private val selectedItems: List<Feed>) {
+    private inner class FeedMultiSelectActionHandler(private val activity: MainActivity, private val selectedItems: List<Feed>) {
         fun handleAction(id: Int) {
             when (id) {
                 R.id.remove_feed -> RemoveFeedDialog.show(activity, selectedItems)
@@ -510,9 +525,40 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 R.id.autodownload -> autoDownloadPrefHandler()
                 R.id.autoDeleteDownload -> autoDeleteEpisodesPrefHandler()
                 R.id.playback_speed -> playbackSpeedPrefHandler()
+                R.id.export_opml -> openExportPathPicker()
                 R.id.associate_queue -> associatedQueuePrefHandler()
                 R.id.edit_tags -> TagSettingsDialog.newInstance(selectedItems).show(activity.supportFragmentManager, TAG)
                 else -> Log.e(TAG, "Unrecognized speed dial action item. Do nothing. id=$id")
+            }
+        }
+        private fun openExportPathPicker() {
+            val exportType = Export.OPML_SELECTED
+            val title = String.format(exportType.outputNameTemplate, SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date()))
+            val intentPickAction = Intent(Intent.ACTION_CREATE_DOCUMENT)
+                .addCategory(Intent.CATEGORY_OPENABLE)
+                .setType(exportType.contentType)
+                .putExtra(Intent.EXTRA_TITLE, title)
+            try {
+                chooseOpmlExportPathLauncher.launch(intentPickAction)
+                return
+            } catch (e: ActivityNotFoundException) {
+                Log.e(TAG, "No activity found. Should never happen...")
+            }
+            // if on SDK lower than API 21 or the implicit intent failed, fallback to the legacy export process
+            exportOPML(null)
+        }
+        fun exportOPML(uri: Uri?) {
+            try {
+                runBlocking {
+                    Logd(TAG, "selectedFeeds: ${selectedItems.size}")
+                    if (uri == null) ExportWorker(OpmlWriter(), requireContext()).exportFile(selectedItems)
+                    else {
+                        val worker = DocumentFileExportWorker(OpmlWriter(), requireContext(), uri)
+                        worker.exportFile(selectedItems)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "exportOPML error: ${e.message}")
             }
         }
         private fun autoDownloadPrefHandler() {
@@ -761,10 +807,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             get() {
                 val items = ArrayList<Feed>()
                 for (i in 0 until itemCount) {
-                    if (isSelected(i)) {
-                        val feed: Feed = feedList[i]
-                        items.add(feed)
-                    }
+                    if (isSelected(i)) items.add(feedList[i])
                 }
                 return items
             }

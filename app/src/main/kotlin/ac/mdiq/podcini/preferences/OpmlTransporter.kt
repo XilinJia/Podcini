@@ -68,6 +68,8 @@ class OpmlTransporter {
 
             xs.startTag(null, OpmlSymbols.BODY)
             for (feed in feeds!!) {
+                if (feed == null) continue
+                Logd(TAG, "writeDocument ${feed?.title}")
                 xs.startTag(null, OpmlSymbols.OUTLINE)
                 xs.attribute(null, OpmlSymbols.TEXT, feed!!.title)
                 xs.attribute(null, OpmlSymbols.TITLE, feed.title)

@@ -9,6 +9,10 @@ import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
 import ac.mdiq.podcini.storage.database.Episodes.persistEpisode
+import ac.mdiq.podcini.storage.database.RealmDB.upsert
+import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 
 class CancelDownloadActionButton(item: Episode) : EpisodeActionButton(item) {
     @StringRes
@@ -25,8 +29,9 @@ class CancelDownloadActionButton(item: Episode) : EpisodeActionButton(item) {
         val media = item.media
         if (media != null) DownloadServiceInterface.get()?.cancel(context, media)
         if (isEnableAutodownload) {
-            item.disableAutoDownload()
-            persistEpisode(item)
-        }
+            val item_ = upsertBlk(item) {
+                it.disableAutoDownload()
+            }
+            EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(item_))        }
     }
 }

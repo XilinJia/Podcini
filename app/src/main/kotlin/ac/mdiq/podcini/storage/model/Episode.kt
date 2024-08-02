@@ -1,6 +1,7 @@
 package ac.mdiq.podcini.storage.model
 
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
+import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.ext.realmSetOf
 import io.realm.kotlin.types.RealmList
@@ -114,7 +115,7 @@ class Episode : RealmObject {
     val imageLocation: String?
         get() = when {
             imageUrl != null -> imageUrl
-            media != null && media!!.hasEmbeddedPicture() -> EpisodeMedia.FILENAME_PREFIX_EMBEDDED_COVER + media!!.getLocalMediaUrl()
+            media != null && unmanaged(media!!).hasEmbeddedPicture() -> EpisodeMedia.FILENAME_PREFIX_EMBEDDED_COVER + media!!.getLocalMediaUrl()
             feed != null -> {
                 feed!!.imageUrl
             }

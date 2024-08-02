@@ -238,7 +238,7 @@ import java.lang.ref.WeakReference
     private fun onMenuItemClicked(fragment: Fragment, menuItemId: Int, selectedFeed: Feed, callback: Runnable): Boolean {
         val context = fragment.requireContext()
         when (menuItemId) {
-            R.id.rename_folder_item -> CustomFeedNameDialog(fragment.activity as Activity, selectedFeed).show()
+//            R.id.rename_folder_item -> CustomFeedNameDialog(fragment.activity as Activity, selectedFeed).show()
             R.id.edit_tags -> if (selectedFeed.preferences != null) TagSettingsDialog.newInstance(listOf(selectedFeed))
                 .show(fragment.childFragmentManager, TagSettingsDialog.TAG)
             R.id.rename_item -> CustomFeedNameDialog(fragment.activity as Activity, selectedFeed).show()
@@ -492,7 +492,7 @@ import java.lang.ref.WeakReference
         override fun onCreateContextMenu(contextMenu: ContextMenu, view: View, contextMenuInfo: ContextMenu.ContextMenuInfo?) {
             val inflater: MenuInflater = mainActivityRef.get()!!.menuInflater
             if (longPressedItem == null) return
-            inflater.inflate(R.menu.nav_feed_context, contextMenu)
+            inflater.inflate(R.menu.feed_context, contextMenu)
             contextMenu.setHeaderTitle(longPressedItem!!.title)
         }
         fun setEndButton(@StringRes text: Int, action: Runnable?) {

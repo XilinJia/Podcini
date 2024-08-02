@@ -524,9 +524,10 @@ import kotlin.math.max
                     }
                 }
                 // they didn't tell us the size, but we don't want to keep querying on it
-                if (size <= 0) media.setCheckedOnSizeButUnknown()
-                else media.size = size
-                upsert(episode) {}
+                upsert(episode) {
+                    if (size <= 0) it.media?.setCheckedOnSizeButUnknown()
+                    else it.media?.size = size
+                }
                 size
             }
         }

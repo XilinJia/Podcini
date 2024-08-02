@@ -10,11 +10,6 @@
         android:menuCategory="container"
         android:title="@string/keep_updated"
         android:icon="@drawable/ic_refresh"/>
-<!--    <item-->
-<!--        android:id="@+id/notify_new_episodes"-->
-<!--        android:menuCategory="container"-->
-<!--        android:title="@string/episode_notification"-->
-<!--        android:icon="@drawable/ic_notifications"/>-->
     <item
         android:id="@+id/autodownload"
         android:menuCategory="container"
@@ -40,4 +35,9 @@
         android:menuCategory="container"
         android:title="@string/pref_feed_associated_queue"
         android:icon="@drawable/ic_playlist_play"/>
+    <item
+        android:id="@+id/export_opml"
+        android:menuCategory="container"
+        android:title="@string/opml_export_label"
+        android:icon="@drawable/baseline_import_export_24"/>
 </menu>

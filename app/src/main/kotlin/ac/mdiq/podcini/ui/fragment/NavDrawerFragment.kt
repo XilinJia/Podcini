@@ -186,7 +186,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
         @UnstableApi @DrawableRes
         private fun getDrawable(tag: String?): Int {
             return when (tag) {
-                QueueFragment.TAG -> R.drawable.ic_playlist_play
+                QueuesFragment.TAG -> R.drawable.ic_playlist_play
                 AllEpisodesFragment.TAG -> R.drawable.ic_feed
                 DownloadsFragment.TAG -> R.drawable.ic_download
                 HistoryFragment.TAG -> R.drawable.ic_history
@@ -293,7 +293,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
                         holder.count.visibility = View.VISIBLE
                     }
                 }
-                QueueFragment.TAG -> {
+                QueuesFragment.TAG -> {
                     val queueSize = datasetStats?.queueSize ?: 0
                     if (queueSize > 0) {
                         holder.count.text = NumberFormat.getInstance().format(queueSize.toLong())
@@ -378,7 +378,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
         @UnstableApi
         val NAV_DRAWER_TAGS: Array<String> = arrayOf(
             SubscriptionsFragment.TAG,
-            QueueFragment.TAG,
+            QueuesFragment.TAG,
             AllEpisodesFragment.TAG,
             DownloadsFragment.TAG,
             HistoryFragment.TAG,

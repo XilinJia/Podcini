@@ -6,7 +6,7 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
 
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
      alt="Get it on F-Droid"
-     height="80">](https://f-droid.org/packages/ac.mdiq.podcini/)
+     height="80">](https://f-droid.org/packages/ac.mdiq.podcini.R/)
 Or download the latest APK from the [Releases Section](https://github.com/XilinJia/Podcini/releases/latest).
 
 ## Announcement

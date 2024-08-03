@@ -128,7 +128,7 @@ class MainActivity : CastEnabledActivity() {
             EpisodesRecyclerView.getSharedPrefs(this@MainActivity)
             NavDrawerFragment.getSharedPrefs(this@MainActivity)
             SwipeActions.getSharedPrefs(this@MainActivity)
-            QueueFragment.getSharedPrefs(this@MainActivity)
+            QueuesFragment.getSharedPrefs(this@MainActivity)
 //            updateFeedMap()
             buildTags()
             monitorFeeds()
@@ -419,7 +419,7 @@ class MainActivity : CastEnabledActivity() {
         Logd(TAG, "loadFragment(tag: $tag, args: $args)")
         val fragment: Fragment
         when (tag) {
-            QueueFragment.TAG -> fragment = QueueFragment()
+            QueuesFragment.TAG -> fragment = QueuesFragment()
             AllEpisodesFragment.TAG -> fragment = AllEpisodesFragment()
             DownloadsFragment.TAG -> fragment = DownloadsFragment()
             HistoryFragment.TAG -> fragment = HistoryFragment()
@@ -719,7 +719,7 @@ class MainActivity : CastEnabledActivity() {
                     "DOWNLOADS" -> loadFragment(DownloadsFragment.TAG, null)
                     "HISTORY" -> loadFragment(HistoryFragment.TAG, null)
                     "EPISODES" -> loadFragment(AllEpisodesFragment.TAG, null)
-                    "QUEUE" -> loadFragment(QueueFragment.TAG, null)
+                    "QUEUE" -> loadFragment(QueuesFragment.TAG, null)
                     "SUBSCRIPTIONS" -> loadFragment(SubscriptionsFragment.TAG, null)
                     "STATISTCS" -> loadFragment(StatisticsFragment.TAG, null)
                     else -> {

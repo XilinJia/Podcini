@@ -309,7 +309,7 @@ import java.util.concurrent.Semaphore
             R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance(feed!!.id, feed!!.title))
             R.id.switch_queue -> SwitchQueueDialog(activity as MainActivity).show()
             R.id.open_queue -> {
-                val qFrag = QueueFragment()
+                val qFrag = QueuesFragment()
                 (activity as MainActivity).loadChildFragment(qFrag)
                 (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
             }

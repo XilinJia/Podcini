@@ -1,5 +1,7 @@
 package ac.mdiq.podcini.receiver
 
+import ac.mdiq.podcini.playback.service.PlaybackService
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion
 import ac.mdiq.podcini.util.Logd
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
@@ -18,7 +20,7 @@ import ac.mdiq.podcini.util.config.ClientConfigurator
 class MediaButtonReceiver : BroadcastReceiver() {
     @UnstableApi
     override fun onReceive(context: Context, intent: Intent) {
-        Logd(TAG, "Received intent")
+        Log.d(TAG, "onReceive called with action: ${intent.action}")
         if (intent.extras == null) return
 
         val event = intent.extras!![Intent.EXTRA_KEY_EVENT] as? KeyEvent

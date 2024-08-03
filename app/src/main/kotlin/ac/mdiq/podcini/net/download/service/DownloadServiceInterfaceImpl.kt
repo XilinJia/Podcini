@@ -14,6 +14,8 @@ import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.LogsAndStats
 import ac.mdiq.podcini.storage.database.Queues
+import ac.mdiq.podcini.storage.database.RealmDB.upsert
+import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.DownloadResult
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
@@ -377,12 +379,15 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 try {
                     // we've received the media, we don't want to autodownload it again
                     if (item != null) {
-                        item.disableAutoDownload()
+                        item = upsertBlk(item) {
+                            it.disableAutoDownload()
+                        }
+                        EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(item))
                         Logd(TAG, "persisting episode downloaded ${item.title} ${item.media?.fileUrl} ${item.media?.downloaded} ${item.isNew}")
                         // setFeedItem() signals that the item has been updated,
                         // so we do it after the enclosing media has been updated above,
                         // to ensure subscribers will get the updated EpisodeMedia as well
-                        Episodes.persistEpisode(item)
+//                        Episodes.persistEpisode(item)
 //                        TODO: should use different event?
                         if (broadcastUnreadStateUpdate) EventFlow.postEvent(FlowEvent.EpisodePlayedEvent(item))
                     }

@@ -8,7 +8,7 @@ import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.fragment.QueueFragment
+import ac.mdiq.podcini.ui.fragment.QueuesFragment
 import de.test.podcini.EspressoTestUtils
 import de.test.podcini.NthMatcher
 import org.hamcrest.CoreMatchers
@@ -22,7 +22,7 @@ import org.junit.runner.RunWith
  * User interface tests for queue fragment.
  */
 @RunWith(AndroidJUnit4::class)
-class PlayQueueFragmentTest {
+class PlayQueuesFragmentTest {
     @Rule
     var activityRule: IntentsTestRule<MainActivity> = IntentsTestRule(MainActivity::class.java, false, false)
 
@@ -30,7 +30,7 @@ class PlayQueueFragmentTest {
     fun setUp() {
         EspressoTestUtils.clearPreferences()
         EspressoTestUtils.clearDatabase()
-        EspressoTestUtils.setLaunchScreen(QueueFragment.TAG)
+        EspressoTestUtils.setLaunchScreen(QueuesFragment.TAG)
         activityRule.launchActivity(Intent())
     }
 

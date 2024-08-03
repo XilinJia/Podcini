@@ -2,16 +2,16 @@ package ac.mdiq.podcini.ui.actions.actionbutton
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.utils.NetworkUtils.fetchHtmlSource
-import ac.mdiq.podcini.storage.database.Episodes.persistEpisode
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
+import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
+import ac.mdiq.podcini.storage.utils.AudioMediaTools.mergeAudios
 import ac.mdiq.podcini.storage.utils.FilesUtils.getMediafilePath
 import ac.mdiq.podcini.storage.utils.FilesUtils.getMediafilename
 import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment.Companion.tts
 import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment.Companion.ttsReady
 import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment.Companion.ttsWorking
-import ac.mdiq.podcini.storage.utils.AudioMediaTools.mergeAudios
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
@@ -64,8 +64,10 @@ class TTSActionButton(item: Episode) : EpisodeActionButton(item) {
                 val htmlSource = fetchHtmlSource(url)
                 val article = Readability4J(item.link!!, htmlSource).parse()
                 readerText = article.textContent
-                item.setTranscriptIfLonger(article.contentWithDocumentsCharsetOrUtf8)
-                persistEpisode(item)
+                item = upsertBlk(item) {
+                    it.setTranscriptIfLonger(article.contentWithDocumentsCharsetOrUtf8)
+                }
+//                persistEpisode(item)
                 Logd(TAG, "readability4J: ${readerText?.substring(max(0, readerText!!.length-100), readerText!!.length)}")
             } else readerText = HtmlCompat.fromHtml(item.transcript!!, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
             processing = 0.1f
@@ -139,10 +141,11 @@ class TTSActionButton(item: Episode) : EpisodeActionButton(item) {
                     media.fileUrl = mFilename
 //                    media.downloaded = true
                     media.setIsDownloaded()
-                    item.media = media
-//                    DBWriter.persistFeedMedia(media)
-                    item.setTranscriptIfLonger(readerText)
-                    persistEpisode(item)
+                    item = upsertBlk(item) {
+                        it.media = media
+                        it.setTranscriptIfLonger(readerText)
+                    }
+//                    persistEpisode(item)
                 }
                 for (p in parts) {
                     val f = File(p)

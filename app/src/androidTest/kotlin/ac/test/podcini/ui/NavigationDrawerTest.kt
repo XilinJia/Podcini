@@ -165,7 +165,7 @@ class NavigationDrawerTest {
 
         hidden = hiddenDrawerItems?.filterNotNull()?: listOf()
         Assert.assertEquals(2, hidden.size.toLong())
-        Assert.assertTrue(hidden.contains(QueueFragment.TAG))
+        Assert.assertTrue(hidden.contains(QueuesFragment.TAG))
         Assert.assertTrue(hidden.contains(HistoryFragment.TAG))
     }
 

@@ -1,3 +1,11 @@
+# 6.3.3
+
+* fixed crash when setting as Played/Unplayed in EpisodeInfo view
+* various changes in writing to DB in write block
+* Queue view is renamed to Queues view
+* in Queues view, when opening/closing Bin, the queues spinner on ToolBar is toggled with a title
+* added various Log.d statements in seeking to trace down the occasional random playing behavior
+
 # 6.3.2
 
 * fixed crash of opening FeedEpisode view when "Use episode cover" is set

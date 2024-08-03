@@ -53,7 +53,7 @@ import androidx.media3.common.util.UnstableApi
                 forFragment = context.getString(R.string.individual_subscription)
                 keys = Stream.of(keys).filter { a: SwipeAction -> !a.getId().equals(SwipeAction.REMOVE_FROM_HISTORY) }.toList()
             }
-            QueueFragment.TAG -> {
+            QueuesFragment.TAG -> {
                 forFragment = context.getString(R.string.queue_label)
                 keys = Stream.of(keys).filter { a: SwipeAction ->
                     (!a.getId().equals(SwipeAction.ADD_TO_QUEUE) && !a.getId().equals(SwipeAction.REMOVE_FROM_HISTORY)) }.toList()
@@ -64,7 +64,7 @@ import androidx.media3.common.util.UnstableApi
             }
             else -> {}
         }
-        if (tag != QueueFragment.TAG) keys = Stream.of(keys).filter { a: SwipeAction -> !a.getId().equals(SwipeAction.REMOVE_FROM_QUEUE) }.toList()
+        if (tag != QueuesFragment.TAG) keys = Stream.of(keys).filter { a: SwipeAction -> !a.getId().equals(SwipeAction.REMOVE_FROM_QUEUE) }.toList()
 
         builder.setTitle(context.getString(R.string.swipeactions_label) + " - " + forFragment)
         val binding = SwipeactionsDialogBinding.inflate(LayoutInflater.from(context))

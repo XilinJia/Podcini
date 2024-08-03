@@ -15,7 +15,7 @@ class SwipePreferencesFragment : PreferenceFragmentCompat() {
         addPreferencesFromResource(R.xml.preferences_swipe)
 
         findPreference<Preference>(Prefs.prefSwipeQueue.name)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            SwipeActionsDialog(requireContext(), QueueFragment.TAG).show(object : SwipeActionsDialog.Callback {
+            SwipeActionsDialog(requireContext(), QueuesFragment.TAG).show(object : SwipeActionsDialog.Callback {
                 override fun onCall() {}
             })
             true

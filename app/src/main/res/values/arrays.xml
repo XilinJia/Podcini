@@ -228,7 +228,7 @@
 
     <string-array name="default_page_values">
         <item>SubscriptionsFragment</item>
-        <item>QueueFragment</item>
+        <item>QueuesFragment</item>
         <item>AllEpisodesFragment</item>
         <item>DownloadsFragment</item>
         <item>PlaybackHistoryFragment</item>

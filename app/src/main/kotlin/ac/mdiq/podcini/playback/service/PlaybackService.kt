@@ -132,6 +132,7 @@ class PlaybackService : MediaSessionService() {
 
     private val autoStateUpdated: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+            Log.d(TAG, "autoStateUpdated onReceive called with action: ${intent.action}")
             val status = intent.getStringExtra("media_connection_status")
             val isConnectedToCar = "media_connected" == status
             Logd(TAG, "Received Auto Connection update: $status")
@@ -164,6 +165,7 @@ class PlaybackService : MediaSessionService() {
             // Don't pause playback after we just started, just because the receiver
             // delivers the current headset state (instead of a change)
             if (isInitialStickyBroadcast) return
+            Log.d(TAG, "headsetDisconnected onReceive called with action: ${intent.action}")
 
             if (intent.action == Intent.ACTION_HEADSET_PLUG) {
                 val state = intent.getIntExtra("state", -1)
@@ -183,6 +185,7 @@ class PlaybackService : MediaSessionService() {
 
     private val bluetoothStateUpdated: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+            Log.d(TAG, "bluetoothStateUpdated onReceive called with action: ${intent.action}")
             if (intent.action == BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED) {
                 val state = intent.getIntExtra(BluetoothA2dp.EXTRA_STATE, -1)
                 if (state == BluetoothA2dp.STATE_CONNECTED) {
@@ -196,6 +199,7 @@ class PlaybackService : MediaSessionService() {
     private val audioBecomingNoisy: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             // sound is about to change, eg. bluetooth -> speaker
+            Log.d(TAG, "audioBecomingNoisy onReceive called with action: ${intent.action}")
             Logd(TAG, "Pausing playback because audio is becoming noisy")
             pauseIfPauseOnDisconnect()
         }
@@ -468,6 +472,7 @@ class PlaybackService : MediaSessionService() {
 
     private val shutdownReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+            Log.d(TAG, "shutdownReceiver onReceive called with action: ${intent.action}")
             if (intent.action == ACTION_SHUTDOWN_PLAYBACK_SERVICE)
                 EventFlow.postEvent(FlowEvent.PlaybackServiceEvent(FlowEvent.PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN))
         }
@@ -524,7 +529,7 @@ class PlaybackService : MediaSessionService() {
         val pendingIntent = PendingIntent.getActivity(this, 0, intent, FLAG_IMMUTABLE or FLAG_UPDATE_CURRENT)
         mediaSession = MediaSession.Builder(applicationContext, LocalMediaPlayer.exoPlayer!!)
             .setSessionActivity(pendingIntent)
-            .setCallback(MyCallback())
+            .setCallback(MyMediaSessionCallback())
             .setCustomLayout(notificationCustomButtons)
             .build()
     }
@@ -589,18 +594,18 @@ class PlaybackService : MediaSessionService() {
         return mediaSession?.player?.playbackState != STATE_IDLE && mediaSession?.player?.playbackState != STATE_ENDED
     }
 
-    private inner class MyCallback : MediaSession.Callback {
+    private inner class MyMediaSessionCallback : MediaSession.Callback {
         override fun onConnect(session: MediaSession, controller: MediaSession.ControllerInfo): MediaSession.ConnectionResult {
-           Logd(TAG, "in MyCallback onConnect")
+           Logd(TAG, "in MyMediaSessionCallback onConnect")
             val sessionCommands = MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS.buildUpon()
 //                        .add(NotificationCustomButton.REWIND)
 //                        .add(NotificationCustomButton.FORWARD)
             when {
                 session.isMediaNotificationController(controller) -> {
-                    Logd(TAG, "MyCallback onConnect isMediaNotificationController")
+                    Logd(TAG, "MyMediaSessionCallback onConnect isMediaNotificationController")
                     val playerCommands = MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS.buildUpon()
                     notificationCustomButtons.forEach { commandButton ->
-                        Logd(TAG, "MyCallback onConnect commandButton ${commandButton.displayName}")
+                        Logd(TAG, "MyMediaSessionCallback onConnect commandButton ${commandButton.displayName}")
                         commandButton.sessionCommand?.let(sessionCommands::add)
                     }
                     return MediaSession.ConnectionResult.accept(
@@ -609,29 +614,27 @@ class PlaybackService : MediaSessionService() {
                     )
                 }
                 session.isAutoCompanionController(controller) -> {
-                    Logd(TAG, "MyCallback onConnect isAutoCompanionController")
+                    Logd(TAG, "MyMediaSessionCallback onConnect isAutoCompanionController")
                     return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
                         .setAvailableSessionCommands(sessionCommands.build())
                         .build()
                 }
                 else -> {
-                    Logd(TAG, "MyCallback onConnect other controller")
+                    Logd(TAG, "MyMediaSessionCallback onConnect other controller")
                     return MediaSession.ConnectionResult.AcceptedResultBuilder(session).build()
                 }
             }
         }
-
         override fun onPostConnect(session: MediaSession, controller: MediaSession.ControllerInfo) {
             super.onPostConnect(session, controller)
-            Logd(TAG, "MyCallback onPostConnect")
+            Logd(TAG, "MyMediaSessionCallback onPostConnect")
             if (notificationCustomButtons.isNotEmpty()) {
                 mediaSession?.setCustomLayout(notificationCustomButtons)
 //                mediaSession?.setCustomLayout(customMediaNotificationProvider.notificationMediaButtons)
             }
         }
-
         override fun onCustomCommand(session: MediaSession, controller: MediaSession.ControllerInfo, customCommand: SessionCommand, args: Bundle): ListenableFuture<SessionResult> {
-            Logd(TAG, "MyCallback onCustomCommand ${customCommand.customAction}")
+            Log.d(TAG, "onCustomCommand ${customCommand.customAction}")
             /* Handling custom command buttons from player notification. */
             when (customCommand.customAction) {
                 NotificationCustomButton.REWIND.customAction -> mPlayer?.seekDelta(-rewindSecs * 1000)
@@ -640,9 +643,8 @@ class PlaybackService : MediaSessionService() {
             }
             return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
         }
-
         override fun onPlaybackResumption(mediaSession: MediaSession, controller: MediaSession.ControllerInfo): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
-            Logd(TAG, "MyCallback onPlaybackResumption ")
+            Logd(TAG, "MyMediaSessionCallback onPlaybackResumption ")
             val settable = SettableFuture.create<MediaSession.MediaItemsWithStartPosition>()
 //            scope.launch {
 //                // Your app is responsible for storing the playlist and the start position
@@ -652,11 +654,10 @@ class PlaybackService : MediaSessionService() {
 //            }
             return settable
         }
-
         override fun onMediaButtonEvent(mediaSession: MediaSession, controller: MediaSession.ControllerInfo, intent: Intent): Boolean {
             val keyEvent = if (Build.VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) intent.extras!!.getParcelable(EXTRA_KEY_EVENT, KeyEvent::class.java)
             else intent.extras!!.getParcelable(EXTRA_KEY_EVENT) as? KeyEvent
-            Logd(TAG, "MyCallback onMediaButtonEvent ${keyEvent?.keyCode}")
+            Log.d(TAG, "onMediaButtonEvent ${keyEvent?.keyCode}")
 
             if (keyEvent != null && keyEvent.action == KeyEvent.ACTION_DOWN && keyEvent.repeatCount == 0) {
                 val keyCode = keyEvent.keyCode
@@ -693,7 +694,7 @@ class PlaybackService : MediaSessionService() {
         val hardwareButton = intent?.getBooleanExtra(MediaButtonReceiver.EXTRA_HARDWAREBUTTON, false) ?: false
         val playable = curMedia
 
-        Logd(TAG, "onStartCommand flags=$flags startId=$startId keycode=$keycode customAction=$customAction hardwareButton=$hardwareButton action=${intent?.action.toString()} ${playable?.getEpisodeTitle()}")
+        Log.d(TAG, "onStartCommand flags=$flags startId=$startId keycode=$keycode customAction=$customAction hardwareButton=$hardwareButton action=${intent?.action.toString()} ${playable?.getEpisodeTitle()}")
         if (keycode == -1 && playable == null && customAction == null) {
             Log.e(TAG, "onStartCommand PlaybackService was started with no arguments, return")
             return START_NOT_STICKY

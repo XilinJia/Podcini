@@ -74,7 +74,7 @@ import kotlin.math.max
     private var homeFragment: EpisodeHomeFragment? = null
 
     private var itemLoaded = false
-    private var episode: Episode? = null    // unmanaged
+    private var episode: Episode? = null    // managed
     private var webviewData: String? = null
 
     private lateinit var shownotesCleaner: ShownotesCleaner

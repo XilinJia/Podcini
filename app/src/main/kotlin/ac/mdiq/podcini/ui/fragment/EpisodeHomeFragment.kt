@@ -2,15 +2,12 @@ package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.EpisodeHomeFragmentBinding
+import ac.mdiq.podcini.net.utils.NetworkUtils.fetchHtmlSource
+import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
+import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.net.utils.NetworkUtils.fetchHtmlSource
-import ac.mdiq.podcini.storage.database.Episodes.persistEpisode
-import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
-import ac.mdiq.podcini.storage.database.RealmDB.upsert
-import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import android.content.Context
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
@@ -27,7 +24,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.media3.common.util.UnstableApi
 import com.google.android.material.appbar.MaterialToolbar
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import net.dankito.readability4j.extended.Readability4JExtended
 import java.util.*
 
@@ -113,11 +111,8 @@ class EpisodeHomeFragment : Fragment() {
             if (!cleanedNotes.isNullOrEmpty()) {
                 if (!ttsReady) initializeTTS(requireContext())
                 withContext(Dispatchers.Main) {
-                    binding.readerView.loadDataWithBaseURL("https://127.0.0.1",
-                        cleanedNotes ?: "No notes",
-                        "text/html",
-                        "UTF-8",
-                        null)
+                    binding.readerView.loadDataWithBaseURL("https://127.0.0.1", cleanedNotes ?: "No notes",
+                        "text/html", "UTF-8", null)
                     binding.readerView.visibility = View.VISIBLE
                     binding.webView.visibility = View.GONE
                 }

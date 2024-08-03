@@ -14,7 +14,6 @@ import ac.mdiq.podcini.storage.database.Queues.moveInQueue
 import ac.mdiq.podcini.storage.database.Queues.queueKeepSortedOrder
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
-import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
@@ -80,7 +79,7 @@ import java.util.*
 /**
  * Shows all items in the queue.
  */
-@UnstableApi class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAdapter.OnSelectModeListener {
+@UnstableApi class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAdapter.OnSelectModeListener {
 
     private var _binding: QueueFragmentBinding? = null
     private val binding get() = _binding!!
@@ -91,6 +90,7 @@ import java.util.*
     private lateinit var swipeActions: SwipeActions
     private lateinit var speedDialView: SpeedDialView
 
+    private lateinit var spinnerLayout: View
     private lateinit var queueNames: Array<String>
     private lateinit var spinnerTexts: MutableList<String>
     private lateinit var queueSpinner: Spinner
@@ -127,7 +127,7 @@ import java.util.*
         val queues = realm.query(PlayQueue::class).find()
         queueNames = queues.map { it.name }.toTypedArray()
         spinnerTexts = queues.map { "${it.name} : ${it.episodeIds.size}" }.toMutableList()
-        val spinnerLayout = inflater.inflate(R.layout.queue_title_spinner, toolbar, false)
+        spinnerLayout = inflater.inflate(R.layout.queue_title_spinner, toolbar, false)
         queueSpinner = spinnerLayout.findViewById(R.id.queue_spinner)
         val params = Toolbar.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
         params.gravity = Gravity.CENTER_VERTICAL
@@ -415,6 +415,13 @@ import java.util.*
         when (itemId) {
             R.id.show_bin -> {
                 showBin = !showBin
+                if (showBin) {
+                    toolbar.removeView(spinnerLayout)
+                    toolbar.title = curQueue.name + " Bin"
+                } else {
+                    toolbar.title = ""
+                    toolbar.addView(spinnerLayout)
+                }
                 refreshMenuItems()
                 if (showBin) {
                     item.setIcon(R.drawable.playlist_play)
@@ -635,7 +642,6 @@ import java.util.*
             while (curQueue.name.isEmpty()) runBlocking { delay(100) }
             if (queueItems.isEmpty()) emptyView.hide()
             queueItems.clear()
-            Logd(TAG, "loadCurQueue() showBin: $showBin")
             if (showBin) {
                 queueItems.addAll(realm.query(Episode::class, "id IN $0", curQueue.idsBinList)
                     .find().sortedByDescending { curQueue.idsBinList.indexOf(it.id) })
@@ -718,7 +724,7 @@ import java.util.*
         }
     }
 
-    private inner class QueueSwipeActions : SwipeActions(ItemTouchHelper.UP or ItemTouchHelper.DOWN, this@QueueFragment, TAG) {
+    private inner class QueueSwipeActions : SwipeActions(ItemTouchHelper.UP or ItemTouchHelper.DOWN, this@QueuesFragment, TAG) {
         // Position tracking whilst dragging
         var dragFrom: Int = -1
         var dragTo: Int = -1
@@ -801,7 +807,7 @@ import java.util.*
     }
 
     companion object {
-        val TAG = QueueFragment::class.simpleName ?: "Anonymous"
+        val TAG = QueuesFragment::class.simpleName ?: "Anonymous"
 
         private const val KEY_UP_ARROW = "up_arrow"
 

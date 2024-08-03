@@ -7,7 +7,7 @@ import ac.mdiq.podcini.ui.dialog.SwipeActionsDialog
 import ac.mdiq.podcini.ui.fragment.AllEpisodesFragment
 import ac.mdiq.podcini.ui.fragment.DownloadsFragment
 import ac.mdiq.podcini.ui.fragment.HistoryFragment
-import ac.mdiq.podcini.ui.fragment.QueueFragment
+import ac.mdiq.podcini.ui.fragment.QueuesFragment
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import ac.mdiq.podcini.ui.view.EpisodeViewHolder
 import ac.mdiq.podcini.util.event.EventFlow
@@ -233,7 +233,7 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
         @OptIn(UnstableApi::class) @JvmStatic
         fun getPrefsWithDefaults(tag: String): Actions {
             val defaultActions = when (tag) {
-                QueueFragment.TAG -> NO_ACTION + "," + NO_ACTION
+                QueuesFragment.TAG -> NO_ACTION + "," + NO_ACTION
                 DownloadsFragment.TAG -> NO_ACTION + "," + NO_ACTION
                 HistoryFragment.TAG -> NO_ACTION + "," + NO_ACTION
                 AllEpisodesFragment.TAG -> NO_ACTION + "," + NO_ACTION

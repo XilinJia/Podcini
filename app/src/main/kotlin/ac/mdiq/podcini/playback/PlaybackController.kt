@@ -65,7 +65,7 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
     private var prevStatus = PlayerStatus.STOPPED
     private val statusUpdate: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            Logd(TAG, "BroadcastReceiver onReceive")
+            Log.d(TAG, "statusUpdate onReceive called with action: ${intent.action}")
             if (playbackService != null && mPlayerInfo != null) {
                 val info = mPlayerInfo!!
                 Logd(TAG, "statusUpdate onReceive $prevStatus ${MediaPlayerBase.status} ${info.playerStatus} ${curMedia?.getIdentifier()} ${info.playable?.getIdentifier()}.")
@@ -88,6 +88,7 @@ abstract class PlaybackController(private val activity: FragmentActivity) {
 
     private val notificationReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+            Log.d(TAG, "notificationReceiver onReceive called with action: ${intent.action}")
             val type = intent.getIntExtra(PlaybackService.EXTRA_NOTIFICATION_TYPE, -1)
             val code = intent.getIntExtra(PlaybackService.EXTRA_NOTIFICATION_CODE, -1)
             if (code == -1 || type == -1) {

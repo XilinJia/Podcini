@@ -9,6 +9,7 @@ import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownloadOnBattery
 import ac.mdiq.podcini.storage.algorithms.AutoDownloads.autodownloadEpisodeMedia
 import ac.mdiq.podcini.util.Logd
+import android.util.Log
 
 // modified from http://developer.android.com/training/monitoring-device-state/battery-monitoring.html
 // and ConnectivityActionReceiver.java
@@ -19,7 +20,7 @@ class PowerConnectionReceiver : BroadcastReceiver() {
     @UnstableApi override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action
 
-        Logd(TAG, "charging intent: $action")
+        Log.d(TAG, "onReceive charging intent: $action")
 
         ClientConfigurator.initialize(context)
         if (Intent.ACTION_POWER_CONNECTED == action) {

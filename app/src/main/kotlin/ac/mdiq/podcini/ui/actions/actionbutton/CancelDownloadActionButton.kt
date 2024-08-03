@@ -1,18 +1,16 @@
 package ac.mdiq.podcini.ui.actions.actionbutton
 
+import ac.mdiq.podcini.R
+import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
+import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
+import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.Context
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.media3.common.util.UnstableApi
-import ac.mdiq.podcini.R
-import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
-import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
-import ac.mdiq.podcini.storage.database.Episodes.persistEpisode
-import ac.mdiq.podcini.storage.database.RealmDB.upsert
-import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
 
 class CancelDownloadActionButton(item: Episode) : EpisodeActionButton(item) {
     @StringRes

@@ -2,6 +2,7 @@ package ac.mdiq.podcini.receiver
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
+import ac.mdiq.podcini.receiver.MediaButtonReceiver.Companion
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.util.Logd
@@ -19,6 +20,7 @@ import androidx.media3.common.util.UnstableApi
 class SPAReceiver : BroadcastReceiver() {
     @UnstableApi override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != ACTION_SP_APPS_QUERY_FEEDS_REPSONSE) return
+        Log.d(TAG, "onReceive called with action: ${intent.action}")
 
         Logd(TAG, "Received SP_APPS_QUERY_RESPONSE")
         if (!intent.hasExtra(ACTION_SP_APPS_QUERY_FEEDS_REPSONSE_FEEDS_EXTRA)) {

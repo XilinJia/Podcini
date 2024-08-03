@@ -24,7 +24,6 @@ import ac.mdiq.podcini.ui.adapter.EpisodesAdapter
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.ui.dialog.SwitchQueueDialog
-import ac.mdiq.podcini.ui.fragment.QueueFragment.Companion
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
 import ac.mdiq.podcini.ui.view.EpisodeViewHolder
@@ -76,7 +75,6 @@ import java.util.*
     private lateinit var emptyView: EmptyViewHandler
     
     private var displayUpArrow = false
-//    private var curIndex = -1
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = SimpleListFragmentBinding.inflate(inflater)

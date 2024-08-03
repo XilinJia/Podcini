@@ -11,7 +11,7 @@
             android:targetPackage="ac.mdiq.podcini">
             <extra
                 android:name="fragment_tag"
-                android:value="QueueFragment" />
+                android:value="QueuesFragment" />
         </intent>
     </shortcut>
 

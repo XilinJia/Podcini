@@ -7,13 +7,12 @@ import ac.mdiq.podcini.playback.PlaybackController.Companion.curPosition
 import ac.mdiq.podcini.playback.PlaybackController.Companion.curSpeedMultiplier
 import ac.mdiq.podcini.playback.PlaybackController.Companion.seekTo
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
-import ac.mdiq.podcini.storage.database.Episodes.persistEpisode
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
+import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.utils.ChapterUtils
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.DateFormatter
@@ -187,9 +186,11 @@ class PlayerDetailsFragment : Fragment() {
                     val article = readability4J.parse()
                     readerhtml = article.contentWithDocumentsCharsetOrUtf8
                     if (!readerhtml.isNullOrEmpty()) {
-                        currentItem!!.setTranscriptIfLonger(readerhtml)
+                        currentItem = upsertBlk(currentItem!!) {
+                            it.setTranscriptIfLonger(readerhtml)
+                        }
                         homeText = currentItem!!.transcript
-                        persistEpisode(currentItem)
+//                        persistEpisode(currentItem)
                     }
                 }
                 if (!homeText.isNullOrEmpty()) {

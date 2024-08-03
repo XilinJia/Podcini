@@ -140,7 +140,7 @@ object EpisodeMenuHandler {
                 LocalDeleteModal.deleteEpisodesWarnLocal(context, listOf(selectedItem))
             }
             R.id.mark_read_item -> {
-                selectedItem.setPlayed(true)
+//                selectedItem.setPlayed(true)
                 setPlayState(Episode.PLAYED, true, selectedItem)
                 if (selectedItem.feed?.isLocalFeed != true && (isProviderConnected || wifiSyncEnabledKey)) {
                     val media: EpisodeMedia? = selectedItem.media
@@ -157,7 +157,7 @@ object EpisodeMenuHandler {
                 }
             }
             R.id.mark_unread_item -> {
-                selectedItem.setPlayed(false)
+//                selectedItem.setPlayed(false)
                 setPlayState(Episode.UNPLAYED, false, selectedItem)
                 if (needSynch() && selectedItem.feed?.isLocalFeed != true && selectedItem.media != null) {
                     val actionNew: EpisodeAction = EpisodeAction.Builder(selectedItem, EpisodeAction.NEW)

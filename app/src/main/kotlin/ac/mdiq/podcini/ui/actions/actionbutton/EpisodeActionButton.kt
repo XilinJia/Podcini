@@ -46,7 +46,8 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
                 episode.feed != null && episode.feed!!.isLocalFeed -> PlayLocalActionButton(episode)
                 media.downloaded -> PlayActionButton(episode)
                 isDownloadingMedia -> CancelDownloadActionButton(episode)
-                isStreamOverDownload || episode.feed == null || episode.feedId == null -> StreamActionButton(episode)
+                isStreamOverDownload || episode.feed == null || episode.feedId == null || episode.feed?.preferences?.prefStreamOverDownload == true ->
+                    StreamActionButton(episode)
                 else -> DownloadActionButton(episode)
             }
         }

@@ -56,7 +56,7 @@ object LogsAndStats {
                 feedTotalTime += m.duration
                 if (m.lastPlayedTime in timeFilterFrom..<timeFilterTo) {
                     if (includeMarkedAsPlayed) {
-                        if ((m.playbackCompletionTime > 0 && m.playedDuration > 0) || m.episodeOrFetch()?.playState == Episode.PLAYED || m.position > 0) {
+                        if ((m.playbackCompletionTime > 0 && m.playedDuration > 0) || m.episodeOrFetch()?.playState == Episode.PlayState.PLAYED.code || m.position > 0) {
                             episodesStarted += 1
                             feedPlayedTime += m.duration
                         }

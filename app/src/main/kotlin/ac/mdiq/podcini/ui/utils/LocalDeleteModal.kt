@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.ui.utils
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.storage.database.Episodes.deleteMediaOfEpisode
+import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodeMedia
 import android.content.Context
 import android.content.DialogInterface
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -13,7 +13,7 @@ object LocalDeleteModal {
         val localItems: MutableList<Episode> = mutableListOf()
         for (item in items) {
             if (item.feed?.isLocalFeed == true) localItems.add(item)
-            else deleteMediaOfEpisode(context, item)
+            else deleteEpisodeMedia(context, item)
         }
 
         if (localItems.isNotEmpty()) {
@@ -22,7 +22,7 @@ object LocalDeleteModal {
                 .setMessage(R.string.delete_local_feed_warning_body)
                 .setPositiveButton(R.string.delete_label) { dialog: DialogInterface?, which: Int ->
                     for (item in localItems) {
-                        deleteMediaOfEpisode(context, item)
+                        deleteEpisodeMedia(context, item)
                     }
                 }
                 .setNegativeButton(R.string.cancel_label, null)

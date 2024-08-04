@@ -113,7 +113,7 @@ class UITestUtils(private val context: Context) {
             val items: MutableList<Episode> = ArrayList()
             for (j in 0 until NUM_ITEMS_PER_FEED) {
                 val item = Episode(j.toLong(), "Feed " + (i + 1) + ": Item " + (j + 1), "item$j",
-                    "http://example.com/feed$i/item/$j", Date(), Episode.UNPLAYED, feed)
+                    "http://example.com/feed$i/item/$j", Date(), Episode.PlayState.UNPLAYED.code, feed)
                 items.add(item)
 
                 if (!hostTextOnlyFeeds) {

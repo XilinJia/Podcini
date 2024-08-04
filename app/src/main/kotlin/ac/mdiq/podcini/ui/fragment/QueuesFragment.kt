@@ -85,7 +85,7 @@ import java.util.*
     private val binding get() = _binding!!
 
     private lateinit var recyclerView: EpisodesRecyclerView
-    private lateinit var emptyView: EmptyViewHandler
+    private lateinit var emptyViewHandler: EmptyViewHandler
     private lateinit var toolbar: MaterialToolbar
     private lateinit var swipeActions: SwipeActions
     private lateinit var speedDialView: SpeedDialView
@@ -179,12 +179,12 @@ import java.util.*
         adapter?.setOnSelectModeListener(this)
         recyclerView.adapter = adapter
 
-        emptyView = EmptyViewHandler(requireContext())
-        emptyView.attachToRecyclerView(recyclerView)
-        emptyView.setIcon(R.drawable.ic_playlist_play)
-        emptyView.setTitle(R.string.no_items_header_label)
-        emptyView.setMessage(R.string.no_items_label)
-        emptyView.updateAdapter(adapter)
+        emptyViewHandler = EmptyViewHandler(requireContext())
+        emptyViewHandler.attachToRecyclerView(recyclerView)
+        emptyViewHandler.setIcon(R.drawable.ic_playlist_play)
+        emptyViewHandler.setTitle(R.string.no_items_header_label)
+        emptyViewHandler.setMessage(R.string.no_items_label)
+        emptyViewHandler.updateAdapter(adapter)
 
         val multiSelectDial = MultiSelectSpeedDialBinding.bind(binding.root)
         speedDialView = multiSelectDial.fabSD
@@ -290,8 +290,12 @@ import java.util.*
         }
         when (event.action) {
             FlowEvent.QueueEvent.Action.ADDED -> {
-                if (event.episodes.isNotEmpty() && !curQueue.isInQueue(event.episodes[0])) queueItems.add(event.position, event.episodes[0])
-                adapter?.notifyItemInserted(event.position)
+                if (event.episodes.isNotEmpty() && !curQueue.isInQueue(event.episodes[0])) {
+                    val pos = queueItems.size
+                    queueItems.addAll(event.episodes)
+                    adapter?.notifyItemRangeInserted(pos, queueItems.size)
+                    adapter?.notifyItemRangeChanged(pos, event.episodes.size);
+                }
             }
             FlowEvent.QueueEvent.Action.SET_QUEUE, FlowEvent.QueueEvent.Action.SORTED -> {
                 queueItems.clear()
@@ -303,9 +307,12 @@ import java.util.*
                     for (e in event.episodes) {
                         val pos: Int = EpisodeUtil.indexOfItemWithId(queueItems, e.id)
                         if (pos >= 0) {
-                            Logd(TAG, "removing episode $pos ${queueItems[pos]} $e")
+                            Logd(TAG, "removing episode $pos ${queueItems[pos].title} $e")
+                            val holder = recyclerView.findViewHolderForLayoutPosition(pos) as? EpisodeViewHolder
+                            holder?.unbind()
                             queueItems.removeAt(pos)
                             adapter?.notifyItemRemoved(pos)
+                            adapter?.notifyItemRangeChanged(pos, adapter!!.getItemCount()-pos);
                         } else {
                             Log.e(TAG, "Trying to remove item non-existent from queue ${e.id} ${e.title}")
                             continue
@@ -637,18 +644,16 @@ import java.util.*
     private fun loadCurQueue(restoreScrollPosition: Boolean) {
         if (!loadItemsRunning) {
             loadItemsRunning = true
-            adapter?.updateItems(mutableListOf())
+//            adapter?.updateItems(mutableListOf())
             Logd(TAG, "loadCurQueue() called ${curQueue.name}")
             while (curQueue.name.isEmpty()) runBlocking { delay(100) }
-            if (queueItems.isEmpty()) emptyView.hide()
+            if (queueItems.isNotEmpty()) emptyViewHandler.hide()
             queueItems.clear()
             if (showBin) {
                 queueItems.addAll(realm.query(Episode::class, "id IN $0", curQueue.idsBinList)
                     .find().sortedByDescending { curQueue.idsBinList.indexOf(it.id) })
             } else {
                 curQueue.episodes.clear()
-//                curQueue.episodes.addAll(realm.query(Episode::class, "id IN $0", curQueue.episodeIds)
-//                    .find().sortedBy { curQueue.episodeIds.indexOf(it.id) })
                 queueItems.addAll(curQueue.episodes)
             }
             Logd(TAG, "loadCurQueue() curQueue.episodes: ${curQueue.episodes.size}")

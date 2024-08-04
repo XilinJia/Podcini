@@ -14,7 +14,6 @@ import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.LogsAndStats
 import ac.mdiq.podcini.storage.database.Queues
-import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.DownloadResult
 import ac.mdiq.podcini.storage.model.Episode
@@ -78,7 +77,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
         Logd(TAG, "starting cancel")
         // This needs to be done here, not in the worker. Reason: The worker might or might not be running.
         val item_ = media.episodeOrFetch()
-        if (item_ != null) Episodes.deleteMediaOfEpisode(context, item_) // Remove partially downloaded file
+        if (item_ != null) Episodes.deleteEpisodeMedia(context, item_) // Remove partially downloaded file
         val tag = WORK_TAG_EPISODE_URL + media.downloadUrl
         val future: Future<List<WorkInfo>> = WorkManager.getInstance(context).getWorkInfosByTag(tag)
 
@@ -124,7 +123,8 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 .addTag(WORK_TAG)
                 .addTag(WORK_TAG_EPISODE_URL + item.media!!.downloadUrl)
             if (enqueueDownloadedEpisodes()) {
-                runBlocking { Queues.addToQueueSync(false, item, item.feed?.preferences?.queue) }
+                if (item.feed?.preferences?.queue != null)
+                    runBlocking { Queues.addToQueueSync(false, item, item.feed?.preferences?.queue) }
                 workRequest.addTag(WORK_DATA_WAS_QUEUED)
             }
             workRequest.setInputData(Data.Builder().putLong(WORK_DATA_MEDIA_ID, item.media!!.id).build())

@@ -5,7 +5,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.EPISODE_CLEANUP_NULL
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.UserPreferences.episodeCacheSize
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
-import ac.mdiq.podcini.storage.database.Episodes.deleteMediaOfEpisode
+import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodeMedia
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodesCount
 import ac.mdiq.podcini.storage.database.Queues.getInQueueEpisodeIds
@@ -84,7 +84,7 @@ object AutoCleanups {
             for (item in delete) {
                 if (item.media == null) continue
                 try {
-                    runBlocking { deleteMediaOfEpisode(context, item).join() }
+                    runBlocking { deleteEpisodeMedia(context, item).join() }
                 } catch (e: InterruptedException) {
                     e.printStackTrace()
                 } catch (e: ExecutionException) {
@@ -138,7 +138,7 @@ object AutoCleanups {
             for (item in delete) {
                 if (item.media == null) continue
                 try {
-                    runBlocking { deleteMediaOfEpisode(context, item).join() }
+                    runBlocking { deleteEpisodeMedia(context, item).join() }
                 } catch (e: InterruptedException) {
                     e.printStackTrace()
                 } catch (e: ExecutionException) {
@@ -205,7 +205,7 @@ object AutoCleanups {
             val delete = if (candidates.size > numToRemove) candidates.subList(0, numToRemove) else candidates
             for (item in delete) {
                 try {
-                    runBlocking { deleteMediaOfEpisode(context, item).join() }
+                    runBlocking { deleteEpisodeMedia(context, item).join() }
                 } catch (e: InterruptedException) {
                     e.printStackTrace()
                 } catch (e: ExecutionException) {

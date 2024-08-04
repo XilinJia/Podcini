@@ -3,6 +3,7 @@ package ac.mdiq.podcini.storage.model
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.FeedFunding.Companion.extractPaymentLinks
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.fromCode
+import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
@@ -144,20 +145,7 @@ class Feed : RealmObject {
 
     @Ignore
     val mostRecentItem: Episode?
-        get() {
-//            // we could sort, but we don't need to, a simple search is fine...
-//            var mostRecentDate = Date(0)
-//            var mostRecentItem: Episode? = null
-//            for (item in episodes) {
-//                val date = item.getPubDate()
-//                if (date != null && date.after(mostRecentDate)) {
-//                    mostRecentDate = date
-//                    mostRecentItem = item
-//                }
-//            }
-//            return mostRecentItem
-            return realm.query(Episode::class).query("feedId == $id SORT(pubDate DESC)").first().find()
-        }
+        get() = realm.query(Episode::class).query("feedId == $id SORT(pubDate DESC)").first().find()
 
     @Ignore
     var title: String?
@@ -295,6 +283,14 @@ class Feed : RealmObject {
 
     fun addPayment(funding: FeedFunding) {
         paymentLinks.add(funding)
+    }
+
+    fun getVirtualQueueItems():  List<Episode> {
+        var qString = "feedId == $id AND playState != ${Episode.PlayState.PLAYED.code}"
+        if (preferences?.prefStreamOverDownload != true) qString += " AND media.downloaded == true"
+        val eList_ = realm.query(Episode::class, qString).find().toMutableList()
+        if (sortOrder != null) getPermutor(sortOrder!!).reorder(eList_)
+        return eList_
     }
 
     companion object {

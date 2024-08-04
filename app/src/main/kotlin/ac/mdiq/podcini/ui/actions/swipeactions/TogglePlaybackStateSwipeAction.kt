@@ -39,7 +39,7 @@ class TogglePlaybackStateSwipeAction : SwipeAction {
     }
 
     override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
-        val newState = if (item.playState == Episode.UNPLAYED) Episode.PLAYED else Episode.UNPLAYED
+        val newState = if (item.playState == Episode.PlayState.UNPLAYED.code) Episode.PlayState.PLAYED.code else Episode.PlayState.UNPLAYED.code
 
         Logd("TogglePlaybackStateSwipeAction", "performAction( ${item.id} )")
         // we're marking it as unplayed since the user didn't actually play it
@@ -55,10 +55,10 @@ class TogglePlaybackStateSwipeAction : SwipeAction {
                 if (shouldDeleteRemoveFromQueue()) removeFromQueueSync(null, item)   }
         }
         val playStateStringRes: Int = when (newState) {
-            Episode.UNPLAYED -> if (item.playState == Episode.NEW) R.string.removed_inbox_label    //was new
+            Episode.PlayState.UNPLAYED.code -> if (item.playState == Episode.PlayState.NEW.code) R.string.removed_inbox_label    //was new
             else R.string.marked_as_unplayed_label   //was played
-            Episode.PLAYED -> R.string.marked_as_played_label
-            else -> if (item.playState == Episode.NEW) R.string.removed_inbox_label
+            Episode.PlayState.PLAYED.code -> R.string.marked_as_played_label
+            else -> if (item.playState == Episode.PlayState.NEW.code) R.string.removed_inbox_label
             else R.string.marked_as_unplayed_label
         }
         val duration: Int = Snackbar.LENGTH_LONG
@@ -87,7 +87,7 @@ class TogglePlaybackStateSwipeAction : SwipeAction {
     }
 
     override fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {
-        return if (item.playState == Episode.NEW) filter.showPlayed || filter.showNew
+        return if (item.playState == Episode.PlayState.NEW.code) filter.showPlayed || filter.showNew
         else filter.showUnplayed || filter.showPlayed || filter.showNew
     }
 }

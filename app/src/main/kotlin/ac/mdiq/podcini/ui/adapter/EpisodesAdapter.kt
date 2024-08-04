@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.ui.adapter
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.ui.activity.MainActivity
@@ -92,6 +91,7 @@ open class EpisodesAdapter(mainActivity: MainActivity, var refreshFragPosCallbac
 
     @UnstableApi
     override fun onBindViewHolder(holder: EpisodeViewHolder, pos: Int) {
+//        Logd(TAG, "onBindViewHolder $pos ${holder.episode?.title}")
         if (pos >= episodes.size || pos < 0) {
             beforeBindViewHolder(holder, pos)
             holder.bindDummy()
@@ -150,8 +150,10 @@ open class EpisodesAdapter(mainActivity: MainActivity, var refreshFragPosCallbac
 
     @UnstableApi
     override fun onBindViewHolder(holder: EpisodeViewHolder, pos: Int, payloads: MutableList<Any>) {
+//       Logd(TAG, "onBindViewHolder payloads $pos ${holder.episode?.title}")
         if (payloads.isEmpty()) onBindViewHolder(holder, pos)
         else {
+            holder.refreshAdapterPosCallback = ::refreshPosCallback
             val payload = payloads[0]
             when {
                 payload is String && payload == "foo" -> onBindViewHolder(holder, pos)

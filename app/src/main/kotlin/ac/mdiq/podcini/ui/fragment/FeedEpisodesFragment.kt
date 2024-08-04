@@ -573,7 +573,7 @@ import java.util.concurrent.Semaphore
                                 val episodes_ = feed_.episodes.filter { feed_.episodeFilter.matches(it) }
                                 episodes.addAll(episodes_)
                             } else episodes.addAll(feed_.episodes)
-                            val sortOrder = fromCode(feed_.preferences?.sortOrderCode ?: 0)
+                            val sortOrder = feed_.sortOrder
                             if (sortOrder != null) getPermutor(sortOrder).reorder(episodes)
                             if (onInit) {
                                 var hasNonMediaItems = false

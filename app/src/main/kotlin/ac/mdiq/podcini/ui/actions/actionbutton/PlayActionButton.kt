@@ -1,14 +1,17 @@
 package ac.mdiq.podcini.ui.actions.actionbutton
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.net.utils.NetworkUtils.isStreamingAllowed
 import ac.mdiq.podcini.playback.PlaybackController.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.playback.PlaybackController.Companion.playbackService
 import ac.mdiq.podcini.playback.PlaybackServiceStarter
 import ac.mdiq.podcini.playback.base.InTheatre
+import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.MediaType
+import ac.mdiq.podcini.ui.actions.actionbutton.StreamActionButton.StreamingConfirmationDialog
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
@@ -57,10 +60,11 @@ class PlayActionButton(item: Episode) : EpisodeActionButton(item) {
     fun notifyMissingEpisodeMediaFile(context: Context, media: EpisodeMedia) {
         Logd(TAG, "notifyMissingEpisodeMediaFile called")
         Log.i(TAG, "The feedmanager was notified about a missing episode. It will update its database now.")
-        val episode = media.episodeOrFetch()
+        val episode = realm.query(Episode::class).query("id == media.id").first().find()
+//        val episode = media.episodeOrFetch()
         if (episode != null) {
             val episode_ = upsertBlk(episode) {
-                it.media = media
+//                it.media = media
                 it.media?.downloaded = false
                 it.media?.fileUrl = null
             }

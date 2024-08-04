@@ -1,7 +1,9 @@
 package ac.mdiq.podcini.storage.model
 
+import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting.Companion.fromInteger
+import androidx.compose.runtime.mutableStateOf
 import io.realm.kotlin.ext.realmSetOf
 import io.realm.kotlin.types.EmbeddedRealmObject
 import io.realm.kotlin.types.RealmSet
@@ -46,6 +48,8 @@ class FeedPreferences : EmbeddedRealmObject {
         }
     var volumeAdaption: Int = 0
 
+    var prefStreamOverDownload: Boolean = false
+
     var filterString: String = ""
 
     var sortOrderCode: Int = 0      // in EpisodeSortOrder
@@ -62,10 +66,30 @@ class FeedPreferences : EmbeddedRealmObject {
 
     @Ignore
     var queue: PlayQueue? = null
-        get() = if(queueId >= 0) realm.query(PlayQueue::class).query("id == $queueId").first().find() else null
+        get() = when {
+            queueId >= 0 -> realm.query(PlayQueue::class).query("id == $queueId").first().find()
+            queueId == -1L -> curQueue
+            queueId == -2L -> null
+            else -> null
+        }
         set(value) {
             field = value
             queueId = value?.id ?: -1L
+        }
+    @Ignore
+    var queueText: String = "Default"
+        get() = when (queueId) {
+            0L -> "Default"
+            -1L -> "Active"
+            -2L -> "None"
+            else -> "Custom"
+        }
+    @Ignore
+    val queueTextExt: String
+        get() = when (queueId) {
+            -1L -> "Active"
+            -2L -> "None"
+            else -> queue?.name ?: "Default"
         }
     var queueId: Long = 0L
 

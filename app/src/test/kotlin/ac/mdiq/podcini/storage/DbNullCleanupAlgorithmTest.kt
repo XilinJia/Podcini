@@ -81,7 +81,7 @@ class DbNullCleanupAlgorithmTest {
         feed.episodes.addAll(items)
         val files: MutableList<File> = ArrayList()
         for (i in 0 until numItems) {
-            val item = Episode(0, "title", "id$i", "link", Date(), Episode.PLAYED, feed)
+            val item = Episode(0, "title", "id$i", "link", Date(), Episode.PlayState.PLAYED.code, feed)
 
             val f = File(destFolder, "file $i")
             Assert.assertTrue(f.createNewFile())

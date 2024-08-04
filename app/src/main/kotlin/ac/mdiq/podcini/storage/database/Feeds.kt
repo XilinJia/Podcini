@@ -377,13 +377,6 @@ object Feeds {
         backupManager.dataChanged()
     }
 
-//    private fun persistFeedsSync(vararg feeds: Feed) {
-//        Logd(TAG, "persistFeedsSync called")
-//        for (feed in feeds) {
-//            upsertBlk(feed) {}
-//        }
-//    }
-
     fun persistFeedPreferences(feed: Feed) : Job {
         Logd(TAG, "persistFeedPreferences called")
         return runOnIOScope {

@@ -213,13 +213,14 @@ import java.util.*
             if (nameEpisodeMap.isNotEmpty()) {
                 for (e in nameEpisodeMap.values) {
                     upsertBlk(e) {
-                        e.media?.setfileUrlOrNull(null)
+                        it.media?.setfileUrlOrNull(null)
                     }
                 }
             }
+            loadItems()
             Logd(TAG, "Episodes reconsiled: ${nameEpisodeMap.size}\nFiles removed: ${filesRemoved.size}")
             withContext(Dispatchers.Main) {
-                Toast.makeText(requireContext().applicationContext, "Episodes reconsiled: ${nameEpisodeMap.size}\nFiles removed: ${filesRemoved.size}", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "Episodes reconsiled: ${nameEpisodeMap.size}\nFiles removed: ${filesRemoved.size}", Toast.LENGTH_LONG).show()
             }
         }
     }

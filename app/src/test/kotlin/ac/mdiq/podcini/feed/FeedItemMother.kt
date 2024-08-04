@@ -8,7 +8,7 @@ internal object FeedItemMother {
 
     @JvmStatic
     fun anyFeedItemWithImage(): Episode {
-        val item = Episode(0, "Item", "Item", "url", Date(), Episode.PLAYED, FeedMother.anyFeed())
+        val item = Episode(0, "Item", "Item", "url", Date(), Episode.PlayState.PLAYED.code, FeedMother.anyFeed())
         item.imageUrl = (IMAGE_URL)
         return item
     }

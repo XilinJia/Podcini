@@ -22,7 +22,7 @@ Compared to AntennaPod this project:
 3. Iron-age celebrity SQLite is replaced with modern object-base Realm DB (Podcini.R),
 4. Outfits with Viewbinding, Coil replacing Glide, coroutines replacing RxJava and threads, SharedFlow replacing EventBus, and jetifier removed,
 5. Boasts new UI's including streamlined drawer, subscriptions view and player controller,
-6. Supports multiple and circular play queues associable to any podcast
+6. Supports multiple, virtual and circular play queues associable to any podcast
 7. Auto-download is governed by policy and limit settings of individual feed
 8. Accepts podcast as well as plain RSS and YouTube feeds,
 9. Offers Readability and Text-to-Speech for RSS contents,
@@ -59,13 +59,20 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * easy switches on video player to other video mode or audio only
 * default video player mode setting in preferences
 * when video mode is set to audio only, click on image on audio player on a video episode brings up the normal player detailed view
+* "Prefer streaming over download" is now on setting of individual feed
 * Multiple queues can be used: 5 queues are provided by default, user can rename or add up to 10 queues
   * on app startup, the most recently updated queue is set to curQueue
   * any episodes can be easily added/moved to the active or any designated queues
   * any queue can be associated with any feed for customized playing experience
 * Every queue is circular: if the final item in queue finished, the first item in queue (if exists) will get played
 * Every queue has a bin containing past episodes removed from the queue
-* Episode played from a list other than the queue is now a one-off play, unless the episode is on the active queue, in which case, the next episode in the queue will be played
+* Feed associated queue can be set to None, in which case:
+  * episodes in the feed are not automatically added to any queue, but are used as a natural queue for getting the next episode to play
+  * the next episode is determined in such a way:
+    * if the currently playing episode had been (manually) added to the active queue, then it's the next in queue
+    * else if "prefer streaming" is set, it's the next unplayed episode in the feed episodes list based on the current sort order
+    * else it's the next downloaded unplayed episode
+* Otherwise, episode played from a list other than the queue is now a one-off play, unless the episode is on the active queue, in which case, the next episode in the queue will be played
 
 
 ### Podcast/Episode list

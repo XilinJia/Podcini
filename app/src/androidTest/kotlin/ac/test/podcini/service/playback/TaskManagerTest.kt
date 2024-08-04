@@ -65,7 +65,7 @@ class TaskManagerTest {
         val f = Feed(0, null, "title", "link", "d", null, null, null, null, "id", null, "null", "url")
         f.episodes.clear()
         for (i in 0 until NUM_ITEMS) {
-            f.episodes.add(Episode(0, pref + i, pref + i, "link", Date(), Episode.PLAYED, f))
+            f.episodes.add(Episode(0, pref + i, pref + i, "link", Date(), Episode.PlayState.PLAYED.code, f))
         }
 //        val adapter = getInstance()
 //        adapter.open()

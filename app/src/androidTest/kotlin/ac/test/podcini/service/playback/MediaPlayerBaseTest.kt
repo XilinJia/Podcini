@@ -105,7 +105,7 @@ class MediaPlayerBaseTest {
             VolumeAdaptionSetting.OFF, null, null)
         f.preferences = prefs
         f.episodes.clear()
-        val i = Episode(0, "t", "i", "l", Date(), Episode.UNPLAYED, f)
+        val i = Episode(0, "t", "i", "l", Date(), Episode.PlayState.UNPLAYED.code, f)
         f.episodes.add(i)
         val media = EpisodeMedia(0, i, 0, 0, 0, "audio/wav", fileUrl, downloadUrl, fileUrl != null, null, 0, 0)
         i.setMedia(media)

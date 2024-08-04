@@ -11,6 +11,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.storage.utils.EpisodeUtil.indexOfItemWithId
 import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
@@ -144,7 +145,7 @@ object Queues {
                 for (event in events) EventFlow.postEvent(event)
 
 //                EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(updatedItems))
-                if (markAsUnplayed && markAsUnplayeds.size > 0) setPlayState(Episode.UNPLAYED, false, *markAsUnplayeds.toTypedArray())
+                if (markAsUnplayed && markAsUnplayeds.size > 0) setPlayState(Episode.PlayState.UNPLAYED.code, false, *markAsUnplayeds.toTypedArray())
 //                if (performAutoDownload) autodownloadEpisodeMedia(context)
             }
         }
@@ -153,7 +154,6 @@ object Queues {
     suspend fun addToQueueSync(markAsUnplayed: Boolean, episode: Episode, queue_: PlayQueue? = null) {
         Logd(TAG, "addToQueueSync( ... ) called")
 
-//        val queue = if (queue_ != null) unmanaged(queue_) else curQueue
         val queue = queue_ ?: curQueue
         val currentlyPlaying = curMedia
         val positionCalculator = EnqueuePositionCalculator(enqueueLocation)
@@ -166,11 +166,9 @@ object Queues {
             insertPosition++
             it.update()
         }
-//        queueNew.episodes.addAll(queue.episodes)
-//        queueNew.episodes.add(insertPosition, episode)
         if (queue.id == curQueue.id) curQueue = queueNew
 
-        if (markAsUnplayed && episode.isNew) setPlayState(Episode.UNPLAYED, false, episode)
+        if (markAsUnplayed && episode.isNew) setPlayState(Episode.PlayState.UNPLAYED.code, false, episode)
         if (queue.id == curQueue.id) EventFlow.postEvent(FlowEvent.QueueEvent.added(episode, insertPosition))
 //                if (performAutoDownload) autodownloadEpisodeMedia(context)
     }
@@ -246,9 +244,10 @@ object Queues {
         val events: MutableList<FlowEvent.QueueEvent> = ArrayList()
         val indicesToRemove: MutableList<Int> = mutableListOf()
         val qItems = queue.episodes.toMutableList()
+        val eList = episodes.toList()
         for (i in qItems.indices) {
             val episode = qItems[i]
-            if (episodes.contains(episode)) {
+            if (indexOfItemWithId(eList, episode.id) >= 0) {
                 Logd(TAG, "removing from queue: ${episode.id} ${episode.title}")
                 indicesToRemove.add(i)
                 if (queue.id == curQueue.id) events.add(FlowEvent.QueueEvent.removed(episode))

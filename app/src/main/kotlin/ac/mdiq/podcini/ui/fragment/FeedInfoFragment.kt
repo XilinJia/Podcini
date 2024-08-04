@@ -18,6 +18,8 @@ import ac.mdiq.podcini.ui.utils.TransitionEffect
 import ac.mdiq.podcini.util.IntentUtils
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.ShareUtils
+import ac.mdiq.podcini.util.event.EventFlow
+import ac.mdiq.podcini.util.event.FlowEvent
 import android.R.string
 import android.app.Activity
 import android.content.*
@@ -46,10 +48,8 @@ import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.collectLatest
 import org.apache.commons.lang3.StringUtils
 import java.lang.ref.WeakReference
 import java.util.*
@@ -64,8 +64,6 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private val binding get() = _binding!!
 
     private lateinit var feed: Feed
-//    private lateinit var imgvCover: ImageView
-//    private lateinit var imgvBackground: ImageView
     private lateinit var toolbar: MaterialToolbar
 
     private val addLocalFolderLauncher = registerForActivityResult<Uri?, Uri>(AddLocalFolder()) {
@@ -129,6 +127,18 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
         showFeed()
         return binding.root
+    }
+
+    override fun onStart() {
+        Logd(TAG, "onStart() called")
+        super.onStart()
+        procFlowEvents()
+    }
+
+    override fun onStop() {
+        Logd(TAG, "onStop() called")
+        super.onStop()
+        cancelFlowEvents()
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -264,6 +274,23 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             } catch (e: Throwable) {
                 withContext(Dispatchers.Main) {
                     (activity as MainActivity).showSnackbarAbovePlayer(e.localizedMessage, Snackbar.LENGTH_LONG)
+                }
+            }
+        }
+    }
+
+    private var eventSink: Job? = null
+    private fun cancelFlowEvents() {
+        eventSink?.cancel()
+        eventSink = null
+    }
+    private fun procFlowEvents() {
+        if (eventSink == null) eventSink = lifecycleScope.launch {
+            EventFlow.events.collectLatest { event ->
+                Logd(TAG, "Received event: ${event.TAG}")
+                when (event) {
+                    is FlowEvent.FeedPrefsChangeEvent -> feed = event.feed
+                    else -> {}
                 }
             }
         }

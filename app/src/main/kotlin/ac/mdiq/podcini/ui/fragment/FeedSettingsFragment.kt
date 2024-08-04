@@ -9,18 +9,16 @@ import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
 import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
 import ac.mdiq.podcini.storage.database.RealmDB.realm
-import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
-import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.FeedAutoDeleteOptions
 import ac.mdiq.podcini.ui.adapter.SimpleChipAdapter
+import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.ui.compose.Spinner
 import ac.mdiq.podcini.ui.dialog.AuthenticationDialog
 import ac.mdiq.podcini.ui.dialog.TagSettingsDialog
 import ac.mdiq.podcini.ui.utils.ItemOffsetDecoration
-import ac.mdiq.podcini.ui.compose.CustomTheme
-import ac.mdiq.podcini.ui.compose.Spinner
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.content.DialogInterface
@@ -40,11 +38,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.outlined.AccountCircle
-import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -70,6 +63,7 @@ class FeedSettingsFragment : Fragment() {
     private val binding get() = _binding!!
     private var feed: Feed? = null
     private var autoDeleteSummaryResId by mutableIntStateOf(R.string.global_default)
+    private var curPrefQueue by mutableStateOf(feed?.preferences?.queueTextExt ?: "Default")
     private var autoDeletePolicy = "global"
     private var queues: List<PlayQueue>? = null
 
@@ -102,6 +96,7 @@ class FeedSettingsFragment : Fragment() {
                             var checked by remember { mutableStateOf(feed?.preferences?.keepUpdated ?: true) }
                             Switch(
                                 checked = checked,
+                                modifier = Modifier.height(24.dp),
                                 onCheckedChange = {
                                     checked = it
                                     feed = upsertBlk(feed!!) {
@@ -118,6 +113,35 @@ class FeedSettingsFragment : Fragment() {
                     }
                     Column {
                         Row(Modifier.fillMaxWidth()) {
+                            Icon(ImageVector.vectorResource(id = R.drawable.ic_stream), "", tint = textColor)
+                            Spacer(modifier = Modifier.width(20.dp))
+                            Text(
+                                text = stringResource(R.string.pref_stream_over_download_title),
+                                style = MaterialTheme.typography.h6,
+                                color = textColor
+                            )
+                            Spacer(modifier = Modifier.weight(1f))
+                            var checked by remember { mutableStateOf(feed?.preferences?.prefStreamOverDownload ?: false) }
+                            Switch(
+                                checked = checked,
+                                modifier = Modifier.height(24.dp),
+                                onCheckedChange = {
+                                    checked = it
+                                    feed = upsertBlk(feed!!) {
+                                        it.preferences?.prefStreamOverDownload = checked
+                                    }
+                                }
+                            )
+                        }
+                        Text(
+                            text = stringResource(R.string.pref_stream_over_download_sum),
+                            style = MaterialTheme.typography.body2,
+                            color = textColor
+                        )
+                    }
+                    Column {
+                        curPrefQueue = feed?.preferences?.queueTextExt ?: "Default"
+                        Row(Modifier.fillMaxWidth()) {
                             Icon(ImageVector.vectorResource(id = R.drawable.ic_playlist_play), "", tint = textColor)
                             Spacer(modifier = Modifier.width(20.dp))
                             Text(
@@ -125,27 +149,21 @@ class FeedSettingsFragment : Fragment() {
                                 style = MaterialTheme.typography.h6,
                                 color = textColor,
                                 modifier = Modifier.clickable(onClick = {
-//                                    queues = realm.query(PlayQueue::class).find()
-                                        val selectedOption = when (feed?.preferences?.queueId) {
-                                            null, 0L -> "Default"
-                                            -1L -> "Active"
-                                            else -> "Custom"
-                                        }
-                                        val composeView = ComposeView(requireContext()).apply {
-                                            setContent {
-                                                val showDialog = remember { mutableStateOf(true) }
-                                                CustomTheme(requireContext()) {
-                                                    SetAssociatedQueue(showDialog.value, selectedOption = selectedOption, onDismissRequest = { showDialog.value = false })
-                                                }
+                                    val selectedOption = feed?.preferences?.queueText ?: "Default"
+                                    val composeView = ComposeView(requireContext()).apply {
+                                        setContent {
+                                            val showDialog = remember { mutableStateOf(true) }
+                                            CustomTheme(requireContext()) {
+                                                SetAssociatedQueue(showDialog.value, selectedOption = selectedOption, onDismissRequest = { showDialog.value = false })
                                             }
                                         }
-                                        (view as? ViewGroup)?.addView(composeView)
-
+                                    }
+                                    (view as? ViewGroup)?.addView(composeView)
                                 })
                             )
                         }
                         Text(
-                            text = stringResource(R.string.pref_feed_associated_queue_sum),
+                            text = curPrefQueue + " : " + stringResource(R.string.pref_feed_associated_queue_sum),
                             style = MaterialTheme.typography.body2,
                             color = textColor
                         )
@@ -159,16 +177,15 @@ class FeedSettingsFragment : Fragment() {
                                 style = MaterialTheme.typography.h6,
                                 color = textColor,
                                 modifier = Modifier.clickable(onClick = {
-                                        val composeView = ComposeView(requireContext()).apply {
-                                            setContent {
-                                                val showDialog = remember { mutableStateOf(true) }
-                                                CustomTheme(requireContext()) {
-                                                    AutoDeleteDialog(showDialog.value, onDismissRequest = { showDialog.value = false })
-                                                }
+                                    val composeView = ComposeView(requireContext()).apply {
+                                        setContent {
+                                            val showDialog = remember { mutableStateOf(true) }
+                                            CustomTheme(requireContext()) {
+                                                AutoDeleteDialog(showDialog.value, onDismissRequest = { showDialog.value = false })
                                             }
                                         }
-                                        (view as? ViewGroup)?.addView(composeView)
-
+                                    }
+                                    (view as? ViewGroup)?.addView(composeView)
                                 })
                             )
                         }
@@ -231,35 +248,29 @@ class FeedSettingsFragment : Fragment() {
                     ) {
                         Column {
                             FeedAutoDeleteOptions.forEach { text ->
-                                Row(
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .selectable(
-                                            selected = (text == selectedOption),
-                                            onClick = {
-                                                Logd(TAG, "row clicked: $text $selectedOption")
-                                                if (text != selectedOption) {
-                                                    onOptionSelected(text)
-                                                    val action_ = when (text) {
-                                                        "global" -> AutoDeleteAction.GLOBAL
-                                                        "always" -> AutoDeleteAction.ALWAYS
-                                                        "never" -> AutoDeleteAction.NEVER
-                                                        else -> AutoDeleteAction.GLOBAL
-                                                    }
-                                                    feed = upsertBlk(feed!!) {
-                                                        it.preferences?.autoDeleteAction = action_
-                                                    }
-                                                    getAutoDeletePolicy()
-                                                    onDismissRequest()
-                                                }
-                                            }
-                                        )
-                                        .padding(horizontal = 16.dp),
+                                Row(Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    RadioButton(
-                                        selected = (text == selectedOption),
-                                        onClick = { }
+                                    Checkbox(checked = (text == selectedOption),
+                                        onCheckedChange = { isChecked ->
+                                            Logd(TAG, "row clicked: $text $selectedOption")
+                                            if (text != selectedOption) {
+                                                onOptionSelected(text)
+                                                val action_ = when (text) {
+                                                    "global" -> AutoDeleteAction.GLOBAL
+                                                    "always" -> AutoDeleteAction.ALWAYS
+                                                    "never" -> AutoDeleteAction.NEVER
+                                                    else -> AutoDeleteAction.GLOBAL
+                                                }
+                                                feed = upsertBlk(feed!!) {
+                                                    it.preferences?.autoDeleteAction = action_
+                                                }
+                                                getAutoDeletePolicy()
+                                                onDismissRequest()
+                                            }
+                                        }
                                     )
                                     Text(
                                         text = text,
@@ -281,37 +292,36 @@ class FeedSettingsFragment : Fragment() {
         var selected by remember {mutableStateOf(selectedOption)}
         if (showDialog) {
             Dialog(onDismissRequest = { onDismissRequest() }) {
-                Card(
-                    modifier = Modifier
-                        .wrapContentSize(align = Alignment.Center)
-                        .padding(16.dp),
+                Card(modifier = Modifier
+                    .wrapContentSize(align = Alignment.Center)
+                    .padding(16.dp),
                     shape = RoundedCornerShape(16.dp),
                 ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
+                    Column(modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         queueSettingOptions.forEach { option ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
+                            Row(modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Checkbox(
-                                    checked = option == selected,
+                                Checkbox(checked = option == selected,
                                     onCheckedChange = { isChecked ->
                                         selected = option
                                         if (isChecked) Logd(TAG, "$option is checked")
                                         when (selected) {
                                             "Default" -> {
-                                                feed = upsertBlk(feed!!) {
-                                                    it.preferences?.queueId = 0L
-                                                }
+                                                feed = upsertBlk(feed!!) { it.preferences?.queueId = 0L }
+                                                curPrefQueue = selected
                                                 onDismissRequest()
                                             }
                                             "Active" -> {
-                                                feed = upsertBlk(feed!!) {
-                                                    it.preferences?.queueId = 1L
-                                                }
+                                                feed = upsertBlk(feed!!) { it.preferences?.queueId = -1L }
+                                                curPrefQueue = selected
+                                                onDismissRequest()
+                                            }
+                                            "None" -> {
+                                                feed = upsertBlk(feed!!) { it.preferences?.queueId = -2L }
+                                                curPrefQueue = selected
                                                 onDismissRequest()
                                             }
                                             "Custom" -> {}
@@ -326,9 +336,8 @@ class FeedSettingsFragment : Fragment() {
                             Spinner(items = queues!!.map { it.name }, selectedItem = feed?.preferences?.queue?.name ?: "Default") { name ->
                                 Logd(TAG, "Queue selected: $name")
                                 val q = queues?.firstOrNull { it.name == name }
-                                feed = upsertBlk(feed!!) {
-                                    it.preferences?.queue = q
-                                }
+                                feed = upsertBlk(feed!!) { it.preferences?.queue = q }
+                                if (q != null) curPrefQueue = q.name
                                 onDismissRequest()
                             }
                         }
@@ -753,7 +762,7 @@ class FeedSettingsFragment : Fragment() {
         private val TAG: String = FeedSettingsFragment::class.simpleName ?: "Anonymous"
         private const val EXTRA_FEED_ID = "ac.mdiq.podcini.extra.feedId"
 
-        val queueSettingOptions = listOf("Default", "Active", "Custom")
+        val queueSettingOptions = listOf("Default", "Active", "None", "Custom")
 
         fun newInstance(feed: Feed): FeedSettingsFragment {
             val fragment = FeedSettingsFragment()

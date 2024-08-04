@@ -19,10 +19,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.Episode.Companion.BUILDING
-import ac.mdiq.podcini.storage.model.Episode.Companion.NEW
-import ac.mdiq.podcini.storage.model.Episode.Companion.PLAYED
-import ac.mdiq.podcini.storage.model.Episode.Companion.UNPLAYED
+import ac.mdiq.podcini.storage.model.Episode.PlayState
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
@@ -98,7 +95,7 @@ object Episodes {
 
 // @JvmStatic is needed because some Runnable blocks call this
     @OptIn(UnstableApi::class) @JvmStatic
-    fun deleteMediaOfEpisode(context: Context, episode: Episode) : Job {
+    fun deleteEpisodeMedia(context: Context, episode: Episode) : Job {
         Logd(TAG, "deleteMediaOfEpisode called ${episode.title}")
         return runOnIOScope {
             if (episode.media == null) return@runOnIOScope
@@ -136,7 +133,7 @@ object Episodes {
             url != null -> {
                 // delete downloaded media file
                 val mediaFile = File(url)
-                if (mediaFile.exists() && !mediaFile.delete()) {
+                if (!mediaFile.delete()) {
                     Log.e(TAG, "delete media file failed: $url")
                     val evt = FlowEvent.MessageEvent(context.getString(R.string.delete_failed))
                     EventFlow.postEvent(evt)
@@ -176,6 +173,7 @@ object Episodes {
      * Remove the listed episodes and their EpisodeMedia entries.
      * Deleting media also removes the download log entries.
      */
+    @UnstableApi
     fun deleteEpisodes(context: Context, episodes: List<Episode>) : Job {
         return runOnIOScope {
             val removedFromQueue: MutableList<Episode> = ArrayList()
@@ -290,19 +288,19 @@ object Episodes {
     suspend fun setPlayStateSync(played: Int, resetMediaPosition: Boolean, episode: Episode) : Episode {
         Logd(TAG, "setPlayStateSync called resetMediaPosition: $resetMediaPosition")
         val result = upsert(episode) {
-            if (played >= NEW && played <= BUILDING) it.playState = played
+            if (played >= PlayState.NEW.code && played <= PlayState.BUILDING.code) it.playState = played
             else {
-                if (it.playState == PLAYED) it.playState = UNPLAYED
-                else it.playState = PLAYED
+                if (it.playState == PlayState.PLAYED.code) it.playState = PlayState.UNPLAYED.code
+                else it.playState = PlayState.PLAYED.code
             }
             if (resetMediaPosition) it.media?.setPosition(0)
         }
-        if (played == PLAYED && shouldRemoveFromQueuesMarkPlayed()) removeFromAllQueuesSync(result)
+        if (played == PlayState.PLAYED.code && shouldMarkedPlayedRemoveFromQueues()) removeFromAllQueuesSync(result)
         EventFlow.postEvent(FlowEvent.EpisodePlayedEvent(result))
         return result
     }
 
-    private fun shouldRemoveFromQueuesMarkPlayed(): Boolean {
+    private fun shouldMarkedPlayedRemoveFromQueues(): Boolean {
         return appPrefs.getBoolean(Prefs.prefRemoveFromQueueMarkedPlayed.name, true)
     }
 }

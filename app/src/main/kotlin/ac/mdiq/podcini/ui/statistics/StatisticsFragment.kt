@@ -447,7 +447,7 @@ class StatisticsFragment : Fragment() {
                     else {
 //                        progress import does not include playedDuration
                         if (includeMarkedAsPlayed) {
-                            if (m.playbackCompletionTime > 0 || m.episodeOrFetch()?.playState == Episode.PLAYED)
+                            if (m.playbackCompletionTime > 0 || m.episodeOrFetch()?.playState == Episode.PlayState.PLAYED.code)
                                 dur += m.duration
                             else if (m.position > 0) dur += m.position
                         } else dur += m.position

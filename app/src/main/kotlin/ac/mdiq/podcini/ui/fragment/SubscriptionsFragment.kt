@@ -388,7 +388,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         val dir = 1 - 2*feedOrderDir    // get from 0, 1 to 1, -1
         val comparator: Comparator<Feed> = when (feedOrder) {
             FeedSortOrder.UNPLAYED_NEW_OLD.index -> {
-                val queryString = "feedId == $0 AND (playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED})"
+                val queryString = "feedId == $0 AND (playState == ${Episode.PlayState.NEW.code} OR playState == ${Episode.PlayState.UNPLAYED.code})"
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
                 for (f in feedList_) {
                     val c = realm.query(Episode::class).query(queryString, f.id).count().find()
@@ -410,7 +410,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 }
             }
             FeedSortOrder.MOST_PLAYED.index -> {
-                val queryString = "feedId == $0 AND playState == ${Episode.PLAYED}"
+                val queryString = "feedId == $0 AND playState == ${Episode.PlayState.PLAYED.code}"
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
                 for (f in feedList_) {
                     val c = realm.query(Episode::class).query(queryString, f.id).count().find()
@@ -444,7 +444,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             }
             FeedSortOrder.LAST_UPDATED_UNPLAYED_NEW_OLD.index -> {
                 val queryString =
-                    "feedId == $0 AND (playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED}) SORT(pubDate DESC)"
+                    "feedId == $0 AND (playState == ${Episode.PlayState.NEW.code} OR playState == ${Episode.PlayState.UNPLAYED.code}) SORT(pubDate DESC)"
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
                 for (f in feedList_) {
                     val d = realm.query(Episode::class).query(queryString, f.id).first().find()?.pubDate ?: 0L
@@ -466,7 +466,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             }
             FeedSortOrder.MOST_DOWNLOADED_UNPLAYED.index -> {
                 val queryString =
-                    "feedId == $0 AND (playState == ${Episode.NEW} OR playState == ${Episode.UNPLAYED}) AND media.downloaded == true"
+                    "feedId == $0 AND (playState == ${Episode.PlayState.NEW.code} OR playState == ${Episode.PlayState.UNPLAYED.code}) AND media.downloaded == true"
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
                 for (f in feedList_) {
                     val c = realm.query(Episode::class).query(queryString, f.id).count().find()
@@ -477,7 +477,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             }
             //            doing FEED_ORDER_NEW
             else -> {
-                val queryString = "feedId == $0 AND playState == ${Episode.NEW}"
+                val queryString = "feedId == $0 AND playState == ${Episode.PlayState.NEW.code}"
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
                 for (f in feedList_) {
                     val c = realm.query(Episode::class).query(queryString, f.id).count().find()
@@ -738,37 +738,33 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             var selected by remember {mutableStateOf("")}
             if (showDialog) {
                 Dialog(onDismissRequest = { onDismissRequest() }) {
-                    Card(
-                        modifier = Modifier
-                            .wrapContentSize(align = Alignment.Center)
-                            .padding(16.dp),
+                    Card(modifier = Modifier
+                        .wrapContentSize(align = Alignment.Center)
+                        .padding(16.dp),
                         shape = RoundedCornerShape(16.dp),
                     ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
+                        Column(modifier = Modifier.padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             queueSettingOptions.forEach { option ->
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
+                                Row(modifier = Modifier.fillMaxWidth(),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Checkbox(
-                                        checked = option == selected,
+                                    Checkbox(checked = option == selected,
                                         onCheckedChange = { isChecked ->
                                             selected = option
                                             if (isChecked) Logd(TAG, "$option is checked")
                                             when (selected) {
                                                 "Default" -> {
-                                                    saveFeedPreferences { it: FeedPreferences ->
-                                                        it.queueId = 0L
-                                                    }
+                                                    saveFeedPreferences { it: FeedPreferences -> it.queueId = 0L }
                                                     onDismissRequest()
                                                 }
                                                 "Active" -> {
-                                                    saveFeedPreferences { it: FeedPreferences ->
-                                                        it.queueId = -1L
-                                                    }
+                                                    saveFeedPreferences { it: FeedPreferences -> it.queueId = -1L }
+                                                    onDismissRequest()
+                                                }
+                                                "None" -> {
+                                                    saveFeedPreferences { it: FeedPreferences -> it.queueId = -2L }
                                                     onDismissRequest()
                                                 }
                                                 "Custom" -> {}
@@ -784,9 +780,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                                     Logd(TAG, "Queue selected: $name")
                                     val q = queues.firstOrNull { it.name == name }
                                     if (q != null) {
-                                        saveFeedPreferences { it: FeedPreferences ->
-                                            it.queueId = q.id
-                                        }
+                                        saveFeedPreferences { it: FeedPreferences -> it.queueId = q.id }
                                         onDismissRequest()
                                     }
                                 }

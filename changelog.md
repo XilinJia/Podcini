@@ -1,3 +1,20 @@
+# 6.3.4
+
+* fixed mis-behavior of setting associated queue to Active in FeedSettings
+* items on dialog for "Auto delete episodes" are changed to checkbox
+* playState Int variables have been put into enum PlayState
+* corrected an error in incomplete reconsile
+* fixed the nasty mis-behavior in Queues view when removing episodes
+* updated feed in FeedInfo view when feed preferences change
+* enhanced feed setting UI, added display of current queue preference
+* added "prefer streaming over download" in feed setting. ruling along the global setting, streaming is preferred when either one is set to true
+* added None in associated queue setting of any feed
+	* if set, episodes in the feed are not automatically added to any queue, but are used as a natural queue for getting the next episode to play
+	* the next episode is determined in such a way:
+		* if the currently playing episode had been (manually) added to the active queue, then it's the next in queue
+		* else if "prefer streaming" is set, it's the next unplayed episode in the feed episodes list based on the current sort order
+		* else it's the next downloaded unplayed episode
+
 # 6.3.3
 
 * fixed crash when setting as Played/Unplayed in EpisodeInfo view

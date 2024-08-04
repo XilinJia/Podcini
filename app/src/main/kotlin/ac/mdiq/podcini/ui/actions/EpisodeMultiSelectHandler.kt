@@ -11,9 +11,7 @@ import ac.mdiq.podcini.storage.database.Queues.addToQueueSync
 import ac.mdiq.podcini.storage.database.Queues.removeFromAllQueuesQuiet
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueue
 import ac.mdiq.podcini.storage.database.RealmDB.realm
-import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.Episode.Companion.UNSPECIFIED
 import ac.mdiq.podcini.storage.model.PlayQueue
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.utils.LocalDeleteModal
@@ -47,7 +45,7 @@ class EpisodeMultiSelectHandler(private val activity: MainActivity, private val 
             R.id.put_in_queue_batch -> PutToQueueDialog(activity, items).show()
             R.id.remove_from_queue_batch -> removeFromQueueChecked(items)
             R.id.toggle_played_batch -> {
-                setPlayState(UNSPECIFIED, false, *items.toTypedArray())
+                setPlayState(Episode.PlayState.UNSPECIFIED.code, false, *items.toTypedArray())
 //                showMessage(R.plurals.marked_read_batch_label, items.size)
             }
 //            R.id.mark_read_batch -> {

@@ -141,7 +141,7 @@ object EpisodeMenuHandler {
             }
             R.id.mark_read_item -> {
 //                selectedItem.setPlayed(true)
-                setPlayState(Episode.PLAYED, true, selectedItem)
+                setPlayState(Episode.PlayState.PLAYED.code, true, selectedItem)
                 if (selectedItem.feed?.isLocalFeed != true && (isProviderConnected || wifiSyncEnabledKey)) {
                     val media: EpisodeMedia? = selectedItem.media
                     // not all items have media, Gpodder only cares about those that do
@@ -158,7 +158,7 @@ object EpisodeMenuHandler {
             }
             R.id.mark_unread_item -> {
 //                selectedItem.setPlayed(false)
-                setPlayState(Episode.UNPLAYED, false, selectedItem)
+                setPlayState(Episode.PlayState.UNPLAYED.code, false, selectedItem)
                 if (needSynch() && selectedItem.feed?.isLocalFeed != true && selectedItem.media != null) {
                     val actionNew: EpisodeAction = EpisodeAction.Builder(selectedItem, EpisodeAction.NEW)
                         .currentTimestamp()
@@ -176,7 +176,7 @@ object EpisodeMenuHandler {
                     writeNoMediaPlaying()
                     IntentUtils.sendLocalBroadcast(context, ACTION_SHUTDOWN_PLAYBACK_SERVICE)
                 }
-                setPlayState(Episode.UNPLAYED, true, selectedItem)
+                setPlayState(Episode.PlayState.UNPLAYED.code, true, selectedItem)
             }
             R.id.visit_website_item -> {
                 val url = selectedItem.getLinkWithFallback()

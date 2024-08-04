@@ -7,9 +7,8 @@ import ac.mdiq.podcini.playback.base.InTheatre
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.database.RealmDB.realm
-import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.Episode.Companion.BUILDING
+import ac.mdiq.podcini.storage.model.Episode.PlayState
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Feed.Companion.PREFIX_GENERATIVE_COVER
 import ac.mdiq.podcini.storage.model.MediaType
@@ -99,7 +98,6 @@ open class EpisodeViewHolder(private val activity: MainActivity, parent: ViewGro
     }
 
     fun bind(item: Episode) {
-//        Logd(TAG, "in bind: ${item.title} ${item.isFavorite} ${item.isPlayed()}")
         if (episodeMonitor == null) {
             val item_ = realm.query(Episode::class).query("id == ${item.id}").first()
             episodeMonitor = CoroutineScope(Dispatchers.Default).launch {
@@ -116,6 +114,7 @@ open class EpisodeViewHolder(private val activity: MainActivity, parent: ViewGro
                         else -> {}
                     }
                 }
+//            return
             }
         }
         if (mediaMonitor == null) {
@@ -174,7 +173,7 @@ open class EpisodeViewHolder(private val activity: MainActivity, parent: ViewGro
         when {
             item.media != null -> bind(item.media!!)
             //            for generating TTS files for episode without media
-            item.playState == BUILDING -> {
+            item.playState == PlayState.BUILDING.code -> {
                 secondaryActionProgress.setPercentage(actionButton!!.processing, item)
                 secondaryActionProgress.setIndeterminate(false)
             }

@@ -512,7 +512,7 @@
     <string name="pref_feed_skip">Auto skip</string>
     <string name="pref_feed_skip_sum">Skip introductions and ending credits.</string>
     <string name="pref_feed_associated_queue">Associated queue</string>
-    <string name="pref_feed_associated_queue_sum">Set the queue to which epiosdes in the feed will added by default.</string>
+    <string name="pref_feed_associated_queue_sum">The queue to which epiosdes in the feed will added by default</string>
     <string name="pref_feed_skip_ending">Skip last</string>
     <string name="pref_feed_skip_intro">Skip first</string>
     <string name="pref_feed_skip_ending_toast">Skipped last %d seconds</string>

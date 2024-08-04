@@ -61,7 +61,7 @@ class RemoveFromQueueSwipeAction : SwipeAction {
     fun addToQueueAt(episode: Episode, index: Int) : Job {
         return runOnIOScope {
             if (curQueue.episodeIds.contains(episode.id)) return@runOnIOScope
-            if (episode.isNew) setPlayState(Episode.UNPLAYED, false, episode)
+            if (episode.isNew) setPlayState(Episode.PlayState.UNPLAYED.code, false, episode)
             curQueue = upsert(curQueue) {
                 it.episodeIds.add(index, episode.id)
                 it.update()

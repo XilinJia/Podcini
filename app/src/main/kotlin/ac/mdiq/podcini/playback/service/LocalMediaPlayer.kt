@@ -253,8 +253,11 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
         curMedia = playable
         if (curMedia is EpisodeMedia) {
             val media_ = curMedia as EpisodeMedia
-            curIndexInQueue = EpisodeUtil.indexOfItemWithId(curQueue.episodes, media_.id)
+            val item = media_.episodeOrFetch()
+            val eList = if (item?.feed?.preferences?.queue != null) curQueue.episodes else item?.feed?.getVirtualQueueItems() ?: listOf()
+            curIndexInQueue = EpisodeUtil.indexOfItemWithId(eList, media_.id)
         } else curIndexInQueue = -1
+
         prevMedia = curMedia
         this.isStreaming = stream
         mediaType = curMedia!!.getMediaType()

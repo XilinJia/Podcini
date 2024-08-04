@@ -86,7 +86,7 @@ class Episode : RealmObject {
 
     @Ignore
     val isNew: Boolean
-        get() = playState == NEW
+        get() = playState == PlayState.NEW.code
 
     @Ignore
     val isInProgress: Boolean
@@ -123,7 +123,7 @@ class Episode : RealmObject {
         }
 
     constructor() {
-        this.playState = UNPLAYED
+        this.playState = PlayState.UNPLAYED.code
     }
 
     /**
@@ -187,19 +187,19 @@ class Episode : RealmObject {
     }
 
     fun setNew() {
-        playState = NEW
+        playState = PlayState.NEW.code
     }
 
     fun isPlayed(): Boolean {
-        return playState == PLAYED
+        return playState == PlayState.PLAYED.code
     }
 
     fun setPlayed(played: Boolean) {
-        playState = if (played) PLAYED else UNPLAYED
+        playState = if (played) PlayState.PLAYED.code else PlayState.UNPLAYED.code
     }
 
     fun setBuilding() {
-        playState = BUILDING
+        playState = PlayState.BUILDING.code
     }
 
     /**
@@ -252,13 +252,15 @@ class Episode : RealmObject {
         return (id xor (id ushr 32)).toInt()
     }
 
+    enum class PlayState(val code: Int) {
+        UNSPECIFIED(-2),
+        NEW(-1),
+        UNPLAYED(0),
+        PLAYED(1),
+        BUILDING(2),
+        ABANDONED(3)
+    }
     companion object {
         val TAG: String = Episode::class.simpleName ?: "Anonymous"
-
-        const val UNSPECIFIED: Int = -2
-        const val NEW: Int = -1
-        const val UNPLAYED: Int = 0
-        const val PLAYED: Int = 1
-        const val BUILDING: Int = 2
     }
 }

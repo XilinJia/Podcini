@@ -311,7 +311,7 @@ class PlaybackService : MediaSessionService() {
                     if (ended || smartMarkAsPlayed || autoSkipped || (skipped && !shouldSkipKeepEpisode())) {
                         Logd(TAG, "onPostPlayback ended: $ended smartMarkAsPlayed: $smartMarkAsPlayed autoSkipped: $autoSkipped skipped: $skipped")
                         // only mark the item as played if we're not keeping it anyways
-                        item = setPlayStateSync(Episode.PLAYED, ended || (skipped && smartMarkAsPlayed), item!!)
+                        item = setPlayStateSync(Episode.PlayState.PLAYED.code, ended || (skipped && smartMarkAsPlayed), item!!)
                         val action = item?.feed?.preferences?.autoDeleteAction
                         val shouldAutoDelete = (action == AutoDeleteAction.ALWAYS ||
                                 (action == AutoDeleteAction.GLOBAL && item?.feed != null && shouldAutoDeleteItem(item!!.feed!!)))
@@ -355,11 +355,6 @@ class PlaybackService : MediaSessionService() {
 
         override fun getNextInQueue(currentMedia: Playable?): Playable? {
             Logd(TAG, "call getNextInQueue currentMedia: ${currentMedia?.getEpisodeTitle()}")
-            if (curIndexInQueue < 0) {
-                Logd(TAG, "getNextInQueue(), curMedia is not in curQueue")
-                writeNoMediaPlaying()
-                return null
-            }
             if (currentMedia !is EpisodeMedia) {
                 Logd(TAG, "getNextInQueue(), but playable not an instance of EpisodeMedia, so not proceeding")
                 writeNoMediaPlaying()
@@ -371,20 +366,29 @@ class PlaybackService : MediaSessionService() {
                 writeNoMediaPlaying()
                 return null
             }
-//            val nextItem = getNextInQueue(item)
-            if (curQueue.episodes.isEmpty()) {
+            if (curIndexInQueue < 0 && item.feed?.preferences?.queue != null) {
+                Logd(TAG, "getNextInQueue(), curMedia is not in curQueue")
+                writeNoMediaPlaying()
+                return null
+            }
+            val eList = if (item.feed?.preferences?.queue == null) item.feed?.getVirtualQueueItems() else curQueue.episodes
+            if (eList.isNullOrEmpty()) {
                 Logd(TAG, "getNextInQueue queue is empty")
                 writeNoMediaPlaying()
                 return null
             }
+            Logd(TAG, "getNextInQueue eList: ${eList.size}")
             var j = 0
-            val i = EpisodeUtil.indexOfItemWithId(curQueue.episodes, item.id)
+            val i = EpisodeUtil.indexOfItemWithId(eList, item.id)
+            Logd(TAG, "getNextInQueue current i: $i curIndexInQueue: $curIndexInQueue")
             if (i < 0) {
-                if (curIndexInQueue < curQueue.episodes.size) j = curIndexInQueue
-                else j = curQueue.episodes.size-1
-            } else if (i < curQueue.episodes.size-1) j = i+1
+                if (curIndexInQueue >= 0 && curIndexInQueue < eList.size) j = curIndexInQueue
+                else j = eList.size-1
+            } else if (i < eList.size-1) j = i+1
+            Logd(TAG, "getNextInQueue next j: $j")
 
-            val nextItem = unmanaged(curQueue.episodes[j])
+            val nextItem = unmanaged(eList[j])
+            Logd(TAG, "getNextInQueue nextItem ${nextItem.title}")
             if (nextItem.media == null) {
                 Logd(TAG, "getNextInQueue nextItem: $nextItem media is null")
                 writeNoMediaPlaying()
@@ -397,7 +401,7 @@ class PlaybackService : MediaSessionService() {
                 return null
             }
 
-            if (!nextItem.media!!.localFileAvailable() && !isStreamingAllowed && isFollowQueue && nextItem.feed != null && !nextItem.feed!!.isLocalFeed) {
+            if (!nextItem.media!!.localFileAvailable() && !isStreamingAllowed && isFollowQueue && nextItem.feed?.isLocalFeed != true) {
                 Logd(TAG, "getNextInQueue nextItem has no local file ${nextItem.title}")
                 displayStreamingNotAllowedNotification(PlaybackServiceStarter(this@PlaybackService, nextItem.media!!).intent)
                 writeNoMediaPlaying()
@@ -405,7 +409,7 @@ class PlaybackService : MediaSessionService() {
             }
             EventFlow.postEvent(FlowEvent.PlayEvent(item, FlowEvent.PlayEvent.Action.END))
             EventFlow.postEvent(FlowEvent.PlayEvent(nextItem))
-            return if (nextItem.media == null) nextItem.media else unmanaged(nextItem.media!!)
+            return if (nextItem.media == null) null else unmanaged(nextItem.media!!)
         }
 
         override fun findMedia(url: String): Playable? {
@@ -419,14 +423,12 @@ class PlaybackService : MediaSessionService() {
             if (stopPlaying) taskManager.cancelPositionSaver()
 
             if (mediaType == null) sendNotificationBroadcast(NOTIFICATION_TYPE_PLAYBACK_END, 0)
-            else {
-                sendNotificationBroadcast(NOTIFICATION_TYPE_RELOAD,
-                    when {
-                        isCasting -> EXTRA_CODE_CAST
-                        mediaType == MediaType.VIDEO -> EXTRA_CODE_VIDEO
-                        else -> EXTRA_CODE_AUDIO
-                    })
-            }
+            else sendNotificationBroadcast(NOTIFICATION_TYPE_RELOAD,
+                when {
+                    isCasting -> EXTRA_CODE_CAST
+                    mediaType == MediaType.VIDEO -> EXTRA_CODE_VIDEO
+                    else -> EXTRA_CODE_AUDIO
+                })
         }
 
         override fun ensureMediaInfoLoaded(media: Playable) {
@@ -962,7 +964,7 @@ class PlaybackService : MediaSessionService() {
         if (event.action == FlowEvent.QueueEvent.Action.REMOVED) {
             Logd(TAG, "onQueueEvent: ending playback curEpisode ${curEpisode?.title}")
             for (e in event.episodes) {
-                Logd(TAG, "onQueueEvent: ending playback event ${e?.title}")
+                Logd(TAG, "onQueueEvent: ending playback event ${e.title}")
                 if (e.id == curEpisode?.id) {
                     mPlayer?.endPlayback(hasEnded = false, wasSkipped = true, shouldContinue = true, toStoppedState = true)
                     break
@@ -1075,7 +1077,7 @@ class PlaybackService : MediaSessionService() {
                         if (media != null) {
                             media.setPosition(position)
                             media.setLastPlayedTime(System.currentTimeMillis())
-                            if (it.isNew) it.playState = Episode.UNPLAYED
+                            if (it.isNew) it.playState = Episode.PlayState.UNPLAYED.code
                             if (media.startPosition >= 0 && media.getPosition() > media.startPosition)
                                 media.playedDuration = (media.playedDurationWhenStarted + media.getPosition() - media.startPosition)
                         }

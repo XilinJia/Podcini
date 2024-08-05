@@ -226,7 +226,7 @@ class PlaybackService : MediaSessionService() {
     private val mediaPlayerCallback: MediaPlayerCallback = object : MediaPlayerCallback {
         override fun statusChanged(newInfo: MediaPlayerInfo?) {
             currentMediaType = mPlayer?.mediaType ?: MediaType.UNKNOWN
-            Logd(TAG, "statusChanged called ${newInfo?.playerStatus}")
+            Log.d(TAG, "statusChanged called ${newInfo?.playerStatus}")
             if (newInfo != null) {
                 when (newInfo.playerStatus) {
                     PlayerStatus.INITIALIZED ->

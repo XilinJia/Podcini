@@ -27,6 +27,7 @@ import ac.mdiq.podcini.ui.fragment.FeedSettingsFragment.Companion.queueSettingOp
 import ac.mdiq.podcini.ui.utils.CoverLoader
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
+import ac.mdiq.podcini.util.DateFormatter.formatAbbrev
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
@@ -425,8 +426,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 for (f in feedList_) {
                     val d = realm.query(Episode::class).query(queryString, f.id).first().find()?.pubDate ?: 0L
                     counterMap[f.id] = d
-                    val dateFormat = SimpleDateFormat("yy-MM-dd HH:mm", Locale.getDefault())
-                    f.sortInfo = "Updated: " + dateFormat.format(Date(d))
+//                    val dateFormat = SimpleDateFormat("yy-MM-dd HH:mm", Locale.getDefault())
+                    f.sortInfo = "Updated: " + formatAbbrev(requireContext(), Date(d))
                 }
                 comparator(counterMap, dir)
             }
@@ -434,11 +435,10 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 val queryString = "feedId == $0 SORT(media.downloadTime DESC)"
                 val counterMap: MutableMap<Long, Long> = mutableMapOf()
                 for (f in feedList_) {
-                    val d =
-                        realm.query(Episode::class).query(queryString, f.id).first().find()?.media?.downloadTime ?: 0L
+                    val d = realm.query(Episode::class).query(queryString, f.id).first().find()?.media?.downloadTime ?: 0L
                     counterMap[f.id] = d
-                    val dateFormat = SimpleDateFormat("yy-MM-dd HH:mm", Locale.getDefault())
-                    f.sortInfo = "Downloaded: " + dateFormat.format(Date(d))
+//                    val dateFormat = SimpleDateFormat("yy-MM-dd HH:mm", Locale.getDefault())
+                    f.sortInfo = "Downloaded: " + formatAbbrev(requireContext(), Date(d))
                 }
                 comparator(counterMap, dir)
             }
@@ -449,8 +449,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 for (f in feedList_) {
                     val d = realm.query(Episode::class).query(queryString, f.id).first().find()?.pubDate ?: 0L
                     counterMap[f.id] = d
-                    val dateFormat = SimpleDateFormat("yy-MM-dd HH:mm", Locale.getDefault())
-                    f.sortInfo = "Unplayed: " + dateFormat.format(Date(d))
+//                    val dateFormat = SimpleDateFormat("yy-MM-dd HH:mm", Locale.getDefault())
+                    f.sortInfo = "Unplayed: " + formatAbbrev(requireContext(), Date(d))
                 }
                 comparator(counterMap, dir)
             }

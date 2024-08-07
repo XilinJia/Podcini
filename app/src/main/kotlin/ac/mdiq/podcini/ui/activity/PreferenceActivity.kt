@@ -113,13 +113,13 @@ class PreferenceActivity : AppCompatActivity(), SearchPreferenceResultListener {
 
     override fun onSearchResultClicked(result: SearchPreferenceResult) {
         when (val screen = result.resourceFile) {
-            R.xml.feed_settings -> {
-                val builder = MaterialAlertDialogBuilder(this)
-                builder.setTitle(R.string.feed_settings_label)
-                builder.setMessage(R.string.pref_feed_settings_dialog_msg)
-                builder.setPositiveButton(android.R.string.ok, null)
-                builder.show()
-            }
+//            R.xml.feed_settings -> {
+//                val builder = MaterialAlertDialogBuilder(this)
+//                builder.setTitle(R.string.feed_settings_label)
+//                builder.setMessage(R.string.pref_feed_settings_dialog_msg)
+//                builder.setPositiveButton(android.R.string.ok, null)
+//                builder.show()
+//            }
             R.xml.preferences_notifications -> openScreen(screen)
             else -> {
                 val fragment = openScreen(result.resourceFile)
@@ -197,9 +197,9 @@ class PreferenceActivity : AppCompatActivity(), SearchPreferenceResultListener {
                 R.xml.preferences_notifications -> {
                     return R.string.notification_pref_fragment
                 }
-                R.xml.feed_settings -> {
-                    return R.string.feed_settings_label
-                }
+//                R.xml.feed_settings -> {
+//                    return R.string.feed_settings_label
+//                }
                 R.xml.preferences_swipe -> {
                     return R.string.swipeactions_label
                 }

@@ -1,8 +1,6 @@
 package ac.mdiq.podcini.receiver
 
-import ac.mdiq.podcini.playback.service.PlaybackService
-import ac.mdiq.podcini.playback.service.PlaybackService.Companion
-import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.config.ClientConfigurator
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -12,7 +10,6 @@ import android.util.Log
 import android.view.KeyEvent
 import androidx.core.content.ContextCompat
 import androidx.media3.common.util.UnstableApi
-import ac.mdiq.podcini.util.config.ClientConfigurator
 
 /**
  * Receives media button events.
@@ -20,17 +17,29 @@ import ac.mdiq.podcini.util.config.ClientConfigurator
 class MediaButtonReceiver : BroadcastReceiver() {
     @UnstableApi
     override fun onReceive(context: Context, intent: Intent) {
-        Log.d(TAG, "onReceive called with action: ${intent.action}")
-        if (intent.extras == null) return
+        Log.d(TAG, "onReceive Received intent: $intent")
+        Log.d(TAG, "onReceive Action: ${intent.action}")
+        val extras = intent.extras
+        Log.d(TAG, "onReceive Extras: $extras")
+        if (extras == null) return
 
-        val event = intent.extras!![Intent.EXTRA_KEY_EVENT] as? KeyEvent
-        if (event != null && event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
+        Log.d(TAG, "onReceive Extras: ${extras.keySet()}")
+        for (key in extras.keySet()) {
+            Log.d(TAG, "onReceive Extra[$key] = ${extras[key]}")
+        }
+
+//        val event = extras.getParcelable(Intent.EXTRA_KEY_EVENT, KeyEvent::class.java)
+        val keyEvent: KeyEvent? = if (Build.VERSION.SDK_INT >= 33) extras.getParcelable(Intent.EXTRA_KEY_EVENT, KeyEvent::class.java)
+        else extras.getParcelable(Intent.EXTRA_KEY_EVENT) as KeyEvent?
+        Log.d(TAG, "onReceive keyEvent = $keyEvent" )
+
+        if (keyEvent != null && keyEvent.action == KeyEvent.ACTION_DOWN && keyEvent.repeatCount == 0) {
             ClientConfigurator.initialize(context)
             val serviceIntent = Intent(PLAYBACK_SERVICE_INTENT)
             serviceIntent.setPackage(context.packageName)
-            serviceIntent.putExtra(EXTRA_KEYCODE, event.keyCode)
-            serviceIntent.putExtra(EXTRA_SOURCE, event.source)
-            serviceIntent.putExtra(EXTRA_HARDWAREBUTTON, event.eventTime > 0 || event.downTime > 0)
+            serviceIntent.putExtra(EXTRA_KEYCODE, keyEvent.keyCode)
+            serviceIntent.putExtra(EXTRA_SOURCE, keyEvent.source)
+            serviceIntent.putExtra(EXTRA_HARDWAREBUTTON, keyEvent.eventTime > 0 || keyEvent.downTime > 0)
             try {
                 ContextCompat.startForegroundService(context, serviceIntent)
             } catch (e: Exception) {

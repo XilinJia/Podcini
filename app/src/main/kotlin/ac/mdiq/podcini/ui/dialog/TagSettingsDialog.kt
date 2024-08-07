@@ -26,7 +26,7 @@ class TagSettingsDialog : DialogFragment() {
     private var _binding: EditTagsDialogBinding? = null
     private val binding get() = _binding!!
 
-    private var feedList:  List<Feed> = mutableListOf()
+    private var feedList:  MutableList<Feed> = mutableListOf()
 
     private lateinit var displayedTags: MutableList<String>
     private lateinit var adapter: SimpleChipAdapter
@@ -100,9 +100,10 @@ class TagSettingsDialog : DialogFragment() {
     }
 
     @OptIn(UnstableApi::class) private fun updatePreferencesTags(commonTags: Set<String>) {
-        for (f in feedList) {
+        for (i in 0..feedList.size-1) {
+            val f = feedList[i]
             Logd(TAG, "${f.title} $displayedTags")
-            upsertBlk(f) {
+            feedList[i] = upsertBlk(f) {
                 if (it.preferences != null) {
                     it.preferences!!.tags.removeAll(commonTags)
                     it.preferences!!.tags.addAll(displayedTags)
@@ -112,7 +113,7 @@ class TagSettingsDialog : DialogFragment() {
     }
 
     private fun setFeedList(feedLst_: List<Feed>) {
-        feedList = feedLst_
+        feedList = feedLst_.toMutableList()
     }
 
     companion object {

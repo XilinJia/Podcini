@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.storage.model
 
+import ac.mdiq.podcini.R
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting.Companion.fromInteger
@@ -93,6 +94,8 @@ class FeedPreferences : EmbeddedRealmObject {
         }
     var queueId: Long = 0L
 
+    var autoAddNewToQueue: Boolean = false
+
     @Ignore
     var autoDownloadFilter: FeedAutoDownloadFilter? = null
         get() = field ?: FeedAutoDownloadFilter(autoDLInclude, autoDLExclude, autoDLMinDuration, markExcludedPlayed)
@@ -121,10 +124,10 @@ class FeedPreferences : EmbeddedRealmObject {
         }
     var autoDLPolicyCode: Int = 0
 
-    enum class AutoDLPolicy(val code: Int) {
-        ONLY_NEW(0),
-        NEWER(1),
-        OLDER(2);
+    enum class AutoDLPolicy(val code: Int, val resId: Int) {
+        ONLY_NEW(0, R.string.feed_auto_download_new),
+        NEWER(1, R.string.feed_auto_download_newer),
+        OLDER(2, R.string.feed_auto_download_older);
 
         companion object {
             fun fromCode(code: Int): AutoDLPolicy {
@@ -190,5 +193,6 @@ class FeedPreferences : EmbeddedRealmObject {
         const val TAG_SEPARATOR: String = "\u001e"
 
         val FeedAutoDeleteOptions = AutoDeleteAction.values().map { it.tag }
+
     }
 }

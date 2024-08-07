@@ -138,7 +138,7 @@ class MainPreferencesFragment : PreferenceFragmentCompat() {
             .addBreadcrumb(getTitleOfPage(R.xml.preferences_autodownload))
         config.index(R.xml.preferences_synchronization).addBreadcrumb(getTitleOfPage(R.xml.preferences_synchronization))
         config.index(R.xml.preferences_notifications).addBreadcrumb(getTitleOfPage(R.xml.preferences_notifications))
-        config.index(R.xml.feed_settings).addBreadcrumb(getTitleOfPage(R.xml.feed_settings))
+//        config.index(R.xml.feed_settings).addBreadcrumb(getTitleOfPage(R.xml.feed_settings))
         config.index(R.xml.preferences_swipe)
             .addBreadcrumb(getTitleOfPage(R.xml.preferences_user_interface))
             .addBreadcrumb(getTitleOfPage(R.xml.preferences_swipe))

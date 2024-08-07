@@ -70,8 +70,6 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
     private var datasetStats: DatasetStats? = null
     private lateinit var navAdapter: NavListAdapter
 
-//    private var openFolders: MutableSet<String> = HashSet()
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         _binding = NavListBinding.inflate(inflater)
@@ -92,11 +90,6 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
             insets
         }
 
-//        val preferences: SharedPreferences = requireContext().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-//        TODO: what is this?
-//        openFolders = HashSet(prefs!!.getStringSet(PREF_OPEN_FOLDERS, HashSet())!!) // Must not modify
-
-//        loadData()
         val navList = binding.navRecycler
         navAdapter = NavListAdapter()
         navAdapter.setHasStableIds(true)
@@ -197,7 +190,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
             }
         }
         fun getFragmentTags(): List<String?> {
-            return Collections.unmodifiableList(fragmentTags)
+            return fragmentTags
         }
         override fun getItemCount(): Int {
             return subscriptionOffset
@@ -359,7 +352,6 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
 
         @VisibleForTesting
         const val PREF_LAST_FRAGMENT_TAG: String = "prefLastFragmentTag"
-//        private const val PREF_OPEN_FOLDERS = "prefOpenFolders"
         const val VIEW_TYPE_NAV: Int = 0
         const val VIEW_TYPE_SECTION_DIVIDER: Int = 1
 

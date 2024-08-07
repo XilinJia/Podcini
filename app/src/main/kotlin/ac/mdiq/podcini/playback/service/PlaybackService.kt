@@ -271,7 +271,7 @@ class PlaybackService : MediaSessionService() {
         }
 
         override fun onMediaChanged(reloadUI: Boolean) {
-            Logd(TAG, "reloadUI callback reached")
+            Logd(TAG, "onMediaChanged reloadUI callback reached")
             if (reloadUI) sendNotificationBroadcast(NOTIFICATION_TYPE_RELOAD, 0)
         }
 

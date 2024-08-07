@@ -71,48 +71,7 @@ object AutoDownloads {
 //        likely not needed
         @UnstableApi
         open fun autoDownloadEpisodeMedia(context: Context, feeds: List<Feed>? = null): Runnable? {
-            return Runnable {
-//                // true if we should auto download based on network status
-////            val networkShouldAutoDl = (isAutoDownloadAllowed)
-//                val networkShouldAutoDl = (isAutoDownloadAllowed && isEnableAutodownload)
-//                // true if we should auto download based on power status
-//                val powerShouldAutoDl = (deviceCharging(context) || isEnableAutodownloadOnBattery)
-//                Logd(TAG, "prepare autoDownloadUndownloadedItems $networkShouldAutoDl $powerShouldAutoDl")
-//                // we should only auto download if both network AND power are happy
-//                if (networkShouldAutoDl && powerShouldAutoDl) {
-//                    Logd(TAG, "Performing auto-dl of undownloaded episodes")
-//                    val queueItems = curQueue.episodes
-//                    val newItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.new.name), EpisodeSortOrder.DATE_NEW_OLD)
-//                    Logd(TAG, "newItems: ${newItems.size}")
-//                    val candidates: MutableList<Episode> = ArrayList(queueItems.size + newItems.size)
-//                    candidates.addAll(queueItems)
-//                    for (newItem in newItems) {
-//                        val feedPrefs = newItem.feed!!.preferences
-//                        if (feedPrefs!!.autoDownload && !candidates.contains(newItem) && feedPrefs.autoDownloadFilter!!.shouldAutoDownload(newItem)) candidates.add(newItem)
-//                    }
-//                    // filter items that are not auto downloadable
-//                    val it = candidates.iterator()
-//                    while (it.hasNext()) {
-//                        val item = it.next()
-//                        if (!item.isAutoDownloadEnabled || item.isDownloaded || item.media == null || isCurMedia(item.media) || item.feed?.isLocalFeed == true)
-//                            it.remove()
-//                    }
-//                    val autoDownloadableEpisodes = candidates.size
-//                    val downloadedEpisodes = getEpisodesCount(EpisodeFilter(EpisodeFilter.States.downloaded.name))
-//                    val deletedEpisodes = AutoCleanups.build().makeRoomForEpisodes(context, autoDownloadableEpisodes)
-//                    val cacheIsUnlimited = episodeCacheSize == UserPreferences.EPISODE_CACHE_SIZE_UNLIMITED
-//                    val episodeCacheSize = episodeCacheSize
-//                    val episodeSpaceLeft =
-//                        if (cacheIsUnlimited || episodeCacheSize >= downloadedEpisodes + autoDownloadableEpisodes) autoDownloadableEpisodes
-//                        else episodeCacheSize - (downloadedEpisodes - deletedEpisodes)
-//                    val itemsToDownload: List<Episode> = candidates.subList(0, episodeSpaceLeft)
-//                    if (itemsToDownload.isNotEmpty()) {
-//                        Logd(TAG, "Enqueueing " + itemsToDownload.size + " items for download")
-//                        for (episode in itemsToDownload) DownloadServiceInterface.get()?.download(context, episode)
-//                    }
-//                }
-//                else Logd(TAG, "not auto downloaded networkShouldAutoDl: $networkShouldAutoDl powerShouldAutoDl $powerShouldAutoDl")
-            }
+            return Runnable {}
         }
 
         /**

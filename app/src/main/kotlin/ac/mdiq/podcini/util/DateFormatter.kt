@@ -13,7 +13,7 @@ object DateFormatter {
     @JvmStatic
     fun formatRfc822Date(date: Date?): String {
         val format = SimpleDateFormat("dd MMM yy HH:mm:ss Z", Locale.US)
-        return format.format(date)
+        return format.format(date?: Date(0))
     }
 
     @JvmStatic
@@ -25,16 +25,40 @@ object DateFormatter {
         cal.time = date
         val withinLastYear = now[Calendar.YEAR] == cal[Calendar.YEAR]
         var format = DateUtils.FORMAT_ABBREV_ALL
-        if (withinLastYear) {
-            format = format or DateUtils.FORMAT_NO_YEAR
-        }
+        if (withinLastYear) format = format or DateUtils.FORMAT_NO_YEAR
+
         return DateUtils.formatDateTime(context, date.time, format)
     }
 
     @JvmStatic
     fun formatForAccessibility(date: Date?): String {
         if (date == null) return ""
-
         return DateFormat.getDateInstance(DateFormat.LONG).format(date)
+    }
+
+    fun formatDateTimeFlex(date: Date): String {
+        val now = Date()
+        val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+        return when {
+            isSameDay(date, now) -> SimpleDateFormat("HH:mm", Locale.getDefault()).format(date)
+            isSameYear(date, now) -> SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()).format(date)
+            else -> formatter.format(date)
+        }
+    }
+
+    fun isSameDay(date1: Date, date2: Date): Boolean {
+        val cal1 = Calendar.getInstance()
+        cal1.time = date1
+        val cal2 = Calendar.getInstance()
+        cal2.time = date2
+        return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) && cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)
+    }
+
+    fun isSameYear(date1: Date, date2: Date): Boolean {
+        val cal1 = Calendar.getInstance()
+        cal1.time = date1
+        val cal2 = Calendar.getInstance()
+        cal2.time = date2
+        return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR)
     }
 }

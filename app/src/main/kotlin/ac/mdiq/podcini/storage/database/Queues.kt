@@ -133,18 +133,13 @@ object Queues {
             if (queueModified) {
 //                TODO: handle sorting
                 applySortOrder(qItems, events)
-//                curQueue.episodes.clear()
-//                curQueue.episodes.addAll(qItems)
                 curQueue = upsert(curQueue) {
                     it.episodeIds.clear()
                     it.episodeIds.addAll(qItemIds)
                     it.update()
                 }
-//                curQueue.episodes.addAll(qItems)
-
                 for (event in events) EventFlow.postEvent(event)
 
-//                EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(updatedItems))
                 if (markAsUnplayed && markAsUnplayeds.size > 0) setPlayState(Episode.PlayState.UNPLAYED.code, false, *markAsUnplayeds.toTypedArray())
 //                if (performAutoDownload) autodownloadEpisodeMedia(context)
             }

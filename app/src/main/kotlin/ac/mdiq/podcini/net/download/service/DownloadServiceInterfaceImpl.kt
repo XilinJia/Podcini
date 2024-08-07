@@ -85,7 +85,6 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
             try {
                 val workInfoList = future.get() // Wait for the completion of the future operation and retrieve the result
                 workInfoList.forEach { workInfo ->
-//                    TODO: why cancel so many times??
                     if (workInfo.tags.contains(WORK_DATA_WAS_QUEUED)) {
                         val item_ = media.episodeOrFetch()
                         if (item_ != null) Queues.removeFromQueue(item_)

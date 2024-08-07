@@ -1,12 +1,14 @@
 package ac.mdiq.podcini.storage.model
 
-enum class VolumeAdaptionSetting(private val value: Int, @JvmField val adaptionFactor: Float) {
-    OFF(0, 1.0f),
-    LIGHT_REDUCTION(1, 0.5f),
-    HEAVY_REDUCTION(2, 0.2f),
-    LIGHT_BOOST(3, 1.5f),
-    MEDIUM_BOOST(4, 2f),
-    HEAVY_BOOST(5, 2.5f);
+import ac.mdiq.podcini.R
+
+enum class VolumeAdaptionSetting(private val value: Int, @JvmField val adaptionFactor: Float, val resId: Int) {
+    OFF(0, 1.0f, R.string.feed_volume_reduction_off),
+    LIGHT_REDUCTION(1, 0.5f, R.string.feed_volume_reduction_light),
+    HEAVY_REDUCTION(2, 0.2f, R.string.feed_volume_reduction_heavy),
+    LIGHT_BOOST(3, 1.5f, R.string.feed_volume_boost_light),
+    MEDIUM_BOOST(4, 2f, R.string.feed_volume_boost_medium),
+    HEAVY_BOOST(5, 2.5f, R.string.feed_volume_boost_heavy);
 
     fun toInteger(): Int {
         return value

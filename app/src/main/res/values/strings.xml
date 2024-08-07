@@ -810,6 +810,8 @@
     <string name="mark_excluded_episodes_played">Mark excluded episodes played</string>
     <string name="keep_updated">Keep updated</string>
     <string name="keep_updated_summary">Include this podcast when (auto-)refreshing all podcasts</string>
+    <string name="audo_add_new_queue">Auto add new to queue</string>
+    <string name="audo_add_new_queue_summary">Automatically add new episodes in this podcast to the designated queue when (auto-)refreshing</string>
     <string name="auto_download_disabled_globally">Auto download is disabled in the main Podcini settings</string>
     <string name="statistics_time_played">Time played:</string>
     <string name="statistics_total_duration">Total duration (estimate):</string>

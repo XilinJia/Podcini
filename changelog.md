@@ -1,3 +1,11 @@
+# 6.3.5
+
+* added more Log.d statements in hope for tracking down the mysterious random playing
+* FeedSettings view is all in Jetpack Compose, FeedSettingsPreferenceFragment removed
+* in FeedSettings, added "Audo add new to queue" (accissible when associated queue not set to "None")
+	* when set, new episodes during refresh will be added to the associated queue, regardless of being downloaded
+* use adaptive date formats (stripped time) in Subscriptions view
+
 # 6.3.4
 
 * fixed mis-behavior of setting associated queue to Active in FeedSettings

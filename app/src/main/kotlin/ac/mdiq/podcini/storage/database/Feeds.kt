@@ -9,6 +9,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.isAutoDelete
 import ac.mdiq.podcini.preferences.UserPreferences.isAutoDeleteLocal
 import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodes
 import ac.mdiq.podcini.storage.database.LogsAndStats.addDownloadStatus
+import ac.mdiq.podcini.storage.database.Queues.addToQueueSync
 import ac.mdiq.podcini.storage.database.Queues.removeFromAllQueuesQuiet
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
@@ -284,6 +285,10 @@ object Feeds {
                     if (pubDate == null || priorMostRecentDate == null || priorMostRecentDate.before(pubDate) || priorMostRecentDate == pubDate) {
                         Logd(TAG, "Marking episode published on $pubDate new, prior most recent date = $priorMostRecentDate")
                         episode.setNew()
+                        if (savedFeed.preferences?.autoAddNewToQueue == true) {
+                            val q = savedFeed.preferences?.queue
+                            if (q != null) runOnIOScope {  addToQueueSync(false, episode, q) }
+                        }
                     }
                 }
             }

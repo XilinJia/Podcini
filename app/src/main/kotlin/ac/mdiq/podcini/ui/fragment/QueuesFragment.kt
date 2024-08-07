@@ -294,7 +294,7 @@ import java.util.*
                     val pos = queueItems.size
                     queueItems.addAll(event.episodes)
                     adapter?.notifyItemRangeInserted(pos, queueItems.size)
-                    adapter?.notifyItemRangeChanged(pos, event.episodes.size);
+                    adapter?.notifyItemRangeChanged(pos, event.episodes.size)
                 }
             }
             FlowEvent.QueueEvent.Action.SET_QUEUE, FlowEvent.QueueEvent.Action.SORTED -> {
@@ -312,7 +312,7 @@ import java.util.*
                             holder?.unbind()
                             queueItems.removeAt(pos)
                             adapter?.notifyItemRemoved(pos)
-                            adapter?.notifyItemRangeChanged(pos, adapter!!.getItemCount()-pos);
+                            adapter?.notifyItemRangeChanged(pos, adapter!!.itemCount -pos)
                         } else {
                             Log.e(TAG, "Trying to remove item non-existent from queue ${e.id} ${e.title}")
                             continue
@@ -494,19 +494,16 @@ import java.util.*
     fun RenameQueueDialog(showDialog: Boolean, onDismiss: () -> Unit) {
         if (showDialog) {
             Dialog(onDismissRequest = onDismiss) {
-                Card(
-                    modifier = Modifier
-                        .wrapContentSize(align = Alignment.Center)
-                        .padding(16.dp),
+                Card(modifier = Modifier
+                    .wrapContentSize(align = Alignment.Center)
+                    .padding(16.dp),
                     shape = RoundedCornerShape(16.dp),
                 ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
+                    Column(modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         var newName by remember { mutableStateOf(curQueue.name) }
-                        TextField(
-                            value = newName,
+                        TextField(value = newName,
                             onValueChange = { newName = it },
                             label = { Text("Rename (Unique name only)") }
                         )
@@ -537,19 +534,16 @@ import java.util.*
     fun AddQueueDialog(showDialog: Boolean, onDismiss: () -> Unit) {
         if (showDialog) {
             Dialog(onDismissRequest = onDismiss) {
-                Card(
-                    modifier = Modifier
-                        .wrapContentSize(align = Alignment.Center)
-                        .padding(16.dp),
+                Card(modifier = Modifier
+                    .wrapContentSize(align = Alignment.Center)
+                    .padding(16.dp),
                     shape = RoundedCornerShape(16.dp),
                 ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
+                    Column(modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         var newName by remember { mutableStateOf("") }
-                        TextField(
-                            value = newName,
+                        TextField(value = newName,
                             onValueChange = { newName = it },
                             label = { Text("Add queue (Unique name only)") }
                         )

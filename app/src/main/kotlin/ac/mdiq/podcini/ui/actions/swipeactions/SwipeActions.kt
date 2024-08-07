@@ -215,11 +215,11 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
         }
 
         @JvmField
-        val swipeActions: List<SwipeAction> = Collections.unmodifiableList(
-            listOf(NoActionSwipeAction(), AddToQueueSwipeAction(), StartDownloadSwipeAction(), MarkFavoriteSwipeAction(),
-                TogglePlaybackStateSwipeAction(), RemoveFromQueueSwipeAction(),
-                DeleteSwipeAction(), RemoveFromHistorySwipeAction())
-        )
+        val swipeActions: List<SwipeAction> = listOf(
+            NoActionSwipeAction(), AddToQueueSwipeAction(),
+            StartDownloadSwipeAction(), MarkFavoriteSwipeAction(),
+            TogglePlaybackStateSwipeAction(), RemoveFromQueueSwipeAction(),
+            DeleteSwipeAction(), RemoveFromHistorySwipeAction())
 
         private fun getPrefs(tag: String, defaultActions: String): Actions {
             val prefsString = prefs!!.getString(KEY_PREFIX_SWIPEACTIONS + tag, defaultActions)

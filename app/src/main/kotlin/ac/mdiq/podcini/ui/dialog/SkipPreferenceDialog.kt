@@ -23,7 +23,6 @@ object SkipPreferenceDialog {
         val choices = arrayOfNulls<String>(values.size)
         for (i in values.indices) {
             if (skipSecs == values[i]) checked = i
-
             choices[i] = String.format(Locale.getDefault(), "%d %s", values[i], context.getString(R.string.time_seconds))
         }
 
@@ -31,15 +30,12 @@ object SkipPreferenceDialog {
         builder.setTitle(if (direction == SkipDirection.SKIP_FORWARD) R.string.pref_fast_forward else R.string.pref_rewind)
         builder.setSingleChoiceItems(choices, checked) { dialog: DialogInterface, _: Int ->
             val choice = (dialog as AlertDialog).listView.checkedItemPosition
-            if (choice < 0 || choice >= values.size) {
-                System.err.printf("Choice in showSkipPreference is out of bounds %d", choice)
-            } else {
+            if (choice < 0 || choice >= values.size) System.err.printf("Choice in showSkipPreference is out of bounds %d", choice)
+            else {
                 val seconds = values[choice]
                 if (direction == SkipDirection.SKIP_FORWARD) fastForwardSecs = seconds
                 else rewindSecs = seconds
-
                 if (textView != null) textView.text = NumberFormat.getInstance().format(seconds.toLong())
-
                 dialog.dismiss()
             }
         }

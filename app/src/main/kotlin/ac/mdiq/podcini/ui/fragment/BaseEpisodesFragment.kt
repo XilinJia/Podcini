@@ -14,6 +14,7 @@ import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
+import ac.mdiq.podcini.ui.view.EpisodeViewHolder
 import ac.mdiq.podcini.ui.view.EpisodesRecyclerView
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
@@ -129,24 +130,28 @@ import kotlinx.coroutines.withContext
             }
         })
         speedDialView.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
-            var confirmationString = 0
-            if (adapter.selectedItems.size >= 25 || adapter.shouldSelectLazyLoadedItems()) {
-                // Should ask for confirmation
-                when (actionItem.id) {
-//                    R.id.mark_read_batch -> confirmationString = R.string.multi_select_mark_played_confirmation
-//                    R.id.mark_unread_batch -> confirmationString = R.string.multi_select_mark_unplayed_confirmation
-                    R.id.toggle_played_batch -> confirmationString = R.string.multi_select_toggle_played_confirmation
-                }
-            }
-            if (confirmationString == 0) performMultiSelectAction(actionItem.id)
-            else {
-                object : ConfirmationDialog(activity as MainActivity, R.string.multi_select, confirmationString) {
-                    override fun onConfirmButtonPressed(dialog: DialogInterface) {
-                        performMultiSelectAction(actionItem.id)
+//            if (actionItem.id == R.id.put_in_queue_batch) {
+//                EpisodeMultiSelectHandler((activity as MainActivity), actionItem.id).handleAction(adapter.selectedItems.filterIsInstance<Episode>())
+//                true
+//            } else {
+                var confirmationString = 0
+            Logd(TAG, "adapter.selectedItems: ${adapter.selectedItems.size}")
+                if (adapter.selectedItems.size >= 25 || adapter.shouldSelectLazyLoadedItems()) {
+                    when (actionItem.id) {
+                        R.id.toggle_played_batch -> confirmationString = R.string.multi_select_toggle_played_confirmation
+                        else -> confirmationString = R.string.multi_select_operation_confirmation
                     }
-                }.createNewDialog().show()
-            }
-            true
+                }
+                if (confirmationString == 0) performMultiSelectAction(actionItem.id)
+                else {
+                    object : ConfirmationDialog(activity as MainActivity, R.string.multi_select, confirmationString) {
+                        override fun onConfirmButtonPressed(dialog: DialogInterface) {
+                            performMultiSelectAction(actionItem.id)
+                        }
+                    }.createNewDialog().show()
+                }
+                true
+//            }
         }
         return binding.root
     }
@@ -166,6 +171,13 @@ import kotlinx.coroutines.withContext
     override fun onStop() {
         super.onStop()
         cancelFlowEvents()
+        val recyclerView =  binding.recyclerView
+        val childCount = recyclerView.childCount
+        for (i in 0 until childCount) {
+            val child = recyclerView.getChildAt(i)
+            val viewHolder = recyclerView.getChildViewHolder(child) as? EpisodeViewHolder
+            viewHolder?.stopDBMonitor()
+        }
     }
 
     override fun onResume() {
@@ -182,7 +194,6 @@ import kotlinx.coroutines.withContext
     @Deprecated("Deprecated in Java")
     @UnstableApi override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (super.onOptionsItemSelected(item)) return true
-
         val itemId = item.itemId
         when (itemId) {
             R.id.action_search -> {
@@ -195,27 +206,29 @@ import kotlinx.coroutines.withContext
 
     @UnstableApi private fun performMultiSelectAction(actionItemId: Int) {
         val handler = EpisodeMultiSelectHandler((activity as MainActivity), actionItemId)
-        lifecycleScope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    handler.handleAction(adapter.selectedItems.filterIsInstance<Episode>())
-                    if (adapter.shouldSelectLazyLoadedItems()) {
-                        var applyPage = page + 1
-                        var nextPage: List<Episode>
-                        do {
-                            nextPage = loadMoreData(applyPage)
-                            handler.handleAction(nextPage)
-                            applyPage++
-                        } while (nextPage.size == EPISODES_PER_PAGE)
-                    }
-                    withContext(Dispatchers.Main) {
-                        adapter.endSelectMode()
-                    }
-                }
-            } catch (e: Throwable) {
-                Log.e(TAG, Log.getStackTraceString(e))
-            }
-        }
+        handler.handleAction(adapter.selectedItems)
+//        TODO: this appears incorrect, and lazy loading is likely not needed
+//        lifecycleScope.launch {
+//            try {
+//                withContext(Dispatchers.IO) {
+//                    handler.handleAction(adapter.selectedItems.filterIsInstance<Episode>())
+//                    if (adapter.shouldSelectLazyLoadedItems()) {
+//                        var applyPage = page + 1
+//                        var nextPage: List<Episode>
+//                        do {
+//                            nextPage = loadMoreData(applyPage)
+//                            handler.handleAction(nextPage)
+//                            applyPage++
+//                        } while (nextPage.size == EPISODES_PER_PAGE)
+//                    }
+//                    withContext(Dispatchers.Main) {
+//                        adapter.endSelectMode()
+//                    }
+//                }
+//            } catch (e: Throwable) {
+//                Log.e(TAG, Log.getStackTraceString(e))
+//            }
+//        }
     }
 
     private fun setupLoadMoreScrollListener() {

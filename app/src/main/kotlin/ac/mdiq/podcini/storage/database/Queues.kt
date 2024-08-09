@@ -113,7 +113,7 @@ object Queues {
             val markAsUnplayeds = mutableListOf<Episode>()
             val events: MutableList<FlowEvent.QueueEvent> = ArrayList()
             val updatedItems: MutableList<Episode> = ArrayList()
-            val positionCalculator = EnqueuePositionCalculator(enqueueLocation)
+            val positionCalculator = EnqueuePositionPolicy(enqueueLocation)
             val currentlyPlaying = curMedia
             var insertPosition = positionCalculator.calcPosition(curQueue.episodes, currentlyPlaying)
 
@@ -151,8 +151,9 @@ object Queues {
 
         val queue = queue_ ?: curQueue
         val currentlyPlaying = curMedia
-        val positionCalculator = EnqueuePositionCalculator(enqueueLocation)
+        val positionCalculator = EnqueuePositionPolicy(enqueueLocation)
         var insertPosition = positionCalculator.calcPosition(queue.episodes, currentlyPlaying)
+        Logd(TAG, "addToQueueSync insertPosition: $insertPosition")
 
         if (queue.episodeIds.contains(episode.id)) return
 
@@ -345,20 +346,21 @@ object Queues {
         }
     }
 
-    class EnqueuePositionCalculator(private val enqueueLocation: EnqueueLocation) {
+    class EnqueuePositionPolicy(private val enqueueLocation: EnqueueLocation) {
         /**
          * Determine the position (0-based) that the item(s) should be inserted to the named queue.
          * @param queueItems           the queue to which the item is to be inserted
          * @param currentPlaying     the currently playing media
          */
         fun calcPosition(queueItems: List<Episode>, currentPlaying: Playable?): Int {
+            if (queueItems.isEmpty()) return 0
             when (enqueueLocation) {
                 EnqueueLocation.BACK -> return queueItems.size
-                EnqueueLocation.FRONT ->                 // Return not necessarily 0, so that when a list of items are downloaded and enqueued
-                    // in succession of calls (e.g., users manually tapping download one by one),
-                    // the items enqueued are kept the same order.
-                    // Simply returning 0 will reverse the order.
-                    return getPositionOfFirstNonDownloadingItem(0, queueItems)
+                // Return not necessarily 0, so that when a list of items are downloaded and enqueued
+                // in succession of calls (e.g., users manually tapping download one by one),
+                // the items enqueued are kept the same order.
+                // Simply returning 0 will reverse the order.
+                EnqueueLocation.FRONT -> return getPositionOfFirstNonDownloadingItem(0, queueItems)
                 EnqueueLocation.AFTER_CURRENTLY_PLAYING -> {
                     val currentlyPlayingPosition = getCurrentlyPlayingPosition(queueItems, currentPlaying)
                     return getPositionOfFirstNonDownloadingItem(currentlyPlayingPosition + 1, queueItems)

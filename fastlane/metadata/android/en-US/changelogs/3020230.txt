@@ -1,0 +1,12 @@
+ Version 6.3.6 brings several changes:
+
+* upgraded gradle to 8.9 and Android Gradle Plugin to 8.5.2
+* minor dependencies updates
+* corrected the count of total episodes in History view
+* corrected the count of selections in AllEpisodes, History views
+* fixed "add selected to queue" in History, AllEpisodes views
+* known issue: in History and AllEpisodes views, the play button on every episode is not convertible
+* added history count in NavDrawer
+* in adapters, made selectedItems type explicit (rather than of Any), either of Episode or of Feed
+* explicitly revoked DB monitoring in episodes list views at exit
+* fixed issue of IndexOutOfBoundsException when adding to an empty queue

@@ -20,7 +20,7 @@ import java.util.stream.Collectors
 
 object ItemEnqueuePositionCalculatorTest {
     fun doAddToQueueAndAssertResult(message: String?,
-                                    calculator: Queues.EnqueuePositionCalculator,
+                                    calculator: Queues.EnqueuePositionPolicy,
                                     itemToAdd: Episode,
                                     queue: MutableList<Episode>,
                                     currentlyPlaying: Playable?,
@@ -85,7 +85,7 @@ open class BasicTest {
     @Test
     fun test() {
         DownloadServiceInterface.setImpl(DownloadServiceInterfaceTestStub())
-        val calculator = Queues.EnqueuePositionCalculator(options!!)
+        val calculator = Queues.EnqueuePositionPolicy(options!!)
 
         // shallow copy to which the test will add items
         val queue: MutableList<Episode> = ArrayList(curQueue)

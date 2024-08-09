@@ -213,6 +213,7 @@ open class EpisodeViewHolder(private val activity: MainActivity, parent: ViewGro
     }
 
     fun unbind() {
+        Logd(TAG, "unbind ${title.text}")
         // Cancel coroutine here
         itemView.setOnClickListener(null)
         itemView.setOnCreateContextMenuListener(null)
@@ -224,6 +225,10 @@ open class EpisodeViewHolder(private val activity: MainActivity, parent: ViewGro
         posIndex = -1
         episode = null
         notBond = true
+        stopDBMonitor()
+    }
+
+    fun stopDBMonitor() {
         episodeMonitor?.cancel()
         episodeMonitor = null
         mediaMonitor?.cancel()

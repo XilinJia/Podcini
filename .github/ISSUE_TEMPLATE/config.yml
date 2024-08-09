@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Help & Support
-    url: https://forum.podvinci.org/
+    url: https://github.com/XilinJia/Podcini
     about: Reduce developer's support workload by asking other users on our forum.
   - name: F-Droid Release
-    url: https://podvinci.org/documentation/general/f-droid
+    url: https://f-droid.org/packages/ac.mdiq.podcini.R/
     about: Waiting for an update to appear on F-Droid? No need to create an issue, please just be patient!

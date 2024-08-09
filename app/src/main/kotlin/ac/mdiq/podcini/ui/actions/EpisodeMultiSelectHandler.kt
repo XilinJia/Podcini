@@ -27,8 +27,12 @@ import androidx.annotation.PluralsRes
 import androidx.media3.common.util.UnstableApi
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 
 
 @UnstableApi
@@ -139,7 +143,7 @@ class EpisodeMultiSelectHandler(private val activity: MainActivity, private val 
                 val selectedIndex = radioButton.tag as Int
                 toQueue = queues[selectedIndex]
             }
-            MaterialAlertDialogBuilder(activity)
+            val dialog = MaterialAlertDialogBuilder(activity)
                 .setView(binding.root)
                 .setTitle(R.string.put_in_queue_label)
                 .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
@@ -166,7 +170,7 @@ class EpisodeMultiSelectHandler(private val activity: MainActivity, private val 
                     }
                 }
                 .setNegativeButton(R.string.cancel_label, null)
-                .show()
+            dialog.show()
         }
     }
 

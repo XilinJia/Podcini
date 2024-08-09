@@ -37,7 +37,6 @@ import kotlin.math.min
     private var sortOrder : EpisodeSortOrder = EpisodeSortOrder.PLAYED_DATE_NEW_OLD
     private var startDate : Long = 0L
     private var endDate : Long = Date().time
-
     private var allHistory: List<Episode> = listOf()
 
     override fun getPrefName(): String {
@@ -184,7 +183,7 @@ import kotlin.math.min
     }
 
     override fun loadTotalItemCount(): Int {
-        return getNumberOfCompleted().toInt()
+        return getNumberOfPlayed().toInt()
     }
 
     fun clearHistory() : Job {
@@ -221,8 +220,13 @@ import kotlin.math.min
         val TAG = HistoryFragment::class.simpleName ?: "Anonymous"
 
         fun getNumberOfCompleted(): Long {
-            Logd(TAG, "getHistoryLength called")
+            Logd(TAG, "getNumberOfCompleted called")
             return realm.query(EpisodeMedia::class).query("playbackCompletionTime > 0").count().find()
+        }
+
+        fun getNumberOfPlayed(): Long {
+            Logd(TAG, "getNumberOfPlayed called")
+            return realm.query(EpisodeMedia::class).query("lastPlayedTime > 0").count().find()
         }
 
         /**
@@ -239,10 +243,11 @@ import kotlin.math.min
             for (m in medias) {
                 val item_ = m.episodeOrFetch()
                 if (item_ != null) episodes.add(item_)
+                else Logd(TAG, "getHistory: media has null episode: ${m.id}")
             }
             getPermutor(sortOrder).reorder(episodes)
-            if (episodes.size > offset) episodes = episodes.subList(offset, min(episodes.size, offset+limit))
-            return realm.copyFromRealm(episodes)
+            if (offset > 0 && episodes.size > offset) episodes = episodes.subList(offset, min(episodes.size, offset+limit))
+            return episodes
         }
     }
 }

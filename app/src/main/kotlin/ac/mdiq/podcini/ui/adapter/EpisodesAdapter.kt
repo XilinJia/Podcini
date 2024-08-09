@@ -37,7 +37,7 @@ open class EpisodesAdapter(mainActivity: MainActivity, var refreshFragPosCallbac
     private var longPressedPosition: Int = 0 // used to init actionMode
     private var dummyViews = 0
 
-    val selectedItems: List<Any>
+    val selectedItems: List<Episode>
         get() {
             val items: MutableList<Episode> = ArrayList()
             for (i in 0 until itemCount) {
@@ -91,12 +91,13 @@ open class EpisodesAdapter(mainActivity: MainActivity, var refreshFragPosCallbac
 
     @UnstableApi
     override fun onBindViewHolder(holder: EpisodeViewHolder, pos: Int) {
-//        Logd(TAG, "onBindViewHolder $pos ${holder.episode?.title}")
+//        Logd(TAG, "onBindViewHolder $pos ${episodes[pos].title}")
         if (pos >= episodes.size || pos < 0) {
-            beforeBindViewHolder(holder, pos)
-            holder.bindDummy()
-            afterBindViewHolder(holder, pos)
-            holder.hideSeparatorIfNecessary()
+//            beforeBindViewHolder(holder, pos)
+//            holder.bindDummy()
+//            afterBindViewHolder(holder, pos)
+//            holder.hideSeparatorIfNecessary()
+            Logd(TAG, "onBindViewHolder got invalid pos: $pos of ${episodes.size}")
             return
         }
 

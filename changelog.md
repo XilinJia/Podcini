@@ -1,8 +1,21 @@
+# 6.3.6
+
+* upgraded gradle to 8.9 and Android Gradle Plugin to 8.5.2
+* minor dependencies updates
+* corrected the count of total episodes in History view
+* corrected the count of selections in AllEpisodes, History views
+* fixed "add selected to queue" in History, AllEpisodes views
+* known issue: in History and AllEpisodes views, the play button on every episode is not convertible
+* added history count in NavDrawer
+* in adapters, made selectedItems type explicit (rather than of Any), either of Episode or of Feed
+* explicitly revoked DB monitoring in episodes list views at exit
+* fixed issue of IndexOutOfBoundsException when adding to an empty queue
+
 # 6.3.5
 
 * added more Log.d statements in hope for tracking down the mysterious random playing
 * FeedSettings view is all in Jetpack Compose, FeedSettingsPreferenceFragment removed
-* in FeedSettings, added "Audo add new to queue" (accissible when associated queue not set to "None")
+* in FeedSettings, added "Auto add new to queue" (accessible when associated queue not set to "None")
 	* when set, new episodes during refresh will be added to the associated queue, regardless of being downloaded
 * use adaptive date formats (stripped time) in Subscriptions view
 

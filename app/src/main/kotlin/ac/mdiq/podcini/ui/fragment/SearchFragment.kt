@@ -157,7 +157,7 @@ import java.lang.ref.WeakReference
         })
         sdBinding.fabSD.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
             EpisodeMultiSelectHandler(activity as MainActivity, actionItem.id)
-                .handleAction(adapter.selectedItems.filterIsInstance<Episode>())
+                .handleAction(adapter.selectedItems)
             adapter.endSelectMode()
             true
         }

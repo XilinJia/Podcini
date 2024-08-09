@@ -19,6 +19,7 @@ import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.dialog.DrawerPreferencesDialog
+import ac.mdiq.podcini.ui.fragment.HistoryFragment.Companion.getNumberOfPlayed
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.util.Logd
@@ -323,6 +324,14 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
                         }
                     }
                 }
+                HistoryFragment.TAG -> {
+                    val historyCount = datasetStats?.historyCount ?: 0
+                    if (historyCount > 0) {
+                        holder.count.text = NumberFormat.getInstance().format(historyCount.toLong())
+                        holder.count.visibility = View.VISIBLE
+                    }
+                }
+
             }
 //        Logd("NavListAdapter", "bindNavView getting drawable for: ${fragmentTags[position]}")
             holder.image.setImageResource(getDrawable(fragmentTags[position]))
@@ -403,7 +412,8 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
             while (curQueue.name.isEmpty()) runBlocking { delay(100) }
             val queueSize = curQueue.episodeIds.size
             Logd(TAG, "getDatasetStats: queueSize: $queueSize")
-            return DatasetStats(queueSize, numDownloadedItems, AutoCleanups.build().getReclaimableItems(), numItems, feedCount)
+            val historyCount = getNumberOfPlayed().toInt()
+            return DatasetStats(queueSize, numDownloadedItems, AutoCleanups.build().getReclaimableItems(), numItems, feedCount, historyCount)
         }
     }
 }

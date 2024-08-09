@@ -157,6 +157,13 @@ import java.util.*
     override fun onStop() {
         super.onStop()
         cancelFlowEvents()
+        val recyclerView =  binding.recyclerView
+        val childCount = recyclerView.childCount
+        for (i in 0 until childCount) {
+            val child = recyclerView.getChildAt(i)
+            val viewHolder = recyclerView.getChildViewHolder(child) as? EpisodeViewHolder
+            viewHolder?.stopDBMonitor()
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

@@ -24,6 +24,7 @@ import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.dialog.*
 import ac.mdiq.podcini.ui.utils.ToolbarIconTintManager
 import ac.mdiq.podcini.ui.utils.TransitionEffect
+import ac.mdiq.podcini.ui.view.EpisodeViewHolder
 import ac.mdiq.podcini.util.IntentUtils
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.ShareUtils
@@ -173,7 +174,7 @@ import java.util.concurrent.Semaphore
             }
         })
         dialBinding.fabSD.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
-            EpisodeMultiSelectHandler((activity as MainActivity), actionItem.id).handleAction(adapter.selectedItems.filterIsInstance<Episode>())
+            EpisodeMultiSelectHandler((activity as MainActivity), actionItem.id).handleAction(adapter.selectedItems)
             adapter.endSelectMode()
             true
         }
@@ -194,6 +195,13 @@ import java.util.concurrent.Semaphore
         super.onStop()
 //        adapter.refreshFragPosCallback = null
         cancelFlowEvents()
+        val recyclerView =  binding.recyclerView
+        val childCount = recyclerView.childCount
+        for (i in 0 until childCount) {
+            val child = recyclerView.getChildAt(i)
+            val viewHolder = recyclerView.getChildViewHolder(child) as? EpisodeViewHolder
+            viewHolder?.stopDBMonitor()
+        }
     }
 
     private val semaphore = Semaphore(0)

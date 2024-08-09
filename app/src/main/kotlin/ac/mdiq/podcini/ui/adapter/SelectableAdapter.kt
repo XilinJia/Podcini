@@ -1,6 +1,7 @@
 package ac.mdiq.podcini.ui.adapter
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.util.Logd
 import android.app.Activity
 import android.view.ActionMode
 import android.view.Menu
@@ -22,6 +23,7 @@ abstract class SelectableAdapter<T : RecyclerView.ViewHolder?>(private val activ
         get() = selectedIds.size
 
     fun startSelectMode(pos: Int) {
+        Logd("SelectableAdapter", "startSelectMode: $pos ${actionMode == null}")
         if (inActionMode()) endSelectMode()
 
         onSelectModeListener?.onStartSelectMode()
@@ -96,10 +98,12 @@ abstract class SelectableAdapter<T : RecyclerView.ViewHolder?>(private val activ
      * @param pos      the position to select
      * @param selected true for selected state and false for unselected
      */
-    open fun setSelected(pos: Int, selected: Boolean) {
-        if (selected) selectedIds.add(getItemId(pos))
-        else selectedIds.remove(getItemId(pos))
-        updateTitle()
+    open fun setSelected(pos: Int, selected: Boolean, updateTitle: Boolean = true) {
+        val itemId = getItemId(pos)
+//        Logd("SelectableAdapter", "setSelected: $pos $itemId ${getItemViewType(pos)} selectedIds: ${selectedIds.size}")
+        if (selected) selectedIds.add(itemId)
+        else selectedIds.remove(itemId)
+        if (updateTitle) updateTitle()
     }
 
     /**
@@ -111,27 +115,30 @@ abstract class SelectableAdapter<T : RecyclerView.ViewHolder?>(private val activ
      */
     @Throws(IllegalArgumentException::class)
     fun setSelected(startPos: Int, endPos: Int, selected: Boolean) {
+//        Logd("SelectableAdapter", "setSelected: $startPos, $endPos $selected")
         var i = startPos
         while (i < endPos && i < itemCount) {
-            setSelected(i, selected)
+            setSelected(i, selected, false)
             i++
         }
+        updateTitle()
         notifyItemRangeChanged(startPos, (endPos - startPos))
     }
 
     fun toggleSelected(startPos: Int, endPos: Int) {
         var i = startPos
+//        Logd("SelectableAdapter", "toggleSelected: $startPos, $endPos")
         while (i < endPos && i < itemCount) {
-            toggleSelection(i)
+            toggleSelection(i, false)
             i++
         }
+        updateTitle()
         notifyItemRangeChanged(startPos, (endPos - startPos))
     }
 
-    protected fun toggleSelection(pos: Int) {
-        setSelected(pos, !isSelected(pos))
+    protected fun toggleSelection(pos: Int, updateTitle: Boolean = true) {
+        setSelected(pos, !isSelected(pos), updateTitle)
         notifyItemChanged(pos)
-
         if (selectedIds.size == 0) endSelectMode()
     }
 
@@ -152,11 +159,12 @@ abstract class SelectableAdapter<T : RecyclerView.ViewHolder?>(private val activ
     fun updateTitle() {
         if (actionMode == null) return
         var totalCount = itemCount
-        var selectedCount = selectedIds.size
+//        var selectedCount = selectedIds.size
         if (totalNumberOfItems != COUNT_AUTOMATICALLY) {
             totalCount = totalNumberOfItems
-            if (shouldSelectLazyLoadedItems) selectedCount += (totalNumberOfItems - itemCount)
+//            if (shouldSelectLazyLoadedItems) selectedCount += (totalNumberOfItems - itemCount)
         }
+//        Logd("SelectableAdapter", "updateTitle: $selectedCount $totalCount")
         actionMode!!.title = activity.resources.getQuantityString(R.plurals.num_selected_label, selectedIds.size, selectedCount, totalCount)
     }
 
@@ -182,7 +190,6 @@ abstract class SelectableAdapter<T : RecyclerView.ViewHolder?>(private val activ
 
     interface OnSelectModeListener {
         fun onStartSelectMode()
-
         fun onEndSelectMode()
     }
 

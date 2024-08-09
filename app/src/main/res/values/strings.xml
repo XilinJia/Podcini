@@ -185,6 +185,7 @@
 
     <!-- Actions on feeds -->
 
+    <string name="multi_select_operation_confirmation">Please confirm that you want to perform the action on all selected items.</string>
     <string name="multi_select_toggle_played_confirmation">Please confirm that you want to toggle played status of all selected items.</string>
     <string name="multi_select_mark_played_confirmation">Please confirm that you want to mark all selected items as played.</string>
     <string name="multi_select_mark_unplayed_confirmation">Please confirm that you want to mark all selected items as unplayed.</string>

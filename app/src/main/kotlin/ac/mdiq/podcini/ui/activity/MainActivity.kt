@@ -562,16 +562,6 @@ class MainActivity : CastEnabledActivity() {
         lastTheme = getNoTitleTheme(this) // Don't recreate activity when a result is pending
     }
 
-//    override fun onTrimMemory(level: Int) {
-//        super.onTrimMemory(level)
-////        Glide.get(this).trimMemory(level)
-//    }
-//
-//    override fun onLowMemory() {
-//        super.onLowMemory()
-////        Glide.get(this).clearMemory()
-//    }
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         Logd(TAG, "onOptionsItemSelected ${item.title}")
         when {

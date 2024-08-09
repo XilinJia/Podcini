@@ -203,7 +203,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             override fun onToggleChanged(isOpen: Boolean) {}
         })
         speedDialView.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
-            multiSelectHandler = FeedMultiSelectActionHandler(activity as MainActivity, adapter.selectedItems.filterIsInstance<Feed>())
+            multiSelectHandler = FeedMultiSelectActionHandler(activity as MainActivity, adapter.selectedItems)
             multiSelectHandler?.handleAction(actionItem.id)
             true
         }
@@ -797,7 +797,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         protected var feedList: List<Feed>
         var selectedItem: Feed? = null
         protected var longPressedPosition: Int = 0 // used to init actionMode
-        val selectedItems: List<Any>
+        val selectedItems: List<Feed>
             get() {
                 val items = ArrayList<Feed>()
                 for (i in 0 until itemCount) {

@@ -4,7 +4,7 @@ set -o pipefail
 
 runTests() {
     ./gradlew connectedPlayDebugAndroidTest connectedDebugAndroidTest \
-        -Pandroid.testInstrumentationRunnerArguments.notAnnotation=de.test.podvinci.IgnoreOnCi
+        -Pandroid.testInstrumentationRunnerArguments.notAnnotation=de.test.podcini.IgnoreOnCi
 }
 
 # Retry tests to make them less flaky

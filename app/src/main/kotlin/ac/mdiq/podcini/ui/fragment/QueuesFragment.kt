@@ -203,7 +203,7 @@ import java.util.*
             }
         })
         speedDialView.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
-            EpisodeMultiSelectHandler((activity as MainActivity), actionItem.id).handleAction(adapter!!.selectedItems.filterIsInstance<Episode>())
+            EpisodeMultiSelectHandler((activity as MainActivity), actionItem.id).handleAction(adapter!!.selectedItems)
             adapter?.endSelectMode()
             true
         }
@@ -224,6 +224,12 @@ import java.util.*
         super.onStop()
         adapter?.refreshFragPosCallback = null
         cancelFlowEvents()
+        val childCount = recyclerView.childCount
+        for (i in 0 until childCount) {
+            val child = recyclerView.getChildAt(i)
+            val viewHolder = recyclerView.getChildViewHolder(child) as? EpisodeViewHolder
+            viewHolder?.stopDBMonitor()
+        }
     }
 
     override fun onPause() {
@@ -309,10 +315,11 @@ import java.util.*
                         if (pos >= 0) {
                             Logd(TAG, "removing episode $pos ${queueItems[pos].title} $e")
                             val holder = recyclerView.findViewHolderForLayoutPosition(pos) as? EpisodeViewHolder
-                            holder?.unbind()
+                            holder?.stopDBMonitor()
+//                            holder?.unbind()
                             queueItems.removeAt(pos)
                             adapter?.notifyItemRemoved(pos)
-                            adapter?.notifyItemRangeChanged(pos, adapter!!.itemCount -pos)
+                            adapter?.notifyItemRangeChanged(pos, adapter!!.itemCount - pos)
                         } else {
                             Log.e(TAG, "Trying to remove item non-existent from queue ${e.id} ${e.title}")
                             continue

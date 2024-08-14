@@ -4,13 +4,13 @@
 
 An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccini.jpg), adorned with pasticcini ![pasticcini](./images/pasticcini.jpg) and aromatized with porcini ![porcini](./images/porcini.jpg), invites your harmonious heartbeats.
 
-F-Droid [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
-     alt="Get it on F-Droid"
-     height="40">](https://f-droid.org/packages/ac.mdiq.podcini.R/)
-Or IzzyOnDroid [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
-     alt="Get it on IzzyOnDroid"
-     height="40">](https://apt.izzysoft.de/fdroid/index/apk/ac.mdiq.podcini.R)
-Or download the latest APK from the [Releases Section](https://github.com/XilinJia/Podcini/releases/latest).
+## Rendezvous at:
+
+[<img src="./images/external/getItGithub.png" alt="GitHub" height="60">](https://github.com/XilinJia/Podcini/releases/latest)
+[<img src="./images/external/getItIzzyOnDroid.png" alt="IzzyOnDroid" height="60">](https://apt.izzysoft.de/fdroid/index/apk/ac.mdiq.podcini.R)
+[<img src="./images/external/getItOpenapk.png" alt="OpenAPK" height="60">](https://www.openapk.net/podcini/ac.mdiq.podcini/)
+[<img src="./images/external/getItf-droid.png" alt="F-Droid" height="60">](https://f-droid.org/packages/ac.mdiq.podcini.R/)
+[<img src="./images/external/amazon.png" alt="Amazon" height="50">](https://www.amazon.com/%E8%B4%BE%E8%A5%BF%E6%9E%97-Podcini-R/dp/B0D9WR8P13)
 
 ## Announcement
 

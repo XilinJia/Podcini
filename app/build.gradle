@@ -4,7 +4,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     alias(libs.plugins.compose.compiler)
     id 'io.realm.kotlin'
-    id('com.github.triplet.play') version '3.8.3' apply false
+    id('com.github.triplet.play') version '3.9.0' apply false
 }
 
 //apply plugin: 'org.jetbrains.compose'
@@ -31,8 +31,8 @@ android {
         testApplicationId "ac.mdiq.podcini.tests"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        versionCode 3020230
-        versionName "6.3.6"
+        versionCode 3020231
+        versionName "6.3.7"
 
         applicationId "ac.mdiq.podcini.R"
         def commit = ""
@@ -102,23 +102,11 @@ android {
     namespace "ac.mdiq.podcini"
     lint {
         lintConfig = file("lint.xml")
-
-        //        disable "GradleDependency"
         checkReleaseBuilds false
         checkDependencies true
         warningsAsErrors true
         abortOnError true
         checkGeneratedSources = true
-
-//        checkOnly += ['NewApi', 'InlinedApi', 'Performance', 'DuplicateIds']
-
-//        disable += ['TypographyDashes', 'TypographyQuotes', 'ObsoleteLintCustomCheck', 'CheckResult', 'UnusedAttribute', 'BatteryLife', 'InflateParams',
-//                'RestrictedApi', 'TrustAllX509TrustManager', 'ExportedReceiver', 'VectorDrawableCompat',
-//                'StaticFieldLeak', 'UseCompoundDrawables', 'NestedWeights', 'Overdraw', 'UselessParent', 'TextFields',
-//                'AlwaysShowAction', 'Autofill', 'ClickableViewAccessibility', 'ContentDescription',
-//                'KeyboardInaccessibleWidget', 'LabelFor', 'SetTextI18n', 'HardcodedText', 'RelativeOverlap',
-//                'RtlCompat', 'RtlHardcoded', 'MissingMediaBrowserServiceIntentFilter', 'VectorPath',
-//                'InvalidPeriodicWorkRequestInterval', 'NotifyDataSetChanged', 'RtlEnabled']
         disable += ['TypographyDashes', 'TypographyQuotes', 'ObsoleteLintCustomCheck', 'BatteryLife',
                     'ExportedReceiver', 'VectorDrawableCompat', 'NestedWeights', 'Overdraw', 'TextFields',
                     'AlwaysShowAction', 'Autofill', 'ClickableViewAccessibility', 'ContentDescription',

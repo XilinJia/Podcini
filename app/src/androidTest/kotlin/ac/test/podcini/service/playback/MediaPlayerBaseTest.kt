@@ -2,6 +2,7 @@ package de.test.podcini.service.playback
 
 import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.MediaPlayerInfo
+import ac.mdiq.podcini.playback.base.MediaPlayerCallback
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.service.LocalMediaPlayer
 import ac.mdiq.podcini.storage.model.*
@@ -798,6 +799,72 @@ class MediaPlayerBaseTest {
     }
 
     private class UnexpectedStateChange(status: PlayerStatus) : AssertionFailedError("Unexpected state change: $status")
+
+    open class DefaultMediaPlayerCallback : MediaPlayerCallback {
+        override fun statusChanged(newInfo: MediaPlayerInfo?) {}
+        override fun shouldStop() {}
+        override fun onMediaChanged(reloadUI: Boolean) {}
+        override fun onPostPlayback(media: Playable?, ended: Boolean, skipped: Boolean, playingNext: Boolean) {}
+        override fun onPlaybackStart(playable: Playable, position: Int) {}
+        override fun onPlaybackPause(playable: Playable?, position: Int) {}
+        override fun getNextInQueue(currentMedia: Playable?): Playable? {
+            return null
+        }
+        override fun findMedia(url: String): Playable? {
+            return null
+        }
+        override fun onPlaybackEnded(mediaType: MediaType?, stopPlaying: Boolean) {}
+        override fun ensureMediaInfoLoaded(media: Playable) {}
+    }
+
+    class CancelableMediaPlayerCallback(private val originalCallback: MediaPlayerCallback) : MediaPlayerCallback {
+        private var isCancelled = false
+
+        fun cancel() {
+            isCancelled = true
+        }
+        override fun statusChanged(newInfo: MediaPlayerInfo?) {
+            if (isCancelled) return
+            originalCallback.statusChanged(newInfo)
+        }
+        override fun shouldStop() {
+            if (isCancelled) return
+//        originalCallback.shouldStop()
+        }
+        override fun onMediaChanged(reloadUI: Boolean) {
+            if (isCancelled) return
+            originalCallback.onMediaChanged(reloadUI)
+        }
+        override fun onPostPlayback(media: Playable?, ended: Boolean, skipped: Boolean, playingNext: Boolean) {
+            if (isCancelled) return
+            originalCallback.onPostPlayback(media, ended, skipped, playingNext)
+        }
+        override fun onPlaybackStart(playable: Playable, position: Int) {
+            if (isCancelled) return
+            originalCallback.onPlaybackStart(playable, position)
+        }
+        override fun onPlaybackPause(playable: Playable?, position: Int) {
+            if (isCancelled) return
+            originalCallback.onPlaybackPause(playable, position)
+        }
+        override fun getNextInQueue(currentMedia: Playable?): Playable? {
+            if (isCancelled) return null
+            return originalCallback.getNextInQueue(currentMedia)
+        }
+        override fun findMedia(url: String): Playable? {
+            if (isCancelled) return null
+            return originalCallback.findMedia(url)
+        }
+        override fun onPlaybackEnded(mediaType: MediaType?, stopPlaying: Boolean) {
+            if (isCancelled) return
+            originalCallback.onPlaybackEnded(mediaType, stopPlaying)
+        }
+        override fun ensureMediaInfoLoaded(media: Playable) {
+            if (isCancelled) return
+            originalCallback.ensureMediaInfoLoaded(media)
+        }
+    }
+
     companion object {
         private const val PLAYABLE_DEST_URL = "psmptestfile.mp3"
         private const val LATCH_TIMEOUT_SECONDS = 3

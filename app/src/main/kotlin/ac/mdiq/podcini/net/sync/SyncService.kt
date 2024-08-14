@@ -289,8 +289,6 @@ open class SyncService(context: Context, params: WorkerParameters) : Worker(cont
             updatedItems.add(result.second)
         }
         removeFromQueue(*updatedItems.toTypedArray())
-//        loadAdditionalFeedItemListData(updatedItems)
-//        persistEpisodes(updatedItems)
         runOnIOScope {
             for (episode in updatedItems) {
                 upsert(episode) {}

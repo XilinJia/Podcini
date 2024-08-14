@@ -10,6 +10,8 @@ import ac.mdiq.podcini.net.sync.model.EpisodeAction.Companion.readFromJsonObject
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.persistEpisode
+import ac.mdiq.podcini.storage.database.RealmDB.upsert
+import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
@@ -315,7 +317,7 @@ import kotlin.math.min
 
     override fun processEpisodeAction(action: EpisodeAction): Pair<Long, Episode>? {
         val guid = if (isValidGuid(action.guid)) action.guid else null
-        val feedItem = getEpisodeByGuidOrUrl(guid, action.episode?:"")
+        var feedItem = getEpisodeByGuidOrUrl(guid, action.episode?:"", false)
         if (feedItem == null) {
             Logd(TAG, "Unknown feed item: $action")
             return null
@@ -328,23 +330,23 @@ import kotlin.math.min
         var idRemove: Long? = null
         Logd(TAG, "processEpisodeAction ${feedItem.media!!.getLastPlayedTime()} ${(action.timestamp?.time?:0L)} ${action.position} ${feedItem.title}")
         if (feedItem.media!!.getLastPlayedTime() < (action.timestamp?.time?:0L)) {
-            feedItem.media!!.startPosition = action.started * 1000
-            feedItem.media!!.setPosition(action.position * 1000)
-            feedItem.media!!.playedDuration = action.playedDuration * 1000
-            feedItem.media!!.setLastPlayedTime(action.timestamp!!.time)
-            feedItem.isFavorite = action.isFavorite
-            feedItem.playState = action.playState
-            if (hasAlmostEnded(feedItem.media!!)) {
-                Logd(TAG, "Marking as played")
-                feedItem.setPlayed(true)
-                feedItem.media!!.setPosition(0)
-                idRemove = feedItem.id
-            } else Logd(TAG, "Setting position")
-//            persistFeedMediaPlaybackInfo(feedItem.media)
-            persistEpisode(feedItem)
+            feedItem = upsertBlk(feedItem) {
+                it.media!!.startPosition = action.started * 1000
+                it.media!!.setPosition(action.position * 1000)
+                it.media!!.playedDuration = action.playedDuration * 1000
+                it.media!!.setLastPlayedTime(action.timestamp!!.time)
+                it.isFavorite = action.isFavorite
+                it.playState = action.playState
+                if (hasAlmostEnded(it.media!!)) {
+                    Logd(TAG, "Marking as played")
+                    it.setPlayed(true)
+                    it.media!!.setPosition(0)
+                    idRemove = it.id
+                } else Logd(TAG, "Setting position")
+            }
+            EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(feedItem))
         } else Logd(TAG, "local is newer, no change")
-
-        return if (idRemove != null) Pair(idRemove, feedItem) else null
+        return if (idRemove != null) Pair(idRemove!!, feedItem) else null
     }
 
     override fun logout() {

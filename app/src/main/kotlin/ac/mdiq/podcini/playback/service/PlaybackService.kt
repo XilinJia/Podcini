@@ -136,9 +136,8 @@ class PlaybackService : MediaSessionService() {
             val status = intent.getStringExtra("media_connection_status")
             val isConnectedToCar = "media_connected" == status
             Logd(TAG, "Received Auto Connection update: $status")
-            if (!isConnectedToCar) {
-                Logd(TAG, "Car was unplugged during playback.")
-            } else {
+            if (!isConnectedToCar) Logd(TAG, "Car was unplugged during playback.")
+            else {
                 val playerStatus = MediaPlayerBase.status
                 when (playerStatus) {
                     PlayerStatus.PAUSED, PlayerStatus.PREPARED -> mPlayer?.resume()
@@ -229,8 +228,7 @@ class PlaybackService : MediaSessionService() {
             Log.d(TAG, "statusChanged called ${newInfo?.playerStatus}")
             if (newInfo != null) {
                 when (newInfo.playerStatus) {
-                    PlayerStatus.INITIALIZED ->
-                        if (mPlayer != null) writeMediaPlaying(mPlayer!!.playerInfo.playable, mPlayer!!.playerInfo.playerStatus)
+                    PlayerStatus.INITIALIZED -> if (mPlayer != null) writeMediaPlaying(mPlayer!!.playerInfo.playable, mPlayer!!.playerInfo.playerStatus)
                     PlayerStatus.PREPARED -> {
                         if (mPlayer != null) writeMediaPlaying(mPlayer!!.playerInfo.playable, mPlayer!!.playerInfo.playerStatus)
                         if (newInfo.playable != null) taskManager.startChapterLoader(newInfo.playable!!)
@@ -382,8 +380,7 @@ class PlaybackService : MediaSessionService() {
             val i = EpisodeUtil.indexOfItemWithId(eList, item.id)
             Logd(TAG, "getNextInQueue current i: $i curIndexInQueue: $curIndexInQueue")
             if (i < 0) {
-                if (curIndexInQueue >= 0 && curIndexInQueue < eList.size) j = curIndexInQueue
-                else j = eList.size-1
+                j = if (curIndexInQueue >= 0 && curIndexInQueue < eList.size) curIndexInQueue else eList.size-1
             } else if (i < eList.size-1) j = i+1
             Logd(TAG, "getNextInQueue next j: $j")
 
@@ -411,17 +408,15 @@ class PlaybackService : MediaSessionService() {
             EventFlow.postEvent(FlowEvent.PlayEvent(nextItem))
             return if (nextItem.media == null) null else unmanaged(nextItem.media!!)
         }
-
+        // only used in test
         override fun findMedia(url: String): Playable? {
             val item = getEpisodeByGuidOrUrl(null, url)
             return item?.media
         }
-
         override fun onPlaybackEnded(mediaType: MediaType?, stopPlaying: Boolean) {
             Logd(TAG, "onPlaybackEnded mediaType: $mediaType stopPlaying: $stopPlaying")
             clearCurTempSpeed()
             if (stopPlaying) taskManager.cancelPositionSaver()
-
             if (mediaType == null) sendNotificationBroadcast(NOTIFICATION_TYPE_PLAYBACK_END, 0)
             else sendNotificationBroadcast(NOTIFICATION_TYPE_RELOAD,
                 when {
@@ -694,9 +689,15 @@ class PlaybackService : MediaSessionService() {
         val keycode = intent?.getIntExtra(MediaButtonReceiver.EXTRA_KEYCODE, -1) ?: -1
         val customAction = intent?.getStringExtra(MediaButtonReceiver.EXTRA_CUSTOM_ACTION)
         val hardwareButton = intent?.getBooleanExtra(MediaButtonReceiver.EXTRA_HARDWAREBUTTON, false) ?: false
+        val keyEvent: KeyEvent? = if (Build.VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
+            intent?.getParcelableExtra(EXTRA_KEY_EVENT, KeyEvent::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent?.getParcelableExtra(EXTRA_KEY_EVENT)
+        }
         val playable = curMedia
 
-        Log.d(TAG, "onStartCommand flags=$flags startId=$startId keycode=$keycode customAction=$customAction hardwareButton=$hardwareButton action=${intent?.action.toString()} ${playable?.getEpisodeTitle()}")
+        Log.d(TAG, "onStartCommand flags=$flags startId=$startId keycode=$keycode keyEvent=$keyEvent customAction=$customAction hardwareButton=$hardwareButton action=${intent?.action.toString()} ${playable?.getEpisodeTitle()}")
         if (keycode == -1 && playable == null && customAction == null) {
             Log.e(TAG, "onStartCommand PlaybackService was started with no arguments, return")
             return START_NOT_STICKY
@@ -797,7 +798,7 @@ class PlaybackService : MediaSessionService() {
      * Handles media button events. return: keycode was handled
      */
     private fun handleKeycode(keycode: Int, notificationButton: Boolean): Boolean {
-        Logd(TAG, "Handling keycode: $keycode")
+        Log.d(TAG, "Handling keycode: $keycode")
         val info = mPlayer?.playerInfo
         val status = info?.playerStatus
         when (keycode) {
@@ -1064,12 +1065,6 @@ class PlaybackService : MediaSessionService() {
             playable.setLastPlayedTime(System.currentTimeMillis())
 
             if (playable is EpisodeMedia) {
-//                val item = playable.episodeOrFetch()
-//                if (item != null && item.isNew) item.playState = Episode.UNPLAYED
-//                if (playable.startPosition >= 0 && playable.getPosition() > playable.startPosition)
-//                    playable.playedDuration = (playable.playedDurationWhenStarted + playable.getPosition() - playable.startPosition)
-//                persistEpisode(item, true)
-
                 var item = realm.query(Episode::class, "id == ${playable.id}").first().find()
                 if (item != null) {
                     item = upsertBlk(item) {

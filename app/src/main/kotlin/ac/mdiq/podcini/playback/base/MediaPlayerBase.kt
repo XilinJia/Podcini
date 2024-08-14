@@ -262,7 +262,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
      */
     @Synchronized
     protected fun setPlayerStatus(newStatus: PlayerStatus, newMedia: Playable?, position: Int = Playable.INVALID_TIME) {
-        Logd(TAG, this.javaClass.simpleName + ": Setting player status to " + newStatus)
+        Log.d(TAG, "${this.javaClass.simpleName}: Setting player status to $newStatus")
         this.oldStatus = status
         status = newStatus
         if (newMedia != null) setPlayable(newMedia)

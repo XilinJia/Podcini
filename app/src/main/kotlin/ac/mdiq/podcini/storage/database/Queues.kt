@@ -148,14 +148,13 @@ object Queues {
 
     suspend fun addToQueueSync(markAsUnplayed: Boolean, episode: Episode, queue_: PlayQueue? = null) {
         Logd(TAG, "addToQueueSync( ... ) called")
-
         val queue = queue_ ?: curQueue
+        if (queue.episodeIds.contains(episode.id)) return
+
         val currentlyPlaying = curMedia
         val positionCalculator = EnqueuePositionPolicy(enqueueLocation)
         var insertPosition = positionCalculator.calcPosition(queue.episodes, currentlyPlaying)
         Logd(TAG, "addToQueueSync insertPosition: $insertPosition")
-
-        if (queue.episodeIds.contains(episode.id)) return
 
         val queueNew = upsert(queue) {
             if (!it.episodeIds.contains(episode.id)) it.episodeIds.add(insertPosition, episode.id)

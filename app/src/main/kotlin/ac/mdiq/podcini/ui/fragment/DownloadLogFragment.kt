@@ -5,13 +5,14 @@ import ac.mdiq.podcini.databinding.DownloadLogFragmentBinding
 import ac.mdiq.podcini.databinding.DownloadlogItemBinding
 import ac.mdiq.podcini.net.download.DownloadError
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
-import ac.mdiq.podcini.storage.database.Episodes.getEpisodeMedia
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.model.DownloadResult
+import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Feed
+import ac.mdiq.podcini.storage.utils.DownloadResultComparator
 import ac.mdiq.podcini.ui.actions.actionbutton.DownloadActionButton
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.dialog.DownloadLogDetailsDialog
@@ -21,7 +22,6 @@ import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.error.DownloadErrorLabel
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
-import ac.mdiq.podcini.storage.utils.DownloadResultComparator
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
@@ -237,17 +237,12 @@ class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, To
                             })
                         }
                         EpisodeMedia.FEEDFILETYPE_FEEDMEDIA -> {
-                            holder.secondaryActionButton.setOnClickListener(View.OnClickListener {
+                            holder.secondaryActionButton.setOnClickListener {
                                 holder.secondaryActionButton.visibility = View.INVISIBLE
-                                val media: EpisodeMedia? = getEpisodeMedia(status.feedfileId)
-                                if (media == null) {
-                                    Log.e(TAG, "Could not find feed media for feed id: " + status.feedfileId)
-                                    return@OnClickListener
-                                }
-                                val item_ = media.episodeOrFetch()
+                                val item_ = realm.query(Episode::class).query("id == $0", status.feedfileId).first().find()
                                 if (item_ != null) DownloadActionButton(item_).onClick(context)
                                 (context as MainActivity).showSnackbarAbovePlayer(R.string.status_downloading_label, Toast.LENGTH_SHORT)
-                            })
+                            }
                         }
                     }
                 }

@@ -23,8 +23,6 @@ import ac.mdiq.podcini.storage.utils.FileNameGenerator.generateFileName
 import ac.mdiq.podcini.storage.utils.FilesUtils.getDataFolder
 import ac.mdiq.podcini.ui.activity.OpmlImportActivity
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.util.Logd
 import android.app.Activity.RESULT_OK
 import android.app.ProgressDialog
@@ -934,29 +932,31 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                 val action = readFromJsonObject(jsonAction) ?: continue
                 Logd(TAG, "processing action: $action")
                 val result = processEpisodeAction(action) ?: continue
-                upsertBlk(result.second) {}
+//                upsertBlk(result.second) {}
             }
         }
         private fun processEpisodeAction(action: EpisodeAction): Pair<Long, Episode>? {
             val guid = if (isValidGuid(action.guid)) action.guid else null
-            val feedItem = getEpisodeByGuidOrUrl(guid, action.episode?:"") ?: return null
+            var feedItem = getEpisodeByGuidOrUrl(guid, action.episode?:"", false) ?: return null
             if (feedItem.media == null) {
                 Logd(TAG, "Feed item has no media: $action")
                 return null
             }
             var idRemove = 0L
-            feedItem.media!!.startPosition = action.started * 1000
-            feedItem.media!!.setPosition(action.position * 1000)
-            feedItem.media!!.playedDuration = action.playedDuration * 1000
-            feedItem.media!!.setLastPlayedTime(action.timestamp!!.time)
-            feedItem.isFavorite = action.isFavorite
-            feedItem.playState = action.playState
-            if (hasAlmostEnded(feedItem.media!!)) {
-                Logd(TAG, "Marking as played: $action")
-                feedItem.setPlayed(true)
-                feedItem.media!!.setPosition(0)
-                idRemove = feedItem.id
-            } else Logd(TAG, "Setting position: $action")
+            feedItem = upsertBlk(feedItem) {
+                it.media!!.startPosition = action.started * 1000
+                it.media!!.setPosition(action.position * 1000)
+                it.media!!.playedDuration = action.playedDuration * 1000
+                it.media!!.setLastPlayedTime(action.timestamp!!.time)
+                it.isFavorite = action.isFavorite
+                it.playState = action.playState
+                if (hasAlmostEnded(it.media!!)) {
+                    Logd(TAG, "Marking as played: $action")
+                    it.setPlayed(true)
+                    it.media!!.setPosition(0)
+                    idRemove = it.id
+                } else Logd(TAG, "Setting position: $action")
+            }
             return Pair(idRemove, feedItem)
         }
     }

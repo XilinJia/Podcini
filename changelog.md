@@ -1,3 +1,10 @@
+# 6.3.7
+
+* inlined some DB writes of Episodes in some routines
+* enhanced DB writes in download routine, fixed a write error
+* added a couple more Log.d statements in hope for tracking down the mysterious random playing
+* Kotlin upped to 2.0.10
+
 # 6.3.6
 
 * upgraded gradle to 8.9 and Android Gradle Plugin to 8.5.2

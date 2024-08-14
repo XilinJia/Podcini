@@ -80,16 +80,18 @@ object Episodes {
      * @return The FeedItem or null if the FeedItem could not be found.
      * Does NOT load additional attributes like feed or queue state.
      */
-    fun getEpisodeByGuidOrUrl(guid: String?, episodeUrl: String): Episode? {
+    fun getEpisodeByGuidOrUrl(guid: String?, episodeUrl: String, copy: Boolean = true): Episode? {
         Logd(TAG, "getEpisodeByGuidOrUrl called $guid $episodeUrl")
         val episode = if (guid != null) realm.query(Episode::class).query("identifier == $0", guid).first().find()
         else realm.query(Episode::class).query("media.downloadUrl == $0", episodeUrl).first().find()
+        if (!copy) return episode
         return if (episode != null) realm.copyFromRealm(episode) else null
     }
 
-    fun getEpisodeMedia(mediaId: Long): EpisodeMedia? {
+    fun getEpisodeMedia(mediaId: Long, copy: Boolean = true): EpisodeMedia? {
         Logd(TAG, "getEpisodeMedia called $mediaId")
         val media = realm.query(EpisodeMedia::class).query("id == $0", mediaId).first().find()
+        if (!copy) return media
         return if (media != null) realm.copyFromRealm(media) else null
     }
 
@@ -217,6 +219,7 @@ object Episodes {
 //        }
 //    }
 
+//    only used in tests
     fun persistEpisodeMedia(media: EpisodeMedia) : Job {
         Logd(TAG, "persistEpisodeMedia called")
         return runOnIOScope {

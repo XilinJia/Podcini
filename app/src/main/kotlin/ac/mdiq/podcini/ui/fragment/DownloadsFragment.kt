@@ -136,7 +136,7 @@ import java.util.*
         })
         speedDialView.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
             adapter.selectedItems.let {
-                EpisodeMultiSelectHandler((activity as MainActivity), actionItem.id).handleAction(it.filterIsInstance<Episode>())
+                EpisodeMultiSelectHandler((activity as MainActivity), actionItem.id).handleAction(it)
             }
             adapter.endSelectMode()
             true

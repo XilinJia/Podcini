@@ -4,7 +4,7 @@ buildscript {
         mavenCentral()
         gradlePluginPortal()
     }
-    ext.kotlin_version = '2.0.0'
+    ext.kotlin_version = '2.0.10'
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'com.android.tools.build:gradle:8.5.2'

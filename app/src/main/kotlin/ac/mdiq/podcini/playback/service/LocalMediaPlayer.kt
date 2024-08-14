@@ -307,7 +307,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
 
     override fun resume() {
         if (status == PlayerStatus.PAUSED || status == PlayerStatus.PREPARED) {
-            Logd(TAG, "Resuming/Starting playback")
+            Log.d(TAG, "Resuming/Starting playback")
             acquireWifiLockIfNecessary()
             setPlaybackParams(getCurrentPlaybackSpeed(curMedia), UserPreferences.isSkipSilence)
             setVolume(1.0f, 1.0f)
@@ -646,13 +646,11 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
                     else -> bufferingUpdateListener?.accept(BUFFERING_ENDED)
                 }
             }
-
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 val stat = if (isPlaying) PlayerStatus.PLAYING else PlayerStatus.PAUSED
                 setPlayerStatus(stat, curMedia)
-                Logd(TAG, "onIsPlayingChanged $isPlaying")
+                Log.d(TAG, "onIsPlayingChanged $isPlaying")
             }
-
             override fun onPlayerError(error: PlaybackException) {
                 Logd(TAG, "onPlayerError ${error.message}")
                 if (wasDownloadBlocked(error)) audioErrorListener?.accept(context.getString(R.string.download_error_blocked))
@@ -663,12 +661,10 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
                     audioErrorListener?.accept((if (cause != null) cause.message else error.message) ?:"no message")
                 }
             }
-
             override fun onPositionDiscontinuity(oldPosition: PositionInfo, newPosition: PositionInfo, reason: @DiscontinuityReason Int) {
                 Logd(TAG, "onPositionDiscontinuity $oldPosition $newPosition $reason")
                 if (reason == DISCONTINUITY_REASON_SEEK) audioSeekCompleteListener?.run()
             }
-
             override fun onAudioSessionIdChanged(audioSessionId: Int) {
                 Logd(TAG, "onAudioSessionIdChanged $audioSessionId")
                 initLoudnessEnhancer(audioSessionId)

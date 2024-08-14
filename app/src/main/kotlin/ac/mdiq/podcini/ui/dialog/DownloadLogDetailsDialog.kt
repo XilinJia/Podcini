@@ -1,11 +1,11 @@
 package ac.mdiq.podcini.ui.dialog
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.storage.database.Episodes.getEpisodeMedia
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
+import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.DownloadResult
-import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.EpisodeMedia
+import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.util.error.DownloadErrorLabel.from
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
@@ -23,7 +23,7 @@ class DownloadLogDetailsDialog(context: Context, status: DownloadResult) : Mater
         var url = "unknown"
         when (status.feedfileType) {
             EpisodeMedia.FEEDFILETYPE_FEEDMEDIA -> {
-                val media = getEpisodeMedia(status.feedfileId)
+                val media = realm.query(EpisodeMedia::class).query("id == $0", status.feedfileId).first().find()
                 if (media != null) url = media.downloadUrl?:""
             }
             Feed.FEEDFILETYPE_FEED -> {

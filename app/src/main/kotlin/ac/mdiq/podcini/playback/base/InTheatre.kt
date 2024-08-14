@@ -48,12 +48,8 @@ object InTheatre {
         CoroutineScope(Dispatchers.IO).launch {
             Logd(TAG, "starting curQueue")
             var curQueue_ = realm.query(PlayQueue::class).sort("updated", Sort.DESCENDING).first().find()
-            if (curQueue_ != null) {
-                curQueue = curQueue_
-//                curQueue.episodes.addAll(realm.copyFromRealm(realm.query(Episode::class, "id IN $0", curQueue.episodeIds)
-//                    .find().sortedBy { curQueue.episodeIds.indexOf(it.id) }))
-            } else {
-                Logd(TAG, "creating new curQueue")
+            if (curQueue_ != null) curQueue = curQueue_
+            else {
                 for (i in 0..4) {
                     curQueue_ = PlayQueue()
                     if (i == 0) {
@@ -72,7 +68,6 @@ object InTheatre {
 
             Logd(TAG, "starting curState")
             var curState_ = realm.query(CurrentState::class).first().find()
-//            if (curState_ != null) curState = unmanaged(curState_)
             if (curState_ != null) curState = curState_
             else {
                 Logd(TAG, "creating new curState")

@@ -14,6 +14,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.LogsAndStats
 import ac.mdiq.podcini.storage.database.Queues
+import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.DownloadResult
 import ac.mdiq.podcini.storage.model.Episode
@@ -60,7 +61,6 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
         workRequest.setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
         if (ignoreConstraints) workRequest.setConstraints(Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
         else workRequest.setConstraints(constraints)
-
         if (item.media?.downloadUrl != null)
             WorkManager.getInstance(context).enqueueUniqueWork(item.media!!.downloadUrl!!, ExistingWorkPolicy.KEEP, workRequest.build())
     }
@@ -144,7 +144,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
             Logd(TAG, "starting doWork")
             ClientConfigurator.initialize(applicationContext)
             val mediaId = inputData.getLong(WORK_DATA_MEDIA_ID, 0)
-            val media = Episodes.getEpisodeMedia(mediaId)
+            val media = realm.query(EpisodeMedia::class).query("id == $0", mediaId).first().find()
             if (media == null) {
                 Log.e(TAG, "media is null for mediaId: $mediaId")
                 return Result.failure()
@@ -220,8 +220,13 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
             }
             if (dest.exists()) {
                 try {
-                    media.setfileUrlOrNull(request.destination)
-                    Episodes.persistEpisodeMedia(media)
+                    var episode = realm.query(Episode::class).query("id == ${media.id}").first().find()
+                    if (episode != null) {
+                        episode = upsertBlk(episode) {
+                            it.media?.setfileUrlOrNull(request.destination)
+                        }
+                        EventFlow.postEvent(FlowEvent.EpisodeMediaEvent.updated(episode))
+                    } else Log.e(TAG, "performDownload media.episode is null")
                 } catch (e: Exception) {
                     Log.e(TAG, "performDownload Exception in writeFileUrl: " + e.message)
                 }
@@ -340,79 +345,53 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
 
         class MediaDownloadedHandler(private val context: Context, var updatedStatus: DownloadResult, private val request: DownloadRequest) : Runnable {
             @UnstableApi override fun run() {
-                val media = Episodes.getEpisodeMedia(request.feedfileId)
+                var item = realm.query(Episode::class).query("id == ${request.feedfileId}").first().find()
+                if (item == null) {
+                    Log.e(TAG, "Could not find downloaded episode object in database")
+                    return
+                }
+                val media = item.media
                 if (media == null) {
                     Log.e(TAG, "Could not find downloaded media object in database")
                     return
                 }
-                // media.setDownloaded modifies played state
-                var item = media.episodeOrFetch()
-                val broadcastUnreadStateUpdate = item?.isNew == true
-//                media.downloaded = true
-                media.setIsDownloaded()
-//                item = media.episodeOrFetch()
-                Logd(TAG, "media.episode.isNew: ${item?.isNew} ${item?.playState}")
-                media.setfileUrlOrNull(request.destination)
-                if (request.destination != null) media.size = File(request.destination).length()
-                media.checkEmbeddedPicture(false) // enforce check
-                // check if file has chapters
-                if (item?.chapters.isNullOrEmpty()) media.setChapters(ChapterUtils.loadChaptersFromMediaFile(media, context))
-                if (item?.podcastIndexChapterUrl != null) ChapterUtils.loadChaptersFromUrl(item.podcastIndexChapterUrl!!, false)
-                // Get duration
-                var durationStr: String? = null
-                try {
-                    MediaMetadataRetrieverCompat().use { mmr ->
-                        mmr.setDataSource(media.fileUrl)
-                        durationStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-                        if (durationStr != null) media.setDuration(durationStr!!.toInt())
-                        Logd(TAG, "Duration of file is " + media.getDuration())
-                    }
-                } catch (e: NumberFormatException) {
-                    Logd(TAG, "Invalid file duration: $durationStr")
-                } catch (e: Exception) {
-                    Log.e(TAG, "Get duration failed", e)
-                    media.setDuration(30000)
-                }
-//                val item = media.episodeOrFetch()
-                item?.media = media
-                try {
-                    // we've received the media, we don't want to autodownload it again
-                    if (item != null) {
-                        item = upsertBlk(item) {
-                            it.disableAutoDownload()
+                val broadcastUnreadStateUpdate = item.isNew
+                item = upsertBlk(item) {
+                    it.media?.setIsDownloaded()
+                    it.media?.setfileUrlOrNull(request.destination)
+                    if (request.destination != null) it.media?.size = File(request.destination).length()
+                    it.media?.checkEmbeddedPicture(false) // enforce check
+                    if (it.chapters.isEmpty()) it.media?.setChapters(ChapterUtils.loadChaptersFromMediaFile(it.media!!, context))
+                    if (it.podcastIndexChapterUrl != null) ChapterUtils.loadChaptersFromUrl(it.podcastIndexChapterUrl!!, false)
+                    var durationStr: String? = null
+                    try {
+                        MediaMetadataRetrieverCompat().use { mmr ->
+                            if (it.media != null) mmr.setDataSource(it.media!!.fileUrl)
+                            durationStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+                            if (durationStr != null) it.media?.setDuration(durationStr!!.toInt())
                         }
-                        EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(item))
-                        Logd(TAG, "persisting episode downloaded ${item.title} ${item.media?.fileUrl} ${item.media?.downloaded} ${item.isNew}")
-                        // setFeedItem() signals that the item has been updated,
-                        // so we do it after the enclosing media has been updated above,
-                        // to ensure subscribers will get the updated EpisodeMedia as well
-//                        Episodes.persistEpisode(item)
-//                        TODO: should use different event?
-                        if (broadcastUnreadStateUpdate) EventFlow.postEvent(FlowEvent.EpisodePlayedEvent(item))
+                    } catch (e: NumberFormatException) {
+                        Logd(TAG, "Invalid file duration: $durationStr")
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Get duration failed", e)
+                        it.media?.setDuration(30000)
                     }
-                } catch (e: InterruptedException) {
-                    Log.e(TAG, "MediaHandlerThread was interrupted")
-                } catch (e: ExecutionException) {
-                    Log.e(TAG, "ExecutionException in MediaHandlerThread: " + e.message)
-                    updatedStatus = DownloadResult(media.id, media.getEpisodeTitle(), DownloadError.ERROR_DB_ACCESS_ERROR, false, e.message?:"")
+                    it.disableAutoDownload()
                 }
-                if (needSynch() && item != null) {
-                    val action = EpisodeAction.Builder(item, EpisodeAction.DOWNLOAD)
-                        .currentTimestamp()
-                        .build()
+                EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(item))
+//                        TODO: should use different event?
+                if (broadcastUnreadStateUpdate) EventFlow.postEvent(FlowEvent.EpisodePlayedEvent(item))
+                if (needSynch()) {
+                    Logd(TAG, "enqueue synch")
+                    val action = EpisodeAction.Builder(item, EpisodeAction.DOWNLOAD).currentTimestamp().build()
                     SynchronizationQueueSink.enqueueEpisodeActionIfSyncActive(context, action)
                 }
-            }
-
-            companion object {
-                private val TAG: String = MediaDownloadedHandler::class.simpleName ?: "Anonymous"
+                Logd(TAG, "media.episode.isNew: ${item.isNew} ${item.playState}")
             }
         }
 
         companion object {
-            private val TAG: String = EpisodeDownloadWorker::class.simpleName ?: "Anonymous"
             private val notificationProgress: MutableMap<String, Int> = HashMap()
         }
     }
-
 }

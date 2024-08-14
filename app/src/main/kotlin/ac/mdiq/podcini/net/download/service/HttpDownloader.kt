@@ -143,15 +143,13 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
                     } catch (e: IOException) {
                         Log.e(TAG, Log.getStackTraceString(e))
                     }
-                    if (cancelled) {
-                        onCancelled()
-                    } else {
+                    if (cancelled) onCancelled()
+                    else {
                         // check if size specified in the response header is the same as the size of the
                         // written file. This check cannot be made if compression was used
                         when {
                             !isGzip && downloadRequest.size != DownloadResult.SIZE_UNKNOWN.toLong() && downloadRequest.soFar != downloadRequest.size -> {
-                                onFail(DownloadError.ERROR_IO_WRONG_SIZE,
-                                    "Download completed but size: ${downloadRequest.soFar} does not equal expected size ${downloadRequest.size}")
+                                onFail(DownloadError.ERROR_IO_WRONG_SIZE, "Download completed but size: ${downloadRequest.soFar} does not equal expected size ${downloadRequest.size}")
                                 return
                             }
                             downloadRequest.size > 0 && downloadRequest.soFar == 0L -> {
@@ -208,9 +206,7 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
             Log.e(TAG, e.toString())
             if (e.message != null && e.message!!.contains("PROTOCOL_ERROR")) {
                 // Apparently some servers announce they support SPDY but then actually don't.
-                httpClient = httpClient.newBuilder()
-                    .protocols(listOf(Protocol.HTTP_1_1))
-                    .build()
+                httpClient = httpClient.newBuilder().protocols(listOf(Protocol.HTTP_1_1)).build()
                 return httpClient.newCall(httpReq.build()).execute()
             } else {
                 throw e

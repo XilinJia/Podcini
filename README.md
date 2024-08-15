@@ -4,7 +4,7 @@
 
 An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccini.jpg), adorned with pasticcini ![pasticcini](./images/pasticcini.jpg) and aromatized with porcini ![porcini](./images/porcini.jpg), invites your harmonious heartbeats.
 
-## Rendezvous at:
+### Rendezvous chez:
 
 [<img src="./images/external/getItGithub.png" alt="GitHub" height="60">](https://github.com/XilinJia/Podcini/releases/latest)
 [<img src="./images/external/getItIzzyOnDroid.png" alt="IzzyOnDroid" height="60">](https://apt.izzysoft.de/fdroid/index/apk/ac.mdiq.podcini.R)

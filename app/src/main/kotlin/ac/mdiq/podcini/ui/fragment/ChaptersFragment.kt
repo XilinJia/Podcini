@@ -3,7 +3,7 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.SimpleListFragmentBinding
 import ac.mdiq.podcini.databinding.SimplechapterItemBinding
-import ac.mdiq.podcini.playback.PlaybackController
+import ac.mdiq.podcini.playback.ServiceStatusHandler
 import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.storage.model.EpisodeMedia
@@ -11,8 +11,9 @@ import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.storage.utils.ChapterUtils.getCurrentChapterIndex
 import ac.mdiq.podcini.storage.utils.ChapterUtils.loadChapters
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
-import ac.mdiq.podcini.playback.PlaybackController.Companion.curPosition
-import ac.mdiq.podcini.playback.PlaybackController.Companion.seekTo
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curPositionFB
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playPause
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.seekTo
 import ac.mdiq.podcini.storage.model.Chapter
 import ac.mdiq.podcini.storage.model.EmbeddedChapterImage
 import ac.mdiq.podcini.ui.view.CircularProgressBar
@@ -63,7 +64,7 @@ class ChaptersFragment : AppCompatDialogFragment() {
     private lateinit var progressBar: ProgressBar
     private lateinit var adapter: ChaptersListAdapter
 
-    private var controller: PlaybackController? = null
+    private var controller: ServiceStatusHandler? = null
     private var focusedChapter = -1
     private var media: Playable? = null
     
@@ -97,7 +98,7 @@ class ChaptersFragment : AppCompatDialogFragment() {
 
         adapter = ChaptersListAdapter(requireContext(), object : ChaptersListAdapter.Callback {
             override fun onPlayChapterButtonClicked(pos: Int) {
-                if (MediaPlayerBase.status != PlayerStatus.PLAYING) controller!!.playPause()
+                if (MediaPlayerBase.status != PlayerStatus.PLAYING) playPause()
 
                 val chapter = adapter.getItem(pos)
                 if (chapter != null) seekTo(chapter.start.toInt())
@@ -111,7 +112,7 @@ class ChaptersFragment : AppCompatDialogFragment() {
         val wrapHeight = CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MATCH_PARENT, CoordinatorLayout.LayoutParams.WRAP_CONTENT)
         recyclerView.layoutParams = wrapHeight
 
-        controller = object : PlaybackController(requireActivity()) {
+        controller = object : ServiceStatusHandler(requireActivity()) {
             override fun loadMediaInfo() {
                 this@ChaptersFragment.loadMediaInfo(false)
             }
@@ -167,7 +168,7 @@ class ChaptersFragment : AppCompatDialogFragment() {
     private fun getCurrentChapter(media: Playable?): Int {
         if (controller == null) return -1
 
-        return getCurrentChapterIndex(media, curPosition)
+        return getCurrentChapterIndex(media, curPositionFB)
     }
 
     private fun loadMediaInfo(forceRefresh: Boolean) {

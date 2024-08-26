@@ -7,8 +7,8 @@ import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.net.utils.NetworkUtils.isEpisodeHeadDownloadAllowed
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
-import ac.mdiq.podcini.playback.PlaybackController.Companion.seekTo
 import ac.mdiq.podcini.playback.base.InTheatre
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.seekTo
 import ac.mdiq.podcini.preferences.UsageStatistics
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged

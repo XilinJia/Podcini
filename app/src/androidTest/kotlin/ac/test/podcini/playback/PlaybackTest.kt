@@ -1,7 +1,7 @@
 package de.test.podcini.playback
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.playback.PlaybackController
+import ac.mdiq.podcini.playback.ServiceStatusHandler
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.PlayerStatus
@@ -46,7 +46,7 @@ class PlaybackTest {
 
     private var uiTestUtils: UITestUtils? = null
     protected lateinit var context: Context
-    private var controller: PlaybackController? = null
+    private var controller: ServiceStatusHandler? = null
 
     @Before
     @Throws(Exception::class)
@@ -71,7 +71,7 @@ class PlaybackTest {
     }
 
     private fun setupPlaybackController() {
-        controller = object : PlaybackController(activityTestRule.activity) {
+        controller = object : ServiceStatusHandler(activityTestRule.activity) {
             override fun loadMediaInfo() {
                 // Do nothing
             }

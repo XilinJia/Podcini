@@ -3,10 +3,10 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.PlayerDetailsFragmentBinding
 import ac.mdiq.podcini.net.utils.NetworkUtils.fetchHtmlSource
-import ac.mdiq.podcini.playback.PlaybackController.Companion.curPosition
-import ac.mdiq.podcini.playback.PlaybackController.Companion.curSpeedMultiplier
-import ac.mdiq.podcini.playback.PlaybackController.Companion.seekTo
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curPositionFB
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curSpeedFB
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.seekTo
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
@@ -93,7 +93,7 @@ class PlayerDetailsFragment : Fragment() {
 
         Logd(TAG, "fragment onCreateView")
         shownoteView = binding.webview
-        shownoteView.setTimecodeSelectedListener { time: Int? -> seekTo(time!!) }
+        shownoteView.setTimecodeSelectedListener { time: Int -> seekTo(time) }
         shownoteView.setPageFinishedListener {
             // Restoring the scroll position might not always work
             shownoteView.postDelayed({ this@PlayerDetailsFragment.restoreFromPreference() }, 50)
@@ -347,7 +347,7 @@ class PlayerDetailsFragment : Fragment() {
 
         when {
             displayedChapterIndex < 1 -> seekTo(0)
-            (curPosition - 10000 * curSpeedMultiplier) < curr.start -> {
+            (curPositionFB - 10000 * curSpeedFB) < curr.start -> {
                 refreshChapterData(displayedChapterIndex - 1)
                 if (playable != null) seekTo(playable!!.getChapters()[displayedChapterIndex].start.toInt())
             }

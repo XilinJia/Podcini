@@ -2,12 +2,12 @@ package ac.mdiq.podcini.ui.dialog
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.SpeedSelectDialogBinding
-import ac.mdiq.podcini.playback.PlaybackController.Companion.curSpeedMultiplier
-import ac.mdiq.podcini.playback.PlaybackController.Companion.playbackService
 import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.base.InTheatre.curState
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curSpeedFB
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.currentMediaType
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
@@ -76,7 +76,7 @@ import java.util.*
         if (!settingCode[2]) binding.global.visibility = View.INVISIBLE
 
         procFlowEvents()
-        updateSpeed(FlowEvent.SpeedChangedEvent(curSpeedMultiplier))
+        updateSpeed(FlowEvent.SpeedChangedEvent(curSpeedFB))
     }
 
     @UnstableApi override fun onStop() {

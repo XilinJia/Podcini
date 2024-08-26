@@ -3,27 +3,29 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.AudioplayerFragmentBinding
 import ac.mdiq.podcini.databinding.PlayerUiFragmentBinding
-import ac.mdiq.podcini.playback.PlaybackController
-import ac.mdiq.podcini.playback.PlaybackController.Companion.curPosition
-import ac.mdiq.podcini.playback.PlaybackController.Companion.curSpeedMultiplier
-import ac.mdiq.podcini.playback.PlaybackController.Companion.duration
-import ac.mdiq.podcini.playback.PlaybackController.Companion.fallbackSpeed
-import ac.mdiq.podcini.playback.PlaybackController.Companion.getPlayerActivityIntent
-import ac.mdiq.podcini.playback.PlaybackController.Companion.isPlayingVideoLocally
-import ac.mdiq.podcini.playback.PlaybackController.Companion.playbackService
-import ac.mdiq.podcini.playback.PlaybackController.Companion.seekTo
-import ac.mdiq.podcini.playback.PlaybackController.Companion.sleepTimerActive
+import ac.mdiq.podcini.playback.PlaybackServiceStarter
+import ac.mdiq.podcini.playback.ServiceStatusHandler
+import ac.mdiq.podcini.playback.ServiceStatusHandler.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.getCurrentPlaybackSpeed
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.cast.CastEnabledActivity
+import ac.mdiq.podcini.playback.service.PlaybackService
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curDurationFB
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curPositionFB
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curSpeedFB
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.toggleFallbackSpeed
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isPlayingVideoLocally
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isSleepTimerActive
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playPause
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.seekTo
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
-import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.model.Chapter
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Playable
@@ -47,6 +49,7 @@ import ac.mdiq.podcini.storage.utils.TimeSpeedConverter
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
 import android.app.Activity
+import android.content.ComponentName
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -63,12 +66,16 @@ import androidx.fragment.app.Fragment
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.MediaController
+import androidx.media3.session.SessionToken
 import coil.imageLoader
 import coil.request.ErrorResult
 import coil.request.ImageRequest
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.elevation.SurfaceColors
+import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
@@ -100,7 +107,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
     private lateinit  var cardViewSeek: CardView
 
-    private var controller: PlaybackController? = null
+    private lateinit var controllerFuture: ListenableFuture<MediaController>
+    private var controller: ServiceStatusHandler? = null
     private var seekedToChapterStart = false
 //    private var currentChapterIndex = -1
 
@@ -128,7 +136,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         }
         toolbar.setOnMenuItemClickListener(this)
 
-        controller = createController()
+        controller = createHandler()
         controller!!.init()
 
         playerUI1 = PlayerUIFragment.newInstance(controller!!)
@@ -152,7 +160,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         return binding.root
     }
 
-    fun initDetailedView() {
+    private fun initDetailedView() {
         if (playerDetailsFragment == null) {
             val fm = requireActivity().supportFragmentManager
             val transaction = fm.beginTransaction()
@@ -198,7 +206,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             val dividerPos = FloatArray(chapters.size)
 
             for (i in chapters.indices) {
-                dividerPos[i] = chapters[i].start / duration.toFloat()
+                dividerPos[i] = chapters[i].start / curDurationFB.toFloat()
             }
         }
     }
@@ -246,9 +254,9 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         }
     }
 
-    private fun createController(): PlaybackController {
-        return object : PlaybackController(requireActivity()) {
-            override fun updatePlayButtonShowsPlay(showPlay: Boolean) {
+    private fun createHandler(): ServiceStatusHandler {
+        return object : ServiceStatusHandler(requireActivity()) {
+            override fun updatePlayButton(showPlay: Boolean) {
                 isShowPlay = showPlay
                 playerUI?.butPlay?.setIsShowPlay(showPlay)
 //                playerFragment2?.butPlay?.setIsShowPlay(showPlay)
@@ -287,12 +295,21 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         Logd(TAG, "onStart() isCollapsed: $isCollapsed")
         super.onStart()
         procFlowEvents()
+
+        val sessionToken = SessionToken(requireContext(), ComponentName(requireContext(), PlaybackService::class.java))
+        controllerFuture = MediaController.Builder(requireContext(), sessionToken).buildAsync()
+        controllerFuture.addListener({
+//            mediaController = controllerFuture.get()
+//            Logd(TAG, "controllerFuture.addListener: $mediaController")
+        }, MoreExecutors.directExecutor())
+
         loadMediaInfo(false)
     }
 
     override fun onStop() {
         Logd(TAG, "onStop()")
         super.onStop()
+        MediaController.releaseFuture(controllerFuture)
         cancelFlowEvents()
 //        progressIndicator.visibility = View.GONE // Controller released; we will not receive buffering updates
     }
@@ -377,8 +394,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         when {
             fromUser -> {
                 val prog: Float = progress / (seekBar.max.toFloat())
-                val converter = TimeSpeedConverter(curSpeedMultiplier)
-                val position: Int = converter.convert((prog * duration).toInt())
+                val converter = TimeSpeedConverter(curSpeedFB)
+                val position: Int = converter.convert((prog * curDurationFB).toInt())
                 val newChapterIndex: Int = ChapterUtils.getCurrentChapterIndex(curMedia, position)
                 if (newChapterIndex > -1) {
 //                    if (!sbPosition.isPressed && currentChapterIndex != newChapterIndex) {
@@ -393,7 +410,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                     binding.txtvSeek.text = curMedia?.getChapters()?.get(newChapterIndex)?.title ?: ("\n${DurationConverter.getDurationStringLong(position)}")
                 } else binding.txtvSeek.text = DurationConverter.getDurationStringLong(position)
             }
-            duration != playbackService?.curDuration -> updateUi()
+            curDurationFB != playbackService?.curDuration -> updateUi()
         }
     }
 
@@ -414,7 +431,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 seekedToChapterStart = false
             } else {
                 val prog: Float = seekBar.progress / (seekBar.max.toFloat())
-                seekTo((prog * duration).toInt())
+                seekTo((prog * curDurationFB).toInt())
             }
         }
         cardViewSeek.scaleX = 1f
@@ -438,8 +455,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         toolbar.menu?.findItem(R.id.show_video)?.setVisible(mediaType == MediaType.VIDEO)
 
         if (controller != null) {
-            toolbar.menu.findItem(R.id.set_sleeptimer_item).setVisible(!sleepTimerActive())
-            toolbar.menu.findItem(R.id.disable_sleeptimer_item).setVisible(sleepTimerActive())
+            toolbar.menu.findItem(R.id.set_sleeptimer_item).setVisible(!isSleepTimerActive())
+            toolbar.menu.findItem(R.id.disable_sleeptimer_item).setVisible(isSleepTimerActive())
         }
         (activity as? CastEnabledActivity)?.requestCastButton(toolbar.menu)
     }
@@ -457,7 +474,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 playerDetailsFragment?.buildHomeReaderText()
             }
             R.id.show_video -> {
-                controller!!.playPause()
+                playPause()
                 VideoPlayerActivityStarter(requireContext(), VideoMode.FULL_SCREEN_VIEW).start()
             }
             R.id.disable_sleeptimer_item, R.id.set_sleeptimer_item -> SleepTimerDialog().show(childFragmentManager, "SleepTimerDialog")
@@ -535,10 +552,10 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                     val mediaType = media.getMediaType()
                     if (mediaType == MediaType.AUDIO ||
                             (mediaType == MediaType.VIDEO && (videoPlayMode == VideoMode.AUDIO_ONLY.mode || videoMode == VideoMode.AUDIO_ONLY))) {
-                        controller!!.ensureService()
+                        ensureService()
                         (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_EXPANDED)
                     } else {
-                        controller?.playPause()
+                        playPause()
 //                        controller!!.ensureService()
                         val intent = getPlayerActivityIntent(requireContext(), mediaType)
                         startActivity(intent)
@@ -557,12 +574,11 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             super.onViewCreated(view, savedInstanceState)
             butPlay?.setOnClickListener {
                 if (controller == null) return@setOnClickListener
-//                val media = curMedia
                 if (curMedia != null) {
                     if (curMedia?.getMediaType() == MediaType.VIDEO && MediaPlayerBase.status != PlayerStatus.PLAYING) {
-                        controller!!.playPause()
+                        playPause()
                         requireContext().startActivity(getPlayerActivityIntent(requireContext(), curMedia!!.getMediaType()))
-                    } else controller!!.playPause()
+                    } else playPause()
                     if (!isControlButtonsSet) {
                         sbPosition.visibility = View.VISIBLE
                         isControlButtonsSet = true
@@ -584,7 +600,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             butPlay?.setOnLongClickListener {
                 if (controller != null && MediaPlayerBase.status == PlayerStatus.PLAYING) {
                     val fallbackSpeed = UserPreferences.fallbackSpeed
-                    if (fallbackSpeed > 0.1f) fallbackSpeed(fallbackSpeed)
+                    if (fallbackSpeed > 0.1f) toggleFallbackSpeed(fallbackSpeed)
                 }
                 true
             }
@@ -609,6 +625,10 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 true
             }
         }
+        private fun ensureService() {
+            if (curMedia == null) return
+            if (playbackService == null) PlaybackServiceStarter(requireContext(), curMedia!!).start()
+        }
         private fun speedForward(speed: Float) {
 //            playbackService?.speedForward(speed)
             if (playbackService?.mPlayer == null || playbackService?.isFallbackSpeed == true) return
@@ -624,7 +644,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 if (controller == null) return@OnClickListener
                 showTimeLeft = !showTimeLeft
                 UserPreferences.setShowRemainTimeSetting(showTimeLeft)
-                onPositionUpdate(FlowEvent.PlaybackPositionEvent(curMedia, curPosition, duration))
+                onPositionUpdate(FlowEvent.PlaybackPositionEvent(curMedia, curPositionFB, curDurationFB))
             })
         }
         fun updatePlaybackSpeedButton(event: FlowEvent.SpeedChangedEvent) {
@@ -634,8 +654,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         }
         @UnstableApi
         fun onPositionUpdate(event: FlowEvent.PlaybackPositionEvent) {
-            if (curMedia?.getIdentifier() != event.media?.getIdentifier() || controller == null || curPosition == Playable.INVALID_TIME || duration == Playable.INVALID_TIME) return
-            val converter = TimeSpeedConverter(curSpeedMultiplier)
+            if (curMedia?.getIdentifier() != event.media?.getIdentifier() || controller == null || curPositionFB == Playable.INVALID_TIME || curDurationFB == Playable.INVALID_TIME) return
+            val converter = TimeSpeedConverter(curSpeedFB)
             val currentPosition: Int = converter.convert(event.position)
             val duration: Int = converter.convert(event.duration)
             val remainingTime: Int = converter.convert(max((event.duration - event.position).toDouble(), 0.0).toInt())
@@ -685,14 +705,14 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         override fun onPause() {
             Logd(TAG, "onPause() called")
             super.onPause()
-            controller?.pause()
+//            controller?.pause()
         }
         @OptIn(UnstableApi::class) override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {}
         override fun onStartTrackingTouch(seekBar: SeekBar) {}
         @OptIn(UnstableApi::class) override fun onStopTrackingTouch(seekBar: SeekBar) {
             if (playbackService?.isServiceReady() == true) {
                 val prog: Float = seekBar.progress / (seekBar.max.toFloat())
-                seekTo((prog * duration).toInt())
+                seekTo((prog * curDurationFB).toInt())
             }
         }
         @UnstableApi
@@ -736,8 +756,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         }
 
         companion object {
-            var controller: PlaybackController? = null
-            fun newInstance(controller_: PlaybackController) : PlayerUIFragment {
+            var controller: ServiceStatusHandler? = null
+            fun newInstance(controller_: ServiceStatusHandler) : PlayerUIFragment {
                 controller = controller_
                 return PlayerUIFragment()
             }

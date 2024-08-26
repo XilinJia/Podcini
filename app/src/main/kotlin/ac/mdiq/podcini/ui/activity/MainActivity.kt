@@ -11,7 +11,6 @@ import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnceOrAsk
 import ac.mdiq.podcini.net.feed.discovery.ItunesTopListLoader
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.playback.cast.CastEnabledActivity
-import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.preferences.ThemeSwitcher.getNoTitleTheme
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.backButtonOpensDrawer
@@ -36,7 +35,6 @@ import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.ComponentName
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -65,8 +63,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.session.MediaController
-import androidx.media3.session.SessionToken
 import androidx.recyclerview.widget.RecyclerView
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
@@ -75,8 +71,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import com.google.common.util.concurrent.ListenableFuture
-import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
 import org.apache.commons.lang3.ArrayUtils
@@ -96,7 +90,7 @@ class MainActivity : CastEnabledActivity() {
     private lateinit var navDrawerFragment: NavDrawerFragment
     private lateinit var audioPlayerFragment: AudioPlayerFragment
     private lateinit var audioPlayerView: View
-    private lateinit var controllerFuture: ListenableFuture<MediaController>
+//    private lateinit var controllerFuture: ListenableFuture<MediaController>
     private lateinit var navDrawer: View
     private lateinit var dummyView : View
     lateinit var bottomSheet: LockableBottomSheetBehavior<*>
@@ -529,19 +523,20 @@ class MainActivity : CastEnabledActivity() {
         procFlowEvents()
         RatingDialog.init(this)
 
-        val sessionToken = SessionToken(this, ComponentName(this, PlaybackService::class.java))
-        controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
-        controllerFuture.addListener({
-                // Call controllerFuture.get() to retrieve the MediaController.
-                // MediaController implements the Player interface, so it can be
-                // attached to the PlayerView UI component.
-//                playerView.setPlayer(controllerFuture.get())
-        }, MoreExecutors.directExecutor())
+//        val sessionToken = SessionToken(this, ComponentName(this, PlaybackService::class.java))
+//        controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
+//        controllerFuture.addListener({
+//                // Call controllerFuture.get() to retrieve the MediaController.
+//                // MediaController implements the Player interface, so it can be
+//                // attached to the PlayerView UI component.
+////                playerView.setPlayer(controllerFuture.get())
+//            val player = controllerFuture.get()
+//        }, MoreExecutors.directExecutor())
     }
 
     override fun onStop() {
         super.onStop()
-        MediaController.releaseFuture(controllerFuture)
+//        MediaController.releaseFuture(controllerFuture)
         cancelFlowEvents()
     }
 

@@ -2,16 +2,17 @@ package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.VideoEpisodeFragmentBinding
-import ac.mdiq.podcini.playback.PlaybackController
-import ac.mdiq.podcini.playback.PlaybackController.Companion.curSpeedMultiplier
-import ac.mdiq.podcini.playback.PlaybackController.Companion.duration
+import ac.mdiq.podcini.playback.ServiceStatusHandler
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
-import ac.mdiq.podcini.playback.PlaybackController.Companion.isPlayingVideoLocally
-import ac.mdiq.podcini.playback.PlaybackController.Companion.playbackService
-import ac.mdiq.podcini.playback.PlaybackController.Companion.curPosition
-import ac.mdiq.podcini.playback.PlaybackController.Companion.seekTo
 import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.PlayerStatus
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curSpeedFB
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curDurationFB
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curPositionFB
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playPause
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.seekTo
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isPlayingVideoLocally
 import ac.mdiq.podcini.preferences.UserPreferences.fastForwardSecs
 import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
 import ac.mdiq.podcini.preferences.UserPreferences.setShowRemainTimeSetting
@@ -76,7 +77,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     private lateinit var webvDescription: ShownotesWebView
 
     var destroyingDueToReload = false
-    var controller: PlaybackController? = null
+    var controller: ServiceStatusHandler? = null
     var isFavorite = false
 
     private val onVideoviewTouched = View.OnTouchListener { v: View, event: MotionEvent ->
@@ -116,9 +117,9 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         return root
     }
 
-    @OptIn(UnstableApi::class) private fun newPlaybackController(): PlaybackController {
-        return object : PlaybackController(requireActivity()) {
-            override fun updatePlayButtonShowsPlay(showPlay: Boolean) {
+    @OptIn(UnstableApi::class) private fun newPlaybackController(): ServiceStatusHandler {
+        return object : ServiceStatusHandler(requireActivity()) {
+            override fun updatePlayButton(showPlay: Boolean) {
                 Logd(TAG, "updatePlayButtonShowsPlay called")
                 binding.playButton.setIsShowPlay(showPlay)
                 if (showPlay) (activity as AppCompatActivity).window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -159,9 +160,10 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
 
     @UnstableApi
     override fun onPause() {
-        if (!PictureInPictureUtil.isInPictureInPictureMode(requireActivity())) {
-            if (MediaPlayerBase.status == PlayerStatus.PLAYING) controller!!.pause()
-        }
+//        this does nothing
+//        if (!PictureInPictureUtil.isInPictureInPictureMode(requireActivity())) {
+//            if (MediaPlayerBase.status == PlayerStatus.PLAYING) controller!!.pause()
+//        }
         super.onPause()
     }
 
@@ -286,7 +288,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         binding.durationLabel.setOnClickListener {
             showTimeLeft = !showTimeLeft
             val media = curMedia ?: return@setOnClickListener
-            val converter = TimeSpeedConverter(curSpeedMultiplier)
+            val converter = TimeSpeedConverter(curSpeedFB)
             val length: String
             if (showTimeLeft) {
                 val remainingTime = converter.convert(media.getDuration() - media.getPosition())
@@ -423,8 +425,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
 
     @UnstableApi
     fun onPlayPause() {
-        if (controller == null) return
-        controller!!.playPause()
+        playPause()
         setupVideoControlsToggler()
     }
 
@@ -482,10 +483,10 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
 
     private fun onPositionObserverUpdate() {
         if (controller == null) return
-        val converter = TimeSpeedConverter(curSpeedMultiplier)
-        val currentPosition = converter.convert(curPosition)
-        val duration_ = converter.convert(duration)
-        val remainingTime = converter.convert(duration - curPosition)
+        val converter = TimeSpeedConverter(curSpeedFB)
+        val currentPosition = converter.convert(curPositionFB)
+        val duration_ = converter.convert(curDurationFB)
+        val remainingTime = converter.convert(curDurationFB - curPositionFB)
         //        Log.d(TAG, "currentPosition " + Converter.getDurationStringLong(currentPosition));
         if (currentPosition == Playable.INVALID_TIME || duration_ == Playable.INVALID_TIME) {
             Log.w(TAG, "Could not react to position observer update because of invalid time")
@@ -508,8 +509,8 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         if (controller == null) return
         if (fromUser) {
             prog = progress / (seekBar.max.toFloat())
-            val converter = TimeSpeedConverter(curSpeedMultiplier)
-            val position = converter.convert((prog * duration).toInt())
+            val converter = TimeSpeedConverter(curSpeedFB)
+            val position = converter.convert((prog * curDurationFB).toInt())
             binding.seekPositionLabel.text = getDurationStringLong(position)
         }
     }
@@ -526,7 +527,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     }
 
     override fun onStopTrackingTouch(seekBar: SeekBar) {
-        seekTo((prog * duration).toInt())
+        seekTo((prog * curDurationFB).toInt())
         binding.seekCardView.scaleX = 1f
         binding.seekCardView.scaleY = 1f
         binding.seekCardView.animate()

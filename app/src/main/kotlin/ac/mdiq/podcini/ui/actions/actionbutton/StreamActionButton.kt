@@ -10,7 +10,7 @@ import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.storage.model.RemoteMedia
 import ac.mdiq.podcini.net.utils.NetworkUtils.isStreamingAllowed
-import ac.mdiq.podcini.playback.PlaybackController.Companion.getPlayerActivityIntent
+import ac.mdiq.podcini.playback.ServiceStatusHandler.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
 import android.content.Context

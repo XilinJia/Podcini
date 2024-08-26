@@ -3,22 +3,23 @@ package ac.mdiq.podcini.playback.base
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.Prefs.prefPlaybackSpeed
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.UserPreferences.setPlaybackSpeed
 import ac.mdiq.podcini.preferences.UserPreferences.videoPlaybackSpeed
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.FeedPreferences
-import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.storage.model.MediaType
-import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.storage.model.Playable
 import android.content.Context
 import android.media.AudioManager
+import android.net.Uri
 import android.net.wifi.WifiManager
 import android.net.wifi.WifiManager.WifiLock
 import android.util.Log
 import android.util.Pair
 import android.view.SurfaceHolder
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.Volatile
@@ -315,6 +316,28 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
                     return 1.0f
                 }
             }
+
+        fun buildMetadata(p: Playable): MediaMetadata {
+            val builder = MediaMetadata.Builder()
+                .setIsBrowsable(true)
+                .setIsPlayable(true)
+                .setArtist(p.getFeedTitle())
+                .setTitle(p.getEpisodeTitle())
+                .setAlbumArtist(p.getFeedTitle())
+                .setDisplayTitle(p.getEpisodeTitle())
+                .setSubtitle(p.getFeedTitle())
+                .setArtworkUri(null)
+            return builder.build()
+        }
+
+        fun buildMediaItem(p: Playable): MediaItem? {
+            val url = p.getStreamUrl() ?: return null
+            val metadata = buildMetadata(p)
+            return MediaItem.Builder()
+                .setMediaId(url)
+                .setUri(Uri.parse(url))
+                .setMediaMetadata(metadata).build()
+        }
 
         /**
          * @param currentPosition  current position in a media file in ms

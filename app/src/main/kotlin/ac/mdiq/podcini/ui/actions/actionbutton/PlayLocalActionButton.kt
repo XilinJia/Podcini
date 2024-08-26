@@ -1,10 +1,10 @@
 package ac.mdiq.podcini.ui.actions.actionbutton
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.playback.PlaybackController.Companion.getPlayerActivityIntent
-import ac.mdiq.podcini.playback.PlaybackController.Companion.playbackService
+import ac.mdiq.podcini.playback.ServiceStatusHandler.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.playback.PlaybackServiceStarter
 import ac.mdiq.podcini.playback.base.InTheatre
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.util.Logd

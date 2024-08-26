@@ -1,17 +1,15 @@
 package ac.mdiq.podcini.ui.actions.actionbutton
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.net.utils.NetworkUtils.isStreamingAllowed
-import ac.mdiq.podcini.playback.PlaybackController.Companion.getPlayerActivityIntent
-import ac.mdiq.podcini.playback.PlaybackController.Companion.playbackService
+import ac.mdiq.podcini.playback.ServiceStatusHandler.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.playback.PlaybackServiceStarter
 import ac.mdiq.podcini.playback.base.InTheatre
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.MediaType
-import ac.mdiq.podcini.ui.actions.actionbutton.StreamActionButton.StreamingConfirmationDialog
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent

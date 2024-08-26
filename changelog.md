@@ -1,3 +1,10 @@
+# 6.4.0
+
+* PlaybackService is now a MediaLibraryService and also takes over many functionalities from PlaybackController
+* PlaybackController is renamed to ServiceStatusHandler and is stripped to bare bones
+* enabled Android Auto UI, currently playing episode and episodes in the active queue are shown in the Auto UI
+* added code to handle case where keycode=-1 and keyEvent!=null, attempting to resolve the occassional issue of random start playing
+
 # 6.3.7
 
 * inlined some DB writes of Episodes in some routines

@@ -2,10 +2,10 @@ package ac.mdiq.podcini.ui.dialog
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.TimeDialogBinding
-import ac.mdiq.podcini.playback.PlaybackController.Companion.curSpeedMultiplier
-import ac.mdiq.podcini.playback.PlaybackController.Companion.playbackService
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.service.PlaybackService
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curSpeedFB
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnable
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnableFrom
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.autoEnableTo
@@ -51,7 +51,6 @@ import kotlinx.coroutines.launch
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.math.*
-import kotlin.time.DurationUnit
 
 class SleepTimerDialog : DialogFragment() {
     private var _binding: TimeDialogBinding? = null
@@ -146,7 +145,7 @@ class SleepTimerDialog : DialogFragment() {
                 val time = if (binding.endEpisode.isChecked) {
                     val curPosition = curMedia?.getPosition() ?: 0
                     val duration = curMedia?.getDuration() ?: 0
-                    val converter = TimeSpeedConverter(curSpeedMultiplier)
+                    val converter = TimeSpeedConverter(curSpeedFB)
                     TimeUnit.MILLISECONDS.toMinutes(converter.convert(max((duration - curPosition).toDouble(), 0.0).toInt()).toLong()) // ms to minutes
                 } else etxtTime.getText().toString().toLong()
                 Logd(TAG, "Sleep timer set: $time")

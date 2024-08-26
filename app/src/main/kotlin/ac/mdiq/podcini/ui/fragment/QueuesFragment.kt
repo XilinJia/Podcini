@@ -6,6 +6,9 @@ import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.databinding.QueueFragmentBinding
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.getCurrentPlaybackSpeed
+import ac.mdiq.podcini.playback.service.PlaybackService
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.mediaBrowser
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.database.Queues.clearQueue
 import ac.mdiq.podcini.storage.database.Queues.isQueueKeepSorted
@@ -38,6 +41,8 @@ import ac.mdiq.podcini.ui.view.EpisodesRecyclerView
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.event.EventFlow
 import ac.mdiq.podcini.util.event.FlowEvent
+import android.annotation.SuppressLint
+import android.content.ComponentName
 import android.content.Context
 import android.content.DialogInterface
 import android.content.SharedPreferences
@@ -64,12 +69,16 @@ import androidx.compose.ui.window.Dialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.MediaBrowser
+import androidx.media3.session.SessionToken
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.MoreExecutors
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
 import kotlinx.coroutines.*
@@ -103,6 +112,8 @@ import java.util.*
 
     private var showBin: Boolean = false
     private var addToQueueActionItem: SpeedDialActionItem? = null
+
+    private lateinit var browserFuture: ListenableFuture<MediaBrowser>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -138,9 +149,11 @@ import java.util.*
         queueSpinner.setSelection(queueNames.indexOf(curQueue.name))
         queueSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val prevQueueSize = curQueue.size()
                 curQueue = upsertBlk(queues[position]) { it.update() }
                 toolbar.menu?.findItem(R.id.rename_queue)?.setVisible(curQueue.name != "Default")
                 loadCurQueue(true)
+                playbackService?.notifyCurQueueItemsChanged(Math.max(prevQueueSize, curQueue.size()))
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
@@ -216,6 +229,16 @@ import java.util.*
         adapter?.refreshFragPosCallback = ::refreshPosCallback
         loadCurQueue(true)
         procFlowEvents()
+        val sessionToken = SessionToken(requireContext(), ComponentName(requireContext(), PlaybackService::class.java))
+        browserFuture = MediaBrowser.Builder(requireContext(), sessionToken).buildAsync()
+        browserFuture.addListener(
+            {
+                // here we can get the root of media items tree or we can get also the children if it is an album for example.
+                mediaBrowser = browserFuture.get()
+                mediaBrowser?.subscribe("CurQueue", null)
+            },
+            MoreExecutors.directExecutor()
+        )
 //        if (queueItems.isNotEmpty()) recyclerView.restoreScrollPosition(TAG)
     }
 
@@ -224,6 +247,9 @@ import java.util.*
         super.onStop()
         adapter?.refreshFragPosCallback = null
         cancelFlowEvents()
+        mediaBrowser?.unsubscribe("CurQueue")
+        mediaBrowser = null
+        MediaBrowser.releaseFuture(browserFuture)
         val childCount = recyclerView.childCount
         for (i in 0 until childCount) {
             val child = recyclerView.getChildAt(i)
@@ -327,7 +353,10 @@ import java.util.*
                     }
                 }
             }
-            FlowEvent.QueueEvent.Action.SWITCH_QUEUE -> loadCurQueue(false)
+            FlowEvent.QueueEvent.Action.SWITCH_QUEUE -> {
+                loadCurQueue(false)
+                playbackService?.notifyCurQueueItemsChanged(event.episodes.size)
+            }
             FlowEvent.QueueEvent.Action.CLEARED -> {
                 queueItems.clear()
                 adapter?.updateItems(queueItems)
@@ -385,6 +414,7 @@ import java.util.*
         if (swipeActions.actions?.right != null) binding.rightActionIcon.setImageResource(swipeActions.actions!!.right!!.getActionIcon())
     }
 
+    @SuppressLint("RestrictedApi")
     private fun onKeyUp(event: KeyEvent) {
         if (!isAdded || !isVisible || !isMenuVisible) return
 
@@ -650,10 +680,9 @@ import java.util.*
             while (curQueue.name.isEmpty()) runBlocking { delay(100) }
             if (queueItems.isNotEmpty()) emptyViewHandler.hide()
             queueItems.clear()
-            if (showBin) {
-                queueItems.addAll(realm.query(Episode::class, "id IN $0", curQueue.idsBinList)
+            if (showBin) queueItems.addAll(realm.query(Episode::class, "id IN $0", curQueue.idsBinList)
                     .find().sortedByDescending { curQueue.idsBinList.indexOf(it.id) })
-            } else {
+            else {
                 curQueue.episodes.clear()
                 queueItems.addAll(curQueue.episodes)
             }
@@ -664,6 +693,7 @@ import java.util.*
             adapter?.updateItems(queueItems)
             if (restoreScrollPosition) recyclerView.restoreScrollPosition(TAG)
             refreshInfoBar()
+//            playbackService?.notifyCurQueueItemsChanged()
             loadItemsRunning = false
         }
     }

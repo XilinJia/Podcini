@@ -31,8 +31,8 @@ android {
         testApplicationId "ac.mdiq.podcini.tests"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        versionCode 3020231
-        versionName "6.3.7"
+        versionCode 3020232
+        versionName "6.4.0"
 
         applicationId "ac.mdiq.podcini.R"
         def commit = ""
@@ -125,6 +125,15 @@ android {
         }
     }
 
+    splits {
+        abi {
+            enable true
+            reset()
+            include "arm64-v8a"  // Specify the ABI you want to split.
+            universalApk true  // This will generate a universal APK that includes all ABIs.
+        }
+    }
+
     buildTypes {
         release {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard.cfg"
@@ -156,7 +165,7 @@ android {
 }
 
 dependencies {
-    def composeBom = platform('androidx.compose:compose-bom:2024.06.00')
+    def composeBom = platform('androidx.compose:compose-bom:2024.08.00')
     implementation composeBom
     androidTestImplementation composeBom
 
@@ -215,6 +224,7 @@ dependencies {
 //    implementation "io.reactivex.rxjava2:rxandroid:2.1.1"
     implementation "io.reactivex.rxjava2:rxjava:2.2.21"
 
+//    5.5.0-b01 is newer than 5.5.0-compose01
     implementation 'com.mikepenz:iconics-core:5.5.0-b01'
     implementation 'com.mikepenz:iconics-views:5.5.0-b01'
     implementation 'com.mikepenz:google-material-typeface:4.0.0.3-kotlin@aar'
@@ -243,7 +253,7 @@ dependencies {
     androidTestImplementation "androidx.test.espresso:espresso-core:3.6.1"
     androidTestImplementation "androidx.test.espresso:espresso-contrib:3.6.1"
     androidTestImplementation "androidx.test.espresso:espresso-intents:3.6.1"
-    androidTestImplementation "androidx.test:runner:1.6.1"
+    androidTestImplementation "androidx.test:runner:1.6.2"
     androidTestImplementation "androidx.test:rules:1.6.1"
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'org.awaitility:awaitility:4.2.1'

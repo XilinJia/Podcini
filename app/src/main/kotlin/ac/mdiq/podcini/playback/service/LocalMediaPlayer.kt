@@ -166,17 +166,6 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
         exoPlayer?.setAudioAttributes(b.build(), true)
     }
 
-    private fun buildMetadata(p: Playable): MediaMetadata {
-        val builder = MediaMetadata.Builder()
-            .setArtist(p.getFeedTitle())
-            .setTitle(p.getEpisodeTitle())
-            .setAlbumArtist(p.getFeedTitle())
-            .setDisplayTitle(p.getEpisodeTitle())
-            .setSubtitle(p.getFeedTitle())
-            .setArtworkUri(null)
-        return builder.build()
-    }
-
     @Throws(IllegalArgumentException::class, IllegalStateException::class)
     private fun setDataSource(metadata: MediaMetadata, mediaUrl: String, user: String?, password: String?) {
         Logd(TAG, "setDataSource: $mediaUrl")
@@ -681,6 +670,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
         private var httpDataSourceFactory:  OkHttpDataSource.Factory? = null
 
         private var trackSelector: DefaultTrackSelector? = null
+
         var exoPlayer: ExoPlayer? = null
 
         private var exoplayerListener: Listener? = null

@@ -3,15 +3,15 @@ package ac.mdiq.podcini.ui.activity
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.AudioControlsBinding
 import ac.mdiq.podcini.databinding.VideoplayerActivityBinding
-import ac.mdiq.podcini.playback.PlaybackController
-import ac.mdiq.podcini.playback.PlaybackController.Companion.duration
-import ac.mdiq.podcini.playback.PlaybackController.Companion.getPlayerActivityIntent
-import ac.mdiq.podcini.playback.PlaybackController.Companion.playbackService
-import ac.mdiq.podcini.playback.PlaybackController.Companion.seekTo
-import ac.mdiq.podcini.playback.PlaybackController.Companion.sleepTimerActive
+import ac.mdiq.podcini.playback.ServiceStatusHandler
+import ac.mdiq.podcini.playback.ServiceStatusHandler.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.cast.CastEnabledActivity
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curDurationFB
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isCasting
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isSleepTimerActive
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.seekTo
 import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
 import ac.mdiq.podcini.storage.database.Episodes.setFavorite
 import ac.mdiq.podcini.storage.model.EpisodeMedia
@@ -21,8 +21,6 @@ import ac.mdiq.podcini.ui.dialog.ShareDialog
 import ac.mdiq.podcini.ui.dialog.SleepTimerDialog
 import ac.mdiq.podcini.ui.dialog.VariableSpeedDialog
 import ac.mdiq.podcini.ui.fragment.ChaptersFragment
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.ui.fragment.VideoEpisodeFragment
 import ac.mdiq.podcini.ui.utils.PictureInPictureUtil
 import ac.mdiq.podcini.util.IntentUtils.openInBrowser
@@ -41,7 +39,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.*
 import android.view.MenuItem.SHOW_AS_ACTION_NEVER
 import android.widget.EditText
@@ -243,8 +240,8 @@ class VideoplayerActivity : CastEnabledActivity() {
             menu.findItem(R.id.remove_from_favorites_item).setVisible(videoEpisodeFragment.isFavorite)
         }
 
-        menu.findItem(R.id.set_sleeptimer_item).setVisible(!sleepTimerActive())
-        menu.findItem(R.id.disable_sleeptimer_item).setVisible(sleepTimerActive())
+        menu.findItem(R.id.set_sleeptimer_item).setVisible(!isSleepTimerActive())
+        menu.findItem(R.id.disable_sleeptimer_item).setVisible(isSleepTimerActive())
         menu.findItem(R.id.player_switch_to_audio_only).setVisible(true)
 
         menu.findItem(R.id.audio_controls).setVisible(audioTracks.size >= 2)
@@ -382,7 +379,7 @@ class VideoplayerActivity : CastEnabledActivity() {
         }
         //Go to x% of video:
         if (keyCode >= KeyEvent.KEYCODE_0 && keyCode <= KeyEvent.KEYCODE_9) {
-            seekTo((0.1f * (keyCode - KeyEvent.KEYCODE_0) * duration).toInt())
+            seekTo((0.1f * (keyCode - KeyEvent.KEYCODE_0) * curDurationFB).toInt())
             return true
         }
         return super.onKeyUp(keyCode, event)
@@ -393,11 +390,11 @@ class VideoplayerActivity : CastEnabledActivity() {
         private var _binding: AudioControlsBinding? = null
         private val binding get() = _binding!!
 
-        private var controller: PlaybackController? = null
+        private var controller: ServiceStatusHandler? = null
 
         @UnstableApi override fun onStart() {
             super.onStart()
-            controller = object : PlaybackController(requireActivity()) {
+            controller = object : ServiceStatusHandler(requireActivity()) {
                 override fun loadMediaInfo() {
                     setupAudioTracks()
                 }

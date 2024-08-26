@@ -87,6 +87,15 @@ android {
         compose true
     }
 
+//     splits {
+//         abi {
+//             enable true
+//             reset()
+//             include "arm64-v8a"  // Specify the ABI you want to split.
+//             universalApk true  // This will generate a universal APK that includes all ABIs.
+//         }
+//     }
+
 // from playFlavor.gradle
     flavorDimensions += ["market"]
     productFlavors {
@@ -125,14 +134,6 @@ android {
         }
     }
 
-    splits {
-        abi {
-            enable true
-            reset()
-            include "arm64-v8a"  // Specify the ABI you want to split.
-            universalApk true  // This will generate a universal APK that includes all ABIs.
-        }
-    }
 
     buildTypes {
         release {

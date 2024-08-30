@@ -64,26 +64,16 @@ class AddFeedFragment : Fragment() {
 
         (getActivity() as MainActivity).setupToolbarToggle(binding.toolbar, displayUpArrow)
 
-        binding.searchItunesButton.setOnClickListener {
-            activity?.loadChildFragment(OnlineSearchFragment.newInstance(ItunesPodcastSearcher::class.java))
-        }
-        binding.searchFyydButton.setOnClickListener {
-            activity?.loadChildFragment(OnlineSearchFragment.newInstance(FyydPodcastSearcher::class.java))
-        }
-        binding.searchGPodderButton.setOnClickListener {
-            activity?.loadChildFragment(OnlineSearchFragment.newInstance(GpodnetPodcastSearcher::class.java))
-        }
-        binding.searchPodcastIndexButton.setOnClickListener {
-            activity?.loadChildFragment(OnlineSearchFragment.newInstance(PodcastIndexPodcastSearcher::class.java))
-        }
-
+        binding.searchVistaGuideButton.setOnClickListener { activity?.loadChildFragment(OnlineSearchFragment.newInstance(VistaGuidePodcastSearcher::class.java)) }
+        binding.searchItunesButton.setOnClickListener { activity?.loadChildFragment(OnlineSearchFragment.newInstance(ItunesPodcastSearcher::class.java)) }
+        binding.searchFyydButton.setOnClickListener { activity?.loadChildFragment(OnlineSearchFragment.newInstance(FyydPodcastSearcher::class.java)) }
+        binding.searchGPodderButton.setOnClickListener { activity?.loadChildFragment(OnlineSearchFragment.newInstance(GpodnetPodcastSearcher::class.java)) }
+        binding.searchPodcastIndexButton.setOnClickListener { activity?.loadChildFragment(OnlineSearchFragment.newInstance(PodcastIndexPodcastSearcher::class.java)) }
         binding.combinedFeedSearchEditText.setOnEditorActionListener { _: TextView?, _: Int, _: KeyEvent? ->
             performSearch()
             true
         }
-
         binding.addViaUrlButton.setOnClickListener { showAddViaUrlDialog() }
-
         binding.opmlImportButton.setOnClickListener {
             try {
                 chooseOpmlImportPathLauncher.launch("*/*")
@@ -92,7 +82,6 @@ class AddFeedFragment : Fragment() {
                 activity?.showSnackbarAbovePlayer(R.string.unable_to_start_system_file_manager, Snackbar.LENGTH_LONG)
             }
         }
-
         binding.addLocalFolderButton.setOnClickListener {
             try {
                 addLocalFolderLauncher.launch(null)
@@ -102,7 +91,6 @@ class AddFeedFragment : Fragment() {
             }
         }
         binding.searchButton.setOnClickListener { performSearch() }
-
         if (isOPMLRestared && feedCount == 0) {
             AlertDialog.Builder(requireContext())
                 .setTitle(R.string.restore_subscriptions_label)
@@ -187,9 +175,7 @@ class AddFeedFragment : Fragment() {
         val scope = CoroutineScope(Dispatchers.Main)
         scope.launch {
             try {
-                val feed = withContext(Dispatchers.IO) {
-                    addLocalFolder(uri)
-                }
+                val feed = withContext(Dispatchers.IO) { addLocalFolder(uri) }
                 withContext(Dispatchers.Main) {
                     if (feed != null) {
                         val fragment: Fragment = FeedEpisodesFragment.newInstance(feed.id)

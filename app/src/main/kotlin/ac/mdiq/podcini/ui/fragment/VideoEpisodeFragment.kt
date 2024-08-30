@@ -30,8 +30,8 @@ import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringLong
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.storage.utils.TimeSpeedConverter
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -72,7 +72,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     private var prog = 0f
 
     private var itemsLoaded = false
-    private var item: Episode? = null
+    private var episode: Episode? = null
     private var webviewData: String? = null
     private lateinit var webvDescription: ShownotesWebView
 
@@ -104,6 +104,37 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
 
         lastScreenTap = System.currentTimeMillis()
         true
+    }
+
+    private val surfaceHolderCallback: SurfaceHolder.Callback = object : SurfaceHolder.Callback {
+        override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+            holder.setFixedSize(width, height)
+        }
+
+        @UnstableApi
+        override fun surfaceCreated(holder: SurfaceHolder) {
+            Logd(TAG, "Videoview holder created")
+            videoSurfaceCreated = true
+//            if (MediaPlayerBase.status == PlayerStatus.PLAYING) setVideoSurface(holder)
+            if (MediaPlayerBase.status == PlayerStatus.PLAYING) playbackService?.mPlayer?.setVideoSurface(holder)
+            setupVideoAspectRatio()
+        }
+
+        override fun surfaceDestroyed(holder: SurfaceHolder) {
+            Logd(TAG, "Videosurface was destroyed")
+            videoSurfaceCreated = false
+            if (controller != null && !destroyingDueToReload && !(activity as VideoplayerActivity).switchToAudioOnly)
+                notifyVideoSurfaceAbandoned()
+        }
+    }
+
+    private val hideVideoControls = Runnable {
+        if (videoControlsShowing) {
+            Logd(TAG, "Hiding video controls")
+            hideVideoControls(true)
+            if (videoMode == VideoplayerActivity.VideoMode.FULL_SCREEN_VIEW) (activity as? AppCompatActivity)?.supportActionBar?.hide()
+            videoControlsShowing = false
+        }
     }
 
     @OptIn(UnstableApi::class) override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -241,7 +272,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
             loadItemsRunning = true
             lifecycleScope.launch {
                 try {
-                    item = withContext(Dispatchers.IO) {
+                    episode = withContext(Dispatchers.IO) {
                         val feedItem = (curMedia as? EpisodeMedia)?.episodeOrFetch()
                         if (feedItem != null) {
                             val duration = feedItem.media?.getDuration() ?: Int.MAX_VALUE
@@ -250,20 +281,17 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
                         feedItem
                     }
                     withContext(Dispatchers.Main) {
-                        Logd(TAG, "load() item ${item?.id}")
-                        if (item != null) {
-                            val isFav = item!!.isFavorite
+                        Logd(TAG, "load() item ${episode?.id}")
+                        if (episode != null) {
+                            val isFav = episode!!.isFavorite
                             if (isFavorite != isFav) {
                                 isFavorite = isFav
                                 invalidateOptionsMenu(requireActivity())
                             }
                         }
-                        if (webviewData != null && !itemsLoaded)
-                            webvDescription.loadDataWithBaseURL("https://127.0.0.1",
-                                webviewData!!,
-                                "text/html",
-                                "utf-8",
-                                "about:blank")
+                        if (webviewData != null && !itemsLoaded) webvDescription.loadDataWithBaseURL("https://127.0.0.1", webviewData!!,
+                            "text/html", "utf-8", "about:blank")
+
                         itemsLoaded = true
                     }
                 } catch (e: Throwable) {
@@ -279,7 +307,6 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
             (activity as AppCompatActivity).supportActionBar!!.title = media.getFeedTitle()
         }
     }
-
 
     @UnstableApi
     private fun setupView() {
@@ -384,28 +411,6 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         })
     }
 
-    private val surfaceHolderCallback: SurfaceHolder.Callback = object : SurfaceHolder.Callback {
-        override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-            holder.setFixedSize(width, height)
-        }
-
-        @UnstableApi
-        override fun surfaceCreated(holder: SurfaceHolder) {
-            Logd(TAG, "Videoview holder created")
-            videoSurfaceCreated = true
-//            if (MediaPlayerBase.status == PlayerStatus.PLAYING) setVideoSurface(holder)
-            if (MediaPlayerBase.status == PlayerStatus.PLAYING) playbackService?.mPlayer?.setVideoSurface(holder)
-            setupVideoAspectRatio()
-        }
-
-        override fun surfaceDestroyed(holder: SurfaceHolder) {
-            Logd(TAG, "Videosurface was destroyed")
-            videoSurfaceCreated = false
-            if (controller != null && !destroyingDueToReload && !(activity as VideoplayerActivity).switchToAudioOnly)
-                notifyVideoSurfaceAbandoned()
-        }
-    }
-
     fun notifyVideoSurfaceAbandoned() {
 //            playbackService?.notifyVideoSurfaceAbandoned()
         playbackService?.mPlayer?.pause(abandonFocus = true, reinit = false)
@@ -441,15 +446,6 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         videoControlsHider.postDelayed(hideVideoControls, 2500)
     }
 
-    private val hideVideoControls = Runnable {
-        if (videoControlsShowing) {
-            Logd(TAG, "Hiding video controls")
-            hideVideoControls(true)
-            if (videoMode == VideoplayerActivity.VideoMode.FULL_SCREEN_VIEW) (activity as? AppCompatActivity)?.supportActionBar?.hide()
-            videoControlsShowing = false
-        }
-    }
-
     private fun showVideoControls() {
         binding.bottomControlsContainer.visibility = View.VISIBLE
         binding.controlsContainer.visibility = View.VISIBLE
@@ -464,6 +460,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     }
 
     fun hideVideoControls(showAnimation: Boolean) {
+        if (!isAdded) return
         if (showAnimation) {
             val animation = AnimationUtils.loadAnimation(requireContext(), R.anim.fade_out)
             if (animation != null) {
@@ -476,7 +473,6 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
 //                or View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
 //                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION)
         binding.bottomControlsContainer.fitsSystemWindows = true
-
         binding.bottomControlsContainer.visibility = View.GONE
         binding.controlsContainer.visibility = View.GONE
     }

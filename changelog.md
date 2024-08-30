@@ -1,3 +1,24 @@
+# 6.5.0
+
+* media3 upped to 1.4.1
+* removed dependency of androidx.media
+* minSDK bumped to 24 (Marshmallow no longer supported, sorry)
+* in OnlineSearch view, info about subscriber counts (when available) are added to podcasts
+* likely fixed video fragment crash due to: java.lang.IllegalStateException: Fragment VideoEpisodeFragment
+* improved behavior of toggling video view modes
+* added setting in feed preferences to play audio only for video feeds
+* added feature to truely handling of Youtube channels
+* Youtube channels can be searched in OnlineSearch view and browsed, played or subscribed in OnlineFeed view
+* Youtube media are played within Podcini, in video pr audio modes
+* in feed setting of Youtube channels, "Prefer streaming" and "Auto download" options are disabled
+* limitations:
+	* Youtube channels search currently only showing up to 20 results
+	* A YouTube channel is only fetching up to 30 media
+	* Youtube media can only be streamed (not downloadable for now)
+	* video quality is set to lowest, audio quality is set to highest on wifi and lowest on mobile (not customizable now)
+	* Youtube feed is not auto-downloadable
+	*
+
 # 6.4.0
 
 * PlaybackService is now a MediaLibraryService and also takes over many functionalities from PlaybackController

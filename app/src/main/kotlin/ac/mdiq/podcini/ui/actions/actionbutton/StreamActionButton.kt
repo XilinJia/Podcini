@@ -11,8 +11,11 @@ import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.storage.model.RemoteMedia
 import ac.mdiq.podcini.net.utils.NetworkUtils.isStreamingAllowed
 import ac.mdiq.podcini.playback.ServiceStatusHandler.Companion.getPlayerActivityIntent
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
+import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
+import ac.mdiq.podcini.ui.activity.VideoplayerActivity.VideoMode
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
 import android.content.Context
 import android.content.DialogInterface
 import androidx.media3.common.util.UnstableApi
@@ -44,7 +47,8 @@ class StreamActionButton(item: Episode) : EpisodeActionButton(item) {
             .start()
         EventFlow.postEvent(FlowEvent.PlayEvent(item))
 
-        if (media.getMediaType() == MediaType.VIDEO) context.startActivity(getPlayerActivityIntent(context, MediaType.VIDEO))
+        if (item.feed?.preferences?.playAudioOnly != true && videoPlayMode != VideoMode.AUDIO_ONLY.mode && videoMode != VideoMode.AUDIO_ONLY
+                && media.getMediaType() == MediaType.VIDEO) context.startActivity(getPlayerActivityIntent(context, MediaType.VIDEO))
     }
 
     class StreamingConfirmationDialog(private val context: Context, private val playable: Playable) {

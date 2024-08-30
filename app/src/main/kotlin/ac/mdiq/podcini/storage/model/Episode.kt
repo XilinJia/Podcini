@@ -19,7 +19,6 @@ import java.util.*
  * Episode within a feed.
  */
 class Episode : RealmObject {
-
     @PrimaryKey
     var id: Long = 0L   // increments from Date().time * 100 at time of creation
 

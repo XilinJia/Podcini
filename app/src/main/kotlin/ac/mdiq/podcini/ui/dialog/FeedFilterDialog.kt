@@ -7,8 +7,8 @@ import ac.mdiq.podcini.storage.model.FeedFilter
 import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion.TAG
 import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion.feedsFilter
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle

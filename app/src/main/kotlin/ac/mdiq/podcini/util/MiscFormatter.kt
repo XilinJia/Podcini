@@ -9,7 +9,7 @@ import java.util.*
 /**
  * Formats dates.
  */
-object DateFormatter {
+object MiscFormatter {
     @JvmStatic
     fun formatRfc822Date(date: Date?): String {
         val format = SimpleDateFormat("dd MMM yy HH:mm:ss Z", Locale.US)
@@ -60,5 +60,14 @@ object DateFormatter {
         val cal2 = Calendar.getInstance()
         cal2.time = date2
         return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR)
+    }
+
+    fun formatNumber(n: Int): String {
+        return when {
+            n < 1000 -> n.toString()
+            n < 1_000_000 -> String.format(Locale.getDefault(), "%.2fK", n / 1000.0)
+            n < 1_000_000_000 -> String.format(Locale.getDefault(), "%.2fM", n / 1_000_000.0)
+            else -> String.format(Locale.getDefault(), "%.2fB", n / 1_000_000_000.0)
+        }
     }
 }

@@ -116,6 +116,15 @@
                 style="@style/AddPodcastTextView" />
 
             <TextView
+                android:id="@+id/searchVistaGuideButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/search_vistaguide_label"
+                app:drawableStartCompat="@drawable/ic_search"
+                app:drawableLeftCompat="@drawable/ic_search"
+                style="@style/AddPodcastTextView" />
+
+            <TextView
                 android:id="@+id/searchItunesButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

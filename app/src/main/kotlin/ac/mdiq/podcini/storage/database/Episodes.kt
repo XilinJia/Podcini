@@ -24,10 +24,12 @@ import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
+import ac.mdiq.podcini.storage.utils.FilesUtils.getMediafilename
 import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.vista.extractor.stream.StreamInfoItem
 import android.app.backup.BackupManager
 import android.content.Context
 import android.net.Uri
@@ -305,5 +307,19 @@ object Episodes {
 
     private fun shouldMarkedPlayedRemoveFromQueues(): Boolean {
         return appPrefs.getBoolean(Prefs.prefRemoveFromQueueMarkedPlayed.name, true)
+    }
+
+    fun episodeFromStreamInfoItem(info: StreamInfoItem): Episode {
+        val e = Episode()
+        e.link = info.url
+        e.title = info.name
+        e.description = info.shortDescription
+        e.imageUrl = info.thumbnails.first().url
+        e.setPubDate(info.uploadDate?.date()?.time)
+        val m = EpisodeMedia(e, info.url, 0, "video/*")
+        if (info.duration > 0) m.duration = info.duration.toInt() * 1000
+        m.fileUrl = getMediafilename(m)
+        e.media = m
+        return e
     }
 }

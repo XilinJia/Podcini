@@ -21,8 +21,9 @@ import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.utils.CoverLoader
 import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
-import ac.mdiq.podcini.util.DateFormatter
 import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.MiscFormatter.formatAbbrev
+import ac.mdiq.podcini.util.MiscFormatter.formatForAccessibility
 import android.text.Layout
 import android.text.format.Formatter
 import android.util.Log
@@ -236,8 +237,8 @@ open class EpisodeViewHolder(private val activity: MainActivity, parent: ViewGro
     }
 
     open fun setPubDate(item: Episode) {
-        pubDate.text = DateFormatter.formatAbbrev(activity, item.getPubDate())
-        pubDate.setContentDescription(DateFormatter.formatForAccessibility(item.getPubDate()))
+        pubDate.text = formatAbbrev(activity, item.getPubDate())
+        pubDate.setContentDescription(formatForAccessibility(item.getPubDate()))
     }
 
     private fun bind(media: EpisodeMedia) {

@@ -8,9 +8,9 @@ import kotlinx.coroutines.supervisorScope
 
 class CombinedSearcher : PodcastSearcher {
 
-    override suspend fun search(query: String): List<PodcastSearchResult?> {
+    override suspend fun search(query: String): List<PodcastSearchResult> {
         val searchProviders = PodcastSearcherRegistry.searchProviders
-        val searchResults = MutableList<List<PodcastSearchResult?>?>(searchProviders.size) { null }
+        val searchResults = MutableList<List<PodcastSearchResult>>(searchProviders.size) { listOf() }
 
         // Using a supervisor scope to ensure that one failing child does not cancel others
         supervisorScope {
@@ -36,15 +36,15 @@ class CombinedSearcher : PodcastSearcher {
         return weightSearchResults(searchResults)
     }
 
-    private fun weightSearchResults(singleResults: List<List<PodcastSearchResult?>?>): List<PodcastSearchResult?> {
+    private fun weightSearchResults(singleResults: List<List<PodcastSearchResult>>): List<PodcastSearchResult> {
         val resultRanking = HashMap<String?, Float>()
-        val urlToResult = HashMap<String?, PodcastSearchResult?>()
+        val urlToResult = HashMap<String?, PodcastSearchResult>()
         for (i in singleResults.indices) {
             val providerPriority = PodcastSearcherRegistry.searchProviders[i].weight
-            val providerResults = singleResults[i] ?: continue
+            val providerResults = singleResults[i]
             for (position in providerResults.indices) {
                 val result = providerResults[position]
-                urlToResult[result!!.feedUrl] = result
+                urlToResult[result.feedUrl] = result
 
                 var ranking = 0f
                 if (resultRanking.containsKey(result.feedUrl)) ranking = resultRanking[result.feedUrl]!!
@@ -59,9 +59,10 @@ class CombinedSearcher : PodcastSearcher {
             o2.value.toDouble().compareTo(o1.value.toDouble())
         }
 
-        val results: MutableList<PodcastSearchResult?> = ArrayList()
+        val results: MutableList<PodcastSearchResult> = ArrayList()
         for ((key) in sortedResults) {
-            results.add(urlToResult[key])
+            val v = urlToResult[key] ?: continue
+            results.add(v)
         }
         return results
     }
@@ -70,8 +71,8 @@ class CombinedSearcher : PodcastSearcher {
 //        return PodcastSearcherRegistry.lookupUrl(url)
 //    }
 
-    override suspend fun lookupUrl(resultUrl: String): String {
-        return PodcastSearcherRegistry.lookupUrl1(resultUrl)
+    override suspend fun lookupUrl(url: String): String {
+        return PodcastSearcherRegistry.lookupUrl1(url)
     }
 
     override fun urlNeedsLookup(url: String): Boolean {

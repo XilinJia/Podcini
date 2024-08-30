@@ -28,7 +28,6 @@ import java.security.cert.CertificateException
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 import java.util.concurrent.TimeUnit
-import javax.net.SocketFactory
 import javax.net.ssl.*
 import kotlin.concurrent.Volatile
 
@@ -133,7 +132,7 @@ object PodciniHttpClient {
         }
     }
 
-    fun installCertificates(builder: Builder) {
+    private fun installCertificates(builder: Builder) {
         val trustManager = create()
         builder.sslSocketFactory(PodciniSslSocketFactory(trustManager!!), trustManager)
         builder.connectionSpecs(listOf(ConnectionSpec.MODERN_TLS, ConnectionSpec.CLEARTEXT))
@@ -290,7 +289,7 @@ object PodciniHttpClient {
          * @param imageUrl The URL of the image
          * @return Credentials in format "Username:Password", empty String if no authorization given
          */
-        fun getImageAuthentication(imageUrl: String): String {
+        private fun getImageAuthentication(imageUrl: String): String {
             Logd(TAG, "getImageAuthentication() called with: imageUrl = [$imageUrl]")
             val episode = realm.query(Episode::class).query("imageUrl == $0", imageUrl).first().find() ?: return ""
             val username = episode.feed?.preferences?.username
@@ -400,7 +399,7 @@ object PodciniHttpClient {
         }
     }
 
-    const val SECTIGO_USER_TRUST: String = ("-----BEGIN CERTIFICATE-----\n"
+    private const val SECTIGO_USER_TRUST: String = ("-----BEGIN CERTIFICATE-----\n"
             + "MIIF3jCCA8agAwIBAgIQAf1tMPyjylGoG7xkDjUDLTANBgkqhkiG9w0BAQwFADCB\n"
             + "iDELMAkGA1UEBhMCVVMxEzARBgNVBAgTCk5ldyBKZXJzZXkxFDASBgNVBAcTC0pl\n"
             + "cnNleSBDaXR5MR4wHAYDVQQKExVUaGUgVVNFUlRSVVNUIE5ldHdvcmsxLjAsBgNV\n"
@@ -435,7 +434,7 @@ object PodciniHttpClient {
             + "jjxDah2nGN59PRbxYvnKkKj9\n"
             + "-----END CERTIFICATE-----\n")
 
-    const val COMODO: String = ("-----BEGIN CERTIFICATE-----\n"
+    private const val COMODO: String = ("-----BEGIN CERTIFICATE-----\n"
             + "MIIF2DCCA8CgAwIBAgIQTKr5yttjb+Af907YWwOGnTANBgkqhkiG9w0BAQwFADCB\n"
             + "hTELMAkGA1UEBhMCR0IxGzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4G\n"
             + "A1UEBxMHU2FsZm9yZDEaMBgGA1UEChMRQ09NT0RPIENBIExpbWl0ZWQxKzApBgNV\n"
@@ -470,7 +469,7 @@ object PodciniHttpClient {
             + "NVOFBkpdn627G190\n"
             + "-----END CERTIFICATE-----")
 
-    const val LETSENCRYPT_ISRG: String = ("-----BEGIN CERTIFICATE-----\n"
+    private const val LETSENCRYPT_ISRG: String = ("-----BEGIN CERTIFICATE-----\n"
             + "MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw\n"
             + "TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh\n"
             + "cmNoIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwHhcNMTUwNjA0MTEwNDM4\n"

@@ -15,7 +15,6 @@ import java.net.URLDecoder
 
 // this now is only used for receiving shared feed url
 class OnlineFeedViewActivity : AppCompatActivity() {
-
     @OptIn(UnstableApi::class) override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -37,7 +36,6 @@ class OnlineFeedViewActivity : AppCompatActivity() {
             showNoPodcastFoundError()
         } else {
             Logd(TAG, "Activity was started with url $feedUrl")
-
             val intent = MainActivity.showOnlineFeed(this, feedUrl)
             intent.putExtra(MainActivity.Extras.started_from_search.name, getIntent().getBooleanExtra(MainActivity.Extras.started_from_search.name, false))
             startActivity(intent)
@@ -53,8 +51,7 @@ class OnlineFeedViewActivity : AppCompatActivity() {
                 .setMessage(R.string.null_value_podcast_error)
                 .setOnDismissListener {
                     setResult(RESULT_ERROR)
-                    finish()
-                }
+                    finish() }
                 .show()
         }
     }
@@ -63,7 +60,6 @@ class OnlineFeedViewActivity : AppCompatActivity() {
         super.finish()
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
     }
-
 
     companion object {
         const val ARG_FEEDURL: String = "arg.feedurl"

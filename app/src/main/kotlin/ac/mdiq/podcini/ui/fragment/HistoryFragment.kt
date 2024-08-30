@@ -13,10 +13,10 @@ import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.dialog.DatesFilterDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.ui.view.EpisodeViewHolder
-import ac.mdiq.podcini.util.DateFormatter
+import ac.mdiq.podcini.util.MiscFormatter
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -63,8 +63,8 @@ import kotlin.math.min
                 return object: EpisodeViewHolder(mainActivityRef.get()!!, parent) {
                     override fun setPubDate(item: Episode) {
                         val playDate = Date(item.media?.getLastPlayedTime()?:0L)
-                        pubDate.text = DateFormatter.formatAbbrev(activity, playDate)
-                        pubDate.setContentDescription(DateFormatter.formatForAccessibility(playDate))
+                        pubDate.text = MiscFormatter.formatAbbrev(activity, playDate)
+                        pubDate.setContentDescription(MiscFormatter.formatForAccessibility(playDate))
                     }
                 }
             }

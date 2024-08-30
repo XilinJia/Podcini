@@ -3,8 +3,11 @@ package ac.mdiq.podcini.storage.model
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
+import ac.mdiq.podcini.storage.model.RemoteMedia.Companion.PLAYABLE_TYPE_REMOTE_MEDIA
 import ac.mdiq.podcini.storage.utils.MediaMetadataRetrieverCompat
 import ac.mdiq.podcini.util.Logd
+import ac.mdiq.vista.extractor.Vista
+import ac.mdiq.vista.extractor.stream.StreamInfo
 import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
@@ -17,24 +20,14 @@ import java.util.*
 import kotlin.math.max
 
 class EpisodeMedia: EmbeddedRealmObject, Playable {
-
     @Index
     var id: Long = 0L   // same as the episode id
 
     var fileUrl: String? = null
-//        set(value) {
-//            field = value
-//            if (value == null) downloaded = false
-//        }
 
     var downloadUrl: String? = null
 
     var downloaded: Boolean = false
-//        set(value) {
-//            Logd(TAG, "setting downloaded: $value ${episode?.isNew}")
-//            field = value
-//            if (value && episode?.isNew == true) episode!!.setPlayed(false)
-//        }
 
     var downloadTime: Long = 0
 
@@ -378,9 +371,6 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
         const val FEEDFILETYPE_FEEDMEDIA: Int = 2
         const val PLAYABLE_TYPE_FEEDMEDIA: Int = 1
         const val FILENAME_PREFIX_EMBEDDED_COVER: String = "metadata-retriever:"
-
-//        const val PREF_MEDIA_ID: String = "EpisodeMedia.PrefMediaId"
-//        private const val PREF_FEED_ID = "EpisodeMedia.PrefFeedId"
 
         /**
          * Indicates we've checked on the size of the item via the network

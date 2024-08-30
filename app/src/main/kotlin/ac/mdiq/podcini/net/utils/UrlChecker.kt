@@ -8,9 +8,6 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
  * Provides methods for checking and editing a URL.
  */
 object UrlChecker {
-    /**
-     * Logging tag.
-     */
     private val TAG: String = UrlChecker::class.simpleName ?: "Anonymous"
 
     private const val AP_SUBSCRIBE = "podcini-subscribe://"
@@ -18,7 +15,6 @@ object UrlChecker {
 
     /**
      * Checks if URL is valid and modifies it if necessary.
-     *
      * @param url_ The url which is going to be prepared
      * @return The prepared url
      */
@@ -27,27 +23,13 @@ object UrlChecker {
         var url = url_
         url = url.trim { it <= ' ' }
         val lowerCaseUrl = url.lowercase() // protocol names are case insensitive
-        when {
-            lowerCaseUrl.startsWith("feed://") -> {
-                Logd(TAG, "Replacing feed:// with http://")
-                return prepareUrl(url.substring("feed://".length))
-            }
-            lowerCaseUrl.startsWith("pcast://") -> {
-                Logd(TAG, "Removing pcast://")
-                return prepareUrl(url.substring("pcast://".length))
-            }
-            lowerCaseUrl.startsWith("pcast:") -> {
-                Logd(TAG, "Removing pcast:")
-                return prepareUrl(url.substring("pcast:".length))
-            }
-            lowerCaseUrl.startsWith("itpc") -> {
-                Logd(TAG, "Replacing itpc:// with http://")
-                return prepareUrl(url.substring("itpc://".length))
-            }
-            lowerCaseUrl.startsWith(AP_SUBSCRIBE) -> {
-                Logd(TAG, "Removing podcini-subscribe://")
-                return prepareUrl(url.substring(AP_SUBSCRIBE.length))
-            }
+        Logd(TAG, "prepareUrl lowerCaseUrl: $lowerCaseUrl")
+        return when {
+            lowerCaseUrl.startsWith("feed://") ->  prepareUrl(url.substring("feed://".length))
+            lowerCaseUrl.startsWith("pcast://") ->  prepareUrl(url.substring("pcast://".length))
+            lowerCaseUrl.startsWith("pcast:") ->  prepareUrl(url.substring("pcast:".length))
+            lowerCaseUrl.startsWith("itpc") ->  prepareUrl(url.substring("itpc://".length))
+            lowerCaseUrl.startsWith(AP_SUBSCRIBE) ->  prepareUrl(url.substring(AP_SUBSCRIBE.length))
 //            lowerCaseUrl.contains(AP_SUBSCRIBE_DEEPLINK) -> {
 //                Log.d(TAG, "Removing $AP_SUBSCRIBE_DEEPLINK")
 //                val removedWebsite = url.substring(url.indexOf("?url=") + "?url=".length)
@@ -57,18 +39,15 @@ object UrlChecker {
 //                    prepareUrl(removedWebsite)
 //                }
 //            }
-            !(lowerCaseUrl.startsWith("http://") || lowerCaseUrl.startsWith("https://")) -> {
-                Logd(TAG, "Adding http:// at the beginning of the URL")
-                return "http://$url"
-            }
-            else -> return url
+            !(lowerCaseUrl.startsWith("http://") || lowerCaseUrl.startsWith("https://")) ->  "http://$url"
+            else ->  url
         }
     }
 
     /**
      * Checks if URL is valid and modifies it if necessary.
      * This method also handles protocol relative URLs.
-     *
+
      * @param url_  The url which is going to be prepared
      * @param base_ The url against which the (possibly relative) url is applied. If this is null,
      * the result of prepareURL(url) is returned instead.
@@ -85,7 +64,7 @@ object UrlChecker {
         return if (urlUri.isRelative && baseUri.isAbsolute) urlUri.buildUpon().scheme(baseUri.scheme).build().toString() else prepareUrl(url)
     }
 
-    fun containsUrl(list: List<String?>, url: String?): Boolean {
+    fun containsUrl(list: List<String>, url: String?): Boolean {
         for (item in list) {
             if (urlEquals(item, url)) return true
         }
@@ -94,16 +73,16 @@ object UrlChecker {
 
     @JvmStatic
     fun urlEquals(string1: String?, string2: String?): Boolean {
-        val url1 = string1!!.toHttpUrlOrNull()
-        val url2 = string2!!.toHttpUrlOrNull()
-        if (url1!!.host != url2!!.host) return false
+        if (string1 == null || string2 == null) return false
+        val url1 = string1.toHttpUrlOrNull() ?: return false
+        val url2 = string2.toHttpUrlOrNull() ?: return false
+        if (url1.host != url2.host) return false
 
         val pathSegments1 = normalizePathSegments(url1.pathSegments)
         val pathSegments2 = normalizePathSegments(url2.pathSegments)
         if (pathSegments1 != pathSegments2) return false
 
         if (url1.query.isNullOrEmpty()) return url2.query.isNullOrEmpty()
-
         return url1.query == url2.query
     }
 

@@ -469,6 +469,8 @@
     <string name="pref_pauseOnHeadsetDisconnect_title">Headphones or Bluetooth disconnect</string>
     <string name="pref_unpauseOnHeadsetReconnect_title">Headphones reconnect</string>
     <string name="pref_unpauseOnBluetoothReconnect_title">Bluetooth reconnect</string>
+    <string name="pref_audio_only_title">Prefer audio only</string>
+    <string name="pref_audio_only_sum">Only play audio of a video media</string>
     <string name="pref_stream_over_download_title">Prefer streaming</string>
     <string name="pref_stream_over_download_sum">Display stream button instead of download button in lists</string>
     <string name="pref_mobileUpdate_title">Mobile updates</string>
@@ -832,6 +834,7 @@
 
     <!-- Add podcast fragment -->
     <string name="search_podcast_hint">Search podcast…</string>
+    <string name="search_vistaguide_label">Search YouTube channels</string>
     <string name="search_itunes_label">Search Apple Podcasts</string>
     <string name="search_podcastindex_label">Search Podcast Index</string>
     <string name="search_fyyd_label">Search fyyd</string>

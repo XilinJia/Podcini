@@ -13,8 +13,8 @@ import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment.Companion.tts
 import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment.Companion.ttsReady
 import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment.Companion.ttsWorking
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
 import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.speech.tts.TextToSpeech.getMaxSpeechInputLength

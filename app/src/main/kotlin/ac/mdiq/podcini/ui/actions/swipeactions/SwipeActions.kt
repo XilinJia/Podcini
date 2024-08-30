@@ -10,8 +10,8 @@ import ac.mdiq.podcini.ui.fragment.HistoryFragment
 import ac.mdiq.podcini.ui.fragment.QueuesFragment
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import ac.mdiq.podcini.ui.view.EpisodeViewHolder
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Canvas
@@ -24,7 +24,6 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.annimon.stream.Stream
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
-import java.util.*
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sin

@@ -18,8 +18,8 @@ import ac.mdiq.podcini.ui.utils.TransitionEffect
 import ac.mdiq.podcini.util.IntentUtils
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.ShareUtils
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
 import android.R.string
 import android.app.Activity
 import android.content.*

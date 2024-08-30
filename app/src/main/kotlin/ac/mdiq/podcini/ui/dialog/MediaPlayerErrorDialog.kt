@@ -9,7 +9,7 @@ import android.text.style.ForegroundColorSpan
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.podcini.util.FlowEvent
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 

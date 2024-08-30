@@ -11,8 +11,8 @@ import ac.mdiq.podcini.storage.model.FeedSortOrder.Companion.getSortOrder
 import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion.feedOrderBy
 import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion.feedOrderDir
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle

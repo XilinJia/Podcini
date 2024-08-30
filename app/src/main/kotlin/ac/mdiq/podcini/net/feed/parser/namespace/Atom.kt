@@ -36,13 +36,8 @@ class Atom : Namespace() {
                             LINK_REL_ENCLOSURE -> {
                                 val strSize: String? = attributes.getValue(LINK_LENGTH)
                                 var size: Long = 0
-                                try {
-                                    if (strSize != null) size = strSize.toLong()
-                                } catch (e: NumberFormatException) {
-                                    Logd(TAG, "Length attribute could not be parsed.")
-                                }
+                                try { if (strSize != null) size = strSize.toLong() } catch (e: NumberFormatException) { Logd(TAG, "Length attribute could not be parsed.") }
                                 val mimeType: String? = getMimeType(attributes.getValue(LINK_TYPE), href)
-
                                 val currItem = state.currentItem
                                 if (isMediaFile(mimeType) && currItem != null && currItem.media == null)
                                     currItem.media = EpisodeMedia(currItem, href, size, mimeType)
@@ -121,7 +116,6 @@ class Atom : Namespace() {
                 textElement = topElement as AtomText
                 textElement.setContent(content)
             }
-
             when {
                 ID == top -> {
                     when {

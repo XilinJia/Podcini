@@ -1,1 +1,7 @@
 include ':app'
+
+// includeBuild('../VistaGuide') {
+//     dependencySubstitution {
+//         substitute module('com.github.XilinJia.vistaguide:VistaGuide') using project(':extractor')
+//     }
+// }

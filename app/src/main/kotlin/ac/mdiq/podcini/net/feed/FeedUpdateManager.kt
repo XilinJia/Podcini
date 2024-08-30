@@ -8,8 +8,6 @@ import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
 import ac.mdiq.podcini.net.feed.parser.FeedHandler
 import ac.mdiq.podcini.net.feed.parser.FeedHandlerResult
 import ac.mdiq.podcini.net.utils.NetworkUtils.isAllowMobileFeedRefresh
-import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.net.utils.NetworkUtils.isFeedRefreshAllowed
 import ac.mdiq.podcini.net.utils.NetworkUtils.isNetworkRestricted
 import ac.mdiq.podcini.net.utils.NetworkUtils.isVpnOverWifi
@@ -17,16 +15,23 @@ import ac.mdiq.podcini.net.utils.NetworkUtils.networkAvailable
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.algorithms.AutoDownloads.autodownloadEpisodeMedia
+import ac.mdiq.podcini.storage.database.Episodes.episodeFromStreamInfoItem
 import ac.mdiq.podcini.storage.database.Feeds
 import ac.mdiq.podcini.storage.database.LogsAndStats
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
-import ac.mdiq.podcini.storage.model.DownloadResult
-import ac.mdiq.podcini.storage.model.FeedPreferences
-import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting
+import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.storage.utils.FilesUtils.feedfilePath
+import ac.mdiq.podcini.storage.utils.FilesUtils.getFeedfileName
 import ac.mdiq.podcini.ui.utils.NotificationUtils
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.config.ClientConfigurator
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.vista.extractor.Vista
+import ac.mdiq.vista.extractor.channel.ChannelInfo
+import ac.mdiq.vista.extractor.channel.tabs.ChannelTabInfo
+import ac.mdiq.vista.extractor.exceptions.ExtractionException
+import ac.mdiq.vista.extractor.stream.StreamInfoItem
 import android.Manifest
 import android.app.Notification
 import android.content.Context
@@ -46,6 +51,8 @@ import com.annimon.stream.Stream
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import io.realm.kotlin.ext.realmListOf
+import io.realm.kotlin.types.RealmList
 import org.xml.sax.SAXException
 import java.io.File
 import java.io.IOException
@@ -64,10 +71,10 @@ object FeedUpdateManager {
     const val EXTRA_NEXT_PAGE: String = "next_page"
     const val EXTRA_EVEN_ON_MOBILE: String = "even_on_mobile"
 
-    val updateInterval: Long
+    private val updateInterval: Long
         get() = appPrefs.getString(UserPreferences.Prefs.prefAutoUpdateIntervall.name, "12")!!.toInt().toLong()
 
-    val isAutoUpdateDisabled: Boolean
+    private val isAutoUpdateDisabled: Boolean
         get() = updateInterval == 0L
 
     /**
@@ -218,8 +225,11 @@ object FeedUpdateManager {
                 val feed = unmanaged(toUpdate[i++])
                 try {
                     Logd(TAG, "updating local feed? ${feed.isLocalFeed} ${feed.title}")
-                    if (feed.isLocalFeed) LocalFeedUpdater.updateFeed(feed, applicationContext, null)
-                    else refreshFeed(feed, force)
+                    when {
+                        feed.isLocalFeed -> LocalFeedUpdater.updateFeed(feed, applicationContext, null)
+                        feed.type == Feed.FeedType.YOUTUBE.name -> refreshYoutubeFeed(feed)
+                        else -> refreshFeed(feed, force)
+                    }
                 } catch (e: Exception) {
                     Logd(TAG, "update failed ${e.message}")
                     Feeds.persistFeedLastUpdateFailed(feed, true)
@@ -228,6 +238,32 @@ object FeedUpdateManager {
                 }
 //                toUpdate.removeAt(0)
             }
+        }
+        private fun refreshYoutubeFeed(feed: Feed) {
+            try {
+                val service = try { Vista.getService("YouTube") } catch (e: ExtractionException) { throw ExtractionException("YouTube service not found") }
+                val channelInfo = ChannelInfo.getInfo(service, feed.downloadUrl!!)
+                Logd(TAG, "refreshYoutubeFeed channelInfo: $channelInfo ${channelInfo.tabs.size}")
+                if (channelInfo.tabs.isEmpty()) return
+                try {
+                    val channelTabInfo = ChannelTabInfo.getInfo(service, channelInfo.tabs.first())
+                    Logd(TAG, "refreshYoutubeFeed result1: $channelTabInfo ${channelTabInfo.relatedItems.size}")
+                    val eList: RealmList<Episode> = realmListOf()
+                    for (r in channelTabInfo.relatedItems) {
+                        eList.add(episodeFromStreamInfoItem(r as StreamInfoItem))
+                    }
+                    val feed_ = Feed(feed.downloadUrl, null)
+                    feed_.type = Feed.FeedType.YOUTUBE.name
+                    feed_.hasVideoMedia = true
+                    feed_.title = channelInfo.name
+                    feed_.fileUrl = File(feedfilePath, getFeedfileName(feed_)).toString()
+                    feed_.description = channelInfo.description
+                    feed_.author = channelInfo.parentChannelName
+                    feed_.imageUrl = if (channelInfo.avatars.isNotEmpty()) channelInfo.avatars.first().url else null
+                    feed_.episodes = eList
+                    Feeds.updateFeed(applicationContext, feed_, false)
+                } catch (e: Throwable) { Logd(TAG, "refreshYoutubeFeed error1 ${e.message}") }
+            } catch (e: Throwable) { Logd(TAG, "refreshYoutubeFeed error ${e.message}") }
         }
         @UnstableApi
         @Throws(Exception::class)

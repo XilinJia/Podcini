@@ -21,13 +21,19 @@ import javax.xml.parsers.SAXParserFactory
 
 class FeedHandler {
     enum class Type {
-        RSS20, RSS091, ATOM, INVALID
+        RSS20, RSS091, ATOM, YOUTUBE, INVALID;
+
+        companion object {
+            fun fromName(name: String): Type {
+                for (t in entries) {
+                    if (t.name == name) return t
+                }
+                return INVALID
+            }
+        }
     }
 
-    @Throws(SAXException::class,
-        IOException::class,
-        ParserConfigurationException::class,
-        UnsupportedFeedtypeException::class)
+    @Throws(SAXException::class, IOException::class, ParserConfigurationException::class, UnsupportedFeedtypeException::class)
     fun parseFeed(feed: Feed): FeedHandlerResult {
 //        val tg = TypeGetter()
         val type = getType(feed)
@@ -50,6 +56,8 @@ class FeedHandler {
 
     @Throws(UnsupportedFeedtypeException::class)
     fun getType(feed: Feed): Type {
+        if (feed.type != null) return Type.fromName(feed.type!!)
+
         val factory: XmlPullParserFactory
         if (feed.fileUrl != null) {
             var reader: Reader? = null
@@ -64,9 +72,8 @@ class FeedHandler {
                     if (eventType == XmlPullParser.START_TAG) {
                         when (val tag = xpp.name) {
                             ATOM_ROOT -> {
-                                feed.type = Feed.TYPE_ATOM1
+                                feed.type = Feed.FeedType.ATOM1.name
                                 Logd(TAG, "Recognized type Atom")
-
                                 val strLang = xpp.getAttributeValue("http://www.w3.org/XML/1998/namespace", "lang")
                                 if (strLang != null) feed.language = strLang
 
@@ -76,12 +83,12 @@ class FeedHandler {
                                 val strVersion = xpp.getAttributeValue(null, "version")
                                 when (strVersion) {
                                     null -> {
-                                        feed.type = Feed.TYPE_RSS2
+                                        feed.type = Feed.FeedType.RSS.name
                                         Logd(TAG, "Assuming type RSS 2.0")
                                         return Type.RSS20
                                     }
                                     "2.0" -> {
-                                        feed.type = Feed.TYPE_RSS2
+                                        feed.type = Feed.FeedType.RSS.name
                                         Logd(TAG, "Recognized type RSS 2.0")
                                         return Type.RSS20
                                     }
@@ -98,12 +105,8 @@ class FeedHandler {
                             }
                         }
                     } else {
-                        try {
-                            eventType = xpp.next()
-                        } catch (e: RuntimeException) {
-                            // Apparently this happens on some devices...
-                            throw UnsupportedFeedtypeException("Unable to get type")
-                        }
+                        // Apparently exception happens on some devices...
+                        try { eventType = xpp.next() } catch (e: RuntimeException) { throw UnsupportedFeedtypeException("Unable to get type") }
                     }
                 }
             } catch (e: XmlPullParserException) {

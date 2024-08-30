@@ -26,6 +26,8 @@ class FeedPreferences : EmbeddedRealmObject {
     var username: String? = null
     var password: String? = null
 
+    var playAudioOnly: Boolean = false
+
     var playSpeed: Float = SPEED_USE_GLOBAL
 
     var introSkip: Int = 0

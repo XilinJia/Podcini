@@ -26,7 +26,6 @@ class Rss20 : Namespace() {
             ENCLOSURE == localName && ITEM == state.tagstack.peek()?.name -> {
                 val url: String? = attributes.getValue(ENC_URL)
                 val mimeType: String? = getMimeType(attributes.getValue(ENC_TYPE), url)
-
                 val validUrl = !url.isNullOrBlank()
                 if (state.currentItem?.media == null && isMediaFile(mimeType) && validUrl) {
                     var size: Long = 0
@@ -34,9 +33,7 @@ class Rss20 : Namespace() {
                         size = attributes.getValue(ENC_LEN)?.toLong() ?: 0
                         // less than 16kb is suspicious, check manually
                         if (size < 16384) size = 0
-                    } catch (e: NumberFormatException) {
-                        Logd(TAG, "Length attribute could not be parsed.")
-                    }
+                    } catch (e: NumberFormatException) { Logd(TAG, "Length attribute could not be parsed.") }
                     val media = EpisodeMedia(state.currentItem, url, size, mimeType)
                     if(state.currentItem != null) state.currentItem!!.media = media
                 }
@@ -78,9 +75,7 @@ class Rss20 : Namespace() {
                 when {
                     // some feed creators include an empty or non-standard guid-element in their feed,
                     // which should be ignored
-                    GUID == top && ITEM == second -> {
-                        if (contentRaw.isNotEmpty() && state.currentItem != null) state.currentItem!!.identifier = contentRaw
-                    }
+                    GUID == top && ITEM == second -> if (contentRaw.isNotEmpty() && state.currentItem != null) state.currentItem!!.identifier = contentRaw
                     TITLE == top -> {
                         val contentFromHtml = HtmlCompat.fromHtml(content, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
                         when {
@@ -94,12 +89,9 @@ class Rss20 : Namespace() {
                             ITEM == second && state.currentItem != null -> state.currentItem!!.link = content
                         }
                     }
-                    PUBDATE == top && ITEM == second && state.currentItem != null ->
-                        state.currentItem!!.pubDate = parseOrNullIfFuture(content)?.time ?: 0
+                    PUBDATE == top && ITEM == second && state.currentItem != null -> state.currentItem!!.pubDate = parseOrNullIfFuture(content)?.time ?: 0
                     // prefer itunes:image
-                    URL == top && IMAGE == second && CHANNEL == third -> {
-                        if (state.feed.imageUrl == null) state.feed.imageUrl = content
-                    }
+                    URL == top && IMAGE == second && CHANNEL == third -> if (state.feed.imageUrl == null) state.feed.imageUrl = content
                     DESCR == localName -> {
                         when {
                             CHANNEL == second -> state.feed.description = HtmlCompat.fromHtml(content, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()

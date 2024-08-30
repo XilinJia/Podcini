@@ -26,8 +26,8 @@ import ac.mdiq.podcini.ui.utils.PictureInPictureUtil
 import ac.mdiq.podcini.util.IntentUtils.openInBrowser
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.ShareUtils.hasLinkToShare
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
 import android.app.Dialog
 import android.content.DialogInterface
 import android.content.Intent
@@ -73,7 +73,6 @@ class VideoplayerActivity : CastEnabledActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-
         videoMode = (intent.getSerializableExtra(VIDEO_MODE) as? VideoMode) ?: VideoMode.None
         if (videoMode == VideoMode.None) {
             videoMode = VideoMode.entries.toTypedArray().getOrElse(videoPlayMode) { VideoMode.WINDOW_VIEW }
@@ -86,26 +85,8 @@ class VideoplayerActivity : CastEnabledActivity() {
                 videoMode = VideoMode.WINDOW_VIEW
             }
         }
-
-        when (videoMode) {
-            VideoMode.FULL_SCREEN_VIEW -> {
-                window.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN)
-                // has to be called before setting layout content
-                supportRequestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY)
-                setTheme(R.style.Theme_Podcini_VideoPlayer)
-                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-                window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
-                window.setFormat(PixelFormat.TRANSPARENT)
-            }
-            VideoMode.WINDOW_VIEW -> {
-                supportRequestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY)
-                setTheme(R.style.Theme_Podcini_VideoEpisode)
-                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-                window.setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN, WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN)
-                window.setFormat(PixelFormat.TRANSPARENT)
-            }
-            else -> {}
-        }
+        supportRequestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY)
+        setForVideoMode()
         super.onCreate(savedInstanceState)
 
         _binding = VideoplayerActivityBinding.inflate(LayoutInflater.from(this))
@@ -118,6 +99,25 @@ class VideoplayerActivity : CastEnabledActivity() {
         videoEpisodeFragment = VideoEpisodeFragment()
         transaction.replace(R.id.main_view, videoEpisodeFragment, VideoEpisodeFragment.TAG)
         transaction.commit()
+    }
+
+    private fun setForVideoMode() {
+        when (videoMode) {
+            VideoMode.FULL_SCREEN_VIEW -> {
+                window.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN)
+                setTheme(R.style.Theme_Podcini_VideoPlayer)
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
+                window.setFormat(PixelFormat.TRANSPARENT)
+            }
+            VideoMode.WINDOW_VIEW -> {
+                setTheme(R.style.Theme_Podcini_VideoEpisode)
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                window.setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN, WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN)
+                window.setFormat(PixelFormat.TRANSPARENT)
+            }
+            else -> {}
+        }
     }
 
     @UnstableApi
@@ -159,21 +159,9 @@ class VideoplayerActivity : CastEnabledActivity() {
         cancelFlowEvents()
     }
 
-//    override fun onTrimMemory(level: Int) {
-//        super.onTrimMemory(level)
-////        Glide.get(this).trimMemory(level)
-//    }
-//
-//    override fun onLowMemory() {
-//        super.onLowMemory()
-////        Glide.get(this).clearMemory()
-//    }
-
     fun toggleViews() {
-        val newIntent = Intent(this, VideoplayerActivity::class.java)
-        newIntent.putExtra(VIDEO_MODE, if (videoMode == VideoMode.FULL_SCREEN_VIEW) VideoMode.WINDOW_VIEW else VideoMode.FULL_SCREEN_VIEW)
-        finish()
-        startActivity(newIntent)
+        videoMode = if (videoMode == VideoMode.FULL_SCREEN_VIEW) VideoMode.WINDOW_VIEW else VideoMode.FULL_SCREEN_VIEW
+        setForVideoMode()
     }
 
     private var eventSink: Job?     = null
@@ -218,7 +206,6 @@ class VideoplayerActivity : CastEnabledActivity() {
     @UnstableApi
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         super.onPrepareOptionsMenu(menu)
-//        val controller = videoEpisodeFragment.controller ?: return false
 
         val media = curMedia
         val isEpisodeMedia = (media is EpisodeMedia)
@@ -261,8 +248,6 @@ class VideoplayerActivity : CastEnabledActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-//        val controller = videoEpisodeFragment.controller
-
         // some options option requires FeedItem
         when {
             item.itemId == R.id.player_switch_to_audio_only -> {
@@ -281,7 +266,6 @@ class VideoplayerActivity : CastEnabledActivity() {
                 ChaptersFragment().show(supportFragmentManager, ChaptersFragment.TAG)
                 return true
             }
-//            controller == null -> return false
             else -> {
                 val media = curMedia ?: return false
                 val feedItem = (media as? EpisodeMedia)?.episodeOrFetch()
@@ -336,9 +320,7 @@ class VideoplayerActivity : CastEnabledActivity() {
     override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
         val currentFocus = currentFocus
         if (currentFocus is EditText) return super.onKeyUp(keyCode, event)
-
         val audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
-
         when (keyCode) {
             KeyEvent.KEYCODE_P, KeyEvent.KEYCODE_SPACE -> {
                 videoEpisodeFragment.onPlayPause()
@@ -389,7 +371,6 @@ class VideoplayerActivity : CastEnabledActivity() {
         private lateinit var dialog: AlertDialog
         private var _binding: AudioControlsBinding? = null
         private val binding get() = _binding!!
-
         private var controller: ServiceStatusHandler? = null
 
         @UnstableApi override fun onStart() {

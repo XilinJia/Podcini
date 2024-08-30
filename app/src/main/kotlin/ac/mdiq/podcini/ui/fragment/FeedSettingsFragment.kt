@@ -126,34 +126,71 @@ class FeedSettingsFragment : Fragment() {
                             color = textColor
                         )
                     }
-                    //                    prefer streaming
-                    Column {
-                        Row(Modifier.fillMaxWidth()) {
-                            Icon(ImageVector.vectorResource(id = R.drawable.ic_stream), "", tint = textColor)
-                            Spacer(modifier = Modifier.width(20.dp))
+                    if (feed?.hasVideoMedia == true) {
+                        //                    prefer play audio only
+                        Column {
+                            Row(Modifier.fillMaxWidth()) {
+                                Icon(ImageVector.vectorResource(id = R.drawable.baseline_audiotrack_24),
+                                    "",
+                                    tint = textColor)
+                                Spacer(modifier = Modifier.width(20.dp))
+                                Text(
+                                    text = stringResource(R.string.pref_audio_only_title),
+                                    style = MaterialTheme.typography.h6,
+                                    color = textColor
+                                )
+                                Spacer(modifier = Modifier.weight(1f))
+                                var checked by remember { mutableStateOf(feed?.preferences?.playAudioOnly ?: false) }
+                                Switch(
+                                    checked = checked,
+                                    modifier = Modifier.height(24.dp),
+                                    onCheckedChange = {
+                                        checked = it
+                                        feed = upsertBlk(feed!!) { f ->
+                                            f.preferences?.playAudioOnly = checked
+                                        }
+                                    }
+                                )
+                            }
                             Text(
-                                text = stringResource(R.string.pref_stream_over_download_title),
-                                style = MaterialTheme.typography.h6,
+                                text = stringResource(R.string.pref_audio_only_sum),
+                                style = MaterialTheme.typography.body2,
                                 color = textColor
                             )
-                            Spacer(modifier = Modifier.weight(1f))
-                            var checked by remember { mutableStateOf(feed?.preferences?.prefStreamOverDownload ?: false) }
-                            Switch(
-                                checked = checked,
-                                modifier = Modifier.height(24.dp),
-                                onCheckedChange = {
-                                    checked = it
-                                    feed = upsertBlk(feed!!) { f ->
-                                        f.preferences?.prefStreamOverDownload = checked
-                                    }
+                        }
+                    }
+                    if (feed?.type != Feed.FeedType.YOUTUBE.name) {
+                        //                    prefer streaming
+                        Column {
+                            Row(Modifier.fillMaxWidth()) {
+                                Icon(ImageVector.vectorResource(id = R.drawable.ic_stream), "", tint = textColor)
+                                Spacer(modifier = Modifier.width(20.dp))
+                                Text(
+                                    text = stringResource(R.string.pref_stream_over_download_title),
+                                    style = MaterialTheme.typography.h6,
+                                    color = textColor
+                                )
+                                Spacer(modifier = Modifier.weight(1f))
+                                var checked by remember {
+                                    mutableStateOf(feed?.preferences?.prefStreamOverDownload ?: false)
                                 }
+                                Switch(
+                                    checked = checked,
+                                    modifier = Modifier.height(24.dp),
+                                    onCheckedChange = {
+                                        checked = it
+                                        feed = upsertBlk(feed!!) { f ->
+                                            f.preferences?.prefStreamOverDownload = checked
+                                        }
+                                    }
+                                )
+                            }
+                            Text(
+                                text = stringResource(R.string.pref_stream_over_download_sum),
+                                style = MaterialTheme.typography.body2,
+                                color = textColor
                             )
                         }
-                        Text(
-                            text = stringResource(R.string.pref_stream_over_download_sum),
-                            style = MaterialTheme.typography.body2,
-                            color = textColor
-                        )
                     }
                     //                    associated queue
                     Column {
@@ -218,33 +255,36 @@ class FeedSettingsFragment : Fragment() {
                             )
                         }
                     }
-                    //                    auto delete
-                    Column {
-                        Row(Modifier.fillMaxWidth()) {
-                            Icon(ImageVector.vectorResource(id = R.drawable.ic_delete), "", tint = textColor)
-                            Spacer(modifier = Modifier.width(20.dp))
-                            Text(
-                                text = stringResource(R.string.auto_delete_label),
-                                style = MaterialTheme.typography.h6,
-                                color = textColor,
-                                modifier = Modifier.clickable(onClick = {
-                                    val composeView = ComposeView(requireContext()).apply {
-                                        setContent {
-                                            val showDialog = remember { mutableStateOf(true) }
-                                            CustomTheme(requireContext()) {
-                                                AutoDeleteDialog(showDialog.value, onDismissRequest = { showDialog.value = false })
+                    if (feed?.type != Feed.FeedType.YOUTUBE.name) {
+                        //                    auto delete
+                        Column {
+                            Row(Modifier.fillMaxWidth()) {
+                                Icon(ImageVector.vectorResource(id = R.drawable.ic_delete), "", tint = textColor)
+                                Spacer(modifier = Modifier.width(20.dp))
+                                Text(
+                                    text = stringResource(R.string.auto_delete_label),
+                                    style = MaterialTheme.typography.h6,
+                                    color = textColor,
+                                    modifier = Modifier.clickable(onClick = {
+                                        val composeView = ComposeView(requireContext()).apply {
+                                            setContent {
+                                                val showDialog = remember { mutableStateOf(true) }
+                                                CustomTheme(requireContext()) {
+                                                    AutoDeleteDialog(showDialog.value,
+                                                        onDismissRequest = { showDialog.value = false })
+                                                }
                                             }
                                         }
-                                    }
-                                    (view as? ViewGroup)?.addView(composeView)
-                                })
+                                        (view as? ViewGroup)?.addView(composeView)
+                                    })
+                                )
+                            }
+                            Text(
+                                text = stringResource(autoDeleteSummaryResId),
+                                style = MaterialTheme.typography.body2,
+                                color = textColor
                             )
                         }
-                        Text(
-                            text = stringResource(autoDeleteSummaryResId),
-                            style = MaterialTheme.typography.body2,
-                            color = textColor
-                        )
                     }
                     //                    tags
                     Column {
@@ -374,7 +414,7 @@ class FeedSettingsFragment : Fragment() {
                             )
                         }
                     }
-                    if (isEnableAutodownload) {
+                    if (isEnableAutodownload && feed?.type != Feed.FeedType.YOUTUBE.name) {
                         //                    auto download
                         var audoDownloadChecked by remember { mutableStateOf(feed?.preferences?.autoDownload ?: true) }
                         Column {

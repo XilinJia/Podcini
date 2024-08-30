@@ -44,7 +44,9 @@ abstract class DownloadServiceInterface {
         const val WORK_DATA_PROGRESS: String = "progress"
         const val WORK_DATA_MEDIA_ID: String = "media_id"
         const val WORK_DATA_WAS_QUEUED: String = "was_queued"
+
         private var impl: DownloadServiceInterface? = null
+
         fun get(): DownloadServiceInterface? {
             return impl
         }

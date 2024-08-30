@@ -18,7 +18,7 @@ import kotlin.coroutines.ContinuationInterceptor
 object RealmDB {
     private val TAG: String = RealmDB::class.simpleName ?: "Anonymous"
 
-    private const val SCHEMA_VERSION_NUMBER = 19L
+    private const val SCHEMA_VERSION_NUMBER = 21L
 
     private val ioScope = CoroutineScope(Dispatchers.IO)
 
@@ -51,24 +51,6 @@ object RealmDB {
         return if (entity.isManaged()) realm.copyFromRealm(entity) else entity
     }
 
-//    fun <T : RealmObject> updateBlk(entity: T, block: MutableRealm.(T) -> Unit) : T {
-//        return realm.writeBlocking {
-//            findLatest(entity)?.let {
-//                block(it)
-//            }
-//            entity
-//        }
-//    }
-//
-//    fun <T : EmbeddedRealmObject> updateBlk(entity: T, block: MutableRealm.(T) -> Unit) : T {
-//        return realm.writeBlocking {
-//            findLatest(entity)?.let {
-//                block(it)
-//            }
-//            entity
-//        }
-//    }
-
     suspend fun <T : TypedRealmObject> update(entity: T, block: MutableRealm.(T) -> Unit) : T {
         return realm.write {
             val result: T = findLatest(entity)?.let {
@@ -78,16 +60,6 @@ object RealmDB {
             result
         }
     }
-
-//    suspend fun <T : EmbeddedRealmObject> update(entity: T, block: MutableRealm.(T) -> Unit) : T {
-//        return realm.write {
-//            val result: T = findLatest(entity)?.let {
-//                block(it)
-//                it
-//            } ?: entity
-//            result
-//        }
-//    }
 
     suspend fun <T : RealmObject> upsert(entity: T, block: MutableRealm.(T) -> Unit) : T {
         if (BuildConfig.DEBUG) {

@@ -1,22 +1,30 @@
 package ac.mdiq.podcini.net.feed.discovery
 
 import ac.mdiq.podcini.net.sync.gpoddernet.model.GpodnetPodcast
+import ac.mdiq.vista.extractor.channel.ChannelInfoItem
 import de.mfietz.fyydlin.SearchHit
 import org.json.JSONException
 import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
 
-class PodcastSearchResult private constructor(val title: String, val imageUrl: String?, val feedUrl: String?,
-                                              val author: String?, val count: Int?, val update: String?, val source: String) {
+class PodcastSearchResult private constructor(
+        val title: String,
+        val imageUrl: String?,
+        val feedUrl: String?,
+        val author: String?,
+        val count: Int?,
+        val update: String?,
+        val subscriberCount: Int,
+        val source: String) {
+
     companion object {
         fun dummy(): PodcastSearchResult {
-            return PodcastSearchResult("", "", "", "", 0, "", "dummy")
+            return PodcastSearchResult("", "", "", "", 0, "", -1, "dummy")
         }
 
         /**
          * Constructs a Podcast instance from a iTunes search result
-         *
          * @param json object holding the podcast information
          * @throws JSONException
          */
@@ -25,7 +33,7 @@ class PodcastSearchResult private constructor(val title: String, val imageUrl: S
             val imageUrl: String? = json.optString("artworkUrl100").takeIf { it.isNotEmpty() }
             val feedUrl: String? = json.optString("feedUrl").takeIf { it.isNotEmpty() }
             val author: String? = json.optString("artistName").takeIf { it.isNotEmpty() }
-            return PodcastSearchResult(title, imageUrl, feedUrl, author, null, null, "Itunes")
+            return PodcastSearchResult(title, imageUrl, feedUrl, author, null, null, -1, "Itunes")
         }
 
         /**
@@ -54,15 +62,15 @@ class PodcastSearchResult private constructor(val title: String, val imageUrl: S
             } catch (e: Exception) {
                 // Some feeds have empty artist
             }
-            return PodcastSearchResult(title, imageUrl, feedUrl, author, null, null, "Toplist")
+            return PodcastSearchResult(title, imageUrl, feedUrl, author, null, null, -1, "Toplist")
         }
 
         fun fromFyyd(searchHit: SearchHit): PodcastSearchResult {
-            return PodcastSearchResult(searchHit.title, searchHit.thumbImageURL, searchHit.xmlUrl, searchHit.author, null, null, "Fyyd")
+            return PodcastSearchResult(searchHit.title, searchHit.thumbImageURL, searchHit.xmlUrl, searchHit.author, null, null, -1, "Fyyd")
         }
 
         fun fromGpodder(searchHit: GpodnetPodcast): PodcastSearchResult {
-            return PodcastSearchResult(searchHit.title, searchHit.logoUrl, searchHit.url, searchHit.author, null, null, "GPodder")
+            return PodcastSearchResult(searchHit.title, searchHit.logoUrl, searchHit.url, searchHit.author, null, null, -1, "GPodder")
         }
 
         fun fromPodcastIndex(json: JSONObject): PodcastSearchResult {
@@ -78,7 +86,19 @@ class PodcastSearchResult private constructor(val title: String, val imageUrl: S
                 val format = SimpleDateFormat("yyyy-MM-dd", Locale.US)
                 update = format.format(updateInt.toLong() * 1000)
             }
-            return PodcastSearchResult(title, imageUrl, feedUrl, author, count, update, "PodcastIndex")
+            return PodcastSearchResult(title, imageUrl, feedUrl, author, count, update, -1, "PodcastIndex")
+        }
+
+        fun fromChannelInfoItem(info: ChannelInfoItem): PodcastSearchResult {
+            val title = info.name
+            val imageUrl: String? = if (info.thumbnails.isNotEmpty()) info.thumbnails[0].url else null
+            val feedUrl = info.url
+            val author = ""
+            val count: Int = info.streamCount.toInt()
+            val updateInt = -1
+            val update: String? = null
+            val subscriberCount = info.subscriberCount.toInt()
+            return PodcastSearchResult(title, imageUrl, feedUrl, author, count, update, subscriberCount,"VistaGuide")
         }
     }
 }

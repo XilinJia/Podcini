@@ -2,10 +2,9 @@ package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.ui.fragment.SubscriptionsFragment.Companion
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -22,8 +21,8 @@ import kotlin.math.min
 /**
  * Shows all episodes (possibly filtered by user).
  */
-@UnstableApi class RemoteEpisodesFragment : BaseEpisodesFragment() {
-
+@UnstableApi
+class RemoteEpisodesFragment : BaseEpisodesFragment() {
     private val episodeList: MutableList<Episode> = mutableListOf()
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -87,7 +86,6 @@ import kotlin.math.min
 
     @OptIn(UnstableApi::class) override fun onMenuItemClick(item: MenuItem): Boolean {
         if (super.onOptionsItemSelected(item)) return true
-
         when (item.itemId) {
             else -> return false
         }

@@ -46,8 +46,8 @@ import ac.mdiq.podcini.ui.view.PlayButton
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.storage.utils.TimeSpeedConverter
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
 import android.app.Activity
 import android.content.ComponentName
 import android.content.Intent
@@ -550,8 +550,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                 val media = curMedia
                 if (media != null) {
                     val mediaType = media.getMediaType()
-                    if (mediaType == MediaType.AUDIO ||
-                            (mediaType == MediaType.VIDEO && (videoPlayMode == VideoMode.AUDIO_ONLY.mode || videoMode == VideoMode.AUDIO_ONLY))) {
+                    if (mediaType == MediaType.AUDIO || videoPlayMode == VideoMode.AUDIO_ONLY.mode || videoMode == VideoMode.AUDIO_ONLY
+                            || (media is EpisodeMedia && media.episode?.feed?.preferences?.playAudioOnly == true)) {
                         ensureService()
                         (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_EXPANDED)
                     } else {
@@ -575,7 +575,9 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             butPlay?.setOnClickListener {
                 if (controller == null) return@setOnClickListener
                 if (curMedia != null) {
-                    if (curMedia?.getMediaType() == MediaType.VIDEO && MediaPlayerBase.status != PlayerStatus.PLAYING) {
+                    val media = curMedia!!
+                    if (media.getMediaType() == MediaType.VIDEO && MediaPlayerBase.status != PlayerStatus.PLAYING &&
+                            (media is EpisodeMedia && media.episode?.feed?.preferences?.playAudioOnly != true)) {
                         playPause()
                         requireContext().startActivity(getPlayerActivityIntent(requireContext(), curMedia!!.getMediaType()))
                     } else playPause()

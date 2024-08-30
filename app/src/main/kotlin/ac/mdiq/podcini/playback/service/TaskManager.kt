@@ -6,8 +6,8 @@ import ac.mdiq.podcini.ui.widget.WidgetUpdater
 import ac.mdiq.podcini.ui.widget.WidgetUpdater.WidgetState
 import ac.mdiq.podcini.storage.utils.ChapterUtils
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent

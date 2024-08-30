@@ -27,10 +27,10 @@ import ac.mdiq.podcini.ui.fragment.FeedSettingsFragment.Companion.queueSettingOp
 import ac.mdiq.podcini.ui.utils.CoverLoader
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
-import ac.mdiq.podcini.util.DateFormatter.formatAbbrev
+import ac.mdiq.podcini.util.MiscFormatter.formatAbbrev
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
 import android.app.Activity.RESULT_OK
 import android.content.ActivityNotFoundException
 import android.content.Context

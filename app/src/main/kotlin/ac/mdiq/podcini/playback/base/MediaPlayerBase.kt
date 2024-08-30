@@ -98,7 +98,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
      * This method is executed on an internal executor service.
      *
      * @param playable           The Playable object that is supposed to be played. This parameter must not be null.
-     * @param stream             The type of playback. If false, the Playable object MUST provide access to a locally available file via
+     * @param streaming             The type of playback. If false, the Playable object MUST provide access to a locally available file via
      * getLocalMediaUrl. If true, the Playable object MUST provide access to a resource that can be streamed by
      * the Android MediaPlayer via getStreamUrl.
      * @param startWhenPrepared  Sets the 'startWhenPrepared' flag. This flag determines whether playback will start immediately after the
@@ -106,7 +106,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
      * for playback immediately (see 'prepareImmediately' parameter for more details)
      * @param prepareImmediately Set to true if the method should also prepare the episode for playback.
      */
-    abstract fun playMediaObject(playable: Playable, stream: Boolean, startWhenPrepared: Boolean, prepareImmediately: Boolean, forceReset: Boolean = false)
+    abstract fun playMediaObject(playable: Playable, streaming: Boolean, startWhenPrepared: Boolean, prepareImmediately: Boolean, forceReset: Boolean = false)
 
     /**
      * Resumes playback if the PSMP object is in PREPARED or PAUSED state. If the PSMP object is in an invalid state.

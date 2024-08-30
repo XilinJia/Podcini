@@ -20,8 +20,8 @@ import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.TAG_ROOT
 import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
 import android.app.backup.BackupManager
 import android.content.Context
 import android.net.Uri
@@ -202,7 +202,6 @@ object Feeds {
         } else {
             Logd(TAG, "Feed with title " + newFeed.title + " already exists. Syncing new with existing one.")
             newFeed.episodes.sortWith(EpisodePubdateComparator())
-
             if (newFeed.pageNr == savedFeed.pageNr) {
                 if (savedFeed.compareWithOther(newFeed)) {
                     Logd(TAG, "Feed has updated attribute values. Updating old feed's attributes")
@@ -216,10 +215,8 @@ object Feeds {
                 Logd(TAG, "Feed has updated preferences. Updating old feed's preferences")
                 savedFeed.preferences!!.updateFromOther(newFeed.preferences)
             }
-
             val priorMostRecent = savedFeed.mostRecentItem
             val priorMostRecentDate: Date? = priorMostRecent?.getPubDate()
-
             var idLong = Feed.newId()
             // Look for new or updated Items
             for (idx in newFeed.episodes.indices) {
@@ -256,7 +253,6 @@ object Feeds {
                                 ${EpisodeAssistant.duplicateEpisodeDetails(episode)}
                                 """.trimIndent()))
                         oldItem.identifier = episode.identifier
-
                         if (needSynch() && oldItem.isPlayed() && oldItem.media != null) {
                             val durs = oldItem.media!!.getDuration() / 1000
                             val action = EpisodeAction.Builder(oldItem, EpisodeAction.PLAY)
@@ -269,15 +265,16 @@ object Feeds {
                         }
                     }
                 }
-
                 if (oldItem != null) oldItem.updateFromOther(episode)
                 else {
                     Logd(TAG, "Found new episode: ${episode.title}")
                     episode.feed = savedFeed
                     episode.id = idLong++
                     episode.feedId = savedFeed.id
-                    if (episode.media != null) episode.media!!.id = episode.id
-
+                    if (episode.media != null) {
+                        episode.media!!.id = episode.id
+                        if (!savedFeed.hasVideoMedia && episode.media!!.getMediaType() == MediaType.VIDEO) savedFeed.hasVideoMedia = true
+                    }
                     if (idx >= savedFeed.episodes.size) savedFeed.episodes.add(episode)
                     else savedFeed.episodes.add(idx, episode)
 
@@ -292,7 +289,6 @@ object Feeds {
                     }
                 }
             }
-
             // identify episodes to be removed
             if (removeUnlistedItems) {
                 val it = savedFeed.episodes.toMutableList().iterator()
@@ -304,40 +300,28 @@ object Feeds {
                     }
                 }
             }
-
             // update attributes
             savedFeed.lastUpdate = newFeed.lastUpdate
             savedFeed.type = newFeed.type
             savedFeed.lastUpdateFailed = false
             resultFeed = savedFeed
         }
-
         try {
             if (savedFeed == null) {
                 addNewFeedsSync(context, newFeed)
                 // Update with default values that are set in database
                 resultFeed = searchFeedByIdentifyingValueOrID(newFeed)
             } else upsertBlk(savedFeed) {}
-
             if (removeUnlistedItems) runBlocking { deleteEpisodes(context, unlistedItems).join() }
-        } catch (e: InterruptedException) {
-            e.printStackTrace()
-        } catch (e: ExecutionException) {
-            e.printStackTrace()
-        }
-//      TODO: feedMonitor likely takes care of this
-//        if (savedFeed != null) EventFlow.postEvent(FlowEvent.FeedListEvent(savedFeed))
-//        else EventFlow.postEvent(FlowEvent.FeedListEvent(emptyList<Long>()))
-
+        } catch (e: InterruptedException) { e.printStackTrace()
+        } catch (e: ExecutionException) { e.printStackTrace() }
         return resultFeed
     }
 
     fun persistFeedLastUpdateFailed(feed: Feed, lastUpdateFailed: Boolean) : Job {
         Logd(TAG, "persistFeedLastUpdateFailed called")
         return runOnIOScope {
-            upsert(feed) {
-                it.lastUpdateFailed = lastUpdateFailed
-            }
+            upsert(feed) { it.lastUpdateFailed = lastUpdateFailed }
             EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.ERROR, feed.id))
         }
     }
@@ -346,11 +330,7 @@ object Feeds {
         Logd(TAG, "updateFeedDownloadURL(original: $original, updated: $updated)")
         return runOnIOScope {
             val feed = realm.query(Feed::class).query("downloadUrl == $0", original).first().find()
-            if (feed != null) {
-                upsert(feed) {
-                    it.downloadUrl = updated
-                }
-            }
+            if (feed != null) upsert(feed) { it.downloadUrl = updated }
         }
     }
 
@@ -386,11 +366,8 @@ object Feeds {
         Logd(TAG, "persistFeedPreferences called")
         return runOnIOScope {
             val feed_ = realm.query(Feed::class, "id == ${feed.id}").first().find()
-            if (feed_ != null) {
-                upsert(feed_) {
-                    it.preferences = feed.preferences
-                }
-            } else upsert(feed) {}
+            if (feed_ != null) upsert(feed_) { it.preferences = feed.preferences }
+            else upsert(feed) {}
         }
     }
 
@@ -421,14 +398,10 @@ object Feeds {
                         delete(episode)
                     }
                     val feedToDelete = findLatest(feed_)
-                    if (feedToDelete != null) {
-                        delete(feedToDelete)
-//                        feedMap.remove(feedId)
-                    }
+                    if (feedToDelete != null) delete(feedToDelete)
                 }
             }
             if (!feed.isLocalFeed && feed.downloadUrl != null) SynchronizationQueueSink.enqueueFeedRemovedIfSyncActive(context, feed.downloadUrl!!)
-//                if (postEvent) EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.REMOVED, feed.id))
         }
     }
 

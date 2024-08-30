@@ -6,15 +6,15 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
 
 ### Rendezvous chez:
 
-[<img src="./images/external/getItGithub.png" alt="GitHub" height="60">](https://github.com/XilinJia/Podcini/releases/latest)
-[<img src="./images/external/getItIzzyOnDroid.png" alt="IzzyOnDroid" height="60">](https://apt.izzysoft.de/fdroid/index/apk/ac.mdiq.podcini.R)
-[<img src="./images/external/getItOpenapk.png" alt="OpenAPK" height="60">](https://www.openapk.net/podcini/ac.mdiq.podcini/)
-[<img src="./images/external/getItf-droid.png" alt="F-Droid" height="60">](https://f-droid.org/packages/ac.mdiq.podcini.R/)
-[<img src="./images/external/amazon.png" alt="Amazon" height="50">](https://www.amazon.com/%E8%B4%BE%E8%A5%BF%E6%9E%97-Podcini-R/dp/B0D9WR8P13)
+[<img src="./images/external/getItGithub.png" alt="GitHub" height="50">](https://github.com/XilinJia/Podcini/releases/latest)
+[<img src="./images/external/getItIzzyOnDroid.png" alt="IzzyOnDroid" height="50">](https://apt.izzysoft.de/fdroid/index/apk/ac.mdiq.podcini.R)
+[<img src="./images/external/getItOpenapk.png" alt="OpenAPK" height="50">](https://www.openapk.net/podcini/ac.mdiq.podcini/)
+[<img src="./images/external/getItf-droid.png" alt="F-Droid" height="50">](https://f-droid.org/packages/ac.mdiq.podcini.R/)
+[<img src="./images/external/amazon.png" alt="Amazon" height="40">](https://www.amazon.com/%E8%B4%BE%E8%A5%BF%E6%9E%97-Podcini-R/dp/B0D9WR8P13)
 
 ## Announcement
 
-### Podcini.R version 6 is released.  It's not compatible with prior versions.  The major overhaul is the replacement of SQLite DB with the object-based Realm DB. With a different application Id, it is installed afresh and in parallel with a previous version. You can migrate certain assets from an earlier version, see [Podcini 6 migrations instructions](migrationTo6.md)
+### Podcini.R version 6.5 brings YouTube channels in the app.  They can be searched, subscribed and played from within Podcini. For more see the changelogs
 
 This project is based on a fork of [AntennaPod](<https://github.com/AntennaPod/AntennaPod>) as of Feb 5 2024.
 

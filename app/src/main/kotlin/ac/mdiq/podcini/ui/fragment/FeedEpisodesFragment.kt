@@ -28,8 +28,8 @@ import ac.mdiq.podcini.ui.view.EpisodeViewHolder
 import ac.mdiq.podcini.util.IntentUtils
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.ShareUtils
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
 import android.app.Activity
 import android.content.Context
 import android.content.res.Configuration

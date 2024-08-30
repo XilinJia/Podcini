@@ -3,8 +3,8 @@ package de.test.podcini.ui
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
 import android.content.Context
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
@@ -106,7 +106,7 @@ class UITestUtils(private val context: Context) {
         check(!feedDataHosted) { "addHostedFeedData was called twice on the same instance" }
         for (i in 0 until NUM_FEEDS) {
             val feed = Feed(0, null, "Title $i", "http://example.com/$i", "Description of feed $i",
-                "http://example.com/pay/feed$i", "author $i", "en", Feed.TYPE_RSS2, "feed$i", null, null,
+                "http://example.com/pay/feed$i", "author $i", "en", Feed.FeedType.RSS.name, "feed$i", null, null,
                 "http://example.com/feed/src/$i")
 
             // create items

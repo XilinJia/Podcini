@@ -15,6 +15,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
+import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.ui.actions.actionbutton.*
 import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
@@ -23,15 +24,16 @@ import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.storage.utils.DurationConverter
-import ac.mdiq.podcini.util.DateFormatter
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.podcini.util.MiscFormatter.formatAbbrev
+import ac.mdiq.podcini.util.MiscFormatter.formatForAccessibility
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
 import android.os.Build
 import android.os.Bundle
 import android.text.Layout
 import android.text.TextUtils
-import android.text.format.Formatter
+import android.text.format.Formatter.formatShortFileSize
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -177,9 +179,9 @@ import kotlin.math.max
             .setLifecycleOwner(this)
             .build()
         val ballonView = balloon.getContentView()
-        val positiveButton = ballonView.findViewById(R.id.balloon_button_positive) as Button
-        val negativeButton = ballonView.findViewById(R.id.balloon_button_negative) as Button
-        val message: TextView = ballonView.findViewById(R.id.balloon_message) as TextView
+        val positiveButton: Button = ballonView.findViewById(R.id.balloon_button_positive)
+        val negativeButton: Button = ballonView.findViewById(R.id.balloon_button_negative)
+        val message: TextView = ballonView.findViewById(R.id.balloon_message)
         message.setText(if (offerStreaming) R.string.on_demand_config_stream_text
         else R.string.on_demand_config_download_text)
         positiveButton.setOnClickListener {
@@ -267,22 +269,22 @@ import kotlin.math.max
         binding.itemLink.text = episode!!.link
 
         if (episode?.pubDate != null) {
-            val pubDateStr = DateFormatter.formatAbbrev(context, Date(episode!!.pubDate))
+            val pubDateStr = formatAbbrev(context, Date(episode!!.pubDate))
             binding.txtvPublished.text = pubDateStr
-            binding.txtvPublished.setContentDescription(DateFormatter.formatForAccessibility(Date(episode!!.pubDate)))
+            binding.txtvPublished.setContentDescription(formatForAccessibility(Date(episode!!.pubDate)))
         }
 
         val media = episode?.media
         when {
             media == null -> binding.txtvSize.text = ""
-            media.size > 0 -> binding.txtvSize.text = Formatter.formatShortFileSize(activity, media.size)
+            media.size > 0 -> binding.txtvSize.text = formatShortFileSize(activity, media.size)
             isEpisodeHeadDownloadAllowed && !media.checkedOnSizeButUnknown() -> {
                 binding.txtvSize.text = "{faw_spinner}"
 //                Iconify.addIcons(size)
                 lifecycleScope.launch {
                     val sizeValue = getMediaSize(episode)
                     if (sizeValue <= 0) binding.txtvSize.text = ""
-                    else binding.txtvSize.text = Formatter.formatShortFileSize(activity, sizeValue)
+                    else binding.txtvSize.text = formatShortFileSize(activity, sizeValue)
                 }
             }
             else -> binding.txtvSize.text = ""
@@ -346,7 +348,7 @@ import kotlin.math.max
                     else -> StreamActionButton(episode!!)
                 }
                 actionButton2 = when {
-                    media.getMediaType() == MediaType.FLASH -> VisitWebsiteActionButton(episode!!)
+                    media.getMediaType() == MediaType.FLASH || episode!!.feed?.type == Feed.FeedType.YOUTUBE.name -> VisitWebsiteActionButton(episode!!)
                     dls != null && media.downloadUrl != null && dls.isDownloadingEpisode(media.downloadUrl!!) -> CancelDownloadActionButton(episode!!)
                     !media.downloaded -> DownloadActionButton(episode!!)
                     else -> DeleteActionButton(episode!!)

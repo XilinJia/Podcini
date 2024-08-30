@@ -104,7 +104,6 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
                         val start = contentRangeHeader.substring("bytes ".length, contentRangeHeader.indexOf("-"))
                         downloadRequest.soFar = start.toLong()
                         Logd(TAG, "Starting download at position " + downloadRequest.soFar)
-
                         out = RandomAccessFile(destination, "rw")
                         out.seek(downloadRequest.soFar)
                     } else {
@@ -112,7 +111,6 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
                         var success = destination.delete()
                         success = success or destination.createNewFile()
                         if (!success) throw IOException("Unable to recreate partially downloaded file ${destination.absolutePath}")
-
                         out = RandomAccessFile(destination, "rw")
                     }
 
@@ -140,9 +138,7 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
                             val progressPercent = (100.0 * downloadRequest.soFar / downloadRequest.size).toInt()
                             downloadRequest.progressPercent = progressPercent
                         }
-                    } catch (e: IOException) {
-                        Log.e(TAG, Log.getStackTraceString(e))
-                    }
+                    } catch (e: IOException) { Log.e(TAG, Log.getStackTraceString(e)) }
                     if (cancelled) onCancelled()
                     else {
                         // check if size specified in the response header is the same as the size of the
@@ -208,9 +204,7 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
                 // Apparently some servers announce they support SPDY but then actually don't.
                 httpClient = httpClient.newBuilder().protocols(listOf(Protocol.HTTP_1_1)).build()
                 return httpClient.newCall(httpReq.build()).execute()
-            } else {
-                throw e
-            }
+            } else throw e
         }
     }
 
@@ -218,11 +212,7 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
         var contentLength = -1
         val contentLen = response.header("Content-Length")
         if (contentLen != null) {
-            try {
-                contentLength = contentLen.toInt()
-            } catch (e: NumberFormatException) {
-                e.printStackTrace()
-            }
+            try { contentLength = contentLen.toInt() } catch (e: NumberFormatException) { e.printStackTrace() }
         }
         Logd(TAG, "content length: $contentLength")
         val contentType = response.header("Content-Type")

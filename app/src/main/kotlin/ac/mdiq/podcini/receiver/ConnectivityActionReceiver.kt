@@ -1,8 +1,9 @@
 package ac.mdiq.podcini.receiver
 
-import ac.mdiq.podcini.net.download.NetworkConnectionChangeHandler.networkChangedDetected
-import ac.mdiq.podcini.playback.service.PlaybackService
-import ac.mdiq.podcini.playback.service.PlaybackService.Companion
+import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.net.utils.NetworkUtils.isAutoDownloadAllowed
+import ac.mdiq.podcini.net.utils.NetworkUtils.isNetworkRestricted
+import ac.mdiq.podcini.storage.algorithms.AutoDownloads.autodownloadEpisodeMedia
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.config.ClientConfigurator
 import android.content.BroadcastReceiver
@@ -19,7 +20,20 @@ class ConnectivityActionReceiver : BroadcastReceiver() {
             Logd(TAG, "Received intent")
 
             ClientConfigurator.initialize(context)
-            networkChangedDetected()
+            networkChangedDetected(context)
+        }
+    }
+
+    private fun networkChangedDetected(context: Context) {
+        if (isAutoDownloadAllowed) {
+            Logd(TAG, "auto-dl network available, starting auto-download")
+            autodownloadEpisodeMedia(context)
+        } else { // if new network is Wi-Fi, finish ongoing downloads,
+            // otherwise cancel all downloads
+            if (isNetworkRestricted) {
+                Log.i(TAG, "Device is no longer connected to Wi-Fi. Cancelling ongoing downloads")
+                DownloadServiceInterface.get()?.cancelAll(context)
+            }
         }
     }
 

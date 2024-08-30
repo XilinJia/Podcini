@@ -8,17 +8,18 @@ import android.os.Parcel
 import android.os.Parcelable
 
 
-class DownloadRequest private constructor(@JvmField val destination: String?,
-                                          @JvmField val source: String?,
-                                          val title: String?,
-                                          val feedfileId: Long,
-                                          val feedfileType: Int,
-                                          var lastModified: String?,
-                                          var username: String?,
-                                          @JvmField var password: String?,
-                                          private val mediaEnqueued: Boolean,
-                                          @JvmField val arguments: Bundle?,
-                                          private val initiatedByUser: Boolean) : Parcelable {
+class DownloadRequest private constructor(
+        @JvmField val destination: String?,
+        @JvmField val source: String?,
+        val title: String?,
+        val feedfileId: Long,
+        val feedfileType: Int,
+        var lastModified: String?,
+        var username: String?,
+        @JvmField var password: String?,
+        private val mediaEnqueued: Boolean,
+        @JvmField val arguments: Bundle?,
+        private val initiatedByUser: Boolean) : Parcelable {
 
     var progressPercent: Int = 0
     var soFar: Long = 0
@@ -26,8 +27,7 @@ class DownloadRequest private constructor(@JvmField val destination: String?,
     private var statusMsg = 0
 
     constructor(destination: String, source: String, title: String, feedfileId: Long,
-                feedfileType: Int, username: String?, password: String?,
-                arguments: Bundle?, initiatedByUser: Boolean)
+                feedfileType: Int, username: String?, password: String?, arguments: Bundle?, initiatedByUser: Boolean)
             : this(destination, source, title, feedfileId, feedfileType, null, username, password, false, arguments, initiatedByUser)
 
     private constructor(builder: Builder) : this(builder.destination,
@@ -162,10 +162,6 @@ class DownloadRequest private constructor(@JvmField val destination: String?,
             this.initiatedByUser = initiatedByUser
             return this
         }
-
-//        fun setSource(source: String?) {
-//            this.source = source
-//        }
 
         fun setForce(force: Boolean) {
             if (force) lastModified = null

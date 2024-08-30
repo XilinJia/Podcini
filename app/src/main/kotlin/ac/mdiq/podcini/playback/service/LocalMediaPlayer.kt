@@ -4,6 +4,7 @@ import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.download.service.HttpCredentialEncoder
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient
+import ac.mdiq.podcini.net.utils.NetworkUtils.isNetworkRestricted
 import ac.mdiq.podcini.net.utils.NetworkUtils.wasDownloadBlocked
 import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.base.InTheatre.curIndexInQueue
@@ -15,14 +16,18 @@ import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.model.EpisodeMedia
+import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.config.ClientConfig
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
-import ac.mdiq.podcini.util.event.FlowEvent.PlayEvent.Action
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.podcini.util.FlowEvent.PlayEvent.Action
+import ac.mdiq.vista.extractor.MediaFormat
+import ac.mdiq.vista.extractor.Vista
+import ac.mdiq.vista.extractor.stream.*
 import android.app.UiModeManager
 import android.content.Context
 import android.content.res.Configuration
@@ -32,7 +37,6 @@ import android.util.Log
 import android.util.Pair
 import android.view.SurfaceHolder
 import androidx.core.util.Consumer
-import androidx.media.AudioAttributesCompat
 import androidx.media3.common.*
 import androidx.media3.common.Player.*
 import androidx.media3.common.TrackSelectionParameters.AudioOffloadPreferences
@@ -45,7 +49,9 @@ import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.SeekParameters
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MediaSource
+import androidx.media3.exoplayer.source.MergingMediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector.SelectionOverride
@@ -58,8 +64,11 @@ import androidx.media3.ui.TrackNameProvider
 import kotlinx.coroutines.*
 import java.io.IOException
 import java.lang.Runnable
+import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 import kotlin.concurrent.Volatile
 
 /**
@@ -169,12 +178,51 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
     @Throws(IllegalArgumentException::class, IllegalStateException::class)
     private fun setDataSource(metadata: MediaMetadata, mediaUrl: String, user: String?, password: String?) {
         Logd(TAG, "setDataSource: $mediaUrl")
-
-        mediaItem = MediaItem.Builder()
-            .setUri(Uri.parse(mediaUrl))
-            .setMediaMetadata(metadata).build()
+        mediaItem = MediaItem.Builder().setUri(Uri.parse(mediaUrl)).setMediaMetadata(metadata).build()
         mediaSource = null
+        setSourceCredentials(user, password)
+    }
 
+    @Throws(IllegalArgumentException::class, IllegalStateException::class)
+    private fun setDataSource(metadata: MediaMetadata, media: EpisodeMedia) {
+        val url = media.getStreamUrl() ?: return
+        Logd(TAG, "setDataSource1: $url")
+        val preferences = media.episodeOrFetch()?.feed?.preferences
+        val user = preferences?.username
+        val password = preferences?.password
+        if (media.episode?.feed?.type == Feed.FeedType.YOUTUBE.name) {
+            Logd(TAG, "setDataSource setting for YouTube source")
+            try {
+                val streamInfo = StreamInfo.getInfo(Vista.getService(0), url)
+                val audioStreamsList = getFilteredAudioStreams(streamInfo.audioStreams)
+                val audioIndex = if (isNetworkRestricted) 0 else audioStreamsList.size - 1
+                val audioStream = audioStreamsList[audioIndex]
+                val aSource = DefaultMediaSourceFactory(context).createMediaSource(MediaItem.Builder().setTag(metadata).setUri(Uri.parse(audioStream.content)).build())
+                Logd(TAG, "setDataSource use audio quality: ${audioStream.bitrate}")
+                if (media.episode?.feed?.preferences?.playAudioOnly != true) {
+                    Logd(TAG, "setDataSource result: $streamInfo")
+                    Logd(TAG, "setDataSource videoStreams: ${streamInfo.videoStreams.size} videoOnlyStreams: ${streamInfo.videoOnlyStreams.size} audioStreams: ${streamInfo.audioStreams.size}")
+                    val videoStreamsList = getSortedStreamVideosList(streamInfo.videoStreams, streamInfo.videoOnlyStreams, true, true)
+                    val videoIndex = 0
+                    val videoStream = videoStreamsList[videoIndex]
+                    Logd(TAG, "setDataSource use video quality: ${videoStream.resolution}")
+                    val vSource = DefaultMediaSourceFactory(context).createMediaSource(MediaItem.Builder().setTag(metadata).setUri(Uri.parse(videoStream.content)).build())
+                    val mediaSources: MutableList<MediaSource> = java.util.ArrayList()
+                    mediaSources.add(vSource)
+                    mediaSources.add(aSource)
+                    mediaSource = MergingMediaSource(true, *mediaSources.toTypedArray<MediaSource>())
+//                mediaSource = null
+                } else mediaSource = aSource
+                mediaItem = mediaSource?.mediaItem
+                setSourceCredentials(user, password)
+            } catch (throwable: Throwable) { Logd(TAG, "setDataSource error: ${throwable.message}") }
+        } else {
+            Logd(TAG, "setDataSource setting for Podcast source")
+            setDataSource(metadata, url,user, password)
+        }
+    }
+
+    private fun setSourceCredentials(user: String?, password: String?) {
         if (!user.isNullOrEmpty() && !password.isNullOrEmpty()) {
             if (httpDataSourceFactory == null)
                 httpDataSourceFactory = OkHttpDataSource.Factory(PodciniHttpClient.getHttpClient() as okhttp3.Call.Factory)
@@ -195,6 +243,48 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
     }
 
     /**
+     * Join the two lists of video streams (video_only and normal videos),
+     * and sort them according with default format chosen by the user.
+     *
+     * @param defaultFormat          format to give preference
+     * @param showHigherResolutions  show >1080p resolutions
+     * @param videoStreams           normal videos list
+     * @param videoOnlyStreams       video only stream list
+     * @param ascendingOrder         true -> smallest to greatest | false -> greatest to smallest
+     * @param preferVideoOnlyStreams if video-only streams should preferred when both video-only
+     * streams and normal video streams are available
+     * @return the sorted list
+     */
+    fun getSortedStreamVideosList(videoStreams: List<VideoStream>?, videoOnlyStreams: List<VideoStream>?, ascendingOrder: Boolean,
+                                  preferVideoOnlyStreams: Boolean): List<VideoStream> {
+        val videoStreamsOrdered = if (preferVideoOnlyStreams) listOf(videoStreams, videoOnlyStreams) else listOf(videoOnlyStreams, videoStreams)
+        val allInitialStreams = videoStreamsOrdered.filterNotNull().flatMap { it }.toList()
+        val comparator = compareBy<VideoStream> { it.resolution.toResolutionValue() }
+        return if (ascendingOrder) allInitialStreams.sortedWith(comparator) else { allInitialStreams.sortedWith(comparator.reversed()) }
+    }
+
+    fun String.toResolutionValue(): Int {
+        val match = Regex("(\\d+)p|(\\d+)k").find(this)
+        return when {
+            match?.groupValues?.get(1) != null -> match.groupValues[1].toInt()
+            match?.groupValues?.get(2) != null -> match.groupValues[2].toInt() * 1024
+            else -> 0
+        }
+    }
+
+    fun getFilteredAudioStreams(audioStreams: List<AudioStream>?): List<AudioStream> {
+        if (audioStreams == null) return listOf()
+        val collectedStreams = mutableSetOf<AudioStream>()
+        for (stream in audioStreams) {
+            Logd(TAG, "getFilteredAudioStreams stream: ${stream.audioTrackId} ${stream.bitrate} ${stream.deliveryMethod} ${stream.format}")
+            if (stream.deliveryMethod == DeliveryMethod.TORRENT || (stream.deliveryMethod == DeliveryMethod.HLS && stream.format == MediaFormat.OPUS))
+                continue
+            collectedStreams.add(stream)
+        }
+        return collectedStreams.toList().sortedWith(compareBy<AudioStream> { it.bitrate })
+    }
+
+    /**
      * Starts or prepares playback of the specified Playable object. If another Playable object is already being played, the currently playing
      * episode will be stopped and replaced with the new Playable object. If the Playable object is already being played, the method will
      * not do anything.
@@ -207,7 +297,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
      * will enter the ERROR state.
      * This method is executed on an internal executor service.
      * @param playable           The Playable object that is supposed to be played. This parameter must not be null.
-     * @param stream             The type of playback. If false, the Playable object MUST provide access to a locally available file via
+     * @param streaming             The type of playback. If false, the Playable object MUST provide access to a locally available file via
      * getLocalMediaUrl. If true, the Playable object MUST provide access to a resource that can be streamed by
      * the Android MediaPlayer via getStreamUrl.
      * @param startWhenPrepared  Sets the 'startWhenPrepared' flag. This flag determines whether playback will start immediately after the
@@ -215,8 +305,8 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
      * for playback immediately (see 'prepareImmediately' parameter for more details)
      * @param prepareImmediately Set to true if the method should also prepare the episode for playback.
      */
-    override fun playMediaObject(playable: Playable, stream: Boolean, startWhenPrepared: Boolean, prepareImmediately: Boolean, forceReset: Boolean) {
-       Logd(TAG, "playMediaObject status=$status stream=$stream startWhenPrepared=$startWhenPrepared prepareImmediately=$prepareImmediately forceReset=$forceReset ${playable.getEpisodeTitle()} ")
+    override fun playMediaObject(playable: Playable, streaming: Boolean, startWhenPrepared: Boolean, prepareImmediately: Boolean, forceReset: Boolean) {
+       Logd(TAG, "playMediaObject status=$status stream=$streaming startWhenPrepared=$startWhenPrepared prepareImmediately=$prepareImmediately forceReset=$forceReset ${playable.getEpisodeTitle()} ")
 //       showStackTrace()
         if (curMedia != null) {
             Logd(TAG, "playMediaObject: curMedia exist status=$status")
@@ -248,7 +338,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
         } else curIndexInQueue = -1
 
         prevMedia = curMedia
-        this.isStreaming = stream
+        this.isStreaming = streaming
         mediaType = curMedia!!.getMediaType()
         videoSize = null
         createMediaPlayer()
@@ -260,13 +350,14 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
             callback.onMediaChanged(false)
             setPlaybackParams(getCurrentPlaybackSpeed(curMedia), UserPreferences.isSkipSilence)
             when {
-                stream -> {
+                streaming -> {
                     val streamurl = curMedia!!.getStreamUrl()
                     if (streamurl != null) {
                         val media = curMedia
                         if (media is EpisodeMedia) {
-                            val preferences = media.episodeOrFetch()?.feed?.preferences
-                            setDataSource(metadata, streamurl, preferences?.username, preferences?.password)
+                            setDataSource(metadata, media)
+//                            val preferences = media.episodeOrFetch()?.feed?.preferences
+//                            setDataSource(metadata, streamurl, preferences?.username, preferences?.password)
                         } else setDataSource(metadata, streamurl, null, null)
                     }
                 }
@@ -530,7 +621,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
             status = PlayerStatus.STOPPED
             return
         }
-        setAudioStreamType(AudioAttributesCompat.CONTENT_TYPE_SPEECH)
+        setAudioStreamType(C.AUDIO_CONTENT_TYPE_SPEECH)
         setMediaPlayerListeners()
     }
 

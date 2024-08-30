@@ -13,13 +13,7 @@ import io.realm.kotlin.types.annotations.Index
 import io.realm.kotlin.types.annotations.PrimaryKey
 import java.util.*
 
-/**
- * Data Object for a whole feed.
- *
- * @author daniel
- */
 class Feed : RealmObject {
-
     @PrimaryKey
     var id: Long = 0L  // increments from Date().time * 100 at time of creation
 
@@ -42,10 +36,6 @@ class Feed : RealmObject {
      */
     @FullText
     var customTitle: String? = null
-//        set(value) {
-//            field = if (value == null || value == eigenTitle) null
-//            else value
-//        }
 
     var link: String? = null
 
@@ -66,7 +56,7 @@ class Feed : RealmObject {
     var lastUpdate: String? = null
 
     /**
-     * Feed type, for example RSS 2 or Atom.
+     * Feed type, options are defined in [FeedType].
      */
     var type: String? = null
 
@@ -95,6 +85,8 @@ class Feed : RealmObject {
     var preferences: FeedPreferences? = null
 
     var measures: FeedMeasures? = null
+
+    var hasVideoMedia: Boolean = false
 
     /**
      * Returns the value that uniquely identifies this Feed. If the
@@ -293,12 +285,16 @@ class Feed : RealmObject {
         return eList_
     }
 
+    enum class FeedType(name: String) {
+        RSS("rss"),
+        ATOM1("atom"),
+        YOUTUBE("YouTube")
+    }
+
     companion object {
         val TAG: String = Feed::class.simpleName ?: "Anonymous"
 
         const val FEEDFILETYPE_FEED: Int = 0
-        const val TYPE_RSS2: String = "rss"
-        const val TYPE_ATOM1: String = "atom"
         const val PREFIX_LOCAL_FOLDER: String = "podcini_local:"
         const val PREFIX_GENERATIVE_COVER: String = "podcini_generative_cover:"
 

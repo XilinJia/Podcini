@@ -2,7 +2,7 @@ package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.FragmentItunesSearchBinding
+import ac.mdiq.podcini.databinding.FragmentOnlineSearchBinding
 import ac.mdiq.podcini.databinding.SelectCountryDialogBinding
 import ac.mdiq.podcini.net.feed.discovery.ItunesTopListLoader
 import ac.mdiq.podcini.net.feed.discovery.ItunesTopListLoader.Companion.prefs
@@ -11,8 +11,8 @@ import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.OnlineFeedsAdapter
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
 import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
@@ -38,7 +38,7 @@ import java.util.*
  * Searches iTunes store for top podcasts and displays results in a list.
  */
 class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
-    private var _binding: FragmentItunesSearchBinding? = null
+    private var _binding: FragmentOnlineSearchBinding? = null
     private val binding get() = _binding!!
 
 //    private lateinit var prefs: SharedPreferences
@@ -95,7 +95,7 @@ class DiscoveryFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     @OptIn(UnstableApi::class) override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         // Inflate the layout for this fragment
-        _binding = FragmentItunesSearchBinding.inflate(inflater)
+        _binding = FragmentOnlineSearchBinding.inflate(inflater)
 //        val root = inflater.inflate(R.layout.fragment_itunes_search, container, false)
 
         Logd(TAG, "fragment onCreateView")

@@ -8,8 +8,8 @@ import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.storage.model.RemoteMedia
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
@@ -92,6 +92,7 @@ class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBas
             CastUtils.matches(remoteMedia, playable) -> remoteMedia
             playable is EpisodeMedia -> MediaInfoCreator.from(playable)
             playable is RemoteMedia -> MediaInfoCreator.from(playable)
+//            playable is RemoteMedia -> MediaInfoCreator.from(playable)
             else -> null
         }
     }

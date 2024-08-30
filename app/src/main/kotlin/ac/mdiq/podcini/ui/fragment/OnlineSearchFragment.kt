@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.FragmentItunesSearchBinding
+import ac.mdiq.podcini.databinding.FragmentOnlineSearchBinding
 import ac.mdiq.podcini.net.feed.discovery.PodcastSearchResult
 import ac.mdiq.podcini.net.feed.discovery.PodcastSearcher
 import ac.mdiq.podcini.net.feed.discovery.PodcastSearcherRegistry
@@ -10,7 +10,6 @@ import ac.mdiq.podcini.ui.adapter.OnlineFeedsAdapter
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -28,7 +27,7 @@ import kotlinx.coroutines.withContext
 
 class OnlineSearchFragment : Fragment() {
 
-    private var _binding: FragmentItunesSearchBinding? = null
+    private var _binding: FragmentOnlineSearchBinding? = null
     private val binding get() = _binding!!
 
     private var adapter: OnlineFeedsAdapter? = null
@@ -43,12 +42,11 @@ class OnlineSearchFragment : Fragment() {
     /**
      * List of podcasts retreived from the search
      */
-    private var searchResults: List<PodcastSearchResult?>? = null
+    private var searchResults: MutableList<PodcastSearchResult>? = null
 //    private var disposable: Disposable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         for (info in PodcastSearcherRegistry.searchProviders) {
             Logd(TAG, "searchProvider: $info")
             if (info.searcher.javaClass.getName() == requireArguments().getString(ARG_SEARCHER)) {
@@ -60,7 +58,7 @@ class OnlineSearchFragment : Fragment() {
     }
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = FragmentItunesSearchBinding.inflate(inflater)
+        _binding = FragmentOnlineSearchBinding.inflate(inflater)
 
         Logd(TAG, "fragment onCreateView")
         gridView = binding.gridView
@@ -70,8 +68,9 @@ class OnlineSearchFragment : Fragment() {
         //Show information about the podcast when the list item is clicked
         gridView.onItemClickListener = AdapterView.OnItemClickListener { _: AdapterView<*>?, _: View?, position: Int, _: Long ->
             val podcast = searchResults!![position]
-            if (podcast?.feedUrl != null) {
-                val fragment: Fragment = OnlineFeedViewFragment.newInstance(podcast.feedUrl)
+            if (podcast.feedUrl != null) {
+                val fragment = OnlineFeedViewFragment.newInstance(podcast.feedUrl)
+                fragment.feedSource = podcast.source
                 (activity as MainActivity).loadChildFragment(fragment)
             }
         }
@@ -79,8 +78,7 @@ class OnlineSearchFragment : Fragment() {
         txtvError = binding.txtvError
         butRetry = binding.butRetry
         txtvEmpty = binding.empty
-        val txtvPoweredBy: TextView = binding.searchPoweredBy
-        if (searchProvider != null) txtvPoweredBy.text = getString(R.string.search_powered_by, searchProvider!!.name)
+        if (searchProvider != null) binding.searchPoweredBy.text = getString(R.string.search_powered_by, searchProvider!!.name)
         setupToolbar(binding.toolbar)
 
         gridView.setOnScrollListener(object : AbsListView.OnScrollListener {
@@ -90,7 +88,6 @@ class OnlineSearchFragment : Fragment() {
                     imm.hideSoftInputFromWindow(view.windowToken, 0)
                 }
             }
-
             override fun onScroll(view: AbsListView, firstVisibleItem: Int, visibleItemCount: Int, totalItemCount: Int) {}
         })
         return binding.root
@@ -117,76 +114,57 @@ class OnlineSearchFragment : Fragment() {
                     search(s)
                     return true
                 }
-
                 override fun onQueryTextChange(s: String): Boolean {
                     return false
                 }
             })
             sv.setOnQueryTextFocusChangeListener(View.OnFocusChangeListener { view: View, hasFocus: Boolean ->
-                if (hasFocus) showInputMethod(view.findFocus())
-            })
+                if (hasFocus) showInputMethod(view.findFocus()) })
         }
         searchItem.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
             override fun onMenuItemActionExpand(item: MenuItem): Boolean {
                 return true
             }
-
             override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
                 requireActivity().supportFragmentManager.popBackStack()
                 return true
             }
         })
         searchItem.expandActionView()
-
-        if (requireArguments().getString(ARG_QUERY, null) != null) {
+        if (requireArguments().getString(ARG_QUERY, null) != null)
             sv?.setQuery(requireArguments().getString(ARG_QUERY, null), true)
-        }
     }
 
     private fun search(query: String) {
-//        disposable?.dispose()
-
         showOnlyProgressBar()
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val result = searchProvider?.search(query)
+                searchResults = result?.toMutableList()
                 withContext(Dispatchers.Main) {
-                    searchResults = result
                     progressBar.visibility = View.GONE
                     adapter?.clear()
-                    if (searchResults != null) adapter?.addAll(searchResults!!)
-                    adapter?.notifyDataSetInvalidated()
-                    gridView.visibility = if (!searchResults.isNullOrEmpty()) View.VISIBLE else View.GONE
-                    txtvEmpty.visibility = if (searchResults.isNullOrEmpty()) View.VISIBLE else View.GONE
+                    handleSearchResults()
                     txtvEmpty.text = getString(R.string.no_results_for_query) + query
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, Log.getStackTraceString(e))
-                progressBar.visibility = View.GONE
-                txtvError.text = e.toString()
-                txtvError.visibility = View.VISIBLE
-                butRetry.setOnClickListener { search(query) }
-                butRetry.visibility = View.VISIBLE
-            }
+            } catch (e: Exception) { handleSearchError(e, query) }
         }
-//        disposable = searchProvider?.search(query)
-//            ?.subscribe({ result: List<PodcastSearchResult?>? ->
-//                searchResults = result
-//                progressBar.visibility = View.GONE
-//                adapter?.clear()
-//                if (searchResults != null) adapter?.addAll(searchResults!!)
-//                adapter?.notifyDataSetInvalidated()
-//                gridView.visibility = if (!searchResults.isNullOrEmpty()) View.VISIBLE else View.GONE
-//                txtvEmpty.visibility = if (searchResults.isNullOrEmpty()) View.VISIBLE else View.GONE
-//                txtvEmpty.text = getString(R.string.no_results_for_query) + query
-//            }, { error: Throwable ->
-//                Log.e(TAG, Log.getStackTraceString(error))
-//                progressBar.visibility = View.GONE
-//                txtvError.text = error.toString()
-//                txtvError.visibility = View.VISIBLE
-//                butRetry.setOnClickListener { search(query) }
-//                butRetry.visibility = View.VISIBLE
-//            })
+    }
+
+    private fun handleSearchResults() {
+        adapter?.addAll(searchResults!!)
+        adapter?.notifyDataSetInvalidated()
+        gridView.visibility = if (!searchResults.isNullOrEmpty()) View.VISIBLE else View.GONE
+        txtvEmpty.visibility = if (searchResults.isNullOrEmpty()) View.VISIBLE else View.GONE
+    }
+
+    private fun handleSearchError(e: Throwable, query: String) {
+        Logd(TAG, "exception: ${e.message}")
+        progressBar.visibility = View.GONE
+        txtvError.text = e.toString()
+        txtvError.visibility = View.VISIBLE
+        butRetry.setOnClickListener { search(query) }
+        butRetry.visibility = View.VISIBLE
     }
 
     private fun showOnlyProgressBar() {

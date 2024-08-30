@@ -9,8 +9,8 @@ import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.ui.widget.WidgetUpdater.WidgetState
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
 import androidx.test.annotation.UiThreadTest
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry

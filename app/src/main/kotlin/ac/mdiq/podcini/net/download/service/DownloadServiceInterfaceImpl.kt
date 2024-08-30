@@ -25,8 +25,8 @@ import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.config.ClientConfigurator
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
 import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -54,7 +54,6 @@ import java.util.concurrent.TimeUnit
 
 
 class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
-
     override fun downloadNow(context: Context, item: Episode, ignoreConstraints: Boolean) {
         Logd(TAG, "starting downloadNow")
         val workRequest: OneTimeWorkRequest.Builder = getRequest(item)
@@ -102,38 +101,6 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
         WorkManager.getInstance(context).cancelAllWorkByTag(WORK_TAG)
     }
 
-    companion object {
-        private val TAG: String = DownloadServiceInterfaceImpl::class.simpleName ?: "Anonymous"
-
-        private val constraints: Constraints
-            get() {
-                val constraints = Builder()
-                if (isAllowMobileEpisodeDownload) constraints.setRequiredNetworkType(NetworkType.CONNECTED)
-                else constraints.setRequiredNetworkType(NetworkType.UNMETERED)
-
-                return constraints.build()
-            }
-
-        @OptIn(UnstableApi::class)
-        private fun getRequest(item: Episode): OneTimeWorkRequest.Builder {
-            Logd(TAG, "starting getRequest")
-            val workRequest: OneTimeWorkRequest.Builder = OneTimeWorkRequest.Builder(EpisodeDownloadWorker::class.java)
-                .setInitialDelay(0L, TimeUnit.MILLISECONDS)
-                .addTag(WORK_TAG)
-                .addTag(WORK_TAG_EPISODE_URL + item.media!!.downloadUrl)
-            if (enqueueDownloadedEpisodes()) {
-                if (item.feed?.preferences?.queue != null)
-                    runBlocking { Queues.addToQueueSync(false, item, item.feed?.preferences?.queue) }
-                workRequest.addTag(WORK_DATA_WAS_QUEUED)
-            }
-            workRequest.setInputData(Data.Builder().putLong(WORK_DATA_MEDIA_ID, item.media!!.id).build())
-            return workRequest
-        }
-        private fun enqueueDownloadedEpisodes(): Boolean {
-            return appPrefs.getBoolean(UserPreferences.Prefs.prefEnqueueDownloaded.name, true)
-        }
-    }
-
     class EpisodeDownloadWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
         private var downloader: Downloader? = null
         private val isLastRunAttempt: Boolean
@@ -162,11 +129,8 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                             val nm = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                             nm.notify(R.id.notification_downloading, generateProgressNotification())
                             sleep(1000)
-                        } catch (e: InterruptedException) {
-                            return
-                        } catch (e: ExecutionException) {
-                            return
-                        }
+                        } catch (e: InterruptedException) { return
+                        } catch (e: ExecutionException) { return }
                     }
                 }
             }
@@ -181,11 +145,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
             if (result == Result.failure() && downloader?.downloadRequest?.destination != null)
                 FileUtils.deleteQuietly(File(downloader!!.downloadRequest.destination!!))
             progressUpdaterThread.interrupt()
-            try {
-                progressUpdaterThread.join()
-            } catch (e: InterruptedException) {
-                e.printStackTrace()
-            }
+            try { progressUpdaterThread.join() } catch (e: InterruptedException) { e.printStackTrace() }
             synchronized(notificationProgress) {
                 notificationProgress.remove(media.getEpisodeTitle())
                 if (notificationProgress.isEmpty()) {
@@ -392,6 +352,37 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
 
         companion object {
             private val notificationProgress: MutableMap<String, Int> = HashMap()
+        }
+    }
+
+    companion object {
+        private val TAG: String = DownloadServiceInterfaceImpl::class.simpleName ?: "Anonymous"
+
+        private val constraints: Constraints
+            get() {
+                val constraints = Builder()
+                if (isAllowMobileEpisodeDownload) constraints.setRequiredNetworkType(NetworkType.CONNECTED)
+                else constraints.setRequiredNetworkType(NetworkType.UNMETERED)
+                return constraints.build()
+            }
+
+        @OptIn(UnstableApi::class)
+        private fun getRequest(item: Episode): OneTimeWorkRequest.Builder {
+            Logd(TAG, "starting getRequest")
+            val workRequest: OneTimeWorkRequest.Builder = OneTimeWorkRequest.Builder(EpisodeDownloadWorker::class.java)
+                .setInitialDelay(0L, TimeUnit.MILLISECONDS)
+                .addTag(WORK_TAG)
+                .addTag(WORK_TAG_EPISODE_URL + item.media!!.downloadUrl)
+            if (enqueueDownloadedEpisodes()) {
+                if (item.feed?.preferences?.queue != null)
+                    runBlocking { Queues.addToQueueSync(false, item, item.feed?.preferences?.queue) }
+                workRequest.addTag(WORK_DATA_WAS_QUEUED)
+            }
+            workRequest.setInputData(Data.Builder().putLong(WORK_DATA_MEDIA_ID, item.media!!.id).build())
+            return workRequest
+        }
+        private fun enqueueDownloadedEpisodes(): Boolean {
+            return appPrefs.getBoolean(UserPreferences.Prefs.prefEnqueueDownloaded.name, true)
         }
     }
 }

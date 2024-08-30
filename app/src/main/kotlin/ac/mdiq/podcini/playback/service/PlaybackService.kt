@@ -54,10 +54,12 @@ import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
 import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.ui.widget.WidgetUpdater.WidgetState
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.vista.extractor.Vista
+import ac.mdiq.vista.extractor.stream.StreamInfo
 import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -117,7 +119,7 @@ class PlaybackService : MediaLibraryService() {
     private var autoSkippedFeedMediaId: String? = null
     internal var normalSpeed = 1.0f
 
-    private val mBinder: IBinder = LocalBinder()
+//    private val mBinder: IBinder = LocalBinder()
     private var clickCount = 0
     private val clickHandler = Handler(Looper.getMainLooper())
 
@@ -503,7 +505,7 @@ class PlaybackService : MediaLibraryService() {
         list
     }
 
-    val mediaLibrarySessionCK = object: MediaLibrarySession.Callback {
+    private val mediaLibrarySessionCK = object: MediaLibrarySession.Callback {
         override fun onConnect(session: MediaSession, controller: MediaSession.ControllerInfo): MediaSession.ConnectionResult {
             Logd(TAG, "in MyMediaSessionCallback onConnect")
             when {
@@ -529,7 +531,7 @@ class PlaybackService : MediaLibraryService() {
                         .build()
                 }
                 else -> {
-                    Logd(TAG, "MyMediaSessionCallback onConnect other controller: ${controller.toString()}")
+                    Logd(TAG, "MyMediaSessionCallback onConnect other controller: $controller")
                     return MediaSession.ConnectionResult.AcceptedResultBuilder(session).build()
                 }
             }
@@ -783,12 +785,12 @@ class PlaybackService : MediaLibraryService() {
         when {
             keycode != -1 -> {
                 Logd(TAG, "onStartCommand Received hardware button event: $hardwareButton")
-                val handled = handleKeycode(keycode, !hardwareButton)
+                handleKeycode(keycode, !hardwareButton)
                 return super.onStartCommand(intent, flags, startId)
             }
             keyEvent != null && keyEvent.keyCode != -1 -> {
                 Logd(TAG, "onStartCommand Received button event: ${keyEvent.keyCode}")
-                val handled = handleKeycode(keyEvent.keyCode, !hardwareButton)
+                handleKeycode(keyEvent.keyCode, !hardwareButton)
                 return super.onStartCommand(intent, flags, startId)
             }
             playable != null -> {
@@ -974,8 +976,8 @@ class PlaybackService : MediaLibraryService() {
         val media = curMedia ?: return
 
         val localFeed = URLUtil.isContentUrl(media.getStreamUrl())
-        val stream = !media.localFileAvailable() || localFeed
-        if (stream && !localFeed && !isStreamingAllowed && !allowStreamThisTime) {
+        val streaming = !media.localFileAvailable() || localFeed
+        if (streaming && !localFeed && !isStreamingAllowed && !allowStreamThisTime) {
             displayStreamingNotAllowedNotification(PlaybackServiceStarter(this, media).intent)
             writeNoMediaPlaying()
             return
@@ -983,7 +985,7 @@ class PlaybackService : MediaLibraryService() {
 
         if (media.getIdentifier() != curState.curMediaId) clearCurTempSpeed()
 
-        mPlayer?.playMediaObject(media, stream, startWhenPrepared = true, true)
+        mPlayer?.playMediaObject(media, streaming, startWhenPrepared = true, true)
         recreateMediaSessionIfNeeded()
 //        val episode = (media as? EpisodeMedia)?.episode
 //        if (curMedia is EpisodeMedia && episode != null) addToQueue(true, episode)
@@ -1210,10 +1212,10 @@ class PlaybackService : MediaLibraryService() {
         }
     }
 
-    inner class LocalBinder : Binder() {
-        val service: PlaybackService
-            get() = this@PlaybackService
-    }
+//    inner class LocalBinder : Binder() {
+//        val service: PlaybackService
+//            get() = this@PlaybackService
+//    }
 
     enum class NotificationCustomButton(val customAction: String, val commandButton: CommandButton) {
         SKIP(

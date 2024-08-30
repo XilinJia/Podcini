@@ -37,20 +37,13 @@ object CastUtils {
     const val MAX_VERSION_FORWARD_COMPATIBILITY: Int = 9999
 
     fun isCastable(media: Playable?, castSession: CastSession?): Boolean {
-        if (media == null || castSession == null || castSession.castDevice == null) {
-            return false
-        }
+        if (media == null || castSession == null || castSession.castDevice == null) return false
         if (media is EpisodeMedia || media is RemoteMedia) {
             val url = media.getStreamUrl()
-            if (url.isNullOrEmpty()) {
-                return false
-            }
-            if (url.startsWith(ContentResolver.SCHEME_CONTENT)) {
-                return false // Local feed
-            }
+            if (url.isNullOrEmpty()) return false
+            if (url.startsWith(ContentResolver.SCHEME_CONTENT)) return false /* Local feed */
             return when (media.getMediaType()) {
-                MediaType.AUDIO -> castSession.castDevice!!
-                    .hasCapability(CastDevice.CAPABILITY_AUDIO_OUT)
+                MediaType.AUDIO -> castSession.castDevice!!.hasCapability(CastDevice.CAPABILITY_AUDIO_OUT)
                 MediaType.VIDEO -> castSession.castDevice!!.hasCapability(CastDevice.CAPABILITY_VIDEO_OUT)
                 else -> false
             }
@@ -73,9 +66,7 @@ object CastUtils {
         }
         val imageList = metadata.images
         var imageUrl: String? = null
-        if (imageList.isNotEmpty()) {
-            imageUrl = imageList[0].url.toString()
-        }
+        if (imageList.isNotEmpty()) imageUrl = imageList[0].url.toString()
         val notes = metadata.getString(KEY_EPISODE_NOTES)
         val result = RemoteMedia(media.contentId,
             metadata.getString(KEY_EPISODE_IDENTIFIER),
@@ -89,9 +80,7 @@ object CastUtils {
             media.contentType,
             metadata.getDate(MediaMetadata.KEY_RELEASE_DATE)!!.time,
             notes)
-        if (result.getDuration() == 0 && media.streamDuration > 0) {
-            result.setDuration(media.streamDuration.toInt())
-        }
+        if (result.getDuration() == 0 && media.streamDuration > 0) result.setDuration(media.streamDuration.toInt())
         return result
     }
 
@@ -133,7 +122,7 @@ object CastUtils {
 
         val metadata = info.metadata
         return (metadata != null && metadata.getString(KEY_EPISODE_IDENTIFIER) ==
-            media.getEpisodeIdentifier() && metadata.getString(KEY_FEED_URL) == media.feedUrl)
+                media.getEpisodeIdentifier() && metadata.getString(KEY_FEED_URL) == media.feedUrl)
     }
 
     /**
@@ -148,12 +137,8 @@ object CastUtils {
      * @see RemoteMedia.equals
      */
     fun matches(info: MediaInfo?, media: Playable?): Boolean {
-        if (info == null || media == null) {
-            return false
-        }
-        if (media is RemoteMedia) {
-            return matches(info, media as RemoteMedia?)
-        }
+        if (info == null || media == null) return false
+        if (media is RemoteMedia) return matches(info, media as RemoteMedia?)
         return media is EpisodeMedia && matches(info, media as EpisodeMedia?)
     }
 }

@@ -3,9 +3,14 @@ package ac.mdiq.podcini.net.feed.discovery
 import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient
 import ac.mdiq.podcini.net.feed.FeedUrlNotFoundException
+import ac.mdiq.podcini.net.feed.discovery.PodcastSearchResult.Companion.fromChannelInfoItem
 import ac.mdiq.podcini.net.sync.SynchronizationCredentials
 import ac.mdiq.podcini.net.sync.gpoddernet.GpodnetService
 import ac.mdiq.podcini.util.config.ClientConfig
+import ac.mdiq.vista.extractor.Vista
+import ac.mdiq.vista.extractor.channel.ChannelInfoItem
+import ac.mdiq.vista.extractor.exceptions.ExtractionException
+import ac.mdiq.vista.extractor.search.SearchInfo
 import de.mfietz.fyydlin.FyydClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -26,6 +31,7 @@ object PodcastSearcherRegistry {
             if (field.isEmpty()) {
                 field = ArrayList()
                 field.add(SearcherInfo(CombinedSearcher(), 1.0f))
+                field.add(SearcherInfo(VistaGuidePodcastSearcher(), 1.0f))
                 field.add(SearcherInfo(GpodnetPodcastSearcher(), 0.0f))
                 field.add(SearcherInfo(FyydPodcastSearcher(), 1.0f))
                 field.add(SearcherInfo(ItunesPodcastSearcher(), 1.0f))
@@ -54,17 +60,10 @@ object PodcastSearcherRegistry {
 }
 
 class PodcastIndexPodcastSearcher : PodcastSearcher {
-    override suspend fun search(query: String): List<PodcastSearchResult?> {
-        val encodedQuery = try {
-            withContext(Dispatchers.IO) {
-                URLEncoder.encode(query, "UTF-8")
-            }
-        } catch (e: UnsupportedEncodingException) {
-            // this won't ever be thrown
-            query
-        }
+    override suspend fun search(query: String): List<PodcastSearchResult> {
+        val encodedQuery = try { withContext(Dispatchers.IO) { URLEncoder.encode(query, "UTF-8") } } catch (e: UnsupportedEncodingException) { query }
         val formattedUrl = String.format(SEARCH_API_URL, encodedQuery)
-        val podcasts: MutableList<PodcastSearchResult?> = ArrayList()
+        val podcasts: MutableList<PodcastSearchResult> = ArrayList()
         try {
             val client = PodciniHttpClient.getHttpClient()
             val response = client.newCall(buildAuthenticatedRequest(formattedUrl)).execute()
@@ -79,14 +78,9 @@ class PodcastIndexPodcastSearcher : PodcastSearcher {
                     val podcast = PodcastSearchResult.fromPodcastIndex(podcastJson)
                     if (podcast.feedUrl != null) podcasts.add(podcast)
                 }
-            } else {
-                throw IOException(response.toString())
-            }
-        } catch (e: IOException) {
-            throw e
-        } catch (e: JSONException) {
-            throw e
-        }
+            } else throw IOException(response.toString())
+        } catch (e: IOException) { throw e
+        } catch (e: JSONException) { throw e }
         return podcasts
     }
 
@@ -144,14 +138,36 @@ class PodcastIndexPodcastSearcher : PodcastSearcher {
     }
 }
 
+class VistaGuidePodcastSearcher : PodcastSearcher {
+
+    override suspend fun search(query: String): List<PodcastSearchResult> {
+        val service = try { Vista.getService("YouTube") } catch (e: ExtractionException) { throw ExtractionException("YouTube service not found") }
+        val searchInfo = SearchInfo.getInfo(service, service.getSearchQHFactory().fromQuery(query, listOf("channels"), ""))
+        val podResults : MutableList<PodcastSearchResult> = mutableListOf()
+        for (ch in searchInfo.relatedItems) {
+            podResults.add(fromChannelInfoItem(ch as ChannelInfoItem))
+        }
+        return podResults
+    }
+
+    override suspend fun lookupUrl(url: String): String {
+        return url
+    }
+
+    override fun urlNeedsLookup(url: String): Boolean {
+        return false
+    }
+
+    override val name: String
+        get() = "VistaGuide"
+}
+
 class FyydPodcastSearcher : PodcastSearcher {
     private val client = FyydClient(PodciniHttpClient.getHttpClient())
 
-    override suspend fun search(query: String): List<PodcastSearchResult?> {
-        val response = withContext(Dispatchers.IO) {
-            client.searchPodcasts(query, 10).blockingGet()
-        }
-        val searchResults = ArrayList<PodcastSearchResult?>()
+    override suspend fun search(query: String): List<PodcastSearchResult> {
+        val response = withContext(Dispatchers.IO) { client.searchPodcasts(query, 10).blockingGet() }
+        val searchResults = ArrayList<PodcastSearchResult>()
 
         if (response.data.isNotEmpty()) {
             for (searchHit in response.data) {
@@ -175,15 +191,13 @@ class FyydPodcastSearcher : PodcastSearcher {
 }
 
 class GpodnetPodcastSearcher : PodcastSearcher {
-    override suspend fun search(query: String): List<PodcastSearchResult?>? {
+    override suspend fun search(query: String): List<PodcastSearchResult> {
         return try {
             val service = GpodnetService(PodciniHttpClient.getHttpClient(),
                 SynchronizationCredentials.hosturl, SynchronizationCredentials.deviceID ?: "",
                 SynchronizationCredentials.username ?: "", SynchronizationCredentials.password ?: "")
-            val gpodnetPodcasts = withContext(Dispatchers.IO) {
-                service.searchPodcasts(query, 0)
-            }
-            val results: MutableList<PodcastSearchResult?> = ArrayList()
+            val gpodnetPodcasts = withContext(Dispatchers.IO) { service.searchPodcasts(query, 0) }
+            val results: MutableList<PodcastSearchResult> = ArrayList()
             for (podcast in gpodnetPodcasts) {
                 results.add(PodcastSearchResult.fromGpodder(podcast))
             }
@@ -207,20 +221,13 @@ class GpodnetPodcastSearcher : PodcastSearcher {
 }
 
 class ItunesPodcastSearcher : PodcastSearcher {
-    override suspend fun search(query: String): List<PodcastSearchResult?> {
-        val encodedQuery = try {
-            withContext(Dispatchers.IO) {
-                URLEncoder.encode(query, "UTF-8")
-            }
-        } catch (e: UnsupportedEncodingException) {
-            // this won't ever be thrown
-            query
-        }
+    override suspend fun search(query: String): List<PodcastSearchResult> {
+        val encodedQuery = try { withContext(Dispatchers.IO) { URLEncoder.encode(query, "UTF-8") } } catch (e: UnsupportedEncodingException) { query }
         val formattedUrl = String.format(ITUNES_API_URL, encodedQuery)
 
         val client = PodciniHttpClient.getHttpClient()
         val httpReq: Request.Builder = Request.Builder().url(formattedUrl)
-        val podcasts: MutableList<PodcastSearchResult?> = ArrayList()
+        val podcasts: MutableList<PodcastSearchResult> = ArrayList()
         try {
             val response = client.newCall(httpReq.build()).execute()
 
@@ -234,14 +241,9 @@ class ItunesPodcastSearcher : PodcastSearcher {
                     val podcast = PodcastSearchResult.fromItunes(podcastJson)
                     if (podcast.feedUrl != null) podcasts.add(podcast)
                 }
-            } else {
-                throw IOException(response.toString())
-            }
-        } catch (e: IOException) {
-            throw e
-        } catch (e: JSONException) {
-            throw e
-        }
+            } else throw IOException(response.toString())
+        } catch (e: IOException) { throw e
+        } catch (e: JSONException) { throw e }
         return podcasts
     }
 
@@ -252,9 +254,7 @@ class ItunesPodcastSearcher : PodcastSearcher {
         val client = PodciniHttpClient.getHttpClient()
         val httpReq = Request.Builder().url(lookupUrl).build()
         val response = client.newCall(httpReq).execute()
-        if (!response.isSuccessful) {
-            throw IOException(response.toString())
-        }
+        if (!response.isSuccessful) throw IOException(response.toString())
         val resultString = response.body!!.string()
         val result = JSONObject(resultString)
         val results = result.getJSONArray("results").getJSONObject(0)

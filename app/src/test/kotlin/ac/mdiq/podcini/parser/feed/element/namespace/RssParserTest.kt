@@ -22,7 +22,7 @@ class RssParserTest {
     fun testRss2Basic() {
         val feedFile = getFeedFile("feed-rss-testRss2Basic.xml")
         val feed = runFeedParser(feedFile)
-        Assert.assertEquals(Feed.TYPE_RSS2, feed.type)
+        Assert.assertEquals(Feed.FeedType.RSS.name, feed.type)
         Assert.assertEquals("title", feed.title)
         Assert.assertEquals("en", feed.language)
         Assert.assertEquals("http://example.com", feed.link)

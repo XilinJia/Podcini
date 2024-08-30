@@ -2,6 +2,7 @@ package ac.mdiq.podcini.net.utils
 
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
+import android.annotation.SuppressLint
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -14,15 +15,11 @@ import java.io.InputStreamReader
 import java.net.URL
 import java.util.regex.Pattern
 
+@SuppressLint("StaticFieldLeak")
 object NetworkUtils {
     private const val REGEX_PATTERN_IP_ADDRESS = "([0-9]{1,3}[\\.]){3}[0-9]{1,3}"
 
     private lateinit var context: Context
-
-    @JvmStatic
-    fun init(context: Context) {
-        NetworkUtils.context = context
-    }
 
     var isAllowMobileStreaming: Boolean
         get() = isAllowMobileFor("streaming")
@@ -35,24 +32,6 @@ object NetworkUtils {
         set(allow) {
             setAllowMobileFor("auto_download", allow)
         }
-
-    fun isAllowMobileFor(type: String): Boolean {
-        val defaultValue = HashSet<String>()
-        defaultValue.add("images")
-        val allowed = appPrefs.getStringSet(UserPreferences.Prefs.prefMobileUpdateTypes.name, defaultValue)
-        return allowed!!.contains(type)
-    }
-
-    fun setAllowMobileFor(type: String, allow: Boolean) {
-        val defaultValue = HashSet<String>()
-        defaultValue.add("images")
-        val getValueStringSet = appPrefs.getStringSet(UserPreferences.Prefs.prefMobileUpdateTypes.name, defaultValue)
-        val allowed: MutableSet<String> = HashSet(getValueStringSet!!)
-        if (allow) allowed.add(type)
-        else allowed.remove(type)
-
-        appPrefs.edit().putStringSet(UserPreferences.Prefs.prefMobileUpdateTypes.name, allowed).apply()
-    }
 
     val isEnableAutodownloadWifiFilter: Boolean
         get() = Build.VERSION.SDK_INT < 29 && appPrefs.getBoolean(UserPreferences.Prefs.prefEnableAutoDownloadWifiFilter.name, false)
@@ -71,13 +50,6 @@ object NetworkUtils {
                 else -> isAllowMobileAutoDownload || !isNetworkRestricted
             }
         }
-
-    @JvmStatic
-    fun networkAvailable(): Boolean {
-        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val info = cm.activeNetworkInfo
-        return info != null && info.isConnected
-    }
 
     var isAllowMobileFeedRefresh: Boolean
         get() = isAllowMobileFor("feed_refresh")
@@ -138,7 +110,7 @@ object NetworkUtils {
                     && capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN))
         }
 
-    private val isNetworkCellular: Boolean
+    val isNetworkCellular: Boolean
         get() {
             val connManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 //            if (Build.VERSION.SDK_INT >= 23) {
@@ -166,6 +138,36 @@ object NetworkUtils {
             val selectedNetworks = listOf(*autodownloadSelectedNetworks)
             return selectedNetworks.contains(wm.connectionInfo.networkId.toString())
         }
+
+    @JvmStatic
+    fun init(context: Context) {
+        NetworkUtils.context = context
+    }
+
+    fun isAllowMobileFor(type: String): Boolean {
+        val defaultValue = HashSet<String>()
+        defaultValue.add("images")
+        val allowed = appPrefs.getStringSet(UserPreferences.Prefs.prefMobileUpdateTypes.name, defaultValue)
+        return allowed!!.contains(type)
+    }
+
+    fun setAllowMobileFor(type: String, allow: Boolean) {
+        val defaultValue = HashSet<String>()
+        defaultValue.add("images")
+        val getValueStringSet = appPrefs.getStringSet(UserPreferences.Prefs.prefMobileUpdateTypes.name, defaultValue)
+        val allowed: MutableSet<String> = HashSet(getValueStringSet!!)
+        if (allow) allowed.add(type)
+        else allowed.remove(type)
+
+        appPrefs.edit().putStringSet(UserPreferences.Prefs.prefMobileUpdateTypes.name, allowed).apply()
+    }
+
+    @JvmStatic
+    fun networkAvailable(): Boolean {
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val info = cm.activeNetworkInfo
+        return info != null && info.isConnected
+    }
 
     @JvmStatic
     fun wasDownloadBlocked(throwable: Throwable?): Boolean {

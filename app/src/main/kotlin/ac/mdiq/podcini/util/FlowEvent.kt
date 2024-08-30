@@ -1,4 +1,4 @@
-package ac.mdiq.podcini.util.event
+package ac.mdiq.podcini.util
 
 import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.net.download.DownloadStatus
@@ -6,7 +6,6 @@ import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.Playable
-import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.view.KeyEvent
 import androidx.core.util.Consumer

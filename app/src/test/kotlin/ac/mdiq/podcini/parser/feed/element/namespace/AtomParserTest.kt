@@ -19,7 +19,7 @@ class AtomParserTest {
     fun testAtomBasic() {
         val feedFile = FeedParserTestHelper.getFeedFile("feed-atom-testAtomBasic.xml")
         val feed = FeedParserTestHelper.runFeedParser(feedFile)
-        Assert.assertEquals(Feed.TYPE_ATOM1, feed.type)
+        Assert.assertEquals(Feed.FeedType.ATOM1.name, feed.type)
         Assert.assertEquals("title", feed.title)
         Assert.assertEquals("http://example.com/feed", feed.identifier)
         Assert.assertEquals("http://example.com", feed.link)
@@ -52,7 +52,7 @@ class AtomParserTest {
     fun testEmptyRelLinks() {
         val feedFile = FeedParserTestHelper.getFeedFile("feed-atom-testEmptyRelLinks.xml")
         val feed = FeedParserTestHelper.runFeedParser(feedFile)
-        Assert.assertEquals(Feed.TYPE_ATOM1, feed.type)
+        Assert.assertEquals(Feed.FeedType.ATOM1.name, feed.type)
         Assert.assertEquals("title", feed.title)
         Assert.assertEquals("http://example.com/feed", feed.identifier)
         Assert.assertEquals("http://example.com", feed.link)

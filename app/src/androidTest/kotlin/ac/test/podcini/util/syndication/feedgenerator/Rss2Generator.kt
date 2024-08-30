@@ -1,7 +1,7 @@
 package de.test.podcini.util.syndication.feedgenerator
 
 import android.util.Xml
-import ac.mdiq.podcini.util.DateFormatter.formatRfc822Date
+import ac.mdiq.podcini.util.MiscFormatter.formatRfc822Date
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.net.feed.parser.namespace.PodcastIndex
 import de.test.podcini.util.syndication.feedgenerator.GeneratorUtil.addPaymentLink

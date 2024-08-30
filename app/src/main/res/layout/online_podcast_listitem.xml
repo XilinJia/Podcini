@@ -65,6 +65,29 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
+            <LinearLayout
+                android:id="@+id/subscribers_group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/subscribers"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textColor="?android:attr/textColorSecondary"
+                    android:maxLines="1"
+                    style="android:style/TextAppearance.Small"
+                    tools:text="10 subscribers"
+                    tools:background="@android:color/holo_green_dark" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"/>
+            </LinearLayout>
+
             <TextView
                 android:id="@+id/count"
                 android:layout_width="match_parent"

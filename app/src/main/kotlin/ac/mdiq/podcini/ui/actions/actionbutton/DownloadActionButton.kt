@@ -27,11 +27,8 @@ class DownloadActionButton(item: Episode) : EpisodeActionButton(item) {
     }
 
     override fun onClick(context: Context) {
-        val media = item.media
-        if (media == null || shouldNotDownload(media)) return
-
+        if (shouldNotDownload(item.media)) return
         logAction(UsageStatistics.ACTION_DOWNLOAD)
-
         if (isEpisodeDownloadAllowed) DownloadServiceInterface.get()?.downloadNow(context, item, false)
         else {
             val builder = MaterialAlertDialogBuilder(context)
@@ -48,8 +45,8 @@ class DownloadActionButton(item: Episode) : EpisodeActionButton(item) {
         }
     }
 
-    private fun shouldNotDownload(media: EpisodeMedia): Boolean {
-        if (media.downloadUrl == null) return true
+    private fun shouldNotDownload(media: EpisodeMedia?): Boolean {
+        if (media?.downloadUrl == null) return true
         val isDownloading = DownloadServiceInterface.get()?.isDownloadingEpisode(media.downloadUrl!!)?:false
         return isDownloading || media.downloaded
     }

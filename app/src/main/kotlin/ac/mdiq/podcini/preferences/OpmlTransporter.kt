@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.preferences
 
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.util.DateFormatter.formatRfc822Date
+import ac.mdiq.podcini.util.MiscFormatter.formatRfc822Date
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.util.Log

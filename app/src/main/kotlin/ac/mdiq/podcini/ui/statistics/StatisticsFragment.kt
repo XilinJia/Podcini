@@ -15,8 +15,8 @@ import ac.mdiq.podcini.ui.dialog.DatesFilterDialog
 import ac.mdiq.podcini.ui.statistics.PieChartView.PieChartData
 import ac.mdiq.podcini.storage.utils.DurationConverter.shortLocalizedDuration
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.EventFlow
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context

@@ -14,14 +14,9 @@ class YouTube : Namespace() {
 //        Logd(TAG, "handleElementStart $localName")
         if (IMAGE == localName) {
             val url: String? = attributes.getValue(IMAGE_HREF)
-
-            if (state.currentItem != null) {
-                state.currentItem!!.imageUrl = url
-            } else {
-                // this is the feed image
-                // prefer to all other images
-                if (!url.isNullOrEmpty()) state.feed.imageUrl = url
-            }
+            if (state.currentItem != null) state.currentItem!!.imageUrl = url
+            // this is the feed image, prefer to all other images
+            else if (!url.isNullOrEmpty()) state.feed.imageUrl = url
         }
         return SyndElement(localName, this)
     }

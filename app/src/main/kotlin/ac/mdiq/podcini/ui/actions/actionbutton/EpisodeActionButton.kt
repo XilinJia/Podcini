@@ -5,6 +5,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.isStreamOverDownload
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.playback.base.InTheatre.isCurrentlyPlaying
+import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.view.View
@@ -46,8 +47,8 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
                 episode.feed != null && episode.feed!!.isLocalFeed -> PlayLocalActionButton(episode)
                 media.downloaded -> PlayActionButton(episode)
                 isDownloadingMedia -> CancelDownloadActionButton(episode)
-                isStreamOverDownload || episode.feed == null || episode.feedId == null || episode.feed?.preferences?.prefStreamOverDownload == true ->
-                    StreamActionButton(episode)
+                isStreamOverDownload || episode.feed == null || episode.feedId == null || episode.feed?.type == Feed.FeedType.YOUTUBE.name
+                        || episode.feed?.preferences?.prefStreamOverDownload == true -> StreamActionButton(episode)
                 else -> DownloadActionButton(episode)
             }
         }

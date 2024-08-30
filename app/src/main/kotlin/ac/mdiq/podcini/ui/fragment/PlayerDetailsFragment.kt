@@ -15,9 +15,9 @@ import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
-import ac.mdiq.podcini.util.DateFormatter
+import ac.mdiq.podcini.util.MiscFormatter
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.event.FlowEvent
+import ac.mdiq.podcini.util.FlowEvent
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
@@ -222,7 +222,7 @@ class PlayerDetailsFragment : Fragment() {
 
     @UnstableApi private fun displayMediaInfo(media: Playable) {
         Logd(TAG, "displayMediaInfo ${currentItem?.title} ${media.getEpisodeTitle()}")
-        val pubDateStr = DateFormatter.formatAbbrev(context, media.getPubDate())
+        val pubDateStr = MiscFormatter.formatAbbrev(context, media.getPubDate())
         binding.txtvPodcastTitle.text = StringUtils.stripToEmpty(media.getFeedTitle())
         if (media is EpisodeMedia) {
             if (currentItem?.feedId != null) {

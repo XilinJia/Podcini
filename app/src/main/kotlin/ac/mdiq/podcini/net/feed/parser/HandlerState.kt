@@ -31,7 +31,6 @@ class HandlerState(@JvmField var feed: Feed) {
     var currentFunding: FeedFunding? = null
     @JvmField
     val tagstack: Stack<SyndElement> = Stack()
-
     /**
      * Namespaces that have been defined so far.
      */
@@ -39,19 +38,16 @@ class HandlerState(@JvmField var feed: Feed) {
     val namespaces: MutableMap<String, Namespace> = HashMap()
     @JvmField
     val defaultNamespaces: Stack<Namespace> = Stack()
-
     /**
      * Buffer for saving characters.
      */
     @JvmField
     var contentBuf: StringBuilder? = null
-
     /**
      * Temporarily saved objects.
      */
     @JvmField
     val tempObjects: MutableMap<String, Any> = HashMap()
-
     /**
      * Returns the SyndElement that comes after the top element of the tagstack.
      */

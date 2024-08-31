@@ -171,7 +171,6 @@ class AddFeedFragment : Fragment() {
 
     @UnstableApi private fun addLocalFolderResult(uri: Uri?) {
         if (uri == null) return
-
         val scope = CoroutineScope(Dispatchers.Main)
         scope.launch {
             try {

@@ -8,15 +8,15 @@
                 android:id="@+id/videoEpisodeContainer">
 
     <FrameLayout
+        android:id="@+id/videoPlayerContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/black"
-        android:id="@+id/videoPlayerContainer">
+        android:background="@color/black">
 
         <ac.mdiq.podcini.ui.view.AspectRatioVideoView
             android:id="@+id/videoView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_gravity="center" />
 
         <ProgressBar
@@ -183,7 +183,6 @@
             </RelativeLayout>
 
         </LinearLayout>
-
     </FrameLayout>
 
     <ac.mdiq.podcini.ui.view.ShownotesWebView

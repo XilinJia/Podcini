@@ -1,3 +1,8 @@
+# 6.5.1
+
+* further improved behavior in video player, seamless switch among audio-only, window and fullscreen modes, and automatical switch to audio when exit
+* fixed issue of OnlineFeed view not transition to FeedEpisodes view when subscribing a Youtube channel
+
 # 6.5.0.1
 
 * fixed release app being improperly stripped of classes by R8

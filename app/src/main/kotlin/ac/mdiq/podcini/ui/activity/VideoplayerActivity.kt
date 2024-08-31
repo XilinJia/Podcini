@@ -104,6 +104,7 @@ class VideoplayerActivity : CastEnabledActivity() {
     private fun setForVideoMode() {
         when (videoMode) {
             VideoMode.FULL_SCREEN_VIEW -> {
+                window.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN)
                 window.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN)
                 setTheme(R.style.Theme_Podcini_VideoPlayer)
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
@@ -111,13 +112,16 @@ class VideoplayerActivity : CastEnabledActivity() {
                 window.setFormat(PixelFormat.TRANSPARENT)
             }
             VideoMode.WINDOW_VIEW -> {
+                window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+                window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN)
                 setTheme(R.style.Theme_Podcini_VideoEpisode)
-                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
                 window.setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN, WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN)
                 window.setFormat(PixelFormat.TRANSPARENT)
             }
             else -> {}
         }
+        if (::videoEpisodeFragment.isInitialized) videoEpisodeFragment.setForVideoMode()
     }
 
     @UnstableApi
@@ -142,7 +146,6 @@ class VideoplayerActivity : CastEnabledActivity() {
         _binding = null
         super.onDestroy()
     }
-
 
     public override fun onUserLeaveHint() {
         if (!PictureInPictureUtil.isInPictureInPictureMode(this)) compatEnterPictureInPicture()
@@ -185,7 +188,7 @@ class VideoplayerActivity : CastEnabledActivity() {
         }
     }
 
-    fun onEventMainThread(event: FlowEvent.MessageEvent) {
+    private fun onEventMainThread(event: FlowEvent.MessageEvent) {
 //        Logd(TAG, "onEvent($event)")
         val errorDialog = MaterialAlertDialogBuilder(this)
         errorDialog.setMessage(event.message)
@@ -249,20 +252,20 @@ class VideoplayerActivity : CastEnabledActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // some options option requires FeedItem
-        when {
-            item.itemId == R.id.player_switch_to_audio_only -> {
+        when (item.itemId) {
+            R.id.player_switch_to_audio_only -> {
                 switchToAudioOnly = true
                 finish()
                 return true
             }
-            item.itemId == android.R.id.home -> {
+            android.R.id.home -> {
                 val intent = Intent(this@VideoplayerActivity, MainActivity::class.java)
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(intent)
                 finish()
                 return true
             }
-            item.itemId == R.id.player_show_chapters -> {
+            R.id.player_show_chapters -> {
                 ChaptersFragment().show(supportFragmentManager, ChaptersFragment.TAG)
                 return true
             }

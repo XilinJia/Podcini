@@ -30,6 +30,7 @@ import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringLong
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.storage.utils.TimeSpeedConverter
+import ac.mdiq.podcini.ui.activity.VideoplayerActivity.VideoMode
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import android.os.Bundle
@@ -74,7 +75,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     private var itemsLoaded = false
     private var episode: Episode? = null
     private var webviewData: String? = null
-    private lateinit var webvDescription: ShownotesWebView
+    var webvDescription: ShownotesWebView? = null
 
     var destroyingDueToReload = false
     var controller: ServiceStatusHandler? = null
@@ -123,8 +124,10 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         override fun surfaceDestroyed(holder: SurfaceHolder) {
             Logd(TAG, "Videosurface was destroyed")
             videoSurfaceCreated = false
-            if (controller != null && !destroyingDueToReload && !(activity as VideoplayerActivity).switchToAudioOnly)
-                notifyVideoSurfaceAbandoned()
+            (activity as? VideoplayerActivity)?.finish()
+//            TODO: test
+//            if (controller != null && !destroyingDueToReload && !(activity as VideoplayerActivity).switchToAudioOnly)
+//                notifyVideoSurfaceAbandoned()
         }
     }
 
@@ -200,8 +203,10 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
 
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
-        root.removeView(webvDescription)
-        webvDescription.destroy()
+        if (webvDescription != null) {
+            root.removeView(webvDescription!!)
+            webvDescription!!.destroy()
+        }
         _binding = null
         controller?.release()
         controller = null // prevent leak
@@ -224,6 +229,24 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
                     else -> {}
                 }
             }
+        }
+    }
+
+    fun setForVideoMode() {
+        when (videoMode) {
+            VideoMode.FULL_SCREEN_VIEW ->{
+                webvDescription?.visibility = View.GONE
+                val layoutParams = binding.videoPlayerContainer.layoutParams
+                layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
+                binding.videoPlayerContainer.layoutParams = layoutParams
+            }
+            VideoMode.WINDOW_VIEW -> {
+                webvDescription?.visibility = View.VISIBLE
+                val layoutParams = binding.videoPlayerContainer.layoutParams
+                layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
+                binding.videoPlayerContainer.layoutParams = layoutParams
+            }
+            else -> {}
         }
     }
 
@@ -289,7 +312,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
                                 invalidateOptionsMenu(requireActivity())
                             }
                         }
-                        if (webviewData != null && !itemsLoaded) webvDescription.loadDataWithBaseURL("https://127.0.0.1", webviewData!!,
+                        if (webviewData != null && !itemsLoaded) webvDescription?.loadDataWithBaseURL("https://127.0.0.1", webviewData!!,
                             "text/html", "utf-8", "about:blank")
 
                         itemsLoaded = true
@@ -375,7 +398,9 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     fun toggleVideoControlsVisibility() {
         if (videoControlsShowing) {
             hideVideoControls(true)
-            if (videoMode == VideoplayerActivity.VideoMode.FULL_SCREEN_VIEW) (activity as AppCompatActivity).supportActionBar?.hide()
+            if (videoMode == VideoplayerActivity.VideoMode.FULL_SCREEN_VIEW) {
+                (activity as AppCompatActivity).supportActionBar?.hide()
+            }
         } else {
             showVideoControls()
             (activity as AppCompatActivity).supportActionBar?.show()
@@ -456,7 +481,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         }
         (activity as AppCompatActivity).window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
 //        binding.videoView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
-        binding.bottomControlsContainer.fitsSystemWindows = true
+//        binding.bottomControlsContainer.fitsSystemWindows = true
     }
 
     fun hideVideoControls(showAnimation: Boolean) {
@@ -472,7 +497,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
 //        (activity as AppCompatActivity).window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LOW_PROFILE
 //                or View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
 //                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION)
-        binding.bottomControlsContainer.fitsSystemWindows = true
+//        binding.bottomControlsContainer.fitsSystemWindows = true
         binding.bottomControlsContainer.visibility = View.GONE
         binding.controlsContainer.visibility = View.GONE
     }

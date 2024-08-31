@@ -218,7 +218,6 @@ class OnlineFeedViewFragment : Fragment() {
                     break
                 }
             }
-
             if (url != null) {
                 Logd(TAG, "Successfully retrieve feed url")
                 isFeedFoundBySearch = true
@@ -268,9 +267,9 @@ class OnlineFeedViewFragment : Fragment() {
                     try {
                         val channelTabInfo = ChannelTabInfo.getInfo(service, channelInfo.tabs.first())
                         Logd(TAG, "startFeedBuilding result1: $channelTabInfo ${channelTabInfo.relatedItems.size}")
+                        selectedDownloadUrl = prepareUrl(url)
                         val feed_ = Feed(selectedDownloadUrl, null)
                         feed_.id = 1234567889L
-                        selectedDownloadUrl = prepareUrl(url)
                         feed_.type = Feed.FeedType.YOUTUBE.name
                         feed_.hasVideoMedia = true
                         feed_.title = channelInfo.name
@@ -479,6 +478,7 @@ class OnlineFeedViewFragment : Fragment() {
                         }
                         val fo = updateFeed(requireContext(), feed, false)
                         Logd(TAG, "fo.id: ${fo?.id} feed.id: ${feed.id}")
+//                        feeds = getFeedList()
                     }
                     withContext(Dispatchers.Main) {
                         didPressSubscribe = true
@@ -521,8 +521,6 @@ class OnlineFeedViewFragment : Fragment() {
     }
 
     @UnstableApi private fun openFeed() {
-        // feed.getId() is always 0, we have to retrieve the id from the feed list from
-        // the database
         (activity as MainActivity).loadFeedFragmentById(feedId, null)
     }
 
@@ -542,6 +540,9 @@ class OnlineFeedViewFragment : Fragment() {
         if (dli == null || selectedDownloadUrl == null) return
 
         when {
+//            feedSource != "VistaGuide" -> {
+//                binding.subscribeButton.isEnabled = false
+//            }
             dli.isDownloadingEpisode(selectedDownloadUrl!!) -> {
                 binding.subscribeButton.isEnabled = false
                 binding.subscribeButton.setText(R.string.subscribing_label)
@@ -695,7 +696,6 @@ class OnlineFeedViewFragment : Fragment() {
         fun findLinks(inVal: File, baseUrl: String): Map<String, String> {
             return findLinks(Jsoup.parse(inVal), baseUrl)
         }
-
         /**
          * Discovers links to RSS and Atom feeds in the given File which must be a HTML document.
          * @return A map which contains the feed URLs as keys and titles as values (the feed URL is also used as a title if

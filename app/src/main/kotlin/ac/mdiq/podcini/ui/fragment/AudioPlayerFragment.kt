@@ -555,7 +555,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                         ensureService()
                         (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_EXPANDED)
                     } else {
-                        playPause()
+//                        playPause()
 //                        controller!!.ensureService()
                         val intent = getPlayerActivityIntent(requireContext(), mediaType)
                         startActivity(intent)

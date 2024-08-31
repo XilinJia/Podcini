@@ -1,3 +1,3 @@
- Version 6.5.1 brings several changes:
+ Version 6.5.0.1 brings several changes:
 
 * fixed release app being improperly stripped of classes by R8

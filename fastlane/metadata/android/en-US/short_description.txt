@@ -1,1 +1,1 @@
-A feature-rich open-source podcast manager and player
+A feature-rich open-source podcast instrument capable of handling Youtube channels

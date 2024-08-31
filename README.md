@@ -14,7 +14,7 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
 
 ## Announcement
 
-### Podcini.R version 6.5 brings YouTube channels in the app.  They can be searched, subscribed and played from within Podcini. For more see the changelogs
+### Podcini.R version 6.5 as a major step forward brings YouTube channels in the app.  They can be searched, subscribed and played from within Podcini. For more see the changelogs
 
 This project is based on a fork of [AntennaPod](<https://github.com/AntennaPod/AntennaPod>) as of Feb 5 2024.
 
@@ -27,7 +27,7 @@ Compared to AntennaPod this project:
 5. Boasts new UI's including streamlined drawer, subscriptions view and player controller,
 6. Supports multiple, virtual and circular play queues associable to any podcast
 7. Auto-download is governed by policy and limit settings of individual feed
-8. Accepts podcast as well as plain RSS and YouTube feeds,
+8. Accepts podcast as well as Youtube channels and plain RSS,
 9. Offers Readability and Text-to-Speech for RSS contents,
 10. Features `instant sync` across devices without a server.
 
@@ -119,7 +119,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * Ability to open podcast from webpage address
 * Online feed info display is handled in similar ways as any local feed, and offers options to subscribe or view episodes
 * Online feed episodes can be freely played (streamed) without a subscription
-* Youtube channels are accepted from external share or paste of address in podcast search view, and can be subscribed as a normal podcast, though video play is handled externally
+* Youtube channels can be searched in podcast search view, and can be subscribed as a normal podcast.
 
 ### Instant (or Wifi) sync
 

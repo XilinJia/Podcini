@@ -1,3 +1,7 @@
+# 6.5.0.1
+
+* fixed release app being improperly stripped of classes by R8
+
 # 6.5.0
 
 * media3 upped to 1.4.1

@@ -1,9 +1,9 @@
 
-Podcini.R is a revamped version from Podcini version 5, uses a modern object-base database. Though loaded with newer features, it works in similar ways as Podcini. This app installs afresh and in parallel with any older version of Podcini. Though incompatible with older versions, migration path is provided. If you need migration from an earlier version, see Github site for instructions.
+Podcini.R is a revamped version from Podcini version 5, uses a modern object-base database. Though loaded with newer features, it works in similar ways as Podcini.  Version 6.5 as a major step forward brings the capability of handling Youtube channels as normal podcasts within the Podcini.
 
 Podcini, an open source podcast instrument, attuned to Puccini, adorned with pasticcini and aromatized with porcini, invites your harmonious heartbeats.
 
-It allows you to subscribe to any RSS feed (with or without media), gives you instant access to millions of free and paid podcasts or plain RSS feeds, from independent podcasters to large publishing houses such as the BBC, NPR and CNN. Add, import and export their feeds hassle-free using the Apple Podcasts database, OPML files or simple RSS URLs.
+It allows you to subscribe to, in addition to Youtube channels, any RSS feed (with or without media), gives you instant access to millions of free and paid podcasts or plain RSS feeds, from independent podcasters to large publishing houses. Add, import and export their feeds hassle-free using the Apple Podcasts database, OPML files or simple RSS URLs.
 
 Download, stream or queue episodes and enjoy them the way you like with adjustable playback speeds, chapter support and a sleep timer.  In case the feed contains no media (plain RSS feed), Text-to-Speech engine (if available) is used to play the text.
 
@@ -11,7 +11,7 @@ Save effort, battery power and mobile data usage with powerful automation contro
 
 Transcripts or episode descriptions can be easily shared as text to other apps for record-keeping.
 
-Listening progress can be instantly synced across devices in the same wifi network.
+Listening progress can be instantly synced across devices in the same wifi network without a server.
 
 Made by podcast-enthusiasts, Podcini is free in all senses of the word: open source, no costs, no ads.
 

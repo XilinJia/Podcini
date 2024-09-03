@@ -268,6 +268,7 @@ class OnlineFeedViewFragment : Fragment() {
                         val channelTabInfo = ChannelTabInfo.getInfo(service, channelInfo.tabs.first())
                         Logd(TAG, "startFeedBuilding result1: $channelTabInfo ${channelTabInfo.relatedItems.size}")
                         selectedDownloadUrl = prepareUrl(url)
+//                        selectedDownloadUrl = url
                         val feed_ = Feed(selectedDownloadUrl, null)
                         feed_.id = 1234567889L
                         feed_.type = Feed.FeedType.YOUTUBE.name

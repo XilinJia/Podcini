@@ -31,18 +31,12 @@ object RatingDialog {
         mPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
         val firstDate: Long = mPreferences.getLong(KEY_FIRST_START_DATE, 0)
-        if (firstDate == 0L) {
-            resetStartDate()
-        }
+        if (firstDate == 0L) resetStartDate()
     }
 
     fun check() {
         if (shouldShow()) {
-            try {
-                showInAppReview()
-            } catch (e: Exception) {
-                Log.e(TAG, Log.getStackTraceString(e))
-            }
+            try { showInAppReview() } catch (e: Exception) { Log.e(TAG, Log.getStackTraceString(e)) }
         }
     }
 
@@ -58,9 +52,8 @@ object RatingDialog {
                 val flow: Task<Void?> = manager.launchReviewFlow(context as Activity, reviewInfo)
                 flow.addOnCompleteListener { task1: Task<Void?>? ->
                     val previousAttempts: Int = mPreferences.getInt(KEY_NUMBER_OF_REVIEWS, 0)
-                    if (previousAttempts >= 3) {
-                        saveRated()
-                    } else {
+                    if (previousAttempts >= 3) saveRated()
+                    else {
                         resetStartDate()
                         mPreferences
                             .edit()
@@ -69,14 +62,10 @@ object RatingDialog {
                     }
                     Logd("ReviewDialog", "Successfully finished in-app review")
                 }
-                    .addOnFailureListener { error: Exception? ->
-                        Logd("ReviewDialog", "failed in reviewing process")
-                    }
+                    .addOnFailureListener { error: Exception? -> Logd("ReviewDialog", "failed in reviewing process") }
             }
         }
-            .addOnFailureListener { error: Exception? ->
-                Logd("ReviewDialog", "failed to get in-app review request")
-            }
+            .addOnFailureListener { error: Exception? -> Logd("ReviewDialog", "failed to get in-app review request") }
     }
 
     private fun rated(): Boolean {
@@ -99,9 +88,7 @@ object RatingDialog {
     }
 
     private fun shouldShow(): Boolean {
-        if (rated() || BuildConfig.DEBUG) {
-            return false
-        }
+        if (rated() || BuildConfig.DEBUG) return false
 
         val now = System.currentTimeMillis()
         val firstDate: Long = mPreferences.getLong(KEY_FIRST_START_DATE, now)

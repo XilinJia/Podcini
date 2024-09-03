@@ -101,9 +101,7 @@ object PodciniHttpClient {
             if (!proxyConfig!!.username.isNullOrEmpty() && proxyConfig!!.password != null) {
                 builder.proxyAuthenticator { _: Route?, response: Response ->
                     val credentials = basic(proxyConfig!!.username!!, proxyConfig!!.password!!)
-                    response.request.newBuilder()
-                        .header("Proxy-Authorization", credentials)
-                        .build()
+                    response.request.newBuilder().header("Proxy-Authorization", credentials).build()
                 }
             }
         }
@@ -126,9 +124,7 @@ object PodciniHttpClient {
         @Throws(IOException::class)
         override fun intercept(chain: Chain): Response {
             TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt())
-            return chain.proceed(chain.request().newBuilder()
-                .header("User-Agent", ClientConfig.USER_AGENT?:"")
-                .build())
+            return chain.proceed(chain.request().newBuilder().header("User-Agent", ClientConfig.USER_AGENT?:"").build())
         }
     }
 

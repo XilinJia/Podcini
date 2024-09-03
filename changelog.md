@@ -1,3 +1,8 @@
+# 6.5.2
+
+* replace all url of http to https
+* resolved the nasty issue of Youtube media not properly played in release app
+
 # 6.5.1
 
 * further improved behavior in video player, seamless switch among audio-only, window and fullscreen modes, and automatical switch to audio when exit

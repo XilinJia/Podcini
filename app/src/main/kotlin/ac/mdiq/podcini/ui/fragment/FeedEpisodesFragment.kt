@@ -689,9 +689,7 @@ import java.util.concurrent.Semaphore
                 runOnIOScope {
                     val feed_ = realm.query(Feed::class, "id == ${feed.id}").first().find()
                     if (feed_ != null) {
-                        upsert(feed_) {
-                            it.sortOrder = sortOrder
-                        }
+                        upsert(feed_) { it.sortOrder = sortOrder }
                     }
                 }
             }
@@ -737,6 +735,10 @@ import java.util.concurrent.Semaphore
         private const val ARGUMENT_FEED_ID = "argument.ac.mdiq.podcini.feed_id"
         private const val KEY_UP_ARROW = "up_arrow"
 
+        var tts: TextToSpeech? = null
+        var ttsReady = false
+        var ttsWorking = false
+
         fun newInstance(feedId: Long): FeedEpisodesFragment {
             val i = FeedEpisodesFragment()
             val b = Bundle()
@@ -744,9 +746,5 @@ import java.util.concurrent.Semaphore
             i.arguments = b
             return i
         }
-
-        var tts: TextToSpeech? = null
-        var ttsReady = false
-        var ttsWorking = false
     }
 }

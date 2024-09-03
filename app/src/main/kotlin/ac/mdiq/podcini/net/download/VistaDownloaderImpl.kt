@@ -8,10 +8,12 @@ import ac.mdiq.vista.extractor.downloader.Response
 import ac.mdiq.vista.extractor.exceptions.ReCaptchaException
 import android.content.Context
 import androidx.preference.PreferenceManager
+import okhttp3.Cache
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request.Builder
 import okhttp3.RequestBody
+import java.io.File
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -22,7 +24,7 @@ class VistaDownloaderImpl private constructor(builder: OkHttpClient.Builder) : D
     private val mCookies: MutableMap<String, String> = HashMap()
     private val client: OkHttpClient = builder
         .readTimeout(30, TimeUnit.SECONDS)
-        //                .cache(new Cache(new File(context.getExternalCacheDir(), "okhttp"), 16 * 1024 * 1024))
+//                        .cache(Cache(File(context.getExternalCacheDir(), "okhttp"), 16 * 1024 * 1024))
         .build()
 
     private fun getCookies(url: String): String {
@@ -107,17 +109,22 @@ class VistaDownloaderImpl private constructor(builder: OkHttpClient.Builder) : D
             }
         }
 
-        val response = client.newCall(requestBuilder.build()).execute()
-        if (response.code == 429) {
-            response.close()
-            throw ReCaptchaException("reCaptcha Challenge requested", url)
+        try {
+            val response = client.newCall(requestBuilder.build()).execute()
+            if (response.code == 429) {
+                response.close()
+                throw ReCaptchaException("reCaptcha Challenge requested", url)
+            }
+
+            val body = response.body
+            val responseBodyToReturn: String? = body?.string()
+
+            val latestUrl = response.request.url.toString()
+            return Response(response.code, response.message, response.headers.toMultimap(), responseBodyToReturn, latestUrl)
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            throw IOException("Something is wrong ${e.message}")
         }
-
-        val body = response.body
-        val responseBodyToReturn: String? = body?.string()
-
-        val latestUrl = response.request.url.toString()
-        return Response(response.code, response.message, response.headers.toMultimap(), responseBodyToReturn, latestUrl)
     }
 
     companion object {

@@ -1,0 +1,4 @@
+ Version 6.5.2 brings several changes:
+
+* replace all url of http to https
+* resolved the nasty issue of Youtube media not properly played in release app

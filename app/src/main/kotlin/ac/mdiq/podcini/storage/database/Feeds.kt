@@ -152,11 +152,11 @@ object Feeds {
     }
 
     fun getFeed(feedId: Long, copy: Boolean = false): Feed? {
-        if (BuildConfig.DEBUG) {
-            val stackTrace = Thread.currentThread().stackTrace
-            val caller = if (stackTrace.size > 3) stackTrace[3] else null
-            Logd(TAG, "${caller?.className}.${caller?.methodName} getFeed called")
-        }
+//        if (BuildConfig.DEBUG) {
+//            val stackTrace = Thread.currentThread().stackTrace
+//            val caller = if (stackTrace.size > 3) stackTrace[3] else null
+//            Logd(TAG, "${caller?.className}.${caller?.methodName} getFeed called")
+//        }
         val f = realm.query(Feed::class, "id == $feedId").first().find()
         return if (f != null) {
             if (copy) realm.copyFromRealm(f)

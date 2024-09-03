@@ -19,7 +19,6 @@ import android.util.Log
 class PowerConnectionReceiver : BroadcastReceiver() {
     @UnstableApi override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action
-
         Log.d(TAG, "onReceive charging intent: $action")
 
         ClientConfigurator.initialize(context)

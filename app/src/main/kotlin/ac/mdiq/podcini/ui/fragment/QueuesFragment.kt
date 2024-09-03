@@ -403,7 +403,7 @@ import java.util.*
     }
 
     private fun onFeedPrefsChanged(event: FlowEvent.FeedPrefsChangeEvent) {
-        Log.d(TAG,"speedPresetChanged called")
+        Logd(TAG,"speedPresetChanged called")
         for (item in queueItems) {
             if (item.feed?.id == event.feed.id) item.feed = null
         }

@@ -39,7 +39,9 @@ object UrlChecker {
 //                    prepareUrl(removedWebsite)
 //                }
 //            }
-            !(lowerCaseUrl.startsWith("http://") || lowerCaseUrl.startsWith("https://")) ->  "http://$url"
+//            TODO: test
+//            !(lowerCaseUrl.startsWith("http://") || lowerCaseUrl.startsWith("https://")) ->  "http://$url"
+            !(lowerCaseUrl.startsWith("http://") || lowerCaseUrl.startsWith("https://")) ->  "https://$url"
             else ->  url
         }
     }

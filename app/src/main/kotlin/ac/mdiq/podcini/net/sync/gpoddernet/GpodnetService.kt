@@ -391,11 +391,7 @@ class GpodnetService(private val httpClient: OkHttpClient, baseHosturl: String?,
                 throw GpodnetServiceAuthenticationException("Wrong username or password")
             } else {
                 if (BuildConfig.DEBUG) {
-                    try {
-                        Logd(TAG, response.body!!.string())
-                    } catch (e: IOException) {
-                        e.printStackTrace()
-                    }
+                    try { Logd(TAG, response.body!!.string()) } catch (e: IOException) { e.printStackTrace() }
                 }
                 if (responseCode >= 500) {
                     throw GpodnetServiceBadStatusCodeException("Gpodder.net is currently unavailable (code " + responseCode + ")", responseCode)

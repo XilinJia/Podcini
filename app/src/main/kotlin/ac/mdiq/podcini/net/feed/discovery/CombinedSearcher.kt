@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.net.feed.discovery
 
+import ac.mdiq.podcini.util.Logd
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -21,13 +22,9 @@ class CombinedSearcher : PodcastSearcher {
                         try {
                             val results = searcher.search(query)
                             searchResults[index] = results
-                        } catch (e: Throwable) {
-                            Log.d(TAG, Log.getStackTraceString(e))
-                        }
+                        } catch (e: Throwable) { Logd(TAG, Log.getStackTraceString(e)) }
                     }
-                } else {
-                    null
-                }
+                } else null
             }.filterNotNull() // Remove null jobs
             // Wait for all search jobs to complete
             searchJobs.awaitAll()

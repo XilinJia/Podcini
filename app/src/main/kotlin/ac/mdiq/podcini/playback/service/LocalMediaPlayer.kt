@@ -1,6 +1,5 @@
 package ac.mdiq.podcini.playback.service
 
-import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.download.service.HttpCredentialEncoder
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient
@@ -20,11 +19,11 @@ import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.storage.model.Playable
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
-import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.config.ClientConfig
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.FlowEvent.PlayEvent.Action
+import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.config.ClientConfig
 import ac.mdiq.vista.extractor.MediaFormat
 import ac.mdiq.vista.extractor.Vista
 import ac.mdiq.vista.extractor.stream.*
@@ -56,7 +55,6 @@ import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector.SelectionOverride
 import androidx.media3.exoplayer.trackselection.ExoTrackSelection
-import androidx.media3.exoplayer.util.EventLogger
 import androidx.media3.extractor.DefaultExtractorsFactory
 import androidx.media3.extractor.mp3.Mp3Extractor
 import androidx.media3.ui.DefaultTrackNameProvider
@@ -67,8 +65,6 @@ import java.lang.Runnable
 import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 import kotlin.concurrent.Volatile
 
 /**
@@ -186,28 +182,29 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
     @Throws(IllegalArgumentException::class, IllegalStateException::class)
     private fun setDataSource(metadata: MediaMetadata, media: EpisodeMedia) {
         val url = media.getStreamUrl() ?: return
-        Logd(TAG, "setDataSource1: $url")
         val preferences = media.episodeOrFetch()?.feed?.preferences
         val user = preferences?.username
         val password = preferences?.password
         if (media.episode?.feed?.type == Feed.FeedType.YOUTUBE.name) {
-            Logd(TAG, "setDataSource setting for YouTube source")
+            Logd(TAG, "setDataSource1 setting for YouTube source")
             try {
-                val streamInfo = StreamInfo.getInfo(Vista.getService(0), url)
+                val vService = Vista.getService(0)
+                val streamInfo = StreamInfo.getInfo(vService, url)
                 val audioStreamsList = getFilteredAudioStreams(streamInfo.audioStreams)
+                Logd(TAG, "setDataSource1 got ${audioStreamsList.size}")
                 val audioIndex = if (isNetworkRestricted) 0 else audioStreamsList.size - 1
                 val audioStream = audioStreamsList[audioIndex]
+                Logd(TAG, "setDataSource1 use audio quality: ${audioStream.bitrate}")
                 val aSource = DefaultMediaSourceFactory(context).createMediaSource(MediaItem.Builder().setTag(metadata).setUri(Uri.parse(audioStream.content)).build())
-                Logd(TAG, "setDataSource use audio quality: ${audioStream.bitrate}")
                 if (media.episode?.feed?.preferences?.playAudioOnly != true) {
-                    Logd(TAG, "setDataSource result: $streamInfo")
-                    Logd(TAG, "setDataSource videoStreams: ${streamInfo.videoStreams.size} videoOnlyStreams: ${streamInfo.videoOnlyStreams.size} audioStreams: ${streamInfo.audioStreams.size}")
+                    Logd(TAG, "setDataSource1 result: $streamInfo")
+                    Logd(TAG, "setDataSource1 videoStreams: ${streamInfo.videoStreams.size} videoOnlyStreams: ${streamInfo.videoOnlyStreams.size} audioStreams: ${streamInfo.audioStreams.size}")
                     val videoStreamsList = getSortedStreamVideosList(streamInfo.videoStreams, streamInfo.videoOnlyStreams, true, true)
                     val videoIndex = 0
                     val videoStream = videoStreamsList[videoIndex]
-                    Logd(TAG, "setDataSource use video quality: ${videoStream.resolution}")
+                    Logd(TAG, "setDataSource1 use video quality: ${videoStream.resolution}")
                     val vSource = DefaultMediaSourceFactory(context).createMediaSource(MediaItem.Builder().setTag(metadata).setUri(Uri.parse(videoStream.content)).build())
-                    val mediaSources: MutableList<MediaSource> = java.util.ArrayList()
+                    val mediaSources: MutableList<MediaSource> = ArrayList()
                     mediaSources.add(vSource)
                     mediaSources.add(aSource)
                     mediaSource = MergingMediaSource(true, *mediaSources.toTypedArray<MediaSource>())
@@ -215,9 +212,9 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
                 } else mediaSource = aSource
                 mediaItem = mediaSource?.mediaItem
                 setSourceCredentials(user, password)
-            } catch (throwable: Throwable) { Logd(TAG, "setDataSource error: ${throwable.message}") }
+            } catch (throwable: Throwable) { Log.e(TAG, "setDataSource1 error: ${throwable.message}") }
         } else {
-            Logd(TAG, "setDataSource setting for Podcast source")
+            Logd(TAG, "setDataSource1 setting for Podcast source")
             setDataSource(metadata, url,user, password)
         }
     }
@@ -255,15 +252,15 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
      * streams and normal video streams are available
      * @return the sorted list
      */
-    fun getSortedStreamVideosList(videoStreams: List<VideoStream>?, videoOnlyStreams: List<VideoStream>?, ascendingOrder: Boolean,
+    private fun getSortedStreamVideosList(videoStreams: List<VideoStream>?, videoOnlyStreams: List<VideoStream>?, ascendingOrder: Boolean,
                                   preferVideoOnlyStreams: Boolean): List<VideoStream> {
         val videoStreamsOrdered = if (preferVideoOnlyStreams) listOf(videoStreams, videoOnlyStreams) else listOf(videoOnlyStreams, videoStreams)
-        val allInitialStreams = videoStreamsOrdered.filterNotNull().flatMap { it }.toList()
+        val allInitialStreams = videoStreamsOrdered.filterNotNull().flatten().toList()
         val comparator = compareBy<VideoStream> { it.resolution.toResolutionValue() }
         return if (ascendingOrder) allInitialStreams.sortedWith(comparator) else { allInitialStreams.sortedWith(comparator.reversed()) }
     }
 
-    fun String.toResolutionValue(): Int {
+    private fun String.toResolutionValue(): Int {
         val match = Regex("(\\d+)p|(\\d+)k").find(this)
         return when {
             match?.groupValues?.get(1) != null -> match.groupValues[1].toInt()
@@ -272,7 +269,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
         }
     }
 
-    fun getFilteredAudioStreams(audioStreams: List<AudioStream>?): List<AudioStream> {
+    private fun getFilteredAudioStreams(audioStreams: List<AudioStream>?): List<AudioStream> {
         if (audioStreams == null) return listOf()
         val collectedStreams = mutableSetOf<AudioStream>()
         for (stream in audioStreams) {
@@ -281,7 +278,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
                 continue
             collectedStreams.add(stream)
         }
-        return collectedStreams.toList().sortedWith(compareBy<AudioStream> { it.bitrate })
+        return collectedStreams.toList().sortedWith(compareBy { it.bitrate })
     }
 
     /**
@@ -355,7 +352,8 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
                     if (streamurl != null) {
                         val media = curMedia
                         if (media is EpisodeMedia) {
-                            setDataSource(metadata, media)
+                            val deferred = CoroutineScope(Dispatchers.IO).async {  setDataSource(metadata, media) }
+                            runBlocking { deferred.await() }
 //                            val preferences = media.episodeOrFetch()?.feed?.preferences
 //                            setDataSource(metadata, streamurl, preferences?.username, preferences?.password)
                         } else setDataSource(metadata, streamurl, null, null)
@@ -381,13 +379,12 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
             e.printStackTrace()
             setPlayerStatus(PlayerStatus.ERROR, null)
             EventFlow.postStickyEvent(FlowEvent.PlayerErrorEvent(e.localizedMessage ?: ""))
-        } finally {
-        }
+        } finally { }
     }
 
     override fun resume() {
         if (status == PlayerStatus.PAUSED || status == PlayerStatus.PREPARED) {
-            Log.d(TAG, "Resuming/Starting playback")
+            Logd(TAG, "Resuming/Starting playback")
             acquireWifiLockIfNecessary()
             setPlaybackParams(getCurrentPlaybackSpeed(curMedia), UserPreferences.isSkipSilence)
             setVolume(1.0f, 1.0f)
@@ -441,9 +438,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
         releaseWifiLockIfNecessary()
         when {
             curMedia != null -> playMediaObject(curMedia!!, isStreaming, startWhenPrepared.get(), prepareImmediately = false, true)
-            else -> {
-                Logd(TAG, "Call to reinit: media and mediaPlayer were null, ignored")
-            }
+            else -> Logd(TAG, "Call to reinit: media and mediaPlayer were null, ignored")
         }
     }
 
@@ -466,11 +461,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
             PlayerStatus.PLAYING, PlayerStatus.PAUSED, PlayerStatus.PREPARED -> {
                 Logd(TAG, "seekTo() called $t")
                 if (seekLatch != null && seekLatch!!.count > 0) {
-                    try {
-                        seekLatch!!.await(3, TimeUnit.SECONDS)
-                    } catch (e: InterruptedException) {
-                        Log.e(TAG, Log.getStackTraceString(e))
-                    }
+                    try { seekLatch!!.await(3, TimeUnit.SECONDS) } catch (e: InterruptedException) { Log.e(TAG, Log.getStackTraceString(e)) }
                 }
                 seekLatch = CountDownLatch(1)
                 statusBeforeSeeking = status
@@ -479,11 +470,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
                 if (curMedia != null) EventFlow.postEvent(FlowEvent.PlaybackPositionEvent(curMedia, t, curMedia!!.getDuration()))
                 audioSeekCompleteListener?.run()
                 if (statusBeforeSeeking == PlayerStatus.PREPARED) curMedia?.setPosition(t)
-                try {
-                    seekLatch!!.await(3, TimeUnit.SECONDS)
-                } catch (e: InterruptedException) {
-                    Log.e(TAG, Log.getStackTraceString(e))
-                }
+                try { seekLatch!!.await(3, TimeUnit.SECONDS) } catch (e: InterruptedException) { Log.e(TAG, Log.getStackTraceString(e)) }
             }
             PlayerStatus.INITIALIZED -> {
                 curMedia?.setPosition(t)
@@ -729,7 +716,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 val stat = if (isPlaying) PlayerStatus.PLAYING else PlayerStatus.PAUSED
                 setPlayerStatus(stat, curMedia)
-                Log.d(TAG, "onIsPlayingChanged $isPlaying")
+                Logd(TAG, "onIsPlayingChanged $isPlaying")
             }
             override fun onPlayerError(error: PlaybackException) {
                 Logd(TAG, "onPlayerError ${error.message}")
@@ -808,7 +795,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
                 .setAudioOffloadPreferences(audioOffloadPreferences)
                 .build()
 
-            if (BuildConfig.DEBUG) exoPlayer!!.addAnalyticsListener(EventLogger())
+//            if (BuildConfig.DEBUG) exoPlayer!!.addAnalyticsListener(EventLogger())
 
             if (exoplayerListener != null) {
                 exoPlayer?.removeListener(exoplayerListener!!)

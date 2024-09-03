@@ -59,7 +59,8 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
   * mark as played when finished
   * streamed media is added to queue and is resumed after restart
 * new video episode view, with video player on top and episode descriptions in portrait mode
-* easy switches on video player to other video mode or audio only
+* easy switches on video player to other video mode or audio only, in seamless way
+* video player automatically switch to audio when app invisible
 * default video player mode setting in preferences
 * when video mode is set to audio only, click on image on audio player on a video episode brings up the normal player detailed view
 * "Prefer streaming over download" is now on setting of individual feed

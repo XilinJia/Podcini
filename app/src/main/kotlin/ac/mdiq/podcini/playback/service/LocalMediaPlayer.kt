@@ -352,8 +352,8 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
                     if (streamurl != null) {
                         val media = curMedia
                         if (media is EpisodeMedia) {
-                            val deferred = CoroutineScope(Dispatchers.IO).async {  setDataSource(metadata, media) }
-                            runBlocking { deferred.await() }
+                            val deferred = CoroutineScope(Dispatchers.IO).async { setDataSource(metadata, media) }
+                            if (startWhenPrepared) runBlocking { deferred.await() }
 //                            val preferences = media.episodeOrFetch()?.feed?.preferences
 //                            setDataSource(metadata, streamurl, preferences?.username, preferences?.password)
                         } else setDataSource(metadata, streamurl, null, null)
@@ -805,14 +805,16 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
         }
 
         private fun initLoudnessEnhancer(audioStreamId: Int) {
-            val newEnhancer = LoudnessEnhancer(audioStreamId)
-            val oldEnhancer = loudnessEnhancer
-            if (oldEnhancer != null) {
-                newEnhancer.setEnabled(oldEnhancer.enabled)
-                if (oldEnhancer.enabled) newEnhancer.setTargetGain(oldEnhancer.targetGain.toInt())
-                oldEnhancer.release()
+            runOnIOScope {
+                val newEnhancer = LoudnessEnhancer(audioStreamId)
+                val oldEnhancer = loudnessEnhancer
+                if (oldEnhancer != null) {
+                    newEnhancer.setEnabled(oldEnhancer.enabled)
+                    if (oldEnhancer.enabled) newEnhancer.setTargetGain(oldEnhancer.targetGain.toInt())
+                    oldEnhancer.release()
+                }
+                loudnessEnhancer = newEnhancer
             }
-            loudnessEnhancer = newEnhancer
         }
 
         fun cleanup() {

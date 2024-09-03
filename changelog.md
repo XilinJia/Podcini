@@ -1,6 +1,13 @@
+# 6.5.3
+
+* properly assigning ids to remote episodes in OnlineFeedView to resolve the issue of duplicates
+* fixed possible startup hang when previous media was Youtube media
+* the fixed for random starts in 6.4.0 conflicts with notification play/pause button, narrowed handling to only KEYCODE_MEDIA_STOP
+* some fragment class restructuring
+
 # 6.5.2
 
-* replace all url of http to https
+* replaced all url of http to https
 * resolved the nasty issue of Youtube media not properly played in release app
 
 # 6.5.1

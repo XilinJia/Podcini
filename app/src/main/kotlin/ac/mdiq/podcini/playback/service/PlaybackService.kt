@@ -74,6 +74,7 @@ import android.os.Build.VERSION_CODES
 import android.service.quicksettings.TileService
 import android.util.Log
 import android.view.KeyEvent
+import android.view.KeyEvent.KEYCODE_MEDIA_STOP
 import android.view.ViewConfiguration
 import android.webkit.URLUtil
 import android.widget.Toast
@@ -579,7 +580,7 @@ class PlaybackService : MediaLibraryService() {
         override fun onMediaButtonEvent(mediaSession: MediaSession, controller: MediaSession.ControllerInfo, intent: Intent): Boolean {
             val keyEvent = if (Build.VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) intent.extras!!.getParcelable(EXTRA_KEY_EVENT, KeyEvent::class.java)
             else intent.extras!!.getParcelable(EXTRA_KEY_EVENT) as? KeyEvent
-            Log.d(TAG, "onMediaButtonEvent ${keyEvent?.keyCode}")
+            Logd(TAG, "onMediaButtonEvent ${keyEvent?.keyCode}")
 
             if (keyEvent != null && keyEvent.action == KeyEvent.ACTION_DOWN && keyEvent.repeatCount == 0) {
                 val keyCode = keyEvent.keyCode
@@ -681,6 +682,7 @@ class PlaybackService : MediaLibraryService() {
     }
 
     fun recreateMediaPlayer() {
+        Logd(TAG, "recreateMediaPlayer")
         val media = curMedia
         var wasPlaying = false
         if (mPlayer != null) {
@@ -691,6 +693,7 @@ class PlaybackService : MediaLibraryService() {
         mPlayer = CastPsmp.getInstanceIfConnected(this, mediaPlayerCallback)
         if (mPlayer == null) mPlayer = LocalMediaPlayer(applicationContext, mediaPlayerCallback) // Cast not supported or not connected
 
+        Logd(TAG, "recreateMediaPlayer wasPlaying: $wasPlaying")
         if (media != null) mPlayer!!.playMediaObject(media, !media.localFileAvailable(), wasPlaying, true)
         isCasting = mPlayer!!.isCasting()
     }
@@ -788,7 +791,7 @@ class PlaybackService : MediaLibraryService() {
                 handleKeycode(keycode, !hardwareButton)
                 return super.onStartCommand(intent, flags, startId)
             }
-            keyEvent != null && keyEvent.keyCode != -1 -> {
+            keyEvent?.keyCode == KEYCODE_MEDIA_STOP -> {
                 Logd(TAG, "onStartCommand Received button event: ${keyEvent.keyCode}")
                 handleKeycode(keyEvent.keyCode, !hardwareButton)
                 return super.onStartCommand(intent, flags, startId)

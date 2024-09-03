@@ -48,6 +48,7 @@ import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
@@ -73,6 +74,7 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.concurrent.Volatile
+import kotlin.math.min
 
 /**
  * Downloads a feed from a feed URL and parses it. Subclasses can display the
@@ -212,7 +214,7 @@ class OnlineFeedViewFragment : Fragment() {
             val results = searcher.search(query)
             if (results.isEmpty()) return@launch
             for (result in results) {
-                if (result?.feedUrl != null && result.author != null && result.author.equals(error.artistName, ignoreCase = true)
+                if (result.feedUrl != null && result.author != null && result.author.equals(error.artistName, ignoreCase = true)
                         && result.title.equals(error.trackName, ignoreCase = true)) {
                     url = result.feedUrl
                     break
@@ -268,9 +270,8 @@ class OnlineFeedViewFragment : Fragment() {
                         val channelTabInfo = ChannelTabInfo.getInfo(service, channelInfo.tabs.first())
                         Logd(TAG, "startFeedBuilding result1: $channelTabInfo ${channelTabInfo.relatedItems.size}")
                         selectedDownloadUrl = prepareUrl(url)
-//                        selectedDownloadUrl = url
                         val feed_ = Feed(selectedDownloadUrl, null)
-                        feed_.id = 1234567889L
+                        feed_.id = Feed.newId()
                         feed_.type = Feed.FeedType.YOUTUBE.name
                         feed_.hasVideoMedia = true
                         feed_.title = channelInfo.name
@@ -472,6 +473,7 @@ class OnlineFeedViewFragment : Fragment() {
                         feed.id = 0L
                         for (item in feed.episodes) {
                             item.id = 0L
+                            item.media?.id = 0L
                             item.feedId = null
                             item.feed = feed
                             val media = item.media
@@ -529,8 +531,10 @@ class OnlineFeedViewFragment : Fragment() {
         Logd(TAG, "showEpisodes ${episodes.size}")
         if (episodes.isEmpty()) return
         episodes.sortByDescending { it.pubDate }
+        var id_ = Feed.newId()
         for (i in 0..<episodes.size) {
-            episodes[i].id = 1234567890L + i
+            episodes[i].id = id_++
+            episodes[i].media?.id = episodes[i].id
         }
         val fragment: Fragment = RemoteEpisodesFragment.newInstance(episodes)
         (activity as MainActivity).loadChildFragment(fragment)
@@ -732,6 +736,97 @@ class OnlineFeedViewFragment : Fragment() {
         companion object {
             private const val MIME_RSS = "application/rss+xml"
             private const val MIME_ATOM = "application/atom+xml"
+        }
+    }
+
+    /**
+     * Shows all episodes (possibly filtered by user).
+     */
+    @UnstableApi
+    class RemoteEpisodesFragment : BaseEpisodesFragment() {
+        private val episodeList: MutableList<Episode> = mutableListOf()
+
+        @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+            val root = super.onCreateView(inflater, container, savedInstanceState)
+            Logd(TAG, "fragment onCreateView")
+            toolbar.inflateMenu(R.menu.episodes)
+            toolbar.setTitle(R.string.episodes_label)
+            updateToolbar()
+            adapter.setOnSelectModeListener(null)
+            return root
+        }
+        override fun onStart() {
+            super.onStart()
+            procFlowEvents()
+        }
+        override fun onStop() {
+            super.onStop()
+            cancelFlowEvents()
+        }
+        override fun onDestroyView() {
+            episodeList.clear()
+            super.onDestroyView()
+        }
+        fun setEpisodes(episodeList_: MutableList<Episode>) {
+            episodeList.clear()
+            episodeList.addAll(episodeList_)
+        }
+        override fun loadData(): List<Episode> {
+            if (episodeList.isEmpty()) return listOf()
+            return episodeList.subList(0, min(episodeList.size-1, page * EPISODES_PER_PAGE))
+        }
+        override fun loadMoreData(page: Int): List<Episode> {
+            val offset = (page - 1) * EPISODES_PER_PAGE
+            if (offset >= episodeList.size) return listOf()
+            val toIndex = offset + EPISODES_PER_PAGE
+            return episodeList.subList(offset, min(episodeList.size, toIndex))
+        }
+        override fun loadTotalItemCount(): Int {
+            return episodeList.size
+        }
+        override fun getPrefName(): String {
+            return PREF_NAME
+        }
+        override fun updateToolbar() {
+            binding.toolbar.menu.findItem(R.id.episodes_sort).setVisible(false)
+//        binding.toolbar.menu.findItem(R.id.refresh_item).setVisible(false)
+            binding.toolbar.menu.findItem(R.id.action_search).setVisible(false)
+            binding.toolbar.menu.findItem(R.id.action_favorites).setVisible(false)
+            binding.toolbar.menu.findItem(R.id.filter_items).setVisible(false)
+        }
+        @OptIn(UnstableApi::class) override fun onMenuItemClick(item: MenuItem): Boolean {
+            if (super.onOptionsItemSelected(item)) return true
+            when (item.itemId) {
+                else -> return false
+            }
+        }
+        private var eventSink: Job?     = null
+        private fun cancelFlowEvents() {
+            eventSink?.cancel()
+            eventSink = null
+        }
+        private fun procFlowEvents() {
+            if (eventSink != null) return
+            eventSink = lifecycleScope.launch {
+                EventFlow.events.collectLatest { event ->
+                    Logd(TAG, "Received event: ${event.TAG}")
+                    when (event) {
+                        is FlowEvent.AllEpisodesFilterEvent -> page = 1
+                        else -> {}
+                    }
+                }
+            }
+        }
+
+        companion object {
+            const val PREF_NAME: String = "EpisodesListFragment"
+
+            fun newInstance(episodes: MutableList<Episode>): RemoteEpisodesFragment {
+                val i = RemoteEpisodesFragment()
+                i.setEpisodes(episodes)
+                return i
+            }
+
         }
     }
 

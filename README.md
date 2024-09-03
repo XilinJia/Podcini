@@ -63,6 +63,9 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * default video player mode setting in preferences
 * when video mode is set to audio only, click on image on audio player on a video episode brings up the normal player detailed view
 * "Prefer streaming over download" is now on setting of individual feed
+* added setting in individual feed to play audio only for video feeds,
+  * an added benefit for setting it enables Youtube media to only stream audio content, saving bandwidth.
+  * this differs from switching to "Audio only" on each episode, in which case, video is also streamed
 * Multiple queues can be used: 5 queues are provided by default, user can rename or add up to 10 queues
   * on app startup, the most recently updated queue is set to curQueue
   * any episodes can be easily added/moved to the active or any designated queues
@@ -100,10 +103,11 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * on action bar of FeedEpisodes view there is a direct access to Queue
 * Long-press filter button in FeedEpisodes view enables/disables filters without changing filter settings
 * History view shows time of last play, and allows filters and sorts
+
 ### Podcast/Episode
 
 * New share notes menu option on various episode views
-* Every feed can be associated with a queue allowing downloaded media to be added to the queue
+* Every feed (podcast) can be associated with a queue allowing downloaded media to be added to the queue
 * FeedInfo view offers a link for direct search of feeds related to author
 * FeedInfo view has button showing number of episodes to open the FeedEpisodes view
 * FeedInfo view has feed setting in the header

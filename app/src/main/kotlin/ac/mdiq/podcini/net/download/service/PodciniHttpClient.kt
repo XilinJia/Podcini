@@ -144,20 +144,15 @@ object PodciniHttpClient {
         init {
             try {
                 var sslContext: SSLContext
-
-                try {
-                    sslContext = SSLContext.getInstance("TLSv1.3")
+                try { sslContext = SSLContext.getInstance("TLSv1.3")
                 } catch (e: NoSuchAlgorithmException) {
                     e.printStackTrace()
                     // In the play flavor (security provider can vary), some devices only support TLSv1.2.
                     sslContext = SSLContext.getInstance("TLSv1.2")
                 }
-
                 sslContext.init(null, arrayOf(trustManager), null)
                 factory = sslContext.socketFactory
-            } catch (e: GeneralSecurityException) {
-                e.printStackTrace()
-            }
+            } catch (e: GeneralSecurityException) { e.printStackTrace() }
         }
 
         override fun getDefaultCipherSuites(): Array<String> {

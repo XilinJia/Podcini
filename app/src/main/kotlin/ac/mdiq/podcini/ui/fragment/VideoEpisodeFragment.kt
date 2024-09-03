@@ -95,7 +95,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
             }
             if (videoControlsShowing) {
                 hideVideoControls(false)
-                if (videoMode == VideoplayerActivity.VideoMode.FULL_SCREEN_VIEW) (activity as AppCompatActivity).supportActionBar?.hide()
+                if (videoMode == VideoMode.FULL_SCREEN_VIEW) (activity as AppCompatActivity).supportActionBar?.hide()
                 videoControlsShowing = false
             }
             return@OnTouchListener true
@@ -135,7 +135,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         if (videoControlsShowing) {
             Logd(TAG, "Hiding video controls")
             hideVideoControls(true)
-            if (videoMode == VideoplayerActivity.VideoMode.FULL_SCREEN_VIEW) (activity as? AppCompatActivity)?.supportActionBar?.hide()
+            if (videoMode == VideoMode.FULL_SCREEN_VIEW) (activity as? AppCompatActivity)?.supportActionBar?.hide()
             videoControlsShowing = false
         }
     }
@@ -398,7 +398,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     fun toggleVideoControlsVisibility() {
         if (videoControlsShowing) {
             hideVideoControls(true)
-            if (videoMode == VideoplayerActivity.VideoMode.FULL_SCREEN_VIEW) {
+            if (videoMode == VideoMode.FULL_SCREEN_VIEW) {
                 (activity as AppCompatActivity).supportActionBar?.hide()
             }
         } else {

@@ -1,35 +1,43 @@
 package ac.mdiq.podcini.net.download
 
+import ac.mdiq.podcini.net.download.service.PodciniHttpClient.UserAgentInterceptor
 import ac.mdiq.podcini.storage.algorithms.InfoCache
-import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.config.ClientConfig
 import ac.mdiq.vista.extractor.downloader.Downloader
 import ac.mdiq.vista.extractor.downloader.Request
 import ac.mdiq.vista.extractor.downloader.Response
 import ac.mdiq.vista.extractor.exceptions.ReCaptchaException
 import android.content.Context
+import android.net.TrafficStats
 import androidx.preference.PreferenceManager
-import okhttp3.Cache
+import okhttp3.Interceptor
+import okhttp3.Interceptor.Chain
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request.Builder
 import okhttp3.RequestBody
-import java.io.File
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.stream.Collectors
 import java.util.stream.Stream
 
-class VistaDownloaderImpl private constructor(builder: OkHttpClient.Builder) : Downloader()  {
+class VistaDownloaderImpl private constructor(val builder: OkHttpClient.Builder) : Downloader()  {
     private val mCookies: MutableMap<String, String> = HashMap()
-    private val client: OkHttpClient = builder
-        .readTimeout(30, TimeUnit.SECONDS)
-//                        .cache(Cache(File(context.getExternalCacheDir(), "okhttp"), 16 * 1024 * 1024))
-        .build()
+    private val client: OkHttpClient
+        get() {
+            builder.readTimeout(30, TimeUnit.SECONDS)
+            builder.networkInterceptors().add(object : Interceptor {
+                override fun intercept(chain: Chain): okhttp3.Response {
+                    TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt())
+                    return chain.proceed(chain.request())
+                }
+            } )
+            return builder.build()
+        }
 
     private fun getCookies(url: String): String {
         val youtubeCookie = if (url.contains(YOUTUBE_DOMAIN)) getCookie(YOUTUBE_RESTRICTED_MODE_COOKIE_KEY) else null
-
         // Recaptcha cookie is always added TODO: not sure if this is necessary
         return Stream.of(youtubeCookie, getCookie("recaptcha_cookies"))
             .filter { obj: String? -> Objects.nonNull(obj) }
@@ -73,11 +81,8 @@ class VistaDownloaderImpl private constructor(builder: OkHttpClient.Builder) : D
         try {
             val response = head(url)
             return response.getHeader("Content-Length")!!.toLong()
-        } catch (e: NumberFormatException) {
-            throw IOException("Invalid content length", e)
-        } catch (e: ReCaptchaException) {
-            throw IOException(e)
-        }
+        } catch (e: NumberFormatException) { throw IOException("Invalid content length", e)
+        } catch (e: ReCaptchaException) { throw IOException(e) }
     }
 
     @Throws(IOException::class, ReCaptchaException::class)
@@ -115,10 +120,8 @@ class VistaDownloaderImpl private constructor(builder: OkHttpClient.Builder) : D
                 response.close()
                 throw ReCaptchaException("reCaptcha Challenge requested", url)
             }
-
             val body = response.body
             val responseBodyToReturn: String? = body?.string()
-
             val latestUrl = response.request.url.toString()
             return Response(response.code, response.message, response.headers.toMultimap(), responseBodyToReturn, latestUrl)
         } catch (e: Throwable) {

@@ -283,9 +283,8 @@ class VideoplayerActivity : CastEnabledActivity() {
                         videoEpisodeFragment.isFavorite = false
                         invalidateOptionsMenu()
                     }
-                    item.itemId == R.id.disable_sleeptimer_item || item.itemId == R.id.set_sleeptimer_item -> {
+                    item.itemId == R.id.disable_sleeptimer_item || item.itemId == R.id.set_sleeptimer_item ->
                         SleepTimerDialog().show(supportFragmentManager, "SleepTimerDialog")
-                    }
                     item.itemId == R.id.audio_controls -> {
                         val dialog = PlaybackControlsDialog.newInstance()
                         dialog.show(supportFragmentManager, "playback_controls")
@@ -374,24 +373,22 @@ class VideoplayerActivity : CastEnabledActivity() {
         private lateinit var dialog: AlertDialog
         private var _binding: AudioControlsBinding? = null
         private val binding get() = _binding!!
-        private var controller: ServiceStatusHandler? = null
+        private var statusHandler: ServiceStatusHandler? = null
 
         @UnstableApi override fun onStart() {
             super.onStart()
-            controller = object : ServiceStatusHandler(requireActivity()) {
+            statusHandler = object : ServiceStatusHandler(requireActivity()) {
                 override fun loadMediaInfo() {
                     setupAudioTracks()
                 }
             }
-            controller?.init()
+            statusHandler?.init()
         }
-
         @UnstableApi override fun onStop() {
             super.onStop()
-            controller?.release()
-            controller = null
+            statusHandler?.release()
+            statusHandler = null
         }
-
         override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
             _binding = AudioControlsBinding.inflate(layoutInflater)
             dialog = MaterialAlertDialogBuilder(requireContext())
@@ -400,20 +397,17 @@ class VideoplayerActivity : CastEnabledActivity() {
                 .setPositiveButton(R.string.close_label, null).create()
             return dialog
         }
-
         override fun onDestroyView() {
             Logd(TAG, "onDestroyView")
             _binding = null
             super.onDestroyView()
         }
-
         @UnstableApi private fun setupAudioTracks() {
             val butAudioTracks = binding.audioTracks
             if (audioTracks.size < 2 || selectedAudioTrack < 0) {
                 butAudioTracks.visibility = View.GONE
                 return
             }
-
             butAudioTracks.visibility = View.VISIBLE
             butAudioTracks.text = audioTracks[selectedAudioTrack]
             butAudioTracks.setOnClickListener {

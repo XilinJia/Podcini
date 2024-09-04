@@ -1,0 +1,7 @@
+ Version 6.5.4 brings several changes:
+
+* in the search bar of OnlineSearch view, search button is moved to the end of the bar
+* new way of handling sharing of youtube channels from other apps
+* normal text (other than url) shared from other apps is taken by OnlineSearch view for podcast search
+* preparing mediaSouces is done in IO scope preventing network access blocking Main scope
+* some class restructuring and refactoring

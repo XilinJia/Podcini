@@ -13,8 +13,8 @@ import androidx.media3.common.util.UnstableApi
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.net.URLDecoder
 
-// this now is only used for receiving shared feed url
-class OnlineFeedViewActivity : AppCompatActivity() {
+class ShareReceiverActivity : AppCompatActivity() {
+
     @OptIn(UnstableApi::class) override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -31,21 +31,29 @@ class OnlineFeedViewActivity : AppCompatActivity() {
             if (urlString != null) feedUrl = URLDecoder.decode(urlString, "UTF-8")
         }
 
-        if (feedUrl == null) {
-            Log.e(TAG, "feedUrl is null.")
-            showNoPodcastFoundError()
-        } else {
-            Logd(TAG, "Activity was started with url $feedUrl")
-            val intent = MainActivity.showOnlineFeed(this, feedUrl)
-            intent.putExtra(MainActivity.Extras.started_from_search.name, getIntent().getBooleanExtra(MainActivity.Extras.started_from_search.name, false))
-            startActivity(intent)
-            finish()
+        when {
+            feedUrl.isNullOrBlank() -> {
+                Log.e(TAG, "feedUrl is empty or null.")
+                showNoPodcastFoundError()
+            }
+            !feedUrl.matches(Regex("[./%]")) -> {
+                val intent = MainActivity.showOnlineSearch(this, feedUrl)
+                startActivity(intent)
+                finish()
+            }
+            else -> {
+                Logd(TAG, "Activity was started with url $feedUrl")
+                val intent = MainActivity.showOnlineFeed(this, feedUrl)
+//                intent.putExtra(MainActivity.Extras.started_from_share.name, getIntent().getBooleanExtra(MainActivity.Extras.started_from_share.name, false))
+                startActivity(intent)
+                finish()
+            }
         }
     }
 
     private fun showNoPodcastFoundError() {
         runOnUiThread {
-            MaterialAlertDialogBuilder(this@OnlineFeedViewActivity)
+            MaterialAlertDialogBuilder(this@ShareReceiverActivity)
                 .setNeutralButton(android.R.string.ok) { _: DialogInterface?, _: Int -> finish() }
                 .setTitle(R.string.error_label)
                 .setMessage(R.string.null_value_podcast_error)
@@ -64,6 +72,6 @@ class OnlineFeedViewActivity : AppCompatActivity() {
     companion object {
         const val ARG_FEEDURL: String = "arg.feedurl"
         private const val RESULT_ERROR = 2
-        private val TAG: String = OnlineFeedViewActivity::class.simpleName ?: "Anonymous"
+        private val TAG: String = ShareReceiverActivity::class.simpleName ?: "Anonymous"
     }
 }

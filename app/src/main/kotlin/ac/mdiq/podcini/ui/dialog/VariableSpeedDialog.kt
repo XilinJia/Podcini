@@ -45,7 +45,8 @@ import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.*
 
-@OptIn(UnstableApi::class) open class VariableSpeedDialog : BottomSheetDialogFragment() {
+@OptIn(UnstableApi::class)
+open class VariableSpeedDialog : BottomSheetDialogFragment() {
 
     private lateinit var adapter: SpeedSelectionAdapter
     private lateinit var speedSeekBar: PlaybackSpeedSeekBar

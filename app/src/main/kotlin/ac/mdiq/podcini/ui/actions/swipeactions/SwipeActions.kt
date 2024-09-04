@@ -1,20 +1,41 @@
 package ac.mdiq.podcini.ui.actions.swipeactions
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.playback.base.InTheatre.curQueue
+import ac.mdiq.podcini.storage.database.Episodes.addToHistory
+import ac.mdiq.podcini.storage.database.Episodes.deleteMediaSync
+import ac.mdiq.podcini.storage.database.Episodes.setFavorite
+import ac.mdiq.podcini.storage.database.Episodes.setPlayState
+import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
+import ac.mdiq.podcini.storage.database.Episodes.shouldDeleteRemoveFromQueue
+import ac.mdiq.podcini.storage.database.Feeds.shouldAutoDeleteItem
+import ac.mdiq.podcini.storage.database.Queues.addToQueue
+import ac.mdiq.podcini.storage.database.Queues.removeFromQueue
+import ac.mdiq.podcini.storage.database.Queues.removeFromQueueSync
+import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
+import ac.mdiq.podcini.storage.database.RealmDB.upsert
+import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
+import ac.mdiq.podcini.storage.model.EpisodeMedia
+import ac.mdiq.podcini.storage.utils.EpisodeUtil
+import ac.mdiq.podcini.ui.actions.actionbutton.DownloadActionButton
 import ac.mdiq.podcini.ui.actions.swipeactions.SwipeAction.Companion.NO_ACTION
+import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.dialog.SwipeActionsDialog
 import ac.mdiq.podcini.ui.fragment.AllEpisodesFragment
 import ac.mdiq.podcini.ui.fragment.DownloadsFragment
 import ac.mdiq.podcini.ui.fragment.HistoryFragment
 import ac.mdiq.podcini.ui.fragment.QueuesFragment
+import ac.mdiq.podcini.ui.utils.LocalDeleteModal.deleteEpisodesWarnLocal
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import ac.mdiq.podcini.ui.view.EpisodeViewHolder
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Canvas
+import android.os.Handler
 import androidx.annotation.OptIn
 import androidx.core.graphics.ColorUtils
 import androidx.fragment.app.Fragment
@@ -23,7 +44,13 @@ import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.annimon.stream.Stream
+import com.google.android.material.snackbar.Snackbar
 import it.xabaras.android.recyclerview.swipedecorator.RecyclerViewSwipeDecorator
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import java.util.*
+import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sin
@@ -243,6 +270,329 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
 
         fun isSwipeActionEnabled(tag: String): Boolean {
             return prefs!!.getBoolean(KEY_PREFIX_NO_ACTION + tag, true)
+        }
+    }
+
+    class AddToQueueSwipeAction : SwipeAction {
+        override fun getId(): String {
+            return SwipeAction.ADD_TO_QUEUE
+        }
+
+        override fun getActionIcon(): Int {
+            return R.drawable.ic_playlist_play
+        }
+
+        override fun getActionColor(): Int {
+            return androidx.appcompat.R.attr.colorAccent
+        }
+
+        override fun getTitle(context: Context): String {
+            return context.getString(R.string.add_to_queue_label)
+        }
+
+        @OptIn(UnstableApi::class)
+        override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
+            addToQueue( true, item)
+//        else RemoveFromQueueSwipeAction().performAction(item, fragment, filter)
+        }
+
+        override fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {
+            return filter.showQueued || filter.showNew
+        }
+    }
+
+    class DeleteSwipeAction : SwipeAction {
+        override fun getId(): String {
+            return SwipeAction.DELETE
+        }
+
+        override fun getActionIcon(): Int {
+            return R.drawable.ic_delete
+        }
+
+        override fun getActionColor(): Int {
+            return R.attr.icon_red
+        }
+
+        override fun getTitle(context: Context): String {
+            return context.getString(R.string.delete_episode_label)
+        }
+
+        @UnstableApi override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
+            if (!item.isDownloaded && item.feed?.isLocalFeed != true) return
+            deleteEpisodesWarnLocal(fragment.requireContext(), listOf(item))
+        }
+
+        override fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {
+            return filter.showDownloaded && (item.isDownloaded || item.feed?.isLocalFeed == true)
+        }
+    }
+
+    class MarkFavoriteSwipeAction : SwipeAction {
+        override fun getId(): String {
+            return SwipeAction.MARK_FAV
+        }
+
+        override fun getActionIcon(): Int {
+            return R.drawable.ic_star
+        }
+
+        override fun getActionColor(): Int {
+            return R.attr.icon_yellow
+        }
+
+        override fun getTitle(context: Context): String {
+            return context.getString(R.string.add_to_favorite_label)
+        }
+
+        @OptIn(UnstableApi::class) override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
+            setFavorite(item, !item.isFavorite)
+        }
+
+        override fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {
+            return filter.showIsFavorite || filter.showNotFavorite
+        }
+    }
+
+    class NoActionSwipeAction : SwipeAction {
+        override fun getId(): String {
+            return SwipeAction.NO_ACTION
+        }
+
+        override fun getActionIcon(): Int {
+            return R.drawable.ic_questionmark
+        }
+
+        override fun getActionColor(): Int {
+            return R.attr.icon_red
+        }
+
+        override fun getTitle(context: Context): String {
+            return context.getString(R.string.no_action_label)
+        }
+
+        @UnstableApi override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {}
+
+        override fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {
+            return false
+        }
+    }
+
+    class RemoveFromHistorySwipeAction : SwipeAction {
+        val TAG = this::class.simpleName ?: "Anonymous"
+
+        override fun getId(): String {
+            return SwipeAction.REMOVE_FROM_HISTORY
+        }
+
+        override fun getActionIcon(): Int {
+            return R.drawable.ic_history_remove
+        }
+
+        override fun getActionColor(): Int {
+            return R.attr.icon_purple
+        }
+
+        override fun getTitle(context: Context): String {
+            return context.getString(R.string.remove_history_label)
+        }
+
+        @OptIn(UnstableApi::class) override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
+            val playbackCompletionDate: Date? = item.media?.playbackCompletionDate
+            deleteFromHistory(item)
+
+            (fragment.requireActivity() as MainActivity)
+                .showSnackbarAbovePlayer(R.string.removed_history_label, Snackbar.LENGTH_LONG)
+                .setAction(fragment.getString(R.string.undo)) {
+                    if (playbackCompletionDate != null) addToHistory(item, playbackCompletionDate) }
+        }
+
+        override fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {
+            return true
+        }
+
+        fun deleteFromHistory(episode: Episode) {
+            addToHistory(episode, Date(0))
+        }
+    }
+
+    class RemoveFromQueueSwipeAction : SwipeAction {
+        override fun getId(): String {
+            return SwipeAction.REMOVE_FROM_QUEUE
+        }
+
+        override fun getActionIcon(): Int {
+            return R.drawable.ic_playlist_remove
+        }
+
+        override fun getActionColor(): Int {
+            return androidx.appcompat.R.attr.colorAccent
+        }
+
+        override fun getTitle(context: Context): String {
+            return context.getString(R.string.remove_from_queue_label)
+        }
+
+        @OptIn(UnstableApi::class) override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
+            val position: Int = curQueue.episodes.indexOf(item)
+            removeFromQueue(item)
+            if (willRemove(filter, item)) {
+                (fragment.requireActivity() as MainActivity).showSnackbarAbovePlayer(fragment.resources.getQuantityString(R.plurals.removed_from_queue_batch_label, 1, 1), Snackbar.LENGTH_LONG)
+                    .setAction(fragment.getString(R.string.undo)) {
+                        addToQueueAt(item, position)
+                    }
+            }
+        }
+
+        override fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {
+            return filter.showQueued || filter.showNotQueued
+        }
+
+        /**
+         * Inserts a Episode in the queue at the specified index. The 'read'-attribute of the Episode will be set to
+         * true. If the Episode is already in the queue, the queue will not be modified.
+         * @param episode                the Episode that should be added to the queue.
+         * @param index               Destination index. Must be in range 0..queue.size()
+         * @throws IndexOutOfBoundsException if index < 0 || index >= queue.size()
+         */
+        @UnstableApi
+        fun addToQueueAt(episode: Episode, index: Int) : Job {
+            return runOnIOScope {
+                if (curQueue.episodeIds.contains(episode.id)) return@runOnIOScope
+                if (episode.isNew) setPlayState(Episode.PlayState.UNPLAYED.code, false, episode)
+                curQueue = upsert(curQueue) {
+                    it.episodeIds.add(index, episode.id)
+                    it.update()
+                }
+//            curQueue.episodes.add(index, episode)
+                EventFlow.postEvent(FlowEvent.QueueEvent.added(episode, index))
+//            if (performAutoDownload) autodownloadEpisodeMedia(context)
+            }
+        }
+    }
+
+    class ShowFirstSwipeDialogAction : SwipeAction {
+        override fun getId(): String {
+            return "SHOW_FIRST_SWIPE_DIALOG"
+        }
+
+        override fun getActionIcon(): Int {
+            return R.drawable.ic_settings
+        }
+
+        override fun getActionColor(): Int {
+            return R.attr.icon_gray
+        }
+
+        override fun getTitle(context: Context): String {
+            return ""
+        }
+
+        override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
+            //handled in SwipeActions
+        }
+
+        override fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {
+            return false
+        }
+    }
+
+    class StartDownloadSwipeAction : SwipeAction {
+        override fun getId(): String {
+            return SwipeAction.START_DOWNLOAD
+        }
+
+        override fun getActionIcon(): Int {
+            return R.drawable.ic_download
+        }
+
+        override fun getActionColor(): Int {
+            return R.attr.icon_green
+        }
+
+        override fun getTitle(context: Context): String {
+            return context.getString(R.string.download_label)
+        }
+
+        override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
+            if (!item.isDownloaded && item.feed != null && !item.feed!!.isLocalFeed) {
+                DownloadActionButton(item).onClick(fragment.requireContext())
+            }
+        }
+
+        override fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {
+            return false
+        }
+    }
+
+    class TogglePlaybackStateSwipeAction : SwipeAction {
+        override fun getId(): String {
+            return SwipeAction.TOGGLE_PLAYED
+        }
+
+        override fun getActionIcon(): Int {
+            return R.drawable.ic_mark_played
+        }
+
+        override fun getActionColor(): Int {
+            return R.attr.icon_gray
+        }
+
+        override fun getTitle(context: Context): String {
+            return context.getString(R.string.toggle_played_label)
+        }
+
+        override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
+            val newState = if (item.playState == Episode.PlayState.UNPLAYED.code) Episode.PlayState.PLAYED.code else Episode.PlayState.UNPLAYED.code
+
+            Logd("TogglePlaybackStateSwipeAction", "performAction( ${item.id} )")
+            // we're marking it as unplayed since the user didn't actually play it
+            // but they don't want it considered 'NEW' anymore
+            var item = runBlocking {  setPlayStateSync(newState, false, item) }
+
+            val h = Handler(fragment.requireContext().mainLooper)
+            val r = Runnable {
+                val media: EpisodeMedia? = item.media
+                val shouldAutoDelete = if (item.feed == null) false else shouldAutoDeleteItem(item.feed!!)
+                if (media != null && EpisodeUtil.hasAlmostEnded(media) && shouldAutoDelete) {
+                    item = deleteMediaSync(fragment.requireContext(), item)
+                    if (shouldDeleteRemoveFromQueue()) removeFromQueueSync(null, item)   }
+            }
+            val playStateStringRes: Int = when (newState) {
+                Episode.PlayState.UNPLAYED.code -> if (item.playState == Episode.PlayState.NEW.code) R.string.removed_inbox_label    //was new
+                else R.string.marked_as_unplayed_label   //was played
+                Episode.PlayState.PLAYED.code -> R.string.marked_as_played_label
+                else -> if (item.playState == Episode.PlayState.NEW.code) R.string.removed_inbox_label
+                else R.string.marked_as_unplayed_label
+            }
+            val duration: Int = Snackbar.LENGTH_LONG
+
+            if (willRemove(filter, item)) {
+                (fragment.activity as MainActivity).showSnackbarAbovePlayer(
+                    playStateStringRes, duration)
+                    .setAction(fragment.getString(R.string.undo)) {
+                        setPlayState(item.playState, false, item)
+                        // don't forget to cancel the thing that's going to remove the media
+                        h.removeCallbacks(r)
+                    }
+            }
+
+            h.postDelayed(r, ceil((duration * 1.05f).toDouble()).toLong())
+        }
+
+        private fun delayedExecution(item: Episode, fragment: Fragment, duration: Float) = runBlocking {
+            delay(ceil((duration * 1.05f).toDouble()).toLong())
+            val media: EpisodeMedia? = item.media
+            val shouldAutoDelete = if (item.feed == null) false else shouldAutoDeleteItem(item.feed!!)
+            if (media != null && EpisodeUtil.hasAlmostEnded(media) && shouldAutoDelete) {
+//                deleteMediaOfEpisode(fragment.requireContext(), item)
+                var item = deleteMediaSync(fragment.requireContext(), item)
+                if (shouldDeleteRemoveFromQueue()) removeFromQueueSync(null, item)   }
+        }
+
+        override fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {
+            return if (item.playState == Episode.PlayState.NEW.code) filter.showPlayed || filter.showNew
+            else filter.showUnplayed || filter.showPlayed || filter.showNew
         }
     }
 }

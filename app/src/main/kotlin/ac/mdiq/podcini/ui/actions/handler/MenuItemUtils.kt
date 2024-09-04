@@ -1,4 +1,4 @@
-package ac.mdiq.podcini.ui.actions.menuhandler
+package ac.mdiq.podcini.ui.actions.handler
 
 import android.view.Menu
 import android.view.MenuItem

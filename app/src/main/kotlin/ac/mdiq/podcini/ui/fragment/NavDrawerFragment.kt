@@ -186,7 +186,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
                 HistoryFragment.TAG -> R.drawable.ic_history
                 SubscriptionsFragment.TAG -> R.drawable.ic_subscriptions
                 StatisticsFragment.TAG -> R.drawable.ic_chart_box
-                AddFeedFragment.TAG -> R.drawable.ic_add
+                OnlineSearchFragment.TAG -> R.drawable.ic_add
                 else -> 0
             }
         }
@@ -384,7 +384,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
             DownloadsFragment.TAG,
             HistoryFragment.TAG,
             StatisticsFragment.TAG,
-            AddFeedFragment.TAG,
+            OnlineSearchFragment.TAG,
         )
 
         fun saveLastNavFragment(tag: String?) {

@@ -38,16 +38,6 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <ImageView
-                android:id="@+id/searchButton"
-                android:layout_width="40dp"
-                android:layout_height="match_parent"
-                android:layout_marginLeft="8dp"
-                android:layout_marginRight="8dp"
-                android:contentDescription="@string/search_podcast_hint"
-                android:scaleType="center"
-                app:srcCompat="@drawable/ic_search" />
-
             <EditText
                 android:id="@+id/combinedFeedSearchEditText"
                 android:layout_width="0dp"
@@ -64,6 +54,16 @@
                 android:paddingBottom="16dp"
                 android:hint="@string/search_podcast_hint"
                 android:background="@null" />
+
+            <ImageView
+                android:id="@+id/searchButton"
+                android:layout_width="40dp"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:contentDescription="@string/search_podcast_hint"
+                android:scaleType="center"
+                app:srcCompat="@drawable/ic_search" />
 
         </LinearLayout>
 

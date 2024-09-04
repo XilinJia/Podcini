@@ -1,3 +1,11 @@
+# 6.5.4
+
+* in the search bar of OnlineSearch view, search button is moved to the end of the bar
+* new way of handling sharing of youtube channels from other apps
+* normal text (other than url) shared from other apps is taken by OnlineSearch view for podcast search
+* preparing mediaSouces is done in IO scope preventing network access blocking Main scope
+* some class restructuring and refactoring
+
 # 6.5.3
 
 * properly assigning ids to remote episodes in OnlineFeedView to resolve the issue of duplicates

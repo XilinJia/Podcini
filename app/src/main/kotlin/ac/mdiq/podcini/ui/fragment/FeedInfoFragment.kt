@@ -116,7 +116,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
 
         binding.btnvRelatedFeeds.setOnClickListener {
-            val fragment = OnlineSearchFragment.newInstance(CombinedSearcher::class.java, "${binding.header.txtvAuthor.text} podcasts")
+            val fragment = SearchResultsFragment.newInstance(CombinedSearcher::class.java, "${binding.header.txtvAuthor.text} podcasts")
             (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
         }
         binding.txtvUrl.setOnClickListener(copyUrlToClipboard)

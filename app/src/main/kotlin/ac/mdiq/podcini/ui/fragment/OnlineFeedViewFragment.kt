@@ -94,6 +94,7 @@ class OnlineFeedViewFragment : Fragment() {
 
     var feedSource: String = ""
     var feedUrl: String = ""
+
     private val feedId: Long
         get() {
             if (feeds == null) return 0
@@ -128,6 +129,7 @@ class OnlineFeedViewFragment : Fragment() {
         (activity as MainActivity).setupToolbarToggle(binding.toolbar, displayUpArrow)
 
         feedUrl = requireArguments().getString(ARG_FEEDURL) ?: ""
+        Logd(TAG, "feedUrl: $feedUrl")
         if (feedUrl.isEmpty()) {
             Log.e(TAG, "feedUrl is null.")
             showNoPodcastFoundError()
@@ -194,8 +196,7 @@ class OnlineFeedViewFragment : Fragment() {
     private fun lookupUrlAndBuild(url: String) {
         lifecycleScope.launch(Dispatchers.IO) {
             val urlString = PodcastSearcherRegistry.lookupUrl1(url)
-            try {
-                startFeedBuilding(urlString)
+            try { startFeedBuilding(urlString)
             } catch (e: FeedUrlNotFoundException) { tryToRetrieveFeedUrlBySearch(e)
             } catch (e: Throwable) {
                 Log.e(TAG, Log.getStackTraceString(e))
@@ -258,7 +259,8 @@ class OnlineFeedViewFragment : Fragment() {
 
     private fun startFeedBuilding(url: String) {
         Logd(TAG, "startFeedBuilding")
-        if (feedSource == "VistaGuide") {
+        if (feedSource == "VistaGuide" || url.contains("youtube.com")) {
+            feedSource = "VistaGuide"
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
                     feeds = getFeedList()

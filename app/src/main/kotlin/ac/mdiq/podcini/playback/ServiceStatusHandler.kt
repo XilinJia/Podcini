@@ -138,9 +138,7 @@ abstract class ServiceStatusHandler(private val activity: FragmentActivity) {
         try {
             activity.unregisterReceiver(statusUpdate)
             activity.unregisterReceiver(notificationReceiver)
-        } catch (e: IllegalArgumentException) {
-            // ignore
-        }
+        } catch (e: IllegalArgumentException) {/* ignore */ }
         initialized = false
         cancelFlowEvents()
     }

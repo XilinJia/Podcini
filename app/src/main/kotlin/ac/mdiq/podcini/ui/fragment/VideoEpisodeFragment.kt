@@ -62,10 +62,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     private val binding get() = _binding!!
     private lateinit var root: ViewGroup
 
-    /**
-     * True if video controls are currently visible.
-     */
-    private var videoControlsShowing = true
+    private var videoControlsVisible = true
     private var videoSurfaceCreated = false
     private var lastScreenTap: Long = 0
     private val videoControlsHider = Handler(Looper.getMainLooper())
@@ -75,10 +72,10 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     private var itemsLoaded = false
     private var episode: Episode? = null
     private var webviewData: String? = null
-    var webvDescription: ShownotesWebView? = null
+    private var webvDescription: ShownotesWebView? = null
 
     var destroyingDueToReload = false
-    var controller: ServiceStatusHandler? = null
+    var statusHandler: ServiceStatusHandler? = null
     var isFavorite = false
 
     private val onVideoviewTouched = View.OnTouchListener { v: View, event: MotionEvent ->
@@ -93,16 +90,15 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
                 onRewind()
                 showSkipAnimation(false)
             }
-            if (videoControlsShowing) {
+            if (videoControlsVisible) {
                 hideVideoControls(false)
                 if (videoMode == VideoMode.FULL_SCREEN_VIEW) (activity as AppCompatActivity).supportActionBar?.hide()
-                videoControlsShowing = false
+                videoControlsVisible = false
             }
             return@OnTouchListener true
         }
         toggleVideoControlsVisibility()
-        if (videoControlsShowing) setupVideoControlsToggler()
-
+        if (videoControlsVisible) setupVideoControlsToggler()
         lastScreenTap = System.currentTimeMillis()
         true
     }
@@ -111,7 +107,6 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
         override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
             holder.setFixedSize(width, height)
         }
-
         @UnstableApi
         override fun surfaceCreated(holder: SurfaceHolder) {
             Logd(TAG, "Videoview holder created")
@@ -120,7 +115,6 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
             if (MediaPlayerBase.status == PlayerStatus.PLAYING) playbackService?.mPlayer?.setVideoSurface(holder)
             setupVideoAspectRatio()
         }
-
         override fun surfaceDestroyed(holder: SurfaceHolder) {
             Logd(TAG, "Videosurface was destroyed")
             videoSurfaceCreated = false
@@ -132,26 +126,28 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     }
 
     private val hideVideoControls = Runnable {
-        if (videoControlsShowing) {
+        if (videoControlsVisible) {
             Logd(TAG, "Hiding video controls")
             hideVideoControls(true)
             if (videoMode == VideoMode.FULL_SCREEN_VIEW) (activity as? AppCompatActivity)?.supportActionBar?.hide()
-            videoControlsShowing = false
+            videoControlsVisible = false
         }
     }
 
-    @OptIn(UnstableApi::class) override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    @OptIn(UnstableApi::class)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
+        Logd(TAG, "fragment onCreateView")
         _binding = VideoEpisodeFragmentBinding.inflate(LayoutInflater.from(requireContext()))
         root = binding.root
-        controller = newPlaybackController()
-        controller!!.init()
+        statusHandler = newStatusHandler()
+        statusHandler!!.init()
 //        loadMediaInfo()
         setupView()
         return root
     }
 
-    @OptIn(UnstableApi::class) private fun newPlaybackController(): ServiceStatusHandler {
+    @OptIn(UnstableApi::class) private fun newStatusHandler(): ServiceStatusHandler {
         return object : ServiceStatusHandler(requireActivity()) {
             override fun updatePlayButton(showPlay: Boolean) {
                 Logd(TAG, "updatePlayButtonShowsPlay called")
@@ -160,7 +156,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
                 else {
                     (activity as AppCompatActivity).window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                     setupVideoAspectRatio()
-                    if (videoSurfaceCreated && controller != null) {
+                    if (videoSurfaceCreated) {
                         Logd(TAG, "Videosurface already created, setting videosurface now")
 //                        setVideoSurface(binding.videoView.holder)
                         playbackService?.mPlayer?.setVideoSurface(binding.videoView.holder)
@@ -208,8 +204,8 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
             webvDescription!!.destroy()
         }
         _binding = null
-        controller?.release()
-        controller = null // prevent leak
+        statusHandler?.release()
+        statusHandler = null // prevent leak
         super.onDestroyView()
     }
 
@@ -259,7 +255,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     }
 
     private fun setupVideoAspectRatio() {
-        if (videoSurfaceCreated && controller != null) {
+        if (videoSurfaceCreated) {
             if (videoSize != null && videoSize!!.first > 0 && videoSize!!.second > 0) {
                 Logd(TAG, "Width,height of video: ${videoSize!!.first}, ${videoSize!!.second}")
                 val videoWidth = resources.displayMetrics.widthPixels
@@ -279,7 +275,8 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     }
 
     private var loadItemsRunning = false
-    @OptIn(UnstableApi::class) private fun loadMediaInfo() {
+    @OptIn(UnstableApi::class)
+    private fun loadMediaInfo() {
         Logd(TAG, "loadMediaInfo called")
         if (curMedia == null) return
         if (MediaPlayerBase.status == PlayerStatus.PLAYING && !isPlayingVideoLocally) {
@@ -314,14 +311,10 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
                         }
                         if (webviewData != null && !itemsLoaded) webvDescription?.loadDataWithBaseURL("https://127.0.0.1", webviewData!!,
                             "text/html", "utf-8", "about:blank")
-
                         itemsLoaded = true
                     }
-                } catch (e: Throwable) {
-                    Log.e(TAG, Log.getStackTraceString(e))
-                } finally {
-                    loadItemsRunning = false
-                }
+                } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e))
+                } finally { loadItemsRunning = false }
             }
         }
         val media = curMedia
@@ -396,16 +389,14 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     }
 
     fun toggleVideoControlsVisibility() {
-        if (videoControlsShowing) {
+        if (videoControlsVisible) {
             hideVideoControls(true)
-            if (videoMode == VideoMode.FULL_SCREEN_VIEW) {
-                (activity as AppCompatActivity).supportActionBar?.hide()
-            }
+            if (videoMode == VideoMode.FULL_SCREEN_VIEW) (activity as AppCompatActivity).supportActionBar?.hide()
         } else {
             showVideoControls()
             (activity as AppCompatActivity).supportActionBar?.show()
         }
-        videoControlsShowing = !videoControlsShowing
+        videoControlsVisible = !videoControlsVisible
     }
 
     fun showSkipAnimation(isForward: Boolean) {
@@ -448,7 +439,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
 
     @UnstableApi
     fun onRewind() {
-        if (controller == null) return
+//        if (statusHandler == null) return
         playbackService?.mPlayer?.seekDelta(-rewindSecs * 1000)
         setupVideoControlsToggler()
     }
@@ -461,7 +452,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
 
     @UnstableApi
     fun onFastForward() {
-        if (controller == null) return
+//        if (statusHandler == null) return
         playbackService?.mPlayer?.seekDelta(fastForwardSecs * 1000)
         setupVideoControlsToggler()
     }
@@ -503,7 +494,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     }
 
     private fun onPositionObserverUpdate() {
-        if (controller == null) return
+//        if (statusHandler == null) return
         val converter = TimeSpeedConverter(curSpeedFB)
         val currentPosition = converter.convert(curPositionFB)
         val duration_ = converter.convert(curDurationFB)
@@ -527,7 +518,7 @@ class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
     }
 
     override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-        if (controller == null) return
+//        if (statusHandler == null) return
         if (fromUser) {
             prog = progress / (seekBar.max.toFloat())
             val converter = TimeSpeedConverter(curSpeedFB)

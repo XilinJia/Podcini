@@ -23,7 +23,8 @@ import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 
-@OptIn(UnstableApi::class) class SwipeActionsDialog(private val context: Context, private val tag: String) {
+@OptIn(UnstableApi::class)
+class SwipeActionsDialog(private val context: Context, private val tag: String) {
     private lateinit var keys: List<SwipeAction>
 
     private var rightAction: SwipeAction? = null

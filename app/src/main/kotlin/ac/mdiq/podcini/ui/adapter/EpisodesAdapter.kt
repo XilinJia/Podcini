@@ -23,7 +23,7 @@ import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.ui.actions.actionbutton.*
-import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
+import ac.mdiq.podcini.ui.actions.handler.EpisodeMenuHandler
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment
 import ac.mdiq.podcini.ui.fragment.FeedInfoFragment

@@ -3,7 +3,7 @@ package ac.mdiq.podcini.ui.view
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.utils.NetworkUtils
 import ac.mdiq.podcini.storage.utils.DurationConverter
-import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
+import ac.mdiq.podcini.ui.actions.handler.MenuItemUtils
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.util.*

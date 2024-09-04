@@ -181,6 +181,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
 
     @Throws(IllegalArgumentException::class, IllegalStateException::class)
     private fun setDataSource(metadata: MediaMetadata, media: EpisodeMedia) {
+        Logd(TAG, "setDataSource1 called")
         val url = media.getStreamUrl() ?: return
         val preferences = media.episodeOrFetch()?.feed?.preferences
         val user = preferences?.username
@@ -191,7 +192,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
                 val vService = Vista.getService(0)
                 val streamInfo = StreamInfo.getInfo(vService, url)
                 val audioStreamsList = getFilteredAudioStreams(streamInfo.audioStreams)
-                Logd(TAG, "setDataSource1 got ${audioStreamsList.size}")
+                Logd(TAG, "setDataSource1 audioStreamsList ${audioStreamsList.size}")
                 val audioIndex = if (isNetworkRestricted) 0 else audioStreamsList.size - 1
                 val audioStream = audioStreamsList[audioIndex]
                 Logd(TAG, "setDataSource1 use audio quality: ${audioStream.bitrate}")
@@ -346,31 +347,37 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
             callback.ensureMediaInfoLoaded(curMedia!!)
             callback.onMediaChanged(false)
             setPlaybackParams(getCurrentPlaybackSpeed(curMedia), UserPreferences.isSkipSilence)
-            when {
-                streaming -> {
-                    val streamurl = curMedia!!.getStreamUrl()
-                    if (streamurl != null) {
-                        val media = curMedia
-                        if (media is EpisodeMedia) {
-                            val deferred = CoroutineScope(Dispatchers.IO).async { setDataSource(metadata, media) }
-                            if (startWhenPrepared) runBlocking { deferred.await() }
+            CoroutineScope(Dispatchers.IO).launch {
+                when {
+                    streaming -> {
+                        val streamurl = curMedia!!.getStreamUrl()
+                        if (streamurl != null) {
+                            val media = curMedia
+                            if (media is EpisodeMedia) {
+                                mediaItem = null
+                                mediaSource = null
+                                setDataSource(metadata, media)
+//                            val deferred = CoroutineScope(Dispatchers.IO).async { setDataSource(metadata, media) }
+//                            if (startWhenPrepared) runBlocking { deferred.await() }
 //                            val preferences = media.episodeOrFetch()?.feed?.preferences
 //                            setDataSource(metadata, streamurl, preferences?.username, preferences?.password)
-                        } else setDataSource(metadata, streamurl, null, null)
+                            } else setDataSource(metadata, streamurl, null, null)
+                        }
                     }
-                }
-                else -> {
-                    val localMediaurl = curMedia!!.getLocalMediaUrl()
+                    else -> {
+                        val localMediaurl = curMedia!!.getLocalMediaUrl()
 //                    File(localMediaurl).canRead() time consuming, leave it to MediaItem to handle
 //                    if (!localMediaurl.isNullOrEmpty() && File(localMediaurl).canRead()) setDataSource(metadata, localMediaurl, null, null)
-                    if (!localMediaurl.isNullOrEmpty()) setDataSource(metadata, localMediaurl, null, null)
-                    else throw IOException("Unable to read local file $localMediaurl")
+                        if (!localMediaurl.isNullOrEmpty()) setDataSource(metadata, localMediaurl, null, null)
+                        else throw IOException("Unable to read local file $localMediaurl")
+                    }
+                }
+                withContext(Dispatchers.Main) {
+                    val uiModeManager = context.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+                    if (uiModeManager.currentModeType != Configuration.UI_MODE_TYPE_CAR) setPlayerStatus(PlayerStatus.INITIALIZED, curMedia)
+                    if (prepareImmediately) prepare()
                 }
             }
-            val uiModeManager = context.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
-            if (uiModeManager.currentModeType != Configuration.UI_MODE_TYPE_CAR) setPlayerStatus(PlayerStatus.INITIALIZED, curMedia)
-
-            if (prepareImmediately) prepare()
         } catch (e: IOException) {
             e.printStackTrace()
             setPlayerStatus(PlayerStatus.ERROR, null)
@@ -394,6 +401,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
                 seekTo(newPosition)
             }
             if (exoPlayer?.playbackState == STATE_IDLE || exoPlayer?.playbackState == STATE_ENDED ) prepareWR()
+//            while (mediaItem == null && mediaSource == null) runBlocking { delay(100) }
             exoPlayer?.play()
             // Can't set params when paused - so always set it on start in case they changed
             exoPlayer?.playbackParameters = playbackParameters

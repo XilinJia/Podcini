@@ -8,6 +8,7 @@ import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.restartUpdateAlarm
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnceOrAsk
+import ac.mdiq.podcini.net.feed.discovery.CombinedSearcher
 import ac.mdiq.podcini.net.feed.discovery.ItunesTopListLoader
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.playback.cast.CastEnabledActivity
@@ -417,7 +418,7 @@ class MainActivity : CastEnabledActivity() {
             AllEpisodesFragment.TAG -> fragment = AllEpisodesFragment()
             DownloadsFragment.TAG -> fragment = DownloadsFragment()
             HistoryFragment.TAG -> fragment = HistoryFragment()
-            AddFeedFragment.TAG -> fragment = AddFeedFragment()
+            OnlineSearchFragment.TAG -> fragment = OnlineSearchFragment()
             SubscriptionsFragment.TAG -> fragment = SubscriptionsFragment()
             StatisticsFragment.TAG -> fragment = StatisticsFragment()
             else -> {
@@ -622,11 +623,11 @@ class MainActivity : CastEnabledActivity() {
         when {
             intent.hasExtra(Extras.fragment_feed_id.name) -> {
                 val feedId = intent.getLongExtra(Extras.fragment_feed_id.name, 0)
-                val args = intent.getBundleExtra(MainActivityStarter.EXTRA_FRAGMENT_ARGS)
+                val args = intent.getBundleExtra(MainActivityStarter.Extras.fragment_args.name)
                 if (feedId > 0) {
-                    val startedFromSearch = intent.getBooleanExtra(Extras.started_from_search.name, false)
+                    val startedFromShare = intent.getBooleanExtra(Extras.started_from_share.name, false)
                     val addToBackStack = intent.getBooleanExtra(Extras.add_to_back_stack.name, false)
-                    if (startedFromSearch || addToBackStack) loadChildFragment(FeedEpisodesFragment.newInstance(feedId))
+                    if (startedFromShare || addToBackStack) loadChildFragment(FeedEpisodesFragment.newInstance(feedId))
                     else loadFeedFragmentById(feedId, args)
                 }
                 bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
@@ -635,25 +636,26 @@ class MainActivity : CastEnabledActivity() {
                 val feedurl = intent.getStringExtra(Extras.fragment_feed_url.name)
                 if (feedurl != null) loadChildFragment(OnlineFeedViewFragment.newInstance(feedurl))
             }
-            intent.hasExtra(MainActivityStarter.EXTRA_FRAGMENT_TAG) -> {
-                val tag = intent.getStringExtra(MainActivityStarter.EXTRA_FRAGMENT_TAG)
-                val args = intent.getBundleExtra(MainActivityStarter.EXTRA_FRAGMENT_ARGS)
+            intent.hasExtra(Extras.search_string.name) -> {
+                val query = intent.getStringExtra(Extras.search_string.name)
+                if (query != null) loadChildFragment(SearchResultsFragment.newInstance(CombinedSearcher::class.java, query))
+            }
+            intent.hasExtra(MainActivityStarter.Extras.fragment_tag.name) -> {
+                val tag = intent.getStringExtra(MainActivityStarter.Extras.fragment_tag.name)
+                val args = intent.getBundleExtra(MainActivityStarter.Extras.fragment_args.name)
                 if (tag != null) loadFragment(tag, args)
 
                 bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
             }
-            intent.getBooleanExtra(MainActivityStarter.EXTRA_OPEN_PLAYER, false) -> {
+            intent.getBooleanExtra(MainActivityStarter.Extras.open_player.name, false) -> {
 //                bottomSheet.state = BottomSheetBehavior.STATE_EXPANDED
 //                bottomSheetCallback.onSlide(dummyView, 1.0f)
             }
             else -> handleDeeplink(intent.data)
         }
-
-        if (intent.getBooleanExtra(MainActivityStarter.EXTRA_OPEN_DRAWER, false)) drawerLayout?.open()
-
-        if (intent.getBooleanExtra(MainActivityStarter.EXTRA_OPEN_DOWNLOAD_LOGS, false))
+        if (intent.getBooleanExtra(MainActivityStarter.Extras.open_drawer.name, false)) drawerLayout?.open()
+        if (intent.getBooleanExtra(MainActivityStarter.Extras.open_download_logs.name, false))
             DownloadLogFragment().show(supportFragmentManager, null)
-
         if (intent.getBooleanExtra(Extras.refresh_on_start.name, false)) runOnceOrAsk(this)
 
         // to avoid handling the intent twice when the configuration changes
@@ -756,9 +758,10 @@ class MainActivity : CastEnabledActivity() {
         fragment_feed_id,
         fragment_feed_url,
         refresh_on_start,
-        started_from_search,
+        started_from_share, // TODO: seems not needed
         add_to_back_stack,
         generated_view_id,
+        search_string,
     }
 
     companion object {
@@ -778,6 +781,14 @@ class MainActivity : CastEnabledActivity() {
         fun showOnlineFeed(context: Context, feedUrl: String): Intent {
             val intent = Intent(context.applicationContext, MainActivity::class.java)
             intent.putExtra(Extras.fragment_feed_url.name, feedUrl)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            return intent
+        }
+
+        @JvmStatic
+        fun showOnlineSearch(context: Context, query: String): Intent {
+            val intent = Intent(context.applicationContext, MainActivity::class.java)
+            intent.putExtra(Extras.search_string.name, query)
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             return intent
         }

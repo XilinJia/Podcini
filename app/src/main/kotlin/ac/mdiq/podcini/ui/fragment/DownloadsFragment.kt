@@ -16,7 +16,7 @@ import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
-import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectHandler
+import ac.mdiq.podcini.ui.actions.handler.EpisodeMultiSelectHandler
 import ac.mdiq.podcini.ui.actions.actionbutton.DeleteActionButton
 import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
 import ac.mdiq.podcini.ui.activity.MainActivity

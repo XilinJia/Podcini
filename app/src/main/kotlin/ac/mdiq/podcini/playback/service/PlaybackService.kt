@@ -101,7 +101,6 @@ import kotlin.math.max
  */
 @UnstableApi
 class PlaybackService : MediaLibraryService() {
-
     private var mediaSession: MediaLibrarySession? = null
 
     internal var mPlayer: MediaPlayerBase? = null
@@ -228,6 +227,37 @@ class PlaybackService : MediaLibraryService() {
         override fun onChapterLoaded(media: Playable?) {
             sendNotificationBroadcast(NOTIFICATION_TYPE_RELOAD, 0)
         }
+    }
+
+    private val shutdownReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            Log.d(TAG, "shutdownReceiver onReceive called with action: ${intent.action}")
+            if (intent.action == ACTION_SHUTDOWN_PLAYBACK_SERVICE)
+                EventFlow.postEvent(FlowEvent.PlaybackServiceEvent(FlowEvent.PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN))
+        }
+    }
+
+    val rootItem = MediaItem.Builder()
+        .setMediaId("CurQueue")
+        .setMediaMetadata(
+            MediaMetadata.Builder()
+                .setIsBrowsable(true)
+                .setIsPlayable(false)
+                .setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_MIXED)
+                .setTitle(curQueue.name)
+                .build())
+        .build()
+
+    val mediaItemsInQueue: MutableList<MediaItem> by lazy {
+        val list = mutableListOf<MediaItem>()
+        curQueue.episodes.forEach {
+            if (it.media != null) {
+                val item = buildMediaItem(it.media!!)
+                if (item != null) list += item
+            }
+        }
+        Logd(TAG, "mediaItemsInQueue: ${list.size}")
+        list
     }
 
     private val mediaPlayerCallback: MediaPlayerCallback = object : MediaPlayerCallback {
@@ -391,7 +421,6 @@ class PlaybackService : MediaLibraryService() {
                 j = if (curIndexInQueue >= 0 && curIndexInQueue < eList.size) curIndexInQueue else eList.size-1
             } else if (i < eList.size-1) j = i+1
             Logd(TAG, "getNextInQueue next j: $j")
-
             val nextItem = unmanaged(eList[j])
             Logd(TAG, "getNextInQueue nextItem ${nextItem.title}")
             if (nextItem.media == null) {
@@ -399,13 +428,11 @@ class PlaybackService : MediaLibraryService() {
                 writeNoMediaPlaying()
                 return null
             }
-
             if (!isFollowQueue) {
                 Logd(TAG, "getNextInQueue(), but follow queue is not enabled.")
                 writeMediaPlaying(nextItem.media, PlayerStatus.STOPPED)
                 return null
             }
-
             if (!nextItem.media!!.localFileAvailable() && !isStreamingAllowed && isFollowQueue && nextItem.feed?.isLocalFeed != true) {
                 Logd(TAG, "getNextInQueue nextItem has no local file ${nextItem.title}")
                 displayStreamingNotAllowedNotification(PlaybackServiceStarter(this@PlaybackService, nextItem.media!!).intent)
@@ -433,11 +460,9 @@ class PlaybackService : MediaLibraryService() {
                     else -> EXTRA_CODE_AUDIO
                 })
         }
-
         override fun ensureMediaInfoLoaded(media: Playable) {
 //            if (media is EpisodeMedia && media.item == null) media.item = DBReader.getFeedItem(media.itemId)
         }
-
         fun writeMediaPlaying(playable: Playable?, playerStatus: PlayerStatus) {
             Logd(InTheatre.TAG, "Writing playback preferences ${playable?.getIdentifier()}")
             if (playable == null) writeNoMediaPlaying()
@@ -457,14 +482,12 @@ class PlaybackService : MediaLibraryService() {
                 }
             }
         }
-
         fun writePlayerStatus(playerStatus: PlayerStatus) {
             Logd(InTheatre.TAG, "Writing player status playback preferences")
             curState = upsertBlk(curState) {
                 it.curPlayerStatus = getCurPlayerStatusAsInt(playerStatus)
             }
         }
-
         private fun getCurPlayerStatusAsInt(playerStatus: PlayerStatus): Int {
             val playerStatusAsInt = when (playerStatus) {
                 PlayerStatus.PLAYING -> PLAYER_STATUS_PLAYING
@@ -473,37 +496,6 @@ class PlaybackService : MediaLibraryService() {
             }
             return playerStatusAsInt
         }
-    }
-
-    private val shutdownReceiver: BroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            Log.d(TAG, "shutdownReceiver onReceive called with action: ${intent.action}")
-            if (intent.action == ACTION_SHUTDOWN_PLAYBACK_SERVICE)
-                EventFlow.postEvent(FlowEvent.PlaybackServiceEvent(FlowEvent.PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN))
-        }
-    }
-
-    val rootItem = MediaItem.Builder()
-        .setMediaId("CurQueue")
-        .setMediaMetadata(
-            MediaMetadata.Builder()
-                .setIsBrowsable(true)
-                .setIsPlayable(false)
-                .setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_MIXED)
-                .setTitle(curQueue.name)
-                .build())
-        .build()
-
-    val mediaItemsInQueue: MutableList<MediaItem> by lazy {
-        val list = mutableListOf<MediaItem>()
-        curQueue.episodes.forEach {
-            if (it.media != null) {
-                val item = buildMediaItem(it.media!!)
-                if (item != null) list += item
-            }
-        }
-        Logd(TAG, "mediaItemsInQueue: ${list.size}")
-        list
     }
 
     private val mediaLibrarySessionCK = object: MediaLibrarySession.Callback {
@@ -762,9 +754,9 @@ class PlaybackService : MediaLibraryService() {
         val keycode = intent?.getIntExtra(MediaButtonReceiver.EXTRA_KEYCODE, -1) ?: -1
         val customAction = intent?.getStringExtra(MediaButtonReceiver.EXTRA_CUSTOM_ACTION)
         val hardwareButton = intent?.getBooleanExtra(MediaButtonReceiver.EXTRA_HARDWAREBUTTON, false) ?: false
-        val keyEvent: KeyEvent? = if (Build.VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
+        val keyEvent: KeyEvent? = if (Build.VERSION.SDK_INT >= VERSION_CODES.TIRAMISU)
             intent?.getParcelableExtra(EXTRA_KEY_EVENT, KeyEvent::class.java)
-        } else {
+        else {
             @Suppress("DEPRECATION")
             intent?.getParcelableExtra(EXTRA_KEY_EVENT)
         }
@@ -797,6 +789,7 @@ class PlaybackService : MediaLibraryService() {
                 return super.onStartCommand(intent, flags, startId)
             }
             playable != null -> {
+                recreateMediaSessionIfNeeded()
                 Logd(TAG, "onStartCommand status: $status")
                 val allowStreamThisTime = intent?.getBooleanExtra(EXTRA_ALLOW_STREAM_THIS_TIME, false) ?: false
                 val allowStreamAlways = intent?.getBooleanExtra(EXTRA_ALLOW_STREAM_ALWAYS, false) ?: false
@@ -963,6 +956,7 @@ class PlaybackService : MediaLibraryService() {
     }
 
     private fun startPlayingFromPreferences() {
+        recreateMediaSessionIfNeeded()
         scope.launch {
             try {
                 withContext(Dispatchers.IO) { loadPlayableFromPreferences() }
@@ -975,7 +969,7 @@ class PlaybackService : MediaLibraryService() {
     }
 
     private fun startPlaying(allowStreamThisTime: Boolean) {
-        Logd(TAG, "startPlaying called $allowStreamThisTime")
+        Logd(TAG, "startPlaying called allowStreamThisTime: $allowStreamThisTime")
         val media = curMedia ?: return
 
         val localFeed = URLUtil.isContentUrl(media.getStreamUrl())
@@ -986,18 +980,17 @@ class PlaybackService : MediaLibraryService() {
             return
         }
 
-        if (media.getIdentifier() != curState.curMediaId) clearCurTempSpeed()
+//        TODO: this is redundant
+//        if (media.getIdentifier() != curState.curMediaId) clearCurTempSpeed()
 
         mPlayer?.playMediaObject(media, streaming, startWhenPrepared = true, true)
-        recreateMediaSessionIfNeeded()
+//        recreateMediaSessionIfNeeded()
 //        val episode = (media as? EpisodeMedia)?.episode
 //        if (curMedia is EpisodeMedia && episode != null) addToQueue(true, episode)
     }
 
     fun clearCurTempSpeed() {
-        curState = upsertBlk(curState) {
-            it.curTempSpeed = FeedPreferences.SPEED_USE_GLOBAL
-        }
+        curState = upsertBlk(curState) { it.curTempSpeed = FeedPreferences.SPEED_USE_GLOBAL }
     }
 
     private var eventSink: Job?     = null

@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.ui.widget
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.storage.utils.ImageResourceUtils.getFallbackImageLocation
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.preferences.UserPreferences.shouldShowRemainingTime
 import ac.mdiq.podcini.receiver.MediaButtonReceiver.Companion.createPendingIntent
@@ -10,15 +9,17 @@ import ac.mdiq.podcini.receiver.PlayerWidget.Companion.isEnabled
 import ac.mdiq.podcini.receiver.PlayerWidget.Companion.prefs
 import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.storage.model.Playable
-import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
-import ac.mdiq.podcini.ui.activity.starter.PlaybackSpeedActivityStarter
-import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
 import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringLong
-import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.storage.utils.ImageResourceUtils.getFallbackImageLocation
 import ac.mdiq.podcini.storage.utils.TimeSpeedConverter
+import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
+import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
+import ac.mdiq.podcini.util.Logd
+import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.util.Log
@@ -34,7 +35,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.max
-
 
 /**
  * Updates the state of the player widget.
@@ -206,4 +206,30 @@ object WidgetUpdater {
     class WidgetState(val media: Playable?, val status: PlayerStatus, val position: Int, val duration: Int, val playbackSpeed: Float) {
         constructor(status: PlayerStatus) : this(null, status, Playable.INVALID_TIME, Playable.INVALID_TIME, 1.0f)
     }
+
+    /**
+     * Launches the playback speed dialog activity of the app with specific arguments.
+     * Does not require a dependency on the actual implementation of the activity.
+     */
+    class PlaybackSpeedActivityStarter(private val context: Context) {
+        val intent: Intent = Intent(INTENT)
+
+        init {
+            intent.setPackage(context.packageName)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
+        }
+
+        val pendingIntent: PendingIntent
+            get() = PendingIntent.getActivity(context, R.id.pending_intent_playback_speed, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+
+        fun start() {
+            context.startActivity(intent)
+        }
+
+        companion object {
+            const val INTENT: String = "ac.mdiq.podcini.intents.PLAYBACK_SPEED"
+        }
+    }
+
 }

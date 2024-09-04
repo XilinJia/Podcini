@@ -1,4 +1,4 @@
-package ac.mdiq.podcini.ui.actions.menuhandler
+package ac.mdiq.podcini.ui.actions.handler
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.sync.SynchronizationSettings.isProviderConnected

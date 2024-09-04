@@ -218,10 +218,10 @@ class FeedHandler {
                         state.namespaces[uri] = Itunes()
                         Logd(TAG, "Recognized ITunes namespace")
                     }
-                    uri == YouTube.NSURI && prefix == YouTube.NSTAG -> {
-                        state.namespaces[uri] = YouTube()
-                        Logd(TAG, "Recognized YouTube namespace")
-                    }
+//                    uri == YouTube.NSURI && prefix == YouTube.NSTAG -> {
+//                        state.namespaces[uri] = YouTube()
+//                        Logd(TAG, "Recognized YouTube namespace")
+//                    }
                     uri == SimpleChapters.NSURI && prefix.matches(SimpleChapters.NSTAG.toRegex()) -> {
                         state.namespaces[uri] = SimpleChapters()
                         Logd(TAG, "Recognized SimpleChapters namespace")
@@ -238,6 +238,7 @@ class FeedHandler {
                         state.namespaces[uri] = PodcastIndex()
                         Logd(TAG, "Recognized PodcastIndex namespace")
                     }
+                    else -> Logd(TAG, "startPrefixMapping can not handle uri: $uri")
                 }
             }
         }

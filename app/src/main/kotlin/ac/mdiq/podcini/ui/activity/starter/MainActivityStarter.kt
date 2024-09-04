@@ -20,7 +20,7 @@ class MainActivityStarter(private val context: Context) {
     }
 
     fun getIntent(): Intent {
-        if (fragmentArgs != null) intent.putExtra(EXTRA_FRAGMENT_ARGS, fragmentArgs)
+        if (fragmentArgs != null) intent.putExtra(Extras.fragment_args.name, fragmentArgs)
         return intent
     }
 
@@ -33,32 +33,32 @@ class MainActivityStarter(private val context: Context) {
     }
 
     fun withOpenPlayer(): MainActivityStarter {
-        intent.putExtra(EXTRA_OPEN_PLAYER, true)
+        intent.putExtra(Extras.open_player.name, true)
         return this
     }
 
     fun withOpenFeed(feedId: Long): MainActivityStarter {
-        intent.putExtra(EXTRA_FEED_ID, feedId)
+        intent.putExtra(Extras.fragment_feed_id.name, feedId)
         return this
     }
 
     fun withAddToBackStack(): MainActivityStarter {
-        intent.putExtra(EXTRA_ADD_TO_BACK_STACK, true)
+        intent.putExtra(Extras.add_to_back_stack.name, true)
         return this
     }
 
     fun withFragmentLoaded(fragmentName: String?): MainActivityStarter {
-        intent.putExtra(EXTRA_FRAGMENT_TAG, fragmentName)
+        intent.putExtra(Extras.fragment_tag.name, fragmentName)
         return this
     }
 
     fun withDrawerOpen(): MainActivityStarter {
-        intent.putExtra(EXTRA_OPEN_DRAWER, true)
+        intent.putExtra(Extras.open_drawer.name, true)
         return this
     }
 
     fun withDownloadLogsOpen(): MainActivityStarter {
-        intent.putExtra(EXTRA_OPEN_DOWNLOAD_LOGS, true)
+        intent.putExtra(Extras.open_download_logs.name, true)
         return this
     }
 
@@ -69,14 +69,17 @@ class MainActivityStarter(private val context: Context) {
         return this
     }
 
+    @Suppress("EnumEntryName")
+    enum class Extras {
+        open_player,
+        fragment_feed_id,
+        add_to_back_stack,
+        fragment_tag,
+        open_drawer,
+        open_download_logs,
+        fragment_args
+    }
     companion object {
         const val INTENT: String = "ac.mdiq.podcini.intents.MAIN_ACTIVITY"
-        const val EXTRA_OPEN_PLAYER: String = "open_player"
-        const val EXTRA_FEED_ID: String = "fragment_feed_id"
-        const val EXTRA_ADD_TO_BACK_STACK: String = "add_to_back_stack"
-        const val EXTRA_FRAGMENT_TAG: String = "fragment_tag"
-        const val EXTRA_OPEN_DRAWER: String = "open_drawer"
-        const val EXTRA_OPEN_DOWNLOAD_LOGS: String = "open_download_logs"
-        const val EXTRA_FRAGMENT_ARGS: String = "fragment_args"
     }
 }

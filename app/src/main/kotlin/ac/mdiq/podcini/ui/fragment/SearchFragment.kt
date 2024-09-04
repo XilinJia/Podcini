@@ -10,9 +10,9 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
-import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectHandler
-import ac.mdiq.podcini.ui.actions.menuhandler.EpisodeMenuHandler
-import ac.mdiq.podcini.ui.actions.menuhandler.MenuItemUtils
+import ac.mdiq.podcini.ui.actions.handler.EpisodeMultiSelectHandler
+import ac.mdiq.podcini.ui.actions.handler.EpisodeMenuHandler
+import ac.mdiq.podcini.ui.actions.handler.MenuItemUtils
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.EpisodesAdapter
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
@@ -26,6 +26,7 @@ import ac.mdiq.podcini.ui.view.SquareImageView
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
@@ -63,7 +64,8 @@ import java.lang.ref.WeakReference
 /**
  * Performs a search operation on all feeds or one specific feed and displays the search result.
  */
-@UnstableApi class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
+@UnstableApi
+class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
     private var _binding: SearchFragmentBinding? = null
     private val binding get() = _binding!!
 
@@ -290,15 +292,14 @@ import java.lang.ref.WeakReference
         search()
     }
 
+    @SuppressLint("StringFormatMatches")
     @UnstableApi private fun search() {
         adapterFeeds.setEndButton(R.string.search_online) { this.searchOnline() }
         chip.visibility = if ((requireArguments().getLong(ARG_FEED, 0) == 0L)) View.GONE else View.VISIBLE
 
         lifecycleScope.launch {
             try {
-                val results = withContext(Dispatchers.IO) {
-                    performSearch()
-                }
+                val results = withContext(Dispatchers.IO) { performSearch() }
                 withContext(Dispatchers.Main) {
                     progressBar.visibility = View.GONE
                     if (results.first != null) {
@@ -398,7 +399,7 @@ import java.lang.ref.WeakReference
             (activity as MainActivity).loadChildFragment(fragment)
             return
         }
-        (activity as MainActivity).loadChildFragment(OnlineSearchFragment.newInstance(CombinedSearcher::class.java, query))
+        (activity as MainActivity).loadChildFragment(SearchResultsFragment.newInstance(CombinedSearcher::class.java, query))
     }
 
     override fun onStartSelectMode() {

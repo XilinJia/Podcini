@@ -145,7 +145,7 @@ class OnlineSearchFragment : Fragment() {
                     progressBar.visibility = View.GONE
                     adapter?.clear()
                     handleSearchResults()
-                    txtvEmpty.text = getString(R.string.no_results_for_query) + query
+                    txtvEmpty.text = getString(R.string.no_results_for_query, query)
                 }
             } catch (e: Exception) { handleSearchError(e, query) }
         }

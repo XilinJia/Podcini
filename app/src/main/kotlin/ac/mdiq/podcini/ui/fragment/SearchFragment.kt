@@ -310,7 +310,7 @@ import java.lang.ref.WeakReference
                         if (results.second != null) adapterFeeds.updateData(results.second!!)
                     } else adapterFeeds.updateData(emptyList())
                     if (searchView.query.toString().isEmpty()) emptyViewHandler.setMessage(R.string.type_to_search)
-                    else emptyViewHandler.setMessage(getString(R.string.no_results_for_query) + searchView.query)
+                    else emptyViewHandler.setMessage(getString(R.string.no_results_for_query, searchView.query))
                 }
             } catch (e: Throwable) {
                 Log.e(TAG, Log.getStackTraceString(e))

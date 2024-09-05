@@ -22,7 +22,6 @@ class MediaButtonReceiver : BroadcastReceiver() {
         val extras = intent.extras
         Log.d(TAG, "onReceive Extras: $extras")
         if (extras == null) return
-
         Log.d(TAG, "onReceive Extras: ${extras.keySet()}")
         for (key in extras.keySet()) {
             Log.d(TAG, "onReceive Extra[$key] = ${extras[key]}")
@@ -40,11 +39,7 @@ class MediaButtonReceiver : BroadcastReceiver() {
             serviceIntent.putExtra(EXTRA_KEYCODE, keyEvent.keyCode)
             serviceIntent.putExtra(EXTRA_SOURCE, keyEvent.source)
             serviceIntent.putExtra(EXTRA_HARDWAREBUTTON, keyEvent.eventTime > 0 || keyEvent.downTime > 0)
-            try {
-                ContextCompat.startForegroundService(context, serviceIntent)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            try { ContextCompat.startForegroundService(context, serviceIntent) } catch (e: Exception) { e.printStackTrace() }
         }
     }
 

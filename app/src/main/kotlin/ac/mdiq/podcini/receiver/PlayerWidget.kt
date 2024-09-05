@@ -26,7 +26,6 @@ class PlayerWidget : AppWidgetProvider() {
         Logd(TAG, "onUpdate() called with: context = [$context], appWidgetManager = [$appWidgetManager], appWidgetIds = [${appWidgetIds.contentToString()}]")
         getSharedPrefs(context)
         WidgetUpdaterWorker.enqueueWork(context)
-
         if (!prefs!!.getBoolean(Prefs.WorkaroundEnabled.name, false)) {
             scheduleWorkaround(context)
             prefs!!.edit().putBoolean(Prefs.WorkaroundEnabled.name, true).apply()
@@ -75,9 +74,7 @@ class PlayerWidget : AppWidgetProvider() {
     companion object {
         private val TAG: String = PlayerWidget::class.simpleName ?: "Anonymous"
         private const val PREFS_NAME: String = "PlayerWidgetPrefs"
-
         const val DEFAULT_COLOR: Int = -0xd9d3cf
-
         var prefs: SharedPreferences? = null
 
         fun getSharedPrefs(context: Context) {

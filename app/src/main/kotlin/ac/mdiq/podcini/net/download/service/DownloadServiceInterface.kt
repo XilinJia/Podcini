@@ -1,4 +1,4 @@
-package ac.mdiq.podcini.net.download.serviceinterface
+package ac.mdiq.podcini.net.download.service
 
 import android.content.Context
 import ac.mdiq.podcini.net.download.DownloadStatus

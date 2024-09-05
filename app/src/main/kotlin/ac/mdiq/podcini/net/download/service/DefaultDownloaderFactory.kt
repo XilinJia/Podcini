@@ -2,7 +2,6 @@ package ac.mdiq.podcini.net.download.service
 
 import android.util.Log
 import android.webkit.URLUtil
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
 
 class DefaultDownloaderFactory : DownloaderFactory {
     override fun create(request: DownloadRequest): Downloader? {

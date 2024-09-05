@@ -13,7 +13,7 @@ import java.net.URLDecoder
  * Reads ID3 chapters.
  * See https://id3.org/id3v2-chapters-1.0
  */
-class ChapterReader(input: CountingInputStream?) : ID3Reader(input!!) {
+class ChapterReader(input: CountingInputStream) : ID3Reader(input) {
     private val chapters: MutableList<Chapter> = ArrayList()
 
     @Throws(IOException::class, ID3ReaderException::class)
@@ -23,9 +23,7 @@ class ChapterReader(input: CountingInputStream?) : ID3Reader(input!!) {
             val chapter = readChapter(frameHeader)
             Logd(TAG, "Chapter done: $chapter")
             chapters.add(chapter)
-        } else {
-            super.readFrame(frameHeader)
-        }
+        } else super.readFrame(frameHeader)
     }
 
     @Throws(IOException::class, ID3ReaderException::class)
@@ -63,9 +61,7 @@ class ChapterReader(input: CountingInputStream?) : ID3Reader(input!!) {
                     val decodedLink = URLDecoder.decode(url, "ISO-8859-1")
                     chapter.link = decodedLink
                     Logd(TAG, "Found link: " + chapter.link)
-                } catch (iae: IllegalArgumentException) {
-                    Log.w(TAG, "Bad URL found in ID3 data")
-                }
+                } catch (iae: IllegalArgumentException) { Log.w(TAG, "Bad URL found in ID3 data") }
             }
             FRAME_ID_PICTURE -> {
                 val encoding = readByte()

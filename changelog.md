@@ -1,3 +1,10 @@
+# 6.5.5
+
+* corrected issue of Youtube channel being set for auto-download when subscribing
+* fixed various issues on video sizing and further refined the video player
+* some class restructuring and refactoring and nullalability adjustments
+* updated various dependencies
+
 # 6.5.4
 
 * in the search bar of OnlineSearch view, search button is moved to the end of the bar

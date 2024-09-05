@@ -7,7 +7,7 @@ import java.io.IOException
 /**
  * Reads general ID3 metadata like comment, which Android's MediaMetadataReceiver does not support.
  */
-class Id3MetadataReader(input: CountingInputStream?) : ID3Reader(input!!) {
+class Id3MetadataReader(input: CountingInputStream) : ID3Reader(input) {
     var comment: String? = null
         private set
 
@@ -20,9 +20,7 @@ class Id3MetadataReader(input: CountingInputStream?) : ID3Reader(input!!) {
             val shortDescription = readEncodedString(encoding, frameHeader.size - 4)
             val longDescription = readEncodedString(encoding, (frameHeader.size - (position - frameStart)).toInt())
             comment = if (shortDescription.length > longDescription.length) shortDescription else longDescription
-        } else {
-            super.readFrame(frameHeader)
-        }
+        } else super.readFrame(frameHeader)
     }
 
     companion object {

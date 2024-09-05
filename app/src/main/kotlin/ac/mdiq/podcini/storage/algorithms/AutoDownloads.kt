@@ -1,6 +1,6 @@
 package ac.mdiq.podcini.storage.algorithms
 
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.net.utils.NetworkUtils.isAutoDownloadAllowed
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.base.InTheatre.isCurMedia

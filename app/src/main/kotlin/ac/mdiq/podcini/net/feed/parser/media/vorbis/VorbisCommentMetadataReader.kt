@@ -2,7 +2,7 @@ package ac.mdiq.podcini.net.feed.parser.media.vorbis
 
 import java.io.InputStream
 
-class VorbisCommentMetadataReader(input: InputStream?) : VorbisCommentReader(input!!) {
+class VorbisCommentMetadataReader(input: InputStream) : VorbisCommentReader(input!!) {
     var description: String? = null
         private set
 

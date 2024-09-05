@@ -8,24 +8,19 @@ import ac.mdiq.podcini.net.feed.parser.utils.DurationParser.inMillis
 import org.xml.sax.Attributes
 
 class Itunes : Namespace() {
-    override fun handleElementStart(localName: String, state: HandlerState,
-                                    attributes: Attributes): SyndElement {
+    override fun handleElementStart(localName: String, state: HandlerState, attributes: Attributes): SyndElement {
         if (IMAGE == localName) {
             val url: String? = attributes.getValue(IMAGE_HREF)
-
             if (state.currentItem != null) state.currentItem!!.imageUrl = url
-            else {
-                // this is the feed image
-                // prefer to all other images
-                if (!url.isNullOrEmpty()) state.feed.imageUrl = url
-            }
+            // this is the feed image
+            // prefer to all other images
+            else if (!url.isNullOrEmpty()) state.feed.imageUrl = url
         }
         return SyndElement(localName, this)
     }
 
     override fun handleElementEnd(localName: String, state: HandlerState) {
         if (state.contentBuf == null) return
-
         val content = state.contentBuf.toString()
         if (content.isEmpty()) return
 
@@ -38,9 +33,7 @@ class Itunes : Namespace() {
                 try {
                     val durationMs = inMillis(content)
                     state.tempObjects[DURATION] = durationMs.toInt()
-                } catch (e: NumberFormatException) {
-                    Log.e(NSTAG, String.format("Duration '%s' could not be parsed", content))
-                }
+                } catch (e: NumberFormatException) { Log.e(NSTAG, String.format("Duration '%s' could not be parsed", content)) }
             }
             SUBTITLE == localName -> {
                 when {

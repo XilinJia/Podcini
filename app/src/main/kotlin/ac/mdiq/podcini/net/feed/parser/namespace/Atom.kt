@@ -53,8 +53,7 @@ class Atom : Namespace() {
 //                                a) no type-attribute is given and feed-object has no link yet
 //                                b) type of link is LINK_TYPE_HTML or LINK_TYPE_XHTML
                                 when {
-                                    type == null && state.feed.link == null || LINK_TYPE_HTML == type || LINK_TYPE_XHTML == type ->
-                                        state.feed.link = href
+                                    type == null && state.feed.link == null || LINK_TYPE_HTML == type || LINK_TYPE_XHTML == type -> state.feed.link = href
                                     LINK_TYPE_ATOM == type || LINK_TYPE_RSS == type -> {
                                         // treat as podlove alternate feed
                                         var title: String? = attributes.getValue(LINK_TITLE)
@@ -71,9 +70,8 @@ class Atom : Namespace() {
                                         if (title.isNullOrEmpty()) title = href?:""
                                         if (!href.isNullOrEmpty()) state.addAlternateFeedUrl(title, href)
                                     }
-                                    LINK_TYPE_HTML, LINK_TYPE_XHTML -> {
-                                        //A Link such as to a directory such as iTunes
-                                    }
+                                    //A Link such as to a directory such as iTunes
+                                    LINK_TYPE_HTML, LINK_TYPE_XHTML -> {}
                                 }
                             }
                             LINK_REL_PAYMENT -> state.feed.addPayment(FeedFunding(href, ""))

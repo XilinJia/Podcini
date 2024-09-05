@@ -25,17 +25,13 @@ class ShareDialog : BottomSheetDialogFragment() {
     private var item: Episode? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-
         ctx = requireContext()
         prefs = requireActivity().getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-
         _binding = ShareEpisodeDialogBinding.inflate(inflater)
         binding.shareDialogRadioGroup.setOnCheckedChangeListener { _: RadioGroup?, checkedId: Int ->
             binding.sharePositionCheckbox.isEnabled = checkedId == binding.shareSocialRadio.id
         }
-
         setupOptions()
-
         binding.shareButton.setOnClickListener {
             val includePlaybackPosition = binding.sharePositionCheckbox.isChecked
             val position: Int
@@ -52,14 +48,9 @@ class ShareDialog : BottomSheetDialogFragment() {
                     shareFeedItemFile(ctx, item!!.media!!)
                     position = 3
                 }
-                else -> {
-                    throw IllegalStateException("Unknown share method")
-                }
+                else -> throw IllegalStateException("Unknown share method")
             }
-            prefs.edit()
-                .putBoolean(PREF_SHARE_EPISODE_START_AT, includePlaybackPosition)
-                .putInt(PREF_SHARE_EPISODE_TYPE, position)
-                .apply()
+            prefs.edit().putBoolean(PREF_SHARE_EPISODE_START_AT, includePlaybackPosition).putInt(PREF_SHARE_EPISODE_TYPE, position).apply()
             dismiss()
         }
         return binding.root

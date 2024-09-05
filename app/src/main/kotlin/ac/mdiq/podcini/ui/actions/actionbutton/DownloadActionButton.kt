@@ -12,7 +12,7 @@ import ac.mdiq.podcini.net.utils.NetworkUtils.isNetworkRestricted
 import ac.mdiq.podcini.net.utils.NetworkUtils.isVpnOverWifi
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 
 class DownloadActionButton(item: Episode) : EpisodeActionButton(item) {
     override val visibility: Int

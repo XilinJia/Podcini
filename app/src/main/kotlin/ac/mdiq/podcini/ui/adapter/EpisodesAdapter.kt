@@ -4,7 +4,7 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.EpisodeHomeFragmentBinding
 import ac.mdiq.podcini.databinding.EpisodeInfoFragmentBinding
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.net.utils.NetworkUtils.fetchHtmlSource
 import ac.mdiq.podcini.net.utils.NetworkUtils.isEpisodeHeadDownloadAllowed
 import ac.mdiq.podcini.playback.base.InTheatre

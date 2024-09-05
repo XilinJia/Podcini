@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.media3.common.util.UnstableApi
 import ac.mdiq.podcini.util.config.ClientConfigurator
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownloadOnBattery
 import ac.mdiq.podcini.storage.algorithms.AutoDownloads.autodownloadEpisodeMedia
 import ac.mdiq.podcini.util.Logd
@@ -20,7 +20,6 @@ class PowerConnectionReceiver : BroadcastReceiver() {
     @UnstableApi override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action
         Log.d(TAG, "onReceive charging intent: $action")
-
         ClientConfigurator.initialize(context)
         if (Intent.ACTION_POWER_CONNECTED == action) {
             Logd(TAG, "charging, starting auto-download")

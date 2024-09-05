@@ -17,6 +17,8 @@ import java.nio.charset.MalformedInputException
  */
 open class ID3Reader(private val inputStream: CountingInputStream) {
     private var tagHeader: TagHeader? = null
+    val position: Int
+        get() = inputStream.count
 
     @Throws(IOException::class, ID3ReaderException::class)
     fun readInputStream() {
@@ -38,16 +40,12 @@ open class ID3Reader(private val inputStream: CountingInputStream) {
         skipBytes(frameHeader.size)
     }
 
-    val position: Int
-        get() = inputStream.count
-
     /**
      * Skip a certain number of bytes on the given input stream.
      */
     @Throws(IOException::class, ID3ReaderException::class)
     fun skipBytes(number: Int) {
         if (number < 0) throw ID3ReaderException("Trying to read a negative number of bytes")
-
         IOUtils.skipFully(inputStream, number.toLong())
     }
 
@@ -98,7 +96,6 @@ open class ID3Reader(private val inputStream: CountingInputStream) {
         val id = readPlainBytesToString(FRAME_ID_LENGTH)
         var size = readInt()
         if (tagHeader != null && tagHeader!!.version >= 0x0400) size = unsynchsafe(size)
-
         val flags = readShort()
         return FrameHeader(id, size, flags)
     }
@@ -106,13 +103,11 @@ open class ID3Reader(private val inputStream: CountingInputStream) {
     private fun unsynchsafe(inVal: Int): Int {
         var out = 0
         var mask = 0x7F000000
-
         while (mask != 0) {
             out = out shr 1
             out = out or (inVal and mask)
             mask = mask shr 8
         }
-
         return out
     }
 
@@ -161,7 +156,6 @@ open class ID3Reader(private val inputStream: CountingInputStream) {
             val c = readByte()
             bytesRead++
             if (c.toInt() == 0) break
-
             bytes.write(c.toInt())
         }
         return charset.newDecoder().decode(ByteBuffer.wrap(bytes.toByteArray())).toString()
@@ -191,11 +185,7 @@ open class ID3Reader(private val inputStream: CountingInputStream) {
             val c = readByte()
             if (c.toInt() != 0) bytes.write(c.toInt())
         }
-        return try {
-            charset.newDecoder().decode(ByteBuffer.wrap(bytes.toByteArray())).toString()
-        } catch (e: MalformedInputException) {
-            ""
-        }
+        return try { charset.newDecoder().decode(ByteBuffer.wrap(bytes.toByteArray())).toString() } catch (e: MalformedInputException) { "" }
     }
 
     companion object {

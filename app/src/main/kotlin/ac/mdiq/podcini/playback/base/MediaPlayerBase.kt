@@ -50,6 +50,20 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
      */
     private var wifiLock: WifiLock? = null
 
+    /**
+     * Returns a PSMInfo object that contains information about the current state of the PSMP object.
+     * @return The PSMPInfo object.
+     */
+    @get:Synchronized
+    val playerInfo: MediaPlayerInfo
+        get() = MediaPlayerInfo(oldStatus, status, curMedia)
+
+    val isAudioChannelInUse: Boolean
+        get() {
+            val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            return (audioManager.mode != AudioManager.MODE_NORMAL || audioManager.isMusicActive)
+        }
+    
     init {
         status = PlayerStatus.STOPPED
     }
@@ -185,14 +199,6 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
         Log.e(TAG, "Resetting Video Surface unsupported in Remote Media Player")
     }
 
-    /**
-     * Returns a PSMInfo object that contains information about the current state of the PSMP object.
-     * @return The PSMPInfo object.
-     */
-    @get:Synchronized
-    val playerInfo: MediaPlayerInfo
-        get() = MediaPlayerInfo(oldStatus, status, curMedia)
-
     open fun setAudioTrack(track: Int) {}
 
     fun skip() {
@@ -276,13 +282,10 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
         callback.statusChanged(MediaPlayerInfo(oldStatus, status, curMedia))
     }
 
-    val isAudioChannelInUse: Boolean
-        get() {
-            val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            return (audioManager.mode != AudioManager.MODE_NORMAL || audioManager.isMusicActive)
-        }
-
-    class MediaPlayerInfo(@JvmField val oldPlayerStatus: PlayerStatus?, @JvmField var playerStatus: PlayerStatus, @JvmField var playable: Playable?)
+    class MediaPlayerInfo(
+            @JvmField val oldPlayerStatus: PlayerStatus?,
+            @JvmField var playerStatus: PlayerStatus,
+            @JvmField var playable: Playable?)
 
     companion object {
         private val TAG: String = MediaPlayerBase::class.simpleName ?: "Anonymous"
@@ -308,8 +311,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
 
         val audioPlaybackSpeed: Float
             get() {
-                try {
-                    return appPrefs.getString(UserPreferences.Prefs.prefPlaybackSpeed.name, "1.00")!!.toFloat()
+                try { return appPrefs.getString(UserPreferences.Prefs.prefPlaybackSpeed.name, "1.00")!!.toFloat()
                 } catch (e: NumberFormatException) {
                     Log.e(TAG, Log.getStackTraceString(e))
                     setPlaybackSpeed(1.0f)

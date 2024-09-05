@@ -395,7 +395,7 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
         inVal.hideSoftInputFromWindow(searchView.windowToken, 0)
         val query = searchView.query.toString()
         if (query.matches("http[s]?://.*".toRegex())) {
-            val fragment: Fragment = OnlineFeedViewFragment.newInstance(query)
+            val fragment: Fragment = OnlineFeedFragment.newInstance(query)
             (activity as MainActivity).loadChildFragment(fragment)
             return
         }

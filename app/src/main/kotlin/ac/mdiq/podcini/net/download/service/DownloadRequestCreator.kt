@@ -1,6 +1,5 @@
 package ac.mdiq.podcini.net.download.service
 
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.utils.FilesUtils.feedfilePath

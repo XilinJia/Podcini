@@ -47,17 +47,14 @@ import java.util.*
 
 @OptIn(UnstableApi::class)
 open class VariableSpeedDialog : BottomSheetDialogFragment() {
+    private var _binding: SpeedSelectDialogBinding? = null
+    private val binding get() = _binding!!
 
     private lateinit var adapter: SpeedSelectionAdapter
     private lateinit var speedSeekBar: PlaybackSpeedSeekBar
     private lateinit var addCurrentSpeedChip: Chip
-
-    private var _binding: SpeedSelectDialogBinding? = null
-    private val binding get() = _binding!!
-
-    private val selectedSpeeds: MutableList<Float>
-
     private lateinit var settingCode: BooleanArray
+    private val selectedSpeeds: MutableList<Float>
 
     init {
         val format = DecimalFormatSymbols(Locale.US)
@@ -262,9 +259,7 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
                         if (codeArray[1]) {
                             val episode = (curMedia as? EpisodeMedia)?.episodeOrFetch() ?: curEpisode
                             if (episode?.feed?.preferences != null) {
-                                upsertBlk(episode.feed!!) {
-                                    it.preferences!!.playSpeed = speed
-                                }
+                                upsertBlk(episode.feed!!) { it.preferences!!.playSpeed = speed }
                             }
                         }
                         if (codeArray[0]) {
@@ -283,9 +278,7 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
             }
         }
         private fun setCurTempSpeed(speed: Float) {
-            curState = upsertBlk(curState) {
-                it.curTempSpeed = speed
-            }
+            curState = upsertBlk(curState) { it.curTempSpeed = speed }
         }
         inner class ViewHolder internal constructor(var chip: Chip) : RecyclerView.ViewHolder(chip)
     }
@@ -310,7 +303,6 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
             args.putBooleanArray("settingCode", settingCode)
             if (indexDefault != null) args.putInt(INDEX_DEFAULT, indexDefault)
             dialog.arguments = args
-
             return dialog
         }
     }

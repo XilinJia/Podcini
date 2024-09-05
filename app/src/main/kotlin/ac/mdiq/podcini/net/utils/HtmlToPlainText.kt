@@ -14,13 +14,9 @@ import java.util.regex.Pattern
  * This class is based on `HtmlToPlainText` from jsoup's examples package.
  *
  * HTML to plain-text. This example program demonstrates the use of jsoup to convert HTML input to lightly-formatted
- * plain-text. That is divergent from the general goal of jsoup's .text() methods, which is to get clean data from a
- * scrape.
- *
+ * plain-text. That is divergent from the general goal of jsoup's .text() methods, which is to get clean data from a scrape.
  *
  * Note that this is a fairly simplistic formatter -- for real world use you'll want to embrace and extend.
- *
- *
  *
  * To invoke from the command line, assuming you've downloaded the jsoup jar to your current directory:
  *
@@ -40,7 +36,6 @@ class HtmlToPlainText {
         val formatter = FormattingVisitor()
         // walk the DOM, and call .head() and .tail() for each node
         NodeTraversor.traverse(formatter, element)
-
         return formatter.toString()
     }
 
@@ -72,7 +67,6 @@ class HtmlToPlainText {
         private fun append(text: String) {
             if (text == " " && (accum.isEmpty() || StringUtil.`in`(accum.substring(accum.length - 1), " ", "\n")))
                 return  // don't accumulate long runs of empty spaces
-
             accum.append(text)
         }
 

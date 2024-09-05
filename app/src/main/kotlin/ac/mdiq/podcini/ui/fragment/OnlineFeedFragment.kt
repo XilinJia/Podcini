@@ -7,7 +7,7 @@ import ac.mdiq.podcini.net.download.DownloadError
 import ac.mdiq.podcini.net.download.service.DownloadRequestCreator.create
 import ac.mdiq.podcini.net.download.service.Downloader
 import ac.mdiq.podcini.net.download.service.HttpDownloader
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.net.feed.FeedUrlNotFoundException
 import ac.mdiq.podcini.net.feed.discovery.CombinedSearcher
 import ac.mdiq.podcini.net.feed.discovery.PodcastSearcherRegistry
@@ -81,12 +81,11 @@ import kotlin.math.min
  * feed object that was parsed. This activity MUST be started with a given URL
  * or an Exception will be thrown.
  *
- *
  * If the feed cannot be downloaded or parsed, an error dialog will be displayed
  * and the activity will finish as soon as the error dialog is closed.
  */
 @OptIn(UnstableApi::class)
-class OnlineFeedViewFragment : Fragment() {
+class OnlineFeedFragment : Fragment() {
     private var _binding: OnlineFeedviewFragmentBinding? = null
     private val binding get() = _binding!!
 
@@ -145,17 +144,6 @@ class OnlineFeedViewFragment : Fragment() {
             lookupUrlAndBuild(feedUrl)
         }
         return binding.root
-    }
-
-    private fun showNoPodcastFoundError() {
-        requireActivity().runOnUiThread {
-            MaterialAlertDialogBuilder(requireContext())
-                .setNeutralButton(android.R.string.ok) { _: DialogInterface?, _: Int -> }
-                .setTitle(R.string.error_label)
-                .setMessage(R.string.null_value_podcast_error)
-                .setOnDismissListener {}
-                .show()
-        }
     }
 
     /**
@@ -392,7 +380,7 @@ class OnlineFeedViewFragment : Fragment() {
             try {
                 val feeds = withContext(Dispatchers.IO) { getFeedList() }
                 withContext(Dispatchers.Main) {
-                    this@OnlineFeedViewFragment.feeds = feeds
+                    this@OnlineFeedFragment.feeds = feeds
                     handleUpdatedFeedStatus()
                 }
             } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e)) }
@@ -492,7 +480,7 @@ class OnlineFeedViewFragment : Fragment() {
                 }
             }
         }
-        if (feedSource == "VistaGuide" && isEnableAutodownload)
+        if (feedSource != "VistaGuide" && isEnableAutodownload)
             binding.autoDownloadCheckBox.isChecked = prefs!!.getBoolean(PREF_LAST_AUTO_DOWNLOAD, true)
 
         if (alternateFeedUrls.isEmpty()) binding.alternateUrlsSpinner.visibility = View.GONE
@@ -563,7 +551,7 @@ class OnlineFeedViewFragment : Fragment() {
                     if (feed1.preferences == null) feed1.preferences = FeedPreferences(feed1.id, false,
                         FeedPreferences.AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
 
-                    if (isEnableAutodownload) {
+                    if (feedSource != "VistaGuide" && isEnableAutodownload) {
                         val autoDownload = binding.autoDownloadCheckBox.isChecked
                         feed1.preferences!!.autoDownload = autoDownload
                         val editor = prefs!!.edit()
@@ -679,11 +667,22 @@ class OnlineFeedViewFragment : Fragment() {
         return true
     }
 
+    private fun showNoPodcastFoundError() {
+        requireActivity().runOnUiThread {
+            MaterialAlertDialogBuilder(requireContext())
+                .setNeutralButton(android.R.string.ok) { _: DialogInterface?, _: Int -> }
+                .setTitle(R.string.error_label)
+                .setMessage(R.string.null_value_podcast_error)
+                .setOnDismissListener {}
+                .show()
+        }
+    }
+
     private inner class FeedViewAuthenticationDialog(context: Context, titleRes: Int, private val feedUrl: String) :
         AuthenticationDialog(context, titleRes, true, username, password) {
         override fun onConfirmed(username: String, password: String) {
-            this@OnlineFeedViewFragment.username = username
-            this@OnlineFeedViewFragment.password = password
+            this@OnlineFeedFragment.username = username
+            this@OnlineFeedFragment.password = password
             startFeedBuilding(feedUrl)
         }
     }
@@ -836,7 +835,7 @@ class OnlineFeedViewFragment : Fragment() {
         const val ARG_FEEDURL: String = "arg.feedurl"
         const val ARG_WAS_MANUAL_URL: String = "manual_url"
         private const val RESULT_ERROR = 2
-        private val TAG: String = OnlineFeedViewFragment::class.simpleName ?: "Anonymous"
+        private val TAG: String = OnlineFeedFragment::class.simpleName ?: "Anonymous"
         private const val PREFS = "OnlineFeedViewFragmentPreferences"
         private const val PREF_LAST_AUTO_DOWNLOAD = "lastAutoDownload"
         private const val KEY_UP_ARROW = "up_arrow"
@@ -846,8 +845,8 @@ class OnlineFeedViewFragment : Fragment() {
             if (prefs == null) prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         }
 
-        fun newInstance(feedUrl: String): OnlineFeedViewFragment {
-            val fragment = OnlineFeedViewFragment()
+        fun newInstance(feedUrl: String): OnlineFeedFragment {
+            val fragment = OnlineFeedFragment()
             val b = Bundle()
             b.putString(ARG_FEEDURL, feedUrl)
             fragment.arguments = b

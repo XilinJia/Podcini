@@ -4,7 +4,7 @@ import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.MainActivityBinding
 import ac.mdiq.podcini.net.download.DownloadStatus
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.restartUpdateAlarm
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnceOrAsk
@@ -91,7 +91,6 @@ class MainActivity : CastEnabledActivity() {
     private lateinit var navDrawerFragment: NavDrawerFragment
     private lateinit var audioPlayerFragment: AudioPlayerFragment
     private lateinit var audioPlayerView: View
-//    private lateinit var controllerFuture: ListenableFuture<MediaController>
     private lateinit var navDrawer: View
     private lateinit var dummyView : View
     lateinit var bottomSheet: LockableBottomSheetBehavior<*>
@@ -103,6 +102,53 @@ class MainActivity : CastEnabledActivity() {
     val recycledViewPool: RecyclerView.RecycledViewPool = RecyclerView.RecycledViewPool()
     private var lastTheme = 0
     private var navigationBarInsets = Insets.NONE
+
+    private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+        if (isGranted) return@registerForActivityResult
+
+        MaterialAlertDialogBuilder(this)
+            .setMessage(R.string.notification_permission_text)
+            .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int -> }
+            .setNegativeButton(R.string.cancel_label) { _: DialogInterface?, _: Int -> finish() }
+            .show()
+    }
+
+    private var prevState: Int = 0
+    private val bottomSheetCallback: BottomSheetCallback = @UnstableApi object : BottomSheetCallback() {
+        override fun onStateChanged(view: View, state: Int) {
+            Logd(TAG, "bottomSheet onStateChanged $state ${view.id}")
+            when (state) {
+                BottomSheetBehavior.STATE_COLLAPSED -> {
+                    audioPlayerFragment.onCollaped()
+                    onSlide(view,0.0f)
+                    prevState = state
+                }
+                BottomSheetBehavior.STATE_EXPANDED -> {
+                    audioPlayerFragment.onExpanded()
+                    onSlide(view, 1.0f)
+                    prevState = state
+                }
+                else -> {}
+            }
+        }
+        override fun onSlide(view: View, slideOffset: Float) {
+            val audioPlayer = supportFragmentManager.findFragmentByTag(AudioPlayerFragment.TAG) as? AudioPlayerFragment ?: return
+//            if (slideOffset == 0.0f) { //STATE_COLLAPSED
+//                audioPlayer.scrollToTop()
+//            }
+            audioPlayer.fadePlayerToToolbar(slideOffset)
+        }
+    }
+
+    private val isDrawerOpen: Boolean
+        get() = drawerLayout?.isDrawerOpen(navDrawer)?:false
+
+    private val screenWidth: Int
+        get() {
+            val displayMetrics = DisplayMetrics()
+            windowManager.defaultDisplay.getMetrics(displayMetrics)
+            return displayMetrics.widthPixels
+        }
 
     @UnstableApi public override fun onCreate(savedInstanceState: Bundle?) {
         lastTheme = getNoTitleTheme(this)
@@ -131,7 +177,7 @@ class MainActivity : CastEnabledActivity() {
             PlayerDetailsFragment.getSharedPrefs(this@MainActivity)
             PlayerWidget.getSharedPrefs(this@MainActivity)
             StatisticsFragment.getSharedPrefs(this@MainActivity)
-            OnlineFeedViewFragment.getSharedPrefs(this@MainActivity)
+            OnlineFeedFragment.getSharedPrefs(this@MainActivity)
             ItunesTopListLoader.getSharedPrefs(this@MainActivity)
         }
 
@@ -155,7 +201,7 @@ class MainActivity : CastEnabledActivity() {
         if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
 //            Toast.makeText(this, R.string.notification_permission_text, Toast.LENGTH_LONG).show()
 //            requestPostNotificationPermission()
-           requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
 
         // Consume navigation bar insets - we apply them in setPlayerVisible()
@@ -213,9 +259,7 @@ class MainActivity : CastEnabledActivity() {
                     when (workInfo.state) {
                         WorkInfo.State.RUNNING -> isRefreshingFeeds = true
                         WorkInfo.State.ENQUEUED -> isRefreshingFeeds = true
-                        else -> {
-                //                        Log.d(TAG, "workInfo.state ${workInfo.state}")
-                        }
+                        else -> {}
                     }
                 }
                 EventFlow.postStickyEvent(FlowEvent.FeedUpdatingEvent(isRefreshingFeeds))
@@ -225,9 +269,7 @@ class MainActivity : CastEnabledActivity() {
 
     private fun observeDownloads() {
         lifecycleScope.launch {
-            withContext(Dispatchers.IO) {
-                WorkManager.getInstance(this@MainActivity).pruneWork().result.get()
-            }
+            withContext(Dispatchers.IO) { WorkManager.getInstance(this@MainActivity).pruneWork().result.get() }
             WorkManager.getInstance(this@MainActivity)
                 .getWorkInfosByTagLiveData(DownloadServiceInterface.WORK_TAG)
                 .observe(this@MainActivity) { workInfos: List<WorkInfo> ->
@@ -267,19 +309,9 @@ class MainActivity : CastEnabledActivity() {
                 }
         }
     }
-//    fun requestPostNotificationPermission() {
+    //    fun requestPostNotificationPermission() {
 //        if (Build.VERSION.SDK_INT >= 33) requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
 //    }
-
-    private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-        if (isGranted) return@registerForActivityResult
-
-        MaterialAlertDialogBuilder(this)
-            .setMessage(R.string.notification_permission_text)
-            .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int -> }
-            .setNegativeButton(R.string.cancel_label) { _: DialogInterface?, _: Int -> finish() }
-            .show()
-    }
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
@@ -301,33 +333,6 @@ class MainActivity : CastEnabledActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putInt(Extras.generated_view_id.name, View.generateViewId())
-    }
-
-    private var prevState: Int = 0
-    private val bottomSheetCallback: BottomSheetCallback = @UnstableApi object : BottomSheetCallback() {
-         override fun onStateChanged(view: View, state: Int) {
-             Logd(TAG, "bottomSheet onStateChanged $state ${view.id}")
-             when (state) {
-                 BottomSheetBehavior.STATE_COLLAPSED -> {
-                     audioPlayerFragment.onCollaped()
-                     onSlide(view,0.0f)
-                     prevState = state
-                 }
-                 BottomSheetBehavior.STATE_EXPANDED -> {
-                     audioPlayerFragment.onExpanded()
-                     onSlide(view, 1.0f)
-                     prevState = state
-                 }
-                 else -> {}
-             }
-         }
-        override fun onSlide(view: View, slideOffset: Float) {
-            val audioPlayer = supportFragmentManager.findFragmentByTag(AudioPlayerFragment.TAG) as? AudioPlayerFragment ?: return
-//            if (slideOffset == 0.0f) { //STATE_COLLAPSED
-//                audioPlayer.scrollToTop()
-//            }
-            audioPlayer.fadePlayerToToolbar(slideOffset)
-        }
     }
 
     fun setupToolbarToggle(toolbar: MaterialToolbar, displayUpArrow: Boolean) {
@@ -374,9 +379,6 @@ class MainActivity : CastEnabledActivity() {
             edit.apply()
         }
     }
-
-    private val isDrawerOpen: Boolean
-        get() = drawerLayout?.isDrawerOpen(navDrawer)?:false
 
     private fun updateInsets() {
         setPlayerVisible(audioPlayerView.visibility == View.VISIBLE)
@@ -507,13 +509,6 @@ class MainActivity : CastEnabledActivity() {
         Logd(TAG, "setNavDrawerSize: ${navDrawer.layoutParams.width}")
     }
 
-    private val screenWidth: Int
-        get() {
-            val displayMetrics = DisplayMetrics()
-            windowManager.defaultDisplay.getMetrics(displayMetrics)
-            return displayMetrics.widthPixels
-        }
-
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         if (bottomSheet.state == BottomSheetBehavior.STATE_EXPANDED) bottomSheetCallback.onSlide(dummyView, 1.0f)
@@ -523,21 +518,10 @@ class MainActivity : CastEnabledActivity() {
         super.onStart()
         procFlowEvents()
         RatingDialog.init(this)
-
-//        val sessionToken = SessionToken(this, ComponentName(this, PlaybackService::class.java))
-//        controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
-//        controllerFuture.addListener({
-//                // Call controllerFuture.get() to retrieve the MediaController.
-//                // MediaController implements the Player interface, so it can be
-//                // attached to the PlayerView UI component.
-////                playerView.setPlayer(controllerFuture.get())
-//            val player = controllerFuture.get()
-//        }, MoreExecutors.directExecutor())
     }
 
     override fun onStop() {
         super.onStop()
-//        MediaController.releaseFuture(controllerFuture)
         cancelFlowEvents()
     }
 
@@ -634,7 +618,7 @@ class MainActivity : CastEnabledActivity() {
             }
             intent.hasExtra(Extras.fragment_feed_url.name) -> {
                 val feedurl = intent.getStringExtra(Extras.fragment_feed_url.name)
-                if (feedurl != null) loadChildFragment(OnlineFeedViewFragment.newInstance(feedurl))
+                if (feedurl != null) loadChildFragment(OnlineFeedFragment.newInstance(feedurl))
             }
             intent.hasExtra(Extras.search_string.name) -> {
                 val query = intent.getStringExtra(Extras.search_string.name)

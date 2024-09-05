@@ -54,6 +54,28 @@ class OpmlImportActivity : AppCompatActivity() {
     private var listAdapter: ArrayAdapter<String>? = null
     private var readElements: ArrayList<OpmlElement>? = null
 
+    private val titleList: List<String>
+        get() {
+            val result: MutableList<String> = ArrayList()
+            if (!readElements.isNullOrEmpty()) {
+                for (element in readElements!!) {
+                    if (element.text != null) result.add(element.text!!)
+                }
+            }
+            return result
+        }
+
+    private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+        if (isGranted) startImport()
+        else {
+            MaterialAlertDialogBuilder(this)
+                .setMessage(R.string.opml_import_ask_read_permission)
+                .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int -> requestPermission() }
+                .setNegativeButton(R.string.cancel_label) { _: DialogInterface?, _: Int -> finish() }
+                .show()
+        }
+    }
+
     @UnstableApi override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(getTheme(this))
         super.onCreate(savedInstanceState)
@@ -135,17 +157,6 @@ class OpmlImportActivity : AppCompatActivity() {
         startImport()
     }
 
-    private val titleList: List<String>
-        get() {
-            val result: MutableList<String> = ArrayList()
-            if (!readElements.isNullOrEmpty()) {
-                for (element in readElements!!) {
-                    if (element.text != null) result.add(element.text!!)
-                }
-            }
-            return result
-        }
-
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         super.onCreateOptionsMenu(menu)
         val inflater = menuInflater
@@ -185,18 +196,6 @@ class OpmlImportActivity : AppCompatActivity() {
     private fun requestPermission() {
         requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
     }
-
-    private val requestPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-            if (isGranted) startImport()
-            else {
-                MaterialAlertDialogBuilder(this)
-                    .setMessage(R.string.opml_import_ask_read_permission)
-                    .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int -> requestPermission() }
-                    .setNegativeButton(R.string.cancel_label) { _: DialogInterface?, _: Int -> finish() }
-                    .show()
-            }
-        }
 
     /** Starts the import process.  */
     private fun startImport() {

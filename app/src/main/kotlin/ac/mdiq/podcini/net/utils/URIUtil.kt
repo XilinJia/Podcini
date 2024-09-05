@@ -15,11 +15,7 @@ object URIUtil {
     @JvmStatic
     fun getURIFromRequestUrl(source: String): URI {
         // try without encoding the URI
-        try {
-            return URI(source)
-        } catch (e: URISyntaxException) {
-            Logd(TAG, "Source is not encoded, encoding now")
-        }
+        try { return URI(source) } catch (e: URISyntaxException) { Logd(TAG, "Source is not encoded, encoding now") }
         try {
             val url = URL(source)
             return URI(url.protocol, url.userInfo, url.host, url.port, url.path, url.query, url.ref)

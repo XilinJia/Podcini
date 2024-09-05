@@ -136,11 +136,7 @@ open class FeedSortDialog : BottomSheetDialogFragment() {
     }
 
     private fun setFeedOrder(selected: String, dir: Int) {
-        appPrefs.edit()
-            .putString(UserPreferences.Prefs.prefDrawerFeedOrder.name, selected)
-            .apply()
-        appPrefs.edit()
-            .putInt(UserPreferences.Prefs.prefDrawerFeedOrderDir.name, dir)
-            .apply()
+        appPrefs.edit().putString(UserPreferences.Prefs.prefDrawerFeedOrder.name, selected).apply()
+        appPrefs.edit().putInt(UserPreferences.Prefs.prefDrawerFeedOrderDir.name, dir).apply()
     }
 }

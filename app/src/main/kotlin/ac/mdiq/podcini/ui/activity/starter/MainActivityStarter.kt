@@ -14,6 +14,9 @@ import android.os.Bundle
 class MainActivityStarter(private val context: Context) {
     private val intent: Intent = Intent(INTENT)
     private var fragmentArgs: Bundle? = null
+    val pendingIntent: PendingIntent
+        get() = PendingIntent.getActivity(context, R.id.pending_intent_player_activity, getIntent(),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
     init {
         intent.setPackage(context.packageName)
@@ -23,10 +26,6 @@ class MainActivityStarter(private val context: Context) {
         if (fragmentArgs != null) intent.putExtra(Extras.fragment_args.name, fragmentArgs)
         return intent
     }
-
-    val pendingIntent: PendingIntent
-        get() = PendingIntent.getActivity(context, R.id.pending_intent_player_activity, getIntent(),
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
     fun start() {
         context.startActivity(getIntent())
@@ -64,7 +63,6 @@ class MainActivityStarter(private val context: Context) {
 
     fun withFragmentArgs(name: String?, value: Boolean): MainActivityStarter {
         if (fragmentArgs == null) fragmentArgs = Bundle()
-
         fragmentArgs!!.putBoolean(name, value)
         return this
     }

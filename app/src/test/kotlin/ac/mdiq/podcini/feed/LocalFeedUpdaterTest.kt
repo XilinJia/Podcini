@@ -3,7 +3,7 @@ package ac.mdiq.podcini.feed
 import ac.mdiq.podcini.net.feed.LocalFeedUpdater
 import ac.mdiq.podcini.net.feed.LocalFeedUpdater.getImageUrl
 import ac.mdiq.podcini.net.feed.LocalFeedUpdater.tryUpdateFeed
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterfaceTestStub
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList

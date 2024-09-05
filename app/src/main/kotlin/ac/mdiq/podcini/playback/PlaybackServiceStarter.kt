@@ -46,9 +46,7 @@ class PlaybackServiceStarter(private val context: Context, private val media: Pl
         if (curEpisode != null) EventFlow.postEvent(FlowEvent.PlayEvent(curEpisode!!, FlowEvent.PlayEvent.Action.END))
         if (media is EpisodeMedia) {
             curMedia = media
-//            curEpisode = if (media.episode != null) unmanaged(media.episode!!) else null
             curEpisode = media.episodeOrFetch()
-//            curMedia = curEpisode?.media
         } else curMedia = media
 
         if (PlaybackService.isRunning && !callEvenIfRunning) return

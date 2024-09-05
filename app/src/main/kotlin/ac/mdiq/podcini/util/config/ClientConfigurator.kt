@@ -3,7 +3,7 @@ package ac.mdiq.podcini.util.config
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterfaceImpl
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.setCacheDirectory
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.setProxyConfig
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.net.ssl.SslProviderInstaller
 import ac.mdiq.podcini.net.sync.SyncService
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink

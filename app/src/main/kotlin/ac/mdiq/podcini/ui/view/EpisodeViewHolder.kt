@@ -2,7 +2,7 @@ package ac.mdiq.podcini.ui.view
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.FeeditemlistItemBinding
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.playback.base.InTheatre
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.preferences.UserPreferences

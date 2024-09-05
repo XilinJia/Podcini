@@ -495,7 +495,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
 
     override fun getPosition(): Int {
         var retVal = Playable.INVALID_TIME
-        if (status.isAtLeast(PlayerStatus.PREPARED)) retVal = exoPlayer!!.currentPosition.toInt()
+        if (exoPlayer != null && status.isAtLeast(PlayerStatus.PREPARED)) retVal = exoPlayer!!.currentPosition.toInt()
         if (retVal <= 0 && curMedia != null) retVal = curMedia!!.getPosition()
         return retVal
     }

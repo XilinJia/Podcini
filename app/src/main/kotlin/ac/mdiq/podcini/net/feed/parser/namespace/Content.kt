@@ -10,9 +10,8 @@ class Content : Namespace() {
     }
 
     override fun handleElementEnd(localName: String, state: HandlerState) {
-        if (ENCODED == localName && state.currentItem != null && state.contentBuf != null) {
-            state.currentItem!!.setDescriptionIfLonger(state.contentBuf.toString())
-        }
+        if (ENCODED == localName && state.contentBuf != null)
+            state.currentItem?.setDescriptionIfLonger(state.contentBuf.toString())
     }
 
     companion object {

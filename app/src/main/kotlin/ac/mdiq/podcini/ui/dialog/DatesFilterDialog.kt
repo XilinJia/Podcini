@@ -50,9 +50,8 @@ abstract class DatesFilterDialog(private val context: Context, oldestDate: Long)
             binding.allTimeButton.isEnabled = !checked
             binding.dateSelectionContainer.alpha = if (checked) 0.5f else 1f
         }
-        if (showMarkPlayed) {
-            binding.includeMarkedCheckbox.isChecked = includeMarkedAsPlayed
-        } else {
+        if (showMarkPlayed) binding.includeMarkedCheckbox.isChecked = includeMarkedAsPlayed
+        else {
             binding.includeMarkedCheckbox.visibility = View.GONE
             binding.noticeMessage.visibility = View.GONE
         }

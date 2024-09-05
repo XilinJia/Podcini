@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.net.download.service
 
 import ac.mdiq.podcini.net.download.service.HttpCredentialEncoder.encode
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
 import ac.mdiq.podcini.net.utils.URIUtil
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.Episode
@@ -30,7 +29,6 @@ import java.security.cert.X509Certificate
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.*
 import kotlin.concurrent.Volatile
-
 
 /**
  * Provides access to a HttpClient singleton.

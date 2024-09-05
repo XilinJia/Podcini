@@ -4,7 +4,7 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.download.DownloadError
 import ac.mdiq.podcini.net.download.service.DefaultDownloaderFactory
 import ac.mdiq.podcini.net.download.service.DownloadRequestCreator.create
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
+import ac.mdiq.podcini.net.download.service.DownloadRequest
 import ac.mdiq.podcini.net.feed.parser.FeedHandler
 import ac.mdiq.podcini.net.feed.parser.FeedHandlerResult
 import ac.mdiq.podcini.net.utils.NetworkUtils.isAllowMobileFeedRefresh

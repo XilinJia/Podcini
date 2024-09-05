@@ -26,8 +26,7 @@ class ItunesTopListLoader(private val context: Context) {
         var loadCountry = country
         if (COUNTRY_CODE_UNSET == country) loadCountry = Locale.getDefault().country
 
-        feedString = try {
-            getTopListFeed(client, loadCountry)
+        feedString = try { getTopListFeed(client, loadCountry)
         } catch (e: IOException) {
             if (COUNTRY_CODE_UNSET == country) getTopListFeed(client, "US")
             else throw e
@@ -60,9 +59,7 @@ class ItunesTopListLoader(private val context: Context) {
         try {
             feed = result.getJSONObject("feed")
             entries = feed.getJSONArray("entry")
-        } catch (e: JSONException) {
-            return ArrayList()
-        }
+        } catch (e: JSONException) { return ArrayList() }
 
         val results: MutableList<PodcastSearchResult> = ArrayList()
         for (i in 0 until entries.length()) {
@@ -90,9 +87,8 @@ class ItunesTopListLoader(private val context: Context) {
         private fun removeSubscribed(suggestedPodcasts: List<PodcastSearchResult>, subscribedFeeds: List<Feed>, limit: Int): List<PodcastSearchResult> {
             val subscribedPodcastsSet: MutableSet<String> = HashSet()
             for (subscribedFeed in subscribedFeeds) {
-                if (subscribedFeed.title != null && subscribedFeed.author != null) {
+                if (subscribedFeed.title != null && subscribedFeed.author != null)
                     subscribedPodcastsSet.add(subscribedFeed.title!!.trim { it <= ' ' } + " - " + subscribedFeed.author!!.trim { it <= ' ' })
-                }
             }
             val suggestedNotSubscribed: MutableList<PodcastSearchResult> = ArrayList()
             for (suggested in suggestedPodcasts) {

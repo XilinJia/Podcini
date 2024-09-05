@@ -4,7 +4,6 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.feed.parser.utils.DateUtils.parse
 import ac.mdiq.podcini.net.download.DownloadError
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
 import ac.mdiq.podcini.storage.model.DownloadResult
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.util.Logd

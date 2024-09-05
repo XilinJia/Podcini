@@ -5,7 +5,7 @@ import ac.mdiq.podcini.util.Logd
 import java.io.InputStream
 import java.util.concurrent.TimeUnit
 
-class VorbisCommentChapterReader(input: InputStream?) : VorbisCommentReader(input!!) {
+class VorbisCommentChapterReader(input: InputStream) : VorbisCommentReader(input) {
     private val chapters: MutableList<Chapter> = ArrayList()
 
     public override fun handles(key: String?): Boolean {
@@ -59,19 +59,13 @@ class VorbisCommentChapterReader(input: InputStream?) : VorbisCommentReader(inpu
             val parts = value!!.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             if (parts.size >= 3) {
                 try {
-                    val hours = TimeUnit.MILLISECONDS.convert(
-                        parts[0].toLong(), TimeUnit.HOURS)
-                    val minutes = TimeUnit.MILLISECONDS.convert(
-                        parts[1].toLong(), TimeUnit.MINUTES)
+                    val hours = TimeUnit.MILLISECONDS.convert(parts[0].toLong(), TimeUnit.HOURS)
+                    val minutes = TimeUnit.MILLISECONDS.convert(parts[1].toLong(), TimeUnit.MINUTES)
                     if (parts[2].contains("-->")) parts[2] = parts[2].substring(0, parts[2].indexOf("-->"))
                     val seconds = TimeUnit.MILLISECONDS.convert((parts[2].toFloat().toLong()), TimeUnit.SECONDS)
                     return hours + minutes + seconds
-                } catch (e: NumberFormatException) {
-                    throw VorbisCommentReaderException(e)
-                }
-            } else {
-                throw VorbisCommentReaderException("Invalid time string")
-            }
+                } catch (e: NumberFormatException) { throw VorbisCommentReaderException(e) }
+            } else throw VorbisCommentReaderException("Invalid time string")
         }
 
         /**
@@ -86,9 +80,7 @@ class VorbisCommentChapterReader(input: InputStream?) : VorbisCommentReader(inpu
                 try {
                     val strId = key.substring(8, 10)
                     return strId.toInt()
-                } catch (e: NumberFormatException) {
-                    throw VorbisCommentReaderException(e)
-                }
+                } catch (e: NumberFormatException) { throw VorbisCommentReaderException(e) }
             }
             throw VorbisCommentReaderException("key is too short ($key)")
         }
@@ -99,7 +91,6 @@ class VorbisCommentChapterReader(input: InputStream?) : VorbisCommentReader(inpu
          */
         private fun getAttributeTypeFromKey(key: String?): String? {
             if (key!!.length > CHAPTERXXX_LENGTH) return key.substring(CHAPTERXXX_LENGTH)
-
             return null
         }
     }

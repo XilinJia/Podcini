@@ -1,5 +1,6 @@
 package ac.mdiq.podcini.net.download.serviceinterface
 
+import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import android.content.Context

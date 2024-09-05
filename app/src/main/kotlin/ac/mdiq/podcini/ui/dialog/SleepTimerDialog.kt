@@ -85,15 +85,9 @@ class SleepTimerDialog : DialogFragment() {
         extendSleepTenMinutesButton.text = getString(R.string.extend_sleep_timer_label, 10)
         val extendSleepTwentyMinutesButton = binding.extendSleepTwentyMinutesButton
         extendSleepTwentyMinutesButton.text = getString(R.string.extend_sleep_timer_label, 20)
-        extendSleepFiveMinutesButton.setOnClickListener {
-            extendSleepTimer((5 * 1000 * 60).toLong())
-        }
-        extendSleepTenMinutesButton.setOnClickListener {
-            extendSleepTimer((10 * 1000 * 60).toLong())
-        }
-        extendSleepTwentyMinutesButton.setOnClickListener {
-            extendSleepTimer((20 * 1000 * 60).toLong())
-        }
+        extendSleepFiveMinutesButton.setOnClickListener { extendSleepTimer((5 * 1000 * 60).toLong()) }
+        extendSleepTenMinutesButton.setOnClickListener { extendSleepTimer((10 * 1000 * 60).toLong()) }
+        extendSleepTwentyMinutesButton.setOnClickListener { extendSleepTimer((20 * 1000 * 60).toLong()) }
 
         binding.endEpisode.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
             if (isChecked) etxtTime.visibility = View.GONE
@@ -115,9 +109,7 @@ class SleepTimerDialog : DialogFragment() {
         changeTimesButton.isEnabled = chAutoEnable.isChecked
         changeTimesButton.alpha = if (chAutoEnable.isChecked) 1.0f else 0.5f
 
-        binding.cbShakeToReset.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
-            setShakeToReset(isChecked)
-        }
+        binding.cbShakeToReset.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean -> setShakeToReset(isChecked) }
         binding.cbVibrate.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean -> setVibrate(isChecked) }
         chAutoEnable.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
             setAutoEnable(isChecked)
@@ -132,9 +124,7 @@ class SleepTimerDialog : DialogFragment() {
             showTimeRangeDialog(from, to)
         }
 
-        binding.disableSleeptimerButton.setOnClickListener {
-            playbackService?.taskManager?.disableSleepTimer()
-        }
+        binding.disableSleeptimerButton.setOnClickListener { playbackService?.taskManager?.disableSleepTimer() }
 
         binding.setSleeptimerButton.setOnClickListener {
             if (!PlaybackService.isRunning) {
@@ -237,17 +227,15 @@ class SleepTimerDialog : DialogFragment() {
 
     class TimeRangeDialog(context: Context, from: Int, to: Int) : MaterialAlertDialogBuilder(context) {
         private val view = TimeRangeView(context, from, to)
+        val from: Int
+            get() = view.from
+        val to: Int
+            get() = view.to
 
         init {
             setView(view)
             setPositiveButton(android.R.string.ok, null)
         }
-
-        val from: Int
-            get() = view.from
-
-        val to: Int
-            get() = view.to
 
         internal class TimeRangeView @JvmOverloads constructor(context: Context, internal var from: Int = 0, var to: Int = 0) : View(context) {
             private val paintDial = Paint()

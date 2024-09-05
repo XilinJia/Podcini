@@ -3,7 +3,7 @@ package de.test.podcini.service.download
 import ac.mdiq.podcini.net.download.DownloadError
 import ac.mdiq.podcini.net.download.service.Downloader
 import ac.mdiq.podcini.net.download.service.HttpDownloader
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
+import ac.mdiq.podcini.net.download.service.DownloadRequest
 import ac.mdiq.podcini.preferences.UserPreferences.init
 import ac.mdiq.podcini.util.Logd
 import androidx.test.filters.LargeTest

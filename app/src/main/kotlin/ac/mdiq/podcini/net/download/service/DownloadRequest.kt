@@ -1,4 +1,4 @@
-package ac.mdiq.podcini.net.download.serviceinterface
+package ac.mdiq.podcini.net.download.service
 
 import ac.mdiq.podcini.net.utils.UrlChecker.prepareUrl
 import ac.mdiq.podcini.storage.model.Feed
@@ -6,7 +6,6 @@ import ac.mdiq.podcini.storage.model.EpisodeMedia
 import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
-
 
 class DownloadRequest private constructor(
         @JvmField val destination: String?,

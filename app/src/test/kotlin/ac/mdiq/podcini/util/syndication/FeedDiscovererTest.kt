@@ -1,6 +1,6 @@
 package ac.mdiq.podcini.util.syndication
 
-import ac.mdiq.podcini.ui.fragment.OnlineFeedViewFragment
+import ac.mdiq.podcini.ui.fragment.OnlineFeedFragment
 import androidx.test.platform.app.InstrumentationRegistry
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
@@ -19,13 +19,13 @@ import java.nio.charset.StandardCharsets
  */
 @RunWith(RobolectricTestRunner::class)
 class FeedDiscovererTest {
-    private var fd: OnlineFeedViewFragment.FeedDiscoverer? = null
+    private var fd: OnlineFeedFragment.FeedDiscoverer? = null
 
     private var testDir: File? = null
 
     @Before
     fun setUp() {
-        fd = OnlineFeedViewFragment.FeedDiscoverer()
+        fd = OnlineFeedFragment.FeedDiscoverer()
         testDir = File(InstrumentationRegistry
             .getInstrumentation().targetContext.filesDir, "FeedDiscovererTest")
         testDir!!.mkdir()

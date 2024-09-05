@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.storage.database
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.net.feed.LocalFeedUpdater.updateFeed
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink

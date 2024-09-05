@@ -25,9 +25,7 @@ class TagSettingsDialog : DialogFragment() {
 
     private var _binding: EditTagsDialogBinding? = null
     private val binding get() = _binding!!
-
     private var feedList:  MutableList<Feed> = mutableListOf()
-
     private lateinit var displayedTags: MutableList<String>
     private lateinit var adapter: SimpleChipAdapter
 
@@ -53,7 +51,6 @@ class TagSettingsDialog : DialogFragment() {
             }
         }
         binding.tagsRecycler.adapter = adapter
-
         binding.newTagTextInput.setEndIconOnClickListener {
             addTag(binding.newTagEditText.text.toString().trim { it <= ' ' })
         }
@@ -87,7 +84,6 @@ class TagSettingsDialog : DialogFragment() {
 
     private fun addTag(name: String) {
         if (name.isEmpty() || displayedTags.contains(name)) return
-
         displayedTags.add(name)
         binding.newTagEditText.setText("")
         adapter.notifyDataSetChanged()

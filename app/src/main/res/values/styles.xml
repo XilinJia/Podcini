@@ -239,8 +239,8 @@
 
     <style name="Theme.Podcini.VideoPlayer" parent="@style/Theme.Podcini.Dark">
         <item name="windowActionBarOverlay">true</item>
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">true</item>
+        <item name="windowNoTitle">false</item>
     </style>
 
     <style name="Podcini.TextView.Heading" parent="@android:style/TextAppearance.Medium">

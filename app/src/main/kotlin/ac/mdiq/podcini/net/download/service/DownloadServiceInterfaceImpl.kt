@@ -3,8 +3,6 @@ package ac.mdiq.podcini.net.download.service
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.download.DownloadError
 import ac.mdiq.podcini.net.download.service.DownloadRequestCreator.create
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink.needSynch

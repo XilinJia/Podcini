@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.storage
 
 import ac.mdiq.podcini.feed.FeedMother.anyFeed
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterfaceTestStub
 import ac.mdiq.podcini.storage.database.Queues
 import ac.mdiq.podcini.storage.database.Queues.EnqueueLocation

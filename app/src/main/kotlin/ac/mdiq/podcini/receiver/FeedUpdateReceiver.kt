@@ -16,7 +16,6 @@ class FeedUpdateReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         Logd(TAG, "Received intent")
         ClientConfigurator.initialize(context)
-
         FeedUpdateManager.runOnce(context)
     }
 

@@ -2,36 +2,51 @@ package ac.mdiq.podcini.ui.activity
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.AudioControlsBinding
+import ac.mdiq.podcini.databinding.VideoEpisodeFragmentBinding
 import ac.mdiq.podcini.databinding.VideoplayerActivityBinding
 import ac.mdiq.podcini.playback.ServiceStatusHandler
 import ac.mdiq.podcini.playback.ServiceStatusHandler.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
+import ac.mdiq.podcini.playback.base.MediaPlayerBase
+import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.cast.CastEnabledActivity
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curDurationFB
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curPositionFB
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curSpeedFB
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isCasting
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isPlayingVideoLocally
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isSleepTimerActive
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playPause
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.seekTo
+import ac.mdiq.podcini.preferences.UserPreferences.fastForwardSecs
+import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
+import ac.mdiq.podcini.preferences.UserPreferences.setShowRemainTimeSetting
+import ac.mdiq.podcini.preferences.UserPreferences.shouldShowRemainingTime
 import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
 import ac.mdiq.podcini.storage.database.Episodes.setFavorite
+import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Playable
-import ac.mdiq.podcini.ui.dialog.MediaPlayerErrorDialog
-import ac.mdiq.podcini.ui.dialog.ShareDialog
-import ac.mdiq.podcini.ui.dialog.SleepTimerDialog
-import ac.mdiq.podcini.ui.dialog.VariableSpeedDialog
+import ac.mdiq.podcini.storage.utils.DurationConverter.getDurationStringLong
+import ac.mdiq.podcini.storage.utils.TimeSpeedConverter
+import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
+import ac.mdiq.podcini.ui.dialog.*
 import ac.mdiq.podcini.ui.fragment.ChaptersFragment
-import ac.mdiq.podcini.ui.fragment.VideoEpisodeFragment
 import ac.mdiq.podcini.ui.utils.PictureInPictureUtil
+import ac.mdiq.podcini.ui.utils.ShownotesCleaner
+import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.IntentUtils.openInBrowser
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.ShareUtils.hasLinkToShare
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
+import android.app.Activity
 import android.app.Dialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.graphics.PixelFormat
 import android.graphics.drawable.ColorDrawable
 import android.media.AudioManager
@@ -39,17 +54,33 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
+import android.util.Pair
 import android.view.*
 import android.view.MenuItem.SHOW_AS_ACTION_NEVER
+import android.view.animation.*
 import android.widget.EditText
+import android.widget.FrameLayout
+import android.widget.SeekBar
+import android.widget.SeekBar.OnSeekBarChangeListener
+import androidx.annotation.OptIn
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat.invalidateOptionsMenu
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
+import androidx.window.layout.WindowMetricsCalculator
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Activity for playing video files.
@@ -57,18 +88,9 @@ import kotlinx.coroutines.launch
 @UnstableApi
 class VideoplayerActivity : CastEnabledActivity() {
 
-    enum class VideoMode(val mode: Int) {
-        None(0),
-        WINDOW_VIEW(1),
-        FULL_SCREEN_VIEW(2),
-        AUDIO_ONLY(3)
-    }
-
     private var _binding: VideoplayerActivityBinding? = null
     private val binding get() = _binding!!
-
     private lateinit var videoEpisodeFragment: VideoEpisodeFragment
-
     var switchToAudioOnly = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -97,11 +119,12 @@ class VideoplayerActivity : CastEnabledActivity() {
         val fm = supportFragmentManager
         val transaction = fm.beginTransaction()
         videoEpisodeFragment = VideoEpisodeFragment()
-        transaction.replace(R.id.main_view, videoEpisodeFragment, VideoEpisodeFragment.TAG)
+        transaction.replace(R.id.main_view, videoEpisodeFragment, "VideoEpisodeFragment")
         transaction.commit()
     }
 
     private fun setForVideoMode() {
+        Logd(TAG, "setForVideoMode videoMode: $videoMode")
         when (videoMode) {
             VideoMode.FULL_SCREEN_VIEW -> {
                 window.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN)
@@ -114,7 +137,8 @@ class VideoplayerActivity : CastEnabledActivity() {
             VideoMode.WINDOW_VIEW -> {
                 window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
                 window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN)
-                setTheme(R.style.Theme_Podcini_VideoEpisode)
+//                setTheme(R.style.Theme_Podcini_VideoEpisode)
+                setTheme(R.style.Theme_Podcini_VideoPlayer)
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
                 window.setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN, WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN)
                 window.setFormat(PixelFormat.TRANSPARENT)
@@ -127,6 +151,7 @@ class VideoplayerActivity : CastEnabledActivity() {
     @UnstableApi
     override fun onResume() {
         super.onResume()
+        setForVideoMode()
         switchToAudioOnly = false
         if (isCasting) {
             val intent = getPlayerActivityIntent(this)
@@ -189,7 +214,6 @@ class VideoplayerActivity : CastEnabledActivity() {
     }
 
     private fun onEventMainThread(event: FlowEvent.MessageEvent) {
-//        Logd(TAG, "onEvent($event)")
         val errorDialog = MaterialAlertDialogBuilder(this)
         errorDialog.setMessage(event.message)
         errorDialog.setPositiveButton(event.actionText) { _: DialogInterface?, _: Int ->
@@ -369,6 +393,13 @@ class VideoplayerActivity : CastEnabledActivity() {
         return super.onKeyUp(keyCode, event)
     }
 
+    enum class VideoMode(val mode: Int) {
+        None(0),
+        WINDOW_VIEW(1),
+        FULL_SCREEN_VIEW(2),
+        AUDIO_ONLY(3)
+    }
+
     class PlaybackControlsDialog : DialogFragment() {
         private lateinit var dialog: AlertDialog
         private var _binding: AudioControlsBinding? = null
@@ -422,6 +453,472 @@ class VideoplayerActivity : CastEnabledActivity() {
                 val dialog = PlaybackControlsDialog()
                 return dialog
             }
+        }
+    }
+
+    @UnstableApi
+    class VideoEpisodeFragment : Fragment(), OnSeekBarChangeListener {
+        private var _binding: VideoEpisodeFragmentBinding? = null
+        private val binding get() = _binding!!
+        private lateinit var root: ViewGroup
+        private var videoControlsVisible = true
+        private var videoSurfaceCreated = false
+        private var lastScreenTap: Long = 0
+        private val videoControlsHider = Handler(Looper.getMainLooper())
+        private var showTimeLeft = false
+        private var prog = 0f
+
+        private var itemsLoaded = false
+        private var episode: Episode? = null
+        private var webviewData: String? = null
+        private var webvDescription: ShownotesWebView? = null
+
+        var destroyingDueToReload = false
+        private var statusHandler: ServiceStatusHandler? = null
+        var isFavorite = false
+
+        private val onVideoviewTouched = View.OnTouchListener { v: View, event: MotionEvent ->
+            Logd(TAG, "onVideoviewTouched ${event.action}")
+            if (event.action != MotionEvent.ACTION_DOWN) return@OnTouchListener false
+            if (PictureInPictureUtil.isInPictureInPictureMode(requireActivity())) return@OnTouchListener true
+            videoControlsHider.removeCallbacks(hideVideoControls)
+            Logd(TAG, "onVideoviewTouched $videoControlsVisible ${System.currentTimeMillis() - lastScreenTap}")
+            if (System.currentTimeMillis() - lastScreenTap < 300) {
+                if (event.x > v.measuredWidth / 2.0f) {
+                    onFastForward()
+                    showSkipAnimation(true)
+                } else {
+                    onRewind()
+                    showSkipAnimation(false)
+                }
+                if (videoControlsVisible) {
+                    hideVideoControls(false)
+                    videoControlsVisible = false
+                }
+                return@OnTouchListener true
+            }
+            toggleVideoControlsVisibility()
+            if (videoControlsVisible) setupVideoControlsToggler()
+            lastScreenTap = System.currentTimeMillis()
+            true
+        }
+
+        private val surfaceHolderCallback: SurfaceHolder.Callback = object : SurfaceHolder.Callback {
+            override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+                holder.setFixedSize(width, height)
+            }
+            @UnstableApi
+            override fun surfaceCreated(holder: SurfaceHolder) {
+                Logd(TAG, "Videoview holder created")
+                videoSurfaceCreated = true
+                if (MediaPlayerBase.status == PlayerStatus.PLAYING) playbackService?.mPlayer?.setVideoSurface(holder)
+                setupVideoAspectRatio()
+            }
+            override fun surfaceDestroyed(holder: SurfaceHolder) {
+                Logd(TAG, "Videosurface was destroyed")
+                videoSurfaceCreated = false
+                (activity as? VideoplayerActivity)?.finish()
+            }
+        }
+
+        private val hideVideoControls = Runnable {
+            if (videoControlsVisible) {
+                Logd(TAG, "Hiding video controls")
+                hideVideoControls(true)
+                videoControlsVisible = false
+            }
+        }
+
+        @OptIn(UnstableApi::class)
+        override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+            super.onCreateView(inflater, container, savedInstanceState)
+            Logd(TAG, "fragment onCreateView")
+            _binding = VideoEpisodeFragmentBinding.inflate(LayoutInflater.from(activity))
+            root = binding.root
+            statusHandler = newStatusHandler()
+            statusHandler!!.init()
+            setupView()
+            return root
+        }
+
+        @OptIn(UnstableApi::class) private fun newStatusHandler(): ServiceStatusHandler {
+            return object : ServiceStatusHandler(requireActivity()) {
+                override fun updatePlayButton(showPlay: Boolean) {
+                    Logd(TAG, "updatePlayButtonShowsPlay called")
+                    binding.playButton.setIsShowPlay(showPlay)
+                    if (showPlay) (activity as AppCompatActivity).window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                    else {
+                        (activity as AppCompatActivity).window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                        setupVideoAspectRatio()
+                        if (videoSurfaceCreated) {
+                            Logd(TAG, "Videosurface already created, setting videosurface now")
+                            playbackService?.mPlayer?.setVideoSurface(binding.videoView.holder)
+                        }
+                    }
+                }
+                override fun loadMediaInfo() {
+                    this@VideoEpisodeFragment.loadMediaInfo()
+                }
+                override fun onPlaybackEnd() {
+                    activity?.finish()
+                }
+            }
+        }
+
+        @UnstableApi
+        override fun onStart() {
+            super.onStart()
+            onPositionObserverUpdate()
+            procFlowEvents()
+        }
+
+        @UnstableApi
+        override fun onStop() {
+            super.onStop()
+            cancelFlowEvents()
+            if (!PictureInPictureUtil.isInPictureInPictureMode(requireActivity())) videoControlsHider.removeCallbacks(hideVideoControls)
+            // Controller released; we will not receive buffering updates
+            binding.progressBar.visibility = View.GONE
+        }
+
+        override fun onDestroyView() {
+            Logd(TAG, "onDestroyView")
+            if (webvDescription != null) {
+                root.removeView(webvDescription!!)
+                webvDescription!!.destroy()
+            }
+            _binding = null
+            statusHandler?.release()
+            statusHandler = null // prevent leak
+            super.onDestroyView()
+        }
+
+        private var eventSink: Job?     = null
+        private fun cancelFlowEvents() {
+            eventSink?.cancel()
+            eventSink = null
+        }
+        private fun procFlowEvents() {
+            if (eventSink != null) return
+            eventSink = lifecycleScope.launch {
+                EventFlow.events.collectLatest { event ->
+                    Logd(TAG, "Received event: ${event.TAG}")
+                    when (event) {
+                        is FlowEvent.BufferUpdateEvent -> bufferUpdate(event)
+                        is FlowEvent.PlaybackPositionEvent -> onPositionObserverUpdate()
+                        else -> {}
+                    }
+                }
+            }
+        }
+
+        fun setForVideoMode() {
+            when (videoMode) {
+                VideoMode.FULL_SCREEN_VIEW -> {
+                    Logd(TAG, "setForVideoMode setting for FULL_SCREEN_VIEW")
+                    webvDescription?.visibility = View.GONE
+                    val layoutParams = binding.videoPlayerContainer.layoutParams
+                    layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
+                    binding.videoPlayerContainer.layoutParams = layoutParams
+                    binding.topBar.visibility = View.GONE
+                }
+                VideoMode.WINDOW_VIEW -> {
+                    Logd(TAG, "setForVideoMode setting for WINDOW_VIEW")
+                    webvDescription?.visibility = View.VISIBLE
+                    val layoutParams = binding.videoPlayerContainer.layoutParams
+                    layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
+                    binding.videoPlayerContainer.layoutParams = layoutParams
+                    binding.topBar.visibility = View.VISIBLE
+                }
+                else -> {}
+            }
+            setupVideoAspectRatio()
+        }
+
+        private fun bufferUpdate(event: FlowEvent.BufferUpdateEvent) {
+            when {
+                event.hasStarted() -> binding.progressBar.visibility = View.VISIBLE
+                event.hasEnded() -> binding.progressBar.visibility = View.INVISIBLE
+                else -> binding.sbPosition.secondaryProgress = (event.progress * binding.sbPosition.max).toInt()
+            }
+        }
+
+        private fun setupVideoAspectRatio() {
+            if (videoSurfaceCreated) {
+                val windowMetrics = WindowMetricsCalculator.getOrCreate().computeCurrentWindowMetrics(activity as Activity)
+                val videoWidth = if (videoMode == VideoMode.FULL_SCREEN_VIEW) max(windowMetrics.bounds.width(), windowMetrics.bounds.height())
+                else min(windowMetrics.bounds.width(), windowMetrics.bounds.height())
+                var videoHeight = 0
+                if (videoSize != null && videoSize!!.first > 0 && videoSize!!.second > 0) {
+                    Logd(TAG, "setupVideoAspectRatio Width,height of video: ${videoSize!!.first}, ${videoSize!!.second}")
+                    videoHeight = (videoWidth.toFloat() / videoSize!!.first * videoSize!!.second).toInt()
+                    Logd(TAG, "setupVideoAspectRatio Width,height of video 1: $videoWidth, $videoHeight")
+                } else {
+                    Log.e(TAG, "setupVideoAspectRatio Could not determine video size")
+                    videoHeight = (videoWidth.toFloat() / 16 * 9).toInt()
+                    Logd(TAG, "setupVideoAspectRatio Width,height of video 2: $videoWidth, $videoHeight")
+                }
+                val lp = binding.videoView.layoutParams
+                lp.width = videoWidth
+                lp.height = videoHeight
+                binding.videoView.layoutParams = lp
+            }
+        }
+
+        private var loadItemsRunning = false
+        @OptIn(UnstableApi::class)
+        private fun loadMediaInfo() {
+            Logd(TAG, "loadMediaInfo called")
+            if (curMedia == null) return
+            if (MediaPlayerBase.status == PlayerStatus.PLAYING && !isPlayingVideoLocally) {
+                Logd(TAG, "Closing, no longer video")
+                destroyingDueToReload = true
+                activity?.finish()
+                MainActivityStarter(requireContext()).withOpenPlayer().start()
+                return
+            }
+            showTimeLeft = shouldShowRemainingTime()
+            onPositionObserverUpdate()
+            if (!loadItemsRunning) {
+                loadItemsRunning = true
+                lifecycleScope.launch {
+                    try {
+                        episode = withContext(Dispatchers.IO) {
+                            val feedItem = (curMedia as? EpisodeMedia)?.episodeOrFetch()
+                            if (feedItem != null) {
+                                val duration = feedItem.media?.getDuration() ?: Int.MAX_VALUE
+                                webviewData = ShownotesCleaner(requireContext()).processShownotes(feedItem.description ?: "", duration)
+                            }
+                            feedItem
+                        }
+                        withContext(Dispatchers.Main) {
+                            Logd(TAG, "load() item ${episode?.id}")
+                            if (episode != null) {
+                                val isFav = episode!!.isFavorite
+                                if (isFavorite != isFav) {
+                                    isFavorite = isFav
+                                    invalidateOptionsMenu(activity)
+                                }
+                            }
+                            if (webviewData != null && !itemsLoaded) webvDescription?.loadDataWithBaseURL("https://127.0.0.1", webviewData!!,
+                                "text/html", "utf-8", "about:blank")
+                            itemsLoaded = true
+                        }
+                    } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e))
+                    } finally { loadItemsRunning = false }
+                }
+            }
+            val media = curMedia
+            if (media != null) {
+                (activity as AppCompatActivity).supportActionBar?.subtitle = media.getEpisodeTitle()
+                (activity as AppCompatActivity).supportActionBar?.title = media.getFeedTitle()
+            }
+        }
+
+        @UnstableApi
+        private fun setupView() {
+            showTimeLeft = shouldShowRemainingTime()
+            Logd(TAG, "setupView showTimeLeft: $showTimeLeft")
+            binding.durationLabel.setOnClickListener {
+                showTimeLeft = !showTimeLeft
+                val media = curMedia ?: return@setOnClickListener
+                val converter = TimeSpeedConverter(curSpeedFB)
+                val length: String
+                if (showTimeLeft) {
+                    val remainingTime = converter.convert(media.getDuration() - media.getPosition())
+                    length = "-" + getDurationStringLong(remainingTime)
+                } else {
+                    val duration = converter.convert(media.getDuration())
+                    length = getDurationStringLong(duration)
+                }
+                binding.durationLabel.text = length
+                setShowRemainTimeSetting(showTimeLeft)
+                Logd("timeleft on click", if (showTimeLeft) "true" else "false")
+            }
+            binding.sbPosition.setOnSeekBarChangeListener(this)
+            binding.rewindButton.setOnClickListener { onRewind() }
+            binding.rewindButton.setOnLongClickListener {
+                SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_REWIND, null)
+                true
+            }
+            Logd(TAG, "setupView 1")
+            binding.playButton.setIsVideoScreen(true)
+            binding.playButton.setOnClickListener { onPlayPause() }
+            binding.fastForwardButton.setOnClickListener { onFastForward() }
+            binding.fastForwardButton.setOnLongClickListener {
+                SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_FORWARD, null)
+                false
+            }
+            Logd(TAG, "setupView 2")
+            // To suppress touches directly below the slider
+            binding.bottomControlsContainer.setOnTouchListener { _: View?, _: MotionEvent? -> true }
+            binding.videoView.holder.addCallback(surfaceHolderCallback)
+            setupVideoControlsToggler()
+            binding.videoPlayerContainer.setOnTouchListener(onVideoviewTouched)
+            Logd(TAG, "setupView 2")
+            webvDescription = binding.webvDescription
+//        webvDescription.setTimecodeSelectedListener { time: Int? ->
+//            val cMedia = getMedia
+//            if (item?.media?.getIdentifier() == cMedia?.getIdentifier()) {
+//                seekTo(time ?: 0)
+//            } else {
+//                (activity as MainActivity).showSnackbarAbovePlayer(R.string.play_this_to_seek_position,
+//                    Snackbar.LENGTH_LONG)
+//            }
+//        }
+//        registerForContextMenu(webvDescription)
+//        webvDescription.visibility = View.GONE
+            binding.toggleViews.setOnClickListener { (activity as VideoplayerActivity).toggleViews() }
+            binding.audioOnly.setOnClickListener {
+                (activity as? VideoplayerActivity)?.switchToAudioOnly = true
+                (activity as? VideoplayerActivity)?.finish()
+            }
+            Logd(TAG, "setupView 4")
+        }
+
+        fun toggleVideoControlsVisibility() {
+            if (videoControlsVisible) hideVideoControls(true)
+            else showVideoControls()
+            videoControlsVisible = !videoControlsVisible
+        }
+
+        fun showSkipAnimation(isForward: Boolean) {
+            val skipAnimation = AnimationSet(true)
+            skipAnimation.addAnimation(ScaleAnimation(1f, 2f, 1f, 2f,
+                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f))
+            skipAnimation.addAnimation(AlphaAnimation(1f, 0f))
+            skipAnimation.fillAfter = false
+            skipAnimation.duration = 800
+
+            val params = binding.skipAnimationImage.layoutParams as FrameLayout.LayoutParams
+            if (isForward) {
+                binding.skipAnimationImage.setImageResource(R.drawable.ic_fast_forward_video_white)
+                params.gravity = Gravity.RIGHT or Gravity.CENTER_VERTICAL
+            } else {
+                binding.skipAnimationImage.setImageResource(R.drawable.ic_fast_rewind_video_white)
+                params.gravity = Gravity.LEFT or Gravity.CENTER_VERTICAL
+            }
+            binding.skipAnimationImage.visibility = View.VISIBLE
+            binding.skipAnimationImage.layoutParams = params
+            binding.skipAnimationImage.startAnimation(skipAnimation)
+            skipAnimation.setAnimationListener(object : Animation.AnimationListener {
+                override fun onAnimationStart(animation: Animation) {}
+                override fun onAnimationEnd(animation: Animation) {
+                    binding.skipAnimationImage.visibility = View.GONE
+                }
+                override fun onAnimationRepeat(animation: Animation) {}
+            })
+        }
+
+        @UnstableApi
+        fun onRewind() {
+            playbackService?.mPlayer?.seekDelta(-rewindSecs * 1000)
+            setupVideoControlsToggler()
+        }
+
+        @UnstableApi
+        fun onPlayPause() {
+            playPause()
+            setupVideoControlsToggler()
+        }
+
+        @UnstableApi
+        fun onFastForward() {
+            playbackService?.mPlayer?.seekDelta(fastForwardSecs * 1000)
+            setupVideoControlsToggler()
+        }
+
+        private fun setupVideoControlsToggler() {
+            videoControlsHider.removeCallbacks(hideVideoControls)
+            videoControlsHider.postDelayed(hideVideoControls, 2500)
+        }
+
+        private fun showVideoControls() {
+            Logd(TAG, "showVideoControls")
+            binding.bottomControlsContainer.visibility = View.VISIBLE
+            binding.controlsContainer.visibility = View.VISIBLE
+            val animation = AnimationUtils.loadAnimation(activity, R.anim.fade_in)
+            if (animation != null) {
+                binding.bottomControlsContainer.startAnimation(animation)
+                binding.controlsContainer.startAnimation(animation)
+            }
+            (activity as AppCompatActivity).window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+            (activity as AppCompatActivity).supportActionBar?.show()
+        }
+
+        fun hideVideoControls(showAnimation: Boolean) {
+            Logd(TAG, "hideVideoControls $showAnimation")
+            if (!isAdded) return
+            if (showAnimation) {
+                val animation = AnimationUtils.loadAnimation(activity, R.anim.fade_out)
+                if (animation != null) {
+                    binding.bottomControlsContainer.startAnimation(animation)
+                    binding.controlsContainer.startAnimation(animation)
+                }
+            }
+            (activity as AppCompatActivity).window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+            binding.bottomControlsContainer.visibility = View.GONE
+            binding.controlsContainer.visibility = View.GONE
+            if (videoMode == VideoMode.FULL_SCREEN_VIEW) (activity as AppCompatActivity).supportActionBar?.hide()
+        }
+
+        private fun onPositionObserverUpdate() {
+            val converter = TimeSpeedConverter(curSpeedFB)
+            val currentPosition = converter.convert(curPositionFB)
+            val duration_ = converter.convert(curDurationFB)
+            val remainingTime = converter.convert(curDurationFB - curPositionFB)
+            //        Log.d(TAG, "currentPosition " + Converter.getDurationStringLong(currentPosition));
+            if (currentPosition == Playable.INVALID_TIME || duration_ == Playable.INVALID_TIME) {
+                Log.w(TAG, "Could not react to position observer update because of invalid time")
+                return
+            }
+            binding.positionLabel.text = getDurationStringLong(currentPosition)
+            if (showTimeLeft) binding.durationLabel.text = "-" + getDurationStringLong(remainingTime)
+            else binding.durationLabel.text = getDurationStringLong(duration_)
+            updateProgressbarPosition(currentPosition, duration_)
+        }
+
+        private fun updateProgressbarPosition(position: Int, duration: Int) {
+            Logd(TAG, "updateProgressbarPosition ($position, $duration)")
+            val progress = (position.toFloat()) / duration
+            binding.sbPosition.progress = (progress * binding.sbPosition.max).toInt()
+        }
+
+        override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+            if (fromUser) {
+                prog = progress / (seekBar.max.toFloat())
+                val converter = TimeSpeedConverter(curSpeedFB)
+                val position = converter.convert((prog * curDurationFB).toInt())
+                binding.seekPositionLabel.text = getDurationStringLong(position)
+            }
+        }
+
+        override fun onStartTrackingTouch(seekBar: SeekBar) {
+            binding.seekCardView.scaleX = .8f
+            binding.seekCardView.scaleY = .8f
+            binding.seekCardView.animate()
+                .setInterpolator(FastOutSlowInInterpolator())
+                .alpha(1f).scaleX(1f).scaleY(1f)
+                .setDuration(200)
+                .start()
+            videoControlsHider.removeCallbacks(hideVideoControls)
+        }
+
+        override fun onStopTrackingTouch(seekBar: SeekBar) {
+            seekTo((prog * curDurationFB).toInt())
+            binding.seekCardView.scaleX = 1f
+            binding.seekCardView.scaleY = 1f
+            binding.seekCardView.animate()
+                .setInterpolator(FastOutSlowInInterpolator())
+                .alpha(0f).scaleX(.8f).scaleY(.8f)
+                .setDuration(200)
+                .start()
+            setupVideoControlsToggler()
+        }
+
+        companion object {
+            val videoSize: Pair<Int, Int>?
+                get() = playbackService?.mPlayer?.getVideoSize()
         }
     }
 

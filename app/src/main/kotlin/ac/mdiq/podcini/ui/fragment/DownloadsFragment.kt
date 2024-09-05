@@ -3,7 +3,7 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.databinding.SimpleListFragmentBinding
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodes

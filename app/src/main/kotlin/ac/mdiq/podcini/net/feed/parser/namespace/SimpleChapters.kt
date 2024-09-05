@@ -22,9 +22,7 @@ class SimpleChapters : Namespace() {
                         val imageUrl: String? = attributes.getValue(IMAGE)
                         val chapter = Chapter(start, title, link, imageUrl)
                         currentItem.chapters?.add(chapter)
-                    } catch (e: NumberFormatException) {
-                        Log.e(TAG, "Unable to read chapter", e)
-                    }
+                    } catch (e: NumberFormatException) { Log.e(TAG, "Unable to read chapter", e) }
                 }
             }
         }

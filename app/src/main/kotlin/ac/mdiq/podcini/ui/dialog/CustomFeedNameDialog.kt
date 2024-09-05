@@ -33,10 +33,6 @@ class CustomFeedNameDialog(activity: Activity, private var feed: Feed) {
                 feed = unmanaged(feed)
                 feed.setCustomTitle1(newTitle)
                 feed = upsertBlk(feed) {}
-
-//                feed = upsertBlk(feed) {
-//                    it.setCustomTitle1(newTitle)
-//                }
             }
             .setNeutralButton(R.string.reset, null)
             .setNegativeButton(R.string.cancel_label, null)

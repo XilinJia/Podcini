@@ -4,7 +4,10 @@ import androidx.core.text.HtmlCompat
 import ac.mdiq.podcini.net.feed.parser.namespace.Namespace
 
 /** Represents Atom Element which contains text (content, title, summary).  */
-class AtomText(name: String?, namespace: Namespace?, private val type: String?) : SyndElement(name!!, namespace!!) {
+class AtomText(
+        name: String,
+        namespace: Namespace,
+        private val type: String?) : SyndElement(name, namespace) {
 
     private var content: String? = null
 

@@ -46,10 +46,7 @@ class SwitchQueueDialog(activity: Activity) {
                     val items = mutableListOf<Episode>()
                     items.addAll(curQueue.episodes)
                     items.addAll(curQueue_.episodes)
-//                    unmanaged(curQueue_)
-                    curQueue = upsertBlk(curQueue_) {
-                        it.update()
-                    }
+                    curQueue = upsertBlk(curQueue_) { it.update() }
                     EventFlow.postEvent(FlowEvent.QueueEvent.switchQueue(items))
                 }
             }

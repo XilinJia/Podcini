@@ -36,9 +36,7 @@ class YouTube : Namespace() {
                 try {
                     val durationMs = inMillis(content)
                     state.tempObjects[DURATION] = durationMs.toInt()
-                } catch (e: NumberFormatException) {
-                    Log.e(NSTAG, String.format("Duration '%s' could not be parsed", content))
-                }
+                } catch (e: NumberFormatException) { Log.e(NSTAG, String.format("Duration '%s' could not be parsed", content)) }
             }
             SUBTITLE == localName -> {
                 when {

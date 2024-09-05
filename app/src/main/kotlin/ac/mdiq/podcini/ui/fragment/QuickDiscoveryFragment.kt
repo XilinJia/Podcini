@@ -183,7 +183,7 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
         val podcast: PodcastSearchResult? = adapter.getItem(position)
         if (podcast?.feedUrl.isNullOrEmpty()) return
 
-        val fragment: Fragment = OnlineFeedViewFragment.newInstance(podcast!!.feedUrl!!)
+        val fragment: Fragment = OnlineFeedFragment.newInstance(podcast!!.feedUrl!!)
         (activity as MainActivity).loadChildFragment(fragment)
     }
 
@@ -318,7 +318,7 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
                 val podcast = searchResults!![position]
                 if (podcast.feedUrl == null) return@OnItemClickListener
 
-                val fragment: Fragment = OnlineFeedViewFragment.newInstance(podcast.feedUrl)
+                val fragment: Fragment = OnlineFeedFragment.newInstance(podcast.feedUrl)
                 (activity as MainActivity).loadChildFragment(fragment)
             }
 

@@ -2,7 +2,7 @@ package ac.mdiq.podcini.ui.actions.handler
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.SelectQueueDialogBinding
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Episodes.setPlayState

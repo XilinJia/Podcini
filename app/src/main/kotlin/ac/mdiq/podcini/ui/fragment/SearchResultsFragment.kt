@@ -61,7 +61,7 @@ class SearchResultsFragment : Fragment() {
         gridView.onItemClickListener = AdapterView.OnItemClickListener { _: AdapterView<*>?, _: View?, position: Int, _: Long ->
             val podcast = searchResults[position]
             if (podcast.feedUrl != null) {
-                val fragment = OnlineFeedViewFragment.newInstance(podcast.feedUrl)
+                val fragment = OnlineFeedFragment.newInstance(podcast.feedUrl)
                 fragment.feedSource = podcast.source
                 (activity as MainActivity).loadChildFragment(fragment)
             }

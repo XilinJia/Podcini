@@ -25,8 +25,6 @@ object DurationParser {
             val value = seconds.toFloat()
             val millis = value % 1
             return TimeUnit.SECONDS.toMillis(value.toLong()) + (millis * 1000).toLong()
-        } else {
-            return TimeUnit.SECONDS.toMillis(seconds.toLong())
-        }
+        } else return TimeUnit.SECONDS.toMillis(seconds.toLong())
     }
 }

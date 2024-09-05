@@ -171,6 +171,15 @@ abstract class VorbisCommentReader internal constructor(private val input: Input
     @Throws(VorbisCommentReaderException::class)
     protected abstract fun onContentVectorValue(key: String?, value: String?)
 
+    internal class VorbisCommentHeader(
+            val vendorString: String,
+            val userCommentLength: Long) {
+
+        override fun toString(): String {
+            return ("VorbisCommentHeader [vendorString=" + vendorString + ", userCommentLength=" + userCommentLength + "]")
+        }
+    }
+
     companion object {
         private val TAG: String = VorbisCommentReader::class.simpleName ?: "Anonymous"
         private const val FIRST_OGG_PAGE_LENGTH = 58

@@ -1,0 +1,6 @@
+ Version 6.5.5 brings several changes:
+
+* corrected issue of Youtube channel being set for auto-download when subscribing
+* fixed various issues on video sizing and further refined the video player
+* some class restructuring and refactoring and nullalability adjustments
+* updated various dependencies

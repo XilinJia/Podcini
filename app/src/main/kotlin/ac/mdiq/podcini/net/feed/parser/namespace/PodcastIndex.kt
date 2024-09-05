@@ -6,8 +6,7 @@ import ac.mdiq.podcini.net.feed.parser.element.SyndElement
 import org.xml.sax.Attributes
 
 class PodcastIndex : Namespace() {
-    override fun handleElementStart(localName: String, state: HandlerState,
-                                    attributes: Attributes): SyndElement {
+    override fun handleElementStart(localName: String, state: HandlerState, attributes: Attributes): SyndElement {
         when (localName) {
             FUNDING -> {
                 val href: String? = attributes.getValue(URL)
@@ -25,7 +24,6 @@ class PodcastIndex : Namespace() {
 
     override fun handleElementEnd(localName: String, state: HandlerState) {
         if (state.contentBuf == null) return
-
         val content = state.contentBuf.toString()
         if (FUNDING == localName && state.currentFunding != null && content.isNotEmpty()) state.currentFunding!!.setContent(content)
     }

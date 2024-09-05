@@ -127,7 +127,7 @@ class OnlineSearchFragment : Fragment() {
     }
 
     private fun addUrl(url: String) {
-        val fragment: Fragment = OnlineFeedViewFragment.newInstance(url)
+        val fragment: Fragment = OnlineFeedFragment.newInstance(url)
         (activity as MainActivity).loadChildFragment(fragment)
     }
 

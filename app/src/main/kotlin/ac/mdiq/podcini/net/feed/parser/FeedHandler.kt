@@ -20,19 +20,6 @@ import javax.xml.parsers.ParserConfigurationException
 import javax.xml.parsers.SAXParserFactory
 
 class FeedHandler {
-    enum class Type {
-        RSS20, RSS091, ATOM, YOUTUBE, INVALID;
-
-        companion object {
-            fun fromName(name: String): Type {
-                for (t in entries) {
-                    if (t.name == name) return t
-                }
-                return INVALID
-            }
-        }
-    }
-
     @Throws(SAXException::class, IOException::class, ParserConfigurationException::class, UnsupportedFeedtypeException::class)
     fun parseFeed(feed: Feed): FeedHandlerResult {
 //        val tg = TypeGetter()
@@ -155,6 +142,19 @@ class FeedHandler {
             return null
         }
         return reader
+    }
+
+    enum class Type {
+        RSS20, RSS091, ATOM, YOUTUBE, INVALID;
+
+        companion object {
+            fun fromName(name: String): Type {
+                for (t in entries) {
+                    if (t.name == name) return t
+                }
+                return INVALID
+            }
+        }
     }
 
     /** Superclass for all SAX Handlers which process Syndication formats  */

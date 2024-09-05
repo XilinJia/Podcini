@@ -7,13 +7,22 @@
                 android:background="@color/black"
                 android:id="@+id/videoEpisodeContainer">
 
+    <View
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:minHeight="?android:attr/actionBarSize"
+        android:layout_alignParentTop="true"
+        android:background="@color/black" />
+
     <FrameLayout
         android:id="@+id/videoPlayerContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/topBar"
         android:background="@color/black">
 
-        <ac.mdiq.podcini.ui.view.AspectRatioVideoView
+        <VideoView
             android:id="@+id/videoView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

@@ -135,7 +135,6 @@ class SwipeActionsDialog(private val context: Context, private val tag: String) 
             item.root.setOnClickListener {
                 if (direction == LEFT) leftAction = keys[i]
                 else rightAction = keys[i]
-
                 setupSwipeDirectionView(view, direction)
                 dialog.dismiss()
             }

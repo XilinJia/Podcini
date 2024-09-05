@@ -22,10 +22,8 @@ object MimeTypeUtils {
     @JvmStatic
     fun getMimeType(type: String?, filename: String?): String? {
         if (isMediaFile(type) && OCTET_STREAM != type) return type
-
         val filenameType = getMimeTypeFromUrl(filename)
         if (isMediaFile(filenameType)) return filenameType
-
         return type
     }
 

@@ -1,7 +1,6 @@
 package ac.mdiq.podcini.net.download.service
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadRequest
 import ac.mdiq.podcini.storage.model.DownloadResult
 import ac.mdiq.podcini.util.config.ClientConfig
 import android.content.Context

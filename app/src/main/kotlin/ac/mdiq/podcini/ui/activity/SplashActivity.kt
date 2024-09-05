@@ -39,6 +39,5 @@ class SplashActivity : Activity() {
                 finish()
             }
         }
-
     }
 }

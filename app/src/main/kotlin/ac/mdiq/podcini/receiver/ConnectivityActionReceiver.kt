@@ -1,6 +1,6 @@
 package ac.mdiq.podcini.receiver
 
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.net.utils.NetworkUtils.isAutoDownloadAllowed
 import ac.mdiq.podcini.net.utils.NetworkUtils.isNetworkRestricted
 import ac.mdiq.podcini.storage.algorithms.AutoDownloads.autodownloadEpisodeMedia
@@ -18,7 +18,6 @@ class ConnectivityActionReceiver : BroadcastReceiver() {
         Log.d(TAG, "onReceive called with action: ${intent.action}")
         if (intent.action == ConnectivityManager.CONNECTIVITY_ACTION) {
             Logd(TAG, "Received intent")
-
             ClientConfigurator.initialize(context)
             networkChangedDetected(context)
         }

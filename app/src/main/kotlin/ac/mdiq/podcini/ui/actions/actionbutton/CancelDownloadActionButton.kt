@@ -1,7 +1,7 @@
 package ac.mdiq.podcini.ui.actions.actionbutton
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterface
+import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode

@@ -14,7 +14,8 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
 
 ## Announcement
 
-### Podcini.R version 6.5 as a major step forward brings YouTube channels in the app.  They can be searched, subscribed and played from within Podcini. For more see the changelogs
+#### Podcini.R version 6.5 as a major step forward brings YouTube channels in the app.  They can be searched, subscribed and played from within Podcini. For more see the changelogs
+#### If you are migrating from Podcini version 5, please read the migrationTo5.md file for migration instructions.
 
 This project is based on a fork of [AntennaPod](<https://github.com/AntennaPod/AntennaPod>) as of Feb 5 2024.
 

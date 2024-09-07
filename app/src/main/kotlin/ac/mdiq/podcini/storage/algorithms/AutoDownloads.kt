@@ -117,15 +117,15 @@ object AutoDownloads {
                             if (allowedDLCount > 0) {
                                 var queryString = "feedId == ${f.id} AND isAutoDownloadEnabled == true AND media != nil AND media.downloaded == false"
                                 when (f.preferences?.autoDLPolicy) {
-                                    FeedPreferences.AutoDLPolicy.ONLY_NEW -> {
+                                    FeedPreferences.AutoDownloadPolicy.ONLY_NEW -> {
                                         queryString += " AND playState == -1 SORT(pubDate DESC) LIMIT(${3*allowedDLCount})"
                                         episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
                                     }
-                                    FeedPreferences.AutoDLPolicy.NEWER -> {
+                                    FeedPreferences.AutoDownloadPolicy.NEWER -> {
                                         queryString += " AND playState != 1 SORT(pubDate DESC) LIMIT(${3*allowedDLCount})"
                                         episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
                                     }
-                                    FeedPreferences.AutoDLPolicy.OLDER -> {
+                                    FeedPreferences.AutoDownloadPolicy.OLDER -> {
                                         queryString += " AND playState != 1 SORT(pubDate ASC) LIMIT(${3*allowedDLCount})"
                                         episodes = realm.query(Episode::class).query(queryString).find().toMutableList()
                                     }

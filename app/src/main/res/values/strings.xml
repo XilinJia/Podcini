@@ -142,6 +142,11 @@
     <string name="feed_auto_download_always">Always</string>
     <string name="feed_auto_download_never">Never</string>
 
+    <string name="feed_video_mode_label">Video mode</string>
+    <string name="feed_video_mode_window">Window mode</string>
+    <string name="feed_video_mode_fullscreen">Full screen</string>
+    <string name="feed_video_mode_audioonly">Audio only</string>
+
     <string name="feed_auto_download_policy">Auto download policy</string>
     <string name="feed_auto_download_new">Only new items</string>
     <string name="feed_auto_download_newer">Newest unplayed</string>

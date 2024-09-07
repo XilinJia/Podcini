@@ -1,3 +1,9 @@
+# 6.5.6
+
+* in feed preferences, the setting "play audio only" for video feed is replaced with the setting of a video mode.  If you set the previous setting, you need to redo with the new setting.
+* added some extra permission requests when exporting/importing various files, maybe needed in some system
+* re-enabed use of http traffic to work with relevant podcasts
+
 # 6.5.5
 
 * corrected issue of Youtube channel being set for auto-download when subscribing

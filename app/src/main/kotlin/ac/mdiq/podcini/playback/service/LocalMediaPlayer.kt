@@ -12,12 +12,10 @@ import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.MediaPlayerCallback
 import ac.mdiq.podcini.playback.base.PlayerStatus
+import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
-import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.model.MediaType
-import ac.mdiq.podcini.storage.model.Playable
+import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
@@ -197,7 +195,7 @@ class LocalMediaPlayer(context: Context, callback: MediaPlayerCallback) : MediaP
                 val audioStream = audioStreamsList[audioIndex]
                 Logd(TAG, "setDataSource1 use audio quality: ${audioStream.bitrate}")
                 val aSource = DefaultMediaSourceFactory(context).createMediaSource(MediaItem.Builder().setTag(metadata).setUri(Uri.parse(audioStream.content)).build())
-                if (media.episode?.feed?.preferences?.playAudioOnly != true) {
+                if (media.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY) {
                     Logd(TAG, "setDataSource1 result: $streamInfo")
                     Logd(TAG, "setDataSource1 videoStreams: ${streamInfo.videoStreams.size} videoOnlyStreams: ${streamInfo.videoOnlyStreams.size} audioStreams: ${streamInfo.audioStreams.size}")
                     val videoStreamsList = getSortedStreamVideosList(streamInfo.videoStreams, streamInfo.videoOnlyStreams, true, true)

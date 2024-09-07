@@ -211,10 +211,11 @@ object Feeds {
                 Logd(TAG, "New feed has a higher page number.")
                 savedFeed.nextPageLink = newFeed.nextPageLink
             }
-            if (savedFeed.preferences != null && savedFeed.preferences!!.compareWithOther(newFeed.preferences)) {
-                Logd(TAG, "Feed has updated preferences. Updating old feed's preferences")
-                savedFeed.preferences!!.updateFromOther(newFeed.preferences)
-            }
+//            appears not useful
+//            if (savedFeed.preferences != null && savedFeed.preferences!!.compareWithOther(newFeed.preferences)) {
+//                Logd(TAG, "Feed has updated preferences. Updating old feed's preferences")
+//                savedFeed.preferences!!.updateFromOther(newFeed.preferences)
+//            }
             val priorMostRecent = savedFeed.mostRecentItem
             val priorMostRecentDate: Date? = priorMostRecent?.getPubDate()
             var idLong = Feed.newId()

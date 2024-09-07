@@ -190,11 +190,8 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                         val fileUri = FileProvider.getUriForFile(context!!.applicationContext, context.getString(R.string.provider_authority), output!!)
                         showExportSuccessSnackbar(fileUri, exportType.contentType)
                     }
-                } catch (e: Exception) {
-                     showTransportErrorDialog(e)
-                } finally {
-                    progressDialog!!.dismiss()
-                }
+                } catch (e: Exception) { showTransportErrorDialog(e)
+                } finally { progressDialog!!.dismiss() }
             }
         } else {
             lifecycleScope.launch(Dispatchers.IO) {
@@ -204,18 +201,15 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                     withContext(Dispatchers.Main) {
                         showExportSuccessSnackbar(output.uri, exportType.contentType)
                     }
-                } catch (e: Exception) {
-                    showTransportErrorDialog(e)
-                } finally {
-                    progressDialog!!.dismiss()
-                }
+                } catch (e: Exception) { showTransportErrorDialog(e)
+                } finally { progressDialog!!.dismiss() }
             }
         }
     }
 
     private fun exportPreferences() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
         intent.addCategory(Intent.CATEGORY_DEFAULT)
         backupPreferencesLauncher.launch(intent)
     }
@@ -240,7 +234,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
 
     private fun exportMediaFiles() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
         intent.addCategory(Intent.CATEGORY_DEFAULT)
         backupMediaFilesLauncher.launch(intent)
     }
@@ -277,6 +271,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         builder.setNegativeButton(R.string.no, null)
         builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             intent.setType("*/*")
             intent.putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("application/octet-stream"))
             intent.addCategory(Intent.CATEGORY_OPENABLE)
@@ -321,6 +316,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         builder.setNegativeButton(R.string.no, null)
         builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             intent.setType("*/*")
             intent.addCategory(Intent.CATEGORY_OPENABLE)
             restoreProgressLauncher.launch(intent)
@@ -331,25 +327,33 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
 
     private fun chooseProgressExportPathResult(result: ActivityResult) {
         if (result.resultCode != RESULT_OK || result.data == null) return
-        val uri = result.data!!.data
+        val uri = result.data!!.data!!
+//        val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION) ?: 0
+//        requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
         exportWithWriter(EpisodesProgressWriter(), uri, Export.PROGRESS)
     }
 
     private fun chooseOpmlExportPathResult(result: ActivityResult) {
         if (result.resultCode != RESULT_OK || result.data == null) return
-        val uri = result.data!!.data
+        val uri = result.data!!.data!!
+//        val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION) ?: 0
+//        requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
         exportWithWriter(OpmlWriter(), uri, Export.OPML)
     }
 
     private fun chooseHtmlExportPathResult(result: ActivityResult) {
         if (result.resultCode != RESULT_OK || result.data == null) return
-        val uri = result.data!!.data
+        val uri = result.data!!.data!!
+//        val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION) ?: 0
+//        requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
         exportWithWriter(HtmlWriter(), uri, Export.HTML)
     }
 
     private fun chooseFavoritesExportPathResult(result: ActivityResult) {
         if (result.resultCode != RESULT_OK || result.data == null) return
-        val uri = result.data!!.data
+        val uri = result.data!!.data!!
+//        val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION) ?: 0
+//        requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
         exportWithWriter(FavoritesWriter(), uri, Export.FAVORITES)
     }
 
@@ -357,6 +361,8 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         if (result.resultCode != RESULT_OK || result.data?.data == null) return
         val uri = result.data!!.data
         uri?.let {
+//            val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION) ?: 0
+//            requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
             if (isJsonFile(uri)) {
                 progressDialog!!.show()
                 lifecycleScope.launch {
@@ -371,9 +377,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                             showImportSuccessDialog()
                             progressDialog!!.dismiss()
                         }
-                    } catch (e: Throwable) {
-                        showTransportErrorDialog(e)
-                    }
+                    } catch (e: Throwable) { showTransportErrorDialog(e) }
                 }
             } else {
                 val context = requireContext()
@@ -392,6 +396,8 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         if (result.resultCode != RESULT_OK || result.data == null) return
         val uri = result.data!!.data
         uri?.let {
+//            val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION) ?: 0
+//            requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
             if (isRealmFile(uri)) {
                 progressDialog!!.show()
                 lifecycleScope.launch {
@@ -403,9 +409,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                             showImportSuccessDialog()
                             progressDialog!!.dismiss()
                         }
-                    } catch (e: Throwable) {
-                        showTransportErrorDialog(e)
-                    }
+                    } catch (e: Throwable) { showTransportErrorDialog(e) }
                 }
             } else {
                 val context = requireContext()
@@ -433,6 +437,8 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
     private fun restorePreferencesResult(result: ActivityResult) {
         if (result.resultCode != RESULT_OK || result.data?.data == null) return
         val uri = result.data!!.data!!
+//        val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION) ?: 0
+//        requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
         if (isPrefDir(uri)) {
             progressDialog!!.show()
             lifecycleScope.launch {
@@ -444,9 +450,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                         showImportSuccessDialog()
                         progressDialog!!.dismiss()
                     }
-                } catch (e: Throwable) {
-                    showTransportErrorDialog(e)
-                }
+                } catch (e: Throwable) { showTransportErrorDialog(e) }
             }
         } else {
             val context = requireContext()
@@ -458,6 +462,8 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
     private fun restoreMediaFilesResult(result: ActivityResult) {
         if (result.resultCode != RESULT_OK || result.data?.data == null) return
         val uri = result.data!!.data!!
+//        val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION) ?: 0
+//        requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
         if (isMediaFilesDir(uri)) {
             progressDialog!!.show()
             lifecycleScope.launch {
@@ -469,9 +475,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                         showImportSuccessDialog()
                         progressDialog!!.dismiss()
                     }
-                } catch (e: Throwable) {
-                    showTransportErrorDialog(e)
-                }
+                } catch (e: Throwable) { showTransportErrorDialog(e) }
             }
         } else {
             val context = requireContext()
@@ -483,6 +487,8 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
     private fun exportMediaFilesResult(result: ActivityResult) {
         if (result.resultCode != RESULT_OK || result.data?.data == null) return
         val uri = result.data!!.data!!
+//        val takeFlags = result.data?.flags?.and(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION) ?: 0
+//        requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
         progressDialog!!.show()
         lifecycleScope.launch {
             try {
@@ -493,9 +499,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                     showExportSuccessSnackbar(uri, null)
                     progressDialog!!.dismiss()
                 }
-            } catch (e: Throwable) {
-                showTransportErrorDialog(e)
-            }
+            } catch (e: Throwable) { showTransportErrorDialog(e) }
         }
     }
 
@@ -511,9 +515,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                     showExportSuccessSnackbar(uri, "application/x-sqlite3")
                     progressDialog!!.dismiss()
                 }
-            } catch (e: Throwable) {
-                showTransportErrorDialog(e)
-            }
+            } catch (e: Throwable) { showTransportErrorDialog(e) }
         }
     }
 
@@ -537,9 +539,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         try {
             result.launch(intentPickAction)
             return
-        } catch (e: ActivityNotFoundException) {
-            Log.e(TAG, "No activity found. Should never happen...")
-        }
+        } catch (e: ActivityNotFoundException) { Log.e(TAG, "No activity found. Should never happen...") }
 
         // If we are using a SDK lower than API 21 or the implicit intent failed
         // fallback to the legacy export process
@@ -578,8 +578,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                     Logd(TAG, "feeds_: ${feeds_.size}")
                     exportWriter.writeDocument(feeds_, writer, context)
                     output
-                } catch (e: IOException) {
-                    throw e
+                } catch (e: IOException) { throw e
                 } finally {
                     if (writer != null) try { writer.close() } catch (e: IOException) { throw e }
                     if (outputStream != null) try { outputStream.close() } catch (e: IOException) { throw e }
@@ -610,9 +609,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                 } catch (e: IOException) {
                     Log.e(TAG, "Error during file export", e)
                     null // return null in case of error
-                } finally {
-                    writer?.close()
-                }
+                } finally { writer?.close() }
             }
         }
         companion object {
@@ -637,9 +634,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                         val destFile = exportSubDir.createFile("text/xml", file.name)
                         if (destFile != null) copyFile(file, destFile, context)
                     }
-                } else {
-                    Log.e("Error", "shared_prefs directory not found")
-                }
+                } else Log.e("Error", "shared_prefs directory not found")
             } catch (e: IOException) {
                 Log.e(TAG, Log.getStackTraceString(e))
                 throw e
@@ -730,8 +725,8 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
     object MediaFilesTransporter {
         private val TAG: String = MediaFilesTransporter::class.simpleName ?: "Anonymous"
         var feed: Feed? = null
-        val nameFeedMap: MutableMap<String, Feed> = mutableMapOf()
-        val nameEpisodeMap: MutableMap<String, Episode> = mutableMapOf()
+        private val nameFeedMap: MutableMap<String, Feed> = mutableMapOf()
+        private val nameEpisodeMap: MutableMap<String, Episode> = mutableMapOf()
         @Throws(IOException::class)
         fun exportToDocument(uri: Uri, context: Context) {
             try {
@@ -913,9 +908,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
             } catch (e: IOException) {
                 Log.e(TAG, Log.getStackTraceString(e))
                 throw e
-            } finally {
-                IOUtils.closeQuietly(inputStream)
-            }
+            } finally { IOUtils.closeQuietly(inputStream) }
         }
     }
 
@@ -1124,6 +1117,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
         }
     }
 
+    @Suppress("EnumEntryName")
     private enum class IExport {
         prefOpmlExport,
         prefOpmlImport,

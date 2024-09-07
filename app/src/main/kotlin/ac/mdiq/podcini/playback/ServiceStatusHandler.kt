@@ -5,16 +5,11 @@ import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.PlayerStatus
 import ac.mdiq.podcini.playback.service.PlaybackService
-import ac.mdiq.podcini.playback.service.PlaybackService.Companion.currentMediaType
-import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isCasting
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isRunning
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
-import ac.mdiq.podcini.storage.model.MediaType
-import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
-import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
-import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.podcini.util.Logd
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -191,28 +186,5 @@ abstract class ServiceStatusHandler(private val activity: FragmentActivity) {
 
     companion object {
         private val TAG: String = ServiceStatusHandler::class.simpleName ?: "Anonymous"
-
-        /**
-         * Returns an intent which starts an audio- or videoplayer, depending on the
-         * type of media that is being played. If the playbackservice is not
-         * running, the type of the last played media will be looked up.
-         */
-        @JvmStatic
-        fun getPlayerActivityIntent(context: Context): Intent {
-            val showVideoPlayer = if (isRunning) currentMediaType == MediaType.VIDEO && !isCasting
-            else curState.curIsVideo
-            return if (showVideoPlayer) VideoPlayerActivityStarter(context).intent
-            else MainActivityStarter(context).withOpenPlayer().getIntent()
-        }
-
-        /**
-         * Same as [.getPlayerActivityIntent], but here the type of activity
-         * depends on the medaitype that is provided as an argument.
-         */
-        @JvmStatic
-        fun getPlayerActivityIntent(context: Context, mediaType: MediaType?): Intent {
-            return if (mediaType == MediaType.VIDEO && !isCasting) VideoPlayerActivityStarter(context).intent
-            else MainActivityStarter(context).withOpenPlayer().getIntent()
-        }
     }
 }

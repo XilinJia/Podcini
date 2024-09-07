@@ -5,14 +5,15 @@ import ac.mdiq.podcini.databinding.AutodownloadFilterDialogBinding
 import ac.mdiq.podcini.databinding.FeedsettingsBinding
 import ac.mdiq.podcini.databinding.PlaybackSpeedFeedSettingDialogBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
+import ac.mdiq.podcini.playback.base.VideoMode
+import ac.mdiq.podcini.playback.base.VideoMode.Companion.videoModeTags
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
 import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
-import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDLPolicy
-import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
+import ac.mdiq.podcini.storage.model.FeedPreferences.*
 import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.FeedAutoDeleteOptions
 import ac.mdiq.podcini.ui.adapter.SimpleChipAdapter
 import ac.mdiq.podcini.ui.compose.CustomTheme
@@ -64,7 +65,9 @@ class FeedSettingsFragment : Fragment() {
     private var feed: Feed? = null
     private var autoDeleteSummaryResId by mutableIntStateOf(R.string.global_default)
     private var curPrefQueue by mutableStateOf(feed?.preferences?.queueTextExt ?: "Default")
-    private var autoDeletePolicy = "global"
+    private var autoDeletePolicy = AutoDeleteAction.GLOBAL.name
+    private var videoModeSummaryResId by mutableIntStateOf(R.string.global_default)
+    private var videoMode = VideoMode.NONE.name
     private var queues: List<PlayQueue>? = null
 
     private var notificationPermissionDenied: Boolean = false
@@ -88,6 +91,7 @@ class FeedSettingsFragment : Fragment() {
         val toolbar = binding.toolbar
         toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
 
+        getVideoModePolicy()
         getAutoDeletePolicy()
 
         binding.composeView.setContent {
@@ -130,30 +134,27 @@ class FeedSettingsFragment : Fragment() {
                         //                    prefer play audio only
                         Column {
                             Row(Modifier.fillMaxWidth()) {
-                                Icon(ImageVector.vectorResource(id = R.drawable.baseline_audiotrack_24),
-                                    "",
-                                    tint = textColor)
+                                Icon(ImageVector.vectorResource(id = R.drawable.ic_delete), "", tint = textColor)
                                 Spacer(modifier = Modifier.width(20.dp))
                                 Text(
-                                    text = stringResource(R.string.pref_audio_only_title),
+                                    text = stringResource(R.string.feed_video_mode_label),
                                     style = MaterialTheme.typography.h6,
-                                    color = textColor
-                                )
-                                Spacer(modifier = Modifier.weight(1f))
-                                var checked by remember { mutableStateOf(feed?.preferences?.playAudioOnly ?: false) }
-                                Switch(
-                                    checked = checked,
-                                    modifier = Modifier.height(24.dp),
-                                    onCheckedChange = {
-                                        checked = it
-                                        feed = upsertBlk(feed!!) { f ->
-                                            f.preferences?.playAudioOnly = checked
+                                    color = textColor,
+                                    modifier = Modifier.clickable(onClick = {
+                                        val composeView = ComposeView(requireContext()).apply {
+                                            setContent {
+                                                val showDialog = remember { mutableStateOf(true) }
+                                                CustomTheme(requireContext()) {
+                                                    VideoModeDialog(showDialog.value, onDismissRequest = { showDialog.value = false })
+                                                }
+                                            }
                                         }
-                                    }
+                                        (view as? ViewGroup)?.addView(composeView)
+                                    })
                                 )
                             }
                             Text(
-                                text = stringResource(R.string.pref_audio_only_sum),
+                                text = stringResource(videoModeSummaryResId),
                                 style = MaterialTheme.typography.body2,
                                 color = textColor
                             )
@@ -270,8 +271,7 @@ class FeedSettingsFragment : Fragment() {
                                             setContent {
                                                 val showDialog = remember { mutableStateOf(true) }
                                                 CustomTheme(requireContext()) {
-                                                    AutoDeleteDialog(showDialog.value,
-                                                        onDismissRequest = { showDialog.value = false })
+                                                    AutoDeleteDialog(showDialog.value, onDismissRequest = { showDialog.value = false })
                                                 }
                                             }
                                         }
@@ -596,19 +596,94 @@ class FeedSettingsFragment : Fragment() {
         super.onDestroyView()
     }
 
+    private fun getVideoModePolicy() {
+        when (feed?.preferences!!.videoModePolicy) {
+            VideoMode.NONE -> {
+                videoModeSummaryResId = R.string.global_default
+                videoMode = VideoMode.NONE.tag
+            }
+            VideoMode.WINDOW_VIEW -> {
+                videoModeSummaryResId = R.string.feed_video_mode_window
+                videoMode = VideoMode.WINDOW_VIEW.tag
+            }
+            VideoMode.FULL_SCREEN_VIEW -> {
+                videoModeSummaryResId = R.string.feed_video_mode_fullscreen
+                videoMode = VideoMode.FULL_SCREEN_VIEW.tag
+            }
+            VideoMode.AUDIO_ONLY -> {
+                videoModeSummaryResId = R.string.feed_video_mode_audioonly
+                videoMode = VideoMode.AUDIO_ONLY.tag
+            }
+        }
+    }
+    @Composable
+    fun VideoModeDialog(showDialog: Boolean, onDismissRequest: () -> Unit) {
+        if (showDialog) {
+            val (selectedOption, onOptionSelected) = remember { mutableStateOf(videoMode) }
+            Dialog(onDismissRequest = { onDismissRequest() }) {
+                Card(
+                    modifier = Modifier
+                        .wrapContentSize(align = Alignment.Center)
+                        .padding(16.dp),
+                    shape = RoundedCornerShape(16.dp),
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Column {
+                            videoModeTags.forEach { text ->
+                                Row(Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Checkbox(checked = (text == selectedOption),
+                                        onCheckedChange = {
+                                            Logd(TAG, "row clicked: $text $selectedOption")
+                                            if (text != selectedOption) {
+                                                onOptionSelected(text)
+                                                val mode_ = when (text) {
+                                                    VideoMode.NONE.tag -> VideoMode.NONE
+                                                    VideoMode.WINDOW_VIEW.tag -> VideoMode.WINDOW_VIEW
+                                                    VideoMode.FULL_SCREEN_VIEW.tag -> VideoMode.FULL_SCREEN_VIEW
+                                                    VideoMode.AUDIO_ONLY.tag -> VideoMode.AUDIO_ONLY
+                                                    else -> VideoMode.NONE
+                                                }
+                                                feed = upsertBlk(feed!!) { it.preferences?.videoModePolicy = mode_ }
+                                                getVideoModePolicy()
+                                                onDismissRequest()
+                                            }
+                                        }
+                                    )
+                                    Text(
+                                        text = text,
+                                        style = MaterialTheme.typography.body1.merge(),
+//                                        color = textColor,
+                                        modifier = Modifier.padding(start = 16.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private fun getAutoDeletePolicy() {
         when (feed?.preferences!!.autoDeleteAction) {
             AutoDeleteAction.GLOBAL -> {
                 autoDeleteSummaryResId = R.string.global_default
-                autoDeletePolicy = "global"
+                autoDeletePolicy = AutoDeleteAction.GLOBAL.tag
             }
             AutoDeleteAction.ALWAYS -> {
                 autoDeleteSummaryResId = R.string.feed_auto_download_always
-                autoDeletePolicy = "always"
+                autoDeletePolicy = AutoDeleteAction.ALWAYS.tag
             }
             AutoDeleteAction.NEVER -> {
                 autoDeleteSummaryResId = R.string.feed_auto_download_never
-                autoDeletePolicy = "never"
+                autoDeletePolicy = AutoDeleteAction.NEVER.tag
             }
         }
     }
@@ -640,14 +715,12 @@ class FeedSettingsFragment : Fragment() {
                                             if (text != selectedOption) {
                                                 onOptionSelected(text)
                                                 val action_ = when (text) {
-                                                    "global" -> AutoDeleteAction.GLOBAL
-                                                    "always" -> AutoDeleteAction.ALWAYS
-                                                    "never" -> AutoDeleteAction.NEVER
+                                                    AutoDeleteAction.GLOBAL.tag -> AutoDeleteAction.GLOBAL
+                                                    AutoDeleteAction.ALWAYS.tag -> AutoDeleteAction.ALWAYS
+                                                    AutoDeleteAction.NEVER.tag -> AutoDeleteAction.NEVER
                                                     else -> AutoDeleteAction.GLOBAL
                                                 }
-                                                feed = upsertBlk(feed!!) {
-                                                    it.preferences?.autoDeleteAction = action_
-                                                }
+                                                feed = upsertBlk(feed!!) { it.preferences?.autoDeleteAction = action_ }
                                                 getAutoDeletePolicy()
                                                 onDismissRequest()
                                             }
@@ -720,7 +793,7 @@ class FeedSettingsFragment : Fragment() {
     @Composable
     fun AutoDownloadPolicyDialog(showDialog: Boolean, onDismissRequest: () -> Unit) {
         if (showDialog) {
-            val (selectedOption, onOptionSelected) = remember { mutableStateOf(feed?.preferences?.autoDLPolicy ?: AutoDLPolicy.ONLY_NEW) }
+            val (selectedOption, onOptionSelected) = remember { mutableStateOf(feed?.preferences?.autoDLPolicy ?: AutoDownloadPolicy.ONLY_NEW) }
             Dialog(onDismissRequest = { onDismissRequest() }) {
                 Card(
                     modifier = Modifier
@@ -733,7 +806,7 @@ class FeedSettingsFragment : Fragment() {
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Column {
-                            AutoDLPolicy.entries.forEach { item ->
+                            AutoDownloadPolicy.entries.forEach { item ->
                                 Row(Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 16.dp),

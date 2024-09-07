@@ -2,10 +2,12 @@ package ac.mdiq.podcini.ui.actions.actionbutton
 
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.preferences.UserPreferences.isStreamOverDownload
-import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.playback.base.InTheatre.isCurrentlyPlaying
-import ac.mdiq.podcini.storage.model.Feed
+import ac.mdiq.podcini.playback.base.VideoMode
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.getPlayerActivityIntent
+import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
+import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
 import android.content.Context
 import android.view.View
 import android.widget.ImageView
@@ -30,6 +32,13 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
         button.contentDescription = context.getString(getLabel())
         button.setOnClickListener { onClick(context) }
         icon.setImageResource(getDrawable())
+    }
+
+    protected fun playVideo(context: Context,  media: Playable) {
+        if (item.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY
+                && videoPlayMode != VideoMode.AUDIO_ONLY.code && videoMode != VideoMode.AUDIO_ONLY
+                && media.getMediaType() == MediaType.VIDEO)
+            context.startActivity(getPlayerActivityIntent(context, MediaType.VIDEO))
     }
 
     @UnstableApi companion object {

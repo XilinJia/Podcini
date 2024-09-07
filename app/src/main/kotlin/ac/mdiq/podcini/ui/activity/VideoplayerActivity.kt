@@ -5,14 +5,15 @@ import ac.mdiq.podcini.databinding.AudioControlsBinding
 import ac.mdiq.podcini.databinding.VideoEpisodeFragmentBinding
 import ac.mdiq.podcini.databinding.VideoplayerActivityBinding
 import ac.mdiq.podcini.playback.ServiceStatusHandler
-import ac.mdiq.podcini.playback.ServiceStatusHandler.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.PlayerStatus
+import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.playback.cast.CastEnabledActivity
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curDurationFB
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curPositionFB
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curSpeedFB
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isCasting
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isPlayingVideoLocally
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.isSleepTimerActive
@@ -36,17 +37,16 @@ import ac.mdiq.podcini.ui.fragment.ChaptersFragment
 import ac.mdiq.podcini.ui.utils.PictureInPictureUtil
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.IntentUtils.openInBrowser
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.ShareUtils.hasLinkToShare
-import ac.mdiq.podcini.util.EventFlow
-import ac.mdiq.podcini.util.FlowEvent
 import android.app.Activity
 import android.app.Dialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ActivityInfo
-import android.content.res.Configuration
 import android.graphics.PixelFormat
 import android.graphics.drawable.ColorDrawable
 import android.media.AudioManager
@@ -95,18 +95,25 @@ class VideoplayerActivity : CastEnabledActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        videoMode = (intent.getSerializableExtra(VIDEO_MODE) as? VideoMode) ?: VideoMode.None
-        if (videoMode == VideoMode.None) {
-            videoMode = VideoMode.entries.toTypedArray().getOrElse(videoPlayMode) { VideoMode.WINDOW_VIEW }
-            if (videoMode == VideoMode.AUDIO_ONLY) {
-                switchToAudioOnly = true
-                finish()
-            }
-            if (videoMode != VideoMode.FULL_SCREEN_VIEW && videoMode != VideoMode.WINDOW_VIEW) {
-                Logd(TAG, "videoMode not selected, use window mode")
-                videoMode = VideoMode.WINDOW_VIEW
-            }
+        var vmCode = 0
+        if (curMedia is EpisodeMedia) {
+            val media_ = curMedia as EpisodeMedia
+            val vPol = media_.episode?.feed?.preferences?.videoModePolicy
+            if (vPol != null && vPol != VideoMode.NONE) vmCode = vPol.code
         }
+        Logd(TAG, "onCreate vmCode: $vmCode")
+        if (vmCode == 0) vmCode = videoPlayMode
+        Logd(TAG, "onCreate vmCode: $vmCode")
+        videoMode = VideoMode.entries.toTypedArray().getOrElse(vmCode) { VideoMode.WINDOW_VIEW }
+        if (videoMode == VideoMode.AUDIO_ONLY) {
+            switchToAudioOnly = true
+            finish()
+        }
+        if (videoMode != VideoMode.FULL_SCREEN_VIEW && videoMode != VideoMode.WINDOW_VIEW) {
+            Logd(TAG, "videoMode not selected, use window mode")
+            videoMode = VideoMode.WINDOW_VIEW
+        }
+
         supportRequestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY)
         setForVideoMode()
         super.onCreate(savedInstanceState)
@@ -393,13 +400,6 @@ class VideoplayerActivity : CastEnabledActivity() {
         return super.onKeyUp(keyCode, event)
     }
 
-    enum class VideoMode(val mode: Int) {
-        None(0),
-        WINDOW_VIEW(1),
-        FULL_SCREEN_VIEW(2),
-        AUDIO_ONLY(3)
-    }
-
     class PlaybackControlsDialog : DialogFragment() {
         private lateinit var dialog: AlertDialog
         private var _binding: AudioControlsBinding? = null
@@ -533,7 +533,7 @@ class VideoplayerActivity : CastEnabledActivity() {
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             super.onCreateView(inflater, container, savedInstanceState)
             Logd(TAG, "fragment onCreateView")
-            _binding = VideoEpisodeFragmentBinding.inflate(LayoutInflater.from(activity))
+            _binding = VideoEpisodeFragmentBinding.inflate(inflater)
             root = binding.root
             statusHandler = newStatusHandler()
             statusHandler!!.init()
@@ -646,17 +646,19 @@ class VideoplayerActivity : CastEnabledActivity() {
         private fun setupVideoAspectRatio() {
             if (videoSurfaceCreated) {
                 val windowMetrics = WindowMetricsCalculator.getOrCreate().computeCurrentWindowMetrics(activity as Activity)
-                val videoWidth = if (videoMode == VideoMode.FULL_SCREEN_VIEW) max(windowMetrics.bounds.width(), windowMetrics.bounds.height())
-                else min(windowMetrics.bounds.width(), windowMetrics.bounds.height())
-                var videoHeight = 0
+                val videoWidth = when (videoMode) {
+                    VideoMode.FULL_SCREEN_VIEW -> max(windowMetrics.bounds.width(), windowMetrics.bounds.height())
+                    VideoMode.WINDOW_VIEW -> min(windowMetrics.bounds.width(), windowMetrics.bounds.height())
+                    else -> min(windowMetrics.bounds.width(), windowMetrics.bounds.height())
+                }
+                val videoHeight: Int
                 if (videoSize != null && videoSize!!.first > 0 && videoSize!!.second > 0) {
-                    Logd(TAG, "setupVideoAspectRatio Width,height of video: ${videoSize!!.first}, ${videoSize!!.second}")
+                    Logd(TAG, "setupVideoAspectRatio video width: ${videoSize!!.first} height: ${videoSize!!.second}")
                     videoHeight = (videoWidth.toFloat() / videoSize!!.first * videoSize!!.second).toInt()
-                    Logd(TAG, "setupVideoAspectRatio Width,height of video 1: $videoWidth, $videoHeight")
+                    Logd(TAG, "setupVideoAspectRatio adjusted video width: $videoWidth height: $videoHeight")
                 } else {
-                    Log.e(TAG, "setupVideoAspectRatio Could not determine video size")
                     videoHeight = (videoWidth.toFloat() / 16 * 9).toInt()
-                    Logd(TAG, "setupVideoAspectRatio Width,height of video 2: $videoWidth, $videoHeight")
+                    Logd(TAG, "setupVideoAspectRatio Could not determine video size, use: $videoWidth $videoHeight")
                 }
                 val lp = binding.videoView.layoutParams
                 lp.width = videoWidth
@@ -924,9 +926,7 @@ class VideoplayerActivity : CastEnabledActivity() {
 
     companion object {
         private val TAG: String = VideoplayerActivity::class.simpleName ?: "Anonymous"
-        const val VIDEO_MODE = "Video_Mode"
-
-        var videoMode = VideoMode.None
+        var videoMode = VideoMode.NONE
 
         private val audioTracks: List<String>
             get() {

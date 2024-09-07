@@ -1,21 +1,16 @@
 package ac.mdiq.podcini.ui.actions.actionbutton
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.playback.ServiceStatusHandler.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.playback.PlaybackServiceStarter
 import ac.mdiq.podcini.playback.base.InTheatre
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
-import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.model.MediaType
-import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
-import ac.mdiq.podcini.ui.activity.VideoplayerActivity.VideoMode
-import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
@@ -51,9 +46,11 @@ class PlayActionButton(item: Episode) : EpisodeActionButton(item) {
             EventFlow.postEvent(FlowEvent.PlayEvent(item))
         }
 
-        if (item.feed?.preferences?.playAudioOnly != true && videoPlayMode != VideoMode.AUDIO_ONLY.mode && videoMode != VideoMode.AUDIO_ONLY
-                && media.getMediaType() == MediaType.VIDEO)
-            context.startActivity(getPlayerActivityIntent(context, MediaType.VIDEO))
+//        if (item.feed?.preferences?.videoModePolicy != FeedPreferences.VideomodePolicy.AUDIO_ONLY
+//                && videoPlayMode != VideoMode.AUDIO_ONLY.mode && videoMode != VideoMode.AUDIO_ONLY
+//                && media.getMediaType() == MediaType.VIDEO)
+//            context.startActivity(getPlayerActivityIntent(context, MediaType.VIDEO))
+        playVideo(context, media)
     }
 
     /**

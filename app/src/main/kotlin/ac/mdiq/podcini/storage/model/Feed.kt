@@ -243,7 +243,6 @@ class Feed : RealmObject {
             if (imageUrl == null || imageUrl != other.imageUrl) return true
         }
         if (eigenTitle != other.eigenTitle) return true
-
         if (other.identifier != null) {
             if (identifier == null || identifier != other.identifier) return true
         }
@@ -263,9 +262,7 @@ class Feed : RealmObject {
             if (paymentLinks.isEmpty() || paymentLinks != other.paymentLinks) return true
         }
         if (other.isPaged && !this.isPaged) return true
-
         if (other.nextPageLink != this.nextPageLink) return true
-
         return false
     }
 

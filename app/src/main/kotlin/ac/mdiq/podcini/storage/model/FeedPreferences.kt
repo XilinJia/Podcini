@@ -2,9 +2,9 @@ package ac.mdiq.podcini.storage.model
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
+import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting.Companion.fromInteger
-import androidx.compose.runtime.mutableStateOf
 import io.realm.kotlin.ext.realmSetOf
 import io.realm.kotlin.types.EmbeddedRealmObject
 import io.realm.kotlin.types.RealmSet
@@ -26,7 +26,15 @@ class FeedPreferences : EmbeddedRealmObject {
     var username: String? = null
     var password: String? = null
 
-    var playAudioOnly: Boolean = false
+    //    var playAudioOnly: Boolean = false
+    @Ignore
+    var videoModePolicy: VideoMode = VideoMode.NONE
+        get() = VideoMode.fromCode(videoMode)
+        set(value) {
+            field = value
+            videoMode = field.code
+        }
+    var videoMode: Int = 0
 
     var playSpeed: Float = SPEED_USE_GLOBAL
 
@@ -118,22 +126,57 @@ class FeedPreferences : EmbeddedRealmObject {
     var countingPlayed: Boolean = true
 
     @Ignore
-    var autoDLPolicy: AutoDLPolicy = AutoDLPolicy.ONLY_NEW
-        get() = AutoDLPolicy.fromCode(autoDLPolicyCode)
+    var autoDLPolicy: AutoDownloadPolicy = AutoDownloadPolicy.ONLY_NEW
+        get() = AutoDownloadPolicy.fromCode(autoDLPolicyCode)
         set(value) {
             field = value
             autoDLPolicyCode = value.code
         }
     var autoDLPolicyCode: Int = 0
 
-    enum class AutoDLPolicy(val code: Int, val resId: Int) {
+    constructor() {}
+
+    constructor(feedID: Long, autoDownload: Boolean, autoDeleteAction: AutoDeleteAction,
+                volumeAdaptionSetting: VolumeAdaptionSetting?, username: String?, password: String?) {
+        this.feedID = feedID
+        this.autoDownload = autoDownload
+        this.autoDeleteAction = autoDeleteAction
+        if (volumeAdaptionSetting != null) this.volumeAdaptionSetting = volumeAdaptionSetting
+        this.username = username
+        this.password = password
+        this.autoDelete = autoDeleteAction.code
+        this.volumeAdaption = volumeAdaptionSetting?.toInteger() ?: 0
+    }
+
+//    These appear not needed
+    /**
+     * Compare another FeedPreferences with this one. .
+     * @return True if the two objects are different.
+     */
+//    fun compareWithOther(other: FeedPreferences?): Boolean {
+//        if (other == null) return true
+//        if (username != other.username) return true
+//        if (password != other.password) return true
+//        return false
+//    }
+
+    /**
+     * Update this FeedPreferences object from another one.
+     */
+//    fun updateFromOther(other: FeedPreferences?) {
+//        if (other == null) return
+//        this.username = other.username
+//        this.password = other.password
+//    }
+
+    enum class AutoDownloadPolicy(val code: Int, val resId: Int) {
         ONLY_NEW(0, R.string.feed_auto_download_new),
         NEWER(1, R.string.feed_auto_download_newer),
         OLDER(2, R.string.feed_auto_download_older);
 
         companion object {
-            fun fromCode(code: Int): AutoDLPolicy {
-                return enumValues<AutoDLPolicy>().firstOrNull { it.code == code } ?: ONLY_NEW
+            fun fromCode(code: Int): AutoDownloadPolicy {
+                return enumValues<AutoDownloadPolicy>().firstOrNull { it.code == code } ?: ONLY_NEW
             }
         }
     }
@@ -153,48 +196,11 @@ class FeedPreferences : EmbeddedRealmObject {
         }
     }
 
-    constructor() {}
-
-    constructor(feedID: Long, autoDownload: Boolean, autoDeleteAction: AutoDeleteAction,
-                volumeAdaptionSetting: VolumeAdaptionSetting?, username: String?, password: String?) {
-        this.feedID = feedID
-        this.autoDownload = autoDownload
-        this.autoDeleteAction = autoDeleteAction
-        if (volumeAdaptionSetting != null) this.volumeAdaptionSetting = volumeAdaptionSetting
-        this.username = username
-        this.password = password
-        this.autoDelete = autoDeleteAction.code
-        this.volumeAdaption = volumeAdaptionSetting?.toInteger() ?: 0
-    }
-
-    /**
-     * Compare another FeedPreferences with this one. The feedID, autoDownload and AutoDeleteAction attribute are excluded from the
-     * comparison.
-     * @return True if the two objects are different.
-     */
-    fun compareWithOther(other: FeedPreferences?): Boolean {
-        if (other == null) return true
-        if (username != other.username) return true
-        if (password != other.password) return true
-        return false
-    }
-
-    /**
-     * Update this FeedPreferences object from another one. The feedID, autoDownload and AutoDeleteAction attributes are excluded
-     * from the update.
-     */
-    fun updateFromOther(other: FeedPreferences?) {
-        if (other == null) return
-        this.username = other.username
-        this.password = other.password
-    }
-
     companion object {
         const val SPEED_USE_GLOBAL: Float = -1f
         const val TAG_ROOT: String = "#root"
         const val TAG_SEPARATOR: String = "\u001e"
 
-        val FeedAutoDeleteOptions = AutoDeleteAction.values().map { it.tag }
-
+        val FeedAutoDeleteOptions = AutoDeleteAction.entries.map { it.tag }
     }
 }

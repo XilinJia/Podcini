@@ -52,6 +52,8 @@ import ac.mdiq.podcini.storage.model.CurrentState.Companion.PLAYER_STATUS_PLAYIN
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
+import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
+import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
 import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.ui.widget.WidgetUpdater.WidgetState
 import ac.mdiq.podcini.util.EventFlow
@@ -1439,6 +1441,19 @@ class PlaybackService : MediaLibraryService() {
                     }
                 }
             }
+        }
+
+        /**
+         * Returns an intent which starts an audio- or videoplayer, depending on the
+         * type of media that is being played or the medaitype that is provided as an argument.
+         * If the playbackservice is not running, the type of the last played media will be looked up.
+         */
+        @JvmStatic
+        fun getPlayerActivityIntent(context: Context, mediaType_: MediaType? = null): Intent {
+            val mediaType = mediaType_ ?: currentMediaType
+            val showVideoPlayer = if (isRunning) mediaType == MediaType.VIDEO && !isCasting else curState.curIsVideo
+            return if (showVideoPlayer) VideoPlayerActivityStarter(context).intent
+            else MainActivityStarter(context).withOpenPlayer().getIntent()
         }
     }
 }

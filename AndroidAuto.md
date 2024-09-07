@@ -1,4 +1,4 @@
-Podcini runs fine on "desktop head unit", the screenshots are on Readme.
+Since version 6.4.0, Podcini has been back to run on Android Auto.  It runs fine on "desktop head unit" and the screenshots are on Readme.
 
 So this appears the issue with Podcini not showing up on car display, from Google document:
 

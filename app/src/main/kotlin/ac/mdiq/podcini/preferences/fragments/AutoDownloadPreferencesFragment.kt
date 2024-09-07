@@ -50,7 +50,6 @@ class AutoDownloadPreferencesFragment : PreferenceFragmentCompat() {
                 true
             }
         if (Build.VERSION.SDK_INT >= 29) findPreference<Preference>(UserPreferences.Prefs.prefEnableAutoDownloadWifiFilter.name)!!.isVisible = false
-
         findPreference<Preference>(UserPreferences.Prefs.prefEnableAutoDownloadWifiFilter.name)?.onPreferenceChangeListener =
             Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any? ->
                 if (newValue is Boolean) {
@@ -71,7 +70,6 @@ class AutoDownloadPreferencesFragment : PreferenceFragmentCompat() {
     @SuppressLint("MissingPermission") // getConfiguredNetworks needs location permission starting with API 29
     private fun buildAutodownloadSelectedNetworksPreference() {
         if (Build.VERSION.SDK_INT >= 29) return
-
         val activity: Activity? = activity
 
         if (selectedNetworks != null) clearAutodownloadSelectedNetworsPreference()

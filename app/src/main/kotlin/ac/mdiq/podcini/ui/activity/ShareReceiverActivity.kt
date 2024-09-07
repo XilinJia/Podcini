@@ -36,7 +36,8 @@ class ShareReceiverActivity : AppCompatActivity() {
                 Log.e(TAG, "feedUrl is empty or null.")
                 showNoPodcastFoundError()
             }
-            !feedUrl.matches(Regex("[./%]")) -> {
+//            plain text
+            feedUrl.matches(Regex("^[^\\s<>/]+\$")) -> {
                 val intent = MainActivity.showOnlineSearch(this, feedUrl)
                 startActivity(intent)
                 finish()

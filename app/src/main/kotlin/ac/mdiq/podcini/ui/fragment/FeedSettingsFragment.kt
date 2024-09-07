@@ -10,7 +10,6 @@ import ac.mdiq.podcini.playback.base.VideoMode.Companion.videoModeTags
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
 import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
 import ac.mdiq.podcini.storage.database.RealmDB.realm
-import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.FeedPreferences.*
@@ -416,7 +415,7 @@ class FeedSettingsFragment : Fragment() {
                     }
                     if (isEnableAutodownload && feed?.type != Feed.FeedType.YOUTUBE.name) {
                         //                    auto download
-                        var audoDownloadChecked by remember { mutableStateOf(feed?.preferences?.autoDownload ?: true) }
+                        var audoDownloadChecked by remember { mutableStateOf(feed?.preferences?.autoDownload ?: false) }
                         Column {
                             Row(Modifier.fillMaxWidth()) {
                                 Text(
@@ -430,9 +429,7 @@ class FeedSettingsFragment : Fragment() {
                                     modifier = Modifier.height(24.dp),
                                     onCheckedChange = {
                                         audoDownloadChecked = it
-                                        feed = upsertBlk(feed!!) { f ->
-                                            f.preferences?.autoDownload = audoDownloadChecked
-                                        }
+                                        feed = upsertBlk(feed!!) { f -> f.preferences?.autoDownload = audoDownloadChecked }
                                     }
                                 )
                             }
@@ -768,9 +765,7 @@ class FeedSettingsFragment : Fragment() {
                                             Logd(TAG, "row clicked: $item $selectedOption")
                                             if (item != selectedOption) {
                                                 onOptionSelected(item)
-                                                feed = upsertBlk(feed!!) {
-                                                    it.preferences?.volumeAdaptionSetting = item
-                                                }
+                                                feed = upsertBlk(feed!!) { it.preferences?.volumeAdaptionSetting = item }
                                                 onDismissRequest()
                                             }
                                         }
@@ -817,9 +812,7 @@ class FeedSettingsFragment : Fragment() {
                                             Logd(TAG, "row clicked: $item $selectedOption")
                                             if (item != selectedOption) {
                                                 onOptionSelected(item)
-                                                feed = upsertBlk(feed!!) {
-                                                    it.preferences?.autoDLPolicy = item
-                                                }
+                                                feed = upsertBlk(feed!!) { it.preferences?.autoDLPolicy = item }
 //                                                getAutoDeletePolicy()
                                                 onDismissRequest()
                                             }
@@ -854,18 +847,14 @@ class FeedSettingsFragment : Fragment() {
                     ) {
                         var newCache by remember { mutableStateOf((feed?.preferences?.autoDLMaxEpisodes ?: 1).toString()) }
                         TextField(value = newCache,
-                            onValueChange = { if (it.toIntOrNull() != null) newCache = it },
+                            onValueChange = { if (it.isEmpty() || it.toIntOrNull() != null) newCache = it },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            visualTransformation = PositiveIntegerTransform(),
+//                            visualTransformation = PositiveIntegerTransform(),
                             label = { Text("Max episodes allowed") }
                         )
                         Button(onClick = {
                             if (newCache.isNotEmpty()) {
-                                runOnIOScope {
-                                    feed = upsertBlk(feed!!) {
-                                        it.preferences?.autoDLMaxEpisodes = newCache.toIntOrNull() ?: 1
-                                    }
-                                }
+                                feed = upsertBlk(feed!!) { it.preferences?.autoDLMaxEpisodes = newCache.toIntOrNull() ?: 1 }
                                 onDismiss()
                             }
                         }) {
@@ -993,16 +982,16 @@ class FeedSettingsFragment : Fragment() {
                     ) {
                         var intro by remember { mutableStateOf((feed?.preferences?.introSkip ?: 0).toString()) }
                         TextField(value = intro,
-                            onValueChange = { if (it.toIntOrNull() != null) intro = it },
+                            onValueChange = { if (it.isEmpty() || it.toIntOrNull() != null) intro = it },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            visualTransformation = PositiveIntegerTransform(),
+//                            visualTransformation = PositiveIntegerTransform(),
                             label = { Text("Skip first (seconds)") }
                         )
                         var ending by remember { mutableStateOf((feed?.preferences?.endingSkip ?: 0).toString()) }
                         TextField(value = ending,
-                            onValueChange = { if (it.toIntOrNull() != null) ending = it  },
+                            onValueChange = { if (it.isEmpty() || it.toIntOrNull() != null) ending = it  },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            visualTransformation = PositiveIntegerTransform(),
+//                            visualTransformation = PositiveIntegerTransform(),
                             label = { Text("Skip last (seconds)") }
                         )
                         Button(onClick = {
@@ -1022,7 +1011,7 @@ class FeedSettingsFragment : Fragment() {
         }
     }
 
-    fun PlaybackSpeedDialog(): AlertDialog {
+    private fun PlaybackSpeedDialog(): AlertDialog {
         val binding = PlaybackSpeedFeedSettingDialogBinding.inflate(LayoutInflater.from(requireContext()))
         binding.seekBar.setProgressChangedListener { speed: Float? ->
             binding.currentSpeedLabel.text = String.format(Locale.getDefault(), "%.2fx", speed)
@@ -1049,13 +1038,13 @@ class FeedSettingsFragment : Fragment() {
             .create()
     }
 
-    class PositiveIntegerTransform : VisualTransformation {
-        override fun filter(text: AnnotatedString): TransformedText {
-            val trimmedText = text.text.filter { it.isDigit() }
-            val transformedText = if (trimmedText.isNotEmpty() && trimmedText.toInt() > 0) trimmedText else ""
-            return TransformedText(AnnotatedString(transformedText), OffsetMapping.Identity)
-        }
-    }
+//    class PositiveIntegerTransform : VisualTransformation {
+//        override fun filter(text: AnnotatedString): TransformedText {
+//            val trimmedText = text.text.filter { it.isDigit() }
+//            val transformedText = if (trimmedText.isNotEmpty() && trimmedText.toInt() > 0) trimmedText else ""
+//            return TransformedText(AnnotatedString(transformedText), OffsetMapping.Identity)
+//        }
+//    }
 
     /**
      * Displays a dialog with a text box for filtering episodes and two radio buttons for exclusion/inclusion

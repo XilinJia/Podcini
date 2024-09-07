@@ -1,3 +1,9 @@
+# 6.5.7
+
+* in every feed settings, in case the preferences are not properly set, auto-download is by default disabled
+* fixed mis-behavior of entering number in textfield in FeedSettings
+* fixed the issue of ShareReceiver not detecting url or plain text correctly
+
 # 6.5.6
 
 * in feed preferences, the setting "play audio only" for video feed is replaced with the setting of a video mode.  If you set the previous setting, you need to redo with the new setting.

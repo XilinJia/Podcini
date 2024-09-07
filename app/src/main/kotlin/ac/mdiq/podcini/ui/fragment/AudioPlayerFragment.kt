@@ -549,9 +549,11 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                     val mediaType = media.getMediaType()
                     if (mediaType == MediaType.AUDIO || videoPlayMode == VideoMode.AUDIO_ONLY.code || videoMode == VideoMode.AUDIO_ONLY
                             || (media is EpisodeMedia && media.episode?.feed?.preferences?.videoModePolicy == VideoMode.AUDIO_ONLY)) {
+                        Logd(TAG, "popping as audio episode")
                         ensureService()
                         (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_EXPANDED)
                     } else {
+                        Logd(TAG, "popping video activity")
 //                        playPause()
 //                        controller!!.ensureService()
                         val intent = getPlayerActivityIntent(requireContext(), mediaType)

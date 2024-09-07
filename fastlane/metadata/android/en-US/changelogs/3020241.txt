@@ -1,0 +1,5 @@
+ Version 6.5.7 brings several changes:
+
+* in every feed settings, in case the preferences are not properly set, auto-download is by default disabled
+* fixed mis-behavior of entering number in textfield in FeedSettings
+* fixed the issue of ShareReceiver not detecting url or plain text correctly

@@ -96,19 +96,6 @@ object UserPreferences {
             }
         }
 
-    var videoPlaybackSpeed: Float
-        get() {
-            try { return appPrefs.getString(Prefs.prefVideoPlaybackSpeed.name, "1.00")!!.toFloat()
-            } catch (e: NumberFormatException) {
-                Log.e(TAG, Log.getStackTraceString(e))
-                videoPlaybackSpeed = 1.0f
-                return 1.0f
-            }
-        }
-        set(speed) {
-            appPrefs.edit().putString(Prefs.prefVideoPlaybackSpeed.name, speed.toString()).apply()
-        }
-
     var isSkipSilence: Boolean
         get() = appPrefs.getBoolean(Prefs.prefSkipSilence.name, false)
         set(skipSilence) {
@@ -364,7 +351,6 @@ object UserPreferences {
 
         // Mediaplayer
         prefPlaybackSpeed,
-        prefVideoPlaybackSpeed,
         prefSkipSilence,
         prefFastForwardSecs,
         prefRewindSecs,
@@ -372,7 +358,7 @@ object UserPreferences {
         prefVideoPlaybackMode,
     }
 
-    // Constants
+    @Suppress("ClassName")
     enum class NOTIFICATION_BUTTON {
         REWIND,
         FAST_FORWARD,

@@ -282,7 +282,7 @@ class MainActivity : CastEnabledActivity() {
                         }
                         if (downloadUrl == null) continue
 
-                        Logd(TAG, "workInfo.state: ${workInfo.state}")
+//                        Logd(TAG, "workInfo.state: ${workInfo.state}")
                         var status: Int
                         status = when (workInfo.state) {
                             WorkInfo.State.RUNNING -> DownloadStatus.STATE_RUNNING

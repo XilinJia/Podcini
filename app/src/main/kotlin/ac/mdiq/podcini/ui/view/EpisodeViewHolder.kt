@@ -90,7 +90,7 @@ open class EpisodeViewHolder(private val activity: MainActivity, parent: ViewGro
     private var mediaMonitor: Job? = null
     private var notBond: Boolean = true
 
-    val isCurMedia: Boolean
+    private val isCurMedia: Boolean
         get() = InTheatre.isCurMedia(this.episode?.media)
 
     init {
@@ -292,33 +292,6 @@ open class EpisodeViewHolder(private val activity: MainActivity, parent: ViewGro
         when {
             media.size > 0 -> binding.size.text = Formatter.formatShortFileSize(activity, media.size)
             else -> binding.size.text = ""
-        }
-    }
-
-    fun bindDummy() {
-        this.episode = Episode()
-        binding.container.alpha = 0.1f
-        secondaryActionIcon.setImageDrawable(null)
-        isVideo.visibility = View.GONE
-        binding.isFavorite.visibility = View.GONE
-        isInQueue.visibility = View.GONE
-        title.text = "███████"
-        pubDate.text = "████"
-        duration.text = "████"
-        secondaryActionProgress.setPercentage(0f, null)
-        secondaryActionProgress.setIndeterminate(false)
-        progressBar.visibility = View.GONE
-        position.visibility = View.GONE
-        dragHandle.visibility = View.GONE
-        binding.size.text = ""
-        itemView.setBackgroundResource(ThemeUtils.getDrawableFromAttr(activity, androidx.appcompat.R.attr.selectableItemBackground))
-        placeholder.text = ""
-        if (coverHolder.visibility == View.VISIBLE) {
-            CoverLoader(activity)
-                .withResource(R.color.medium_gray)
-                .withPlaceholderView(placeholder)
-                .withCoverView(cover)
-                .load()
         }
     }
 

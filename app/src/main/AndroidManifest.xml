@@ -54,7 +54,6 @@
                  android:enabled="true"
                  android:exported="true"
                  tools:ignore="ExportedService">
-
             <intent-filter>
                 <action android:name="androidx.media3.session.MediaLibraryService"/>
                 <action android:name="android.media.browse.MediaBrowserService"/>

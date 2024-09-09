@@ -84,6 +84,7 @@ import com.leinardi.android.speeddial.SpeedDialView
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
 import java.util.*
+import kotlin.math.max
 
 /**
  * Shows all items in the queue.
@@ -153,7 +154,7 @@ import java.util.*
                 curQueue = upsertBlk(queues[position]) { it.update() }
                 toolbar.menu?.findItem(R.id.rename_queue)?.setVisible(curQueue.name != "Default")
                 loadCurQueue(true)
-                playbackService?.notifyCurQueueItemsChanged(Math.max(prevQueueSize, curQueue.size()))
+                playbackService?.notifyCurQueueItemsChanged(max(prevQueueSize, curQueue.size()))
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
@@ -231,14 +232,11 @@ import java.util.*
         procFlowEvents()
         val sessionToken = SessionToken(requireContext(), ComponentName(requireContext(), PlaybackService::class.java))
         browserFuture = MediaBrowser.Builder(requireContext(), sessionToken).buildAsync()
-        browserFuture.addListener(
-            {
-                // here we can get the root of media items tree or we can get also the children if it is an album for example.
-                mediaBrowser = browserFuture.get()
-                mediaBrowser?.subscribe("CurQueue", null)
-            },
-            MoreExecutors.directExecutor()
-        )
+        browserFuture.addListener({
+            // here we can get the root of media items tree or we can get also the children if it is an album for example.
+            mediaBrowser = browserFuture.get()
+            mediaBrowser?.subscribe("CurQueue", null)
+        }, MoreExecutors.directExecutor())
 //        if (queueItems.isNotEmpty()) recyclerView.restoreScrollPosition(TAG)
     }
 
@@ -309,7 +307,7 @@ import java.util.*
     }
 
     private fun refreshPosCallback(pos: Int, episode: Episode) {
-        Logd(TAG, "Queue refreshPosCallback: $pos ${episode.title}")
+//        Logd(TAG, "Queue refreshPosCallback: $pos ${episode.title}")
         if (isAdded && activity != null) refreshInfoBar()
     }
 
@@ -340,12 +338,15 @@ import java.util.*
                         val pos: Int = EpisodeUtil.indexOfItemWithId(queueItems, e.id)
                         if (pos >= 0) {
                             Logd(TAG, "removing episode $pos ${queueItems[pos].title} $e")
+//                            val holder = recyclerView.findViewHolderForItemId(e.id) as? EpisodeViewHolder
                             val holder = recyclerView.findViewHolderForLayoutPosition(pos) as? EpisodeViewHolder
-                            holder?.stopDBMonitor()
+                            if (holder != null) {
+                                holder.stopDBMonitor()
 //                            holder?.unbind()
-                            queueItems.removeAt(pos)
-                            adapter?.notifyItemRemoved(pos)
-                            adapter?.notifyItemRangeChanged(pos, adapter!!.itemCount - pos)
+                                queueItems.removeAt(pos)
+                                adapter?.notifyItemRemoved(pos)
+//                            adapter?.notifyItemRangeChanged(pos, adapter!!.itemCount - pos)
+                            }
                         } else {
                             Log.e(TAG, "Trying to remove item non-existent from queue ${e.id} ${e.title}")
                             continue
@@ -370,8 +371,8 @@ import java.util.*
     }
 
     private fun onPlayEvent(event: FlowEvent.PlayEvent) {
-        Logd(TAG, "onPlayEvent ${event.episode.title}")
         val pos: Int = EpisodeUtil.indexOfItemWithId(queueItems, event.episode.id)
+        Logd(TAG, "onPlayEvent action: ${event.action} pos: $pos ${event.episode.title}")
         if (pos >= 0) adapter?.notifyItemChangedCompat(pos)
     }
 
@@ -380,9 +381,7 @@ import java.util.*
         if (loadItemsRunning) return
         for (downloadUrl in event.urls) {
             val pos: Int = EpisodeUtil.indexOfItemWithDownloadUrl(queueItems.toList(), downloadUrl)
-            if (pos >= 0) {
-                adapter?.notifyItemChangedCompat(pos)
-            }
+            if (pos >= 0) adapter?.notifyItemChangedCompat(pos)
         }
     }
 
@@ -417,7 +416,6 @@ import java.util.*
     @SuppressLint("RestrictedApi")
     private fun onKeyUp(event: KeyEvent) {
         if (!isAdded || !isVisible || !isMenuVisible) return
-
         when (event.keyCode) {
             KeyEvent.KEYCODE_T -> recyclerView.smoothScrollToPosition(0)
             KeyEvent.KEYCODE_B -> recyclerView.smoothScrollToPosition(adapter!!.itemCount - 1)

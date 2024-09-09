@@ -139,13 +139,13 @@ class RemoteMedia : Playable {
         return streamUrl
     }
 
-    override fun getLocalMediaUrl(): String? {
-        return null
-    }
+//    override fun getLocalMediaUrl(): String? {
+//        return null
+//    }
 
-    override fun localFileAvailable(): Boolean {
-        return false
-    }
+//    override fun localFileAvailable(): Boolean {
+//        return false
+//    }
 
     override fun setPosition(newPosition: Int) {
         position = newPosition
@@ -159,17 +159,17 @@ class RemoteMedia : Playable {
         this.lastPlayedTime = lastPlayedTime
     }
 
-    override fun onPlaybackStart() {
-        // no-op
-    }
+//    override fun onPlaybackStart() {
+//        // no-op
+//    }
 
-    override fun onPlaybackPause(context: Context) {
-        // no-op
-    }
+//    override fun onPlaybackPause(context: Context) {
+//        // no-op
+//    }
 
-    override fun onPlaybackCompleted(context: Context) {
-        // no-op
-    }
+//    override fun onPlaybackCompleted(context: Context) {
+//        // no-op
+//    }
     override fun getPlayableType(): Int {
         return PLAYABLE_TYPE_REMOTE_MEDIA
     }

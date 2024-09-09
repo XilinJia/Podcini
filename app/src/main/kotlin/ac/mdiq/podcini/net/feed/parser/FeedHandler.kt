@@ -63,7 +63,6 @@ class FeedHandler {
                                 Logd(TAG, "Recognized type Atom")
                                 val strLang = xpp.getAttributeValue("http://www.w3.org/XML/1998/namespace", "lang")
                                 if (strLang != null) feed.language = strLang
-
                                 return Type.ATOM
                             }
                             RSS_ROOT -> {
@@ -113,8 +112,7 @@ class FeedHandler {
                 e.printStackTrace()
             } finally {
                 if (reader != null) {
-                    try {
-                        reader.close()
+                    try { reader.close()
                     } catch (e: IOException) {
                         Logd(TAG, "IOException: $reader")
                         e.printStackTrace()
@@ -130,8 +128,7 @@ class FeedHandler {
         if (feed.fileUrl == null) return null
 
         val reader: Reader
-        try {
-            reader = XmlStreamReader(File(feed.fileUrl!!))
+        try { reader = XmlStreamReader(File(feed.fileUrl!!))
         } catch (e: FileNotFoundException) {
             Logd(TAG, "FileNotFoundException: " + feed.fileUrl)
             e.printStackTrace()
@@ -218,10 +215,6 @@ class FeedHandler {
                         state.namespaces[uri] = Itunes()
                         Logd(TAG, "Recognized ITunes namespace")
                     }
-//                    uri == YouTube.NSURI && prefix == YouTube.NSTAG -> {
-//                        state.namespaces[uri] = YouTube()
-//                        Logd(TAG, "Recognized YouTube namespace")
-//                    }
                     uri == SimpleChapters.NSURI && prefix.matches(SimpleChapters.NSTAG.toRegex()) -> {
                         state.namespaces[uri] = SimpleChapters()
                         Logd(TAG, "Recognized SimpleChapters namespace")
@@ -289,20 +282,15 @@ class FeedHandler {
             type = Type.INVALID
         }
 
-//    fun getMessage(): String? {
-//        return if (message != null) {
-//            message!!
-//        } else if (type == TypeGetter.Type.INVALID) {
-//            "Invalid type"
-//        } else {
-//            "Type $type not supported"
-//        }
-//    }
-
         companion object {
             private const val serialVersionUID = 9105878964928170669L
         }
     }
+
+    class FeedHandlerResult(
+            @JvmField val feed: Feed,
+            @JvmField val alternateFeedUrls: Map<String, String>,
+            val redirectUrl: String)
 
     companion object {
         private val TAG: String = FeedHandler::class.simpleName ?: "Anonymous"

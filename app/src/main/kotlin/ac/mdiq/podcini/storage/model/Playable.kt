@@ -81,7 +81,7 @@ interface Playable : Parcelable, Serializable {
      * Returns an url to a local file that can be played or null if this file
      * does not exist.
      */
-    fun getLocalMediaUrl(): String?
+    fun getLocalMediaUrl(): String? { return null}
 
     /**
      * Returns an url to a file that can be streamed by the player or null if
@@ -93,7 +93,7 @@ interface Playable : Parcelable, Serializable {
      * Returns true if a local file that can be played is available. getFileUrl
      * MUST return a non-null string if this method returns true.
      */
-    fun localFileAvailable(): Boolean
+    fun localFileAvailable(): Boolean { return false}
 
     /**
      * This method should be called every time playback starts on this object.
@@ -101,7 +101,7 @@ interface Playable : Parcelable, Serializable {
      *
      * Position held by this Playable should be set accurately before a call to this method is made.
      */
-    fun onPlaybackStart()
+    fun onPlaybackStart() {}
 
     /**
      * This method should be called every time playback pauses or stops on this object,
@@ -112,13 +112,13 @@ interface Playable : Parcelable, Serializable {
      *
      * Position held by this Playable should be set accurately before a call to this method is made.
      */
-    fun onPlaybackPause(context: Context)
+    fun onPlaybackPause(context: Context) {}
 
     /**
      * This method should be called when playback completes for this object.
      * @param context
      */
-    fun onPlaybackCompleted(context: Context)
+    fun onPlaybackCompleted(context: Context) {}
 
     /**
      * Returns an integer that must be unique among all Playable classes. The

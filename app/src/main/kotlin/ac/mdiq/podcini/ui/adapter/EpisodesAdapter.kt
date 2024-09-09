@@ -3,8 +3,8 @@ package ac.mdiq.podcini.ui.adapter
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.EpisodeHomeFragmentBinding
 import ac.mdiq.podcini.databinding.EpisodeInfoFragmentBinding
-import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
+import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
 import ac.mdiq.podcini.net.utils.NetworkUtils.fetchHtmlSource
 import ac.mdiq.podcini.net.utils.NetworkUtils.isEpisodeHeadDownloadAllowed
 import ac.mdiq.podcini.playback.base.InTheatre
@@ -19,7 +19,6 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.ui.actions.actionbutton.*
@@ -81,7 +80,6 @@ import okhttp3.Request.Builder
 import java.io.File
 import java.lang.ref.WeakReference
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.math.max
 
 /**
@@ -121,9 +119,11 @@ open class EpisodesAdapter(mainActivity: MainActivity, var refreshFragPosCallbac
     @UnstableApi
     fun refreshPosCallback(pos: Int, episode: Episode) {
         Logd(TAG, "refreshPosCallback: $pos ${episode.title}")
-        if (pos >= 0 && pos < episodes.size) episodes[pos] = episode
+        if (pos >= 0 && pos < episodes.size && episodes[pos].id == episode.id) {
+            episodes[pos] = episode
 //        notifyItemChanged(pos, "foo")
-        refreshFragPosCallback?.invoke(pos, episode)
+            refreshFragPosCallback?.invoke(pos, episode)
+        }
     }
 
     fun clearData() {
@@ -131,11 +131,6 @@ open class EpisodesAdapter(mainActivity: MainActivity, var refreshFragPosCallbac
         feed = null
         notifyDataSetChanged()
     }
-
-//    fun setDummyViews(dummyViews: Int) {
-//        this.dummyViews = dummyViews
-//        notifyDataSetChanged()
-//    }
 
     fun updateItems(items: MutableList<Episode>, feed_: Feed? = null) {
         episodes = items
@@ -156,12 +151,8 @@ open class EpisodesAdapter(mainActivity: MainActivity, var refreshFragPosCallbac
 
     @UnstableApi
     override fun onBindViewHolder(holder: EpisodeViewHolder, pos: Int) {
-//        Logd(TAG, "onBindViewHolder $pos ${episodes[pos].title}")
+        Logd(TAG, "onBindViewHolder $pos ${episodes[pos].title}")
         if (pos >= episodes.size || pos < 0) {
-//            beforeBindViewHolder(holder, pos)
-//            holder.bindDummy()
-//            afterBindViewHolder(holder, pos)
-//            holder.hideSeparatorIfNecessary()
             Logd(TAG, "onBindViewHolder got invalid pos: $pos of ${episodes.size}")
             return
         }
@@ -539,14 +530,14 @@ open class EpisodesAdapter(mainActivity: MainActivity, var refreshFragPosCallbac
                 }
                 if (episode != null) {
                     actionButton1 = when {
-                        media.getMediaType() == MediaType.FLASH -> VisitWebsiteActionButton(episode!!)
+//                        media.getMediaType() == MediaType.FLASH -> VisitWebsiteActionButton(episode!!)
                         InTheatre.isCurrentlyPlaying(media) -> PauseActionButton(episode!!)
                         episode!!.feed != null && episode!!.feed!!.isLocalFeed -> PlayLocalActionButton(episode!!)
                         media.downloaded -> PlayActionButton(episode!!)
                         else -> StreamActionButton(episode!!)
                     }
                     actionButton2 = when {
-                        media.getMediaType() == MediaType.FLASH || episode!!.feed?.type == Feed.FeedType.YOUTUBE.name -> VisitWebsiteActionButton(episode!!)
+                        episode!!.feed?.type == Feed.FeedType.YOUTUBE.name -> VisitWebsiteActionButton(episode!!)
                         dls != null && media.downloadUrl != null && dls.isDownloadingEpisode(media.downloadUrl!!) -> CancelDownloadActionButton(episode!!)
                         !media.downloaded -> DownloadActionButton(episode!!)
                         else -> DeleteActionButton(episode!!)

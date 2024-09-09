@@ -1,3 +1,11 @@
+# 6.5.8
+
+* corrected mis-behavior of speed settings for video media
+* likely fixed issue of duplicates or absence of playing episode seen sometimes in Queues view
+* reduced some unnecessary posting of events
+* removed setting of videoPlaybackSpeed, audio and video speed how handled in the same way
+* removed incomplete handling of flash media previously used to handle youtube media
+
 # 6.5.7
 
 * in every feed settings, in case the preferences are not properly set, auto-download is by default disabled

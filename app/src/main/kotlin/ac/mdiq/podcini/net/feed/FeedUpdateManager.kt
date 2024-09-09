@@ -6,7 +6,7 @@ import ac.mdiq.podcini.net.download.service.DefaultDownloaderFactory
 import ac.mdiq.podcini.net.download.service.DownloadRequestCreator.create
 import ac.mdiq.podcini.net.download.service.DownloadRequest
 import ac.mdiq.podcini.net.feed.parser.FeedHandler
-import ac.mdiq.podcini.net.feed.parser.FeedHandlerResult
+import ac.mdiq.podcini.net.feed.parser.FeedHandler.FeedHandlerResult
 import ac.mdiq.podcini.net.utils.NetworkUtils.isAllowMobileFeedRefresh
 import ac.mdiq.podcini.net.utils.NetworkUtils.isFeedRefreshAllowed
 import ac.mdiq.podcini.net.utils.NetworkUtils.isNetworkRestricted

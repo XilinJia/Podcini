@@ -4,7 +4,7 @@ import ac.mdiq.podcini.playback.base.MediaPlayerBase
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.MediaPlayerInfo
 import ac.mdiq.podcini.playback.base.MediaPlayerCallback
 import ac.mdiq.podcini.playback.base.PlayerStatus
-import ac.mdiq.podcini.playback.service.LocalMediaPlayer
+import ac.mdiq.podcini.playback.service.PlaybackService.LocalMediaPlayer
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting
 import androidx.test.annotation.UiThreadTest

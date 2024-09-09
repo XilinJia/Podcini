@@ -12,7 +12,6 @@ import ac.mdiq.podcini.net.feed.FeedUrlNotFoundException
 import ac.mdiq.podcini.net.feed.discovery.CombinedSearcher
 import ac.mdiq.podcini.net.feed.discovery.PodcastSearcherRegistry
 import ac.mdiq.podcini.net.feed.parser.FeedHandler
-import ac.mdiq.podcini.net.feed.parser.FeedHandlerResult
 import ac.mdiq.podcini.net.utils.HtmlToPlainText
 import ac.mdiq.podcini.net.utils.UrlChecker.prepareUrl
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
@@ -394,7 +393,7 @@ class OnlineFeedFragment : Fragment() {
      * @throws Exception If unsuccessful but we do not know a resolution.
      */
     @Throws(Exception::class)
-    private fun doParseFeed(destination: String): FeedHandlerResult? {
+    private fun doParseFeed(destination: String): FeedHandler.FeedHandlerResult? {
         val destinationFile = File(destination)
         return try {
             val feed = Feed(selectedDownloadUrl, null)

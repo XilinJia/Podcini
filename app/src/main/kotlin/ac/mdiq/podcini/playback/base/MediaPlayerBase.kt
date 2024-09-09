@@ -1,11 +1,11 @@
 package ac.mdiq.podcini.playback.base
 
+//import ac.mdiq.podcini.preferences.UserPreferences.videoPlaybackSpeed
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.base.InTheatre.curState
-import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.Prefs
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.UserPreferences.setPlaybackSpeed
-import ac.mdiq.podcini.preferences.UserPreferences.videoPlaybackSpeed
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.FeedPreferences
 import ac.mdiq.podcini.storage.model.MediaType
@@ -311,7 +311,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
 
         val audioPlaybackSpeed: Float
             get() {
-                try { return appPrefs.getString(UserPreferences.Prefs.prefPlaybackSpeed.name, "1.00")!!.toFloat()
+                try { return appPrefs.getString(Prefs.prefPlaybackSpeed.name, "1.00")!!.toFloat()
                 } catch (e: NumberFormatException) {
                     Log.e(TAG, Log.getStackTraceString(e))
                     setPlaybackSpeed(1.0f)
@@ -367,7 +367,6 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
         @JvmStatic
         fun getCurrentPlaybackSpeed(media: Playable?): Float {
             var playbackSpeed = FeedPreferences.SPEED_USE_GLOBAL
-            val mediaType: MediaType? = media?.getMediaType()
             if (media != null) {
                 playbackSpeed = curState.curTempSpeed
                 if (playbackSpeed == FeedPreferences.SPEED_USE_GLOBAL && media is EpisodeMedia) {
@@ -375,12 +374,8 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
                     if (prefs_ != null) playbackSpeed = prefs_.playSpeed
                 }
             }
-            if (mediaType != null && playbackSpeed == FeedPreferences.SPEED_USE_GLOBAL) playbackSpeed = getPlaybackSpeed(mediaType)
+            if (playbackSpeed == FeedPreferences.SPEED_USE_GLOBAL) playbackSpeed = audioPlaybackSpeed
             return playbackSpeed
-        }
-
-        fun getPlaybackSpeed(mediaType: MediaType): Float {
-            return if (mediaType == MediaType.VIDEO) videoPlaybackSpeed else audioPlaybackSpeed
         }
     }
 }

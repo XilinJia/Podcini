@@ -46,11 +46,7 @@ class PlayActionButton(item: Episode) : EpisodeActionButton(item) {
             EventFlow.postEvent(FlowEvent.PlayEvent(item))
         }
 
-//        if (item.feed?.preferences?.videoModePolicy != FeedPreferences.VideomodePolicy.AUDIO_ONLY
-//                && videoPlayMode != VideoMode.AUDIO_ONLY.mode && videoMode != VideoMode.AUDIO_ONLY
-//                && media.getMediaType() == MediaType.VIDEO)
-//            context.startActivity(getPlayerActivityIntent(context, MediaType.VIDEO))
-        playVideo(context, media)
+        playVideoIfNeeded(context, media)
     }
 
     /**

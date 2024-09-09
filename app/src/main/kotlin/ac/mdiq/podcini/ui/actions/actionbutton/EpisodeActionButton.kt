@@ -34,7 +34,7 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
         icon.setImageResource(getDrawable())
     }
 
-    protected fun playVideo(context: Context,  media: Playable) {
+    protected fun playVideoIfNeeded(context: Context, media: Playable) {
         if (item.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY
                 && videoPlayMode != VideoMode.AUDIO_ONLY.code && videoMode != VideoMode.AUDIO_ONLY
                 && media.getMediaType() == MediaType.VIDEO)
@@ -50,7 +50,7 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
             }
 //            Logd("ItemActionButton", "forItem: ${episode.feedId} ${episode.feed?.isLocalFeed} ${media.downloaded} ${isCurrentlyPlaying(media)}  ${episode.title} ")
             return when {
-                media.getMediaType() == MediaType.FLASH -> VisitWebsiteActionButton(episode)
+//                media.getMediaType() == MediaType.FLASH -> VisitWebsiteActionButton(episode)
                 isCurrentlyPlaying(media) -> PauseActionButton(episode)
                 episode.feed != null && episode.feed!!.isLocalFeed -> PlayLocalActionButton(episode)
                 media.downloaded -> PlayActionButton(episode)

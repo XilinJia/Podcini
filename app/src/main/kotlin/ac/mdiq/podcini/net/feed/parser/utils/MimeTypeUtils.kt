@@ -31,7 +31,7 @@ object MimeTypeUtils {
     fun isMediaFile(type: String?): Boolean {
         return if (type == null) false
         else type.startsWith("audio/") || type.startsWith("video/") || type == "application/ogg"
-                || type == "application/octet-stream" || type == "application/x-shockwave-flash"
+                || type == "application/octet-stream"
     }
 
     @JvmStatic

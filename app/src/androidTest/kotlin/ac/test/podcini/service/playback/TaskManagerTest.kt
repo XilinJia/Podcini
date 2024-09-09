@@ -1,8 +1,8 @@
 package de.test.podcini.service.playback
 
 import ac.mdiq.podcini.playback.base.PlayerStatus
-import ac.mdiq.podcini.playback.service.TaskManager
-import ac.mdiq.podcini.playback.service.TaskManager.PSTMCallback
+import ac.mdiq.podcini.playback.service.PlaybackService.TaskManager
+import ac.mdiq.podcini.playback.service.PlaybackService.TaskManager.PSTMCallback
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.setShakeToReset
 import ac.mdiq.podcini.preferences.SleepTimerPreferences.setVibrate
 import ac.mdiq.podcini.storage.model.Feed

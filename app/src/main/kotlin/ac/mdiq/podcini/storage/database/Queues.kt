@@ -262,7 +262,6 @@ object Queues {
             }
             if (queueNew.id == curQueue.id) {
                 queueNew.episodes.clear()
-//                queueNew.episodes.addAll(qItems)
                 curQueue = queueNew
             }
             for (event in events) EventFlow.postEvent(event)

@@ -30,23 +30,14 @@ class StreamActionButton(item: Episode) : EpisodeActionButton(item) {
 //        Logd("StreamActionButton", "item.feed: ${item.feedId}")
         val media = if (item.feedId != null) item.media!! else RemoteMedia(item)
         logAction(UsageStatistics.ACTION_STREAM)
-
         if (!isStreamingAllowed) {
             StreamingConfirmationDialog(context, media).show()
             return
         }
-
-        PlaybackServiceStarter(context, media)
-            .shouldStreamThisTime(true)
-            .callEvenIfRunning(true)
-            .start()
+        PlaybackServiceStarter(context, media).shouldStreamThisTime(true).callEvenIfRunning(true).start()
         EventFlow.postEvent(FlowEvent.PlayEvent(item))
 
-//        if (item.feed?.preferences?.videoModePolicy != FeedPreferences.VideomodePolicy.AUDIO_ONLY
-//                && videoPlayMode != VideoMode.AUDIO_ONLY.mode && videoMode != VideoMode.AUDIO_ONLY
-//                && media.getMediaType() == MediaType.VIDEO)
-//            context.startActivity(getPlayerActivityIntent(context, MediaType.VIDEO))
-        playVideo(context, media)
+        playVideoIfNeeded(context, media)
     }
 
     class StreamingConfirmationDialog(private val context: Context, private val playable: Playable) {
@@ -63,13 +54,9 @@ class StreamActionButton(item: Episode) : EpisodeActionButton(item) {
                 .setNeutralButton(R.string.cancel_label, null)
                 .show()
         }
-
         @UnstableApi
         private fun stream() {
-            PlaybackServiceStarter(context, playable)
-                .callEvenIfRunning(true)
-                .shouldStreamThisTime(true)
-                .start()
+            PlaybackServiceStarter(context, playable).callEvenIfRunning(true).shouldStreamThisTime(true).start()
         }
     }
 }

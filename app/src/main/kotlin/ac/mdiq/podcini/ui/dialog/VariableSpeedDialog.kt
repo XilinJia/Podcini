@@ -1,25 +1,23 @@
 package ac.mdiq.podcini.ui.dialog
 
+//import ac.mdiq.podcini.preferences.UserPreferences.videoPlaybackSpeed
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.SpeedSelectDialogBinding
 import ac.mdiq.podcini.playback.base.InTheatre.curEpisode
 import ac.mdiq.podcini.playback.base.InTheatre.curMedia
 import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.curSpeedFB
-import ac.mdiq.podcini.playback.service.PlaybackService.Companion.currentMediaType
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
-import ac.mdiq.podcini.preferences.UserPreferences.videoPlaybackSpeed
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.ui.utils.ItemOffsetDecoration
 import ac.mdiq.podcini.ui.view.PlaybackSpeedSeekBar
-import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.podcini.util.Logd
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -165,9 +163,8 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
 
     private fun addCurrentSpeed() {
         val newSpeed = speedSeekBar.currentSpeed
-        if (selectedSpeeds.contains(newSpeed)) {
-            Snackbar.make(addCurrentSpeedChip, getString(R.string.preset_already_exists, newSpeed), Snackbar.LENGTH_LONG).show()
-        } else {
+        if (selectedSpeeds.contains(newSpeed)) Snackbar.make(addCurrentSpeedChip, getString(R.string.preset_already_exists, newSpeed), Snackbar.LENGTH_LONG).show()
+        else {
             selectedSpeeds.add(newSpeed)
             selectedSpeeds.sort()
             playbackSpeedArray = selectedSpeeds
@@ -248,28 +245,20 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
                 playbackService!!.isSpeedForward = false
                 playbackService!!.isFallbackSpeed = false
 
-                if (currentMediaType == MediaType.VIDEO) {
-                    setCurTempSpeed(speed)
-                    videoPlaybackSpeed = speed
-                    playbackService!!.mPlayer?.setPlaybackParams(speed, isSkipSilence)
-                } else {
-                    if (codeArray != null && codeArray.size == 3) {
-                        Logd(TAG, "setSpeed codeArray: ${codeArray[0]} ${codeArray[1]} ${codeArray[2]}")
-                        if (codeArray[2]) UserPreferences.setPlaybackSpeed(speed)
-                        if (codeArray[1]) {
-                            val episode = (curMedia as? EpisodeMedia)?.episodeOrFetch() ?: curEpisode
-                            if (episode?.feed?.preferences != null) {
-                                upsertBlk(episode.feed!!) { it.preferences!!.playSpeed = speed }
-                            }
-                        }
-                        if (codeArray[0]) {
-                            setCurTempSpeed(speed)
-                            playbackService!!.mPlayer?.setPlaybackParams(speed, isSkipSilence)
-                        }
-                    } else {
+                if (codeArray != null && codeArray.size == 3) {
+                    Logd(TAG, "setSpeed codeArray: ${codeArray[0]} ${codeArray[1]} ${codeArray[2]}")
+                    if (codeArray[2]) UserPreferences.setPlaybackSpeed(speed)
+                    if (codeArray[1]) {
+                        val episode = (curMedia as? EpisodeMedia)?.episodeOrFetch() ?: curEpisode
+                        if (episode?.feed?.preferences != null) upsertBlk(episode.feed!!) { it.preferences!!.playSpeed = speed }
+                    }
+                    if (codeArray[0]) {
                         setCurTempSpeed(speed)
                         playbackService!!.mPlayer?.setPlaybackParams(speed, isSkipSilence)
                     }
+                } else {
+                    setCurTempSpeed(speed)
+                    playbackService!!.mPlayer?.setPlaybackParams(speed, isSkipSilence)
                 }
             }
             else {

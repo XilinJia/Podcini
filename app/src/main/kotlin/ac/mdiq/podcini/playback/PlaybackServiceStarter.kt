@@ -19,6 +19,13 @@ class PlaybackServiceStarter(private val context: Context, private val media: Pl
 
     private var shouldStreamThisTime = false
     private var callEvenIfRunning = false
+    val intent: Intent
+        get() {
+            val launchIntent = Intent(context, PlaybackService::class.java)
+//            launchIntent.putExtra(PlaybackServiceConstants.EXTRA_PLAYABLE, media as Parcelable)
+            launchIntent.putExtra(EXTRA_ALLOW_STREAM_THIS_TIME, shouldStreamThisTime)
+            return launchIntent
+        }
 
     /**
      * Default value: false
@@ -32,14 +39,6 @@ class PlaybackServiceStarter(private val context: Context, private val media: Pl
         this.shouldStreamThisTime = shouldStreamThisTime
         return this
     }
-
-    val intent: Intent
-        get() {
-            val launchIntent = Intent(context, PlaybackService::class.java)
-//            launchIntent.putExtra(PlaybackServiceConstants.EXTRA_PLAYABLE, media as Parcelable)
-            launchIntent.putExtra(EXTRA_ALLOW_STREAM_THIS_TIME, shouldStreamThisTime)
-            return launchIntent
-        }
 
     fun start() {
         Logd("PlaybackServiceStarter", "starting PlaybackService")

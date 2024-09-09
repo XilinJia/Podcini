@@ -13,6 +13,14 @@ import android.content.SharedPreferences
 class EpisodesRecyclerView : RecyclerView {
     private lateinit var layoutManager: LinearLayoutManager
 
+    val isScrolledToBottom: Boolean
+        get() {
+            val visibleEpisodeCount = childCount
+            val totalEpisodeCount = layoutManager.itemCount
+            val firstVisibleEpisode = layoutManager.findFirstVisibleItemPosition()
+            return (totalEpisodeCount - visibleEpisodeCount) <= (firstVisibleEpisode + 3)
+        }
+
     constructor(context: Context) : super(ContextThemeWrapper(context, R.style.FastScrollRecyclerView)) {
         setup()
     }
@@ -58,14 +66,6 @@ class EpisodesRecyclerView : RecyclerView {
         val offset = prefs!!.getInt(PREF_PREFIX_SCROLL_OFFSET + tag, 0)
         if (position > 0 || offset > 0) layoutManager.scrollToPositionWithOffset(position, offset)
     }
-
-    val isScrolledToBottom: Boolean
-        get() {
-            val visibleEpisodeCount = childCount
-            val totalEpisodeCount = layoutManager.itemCount
-            val firstVisibleEpisode = layoutManager.findFirstVisibleItemPosition()
-            return (totalEpisodeCount - visibleEpisodeCount) <= (firstVisibleEpisode + 3)
-        }
 
     companion object {
         private val TAG: String = EpisodesRecyclerView::class.simpleName ?: "Anonymous"

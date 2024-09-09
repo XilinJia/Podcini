@@ -110,17 +110,15 @@ class PlayerDetailsFragment : Fragment() {
         return binding.root
     }
 
-    override fun onStart() {
-        Logd(TAG, "onStart()")
-        super.onStart()
-//        procFlowEvents()
-    }
+//    override fun onStart() {
+//        Logd(TAG, "onStart()")
+//        super.onStart()
+//    }
 
-    override fun onStop() {
-        Logd(TAG, "onStop()")
-        super.onStop()
-//        cancelFlowEvents()
-    }
+//    override fun onStop() {
+//        Logd(TAG, "onStop()")
+//        super.onStop()
+//    }
 
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
@@ -229,9 +227,8 @@ class PlayerDetailsFragment : Fragment() {
                 val openFeed: Intent = MainActivity.getIntentToOpenFeed(requireContext(), currentItem!!.feedId!!)
                 binding.txtvPodcastTitle.setOnClickListener { startActivity(openFeed) }
             }
-        } else {
-            binding.txtvPodcastTitle.setOnClickListener(null)
-        }
+        } else binding.txtvPodcastTitle.setOnClickListener(null)
+
         binding.txtvPodcastTitle.setOnLongClickListener { copyText(media.getFeedTitle()) }
         binding.episodeDate.text = StringUtils.stripToEmpty(pubDateStr)
         binding.txtvEpisodeTitle.text = currentItem?.title
@@ -256,7 +253,6 @@ class PlayerDetailsFragment : Fragment() {
                 set.start()
             }
         }
-
         displayedChapterIndex = -1
         refreshChapterData(ChapterUtils.getCurrentChapterIndex(media, media.getPosition())) //calls displayCoverImage
         updateChapterControlVisibility()
@@ -357,7 +353,6 @@ class PlayerDetailsFragment : Fragment() {
 
     @UnstableApi private fun seekToNextChapter() {
         if (playable == null || playable!!.getChapters().isEmpty() || displayedChapterIndex == -1 || displayedChapterIndex + 1 >= playable!!.getChapters().size) return
-
         refreshChapterData(displayedChapterIndex + 1)
         seekTo(playable!!.getChapters()[displayedChapterIndex].start.toInt())
     }
@@ -399,7 +394,6 @@ class PlayerDetailsFragment : Fragment() {
                 }
                 Logd(TAG, "reset scroll Position: 0")
                 binding.itemDescriptionFragment.scrollTo(0, 0)
-
                 return true
             }
         }
@@ -414,9 +408,7 @@ class PlayerDetailsFragment : Fragment() {
     fun onPlaybackPositionEvent(event: FlowEvent.PlaybackPositionEvent) {
         if (playable?.getIdentifier() != event.media?.getIdentifier()) return
         val newChapterIndex: Int = ChapterUtils.getCurrentChapterIndex(playable, event.position)
-        if (newChapterIndex >= 0 && newChapterIndex != displayedChapterIndex) {
-            refreshChapterData(newChapterIndex)
-        }
+        if (newChapterIndex >= 0 && newChapterIndex != displayedChapterIndex) refreshChapterData(newChapterIndex)
     }
 
     fun setItem(item_: Episode) {

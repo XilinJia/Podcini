@@ -12,6 +12,7 @@ import ac.mdiq.podcini.net.feed.discovery.CombinedSearcher
 import ac.mdiq.podcini.net.feed.discovery.ItunesTopListLoader
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.playback.cast.CastEnabledActivity
+import ac.mdiq.podcini.playback.service.PlaybackService
 import ac.mdiq.podcini.preferences.ThemeSwitcher.getNoTitleTheme
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.backButtonOpensDrawer
@@ -36,6 +37,7 @@ import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.ComponentName
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -64,6 +66,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.MediaController
+import androidx.media3.session.SessionToken
 import androidx.recyclerview.widget.RecyclerView
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
@@ -72,6 +76,8 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
 import org.apache.commons.lang3.ArrayUtils
@@ -93,6 +99,7 @@ class MainActivity : CastEnabledActivity() {
     private lateinit var audioPlayerView: View
     private lateinit var navDrawer: View
     private lateinit var dummyView : View
+    private lateinit var controllerFuture: ListenableFuture<MediaController>
     lateinit var bottomSheet: LockableBottomSheetBehavior<*>
         private set
 
@@ -174,7 +181,7 @@ class MainActivity : CastEnabledActivity() {
             buildTags()
             monitorFeeds()
 //            InTheatre.apply { }
-            PlayerDetailsFragment.getSharedPrefs(this@MainActivity)
+            AudioPlayerFragment.PlayerDetailsFragment.getSharedPrefs(this@MainActivity)
             PlayerWidget.getSharedPrefs(this@MainActivity)
             StatisticsFragment.getSharedPrefs(this@MainActivity)
             OnlineFeedFragment.getSharedPrefs(this@MainActivity)
@@ -189,13 +196,10 @@ class MainActivity : CastEnabledActivity() {
 //        setContentView(R.layout.main_activity)
         setContentView(binding.root)
         recycledViewPool.setMaxRecycledViews(R.id.view_type_episode_item, 25)
-
         dummyView = object : View(this) {}
-
         drawerLayout = findViewById(R.id.main_layout)
         navDrawer = findViewById(R.id.navDrawerFragment)
         setNavDrawerSize()
-
         mainView = findViewById(R.id.main_view)
 
         if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -208,9 +212,7 @@ class MainActivity : CastEnabledActivity() {
         ViewCompat.setOnApplyWindowInsetsListener(mainView) { _: View?, insets: WindowInsetsCompat ->
             navigationBarInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
             updateInsets()
-            WindowInsetsCompat.Builder(insets)
-                .setInsets(WindowInsetsCompat.Type.navigationBars(), Insets.NONE)
-                .build()
+            WindowInsetsCompat.Builder(insets).setInsets(WindowInsetsCompat.Type.navigationBars(), Insets.NONE).build()
         }
 
         val fm = supportFragmentManager
@@ -220,14 +222,9 @@ class MainActivity : CastEnabledActivity() {
                 val lastFragment = NavDrawerFragment.getLastNavFragment()
                 if (ArrayUtils.contains(NavDrawerFragment.NAV_DRAWER_TAGS, lastFragment)) loadFragment(lastFragment, null)
                 else {
-                    try {
-                        loadFeedFragmentById(lastFragment.toInt().toLong(), null)
-                    } catch (e: NumberFormatException) {
-                        // it's not a number, this happens if we removed
-                        // a label from the NAV_DRAWER_TAGS
-                        // give them a nice default...
-                        loadFragment(SubscriptionsFragment.TAG, null)
-                    }
+                    // it's not a number, this happens if we removed a label from the NAV_DRAWER_TAGS  give them a nice default...
+                    try { loadFeedFragmentById(lastFragment.toInt().toLong(), null) }
+                    catch (e: NumberFormatException) { loadFragment(SubscriptionsFragment.TAG, null) }
                 }
             }
         }
@@ -367,6 +364,7 @@ class MainActivity : CastEnabledActivity() {
         _binding = null
 //        realm.close()
         drawerLayout?.removeDrawerListener(drawerToggle!!)
+        MediaController.releaseFuture(controllerFuture)
         super.onDestroy()
     }
 
@@ -467,14 +465,9 @@ class MainActivity : CastEnabledActivity() {
     @JvmOverloads
     fun loadChildFragment(fragment: Fragment, transition: TransitionEffect? = TransitionEffect.NONE) {
         val transaction = supportFragmentManager.beginTransaction()
-
         when (transition) {
             TransitionEffect.FADE -> transaction.setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
-            TransitionEffect.SLIDE -> transaction.setCustomAnimations(
-                R.anim.slide_right_in,
-                R.anim.slide_left_out,
-                R.anim.slide_left_in,
-                R.anim.slide_right_out)
+            TransitionEffect.SLIDE -> transaction.setCustomAnimations(R.anim.slide_right_in, R.anim.slide_left_out, R.anim.slide_left_in, R.anim.slide_right_out)
             TransitionEffect.NONE -> {}
             null -> {}
         }
@@ -518,6 +511,12 @@ class MainActivity : CastEnabledActivity() {
         super.onStart()
         procFlowEvents()
         RatingDialog.init(this)
+        val sessionToken = SessionToken(this, ComponentName(this, PlaybackService::class.java))
+        controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
+        controllerFuture.addListener({
+//            mediaController = controllerFuture.get()
+//            Logd(TAG, "controllerFuture.addListener: $mediaController")
+        }, MoreExecutors.directExecutor())
     }
 
     override fun onStop() {
@@ -628,7 +627,6 @@ class MainActivity : CastEnabledActivity() {
                 val tag = intent.getStringExtra(MainActivityStarter.Extras.fragment_tag.name)
                 val args = intent.getBundleExtra(MainActivityStarter.Extras.fragment_args.name)
                 if (tag != null) loadFragment(tag, args)
-
                 bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
             }
             intent.getBooleanExtra(MainActivityStarter.Extras.open_player.name, false) -> {

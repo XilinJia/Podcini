@@ -54,6 +54,7 @@ import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.utils.ChapterUtils
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
+import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
 import ac.mdiq.podcini.ui.utils.NotificationUtils
@@ -738,13 +739,10 @@ class PlaybackService : MediaLibraryService() {
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         Logd(TAG, "onTaskRemoved")
-        val player = mediaSession?.player
-        if (player != null) {
-            if (!player.playWhenReady || player.mediaItemCount == 0 || player.playbackState == STATE_ENDED) {
-                // Stop the service if not playing, continue playing in the background
-                // otherwise.
-                stopSelf()
-            }
+        val player = mediaSession?.player ?: return
+        if (!player.playWhenReady || player.mediaItemCount == 0 || player.playbackState == STATE_ENDED) {
+            // Stop the service if not playing, continue playing in the background otherwise.
+            stopSelf()
         }
     }
 
@@ -2569,7 +2567,9 @@ class PlaybackService : MediaLibraryService() {
                     playbackService?.mPlayer?.prepare()
                     playbackService?.taskManager?.restartSleepTimer()
                 }
-                else -> Log.w(TAG, "Play/Pause button was pressed and PlaybackService state was unknown")
+                else -> {
+                    Log.w(TAG, "Play/Pause button was pressed and PlaybackService state was unknown")
+                }
             }
         }
 

@@ -1,3 +1,12 @@
+# 6.5.9
+
+* partially fixed an issue seen on Samsung Android 14 device where after playing the user-started episode, subsequent episode in the queue is not played in foreground service and there is not notification panel and can get stopped by the system.
+	* the current fix is though the subsequent episodes are still played without notification, the play is not stopped by the system.
+* if videoMode of a feed is set to "audio only",
+	* press on icon in the player UI will expand the player detailed view (rather than video view)
+	* "show video" on the menu of AudioPlayer view is hidden
+* some class restructuring
+
 # 6.5.8
 
 * corrected mis-behavior of speed settings for video media

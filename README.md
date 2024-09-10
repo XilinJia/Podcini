@@ -16,7 +16,7 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
 #### If you are migrating from Podcini version 5, please read the migrationTo5.md file for migration instructions.
 #### For Podcini to show up on car's HUD with Android Auto, please read AnroidAuto.md for instructions.
 
-This project evolves from a fork of [AntennaPod](<https://github.com/AntennaPod/AntennaPod>) as of Feb 5 2024.
+This project is developed from a fork of [AntennaPod](<https://github.com/AntennaPod/AntennaPod>) as of Feb 5 2024.
 
 Compared to AntennaPod this project:
 

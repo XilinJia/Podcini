@@ -3,6 +3,7 @@ package ac.mdiq.podcini.ui.actions.actionbutton
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.playback.PlaybackServiceStarter
 import ac.mdiq.podcini.playback.base.InTheatre
+import ac.mdiq.podcini.playback.service.PlaybackService.Companion.clearCurTempSpeed
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.getPlayerActivityIntent
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.playbackService
 import ac.mdiq.podcini.storage.model.Episode
@@ -33,6 +34,7 @@ class PlayLocalActionButton(item: Episode) : EpisodeActionButton(item) {
             playbackService?.mPlayer?.resume()
             playbackService?.taskManager?.restartSleepTimer()
         } else {
+            clearCurTempSpeed()
             PlaybackServiceStarter(context, media).callEvenIfRunning(true).start()
             EventFlow.postEvent(FlowEvent.PlayEvent(item))
         }

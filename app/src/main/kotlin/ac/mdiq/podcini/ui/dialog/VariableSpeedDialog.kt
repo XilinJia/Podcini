@@ -241,7 +241,6 @@ open class VariableSpeedDialog : BottomSheetDialogFragment() {
 
         private fun setPlaybackSpeed(speed: Float, codeArray: BooleanArray? = null) {
             if (playbackService != null) {
-//                playbackService!!.setSpeed(speed, codeArray)
                 playbackService!!.isSpeedForward = false
                 playbackService!!.isFallbackSpeed = false
 

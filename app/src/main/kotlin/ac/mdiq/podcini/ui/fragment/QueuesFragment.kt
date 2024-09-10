@@ -105,6 +105,7 @@ import kotlin.math.max
     private lateinit var spinnerTexts: MutableList<String>
     private lateinit var queueSpinner: Spinner
     private lateinit var spinnerAdaptor: ArrayAdapter<String>
+    private lateinit var queues: List<PlayQueue>
 
     private var displayUpArrow = false
     private var queueItems: MutableList<Episode> = mutableListOf()
@@ -136,7 +137,7 @@ import kotlin.math.max
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
 
-        val queues = realm.query(PlayQueue::class).find()
+        queues = realm.query(PlayQueue::class).find()
         queueNames = queues.map { it.name }.toTypedArray()
         spinnerTexts = queues.map { "${it.name} : ${it.episodeIds.size}" }.toMutableList()
         spinnerLayout = inflater.inflate(R.layout.queue_title_spinner, toolbar, false)
@@ -588,11 +589,9 @@ import kotlin.math.max
                                 newQueue.id = queueNames.size.toLong()
                                 newQueue.name = newName
                                 upsertBlk(newQueue) {}
-                                val queues = realm.query(PlayQueue::class).find()
+                                queues = realm.query(PlayQueue::class).find()
                                 queueNames = queues.map { it.name }.toTypedArray()
                                 spinnerTexts.addAll(queues.map { "${it.name} : ${it.episodeIds.size}" })
-//                                spinnerAdaptor = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, spinnerTexts)
-//                                spinnerAdaptor.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                                 spinnerAdaptor.notifyDataSetChanged()
                                 queueSpinner.adapter = spinnerAdaptor
                                 queueSpinner.setSelection(spinnerAdaptor.getPosition(curQueue.name))

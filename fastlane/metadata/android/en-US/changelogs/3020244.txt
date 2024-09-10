@@ -1,0 +1,4 @@
+ Version 6.5.10 brings several changes:
+
+* fixed crash when switching to a newly created queue in Queues view
+* reset temp speed when manually playing a new episode to ensure preset speed is used

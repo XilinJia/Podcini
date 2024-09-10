@@ -54,7 +54,6 @@ import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.utils.ChapterUtils
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
-import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
 import ac.mdiq.podcini.ui.utils.NotificationUtils
@@ -1031,10 +1030,6 @@ class PlaybackService : MediaLibraryService() {
 //        recreateMediaSessionIfNeeded()
 //        val episode = (media as? EpisodeMedia)?.episode
 //        if (curMedia is EpisodeMedia && episode != null) addToQueue(true, episode)
-    }
-
-    fun clearCurTempSpeed() {
-        curState = upsertBlk(curState) { it.curTempSpeed = FeedPreferences.SPEED_USE_GLOBAL }
     }
 
     private var eventSink: Job?     = null
@@ -2547,6 +2542,10 @@ class PlaybackService : MediaLibraryService() {
 
         fun isSleepTimerActive(): Boolean {
             return playbackService?.taskManager?.isSleepTimerActive ?: false
+        }
+
+        fun clearCurTempSpeed() {
+            curState = upsertBlk(curState) { it.curTempSpeed = FeedPreferences.SPEED_USE_GLOBAL }
         }
 
         fun playPause() {

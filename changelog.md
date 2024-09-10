@@ -1,3 +1,8 @@
+# 6.5.10
+
+* fixed crash when switching to a newly created queue in Queues view
+* reset temp speed when manually playing a new episode to ensure preset speed is used
+
 # 6.5.9
 
 * partially fixed an issue seen on Samsung Android 14 device where after playing the user-started episode, subsequent episode in the queue is not played in foreground service and there is not notification panel and can get stopped by the system.

@@ -34,14 +34,8 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
         icon.setImageResource(getDrawable())
     }
 
-    protected fun playVideoIfNeeded(context: Context, media: Playable) {
-        if (item.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY
-                && videoPlayMode != VideoMode.AUDIO_ONLY.code && videoMode != VideoMode.AUDIO_ONLY
-                && media.getMediaType() == MediaType.VIDEO)
-            context.startActivity(getPlayerActivityIntent(context, MediaType.VIDEO))
-    }
-
     @UnstableApi companion object {
+
         fun forItem(episode: Episode): EpisodeActionButton {
             val media = episode.media ?: return TTSActionButton(episode)
             val isDownloadingMedia = when (media.downloadUrl) {
@@ -59,6 +53,14 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
                         || episode.feed?.preferences?.prefStreamOverDownload == true -> StreamActionButton(episode)
                 else -> DownloadActionButton(episode)
             }
+        }
+
+        fun playVideoIfNeeded(context: Context, media: Playable) {
+            val item = (media as? EpisodeMedia)?.episode
+            if (item?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY
+                    && videoPlayMode != VideoMode.AUDIO_ONLY.code && videoMode != VideoMode.AUDIO_ONLY
+                    && media.getMediaType() == MediaType.VIDEO)
+                context.startActivity(getPlayerActivityIntent(context, MediaType.VIDEO))
         }
     }
 }

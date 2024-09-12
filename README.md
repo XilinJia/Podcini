@@ -28,8 +28,8 @@ Compared to AntennaPod this project:
 5. Boasts new UI's including streamlined drawer, subscriptions view and player controller,
 6. Supports multiple, virtual and circular play queues associable to any podcast
 7. Auto-download is governed by policy and limit settings of individual feed
-8. Accepts podcast, Youtube channels, Youtube media and plain RSS,
-9. Offers Readability and Text-to-Speech for RSS contents,
+8. Features synthetic podcasts while supporting normal podcasts, Youtube channels, Youtube media and plain RSS,
+9. Offers Readability and Text-to-Speech for RSS contents,s
 10. Features `instant sync` across devices without a server.
 
 The project aims to profit from modern frameworks, improve efficiency and provide more useful and user-friendly features.

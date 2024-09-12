@@ -121,8 +121,8 @@ object CastUtils {
         if (info.contentId != media.getStreamUrl()) return false
 
         val metadata = info.metadata
-        return (metadata != null && metadata.getString(KEY_EPISODE_IDENTIFIER) ==
-                media.getEpisodeIdentifier() && metadata.getString(KEY_FEED_URL) == media.feedUrl)
+        return (metadata != null && metadata.getString(KEY_EPISODE_IDENTIFIER) == media.getEpisodeIdentifier()
+                && metadata.getString(KEY_FEED_URL) == media.feedUrl)
     }
 
     /**

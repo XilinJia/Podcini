@@ -122,6 +122,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
     private var useGrid: Boolean? = null
     private val useGridLayout: Boolean
         get() = appPrefs.getBoolean(UserPreferences.Prefs.prefFeedGridLayout.name, false)
+    private val swipeToRefresh: Boolean
+        get() = appPrefs.getBoolean(UserPreferences.Prefs.prefSwipeToRefreshAll.name, true)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -193,10 +195,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         }
 
         binding.count.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
-        binding.swipeRefresh.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
-        binding.swipeRefresh.setOnRefreshListener {
-            FeedUpdateManager.runOnceOrAsk(requireContext())
-        }
+
         val speedDialBinding = MultiSelectSpeedDialBinding.bind(binding.root)
         speedDialView = speedDialBinding.fabSD
         speedDialView.overlayLayout = speedDialBinding.fabSDOverlay
@@ -214,6 +213,22 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         }
         loadSubscriptions()
         return binding.root
+    }
+
+    private fun setSwipeRefresh() {
+        if (swipeToRefresh) {
+            binding.swipeRefresh.isEnabled = true
+            binding.swipeRefresh.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
+            binding.swipeRefresh.setOnRefreshListener {
+                FeedUpdateManager.runOnceOrAsk(requireContext())
+            }
+        } else binding.swipeRefresh.isEnabled = false
+    }
+
+    override fun onResume() {
+        Logd(TAG, "onResume() called")
+        super.onResume()
+        setSwipeRefresh()
     }
 
     private fun initAdapter() {
@@ -376,11 +391,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                         } else binding.txtvInformation.visibility = View.GONE
                         emptyView.updateVisibility()
                     }
-                } catch (e: Throwable) {
-                    Log.e(TAG, Log.getStackTraceString(e))
-                } finally {
-                    loadItemsRunning = false
-                }
+                } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e))
+                } finally { loadItemsRunning = false }
             }
         }
     }
@@ -973,12 +985,13 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             count.visibility = View.VISIBLE
 
             val mainActRef = (activity as MainActivity)
-            val coverLoader = CoverLoader(mainActRef)
-            coverLoader.withUri(feed.imageUrl)
-            errorIcon.visibility = if (feed.lastUpdateFailed) View.VISIBLE else View.GONE
-
-            coverLoader.withCoverView(coverImage)
-            coverLoader.load()
+            if (feed.imageUrl != null) {
+                val coverLoader = CoverLoader(mainActRef)
+                coverLoader.withUri(feed.imageUrl)
+                errorIcon.visibility = if (feed.lastUpdateFailed) View.VISIBLE else View.GONE
+                coverLoader.withCoverView(coverImage)
+                coverLoader.load()
+            } else coverImage.setImageDrawable(AppCompatResources.getDrawable(requireContext(), R.drawable.ic_launcher_foreground))
 
             val density: Float = mainActRef.resources.displayMetrics.density
             binding.outerContainer.setCardBackgroundColor(SurfaceColors.getColorForElevation(mainActRef, 1 * density))

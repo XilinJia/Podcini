@@ -29,6 +29,7 @@ import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.vista.extractor.stream.StreamInfo
 import ac.mdiq.vista.extractor.stream.StreamInfoItem
 import android.app.backup.BackupManager
 import android.content.Context
@@ -197,29 +198,16 @@ object Episodes {
                 }
             }
             if (removedFromQueue.isNotEmpty()) removeFromAllQueuesSync(*removedFromQueue.toTypedArray())
-
             for (episode in removedFromQueue) EventFlow.postEvent(FlowEvent.QueueEvent.irreversibleRemoved(episode))
 
             // we assume we also removed download log entries for the feed or its media files.
             // especially important if download or refresh failed, as the user should not be able
             // to retry these
             EventFlow.postEvent(FlowEvent.DownloadLogEvent())
-
             val backupManager = BackupManager(context)
             backupManager.dataChanged()
         }
     }
-
-//    fun persistEpisodes(episodes: List<Episode>) : Job {
-//        Logd(TAG, "persistEpisodes called")
-//        return runOnIOScope {
-//            for (episode in episodes) {
-//                Logd(TAG, "persistEpisodes: ${episode.playState} ${episode.title}")
-//                upsert(episode) {}
-//            }
-//            EventFlow.postEvent(FlowEvent.EpisodeEvent(episodes))
-//        }
-//    }
 
 //    only used in tests
     fun persistEpisodeMedia(media: EpisodeMedia) : Job {
@@ -227,9 +215,7 @@ object Episodes {
         return runOnIOScope {
             var episode = media.episodeOrFetch()
             if (episode != null) {
-                episode = upsert(episode) {
-                    it.media = media
-                }
+                episode = upsert(episode) { it.media = media }
                 EventFlow.postEvent(FlowEvent.EpisodeMediaEvent.updated(episode))
             } else Log.e(TAG, "persistEpisodeMedia media.episode is null")
         }
@@ -255,9 +241,7 @@ object Episodes {
     fun addToHistory(episode: Episode, date: Date? = Date()) : Job {
         Logd(TAG, "addToHistory called")
         return runOnIOScope {
-            upsert(episode) {
-                it.media?.playbackCompletionDate = date
-            }
+            upsert(episode) { it.media?.playbackCompletionDate = date }
             EventFlow.postEvent(FlowEvent.HistoryEvent())
         }
     }
@@ -266,9 +250,7 @@ object Episodes {
     fun setFavorite(episode: Episode, stat: Boolean?) : Job {
         Logd(TAG, "setFavorite called $stat")
         return runOnIOScope {
-            val result = upsert(episode) {
-                it.isFavorite = stat ?: !it.isFavorite
-            }
+            val result = upsert(episode) { it.isFavorite = stat ?: !it.isFavorite }
             EventFlow.postEvent(FlowEvent.FavoritesEvent(result))
         }
     }
@@ -309,11 +291,25 @@ object Episodes {
         return appPrefs.getBoolean(Prefs.prefRemoveFromQueueMarkedPlayed.name, true)
     }
 
-    fun episodeFromStreamInfoItem(info: StreamInfoItem): Episode {
+    fun episodeFromStreamInfoItem(item: StreamInfoItem): Episode {
+        val e = Episode()
+        e.link = item.url
+        e.title = item.name
+        e.description = item.shortDescription
+        e.imageUrl = item.thumbnails.first().url
+        e.setPubDate(item.uploadDate?.date()?.time)
+        val m = EpisodeMedia(e, item.url, 0, "video/*")
+        if (item.duration > 0) m.duration = item.duration.toInt() * 1000
+        m.fileUrl = getMediafilename(m)
+        e.media = m
+        return e
+    }
+
+    fun episodeFromStreamInfo(info: StreamInfo): Episode {
         val e = Episode()
         e.link = info.url
         e.title = info.name
-        e.description = info.shortDescription
+        e.description = info.description?.content
         e.imageUrl = info.thumbnails.first().url
         e.setPubDate(info.uploadDate?.date()?.time)
         val m = EpisodeMedia(e, info.url, 0, "video/*")

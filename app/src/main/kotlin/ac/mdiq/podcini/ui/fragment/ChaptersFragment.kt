@@ -270,7 +270,6 @@ class ChaptersFragment : AppCompatDialogFragment() {
             if (hasImages) {
                 holder.image.visibility = View.VISIBLE
                 if (sc.imageUrl.isNullOrEmpty()) {
-//                Glide.with(context).clear(holder.image)
                     val imageLoader = ImageLoader.Builder(context).build()
                     imageLoader.enqueue(ImageRequest.Builder(context).data(null).target(holder.image).build())
                 } else {

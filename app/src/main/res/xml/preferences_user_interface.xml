@@ -39,17 +39,17 @@
             android:key="prefDrawerFeedOrder"
             android:summary="@string/pref_nav_drawer_feed_order_sum"/>
         <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:enabled="true"
+            android:key="prefSwipeToRefreshAll"
+            android:summary="@string/pref_swipe_refresh_sum"
+            android:title="@string/pref_swipe_refresh_title"/>
+        <SwitchPreferenceCompat
             android:defaultValue="false"
             android:enabled="true"
             android:key="prefFeedGridLayout"
             android:summary="@string/pref_feedGridLayout_sum"
             android:title="@string/pref_feedGridLayout_title"/>
-
-<!--        <SwitchPreferenceCompat-->
-<!--            android:title="@string/pref_show_subscription_title"-->
-<!--            android:key="prefSubscriptionTitle"-->
-<!--            android:summary="@string/pref_show_subscription_title_summary"-->
-<!--            android:defaultValue="true" />-->
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/external_elements">
         <SwitchPreferenceCompat

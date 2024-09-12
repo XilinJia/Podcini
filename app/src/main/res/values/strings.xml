@@ -540,6 +540,8 @@
     <string name="pref_video_mode_full_screen">Full screen</string>
     <string name="pref_video_mode_small_window">Small window</string>
     <string name="pref_video_mode_audio_only">Audio only</string>
+    <string name="pref_swipe_refresh_title">Swipe to refresh</string>
+    <string name="pref_swipe_refresh_sum">Swipe down to refresh all subscriptions</string>
     <string name="pref_feedGridLayout_title">Subscriptions use grid layout </string>
     <string name="pref_feedGridLayout_sum">When set, Subscriptions view use a grid layout, otherwise list layout</string>
     <string name="pref_expandNotify_title">High notification priority</string>

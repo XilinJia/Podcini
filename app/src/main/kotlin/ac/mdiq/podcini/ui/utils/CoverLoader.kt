@@ -60,9 +60,7 @@ class CoverLoader(private val activity: MainActivity) {
 
     fun load() {
         if (imgvCover == null) return
-
         val coverTargetCoil = CoilCoverTarget(fallbackTitle, imgvCover!!, textAndImageCombined)
-
         if (resource != 0) {
             val imageLoader = ImageLoader.Builder(activity).build()
             imageLoader.enqueue(ImageRequest.Builder(activity).data(null).target(coverTargetCoil).build())

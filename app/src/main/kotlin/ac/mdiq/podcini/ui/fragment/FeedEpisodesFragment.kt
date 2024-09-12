@@ -541,7 +541,7 @@ import java.util.concurrent.Semaphore
                 placeholder(R.color.light_gray)
                 error(R.mipmap.ic_launcher)
             }
-        }
+        } else binding.header.imgvCover.setImageDrawable(AppCompatResources.getDrawable(requireContext(), R.drawable.ic_launcher_foreground))
     }
 
     private var loadItemsRunning = false

@@ -69,9 +69,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
     }
 
     protected open fun setPlayable(playable: Playable?) {
-        if (playable != null && playable !== curMedia) {
-            curMedia = playable
-        }
+        if (playable != null && playable !== curMedia) curMedia = playable
     }
 
     open fun getVideoSize(): Pair<Int, Int>? {
@@ -92,7 +90,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
         return -1
     }
 
-    abstract fun createMediaPlayer()
+    open fun createMediaPlayer() {}
 
     /**
      * Starts or prepares playback of the specified Playable object. If another Playable object is already being played, the currently playing
@@ -165,10 +163,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
      */
     fun seekDelta(delta: Int) {
         val curPosition = getPosition()
-        if (curPosition != Playable.INVALID_TIME) {
-            val prevMedia = curMedia
-            seekTo(curPosition + delta)
-        }
+        if (curPosition != Playable.INVALID_TIME) seekTo(curPosition + delta)
         else Log.e(TAG, "seekDelta getPosition() returned INVALID_TIME in seekDelta")
     }
 
@@ -309,7 +304,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
         @JvmField
         val LONG_REWIND: Long = TimeUnit.SECONDS.toMillis(20)
 
-        val audioPlaybackSpeed: Float
+        val prefPlaybackSpeed: Float
             get() {
                 try { return appPrefs.getString(Prefs.prefPlaybackSpeed.name, "1.00")!!.toFloat()
                 } catch (e: NumberFormatException) {
@@ -374,7 +369,7 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
                     if (prefs_ != null) playbackSpeed = prefs_.playSpeed
                 }
             }
-            if (playbackSpeed == FeedPreferences.SPEED_USE_GLOBAL) playbackSpeed = audioPlaybackSpeed
+            if (playbackSpeed == FeedPreferences.SPEED_USE_GLOBAL) playbackSpeed = prefPlaybackSpeed
             return playbackSpeed
         }
     }

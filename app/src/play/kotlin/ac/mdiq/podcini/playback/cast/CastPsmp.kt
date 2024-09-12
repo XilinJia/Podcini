@@ -29,17 +29,14 @@ import kotlin.math.min
  */
 @SuppressLint("VisibleForTests")
 class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBase(context, callback) {
-
     val TAG = this::class.simpleName ?: "Anonymous"
 
     @Volatile
     private var remoteMedia: MediaInfo? = null
-
     @Volatile
     private var remoteState: Int
     private val castContext = CastContext.getSharedInstance(context)
     private val remoteMediaClient = castContext.sessionManager.currentCastSession!!.remoteMediaClient
-
     private val isBuffering: AtomicBoolean
 
     private val remoteMediaClientCallback: RemoteMediaClient.Callback = object : RemoteMediaClient.Callback() {
@@ -47,17 +44,14 @@ class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBas
             super.onMetadataUpdated()
             onRemoteMediaPlayerStatusUpdated()
         }
-
         override fun onPreloadStatusUpdated() {
             super.onPreloadStatusUpdated()
             onRemoteMediaPlayerStatusUpdated()
         }
-
         override fun onStatusUpdated() {
             super.onStatusUpdated()
             onRemoteMediaPlayerStatusUpdated()
         }
-
         override fun onMediaError(mediaError: MediaError) {
             EventFlow.postEvent(FlowEvent.PlayerErrorEvent(mediaError.reason!!))
         }
@@ -81,7 +75,6 @@ class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBas
     private fun localVersion(info: MediaInfo?): Playable? {
         if (info == null || info.metadata == null) return null
         if (CastUtils.matches(info, curMedia)) return curMedia
-
         val streamUrl = info.metadata!!.getString(CastUtils.KEY_STREAM_URL)
         return if (streamUrl == null) CastUtils.makeRemoteMedia(info) else callback.findMedia(streamUrl)
     }
@@ -122,17 +115,13 @@ class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBas
             state = MediaStatus.PLAYER_STATE_UNKNOWN
             stateChanged = oldState != MediaStatus.PLAYER_STATE_UNKNOWN
         }
-
         if (stateChanged) remoteState = state
-
         if (mediaChanged && stateChanged && oldState == MediaStatus.PLAYER_STATE_PLAYING && state != MediaStatus.PLAYER_STATE_IDLE) {
             callback.onPlaybackPause(null, Playable.INVALID_TIME)
             // We don't want setPlayerStatus to handle the onPlaybackPause callback
             setPlayerStatus(PlayerStatus.INDETERMINATE, currentMedia)
         }
-
         setBuffering(state == MediaStatus.PLAYER_STATE_BUFFERING)
-
         when (state) {
             MediaStatus.PLAYER_STATE_PLAYING -> {
                 if (!stateChanged) {
@@ -197,10 +186,6 @@ class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBas
             if (oldMedia != null) callback.onPostPlayback(oldMedia, ended = false, skipped = false, playingNext = currentMedia != null)
         }
     }
-
-    override fun createMediaPlayer() {}
-
-//    private var prevMedia: Playable? = null
 
     /**
      * Internal implementation of playMediaObject. This method has an additional parameter that
@@ -275,7 +260,6 @@ class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBas
             setPlayerStatus(PlayerStatus.PREPARING, curMedia)
             var position = curMedia!!.getPosition()
             if (position > 0) position = calculatePositionWithRewind(position, curMedia!!.getLastPlayedTime())
-
             remoteMediaClient!!.load(MediaLoadRequestData.Builder()
                 .setMediaInfo(remoteMedia)
                 .setAutoplay(startWhenPrepared.get())
@@ -346,14 +330,12 @@ class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBas
         var nextMedia: Playable? = null
         if (shouldContinue) {
             nextMedia = callback.getNextInQueue(currentMedia)
-
             val playNextEpisode = isPlaying && nextMedia != null
             when {
                 playNextEpisode -> Logd(TAG, "Playback of next episode will start immediately.")
                 nextMedia == null -> Logd(TAG, "No more episodes available to play")
                 else -> Logd(TAG, "Loading next episode, but not playing automatically.")
             }
-
             if (nextMedia != null) {
                 callback.onPlaybackEnded(nextMedia.getMediaType(), !playNextEpisode)
                 // setting media to null signals to playMediaObject() that we're taking care of post-playback processing
@@ -381,12 +363,7 @@ class CastPsmp(context: Context, callback: MediaPlayerCallback) : MediaPlayerBas
 
         fun getInstanceIfConnected(context: Context, callback: MediaPlayerCallback): MediaPlayerBase? {
             if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context) != ConnectionResult.SUCCESS) return null
-
-            try {
-                if (CastContext.getSharedInstance(context).castState == CastState.CONNECTED) return CastPsmp(context, callback)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            try { if (CastContext.getSharedInstance(context).castState == CastState.CONNECTED) return CastPsmp(context, callback) } catch (e: Exception) { e.printStackTrace() }
             return null
         }
     }

@@ -1,3 +1,16 @@
+# 6.6.0
+
+* added ability to receive shared Youtube media,
+	* once received, the user can choose to set it as "audio only" before confirm
+	* the media is then added as an episode to one of the two artificial podcasts: "Youtube Syndicate" or "Youtube Syndicate Audio" (for audio-only media)
+	* the two artificial podcasts behave as normal Youtube-channel podcasts except that they can not be updated, and video mode and authentication can not be changed,
+	* the episodes can be handled in the same fashion as normal podcast episodes, except that those in "Youtube Syndicate Audio" can not be played with video
+* fixed info display on notification panel for Youtube episodes
+* added a setting to disable "swipe to refresh all subscriptions" under Settings -> Interface -> Subscriptions
+	* even when disabled, subscriptions can be refreshed from the menu in Subscriptions view
+	* this doesn't affect "swipe to refresh" in FeedEpisodes view for single podcast
+* updated various compose dependencies
+
 # 6.5.10
 
 * fixed crash when switching to a newly created queue in Queues view

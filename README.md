@@ -12,6 +12,7 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
 [<img src="./images/external/getItf-droid.png" alt="F-Droid" height="50">](https://f-droid.org/packages/ac.mdiq.podcini.R/)
 [<img src="./images/external/amazon.png" alt="Amazon" height="40">](https://www.amazon.com/%E8%B4%BE%E8%A5%BF%E6%9E%97-Podcini-R/dp/B0D9WR8P13)
 
+#### Podcini.R 6.6 is capable of receiving/handling shared single media from Youtube, for more see the changelogs.
 #### Podcini.R version 6.5 as a major step forward brings YouTube channels in the app.  They can be searched, subscribed and played from within Podcini. For more see the changelogs
 #### If you are migrating from Podcini version 5, please read the migrationTo5.md file for migration instructions.
 #### For Podcini to show up on car's HUD with Android Auto, please read AnroidAuto.md for instructions.
@@ -27,7 +28,7 @@ Compared to AntennaPod this project:
 5. Boasts new UI's including streamlined drawer, subscriptions view and player controller,
 6. Supports multiple, virtual and circular play queues associable to any podcast
 7. Auto-download is governed by policy and limit settings of individual feed
-8. Accepts podcast as well as Youtube channels and plain RSS,
+8. Accepts podcast, Youtube channels, Youtube media and plain RSS,
 9. Offers Readability and Text-to-Speech for RSS contents,
 10. Features `instant sync` across devices without a server.
 
@@ -124,7 +125,15 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * Ability to open podcast from webpage address
 * Online feed info display is handled in similar ways as any local feed, and offers options to subscribe or view episodes
 * Online feed episodes can be freely played (streamed) without a subscription
-* Youtube channels can be searched in podcast search view, and can be subscribed as a normal podcast.
+
+### Youtube channels and media
+
+* Youtube channels can be searched in podcast search view, can also be shared from other apps (such as Youtube) to Podcini
+* Youtube channels can be subscribed as normal podcasts
+* Single Youtube media can also be shared from other apps, once received, are added to artificial podcast "Youtube Syndicate"
+* All Youtube media can be played (only streamed) with video in fullscreen and in window as well as in audio only mode
+* Every Youtube media comes with the lowest video quality and highest audio quality
+* If a Youtube channel podcast is set for "audio only", then only audio stream is fetched at play time for every media in the podcast
 
 ### Instant (or Wifi) sync
 

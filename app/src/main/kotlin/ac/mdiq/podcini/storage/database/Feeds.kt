@@ -5,9 +5,11 @@ import ac.mdiq.podcini.net.download.DownloadError
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink.needSynch
+import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.preferences.UserPreferences.isAutoDelete
 import ac.mdiq.podcini.preferences.UserPreferences.isAutoDeleteLocal
 import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodes
+import ac.mdiq.podcini.storage.database.Feeds.EpisodeAssistant.searchEpisodeByIdentifyingValue
 import ac.mdiq.podcini.storage.database.LogsAndStats.addDownloadStatus
 import ac.mdiq.podcini.storage.database.Queues.addToQueueSync
 import ac.mdiq.podcini.storage.database.Queues.removeFromAllQueuesQuiet
@@ -19,6 +21,8 @@ import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.TAG_ROOT
 import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting
+import ac.mdiq.podcini.storage.utils.FilesUtils.feedfilePath
+import ac.mdiq.podcini.storage.utils.FilesUtils.getFeedfileName
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
@@ -410,6 +414,43 @@ object Feeds {
     fun shouldAutoDeleteItem(feed: Feed): Boolean {
         if (!isAutoDelete) return false
         return !feed.isLocalFeed || isAutoDeleteLocal
+    }
+
+    fun getYoutubeSyndicate(video: Boolean): Feed {
+        val feedId: Long = if (video) 1 else 2
+        var feed = getFeed(feedId, true)
+        if (feed != null) return feed
+
+        feed = Feed()
+        feed.id = feedId
+        feed.title = "Youtube Syndicate" + if (video) "" else " Audio"
+        feed.type = Feed.FeedType.YOUTUBE.name
+        feed.hasVideoMedia = video
+        feed.downloadUrl = null
+        feed.fileUrl = File(feedfilePath, getFeedfileName(feed)).toString()
+        feed.preferences = FeedPreferences(feed.id, false, FeedPreferences.AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
+        feed.preferences!!.keepUpdated = false
+        feed.preferences!!.queue = null
+        feed.preferences!!.videoModePolicy = if (video) VideoMode.WINDOW_VIEW else VideoMode.AUDIO_ONLY
+        upsertBlk(feed) {}
+        return feed
+    }
+
+    fun addToYoutubeSyndicate(episode: Episode, video: Boolean) {
+        val feed = getYoutubeSyndicate(video)
+        Logd(TAG, "addToYoutubeSyndicate: feed: ${feed.title}")
+        if (searchEpisodeByIdentifyingValue(feed.episodes, episode) != null) return
+
+        Logd(TAG, "addToYoutubeSyndicate adding new episode: ${episode.title}")
+        runOnIOScope {
+            episode.feed = feed
+            episode.id = Feed.newId()
+            episode.feedId = feed.id
+            episode.media?.id = episode.id
+            upsert(episode) {}
+            feed.episodes.add(episode)
+            upsert(feed) {}
+        }
     }
 
     /**

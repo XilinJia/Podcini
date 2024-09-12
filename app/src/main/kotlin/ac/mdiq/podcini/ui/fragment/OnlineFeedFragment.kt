@@ -270,7 +270,7 @@ class OnlineFeedFragment : Fragment() {
                         feed_.imageUrl = if (channelInfo.avatars.isNotEmpty()) channelInfo.avatars.first().url else null
                         val eList: RealmList<Episode> = realmListOf()
                         for (r in channelTabInfo.relatedItems) {
-//                            Logd(TAG, "startFeedBuilding relatedItem: $r")
+                            Logd(TAG, "startFeedBuilding relatedItem: $r")
                             val e = episodeFromStreamInfoItem(r as StreamInfoItem)
                             e.feed = feed_
                             e.feedId = feed_.id

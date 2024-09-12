@@ -3,11 +3,8 @@ package ac.mdiq.podcini.storage.model
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
-import ac.mdiq.podcini.storage.model.RemoteMedia.Companion.PLAYABLE_TYPE_REMOTE_MEDIA
 import ac.mdiq.podcini.storage.utils.MediaMetadataRetrieverCompat
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.vista.extractor.Vista
-import ac.mdiq.vista.extractor.stream.StreamInfo
 import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable

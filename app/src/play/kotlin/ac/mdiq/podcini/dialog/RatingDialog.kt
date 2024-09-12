@@ -35,9 +35,7 @@ object RatingDialog {
     }
 
     fun check() {
-        if (shouldShow()) {
-            try { showInAppReview() } catch (e: Exception) { Log.e(TAG, Log.getStackTraceString(e)) }
-        }
+        if (shouldShow()) try { showInAppReview() } catch (e: Exception) { Log.e(TAG, Log.getStackTraceString(e)) }
     }
 
     private fun showInAppReview() {
@@ -55,10 +53,7 @@ object RatingDialog {
                     if (previousAttempts >= 3) saveRated()
                     else {
                         resetStartDate()
-                        mPreferences
-                            .edit()
-                            .putInt(KEY_NUMBER_OF_REVIEWS, previousAttempts + 1)
-                            .apply()
+                        mPreferences.edit().putInt(KEY_NUMBER_OF_REVIEWS, previousAttempts + 1).apply()
                     }
                     Logd("ReviewDialog", "Successfully finished in-app review")
                 }
@@ -74,17 +69,11 @@ object RatingDialog {
 
     @VisibleForTesting
     fun saveRated() {
-        mPreferences
-            .edit()
-            .putBoolean(KEY_RATED, true)
-            .apply()
+        mPreferences.edit().putBoolean(KEY_RATED, true).apply()
     }
 
     private fun resetStartDate() {
-        mPreferences
-            .edit()
-            .putLong(KEY_FIRST_START_DATE, System.currentTimeMillis())
-            .apply()
+        mPreferences.edit().putLong(KEY_FIRST_START_DATE, System.currentTimeMillis()).apply()
     }
 
     private fun shouldShow(): Boolean {

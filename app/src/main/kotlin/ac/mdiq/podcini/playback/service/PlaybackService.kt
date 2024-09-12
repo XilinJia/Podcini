@@ -804,7 +804,6 @@ class PlaybackService : MediaLibraryService() {
             intent?.getParcelableExtra(EXTRA_KEY_EVENT)
         }
         val playable = curMedia
-
         Log.d(TAG, "onStartCommand flags=$flags startId=$startId keycode=$keycode keyEvent=$keyEvent customAction=$customAction hardwareButton=$hardwareButton action=${intent?.action.toString()} ${playable?.getEpisodeTitle()}")
         if (keycode == -1 && playable == null && customAction == null) {
             Log.e(TAG, "onStartCommand PlaybackService was started with no arguments, return")
@@ -819,7 +818,6 @@ class PlaybackService : MediaLibraryService() {
             Logd(TAG, "onStartCommand playing same media: $status, return")
             return super.onStartCommand(intent, flags, startId)
         }
-
         when {
             keycode != -1 -> {
                 Logd(TAG, "onStartCommand Received hardware button event: $hardwareButton")
@@ -1437,8 +1435,8 @@ class PlaybackService : MediaLibraryService() {
                     val audioIndex = if (isNetworkRestricted) 0 else audioStreamsList.size - 1
                     val audioStream = audioStreamsList[audioIndex]
                     Logd(TAG, "setDataSource1 use audio quality: ${audioStream.bitrate}")
-                    val aSource = DefaultMediaSourceFactory(context).createMediaSource(MediaItem.Builder().setTag(metadata).setUri(
-                        Uri.parse(audioStream.content)).build())
+                    val aSource = DefaultMediaSourceFactory(context).createMediaSource(
+                        MediaItem.Builder().setMediaMetadata(metadata).setTag(metadata).setUri(Uri.parse(audioStream.content)).build())
                     if (media.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY) {
                         Logd(TAG, "setDataSource1 result: $streamInfo")
                         Logd(TAG, "setDataSource1 videoStreams: ${streamInfo.videoStreams.size} videoOnlyStreams: ${streamInfo.videoOnlyStreams.size} audioStreams: ${streamInfo.audioStreams.size}")
@@ -1446,8 +1444,8 @@ class PlaybackService : MediaLibraryService() {
                         val videoIndex = 0
                         val videoStream = videoStreamsList[videoIndex]
                         Logd(TAG, "setDataSource1 use video quality: ${videoStream.resolution}")
-                        val vSource = DefaultMediaSourceFactory(context).createMediaSource(MediaItem.Builder().setTag(metadata).setUri(
-                            Uri.parse(videoStream.content)).build())
+                        val vSource = DefaultMediaSourceFactory(context).createMediaSource(
+                            MediaItem.Builder().setMediaMetadata(metadata).setTag(metadata).setUri(Uri.parse(videoStream.content)).build())
                         val mediaSources: MutableList<MediaSource> = ArrayList()
                         mediaSources.add(vSource)
                         mediaSources.add(aSource)

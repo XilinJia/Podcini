@@ -20,8 +20,7 @@ abstract class CastEnabledActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         canCast = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this) == ConnectionResult.SUCCESS
         if (canCast) {
-            try {
-                CastContext.getSharedInstance(this)
+            try { CastContext.getSharedInstance(this)
             } catch (e: Exception) {
                 e.printStackTrace()
                 canCast = false
@@ -30,9 +29,7 @@ abstract class CastEnabledActivity : AppCompatActivity() {
     }
 
     fun requestCastButton(menu: Menu?) {
-        if (!canCast) {
-            return
-        }
+        if (!canCast) return
         menuInflater.inflate(R.menu.cast_button, menu)
         CastButtonFactory.setUpMediaRouteButton(applicationContext, menu!!, R.id.media_route_menu_item)
     }

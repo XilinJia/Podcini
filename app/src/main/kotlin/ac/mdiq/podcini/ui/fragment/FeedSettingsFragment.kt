@@ -100,37 +100,39 @@ class FeedSettingsFragment : Fragment() {
                     modifier = Modifier.padding(start = 20.dp, end = 16.dp, top = 10.dp, bottom = 10.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    //                    refresh
-                    Column {
-                        Row(Modifier.fillMaxWidth()) {
-                            Icon(ImageVector.vectorResource(id = R.drawable.ic_refresh), "", tint = textColor)
-                            Spacer(modifier = Modifier.width(20.dp))
+                    if ((feed?.id ?: 0) > 10) {
+                        //                    refresh
+                        Column {
+                            Row(Modifier.fillMaxWidth()) {
+                                Icon(ImageVector.vectorResource(id = R.drawable.ic_refresh), "", tint = textColor)
+                                Spacer(modifier = Modifier.width(20.dp))
+                                Text(
+                                    text = stringResource(R.string.keep_updated),
+                                    style = MaterialTheme.typography.h6,
+                                    color = textColor
+                                )
+                                Spacer(modifier = Modifier.weight(1f))
+                                var checked by remember { mutableStateOf(feed?.preferences?.keepUpdated ?: true) }
+                                Switch(
+                                    checked = checked,
+                                    modifier = Modifier.height(24.dp),
+                                    onCheckedChange = {
+                                        checked = it
+                                        feed = upsertBlk(feed!!) { f ->
+                                            f.preferences?.keepUpdated = checked
+                                        }
+                                    }
+                                )
+                            }
                             Text(
-                                text = stringResource(R.string.keep_updated),
-                                style = MaterialTheme.typography.h6,
+                                text = stringResource(R.string.keep_updated_summary),
+                                style = MaterialTheme.typography.body2,
                                 color = textColor
                             )
-                            Spacer(modifier = Modifier.weight(1f))
-                            var checked by remember { mutableStateOf(feed?.preferences?.keepUpdated ?: true) }
-                            Switch(
-                                checked = checked,
-                                modifier = Modifier.height(24.dp),
-                                onCheckedChange = {
-                                    checked = it
-                                    feed = upsertBlk(feed!!) { f ->
-                                        f.preferences?.keepUpdated = checked
-                                    }
-                                }
-                            )
                         }
-                        Text(
-                            text = stringResource(R.string.keep_updated_summary),
-                            style = MaterialTheme.typography.body2,
-                            color = textColor
-                        )
                     }
-                    if (feed?.hasVideoMedia == true) {
-                        //                    prefer play audio only
+                    if ((feed?.id?:0) > 10 && feed?.hasVideoMedia == true) {
+                        //                    video mode
                         Column {
                             Row(Modifier.fillMaxWidth()) {
                                 Icon(ImageVector.vectorResource(id = R.drawable.ic_delete), "", tint = textColor)
@@ -383,7 +385,7 @@ class FeedSettingsFragment : Fragment() {
                         )
                     }
                     //                    authentication
-                    if (feed?.isLocalFeed != true) {
+                    if ((feed?.id?:0) > 0 && feed?.isLocalFeed != true) {
                         Column {
                             Row(Modifier.fillMaxWidth()) {
                                 Icon(ImageVector.vectorResource(id = R.drawable.ic_key), "", tint = textColor)

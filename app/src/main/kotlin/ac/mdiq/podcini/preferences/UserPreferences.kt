@@ -286,6 +286,7 @@ object UserPreferences {
         prefDrawerFeedOrder,
         prefDrawerFeedOrderDir,
         prefFeedGridLayout,
+        prefSwipeToRefreshAll,
         prefExpandNotify,
         prefEpisodeCover,
         showTimeLeft,

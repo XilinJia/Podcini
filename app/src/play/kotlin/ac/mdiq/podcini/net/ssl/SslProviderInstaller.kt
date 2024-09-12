@@ -8,13 +8,10 @@ import com.google.android.gms.security.ProviderInstaller
 
 object SslProviderInstaller {
     fun install(context: Context) {
-        try {
-            ProviderInstaller.installIfNeeded(context)
+        try { ProviderInstaller.installIfNeeded(context)
         } catch (e: GooglePlayServicesRepairableException) {
             e.printStackTrace()
             GoogleApiAvailability.getInstance().showErrorNotification(context, e.connectionStatusCode)
-        } catch (e: GooglePlayServicesNotAvailableException) {
-            e.printStackTrace()
-        }
+        } catch (e: GooglePlayServicesNotAvailableException) { e.printStackTrace() }
     }
 }

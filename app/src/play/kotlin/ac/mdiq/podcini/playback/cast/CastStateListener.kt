@@ -11,9 +11,8 @@ open class CastStateListener(context: Context) : SessionManagerListener<CastSess
     private var castContext: CastContext?
 
     init {
-        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context) != ConnectionResult.SUCCESS) {
-            castContext = null
-        } else {
+        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context) != ConnectionResult.SUCCESS) castContext = null
+        else {
             var castCtx: CastContext?
             try {
                 castCtx = CastContext.getSharedInstance(context)
@@ -27,40 +26,30 @@ open class CastStateListener(context: Context) : SessionManagerListener<CastSess
     }
 
     fun destroy() {
-        if (castContext != null) {
-            castContext!!.sessionManager.removeSessionManagerListener(this, CastSession::class.java)
-        }
+        if (castContext != null) castContext!!.sessionManager.removeSessionManagerListener(this, CastSession::class.java)
     }
 
-    override fun onSessionStarting(castSession: CastSession) {
-    }
+    override fun onSessionStarting(castSession: CastSession) {}
 
     override fun onSessionStarted(session: CastSession, sessionId: String) {
         onSessionStartedOrEnded()
     }
 
-    override fun onSessionStartFailed(castSession: CastSession, i: Int) {
-    }
+    override fun onSessionStartFailed(castSession: CastSession, i: Int) {}
 
-    override fun onSessionEnding(castSession: CastSession) {
-    }
+    override fun onSessionEnding(castSession: CastSession) {}
 
-    override fun onSessionResumed(session: CastSession, wasSuspended: Boolean) {
-    }
+    override fun onSessionResumed(session: CastSession, wasSuspended: Boolean) {}
 
-    override fun onSessionResumeFailed(castSession: CastSession, i: Int) {
-    }
+    override fun onSessionResumeFailed(castSession: CastSession, i: Int) {}
 
-    override fun onSessionSuspended(castSession: CastSession, i: Int) {
-    }
+    override fun onSessionSuspended(castSession: CastSession, i: Int) {}
 
     override fun onSessionEnded(session: CastSession, error: Int) {
         onSessionStartedOrEnded()
     }
 
-    override fun onSessionResuming(castSession: CastSession, s: String) {
-    }
+    override fun onSessionResuming(castSession: CastSession, s: String) {}
 
-    open fun onSessionStartedOrEnded() {
-    }
+    open fun onSessionStartedOrEnded() {}
 }

@@ -32,6 +32,7 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.UserPreferences.fastForwardSecs
 import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
+import ac.mdiq.podcini.preferences.UserPreferences.prefLowQualityMedia
 import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
 import ac.mdiq.podcini.storage.database.Episodes.addToHistory
@@ -1432,7 +1433,7 @@ class PlaybackService : MediaLibraryService() {
                     val streamInfo = StreamInfo.getInfo(vService, url)
                     val audioStreamsList = getFilteredAudioStreams(streamInfo.audioStreams)
                     Logd(TAG, "setDataSource1 audioStreamsList ${audioStreamsList.size}")
-                    val audioIndex = if (isNetworkRestricted) 0 else audioStreamsList.size - 1
+                    val audioIndex = if (isNetworkRestricted && prefLowQualityMedia) 0 else audioStreamsList.size - 1
                     val audioStream = audioStreamsList[audioIndex]
                     Logd(TAG, "setDataSource1 use audio quality: ${audioStream.bitrate}")
                     val aSource = DefaultMediaSourceFactory(context).createMediaSource(

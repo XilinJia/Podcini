@@ -1,0 +1,7 @@
+ Version 6.6.1:
+
+* the confirm dialog is more responsive when receiving a youtube media share
+* receiving a youtube media share can be dismissed by not pressing the confirm button
+* in Subscriptions and FeedEpisodes views, swipe down to refresh no longer blocks UI, only shows "Refreshing" status on the info bar
+* added preference "Prefer low quality on mobile" under Settings -> Playback -> Playback control, and default it to false,
+	* if set true, Youtube media will use low quality audio on mobile network (which has been the default way of handling)

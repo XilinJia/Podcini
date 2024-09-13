@@ -3,7 +3,6 @@ package ac.mdiq.podcini.ui.activity
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.database.Episodes.episodeFromStreamInfo
 import ac.mdiq.podcini.storage.database.Feeds.addToYoutubeSyndicate
-import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.vista.extractor.Vista
@@ -13,7 +12,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.view.ViewGroup
 import androidx.activity.compose.setContent
 import androidx.annotation.OptIn
 import androidx.appcompat.app.AppCompatActivity
@@ -23,7 +21,6 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -32,14 +29,14 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.net.URLDecoder
 
 class ShareReceiverActivity : AppCompatActivity() {
+    var feedUrl: String? = null
+
     @OptIn(UnstableApi::class) override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        var feedUrl: String? = null
         when {
             intent.hasExtra(ARG_FEEDURL) -> feedUrl = intent.getStringExtra(ARG_FEEDURL)
             intent.action == Intent.ACTION_SEND -> feedUrl = intent.getStringExtra(Intent.EXTRA_TEXT)
@@ -50,7 +47,7 @@ class ShareReceiverActivity : AppCompatActivity() {
             showNoPodcastFoundError()
             return
         }
-        if (!feedUrl.startsWith("http")) {
+        if (!feedUrl!!.startsWith("http")) {
             val uri = Uri.parse(feedUrl)
             val urlString = uri?.getQueryParameter("url")
             if (urlString != null) feedUrl = URLDecoder.decode(urlString, "UTF-8")
@@ -59,32 +56,26 @@ class ShareReceiverActivity : AppCompatActivity() {
         when {
 //            plain text
             feedUrl!!.matches(Regex("^[^\\s<>/]+\$")) -> {
-                val intent = MainActivity.showOnlineSearch(this, feedUrl)
+                val intent = MainActivity.showOnlineSearch(this, feedUrl!!)
                 startActivity(intent)
                 finish()
             }
 //            Youtube media
-            feedUrl.startsWith("https://youtube.com/watch?") -> {
+            feedUrl!!.startsWith("https://youtube.com/watch?") -> {
                 Logd(TAG, "got youtube media")
-                CoroutineScope(Dispatchers.IO).launch {
-                    val info = StreamInfo.getInfo(Vista.getService(0), feedUrl)
-                    Logd(TAG, "info: $info")
-                    val episode = episodeFromStreamInfo(info)
-                    Logd(TAG, "episode: $episode")
-                    withContext(Dispatchers.Main) {
-                        setContent {
-                            val showDialog = remember { mutableStateOf(true) }
-                            CustomTheme(this@ShareReceiverActivity) {
-                                confirmAddEpisode(showDialog.value, episode, onDismissRequest = { showDialog.value = false })
-                            }
-                        }
+                setContent {
+                    val showDialog = remember { mutableStateOf(true) }
+                    CustomTheme(this@ShareReceiverActivity) {
+                        confirmAddEpisode(showDialog.value, onDismissRequest = {
+                            showDialog.value = false
+                            finish()
+                        })
                     }
                 }
-
             }
             else -> {
                 Logd(TAG, "Activity was started with url $feedUrl")
-                val intent = MainActivity.showOnlineFeed(this, feedUrl)
+                val intent = MainActivity.showOnlineFeed(this, feedUrl!!)
 //                intent.putExtra(MainActivity.Extras.started_from_share.name, getIntent().getBooleanExtra(MainActivity.Extras.started_from_share.name, false))
                 startActivity(intent)
                 finish()
@@ -93,7 +84,7 @@ class ShareReceiverActivity : AppCompatActivity() {
     }
 
     @Composable
-    fun confirmAddEpisode(showDialog: Boolean, episode: Episode, onDismissRequest: () -> Unit) {
+    fun confirmAddEpisode(showDialog: Boolean, onDismissRequest: () -> Unit) {
         if (showDialog) {
             Dialog(onDismissRequest = { onDismissRequest() }) {
                 Card(
@@ -106,11 +97,11 @@ class ShareReceiverActivity : AppCompatActivity() {
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.Center
                     ) {
-                        var checked by remember { mutableStateOf(false) }
+                        var audioOnly by remember { mutableStateOf(false) }
                         Row(Modifier.fillMaxWidth()) {
-                            Checkbox(checked = checked,
+                            Checkbox(checked = audioOnly,
                                 onCheckedChange = {
-                                    checked = it
+                                    audioOnly = it
                                 }
                             )
                             Text(
@@ -119,8 +110,14 @@ class ShareReceiverActivity : AppCompatActivity() {
                             )
                         }
                         Button(onClick = {
-                            addToYoutubeSyndicate(episode, !checked)
-                            finish()
+                            CoroutineScope(Dispatchers.IO).launch {
+                                val info = StreamInfo.getInfo(Vista.getService(0), feedUrl!!)
+                                Logd(TAG, "info: $info")
+                                val episode = episodeFromStreamInfo(info)
+                                Logd(TAG, "episode: $episode")
+                                addToYoutubeSyndicate(episode, !audioOnly)
+                            }
+                            onDismissRequest()
                         }) {
                             Text("Confirm")
                         }

@@ -1,4 +1,4 @@
- Version 6.5.10:
+ Version 6.6.0:
 
 * added ability to receive shared Youtube media,
 	* once received, the user can choose to set it as "audio only" before confirm

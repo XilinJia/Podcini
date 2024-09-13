@@ -197,6 +197,12 @@ object UserPreferences {
             appPrefs.edit().putBoolean(Prefs.prefStreamOverDownload.name, stream).apply()
         }
 
+    var prefLowQualityMedia: Boolean
+        get() = appPrefs.getBoolean(Prefs.prefLowQualityOnMobile.name, false)
+        set(stream) {
+            appPrefs.edit().putBoolean(Prefs.prefLowQualityOnMobile.name, stream).apply()
+        }
+
     /**
      * Sets up the UserPreferences class.
      * @throws IllegalArgumentException if context is null
@@ -324,6 +330,7 @@ object UserPreferences {
         prefPauseForFocusLoss,
         prefPlaybackTimeRespectsSpeed,
         prefStreamOverDownload,
+        prefLowQualityOnMobile,
         prefSpeedforwardSpeed,
 
         // Network

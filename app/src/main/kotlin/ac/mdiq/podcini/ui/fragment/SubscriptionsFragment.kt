@@ -110,6 +110,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
 
     private lateinit var catAdapter: ArrayAdapter<String>
 
+    private var infoTextFiltered = ""
+    private var infoTextUpdate = ""
     private var tagFilterIndex = 1
 //    TODO: currently not used
     private var displayedFolder: String = ""
@@ -187,7 +189,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             } else false
         }
 
-        binding.progressBar.visibility = View.VISIBLE
+//        binding.progressBar.visibility = View.VISIBLE
+        binding.progressBar.visibility = View.GONE
 
         val subscriptionAddButton: FloatingActionButton = binding.subscriptionsAdd
         subscriptionAddButton.setOnClickListener {
@@ -218,8 +221,10 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
     private fun setSwipeRefresh() {
         if (swipeToRefresh) {
             binding.swipeRefresh.isEnabled = true
+            binding.swipeRefresh.setProgressViewEndTarget(false, 0)
             binding.swipeRefresh.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
             binding.swipeRefresh.setOnRefreshListener {
+                Logd(TAG, "running FeedUpdateManager")
                 FeedUpdateManager.runOnceOrAsk(requireContext())
             }
         } else binding.swipeRefresh.isEnabled = false
@@ -327,7 +332,9 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 when (event) {
                     is FlowEvent.FeedUpdatingEvent -> {
                         Logd(TAG, "FeedUpdateRunningEvent: ${event.isRunning}")
-                        binding.swipeRefresh.isRefreshing = event.isRunning
+                        infoTextUpdate = if (event.isRunning) " " + this@SubscriptionsFragment.getString(R.string.refreshing_label) else ""
+                        binding.txtvInformation.text = (infoTextFiltered + infoTextUpdate)
+                        if (swipeToRefresh) binding.swipeRefresh.isRefreshing = event.isRunning
                         if (!event.isRunning && event.id != prevFeedUpdatingEvent?.id) loadSubscriptions()
                         prevFeedUpdatingEvent = event
                     }
@@ -377,18 +384,20 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                         // We have fewer items. This can result in items being selected that are no longer visible.
                         if (feedListFiltered.size > feedList.size) adapter.endSelectMode()
                         filterOnTag()
-                        binding.progressBar.visibility = View.GONE
+//                        binding.progressBar.visibility = View.GONE
                         adapter.setItems(feedListFiltered)
                         binding.count.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
+                        infoTextFiltered = " "
+                        binding.txtvInformation.setOnClickListener {}
                         if (feedsFilter.isNotEmpty()) {
                             val filter = FeedFilter(feedsFilter)
-                            binding.txtvInformation.text = ("{gmo-info} " + getString(R.string.filtered_label))
+                            infoTextFiltered = getString(R.string.filtered_label)
                             binding.txtvInformation.setOnClickListener {
                                 val dialog = FeedFilterDialog.newInstance(filter)
                                 dialog.show(childFragmentManager, null)
                             }
-                            binding.txtvInformation.visibility = View.VISIBLE
-                        } else binding.txtvInformation.visibility = View.GONE
+                        }
+                        binding.txtvInformation.text = (infoTextFiltered + infoTextUpdate)
                         emptyView.updateVisibility()
                     }
                 } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e))
@@ -1187,7 +1196,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             }
         }
 
-        fun onFilterChanged(newFilterValues: Set<String>) {
+        private fun onFilterChanged(newFilterValues: Set<String>) {
             feedsFilter = StringUtils.join(newFilterValues, ",")
             Logd(TAG, "onFilterChanged: $feedsFilter")
             EventFlow.postEvent(FlowEvent.FeedsFilterEvent(newFilterValues))

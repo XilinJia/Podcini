@@ -71,6 +71,8 @@ import java.util.concurrent.Semaphore
     private lateinit var swipeActions: SwipeActions
     private lateinit var nextPageLoader: MoreContentListFooterUtil
 
+    private var infoTextFiltered = ""
+    private var infoTextUpdate = ""
     private var displayUpArrow = false
     private var headerCreated = false
     private var feedID: Long = 0
@@ -155,6 +157,7 @@ import java.util.concurrent.Semaphore
         })
 
         binding.swipeRefresh.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
+        binding.swipeRefresh.setProgressViewEndTarget(false, 0)
         binding.swipeRefresh.setOnRefreshListener {
             FeedUpdateManager.runOnceOrAsk(requireContext(), feed)
         }
@@ -429,6 +432,8 @@ import java.util.concurrent.Semaphore
     private fun onFeedUpdateRunningEvent(event: FlowEvent.FeedUpdatingEvent) {
         nextPageLoader.setLoadingState(event.isRunning)
         if (!event.isRunning) nextPageLoader.root.visibility = View.GONE
+        infoTextUpdate = if (event.isRunning) getString(R.string.refreshing_label) else ""
+        binding.header.txtvInformation.text = ("{gmo-info} $infoTextFiltered $infoTextUpdate")
         binding.swipeRefresh.isRefreshing = event.isRunning
     }
 
@@ -454,18 +459,20 @@ import java.util.concurrent.Semaphore
 
         binding.header.txtvTitle.text = feed!!.title
         binding.header.txtvAuthor.text = feed!!.author
+        binding.header.txtvInformation.setOnClickListener {}
+        infoTextFiltered = ""
         if (!feed?.preferences?.filterString.isNullOrEmpty()) {
             val filter: EpisodeFilter = feed!!.episodeFilter
             if (filter.values.isNotEmpty()) {
-                binding.header.txtvInformation.text = ("{gmo-info} " + this.getString(R.string.filtered_label))
+                infoTextFiltered = this.getString(R.string.filtered_label)
                 binding.header.txtvInformation.setOnClickListener {
                     val dialog = FeedEpisodeFilterDialog(feed)
                     dialog.filter = feed!!.episodeFilter
                     dialog.show(childFragmentManager, null)
                 }
-                binding.header.txtvInformation.visibility = View.VISIBLE
-            } else binding.header.txtvInformation.visibility = View.GONE
-        } else binding.header.txtvInformation.visibility = View.GONE
+            }
+        }
+        binding.header.txtvInformation.text = ("{gmo-info} $infoTextFiltered $infoTextUpdate")
     }
 
     @UnstableApi private fun setupHeaderView() {

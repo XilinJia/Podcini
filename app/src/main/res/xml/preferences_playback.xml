@@ -57,10 +57,15 @@
             android:summary="@string/pref_speed_forward_sum"
             android:title="@string/pref_speed_forward"/>
         <SwitchPreferenceCompat
-                android:defaultValue="false"
-                android:key="prefStreamOverDownload"
-                android:summary="@string/pref_stream_over_download_sum"
-                android:title="@string/pref_stream_over_download_title"/>
+            android:defaultValue="false"
+            android:key="prefStreamOverDownload"
+            android:summary="@string/pref_stream_over_download_sum"
+            android:title="@string/pref_stream_over_download_title"/>
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
+            android:key="prefLowQualityOnMobile"
+            android:summary="@string/pref_low_quality_on_mobile_sum"
+            android:title="@string/pref_low_quality_on_mobile_title"/>
         <Preference
             android:title="@string/pref_playback_video_mode"
             android:key="prefPlaybackVideoModeLauncher"

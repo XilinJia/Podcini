@@ -1,6 +1,5 @@
 package ac.mdiq.podcini.storage.database
 
-import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.net.download.DownloadError
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
@@ -20,18 +19,20 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.TAG_ROOT
-import ac.mdiq.podcini.storage.model.VolumeAdaptionSetting
 import ac.mdiq.podcini.storage.utils.FilesUtils.feedfilePath
 import ac.mdiq.podcini.storage.utils.FilesUtils.getFeedfileName
-import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.podcini.util.Logd
 import android.app.backup.BackupManager
 import android.content.Context
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import io.realm.kotlin.ext.asFlow
-import io.realm.kotlin.notifications.*
+import io.realm.kotlin.notifications.ResultsChange
+import io.realm.kotlin.notifications.SingleQueryChange
+import io.realm.kotlin.notifications.UpdatedObject
+import io.realm.kotlin.notifications.UpdatedResults
 import kotlinx.coroutines.*
 import java.io.File
 import java.text.DateFormat
@@ -241,7 +242,7 @@ object Feeds {
                             """.trimIndent()))
                     continue
                 }
-                var oldItem = EpisodeAssistant.searchEpisodeByIdentifyingValue(savedFeed.episodes, episode)
+                var oldItem = searchEpisodeByIdentifyingValue(savedFeed.episodes, episode)
                 if (!newFeed.isLocalFeed && oldItem == null) {
                     oldItem = EpisodeAssistant.searchEpisodeGuessDuplicate(savedFeed.episodes, episode)
                     if (oldItem != null) {
@@ -299,7 +300,7 @@ object Feeds {
                 val it = savedFeed.episodes.toMutableList().iterator()
                 while (it.hasNext()) {
                     val feedItem = it.next()
-                    if (EpisodeAssistant.searchEpisodeByIdentifyingValue(newFeed.episodes, feedItem) == null) {
+                    if (searchEpisodeByIdentifyingValue(newFeed.episodes, feedItem) == null) {
                         unlistedItems.add(feedItem)
                         it.remove()
                     }
@@ -442,15 +443,13 @@ object Feeds {
         if (searchEpisodeByIdentifyingValue(feed.episodes, episode) != null) return
 
         Logd(TAG, "addToYoutubeSyndicate adding new episode: ${episode.title}")
-        runOnIOScope {
-            episode.feed = feed
-            episode.id = Feed.newId()
-            episode.feedId = feed.id
-            episode.media?.id = episode.id
-            upsert(episode) {}
-            feed.episodes.add(episode)
-            upsert(feed) {}
-        }
+        episode.feed = feed
+        episode.id = Feed.newId()
+        episode.feedId = feed.id
+        episode.media?.id = episode.id
+        upsertBlk(episode) {}
+        feed.episodes.add(episode)
+        upsertBlk(feed) {}
     }
 
     /**

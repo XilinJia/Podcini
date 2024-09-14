@@ -6,6 +6,7 @@ import ac.mdiq.podcini.storage.database.Feeds.addToYoutubeSyndicate
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.vista.extractor.Vista
+import ac.mdiq.vista.extractor.playlist.PlaylistInfo
 import ac.mdiq.vista.extractor.stream.StreamInfo
 import android.content.DialogInterface
 import android.content.Intent
@@ -32,36 +33,36 @@ import kotlinx.coroutines.launch
 import java.net.URLDecoder
 
 class ShareReceiverActivity : AppCompatActivity() {
-    var feedUrl: String? = null
+    private var sharedUrl: String? = null
 
     @OptIn(UnstableApi::class) override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         when {
-            intent.hasExtra(ARG_FEEDURL) -> feedUrl = intent.getStringExtra(ARG_FEEDURL)
-            intent.action == Intent.ACTION_SEND -> feedUrl = intent.getStringExtra(Intent.EXTRA_TEXT)
-            intent.action == Intent.ACTION_VIEW -> feedUrl = intent.dataString
+            intent.hasExtra(ARG_FEEDURL) -> sharedUrl = intent.getStringExtra(ARG_FEEDURL)
+            intent.action == Intent.ACTION_SEND -> sharedUrl = intent.getStringExtra(Intent.EXTRA_TEXT)
+            intent.action == Intent.ACTION_VIEW -> sharedUrl = intent.dataString
         }
-        if (feedUrl.isNullOrBlank()) {
+        if (sharedUrl.isNullOrBlank()) {
             Log.e(TAG, "feedUrl is empty or null.")
             showNoPodcastFoundError()
             return
         }
-        if (!feedUrl!!.startsWith("http")) {
-            val uri = Uri.parse(feedUrl)
+        if (!sharedUrl!!.startsWith("http")) {
+            val uri = Uri.parse(sharedUrl)
             val urlString = uri?.getQueryParameter("url")
-            if (urlString != null) feedUrl = URLDecoder.decode(urlString, "UTF-8")
+            if (urlString != null) sharedUrl = URLDecoder.decode(urlString, "UTF-8")
         }
-        Logd(TAG, "feedUrl: $feedUrl")
+        Logd(TAG, "feedUrl: $sharedUrl")
         when {
 //            plain text
-            feedUrl!!.matches(Regex("^[^\\s<>/]+\$")) -> {
-                val intent = MainActivity.showOnlineSearch(this, feedUrl!!)
+            sharedUrl!!.matches(Regex("^[^\\s<>/]+\$")) -> {
+                val intent = MainActivity.showOnlineSearch(this, sharedUrl!!)
                 startActivity(intent)
                 finish()
             }
 //            Youtube media
-            feedUrl!!.startsWith("https://youtube.com/watch?") -> {
+            sharedUrl!!.startsWith("https://youtube.com/watch?") -> {
                 Logd(TAG, "got youtube media")
                 setContent {
                     val showDialog = remember { mutableStateOf(true) }
@@ -73,9 +74,10 @@ class ShareReceiverActivity : AppCompatActivity() {
                     }
                 }
             }
+//            podcast or Youtube channel, Youtube playlist, or other?
             else -> {
-                Logd(TAG, "Activity was started with url $feedUrl")
-                val intent = MainActivity.showOnlineFeed(this, feedUrl!!)
+                Logd(TAG, "Activity was started with url $sharedUrl")
+                val intent = MainActivity.showOnlineFeed(this, sharedUrl!!)
 //                intent.putExtra(MainActivity.Extras.started_from_share.name, getIntent().getBooleanExtra(MainActivity.Extras.started_from_share.name, false))
                 startActivity(intent)
                 finish()
@@ -111,7 +113,7 @@ class ShareReceiverActivity : AppCompatActivity() {
                         }
                         Button(onClick = {
                             CoroutineScope(Dispatchers.IO).launch {
-                                val info = StreamInfo.getInfo(Vista.getService(0), feedUrl!!)
+                                val info = StreamInfo.getInfo(Vista.getService(0), sharedUrl!!)
                                 Logd(TAG, "info: $info")
                                 val episode = episodeFromStreamInfo(info)
                                 Logd(TAG, "episode: $episode")

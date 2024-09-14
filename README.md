@@ -12,8 +12,8 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
 [<img src="./images/external/getItf-droid.png" alt="F-Droid" height="50">](https://f-droid.org/packages/ac.mdiq.podcini.R/)
 [<img src="./images/external/amazon.png" alt="Amazon" height="40">](https://www.amazon.com/%E8%B4%BE%E8%A5%BF%E6%9E%97-Podcini-R/dp/B0D9WR8P13)
 
-#### Podcini.R 6.6 introduces the powerful feature of synthetic podcasts, first enables the receiving/handling shared single media from Youtube, for more see the changelogs.
-#### Podcini.R version 6.5 as a major step forward brings YouTube channels in the app.  They can be searched, subscribed and played from within Podcini. For more see the changelogs
+#### Podcini.R 6.6 introduces the powerful feature of synthetic podcasts, enables the receiving/handling shared single media as well as playlist from Youtube, for more see the changelogs.
+#### Podcini.R version 6.5 as a major step forward brings YouTube channels in the app.  They can be searched, received from share, subscribed and played from within Podcini. For more see the changelogs
 #### If you are migrating from Podcini version 5, please read the migrationTo5.md file for migration instructions.
 #### For Podcini to show up on car's HUD with Android Auto, please read AnroidAuto.md for instructions.
 
@@ -28,7 +28,7 @@ Compared to AntennaPod this project:
 5. Boasts new UI's including streamlined drawer, subscriptions view and player controller,
 6. Supports multiple, virtual and circular play queues associable to any podcast
 7. Auto-download is governed by policy and limit settings of individual feed
-8. Features synthetic podcasts while supporting normal podcasts, Youtube channels, Youtube media and plain RSS,
+8. Features synthetic podcasts while supporting normal podcasts, Youtube channels, Youtube playlists, Youtube media and plain RSS,
 9. Offers Readability and Text-to-Speech for RSS contents,s
 10. Features `instant sync` across devices without a server.
 

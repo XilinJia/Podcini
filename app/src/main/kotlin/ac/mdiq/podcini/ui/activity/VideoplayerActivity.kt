@@ -26,6 +26,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.setShowRemainTimeSetting
 import ac.mdiq.podcini.preferences.UserPreferences.shouldShowRemainingTime
 import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
 import ac.mdiq.podcini.storage.database.Episodes.setFavorite
+import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Playable
@@ -470,7 +471,7 @@ class VideoplayerActivity : CastEnabledActivity() {
 
         private var itemsLoaded = false
         private var episode: Episode? = null
-        private var webviewData: String? = null
+        private var webviewData: String = ""
         private var webvDescription: ShownotesWebView? = null
 
         var destroyingDueToReload = false
@@ -541,7 +542,8 @@ class VideoplayerActivity : CastEnabledActivity() {
             return root
         }
 
-        @OptIn(UnstableApi::class) private fun newStatusHandler(): ServiceStatusHandler {
+        @OptIn(UnstableApi::class)
+        private fun newStatusHandler(): ServiceStatusHandler {
             return object : ServiceStatusHandler(requireActivity()) {
                 override fun updatePlayButton(showPlay: Boolean) {
                     Logd(TAG, "updatePlayButtonShowsPlay called")
@@ -686,10 +688,21 @@ class VideoplayerActivity : CastEnabledActivity() {
                 lifecycleScope.launch {
                     try {
                         episode = withContext(Dispatchers.IO) {
-                            val feedItem = (curMedia as? EpisodeMedia)?.episodeOrFetch()
+                            var feedItem = (curMedia as? EpisodeMedia)?.episodeOrFetch()
                             if (feedItem != null) {
                                 val duration = feedItem.media?.getDuration() ?: Int.MAX_VALUE
-                                webviewData = ShownotesCleaner(requireContext()).processShownotes(feedItem.description ?: "", duration)
+                                val url = feedItem.media?.downloadUrl
+                                val shownotesCleaner = ShownotesCleaner(requireContext())
+                                if (url?.contains("youtube.com") == true && feedItem.description?.startsWith("Short:") == true) {
+                                    Logd(TAG, "getting extended description: ${feedItem.title}")
+                                    try {
+                                        val info = feedItem.streamInfo
+                                        if (info?.description?.content != null) {
+                                            feedItem = upsert(feedItem) { it.description = info.description?.content }
+                                            webviewData = shownotesCleaner.processShownotes(info.description!!.content, duration)
+                                        } else webviewData = shownotesCleaner.processShownotes(episode!!.description ?: "", duration)
+                                    } catch (e: Exception) { Logd(TAG, "StreamInfo error: ${e.message}") }
+                                } else webviewData = shownotesCleaner.processShownotes(episode!!.description ?: "", duration)
                             }
                             feedItem
                         }
@@ -702,7 +715,7 @@ class VideoplayerActivity : CastEnabledActivity() {
                                     invalidateOptionsMenu(activity)
                                 }
                             }
-                            if (webviewData != null && !itemsLoaded) webvDescription?.loadDataWithBaseURL("https://127.0.0.1", webviewData!!,
+                            if (!itemsLoaded) webvDescription?.loadDataWithBaseURL("https://127.0.0.1", webviewData,
                                 "text/html", "utf-8", "about:blank")
                             itemsLoaded = true
                         }
@@ -743,7 +756,6 @@ class VideoplayerActivity : CastEnabledActivity() {
                 SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_REWIND, null)
                 true
             }
-            Logd(TAG, "setupView 1")
             binding.playButton.setIsVideoScreen(true)
             binding.playButton.setOnClickListener { onPlayPause() }
             binding.fastForwardButton.setOnClickListener { onFastForward() }
@@ -751,13 +763,11 @@ class VideoplayerActivity : CastEnabledActivity() {
                 SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_FORWARD, null)
                 false
             }
-            Logd(TAG, "setupView 2")
             // To suppress touches directly below the slider
             binding.bottomControlsContainer.setOnTouchListener { _: View?, _: MotionEvent? -> true }
             binding.videoView.holder.addCallback(surfaceHolderCallback)
             setupVideoControlsToggler()
             binding.videoPlayerContainer.setOnTouchListener(onVideoviewTouched)
-            Logd(TAG, "setupView 2")
             webvDescription = binding.webvDescription
 //        webvDescription.setTimecodeSelectedListener { time: Int? ->
 //            val cMedia = getMedia
@@ -775,7 +785,8 @@ class VideoplayerActivity : CastEnabledActivity() {
                 (activity as? VideoplayerActivity)?.switchToAudioOnly = true
                 (activity as? VideoplayerActivity)?.finish()
             }
-            Logd(TAG, "setupView 4")
+            if (!itemsLoaded) webvDescription?.loadDataWithBaseURL("https://127.0.0.1", webviewData,
+                "text/html", "utf-8", "about:blank")
         }
 
         fun toggleVideoControlsVisibility() {

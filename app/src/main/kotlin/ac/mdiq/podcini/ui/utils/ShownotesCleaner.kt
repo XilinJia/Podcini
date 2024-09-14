@@ -33,9 +33,7 @@ class ShownotesCleaner(context: Context) {
             val templateStream = context.assets.open("shownotes-style.css")
             styleString = IOUtils.toString(templateStream, "UTF-8")
             templateStream.close()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
+        } catch (e: IOException) { e.printStackTrace() }
         webviewStyle = String.format(Locale.US, styleString!!, colorPrimary, colorAccent, margin, margin, margin, margin)
     }
 
@@ -49,8 +47,6 @@ class ShownotesCleaner(context: Context) {
 
     /**
      * Applies an app-specific CSS stylesheet and adds timecode links (optional).
-     *
-     *
      * This method does NOT change the original shownotes string of the shownotesProvider object and it should
      * also not be changed by the caller.
      *
@@ -65,21 +61,24 @@ class ShownotesCleaner(context: Context) {
             shownotes = "<html><head></head><body><p id='apNoShownotes'>$noShownotesLabel</p></body></html>"
         }
 
+        var startTime = System.nanoTime()
         // replace ASCII line breaks with HTML ones if shownotes don't contain HTML line breaks already
-        if (!LINE_BREAK_REGEX.matcher(shownotes).find() && !shownotes.contains("<p>"))
-            shownotes = shownotes.replace("\n", "<br />")
-
+        if (!LINE_BREAK_REGEX.matcher(shownotes).find() && !shownotes.contains("<p>")) shownotes = shownotes.replace("\n", "<br />")
+        Logd(TAG, "nanotime0: ${System.nanoTime() - startTime}")
         val document = Jsoup.parse(shownotes)
+        Logd(TAG, "nanotime: ${System.nanoTime() - startTime}")
         cleanCss(document)
+        Logd(TAG, "nanotime1: ${System.nanoTime() - startTime}")
         document.head().appendElement("style").attr("type", "text/css").text(webviewStyle)
+        Logd(TAG, "nanotime2: ${System.nanoTime() - startTime}")
         addTimecodes(document, playableDuration)
+        Logd(TAG, "nanotime3: ${System.nanoTime() - startTime}")
         return document.toString()
     }
 
     private fun addTimecodes(document: Document, playableDuration: Int) {
         val elementsWithTimeCodes = document.body().getElementsMatchingOwnText(TIMECODE_REGEX)
         Logd(TAG, "Recognized " + elementsWithTimeCodes.size + " timecodes")
-
         if (elementsWithTimeCodes.size == 0) return  // No elements with timecodes
 
         var useHourFormat = true
@@ -159,12 +158,7 @@ class ShownotesCleaner(context: Context) {
         fun getTimecodeLinkTime(link: String?): Int {
             if (isTimecodeLink(link)) {
                 val m = TIMECODE_LINK_REGEX.matcher(link!!)
-
-                try {
-                    if (m.find()) return m.group(1)?.toInt()?:0
-                } catch (e: NumberFormatException) {
-                    e.printStackTrace()
-                }
+                try { if (m.find()) return m.group(1)?.toInt()?:0 } catch (e: NumberFormatException) { e.printStackTrace() }
             }
             return -1
         }

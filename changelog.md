@@ -1,3 +1,9 @@
+# 6.6.3
+
+* added ability to receive shared Youtube playlist, quite similar to receiving shared Youtube channel
+* increased the max number of media to 300 on subscribing a Youtube channel or a Youtube playlist
+* ensures to get and save full description when opening a Youtube media from a list
+
 # 6.6.2
 
 * fixed issue of filter "never auto delete" in Subscriptions view

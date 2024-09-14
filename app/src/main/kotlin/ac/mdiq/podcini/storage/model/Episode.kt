@@ -2,6 +2,8 @@ package ac.mdiq.podcini.storage.model
 
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
+import ac.mdiq.vista.extractor.Vista
+import ac.mdiq.vista.extractor.stream.StreamInfo
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.ext.realmSetOf
 import io.realm.kotlin.types.RealmList
@@ -119,6 +121,16 @@ class Episode : RealmObject {
                 feed!!.imageUrl
             }
             else -> null
+        }
+
+    @Ignore
+    var streamInfo: StreamInfo? = null
+        get() {
+            if (field == null) {
+                if (media?.downloadUrl == null) return null
+                field = StreamInfo.getInfo(Vista.getService(0), media!!.downloadUrl!!)
+            }
+            return field
         }
 
     constructor() {

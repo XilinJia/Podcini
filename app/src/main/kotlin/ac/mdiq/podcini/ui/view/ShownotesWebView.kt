@@ -100,7 +100,6 @@ class ShownotesWebView : WebView, View.OnLongClickListener {
 
     fun onContextItemSelected(item: MenuItem): Boolean {
         if (selectedUrl == null) return false
-
         val itemId = item.itemId
         when (itemId) {
             R.id.open_in_browser_item -> if (selectedUrl != null) IntentUtils.openInBrowser(context, selectedUrl!!)
@@ -132,7 +131,6 @@ class ShownotesWebView : WebView, View.OnLongClickListener {
     override fun onCreateContextMenu(menu: ContextMenu) {
         super.onCreateContextMenu(menu)
         if (selectedUrl == null) return
-
         if (ShownotesCleaner.isTimecodeLink(selectedUrl)) {
             menu.add(Menu.NONE, R.id.go_to_position_item, Menu.NONE, R.string.go_to_position_label)
             menu.setHeaderTitle(DurationConverter.getDurationStringLong(ShownotesCleaner.getTimecodeLinkTime(selectedUrl)))

@@ -29,6 +29,7 @@ import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.vista.extractor.playlist.PlaylistInfo
 import ac.mdiq.vista.extractor.stream.StreamInfo
 import ac.mdiq.vista.extractor.stream.StreamInfoItem
 import android.app.backup.BackupManager
@@ -295,7 +296,7 @@ object Episodes {
         val e = Episode()
         e.link = item.url
         e.title = item.name
-        e.description = item.shortDescription
+        e.description = "Short: ${item.shortDescription}"
         e.imageUrl = item.thumbnails.first().url
         e.setPubDate(item.uploadDate?.date()?.time)
         val m = EpisodeMedia(e, item.url, 0, "video/*")

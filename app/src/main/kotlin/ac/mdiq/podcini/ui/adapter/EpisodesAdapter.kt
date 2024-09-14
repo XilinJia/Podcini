@@ -266,7 +266,8 @@ open class EpisodesAdapter(mainActivity: MainActivity, var refreshFragPosCallbac
 
         private var itemLoaded = false
         private var episode: Episode? = null    // managed
-        private var webviewData: String? = null
+
+        private var webviewData: String = ""
 
         private lateinit var shownotesCleaner: ShownotesCleaner
         private lateinit var toolbar: MaterialToolbar
@@ -337,6 +338,7 @@ open class EpisodesAdapter(mainActivity: MainActivity, var refreshFragPosCallbac
                 }
             })
             shownotesCleaner = ShownotesCleaner(requireContext())
+            onFragmentLoaded()
             load()
             return binding.root
         }
@@ -434,8 +436,8 @@ open class EpisodesAdapter(mainActivity: MainActivity, var refreshFragPosCallbac
         }
 
         @UnstableApi private fun onFragmentLoaded() {
-            if (webviewData != null && !itemLoaded)
-                webvDescription.loadDataWithBaseURL("https://127.0.0.1", webviewData!!, "text/html", "utf-8", "about:blank")
+            if (!itemLoaded)
+                webvDescription.loadDataWithBaseURL("https://127.0.0.1", webviewData, "text/html", "utf-8", "about:blank")
 //        if (item?.link != null) binding.webView.loadUrl(item!!.link!!)
             updateAppearance()
         }
@@ -652,7 +654,18 @@ open class EpisodesAdapter(mainActivity: MainActivity, var refreshFragPosCallbac
                         withContext(Dispatchers.IO) {
                             if (episode != null) {
                                 val duration = episode!!.media?.getDuration() ?: Int.MAX_VALUE
-                                webviewData = shownotesCleaner.processShownotes(episode!!.description ?: "", duration)
+                                Logd(TAG, "description: ${episode?.description}")
+                                val url = episode!!.media?.downloadUrl
+                                if (url?.contains("youtube.com") == true && episode!!.description?.startsWith("Short:") == true) {
+                                    Logd(TAG, "getting extended description: ${episode!!.title}")
+                                    try {
+                                        val info = episode!!.streamInfo
+                                        if (info?.description?.content != null) {
+                                            episode = upsert(episode!!) { it.description = info.description?.content }
+                                            webviewData = shownotesCleaner.processShownotes(info.description!!.content, duration)
+                                        } else webviewData = shownotesCleaner.processShownotes(episode!!.description ?: "", duration)
+                                    } catch (e: Exception) { Logd(TAG, "StreamInfo error: ${e.message}") }
+                                } else webviewData = shownotesCleaner.processShownotes(episode!!.description ?: "", duration)
                             }
                         }
                         withContext(Dispatchers.Main) {
@@ -660,11 +673,8 @@ open class EpisodesAdapter(mainActivity: MainActivity, var refreshFragPosCallbac
                             onFragmentLoaded()
                             itemLoaded = true
                         }
-                    } catch (e: Throwable) {
-                        Log.e(TAG, Log.getStackTraceString(e))
-                    } finally {
-                        loadItemsRunning = false
-                    }
+                    } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e))
+                    } finally { loadItemsRunning = false }
                 }
             }
         }

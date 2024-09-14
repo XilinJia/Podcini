@@ -67,10 +67,8 @@ import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.config.ClientConfig
 import ac.mdiq.vista.extractor.MediaFormat
-import ac.mdiq.vista.extractor.Vista
 import ac.mdiq.vista.extractor.stream.AudioStream
 import ac.mdiq.vista.extractor.stream.DeliveryMethod
-import ac.mdiq.vista.extractor.stream.StreamInfo
 import ac.mdiq.vista.extractor.stream.VideoStream
 import android.annotation.SuppressLint
 import android.app.NotificationManager
@@ -1429,8 +1427,8 @@ class PlaybackService : MediaLibraryService() {
             if (media.episode?.feed?.type == Feed.FeedType.YOUTUBE.name) {
                 Logd(TAG, "setDataSource1 setting for YouTube source")
                 try {
-                    val vService = Vista.getService(0)
-                    val streamInfo = StreamInfo.getInfo(vService, url)
+//                    val vService = Vista.getService(0)
+                    val streamInfo = media.episode!!.streamInfo ?: return
                     val audioStreamsList = getFilteredAudioStreams(streamInfo.audioStreams)
                     Logd(TAG, "setDataSource1 audioStreamsList ${audioStreamsList.size}")
                     val audioIndex = if (isNetworkRestricted && prefLowQualityMedia) 0 else audioStreamsList.size - 1

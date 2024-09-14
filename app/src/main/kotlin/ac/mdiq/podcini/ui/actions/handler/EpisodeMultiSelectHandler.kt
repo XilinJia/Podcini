@@ -148,11 +148,11 @@ class EpisodeMultiSelectHandler(private val activity: MainActivity, private val 
                         val toRemove = mutableSetOf<Long>()
                         val toRemoveCur = mutableListOf<Episode>()
                         items.forEach { e ->
-                            if (curQueue.isInQueue(e)) toRemoveCur.add(e)
+                            if (curQueue.contains(e)) toRemoveCur.add(e)
                         }
                         items.forEach { e ->
                             for (q in queues) {
-                                if (q.isInQueue(e)) {
+                                if (q.contains(e)) {
                                     toRemove.add(e.id)
                                     break
                                 }

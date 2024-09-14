@@ -321,7 +321,7 @@ import kotlin.math.max
         }
         when (event.action) {
             FlowEvent.QueueEvent.Action.ADDED -> {
-                if (event.episodes.isNotEmpty() && !curQueue.isInQueue(event.episodes[0])) {
+                if (event.episodes.isNotEmpty() && !curQueue.contains(event.episodes[0])) {
                     val pos = queueItems.size
                     queueItems.addAll(event.episodes)
                     adapter?.notifyItemRangeInserted(pos, queueItems.size)

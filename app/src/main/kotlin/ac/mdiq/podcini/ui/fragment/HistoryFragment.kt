@@ -128,12 +128,11 @@ import kotlin.math.min
         toolbar.menu.findItem(R.id.clear_history_item).setVisible(episodes.isNotEmpty())
 
         swipeActions.setFilter(getFilter())
+        txtvInformation.visibility = View.VISIBLE
         if (getFilter().values.isNotEmpty()) {
-            txtvInformation.visibility = View.VISIBLE
-            txtvInformation.text = "${adapter.totalNumberOfItems} episodes - filtered"
+            txtvInformation.text = "${adapter.totalNumberOfItems} episodes - ${getString(R.string.filtered_label)}"
             emptyView.setMessage(R.string.no_all_episodes_filtered_label)
         } else {
-            txtvInformation.visibility = View.VISIBLE
             txtvInformation.text = "${adapter.totalNumberOfItems} episodes"
             emptyView.setMessage(R.string.no_all_episodes_label)
         }

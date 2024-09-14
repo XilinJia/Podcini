@@ -43,6 +43,7 @@ import kotlin.math.min
         toolbar.inflateMenu(R.menu.episodes)
         toolbar.setTitle(R.string.episodes_label)
         updateToolbar()
+        txtvInformation.visibility = View.VISIBLE
         txtvInformation.setOnClickListener {
             AllEpisodesFilterDialog.newInstance(getFilter()).show(childFragmentManager, null)
         }
@@ -66,13 +67,15 @@ import kotlin.math.min
 
     private var loadItemsRunning = false
     override fun loadData(): List<Episode> {
+        val filter = getFilter()
         if (!loadItemsRunning) {
             loadItemsRunning = true
-            allEpisodes = getEpisodes(0, Int.MAX_VALUE, getFilter(), allEpisodesSortOrder, false)
+            allEpisodes = getEpisodes(0, Int.MAX_VALUE, filter, allEpisodesSortOrder, false)
             Logd(TAG, "loadData ${allEpisodes.size}")
             loadItemsRunning = false
         }
         if (allEpisodes.isEmpty()) return listOf()
+        allEpisodes = allEpisodes.filter { filter.matchesForQueues(it) }
         return allEpisodes.subList(0, min(allEpisodes.size-1, page * EPISODES_PER_PAGE))
     }
 
@@ -144,11 +147,9 @@ import kotlin.math.min
     override fun updateToolbar() {
         swipeActions.setFilter(getFilter())
         if (getFilter().values.isNotEmpty()) {
-            txtvInformation.visibility = View.VISIBLE
-            txtvInformation.text = "${adapter.totalNumberOfItems} episodes - filtered"
+            txtvInformation.text = "${adapter.totalNumberOfItems} episodes - ${getString(R.string.filtered_label)}"
             emptyView.setMessage(R.string.no_all_episodes_filtered_label)
         } else {
-            txtvInformation.visibility = View.VISIBLE
             txtvInformation.text = "${adapter.totalNumberOfItems} episodes"
             emptyView.setMessage(R.string.no_all_episodes_label)
         }

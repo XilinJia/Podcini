@@ -27,6 +27,7 @@ abstract class EpisodeFilterDialog : BottomSheetDialogFragment() {
 
     var filter: EpisodeFilter? = null
     private val buttonMap: MutableMap<String, Button> = mutableMapOf()
+    val filtersDisabled: MutableSet<FeedItemFilterGroup> = mutableSetOf()
 
     private val newFilterValues: Set<String>
         get() {
@@ -50,10 +51,9 @@ abstract class EpisodeFilterDialog : BottomSheetDialogFragment() {
         //add filter rows
         for (item in FeedItemFilterGroup.entries) {
 //            Logd("EpisodeFilterDialog", "FeedItemFilterGroup: ${item.values[0].filterId} ${item.values[1].filterId}")
+            if (item in filtersDisabled) continue
+
             val rBinding = FilterDialogRowBinding.inflate(inflater)
-//            rowBinding.root.addOnButtonCheckedListener { _: MaterialButtonToggleGroup?, _: Int, _: Boolean ->
-//                onFilterChanged(newFilterValues)
-//            }
             rBinding.filterButton1.setOnClickListener { onFilterChanged(newFilterValues) }
             rBinding.filterButton2.setOnClickListener { onFilterChanged(newFilterValues) }
 

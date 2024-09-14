@@ -42,7 +42,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -108,18 +107,22 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
     private lateinit var toolbar: MaterialToolbar
     private lateinit var speedDialView: SpeedDialView
 
-    private lateinit var catAdapter: ArrayAdapter<String>
+    private val tags: MutableList<String> = mutableListOf()
+    private val queueIds: MutableList<Long> = mutableListOf()
+    private lateinit var queuesAdapter: ArrayAdapter<String>
+    private lateinit var tagsAdapter: ArrayAdapter<String>
+    private var tagFilterIndex = 1
+    private var queueFilterIndex = 1
 
     private var infoTextFiltered = ""
     private var infoTextUpdate = ""
-    private var tagFilterIndex = 1
-//    TODO: currently not used
+
+    //    TODO: currently not used
     private var displayedFolder: String = ""
     private var displayUpArrow = false
 
     private var feedList: MutableList<Feed> = mutableListOf()
     private var feedListFiltered: List<Feed> = mutableListOf()
-    private val tags: MutableList<String> = mutableListOf()
 
     private var useGrid: Boolean? = null
     private val useGridLayout: Boolean
@@ -164,10 +167,26 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
 
         resetTags()
 
-        catAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, tags)
-        catAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.categorySpinner.setAdapter(catAdapter)
-        binding.categorySpinner.setSelection(catAdapter.getPosition("All"))
+        val queues = realm.query(PlayQueue::class).find()
+        queueIds.addAll(queues.map { it.id })
+        val spinnerTexts: MutableList<String> = mutableListOf("All", "None")
+        spinnerTexts.addAll(queues.map { it.name })
+        queuesAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, spinnerTexts)
+        queuesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.queuesSpinner.setAdapter(queuesAdapter)
+        binding.queuesSpinner.setSelection(queuesAdapter.getPosition("All"))
+        binding.queuesSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                queueFilterIndex = position
+                loadSubscriptions()
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        tagsAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, tags)
+        tagsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.categorySpinner.setAdapter(tagsAdapter)
+        binding.categorySpinner.setSelection(tagsAdapter.getPosition("All"))
         binding.categorySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 tagFilterIndex = position
@@ -177,17 +196,17 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        val searchBox = binding.searchBox
-        searchBox.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                val text = searchBox.text.toString().lowercase(Locale.getDefault())
-                val resultList = feedListFiltered.filter {
-                    it.title?.lowercase(Locale.getDefault())?.contains(text)?:false || it.author?.lowercase(Locale.getDefault())?.contains(text)?:false
-                }
-                adapter.setItems(resultList)
-                true
-            } else false
-        }
+//        val searchBox = binding.searchBox
+//        searchBox.setOnEditorActionListener { _, actionId, _ ->
+//            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+//                val text = searchBox.text.toString().lowercase(Locale.getDefault())
+//                val resultList = feedListFiltered.filter {
+//                    it.title?.lowercase(Locale.getDefault())?.contains(text)?:false || it.author?.lowercase(Locale.getDefault())?.contains(text)?:false
+//                }
+//                adapter.setItems(resultList)
+//                true
+//            } else false
+//        }
 
 //        binding.progressBar.visibility = View.VISIBLE
         binding.progressBar.visibility = View.GONE
@@ -291,10 +310,15 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         }
     }
 
-    private fun filterOnTag() {
-        feedListFiltered = feedList
-        binding.count.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
-        adapter.setItems(feedListFiltered)
+    private fun queryStringOfQueues() : String {
+        return when (queueFilterIndex) {
+            0 ->  ""    // All feeds
+            1 -> " preferences.queueId == -2 "
+            else -> {   // feeds associated with the chosen queue
+                val qid = queueIds[queueFilterIndex-2]
+                " preferences.queueId == '$qid' "
+            }
+        }
     }
 
     private fun resetTags() {
@@ -383,7 +407,10 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                     withContext(Dispatchers.Main) {
                         // We have fewer items. This can result in items being selected that are no longer visible.
                         if (feedListFiltered.size > feedList.size) adapter.endSelectMode()
-                        filterOnTag()
+//                        filterOnTag()
+                        feedListFiltered = feedList
+                        binding.count.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
+                        adapter.setItems(feedListFiltered)
 //                        binding.progressBar.visibility = View.GONE
                         adapter.setItems(feedListFiltered)
                         binding.count.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
@@ -407,8 +434,11 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
     }
 
     private fun filterAndSort() {
+        var fQueryStr = FeedFilter(feedsFilter).queryString()
         val tagsQueryStr = queryStringOfTags()
-        val fQueryStr = if (tagsQueryStr.isEmpty()) FeedFilter(feedsFilter).queryString() else FeedFilter(feedsFilter).queryString() + " AND " + tagsQueryStr
+        if (tagsQueryStr.isNotEmpty())  fQueryStr += " AND $tagsQueryStr"
+        val queuesQueryStr = queryStringOfQueues()
+        if (queuesQueryStr.isNotEmpty())  fQueryStr += " AND $queuesQueryStr"
         Logd(TAG, "sortFeeds() called $feedsFilter $fQueryStr")
         val feedList_ = getFeedList(fQueryStr).toMutableList()
         val feedOrder = feedOrderBy
@@ -710,7 +740,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         @Composable
         fun AutoDeleteDialog(showDialog: Boolean, onDismissRequest: () -> Unit) {
             if (showDialog) {
-                val (selectedOption, onOptionSelected) = remember { mutableStateOf("") }
+                val (selectedOption, _) = remember { mutableStateOf("") }
                 Dialog(onDismissRequest = { onDismissRequest() }) {
                     Card(
                         modifier = Modifier

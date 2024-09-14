@@ -30,7 +30,7 @@ class PlayQueue : RealmObject {
 
     var idsBinList: RealmList<Long> = realmListOf()
 
-    fun isInQueue(episode: Episode): Boolean {
+    fun contains(episode: Episode): Boolean {
         return episodeIds.contains(episode.id)
     }
 

@@ -35,34 +35,28 @@ object Queues {
             appPrefs.edit().putBoolean(UserPreferences.Prefs.prefQueueLocked.name, locked).apply()
         }
 
+    /**
+     * Returns if the queue is in keep sorted mode.
+     * Enables/disables the keep sorted mode of the queue.
+     * @see .queueKeepSortedOrder
+     */
     var isQueueKeepSorted: Boolean
-        /**
-         * Returns if the queue is in keep sorted mode.
-         * @see .queueKeepSortedOrder
-         */
         get() = appPrefs.getBoolean(UserPreferences.Prefs.prefQueueKeepSorted.name, false)
-        /**
-         * Enables/disables the keep sorted mode of the queue.
-         * @see .queueKeepSortedOrder
-         */
         set(keepSorted) {
             appPrefs.edit().putBoolean(UserPreferences.Prefs.prefQueueKeepSorted.name, keepSorted).apply()
         }
 
+    /**
+     * Returns the sort order for the queue keep sorted mode.
+     * Note: This value is stored independently from the keep sorted state.
+     * Sets the sort order for the queue keep sorted mode.
+     * @see .isQueueKeepSorted
+     */
     var queueKeepSortedOrder: EpisodeSortOrder?
-        /**
-         * Returns the sort order for the queue keep sorted mode.
-         * Note: This value is stored independently from the keep sorted state.
-         * @see .isQueueKeepSorted
-         */
         get() {
             val sortOrderStr = appPrefs.getString(UserPreferences.Prefs.prefQueueKeepSortedOrder.name, "use-default")
             return EpisodeSortOrder.parseWithDefault(sortOrderStr, EpisodeSortOrder.DATE_NEW_OLD)
         }
-        /**
-         * Sets the sort order for the queue keep sorted mode.
-         * @see .setQueueKeepSorted
-         */
         set(sortOrder) {
             if (sortOrder == null) return
             appPrefs.edit().putString(UserPreferences.Prefs.prefQueueKeepSortedOrder.name, sortOrder.name).apply()
@@ -342,6 +336,14 @@ object Queues {
             for (e in episodes) it.episodeIds.add(e.id)
             it.update()
         }
+    }
+
+    fun inAnyQueue(episode: Episode): Boolean {
+        val queues = realm.query(PlayQueue::class).find()
+        for (q in queues) {
+            if (q.contains(episode)) return true
+        }
+        return false
     }
 
     class EnqueuePositionPolicy(private val enqueueLocation: EnqueueLocation) {

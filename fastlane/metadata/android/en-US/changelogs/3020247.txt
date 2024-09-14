@@ -1,0 +1,8 @@
+ Version 6.6.2:
+
+* fixed issue of filter "never auto delete" in Subscriptions view
+* corrected issue of "queued/not queued" filter for episodes
+* filter on "queued/not queued" is checked for all queues (not only the active queue)
+* added filtering feature to Downloads view
+* changed associated queue of Youtube Syndicate to None (rather than active set previously)
+* in Subscriptions view, the "search" box is changed to a "Queues" spinner to filter by associated queue

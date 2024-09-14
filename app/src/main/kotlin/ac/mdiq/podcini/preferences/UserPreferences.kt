@@ -307,6 +307,7 @@ object UserPreferences {
         prefQueueKeepSorted,
         prefQueueKeepSortedOrder,
         prefDownloadSortedOrder,
+        prefDownloadsFilter,
 
         // Episodes
         prefEpisodesSort,

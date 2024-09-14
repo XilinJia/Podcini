@@ -1,6 +1,7 @@
 package ac.mdiq.podcini.storage.model
 
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
+import ac.mdiq.podcini.storage.database.Queues.inAnyQueue
 import java.io.Serializable
 
 class EpisodeFilter(vararg properties: String) : Serializable {
@@ -49,8 +50,17 @@ class EpisodeFilter(vararg properties: String) : Serializable {
             showNoMedia && item.media != null -> return false
             showIsFavorite && !item.isFavorite -> return false
             showNotFavorite && item.isFavorite -> return false
-            showQueued && curQueue.isInQueue(item) -> return false
-            showNotQueued && !curQueue.isInQueue(item) -> return false
+            showQueued && !inAnyQueue(item) -> return false
+            showNotQueued && inAnyQueue(item) -> return false
+            else -> return true
+        }
+    }
+
+//    filter on queues does not have a query string so it's not applied on query results, need to filter separately
+    fun matchesForQueues(item: Episode): Boolean {
+        when {
+            showQueued && !inAnyQueue(item) -> return false
+            showNotQueued && inAnyQueue(item) -> return false
             else -> return true
         }
     }

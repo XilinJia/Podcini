@@ -82,16 +82,28 @@
         android:orientation="horizontal"
         android:layout_below="@id/appbar">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/search_box"
+<!--        <com.google.android.material.textfield.TextInputEditText-->
+<!--            android:id="@+id/search_box"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_weight="1"-->
+<!--            android:inputType="text"-->
+<!--            android:hint="@string/feed_search_hint_text"-->
+<!--            android:lines="1"-->
+<!--            android:imeOptions="actionSearch"-->
+<!--            android:background="?attr/background_color"/>-->
+
+        <Spinner
+            android:id="@+id/queues_spinner"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:inputType="text"
-            android:hint="@string/feed_search_hint_text"
-            android:lines="1"
-            android:imeOptions="actionSearch"
-            android:background="?attr/background_color"/>
+            android:dropDownWidth="200dp"
+            android:padding="8dp"
+            android:paddingBottom="20dp"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="@dimen/text_size_micro"
+            android:spinnerMode="dropdown"/>
 
         <Spinner
             android:id="@+id/category_spinner"

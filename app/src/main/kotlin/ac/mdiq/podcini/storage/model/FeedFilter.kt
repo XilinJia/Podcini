@@ -62,7 +62,7 @@ class FeedFilter(vararg properties: String) : Serializable {
         }
         when {
             showAlwaysAutoDelete -> statements.add(" preferences.autoDelete == ${FeedPreferences.AutoDeleteAction.ALWAYS.code} ")
-            showNeverAutoDelete -> statements.add(" preferences.playSpeed != ${FeedPreferences.AutoDeleteAction.NEVER.code} ")
+            showNeverAutoDelete -> statements.add(" preferences.playSpeed == ${FeedPreferences.AutoDeleteAction.NEVER.code} ")
         }
         when {
             showAutoDownload -> statements.add(" preferences.autoDownload == true ")

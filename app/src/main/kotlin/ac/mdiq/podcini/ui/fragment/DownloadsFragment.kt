@@ -22,8 +22,11 @@ import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.EpisodesAdapter
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
+import ac.mdiq.podcini.ui.dialog.EpisodeFilterDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.ui.dialog.SwitchQueueDialog
+import ac.mdiq.podcini.ui.fragment.AllEpisodesFragment.AllEpisodesFilterDialog
+import ac.mdiq.podcini.ui.fragment.AllEpisodesFragment.Companion.prefFilterAllEpisodes
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
 import ac.mdiq.podcini.ui.view.EpisodeViewHolder
@@ -53,6 +56,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.apache.commons.lang3.StringUtils
 import java.io.File
 import java.util.*
 
@@ -105,12 +109,8 @@ import java.util.*
         lifecycle.addObserver(swipeActions)
         swipeActions.setFilter(EpisodeFilter(EpisodeFilter.States.downloaded.name))
         refreshSwipeTelltale()
-        binding.leftActionIcon.setOnClickListener {
-            swipeActions.showDialog()
-        }
-        binding.rightActionIcon.setOnClickListener {
-            swipeActions.showDialog()
-        }
+        binding.leftActionIcon.setOnClickListener { swipeActions.showDialog() }
+        binding.rightActionIcon.setOnClickListener { swipeActions.showDialog() }
 
         val animator: RecyclerView.ItemAnimator? = recyclerView.itemAnimator
         if (animator is SimpleItemAnimator) animator.supportsChangeAnimations = false
@@ -141,8 +141,7 @@ import java.util.*
             adapter.endSelectMode()
             true
         }
-        if (arguments != null && requireArguments().getBoolean(ARG_SHOW_LOGS, false))
-            DownloadLogFragment().show(childFragmentManager, null)
+        if (arguments != null && requireArguments().getBoolean(ARG_SHOW_LOGS, false)) DownloadLogFragment().show(childFragmentManager, null)
 
         addEmptyView()
         return binding.root
@@ -185,7 +184,7 @@ import java.util.*
 
     @UnstableApi override fun onMenuItemClick(item: MenuItem): Boolean {
         when (item.itemId) {
-//            R.id.refresh_item -> FeedUpdateManager.runOnceOrAsk(requireContext())
+            R.id.filter_items -> DownloadsFilterDialog.newInstance(getFilter()).show(childFragmentManager, null)
             R.id.action_download_logs -> DownloadLogFragment().show(childFragmentManager, null)
             R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
             R.id.downloads_sort -> DownloadsSortDialog().show(childFragmentManager, "SortDialog")
@@ -196,6 +195,10 @@ import java.util.*
         return true
     }
 
+    private fun getFilter(): EpisodeFilter {
+        return EpisodeFilter(prefFilterDownloads)
+    }
+
     private val nameEpisodeMap: MutableMap<String, Episode> = mutableMapOf()
     private val filesRemoved: MutableList<String> = mutableListOf()
     private fun reconsile() {
@@ -203,9 +206,7 @@ import java.util.*
             val items = realm.query(Episode::class).query("media.episode == nil").find()
             Logd(TAG, "number of episode with null backlink: ${items.size}")
             for (item in items) {
-                upsert(item) {
-                    it.media!!.episode = it
-                }
+                upsert(item) { it.media!!.episode = it }
             }
             nameEpisodeMap.clear()
             episodes.forEach { e ->
@@ -219,9 +220,7 @@ import java.util.*
             Logd(TAG, "reconsile: end, episodes missing file: ${nameEpisodeMap.size}")
             if (nameEpisodeMap.isNotEmpty()) {
                 for (e in nameEpisodeMap.values) {
-                    upsertBlk(e) {
-                        it.media?.setfileUrlOrNull(null)
-                    }
+                    upsertBlk(e) { it.media?.setfileUrlOrNull(null) }
                 }
             }
             loadItems()
@@ -281,6 +280,7 @@ import java.util.*
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.EpisodeEvent -> onEpisodeEvent(event)
+                    is FlowEvent.DownloadsFilterEvent -> onFilterChanged(event)
                     is FlowEvent.EpisodeMediaEvent -> onEpisodeMediaEvent(event)
                     is FlowEvent.PlayerSettingsEvent -> loadItems()
                     is FlowEvent.DownloadLogEvent -> loadItems()
@@ -300,6 +300,14 @@ import java.util.*
 //                }
 //            }
 //        }
+    }
+
+    private fun onFilterChanged(event: FlowEvent.DownloadsFilterEvent) {
+        val fSet = event.filterValues?.toMutableSet() ?: mutableSetOf()
+        fSet.add(EpisodeFilter.States.downloaded.name)
+        prefFilterDownloads = StringUtils.join(fSet, ",")
+        Logd(TAG, "onFilterChanged: $prefFilterDownloads")
+        loadItems()
     }
 
     private fun addEmptyView() {
@@ -324,10 +332,7 @@ import java.util.*
             }
         }
 //        have to do this as adapter.notifyItemRemoved(pos) when pos == 0 causes crash
-        if (size > 0) {
-//            adapter.setDummyViews(0)
-            adapter.updateItems(episodes)
-        }
+        if (size > 0) adapter.updateItems(episodes)
         refreshInfoBar()
     }
 
@@ -345,10 +350,7 @@ import java.util.*
             }
         }
 //        have to do this as adapter.notifyItemRemoved(pos) when pos == 0 causes crash
-        if (size > 0) {
-//            adapter.setDummyViews(0)
-            adapter.updateItems(episodes)
-        }
+        if (size > 0) adapter.updateItems(episodes)
         refreshInfoBar()
     }
 
@@ -366,7 +368,8 @@ import java.util.*
                 try {
                     withContext(Dispatchers.IO) {
                         val sortOrder: EpisodeSortOrder? = downloadsSortedOrder
-                        val downloadedItems = getEpisodes(0, Int.MAX_VALUE, EpisodeFilter(EpisodeFilter.States.downloaded.name), sortOrder)
+                        val filter = getFilter()
+                        val downloadedItems = getEpisodes(0, Int.MAX_VALUE, filter, sortOrder)
                         if (runningDownloads.isEmpty()) episodes = downloadedItems.toMutableList()
                         else {
                             val mediaUrls: MutableList<String> = ArrayList()
@@ -378,6 +381,7 @@ import java.util.*
                             currentDownloads.addAll(downloadedItems)
                             episodes = currentDownloads
                         }
+                        episodes = episodes.filter { filter.matchesForQueues(it) }.toMutableList()
                     }
                     withContext(Dispatchers.Main) {
 //                    adapter.setDummyViews(0)
@@ -389,9 +393,7 @@ import java.util.*
 //                adapter.setDummyViews(0)
                     adapter.updateItems(mutableListOf())
                     Log.e(TAG, Log.getStackTraceString(e))
-                } finally {
-                    loadItemsRunning = false
-                }
+                } finally { loadItemsRunning = false }
             }
         }
     }
@@ -416,6 +418,7 @@ import java.util.*
             for (item in episodes) sizeMB += item.media?.size ?: 0
             info += " • " + (sizeMB / 1000000) + " MB"
         }
+        if (getFilter().values.isNotEmpty()) info += " - ${getString(R.string.filtered_label)}"
         binding.infoBar.text = info
     }
 
@@ -466,6 +469,21 @@ import java.util.*
         }
     }
 
+    class DownloadsFilterDialog : EpisodeFilterDialog() {
+        override fun onFilterChanged(newFilterValues: Set<String>) {
+            EventFlow.postEvent(FlowEvent.DownloadsFilterEvent(newFilterValues))
+        }
+        companion object {
+            fun newInstance(filter: EpisodeFilter?): DownloadsFilterDialog {
+                val dialog = DownloadsFilterDialog()
+                dialog.filter = filter
+                dialog.filtersDisabled.add(FeedItemFilterGroup.DOWNLOADED)
+                dialog.filtersDisabled.add(FeedItemFilterGroup.MEDIA)
+                return dialog
+            }
+        }
+    }
+
     companion object {
         val TAG = DownloadsFragment::class.simpleName ?: "Anonymous"
 
@@ -480,6 +498,12 @@ import java.util.*
             }
             set(sortOrder) {
                 appPrefs.edit().putString(UserPreferences.Prefs.prefDownloadSortedOrder.name, "" + sortOrder!!.code).apply()
+            }
+
+        var prefFilterDownloads: String
+            get() = appPrefs.getString(UserPreferences.Prefs.prefDownloadsFilter.name, EpisodeFilter.States.downloaded.name) ?: EpisodeFilter.States.downloaded.name
+            set(filter) {
+                appPrefs.edit().putString(UserPreferences.Prefs.prefDownloadsFilter.name, filter).apply()
             }
     }
 }

@@ -16,16 +16,18 @@
         android:title="@string/downloads_log_label"
         custom:showAsAction="always" />
 
-    <item
-        android:id="@+id/reconsile"
-        android:title="@string/reconsile_label"
-        app:showAsAction="never" />
-
 <!--    <item-->
 <!--        android:id="@+id/refresh_item"-->
 <!--        android:title="@string/refresh_label"-->
 <!--        android:menuCategory="container"-->
 <!--        app:showAsAction="never" />-->
+
+    <item
+        android:id="@+id/filter_items"
+        android:icon="@drawable/ic_filter"
+        android:menuCategory="container"
+        android:title="@string/filter"
+        custom:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/downloads_sort"
@@ -34,5 +36,10 @@
     <item
         android:id="@+id/switch_queue"
         android:title="@string/switch_queue" />
+
+    <item
+        android:id="@+id/reconsile"
+        android:title="@string/reconsile_label"
+        app:showAsAction="never" />
 
 </menu>

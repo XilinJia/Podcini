@@ -54,7 +54,7 @@ object EpisodeMenuHandler {
 
         val hasMedia = selectedItem.media != null
         val isPlaying = hasMedia && InTheatre.isCurMedia(selectedItem.media)
-        val isInQueue: Boolean = curQueue.isInQueue(selectedItem)
+        val isInQueue: Boolean = curQueue.contains(selectedItem)
         val isLocalFile = hasMedia && selectedItem.feed?.isLocalFeed?:false
         val isFavorite: Boolean = selectedItem.isFavorite
 

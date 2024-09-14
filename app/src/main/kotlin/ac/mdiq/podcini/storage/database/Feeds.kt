@@ -431,7 +431,7 @@ object Feeds {
         feed.fileUrl = File(feedfilePath, getFeedfileName(feed)).toString()
         feed.preferences = FeedPreferences(feed.id, false, FeedPreferences.AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
         feed.preferences!!.keepUpdated = false
-        feed.preferences!!.queue = null
+        feed.preferences!!.queueId = -2L
         feed.preferences!!.videoModePolicy = if (video) VideoMode.WINDOW_VIEW else VideoMode.AUDIO_ONLY
         upsertBlk(feed) {}
         return feed

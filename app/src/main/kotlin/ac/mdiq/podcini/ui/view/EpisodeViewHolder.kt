@@ -158,7 +158,7 @@ open class EpisodeViewHolder(private val activity: MainActivity, parent: ViewGro
         setPubDate(item)
 
         binding.isFavorite.visibility = if (item.isFavorite) View.VISIBLE else View.GONE
-        isInQueue.visibility = if (curQueue.isInQueue(item)) View.VISIBLE else View.GONE
+        isInQueue.visibility = if (curQueue.contains(item)) View.VISIBLE else View.GONE
 //        container.alpha = if (item.isPlayed()) 0.7f else 1.0f
 
         val newButton = EpisodeActionButton.forItem(item)

@@ -1,5 +1,5 @@
 
-Podcini.R is a revamped version from Podcini version 5, uses a modern object-base database. Though loaded with newer features, it works in similar ways as Podcini.  Version 6.5 as a major step forward brings the capability of handling Youtube channels as normal podcasts within the Podcini.
+Podcini.R is a revamped version from Podcini version 5, uses a modern object-base database. Though loaded with newer features, it works in similar ways as Podcini.  Version 6.5 as a major step forward brings the capability of handling channels and playlists on Youtube or YT Music as normal podcasts within the Podcini.
 
 Podcini, an open source podcast instrument, attuned to Puccini, adorned with pasticcini and aromatized with porcini, invites your harmonious heartbeats.
 
@@ -39,7 +39,7 @@ Podcini emphasizes on efficient battery usage, streamlined podcast management an
 
 <b>Join the Podcini community!</b>
 
-Podcini is under active development by volunteers. You can contribute too, with code or with comment!
+Podcini is under active development by volunteers. You can contribute too, with code, comments or critics.
 https://github.com/XilinJia/Podcini
 
 Transifex is the place to help with translations:

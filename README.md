@@ -23,7 +23,7 @@ Compared to AntennaPod this project:
 
 1. Migrated all media routines to `androidx.media3`, with `AudioOffloadMode` enabled, nicer to device battery,
 2. Is purely `Kotlin` based and mono-modular, and being migrated to Jetpack Compose,
-3. Iron-age celebrity SQLite is replaced with modern object-base Realm DB (Podcini.R),
+3. Iron-age celebrity SQLite is replaced with modern object-base Realm DB,
 4. Outfits with Viewbinding, Coil replacing Glide, coroutines replacing RxJava and threads, SharedFlow replacing EventBus, and jetifier removed,
 5. Boasts new UI's including streamlined drawer, subscriptions view and player controller,
 6. Supports multiple, virtual and circular play queues associable to any podcast
@@ -126,14 +126,15 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * Online feed info display is handled in similar ways as any local feed, and offers options to subscribe or view episodes
 * Online feed episodes can be freely played (streamed) without a subscription
 
-### Youtube channels and media
+### Youtube & Youtube Music
 
 * Youtube channels can be searched in podcast search view, can also be shared from other apps (such as Youtube) to Podcini
 * Youtube channels can be subscribed as normal podcasts
-* Single Youtube media can also be shared from other apps, once received, are added to synthetic podcast "Youtube Syndicate"
-* All Youtube media can be played (only streamed) with video in fullscreen and in window as well as in audio only mode
-* Every Youtube media comes with the lowest video quality and highest audio quality
-* If a Youtube channel podcast is set for "audio only", then only audio stream is fetched at play time for every media in the podcast
+* Playlists on Yuotube or Youtube Music can be shared to Podcini, and then can be subscribed in similar fashion as the channels
+* Single media from Youtube or Youtube Music can also be shared from other apps, can be accepted as including video or audio only, are added to synthetic podcasts such as "Youtube Syndicate"
+* All the media from Youtube or Youtube Music can be played (only streamed) with video in fullscreen and in window modes or in audio only mode in the background
+* These media are played with the lowest video quality and highest audio quality
+* If a subscription is set for "audio only", then only audio stream is fetched at play time for every media in the subscription
 
 ### Instant (or Wifi) sync
 

@@ -130,7 +130,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 
 * Youtube channels can be searched in podcast search view, can also be shared from other apps (such as Youtube) to Podcini
 * Youtube channels can be subscribed as normal podcasts
-* Playlists on Yuotube or Youtube Music can be shared to Podcini, and then can be subscribed in similar fashion as the channels
+* Playlists on Youtube or Youtube Music can be shared to Podcini, and then can be subscribed in similar fashion as the channels
 * Single media from Youtube or Youtube Music can also be shared from other apps, can be accepted as including video or audio only, are added to synthetic podcasts such as "Youtube Syndicate"
 * All the media from Youtube or Youtube Music can be played (only streamed) with video in fullscreen and in window modes or in audio only mode in the background
 * These media are played with the lowest video quality and highest audio quality

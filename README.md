@@ -18,7 +18,7 @@ That means finally: [Nessun dorma](https://www.youtube.com/watch?v=cWc7vYjgnTs)
 #### If you are migrating from Podcini version 5, please read the migrationTo5.md file for migration instructions.
 #### For Podcini to show up on car's HUD with Android Auto, please read AnroidAuto.md for instructions.
 
-This project is developed from a fork of [AntennaPod](<https://github.com/AntennaPod/AntennaPod>) as of Feb 5 2024.
+This project was developed from a fork of [AntennaPod](<https://github.com/AntennaPod/AntennaPod>) as of Feb 5 2024.
 
 Compared to AntennaPod this project:
 

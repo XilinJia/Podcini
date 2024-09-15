@@ -38,8 +38,8 @@
         android:title="@string/switch_queue" />
 
     <item
-        android:id="@+id/reconsile"
-        android:title="@string/reconsile_label"
+        android:id="@+id/reconcile"
+        android:title="@string/reconcile_label"
         app:showAsAction="never" />
 
 </menu>

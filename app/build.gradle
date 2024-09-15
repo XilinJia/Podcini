@@ -31,8 +31,8 @@ android {
         testApplicationId "ac.mdiq.podcini.tests"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        versionCode 3020248
-        versionName "6.6.3"
+        versionCode 3020249
+        versionName "6.6.4"
 
         applicationId "ac.mdiq.podcini.R"
         def commit = ""
@@ -94,8 +94,8 @@ android {
         abi {
              enable true
              reset()
-             include "arm64-v8a"  // Specify the ABI you want to split.
-             universalApk true  // This will generate a universal APK that includes all ABIs.
+             include "arm64-v8a"
+             universalApk true
          }
      }
 

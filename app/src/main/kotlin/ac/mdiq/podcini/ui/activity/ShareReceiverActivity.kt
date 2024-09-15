@@ -62,7 +62,7 @@ class ShareReceiverActivity : AppCompatActivity() {
                 finish()
             }
 //            Youtube media
-            sharedUrl!!.startsWith("https://youtube.com/watch?") -> {
+            sharedUrl!!.startsWith("https://youtube.com/watch?") || sharedUrl!!.startsWith("https://music.youtube.com/watch?") -> {
                 Logd(TAG, "got youtube media")
                 setContent {
                     val showDialog = remember { mutableStateOf(true) }

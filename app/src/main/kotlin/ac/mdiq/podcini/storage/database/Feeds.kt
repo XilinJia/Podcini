@@ -204,34 +204,43 @@ object Feeds {
             Logd(TAG, "Found no existing Feed with title ${newFeed.title}. Adding as new one.")
             Logd(TAG, "newFeed.episodes: ${newFeed.episodes.size}")
             resultFeed = newFeed
-        } else {
-            Logd(TAG, "Feed with title " + newFeed.title + " already exists. Syncing new with existing one.")
-            newFeed.episodes.sortWith(EpisodePubdateComparator())
-            if (newFeed.pageNr == savedFeed.pageNr) {
-                if (savedFeed.compareWithOther(newFeed)) {
-                    Logd(TAG, "Feed has updated attribute values. Updating old feed's attributes")
-                    savedFeed.updateFromOther(newFeed)
-                }
-            } else {
-                Logd(TAG, "New feed has a higher page number.")
-                savedFeed.nextPageLink = newFeed.nextPageLink
+            try {
+                addNewFeedsSync(context, newFeed)
+                // Update with default values that are set in database
+                resultFeed = searchFeedByIdentifyingValueOrID(newFeed)
+                if (removeUnlistedItems) runBlocking { deleteEpisodes(context, unlistedItems).join() }
+            } catch (e: InterruptedException) { e.printStackTrace()
+            } catch (e: ExecutionException) { e.printStackTrace() }
+            return resultFeed
+        }
+
+        Logd(TAG, "Feed with title " + newFeed.title + " already exists. Syncing new with existing one.")
+        newFeed.episodes.sortWith(EpisodePubdateComparator())
+        if (newFeed.pageNr == savedFeed.pageNr) {
+            if (savedFeed.compareWithOther(newFeed)) {
+                Logd(TAG, "Feed has updated attribute values. Updating old feed's attributes")
+                savedFeed.updateFromOther(newFeed)
             }
+        } else {
+            Logd(TAG, "New feed has a higher page number.")
+            savedFeed.nextPageLink = newFeed.nextPageLink
+        }
 //            appears not useful
 //            if (savedFeed.preferences != null && savedFeed.preferences!!.compareWithOther(newFeed.preferences)) {
 //                Logd(TAG, "Feed has updated preferences. Updating old feed's preferences")
 //                savedFeed.preferences!!.updateFromOther(newFeed.preferences)
 //            }
-            val priorMostRecent = savedFeed.mostRecentItem
-            val priorMostRecentDate: Date? = priorMostRecent?.getPubDate()
-            var idLong = Feed.newId()
-            // Look for new or updated Items
-            for (idx in newFeed.episodes.indices) {
-                val episode = newFeed.episodes[idx]
-                val possibleDuplicate = EpisodeAssistant.searchEpisodeGuessDuplicate(newFeed.episodes, episode)
-                if (!newFeed.isLocalFeed && possibleDuplicate != null && episode !== possibleDuplicate) {
-                    // Canonical episode is the first one returned (usually oldest)
-                    addDownloadStatus(DownloadResult(savedFeed.id, episode.title ?: "", DownloadError.ERROR_PARSER_EXCEPTION_DUPLICATE, false,
-                        """
+        val priorMostRecent = savedFeed.mostRecentItem
+        val priorMostRecentDate: Date? = priorMostRecent?.getPubDate()
+        var idLong = Feed.newId()
+        // Look for new or updated Items
+        for (idx in newFeed.episodes.indices) {
+            val episode = newFeed.episodes[idx]
+            val possibleDuplicate = EpisodeAssistant.searchEpisodeGuessDuplicate(newFeed.episodes, episode)
+            if (!newFeed.isLocalFeed && possibleDuplicate != null && episode !== possibleDuplicate) {
+                // Canonical episode is the first one returned (usually oldest)
+                addDownloadStatus(DownloadResult(savedFeed.id, episode.title ?: "", DownloadError.ERROR_PARSER_EXCEPTION_DUPLICATE, false,
+                    """
                             The podcast host appears to have added the same episode twice. Podcini still refreshed the feed and attempted to repair it.
                             
                             Original episode:
@@ -240,16 +249,16 @@ object Feeds {
                             Second episode that is also in the feed:
                             ${EpisodeAssistant.duplicateEpisodeDetails(possibleDuplicate)}
                             """.trimIndent()))
-                    continue
-                }
-                var oldItem = searchEpisodeByIdentifyingValue(savedFeed.episodes, episode)
-                if (!newFeed.isLocalFeed && oldItem == null) {
-                    oldItem = EpisodeAssistant.searchEpisodeGuessDuplicate(savedFeed.episodes, episode)
-                    if (oldItem != null) {
-                        Logd(TAG, "Repaired duplicate: $oldItem, $episode")
-                        addDownloadStatus(DownloadResult(savedFeed.id,
-                            episode.title ?: "", DownloadError.ERROR_PARSER_EXCEPTION_DUPLICATE, false,
-                            """
+                continue
+            }
+            var oldItem = searchEpisodeByIdentifyingValue(savedFeed.episodes, episode)
+            if (!newFeed.isLocalFeed && oldItem == null) {
+                oldItem = EpisodeAssistant.searchEpisodeGuessDuplicate(savedFeed.episodes, episode)
+                if (oldItem != null) {
+                    Logd(TAG, "Repaired duplicate: $oldItem, $episode")
+                    addDownloadStatus(DownloadResult(savedFeed.id,
+                        episode.title ?: "", DownloadError.ERROR_PARSER_EXCEPTION_DUPLICATE, false,
+                        """
                                 The podcast host changed the ID of an existing episode instead of just updating the episode itself. Podcini still refreshed the feed and attempted to repair it.
                                 
                                 Original episode:
@@ -258,66 +267,61 @@ object Feeds {
                                 Now the feed contains:
                                 ${EpisodeAssistant.duplicateEpisodeDetails(episode)}
                                 """.trimIndent()))
-                        oldItem.identifier = episode.identifier
-                        if (needSynch() && oldItem.isPlayed() && oldItem.media != null) {
-                            val durs = oldItem.media!!.getDuration() / 1000
-                            val action = EpisodeAction.Builder(oldItem, EpisodeAction.PLAY)
-                                .currentTimestamp()
-                                .started(durs)
-                                .position(durs)
-                                .total(durs)
-                                .build()
-                            SynchronizationQueueSink.enqueueEpisodeActionIfSyncActive(context, action)
-                        }
+                    oldItem.identifier = episode.identifier
+                    if (needSynch() && oldItem.isPlayed() && oldItem.media != null) {
+                        val durs = oldItem.media!!.getDuration() / 1000
+                        val action = EpisodeAction.Builder(oldItem, EpisodeAction.PLAY)
+                            .currentTimestamp()
+                            .started(durs)
+                            .position(durs)
+                            .total(durs)
+                            .build()
+                        SynchronizationQueueSink.enqueueEpisodeActionIfSyncActive(context, action)
                     }
                 }
-                if (oldItem != null) oldItem.updateFromOther(episode)
-                else {
-                    Logd(TAG, "Found new episode: ${episode.title}")
-                    episode.feed = savedFeed
-                    episode.id = idLong++
-                    episode.feedId = savedFeed.id
-                    if (episode.media != null) {
-                        episode.media!!.id = episode.id
-                        if (!savedFeed.hasVideoMedia && episode.media!!.getMediaType() == MediaType.VIDEO) savedFeed.hasVideoMedia = true
-                    }
-                    if (idx >= savedFeed.episodes.size) savedFeed.episodes.add(episode)
-                    else savedFeed.episodes.add(idx, episode)
+            }
+            if (oldItem != null) oldItem.updateFromOther(episode)
+            else {
+                Logd(TAG, "Found new episode: ${episode.title}")
+                episode.feed = savedFeed
+                episode.id = idLong++
+                episode.feedId = savedFeed.id
+                if (episode.media != null) {
+                    episode.media!!.id = episode.id
+                    if (!savedFeed.hasVideoMedia && episode.media!!.getMediaType() == MediaType.VIDEO) savedFeed.hasVideoMedia = true
+                }
+                if (idx >= savedFeed.episodes.size) savedFeed.episodes.add(episode)
+                else savedFeed.episodes.add(idx, episode)
 
-                    val pubDate = episode.getPubDate()
-                    if (pubDate == null || priorMostRecentDate == null || priorMostRecentDate.before(pubDate) || priorMostRecentDate == pubDate) {
-                        Logd(TAG, "Marking episode published on $pubDate new, prior most recent date = $priorMostRecentDate")
-                        episode.setNew()
-                        if (savedFeed.preferences?.autoAddNewToQueue == true) {
-                            val q = savedFeed.preferences?.queue
-                            if (q != null) runOnIOScope {  addToQueueSync(false, episode, q) }
-                        }
+                val pubDate = episode.getPubDate()
+                if (pubDate == null || priorMostRecentDate == null || priorMostRecentDate.before(pubDate) || priorMostRecentDate == pubDate) {
+                    Logd(TAG, "Marking episode published on $pubDate new, prior most recent date = $priorMostRecentDate")
+                    episode.setNew()
+                    if (savedFeed.preferences?.autoAddNewToQueue == true) {
+                        val q = savedFeed.preferences?.queue
+                        if (q != null) runOnIOScope {  addToQueueSync(false, episode, q) }
                     }
                 }
             }
-            // identify episodes to be removed
-            if (removeUnlistedItems) {
-                val it = savedFeed.episodes.toMutableList().iterator()
-                while (it.hasNext()) {
-                    val feedItem = it.next()
-                    if (searchEpisodeByIdentifyingValue(newFeed.episodes, feedItem) == null) {
-                        unlistedItems.add(feedItem)
-                        it.remove()
-                    }
-                }
-            }
-            // update attributes
-            savedFeed.lastUpdate = newFeed.lastUpdate
-            savedFeed.type = newFeed.type
-            savedFeed.lastUpdateFailed = false
-            resultFeed = savedFeed
         }
+        // identify episodes to be removed
+        if (removeUnlistedItems) {
+            val it = savedFeed.episodes.toMutableList().iterator()
+            while (it.hasNext()) {
+                val feedItem = it.next()
+                if (searchEpisodeByIdentifyingValue(newFeed.episodes, feedItem) == null) {
+                    unlistedItems.add(feedItem)
+                    it.remove()
+                }
+            }
+        }
+        // update attributes
+        savedFeed.lastUpdate = newFeed.lastUpdate
+        savedFeed.type = newFeed.type
+        savedFeed.lastUpdateFailed = false
+        resultFeed = savedFeed
         try {
-            if (savedFeed == null) {
-                addNewFeedsSync(context, newFeed)
-                // Update with default values that are set in database
-                resultFeed = searchFeedByIdentifyingValueOrID(newFeed)
-            } else upsertBlk(savedFeed) {}
+            upsertBlk(savedFeed) {}
             if (removeUnlistedItems) runBlocking { deleteEpisodes(context, unlistedItems).join() }
         } catch (e: InterruptedException) { e.printStackTrace()
         } catch (e: ExecutionException) { e.printStackTrace() }
@@ -417,14 +421,16 @@ object Feeds {
         return !feed.isLocalFeed || isAutoDeleteLocal
     }
 
-    fun getYoutubeSyndicate(video: Boolean): Feed {
-        val feedId: Long = if (video) 1 else 2
+    fun getYoutubeSyndicate(video: Boolean, music: Boolean): Feed {
+        var feedId: Long = if (video) 1 else 2
+        if (music) feedId += 2  // music feed takes ids 3 and 4
         var feed = getFeed(feedId, true)
         if (feed != null) return feed
 
         feed = Feed()
         feed.id = feedId
-        feed.title = "Youtube Syndicate" + if (video) "" else " Audio"
+        if (music) feed.title = "YTMusic Syndicate" + if (video) "" else " Audio"
+        else feed.title = "Youtube Syndicate" + if (video) "" else " Audio"
         feed.type = Feed.FeedType.YOUTUBE.name
         feed.hasVideoMedia = video
         feed.downloadUrl = null
@@ -438,7 +444,7 @@ object Feeds {
     }
 
     fun addToYoutubeSyndicate(episode: Episode, video: Boolean) {
-        val feed = getYoutubeSyndicate(video)
+        val feed = getYoutubeSyndicate(video, episode.media?.downloadUrl?.contains("music") == true)
         Logd(TAG, "addToYoutubeSyndicate: feed: ${feed.title}")
         if (searchEpisodeByIdentifyingValue(feed.episodes, episode) != null) return
 

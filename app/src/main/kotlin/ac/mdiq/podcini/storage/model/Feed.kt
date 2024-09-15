@@ -276,7 +276,8 @@ class Feed : RealmObject {
 
     fun getVirtualQueueItems():  List<Episode> {
         var qString = "feedId == $id AND playState != ${Episode.PlayState.PLAYED.code}"
-        if (preferences?.prefStreamOverDownload != true) qString += " AND media.downloaded == true"
+//        TODO: perhaps need to set prefStreamOverDownload for youtube feeds
+        if (type != FeedType.YOUTUBE.name && preferences?.prefStreamOverDownload != true) qString += " AND media.downloaded == true"
         val eList_ = realm.query(Episode::class, qString).find().toMutableList()
         if (sortOrder != null) getPermutor(sortOrder!!).reorder(eList_)
         return eList_

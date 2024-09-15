@@ -1,4 +1,4 @@
- Version 6.6.2:
+ Version 6.6.3:
 
 * added ability to receive shared Youtube playlist, quite similar to receiving shared Youtube channel
 * increased the max number of media to 300 on subscribing a Youtube channel or a Youtube playlist

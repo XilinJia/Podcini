@@ -264,7 +264,7 @@ class OnlineFeedFragment : Fragment() {
                     feed_.fileUrl = File(feedfilePath, getFeedfileName(feed_)).toString()
                     val eList: RealmList<Episode> = realmListOf()
 
-                    if (url.startsWith("https://youtube.com/playlist?")) {
+                    if (url.startsWith("https://youtube.com/playlist?") || url.startsWith("https://music.youtube.com/playlist?")) {
                         val playlistInfo = PlaylistInfo.getInfo(Vista.getService(0), url) ?: return@launch
                         feed_.title = playlistInfo.name
                         feed_.description = playlistInfo.description?.content ?: ""
@@ -274,7 +274,7 @@ class OnlineFeedFragment : Fragment() {
                         var nextPage = playlistInfo.nextPage
                         Logd(TAG, "infoItems: ${infoItems.size}")
                         var i = 0
-                        while (infoItems.isNotEmpty() && i++ < 10) {
+                        while (infoItems.isNotEmpty() && i++ < 2) {
                             for (r in infoItems) {
                                 Logd(TAG, "startFeedBuilding relatedItem: $r")
                                 if (r.infoType != InfoItem.InfoType.STREAM) continue
@@ -307,7 +307,7 @@ class OnlineFeedFragment : Fragment() {
                             var nextPage = channelTabInfo.nextPage
                             Logd(TAG, "infoItems: ${infoItems.size}")
                             var i = 0
-                            while (infoItems.isNotEmpty() && i++ < 10) {
+                            while (infoItems.isNotEmpty() && i++ < 2) {
                                 for (r in infoItems) {
                                     Logd(TAG, "startFeedBuilding relatedItem: $r")
                                     if (r.infoType != InfoItem.InfoType.STREAM) continue
@@ -597,8 +597,10 @@ class OnlineFeedFragment : Fragment() {
                     val feed1 = getFeed(feedId, true)?: return
                     if (feed1.preferences == null) feed1.preferences = FeedPreferences(feed1.id, false,
                         FeedPreferences.AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
-
-                    if (feedSource != "VistaGuide" && isEnableAutodownload) {
+                    if (feedSource != "VistaGuide") {
+                        feed1.preferences!!.prefStreamOverDownload = true
+                        feed1.preferences!!.autoDownload = false
+                    } else if (isEnableAutodownload) {
                         val autoDownload = binding.autoDownloadCheckBox.isChecked
                         feed1.preferences!!.autoDownload = autoDownload
                         val editor = prefs!!.edit()

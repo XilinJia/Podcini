@@ -1,0 +1,9 @@
+ Version 6.6.4:
+
+* added ability to receive music or playlist shared from YT Music
+* single music received from YT Music is added to "YTMusic Syndicate"
+* in newly subscribed Youtube channel or playlist, prefStreamOverDownload is set to true
+* ensured virtual queue (continuous streaming) for previously subscribed "Youtube" type feed when the associated queue is set to None
+* the max number of media is dropped to 60 on subscribing a Youtube type feed (higher number may cause delay or even failure due to network issues, will investigate other ways to handle)
+* fixed a bug in Reconcile that can cause downloaded files to be mistakenly deleted
+* action button on each episode now reacts to LongClick to provide more options

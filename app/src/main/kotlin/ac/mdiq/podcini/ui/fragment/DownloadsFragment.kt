@@ -25,8 +25,6 @@ import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.dialog.EpisodeFilterDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.ui.dialog.SwitchQueueDialog
-import ac.mdiq.podcini.ui.fragment.AllEpisodesFragment.AllEpisodesFilterDialog
-import ac.mdiq.podcini.ui.fragment.AllEpisodesFragment.Companion.prefFilterAllEpisodes
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
 import ac.mdiq.podcini.ui.view.EpisodeViewHolder
@@ -189,7 +187,7 @@ import java.util.*
             R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
             R.id.downloads_sort -> DownloadsSortDialog().show(childFragmentManager, "SortDialog")
             R.id.switch_queue -> SwitchQueueDialog(activity as MainActivity).show()
-            R.id.reconsile -> reconsile()
+            R.id.reconcile -> reconcile()
             else -> return false
         }
         return true
@@ -201,7 +199,7 @@ import java.util.*
 
     private val nameEpisodeMap: MutableMap<String, Episode> = mutableMapOf()
     private val filesRemoved: MutableList<String> = mutableListOf()
-    private fun reconsile() {
+    private fun reconcile() {
         runOnIOScope {
             val items = realm.query(Episode::class).query("media.episode == nil").find()
             Logd(TAG, "number of episode with null backlink: ${items.size}")
@@ -209,15 +207,15 @@ import java.util.*
                 upsert(item) { it.media!!.episode = it }
             }
             nameEpisodeMap.clear()
-            episodes.forEach { e ->
-                var fileUrl = e.media?.fileUrl ?: return@forEach
+            for (e in episodes) {
+                var fileUrl = e.media?.fileUrl ?: continue
                 fileUrl = fileUrl.substring(fileUrl.lastIndexOf('/') + 1)
-                Logd(TAG, "reconsile: fileUrl: $fileUrl")
+                Logd(TAG, "reconcile: fileUrl: $fileUrl")
                 nameEpisodeMap[fileUrl] = e
             }
             val mediaDir = requireContext().getExternalFilesDir("media") ?: return@runOnIOScope
             mediaDir.listFiles()?.forEach { file -> traverse(file, mediaDir) }
-            Logd(TAG, "reconsile: end, episodes missing file: ${nameEpisodeMap.size}")
+            Logd(TAG, "reconcile: end, episodes missing file: ${nameEpisodeMap.size}")
             if (nameEpisodeMap.isNotEmpty()) {
                 for (e in nameEpisodeMap.values) {
                     upsertBlk(e) { it.media?.setfileUrlOrNull(null) }

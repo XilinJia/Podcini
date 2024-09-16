@@ -112,7 +112,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
     private lateinit var queuesAdapter: ArrayAdapter<String>
     private lateinit var tagsAdapter: ArrayAdapter<String>
     private var tagFilterIndex = 1
-    private var queueFilterIndex = 1
+    private var queueFilterIndex = 0
 
     private var infoTextFiltered = ""
     private var infoTextUpdate = ""
@@ -164,17 +164,16 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
 
         initAdapter()
         setupEmptyView()
-
         resetTags()
 
         val queues = realm.query(PlayQueue::class).find()
         queueIds.addAll(queues.map { it.id })
-        val spinnerTexts: MutableList<String> = mutableListOf("All", "None")
+        val spinnerTexts: MutableList<String> = mutableListOf("Any queue", "No queue")
         spinnerTexts.addAll(queues.map { it.name })
         queuesAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, spinnerTexts)
         queuesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.queuesSpinner.setAdapter(queuesAdapter)
-        binding.queuesSpinner.setSelection(queuesAdapter.getPosition("All"))
+        binding.queuesSpinner.setSelection(queuesAdapter.getPosition("Any queue"))
         binding.queuesSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 queueFilterIndex = position

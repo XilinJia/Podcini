@@ -1,3 +1,7 @@
+# 6.6.5
+
+* fixed the issue of subscriptions not filtered correctly.
+
 # 6.6.4
 
 * added ability to receive music or playlist shared from YT Music

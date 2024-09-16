@@ -25,11 +25,10 @@ import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import ac.mdiq.podcini.storage.utils.FilesUtils.getMediafilename
-import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
-import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
-import ac.mdiq.vista.extractor.playlist.PlaylistInfo
+import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.vista.extractor.stream.StreamInfo
 import ac.mdiq.vista.extractor.stream.StreamInfoItem
 import android.app.backup.BackupManager
@@ -240,10 +239,13 @@ object Episodes {
      * @param date PlaybackCompletionDate for `media`
      */
     fun addToHistory(episode: Episode, date: Date? = Date()) : Job {
-        Logd(TAG, "addToHistory called")
+        Logd(TAG, "addToHistory called played: ${episode.playState}")
         return runOnIOScope {
-            upsert(episode) { it.media?.playbackCompletionDate = date }
-            EventFlow.postEvent(FlowEvent.HistoryEvent())
+            val episode_ = realm.query(Episode::class).query("id == $0", episode.id).first().find()
+            if (episode_ != null) {
+                upsert(episode_) { it.media?.playbackCompletionDate = date }
+                EventFlow.postEvent(FlowEvent.HistoryEvent())
+            }
         }
     }
 
@@ -274,7 +276,7 @@ object Episodes {
 
     @OptIn(UnstableApi::class)
     suspend fun setPlayStateSync(played: Int, resetMediaPosition: Boolean, episode: Episode) : Episode {
-        Logd(TAG, "setPlayStateSync called resetMediaPosition: $resetMediaPosition")
+        Logd(TAG, "setPlayStateSync called played: $played resetMediaPosition: $resetMediaPosition ${episode.title}")
         val result = upsert(episode) {
             if (played >= PlayState.NEW.code && played <= PlayState.BUILDING.code) it.playState = played
             else {
@@ -284,6 +286,7 @@ object Episodes {
             if (resetMediaPosition) it.media?.setPosition(0)
         }
         if (played == PlayState.PLAYED.code && shouldMarkedPlayedRemoveFromQueues()) removeFromAllQueuesSync(result)
+        Logd(TAG, "setPlayStateSync played: ${result.playState}")
         EventFlow.postEvent(FlowEvent.EpisodePlayedEvent(result))
         return result
     }

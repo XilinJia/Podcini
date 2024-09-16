@@ -66,6 +66,7 @@ import ac.mdiq.podcini.util.FlowEvent.PlayEvent.Action
 import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.config.ClientConfig
+import ac.mdiq.podcini.util.showStackTrace
 import ac.mdiq.vista.extractor.MediaFormat
 import ac.mdiq.vista.extractor.stream.AudioStream
 import ac.mdiq.vista.extractor.stream.DeliveryMethod
@@ -1073,8 +1074,8 @@ class PlaybackService : MediaLibraryService() {
 //            Logd(TAG, "onQueueEvent: ending playback curEpisode ${curEpisode?.title}")
             notifyCurQueueItemsChanged()
             for (e in event.episodes) {
-                Logd(TAG, "onQueueEvent: queue event removed ${e.title}")
                 if (e.id == curEpisode?.id) {
+                    Logd(TAG, "onQueueEvent: queue event removed ${e.title}")
                     mPlayer?.endPlayback(hasEnded = false, wasSkipped = true, shouldContinue = true, toStoppedState = true)
                     break
                 }
@@ -1758,18 +1759,18 @@ class PlaybackService : MediaLibraryService() {
         override fun setVolume(volumeLeft: Float, volumeRight: Float) {
             var volumeLeft = volumeLeft
             var volumeRight = volumeRight
+            Logd(TAG, "setVolume: $volumeLeft $volumeRight")
             val playable = curMedia
             if (playable is EpisodeMedia) {
                 val preferences = playable.episodeOrFetch()?.feed?.preferences
                 if (preferences != null) {
                     val volumeAdaptionSetting = preferences.volumeAdaptionSetting
-                    if (volumeAdaptionSetting != null) {
-                        val adaptionFactor = volumeAdaptionSetting.adaptionFactor
-                        volumeLeft *= adaptionFactor
-                        volumeRight *= adaptionFactor
-                    }
+                    val adaptionFactor = volumeAdaptionSetting.adaptionFactor
+                    volumeLeft *= adaptionFactor
+                    volumeRight *= adaptionFactor
                 }
             }
+            Logd(TAG, "setVolume 1: $volumeLeft $volumeRight")
             if (volumeLeft > 1) {
                 exoPlayer?.volume = 1f
                 loudnessEnhancer?.setEnabled(true)
@@ -1869,6 +1870,7 @@ class PlaybackService : MediaLibraryService() {
             val position = getPosition()
             if (position >= 0) curMedia?.setPosition(position)
             Logd(TAG, "endPlayback hasEnded=$hasEnded wasSkipped=$wasSkipped shouldContinue=$shouldContinue toStoppedState=$toStoppedState")
+//            showStackTrace()
 
             val currentMedia = curMedia
             var nextMedia: Playable? = null
@@ -2563,9 +2565,7 @@ class PlaybackService : MediaLibraryService() {
                     playbackService?.mPlayer?.prepare()
                     playbackService?.taskManager?.restartSleepTimer()
                 }
-                else -> {
-                    Log.w(TAG, "Play/Pause button was pressed and PlaybackService state was unknown")
-                }
+                else -> Log.w(TAG, "Play/Pause button was pressed and PlaybackService state was unknown")
             }
         }
 

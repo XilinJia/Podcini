@@ -170,7 +170,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         cardViewSeek = binding.cardViewSeek
 
         initDetailedView()
-
+        (activity as MainActivity).setPlayerVisible(false)
         return binding.root
     }
 
@@ -199,7 +199,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         if (isCollapsed) {
             isCollapsed = false
             playerUI = playerUI2
-            playerUI?.updateUi(currentMedia)
+            if (currentMedia != null) playerUI?.updateUi(currentMedia!!)
             playerUI?.butPlay?.setIsShowPlay(isShowPlay)
             playerDetailsFragment?.updateInfo()
         }
@@ -209,7 +209,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         Logd(TAG, "onCollaped()")
         isCollapsed = true
         playerUI = playerUI1
-        playerUI?.updateUi(currentMedia)
+        if (currentMedia != null) playerUI?.updateUi(currentMedia!!)
         playerUI?.butPlay?.setIsShowPlay(isShowPlay)
     }
 
@@ -256,7 +256,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                     val item = (currentMedia as? EpisodeMedia)?.episodeOrFetch()
                     if (item != null) playerDetailsFragment?.setItem(item)
                     updateUi()
-                    playerUI?.updateUi(currentMedia)
+                    if (currentMedia != null) playerUI?.updateUi(currentMedia!!)
 //                TODO: disable for now
 //                if (!includingChapters) loadMediaInfo(true)
                 }.invokeOnCompletion { throwable ->
@@ -363,7 +363,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         val media = event.media ?: return
         if (currentMedia?.getIdentifier() == null || media.getIdentifier() != currentMedia?.getIdentifier()) {
             currentMedia = media
-            playerUI?.updateUi(currentMedia)
+            playerUI?.updateUi(currentMedia!!)
             playerDetailsFragment?.setItem(curEpisode!!)
         }
         playerUI?.onPositionUpdate(event)
@@ -707,7 +707,9 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         fun onPlaybackServiceChanged(event: FlowEvent.PlaybackServiceEvent) {
             when (event.action) {
                 FlowEvent.PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN -> (activity as MainActivity).setPlayerVisible(false)
-                FlowEvent.PlaybackServiceEvent.Action.SERVICE_STARTED -> (activity as MainActivity).setPlayerVisible(true)
+                FlowEvent.PlaybackServiceEvent.Action.SERVICE_STARTED -> {
+                    if (curMedia != null) (activity as MainActivity).setPlayerVisible(true)
+                }
 //                PlaybackServiceEvent.Action.SERVICE_RESTARTED -> (activity as MainActivity).setPlayerVisible(true)
             }
         }
@@ -736,9 +738,9 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             }
         }
         @UnstableApi
-        fun updateUi(media: Playable?) {
+        fun updateUi(media: Playable) {
             Logd(TAG, "updateUi called $media")
-            if (media == null) return
+//            if (media == null) return
             binding.titleView.text = media.getEpisodeTitle()
 //            (activity as MainActivity).setPlayerVisible(true)
             onPositionUpdate(FlowEvent.PlaybackPositionEvent(media, media.getPosition(), media.getDuration()))
@@ -815,7 +817,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
 
         @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             Logd(TAG, "fragment onCreateView")
-            _binding = PlayerDetailsFragmentBinding.inflate(inflater)
+            _binding = PlayerDetailsFragmentBinding.inflate(inflater, container, false)
 
             val colorFilter: ColorFilter? = BlendModeColorFilterCompat.createBlendModeColorFilterCompat(binding.txtvPodcastTitle.currentTextColor, BlendModeCompat.SRC_IN)
             binding.butNextChapter.colorFilter = colorFilter

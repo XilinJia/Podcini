@@ -76,7 +76,7 @@ import kotlin.math.min
         }
         if (allEpisodes.isEmpty()) return listOf()
         allEpisodes = allEpisodes.filter { filter.matchesForQueues(it) }
-        return allEpisodes.subList(0, min(allEpisodes.size-1, page * EPISODES_PER_PAGE))
+        return allEpisodes.subList(0, min(allEpisodes.size, page * EPISODES_PER_PAGE))
     }
 
     override fun loadMoreData(page: Int): List<Episode> {

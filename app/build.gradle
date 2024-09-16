@@ -31,8 +31,8 @@ android {
         testApplicationId "ac.mdiq.podcini.tests"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        versionCode 3020250
-        versionName "6.6.5"
+        versionCode 3020251
+        versionName "6.6.6"
 
         applicationId "ac.mdiq.podcini.R"
         def commit = ""

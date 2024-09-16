@@ -171,7 +171,7 @@ import kotlin.math.min
             loadItemsRunning = false
         }
         if (allHistory.isEmpty()) return listOf()
-        return allHistory.subList(0, min(allHistory.size-1, page * EPISODES_PER_PAGE))
+        return allHistory.subList(0, min(allHistory.size, page * EPISODES_PER_PAGE))
     }
 
     override fun loadMoreData(page: Int): List<Episode> {

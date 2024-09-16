@@ -597,7 +597,7 @@ class OnlineFeedFragment : Fragment() {
                     val feed1 = getFeed(feedId, true)?: return
                     if (feed1.preferences == null) feed1.preferences = FeedPreferences(feed1.id, false,
                         FeedPreferences.AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
-                    if (feedSource != "VistaGuide") {
+                    if (feedSource == "VistaGuide") {
                         feed1.preferences!!.prefStreamOverDownload = true
                         feed1.preferences!!.autoDownload = false
                     } else if (isEnableAutodownload) {
@@ -823,7 +823,7 @@ class OnlineFeedFragment : Fragment() {
         }
         override fun loadData(): List<Episode> {
             if (episodeList.isEmpty()) return listOf()
-            return episodeList.subList(0, min(episodeList.size-1, page * EPISODES_PER_PAGE))
+            return episodeList.subList(0, min(episodeList.size, page * EPISODES_PER_PAGE))
         }
         override fun loadMoreData(page: Int): List<Episode> {
             val offset = (page - 1) * EPISODES_PER_PAGE

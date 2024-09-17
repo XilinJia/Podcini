@@ -195,8 +195,7 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
     @Throws(IOException::class)
     private fun newCall(httpReq: Request.Builder): Response {
         var httpClient = getHttpClient()
-        try {
-            return httpClient.newCall(httpReq.build()).execute()
+        try { return httpClient.newCall(httpReq.build()).execute()
         } catch (e: IOException) {
             Log.e(TAG, e.toString())
             if (e.message != null && e.message!!.contains("PROTOCOL_ERROR")) {

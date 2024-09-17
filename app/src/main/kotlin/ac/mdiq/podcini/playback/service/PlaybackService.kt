@@ -2097,15 +2097,8 @@ class PlaybackService : MediaLibraryService() {
         private var positionSaverFuture: ScheduledFuture<*>? = null
         private var widgetUpdaterFuture: ScheduledFuture<*>? = null
         private var sleepTimerFuture: ScheduledFuture<*>? = null
-
-//    @Volatile
-//    private var chapterLoaderFuture: Disposable? = null
-
         private var sleepTimer: SleepTimer? = null
 
-        /**
-         * Returns true if the sleep timer is currently active.
-         */
         @get:Synchronized
         val isSleepTimerActive: Boolean
             get() = sleepTimerFuture?.isCancelled == false && sleepTimerFuture?.isDone == false && (sleepTimer?.getWaitingTime() ?: 0) > 0
@@ -2124,16 +2117,10 @@ class PlaybackService : MediaLibraryService() {
         val isWidgetUpdaterActive: Boolean
             get() = widgetUpdaterFuture != null && !widgetUpdaterFuture!!.isCancelled && !widgetUpdaterFuture!!.isDone
 
-        /**
-         * Returns true if the position saver is currently running.
-         */
         @get:Synchronized
         val isPositionSaverActive: Boolean
             get() = positionSaverFuture != null && !positionSaverFuture!!.isCancelled && !positionSaverFuture!!.isDone
 
-        /**
-         * Starts the position saver task. If the position saver is already active, nothing will happen.
-         */
         @Synchronized
         fun startPositionSaver() {
             if (!isPositionSaverActive) {
@@ -2145,9 +2132,6 @@ class PlaybackService : MediaLibraryService() {
             } else Logd(TAG, "Call to startPositionSaver was ignored.")
         }
 
-        /**
-         * Cancels the position saver. If the position saver is not running, nothing will happen.
-         */
         @Synchronized
         fun cancelPositionSaver() {
             if (isPositionSaverActive) {
@@ -2156,9 +2140,6 @@ class PlaybackService : MediaLibraryService() {
             }
         }
 
-        /**
-         * Starts the widget updater task. If the widget updater is already active, nothing will happen.
-         */
         @Synchronized
         fun startWidgetUpdater() {
             if (!isWidgetUpdaterActive && !schedExecutor.isShutdown) {
@@ -2184,13 +2165,11 @@ class PlaybackService : MediaLibraryService() {
          * Starts a new sleep timer with the given waiting time. If another sleep timer is already active, it will be
          * cancelled first.
          * After waitingTime has elapsed, onSleepTimerExpired() will be called.
-         *
          * @throws java.lang.IllegalArgumentException if waitingTime <= 0
          */
         @Synchronized
         fun setSleepTimer(waitingTime: Long) {
             require(waitingTime > 0) { "Waiting time <= 0" }
-
             Logd(TAG, "Setting sleep timer to $waitingTime milliseconds")
             if (isSleepTimerActive) sleepTimerFuture!!.cancel(true)
             sleepTimer = SleepTimer(waitingTime)
@@ -2198,9 +2177,6 @@ class PlaybackService : MediaLibraryService() {
             EventFlow.postEvent(FlowEvent.SleepTimerUpdatedEvent.justEnabled(waitingTime))
         }
 
-        /**
-         * Disables the sleep timer. If the sleep timer is not active, nothing will happen.
-         */
         @Synchronized
         fun disableSleepTimer() {
             if (isSleepTimerActive) {
@@ -2209,9 +2185,6 @@ class PlaybackService : MediaLibraryService() {
             }
         }
 
-        /**
-         * Restarts the sleep timer. If the sleep timer is not active, nothing will happen.
-         */
         @Synchronized
         fun restartSleepTimer() {
             if (isSleepTimerActive) {
@@ -2353,8 +2326,7 @@ class PlaybackService : MediaLibraryService() {
             fun onChapterLoaded(media: Playable?)
         }
 
-        internal class ShakeListener(private val mContext: Context, private val mSleepTimer: SleepTimer) :
-            SensorEventListener {
+        internal class ShakeListener(private val mContext: Context, private val mSleepTimer: SleepTimer) : SensorEventListener {
             private var mAccelerometer: Sensor? = null
             private var mSensorMgr: SensorManager? = null
 
@@ -2389,14 +2361,10 @@ class PlaybackService : MediaLibraryService() {
                 }
             }
             override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
-            companion object {
-                private val TAG: String = ShakeListener::class.simpleName ?: "Anonymous"
-            }
         }
 
         companion object {
             private val TAG: String = TaskManager::class.simpleName ?: "Anonymous"
-
             private const val SCHED_EX_POOL_SIZE = 2
 
             private const val SLEEP_TIMER_UPDATE_INTERVAL = 10000L  // in millisoconds

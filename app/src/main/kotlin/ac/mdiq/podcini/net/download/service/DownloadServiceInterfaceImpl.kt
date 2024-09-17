@@ -134,8 +134,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
             }
             progressUpdaterThread.start()
             var result: Result
-            try {
-                result = performDownload(media, request)
+            try { result = performDownload(media, request)
             } catch (e: Exception) {
                 e.printStackTrace()
                 result = Result.failure()
@@ -170,32 +169,23 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
             }
             val dest = File(request.destination)
             if (!dest.exists()) {
-                try {
-                    dest.createNewFile()
-                } catch (e: IOException) {
-                    Log.e(TAG, "performDownload Unable to create file")
-                }
+                try { dest.createNewFile() } catch (e: IOException) { Log.e(TAG, "performDownload Unable to create file") }
             }
             if (dest.exists()) {
                 try {
                     var episode = realm.query(Episode::class).query("id == ${media.id}").first().find()
                     if (episode != null) {
-                        episode = upsertBlk(episode) {
-                            it.media?.setfileUrlOrNull(request.destination)
-                        }
+                        episode = upsertBlk(episode) { it.media?.setfileUrlOrNull(request.destination) }
                         EventFlow.postEvent(FlowEvent.EpisodeMediaEvent.updated(episode))
                     } else Log.e(TAG, "performDownload media.episode is null")
-                } catch (e: Exception) {
-                    Log.e(TAG, "performDownload Exception in writeFileUrl: " + e.message)
-                }
+                } catch (e: Exception) { Log.e(TAG, "performDownload Exception in writeFileUrl: " + e.message) }
             }
             downloader = DefaultDownloaderFactory().create(request)
             if (downloader == null) {
                 Log.e(TAG, "performDownload Unable to create downloader")
                 return Result.failure()
             }
-            try {
-                downloader!!.call()
+            try { downloader!!.call()
             } catch (e: Exception) {
                 Log.e(TAG, "failed performDownload exception on downloader!!.call() ${e.message}")
                 LogsAndStats.addDownloadStatus(downloader!!.result)
@@ -328,8 +318,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                             durationStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
                             if (durationStr != null) it.media?.setDuration(durationStr!!.toInt())
                         }
-                    } catch (e: NumberFormatException) {
-                        Logd(TAG, "Invalid file duration: $durationStr")
+                    } catch (e: NumberFormatException) { Logd(TAG, "Invalid file duration: $durationStr")
                     } catch (e: Exception) {
                         Log.e(TAG, "Get duration failed", e)
                         it.media?.setDuration(30000)

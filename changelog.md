@@ -1,3 +1,7 @@
+# 6.7.0
+
+* largely improved efficiency of podcasts refresh, no more massive list searches
+
 # 6.6.7
 
 * volume adaptation numbers were changed to 0.2, 0.5, 1, 1.6, 2.4, 3.6 to avoid much distortion

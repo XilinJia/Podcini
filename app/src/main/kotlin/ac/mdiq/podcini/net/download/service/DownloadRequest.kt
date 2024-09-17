@@ -3,6 +3,8 @@ package ac.mdiq.podcini.net.download.service
 import ac.mdiq.podcini.net.utils.UrlChecker.prepareUrl
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.EpisodeMedia
+import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.showStackTrace
 import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
@@ -120,6 +122,8 @@ class DownloadRequest private constructor(
     }
 
     fun setLastModified(lastModified: String?): DownloadRequest {
+        Logd("DownloadRequest", "setLastModified: $lastModified")
+//        showStackTrace()
         this.lastModified = lastModified
         return this
     }
@@ -143,7 +147,6 @@ class DownloadRequest private constructor(
             this.feedfileId = media.id
             this.feedfileType = media.getTypeAsInt()
         }
-
         constructor(destination: String, feed: Feed) {
             this.destination = destination
             this.source = when {
@@ -156,27 +159,22 @@ class DownloadRequest private constructor(
             this.feedfileType = feed.getTypeAsInt()
             arguments.putInt(REQUEST_ARG_PAGE_NR, feed.pageNr)
         }
-
         fun withInitiatedByUser(initiatedByUser: Boolean): Builder {
             this.initiatedByUser = initiatedByUser
             return this
         }
-
         fun setForce(force: Boolean) {
             if (force) lastModified = null
         }
-
         fun lastModified(lastModified: String?): Builder {
             this.lastModified = lastModified
             return this
         }
-
         fun withAuthentication(username: String?, password: String?): Builder {
             this.username = username
             this.password = password
             return this
         }
-
         fun build(): DownloadRequest {
             return DownloadRequest(this)
         }

@@ -148,25 +148,25 @@ object FeedUpdateManager {
         @UnstableApi
         override fun doWork(): Result {
             ClientConfigurator.initialize(applicationContext)
-            val toUpdate: MutableList<Feed>
+            val feedsToUpdate: MutableList<Feed>
             val feedId = inputData.getLong(EXTRA_FEED_ID, -1L)
             var allAreLocal = true
             var force = false
             if (feedId == -1L) { // Update all
-                toUpdate = Feeds.getFeedList().toMutableList()
-                val itr = toUpdate.iterator()
+                feedsToUpdate = Feeds.getFeedList().toMutableList()
+                val itr = feedsToUpdate.iterator()
                 while (itr.hasNext()) {
                     val feed = itr.next()
                     if (feed.preferences?.keepUpdated == false) itr.remove()
                     if (!feed.isLocalFeed) allAreLocal = false
                 }
-                toUpdate.shuffle() // If the worker gets cancelled early, every feed has a chance to be updated
+                feedsToUpdate.shuffle() // If the worker gets cancelled early, every feed has a chance to be updated
             } else {
                 val feed = Feeds.getFeed(feedId) ?: return Result.success()
                 Logd(TAG, "doWork feed.downloadUrl: ${feed.downloadUrl}")
                 if (!feed.isLocalFeed) allAreLocal = false
-                toUpdate = ArrayList()
-                toUpdate.add(feed) // Needs to be updatable, so no singletonList
+                feedsToUpdate = mutableListOf(feed)
+//                feedsToUpdate.add(feed) // Needs to be updatable, so no singletonList
                 force = true
             }
             if (!inputData.getBoolean(EXTRA_EVEN_ON_MOBILE, false) && !allAreLocal) {
@@ -175,10 +175,10 @@ object FeedUpdateManager {
                     return Result.retry()
                 }
             }
-            refreshFeeds(toUpdate, force)
+            refreshFeeds(feedsToUpdate, force)
             notificationManager.cancel(R.id.notification_updating_feeds)
-            autodownloadEpisodeMedia(applicationContext, toUpdate.toList())
-            toUpdate.clear()
+            autodownloadEpisodeMedia(applicationContext, feedsToUpdate.toList())
+            feedsToUpdate.clear()
             return Result.success()
         }
         private fun createNotification(toUpdate: List<Feed?>?): Notification {
@@ -203,7 +203,7 @@ object FeedUpdateManager {
             return Futures.immediateFuture(ForegroundInfo(R.id.notification_updating_feeds, createNotification(null)))
         }
         @UnstableApi
-        private fun refreshFeeds(toUpdate: MutableList<Feed>, force: Boolean) {
+        private fun refreshFeeds(feedsToUpdate: MutableList<Feed>, force: Boolean) {
             if (Build.VERSION.SDK_INT >= 33 && ActivityCompat.checkSelfPermission(this.applicationContext,
                         Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 // TODO: Consider calling
@@ -219,10 +219,10 @@ object FeedUpdateManager {
                 return
             }
             var i = 0
-            while (i < toUpdate.size) {
+            while (i < feedsToUpdate.size) {
                 if (isStopped) return
-                notificationManager.notify(R.id.notification_updating_feeds, createNotification(toUpdate))
-                val feed = unmanaged(toUpdate[i++])
+                notificationManager.notify(R.id.notification_updating_feeds, createNotification(feedsToUpdate))
+                val feed = unmanaged(feedsToUpdate[i++])
                 try {
                     Logd(TAG, "updating local feed? ${feed.isLocalFeed} ${feed.title}")
                     when {

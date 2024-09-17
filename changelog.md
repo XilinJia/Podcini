@@ -1,3 +1,8 @@
+# 6.6.7
+
+* volume adaptation numbers were changed to 0.2, 0.5, 1, 1.6, 2.4, 3.6 to avoid much distortion
+* sleep timer and related menu item are enhanced
+
 # 6.6.6
 
 * fixed difference between the count of episodes and the actual number of episodes (seen when the number is small) in History, AllEpisodes, and OnlineFeed views

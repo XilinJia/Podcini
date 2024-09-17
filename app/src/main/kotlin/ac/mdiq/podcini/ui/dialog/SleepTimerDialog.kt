@@ -79,6 +79,12 @@ class SleepTimerDialog : DialogFragment() {
 
         etxtTime = binding.etxtTime
         binding.timeDisplay.visibility = View.GONE
+        val timeLeft = (playbackService?.taskManager?.sleepTimerTimeLeft?:0)
+        if (timeLeft > 0) {
+            binding.timeSetup.visibility = View.GONE
+            binding.timeDisplay.visibility = View.VISIBLE
+            binding.time.text = getDurationStringLong(timeLeft.toInt())
+        }
         val extendSleepFiveMinutesButton = binding.extendSleepFiveMinutesButton
         extendSleepFiveMinutesButton.text = getString(R.string.extend_sleep_timer_label, 5)
         val extendSleepTenMinutesButton = binding.extendSleepTenMinutesButton
@@ -125,7 +131,6 @@ class SleepTimerDialog : DialogFragment() {
         }
 
         binding.disableSleeptimerButton.setOnClickListener { playbackService?.taskManager?.disableSleepTimer() }
-
         binding.setSleeptimerButton.setOnClickListener {
             if (!PlaybackService.isRunning) {
                 Snackbar.make(content, R.string.no_media_playing_label, Snackbar.LENGTH_LONG).show()
@@ -265,7 +270,6 @@ class SleepTimerDialog : DialogFragment() {
                 paintText.color = getColorFromAttr(context, android.R.attr.textColorPrimary)
                 paintText.textAlign = Paint.Align.CENTER
             }
-
             override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
                 when {
                     MeasureSpec.getMode(widthMeasureSpec) == MeasureSpec.EXACTLY && MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.EXACTLY ->
@@ -276,15 +280,12 @@ class SleepTimerDialog : DialogFragment() {
                     else -> super.onMeasure(heightMeasureSpec, heightMeasureSpec)
                 }
             }
-
             override fun onDraw(canvas: Canvas) {
                 super.onDraw(canvas)
-
                 val size = height.toFloat() // square
                 val padding = size * 0.1f
                 paintDial.strokeWidth = size * 0.005f
                 bounds[padding, padding, size - padding] = size - padding
-
                 paintText.alpha = DIAL_ALPHA
                 canvas.drawArc(bounds, 0f, 360f, false, paintDial)
                 for (i in 0..23) {
@@ -301,7 +302,6 @@ class SleepTimerDialog : DialogFragment() {
                     canvas.drawLine(outer.x.toFloat(), outer.y.toFloat(), inner.x.toFloat(), inner.y.toFloat(), paintDial)
                 }
                 paintText.alpha = 255
-
                 val angleFrom = from.toFloat() / 24 * 360 - 90
                 val angleDistance = ((to - from + 24) % 24).toFloat() / 24 * 360
                 paintSelected.strokeWidth = padding / 6
@@ -312,7 +312,6 @@ class SleepTimerDialog : DialogFragment() {
                 canvas.drawCircle(p1.x.toFloat(), p1.y.toFloat(), padding / 2, paintSelected)
                 val p2 = radToPoint(angleFrom + angleDistance + 90, size / 2 - padding)
                 canvas.drawCircle(p2.x.toFloat(), p2.y.toFloat(), padding / 2, paintSelected)
-
                 paintText.textSize = 0.6f * padding
                 val timeRange = when {
                     from == to -> context.getString(R.string.sleep_timer_always)
@@ -324,12 +323,10 @@ class SleepTimerDialog : DialogFragment() {
                 }
                 canvas.drawText(timeRange, size / 2, (size - paintText.descent() - paintText.ascent()) / 2, paintText)
             }
-
             private fun radToPoint(angle: Float, radius: Float): Point {
                 return Point((width / 2 + radius * sin(-angle * Math.PI / 180 + Math.PI)).toInt(),
                     (height / 2 + radius * cos(-angle * Math.PI / 180 + Math.PI)).toInt())
             }
-
             override fun onTouchEvent(event: MotionEvent): Boolean {
                 parent.requestDisallowInterceptTouchEvent(true)
                 val center = Point(width / 2, height / 2)
@@ -337,7 +334,6 @@ class SleepTimerDialog : DialogFragment() {
                 var angle = (angleRad * (180 / Math.PI)).toFloat()
                 angle += (360 + 360 - 90).toFloat()
                 angle %= 360f
-
                 when {
                     event.action == MotionEvent.ACTION_DOWN -> {
                         val fromDistance = abs((angle - from.toFloat() / 24 * 360).toDouble()).toFloat()

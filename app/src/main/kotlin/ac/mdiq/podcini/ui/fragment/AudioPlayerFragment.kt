@@ -391,7 +391,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
                     is FlowEvent.PlayEvent -> onPlayEvent(event)
                     is FlowEvent.FavoritesEvent -> onFavoriteEvent(event)
                     is FlowEvent.PlayerErrorEvent -> MediaPlayerErrorDialog.show(activity as Activity, event)
-                    is FlowEvent.SleepTimerUpdatedEvent ->  if (event.isCancelled || event.wasJustEnabled()) loadMediaInfo(false)
+//                    is FlowEvent.SleepTimerUpdatedEvent ->  if (event.isCancelled || event.wasJustEnabled()) loadMediaInfo(false)
+                    is FlowEvent.SleepTimerUpdatedEvent ->  if (event.isCancelled || event.wasJustEnabled()) setupOptionsMenu()
                     is FlowEvent.PlaybackPositionEvent -> onPlaybackPositionEvent(event)
                     is FlowEvent.SpeedChangedEvent -> playerUI?.updatePlaybackSpeedButton(event)
                     else -> {}
@@ -707,9 +708,7 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
         fun onPlaybackServiceChanged(event: FlowEvent.PlaybackServiceEvent) {
             when (event.action) {
                 FlowEvent.PlaybackServiceEvent.Action.SERVICE_SHUT_DOWN -> (activity as MainActivity).setPlayerVisible(false)
-                FlowEvent.PlaybackServiceEvent.Action.SERVICE_STARTED -> {
-                    if (curMedia != null) (activity as MainActivity).setPlayerVisible(true)
-                }
+                FlowEvent.PlaybackServiceEvent.Action.SERVICE_STARTED -> if (curMedia != null) (activity as MainActivity).setPlayerVisible(true)
 //                PlaybackServiceEvent.Action.SERVICE_RESTARTED -> (activity as MainActivity).setPlayerVisible(true)
             }
         }

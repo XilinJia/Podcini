@@ -5,7 +5,6 @@ import ac.mdiq.podcini.net.sync.SynchronizationSettings.isProviderConnected
 import ac.mdiq.podcini.net.sync.SynchronizationSettings.wifiSyncEnabledKey
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
-import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink.needSynch
 import ac.mdiq.podcini.playback.base.InTheatre
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.base.InTheatre.curState
@@ -145,7 +144,7 @@ object EpisodeMenuHandler {
                 if (selectedItem.feed?.isLocalFeed != true && (isProviderConnected || wifiSyncEnabledKey)) {
                     val media: EpisodeMedia? = selectedItem.media
                     // not all items have media, Gpodder only cares about those that do
-                    if (needSynch() && media != null) {
+                    if (isProviderConnected && media != null) {
                         val actionPlay: EpisodeAction = EpisodeAction.Builder(selectedItem, EpisodeAction.PLAY)
                             .currentTimestamp()
                             .started(media.getDuration() / 1000)
@@ -159,7 +158,7 @@ object EpisodeMenuHandler {
             R.id.mark_unread_item -> {
 //                selectedItem.setPlayed(false)
                 setPlayState(Episode.PlayState.UNPLAYED.code, false, selectedItem)
-                if (needSynch() && selectedItem.feed?.isLocalFeed != true && selectedItem.media != null) {
+                if (isProviderConnected && selectedItem.feed?.isLocalFeed != true && selectedItem.media != null) {
                     val actionNew: EpisodeAction = EpisodeAction.Builder(selectedItem, EpisodeAction.NEW)
                         .currentTimestamp()
                         .build()

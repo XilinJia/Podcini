@@ -1,0 +1,4 @@
+ Version 6.7.1:
+
+* ensured duplicate episodes are removed from secondary checking during refresh
+* refresh progress is updated in notification

@@ -1,9 +1,9 @@
 package ac.mdiq.podcini.storage.database
 
 import ac.mdiq.podcini.net.download.DownloadError
+import ac.mdiq.podcini.net.sync.SynchronizationSettings.isProviderConnected
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
-import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink.needSynch
 import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.preferences.UserPreferences.isAutoDelete
 import ac.mdiq.podcini.preferences.UserPreferences.isAutoDeleteLocal
@@ -196,142 +196,6 @@ object Feeds {
      * I.e. episodes are removed from the database if they are not in this episode list.
      * @return The updated Feed from the database if it already existed, or the new Feed from the parameters otherwise.
      */
-//    @Synchronized
-//    fun updateFeed0(context: Context, newFeed: Feed, removeUnlistedItems: Boolean): Feed? {
-//        Logd(TAG, "updateFeed called")
-//        var resultFeed: Feed?
-//        val unlistedItems: MutableList<Episode> = ArrayList()
-//
-//        // Look up feed in the feedslist
-//        val savedFeed = searchFeedByIdentifyingValueOrID(newFeed, true)
-//        if (savedFeed == null) {
-//            Logd(TAG, "Found no existing Feed with title ${newFeed.title}. Adding as new one.")
-//            Logd(TAG, "newFeed.episodes: ${newFeed.episodes.size}")
-//            resultFeed = newFeed
-//            try {
-//                addNewFeedsSync(context, newFeed)
-//                // Update with default values that are set in database
-//                resultFeed = searchFeedByIdentifyingValueOrID(newFeed)
-//                if (removeUnlistedItems) runBlocking { deleteEpisodes(context, unlistedItems).join() }
-//            } catch (e: InterruptedException) { e.printStackTrace()
-//            } catch (e: ExecutionException) { e.printStackTrace() }
-//            return resultFeed
-//        }
-//
-//        Logd(TAG, "Feed with title " + newFeed.title + " already exists. Syncing new with existing one.")
-//        newFeed.episodes.sortWith(EpisodePubdateComparator())
-//        if (newFeed.pageNr == savedFeed.pageNr) {
-//            if (savedFeed.compareWithOther(newFeed)) {
-//                Logd(TAG, "Feed has updated attribute values. Updating old feed's attributes")
-//                savedFeed.updateFromOther(newFeed)
-//            }
-//        } else {
-//            Logd(TAG, "New feed has a higher page number.")
-//            savedFeed.nextPageLink = newFeed.nextPageLink
-//        }
-////            appears not useful
-////            if (savedFeed.preferences != null && savedFeed.preferences!!.compareWithOther(newFeed.preferences)) {
-////                Logd(TAG, "Feed has updated preferences. Updating old feed's preferences")
-////                savedFeed.preferences!!.updateFromOther(newFeed.preferences)
-////            }
-//        val priorMostRecent = savedFeed.mostRecentItem
-//        val priorMostRecentDate: Date? = priorMostRecent?.getPubDate()
-//        var idLong = Feed.newId()
-//        // Look for new or updated Items
-//        for (idx in newFeed.episodes.indices) {
-//            val episode = newFeed.episodes[idx]
-//            val possibleDuplicate = EpisodeAssistant.searchEpisodeGuessDuplicate(newFeed.episodes, episode)
-//            if (!newFeed.isLocalFeed && possibleDuplicate != null && episode !== possibleDuplicate) {
-//                // Canonical episode is the first one returned (usually oldest)
-//                addDownloadStatus(DownloadResult(savedFeed.id, episode.title ?: "", DownloadError.ERROR_PARSER_EXCEPTION_DUPLICATE, false,
-//                    """
-//                            The podcast host appears to have added the same episode twice. Podcini still refreshed the feed and attempted to repair it.
-//
-//                            Original episode:
-//                            ${EpisodeAssistant.duplicateEpisodeDetails(episode)}
-//
-//                            Second episode that is also in the feed:
-//                            ${EpisodeAssistant.duplicateEpisodeDetails(possibleDuplicate)}
-//                            """.trimIndent()))
-//                continue
-//            }
-//            var oldItem = searchEpisodeByIdentifyingValue(savedFeed.episodes, episode)
-//            if (!newFeed.isLocalFeed && oldItem == null) {
-//                oldItem = EpisodeAssistant.searchEpisodeGuessDuplicate(savedFeed.episodes, episode)
-//                if (oldItem != null) {
-//                    Logd(TAG, "Repaired duplicate: $oldItem, $episode")
-//                    addDownloadStatus(DownloadResult(savedFeed.id,
-//                        episode.title ?: "", DownloadError.ERROR_PARSER_EXCEPTION_DUPLICATE, false,
-//                        """
-//                                The podcast host changed the ID of an existing episode instead of just updating the episode itself. Podcini still refreshed the feed and attempted to repair it.
-//
-//                                Original episode:
-//                                ${EpisodeAssistant.duplicateEpisodeDetails(oldItem)}
-//
-//                                Now the feed contains:
-//                                ${EpisodeAssistant.duplicateEpisodeDetails(episode)}
-//                                """.trimIndent()))
-//                    oldItem.identifier = episode.identifier
-//                    if (needSynch() && oldItem.isPlayed() && oldItem.media != null) {
-//                        val durs = oldItem.media!!.getDuration() / 1000
-//                        val action = EpisodeAction.Builder(oldItem, EpisodeAction.PLAY)
-//                            .currentTimestamp()
-//                            .started(durs)
-//                            .position(durs)
-//                            .total(durs)
-//                            .build()
-//                        SynchronizationQueueSink.enqueueEpisodeActionIfSyncActive(context, action)
-//                    }
-//                }
-//            }
-//            if (oldItem != null) oldItem.updateFromOther(episode)
-//            else {
-//                Logd(TAG, "Found new episode: ${episode.title}")
-//                episode.feed = savedFeed
-//                episode.id = idLong++
-//                episode.feedId = savedFeed.id
-//                if (episode.media != null) {
-//                    episode.media!!.id = episode.id
-//                    if (!savedFeed.hasVideoMedia && episode.media!!.getMediaType() == MediaType.VIDEO) savedFeed.hasVideoMedia = true
-//                }
-//                if (idx >= savedFeed.episodes.size) savedFeed.episodes.add(episode)
-//                else savedFeed.episodes.add(idx, episode)
-//
-//                val pubDate = episode.getPubDate()
-//                if (pubDate == null || priorMostRecentDate == null || priorMostRecentDate.before(pubDate) || priorMostRecentDate == pubDate) {
-//                    Logd(TAG, "Marking episode published on $pubDate new, prior most recent date = $priorMostRecentDate")
-//                    episode.setNew()
-//                    if (savedFeed.preferences?.autoAddNewToQueue == true) {
-//                        val q = savedFeed.preferences?.queue
-//                        if (q != null) runOnIOScope {  addToQueueSync(false, episode, q) }
-//                    }
-//                }
-//            }
-//        }
-//        // identify episodes to be removed
-//        if (removeUnlistedItems) {
-//            val it = savedFeed.episodes.toMutableList().iterator()
-//            while (it.hasNext()) {
-//                val feedItem = it.next()
-//                if (searchEpisodeByIdentifyingValue(newFeed.episodes, feedItem) == null) {
-//                    unlistedItems.add(feedItem)
-//                    it.remove()
-//                }
-//            }
-//        }
-//        // update attributes
-//        savedFeed.lastUpdate = newFeed.lastUpdate
-//        savedFeed.type = newFeed.type
-//        savedFeed.lastUpdateFailed = false
-//        resultFeed = savedFeed
-//        try {
-//            upsertBlk(savedFeed) {}
-//            if (removeUnlistedItems) runBlocking { deleteEpisodes(context, unlistedItems).join() }
-//        } catch (e: InterruptedException) { e.printStackTrace()
-//        } catch (e: ExecutionException) { e.printStackTrace() }
-//        return resultFeed
-//    }
-
     @Synchronized
     fun updateFeed(context: Context, newFeed: Feed, removeUnlistedItems: Boolean): Feed? {
         Logd(TAG, "updateFeed called")
@@ -365,11 +229,6 @@ object Feeds {
             Logd(TAG, "New feed has a higher page number.")
             savedFeed.nextPageLink = newFeed.nextPageLink
         }
-//            appears not useful
-//            if (savedFeed.preferences != null && savedFeed.preferences!!.compareWithOther(newFeed.preferences)) {
-//                Logd(TAG, "Feed has updated preferences. Updating old feed's preferences")
-//                savedFeed.preferences!!.updateFromOther(newFeed.preferences)
-//            }
         val priorMostRecent = savedFeed.mostRecentItem
         val priorMostRecentDate: Date? = priorMostRecent?.getPubDate()
         var idLong = Feed.newId()
@@ -381,21 +240,6 @@ object Feeds {
         // Look for new or updated Items
         for (idx in newFeed.episodes.indices) {
             val episode = newFeed.episodes[idx]
-//            val possibleDuplicate = EpisodeAssistant.searchEpisodeGuessDuplicate(newFeed.episodes, episode)
-//            if (!newFeed.isLocalFeed && possibleDuplicate != null && episode !== possibleDuplicate) {
-//                // Canonical episode is the first one returned (usually oldest)
-//                addDownloadStatus(DownloadResult(savedFeed.id, episode.title ?: "", DownloadError.ERROR_PARSER_EXCEPTION_DUPLICATE, false,
-//                    """
-//                            The podcast host appears to have added the same episode twice. Podcini still refreshed the feed and attempted to repair it.
-//
-//                            Original episode:
-//                            ${EpisodeAssistant.duplicateEpisodeDetails(episode)}
-//
-//                            Second episode that is also in the feed:
-//                            ${EpisodeAssistant.duplicateEpisodeDetails(possibleDuplicate)}
-//                            """.trimIndent()))
-//                continue
-//            }
             var oldItem = savedFeedAssistant.searchEpisodeByIdentifyingValue(episode)
             if (!newFeed.isLocalFeed && oldItem == null) {
                 oldItem = savedFeedAssistant.searchEpisodeGuessDuplicate(episode)
@@ -413,7 +257,7 @@ object Feeds {
                                 ${EpisodeAssistant.duplicateEpisodeDetails(episode)}
                                 """.trimIndent()))
                     oldItem.identifier = episode.identifier
-                    if (needSynch() && oldItem.isPlayed() && oldItem.media != null) {
+                    if (isProviderConnected && oldItem.isPlayed() && oldItem.media != null) {
                         val durs = oldItem.media!!.getDuration() / 1000
                         val action = EpisodeAction.Builder(oldItem, EpisodeAction.PLAY)
                             .currentTimestamp()
@@ -616,16 +460,22 @@ object Feeds {
         }
     }
 
-    class FeedAssistant(val feed: Feed, val feedId: Long = 0L) {
+    // savedFeedId == 0L means saved feed
+    class FeedAssistant(val feed: Feed, val savedFeedId: Long = 0L) {
         val map = mutableMapOf<String, Episode>()
+        val tag: String = if (savedFeedId == 0L) "Saved feed" else "New feed"
 
-         init {
-             for (e in feed.episodes) {
+        init {
+            val iterator = feed.episodes.iterator()
+             while (iterator.hasNext()) {
+                 val e = iterator.next()
                  if (!e.identifier.isNullOrEmpty()) {
                      if (map.containsKey(e.identifier!!)) {
-                         // TODO: add addDownloadStatus
-                         Logd(TAG, "FeedAssistant init identifier duplicate: ${e.identifier} ${e.title}")
-                         addDownloadStatus(e, map[e.identifier!!]!!)
+                         Logd(TAG, "FeedAssistant init $tag identifier duplicate: ${e.identifier} ${e.title}")
+                         if (savedFeedId > 0L) {
+                             addDownloadStatus(e, map[e.identifier!!]!!)
+                             iterator.remove()
+                         }
                          continue
                      }
                      map[e.identifier!!] = e
@@ -633,9 +483,11 @@ object Feeds {
                  val idv = e.identifyingValue
                  if (idv != e.identifier && !idv.isNullOrEmpty()) {
                      if (map.containsKey(idv)) {
-                         // TODO: add addDownloadStatus
-                         Logd(TAG, "FeedAssistant init identifyingValue duplicate: $idv ${e.title}")
-                         addDownloadStatus(e, map[idv]!!)
+                         Logd(TAG, "FeedAssistant init $tag identifyingValue duplicate: $idv ${e.title}")
+                         if (savedFeedId > 0L) {
+                             addDownloadStatus(e, map[idv]!!)
+                             iterator.remove()
+                         }
                          continue
                      }
                      map[idv] = e
@@ -643,9 +495,11 @@ object Feeds {
                  val url = e.media?.getStreamUrl()
                  if (url != idv && !url.isNullOrEmpty()) {
                      if (map.containsKey(url)) {
-                         // TODO: add addDownloadStatus
-                         Logd(TAG, "FeedAssistant init url duplicate: $url ${e.title}")
-                         addDownloadStatus(e, map[url]!!)
+                         Logd(TAG, "FeedAssistant init $tag url duplicate: $url ${e.title}")
+                         if (savedFeedId > 0L) {
+                             addDownloadStatus(e, map[url]!!)
+                             iterator.remove()
+                         }
                          continue
                      }
                      map[url] = e
@@ -653,14 +507,16 @@ object Feeds {
                  val title = canonicalizeTitle(e.title)
                  if (title != idv && title.isNotEmpty()) {
                      if (map.containsKey(title)) {
-                         // TODO: add addDownloadStatus
                          val episode = map[title]
                          if (episode != null) {
                              val media1 = episode.media
                              val media2 = e.media
                              if (media1 != null && media2 != null && datesLookSimilar(episode, e) && durationsLookSimilar(media1, media2) && mimeTypeLooksSimilar(media1, media2)) {
-                                 Logd(TAG, "FeedAssistant init title duplicate: $title ${e.title}")
-                                 addDownloadStatus(e, episode)
+                                 Logd(TAG, "FeedAssistant init $tag title duplicate: $title ${e.title}")
+                                 if (savedFeedId > 0L) {
+                                     addDownloadStatus(e, episode)
+                                     iterator.remove()
+                                 }
                                  continue
                              }
                          }
@@ -670,25 +526,21 @@ object Feeds {
                  }
              }
          }
-
         private fun addDownloadStatus(episode: Episode, possibleDuplicate: Episode) {
-            val feedId_ = if (feedId > 0) feedId else feed.id
-            addDownloadStatus(DownloadResult(feedId_, episode.title ?: "", DownloadError.ERROR_PARSER_EXCEPTION_DUPLICATE, false,
+            addDownloadStatus(DownloadResult(savedFeedId, episode.title ?: "", DownloadError.ERROR_PARSER_EXCEPTION_DUPLICATE, false,
                 """
-                                    The podcast host appears to have added the same episode twice. Podcini still refreshed the feed and attempted to repair it.
-        
-                                    Original episode:
-                                    ${EpisodeAssistant.duplicateEpisodeDetails(episode)}
-        
-                                    Second episode that is also in the feed:
-                                    ${EpisodeAssistant.duplicateEpisodeDetails(possibleDuplicate)}
-                                    """.trimIndent()))
+                                            The podcast host appears to have added the same episode twice. Podcini still refreshed the feed and attempted to repair it.
+                
+                                            Original episode:
+                                            ${EpisodeAssistant.duplicateEpisodeDetails(episode)}
+                
+                                            Second episode that is also in the feed:
+                                            ${EpisodeAssistant.duplicateEpisodeDetails(possibleDuplicate)}
+                                            """.trimIndent()))
         }
-
         fun searchEpisodeByIdentifyingValue(item: Episode): Episode? {
             return map[item.identifyingValue]
         }
-
         fun searchEpisodeGuessDuplicate(item: Episode): Episode? {
             var episode = map[item.identifier]
             if (episode != null) return episode
@@ -709,7 +561,6 @@ object Feeds {
             }
             return null
         }
-
         fun clear() {
             map.clear()
         }

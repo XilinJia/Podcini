@@ -3,9 +3,9 @@ package ac.mdiq.podcini.net.download.service
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.download.DownloadError
 import ac.mdiq.podcini.net.download.service.DownloadRequestCreator.create
+import ac.mdiq.podcini.net.sync.SynchronizationSettings.isProviderConnected
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
-import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink.needSynch
 import ac.mdiq.podcini.net.utils.NetworkUtils.isAllowMobileEpisodeDownload
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
@@ -21,10 +21,10 @@ import ac.mdiq.podcini.storage.utils.ChapterUtils
 import ac.mdiq.podcini.storage.utils.MediaMetadataRetrieverCompat
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.utils.NotificationUtils
-import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.config.ClientConfigurator
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.config.ClientConfigurator
 import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -328,7 +328,7 @@ class DownloadServiceInterfaceImpl : DownloadServiceInterface() {
                 EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(item))
 //                        TODO: should use different event?
                 if (broadcastUnreadStateUpdate) EventFlow.postEvent(FlowEvent.EpisodePlayedEvent(item))
-                if (needSynch()) {
+                if (isProviderConnected) {
                     Logd(TAG, "enqueue synch")
                     val action = EpisodeAction.Builder(item, EpisodeAction.DOWNLOAD).currentTimestamp().build()
                     SynchronizationQueueSink.enqueueEpisodeActionIfSyncActive(context, action)

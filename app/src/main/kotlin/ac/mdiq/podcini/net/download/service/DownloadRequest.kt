@@ -1,10 +1,9 @@
 package ac.mdiq.podcini.net.download.service
 
 import ac.mdiq.podcini.net.utils.UrlChecker.prepareUrl
-import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.EpisodeMedia
+import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.showStackTrace
 import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
@@ -27,6 +26,7 @@ class DownloadRequest private constructor(
     var size: Long = 0
     private var statusMsg = 0
 
+    // only used in tests
     constructor(destination: String, source: String, title: String, feedfileId: Long,
                 feedfileType: Int, username: String?, password: String?, arguments: Bundle?, initiatedByUser: Boolean)
             : this(destination, source, title, feedfileId, feedfileType, null, username, password, false, arguments, initiatedByUser)

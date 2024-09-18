@@ -3,8 +3,8 @@ package ac.mdiq.podcini.net.feed
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.download.DownloadError
 import ac.mdiq.podcini.net.download.service.DefaultDownloaderFactory
-import ac.mdiq.podcini.net.download.service.DownloadRequestCreator.create
 import ac.mdiq.podcini.net.download.service.DownloadRequest
+import ac.mdiq.podcini.net.download.service.DownloadRequestCreator.create
 import ac.mdiq.podcini.net.feed.parser.FeedHandler
 import ac.mdiq.podcini.net.feed.parser.FeedHandler.FeedHandlerResult
 import ac.mdiq.podcini.net.utils.NetworkUtils.isAllowMobileFeedRefresh
@@ -46,8 +46,6 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.media3.common.util.UnstableApi
 import androidx.work.*
 import androidx.work.Constraints.Builder
-import com.annimon.stream.Collectors
-import com.annimon.stream.Stream
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
@@ -163,7 +161,7 @@ object FeedUpdateManager {
                 feedsToUpdate.shuffle() // If the worker gets cancelled early, every feed has a chance to be updated
             } else {
                 val feed = Feeds.getFeed(feedId) ?: return Result.success()
-                Logd(TAG, "doWork feed.downloadUrl: ${feed.downloadUrl}")
+                Logd(TAG, "doWork updating single feed: ${feed.title} ${feed.downloadUrl}")
                 if (!feed.isLocalFeed) allAreLocal = false
                 feedsToUpdate = mutableListOf(feed)
 //                feedsToUpdate.add(feed) // Needs to be updatable, so no singletonList
@@ -181,14 +179,13 @@ object FeedUpdateManager {
             feedsToUpdate.clear()
             return Result.success()
         }
-        private fun createNotification(toUpdate: List<Feed?>?): Notification {
+        private fun createNotification(titles: List<String>?): Notification {
             val context = applicationContext
             var contentText = ""
             var bigText: String? = ""
-            if (toUpdate != null) {
-                contentText = context.resources.getQuantityString(R.plurals.downloads_left,
-                    toUpdate.size, toUpdate.size)
-                bigText = Stream.of(toUpdate).map { feed: Feed? -> "• " + feed!!.title }.collect(Collectors.joining("\n"))
+            if (titles != null) {
+                contentText = context.resources.getQuantityString(R.plurals.downloads_left, titles.size, titles.size)
+                bigText = titles.map { "• $it" }.joinToString("\n")
             }
             return NotificationCompat.Builder(context, NotificationUtils.CHANNEL_ID.downloading.name)
                 .setContentTitle(context.getString(R.string.download_notification_title_feeds))
@@ -199,6 +196,7 @@ object FeedUpdateManager {
                 .addAction(R.drawable.ic_cancel, context.getString(R.string.cancel_label), WorkManager.getInstance(context).createCancelPendingIntent(id))
                 .build()
         }
+
         override fun getForegroundInfoAsync(): ListenableFuture<ForegroundInfo> {
             return Futures.immediateFuture(ForegroundInfo(R.id.notification_updating_feeds, createNotification(null)))
         }
@@ -218,10 +216,11 @@ object FeedUpdateManager {
 //            Toast.makeText(applicationContext, R.string.notification_permission_text, Toast.LENGTH_LONG).show()
                 return
             }
+            val titles = feedsToUpdate.map { it.title ?: "No title" }.toMutableList()
             var i = 0
             while (i < feedsToUpdate.size) {
                 if (isStopped) return
-                notificationManager.notify(R.id.notification_updating_feeds, createNotification(feedsToUpdate))
+                notificationManager.notify(R.id.notification_updating_feeds, createNotification(titles))
                 val feed = unmanaged(feedsToUpdate[i++])
                 try {
                     Logd(TAG, "updating local feed? ${feed.isLocalFeed} ${feed.title}")
@@ -236,7 +235,7 @@ object FeedUpdateManager {
                     val status = DownloadResult(feed.id, feed.title?:"", DownloadError.ERROR_IO_ERROR, false, e.message?:"")
                     LogsAndStats.addDownloadStatus(status)
                 }
-//                toUpdate.removeAt(0)
+                titles.removeAt(0)
             }
         }
         private fun refreshYoutubeFeed(feed: Feed) {
@@ -283,23 +282,23 @@ object FeedUpdateManager {
                 LogsAndStats.addDownloadStatus(downloader.result)
                 return
             }
-            val feedSyncTask = FeedSyncTask(applicationContext, request)
-            val success = feedSyncTask.run()
+            val feedUpdateTask = FeedUpdateTask(applicationContext, request)
+            val success = feedUpdateTask.run()
             if (!success) {
                 Logd(TAG, "update failed: unsuccessful")
                 Feeds.persistFeedLastUpdateFailed(feed, true)
-                LogsAndStats.addDownloadStatus(feedSyncTask.downloadStatus)
+                LogsAndStats.addDownloadStatus(feedUpdateTask.downloadStatus)
                 return
             }
             if (request.feedfileId == null) return  // No download logs for new subscriptions
             // we create a 'successful' download log if the feed's last refresh failed
             val log = LogsAndStats.getFeedDownloadLog(request.feedfileId)
-            if (log.isNotEmpty() && !log[0].isSuccessful) LogsAndStats.addDownloadStatus(feedSyncTask.downloadStatus)
+            if (log.isNotEmpty() && !log[0].isSuccessful) LogsAndStats.addDownloadStatus(feedUpdateTask.downloadStatus)
             if (!request.source.isNullOrEmpty()) {
                 when {
                     !downloader.permanentRedirectUrl.isNullOrEmpty() -> Feeds.updateFeedDownloadURL(request.source, downloader.permanentRedirectUrl!!)
-                    feedSyncTask.redirectUrl.isNotEmpty() && feedSyncTask.redirectUrl != request.source ->
-                        Feeds.updateFeedDownloadURL(request.source, feedSyncTask.redirectUrl)
+                    feedUpdateTask.redirectUrl.isNotEmpty() && feedUpdateTask.redirectUrl != request.source ->
+                        Feeds.updateFeedDownloadURL(request.source, feedUpdateTask.redirectUrl)
                 }
             }
         }
@@ -393,7 +392,7 @@ object FeedUpdateManager {
             }
         }
 
-        class FeedSyncTask(private val context: Context, request: DownloadRequest) {
+        class FeedUpdateTask(private val context: Context, request: DownloadRequest) {
             private val task = FeedParserTask(request)
             private var feedHandlerResult: FeedHandlerResult? = null
             val downloadStatus: DownloadResult

@@ -1,3 +1,8 @@
+# 6.7.1
+
+* ensured duplicate episodes are removed from secondary checking during refresh
+* refresh progress is updated in notification
+
 # 6.7.0
 
 * largely improved efficiency of podcasts refresh, no more massive list searches

@@ -15,8 +15,8 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
 #### Podcini.R 6.6 introduces the powerful feature of synthetic podcasts, enables the receiving/handling shared single media as well as playlist from Youtube and YT Music, for more see the Youtube section below or the changelogs.
 That means finally: [Nessun dorma](https://www.youtube.com/watch?v=cWc7vYjgnTs)
 #### Podcini.R version 6.5 as a major step forward brings YouTube channels in the app.  They can be searched, received from share, subscribed and played from within Podcini. For more see the Youtube section below or the changelogs
-#### If you are migrating from Podcini version 5, please read the migrationTo5.md file for migration instructions.
 #### For Podcini to show up on car's HUD with Android Auto, please read AnroidAuto.md for instructions.
+#### If you are migrating from Podcini version 5, please read the migrationTo5.md file for migration instructions.
 
 This project was developed from a fork of [AntennaPod](<https://github.com/AntennaPod/AntennaPod>) as of Feb 5 2024.
 

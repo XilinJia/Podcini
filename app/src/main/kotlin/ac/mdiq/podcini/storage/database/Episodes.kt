@@ -3,9 +3,9 @@ package ac.mdiq.podcini.storage.database
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.net.feed.LocalFeedUpdater.updateFeed
+import ac.mdiq.podcini.net.sync.SynchronizationSettings.isProviderConnected
 import ac.mdiq.podcini.net.sync.model.EpisodeAction
 import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
-import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink.needSynch
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.base.InTheatre.curState
 import ac.mdiq.podcini.playback.base.InTheatre.writeNoMediaPlaying
@@ -164,7 +164,7 @@ object Episodes {
             // Do full update of this feed to get rid of the episode
             if (episode.feed != null) updateFeed(episode.feed!!, context.applicationContext, null)
         } else {
-            if (needSynch()) {
+            if (isProviderConnected) {
                 // Gpodder: queue delete action for synchronization
                 val action = EpisodeAction.Builder(episode, EpisodeAction.DELETE).currentTimestamp().build()
                 SynchronizationQueueSink.enqueueEpisodeActionIfSyncActive(context, action)

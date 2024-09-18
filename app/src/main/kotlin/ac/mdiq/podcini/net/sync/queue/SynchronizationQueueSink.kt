@@ -11,10 +11,6 @@ object SynchronizationQueueSink {
     // To avoid a dependency loop of every class to SyncService, and from SyncService back to every class.
     private var serviceStarterImpl = Runnable {}
 
-    fun needSynch() : Boolean {
-        return isProviderConnected
-    }
-
     fun setServiceStarterImpl(serviceStarter: Runnable) {
         serviceStarterImpl = serviceStarter
     }
@@ -34,7 +30,6 @@ object SynchronizationQueueSink {
 
     fun enqueueFeedAddedIfSyncActive(context: Context, downloadUrl: String) {
         if (!isProviderConnected) return
-
         LockingAsyncExecutor.executeLockedAsync {
             SynchronizationQueueStorage(context).enqueueFeedAdded(downloadUrl)
             syncNow()
@@ -43,7 +38,6 @@ object SynchronizationQueueSink {
 
     fun enqueueFeedRemovedIfSyncActive(context: Context, downloadUrl: String) {
         if (!isProviderConnected) return
-
         LockingAsyncExecutor.executeLockedAsync {
             SynchronizationQueueStorage(context).enqueueFeedRemoved(downloadUrl)
             syncNow()
@@ -52,7 +46,6 @@ object SynchronizationQueueSink {
 
     fun enqueueEpisodeActionIfSyncActive(context: Context, action: EpisodeAction) {
         if (!isProviderConnected) return
-
         LockingAsyncExecutor.executeLockedAsync {
             SynchronizationQueueStorage(context).enqueueEpisodeAction(action)
             syncNow()
@@ -61,7 +54,6 @@ object SynchronizationQueueSink {
 
     fun enqueueEpisodePlayedIfSyncActive(context: Context, media: EpisodeMedia, completed: Boolean) {
         if (!isProviderConnected) return
-
         val item_ = media.episodeOrFetch()
         if (item_?.feed?.isLocalFeed == true) return
         if (media.startPosition < 0 || (!completed && media.startPosition >= media.getPosition())) return

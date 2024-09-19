@@ -84,6 +84,7 @@ class Feed : RealmObject {
 
     var preferences: FeedPreferences? = null
 
+    // TODO: this might not be needed
     var measures: FeedMeasures? = null
 
     var hasVideoMedia: Boolean = false
@@ -125,15 +126,6 @@ class Feed : RealmObject {
             field = value
             preferences?.sortOrderCode = value.code
         }
-
-//    @Ignore
-//    var sortOrderAux: EpisodeSortOrder? = null
-//        get() = fromCode(preferences?.sortOrderAuxCode ?: 0)
-//        set(value) {
-//            if (value == null) return
-//            field = value
-//            preferences?.sortOrderAuxCode = value.code
-//        }
 
     @Ignore
     val mostRecentItem: Episode?

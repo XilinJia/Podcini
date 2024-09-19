@@ -181,7 +181,7 @@ object Episodes {
     @UnstableApi
     fun deleteEpisodes(context: Context, episodes: List<Episode>) : Job {
         return runOnIOScope {
-            val removedFromQueue: MutableList<Episode> = ArrayList()
+            val removedFromQueue: MutableList<Episode> = mutableListOf()
             val queueItems = curQueue.episodes.toMutableList()
             for (episode in episodes) {
                 if (queueItems.remove(episode)) removedFromQueue.add(episode)

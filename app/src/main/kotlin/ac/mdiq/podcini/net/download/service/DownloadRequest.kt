@@ -71,8 +71,8 @@ class DownloadRequest private constructor(
         // of them from a Parcel (from an Intent extra to submit a request to DownloadService) will fail.
         //
         // see: https://stackoverflow.com/a/22926342
-        dest.writeString(nonNullString(username))
-        dest.writeString(nonNullString(password))
+        dest.writeString(username ?: "")
+        dest.writeString(password ?: "")
         dest.writeByte(if ((mediaEnqueued)) 1.toByte() else 0)
         dest.writeBundle(arguments)
         dest.writeByte(if (initiatedByUser) 1.toByte() else 0)
@@ -182,10 +182,6 @@ class DownloadRequest private constructor(
 
     companion object {
         const val REQUEST_ARG_PAGE_NR: String = "page"
-
-        private fun nonNullString(str: String?): String {
-            return str ?: ""
-        }
 
         private fun nullIfEmpty(str: String?): String? {
             return if (str.isNullOrEmpty()) null else str

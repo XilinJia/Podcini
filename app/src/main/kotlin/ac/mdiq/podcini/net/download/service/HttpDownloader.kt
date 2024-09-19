@@ -138,6 +138,7 @@ class HttpDownloader(request: DownloadRequest) : Downloader(request) {
                             downloadRequest.progressPercent = progressPercent
                         }
                     } catch (e: IOException) { Log.e(TAG, Log.getStackTraceString(e)) }
+
                     if (cancelled) onCancelled()
                     else {
                         // check if size specified in the response header is the same as the size of the

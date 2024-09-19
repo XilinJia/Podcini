@@ -153,7 +153,7 @@
     <string name="feed_auto_download_newer">Newest unplayed</string>
     <string name="feed_auto_download_older">Oldest unplayed</string>
 
-    <string name="put_in_queue_label">Add to queue...</string>
+    <string name="put_in_queue_label">Add to queue…</string>
     <string name="remove_from_other_queues">Remove from other queues</string>
 
     <string name="feed_new_episodes_action_nothing">Nothing</string>
@@ -363,7 +363,7 @@
     <string name="queue_locked">Queue locked</string>
     <string name="queue_unlocked">Queue unlocked</string>
     <string name="queue_lock_warning">If you lock the queue, you can no longer swipe or reorder episodes.</string>
-    <string name="switch_queue">Switch queue</string>
+    <string name="switch_queue">Switch active queue</string>
     <string name="open_queue">Open queue</string>
     <string name="checkbox_do_not_show_again">Do not show again</string>
     <string name="clear_queue_label">Clear queue</string>

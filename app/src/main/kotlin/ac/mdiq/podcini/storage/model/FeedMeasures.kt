@@ -3,6 +3,7 @@ package ac.mdiq.podcini.storage.model
 import io.realm.kotlin.types.EmbeddedRealmObject
 import io.realm.kotlin.types.annotations.Index
 
+// TODO: this might not be needed
 class FeedMeasures : EmbeddedRealmObject {
     @Index
     var feedID: Long = 0L

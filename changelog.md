@@ -1,3 +1,14 @@
+# 6.7.2
+
+* added menu item for removing feed in FeedInfo view
+* menu item "Switch queue" is changed to "Switch active queue"
+* Youtube and YT Music podcasts can be shared to Podcini
+* initial max number of loaded items for Youtube and YT Music playlist and podcast is set 500
+* initial max number of loaded items for Youtube channel is set 500
+* added some error dialogs when handling shared links
+* updated some dependencies including Compose
+* compile and target SDK's are upped to 35
+
 # 6.7.1
 
 * ensured duplicate episodes are removed from secondary checking during refresh

@@ -16,7 +16,7 @@
         custom:showAsAction="always">
     </item>
     <item
-        android:id="@+id/refresh_item"
+        android:id="@+id/refresh_feed"
         android:menuCategory="container"
         android:title="@string/refresh_label"
         custom:showAsAction="never">
@@ -44,13 +44,13 @@
     </item>
 
     <item
-        android:id="@+id/share_item"
+        android:id="@+id/share_feed"
         android:menuCategory="container"
         custom:showAsAction="never"
         android:title="@string/share_label" />
 
     <item
-        android:id="@+id/rename_item"
+        android:id="@+id/rename_feed"
         android:menuCategory="container"
         android:title="@string/rename_feed_label"
         custom:showAsAction="never" />

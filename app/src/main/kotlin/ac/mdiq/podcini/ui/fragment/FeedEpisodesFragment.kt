@@ -97,7 +97,7 @@ import java.util.concurrent.Semaphore
         _binding = FeedItemListFragmentBinding.inflate(inflater)
         _dialBinding = MultiSelectSpeedDialBinding.bind(binding.root)
 
-        binding.toolbar.inflateMenu(R.menu.feedlist)
+        binding.toolbar.inflateMenu(R.menu.feed_episodes)
         binding.toolbar.setOnMenuItemClickListener(this)
         binding.toolbar.setOnLongClickListener {
             binding.recyclerView.scrollToPosition(5)
@@ -132,7 +132,7 @@ import java.util.concurrent.Semaphore
         val iconTintManager: ToolbarIconTintManager = object : ToolbarIconTintManager(
             requireContext(), binding.toolbar, binding.collapsingToolbar) {
             override fun doTint(themedContext: Context) {
-                binding.toolbar.menu.findItem(R.id.refresh_item).setIcon(AppCompatResources.getDrawable(themedContext, R.drawable.ic_refresh))
+                binding.toolbar.menu.findItem(R.id.refresh_feed).setIcon(AppCompatResources.getDrawable(themedContext, R.drawable.ic_refresh))
                 binding.toolbar.menu.findItem(R.id.action_search).setIcon(AppCompatResources.getDrawable(themedContext, R.drawable.ic_search))
             }
         }
@@ -268,7 +268,7 @@ import java.util.concurrent.Semaphore
         binding.toolbar.menu.findItem(R.id.visit_website_item).setVisible(feed!!.link != null)
         binding.toolbar.menu.findItem(R.id.refresh_complete_item).setVisible(feed!!.isPaged)
         if (StringUtils.isBlank(feed!!.link)) binding.toolbar.menu.findItem(R.id.visit_website_item).setVisible(false)
-        if (feed!!.isLocalFeed) binding.toolbar.menu.findItem(R.id.share_item).setVisible(false)
+        if (feed!!.isLocalFeed) binding.toolbar.menu.findItem(R.id.share_feed).setVisible(false)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -285,8 +285,8 @@ import java.util.concurrent.Semaphore
         }
         when (item.itemId) {
             R.id.visit_website_item -> if (feed!!.link != null) IntentUtils.openInBrowser(requireContext(), feed!!.link!!)
-            R.id.share_item -> ShareUtils.shareFeedLink(requireContext(), feed!!)
-            R.id.refresh_item -> FeedUpdateManager.runOnceOrAsk(requireContext(), feed)
+            R.id.share_feed -> ShareUtils.shareFeedLink(requireContext(), feed!!)
+            R.id.refresh_feed -> FeedUpdateManager.runOnceOrAsk(requireContext(), feed)
             R.id.refresh_complete_item -> {
                 Thread {
                     try {
@@ -295,21 +295,14 @@ import java.util.concurrent.Semaphore
                                 it.nextPageLink = it.downloadUrl
                                 it.pageNr = 0
                             }
-//                            val feed_ = unmanaged(feed!!)
-//                            feed_.nextPageLink = feed_.downloadUrl
-//                            feed_.pageNr = 0
-//                            upsertBlk(feed_) {}
                             FeedUpdateManager.runOnce(requireContext(), feed_)
                         }
-                    } catch (e: ExecutionException) {
-                        throw RuntimeException(e)
-                    } catch (e: InterruptedException) {
-                        throw RuntimeException(e)
-                    }
+                    } catch (e: ExecutionException) { throw RuntimeException(e)
+                    } catch (e: InterruptedException) { throw RuntimeException(e) }
                 }.start()
             }
             R.id.sort_items -> SingleFeedSortDialog(feed).show(childFragmentManager, "SortDialog")
-            R.id.rename_item -> CustomFeedNameDialog(activity as Activity, feed!!).show()
+            R.id.rename_feed -> CustomFeedNameDialog(activity as Activity, feed!!).show()
             R.id.remove_feed -> {
                 RemoveFeedDialog.show(requireContext(), feed!!) {
                     (activity as MainActivity).loadFragment(UserPreferences.defaultPage, null)

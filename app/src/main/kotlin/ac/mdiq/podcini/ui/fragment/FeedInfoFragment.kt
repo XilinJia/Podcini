@@ -6,11 +6,13 @@ import ac.mdiq.podcini.databinding.FeedinfoBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager.runOnce
 import ac.mdiq.podcini.net.feed.discovery.CombinedSearcher
 import ac.mdiq.podcini.net.utils.HtmlToPlainText
+import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.database.Feeds.updateFeedDownloadURL
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.FeedFunding
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.dialog.RemoveFeedDialog
 import ac.mdiq.podcini.ui.statistics.FeedStatisticsFragment
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.ui.utils.ToolbarIconTintManager
@@ -248,6 +250,13 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     }
                 }.show()
             }
+            R.id.remove_feed -> {
+                RemoveFeedDialog.show(requireContext(), feed) {
+                    (activity as MainActivity).loadFragment(UserPreferences.defaultPage, null)
+                    // Make sure fragment is hidden before actually starting to delete
+                    requireActivity().supportFragmentManager.executePendingTransactions()
+                }
+            }
             else -> return false
         }
         return true
@@ -255,10 +264,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     @UnstableApi private fun addLocalFolderResult(uri: Uri?) {
         if (uri == null) return
-        reconnectLocalFolder(uri)
-    }
-
-    @UnstableApi private fun reconnectLocalFolder(uri: Uri) {
+//        reconnectLocalFolder(uri)
         lifecycleScope.launch {
             try {
                 withContext(Dispatchers.IO) {
@@ -278,6 +284,27 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             }
         }
     }
+
+//    @UnstableApi private fun reconnectLocalFolder(uri: Uri) {
+//        lifecycleScope.launch {
+//            try {
+//                withContext(Dispatchers.IO) {
+//                    requireActivity().contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+//                    val documentFile = DocumentFile.fromTreeUri(requireContext(), uri)
+//                    requireNotNull(documentFile) { "Unable to retrieve document tree" }
+//                    feed.downloadUrl = Feed.PREFIX_LOCAL_FOLDER + uri.toString()
+//                    updateFeed(requireContext(), feed, true)
+//                }
+//                withContext(Dispatchers.Main) {
+//                    (activity as MainActivity).showSnackbarAbovePlayer(string.ok, Snackbar.LENGTH_SHORT)
+//                }
+//            } catch (e: Throwable) {
+//                withContext(Dispatchers.Main) {
+//                    (activity as MainActivity).showSnackbarAbovePlayer(e.localizedMessage, Snackbar.LENGTH_LONG)
+//                }
+//            }
+//        }
+//    }
 
     private var eventSink: Job? = null
     private fun cancelFlowEvents() {
@@ -323,11 +350,8 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 runBlocking { updateFeedDownloadURL(original, updated).join() }
                 feed.downloadUrl = updated
                 runOnce(activityRef.get()!!, feed)
-            } catch (e: ExecutionException) {
-                throw RuntimeException(e)
-            } catch (e: InterruptedException) {
-                throw RuntimeException(e)
-            }
+            } catch (e: ExecutionException) { throw RuntimeException(e)
+            } catch (e: InterruptedException) { throw RuntimeException(e) }
         }
         @UnstableApi private fun showConfirmAlertDialog(url: String) {
             val activity = activityRef.get()

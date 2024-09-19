@@ -5,9 +5,9 @@ import ac.mdiq.podcini.databinding.EditTextDialogBinding
 import ac.mdiq.podcini.databinding.OnlineFeedviewFragmentBinding
 import ac.mdiq.podcini.net.download.DownloadError
 import ac.mdiq.podcini.net.download.service.DownloadRequestCreator.create
+import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.net.download.service.Downloader
 import ac.mdiq.podcini.net.download.service.HttpDownloader
-import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.net.feed.FeedUrlNotFoundException
 import ac.mdiq.podcini.net.feed.discovery.CombinedSearcher
 import ac.mdiq.podcini.net.feed.discovery.PodcastSearcherRegistry
@@ -24,8 +24,6 @@ import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.utils.FilesUtils.feedfilePath
 import ac.mdiq.podcini.storage.utils.FilesUtils.getFeedfileName
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.adapter.EpisodesAdapter.EpisodeInfoFragment
-import ac.mdiq.podcini.ui.adapter.EpisodesAdapter.EpisodeInfoFragment.Companion
 import ac.mdiq.podcini.ui.dialog.AuthenticationDialog
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import ac.mdiq.podcini.util.EventFlow
@@ -38,7 +36,6 @@ import ac.mdiq.vista.extractor.channel.ChannelInfo
 import ac.mdiq.vista.extractor.channel.tabs.ChannelTabInfo
 import ac.mdiq.vista.extractor.exceptions.ExtractionException
 import ac.mdiq.vista.extractor.playlist.PlaylistInfo
-import ac.mdiq.vista.extractor.stream.StreamInfo
 import ac.mdiq.vista.extractor.stream.StreamInfoItem
 import android.app.Dialog
 import android.content.Context
@@ -239,7 +236,10 @@ class OnlineFeedFragment : Fragment() {
     private fun htmlOrXml(url: String): String? {
         val connection = URL(url).openConnection() as HttpURLConnection
         var type: String? = null
-        try { type = connection.contentType } catch (e: IOException) { Log.e(TAG, "Error connecting to URL", e) } finally { connection.disconnect() }
+        try { type = connection.contentType } catch (e: IOException) {
+            Log.e(TAG, "Error connecting to URL", e)
+            showErrorDialog(e.message, "")
+        } finally { connection.disconnect() }
         if (type == null) return null
         Logd(TAG, "connection type: $type")
         return when {
@@ -273,8 +273,7 @@ class OnlineFeedFragment : Fragment() {
                         var infoItems = playlistInfo.relatedItems
                         var nextPage = playlistInfo.nextPage
                         Logd(TAG, "infoItems: ${infoItems.size}")
-                        var i = 0
-                        while (infoItems.isNotEmpty() && i++ < 2) {
+                        while (infoItems.isNotEmpty()) {
                             for (r in infoItems) {
                                 Logd(TAG, "startFeedBuilding relatedItem: $r")
                                 if (r.infoType != InfoItem.InfoType.STREAM) continue
@@ -283,18 +282,27 @@ class OnlineFeedFragment : Fragment() {
                                 e.feedId = feed_.id
                                 eList.add(e)
                             }
-                            if (nextPage == null) break
-                            val page = PlaylistInfo.getMoreItems(service, url, nextPage) ?: break
-                            nextPage = page.nextPage
-                            infoItems = page.items
-                            Logd(TAG, "more infoItems: ${infoItems.size}")
+                            if (nextPage == null || eList.size > 500) break
+                            try {
+                                val page = PlaylistInfo.getMoreItems(service, url, nextPage) ?: break
+                                nextPage = page.nextPage
+                                infoItems = page.items
+                                Logd(TAG, "more infoItems: ${infoItems.size}")
+                            } catch (e: Throwable) {
+                                Logd(TAG, "PlaylistInfo.getMoreItems error: ${e.message}")
+                                withContext(Dispatchers.Main) { showErrorDialog(e.message, "") }
+                                break
+                            }
                         }
                         feed_.episodes = eList
                         withContext(Dispatchers.Main) { showFeedInformation(feed_, mapOf()) }
                     } else {
                         val channelInfo = ChannelInfo.getInfo(service, url)
                         Logd(TAG, "startFeedBuilding result: $channelInfo ${channelInfo.tabs.size}")
-                        if (channelInfo.tabs.isEmpty()) return@launch
+                        if (channelInfo.tabs.isEmpty()) {
+                            withContext(Dispatchers.Main) { showErrorDialog("Channel is empty", "") }
+                            return@launch
+                        }
                         try {
                             val channelTabInfo = ChannelTabInfo.getInfo(service, channelInfo.tabs.first())
                             Logd(TAG, "startFeedBuilding result1: $channelTabInfo ${channelTabInfo.relatedItems.size}")
@@ -306,8 +314,7 @@ class OnlineFeedFragment : Fragment() {
                             var infoItems = channelTabInfo.relatedItems
                             var nextPage = channelTabInfo.nextPage
                             Logd(TAG, "infoItems: ${infoItems.size}")
-                            var i = 0
-                            while (infoItems.isNotEmpty() && i++ < 2) {
+                            while (infoItems.isNotEmpty()) {
                                 for (r in infoItems) {
                                     Logd(TAG, "startFeedBuilding relatedItem: $r")
                                     if (r.infoType != InfoItem.InfoType.STREAM) continue
@@ -316,17 +323,29 @@ class OnlineFeedFragment : Fragment() {
                                     e.feedId = feed_.id
                                     eList.add(e)
                                 }
-                                if (nextPage == null) break
-                                val page = ChannelTabInfo.getMoreItems(service, channelInfo.tabs.first(), nextPage)
-                                nextPage = page.nextPage
-                                infoItems = page.items
-                                Logd(TAG, "more infoItems: ${infoItems.size}")
+                                if (nextPage == null || eList.size > 200) break
+                                try {
+                                    val page = ChannelTabInfo.getMoreItems(service, channelInfo.tabs.first(), nextPage)
+                                    nextPage = page.nextPage
+                                    infoItems = page.items
+                                    Logd(TAG, "more infoItems: ${infoItems.size}")
+                                } catch (e: Throwable) {
+                                    Logd(TAG, "ChannelTabInfo.getMoreItems error: ${e.message}")
+                                    withContext(Dispatchers.Main) { showErrorDialog(e.message, "") }
+                                    break
+                                }
                             }
                             feed_.episodes = eList
                             withContext(Dispatchers.Main) { showFeedInformation(feed_, mapOf()) }
-                        } catch (e: Throwable) { Logd(TAG, "startFeedBuilding error1 ${e.message}") }
+                        } catch (e: Throwable) {
+                            Logd(TAG, "startFeedBuilding error1 ${e.message}")
+                            withContext(Dispatchers.Main) { showErrorDialog(e.message, "") }
+                        }
                     }
-                } catch (e: Throwable) { Logd(TAG, "startFeedBuilding error ${e.message}") }
+                } catch (e: Throwable) {
+                    Logd(TAG, "startFeedBuilding error ${e.message}")
+                    withContext(Dispatchers.Main) { showErrorDialog(e.message, "") }
+                }
             }
             return
         }
@@ -347,6 +366,7 @@ class OnlineFeedFragment : Fragment() {
             "XML" -> {}
             else -> {
                 Log.e(TAG, "unknown url type $urlType")
+                showErrorDialog("unknown url type $urlType", "")
                 return
             }
         }
@@ -388,7 +408,10 @@ class OnlineFeedFragment : Fragment() {
                         }
                     }
                 }
-            } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e)) }
+            } catch (e: Throwable) {
+                Log.e(TAG, Log.getStackTraceString(e))
+                withContext(Dispatchers.Main) { showErrorDialog(e.message, "") }
+            }
         }
     }
 
@@ -429,7 +452,10 @@ class OnlineFeedFragment : Fragment() {
                     this@OnlineFeedFragment.feeds = feeds
                     handleUpdatedFeedStatus()
                 }
-            } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e)) }
+            } catch (e: Throwable) {
+                Log.e(TAG, Log.getStackTraceString(e))
+                withContext(Dispatchers.Main) { showErrorDialog(e.message, "") }
+            }
         }
     }
 

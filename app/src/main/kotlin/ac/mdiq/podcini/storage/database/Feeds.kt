@@ -200,7 +200,7 @@ object Feeds {
     fun updateFeed(context: Context, newFeed: Feed, removeUnlistedItems: Boolean): Feed? {
         Logd(TAG, "updateFeed called")
         var resultFeed: Feed?
-        val unlistedItems: MutableList<Episode> = ArrayList()
+//        val unlistedItems: MutableList<Episode> = ArrayList()
 
         // Look up feed in the feedslist
         val savedFeed = searchFeedByIdentifyingValueOrID(newFeed, true)
@@ -212,7 +212,8 @@ object Feeds {
                 addNewFeedsSync(context, newFeed)
                 // Update with default values that are set in database
                 resultFeed = searchFeedByIdentifyingValueOrID(newFeed)
-                if (removeUnlistedItems) runBlocking { deleteEpisodes(context, unlistedItems).join() }
+                // TODO: This doesn't appear needed as unlistedItems is still empty
+//                if (removeUnlistedItems && unlistedItems.isNotEmpty()) runBlocking { deleteEpisodes(context, unlistedItems).join() }
             } catch (e: InterruptedException) { e.printStackTrace()
             } catch (e: ExecutionException) { e.printStackTrace() }
             return resultFeed
@@ -226,7 +227,7 @@ object Feeds {
                 savedFeed.updateFromOther(newFeed)
             }
         } else {
-            Logd(TAG, "New feed has a higher page number.")
+            Logd(TAG, "New feed has a higher page number: ${newFeed.nextPageLink}")
             savedFeed.nextPageLink = newFeed.nextPageLink
         }
         val priorMostRecent = savedFeed.mostRecentItem
@@ -240,9 +241,9 @@ object Feeds {
         // Look for new or updated Items
         for (idx in newFeed.episodes.indices) {
             val episode = newFeed.episodes[idx]
-            var oldItem = savedFeedAssistant.searchEpisodeByIdentifyingValue(episode)
+            var oldItem = savedFeedAssistant.getEpisodeByIdentifyingValue(episode)
             if (!newFeed.isLocalFeed && oldItem == null) {
-                oldItem = savedFeedAssistant.searchEpisodeGuessDuplicate(episode)
+                oldItem = savedFeedAssistant.guessDuplicate(episode)
                 if (oldItem != null) {
                     Logd(TAG, "Repaired duplicate: $oldItem, $episode")
                     addDownloadStatus(DownloadResult(savedFeed.id,
@@ -257,6 +258,7 @@ object Feeds {
                                 ${EpisodeAssistant.duplicateEpisodeDetails(episode)}
                                 """.trimIndent()))
                     oldItem.identifier = episode.identifier
+                    // queue for syncing with server
                     if (isProviderConnected && oldItem.isPlayed() && oldItem.media != null) {
                         val durs = oldItem.media!!.getDuration() / 1000
                         val action = EpisodeAction.Builder(oldItem, EpisodeAction.PLAY)
@@ -295,12 +297,13 @@ object Feeds {
         }
         savedFeedAssistant.clear()
 
+        val unlistedItems: MutableList<Episode> = ArrayList()
         // identify episodes to be removed
         if (removeUnlistedItems) {
             val it = savedFeed.episodes.toMutableList().iterator()
             while (it.hasNext()) {
                 val feedItem = it.next()
-                if (newFeedAssistant.searchEpisodeByIdentifyingValue(feedItem) == null) {
+                if (newFeedAssistant.getEpisodeByIdentifyingValue(feedItem) == null) {
                     unlistedItems.add(feedItem)
                     it.remove()
                 }
@@ -315,7 +318,7 @@ object Feeds {
         resultFeed = savedFeed
         try {
             upsertBlk(savedFeed) {}
-            if (removeUnlistedItems) runBlocking { deleteEpisodes(context, unlistedItems).join() }
+            if (removeUnlistedItems && unlistedItems.isNotEmpty()) runBlocking { deleteEpisodes(context, unlistedItems).join() }
         } catch (e: InterruptedException) { e.printStackTrace()
         } catch (e: ExecutionException) { e.printStackTrace() }
         return resultFeed
@@ -461,7 +464,7 @@ object Feeds {
     }
 
     // savedFeedId == 0L means saved feed
-    class FeedAssistant(val feed: Feed, val savedFeedId: Long = 0L) {
+    class FeedAssistant(val feed: Feed, private val savedFeedId: Long = 0L) {
         val map = mutableMapOf<String, Episode>()
         val tag: String = if (savedFeedId == 0L) "Saved feed" else "New feed"
 
@@ -538,10 +541,10 @@ object Feeds {
                                             ${EpisodeAssistant.duplicateEpisodeDetails(possibleDuplicate)}
                                             """.trimIndent()))
         }
-        fun searchEpisodeByIdentifyingValue(item: Episode): Episode? {
+        fun getEpisodeByIdentifyingValue(item: Episode): Episode? {
             return map[item.identifyingValue]
         }
-        fun searchEpisodeGuessDuplicate(item: Episode): Episode? {
+        fun guessDuplicate(item: Episode): Episode? {
             var episode = map[item.identifier]
             if (episode != null) return episode
             val url = item.media?.getStreamUrl()

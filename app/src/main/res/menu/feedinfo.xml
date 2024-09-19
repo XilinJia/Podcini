@@ -21,4 +21,12 @@
     <item
         android:id="@+id/edit_feed_url_item"
         android:title="@string/edit_url_menu" />
+    <item
+        android:id="@+id/remove_feed"
+        android:icon="@drawable/ic_delete"
+        android:menuCategory="container"
+        android:title="@string/remove_feed_label"
+        android:visible="true"
+        custom:showAsAction="collapseActionView">
+    </item>
 </menu>

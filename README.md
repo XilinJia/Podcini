@@ -12,7 +12,7 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
 [<img src="./images/external/getItf-droid.png" alt="F-Droid" height="50">](https://f-droid.org/packages/ac.mdiq.podcini.R/)
 [<img src="./images/external/amazon.png" alt="Amazon" height="40">](https://www.amazon.com/%E8%B4%BE%E8%A5%BF%E6%9E%97-Podcini-R/dp/B0D9WR8P13)
 
-#### Podcini.R 6.6 introduces the powerful feature of synthetic podcasts, enables the receiving/handling shared single media as well as playlist from Youtube and YT Music, for more see the Youtube section below or the changelogs.
+#### Podcini.R 6.6 introduces the powerful feature of synthetic podcasts, enables the receiving/handling shared single media as well as playlist and podcast from Youtube and YT Music, for more see the Youtube section below or the changelogs.
 That means finally: [Nessun dorma](https://www.youtube.com/watch?v=cWc7vYjgnTs)
 #### Podcini.R version 6.5 as a major step forward brings YouTube channels in the app.  They can be searched, received from share, subscribed and played from within Podcini. For more see the Youtube section below or the changelogs
 #### For Podcini to show up on car's HUD with Android Auto, please read AnroidAuto.md for instructions.
@@ -131,7 +131,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 
 * Youtube channels can be searched in podcast search view, can also be shared from other apps (such as Youtube) to Podcini
 * Youtube channels can be subscribed as normal podcasts
-* Playlists on Youtube or Youtube Music can be shared to Podcini, and then can be subscribed in similar fashion as the channels
+* Playlists and podcasts on Youtube or Youtube Music can be shared to Podcini, and then can be subscribed in similar fashion as the channels
 * Single media from Youtube or Youtube Music can also be shared from other apps, can be accepted as including video or audio only, are added to synthetic podcasts such as "Youtube Syndicate"
 * All the media from Youtube or Youtube Music can be played (only streamed) with video in fullscreen and in window modes or in audio only mode in the background
 * These media are played with the lowest video quality and highest audio quality

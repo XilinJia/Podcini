@@ -12,9 +12,8 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
 [<img src="./images/external/getItf-droid.png" alt="F-Droid" height="50">](https://f-droid.org/packages/ac.mdiq.podcini.R/)
 [<img src="./images/external/amazon.png" alt="Amazon" height="40">](https://www.amazon.com/%E8%B4%BE%E8%A5%BF%E6%9E%97-Podcini-R/dp/B0D9WR8P13)
 
-#### Podcini.R 6.6 introduces the powerful feature of synthetic podcasts, enables the receiving/handling shared single media as well as playlist and podcast from Youtube and YT Music, for more see the Youtube section below or the changelogs.
+#### Podcini.R version 6.5 as a major step forward brings YouTube contents in the app.  Channels can be searched, received from share, subscribed. Since 6.5, podcasts, playlists as well as single media from Youtube and YT Music can be shared to Podcini. For more see the Youtube section below or the changelogs
 That means finally: [Nessun dorma](https://www.youtube.com/watch?v=cWc7vYjgnTs)
-#### Podcini.R version 6.5 as a major step forward brings YouTube channels in the app.  They can be searched, received from share, subscribed and played from within Podcini. For more see the Youtube section below or the changelogs
 #### For Podcini to show up on car's HUD with Android Auto, please read AnroidAuto.md for instructions.
 #### If you are migrating from Podcini version 5, please read the migrationTo5.md file for migration instructions.
 

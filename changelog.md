@@ -4,7 +4,7 @@
 * fixed "filtered" always shown in Downloads info bar
 * minor enhancement in multi-select actions handling
 * on-going work to replace recycler view, recycler adapter and view holder for Episodes with Jetpack Compose routines
-* introduced "DownloadsC", an early preview (not fully implemented) of the Compose work
+* introduced "DownloadsC", an early preview (not fully implemented) of the Compose construction
 
 # 6.7.2
 

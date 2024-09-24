@@ -643,23 +643,13 @@ import java.util.concurrent.Semaphore
         }
     }
 
-//    private inner class FeedEpisodesAdapter(mainActivity: MainActivity) : EpisodesAdapter(mainActivity, ::refreshPosCallback) {
-//        @UnstableApi override fun beforeBindViewHolder(holder: EpisodeViewHolder, pos: Int) {
-////            holder.coverHolder.visibility = View.GONE
-//        }
-//    }
-
     class FeedEpisodeFilterDialog(val feed: Feed?) : EpisodeFilterDialog() {
         @OptIn(UnstableApi::class) override fun onFilterChanged(newFilterValues: Set<String>) {
             if (feed != null) {
                 Logd(TAG, "persist Episode Filter(): feedId = [$feed.id], filterValues = [$newFilterValues]")
                 runOnIOScope {
                     val feed_ = realm.query(Feed::class, "id == ${feed.id}").first().find()
-                    if (feed_ != null) {
-                        upsert(feed_) {
-                            it.preferences?.filterString = newFilterValues.joinToString()
-                        }
-                    }
+                    if (feed_ != null) upsert(feed_) { it.preferences?.filterString = newFilterValues.joinToString() }
                 }
             }
         }
@@ -688,9 +678,7 @@ import java.util.concurrent.Semaphore
                 Logd(TAG, "persist Episode SortOrder")
                 runOnIOScope {
                     val feed_ = realm.query(Feed::class, "id == ${feed.id}").first().find()
-                    if (feed_ != null) {
-                        upsert(feed_) { it.sortOrder = sortOrder }
-                    }
+                    if (feed_ != null) upsert(feed_) { it.sortOrder = sortOrder }
                 }
             }
         }

@@ -318,7 +318,8 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
             return context.getString(R.string.delete_episode_label)
         }
 
-        @UnstableApi override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
+        @UnstableApi
+        override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
             if (!item.isDownloaded && item.feed?.isLocalFeed != true) return
             deleteEpisodesWarnLocal(fragment.requireContext(), listOf(item))
         }
@@ -345,7 +346,8 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
             return context.getString(R.string.add_to_favorite_label)
         }
 
-        @OptIn(UnstableApi::class) override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
+        @OptIn(UnstableApi::class)
+        override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
             setFavorite(item, !item.isFavorite)
         }
 
@@ -371,7 +373,8 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
             return context.getString(R.string.no_action_label)
         }
 
-        @UnstableApi override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {}
+        @UnstableApi
+        override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {}
 
         override fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {
             return false
@@ -397,7 +400,8 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
             return context.getString(R.string.remove_history_label)
         }
 
-        @OptIn(UnstableApi::class) override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
+        @OptIn(UnstableApi::class)
+        override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
             val playbackCompletionDate: Date? = item.media?.playbackCompletionDate
             deleteFromHistory(item)
 
@@ -433,7 +437,8 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
             return context.getString(R.string.remove_from_queue_label)
         }
 
-        @OptIn(UnstableApi::class) override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
+        @OptIn(UnstableApi::class)
+        override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
             val position: Int = curQueue.episodes.indexOf(item)
             removeFromQueue(item)
             if (willRemove(filter, item)) {

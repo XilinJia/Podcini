@@ -278,9 +278,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     (activity as MainActivity).showSnackbarAbovePlayer(string.ok, Snackbar.LENGTH_SHORT)
                 }
             } catch (e: Throwable) {
-                withContext(Dispatchers.Main) {
-                    (activity as MainActivity).showSnackbarAbovePlayer(e.localizedMessage, Snackbar.LENGTH_LONG)
-                }
+                withContext(Dispatchers.Main) { (activity as MainActivity).showSnackbarAbovePlayer(e.localizedMessage?:"No message", Snackbar.LENGTH_LONG) }
             }
         }
     }

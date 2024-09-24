@@ -1196,6 +1196,8 @@ class AudioPlayerFragment : Fragment(), SeekBar.OnSeekBarChangeListener, Toolbar
             private const val PREF_SCROLL_Y = "prefScrollY"
             private const val PREF_PLAYABLE_ID = "prefPlayableId"
 
+            var media3Controller: MediaController? = null
+
             var prefs: SharedPreferences? = null
             fun getSharedPrefs(context: Context) {
                 if (prefs == null) prefs = context.getSharedPreferences(PREF, Context.MODE_PRIVATE)

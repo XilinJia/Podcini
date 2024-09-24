@@ -12,20 +12,22 @@ import com.google.android.material.snackbar.Snackbar
 import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.PagerFragmentBinding
+import ac.mdiq.podcini.databinding.SimpleIconListItemBinding
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
-import ac.mdiq.podcini.ui.adapter.SimpleIconListAdapter
 import ac.mdiq.podcini.util.IntentUtils.openInBrowser
 import android.R.color
 import android.content.DialogInterface
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.ListFragment
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import coil.load
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
@@ -98,7 +100,7 @@ class AboutFragment : PreferenceFragmentCompat() {
                         "", lib.getNamedItem("website").textContent, lib.getNamedItem("licenseText").textContent))
                 }
                 withContext(Dispatchers.Main) {
-                    listAdapter = SimpleIconListAdapter(requireContext(), licenses)
+                    listAdapter = ContributorsPagerFragment.SimpleIconListAdapter(requireContext(), licenses)
                 }
             }.invokeOnCompletion { throwable ->
                 if (throwable!= null) {
@@ -108,7 +110,7 @@ class AboutFragment : PreferenceFragmentCompat() {
         }
 
         private class LicenseItem(title: String, subtitle: String, imageUrl: String, val licenseUrl: String, val licenseTextFile: String)
-            : SimpleIconListAdapter.ListItem(title, subtitle, imageUrl)
+            : ContributorsPagerFragment.SimpleIconListAdapter.ListItem(title, subtitle, imageUrl)
 
         override fun onListItemClick(l: ListView, v: View, position: Int, id: Long) {
             super.onListItemClick(l, v, position, id)
@@ -261,6 +263,27 @@ class AboutFragment : PreferenceFragmentCompat() {
                     if (throwable != null) Toast.makeText(context, throwable.message, Toast.LENGTH_LONG).show()
                 }
             }
+        }
+
+        /**
+         * Displays a list of items that have a subtitle and an icon.
+         */
+        class SimpleIconListAdapter<T : SimpleIconListAdapter.ListItem>(private val context: Context, private val listItems: List<T>)
+            : ArrayAdapter<T>(context, R.layout.simple_icon_list_item, listItems) {
+
+            override fun getView(position: Int, view: View?, parent: ViewGroup): View {
+                var view = view
+                if (view == null) view = View.inflate(context, R.layout.simple_icon_list_item, null)
+
+                val item: ListItem = listItems[position]
+                val binding = SimpleIconListItemBinding.bind(view!!)
+                binding.title.text = item.title
+                binding.subtitle.text = item.subtitle
+                binding.icon.load(item.imageUrl)
+                return view
+            }
+
+            open class ListItem(val title: String, val subtitle: String, val imageUrl: String)
         }
 
         companion object {

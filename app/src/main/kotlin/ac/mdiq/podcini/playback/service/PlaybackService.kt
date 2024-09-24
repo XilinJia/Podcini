@@ -57,6 +57,7 @@ import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
+import ac.mdiq.podcini.ui.fragment.AudioPlayerFragment.PlayerDetailsFragment.Companion.media3Controller
 import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.ui.widget.WidgetUpdater
 import ac.mdiq.podcini.ui.widget.WidgetUpdater.WidgetState
@@ -66,7 +67,6 @@ import ac.mdiq.podcini.util.FlowEvent.PlayEvent.Action
 import ac.mdiq.podcini.util.IntentUtils.sendLocalBroadcast
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.config.ClientConfig
-import ac.mdiq.podcini.util.showStackTrace
 import ac.mdiq.vista.extractor.MediaFormat
 import ac.mdiq.vista.extractor.stream.AudioStream
 import ac.mdiq.vista.extractor.stream.DeliveryMethod
@@ -165,7 +165,6 @@ class PlaybackService : MediaLibraryService() {
     private var autoSkippedFeedMediaId: String? = null
     internal var normalSpeed = 1.0f
 
-//    private val mBinder: IBinder = LocalBinder()
     private var clickCount = 0
     private val clickHandler = Handler(Looper.getMainLooper())
 
@@ -1169,6 +1168,7 @@ class PlaybackService : MediaLibraryService() {
         var position = position
         val duration_: Int
         if (fromMediaPlayer) {
+//            position = (media3Controller?.currentPosition ?: 0).toInt() // testing the controller
             position = curPosition
             duration_ = this.curDuration
             playable = curMedia

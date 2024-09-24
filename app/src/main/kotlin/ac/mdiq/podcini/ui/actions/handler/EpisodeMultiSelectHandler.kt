@@ -39,8 +39,6 @@ class EpisodeMultiSelectHandler(private val activity: MainActivity, private val 
     fun handleAction(items: List<Episode>) {
         when (actionId) {
             R.id.toggle_favorite_batch -> toggleFavorite(items)
-//            R.id.add_to_favorite_batch -> markFavorite(items, true)
-//            R.id.remove_favorite_batch -> markFavorite(items, false)
             R.id.add_to_queue_batch -> queueChecked(items)
             R.id.put_in_queue_batch -> PutToQueueDialog(activity, items).show()
             R.id.remove_from_queue_batch -> removeFromQueueChecked(items)
@@ -48,14 +46,6 @@ class EpisodeMultiSelectHandler(private val activity: MainActivity, private val 
                 setPlayState(Episode.PlayState.UNSPECIFIED.code, false, *items.toTypedArray())
 //                showMessage(R.plurals.marked_read_batch_label, items.size)
             }
-//            R.id.mark_read_batch -> {
-//                setPlayState(Episode.PLAYED, false, *items.toTypedArray())
-//                showMessage(R.plurals.marked_read_batch_label, items.size)
-//            }
-//            R.id.mark_unread_batch -> {
-//                setPlayState(Episode.UNPLAYED, false, *items.toTypedArray())
-//                showMessage(R.plurals.marked_unread_batch_label, items.size)
-//            }
             R.id.download_batch -> downloadChecked(items)
             R.id.delete_batch -> deleteChecked(items)
             else -> Log.e(TAG, "Unrecognized speed dial action item. Do nothing. id=$actionId")
@@ -64,18 +54,18 @@ class EpisodeMultiSelectHandler(private val activity: MainActivity, private val 
 
     private fun queueChecked(items: List<Episode>) {
         // Check if an episode actually contains any media files before adding it to queue
-        val toQueue = mutableListOf<Long>()
-        for (episode in items) {
-            if (episode.media != null) toQueue.add(episode.id)
-        }
+//        val toQueue = mutableListOf<Long>()
+//        for (episode in items) {
+//            if (episode.media != null) toQueue.add(episode.id)
+//        }
         Queues.addToQueue(true, *items.toTypedArray())
-        showMessage(R.plurals.added_to_queue_batch_label, toQueue.size)
+        showMessage(R.plurals.added_to_queue_batch_label, items.size)
     }
 
     private fun removeFromQueueChecked(items: List<Episode>) {
-        val checkedIds = getSelectedIds(items)
+//        val checkedIds = getSelectedIds(items)
         removeFromQueue(*items.toTypedArray())
-        showMessage(R.plurals.removed_from_queue_batch_label, checkedIds.size)
+        showMessage(R.plurals.removed_from_queue_batch_label, items.size)
     }
 
     private fun toggleFavorite(items: List<Episode>) {
@@ -109,13 +99,13 @@ class EpisodeMultiSelectHandler(private val activity: MainActivity, private val 
         }
     }
 
-    private fun getSelectedIds(items: List<Episode>): List<Long> {
-        val checkedIds = mutableListOf<Long>()
-        for (i in items.indices) {
-            checkedIds.add(items[i].id)
-        }
-        return checkedIds
-    }
+//    private fun getSelectedIds(items: List<Episode>): List<Long> {
+//        val checkedIds = mutableListOf<Long>()
+//        for (i in items.indices) {
+//            checkedIds.add(items[i].id)
+//        }
+//        return checkedIds
+//    }
 
     class PutToQueueDialog(activity: Activity, val items: List<Episode>) {
         private val activityRef: WeakReference<Activity> = WeakReference(activity)

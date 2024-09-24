@@ -27,6 +27,7 @@ import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.dialog.RatingDialog
 import ac.mdiq.podcini.ui.fragment.*
+import ac.mdiq.podcini.ui.fragment.AudioPlayerFragment.PlayerDetailsFragment.Companion.media3Controller
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.ui.utils.LockableBottomSheetBehavior
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getDrawableFromAttr
@@ -417,6 +418,7 @@ class MainActivity : CastEnabledActivity() {
             QueuesFragment.TAG -> fragment = QueuesFragment()
             AllEpisodesFragment.TAG -> fragment = AllEpisodesFragment()
             DownloadsFragment.TAG -> fragment = DownloadsFragment()
+            DownloadsCFragment.TAG -> fragment = DownloadsCFragment()
             HistoryFragment.TAG -> fragment = HistoryFragment()
             OnlineSearchFragment.TAG -> fragment = OnlineSearchFragment()
             SubscriptionsFragment.TAG -> fragment = SubscriptionsFragment()
@@ -493,11 +495,9 @@ class MainActivity : CastEnabledActivity() {
     private fun setNavDrawerSize() {
         // Tablet layout does not have a drawer
         if (drawerLayout == null) return
-
         val screenPercent = resources.getInteger(R.integer.nav_drawer_screen_size_percent) * 0.01f
         val width = (screenWidth * screenPercent).toInt()
         val maxWidth = resources.getDimension(R.dimen.nav_drawer_max_screen_size).toInt()
-
         navDrawer.layoutParams.width = min(width.toDouble(), maxWidth.toDouble()).toInt()
         Logd(TAG, "setNavDrawerSize: ${navDrawer.layoutParams.width}")
     }
@@ -514,7 +514,7 @@ class MainActivity : CastEnabledActivity() {
         val sessionToken = SessionToken(this, ComponentName(this, PlaybackService::class.java))
         controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
         controllerFuture.addListener({
-//            mediaController = controllerFuture.get()
+            media3Controller = controllerFuture.get()
 //            Logd(TAG, "controllerFuture.addListener: $mediaController")
         }, MoreExecutors.directExecutor())
     }
@@ -651,12 +651,12 @@ class MainActivity : CastEnabledActivity() {
         handleNavIntent()
     }
 
-    fun showSnackbarAbovePlayer(text: CharSequence?, duration: Int): Snackbar {
+    fun showSnackbarAbovePlayer(text: CharSequence, duration: Int): Snackbar {
         val s: Snackbar
         if (bottomSheet.state == BottomSheetBehavior.STATE_COLLAPSED) {
-            s = Snackbar.make(mainView, text!!, duration)
+            s = Snackbar.make(mainView, text, duration)
             if (audioPlayerView.visibility == View.VISIBLE) s.setAnchorView(audioPlayerView)
-        } else s = Snackbar.make(binding.root, text!!, duration)
+        } else s = Snackbar.make(binding.root, text, duration)
 
         s.show()
         return s

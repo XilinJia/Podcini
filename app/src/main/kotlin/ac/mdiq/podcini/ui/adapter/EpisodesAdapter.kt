@@ -87,7 +87,6 @@ import kotlin.math.max
  */
 open class EpisodesAdapter(mainActivity: MainActivity, var refreshFragPosCallback: ((Int, Episode) -> Unit)? = null)
     : SelectableAdapter<EpisodeViewHolder?>(mainActivity) {
-
     private val TAG: String = this::class.simpleName ?: "Anonymous"
 
     val mainActivityRef: WeakReference<MainActivity> = WeakReference<MainActivity>(mainActivity)

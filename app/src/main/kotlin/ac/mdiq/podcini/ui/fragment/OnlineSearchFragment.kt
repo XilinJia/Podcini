@@ -177,7 +177,7 @@ class OnlineSearchFragment : Fragment() {
                 }
             } catch (e: Throwable) {
                 Log.e(TAG, Log.getStackTraceString(e))
-                (getActivity() as MainActivity).showSnackbarAbovePlayer(e.localizedMessage, Snackbar.LENGTH_LONG)
+                (getActivity() as MainActivity).showSnackbarAbovePlayer(e.localizedMessage?: "No messaage", Snackbar.LENGTH_LONG)
             }
         }
     }

@@ -285,6 +285,8 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
         }
         override fun onResume() {
             super.onResume()
+            nextcloudLoginFlow?.onResume()
+
             if (shouldDismiss) dismiss()
         }
         override fun onNextcloudAuthenticated(server: String, username: String, password: String) {

@@ -22,6 +22,7 @@ class NextcloudLoginFlow(private val httpClient: OkHttpClient, private val rawHo
     private val hostname = HostnameParser(rawHostUrl)
     private var token: String? = null
     private var endpoint: String? = null
+    private var isWaitingForBrowser:Boolean = false
 
     fun saveInstanceState(): ArrayList<String?> {
         val state = ArrayList<String?>()
@@ -51,7 +52,7 @@ class NextcloudLoginFlow(private val httpClient: OkHttpClient, private val rawHo
                 withContext(Dispatchers.Main) {
                     val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(result))
                     context.startActivity(browserIntent)
-                    poll()
+                    isWaitingForBrowser = true
                 }
             } catch (e: Throwable) {
                 Log.e(TAG, Log.getStackTraceString(e))
@@ -77,6 +78,13 @@ class NextcloudLoginFlow(private val httpClient: OkHttpClient, private val rawHo
             }
         }
         throw RuntimeException("Maximum retries exceeded")
+    }
+
+    fun onResume(){ //trigger poll only when returning from the browser
+        if (token != null && isWaitingForBrowser){
+            poll()
+            isWaitingForBrowser = false
+        }
     }
 
     private fun poll() {

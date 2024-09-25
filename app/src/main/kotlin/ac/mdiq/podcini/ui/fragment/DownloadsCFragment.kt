@@ -16,6 +16,7 @@ import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
+import ac.mdiq.podcini.ui.actions.swipeactions.SwipeAction
 import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.CustomTheme
@@ -36,8 +37,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
@@ -65,6 +65,8 @@ import java.util.*
     private var episodes = mutableStateListOf<Episode>()
 
     private var infoBarText = mutableStateOf("")
+    var leftActionState = mutableStateOf<SwipeAction?>(null)
+    var rightActionState = mutableStateOf<SwipeAction?>(null)
 
     private lateinit var toolbar: MaterialToolbar
 //    private lateinit var recyclerView: EpisodesRecyclerView
@@ -94,17 +96,18 @@ import java.util.*
         (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
 
         swipeActions = SwipeActions(this, TAG)
+        swipeActions.setFilter(EpisodeFilter(EpisodeFilter.States.downloaded.name))
         binding.infobar.setContent {
             CustomTheme(requireContext()) {
-                InforBar(infoBarText, leftActionConfig = {swipeActions.showDialog()}, rightActionConfig = { swipeActions.showDialog() })
+                InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {swipeActions.showDialog()})
             }
         }
 
         binding.lazyColumn.setContent {
             CustomTheme(requireContext()) {
                 EpisodeLazyColumn(activity as MainActivity, episodes = episodes,
-                    leftAction = { swipeActions.actions?.left?.performAction(it, this, EpisodeFilter())},
-                    rightAction = { swipeActions.actions?.right?.performAction(it, this, EpisodeFilter())})
+                    leftActionCB = { leftActionState.value?.performAction(it, this, swipeActions.filter ?: EpisodeFilter())},
+                    rightActionCB = { rightActionState.value?.performAction(it, this, swipeActions.filter ?: EpisodeFilter())})
             }
         }
 //        recyclerView.setRecycledViewPool((activity as MainActivity).recycledViewPool)
@@ -112,8 +115,7 @@ import java.util.*
 //        recyclerView.addOnScrollListener(LiftOnScrollListener(binding.appbar))
 
 //        swipeActions = SwipeActions(this, TAG).attachTo(recyclerView)
-        lifecycle.addObserver(swipeActions)
-        swipeActions.setFilter(EpisodeFilter(EpisodeFilter.States.downloaded.name))
+//        lifecycle.addObserver(swipeActions)
         refreshSwipeTelltale()
 //        binding.leftActionIcon.setOnClickListener { swipeActions.showDialog() }
 //        binding.rightActionIcon.setOnClickListener { swipeActions.showDialog() }
@@ -363,6 +365,8 @@ import java.util.*
     }
 
     private fun refreshSwipeTelltale() {
+        leftActionState.value = swipeActions.actions?.left
+        rightActionState.value = swipeActions.actions?.right
 //        if (swipeActions.actions?.left != null) binding.leftActionIcon.setImageResource(swipeActions.actions!!.left!!.getActionIcon())
 //        if (swipeActions.actions?.right != null) binding.rightActionIcon.setImageResource(swipeActions.actions!!.right!!.getActionIcon())
     }

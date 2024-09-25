@@ -8,15 +8,19 @@ import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.Queues
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueue
+import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.ui.actions.handler.EpisodeMultiSelectHandler.PutToQueueDialog
+import ac.mdiq.podcini.ui.actions.swipeactions.SwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.EpisodesAdapter.EpisodeInfoFragment
 import ac.mdiq.podcini.ui.fragment.FeedInfoFragment
 import ac.mdiq.podcini.ui.utils.LocalDeleteModal
+import ac.mdiq.podcini.ui.view.EpisodeViewHolder
+import ac.mdiq.podcini.ui.view.EpisodeViewHolder.Companion
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.MiscFormatter.formatAbbrev
 import android.text.format.Formatter
@@ -49,24 +53,25 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import coil.compose.AsyncImage
-import kotlinx.coroutines.launch
+import io.realm.kotlin.notifications.SingleQueryChange
+import io.realm.kotlin.notifications.UpdatedObject
+import kotlinx.coroutines.*
 import kotlin.math.roundToInt
 
 @Composable
-fun InforBar(text: MutableState<String>, leftActionConfig: () -> Unit, rightActionConfig: () -> Unit) {
-//    val textState by remember { mutableStateOf(text) }
+fun InforBar(text: MutableState<String>, leftAction: MutableState<SwipeAction?>, rightAction: MutableState<SwipeAction?>, actionConfig: () -> Unit) {
     val textColor = MaterialTheme.colors.onSurface
     Logd("InforBar", "textState: ${text.value}")
     Row {
-        Image(painter = painterResource(R.drawable.ic_questionmark), contentDescription = "left_action_icon",
-            Modifier.width(24.dp).height(24.dp).clickable(onClick = leftActionConfig))
+        Image(painter = painterResource(leftAction.value?.getActionIcon() ?:R.drawable.ic_questionmark), contentDescription = "left_action_icon",
+            Modifier.width(24.dp).height(24.dp).clickable(onClick = actionConfig))
         Image(painter = painterResource(R.drawable.baseline_arrow_left_alt_24), contentDescription = "left_arrow", Modifier.width(24.dp).height(24.dp))
         Spacer(modifier = Modifier.weight(1f))
         Text(text.value, color = textColor, style = MaterialTheme.typography.body2)
         Spacer(modifier = Modifier.weight(1f))
         Image(painter = painterResource(R.drawable.baseline_arrow_right_alt_24), contentDescription = "right_arrow", Modifier.width(24.dp).height(24.dp))
-        Image(painter = painterResource(R.drawable.ic_questionmark), contentDescription = "right_action_icon",
-            Modifier.width(24.dp).height(24.dp).clickable(onClick = rightActionConfig))
+        Image(painter = painterResource(rightAction.value?.getActionIcon() ?:R.drawable.ic_questionmark), contentDescription = "right_action_icon",
+            Modifier.width(24.dp).height(24.dp).clickable(onClick = actionConfig))
     }
 }
 
@@ -144,10 +149,8 @@ fun EpisodeSpeedDialOptions(activity: MainActivity, selected: List<Episode>): Li
 }
 
 @Composable
-fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episode>, leftAction: (Episode) -> Unit, rightAction: (Episode) -> Unit) {
+fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episode>, leftActionCB: (Episode) -> Unit, rightActionCB: (Episode) -> Unit) {
     var selectMode by remember { mutableStateOf(false) }
-    var longPressedItem by remember { mutableStateOf<Episode?>(null) }
-    var longPressedPosition by remember { mutableStateOf(0) }
     val selectedIds by remember { mutableStateOf(mutableSetOf<Long>()) }
     val selected = remember { mutableListOf<Episode>()}
     val coroutineScope = rememberCoroutineScope()
@@ -173,10 +176,10 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                                         if (velocity > 1000f || velocity < -1000f) {
                                             if (velocity > 0) {
                                                 Logd("EpisodeLazyColumn","Fling to the right with velocity: $velocity")
-                                                rightAction(episode)
+                                                rightActionCB(episode)
                                             } else {
                                                 Logd("EpisodeLazyColumn","Fling to the left with velocity: $velocity")
-                                                leftAction(episode)
+                                                leftActionCB(episode)
                                             }
                                         }
                                         offsetX.animateTo(
@@ -216,8 +219,6 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                                 selectedIds.clear()
                             }
                             Logd("EpisodeLazyColumn", "long clicked: ${episode.title}")
-                            longPressedItem = episode
-                            longPressedPosition = index
                         },
                         iconOnClick = {
                             Logd("EpisodeLazyColumn", "icon clicked!")
@@ -249,8 +250,65 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun EpisodeRow(episode: Episode, isSelected: MutableState<Boolean>, onClick: () -> Unit, onLongClick: () -> Unit, iconOnClick: () -> Unit = {}) {
+fun EpisodeRow(episode_: Episode, isSelected: MutableState<Boolean>, onClick: () -> Unit, onLongClick: () -> Unit, iconOnClick: () -> Unit = {}) {
+    var episode = episode_
     val textColor = MaterialTheme.colors.onSurface
+    var positionState by remember(episode) { mutableStateOf(episode.media?.position?:0) }
+    var playedState by remember { mutableStateOf(episode.isPlayed()) }
+    var farvoriteState by remember { mutableStateOf(episode.isFavorite) }
+    var inProgressState by remember { mutableStateOf(episode.isInProgress) }
+
+    var episodeMonitor: Job? by remember { mutableStateOf(null) }
+    var mediaMonitor: Job? by remember { mutableStateOf(null) }
+    if (episodeMonitor == null) {
+        val item_ = realm.query(Episode::class).query("id == ${episode.id}").first()
+        episodeMonitor = CoroutineScope(Dispatchers.Default).launch {
+            val episodeFlow = item_.asFlow()
+            episodeFlow.collect { changes: SingleQueryChange<Episode> ->
+                when (changes) {
+                    is UpdatedObject -> {
+                        Logd("EpisodeRow", "episodeMonitor UpdatedObject ${changes.obj.title} ${changes.changedFields.joinToString()}")
+                        episode = changes.obj
+                        playedState = episode.isPlayed()
+                        farvoriteState = episode.isFavorite
+//                        withContext(Dispatchers.Main) {
+////                            bind(changes.obj)
+////                            if (posIndex >= 0) refreshAdapterPosCallback?.invoke(posIndex, changes.obj)
+//                        }
+                    }
+                    else -> {}
+                }
+            }
+        }
+    }
+    if (mediaMonitor == null) {
+        val item_ = realm.query(Episode::class).query("id == ${episode.id}").first()
+        mediaMonitor = CoroutineScope(Dispatchers.Default).launch {
+            val episodeFlow = item_.asFlow(listOf("media.*"))
+            episodeFlow.collect { changes: SingleQueryChange<Episode> ->
+                when (changes) {
+                    is UpdatedObject -> {
+                        Logd("EpisodeRow", "mediaMonitor UpdatedObject ${changes.obj.title} ${changes.changedFields.joinToString()}")
+                        episode = changes.obj
+                        positionState = episode.media?.position?:0
+                        inProgressState = episode.isInProgress
+//                        withContext(Dispatchers.Main) {
+////                            updatePlaybackPositionNew(changes.obj)
+//////                                bind(changes.obj)
+////                            if (posIndex >= 0) refreshAdapterPosCallback?.invoke(posIndex, changes.obj)
+//                        }
+                    }
+                    else -> {}
+                }
+            }
+        }
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            episodeMonitor?.cancel()
+            mediaMonitor?.cancel()
+        }
+    }
     Row (Modifier.background(if (isSelected.value) MaterialTheme.colors.secondary else MaterialTheme.colors.surface)) {
         if (false) {
             val typedValue = TypedValue()
@@ -260,8 +318,6 @@ fun EpisodeRow(episode: Episode, isSelected: MutableState<Boolean>, onClick: () 
                 modifier = Modifier.width(16.dp).align(Alignment.CenterVertically))
         }
         ConstraintLayout(modifier = Modifier.width(56.dp).height(56.dp)) {
-            var playedState by remember { mutableStateOf(false) }
-            playedState = episode.isPlayed()
             Logd("EpisodeRow", "playedState: $playedState")
             val (image1, image2) = createRefs()
             val imgLoc = ImageResourceUtils.getEpisodeListImageLocation(episode)
@@ -286,7 +342,7 @@ fun EpisodeRow(episode: Episode, isSelected: MutableState<Boolean>, onClick: () 
             Row {
                 if (episode.media?.getMediaType() == MediaType.VIDEO)
                     Image(painter = painterResource(R.drawable.ic_videocam), contentDescription = "isVideo", Modifier.width(14.dp).height(14.dp))
-                if (episode.isFavorite)
+                if (farvoriteState)
                     Image(painter = painterResource(R.drawable.ic_star), contentDescription = "isFavorite", Modifier.width(14.dp).height(14.dp))
                 if (curQueue.contains(episode))
                     Image(painter = painterResource(R.drawable.ic_playlist_play), contentDescription = "ivInPlaylist", Modifier.width(14.dp).height(14.dp))
@@ -296,9 +352,9 @@ fun EpisodeRow(episode: Episode, isSelected: MutableState<Boolean>, onClick: () 
                 Text(if((episode.media?.size?:0) > 0) Formatter.formatShortFileSize(LocalContext.current, episode.media!!.size) else "", color = textColor, style = MaterialTheme.typography.body2)
             }
             Text(episode.title?:"", color = textColor, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            if (InTheatre.isCurMedia(episode.media) || episode.isInProgress) {
-                val pos = episode.media!!.getPosition()
-                val dur = episode.media!!.getDuration()
+            if (InTheatre.isCurMedia(episode.media) || inProgressState) {
+                val pos = positionState
+                val dur = remember(episode, episode.media) { episode.media!!.getDuration()}
                 val prog = if (dur > 0 && pos >= 0 && dur >= pos) 1.0f * pos / dur else 0f
                 Row {
                     Text(DurationConverter.getDurationStringLong(pos), color = textColor)

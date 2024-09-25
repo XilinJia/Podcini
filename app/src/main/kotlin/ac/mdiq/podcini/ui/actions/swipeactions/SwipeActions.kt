@@ -58,7 +58,8 @@ import kotlin.math.sin
 open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private val tag: String)
     : ItemTouchHelper.SimpleCallback(dragDirs, ItemTouchHelper.RIGHT or ItemTouchHelper.LEFT), DefaultLifecycleObserver {
 
-    private var filter: EpisodeFilter? = null
+    @set:JvmName("setFilterProperty")
+    var filter: EpisodeFilter? = null
 
     var actions: Actions? = null
     var swipeOutEnabled: Boolean = true
@@ -79,6 +80,7 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
         actions = null
     }
 
+    @JvmName("setFilterFunction")
     fun setFilter(filter: EpisodeFilter?) {
         this.filter = filter
     }
@@ -186,7 +188,8 @@ open class SwipeActions(dragDirs: Int, private val fragment: Fragment, private v
         return if (swipeOutEnabled) 0.6f else 1.0f
     }
 
-    @UnstableApi override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
+    @UnstableApi
+    override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
         super.clearView(recyclerView, viewHolder)
 
         if (swipedOutTo != 0) {

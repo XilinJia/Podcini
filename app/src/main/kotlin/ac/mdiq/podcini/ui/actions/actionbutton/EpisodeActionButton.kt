@@ -49,11 +49,7 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
             val composeView = ComposeView(context).apply {
                 setContent {
                     val showDialog = remember { mutableStateOf(true) }
-                    CustomTheme(context) {
-                        AltActionsDialog(context,  showDialog.value, onDismiss = {
-                            showDialog.value = false
-                        })
-                    }
+                    CustomTheme(context) { AltActionsDialog(context,  showDialog.value, onDismiss = { showDialog.value = false }) }
                 }
             }
             (button as? ViewGroup)?.addView(composeView)
@@ -66,69 +62,38 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
     fun AltActionsDialog(context: Context, showDialog: Boolean, onDismiss: () -> Unit) {
         if (showDialog) {
             Dialog(onDismissRequest = onDismiss) {
-                Card(modifier = Modifier
-                    .wrapContentSize(align = Alignment.Center)
-                    .padding(16.dp),
-                    shape = RoundedCornerShape(16.dp),
-                ) {
-                    Row(modifier = Modifier.padding(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp)) {
+                    Row(modifier = Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         val label = getLabel()
                         if (label != R.string.play_label && label != R.string.pause_label && label != R.string.download_label) {
                             IconButton(onClick = {
                                 PlayActionButton(item).onClick(context)
                                 onDismiss()
-                            }) {
-                                Image(
-                                    painter = painterResource(R.drawable.ic_play_24dp),
-                                    contentDescription = "Play"
-                                )
-                            }
+                            }) { Image(painter = painterResource(R.drawable.ic_play_24dp), contentDescription = "Play") }
                         }
-                        if (label != R.string.stream_label && label != R.string.pause_label) {
+                        if (label != R.string.stream_label && label != R.string.play_label && label != R.string.pause_label && label != R.string.delete_label) {
                             IconButton(onClick = {
                                 StreamActionButton(item).onClick(context)
                                 onDismiss()
-                            }) {
-                                Image(
-                                    painter = painterResource(R.drawable.ic_stream),
-                                    contentDescription = "Stream"
-                                )
-                            }
+                            }) { Image(painter = painterResource(R.drawable.ic_stream), contentDescription = "Stream") }
                         }
-                        if (label != R.string.download_label && label != R.string.play_label) {
+                        if (label != R.string.download_label && label != R.string.play_label && label != R.string.delete_label) {
                             IconButton(onClick = {
                                 DownloadActionButton(item).onClick(context)
                                 onDismiss()
-                            }) {
-                                Image(
-                                    painter = painterResource(R.drawable.ic_download),
-                                    contentDescription = "Download"
-                                )
-                            }
+                            }) { Image(painter = painterResource(R.drawable.ic_download), contentDescription = "Download") }
                         }
                         if (label != R.string.delete_label && label != R.string.download_label && label != R.string.stream_label) {
                             IconButton(onClick = {
                                 DeleteActionButton(item).onClick(context)
                                 onDismiss()
-                            }) {
-                                Image(
-                                    painter = painterResource(R.drawable.ic_delete),
-                                    contentDescription = "Delete"
-                                )
-                            }
+                            }) { Image(painter = painterResource(R.drawable.ic_delete), contentDescription = "Delete") }
                         }
                         if (label != R.string.visit_website_label) {
                             IconButton(onClick = {
                                 VisitWebsiteActionButton(item).onClick(context)
                                 onDismiss()
-                            }) {
-                                Image(
-                                    painter = painterResource(R.drawable.ic_web),
-                                    contentDescription = "Web"
-                                )
-                            }
+                            }) { Image(painter = painterResource(R.drawable.ic_web), contentDescription = "Web") }
                         }
                     }
                 }

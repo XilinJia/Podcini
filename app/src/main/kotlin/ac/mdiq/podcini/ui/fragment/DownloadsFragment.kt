@@ -1,8 +1,7 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
-import ac.mdiq.podcini.databinding.SimpleListFragmentBinding
+import ac.mdiq.podcini.databinding.DownloadsFragmentBinding
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
@@ -16,22 +15,20 @@ import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
-import ac.mdiq.podcini.ui.actions.handler.EpisodeMultiSelectHandler
 import ac.mdiq.podcini.ui.actions.actionbutton.DeleteActionButton
+import ac.mdiq.podcini.ui.actions.swipeactions.SwipeAction
 import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.adapter.EpisodesAdapter
-import ac.mdiq.podcini.ui.adapter.SelectableAdapter
+import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.ui.compose.EpisodeLazyColumn
+import ac.mdiq.podcini.ui.compose.InforBar
 import ac.mdiq.podcini.ui.dialog.EpisodeFilterDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.ui.dialog.SwitchQueueDialog
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
-import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
-import ac.mdiq.podcini.ui.view.EpisodeViewHolder
-import ac.mdiq.podcini.ui.view.EpisodesRecyclerView
-import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.podcini.util.Logd
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -40,15 +37,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
+import androidx.compose.runtime.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
-import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.SimpleItemAnimator
 import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.snackbar.Snackbar
-import com.leinardi.android.speeddial.SpeedDialActionItem
-import com.leinardi.android.speeddial.SpeedDialView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
@@ -61,84 +54,63 @@ import java.util.*
 /**
  * Displays all completed downloads and provides a button to delete them.
  */
-@UnstableApi class DownloadsFragment : Fragment(), SelectableAdapter.OnSelectModeListener, Toolbar.OnMenuItemClickListener {
+@UnstableApi class DownloadsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
-    private var _binding: SimpleListFragmentBinding? = null
+    private var _binding: DownloadsFragmentBinding? = null
     private val binding get() = _binding!!
 
     private var runningDownloads: Set<String> = HashSet()
-    private var episodes: MutableList<Episode> = mutableListOf()
+    private val episodes = mutableStateListOf<Episode>()
 
-    private lateinit var adapter: DownloadsListAdapter
+    private var infoBarText = mutableStateOf("")
+    private var leftActionState = mutableStateOf<SwipeAction?>(null)
+    private var rightActionState = mutableStateOf<SwipeAction?>(null)
+
     private lateinit var toolbar: MaterialToolbar
-    private lateinit var recyclerView: EpisodesRecyclerView
     private lateinit var swipeActions: SwipeActions
-    private lateinit var speedDialView: SpeedDialView
     private lateinit var emptyView: EmptyViewHandler
     
     private var displayUpArrow = false
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = SimpleListFragmentBinding.inflate(inflater)
+        _binding = DownloadsFragmentBinding.inflate(inflater)
 
         Logd(TAG, "fragment onCreateView")
         toolbar = binding.toolbar
         toolbar.setTitle(R.string.downloads_label)
         toolbar.inflateMenu(R.menu.downloads_completed)
         toolbar.setOnMenuItemClickListener(this)
-        toolbar.setOnLongClickListener {
-            recyclerView.scrollToPosition(5)
-            recyclerView.post { recyclerView.smoothScrollToPosition(0) }
-            false
-        }
+//        toolbar.setOnLongClickListener {
+////            recyclerView.scrollToPosition(5)
+////            recyclerView.post { recyclerView.smoothScrollToPosition(0) }
+//            false
+//        }
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
 
         (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
 
-        recyclerView = binding.recyclerView
-        recyclerView.setRecycledViewPool((activity as MainActivity).recycledViewPool)
-        adapter = DownloadsListAdapter()
-        adapter.setOnSelectModeListener(this)
-        recyclerView.adapter = adapter
-        recyclerView.addOnScrollListener(LiftOnScrollListener(binding.appbar))
-
-        swipeActions = SwipeActions(this, TAG).attachTo(recyclerView)
-        lifecycle.addObserver(swipeActions)
+        swipeActions = SwipeActions(this, TAG)
         swipeActions.setFilter(EpisodeFilter(EpisodeFilter.States.downloaded.name))
-        refreshSwipeTelltale()
-        binding.leftActionIcon.setOnClickListener { swipeActions.showDialog() }
-        binding.rightActionIcon.setOnClickListener { swipeActions.showDialog() }
-
-        val animator: RecyclerView.ItemAnimator? = recyclerView.itemAnimator
-        if (animator is SimpleItemAnimator) animator.supportsChangeAnimations = false
-
-        binding.progLoading.visibility = View.VISIBLE
-
-        val multiSelectDial = MultiSelectSpeedDialBinding.bind(binding.root)
-        speedDialView = multiSelectDial.fabSD
-        speedDialView.overlayLayout = multiSelectDial.fabSDOverlay
-        speedDialView.inflate(R.menu.episodes_apply_action_speeddial)
-        speedDialView.removeActionItemById(R.id.download_batch)
-        speedDialView.removeActionItemById(R.id.remove_from_queue_batch)
-        speedDialView.setOnChangeListener(object : SpeedDialView.OnChangeListener {
-            override fun onMainActionSelected(): Boolean {
-                return false
+        binding.infobar.setContent {
+            CustomTheme(requireContext()) {
+                InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {swipeActions.showDialog()})
             }
-            override fun onToggleChanged(open: Boolean) {
-                if (open && adapter.selectedCount == 0) {
-                    (activity as MainActivity).showSnackbarAbovePlayer(R.string.no_items_selected, Snackbar.LENGTH_SHORT)
-                    speedDialView.close()
-                }
-            }
-        })
-        speedDialView.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
-            adapter.selectedItems.let {
-                EpisodeMultiSelectHandler((activity as MainActivity), actionItem.id).handleAction(it)
-            }
-            adapter.endSelectMode()
-            true
         }
+
+        binding.lazyColumn.setContent {
+            CustomTheme(requireContext()) {
+                EpisodeLazyColumn(activity as MainActivity, episodes = episodes,
+                    leftSwipeCB = { if (leftActionState.value == null) swipeActions.showDialog() else leftActionState.value?.performAction(it, this, swipeActions.filter ?: EpisodeFilter())},
+                    rightSwipeCB = { if (rightActionState.value == null) swipeActions.showDialog() else rightActionState.value?.performAction(it, this, swipeActions.filter ?: EpisodeFilter())},
+                    actionButton_ = { DeleteActionButton(it) } )
+            }
+        }
+//        recyclerView.setRecycledViewPool((activity as MainActivity).recycledViewPool)
+//        recyclerView.addOnScrollListener(LiftOnScrollListener(binding.appbar))
+
+        lifecycle.addObserver(swipeActions)
+        refreshSwipeTelltale()
         if (arguments != null && requireArguments().getBoolean(ARG_SHOW_LOGS, false)) DownloadLogFragment().show(childFragmentManager, null)
 
         addEmptyView()
@@ -154,13 +126,12 @@ import java.util.*
     override fun onStop() {
         super.onStop()
         cancelFlowEvents()
-        val recyclerView =  binding.recyclerView
-        val childCount = recyclerView.childCount
-        for (i in 0 until childCount) {
-            val child = recyclerView.getChildAt(i)
-            val viewHolder = recyclerView.getChildViewHolder(child) as? EpisodeViewHolder
-            viewHolder?.stopDBMonitor()
-        }
+//        val childCount = recyclerView.childCount
+//        for (i in 0 until childCount) {
+//            val child = recyclerView.getChildAt(i)
+//            val viewHolder = recyclerView.getChildViewHolder(child) as? EpisodeViewHolder
+//            viewHolder?.stopDBMonitor()
+//        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -171,12 +142,11 @@ import java.util.*
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
         _binding = null
-        adapter.endSelectMode()
-        adapter.clearData()
+//        adapter.endSelectMode()
+//        adapter.clearData()
         toolbar.setOnMenuItemClickListener(null)
         toolbar.setOnLongClickListener(null)
-        episodes = mutableListOf()
-
+        episodes.clear()
         super.onDestroyView()
     }
 
@@ -258,10 +228,10 @@ import java.util.*
             loadItems()
             return  // Refreshed anyway
         }
-        for (downloadUrl in event.urls) {
-            val pos = EpisodeUtil.indexOfItemWithDownloadUrl(episodes.toList(), downloadUrl)
-            if (pos >= 0) adapter.notifyItemChangedCompat(pos)
-        }
+//        for (downloadUrl in event.urls) {
+//            val pos = EpisodeUtil.indexOfItemWithDownloadUrl(episodes.toList(), downloadUrl)
+//            if (pos >= 0) adapter.notifyItemChangedCompat(pos)
+//        }
     }
 
     private var eventSink: Job?     = null
@@ -313,7 +283,6 @@ import java.util.*
         emptyView.setIcon(R.drawable.ic_download)
         emptyView.setTitle(R.string.no_comp_downloads_head_label)
         emptyView.setMessage(R.string.no_comp_downloads_label)
-        emptyView.attachToRecyclerView(recyclerView)
     }
 
     private fun onEpisodeEvent(event: FlowEvent.EpisodeEvent) {
@@ -330,7 +299,7 @@ import java.util.*
             }
         }
 //        have to do this as adapter.notifyItemRemoved(pos) when pos == 0 causes crash
-        if (size > 0) adapter.updateItems(episodes)
+//        if (size > 0) adapter.updateItems(episodes)
         refreshInfoBar()
     }
 
@@ -348,13 +317,13 @@ import java.util.*
             }
         }
 //        have to do this as adapter.notifyItemRemoved(pos) when pos == 0 causes crash
-        if (size > 0) adapter.updateItems(episodes)
+//        if (size > 0) adapter.updateItems(episodes)
         refreshInfoBar()
     }
 
     private fun refreshSwipeTelltale() {
-        if (swipeActions.actions?.left != null) binding.leftActionIcon.setImageResource(swipeActions.actions!!.left!!.getActionIcon())
-        if (swipeActions.actions?.right != null) binding.rightActionIcon.setImageResource(swipeActions.actions!!.right!!.getActionIcon())
+        leftActionState.value = swipeActions.actions?.left
+        rightActionState.value = swipeActions.actions?.right
     }
 
     private var loadItemsRunning = false
@@ -367,9 +336,11 @@ import java.util.*
                     withContext(Dispatchers.IO) {
                         val sortOrder: EpisodeSortOrder? = downloadsSortedOrder
                         val filter = getFilter()
-                        val downloadedItems = getEpisodes(0, Int.MAX_VALUE, filter, sortOrder)
-                        if (runningDownloads.isEmpty()) episodes = downloadedItems.toMutableList()
-                        else {
+                        val downloadedItems = getEpisodes(0, Int.MAX_VALUE, filter, sortOrder, false)
+                        if (runningDownloads.isEmpty()) {
+                            episodes.clear()
+                            episodes.addAll(downloadedItems)
+                        } else {
                             val mediaUrls: MutableList<String> = ArrayList()
                             for (url in runningDownloads) {
                                 if (EpisodeUtil.indexOfItemWithDownloadUrl(downloadedItems, url) != -1) continue
@@ -377,31 +348,23 @@ import java.util.*
                             }
                             val currentDownloads = getEpisdesWithUrl(mediaUrls).toMutableList()
                             currentDownloads.addAll(downloadedItems)
-                            episodes = currentDownloads
+                            episodes.clear()
+                            episodes.addAll(currentDownloads)
                         }
-                        episodes = episodes.filter { filter.matchesForQueues(it) }.toMutableList()
+                        episodes.retainAll { filter.matchesForQueues(it) }
                     }
-                    withContext(Dispatchers.Main) {
-//                    adapter.setDummyViews(0)
-                        binding.progLoading.visibility = View.GONE
-                        adapter.updateItems(episodes)
-                        refreshInfoBar()
-                    }
-                } catch (e: Throwable) {
-//                adapter.setDummyViews(0)
-                    adapter.updateItems(mutableListOf())
-                    Log.e(TAG, Log.getStackTraceString(e))
+                    withContext(Dispatchers.Main) { refreshInfoBar() }
+                } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e))
                 } finally { loadItemsRunning = false }
             }
         }
     }
 
-    private fun getEpisdesWithUrl(urls: List<String?>?): List<Episode> {
+    private fun getEpisdesWithUrl(urls: List<String>): List<Episode> {
         Logd(TAG, "getEpisdesWithUrl() called ")
-        if (urls == null) return listOf()
+        if (urls.isEmpty()) return listOf()
         val episodes: MutableList<Episode> = mutableListOf()
         for (url in urls) {
-            if (url == null) continue
             val media = realm.query(EpisodeMedia::class).query("downloadUrl == $0", url).first().find() ?: continue
             val item_ = media.episodeOrFetch()
             if (item_ != null) episodes.add(item_)
@@ -416,31 +379,9 @@ import java.util.*
             for (item in episodes) sizeMB += item.media?.size ?: 0
             info += " • " + (sizeMB / 1000000) + " MB"
         }
+        Logd(TAG, "filter value: ${getFilter().values.size} ${getFilter().values.joinToString()}")
         if (getFilter().values.size > 1) info += " - ${getString(R.string.filtered_label)}"
-        binding.infoBar.text = info
-    }
-
-    override fun onStartSelectMode() {
-        swipeActions.detach()
-        speedDialView.visibility = View.VISIBLE
-    }
-
-    override fun onEndSelectMode() {
-        speedDialView.close()
-        speedDialView.visibility = View.GONE
-        swipeActions.attachTo(recyclerView)
-    }
-
-    @UnstableApi private inner class DownloadsListAdapter : EpisodesAdapter(activity as MainActivity) {
-        @UnstableApi override fun afterBindViewHolder(holder: EpisodeViewHolder, pos: Int) {
-            if (holder.episode != null && !inActionMode()) {
-                if (holder.episode!!.isDownloaded) {
-                    val item = getItem(pos) ?: return
-                    val actionButton = DeleteActionButton(item)
-                    actionButton.configure(holder.secondaryActionButton, holder.secondaryActionIcon, requireContext())
-                }
-            }
-        }
+        infoBarText.value = info
     }
 
     class DownloadsSortDialog : EpisodeSortDialog() {

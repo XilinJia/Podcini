@@ -22,10 +22,7 @@ import ac.mdiq.podcini.ui.actions.actionbutton.DownloadActionButton
 import ac.mdiq.podcini.ui.actions.swipeactions.SwipeAction.Companion.NO_ACTION
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.dialog.SwipeActionsDialog
-import ac.mdiq.podcini.ui.fragment.AllEpisodesFragment
-import ac.mdiq.podcini.ui.fragment.DownloadsFragment
-import ac.mdiq.podcini.ui.fragment.HistoryFragment
-import ac.mdiq.podcini.ui.fragment.QueuesFragment
+import ac.mdiq.podcini.ui.fragment.*
 import ac.mdiq.podcini.ui.utils.LocalDeleteModal.deleteEpisodesWarnLocal
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import ac.mdiq.podcini.ui.view.EpisodeViewHolder

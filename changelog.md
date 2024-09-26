@@ -1,3 +1,8 @@
+# 6.8.0 (Preview release)
+
+* the Compose class of DownloadsC replaces the old Downloads view
+* FeedEpisodes, AllEpisodes, History, and OnlineFeed mostly migrated to Jetpack Compose
+
 # 6.7.3
 
 * fixed bug in nextcloud auth: thanks to Dacid99's PR

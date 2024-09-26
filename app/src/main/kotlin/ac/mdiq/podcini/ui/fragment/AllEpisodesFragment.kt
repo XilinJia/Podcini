@@ -12,9 +12,9 @@ import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.dialog.EpisodeFilterDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.ui.dialog.SwitchQueueDialog
-import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.podcini.util.Logd
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -27,13 +27,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.apache.commons.lang3.StringUtils
-import kotlin.math.min
 
-/**
- * Shows all episodes (possibly filtered by user).
- */
-@UnstableApi class AllEpisodesFragment : BaseEpisodesFragment() {
-
+@UnstableApi
+class AllEpisodesFragment : BaseEpisodesFragment() {
     private var allEpisodes: List<Episode> = listOf()
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -43,10 +39,9 @@ import kotlin.math.min
         toolbar.inflateMenu(R.menu.episodes)
         toolbar.setTitle(R.string.episodes_label)
         updateToolbar()
-        txtvInformation.visibility = View.VISIBLE
-        txtvInformation.setOnClickListener {
-            AllEpisodesFilterDialog.newInstance(getFilter()).show(childFragmentManager, null)
-        }
+//        txtvInformation.setOnClickListener {
+//            AllEpisodesFilterDialog.newInstance(getFilter()).show(childFragmentManager, null)
+//        }
         return root
     }
 
@@ -76,14 +71,7 @@ import kotlin.math.min
         }
         if (allEpisodes.isEmpty()) return listOf()
         allEpisodes = allEpisodes.filter { filter.matchesForQueues(it) }
-        return allEpisodes.subList(0, min(allEpisodes.size, page * EPISODES_PER_PAGE))
-    }
-
-    override fun loadMoreData(page: Int): List<Episode> {
-        val offset = (page - 1) * EPISODES_PER_PAGE
-        if (offset >= allEpisodes.size) return listOf()
-        val toIndex = offset + EPISODES_PER_PAGE
-        return allEpisodes.subList(offset, min(allEpisodes.size, toIndex))
+        return allEpisodes
     }
 
     override fun loadTotalItemCount(): Int {
@@ -146,13 +134,12 @@ import kotlin.math.min
 
     override fun updateToolbar() {
         swipeActions.setFilter(getFilter())
+        var info = "${episodes.size} episodes"
         if (getFilter().values.isNotEmpty()) {
-            txtvInformation.text = "${adapter.totalNumberOfItems} episodes - ${getString(R.string.filtered_label)}"
+            info += " - ${getString(R.string.filtered_label)}"
             emptyView.setMessage(R.string.no_all_episodes_filtered_label)
-        } else {
-            txtvInformation.text = "${adapter.totalNumberOfItems} episodes"
-            emptyView.setMessage(R.string.no_all_episodes_label)
-        }
+        } else emptyView.setMessage(R.string.no_all_episodes_label)
+        infoBarText.value = info
         toolbar.menu?.findItem(R.id.action_favorites)?.setIcon(if (getFilter().showIsFavorite) R.drawable.ic_star else R.drawable.ic_star_border)
     }
 

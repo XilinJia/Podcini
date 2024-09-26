@@ -418,7 +418,6 @@ class MainActivity : CastEnabledActivity() {
             QueuesFragment.TAG -> fragment = QueuesFragment()
             AllEpisodesFragment.TAG -> fragment = AllEpisodesFragment()
             DownloadsFragment.TAG -> fragment = DownloadsFragment()
-            DownloadsCFragment.TAG -> fragment = DownloadsCFragment()
             HistoryFragment.TAG -> fragment = HistoryFragment()
             OnlineSearchFragment.TAG -> fragment = OnlineSearchFragment()
             SubscriptionsFragment.TAG -> fragment = SubscriptionsFragment()

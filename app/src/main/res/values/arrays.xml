@@ -140,7 +140,6 @@
         <item>@string/queue_label</item>
         <item>@string/episodes_label</item>
         <item>@string/downloads_label</item>
-        <item>@string/downloadsC_label</item>
         <item>@string/playback_history_label</item>
         <item>@string/statistics_label</item>
         <item>@string/add_feed_label</item>
@@ -168,7 +167,6 @@
         <item>QueuesFragment</item>
         <item>AllEpisodesFragment</item>
         <item>DownloadsFragment</item>
-        <item>DownloadsCFragment</item>
         <item>PlaybackHistoryFragment</item>
         <item>AddFeedFragment</item>
         <item>StatisticsFragment</item>
@@ -180,7 +178,6 @@
         <item>@string/queue_label</item>
         <item>@string/episodes_label</item>
         <item>@string/downloads_label</item>
-        <item>@string/downloadsC_label</item>
         <item>@string/playback_history_label</item>
         <item>@string/add_feed_label</item>
         <item>@string/statistics_label</item>

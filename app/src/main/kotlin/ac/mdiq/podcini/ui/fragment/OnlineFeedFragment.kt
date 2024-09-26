@@ -75,7 +75,6 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.concurrent.Volatile
-import kotlin.math.min
 
 /**
  * Downloads a feed from a feed URL and parses it. Subclasses can display the
@@ -828,7 +827,7 @@ class OnlineFeedFragment : Fragment() {
             toolbar.inflateMenu(R.menu.episodes)
             toolbar.setTitle(R.string.episodes_label)
             updateToolbar()
-            adapter.setOnSelectModeListener(null)
+//            adapter.setOnSelectModeListener(null)
             return root
         }
         override fun onStart() {
@@ -849,13 +848,7 @@ class OnlineFeedFragment : Fragment() {
         }
         override fun loadData(): List<Episode> {
             if (episodeList.isEmpty()) return listOf()
-            return episodeList.subList(0, min(episodeList.size, page * EPISODES_PER_PAGE))
-        }
-        override fun loadMoreData(page: Int): List<Episode> {
-            val offset = (page - 1) * EPISODES_PER_PAGE
-            if (offset >= episodeList.size) return listOf()
-            val toIndex = offset + EPISODES_PER_PAGE
-            return episodeList.subList(offset, min(episodeList.size, toIndex))
+            return episodeList
         }
         override fun loadTotalItemCount(): Int {
             return episodeList.size
@@ -869,6 +862,7 @@ class OnlineFeedFragment : Fragment() {
             binding.toolbar.menu.findItem(R.id.action_search).setVisible(false)
             binding.toolbar.menu.findItem(R.id.action_favorites).setVisible(false)
             binding.toolbar.menu.findItem(R.id.filter_items).setVisible(false)
+            infoBarText.value = "${episodes.size} episodes"
         }
         @OptIn(UnstableApi::class) override fun onMenuItemClick(item: MenuItem): Boolean {
             if (super.onOptionsItemSelected(item)) return true
@@ -902,7 +896,6 @@ class OnlineFeedFragment : Fragment() {
                 i.setEpisodes(episodes)
                 return i
             }
-
         }
     }
 

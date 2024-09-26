@@ -1,0 +1,4 @@
+ Version 6.8.0 (preview release):
+
+* the Compose class of DownloadsC replaces the old Downloads view
+* FeedEpisodes, AllEpisodes, History, and OnlineFeed mostly migrated to Jetpack Compose

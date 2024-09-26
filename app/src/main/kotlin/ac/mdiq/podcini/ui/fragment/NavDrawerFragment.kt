@@ -141,9 +141,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
                     datasetStats = result
                     navAdapter.notifyDataSetChanged()
                 }
-            } catch (e: Throwable) {
-                Log.e(TAG, Log.getStackTraceString(e))
-            }
+            } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e)) }
         }
     }
 
@@ -183,7 +181,6 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
                 QueuesFragment.TAG -> R.drawable.ic_playlist_play
                 AllEpisodesFragment.TAG -> R.drawable.ic_feed
                 DownloadsFragment.TAG -> R.drawable.ic_download
-                DownloadsCFragment.TAG -> R.drawable.ic_download
                 HistoryFragment.TAG -> R.drawable.ic_history
                 SubscriptionsFragment.TAG -> R.drawable.ic_subscriptions
                 StatisticsFragment.TAG -> R.drawable.ic_chart_box
@@ -325,29 +322,6 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
                         }
                     }
                 }
-                DownloadsCFragment.TAG -> {
-                    val epCacheSize = episodeCacheSize
-                    // don't count episodes that can be reclaimed
-                    val spaceUsed = ((datasetStats?.numDownloaded ?: 0) - (datasetStats?.numReclaimables ?: 0))
-                    holder.count.text = NumberFormat.getInstance().format(spaceUsed.toLong())
-                    holder.count.visibility = View.VISIBLE
-                    if (epCacheSize in 1..spaceUsed) {
-                        holder.count.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_disc_alert, 0)
-                        holder.count.visibility = View.VISIBLE
-                        holder.count.setOnClickListener {
-                            MaterialAlertDialogBuilder(context)
-                                .setTitle(R.string.episode_cache_full_title)
-                                .setMessage(R.string.episode_cache_full_message)
-                                .setPositiveButton(android.R.string.ok, null)
-                                .setNeutralButton(R.string.open_autodownload_settings) { _: DialogInterface?, _: Int ->
-                                    val intent = Intent(context, PreferenceActivity::class.java)
-                                    intent.putExtra(PreferenceActivity.OPEN_AUTO_DOWNLOAD_SETTINGS, true)
-                                    context.startActivity(intent)
-                                }
-                                .show()
-                        }
-                    }
-                }
                 HistoryFragment.TAG -> {
                     val historyCount = datasetStats?.historyCount ?: 0
                     if (historyCount > 0) {
@@ -406,7 +380,6 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
             QueuesFragment.TAG,
             AllEpisodesFragment.TAG,
             DownloadsFragment.TAG,
-            DownloadsCFragment.TAG,
             HistoryFragment.TAG,
             StatisticsFragment.TAG,
             OnlineSearchFragment.TAG,

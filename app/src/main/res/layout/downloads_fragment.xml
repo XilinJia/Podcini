@@ -32,7 +32,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
-    <include
-        layout="@layout/multi_select_speed_dial" />
+<!--    <include-->
+<!--        layout="@layout/multi_select_speed_dial" />-->
 
 </LinearLayout>

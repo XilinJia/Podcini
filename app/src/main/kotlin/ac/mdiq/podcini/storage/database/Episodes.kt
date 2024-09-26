@@ -285,8 +285,9 @@ object Episodes {
             }
             if (resetMediaPosition) it.media?.setPosition(0)
         }
+        Logd(TAG, "setPlayStateSync played0: ${result.playState}")
         if (played == PlayState.PLAYED.code && shouldMarkedPlayedRemoveFromQueues()) removeFromAllQueuesSync(result)
-        Logd(TAG, "setPlayStateSync played: ${result.playState}")
+        Logd(TAG, "setPlayStateSync played1: ${result.playState}")
         EventFlow.postEvent(FlowEvent.EpisodePlayedEvent(result))
         return result
     }

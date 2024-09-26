@@ -256,11 +256,13 @@ class Episode : RealmObject {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Episode) return false
-        return id == other.id
+        return id == other.id && playState == other.playState
     }
 
     override fun hashCode(): Int {
-        return (id xor (id ushr 32)).toInt()
+        var result = (id xor (id ushr 32)).toInt()
+        result = 31 * result + playState.hashCode()
+        return result
     }
 
     enum class PlayState(val code: Int) {

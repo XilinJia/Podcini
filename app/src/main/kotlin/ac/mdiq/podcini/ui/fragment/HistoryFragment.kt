@@ -7,16 +7,12 @@ import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
-import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.adapter.EpisodesAdapter
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.dialog.DatesFilterDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
-import ac.mdiq.podcini.ui.view.EpisodeViewHolder
-import ac.mdiq.podcini.util.MiscFormatter
-import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.podcini.util.Logd
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -58,19 +54,19 @@ import kotlin.math.min
     }
 
     override fun createListAdaptor() {
-        adapter = object : EpisodesAdapter(activity as MainActivity) {
-            override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EpisodeViewHolder {
-                return object: EpisodeViewHolder(mainActivityRef.get()!!, parent) {
-                    override fun setPubDate(item: Episode) {
-                        val playDate = Date(item.media?.getLastPlayedTime()?:0L)
-                        pubDate.text = MiscFormatter.formatAbbrev(activity, playDate)
-                        pubDate.setContentDescription(MiscFormatter.formatForAccessibility(playDate))
-                    }
-                }
-            }
-        }
-        adapter.setOnSelectModeListener(this)
-        recyclerView.adapter = adapter
+//        adapter = object : EpisodesAdapter(activity as MainActivity) {
+//            override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EpisodeViewHolder {
+//                return object: EpisodeViewHolder(mainActivityRef.get()!!, parent) {
+//                    override fun setPubDate(item: Episode) {
+//                        val playDate = Date(item.media?.getLastPlayedTime()?:0L)
+//                        pubDate.text = MiscFormatter.formatAbbrev(activity, playDate)
+//                        pubDate.setContentDescription(MiscFormatter.formatForAccessibility(playDate))
+//                    }
+//                }
+//            }
+//        }
+//        adapter.setOnSelectModeListener(this)
+//        recyclerView.adapter = adapter
     }
 
     override fun onStart() {
@@ -85,7 +81,6 @@ import kotlin.math.min
 
     override fun onDestroyView() {
         allHistory = listOf()
-        adapter.clearData()
         super.onDestroyView()
     }
 
@@ -128,14 +123,12 @@ import kotlin.math.min
         toolbar.menu.findItem(R.id.clear_history_item).setVisible(episodes.isNotEmpty())
 
         swipeActions.setFilter(getFilter())
-        txtvInformation.visibility = View.VISIBLE
+        var info = "${episodes.size} episodes"
         if (getFilter().values.isNotEmpty()) {
-            txtvInformation.text = "${adapter.totalNumberOfItems} episodes - ${getString(R.string.filtered_label)}"
+            info += " - ${getString(R.string.filtered_label)}"
             emptyView.setMessage(R.string.no_all_episodes_filtered_label)
-        } else {
-            txtvInformation.text = "${adapter.totalNumberOfItems} episodes"
-            emptyView.setMessage(R.string.no_all_episodes_label)
-        }
+        } else emptyView.setMessage(R.string.no_all_episodes_label)
+        infoBarText.value = info
         toolbar.menu?.findItem(R.id.action_favorites)?.setIcon(if (getFilter().showIsFavorite) R.drawable.ic_star else R.drawable.ic_star_border)
     }
 
@@ -171,14 +164,7 @@ import kotlin.math.min
             loadItemsRunning = false
         }
         if (allHistory.isEmpty()) return listOf()
-        return allHistory.subList(0, min(allHistory.size, page * EPISODES_PER_PAGE))
-    }
-
-    override fun loadMoreData(page: Int): List<Episode> {
-        val offset = (page - 1) * EPISODES_PER_PAGE
-        if (offset >= allHistory.size) return listOf()
-        val toIndex = offset + EPISODES_PER_PAGE
-        return allHistory.subList(offset, min(allHistory.size, toIndex))
+        return allHistory
     }
 
     override fun loadTotalItemCount(): Int {

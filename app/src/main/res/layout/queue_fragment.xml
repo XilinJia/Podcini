@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:id="@+id/queue_fragment">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fitsSystemWindows="true"
-        android:elevation="0dp">
+        android:fitsSystemWindows="true">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
@@ -21,90 +21,16 @@
             app:navigationContentDescription="@string/toolbar_back_button_content_description"
             app:navigationIcon="?homeAsUpIndicator"/>
 
-        <LinearLayout
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/infobar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/toolbar"
-            android:layout_marginTop="-12dp"
-            android:orientation="horizontal">
+            android:layout_height="wrap_content"/>
 
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:id="@+id/left_action_icon"
-                android:scaleType="fitXY"
-                app:srcCompat="@drawable/ic_questionmark" />
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:scaleType="fitXY"
-                app:srcCompat="@drawable/baseline_arrow_left_alt_24" />
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"/>
-
-            <TextView
-                android:id="@+id/info_bar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="12sp"
-                android:layout_gravity="center_vertical"
-                tools:text="12 Episodes - 12 hours" />
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"/>
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:scaleType="fitXY"
-                app:srcCompat="@drawable/baseline_arrow_right_alt_24" />
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:id="@+id/right_action_icon"
-                android:scaleType="fitXY"
-                app:srcCompat="@drawable/ic_questionmark" />
-
-        </LinearLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <ac.mdiq.podcini.ui.view.EpisodesRecyclerView
-        android:id="@+id/recyclerView"
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/lazyColumn"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingHorizontal="@dimen/additional_horizontal_spacing"
-        android:layout_below="@id/appbar"/>
+        android:layout_height="wrap_content"/>
 
-    <!--    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout-->
-<!--        android:id="@+id/swipeRefresh"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent"-->
-<!--        android:layout_below="@id/appbar">-->
-
-<!--        <ac.mdiq.podcini.ui.view.EpisodesRecyclerView-->
-<!--            android:id="@+id/recyclerView"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="match_parent"-->
-<!--            android:paddingHorizontal="@dimen/additional_horizontal_spacing" />-->
-
-<!--    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>-->
-
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:indeterminateOnly="true"
-        android:visibility="gone" />
-
-    <include
-        layout="@layout/multi_select_speed_dial" />
-
-</RelativeLayout>
+</LinearLayout>

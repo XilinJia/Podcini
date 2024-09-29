@@ -827,7 +827,6 @@ class OnlineFeedFragment : Fragment() {
             toolbar.inflateMenu(R.menu.episodes)
             toolbar.setTitle(R.string.episodes_label)
             updateToolbar()
-//            adapter.setOnSelectModeListener(null)
             return root
         }
         override fun onStart() {

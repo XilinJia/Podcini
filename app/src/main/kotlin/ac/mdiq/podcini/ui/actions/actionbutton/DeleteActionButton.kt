@@ -22,5 +22,6 @@ class DeleteActionButton(item: Episode) : EpisodeActionButton(item) {
     }
     @UnstableApi override fun onClick(context: Context) {
         deleteEpisodesWarnLocal(context, listOf(item))
+        actionState.value = getLabel()
     }
 }

@@ -1,0 +1,9 @@
+ Version 6.8.2 (preview release):
+
+* AudioPlayerFragment got overhauled. migrated to Jetpack Compose and PlayUI and PlayerDetailed fragments are Removed
+* EpisodeInfo is now in Compose
+* SearchFragment shows episodes list in Compose
+* Episodes viewholder and adapter etc are removed
+* SwipeActions class stripped out of View related operations
+* more enhancements in Compose functionalities
+* still have known issues

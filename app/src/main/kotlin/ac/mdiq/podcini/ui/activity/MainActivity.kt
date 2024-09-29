@@ -27,7 +27,7 @@ import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.dialog.RatingDialog
 import ac.mdiq.podcini.ui.fragment.*
-import ac.mdiq.podcini.ui.fragment.AudioPlayerFragment.PlayerDetailsFragment.Companion.media3Controller
+import ac.mdiq.podcini.ui.fragment.AudioPlayerFragment.Companion.media3Controller
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.ui.utils.LockableBottomSheetBehavior
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getDrawableFromAttr
@@ -58,6 +58,7 @@ import android.view.ViewGroup.MarginLayoutParams
 import android.widget.EditText
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -182,7 +183,7 @@ class MainActivity : CastEnabledActivity() {
             buildTags()
             monitorFeeds()
 //            InTheatre.apply { }
-            AudioPlayerFragment.PlayerDetailsFragment.getSharedPrefs(this@MainActivity)
+            AudioPlayerFragment.getSharedPrefs(this@MainActivity)
             PlayerWidget.getSharedPrefs(this@MainActivity)
             StatisticsFragment.getSharedPrefs(this@MainActivity)
             OnlineFeedFragment.getSharedPrefs(this@MainActivity)
@@ -283,21 +284,21 @@ class MainActivity : CastEnabledActivity() {
 //                        Logd(TAG, "workInfo.state: ${workInfo.state}")
                         var status: Int
                         status = when (workInfo.state) {
-                            WorkInfo.State.RUNNING -> DownloadStatus.STATE_RUNNING
-                            WorkInfo.State.ENQUEUED, WorkInfo.State.BLOCKED -> DownloadStatus.STATE_QUEUED
-                            WorkInfo.State.SUCCEEDED -> DownloadStatus.STATE_COMPLETED
+                            WorkInfo.State.RUNNING -> DownloadStatus.State.RUNNING.ordinal
+                            WorkInfo.State.ENQUEUED, WorkInfo.State.BLOCKED -> DownloadStatus.State.QUEUED.ordinal
+                            WorkInfo.State.SUCCEEDED -> DownloadStatus.State.COMPLETED.ordinal
                             WorkInfo.State.FAILED -> {
                                 Log.e(TAG, "download failed $downloadUrl")
-                                DownloadStatus.STATE_COMPLETED
+                                DownloadStatus.State.COMPLETED.ordinal
                             }
                             WorkInfo.State.CANCELLED -> {
                                 Logd(TAG, "download cancelled $downloadUrl")
-                                DownloadStatus.STATE_COMPLETED
+                                DownloadStatus.State.COMPLETED.ordinal
                             }
                         }
                         var progress = workInfo.progress.getInt(DownloadServiceInterface.WORK_DATA_PROGRESS, -1)
-                        if (progress == -1 && status != DownloadStatus.STATE_COMPLETED) {
-                            status = DownloadStatus.STATE_QUEUED
+                        if (progress == -1 && status != DownloadStatus.State.COMPLETED.ordinal) {
+                            status = DownloadStatus.State.QUEUED.ordinal
                             progress = 0
                         }
                         updatedEpisodes[downloadUrl] = DownloadStatus(status, progress)
@@ -398,7 +399,8 @@ class MainActivity : CastEnabledActivity() {
         params.setMargins(navigationBarInsets.left, 0, navigationBarInsets.right,
             navigationBarInsets.bottom + (if (visible) externalPlayerHeight else 0))
         mainView.layoutParams = params
-        val playerView = findViewById<FragmentContainerView>(R.id.playerFragment1)
+//        val playerView = findViewById<FragmentContainerView>(R.id.playerFragment1)
+        val playerView = findViewById<ComposeView>(R.id.composeView1)
         val playerParams = playerView?.layoutParams as? MarginLayoutParams
         playerParams?.setMargins(navigationBarInsets.left, 0, navigationBarInsets.right, 0)
         playerView?.layoutParams = playerParams

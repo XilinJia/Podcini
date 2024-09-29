@@ -164,7 +164,7 @@ class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, To
     }
 
     private class DownloadLogAdapter(private val context: Activity) : BaseAdapter() {
-        private var downloadLog: List<DownloadResult> = ArrayList()
+        private var downloadLog: List<DownloadResult> = listOf()
 
         fun setDownloadLog(downloadLog: List<DownloadResult>) {
             this.downloadLog = downloadLog

@@ -38,6 +38,7 @@ class StreamActionButton(item: Episode) : EpisodeActionButton(item) {
             return
         }
         stream(context, media)
+        actionState.value = getLabel()
     }
 
     class StreamingConfirmationDialog(private val context: Context, private val playable: Playable) {

@@ -43,6 +43,7 @@ class DownloadActionButton(item: Episode) : EpisodeActionButton(item) {
 
             builder.show()
         }
+        actionState.value = getLabel()
     }
 
     private fun shouldNotDownload(media: EpisodeMedia?): Boolean {

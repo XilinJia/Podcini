@@ -1,7 +1,24 @@
+# 6.8.2 (Preview release)
+
+* AudioPlayerFragment got overhauled. migrated to Jetpack Compose and PlayUI and PlayerDetailed fragments are Removed
+* EpisodeInfo is now in Compose
+* SearchFragment shows episodes list in Compose
+* Episodes viewholder and adapter etc are removed
+* SwipeActions class stripped out of View related operations
+* more enhancements in Compose functionalities
+* still have known issues
+
+# 6.8.1 (Preview release)
+
+* made Queues view in Jetpack Compose
+* enhanced various Compose functionalities
+* not yet ready for serious usage
+
 # 6.8.0 (Preview release)
 
 * the Compose class of DownloadsC replaces the old Downloads view
 * FeedEpisodes, AllEpisodes, History, and OnlineFeed mostly migrated to Jetpack Compose
+* there are still known issues and missing functions
 
 # 6.7.3
 

@@ -5,6 +5,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.utils.MediaMetadataRetrieverCompat
 import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.showStackTrace
 import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
@@ -208,7 +209,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
 
     fun hasEmbeddedPicture(): Boolean {
 //        TODO: checkEmbeddedPicture needs to update current copy
-        if (hasEmbeddedPicture == null) checkEmbeddedPicture()
+        if (hasEmbeddedPicture == null) unmanaged(this).checkEmbeddedPicture()
         return hasEmbeddedPicture ?: false
     }
 
@@ -303,7 +304,7 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
     override fun getImageLocation(): String? {
         return when {
             episode != null -> episode!!.imageLocation
-            unmanaged(this).hasEmbeddedPicture() -> FILENAME_PREFIX_EMBEDDED_COVER + getLocalMediaUrl()
+            hasEmbeddedPicture() -> FILENAME_PREFIX_EMBEDDED_COVER + getLocalMediaUrl()
             else -> null
         }
     }

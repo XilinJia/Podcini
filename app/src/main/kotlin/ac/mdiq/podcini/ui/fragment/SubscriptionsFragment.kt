@@ -15,6 +15,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.FeedAutoDeleteOptions
+import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.compose.CustomTheme
@@ -48,6 +49,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.OptIn
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.Toolbar
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -57,8 +60,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.util.Consumer
@@ -67,6 +72,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import coil.compose.AsyncImage
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -208,7 +214,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
 //        }
 
 //        binding.progressBar.visibility = View.VISIBLE
-        binding.progressBar.visibility = View.GONE
+//        binding.progressBar.visibility = View.GONE
 
         val subscriptionAddButton: FloatingActionButton = binding.subscriptionsAdd
         subscriptionAddButton.setOnClickListener {
@@ -571,6 +577,36 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         adapter.setItems(feedsOnly)
     }
 
+    @Composable
+    fun FeedExpanded(feed: Feed) {
+        Row {
+            val imgLoc = ""
+            AsyncImage(model = imgLoc, contentDescription = "imgvCover",
+                placeholder = painterResource(R.mipmap.ic_launcher),
+                modifier = Modifier.width(80.dp).height(80.dp)
+                    .clickable(onClick = {
+                        Logd(TAG, "icon clicked!")
+//                        if (selectMode) toggleSelected()
+//                        else activity.loadChildFragment(FeedInfoFragment.newInstance(episode.feed!!))
+                    }))
+            val textColor = MaterialTheme.colors.onSurface
+            Column(Modifier.fillMaxWidth()) {
+                Text("titleLabel", color = textColor, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text("producerLabel", color = textColor, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Row {
+                    Text("episodeCount", color = textColor, )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text("sortInfo", color = textColor, )
+                }
+            }
+            Icon(painter = painterResource(R.drawable.ic_error), contentDescription = "error")
+        }
+    }
+
+    @Composable
+    fun FeedCompact(feed: Feed) {
+
+    }
     @UnstableApi
     private inner class FeedMultiSelectActionHandler(private val activity: MainActivity, private val selectedItems: List<Feed>) {
         fun handleAction(id: Int) {

@@ -15,7 +15,7 @@ import java.util.*
  * Shows the dialog that allows setting the skip time.
  */
 object SkipPreferenceDialog {
-    fun showSkipPreference(context: Context, direction: SkipDirection, textView: TextView?) {
+    fun showSkipPreference(context: Context, direction: SkipDirection, textView: TextView? = null) {
         var checked = 0
         val skipSecs = if (direction == SkipDirection.SKIP_FORWARD) fastForwardSecs else rewindSecs
 

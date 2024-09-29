@@ -21,6 +21,7 @@ class MarkAsPlayedActionButton(item: Episode) : EpisodeActionButton(item) {
 
     @UnstableApi override fun onClick(context: Context) {
         if (!item.isPlayed()) setPlayState(Episode.PlayState.PLAYED.code, true, item)
+        actionState.value = getLabel()
     }
 
 }

@@ -3,7 +3,8 @@ package ac.mdiq.podcini.ui.fragment
 //import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.FeedItemListFragmentBinding
-import ac.mdiq.podcini.databinding.MoreContentListFooterBinding
+import ac.mdiq.podcini.net.download.DownloadStatus
+import ac.mdiq.podcini.net.download.DownloadStatus.State.UNKNOWN
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
@@ -14,13 +15,10 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.fromCode
-import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
-import ac.mdiq.podcini.ui.actions.actionbutton.DeleteActionButton
 import ac.mdiq.podcini.ui.actions.swipeactions.SwipeAction
 import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.compose.EpisodeLazyColumn
 import ac.mdiq.podcini.ui.compose.FeedEpisodesHeader
@@ -74,6 +72,8 @@ import java.util.concurrent.Semaphore
     private var feedID: Long = 0
     private var feed by mutableStateOf<Feed?>(null)
     private val episodes = mutableStateListOf<Episode>()
+    private var ieMap: Map<Long, Int> = mapOf()
+    private var ueMap: Map<String, Int> = mapOf()
 
     private var enableFilter: Boolean = true
     private var filterButColor = mutableStateOf(Color.White)
@@ -133,6 +133,8 @@ import java.util.concurrent.Semaphore
                 if (sortOrder != null) getPermutor(sortOrder).reorder(etmp)
                 episodes.clear()
                 episodes.addAll(etmp)
+                ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
+                ueMap = episodes.mapIndexedNotNull { index, episode -> episode.media?.downloadUrl?.let { it to index } }.toMap()
                 loadItemsRunning = false
             }
         }
@@ -217,8 +219,9 @@ import java.util.concurrent.Semaphore
         ioScope.cancel()
 
         feed = null
+        ieMap = mapOf()
+        ueMap = mapOf()
         episodes.clear()
-
         tts?.stop()
         tts?.shutdown()
         ttsWorking = false
@@ -308,7 +311,8 @@ import java.util.concurrent.Semaphore
         while (i < size) {
             val item = event.episodes[i++]
             if (item.feedId != feed!!.id) continue
-//            adapter.notifyDataSetChanged()
+            val pos: Int = ieMap[item.id] ?: -1
+            if (pos >= 0) episodes[pos].inQueueState.value = event.inQueue()
             break
         }
     }
@@ -316,8 +320,9 @@ import java.util.concurrent.Semaphore
     private fun onPlayEvent(event: FlowEvent.PlayEvent) {
         Logd(TAG, "onPlayEvent ${event.episode.title}")
         if (feed != null) {
-            val pos: Int = EpisodeUtil.indexOfItemWithId(episodes, event.episode.id)
+            val pos: Int = ieMap[event.episode.id] ?: -1
             if (pos >= 0) {
+                if (!filterOutEpisode(event.episode)) episodes[pos].isPlayingState.value = event.isPlaying()
 //                if (filterOutEpisode(event.episode)) adapter.updateItems(episodes)
 //                else adapter.notifyItemChangedCompat(pos)
             }
@@ -328,10 +333,12 @@ import java.util.concurrent.Semaphore
 //        Logd(TAG, "onEpisodeDownloadEvent() called with ${event.TAG}")
         if (loadItemsRunning) return
         if (feed == null || episodes.isEmpty()) return
-        for (downloadUrl in event.urls) {
-            val pos: Int = EpisodeUtil.indexOfItemWithDownloadUrl(episodes, downloadUrl)
+        for (url in event.urls) {
+//            if (!event.isCompleted(url)) continue
+            val pos: Int = ueMap[url] ?: -1
             if (pos >= 0) {
-                Logd(TAG, "onEpisodeDownloadEvent $pos ${episodes[pos].title}")
+                Logd(TAG, "onEpisodeDownloadEvent $pos ${event.map[url]?.state} ${episodes[pos].media?.downloaded} ${episodes[pos].title}")
+                episodes[pos].downloadState.value = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
 //                adapter.notifyItemChangedCompat(pos)
             }
         }
@@ -464,6 +471,8 @@ import java.util.concurrent.Semaphore
     private fun filterOutEpisode(episode: Episode): Boolean {
         if (enableFilter && !feed?.preferences?.filterString.isNullOrEmpty() && !feed!!.episodeFilter.matches(episode)) {
             episodes.remove(episode)
+            ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
+            ueMap = episodes.mapIndexedNotNull { index, episode -> episode.media?.downloadUrl?.let { it to index } }.toMap()
             return true
         }
         return false
@@ -474,6 +483,8 @@ import java.util.concurrent.Semaphore
             val episodes_ = list ?: episodes.toList()
             episodes.clear()
             episodes.addAll(episodes_.filter { feed!!.episodeFilter.matches(it) })
+            ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
+            ueMap = episodes.mapIndexedNotNull { index, episode -> episode.media?.downloadUrl?.let { it to index } }.toMap()
         }
     }
 
@@ -496,6 +507,8 @@ import java.util.concurrent.Semaphore
                             if (sortOrder != null) getPermutor(sortOrder).reorder(etmp)
                             episodes.clear()
                             episodes.addAll(etmp)
+                            ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
+                            ueMap = episodes.mapIndexedNotNull { index, episode -> episode.media?.downloadUrl?.let { it to index } }.toMap()
                             if (onInit) {
                                 var hasNonMediaItems = false
                                 for (item in episodes) {

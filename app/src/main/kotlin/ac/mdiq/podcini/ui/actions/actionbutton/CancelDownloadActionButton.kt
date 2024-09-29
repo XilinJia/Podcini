@@ -30,6 +30,8 @@ class CancelDownloadActionButton(item: Episode) : EpisodeActionButton(item) {
             val item_ = upsertBlk(item) {
                 it.disableAutoDownload()
             }
-            EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(item_))        }
+            EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(item_))
+        }
+        actionState.value = getLabel()
     }
 }

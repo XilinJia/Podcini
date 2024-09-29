@@ -1,9 +1,13 @@
 package ac.mdiq.podcini.storage.model
 
+import ac.mdiq.podcini.net.download.DownloadStatus
+import ac.mdiq.podcini.playback.base.InTheatre.curQueue
+import ac.mdiq.podcini.playback.base.InTheatre.isCurrentlyPlaying
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
-import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.vista.extractor.Vista
 import ac.mdiq.vista.extractor.stream.StreamInfo
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.ext.realmSetOf
 import io.realm.kotlin.types.RealmList
@@ -116,7 +120,7 @@ class Episode : RealmObject {
     val imageLocation: String?
         get() = when {
             imageUrl != null -> imageUrl
-            media != null && unmanaged(media!!).hasEmbeddedPicture() -> EpisodeMedia.FILENAME_PREFIX_EMBEDDED_COVER + media!!.getLocalMediaUrl()
+            media != null && media?.hasEmbeddedPicture() == true -> EpisodeMedia.FILENAME_PREFIX_EMBEDDED_COVER + media!!.getLocalMediaUrl()
             feed != null -> {
                 feed!!.imageUrl
             }
@@ -132,6 +136,18 @@ class Episode : RealmObject {
             }
             return field
         }
+
+    @Ignore
+    val inQueueState = mutableStateOf(curQueue.contains(this))
+
+    @Ignore
+    val isPlayingState = mutableStateOf(isCurrentlyPlaying(media))
+
+    @Ignore
+    val downloadState = mutableIntStateOf(if (media?.downloaded == true) DownloadStatus.State.COMPLETED.ordinal else DownloadStatus.State.UNKNOWN.ordinal)
+
+    @Ignore
+    val stopMonitoring = mutableStateOf(false)
 
     constructor() {
         this.playState = PlayState.UNPLAYED.code
@@ -149,6 +165,13 @@ class Episode : RealmObject {
         this.playState = state
         if (feed != null) this.feedId = feed.id
         this.feed = feed
+    }
+
+    fun copyStates(other: Episode) {
+        inQueueState.value = other.inQueueState.value
+        isPlayingState.value = other.isPlayingState.value
+        downloadState.value = other.downloadState.value
+        stopMonitoring.value = other.stopMonitoring.value
     }
 
     fun updateFromOther(other: Episode) {
@@ -256,12 +279,11 @@ class Episode : RealmObject {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Episode) return false
-        return id == other.id && playState == other.playState
+        return id == other.id
     }
 
     override fun hashCode(): Int {
-        var result = (id xor (id ushr 32)).toInt()
-        result = 31 * result + playState.hashCode()
+        val result = (id xor (id ushr 32)).toInt()
         return result
     }
 

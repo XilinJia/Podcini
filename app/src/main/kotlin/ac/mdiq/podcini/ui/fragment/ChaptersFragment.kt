@@ -81,7 +81,6 @@ class ChaptersFragment : AppCompatDialogFragment() {
             progressBar.visibility = View.VISIBLE
             loadMediaInfo(true)
         }
-
         return dialog
     }
 
@@ -106,19 +105,15 @@ class ChaptersFragment : AppCompatDialogFragment() {
             }
         })
         recyclerView.adapter = adapter
-
         progressBar.visibility = View.VISIBLE
-
         val wrapHeight = CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MATCH_PARENT, CoordinatorLayout.LayoutParams.WRAP_CONTENT)
         recyclerView.layoutParams = wrapHeight
-
         controller = object : ServiceStatusHandler(requireActivity()) {
             override fun loadMediaInfo() {
                 this@ChaptersFragment.loadMediaInfo(false)
             }
         }
         controller?.init()
-
         return binding.root
     }
 
@@ -167,7 +162,6 @@ class ChaptersFragment : AppCompatDialogFragment() {
 
     private fun getCurrentChapter(media: Playable?): Int {
         if (controller == null) return -1
-
         return getCurrentChapterIndex(media, curPositionFB)
     }
 
@@ -192,7 +186,6 @@ class ChaptersFragment : AppCompatDialogFragment() {
             dismiss()
             Toast.makeText(context, R.string.no_chapters_label, Toast.LENGTH_LONG).show()
         } else progressBar.visibility = View.GONE
-
         adapter.setMedia(media)
         (dialog as AlertDialog).getButton(DialogInterface.BUTTON_NEUTRAL).visibility = View.INVISIBLE
         if ((media is EpisodeMedia) && !media.episodeOrFetch()?.podcastIndexChapterUrl.isNullOrEmpty())
@@ -214,7 +207,6 @@ class ChaptersFragment : AppCompatDialogFragment() {
     }
 
     class ChaptersListAdapter(private val context: Context, private val callback: Callback?) : RecyclerView.Adapter<ChaptersListAdapter.ChapterHolder>() {
-
         private var media: Playable? = null
         private var currentChapterIndex = -1
         private var currentChapterPosition: Long = -1

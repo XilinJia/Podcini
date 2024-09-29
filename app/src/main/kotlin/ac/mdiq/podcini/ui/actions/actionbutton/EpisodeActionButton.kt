@@ -35,28 +35,30 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
 
     var processing: Float = -1f
 
+    val actionState = mutableIntStateOf(0)
+
     abstract fun getLabel(): Int
 
     abstract fun getDrawable(): Int
 
     abstract fun onClick(context: Context)
 
-    fun configure(button: View, icon: ImageView, context: Context) {
-        button.visibility = visibility
-        button.contentDescription = context.getString(getLabel())
-        button.setOnClickListener { onClick(context) }
-        button.setOnLongClickListener {
-            val composeView = ComposeView(context).apply {
-                setContent {
-                    val showDialog = remember { mutableStateOf(true) }
-                    CustomTheme(context) { AltActionsDialog(context,  showDialog.value, onDismiss = { showDialog.value = false }) }
-                }
-            }
-            (button as? ViewGroup)?.addView(composeView)
-            true
-        }
-        icon.setImageResource(getDrawable())
-    }
+//    fun configure(button: View, icon: ImageView, context: Context) {
+//        button.visibility = visibility
+//        button.contentDescription = context.getString(getLabel())
+//        button.setOnClickListener { onClick(context) }
+//        button.setOnLongClickListener {
+//            val composeView = ComposeView(context).apply {
+//                setContent {
+//                    val showDialog = remember { mutableStateOf(true) }
+//                    CustomTheme(context) { AltActionsDialog(context,  showDialog.value, onDismiss = { showDialog.value = false }) }
+//                }
+//            }
+//            (button as? ViewGroup)?.addView(composeView)
+//            true
+//        }
+//        icon.setImageResource(getDrawable())
+//    }
 
     @Composable
     fun AltActionsDialog(context: Context, showDialog: Boolean, onDismiss: () -> Unit) {

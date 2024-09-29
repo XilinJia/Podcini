@@ -29,7 +29,6 @@ class PlayLocalActionButton(item: Episode) : EpisodeActionButton(item) {
             Toast.makeText(context, R.string.no_media_label, Toast.LENGTH_LONG).show()
             return
         }
-
         if (playbackService?.isServiceReady() == true && InTheatre.isCurMedia(media)) {
             playbackService?.mPlayer?.resume()
             playbackService?.taskManager?.restartSleepTimer()
@@ -38,7 +37,7 @@ class PlayLocalActionButton(item: Episode) : EpisodeActionButton(item) {
             PlaybackServiceStarter(context, media).callEvenIfRunning(true).start()
             EventFlow.postEvent(FlowEvent.PlayEvent(item))
         }
-
         if (media.getMediaType() == MediaType.VIDEO) context.startActivity(getPlayerActivityIntent(context, MediaType.VIDEO))
+        actionState.value = getLabel()
     }
 }

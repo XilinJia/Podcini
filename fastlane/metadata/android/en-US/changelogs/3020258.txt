@@ -1,0 +1,5 @@
+ Version 6.8.1 (preview release):
+
+* made Queues view in Jetpack Compose
+* enhanced various Compose functionalities
+* not yet ready for serious usage

@@ -57,7 +57,7 @@ import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
-import ac.mdiq.podcini.ui.fragment.AudioPlayerFragment.PlayerDetailsFragment.Companion.media3Controller
+import ac.mdiq.podcini.ui.fragment.AudioPlayerFragment.Companion.media3Controller
 import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.ui.widget.WidgetUpdater
 import ac.mdiq.podcini.ui.widget.WidgetUpdater.WidgetState
@@ -1708,7 +1708,7 @@ class PlaybackService : MediaLibraryService() {
 
             when (status) {
                 PlayerStatus.PLAYING, PlayerStatus.PAUSED, PlayerStatus.PREPARED -> {
-                    Logd(TAG, "seekTo() called $t")
+                    Logd(TAG, "seekTo t: $t")
                     if (seekLatch != null && seekLatch!!.count > 0) {
                         try { seekLatch!!.await(3, TimeUnit.SECONDS) } catch (e: InterruptedException) { Log.e(TAG, Log.getStackTraceString(e)) }
                     }

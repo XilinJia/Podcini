@@ -29,6 +29,9 @@ sealed class FlowEvent {
 
     data class PlayEvent(val episode: Episode, val action: Action = Action.START) : FlowEvent() {
         enum class Action { START, END, }
+        fun isPlaying(): Boolean {
+            return action == Action.START
+        }
     }
 
     data class PlayerErrorEvent(val message: String) : FlowEvent()
@@ -62,6 +65,13 @@ sealed class FlowEvent {
     data class QueueEvent(val action: Action, val episodes: List<Episode>, val position: Int) : FlowEvent() {
         enum class Action {
             ADDED, SET_QUEUE, REMOVED, IRREVERSIBLE_REMOVED, CLEARED, DELETED_MEDIA, SORTED, MOVED, SWITCH_QUEUE
+        }
+        fun inQueue(): Boolean {
+            return when (action) {
+                Action.ADDED, Action.SET_QUEUE, Action.SORTED, Action.MOVED, Action.SWITCH_QUEUE -> true
+                else -> false
+            }
+
         }
         companion object {
             fun added(episode: Episode, position: Int): QueueEvent {
@@ -149,6 +159,10 @@ sealed class FlowEvent {
     data class EpisodeDownloadEvent(val map: Map<String, DownloadStatus>) : FlowEvent() {
         val urls: Set<String>
             get() = map.keys
+        fun isCompleted(url: String): Boolean {
+            val stat = map[url]
+            return stat?.state == DownloadStatus.State.COMPLETED.ordinal
+        }
     }
 
     //    TODO: need better handling at receving end

@@ -2,8 +2,8 @@ package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.CheckboxDoNotShowAgainBinding
-import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.databinding.QueueFragmentBinding
+import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.getCurrentPlaybackSpeed
 import ac.mdiq.podcini.playback.service.PlaybackService
@@ -13,7 +13,6 @@ import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.database.Queues.clearQueue
 import ac.mdiq.podcini.storage.database.Queues.isQueueKeepSorted
 import ac.mdiq.podcini.storage.database.Queues.isQueueLocked
-import ac.mdiq.podcini.storage.database.Queues.moveInQueue
 import ac.mdiq.podcini.storage.database.Queues.queueKeepSortedOrder
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
@@ -26,21 +25,18 @@ import ac.mdiq.podcini.storage.model.PlayQueue
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
-import ac.mdiq.podcini.ui.actions.handler.EpisodeMultiSelectHandler
+import ac.mdiq.podcini.ui.actions.swipeactions.SwipeAction
 import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.adapter.EpisodesAdapter
-import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.ui.compose.EpisodeLazyColumn
+import ac.mdiq.podcini.ui.compose.InforBar
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
-import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
-import ac.mdiq.podcini.ui.view.EpisodeViewHolder
-import ac.mdiq.podcini.ui.view.EpisodesRecyclerView
-import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.podcini.util.Logd
 import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
@@ -54,7 +50,10 @@ import android.widget.ArrayAdapter
 import android.widget.CheckBox
 import android.widget.Spinner
 import androidx.appcompat.widget.Toolbar
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.Card
@@ -71,34 +70,35 @@ import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
-import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.SimpleItemAnimator
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import com.leinardi.android.speeddial.SpeedDialActionItem
-import com.leinardi.android.speeddial.SpeedDialView
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.util.*
 import kotlin.math.max
 
 /**
  * Shows all items in the queue.
  */
-@UnstableApi class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAdapter.OnSelectModeListener {
+@UnstableApi class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private var _binding: QueueFragmentBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var recyclerView: EpisodesRecyclerView
     private lateinit var emptyViewHandler: EmptyViewHandler
     private lateinit var toolbar: MaterialToolbar
     private lateinit var swipeActions: SwipeActions
-    private lateinit var speedDialView: SpeedDialView
+
+    private var infoBarText = mutableStateOf("")
+    private var leftActionState = mutableStateOf<SwipeAction?>(null)
+    private var rightActionState = mutableStateOf<SwipeAction?>(null)
 
     private lateinit var spinnerLayout: View
     private lateinit var queueNames: Array<String>
@@ -108,12 +108,12 @@ import kotlin.math.max
     private lateinit var queues: List<PlayQueue>
 
     private var displayUpArrow = false
-    private var queueItems: MutableList<Episode> = mutableListOf()
-
-    private var adapter: QueueRecyclerAdapter? = null
+    private val queueItems = mutableStateListOf<Episode>()
 
     private var showBin: Boolean = false
     private var addToQueueActionItem: SpeedDialActionItem? = null
+
+    private var dragDropEnabled: Boolean = !(isQueueKeepSorted || isQueueLocked)
 
     private lateinit var browserFuture: ListenableFuture<MediaBrowser>
 
@@ -129,11 +129,11 @@ import kotlin.math.max
         Logd(TAG, "fragment onCreateView")
         toolbar = binding.toolbar
         toolbar.setOnMenuItemClickListener(this)
-        toolbar.setOnLongClickListener {
-            recyclerView.scrollToPosition(5)
-            recyclerView.post { recyclerView.smoothScrollToPosition(0) }
-            false
-        }
+//        toolbar.setOnLongClickListener {
+//            recyclerView.scrollToPosition(5)
+//            recyclerView.post { recyclerView.smoothScrollToPosition(0) }
+//            false
+//        }
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
 
@@ -172,63 +172,42 @@ import kotlin.math.max
         (activity as MainActivity).setupToolbarToggle(toolbar, displayUpArrow)
         toolbar.inflateMenu(R.menu.queue)
         refreshMenuItems()
-        binding.progressBar.visibility = View.VISIBLE
 
-        recyclerView = binding.recyclerView
-        val animator: RecyclerView.ItemAnimator? = recyclerView.itemAnimator
-        if (animator != null && animator is SimpleItemAnimator) animator.supportsChangeAnimations = false
+//        recyclerView.setRecycledViewPool((activity as MainActivity).recycledViewPool)
+//        registerForContextMenu(recyclerView)
+//        recyclerView.addOnScrollListener(LiftOnScrollListener(binding.appbar))
 
-        recyclerView.setRecycledViewPool((activity as MainActivity).recycledViewPool)
-        registerForContextMenu(recyclerView)
-        recyclerView.addOnScrollListener(LiftOnScrollListener(binding.appbar))
-
-        swipeActions = QueueSwipeActions()
-        lifecycle.addObserver(swipeActions)
+        swipeActions = SwipeActions(this, TAG)
         swipeActions.setFilter(EpisodeFilter(EpisodeFilter.States.queued.name))
-        swipeActions.attachTo(recyclerView)
-        refreshSwipeTelltale()
-        binding.leftActionIcon.setOnClickListener { swipeActions.showDialog() }
-        binding.rightActionIcon.setOnClickListener { swipeActions.showDialog() }
+        binding.infobar.setContent {
+            CustomTheme(requireContext()) {
+                InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {swipeActions.showDialog()})
+            }
+        }
+        binding.lazyColumn.setContent {
+            CustomTheme(requireContext()) {
+                EpisodeLazyColumn(activity as MainActivity, episodes = queueItems,
+                    leftSwipeCB = { if (leftActionState.value == null) swipeActions.showDialog() else leftActionState.value?.performAction(it, this, swipeActions.filter ?: EpisodeFilter())},
+                    rightSwipeCB = { if (rightActionState.value == null) swipeActions.showDialog() else rightActionState.value?.performAction(it, this, swipeActions.filter ?: EpisodeFilter())}, )
+            }
+        }
 
-        adapter = QueueRecyclerAdapter()
-        adapter?.setOnSelectModeListener(this)
-        recyclerView.adapter = adapter
+        lifecycle.addObserver(swipeActions)
+        refreshSwipeTelltale()
 
         emptyViewHandler = EmptyViewHandler(requireContext())
-        emptyViewHandler.attachToRecyclerView(recyclerView)
+//        emptyViewHandler.attachToRecyclerView(recyclerView)
         emptyViewHandler.setIcon(R.drawable.ic_playlist_play)
         emptyViewHandler.setTitle(R.string.no_items_header_label)
         emptyViewHandler.setMessage(R.string.no_items_label)
-        emptyViewHandler.updateAdapter(adapter)
+//        emptyViewHandler.updateAdapter(adapter)
 
-        val multiSelectDial = MultiSelectSpeedDialBinding.bind(binding.root)
-        speedDialView = multiSelectDial.fabSD
-        speedDialView.overlayLayout = multiSelectDial.fabSDOverlay
-        speedDialView.inflate(R.menu.episodes_apply_action_speeddial)
-        addToQueueActionItem = speedDialView.removeActionItemById(R.id.add_to_queue_batch)
-        speedDialView.setOnChangeListener(object : SpeedDialView.OnChangeListener {
-            override fun onMainActionSelected(): Boolean {
-                return false
-            }
-            override fun onToggleChanged(open: Boolean) {
-                if (open && adapter!!.selectedCount == 0) {
-                    (activity as MainActivity).showSnackbarAbovePlayer(R.string.no_items_selected, Snackbar.LENGTH_SHORT)
-                    speedDialView.close()
-                }
-            }
-        })
-        speedDialView.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
-            EpisodeMultiSelectHandler((activity as MainActivity), actionItem.id).handleAction(adapter!!.selectedItems)
-            adapter?.endSelectMode()
-            true
-        }
         return binding.root
     }
 
     override fun onStart() {
         Logd(TAG, "onStart() called")
         super.onStart()
-        adapter?.refreshFragPosCallback = ::refreshPosCallback
         loadCurQueue(true)
         procFlowEvents()
         val sessionToken = SessionToken(requireContext(), ComponentName(requireContext(), PlaybackService::class.java))
@@ -238,29 +217,21 @@ import kotlin.math.max
             mediaBrowser = browserFuture.get()
             mediaBrowser?.subscribe("CurQueue", null)
         }, MoreExecutors.directExecutor())
-//        if (queueItems.isNotEmpty()) recyclerView.restoreScrollPosition(TAG)
     }
 
     override fun onStop() {
         Logd(TAG, "onStop() called")
         super.onStop()
-        adapter?.refreshFragPosCallback = null
         cancelFlowEvents()
         mediaBrowser?.unsubscribe("CurQueue")
         mediaBrowser = null
         MediaBrowser.releaseFuture(browserFuture)
-        val childCount = recyclerView.childCount
-        for (i in 0 until childCount) {
-            val child = recyclerView.getChildAt(i)
-            val viewHolder = recyclerView.getChildViewHolder(child) as? EpisodeViewHolder
-            viewHolder?.stopDBMonitor()
-        }
     }
 
     override fun onPause() {
         Logd(TAG, "onPause() called")
         super.onPause()
-        recyclerView.saveScrollPosition(TAG)
+//        recyclerView.saveScrollPosition(TAG)
     }
 
     private var eventSink: Job?     = null
@@ -307,31 +278,24 @@ import kotlin.math.max
         }
     }
 
-    private fun refreshPosCallback(pos: Int, episode: Episode) {
-//        Logd(TAG, "Queue refreshPosCallback: $pos ${episode.title}")
-        if (isAdded && activity != null) refreshInfoBar()
-    }
+//    private fun refreshPosCallback(pos: Int, episode: Episode) {
+////        Logd(TAG, "Queue refreshPosCallback: $pos ${episode.title}")
+//        if (isAdded && activity != null) refreshInfoBar()
+//    }
 
     private fun onQueueEvent(event: FlowEvent.QueueEvent) {
         Logd(TAG, "onQueueEvent() called with ${event.action.name}")
         if (showBin) return
-        if (adapter == null) {
-            loadCurQueue(true)
-            return
-        }
         when (event.action) {
             FlowEvent.QueueEvent.Action.ADDED -> {
                 if (event.episodes.isNotEmpty() && !curQueue.contains(event.episodes[0])) {
-                    val pos = queueItems.size
                     queueItems.addAll(event.episodes)
-                    adapter?.notifyItemRangeInserted(pos, queueItems.size)
-                    adapter?.notifyItemRangeChanged(pos, event.episodes.size)
                 }
             }
             FlowEvent.QueueEvent.Action.SET_QUEUE, FlowEvent.QueueEvent.Action.SORTED -> {
                 queueItems.clear()
                 queueItems.addAll(event.episodes)
-                adapter?.updateItems(queueItems)
+//                adapter?.updateItems(queueItems)
             }
             FlowEvent.QueueEvent.Action.REMOVED, FlowEvent.QueueEvent.Action.IRREVERSIBLE_REMOVED -> {
                 if (event.episodes.isNotEmpty()) {
@@ -339,15 +303,8 @@ import kotlin.math.max
                         val pos: Int = EpisodeUtil.indexOfItemWithId(queueItems, e.id)
                         if (pos >= 0) {
                             Logd(TAG, "removing episode $pos ${queueItems[pos].title} $e")
-//                            val holder = recyclerView.findViewHolderForItemId(e.id) as? EpisodeViewHolder
-                            val holder = recyclerView.findViewHolderForLayoutPosition(pos) as? EpisodeViewHolder
-                            if (holder != null) {
-                                holder.stopDBMonitor()
-//                            holder?.unbind()
-                                queueItems.removeAt(pos)
-                                adapter?.notifyItemRemoved(pos)
-//                            adapter?.notifyItemRangeChanged(pos, adapter!!.itemCount - pos)
-                            }
+                            queueItems[pos].stopMonitoring.value = true
+                            queueItems.removeAt(pos)
                         } else {
                             Log.e(TAG, "Trying to remove item non-existent from queue ${e.id} ${e.title}")
                             continue
@@ -361,28 +318,28 @@ import kotlin.math.max
             }
             FlowEvent.QueueEvent.Action.CLEARED -> {
                 queueItems.clear()
-                adapter?.updateItems(queueItems)
             }
             FlowEvent.QueueEvent.Action.MOVED, FlowEvent.QueueEvent.Action.DELETED_MEDIA -> return
         }
-        adapter?.updateDragDropEnabled()
+//        adapter?.updateDragDropEnabled()
         refreshMenuItems()
-        recyclerView.saveScrollPosition(TAG)
+//        recyclerView.saveScrollPosition(TAG)
         refreshInfoBar()
     }
 
     private fun onPlayEvent(event: FlowEvent.PlayEvent) {
         val pos: Int = EpisodeUtil.indexOfItemWithId(queueItems, event.episode.id)
         Logd(TAG, "onPlayEvent action: ${event.action} pos: $pos ${event.episode.title}")
-        if (pos >= 0) adapter?.notifyItemChangedCompat(pos)
+        if (pos >= 0) queueItems[pos].isPlayingState.value = event.isPlaying()
     }
 
     private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
 //        Logd(TAG, "onEventMainThread() called with ${event.TAG}")
         if (loadItemsRunning) return
-        for (downloadUrl in event.urls) {
-            val pos: Int = EpisodeUtil.indexOfItemWithDownloadUrl(queueItems.toList(), downloadUrl)
-            if (pos >= 0) adapter?.notifyItemChangedCompat(pos)
+        for (url in event.urls) {
+//            if (!event.isCompleted(url)) continue
+            val pos: Int = EpisodeUtil.indexOfItemWithDownloadUrl(queueItems.toList(), url)
+            if (pos >= 0) queueItems[pos].downloadState.value = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
         }
     }
 
@@ -410,16 +367,16 @@ import kotlin.math.max
     }
 
     private fun refreshSwipeTelltale() {
-        if (swipeActions.actions?.left != null) binding.leftActionIcon.setImageResource(swipeActions.actions!!.left!!.getActionIcon())
-        if (swipeActions.actions?.right != null) binding.rightActionIcon.setImageResource(swipeActions.actions!!.right!!.getActionIcon())
+        leftActionState.value = swipeActions.actions?.left
+        rightActionState.value = swipeActions.actions?.right
     }
 
     @SuppressLint("RestrictedApi")
     private fun onKeyUp(event: KeyEvent) {
         if (!isAdded || !isVisible || !isMenuVisible) return
         when (event.keyCode) {
-            KeyEvent.KEYCODE_T -> recyclerView.smoothScrollToPosition(0)
-            KeyEvent.KEYCODE_B -> recyclerView.smoothScrollToPosition(adapter!!.itemCount - 1)
+//            KeyEvent.KEYCODE_T -> recyclerView.smoothScrollToPosition(0)
+//            KeyEvent.KEYCODE_B -> recyclerView.smoothScrollToPosition(adapter!!.itemCount - 1)
             else -> {}
         }
     }
@@ -427,10 +384,7 @@ import kotlin.math.max
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
         _binding = null
-        queueItems = mutableListOf()
-        adapter?.endSelectMode()
-        adapter?.clearData()
-        adapter = null
+        queueItems.clear()
         toolbar.setOnMenuItemClickListener(null)
         toolbar.setOnLongClickListener(null)
         super.onDestroyView()
@@ -468,10 +422,10 @@ import kotlin.math.max
                 refreshMenuItems()
                 if (showBin) {
                     item.setIcon(R.drawable.playlist_play)
-                    speedDialView.addActionItem(addToQueueActionItem)
+//                    speedDialView.addActionItem(addToQueueActionItem)
                 } else {
                     item.setIcon(R.drawable.ic_history)
-                    speedDialView.removeActionItem(addToQueueActionItem)
+//                    speedDialView.removeActionItem(addToQueueActionItem)
                 }
                 loadCurQueue(false)
             }
@@ -635,7 +589,7 @@ import kotlin.math.max
     @UnstableApi private fun setQueueLocked(locked: Boolean) {
         isQueueLocked = locked
         refreshMenuItems()
-        adapter?.updateDragDropEnabled()
+//        adapter?.updateDragDropEnabled()
 
         if (queueItems.size == 0) {
             if (locked) (activity as MainActivity).showSnackbarAbovePlayer(R.string.queue_locked, Snackbar.LENGTH_SHORT)
@@ -664,7 +618,7 @@ import kotlin.math.max
             info += " • "
             info += DurationConverter.getDurationStringLocalized(requireActivity(), timeLeft)
         }
-        binding.infoBar.text = info
+        infoBarText.value = info
 //        toolbar.title = "${getString(R.string.queue_label)}: ${curQueue.name}"
     }
 
@@ -685,28 +639,11 @@ import kotlin.math.max
             }
             Logd(TAG, "loadCurQueue() curQueue.episodes: ${curQueue.episodes.size}")
 
-            binding.progressBar.visibility = View.GONE
-//        adapter?.setDummyViews(0)
-            adapter?.updateItems(queueItems)
-            if (restoreScrollPosition) recyclerView.restoreScrollPosition(TAG)
+//            if (restoreScrollPosition) recyclerView.restoreScrollPosition(TAG)
             refreshInfoBar()
 //            playbackService?.notifyCurQueueItemsChanged()
             loadItemsRunning = false
         }
-    }
-
-    override fun onStartSelectMode() {
-        swipeActions.detach()
-        speedDialView.visibility = View.VISIBLE
-        refreshMenuItems()
-        binding.infoBar.visibility = View.GONE
-    }
-
-    override fun onEndSelectMode() {
-        speedDialView.close()
-        speedDialView.visibility = View.GONE
-        binding.infoBar.visibility = View.VISIBLE
-        swipeActions.attachTo(recyclerView)
     }
 
     class QueueSortDialog : EpisodeSortDialog() {
@@ -754,88 +691,6 @@ import kotlin.math.max
                 }
                 if (broadcastUpdate) EventFlow.postEvent(FlowEvent.QueueEvent.sorted(curQueue.episodes))
             }
-        }
-    }
-
-    private inner class QueueSwipeActions : SwipeActions(ItemTouchHelper.UP or ItemTouchHelper.DOWN, this@QueuesFragment, TAG) {
-        // Position tracking whilst dragging
-        var dragFrom: Int = -1
-        var dragTo: Int = -1
-
-        override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
-            val fromPosition = viewHolder.bindingAdapterPosition
-            val toPosition = target.bindingAdapterPosition
-
-            // Update tracked position
-            if (dragFrom == -1) dragFrom = fromPosition
-            dragTo = toPosition
-
-            val from = viewHolder.bindingAdapterPosition
-            val to = target.bindingAdapterPosition
-            Logd(TAG, "move($from, $to) in memory")
-            if (from >= queueItems.size || to >= queueItems.size || from < 0 || to < 0) return false
-
-            queueItems.add(to, queueItems.removeAt(from))
-            adapter?.notifyItemMoved(from, to)
-            return true
-        }
-        @UnstableApi override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-            //SwipeActions
-            super.onSwiped(viewHolder, direction)
-        }
-        override fun isLongPressDragEnabled(): Boolean {
-            return false
-        }
-        @UnstableApi override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
-            super.clearView(recyclerView, viewHolder)
-            // Check if drag finished
-            if (dragFrom != -1 && dragTo != -1 && dragFrom != dragTo) reallyMoved(dragFrom, dragTo)
-            dragTo = -1
-            dragFrom = dragTo
-        }
-        @UnstableApi private fun reallyMoved(from: Int, to: Int) {
-            Logd(TAG, "Write to database move($from, $to)")
-            moveInQueue(from, to, true)
-        }
-    }
-
-    private inner class QueueRecyclerAdapter : EpisodesAdapter(activity as MainActivity) {
-        private var dragDropEnabled: Boolean
-
-        init {
-            dragDropEnabled = !(isQueueKeepSorted || isQueueLocked)
-        }
-        fun updateDragDropEnabled() {
-            dragDropEnabled = !(isQueueKeepSorted || isQueueLocked)
-            notifyDataSetChanged()
-        }
-        @UnstableApi
-        override fun afterBindViewHolder(holder: EpisodeViewHolder, pos: Int) {
-            if (inActionMode() || !dragDropEnabled) {
-                holder.dragHandle.visibility = View.GONE
-                holder.dragHandle.setOnTouchListener(null)
-//            holder.coverHolder.setOnTouchListener(null)
-            } else {
-                holder.dragHandle.visibility = View.VISIBLE
-                holder.dragHandle.setOnTouchListener { _: View?, event: MotionEvent ->
-                    if (event.actionMasked == MotionEvent.ACTION_DOWN) swipeActions.startDrag(holder)
-                    false
-                }
-                holder.coverHolder.setOnTouchListener { v1, event ->
-                    if (!inActionMode() && event.actionMasked == MotionEvent.ACTION_DOWN) {
-                        val isLtr = holder.itemView.getLayoutDirection() == View.LAYOUT_DIRECTION_LTR
-                        val factor = (if (isLtr) 1 else -1).toFloat()
-                        if (factor * event.x < factor * 0.5 * v1.width) swipeActions.startDrag(holder)
-                        else Logd(TAG, "Ignoring drag in right half of the image")
-                    }
-                    false
-                }
-            }
-            if (inActionMode()) {
-                holder.dragHandle.setOnTouchListener(null)
-//            holder.coverHolder.setOnTouchListener(null)
-            }
-            holder.isInQueue.setVisibility(View.GONE)
         }
     }
 

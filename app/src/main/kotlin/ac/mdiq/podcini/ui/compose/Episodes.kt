@@ -1,9 +1,9 @@
 package ac.mdiq.podcini.ui.compose
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.playback.base.InTheatre
-import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.Queues
@@ -17,7 +17,7 @@ import ac.mdiq.podcini.ui.actions.actionbutton.EpisodeActionButton
 import ac.mdiq.podcini.ui.actions.handler.EpisodeMultiSelectHandler.PutToQueueDialog
 import ac.mdiq.podcini.ui.actions.swipeactions.SwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.adapter.EpisodesAdapter.EpisodeInfoFragment
+import ac.mdiq.podcini.ui.fragment.EpisodeInfoFragment
 import ac.mdiq.podcini.ui.fragment.FeedInfoFragment
 import ac.mdiq.podcini.ui.utils.LocalDeleteModal
 import ac.mdiq.podcini.util.Logd
@@ -67,102 +67,122 @@ fun InforBar(text: MutableState<String>, leftAction: MutableState<SwipeAction?>,
     val textColor = MaterialTheme.colors.onSurface
     Logd("InforBar", "textState: ${text.value}")
     Row {
-        Image(painter = painterResource(leftAction.value?.getActionIcon() ?:R.drawable.ic_questionmark), contentDescription = "left_action_icon",
-            Modifier.width(24.dp).height(24.dp).clickable(onClick = actionConfig))
-        Image(painter = painterResource(R.drawable.baseline_arrow_left_alt_24), contentDescription = "left_arrow", Modifier.width(24.dp).height(24.dp))
+        Icon(painter = painterResource(leftAction.value?.getActionIcon() ?:R.drawable.ic_questionmark), tint = textColor, contentDescription = "left_action_icon",
+            modifier = Modifier.width(24.dp).height(24.dp).clickable(onClick = actionConfig))
+        Icon(painter = painterResource(R.drawable.baseline_arrow_left_alt_24), tint = textColor, contentDescription = "left_arrow", modifier = Modifier.width(24.dp).height(24.dp))
         Spacer(modifier = Modifier.weight(1f))
         Text(text.value, color = textColor, style = MaterialTheme.typography.body2)
         Spacer(modifier = Modifier.weight(1f))
-        Image(painter = painterResource(R.drawable.baseline_arrow_right_alt_24), contentDescription = "right_arrow", Modifier.width(24.dp).height(24.dp))
-        Image(painter = painterResource(rightAction.value?.getActionIcon() ?:R.drawable.ic_questionmark), contentDescription = "right_action_icon",
-            Modifier.width(24.dp).height(24.dp).clickable(onClick = actionConfig))
+        Icon(painter = painterResource(R.drawable.baseline_arrow_right_alt_24), tint = textColor, contentDescription = "right_arrow", modifier = Modifier.width(24.dp).height(24.dp))
+        Icon(painter = painterResource(rightAction.value?.getActionIcon() ?:R.drawable.ic_questionmark), tint = textColor, contentDescription = "right_action_icon",
+            modifier = Modifier.width(24.dp).height(24.dp).clickable(onClick = actionConfig))
     }
 }
 
 @Composable
-fun EpisodeSpeedDial(activity: MainActivity, selected: List<Episode>, modifier: Modifier = Modifier) {
-    val TAG = "EpisodeSpeedDial"
+fun EpisodeSpeedDial(activity: MainActivity, selected: SnapshotStateList<Episode>, modifier: Modifier = Modifier) {
+    val TAG = "EpisodeSpeedDial ${selected.size}"
     var isExpanded by remember { mutableStateOf(false) }
     val options = listOf<@Composable () -> Unit>(
-        { Row(modifier = Modifier.padding(horizontal = 16.dp)
-            .clickable {
-                isExpanded = false
-                Logd(TAG, "ic_delete: ${selected.size}")
-                LocalDeleteModal.deleteEpisodesWarnLocal(activity, selected)
-            }, verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_delete), "")
-            Text(stringResource(id = R.string.delete_episode_label))
-        } },
-        { Row(modifier = Modifier.padding(horizontal = 16.dp)
-            .clickable {
-                isExpanded = false
-                Logd(TAG, "ic_download: ${selected.size}")
-                for (episode in selected) {
-                    if (episode.media != null && episode.feed != null && !episode.feed!!.isLocalFeed) DownloadServiceInterface.get()?.download(activity, episode)
-                }
-            }, verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_download), "")
-            Text(stringResource(id = R.string.download_label))
-        } },
-        { Row(modifier = Modifier.padding(horizontal = 16.dp)
-            .clickable {
-                isExpanded = false
-                Logd(TAG, "ic_mark_played: ${selected.size}")
-                setPlayState(Episode.PlayState.UNSPECIFIED.code, false, *selected.toTypedArray())
-            }, verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_mark_played), "")
-            Text(stringResource(id = R.string.toggle_played_label))
-        } },
-        { Row(modifier = Modifier.padding(horizontal = 16.dp)
-            .clickable {
-                isExpanded = false
-                Logd(TAG, "ic_playlist_remove: ${selected.size}")
-                removeFromQueue(*selected.toTypedArray())
-            }, verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_playlist_remove), "")
-            Text(stringResource(id = R.string.remove_from_queue_label))
-        } },
-        { Row(modifier = Modifier.padding(horizontal = 16.dp)
-            .clickable {
-                isExpanded = false
-                Logd(TAG, "ic_playlist_play: ${selected.size}")
-                Queues.addToQueue(true, *selected.toTypedArray())
-            }, verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_playlist_play), "")
-            Text(stringResource(id = R.string.add_to_queue_label))
-        } },
-        { Row(modifier = Modifier.padding(horizontal = 16.dp)
-            .clickable {
-                isExpanded = false
-                Logd(TAG, "ic_playlist_play: ${selected.size}")
-                PutToQueueDialog(activity, selected).show()
-            }, verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_playlist_play), "")
-            Text(stringResource(id = R.string.put_in_queue_label))
-        } },
-        { Row(modifier = Modifier.padding(horizontal = 16.dp)
-            .clickable {
-                isExpanded = false
-                Logd(TAG, "ic_star: ${selected.size}")
-                for (item in selected) {
-                    Episodes.setFavorite(item, null)
-                }
-            }, verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_star), "")
-            Text(stringResource(id = R.string.toggle_favorite_label))
-        } },
+        {
+            Row(modifier = Modifier.padding(horizontal = 16.dp)
+                .clickable {
+                    isExpanded = false
+                    Logd(TAG, "ic_delete: ${selected.size}")
+                    LocalDeleteModal.deleteEpisodesWarnLocal(activity, selected)
+                }, verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_delete), "")
+                Text(stringResource(id = R.string.delete_episode_label))
+            }
+        },
+        {
+            Row(modifier = Modifier.padding(horizontal = 16.dp)
+                .clickable {
+                    isExpanded = false
+                    Logd(TAG, "ic_download: ${selected.size}")
+                    for (episode in selected) {
+                        if (episode.media != null && episode.feed != null && !episode.feed!!.isLocalFeed) DownloadServiceInterface.get()
+                            ?.download(activity, episode)
+                    }
+                }, verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_download), "")
+                Text(stringResource(id = R.string.download_label))
+            }
+        },
+        {
+            Row(modifier = Modifier.padding(horizontal = 16.dp)
+                .clickable {
+                    isExpanded = false
+                    Logd(TAG, "ic_mark_played: ${selected.size}")
+                    setPlayState(Episode.PlayState.UNSPECIFIED.code, false, *selected.toTypedArray())
+                }, verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_mark_played), "")
+                Text(stringResource(id = R.string.toggle_played_label))
+            }
+        },
+        {
+            Row(modifier = Modifier.padding(horizontal = 16.dp)
+                .clickable {
+                    isExpanded = false
+                    Logd(TAG, "ic_playlist_remove: ${selected.size}")
+                    removeFromQueue(*selected.toTypedArray())
+                }, verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_playlist_remove), "")
+                Text(stringResource(id = R.string.remove_from_queue_label))
+            }
+        },
+        {
+            Row(modifier = Modifier.padding(horizontal = 16.dp)
+                .clickable {
+                    isExpanded = false
+                    Logd(TAG, "ic_playlist_play: ${selected.size}")
+                    Queues.addToQueue(true, *selected.toTypedArray())
+                }, verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_playlist_play), "")
+                Text(stringResource(id = R.string.add_to_queue_label))
+            }
+        },
+        {
+            Row(modifier = Modifier.padding(horizontal = 16.dp)
+                .clickable {
+                    isExpanded = false
+                    Logd(TAG, "ic_playlist_play: ${selected.size}")
+                    PutToQueueDialog(activity, selected).show()
+                }, verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_playlist_play), "")
+                Text(stringResource(id = R.string.put_in_queue_label))
+            }
+        },
+        {
+            Row(modifier = Modifier.padding(horizontal = 16.dp)
+                .clickable {
+                    isExpanded = false
+                    Logd(TAG, "ic_star: ${selected.size}")
+                    for (item in selected) {
+                        Episodes.setFavorite(item, null)
+                    }
+                }, verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_star), "")
+                Text(stringResource(id = R.string.toggle_favorite_label))
+            }
+        },
     )
-    Column(modifier = modifier, verticalArrangement = Arrangement.Bottom) {
+    val scrollState = rememberScrollState()
+    Column(modifier = modifier.verticalScroll(scrollState), verticalArrangement = Arrangement.Bottom) {
         if (isExpanded) options.forEachIndexed { _, button ->
-            FloatingActionButton(modifier = Modifier.padding(start = 4.dp, bottom = 6.dp).height(50.dp), backgroundColor = Color.LightGray, onClick = {}) { button() } }
-        FloatingActionButton(onClick = { isExpanded = !isExpanded }) { Icon(Icons.Filled.Edit, "Edit") }
+            FloatingActionButton(modifier = Modifier.padding(start = 4.dp, bottom = 6.dp).height(50.dp),
+                backgroundColor = Color.LightGray,
+                onClick = {}) { button() }
+        }
+        FloatingActionButton(backgroundColor = Color.Green,
+            onClick = { isExpanded = !isExpanded }) { Icon(Icons.Filled.Edit, "Edit") }
     }
 }
 
@@ -171,10 +191,12 @@ fun EpisodeSpeedDial(activity: MainActivity, selected: List<Episode>, modifier: 
 fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episode>, leftSwipeCB: (Episode) -> Unit, rightSwipeCB: (Episode) -> Unit, actionButton_: ((Episode)->EpisodeActionButton)? = null) {
     val TAG = "EpisodeLazyColumn"
     var selectMode by remember { mutableStateOf(false) }
-    val selectedIds by remember { mutableStateOf(mutableSetOf<Long>()) }
-    val selected = remember { mutableListOf<Episode>()}
+//    val selectedIds = remember { mutableSetOf<Long>() }
+    var selectedSize by remember { mutableStateOf(0) }
+    val selected = remember { mutableStateListOf<Episode>() }
     val coroutineScope = rememberCoroutineScope()
     val lazyListState = rememberLazyListState()
+    var longPressIndex by remember { mutableIntStateOf(-1) }
 
     Box(modifier = Modifier.fillMaxWidth()) {
         LazyColumn(state = lazyListState,
@@ -196,11 +218,12 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                             when (changes) {
                                 is UpdatedObject -> {
                                     Logd(TAG, "episodeMonitor UpdatedObject ${changes.obj.title} ${changes.changedFields.joinToString()}")
-                                    Logd(TAG, "episodeMonitor playedState0: $playedState ${episode.isPlayed()}")
                                     playedState = changes.obj.isPlayed()
                                     farvoriteState = changes.obj.isFavorite
-                                    episodes[index] = changes.obj
-                                    Logd(TAG, "episodeMonitor playedState: $playedState")
+//                                    episodes[index] = changes.obj     // direct assignment doesn't update member like media??
+                                    changes.obj.copyStates(episodes[index])
+                                    episodes.removeAt(index)
+                                    episodes.add(index, changes.obj)
                                 }
                                 else -> {}
                             }
@@ -217,7 +240,10 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                                     Logd(TAG, "mediaMonitor UpdatedObject ${changes.obj.title} ${changes.changedFields.joinToString()}")
                                     positionState = changes.obj.media?.position?:0
                                     inProgressState = changes.obj.isInProgress
-                                    episodes[index] = changes.obj
+//                                    episodes[index] = changes.obj     // direct assignment doesn't update member like media??
+                                    changes.obj.copyStates(episodes[index])
+                                    episodes.removeAt(index)
+                                    episodes.add(index, changes.obj)
                                 }
                                 else -> {}
                             }
@@ -229,6 +255,10 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                         episodeMonitor?.cancel()
                         mediaMonitor?.cancel()
                     }
+                }
+                if (episodes[index].stopMonitoring.value) {
+                    episodeMonitor?.cancel()
+                    mediaMonitor?.cancel()
                 }
                 val velocityTracker = remember { VelocityTracker() }
                 val offsetX = remember { Animatable(0f) }
@@ -260,14 +290,17 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                         .offset { IntOffset(offsetX.value.roundToInt(), 0) }
                 ) {
                     var isSelected by remember { mutableStateOf(false) }
-                    isSelected = selectMode && episode.id in selectedIds
+                    LaunchedEffect(key1 = selectMode, key2 = selectedSize) {
+                        isSelected = selectMode && episode in selected
+//                        Logd(TAG, "LaunchedEffect $index $isSelected ${selected.size}")
+                    }
                     fun toggleSelected() {
                         isSelected = !isSelected
                         if (isSelected) {
-                            selectedIds.add(episode.id)
+//                            selectedIds.add(episode.id)
                             selected.add(episodes[index])
                         } else {
-                            selectedIds.remove(episode.id)
+//                            selectedIds.remove(episode.id)
                             selected.remove(episodes[index])
                         }
                     }
@@ -276,7 +309,7 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                         if (false) {
                             val typedValue = TypedValue()
                             LocalContext.current.theme.resolveAttribute(R.attr.dragview_background, typedValue, true)
-                            Image(painter = painterResource(typedValue.resourceId),
+                            Icon(painter = painterResource(typedValue.resourceId), tint = textColor,
                                 contentDescription = "drag handle",
                                 modifier = Modifier.width(16.dp).align(Alignment.CenterVertically))
                         }
@@ -284,7 +317,8 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                             val (imgvCover, checkMark) = createRefs()
                             val imgLoc = ImageResourceUtils.getEpisodeListImageLocation(episode)
                             AsyncImage(model = imgLoc, contentDescription = "imgvCover",
-                                Modifier.width(56.dp).height(56.dp)
+                                placeholder = painterResource(R.mipmap.ic_launcher),
+                                modifier = Modifier.width(56.dp).height(56.dp)
                                     .constrainAs(imgvCover) {
                                         top.linkTo(parent.top)
                                         bottom.linkTo(parent.bottom)
@@ -295,8 +329,8 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                                         else activity.loadChildFragment(FeedInfoFragment.newInstance(episode.feed!!))
                                     }))
                             val alpha = if (playedState) 1.0f else 0f
-                            if (playedState) Image(painter = painterResource(R.drawable.ic_check), contentDescription = "played_mark",
-                                Modifier.background(Color.Green).alpha(alpha).constrainAs(checkMark) {
+                            if (playedState) Icon(painter = painterResource(R.drawable.ic_check), tint = textColor, contentDescription = "played_mark",
+                                modifier = Modifier.background(Color.Green).alpha(alpha).constrainAs(checkMark) {
                                     bottom.linkTo(parent.bottom)
                                     end.linkTo(parent.end)
                                 })
@@ -310,18 +344,24 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                                 selectMode = !selectMode
                                 isSelected = selectMode
                                 if (selectMode) {
-                                    selectedIds.add(episode.id)
+//                                    selectedIds.add(episode.id)
                                     selected.add(episodes[index])
-                                } else selectedIds.clear()
+//                                    selectedSize = selectedIds.size
+                                    longPressIndex = index
+                                } else {
+//                                    selectedIds.clear()
+                                    selectedSize = 0
+                                    longPressIndex = -1
+                                }
                                 Logd(TAG, "long clicked: ${episode.title}")
                             })) {
                             Row {
                                 if (episode.media?.getMediaType() == MediaType.VIDEO)
-                                    Image(painter = painterResource(R.drawable.ic_videocam), contentDescription = "isVideo", Modifier.width(14.dp).height(14.dp))
+                                    Icon(painter = painterResource(R.drawable.ic_videocam), tint = textColor, contentDescription = "isVideo", modifier = Modifier.width(14.dp).height(14.dp))
                                 if (farvoriteState)
-                                    Image(painter = painterResource(R.drawable.ic_star), contentDescription = "isFavorite", Modifier.width(14.dp).height(14.dp))
-                                if (curQueue.contains(episode))
-                                    Image(painter = painterResource(R.drawable.ic_playlist_play), contentDescription = "ivInPlaylist", Modifier.width(14.dp).height(14.dp))
+                                    Icon(painter = painterResource(R.drawable.ic_star), tint = textColor, contentDescription = "isFavorite", modifier = Modifier.width(14.dp).height(14.dp))
+                                if (episode.inQueueState.value)
+                                    Icon(painter = painterResource(R.drawable.ic_playlist_play), tint = textColor, contentDescription = "ivInPlaylist", modifier = Modifier.width(14.dp).height(14.dp))
                                 val dateSizeText = " · " + formatAbbrev(LocalContext.current, episode.getPubDate()) + " · " + if((episode.media?.size?:0) > 0) Formatter.formatShortFileSize(LocalContext.current, episode.media!!.size) else ""
                                 Text(dateSizeText, color = textColor, style = MaterialTheme.typography.body2)
                             }
@@ -339,19 +379,78 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                         }
                         var actionButton by remember { mutableStateOf(if (actionButton_ == null) EpisodeActionButton.forItem(episodes[index]) else actionButton_(episodes[index])) }
                         var showAltActionsDialog by remember { mutableStateOf(false) }
+                        val dls = remember { DownloadServiceInterface.get() }
+                        var dlPercent by remember { mutableIntStateOf(0) }
+                        fun isDownloading(): Boolean {
+                            return episodes[index].downloadState.value > DownloadStatus.State.UNKNOWN.ordinal && episodes[index].downloadState.value < DownloadStatus.State.COMPLETED.ordinal
+                        }
+                        if (actionButton_ == null) {
+                            LaunchedEffect(episodes[index].downloadState.value) {
+                                if (isDownloading()) dlPercent = dls?.getProgress(episodes[index].media!!.downloadUrl!!) ?: 0
+//                                Logd(TAG, "downloadState: ${episodes[index].downloadState.value} ${episode.media?.downloaded} $dlPercent")
+                                actionButton = EpisodeActionButton.forItem(episodes[index])
+                            }
+                            LaunchedEffect(episodes[index].isPlayingState.value) {
+                                Logd(TAG, "$index isPlayingState: ${episode.isPlayingState.value}")
+                                actionButton = EpisodeActionButton.forItem(episodes[index])
+                            }
+                        }
                         Box(modifier = Modifier.width(40.dp).height(40.dp).padding(end = 10.dp).align(Alignment.CenterVertically).pointerInput(Unit) {
                             detectTapGestures(onLongPress = { showAltActionsDialog = true }, onTap = {
                                 actionButton.onClick(activity)
-                                actionButton = EpisodeActionButton.forItem(episodes[index])
                             })
                         }, contentAlignment = Alignment.Center) {
-                            Image(painter = painterResource(actionButton.getDrawable()), contentDescription = null, modifier = Modifier.width(28.dp).height(32.dp))
+                            Icon(painter = painterResource(actionButton.getDrawable()), tint = textColor, contentDescription = null, modifier = Modifier.width(28.dp).height(32.dp))
+                            if (isDownloading() && dlPercent >= 0) CircularProgressIndicator(progress = 0.01f * dlPercent, strokeWidth = 4.dp, color = textColor)
                         }
                         if (showAltActionsDialog) actionButton.AltActionsDialog(activity, showAltActionsDialog, onDismiss = { showAltActionsDialog = false })
                     }
                 }
             }
         }
-        if (selectMode) EpisodeSpeedDial(activity, selected, modifier = Modifier.align(Alignment.BottomStart).padding(bottom = 16.dp, start = 16.dp))
+        if (selectMode) {
+            Row(modifier = Modifier.align(Alignment.TopEnd).width(150.dp).height(45.dp).background(Color.LightGray), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                Icon(painter = painterResource(R.drawable.baseline_arrow_upward_24), tint = Color.Black, contentDescription = null, modifier = Modifier.width(35.dp).height(35.dp).padding(end = 10.dp)
+                    .clickable(onClick = {
+//                        selectedIds.clear()
+                        selected.clear()
+                        for (i in 0..longPressIndex) {
+//                            selectedIds.add(episodes[i].id)
+                            selected.add(episodes[i])
+                        }
+                        selectedSize = selected.size
+                        Logd(TAG, "selectedIds: ${selected.size}")
+                    }))
+                Icon(painter = painterResource(R.drawable.baseline_arrow_downward_24), tint = Color.Black, contentDescription = null, modifier = Modifier.width(35.dp).height(35.dp).padding(end = 10.dp)
+                    .clickable(onClick = {
+//                        selectedIds.clear()
+                        selected.clear()
+                        for (i in longPressIndex..episodes.size-1) {
+//                            selectedIds.add(episodes[i].id)
+                            selected.add(episodes[i])
+                        }
+                        selectedSize = selected.size
+                        Logd(TAG, "selectedIds: ${selected.size}")
+                    }))
+                var selectAllRes by remember { mutableIntStateOf(R.drawable.ic_select_all) }
+                Icon(painter = painterResource(selectAllRes), tint = Color.Black, contentDescription = null, modifier = Modifier.width(35.dp).height(35.dp)
+                    .clickable(onClick = {
+                       if (selectedSize != episodes.size) {
+                           for (e in episodes) {
+//                               selectedIds.add(e.id)
+                               selected.add(e)
+                           }
+                           selectAllRes = R.drawable.ic_select_none
+                       } else {
+//                           selectedIds.clear()
+                           selected.clear()
+                           selectAllRes = R.drawable.ic_select_all
+                       }
+                        selectedSize = selected.size
+                        Logd(TAG, "selectedIds: ${selected.size}")
+                    }))
+            }
+            EpisodeSpeedDial(activity, selected.toMutableStateList(), modifier = Modifier.align(Alignment.BottomStart).padding(bottom = 16.dp, start = 16.dp))
+        }
     }
 }

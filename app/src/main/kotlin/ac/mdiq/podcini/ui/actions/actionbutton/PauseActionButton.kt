@@ -22,5 +22,6 @@ class PauseActionButton(item: Episode) : EpisodeActionButton(item) {
 
         if (isCurrentlyPlaying(media)) context.sendBroadcast(createIntent(context, KeyEvent.KEYCODE_MEDIA_PAUSE))
 //        EventFlow.postEvent(FlowEvent.PlayEvent(item, Action.END))
+        actionState.value = getLabel()
     }
 }

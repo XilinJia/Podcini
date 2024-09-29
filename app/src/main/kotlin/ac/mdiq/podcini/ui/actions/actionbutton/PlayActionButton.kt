@@ -38,7 +38,6 @@ class PlayActionButton(item: Episode) : EpisodeActionButton(item) {
             notifyMissingEpisodeMediaFile(context, media)
             return
         }
-
         if (playbackService?.isServiceReady() == true && InTheatre.isCurMedia(media)) {
             playbackService?.mPlayer?.resume()
             playbackService?.taskManager?.restartSleepTimer()
@@ -47,8 +46,8 @@ class PlayActionButton(item: Episode) : EpisodeActionButton(item) {
             PlaybackServiceStarter(context, media).callEvenIfRunning(true).start()
             EventFlow.postEvent(FlowEvent.PlayEvent(item))
         }
-
         playVideoIfNeeded(context, media)
+        actionState.value = getLabel()
     }
 
     /**

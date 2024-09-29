@@ -1,88 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/audioplayer_fragment"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/playerFragment1"
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/composeView1"
         android:layout_width="match_parent"
         android:layout_height="@dimen/external_player_height"
-        android:layout_gravity="top"
         android:elevation="8dp"
-        android:outlineProvider="none"
-        tools:layout_height="@dimen/external_player_height" />
+        android:outlineProvider="none"/>
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fitsSystemWindows="true">
+        android:fitsSystemWindows="true"
+        android:orientation="vertical">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
             android:minHeight="?android:attr/actionBarSize"
             android:theme="?attr/actionBarTheme"
             app:navigationContentDescription="@string/toolbar_back_button_content_description"
             app:navigationIcon="@drawable/ic_arrow_down" />
 
-        <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/itemDescription"
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/composeDetailView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_above="@id/playerFragment2"
-            android:layout_below="@id/toolbar"
-            android:layout_marginBottom="12dp" />
+            android:layout_weight="1"
+            android:layout_marginBottom="12dp"/>
 
-        <ImageView
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/composeView2"
             android:layout_width="match_parent"
-            android:layout_height="8dp"
-            android:importantForAccessibility="no"
-            app:srcCompat="@drawable/bg_gradient"
-            app:tint="?android:attr/colorBackground"/>
+            android:layout_height="@dimen/external_player_height"/>
 
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cardViewSeek"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/itemDescription"
-            android:layout_centerHorizontal="true"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:layout_marginBottom="12dp"
-            android:alpha="0"
-            app:cardBackgroundColor="?attr/seek_background"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="0dp"
-            tools:alpha="1">
+    </LinearLayout>
 
-            <TextView
-                android:id="@+id/txtvSeek"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:paddingLeft="24dp"
-                android:paddingTop="4dp"
-                android:paddingRight="24dp"
-                android:paddingBottom="4dp"
-                android:textColor="@color/white"
-                android:textSize="16sp"
-                tools:text="1:06:29" />
-        </androidx.cardview.widget.CardView>
-
-        <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/playerFragment2"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/external_player_height"
-            android:layout_gravity="bottom"
-            android:layout_alignParentBottom="true"
-            tools:layout_height="@dimen/external_player_height" />
-
-    </RelativeLayout>
-
-</FrameLayout>
+</LinearLayout>

@@ -157,6 +157,7 @@ class TTSActionButton(item: Episode) : EpisodeActionButton(item) {
             item.setPlayed(false)
             processing = 1f
             EventFlow.postEvent(FlowEvent.EpisodeEvent.updated(item))
+            actionState.value = getLabel()
         }
     }
 }

@@ -2,6 +2,8 @@ package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.BaseEpisodesListFragmentBinding
+import ac.mdiq.podcini.net.download.DownloadStatus
+import ac.mdiq.podcini.net.download.DownloadStatus.State.UNKNOWN
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
@@ -102,45 +104,6 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
         emptyView.setMessage(R.string.no_all_episodes_label)
         emptyView.hide()
 
-//        val multiSelectDial = MultiSelectSpeedDialBinding.bind(binding.root)
-//        speedDialView = multiSelectDial.fabSD
-//        speedDialView.overlayLayout = multiSelectDial.fabSDOverlay
-//        speedDialView.inflate(R.menu.episodes_apply_action_speeddial)
-//        speedDialView.setOnChangeListener(object : SpeedDialView.OnChangeListener {
-//            override fun onMainActionSelected(): Boolean {
-//                return false
-//            }
-//            override fun onToggleChanged(open: Boolean) {
-//                if (open && adapter.selectedCount == 0) {
-//                    (activity as MainActivity).showSnackbarAbovePlayer(R.string.no_items_selected, Snackbar.LENGTH_SHORT)
-//                    speedDialView.close()
-//                }
-//            }
-//        })
-//        speedDialView.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
-////            if (actionItem.id == R.id.put_in_queue_batch) {
-////                EpisodeMultiSelectHandler((activity as MainActivity), actionItem.id).handleAction(adapter.selectedItems.filterIsInstance<Episode>())
-////                true
-////            } else {
-//                var confirmationString = 0
-//            Logd(TAG, "adapter.selectedItems: ${adapter.selectedItems.size}")
-//                if (adapter.selectedItems.size >= 25 || adapter.shouldSelectLazyLoadedItems()) {
-//                    when (actionItem.id) {
-//                        R.id.toggle_played_batch -> confirmationString = R.string.multi_select_toggle_played_confirmation
-//                        else -> confirmationString = R.string.multi_select_operation_confirmation
-//                    }
-//                }
-//                if (confirmationString == 0) performMultiSelectAction(actionItem.id)
-//                else {
-//                    object : ConfirmationDialog(activity as MainActivity, R.string.multi_select, confirmationString) {
-//                        override fun onConfirmButtonPressed(dialog: DialogInterface) {
-//                            performMultiSelectAction(actionItem.id)
-//                        }
-//                    }.createNewDialog().show()
-//                }
-//                true
-////            }
-//        }
         return binding.root
     }
 
@@ -194,10 +157,12 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
 
     private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
         if (loadItemsRunning) return
-//        for (downloadUrl in event.urls) {
-//            val pos: Int = EpisodeUtil.indexOfItemWithDownloadUrl(episodes, downloadUrl)
-//            if (pos >= 0) adapter.notifyItemChangedCompat(pos)
-//        }
+        for (url in event.urls) {
+//            if (!event.isCompleted(url)) continue
+            val pos: Int = EpisodeUtil.indexOfItemWithDownloadUrl(episodes, url)
+            if (pos >= 0) episodes[pos].downloadState.value = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
+
+        }
     }
 
     private var eventSink: Job? = null

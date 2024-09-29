@@ -3,25 +3,21 @@ package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.HorizontalFeedItemBinding
-import ac.mdiq.podcini.databinding.MultiSelectSpeedDialBinding
 import ac.mdiq.podcini.databinding.SearchFragmentBinding
+import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.net.feed.discovery.CombinedSearcher
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
-import ac.mdiq.podcini.ui.actions.handler.EpisodeMultiSelectHandler
-import ac.mdiq.podcini.ui.actions.handler.EpisodeMenuHandler
 import ac.mdiq.podcini.ui.actions.handler.MenuItemUtils
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.adapter.EpisodesAdapter
-import ac.mdiq.podcini.ui.adapter.SelectableAdapter
+import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.ui.compose.EpisodeLazyColumn
 import ac.mdiq.podcini.ui.dialog.CustomFeedNameDialog
 import ac.mdiq.podcini.ui.dialog.RemoveFeedDialog
 import ac.mdiq.podcini.ui.dialog.TagSettingsDialog
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
-import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
-import ac.mdiq.podcini.ui.view.EpisodesRecyclerView
 import ac.mdiq.podcini.ui.view.SquareImageView
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.EventFlow
@@ -37,10 +33,10 @@ import android.util.Pair
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
-import android.widget.ProgressBar
 import androidx.annotation.StringRes
 import androidx.appcompat.widget.SearchView
 import androidx.cardview.widget.CardView
+import androidx.compose.runtime.mutableStateListOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
@@ -51,9 +47,6 @@ import coil.load
 import coil.request.ImageRequest
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.chip.Chip
-import com.google.android.material.snackbar.Snackbar
-import com.leinardi.android.speeddial.SpeedDialActionItem
-import com.leinardi.android.speeddial.SpeedDialView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
@@ -65,21 +58,17 @@ import java.lang.ref.WeakReference
  * Performs a search operation on all feeds or one specific feed and displays the search result.
  */
 @UnstableApi
-class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
+class SearchFragment : Fragment() {
     private var _binding: SearchFragmentBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var adapter: EpisodesAdapter
     private lateinit var adapterFeeds: HorizontalFeedListAdapter
-    private lateinit var progressBar: ProgressBar
     private lateinit var emptyViewHandler: EmptyViewHandler
-    private lateinit var recyclerView: EpisodesRecyclerView
     private lateinit var searchView: SearchView
-    private lateinit var sdBinding: MultiSelectSpeedDialBinding
     private lateinit var chip: Chip
     private lateinit var automaticSearchDebouncer: Handler
 
-    private var results: MutableList<Episode> = mutableListOf()
+    private val results = mutableStateListOf<Episode>()
 
     private var lastQueryChange: Long = 0
     private var isOtherViewInFoucus = false
@@ -92,18 +81,16 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = SearchFragmentBinding.inflate(inflater)
-
         Logd(TAG, "fragment onCreateView")
         setupToolbar(binding.toolbar)
-        sdBinding = MultiSelectSpeedDialBinding.bind(binding.root)
-        progressBar = binding.progressBar
-        recyclerView = binding.recyclerView
-        recyclerView.setRecycledViewPool((activity as MainActivity).recycledViewPool)
-        registerForContextMenu(recyclerView)
-        adapter = object : EpisodesAdapter(activity as MainActivity) {}
-        adapter.setOnSelectModeListener(this)
-        recyclerView.adapter = adapter
-        recyclerView.addOnScrollListener(LiftOnScrollListener(binding.appbar))
+
+        binding.lazyColumn.setContent {
+            CustomTheme(requireContext()) {
+                EpisodeLazyColumn(activity as MainActivity, episodes = results,
+                    leftSwipeCB = {},
+                    rightSwipeCB = { })
+            }
+        }
 
         val recyclerViewFeeds = binding.recyclerViewFeeds
         val layoutManagerFeeds = LinearLayoutManager(activity)
@@ -118,7 +105,7 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
         recyclerViewFeeds.adapter = adapterFeeds
 
         emptyViewHandler = EmptyViewHandler(requireContext())
-        emptyViewHandler.attachToRecyclerView(recyclerView)
+//        emptyViewHandler.attachToRecyclerView(recyclerView)
         emptyViewHandler.setIcon(R.drawable.ic_search)
         emptyViewHandler.setTitle(R.string.search_status_no_results)
         emptyViewHandler.setMessage(R.string.type_to_search)
@@ -135,35 +122,6 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
         searchView.setOnQueryTextFocusChangeListener { view: View, hasFocus: Boolean ->
             if (hasFocus && !isOtherViewInFoucus) showInputMethod(view.findFocus())
         }
-        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                super.onScrollStateChanged(recyclerView, newState)
-                if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
-                    val imm = activity!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                    imm.hideSoftInputFromWindow(recyclerView.windowToken, 0)
-                }
-            }
-        })
-        sdBinding.fabSD.overlayLayout = sdBinding.fabSDOverlay
-        sdBinding.fabSD.inflate(R.menu.episodes_apply_action_speeddial)
-        sdBinding.fabSD.setOnChangeListener(object : SpeedDialView.OnChangeListener {
-            override fun onMainActionSelected(): Boolean {
-                return false
-            }
-            override fun onToggleChanged(open: Boolean) {
-                if (open && adapter.selectedCount == 0) {
-                    (activity as MainActivity).showSnackbarAbovePlayer(R.string.no_items_selected, Snackbar.LENGTH_SHORT)
-                    sdBinding.fabSD.close()
-                }
-            }
-        })
-        sdBinding.fabSD.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
-            EpisodeMultiSelectHandler(activity as MainActivity, actionItem.id)
-                .handleAction(adapter.selectedItems)
-            adapter.endSelectMode()
-            true
-        }
-
         return binding.root
     }
 
@@ -180,8 +138,7 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
         _binding = null
-        adapter.clearData()
-        results = mutableListOf()
+        results.clear()
         super.onDestroyView()
     }
 
@@ -204,12 +161,10 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
             }
             @UnstableApi override fun onQueryTextChange(s: String): Boolean {
                 automaticSearchDebouncer.removeCallbacksAndMessages(null)
-                if (s.isEmpty() || s.endsWith(" ") || (lastQueryChange != 0L && System.currentTimeMillis() > lastQueryChange + SEARCH_DEBOUNCE_INTERVAL)) {
+                if (s.isEmpty() || s.endsWith(" ") || (lastQueryChange != 0L && System.currentTimeMillis() > lastQueryChange + SEARCH_DEBOUNCE_INTERVAL))
                     search()
-                } else {
-                    // Don't search instantly with first symbol after some pause
-                    automaticSearchDebouncer.postDelayed({ search(); lastQueryChange = 0 }, (SEARCH_DEBOUNCE_INTERVAL / 2).toLong())
-                }
+                // Don't search instantly with first symbol after some pause
+                else automaticSearchDebouncer.postDelayed({ search(); lastQueryChange = 0 }, (SEARCH_DEBOUNCE_INTERVAL / 2).toLong())
                 lastQueryChange = System.currentTimeMillis()
                 return false
             }
@@ -228,12 +183,6 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
     override fun onContextItemSelected(item: MenuItem): Boolean {
         val selectedFeedItem: Feed? = adapterFeeds.longPressedItem
         if (selectedFeedItem != null && onMenuItemClicked(this, item.itemId, selectedFeedItem) {}) return true
-
-        val selectedItem: Episode? = adapter.longPressedItem
-        if (selectedItem != null) {
-//            if (adapter.onContextItemSelected(item)) return true
-            if (EpisodeMenuHandler.onMenuItemClicked(this, item.itemId, selectedItem)) return true
-        }
         return super.onContextItemSelected(item)
     }
 
@@ -280,14 +229,14 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
     }
 
     private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
-        for (downloadUrl in event.urls) {
-            val pos: Int = EpisodeUtil.indexOfItemWithDownloadUrl(results, downloadUrl)
-            if (pos >= 0) adapter.notifyItemChangedCompat(pos)
+        for (url in event.urls) {
+            val pos: Int = EpisodeUtil.indexOfItemWithDownloadUrl(results, url)
+            if (pos >= 0) results[pos].downloadState.value = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
+
         }
     }
 
     @UnstableApi private fun searchWithProgressBar() {
-        progressBar.visibility = View.VISIBLE
         emptyViewHandler.hide()
         search()
     }
@@ -299,23 +248,20 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
 
         lifecycleScope.launch {
             try {
-                val results = withContext(Dispatchers.IO) { performSearch() }
+                val results_ = withContext(Dispatchers.IO) { performSearch() }
                 withContext(Dispatchers.Main) {
-                    progressBar.visibility = View.GONE
-                    if (results.first != null) {
-                        val first_ = results.first!!.toMutableList()
-                        this@SearchFragment.results = first_
-                        adapter.updateItems(first_)
+                    if (results_.first != null) {
+                        val first_ = results_.first!!.toMutableList()
+                        results.clear()
+                        results.addAll(first_)
                     }
                     if (requireArguments().getLong(ARG_FEED, 0) == 0L) {
-                        if (results.second != null) adapterFeeds.updateData(results.second!!)
+                        if (results_.second != null) adapterFeeds.updateData(results_.second!!)
                     } else adapterFeeds.updateData(emptyList())
                     if (searchView.query.toString().isEmpty()) emptyViewHandler.setMessage(R.string.type_to_search)
                     else emptyViewHandler.setMessage(getString(R.string.no_results_for_query, searchView.query))
                 }
-            } catch (e: Throwable) {
-                Log.e(TAG, Log.getStackTraceString(e))
-            }
+            } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e)) }
         }
     }
 
@@ -402,29 +348,6 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
         (activity as MainActivity).loadChildFragment(SearchResultsFragment.newInstance(CombinedSearcher::class.java, query))
     }
 
-    override fun onStartSelectMode() {
-        searchViewFocusOff()
-        sdBinding.fabSD.removeActionItemById(R.id.remove_from_queue_batch)
-        sdBinding.fabSD.removeActionItemById(R.id.delete_batch)
-        sdBinding.fabSD.visibility = View.VISIBLE
-    }
-
-    override fun onEndSelectMode() {
-        sdBinding.fabSD.close()
-        sdBinding.fabSD.visibility = View.GONE
-        searchViewFocusOn()
-    }
-
-    private fun searchViewFocusOff() {
-        isOtherViewInFoucus = true
-        searchView.clearFocus()
-    }
-
-    private fun searchViewFocusOn() {
-        isOtherViewInFoucus = false
-        searchView.requestFocus()
-    }
-
     open class HorizontalFeedListAdapter(mainActivity: MainActivity)
         : RecyclerView.Adapter<HorizontalFeedListAdapter.Holder>(), View.OnCreateContextMenuListener {
 
@@ -436,9 +359,6 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
         private var endButtonText = 0
         private var endButtonAction: Runnable? = null
 
-//        fun setDummyViews(dummyViews: Int) {
-//            this.dummyViews = dummyViews
-//        }
         fun updateData(newData: List<Feed>?) {
             data.clear()
             data.addAll(newData!!)
@@ -533,18 +453,12 @@ class SearchFragment : Fragment(), SelectableAdapter.OnSelectModeListener {
             return fragment
         }
 
-        /**
-         * Create a new SearchFragment that searches all feeds with pre-defined query.
-         */
         fun newInstance(query: String?): SearchFragment {
             val fragment = newInstance()
             fragment.requireArguments().putString(ARG_QUERY, query)
             return fragment
         }
 
-        /**
-         * Create a new SearchFragment that searches one specific feed.
-         */
         fun newInstance(feedId: Long, feedTitle: String?): SearchFragment {
             val fragment = newInstance()
             fragment.requireArguments().putLong(ARG_FEED, feedId)

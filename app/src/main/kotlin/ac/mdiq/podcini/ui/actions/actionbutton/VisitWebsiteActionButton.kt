@@ -20,5 +20,6 @@ class VisitWebsiteActionButton(item: Episode) : EpisodeActionButton(item) {
 
     override fun onClick(context: Context) {
         if (!item.link.isNullOrEmpty()) openInBrowser(context, item.link!!)
+        actionState.value = getLabel()
     }
 }

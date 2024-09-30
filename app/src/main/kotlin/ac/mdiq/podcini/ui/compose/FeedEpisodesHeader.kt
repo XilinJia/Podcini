@@ -8,8 +8,8 @@ import ac.mdiq.podcini.ui.utils.TransitionEffect
 import ac.mdiq.podcini.util.Logd
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,7 +27,7 @@ import coil.compose.AsyncImage
 @Composable
 fun FeedEpisodesHeader(activity: MainActivity, feed: Feed?, filterButColor: Color, filterClickCB: ()->Unit, filterLongClickCB: ()->Unit) {
     val TAG = "FeedEpisodesHeader"
-    val textColor = MaterialTheme.colors.onSurface
+    val textColor = MaterialTheme.colorScheme.onSurface
     ConstraintLayout(modifier = Modifier.fillMaxWidth().height(120.dp)) {
         val (controlRow, image1, image2, imgvCover, taColumn) = createRefs()
         Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp).background(colorResource(id = R.color.image_readability_tint))
@@ -47,7 +47,7 @@ fun FeedEpisodesHeader(activity: MainActivity, feed: Feed?, filterButColor: Colo
                     }
                 }))
             Spacer(modifier = Modifier.weight(1f))
-            Text(feed?.episodes?.size?.toString()?:"", textAlign = TextAlign.Center, color = Color.White, style = MaterialTheme.typography.body1)
+            Text(feed?.episodes?.size?.toString()?:"", textAlign = TextAlign.Center, color = Color.White, style = MaterialTheme.typography.bodyLarge)
         }
         Image(painter = painterResource(R.drawable.ic_rounded_corner_left), contentDescription = "left_corner",
             Modifier.width(12.dp).height(12.dp).constrainAs(image1) {
@@ -69,8 +69,8 @@ fun FeedEpisodesHeader(activity: MainActivity, feed: Feed?, filterButColor: Colo
         Column(Modifier.constrainAs(taColumn) {
                 top.linkTo(imgvCover.top)
                 start.linkTo(imgvCover.end) }) {
-            Text(feed?.title?:"", color = textColor, style = MaterialTheme.typography.body1, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            Text(feed?.author?:"", color = textColor, style = MaterialTheme.typography.body2, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(feed?.title?:"", color = textColor, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(feed?.author?:"", color = textColor, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
     }
 }

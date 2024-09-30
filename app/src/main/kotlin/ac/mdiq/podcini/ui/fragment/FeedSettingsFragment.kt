@@ -12,7 +12,8 @@ import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
 import ac.mdiq.podcini.storage.model.*
-import ac.mdiq.podcini.storage.model.FeedPreferences.*
+import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
+import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDownloadPolicy
 import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.FeedAutoDeleteOptions
 import ac.mdiq.podcini.ui.adapter.SimpleChipAdapter
 import ac.mdiq.podcini.ui.compose.CustomTheme
@@ -37,7 +38,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,11 +46,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.OffsetMapping
-import androidx.compose.ui.text.input.TransformedText
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.fragment.app.Fragment
@@ -95,7 +92,7 @@ class FeedSettingsFragment : Fragment() {
 
         binding.composeView.setContent {
             CustomTheme(requireContext()) {
-                val textColor = MaterialTheme.colors.onSurface
+                val textColor = MaterialTheme.colorScheme.onSurface
                 Column(
                     modifier = Modifier.padding(start = 20.dp, end = 16.dp, top = 10.dp, bottom = 10.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -108,7 +105,7 @@ class FeedSettingsFragment : Fragment() {
                                 Spacer(modifier = Modifier.width(20.dp))
                                 Text(
                                     text = stringResource(R.string.keep_updated),
-                                    style = MaterialTheme.typography.h6,
+                                    style = MaterialTheme.typography.titleLarge,
                                     color = textColor
                                 )
                                 Spacer(modifier = Modifier.weight(1f))
@@ -126,7 +123,7 @@ class FeedSettingsFragment : Fragment() {
                             }
                             Text(
                                 text = stringResource(R.string.keep_updated_summary),
-                                style = MaterialTheme.typography.body2,
+                                style = MaterialTheme.typography.bodyMedium,
                                 color = textColor
                             )
                         }
@@ -139,7 +136,7 @@ class FeedSettingsFragment : Fragment() {
                                 Spacer(modifier = Modifier.width(20.dp))
                                 Text(
                                     text = stringResource(R.string.feed_video_mode_label),
-                                    style = MaterialTheme.typography.h6,
+                                    style = MaterialTheme.typography.titleLarge,
                                     color = textColor,
                                     modifier = Modifier.clickable(onClick = {
                                         val composeView = ComposeView(requireContext()).apply {
@@ -156,7 +153,7 @@ class FeedSettingsFragment : Fragment() {
                             }
                             Text(
                                 text = stringResource(videoModeSummaryResId),
-                                style = MaterialTheme.typography.body2,
+                                style = MaterialTheme.typography.bodyMedium,
                                 color = textColor
                             )
                         }
@@ -169,7 +166,7 @@ class FeedSettingsFragment : Fragment() {
                                 Spacer(modifier = Modifier.width(20.dp))
                                 Text(
                                     text = stringResource(R.string.pref_stream_over_download_title),
-                                    style = MaterialTheme.typography.h6,
+                                    style = MaterialTheme.typography.titleLarge,
                                     color = textColor
                                 )
                                 Spacer(modifier = Modifier.weight(1f))
@@ -189,7 +186,7 @@ class FeedSettingsFragment : Fragment() {
                             }
                             Text(
                                 text = stringResource(R.string.pref_stream_over_download_sum),
-                                style = MaterialTheme.typography.body2,
+                                style = MaterialTheme.typography.bodyMedium,
                                 color = textColor
                             )
                         }
@@ -202,7 +199,7 @@ class FeedSettingsFragment : Fragment() {
                             Spacer(modifier = Modifier.width(20.dp))
                             Text(
                                 text = stringResource(R.string.pref_feed_associated_queue),
-                                style = MaterialTheme.typography.h6,
+                                style = MaterialTheme.typography.titleLarge,
                                 color = textColor,
                                 modifier = Modifier.clickable(onClick = {
                                     val selectedOption = feed?.preferences?.queueText ?: "Default"
@@ -220,7 +217,7 @@ class FeedSettingsFragment : Fragment() {
                         }
                         Text(
                             text = curPrefQueue + " : " + stringResource(R.string.pref_feed_associated_queue_sum),
-                            style = MaterialTheme.typography.body2,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = textColor
                         )
                     }
@@ -234,7 +231,7 @@ class FeedSettingsFragment : Fragment() {
                                 Spacer(modifier = Modifier.width(20.dp))
                                 Text(
                                     text = stringResource(R.string.audo_add_new_queue),
-                                    style = MaterialTheme.typography.h6,
+                                    style = MaterialTheme.typography.titleLarge,
                                     color = textColor
                                 )
                                 Spacer(modifier = Modifier.weight(1f))
@@ -252,7 +249,7 @@ class FeedSettingsFragment : Fragment() {
                             }
                             Text(
                                 text = stringResource(R.string.audo_add_new_queue_summary),
-                                style = MaterialTheme.typography.body2,
+                                style = MaterialTheme.typography.bodyMedium,
                                 color = textColor
                             )
                         }
@@ -265,7 +262,7 @@ class FeedSettingsFragment : Fragment() {
                                 Spacer(modifier = Modifier.width(20.dp))
                                 Text(
                                     text = stringResource(R.string.auto_delete_label),
-                                    style = MaterialTheme.typography.h6,
+                                    style = MaterialTheme.typography.titleLarge,
                                     color = textColor,
                                     modifier = Modifier.clickable(onClick = {
                                         val composeView = ComposeView(requireContext()).apply {
@@ -282,7 +279,7 @@ class FeedSettingsFragment : Fragment() {
                             }
                             Text(
                                 text = stringResource(autoDeleteSummaryResId),
-                                style = MaterialTheme.typography.body2,
+                                style = MaterialTheme.typography.bodyMedium,
                                 color = textColor
                             )
                         }
@@ -294,7 +291,7 @@ class FeedSettingsFragment : Fragment() {
                             Spacer(modifier = Modifier.width(20.dp))
                             Text(
                                 text = stringResource(R.string.feed_tags_label),
-                                style = MaterialTheme.typography.h6,
+                                style = MaterialTheme.typography.titleLarge,
                                 color = textColor,
                                 modifier = Modifier.clickable(onClick = {
                                     val dialog = TagSettingsDialog.newInstance(listOf(feed!!))
@@ -304,7 +301,7 @@ class FeedSettingsFragment : Fragment() {
                         }
                         Text(
                             text = stringResource(R.string.feed_tags_summary),
-                            style = MaterialTheme.typography.body2,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = textColor
                         )
                     }
@@ -315,7 +312,7 @@ class FeedSettingsFragment : Fragment() {
                             Spacer(modifier = Modifier.width(20.dp))
                             Text(
                                 text = stringResource(R.string.playback_speed),
-                                style = MaterialTheme.typography.h6,
+                                style = MaterialTheme.typography.titleLarge,
                                 color = textColor,
                                 modifier = Modifier.clickable(onClick = {
                                     PlaybackSpeedDialog().show()
@@ -324,7 +321,7 @@ class FeedSettingsFragment : Fragment() {
                         }
                         Text(
                             text = stringResource(R.string.pref_feed_playback_speed_sum),
-                            style = MaterialTheme.typography.body2,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = textColor
                         )
                     }
@@ -335,7 +332,7 @@ class FeedSettingsFragment : Fragment() {
                             Spacer(modifier = Modifier.width(20.dp))
                             Text(
                                 text = stringResource(R.string.pref_feed_skip),
-                                style = MaterialTheme.typography.h6,
+                                style = MaterialTheme.typography.titleLarge,
                                 color = textColor,
                                 modifier = Modifier.clickable(onClick = {
                                     val composeView = ComposeView(requireContext()).apply {
@@ -352,7 +349,7 @@ class FeedSettingsFragment : Fragment() {
                         }
                         Text(
                             text = stringResource(R.string.pref_feed_skip_sum),
-                            style = MaterialTheme.typography.body2,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = textColor
                         )
                     }
@@ -363,7 +360,7 @@ class FeedSettingsFragment : Fragment() {
                             Spacer(modifier = Modifier.width(20.dp))
                             Text(
                                 text = stringResource(R.string.feed_volume_adapdation),
-                                style = MaterialTheme.typography.h6,
+                                style = MaterialTheme.typography.titleLarge,
                                 color = textColor,
                                 modifier = Modifier.clickable(onClick = {
                                     val composeView = ComposeView(requireContext()).apply {
@@ -380,7 +377,7 @@ class FeedSettingsFragment : Fragment() {
                         }
                         Text(
                             text = stringResource(R.string.feed_volume_adaptation_summary),
-                            style = MaterialTheme.typography.body2,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = textColor
                         )
                     }
@@ -392,7 +389,7 @@ class FeedSettingsFragment : Fragment() {
                                 Spacer(modifier = Modifier.width(20.dp))
                                 Text(
                                     text = stringResource(R.string.authentication_label),
-                                    style = MaterialTheme.typography.h6,
+                                    style = MaterialTheme.typography.titleLarge,
                                     color = textColor,
                                     modifier = Modifier.clickable(onClick = {
                                         val composeView = ComposeView(requireContext()).apply {
@@ -410,7 +407,7 @@ class FeedSettingsFragment : Fragment() {
                             }
                             Text(
                                 text = stringResource(R.string.authentication_descr),
-                                style = MaterialTheme.typography.body2,
+                                style = MaterialTheme.typography.bodyMedium,
                                 color = textColor
                             )
                         }
@@ -422,7 +419,7 @@ class FeedSettingsFragment : Fragment() {
                             Row(Modifier.fillMaxWidth()) {
                                 Text(
                                     text = stringResource(R.string.auto_download_label),
-                                    style = MaterialTheme.typography.h6,
+                                    style = MaterialTheme.typography.titleLarge,
                                     color = textColor
                                 )
                                 Spacer(modifier = Modifier.weight(1f))
@@ -438,7 +435,7 @@ class FeedSettingsFragment : Fragment() {
                             if (!isEnableAutodownload) {
                                 Text(
                                     text = stringResource(R.string.auto_download_disabled_globally),
-                                    style = MaterialTheme.typography.body2,
+                                    style = MaterialTheme.typography.bodyMedium,
                                     color = textColor
                                 )
                             }
@@ -449,7 +446,7 @@ class FeedSettingsFragment : Fragment() {
                                 Row(Modifier.fillMaxWidth()) {
                                     Text(
                                         text = stringResource(R.string.feed_auto_download_policy),
-                                        style = MaterialTheme.typography.h6,
+                                        style = MaterialTheme.typography.titleLarge,
                                         color = textColor,
                                         modifier = Modifier.clickable(onClick = {
                                             val composeView = ComposeView(requireContext()).apply {
@@ -471,7 +468,7 @@ class FeedSettingsFragment : Fragment() {
                                 Row(Modifier.fillMaxWidth()) {
                                     Text(
                                         text = stringResource(R.string.pref_episode_cache_title),
-                                        style = MaterialTheme.typography.h6,
+                                        style = MaterialTheme.typography.titleLarge,
                                         color = textColor,
                                         modifier = Modifier.clickable(onClick = {
                                             val composeView = ComposeView(requireContext()).apply {
@@ -489,7 +486,7 @@ class FeedSettingsFragment : Fragment() {
                                 }
                                 Text(
                                     text = stringResource(R.string.pref_episode_cache_summary),
-                                    style = MaterialTheme.typography.body2,
+                                    style = MaterialTheme.typography.bodyMedium,
                                     color = textColor
                                 )
                             }
@@ -498,7 +495,7 @@ class FeedSettingsFragment : Fragment() {
                                 Row(Modifier.fillMaxWidth()) {
                                     Text(
                                         text = stringResource(R.string.pref_auto_download_counting_played_title),
-                                        style = MaterialTheme.typography.h6,
+                                        style = MaterialTheme.typography.titleLarge,
                                         color = textColor
                                     )
                                     Spacer(modifier = Modifier.weight(1f))
@@ -518,7 +515,7 @@ class FeedSettingsFragment : Fragment() {
                                 }
                                 Text(
                                     text = stringResource(R.string.pref_auto_download_counting_played_summary),
-                                    style = MaterialTheme.typography.body2,
+                                    style = MaterialTheme.typography.bodyMedium,
                                     color = textColor
                                 )
                             }
@@ -527,7 +524,7 @@ class FeedSettingsFragment : Fragment() {
                                 Row(Modifier.fillMaxWidth()) {
                                     Text(
                                         text = stringResource(R.string.episode_inclusive_filters_label),
-                                        style = MaterialTheme.typography.h6,
+                                        style = MaterialTheme.typography.titleLarge,
                                         color = textColor,
                                         modifier = Modifier.clickable(onClick = {
                                             object : AutoDownloadFilterPrefDialog(requireContext(),
@@ -545,7 +542,7 @@ class FeedSettingsFragment : Fragment() {
                                 }
                                 Text(
                                     text = stringResource(R.string.episode_filters_description),
-                                    style = MaterialTheme.typography.body2,
+                                    style = MaterialTheme.typography.bodyMedium,
                                     color = textColor
                                 )
                             }
@@ -554,7 +551,7 @@ class FeedSettingsFragment : Fragment() {
                                 Row(Modifier.fillMaxWidth()) {
                                     Text(
                                         text = stringResource(R.string.episode_exclusive_filters_label),
-                                        style = MaterialTheme.typography.h6,
+                                        style = MaterialTheme.typography.titleLarge,
                                         color = textColor,
                                         modifier = Modifier.clickable(onClick = {
                                             object : AutoDownloadFilterPrefDialog(requireContext(),
@@ -572,7 +569,7 @@ class FeedSettingsFragment : Fragment() {
                                 }
                                 Text(
                                     text = stringResource(R.string.episode_filters_description),
-                                    style = MaterialTheme.typography.body2,
+                                    style = MaterialTheme.typography.bodyMedium,
                                     color = textColor
                                 )
                             }
@@ -657,7 +654,7 @@ class FeedSettingsFragment : Fragment() {
                                     )
                                     Text(
                                         text = text,
-                                        style = MaterialTheme.typography.body1.merge(),
+                                        style = MaterialTheme.typography.bodyLarge.merge(),
 //                                        color = textColor,
                                         modifier = Modifier.padding(start = 16.dp)
                                     )
@@ -727,7 +724,7 @@ class FeedSettingsFragment : Fragment() {
                                     )
                                     Text(
                                         text = text,
-                                        style = MaterialTheme.typography.body1.merge(),
+                                        style = MaterialTheme.typography.bodyLarge.merge(),
 //                                        color = textColor,
                                         modifier = Modifier.padding(start = 16.dp)
                                     )
@@ -774,7 +771,7 @@ class FeedSettingsFragment : Fragment() {
                                     )
                                     Text(
                                         text = stringResource(item.resId),
-                                        style = MaterialTheme.typography.body1.merge(),
+                                        style = MaterialTheme.typography.bodyLarge.merge(),
 //                                        color = textColor,
                                         modifier = Modifier.padding(start = 16.dp)
                                     )
@@ -822,7 +819,7 @@ class FeedSettingsFragment : Fragment() {
                                     )
                                     Text(
                                         text = stringResource(item.resId),
-                                        style = MaterialTheme.typography.body1.merge(),
+                                        style = MaterialTheme.typography.bodyLarge.merge(),
 //                                        color = textColor,
                                         modifier = Modifier.padding(start = 16.dp)
                                     )

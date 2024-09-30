@@ -1,0 +1,6 @@
+ Version 6.8.3 (preview release):
+
+* most of Subscriptions view are in Jetpack Compose, feed viewholder and adapters etc are removed
+* added toggle grid and list views in the menu of Subscriptions
+* migrated reliance on compose.material to compose.material3
+* not yet for prime time

@@ -1,10 +1,10 @@
 package ac.mdiq.podcini.ui.compose
 
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Spinner(
         items: List<String>,
@@ -33,14 +33,12 @@ fun Spinner(
             onDismissRequest = { expanded = false }
         ) {
             items.forEach { item ->
-                DropdownMenuItem(
+                DropdownMenuItem(text = { Text(item) },
                     onClick = {
                         onItemSelected(item)
                         expanded = false
                     }
-                ) {
-                    Text(text = item)
-                }
+                )
             }
         }
     }

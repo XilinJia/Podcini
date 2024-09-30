@@ -31,8 +31,8 @@ android {
         testApplicationId "ac.mdiq.podcini.tests"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        versionCode 3020259
-        versionName "6.8.2"
+        versionCode 3020260
+        versionName "6.8.3"
 
         applicationId "ac.mdiq.podcini.R"
         def commit = ""
@@ -171,6 +171,7 @@ android {
 
 dependencies {
     implementation libs.androidx.material3.android
+    implementation libs.androidx.material3
 
     /** Desugaring for using VistaGuide **/
     coreLibraryDesugaring libs.desugar.jdk.libs.nio
@@ -179,7 +180,7 @@ dependencies {
     def composeBom = libs.androidx.compose.bom
     implementation composeBom
     androidTestImplementation composeBom
-    implementation libs.androidx.material
+//    implementation libs.androidx.material
     implementation libs.androidx.ui.tooling.preview
     debugImplementation libs.androidx.ui.tooling
     implementation libs.androidx.constraintlayout.compose

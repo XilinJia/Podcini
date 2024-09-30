@@ -57,10 +57,10 @@ import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Slider
-import androidx.compose.material.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -199,8 +199,8 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     @Composable
     fun PlayerUI() {
         Column(modifier = Modifier.fillMaxWidth().height(133.dp)) {
-            val textColor = MaterialTheme.colors.onSurface
-            Text(titleText, maxLines = 1, color = textColor, style = MaterialTheme.typography.body2)
+            val textColor = MaterialTheme.colorScheme.onSurface
+            Text(titleText, maxLines = 1, color = textColor, style = MaterialTheme.typography.bodyMedium)
             var tempSliderValue by remember { mutableStateOf(sliderValue) }
             Slider(value = tempSliderValue, valueRange = 0f..duration.toFloat(), modifier = Modifier.height(15.dp),
                 onValueChange = {
@@ -213,10 +213,10 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     if (playbackService?.isServiceReady() == true) seekTo(currentPosition)
             })
             Row {
-                Text(DurationConverter.getDurationStringLong(currentPosition), color = textColor, style = MaterialTheme.typography.body2)
+                Text(DurationConverter.getDurationStringLong(currentPosition), color = textColor, style = MaterialTheme.typography.bodyMedium)
                 Spacer(Modifier.weight(1f))
                 showTimeLeft = UserPreferences.shouldShowRemainingTime()
-                Text(txtvLengtTexth, color = textColor, style = MaterialTheme.typography.body2, modifier = Modifier.clickable {
+                Text(txtvLengtTexth, color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.clickable {
                     if (controller == null) return@clickable
                     showTimeLeft = !showTimeLeft
                     UserPreferences.setShowRemainTimeSetting(showTimeLeft)
@@ -255,7 +255,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         modifier = Modifier.width(48.dp).height(48.dp).clickable(onClick = {
                             VariableSpeedDialog.newInstance(booleanArrayOf(true, true, true), null)?.show(childFragmentManager, null)
                         }))
-                    Text(txtvPlaybackSpeed, color = textColor, style = MaterialTheme.typography.body2)
+                    Text(txtvPlaybackSpeed, color = textColor, style = MaterialTheme.typography.bodyMedium)
                 }
                 Spacer(Modifier.weight(0.1f))
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -268,7 +268,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         }, onLongClick = {
                             SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_REWIND)
                         }))
-                    Text(NumberFormat.getInstance().format(UserPreferences.rewindSecs.toLong()), color = textColor, style = MaterialTheme.typography.body2)
+                    Text(NumberFormat.getInstance().format(UserPreferences.rewindSecs.toLong()), color = textColor, style = MaterialTheme.typography.bodyMedium)
                 }
                 Spacer(Modifier.weight(0.1f))
                 Icon(painter = painterResource(playButRes), tint = textColor,
@@ -301,7 +301,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         }, onLongClick = {
                             SkipPreferenceDialog.showSkipPreference(requireContext(), SkipPreferenceDialog.SkipDirection.SKIP_FORWARD)
                         }))
-                    Text(NumberFormat.getInstance().format(UserPreferences.fastForwardSecs.toLong()), color = textColor, style = MaterialTheme.typography.body2)
+                    Text(NumberFormat.getInstance().format(UserPreferences.fastForwardSecs.toLong()), color = textColor, style = MaterialTheme.typography.bodyMedium)
                 }
                 Spacer(Modifier.weight(0.1f))
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -323,7 +323,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         }, onLongClick = {
                             activity?.sendBroadcast(MediaButtonReceiver.createIntent(requireContext(), KeyEvent.KEYCODE_MEDIA_NEXT))
                         }))
-                    if (UserPreferences.speedforwardSpeed > 0.1f) Text(NumberFormat.getInstance().format(UserPreferences.speedforwardSpeed), color = textColor, style = MaterialTheme.typography.body2)
+                    if (UserPreferences.speedforwardSpeed > 0.1f) Text(NumberFormat.getInstance().format(UserPreferences.speedforwardSpeed), color = textColor, style = MaterialTheme.typography.bodyMedium)
                 }
                 Spacer(Modifier.weight(0.1f))
             }
@@ -335,7 +335,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fun DetailUI() {
         val scrollState = rememberScrollState()
         Column(modifier = Modifier.fillMaxWidth().verticalScroll(scrollState)) {
-            val textColor = MaterialTheme.colors.onSurface
+            val textColor = MaterialTheme.colorScheme.onSurface
             fun copyText(text: String): Boolean {
                 val clipboardManager: ClipboardManager? = ContextCompat.getSystemService(requireContext(), ClipboardManager::class.java)
                 clipboardManager?.setPrimaryClip(ClipData.newPlainText("Podcini", text))
@@ -344,7 +344,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 }
                 return true
             }
-            Text(txtvPodcastTitle, textAlign = TextAlign.Center, color = textColor, style = MaterialTheme.typography.h5,
+            Text(txtvPodcastTitle, textAlign = TextAlign.Center, color = textColor, style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 5.dp).combinedClickable(onClick = {
                     if (currentMedia is EpisodeMedia) {
                         if (currentItem?.feedId != null) {
@@ -353,8 +353,8 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         }
                     }
                 }, onLongClick = { copyText(currentMedia?.getFeedTitle()?:"") }))
-            Text(episodeDate, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 2.dp), color = textColor, style = MaterialTheme.typography.body2)
-            Text(titleText, textAlign = TextAlign.Center, color = textColor, style = MaterialTheme.typography.h6, modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 5.dp)
+            Text(episodeDate, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 2.dp), color = textColor, style = MaterialTheme.typography.bodyMedium)
+            Text(titleText, textAlign = TextAlign.Center, color = textColor, style = MaterialTheme.typography.titleLarge, modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 5.dp)
                 .combinedClickable(onClick = {}, onLongClick = { copyText(currentItem?.title?:"") }))
             fun restoreFromPreference(): Boolean {
                 if ((activity as MainActivity).bottomSheet.state != BottomSheetBehavior.STATE_EXPANDED) return false

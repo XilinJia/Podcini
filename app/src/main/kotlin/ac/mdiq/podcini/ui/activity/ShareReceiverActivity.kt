@@ -18,7 +18,7 @@ import androidx.annotation.OptIn
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -108,7 +108,7 @@ class ShareReceiverActivity : AppCompatActivity() {
                             )
                             Text(
                                 text = stringResource(R.string.pref_video_mode_audio_only),
-                                style = MaterialTheme.typography.body1.merge(),
+                                style = MaterialTheme.typography.bodyLarge.merge(),
                             )
                         }
                         Button(onClick = {

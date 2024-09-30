@@ -119,6 +119,7 @@
     <string name="error_label">Error</string>
     <string name="error_msg_prefix">An error occurred:</string>
     <string name="refresh_label">Refresh</string>
+    <string name="toggle_grid_list">Toggle grid list</string>
     <string name="refreshing_label">Refreshing</string>
     <string name="reconcile_label">Reconcile</string>
     <string name="chapters_label">Chapters</string>

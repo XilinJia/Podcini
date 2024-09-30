@@ -15,63 +15,72 @@ import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.model.FeedPreferences.AutoDeleteAction
 import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.FeedAutoDeleteOptions
-import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.adapter.SelectableAdapter
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.compose.Spinner
 import ac.mdiq.podcini.ui.dialog.FeedSortDialog
 import ac.mdiq.podcini.ui.dialog.RemoveFeedDialog
 import ac.mdiq.podcini.ui.dialog.TagSettingsDialog
 import ac.mdiq.podcini.ui.fragment.FeedSettingsFragment.Companion.queueSettingOptions
-import ac.mdiq.podcini.ui.utils.CoverLoader
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
-import ac.mdiq.podcini.ui.utils.LiftOnScrollListener
-import ac.mdiq.podcini.util.MiscFormatter.formatAbbrev
-import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.MiscFormatter.formatAbbrev
 import android.app.Activity.RESULT_OK
 import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.graphics.Rect
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.*
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.OptIn
-import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.Toolbar
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+//import androidx.compose.material3.pullrefresh.pullRefresh
+//import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.core.util.Consumer
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import coil.compose.AsyncImage
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -79,11 +88,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.elevation.SurfaceColors
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
-import com.leinardi.android.speeddial.SpeedDialActionItem
-import com.leinardi.android.speeddial.SpeedDialView
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
 import org.apache.commons.lang3.StringUtils
@@ -94,24 +99,13 @@ import java.util.*
 /**
  * Fragment for displaying feed subscriptions
  */
-class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, SelectableAdapter.OnSelectModeListener {
+class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
-    private val chooseOpmlExportPathLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            result: ActivityResult ->
-        if (result.resultCode != RESULT_OK || result.data == null) return@registerForActivityResult
-        val uri = result.data!!.data
-        multiSelectHandler?.exportOPML(uri)
-    }
-
-    private var multiSelectHandler: FeedMultiSelectActionHandler? = null
     private var _binding: FragmentSubscriptionsBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: SubscriptionsAdapter<*>
     private lateinit var emptyView: EmptyViewHandler
     private lateinit var toolbar: MaterialToolbar
-    private lateinit var speedDialView: SpeedDialView
 
     private val tags: MutableList<String> = mutableListOf()
     private val queueIds: MutableList<Long> = mutableListOf()
@@ -127,12 +121,18 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
     private var displayedFolder: String = ""
     private var displayUpArrow = false
 
-    private var feedList: MutableList<Feed> = mutableListOf()
-    private var feedListFiltered: List<Feed> = mutableListOf()
+    private var txtvInformation by mutableStateOf("")
+    private var feedCount by mutableStateOf("")
+    private var feedSorted by mutableIntStateOf(0)
 
-    private var useGrid: Boolean? = null
-    private val useGridLayout: Boolean
-        get() = appPrefs.getBoolean(UserPreferences.Prefs.prefFeedGridLayout.name, false)
+    private var feedList: MutableList<Feed> = mutableListOf()
+    private var feedListFiltered = mutableStateListOf<Feed>()
+
+    private var useGrid by mutableStateOf<Boolean?>(null)
+    private val useGridLayout by mutableStateOf(appPrefs.getBoolean(UserPreferences.Prefs.prefFeedGridLayout.name, false))
+
+    private var selectMode by mutableStateOf(false)
+
     private val swipeToRefresh: Boolean
         get() = appPrefs.getBoolean(UserPreferences.Prefs.prefSwipeToRefreshAll.name, true)
 
@@ -147,11 +147,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         Logd(TAG, "fragment onCreateView")
         toolbar = binding.toolbar
         toolbar.setOnMenuItemClickListener(this)
-        toolbar.setOnLongClickListener {
-            recyclerView.scrollToPosition(5)
-            recyclerView.post { recyclerView.smoothScrollToPosition(0) }
-            false
-        }
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
 
@@ -163,12 +158,16 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             toolbar.title = displayedFolder
         }
 
-        recyclerView = binding.subscriptionsGrid
-        recyclerView.addItemDecoration(GridDividerItemDecorator())
-        registerForContextMenu(recyclerView)
-        recyclerView.addOnScrollListener(LiftOnScrollListener(binding.appbar))
-
-        initAdapter()
+        binding.infobar.setContent {
+            CustomTheme(requireContext()) {
+                InforBar()
+            }
+        }
+        binding.lazyColumn.setContent {
+            CustomTheme(requireContext()) {
+                LazyList()
+            }
+        }
         setupEmptyView()
         resetTags()
 
@@ -201,99 +200,32 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-//        val searchBox = binding.searchBox
-//        searchBox.setOnEditorActionListener { _, actionId, _ ->
-//            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-//                val text = searchBox.text.toString().lowercase(Locale.getDefault())
-//                val resultList = feedListFiltered.filter {
-//                    it.title?.lowercase(Locale.getDefault())?.contains(text)?:false || it.author?.lowercase(Locale.getDefault())?.contains(text)?:false
-//                }
-//                adapter.setItems(resultList)
-//                true
-//            } else false
-//        }
-
-//        binding.progressBar.visibility = View.VISIBLE
-//        binding.progressBar.visibility = View.GONE
-
-        val subscriptionAddButton: FloatingActionButton = binding.subscriptionsAdd
-        subscriptionAddButton.setOnClickListener {
-            if (activity is MainActivity) (activity as MainActivity).loadChildFragment(OnlineSearchFragment())
-        }
-
-        binding.count.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
-
-        val speedDialBinding = MultiSelectSpeedDialBinding.bind(binding.root)
-        speedDialView = speedDialBinding.fabSD
-        speedDialView.overlayLayout = speedDialBinding.fabSDOverlay
-        speedDialView.inflate(R.menu.feed_action_speeddial)
-        speedDialView.setOnChangeListener(object : SpeedDialView.OnChangeListener {
-            override fun onMainActionSelected(): Boolean {
-                return false
-            }
-            override fun onToggleChanged(isOpen: Boolean) {}
-        })
-        speedDialView.setOnActionSelectedListener { actionItem: SpeedDialActionItem ->
-            multiSelectHandler = FeedMultiSelectActionHandler(activity as MainActivity, adapter.selectedItems)
-            multiSelectHandler?.handleAction(actionItem.id)
-            true
-        }
+        feedCount = feedListFiltered.size.toString() + " / " + feedList.size.toString()
         loadSubscriptions()
         return binding.root
     }
 
-    private fun setSwipeRefresh() {
-        if (swipeToRefresh) {
-            binding.swipeRefresh.isEnabled = true
-            binding.swipeRefresh.setProgressViewEndTarget(false, 0)
-            binding.swipeRefresh.setDistanceToTriggerSync(resources.getInteger(R.integer.swipe_refresh_distance))
-            binding.swipeRefresh.setOnRefreshListener {
-                Logd(TAG, "running FeedUpdateManager")
-                FeedUpdateManager.runOnceOrAsk(requireContext())
-            }
-        } else binding.swipeRefresh.isEnabled = false
-    }
-
-    override fun onResume() {
-        Logd(TAG, "onResume() called")
-        super.onResume()
-        setSwipeRefresh()
-    }
-
-    private fun initAdapter() {
-        if (useGrid != useGridLayout) {
-            useGrid = useGridLayout
-            var spanCount = 1
-            if (useGrid!!) {
-                adapter = GridAdapter()
-                spanCount = 3
-            } else adapter = ListAdapter()
-            recyclerView.layoutManager = GridLayoutManager(context, spanCount, RecyclerView.VERTICAL, false)
-            adapter.setOnSelectModeListener(this)
-            recyclerView.adapter = adapter
-            adapter.setItems(feedListFiltered)
-        }
-    }
+//    override fun onResume() {
+//        Logd(TAG, "onResume() called")
+//        super.onResume()
+//    }
 
     override fun onStart() {
         Logd(TAG, "onStart()")
         super.onStart()
-        initAdapter()
         procFlowEvents()
     }
 
     override fun onStop() {
         Logd(TAG, "onStop()")
         super.onStop()
-        adapter.endSelectMode()
         cancelFlowEvents()
     }
 
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
         feedList = mutableListOf()
-        feedListFiltered = mutableListOf()
-        adapter.clearData()
+        feedListFiltered.clear()
         _binding = null
         super.onDestroyView()
     }
@@ -361,9 +293,9 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                 when (event) {
                     is FlowEvent.FeedUpdatingEvent -> {
                         Logd(TAG, "FeedUpdateRunningEvent: ${event.isRunning}")
-                        infoTextUpdate = if (event.isRunning) " " + this@SubscriptionsFragment.getString(R.string.refreshing_label) else ""
-                        binding.txtvInformation.text = (infoTextFiltered + infoTextUpdate)
-                        if (swipeToRefresh) binding.swipeRefresh.isRefreshing = event.isRunning
+                        infoTextUpdate = if (event.isRunning) " " + getString(R.string.refreshing_label) else ""
+                        txtvInformation = (infoTextFiltered + infoTextUpdate)
+//                        if (swipeToRefresh) binding.swipeRefresh.isRefreshing = event.isRunning
                         if (!event.isRunning && event.id != prevFeedUpdatingEvent?.id) loadSubscriptions()
                         prevFeedUpdatingEvent = event
                     }
@@ -384,6 +316,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
             R.id.subscriptions_sort -> FeedSortDialog().show(childFragmentManager, "FeedSortDialog")
             R.id.refresh_item -> FeedUpdateManager.runOnceOrAsk(requireContext())
+            R.id.toggle_grid_list -> useGrid = if (useGrid == null) !useGridLayout else !useGrid!!
             else -> return false
         }
         return true
@@ -394,7 +327,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         emptyView.setIcon(R.drawable.ic_subscriptions)
         emptyView.setTitle(R.string.no_subscriptions_head_label)
         emptyView.setMessage(R.string.no_subscriptions_label)
-        emptyView.attachToRecyclerView(recyclerView)
+//        emptyView.attachToRecyclerView(recyclerView)
     }
 
     private var loadItemsRunning = false
@@ -411,25 +344,14 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                     }
                     withContext(Dispatchers.Main) {
                         // We have fewer items. This can result in items being selected that are no longer visible.
-                        if (feedListFiltered.size > feedList.size) adapter.endSelectMode()
+//                        if (feedListFiltered.size > feedList.size) adapter.endSelectMode()
 //                        filterOnTag()
-                        feedListFiltered = feedList
-                        binding.count.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
-                        adapter.setItems(feedListFiltered)
-//                        binding.progressBar.visibility = View.GONE
-                        adapter.setItems(feedListFiltered)
-                        binding.count.text = feedListFiltered.size.toString() + " / " + feedList.size.toString()
+                        feedListFiltered.clear()
+                        feedListFiltered.addAll(feedList)
+                        feedCount = feedListFiltered.size.toString() + " / " + feedList.size.toString()
                         infoTextFiltered = " "
-                        binding.txtvInformation.setOnClickListener {}
-                        if (feedsFilter.isNotEmpty()) {
-                            val filter = FeedFilter(feedsFilter)
-                            infoTextFiltered = getString(R.string.filtered_label)
-                            binding.txtvInformation.setOnClickListener {
-                                val dialog = FeedFilterDialog.newInstance(filter)
-                                dialog.show(childFragmentManager, null)
-                            }
-                        }
-                        binding.txtvInformation.text = (infoTextFiltered + infoTextUpdate)
+                        if (feedsFilter.isNotEmpty()) infoTextFiltered = getString(R.string.filtered_label)
+                        txtvInformation = (infoTextFiltered + infoTextUpdate)
                         emptyView.updateVisibility()
                     }
                 } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e))
@@ -549,6 +471,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
             }
         }
         synchronized(feedList_) { feedList = feedList_.sortedWith(comparator).toMutableList() }
+        feedSorted++
     }
 
     private fun comparator(counterMap: Map<Long, Long>, dir: Int): Comparator<Feed> {
@@ -564,162 +487,30 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
         }
     }
 
-    override fun onEndSelectMode() {
-        speedDialView.close()
-        speedDialView.visibility = View.GONE
-        adapter.setItems(feedListFiltered)
-    }
-
-    override fun onStartSelectMode() {
-        speedDialView.visibility = View.VISIBLE
-        val feedsOnly: MutableList<Feed> = ArrayList<Feed>(feedListFiltered)
-//        feedsOnly.addAll(feedListFiltered)
-        adapter.setItems(feedsOnly)
-    }
-
     @Composable
-    fun FeedExpanded(feed: Feed) {
-        Row {
-            val imgLoc = ""
-            AsyncImage(model = imgLoc, contentDescription = "imgvCover",
-                placeholder = painterResource(R.mipmap.ic_launcher),
-                modifier = Modifier.width(80.dp).height(80.dp)
-                    .clickable(onClick = {
-                        Logd(TAG, "icon clicked!")
-//                        if (selectMode) toggleSelected()
-//                        else activity.loadChildFragment(FeedInfoFragment.newInstance(episode.feed!!))
-                    }))
-            val textColor = MaterialTheme.colors.onSurface
-            Column(Modifier.fillMaxWidth()) {
-                Text("titleLabel", color = textColor, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text("producerLabel", color = textColor, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Row {
-                    Text("episodeCount", color = textColor, )
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text("sortInfo", color = textColor, )
+    fun InforBar() {
+        Row(Modifier.padding(start = 20.dp, end = 20.dp)) {
+            val textColor = MaterialTheme.colorScheme.onSurface
+            Icon(painter = painterResource(R.drawable.ic_info), contentDescription = "info", tint = textColor)
+            Spacer(Modifier.weight(1f))
+            Text(txtvInformation, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.clickable {
+                if (feedsFilter.isNotEmpty()) {
+                    val filter = FeedFilter(feedsFilter)
+                    val dialog = FeedFilterDialog.newInstance(filter)
+                    dialog.show(childFragmentManager, null)
                 }
-            }
-            Icon(painter = painterResource(R.drawable.ic_error), contentDescription = "error")
+            } )
+            Spacer(Modifier.weight(1f))
+            Text(feedCount, color = textColor)
         }
     }
 
     @Composable
-    fun FeedCompact(feed: Feed) {
-
-    }
-    @UnstableApi
-    private inner class FeedMultiSelectActionHandler(private val activity: MainActivity, private val selectedItems: List<Feed>) {
-        fun handleAction(id: Int) {
-            when (id) {
-                R.id.remove_feed -> RemoveFeedDialog.show(activity, selectedItems)
-                R.id.keep_updated -> keepUpdatedPrefHandler()
-                R.id.autodownload -> autoDownloadPrefHandler()
-                R.id.autoDeleteDownload -> autoDeleteEpisodesPrefHandler()
-                R.id.playback_speed -> playbackSpeedPrefHandler()
-                R.id.export_opml -> openExportPathPicker()
-                R.id.associate_queue -> associatedQueuePrefHandler()
-                R.id.edit_tags -> TagSettingsDialog.newInstance(selectedItems).show(activity.supportFragmentManager, TAG)
-                else -> Log.e(TAG, "Unrecognized speed dial action item. Do nothing. id=$id")
-            }
-        }
-        private fun openExportPathPicker() {
-            val exportType = Export.OPML_SELECTED
-            val title = String.format(exportType.outputNameTemplate, SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date()))
-            val intentPickAction = Intent(Intent.ACTION_CREATE_DOCUMENT)
-                .addCategory(Intent.CATEGORY_OPENABLE)
-                .setType(exportType.contentType)
-                .putExtra(Intent.EXTRA_TITLE, title)
-            try {
-                chooseOpmlExportPathLauncher.launch(intentPickAction)
-                return
-            } catch (e: ActivityNotFoundException) {
-                Log.e(TAG, "No activity found. Should never happen...")
-            }
-            // if on SDK lower than API 21 or the implicit intent failed, fallback to the legacy export process
-            exportOPML(null)
-        }
-        fun exportOPML(uri: Uri?) {
-            try {
-                runBlocking {
-                    Logd(TAG, "selectedFeeds: ${selectedItems.size}")
-                    if (uri == null) ExportWorker(OpmlWriter(), requireContext()).exportFile(selectedItems)
-                    else {
-                        val worker = DocumentFileExportWorker(OpmlWriter(), requireContext(), uri)
-                        worker.exportFile(selectedItems)
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "exportOPML error: ${e.message}")
-            }
-        }
-        private fun autoDownloadPrefHandler() {
-            val preferenceSwitchDialog = PreferenceSwitchDialog(activity, activity.getString(R.string.auto_download_settings_label), activity.getString(R.string.auto_download_label))
-            preferenceSwitchDialog.setOnPreferenceChangedListener(@UnstableApi object: PreferenceSwitchDialog.OnPreferenceChangedListener {
-                override fun preferenceChanged(enabled: Boolean) {
-                saveFeedPreferences { it: FeedPreferences -> it.autoDownload = enabled }
-                }
-            })
-            preferenceSwitchDialog.openDialog()
-        }
-        @UnstableApi private fun playbackSpeedPrefHandler() {
-            val vBinding = PlaybackSpeedFeedSettingDialogBinding.inflate(activity.layoutInflater)
-            vBinding.seekBar.setProgressChangedListener { speed: Float? ->
-                vBinding.currentSpeedLabel.text = String.format(Locale.getDefault(), "%.2fx", speed)
-            }
-            vBinding.useGlobalCheckbox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
-                vBinding.seekBar.isEnabled = !isChecked
-                vBinding.seekBar.alpha = if (isChecked) 0.4f else 1f
-                vBinding.currentSpeedLabel.alpha = if (isChecked) 0.4f else 1f
-            }
-            vBinding.seekBar.updateSpeed(1.0f)
-            MaterialAlertDialogBuilder(activity)
-                .setTitle(R.string.playback_speed)
-                .setView(vBinding.root)
-                .setPositiveButton("OK") { _: DialogInterface?, _: Int ->
-                    val newSpeed = if (vBinding.useGlobalCheckbox.isChecked) FeedPreferences.SPEED_USE_GLOBAL
-                    else vBinding.seekBar.currentSpeed
-                    saveFeedPreferences { it: FeedPreferences ->
-                        it.playSpeed = newSpeed
-                    }
-                }
-                .setNegativeButton(R.string.cancel_label, null)
-                .show()
-        }
-        private fun autoDeleteEpisodesPrefHandler() {
-            val composeView = ComposeView(activity).apply {
-                setContent {
-                    val showDialog = remember { mutableStateOf(true) }
-                    CustomTheme(activity) {
-                        AutoDeleteDialog(showDialog.value, onDismissRequest = { showDialog.value = false })
-                    }
-                }
-            }
-            (activity.window.decorView as ViewGroup).addView(composeView)
-        }
-        private fun associatedQueuePrefHandler() {
-            val composeView = ComposeView(activity).apply {
-                setContent {
-                    val showDialog = remember { mutableStateOf(true) }
-                    CustomTheme(activity) {
-                        SetAssociatedQueue(showDialog.value, onDismissRequest = { showDialog.value = false })
-                    }
-                }
-            }
-            (activity.window.decorView as ViewGroup).addView(composeView)
-        }
-        private fun keepUpdatedPrefHandler() {
-            val composeView = ComposeView(activity).apply {
-                setContent {
-                    val showDialog = remember { mutableStateOf(true) }
-                    CustomTheme(activity) {
-                        KeepUpdatedDialog(showDialog.value, onDismissRequest = { showDialog.value = false })
-                    }
-                }
-            }
-            (activity.window.decorView as ViewGroup).addView(composeView)
-        }
-        @UnstableApi private fun saveFeedPreferences(preferencesConsumer: Consumer<FeedPreferences>) {
-            for (feed in selectedItems) {
+    fun EpisodeSpeedDial(activity: MainActivity, selected: SnapshotStateList<Feed>, modifier: Modifier = Modifier) {
+        val TAG = "EpisodeSpeedDial ${selected.size}"
+        var isExpanded by remember { mutableStateOf(false) }
+        fun saveFeedPreferences(preferencesConsumer: Consumer<FeedPreferences>) {
+            for (feed in selected) {
                 if (feed.preferences == null) continue
                 runOnIOScope {
                     upsert(feed) {
@@ -727,152 +518,45 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                     }
                 }
             }
-            val numItems = selectedItems.size
+            val numItems = selected.size
             activity.showSnackbarAbovePlayer(activity.resources.getQuantityString(R.plurals.updated_feeds_batch_label, numItems, numItems), Snackbar.LENGTH_LONG)
         }
-        @Composable
-        fun KeepUpdatedDialog(showDialog: Boolean, onDismissRequest: () -> Unit) {
-            if (showDialog) {
-                Dialog(onDismissRequest = { onDismissRequest() }) {
-                    Card(
-                        modifier = Modifier
-                            .wrapContentSize(align = Alignment.Center)
-                            .padding(16.dp),
-                        shape = RoundedCornerShape(16.dp),
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Row(Modifier.fillMaxWidth()) {
-                                Icon(ImageVector.vectorResource(id = R.drawable.ic_refresh), "")
-                                Spacer(modifier = Modifier.width(20.dp))
-                                Text(
-                                    text = stringResource(R.string.keep_updated),
-                                    style = MaterialTheme.typography.h6
-                                )
-                                Spacer(modifier = Modifier.weight(1f))
-                                var checked by remember { mutableStateOf(false) }
-                                Switch(
-                                    checked = checked,
-                                    onCheckedChange = {
-                                        checked = it
-                                        saveFeedPreferences { pref: FeedPreferences ->
-                                            pref.keepUpdated = checked
-                                        }
-                                    }
-                                )
-                            }
-                            Text(
-                                text = stringResource(R.string.keep_updated_summary),
-                                style = MaterialTheme.typography.body2
-                            )
-                        }
-                    }
-                }
-            }
-        }
-        @Composable
-        fun AutoDeleteDialog(showDialog: Boolean, onDismissRequest: () -> Unit) {
-            if (showDialog) {
-                val (selectedOption, _) = remember { mutableStateOf("") }
-                Dialog(onDismissRequest = { onDismissRequest() }) {
-                    Card(
-                        modifier = Modifier
-                            .wrapContentSize(align = Alignment.Center)
-                            .padding(16.dp),
-                        shape = RoundedCornerShape(16.dp),
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Column {
-                                FeedAutoDeleteOptions.forEach { text ->
-                                    Row(
-                                        Modifier
-                                            .fillMaxWidth()
-                                            .selectable(
-                                                selected = (text == selectedOption),
-                                                onClick = {
-                                                    if (text != selectedOption) {
-                                                        val autoDeleteAction: AutoDeleteAction = AutoDeleteAction.fromTag(text)
-                                                        saveFeedPreferences { it: FeedPreferences ->
-                                                            it.autoDeleteAction = autoDeleteAction
+        fun autoDeleteEpisodesPrefHandler() {
+            val composeView = ComposeView(activity).apply {
+                setContent {
+                    val showDialog = remember { mutableStateOf(true) }
+                    CustomTheme(activity) {
+                        if (showDialog.value) {
+                            val (selectedOption, _) = remember { mutableStateOf("") }
+                            Dialog(onDismissRequest = { showDialog.value = false }) {
+                                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp)) {
+                                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        Column {
+                                            FeedAutoDeleteOptions.forEach { text ->
+                                                Row(
+                                                    Modifier.fillMaxWidth().padding(horizontal = 16.dp).selectable(
+                                                        selected = (text == selectedOption),
+                                                        onClick = {
+                                                            if (text != selectedOption) {
+                                                                val autoDeleteAction: AutoDeleteAction = AutoDeleteAction.fromTag(text)
+                                                                saveFeedPreferences { it: FeedPreferences ->
+                                                                    it.autoDeleteAction = autoDeleteAction
+                                                                }
+                                                                showDialog.value = false
+                                                            }
                                                         }
-                                                        onDismissRequest()
-                                                    }
+                                                    ),
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    RadioButton(selected = (text == selectedOption), onClick = { })
+                                                    Text(
+                                                        text = text,
+                                                        style = MaterialTheme.typography.bodyLarge.merge(),
+                                                        modifier = Modifier.padding(start = 16.dp)
+                                                    )
                                                 }
-                                            )
-                                            .padding(horizontal = 16.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        RadioButton(
-                                            selected = (text == selectedOption),
-                                            onClick = { }
-                                        )
-                                        Text(
-                                            text = text,
-                                            style = MaterialTheme.typography.body1.merge(),
-                                            modifier = Modifier.padding(start = 16.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        @Composable
-        private fun SetAssociatedQueue(showDialog: Boolean, onDismissRequest: () -> Unit) {
-            var selected by remember {mutableStateOf("")}
-            if (showDialog) {
-                Dialog(onDismissRequest = { onDismissRequest() }) {
-                    Card(modifier = Modifier
-                        .wrapContentSize(align = Alignment.Center)
-                        .padding(16.dp),
-                        shape = RoundedCornerShape(16.dp),
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            queueSettingOptions.forEach { option ->
-                                Row(modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Checkbox(checked = option == selected,
-                                        onCheckedChange = { isChecked ->
-                                            selected = option
-                                            if (isChecked) Logd(TAG, "$option is checked")
-                                            when (selected) {
-                                                "Default" -> {
-                                                    saveFeedPreferences { it: FeedPreferences -> it.queueId = 0L }
-                                                    onDismissRequest()
-                                                }
-                                                "Active" -> {
-                                                    saveFeedPreferences { it: FeedPreferences -> it.queueId = -1L }
-                                                    onDismissRequest()
-                                                }
-                                                "None" -> {
-                                                    saveFeedPreferences { it: FeedPreferences -> it.queueId = -2L }
-                                                    onDismissRequest()
-                                                }
-                                                "Custom" -> {}
                                             }
                                         }
-                                    )
-                                    Text(option)
-                                }
-                            }
-                            if (selected == "Custom") {
-                                val queues = realm.query(PlayQueue::class).find()
-                                Spinner(items = queues.map { it.name }, selectedItem = "Default") { name ->
-                                    Logd(TAG, "Queue selected: $name")
-                                    val q = queues.firstOrNull { it.name == name }
-                                    if (q != null) {
-                                        saveFeedPreferences { it: FeedPreferences -> it.queueId = q.id }
-                                        onDismissRequest()
                                     }
                                 }
                             }
@@ -880,260 +564,456 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener, Selec
                     }
                 }
             }
+            (activity.window.decorView as ViewGroup).addView(composeView)
         }
-    }
-
-    @OptIn(UnstableApi::class)
-    private abstract inner class SubscriptionsAdapter<T : RecyclerView.ViewHolder?> : SelectableAdapter<T>(activity as MainActivity) {
-        protected var feedList: List<Feed>
-        var selectedItem: Feed? = null
-        protected var longPressedPosition: Int = 0 // used to init actionMode
-        val selectedItems: List<Feed>
-            get() {
-                val items = ArrayList<Feed>()
-                for (i in 0 until itemCount) {
-                    if (isSelected(i)) items.add(feedList[i])
-                }
-                return items
-            }
-
-        init {
-            this.feedList = ArrayList()
-            setHasStableIds(true)
-        }
-        fun clearData() {
-            feedList = listOf()
-        }
-        fun getItem(position: Int): Any {
-            return feedList[position]
-        }
-        override fun getItemCount(): Int {
-            return feedList.size
-        }
-        override fun getItemId(position: Int): Long {
-            if (position >= feedList.size) return RecyclerView.NO_ID // Dummy views
-            return feedList[position].id
-        }
-        fun setItems(listItems: List<Feed>) {
-            this.feedList = listItems
-            notifyDataSetChanged()
-        }
-    }
-
-    private inner class ListAdapter : SubscriptionsAdapter<ViewHolderExpanded>() {
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolderExpanded {
-            val itemView: View = LayoutInflater.from(activity).inflate(R.layout.subscription_item, parent, false)
-            return ViewHolderExpanded(itemView)
-        }
-        @UnstableApi override fun onBindViewHolder(holder: ViewHolderExpanded, position: Int) {
-            val feed: Feed = feedList[position]
-            holder.bind(feed)
-            if (inActionMode()) {
-                holder.selectCheckbox.visibility = View.VISIBLE
-                holder.selectView.visibility = View.VISIBLE
-
-                holder.selectCheckbox.setChecked(isSelected(position))
-                holder.selectCheckbox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
-                    setSelected(holder.bindingAdapterPosition, isChecked)
-                }
-                holder.coverImage.alpha = 0.6f
-                holder.count.visibility = View.GONE
-            } else {
-                holder.selectView.visibility = View.GONE
-                holder.coverImage.alpha = 1.0f
-            }
-            holder.coverImage.setOnClickListener {
-                if (inActionMode()) holder.selectCheckbox.setChecked(!isSelected(holder.bindingAdapterPosition))
-                else {
-                    val fragment: Fragment = FeedInfoFragment.newInstance(feed)
-                    (activity as MainActivity).loadChildFragment(fragment)
-                }
-            }
-            holder.infoCard.setOnClickListener {
-                if (inActionMode()) holder.selectCheckbox.setChecked(!isSelected(holder.bindingAdapterPosition))
-                else {
-                    val fragment: Fragment = FeedEpisodesFragment.newInstance(feed.id)
-                    (activity as MainActivity).loadChildFragment(fragment)
-                }
-            }
-//        holder.infoCard.setOnCreateContextMenuListener(this)
-            holder.infoCard.setOnLongClickListener {
-                longPressedPosition = holder.bindingAdapterPosition
-                selectedItem = feed
-                startSelectMode(longPressedPosition)
-                true
-            }
-            holder.itemView.setOnTouchListener { _: View?, e: MotionEvent ->
-                if (e.isFromSource(InputDevice.SOURCE_MOUSE) && e.buttonState == MotionEvent.BUTTON_SECONDARY) {
-                    if (!inActionMode()) {
-                        longPressedPosition = holder.bindingAdapterPosition
-                        selectedItem = feed
+        fun associatedQueuePrefHandler() {
+            val composeView = ComposeView(activity).apply {
+                setContent {
+                    val showDialog = remember { mutableStateOf(true) }
+                    CustomTheme(activity) {
+                        var selectedOption by remember {mutableStateOf("")}
+                        if (showDialog.value) {
+                            Dialog(onDismissRequest = { showDialog.value = false }) {
+                                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp)) {
+                                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        queueSettingOptions.forEach { option ->
+                                            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                                Checkbox(checked = option == selectedOption,
+                                                    onCheckedChange = { isChecked ->
+                                                        selectedOption = option
+                                                        if (isChecked) Logd(Companion.TAG, "$option is checked")
+                                                        when (selectedOption) {
+                                                            "Default" -> {
+                                                                saveFeedPreferences { it: FeedPreferences -> it.queueId = 0L }
+                                                                showDialog.value = false
+                                                            }
+                                                            "Active" -> {
+                                                                saveFeedPreferences { it: FeedPreferences -> it.queueId = -1L }
+                                                                showDialog.value = false
+                                                            }
+                                                            "None" -> {
+                                                                saveFeedPreferences { it: FeedPreferences -> it.queueId = -2L }
+                                                                showDialog.value = false
+                                                            }
+                                                            "Custom" -> {}
+                                                        }
+                                                    }
+                                                )
+                                                Text(option)
+                                            }
+                                        }
+                                        if (selectedOption == "Custom") {
+                                            val queues = realm.query(PlayQueue::class).find()
+                                            Spinner(items = queues.map { it.name }, selectedItem = "Default") { name ->
+                                                Logd(Companion.TAG, "Queue selected: $name")
+                                                val q = queues.firstOrNull { it.name == name }
+                                                if (q != null) {
+                                                    saveFeedPreferences { it: FeedPreferences -> it.queueId = q.id }
+                                                    showDialog.value = false
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
-                false
             }
-            holder.itemView.setOnClickListener {
-                if (inActionMode()) holder.selectCheckbox.setChecked(!isSelected(holder.bindingAdapterPosition))
-                else {
-//                    val fragment: Fragment = FeedEpisodesFragment.newInstance(feed.id)
-//                    mainActivityRef.get()?.loadChildFragment(fragment)
-                }
+            (activity.window.decorView as ViewGroup).addView(composeView)
+        }
+        val options = listOf<@Composable () -> Unit>(
+            { Row(modifier = Modifier.padding(horizontal = 16.dp)
+                .clickable {
+                    isExpanded = false
+                    Logd(TAG, "ic_delete: ${selected.size}")
+                    RemoveFeedDialog.show(activity, selected)
+                }, verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_delete), "")
+                Text(stringResource(id = R.string.remove_feed_label))
+            } },
+            { Row(modifier = Modifier.padding(horizontal = 16.dp)
+                .clickable {
+                    isExpanded = false
+                    Logd(TAG, "ic_refresh: ${selected.size}")
+                    val composeView = ComposeView(activity).apply {
+                        setContent {
+                            val showDialog = remember { mutableStateOf(true) }
+                            CustomTheme(activity) {
+                                if (showDialog.value) {
+                                    Dialog(onDismissRequest = { showDialog.value = false }) {
+                                        Card(
+                                            modifier = Modifier
+                                                .wrapContentSize(align = Alignment.Center)
+                                                .padding(16.dp),
+                                            shape = RoundedCornerShape(16.dp),
+                                        ) {
+                                            Column(
+                                                modifier = Modifier.padding(16.dp),
+                                                verticalArrangement = Arrangement.Center
+                                            ) {
+                                                Row(Modifier.fillMaxWidth()) {
+                                                    Icon(ImageVector.vectorResource(id = R.drawable.ic_refresh), "")
+                                                    Spacer(modifier = Modifier.width(20.dp))
+                                                    Text(
+                                                        text = stringResource(R.string.keep_updated),
+                                                        style = MaterialTheme.typography.titleLarge
+                                                    )
+                                                    Spacer(modifier = Modifier.weight(1f))
+                                                    var checked by remember { mutableStateOf(false) }
+                                                    Switch(
+                                                        checked = checked,
+                                                        onCheckedChange = {
+                                                            checked = it
+                                                            saveFeedPreferences { pref: FeedPreferences ->
+                                                                pref.keepUpdated = checked
+                                                            }
+                                                        }
+                                                    )
+                                                }
+                                                Text(
+                                                    text = stringResource(R.string.keep_updated_summary),
+                                                    style = MaterialTheme.typography.bodyMedium
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    (activity.window.decorView as ViewGroup).addView(composeView)
+                }, verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_refresh), "")
+                Text(stringResource(id = R.string.keep_updated))
+            } },
+            { Row(modifier = Modifier.padding(horizontal = 16.dp)
+                .clickable {
+                    isExpanded = false
+                    Logd(TAG, "ic_download: ${selected.size}")
+                    val preferenceSwitchDialog = PreferenceSwitchDialog(activity, activity.getString(R.string.auto_download_settings_label), activity.getString(R.string.auto_download_label))
+                    preferenceSwitchDialog.setOnPreferenceChangedListener(@UnstableApi object: PreferenceSwitchDialog.OnPreferenceChangedListener {
+                        override fun preferenceChanged(enabled: Boolean) {
+                            saveFeedPreferences { it: FeedPreferences -> it.autoDownload = enabled }
+                        }
+                    })
+                    preferenceSwitchDialog.openDialog()
+                }, verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_download), "")
+                Text(stringResource(id = R.string.auto_download_label))
+            } },
+            { Row(modifier = Modifier.padding(horizontal = 16.dp)
+                .clickable {
+                    isExpanded = false
+                    Logd(TAG, "ic_delete_auto: ${selected.size}")
+                    autoDeleteEpisodesPrefHandler()
+                }, verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_delete_auto), "")
+                Text(stringResource(id = R.string.auto_delete_label))
+            } },
+            { Row(modifier = Modifier.padding(horizontal = 16.dp)
+                .clickable {
+                    isExpanded = false
+                    Logd(TAG, "ic_playback_speed: ${selected.size}")
+                    val vBinding = PlaybackSpeedFeedSettingDialogBinding.inflate(activity.layoutInflater)
+                    vBinding.seekBar.setProgressChangedListener { speed: Float? ->
+                        vBinding.currentSpeedLabel.text = String.format(Locale.getDefault(), "%.2fx", speed)
+                    }
+                    vBinding.useGlobalCheckbox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
+                        vBinding.seekBar.isEnabled = !isChecked
+                        vBinding.seekBar.alpha = if (isChecked) 0.4f else 1f
+                        vBinding.currentSpeedLabel.alpha = if (isChecked) 0.4f else 1f
+                    }
+                    vBinding.seekBar.updateSpeed(1.0f)
+                    MaterialAlertDialogBuilder(activity)
+                        .setTitle(R.string.playback_speed)
+                        .setView(vBinding.root)
+                        .setPositiveButton("OK") { _: DialogInterface?, _: Int ->
+                            val newSpeed = if (vBinding.useGlobalCheckbox.isChecked) FeedPreferences.SPEED_USE_GLOBAL
+                            else vBinding.seekBar.currentSpeed
+                            saveFeedPreferences { it: FeedPreferences ->
+                                it.playSpeed = newSpeed
+                            }
+                        }
+                        .setNegativeButton(R.string.cancel_label, null)
+                        .show()
+                }, verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_playback_speed), "")
+                Text(stringResource(id = R.string.playback_speed))
+            } },
+            { Row(modifier = Modifier.padding(horizontal = 16.dp)
+                .clickable {
+                    isExpanded = false
+                    Logd(TAG, "ic_tag: ${selected.size}")
+                    TagSettingsDialog.newInstance(selected).show(activity.supportFragmentManager, Companion.TAG)
+                }, verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_tag), "")
+                Text(stringResource(id = R.string.edit_tags))
+            } },
+            { Row(modifier = Modifier.padding(horizontal = 16.dp)
+                .clickable {
+                    isExpanded = false
+                    Logd(TAG, "ic_playlist_play: ${selected.size}")
+                    associatedQueuePrefHandler()
+                }, verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_playlist_play), "")
+                Text(stringResource(id = R.string.pref_feed_associated_queue))
+            } },
+            { Row(modifier = Modifier.padding(horizontal = 16.dp)
+                .clickable {
+                    isExpanded = false
+                    Logd(TAG, "baseline_import_export_24: ${selected.size}")
+                    val exportType = Export.OPML_SELECTED
+                    val title = String.format(exportType.outputNameTemplate, SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date()))
+                    val intentPickAction = Intent(Intent.ACTION_CREATE_DOCUMENT)
+                        .addCategory(Intent.CATEGORY_OPENABLE)
+                        .setType(exportType.contentType)
+                        .putExtra(Intent.EXTRA_TITLE, title)
+                    try {
+                        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+                            if (result.resultCode != RESULT_OK || result.data == null) return@registerForActivityResult
+                            val uri = result.data!!.data
+                            exportOPML(uri, selected)
+                        }.launch(intentPickAction)
+                        return@clickable
+                    } catch (e: ActivityNotFoundException) { Log.e(Companion.TAG, "No activity found. Should never happen...") }
+                    // if on SDK lower than API 21 or the implicit intent failed, fallback to the legacy export process
+                    exportOPML(null, selected)
+                }, verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.baseline_import_export_24), "")
+                Text(stringResource(id = R.string.opml_export_label))
+            } },
+        )
+        val scrollState = rememberScrollState()
+        Column(modifier = modifier.verticalScroll(scrollState), verticalArrangement = Arrangement.Bottom) {
+            if (isExpanded) options.forEachIndexed { _, button ->
+                FloatingActionButton(modifier = Modifier.padding(start = 4.dp, bottom = 6.dp).height(40.dp),
+                    containerColor = Color.LightGray,
+                    onClick = {}) { button() }
             }
+            FloatingActionButton(containerColor = Color.Green,
+                onClick = { isExpanded = !isExpanded }) { Icon(Icons.Filled.Edit, "Edit") }
         }
     }
 
-    private inner class GridAdapter : SubscriptionsAdapter<ViewHolderBrief>() {
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolderBrief {
-            val itemView: View = LayoutInflater.from(activity).inflate(R.layout.subscription_item_brief, parent, false)
-            return ViewHolderBrief(itemView)
-        }
-        @UnstableApi override fun onBindViewHolder(holder: ViewHolderBrief, position: Int) {
-            val feed: Feed = feedList[position]
-            holder.bind(feed)
-            if (inActionMode()) {
-                holder.selectCheckbox.visibility = View.VISIBLE
-                holder.selectView.visibility = View.VISIBLE
-
-                holder.selectCheckbox.setChecked(isSelected(position))
-                holder.selectCheckbox.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
-                    setSelected(holder.bindingAdapterPosition, isChecked)
-                }
-                holder.coverImage.alpha = 0.6f
-                holder.count.visibility = View.GONE
+    @kotlin.OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+    @Composable
+    fun LazyList() {
+        var selectedSize by remember { mutableStateOf(0) }
+        val selected = remember { mutableStateListOf<Feed>() }
+        var longPressIndex by remember { mutableIntStateOf(-1) }
+        var refreshing by remember { mutableStateOf(false)}
+        val coroutineScope = rememberCoroutineScope()
+        PullToRefreshBox(modifier = Modifier.fillMaxWidth(), isRefreshing = refreshing, indicator = {}, onRefresh = {
+//            coroutineScope.launch {
+                refreshing = true
+                if (swipeToRefresh) FeedUpdateManager.runOnceOrAsk(requireContext())
+                refreshing = false
+//            }
+        }) {
+            if (if (useGrid == null) useGridLayout else useGrid!!) {
+                val lazyGridState = rememberLazyGridState()
+                LazyVerticalGrid(state = lazyGridState,
+                    columns = GridCells.Fixed(3),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    contentPadding = PaddingValues(start = 12.dp, top = 16.dp, end = 12.dp, bottom = 16.dp),
+                    content = {
+                        items(feedListFiltered.size) { index ->
+                            val feed by remember { mutableStateOf(feedListFiltered[index]) }
+                            var isSelected by remember { mutableStateOf(false) }
+                            LaunchedEffect(key1 = selectMode, key2 = selectedSize) {
+                                isSelected = selectMode && feed in selected
+                            }
+                            fun toggleSelected() {
+                                isSelected = !isSelected
+                                if (isSelected) selected.add(feed)
+                                else selected.remove(feed)
+                            }
+                            Column(Modifier.background(if (isSelected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.surface)) {
+                                val textColor = MaterialTheme.colorScheme.onSurface
+                                ConstraintLayout {
+                                    val (coverImage, episodeCount, error) = createRefs()
+                                    AsyncImage(model = feed.imageUrl, contentDescription = "coverImage",
+                                        placeholder = painterResource(R.mipmap.ic_launcher),
+                                        modifier = Modifier
+                                            .constrainAs(coverImage) {
+                                                top.linkTo(parent.top)
+                                                bottom.linkTo(parent.bottom)
+                                                start.linkTo(parent.start)
+                                            }.combinedClickable(onClick = {
+                                                Logd(TAG, "clicked: ${feed.title}")
+                                                if (selectMode) toggleSelected()
+                                                else (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
+                                            }, onLongClick = {
+                                                selectMode = !selectMode
+                                                isSelected = selectMode
+                                                if (selectMode) {
+                                                    selected.add(feed)
+                                                    longPressIndex = index
+                                                } else {
+                                                    selectedSize = 0
+                                                    longPressIndex = -1
+                                                }
+                                                Logd(TAG, "long clicked: ${feed.title}")
+                                            }))
+                                    Text(NumberFormat.getInstance().format(feed.episodes.size.toLong()),
+                                        modifier = Modifier.constrainAs(episodeCount) {
+                                            end.linkTo(parent.end)
+                                            top.linkTo(coverImage.top)
+                                        })
+                                    Icon(painter = painterResource(R.drawable.ic_error),
+                                        contentDescription = "error",
+                                        modifier = Modifier.constrainAs(error) {
+                                            end.linkTo(parent.end)
+                                            bottom.linkTo(coverImage.bottom)
+                                        })
+                                }
+                                Text(feed.title ?: "No title",
+                                    color = textColor,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis)
+                            }
+                        }
+                    }
+                )
             } else {
-                holder.selectView.visibility = View.GONE
-                holder.coverImage.alpha = 1.0f
-            }
-            holder.coverImage.setOnClickListener {
-                if (inActionMode()) holder.selectCheckbox.setChecked(!isSelected(holder.bindingAdapterPosition))
-                else {
-                    val fragment: Fragment = FeedEpisodesFragment.newInstance(feed.id)
-                    (activity as MainActivity).loadChildFragment(fragment)
-                }
-            }
-            holder.coverImage.setOnLongClickListener {
-                longPressedPosition = holder.bindingAdapterPosition
-                selectedItem = feed
-                startSelectMode(longPressedPosition)
-                true
-            }
-            holder.itemView.setOnTouchListener { _: View?, e: MotionEvent ->
-                if (e.isFromSource(InputDevice.SOURCE_MOUSE) && e.buttonState == MotionEvent.BUTTON_SECONDARY) {
-                    if (!inActionMode()) {
-                        longPressedPosition = holder.bindingAdapterPosition
-                        selectedItem = feed
+                val lazyListState = rememberLazyListState()
+                LazyColumn(state = lazyListState,
+                    modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    itemsIndexed(feedListFiltered) { index, feed ->
+                        var isSelected by remember { mutableStateOf(false) }
+                        LaunchedEffect(key1 = selectMode, key2 = selectedSize) {
+                            isSelected = selectMode && feed in selected
+                        }
+                        fun toggleSelected() {
+                            isSelected = !isSelected
+                            if (isSelected) selected.add(feed)
+                            else selected.remove(feed)
+                        }
+                        Row(Modifier.background(if (isSelected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.surface)
+                            .combinedClickable(onClick = {
+                                Logd(TAG, "clicked: ${feed.title}")
+                                if (selectMode) toggleSelected()
+                                else (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
+                            }, onLongClick = {
+                                selectMode = !selectMode
+                                isSelected = selectMode
+                                if (selectMode) {
+                                    selected.add(feed)
+                                    longPressIndex = index
+                                } else {
+                                    selectedSize = 0
+                                    longPressIndex = -1
+                                }
+                                Logd(TAG, "long clicked: ${feed.title}")
+                            })) {
+                            AsyncImage(model = feed.imageUrl, contentDescription = "imgvCover",
+                                placeholder = painterResource(R.mipmap.ic_launcher),
+                                modifier = Modifier.width(80.dp).height(80.dp)
+//                                    .clickable(onClick = {
+//                                        Logd(TAG, "icon clicked!")
+//                                    })
+                            )
+                            val textColor = MaterialTheme.colorScheme.onSurface
+                            Column(Modifier.fillMaxWidth().padding(start = 10.dp)) {
+                                Text(feed.title ?: "No title", color = textColor, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
+                                Text(feed.author ?: "No author", color = textColor, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodyMedium)
+                                Row(Modifier.padding(top = 5.dp)) {
+                                    Text(NumberFormat.getInstance().format(feed.episodes.size.toLong()) + " episodes",
+                                        color = textColor, style = MaterialTheme.typography.bodyMedium)
+                                    Spacer(modifier = Modifier.weight(1f))
+                                    var feedSortInfo by remember { mutableStateOf(feed.sortInfo) }
+                                    LaunchedEffect(feedSorted) {
+                                        feedSortInfo = feed.sortInfo
+                                    }
+                                    Text(feedSortInfo, color = textColor, style = MaterialTheme.typography.bodyMedium)
+                                }
+                            }
+                            Icon(painter = painterResource(R.drawable.ic_error), contentDescription = "error")
+                        }
                     }
                 }
-                false
             }
-            holder.itemView.setOnClickListener {
-                if (inActionMode()) holder.selectCheckbox.setChecked(!isSelected(holder.bindingAdapterPosition))
+            if (selectMode) {
+                Row(modifier = Modifier.align(Alignment.TopEnd).width(150.dp).height(45.dp)
+                    .background(Color.LightGray),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically) {
+                    Icon(painter = painterResource(R.drawable.baseline_arrow_upward_24),
+                        tint = Color.Black,
+                        contentDescription = null,
+                        modifier = Modifier.width(35.dp).height(35.dp).padding(end = 10.dp)
+                            .clickable(onClick = {
+                                selected.clear()
+                                for (i in 0..longPressIndex) {
+                                    selected.add(feedListFiltered[i])
+                                }
+                                selectedSize = selected.size
+                                Logd(TAG, "selectedIds: ${selected.size}")
+                            }))
+                    Icon(painter = painterResource(R.drawable.baseline_arrow_downward_24),
+                        tint = Color.Black,
+                        contentDescription = null,
+                        modifier = Modifier.width(35.dp).height(35.dp).padding(end = 10.dp)
+                            .clickable(onClick = {
+                                selected.clear()
+                                for (i in longPressIndex..<feedListFiltered.size) {
+                                    selected.add(feedListFiltered[i])
+                                }
+                                selectedSize = selected.size
+                                Logd(TAG, "selectedIds: ${selected.size}")
+                            }))
+                    var selectAllRes by remember { mutableIntStateOf(R.drawable.ic_select_all) }
+                    Icon(painter = painterResource(selectAllRes),
+                        tint = Color.Black,
+                        contentDescription = null,
+                        modifier = Modifier.width(35.dp).height(35.dp)
+                            .clickable(onClick = {
+                                if (selectedSize != feedListFiltered.size) {
+                                    for (e in feedListFiltered) {
+                                        selected.add(e)
+                                    }
+                                    selectAllRes = R.drawable.ic_select_none
+                                } else {
+                                    selected.clear()
+                                    selectAllRes = R.drawable.ic_select_all
+                                }
+                                selectedSize = selected.size
+                                Logd(TAG, "selectedIds: ${selected.size}")
+                            }))
+                }
+                EpisodeSpeedDial(activity as MainActivity, selected.toMutableStateList(), modifier = Modifier.align(Alignment.BottomStart).padding(bottom = 16.dp, start = 16.dp))
+            }
+            FloatingActionButton(containerColor = Color.Green,
+                modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = 16.dp, end = 16.dp),
+                onClick = {
+                    if (activity is MainActivity) (activity as MainActivity).loadChildFragment(OnlineSearchFragment())
+                }) { Icon(Icons.Filled.AddCircle, "Add") }
+        }
+    }
+
+    private fun exportOPML(uri: Uri?, selectedItems: List<Feed>) {
+        try {
+            runBlocking {
+                Logd(TAG, "selectedFeeds: ${selectedItems.size}")
+                if (uri == null) ExportWorker(OpmlWriter(), requireContext()).exportFile(selectedItems)
                 else {
-//                    val fragment: Fragment = FeedEpisodesFragment.newInstance(feed.id)
-//                    mainActivityRef.get()?.loadChildFragment(fragment)
+                    val worker = DocumentFileExportWorker(OpmlWriter(), requireContext(), uri)
+                    worker.exportFile(selectedItems)
                 }
             }
-        }
-    }
-
-    private inner class ViewHolderExpanded(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val binding = SubscriptionItemBinding.bind(itemView)
-        val count: TextView = binding.episodeCount
-        val coverImage: ImageView = binding.coverImage
-        val infoCard: LinearLayout = binding.infoCard
-        val selectView: FrameLayout = binding.selectContainer
-        val selectCheckbox: CheckBox = binding.selectCheckBox
-        private val errorIcon: View = binding.errorIcon
-
-        @UnstableApi
-        fun bind(feed: Feed) {
-            val drawable: Drawable? = AppCompatResources.getDrawable(selectView.context, R.drawable.ic_checkbox_background)
-            selectView.background = drawable // Setting this in XML crashes API <= 21
-            binding.titleLabel.text = feed.title
-            binding.producerLabel.text = feed.author
-            binding.sortInfo.text = feed.sortInfo
-            coverImage.contentDescription = feed.title
-            coverImage.setImageDrawable(null)
-
-            count.text = NumberFormat.getInstance().format(feed.episodes.size.toLong()) + " episodes"
-            count.visibility = View.VISIBLE
-
-            val mainActRef = (activity as MainActivity)
-            if (feed.imageUrl != null) {
-                val coverLoader = CoverLoader(mainActRef)
-                coverLoader.withUri(feed.imageUrl)
-                errorIcon.visibility = if (feed.lastUpdateFailed) View.VISIBLE else View.GONE
-                coverLoader.withCoverView(coverImage)
-                coverLoader.load()
-            } else coverImage.setImageDrawable(AppCompatResources.getDrawable(requireContext(), R.drawable.ic_launcher_foreground))
-
-            val density: Float = mainActRef.resources.displayMetrics.density
-            binding.outerContainer.setCardBackgroundColor(SurfaceColors.getColorForElevation(mainActRef, 1 * density))
-
-            val textHPadding = 20
-            val textVPadding = 5
-            binding.titleLabel.setPadding(textHPadding, textVPadding, textHPadding, textVPadding)
-            binding.producerLabel.setPadding(textHPadding, textVPadding, textHPadding, textVPadding)
-            count.setPadding(textHPadding, textVPadding, textHPadding, textVPadding)
-
-            val textSize = 14
-            binding.titleLabel.textSize = textSize.toFloat()
-        }
-    }
-
-    private inner class ViewHolderBrief(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val binding = SubscriptionItemBriefBinding.bind(itemView)
-        private val title = binding.titleLabel
-        val count: TextView = binding.episodeCount
-
-        val coverImage: ImageView = binding.coverImage
-        val selectView: FrameLayout = binding.selectContainer
-        val selectCheckbox: CheckBox = binding.selectCheckBox
-
-        private val errorIcon: View = binding.errorIcon
-
-        @UnstableApi
-        fun bind(feed: Feed) {
-            val drawable: Drawable? = AppCompatResources.getDrawable(selectView.context, R.drawable.ic_checkbox_background)
-            selectView.background = drawable // Setting this in XML crashes API <= 21
-            title.text = feed.title
-            coverImage.contentDescription = feed.title
-            coverImage.setImageDrawable(null)
-
-            count.text = NumberFormat.getInstance().format(feed.episodes.size.toLong())
-            count.visibility = View.VISIBLE
-
-            val mainActRef = (activity as MainActivity)
-            val coverLoader = CoverLoader(mainActRef)
-            coverLoader.withUri(feed.imageUrl)
-            errorIcon.visibility = if (feed.lastUpdateFailed) View.VISIBLE else View.GONE
-
-            coverLoader.withCoverView(coverImage)
-            coverLoader.load()
-
-            val density: Float = mainActRef.resources.displayMetrics.density
-            binding.outerContainer.setCardBackgroundColor(SurfaceColors.getColorForElevation(mainActRef, 1 * density))
-
-            val textHPadding = 20
-            val textVPadding = 5
-            title.setPadding(textHPadding, textVPadding, textHPadding, textVPadding)
-            count.setPadding(textHPadding, textVPadding, textHPadding, textVPadding)
-
-            val textSize = 14
-            title.textSize = textSize.toFloat()
-        }
-    }
-
-    private inner class GridDividerItemDecorator : RecyclerView.ItemDecoration() {
-        override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
-            super.getItemOffsets(outRect, view, parent, state)
-            val context = parent.context
-            val insetOffset = convertDpToPixel(context, 1f).toInt()
-            outRect[insetOffset, insetOffset, insetOffset] = insetOffset
-        }
-        private fun convertDpToPixel(context: Context, dp: Float): Float {
-            return dp * context.resources.displayMetrics.density
-        }
+        } catch (e: Exception) { Log.e(TAG, "exportOPML error: ${e.message}") }
     }
 
     class PreferenceSwitchDialog(private var context: Context, private val title: String, private val text: String) {

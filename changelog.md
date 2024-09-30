@@ -1,3 +1,10 @@
+# 6.8.3 (Preview release)
+
+* most of Subscriptions view are in Jetpack Compose, feed viewholder and adapters etc are removed
+* added toggle grid and list views in the menu of Subscriptions
+* migrated reliance on compose.material to compose.material3
+* not yet for prime time
+
 # 6.8.2 (Preview release)
 
 * AudioPlayerFragment got overhauled. migrated to Jetpack Compose and PlayUI and PlayerDetailed fragments are Removed

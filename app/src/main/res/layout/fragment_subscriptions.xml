@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/subscription_fragment"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appbar"
@@ -21,52 +22,11 @@
             app:navigationContentDescription="@string/toolbar_back_button_content_description"
             app:navigationIcon="?homeAsUpIndicator" />
 
-        <LinearLayout
-            android:id="@+id/feeds_info_layout"
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/infobar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:paddingVertical="4dp"
-            android:layout_marginTop="-12dp"
-            android:background="?android:attr/selectableItemBackground"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:layout_height="wrap_content"/>
 
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_info" />
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"/>
-
-            <com.mikepenz.iconics.view.IconicsTextView
-                android:id="@+id/txtvInformation"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="2dp"
-                android:background="?android:attr/colorBackground"
-                android:foreground="?android:attr/selectableItemBackground"
-                android:gravity="center"
-                android:textColor="?attr/colorAccent"
-                tools:visibility="visible"
-                tools:text="(i) Information" />
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"/>
-
-            <TextView
-                android:id="@+id/count"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="12sp"
-                android:text="12 Podcasts" />
-        </LinearLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout
@@ -79,19 +39,7 @@
         android:layout_marginTop="-12dp"
         android:background="?android:attr/selectableItemBackground"
         android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:layout_below="@id/appbar">
-
-<!--        <com.google.android.material.textfield.TextInputEditText-->
-<!--            android:id="@+id/search_box"-->
-<!--            android:layout_width="0dp"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_weight="1"-->
-<!--            android:inputType="text"-->
-<!--            android:hint="@string/feed_search_hint_text"-->
-<!--            android:lines="1"-->
-<!--            android:imeOptions="actionSearch"-->
-<!--            android:background="?attr/background_color"/>-->
+        android:orientation="horizontal">
 
         <Spinner
             android:id="@+id/queues_spinner"
@@ -118,44 +66,9 @@
             android:spinnerMode="dropdown"/>
     </LinearLayout>
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/swipeRefresh"
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/lazyColumn"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/selection_block">
+        android:layout_height="match_parent"/>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/subscriptions_grid"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:layout_gravity="center_horizontal"
-            android:paddingBottom="88dp"
-            tools:itemCount="2"
-            tools:listitem="@layout/subscription_item" />
-
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
-<!--    <ProgressBar-->
-<!--        android:id="@+id/progressBar"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_centerInParent="true"-->
-<!--        android:indeterminateOnly="true"-->
-<!--        android:visibility="visible" />-->
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/subscriptions_add"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:layout_margin="16dp"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:contentDescription="@string/add_feed_label"
-        app:srcCompat="@drawable/ic_add" />
-
-    <include
-        layout="@layout/multi_select_speed_dial" />
-
-</RelativeLayout>
+</LinearLayout>

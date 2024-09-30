@@ -50,9 +50,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -188,14 +188,14 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     @Composable
     fun InfoView() {
         Column {
-            val textColor = MaterialTheme.colors.onSurface
+            val textColor = MaterialTheme.colorScheme.onSurface
             Row(modifier = Modifier.padding(start = 16.dp, end = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                 val imgLoc = if (episode != null) ImageResourceUtils.getEpisodeListImageLocation(episode!!) else null
                 AsyncImage(model = imgLoc, contentDescription = "imgvCover", Modifier.width(56.dp).height(56.dp).clickable(onClick = { openPodcast() }))
                 Column(modifier = Modifier.padding(start = 10.dp)) {
-                    Text(txtvPodcast, color = textColor, style = MaterialTheme.typography.body1, modifier = Modifier.clickable { openPodcast() })
-                    Text(txtvTitle, color = textColor, style = MaterialTheme.typography.body1.copy(fontWeight = FontWeight.Bold), maxLines = 5, overflow = TextOverflow.Ellipsis)
-                    Text(txtvPublished + " · " + txtvDuration + " · " + txtvSize, color = textColor, style = MaterialTheme.typography.body2)
+                    Text(txtvPodcast, color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.clickable { openPodcast() })
+                    Text(txtvTitle, color = textColor, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold), maxLines = 5, overflow = TextOverflow.Ellipsis)
+                    Text(txtvPublished + " · " + txtvDuration + " · " + txtvSize, color = textColor, style = MaterialTheme.typography.bodyMedium)
                 }
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -237,7 +237,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 }
                 Spacer(modifier = Modifier.weight(1f))
             }
-            if (!hasMedia) Text("noMediaLabel", color = textColor, style = MaterialTheme.typography.body2)
+            if (!hasMedia) Text("noMediaLabel", color = textColor, style = MaterialTheme.typography.bodyMedium)
             val scrollState = rememberScrollState()
             Column(modifier = Modifier.fillMaxWidth().verticalScroll(scrollState)) {
                 AndroidView(modifier = Modifier.fillMaxSize(), factory = { context ->
@@ -251,7 +251,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 }, update = {
                     it.loadDataWithBaseURL("https://127.0.0.1", webviewData, "text/html", "utf-8", "about:blank")
                 })
-                Text(itemLink, color = textColor, style = MaterialTheme.typography.caption)
+                Text(itemLink, color = textColor, style = MaterialTheme.typography.bodySmall)
             }
         }
     }

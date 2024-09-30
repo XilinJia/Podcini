@@ -33,9 +33,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -64,14 +64,14 @@ import kotlin.math.roundToInt
 
 @Composable
 fun InforBar(text: MutableState<String>, leftAction: MutableState<SwipeAction?>, rightAction: MutableState<SwipeAction?>, actionConfig: () -> Unit) {
-    val textColor = MaterialTheme.colors.onSurface
+    val textColor = MaterialTheme.colorScheme.onSurface
     Logd("InforBar", "textState: ${text.value}")
     Row {
         Icon(painter = painterResource(leftAction.value?.getActionIcon() ?:R.drawable.ic_questionmark), tint = textColor, contentDescription = "left_action_icon",
             modifier = Modifier.width(24.dp).height(24.dp).clickable(onClick = actionConfig))
         Icon(painter = painterResource(R.drawable.baseline_arrow_left_alt_24), tint = textColor, contentDescription = "left_arrow", modifier = Modifier.width(24.dp).height(24.dp))
         Spacer(modifier = Modifier.weight(1f))
-        Text(text.value, color = textColor, style = MaterialTheme.typography.body2)
+        Text(text.value, color = textColor, style = MaterialTheme.typography.bodyMedium)
         Spacer(modifier = Modifier.weight(1f))
         Icon(painter = painterResource(R.drawable.baseline_arrow_right_alt_24), tint = textColor, contentDescription = "right_arrow", modifier = Modifier.width(24.dp).height(24.dp))
         Icon(painter = painterResource(rightAction.value?.getActionIcon() ?:R.drawable.ic_questionmark), tint = textColor, contentDescription = "right_action_icon",
@@ -177,11 +177,11 @@ fun EpisodeSpeedDial(activity: MainActivity, selected: SnapshotStateList<Episode
     val scrollState = rememberScrollState()
     Column(modifier = modifier.verticalScroll(scrollState), verticalArrangement = Arrangement.Bottom) {
         if (isExpanded) options.forEachIndexed { _, button ->
-            FloatingActionButton(modifier = Modifier.padding(start = 4.dp, bottom = 6.dp).height(50.dp),
-                backgroundColor = Color.LightGray,
+            FloatingActionButton(modifier = Modifier.padding(start = 4.dp, bottom = 6.dp).height(40.dp),
+                containerColor = Color.LightGray,
                 onClick = {}) { button() }
         }
-        FloatingActionButton(backgroundColor = Color.Green,
+        FloatingActionButton(containerColor = Color.Green,
             onClick = { isExpanded = !isExpanded }) { Icon(Icons.Filled.Edit, "Edit") }
     }
 }
@@ -191,7 +191,6 @@ fun EpisodeSpeedDial(activity: MainActivity, selected: SnapshotStateList<Episode
 fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episode>, leftSwipeCB: (Episode) -> Unit, rightSwipeCB: (Episode) -> Unit, actionButton_: ((Episode)->EpisodeActionButton)? = null) {
     val TAG = "EpisodeLazyColumn"
     var selectMode by remember { mutableStateOf(false) }
-//    val selectedIds = remember { mutableSetOf<Long>() }
     var selectedSize by remember { mutableStateOf(0) }
     val selected = remember { mutableStateListOf<Episode>() }
     val coroutineScope = rememberCoroutineScope()
@@ -263,31 +262,28 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                 val velocityTracker = remember { VelocityTracker() }
                 val offsetX = remember { Animatable(0f) }
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .pointerInput(Unit) {
-                            detectHorizontalDragGestures(
-                                onDragStart = { velocityTracker.resetTracking() },
-                                onHorizontalDrag = { change, dragAmount ->
-                                    velocityTracker.addPosition(change.uptimeMillis, change.position)
-                                    coroutineScope.launch { offsetX.snapTo(offsetX.value + dragAmount) }
-                                },
-                                onDragEnd = {
-                                    coroutineScope.launch {
-                                        val velocity = velocityTracker.calculateVelocity().x
-                                        if (velocity > 1000f || velocity < -1000f) {
-                                            if (velocity > 0) rightSwipeCB(episodes[index])
-                                            else leftSwipeCB(episodes[index])
-                                        }
-                                        offsetX.animateTo(
-                                            targetValue = 0f, // Back to the initial position
-                                            animationSpec = tween(500) // Adjust animation duration as needed
-                                        )
+                    modifier = Modifier.fillMaxWidth().pointerInput(Unit) {
+                        detectHorizontalDragGestures(
+                            onDragStart = { velocityTracker.resetTracking() },
+                            onHorizontalDrag = { change, dragAmount ->
+                                velocityTracker.addPosition(change.uptimeMillis, change.position)
+                                coroutineScope.launch { offsetX.snapTo(offsetX.value + dragAmount) }
+                            },
+                            onDragEnd = {
+                                coroutineScope.launch {
+                                    val velocity = velocityTracker.calculateVelocity().x
+                                    if (velocity > 1000f || velocity < -1000f) {
+                                        if (velocity > 0) rightSwipeCB(episodes[index])
+                                        else leftSwipeCB(episodes[index])
                                     }
+                                    offsetX.animateTo(
+                                        targetValue = 0f, // Back to the initial position
+                                        animationSpec = tween(500) // Adjust animation duration as needed
+                                    )
                                 }
-                            )
-                        }
-                        .offset { IntOffset(offsetX.value.roundToInt(), 0) }
+                            }
+                        )
+                    }.offset { IntOffset(offsetX.value.roundToInt(), 0) }
                 ) {
                     var isSelected by remember { mutableStateOf(false) }
                     LaunchedEffect(key1 = selectMode, key2 = selectedSize) {
@@ -296,16 +292,11 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                     }
                     fun toggleSelected() {
                         isSelected = !isSelected
-                        if (isSelected) {
-//                            selectedIds.add(episode.id)
-                            selected.add(episodes[index])
-                        } else {
-//                            selectedIds.remove(episode.id)
-                            selected.remove(episodes[index])
-                        }
+                        if (isSelected) selected.add(episodes[index])
+                        else selected.remove(episodes[index])
                     }
-                    val textColor = MaterialTheme.colors.onSurface
-                    Row (Modifier.background(if (isSelected) MaterialTheme.colors.secondary else MaterialTheme.colors.surface)) {
+                    val textColor = MaterialTheme.colorScheme.onSurface
+                    Row (Modifier.background(if (isSelected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.surface)) {
                         if (false) {
                             val typedValue = TypedValue()
                             LocalContext.current.theme.resolveAttribute(R.attr.dragview_background, typedValue, true)
@@ -344,12 +335,9 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                                 selectMode = !selectMode
                                 isSelected = selectMode
                                 if (selectMode) {
-//                                    selectedIds.add(episode.id)
                                     selected.add(episodes[index])
-//                                    selectedSize = selectedIds.size
                                     longPressIndex = index
                                 } else {
-//                                    selectedIds.clear()
                                     selectedSize = 0
                                     longPressIndex = -1
                                 }
@@ -363,7 +351,7 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                                 if (episode.inQueueState.value)
                                     Icon(painter = painterResource(R.drawable.ic_playlist_play), tint = textColor, contentDescription = "ivInPlaylist", modifier = Modifier.width(14.dp).height(14.dp))
                                 val dateSizeText = " · " + formatAbbrev(LocalContext.current, episode.getPubDate()) + " · " + if((episode.media?.size?:0) > 0) Formatter.formatShortFileSize(LocalContext.current, episode.media!!.size) else ""
-                                Text(dateSizeText, color = textColor, style = MaterialTheme.typography.body2)
+                                Text(dateSizeText, color = textColor, style = MaterialTheme.typography.bodyMedium)
                             }
                             Text(episode.title?:"", color = textColor, maxLines = 2, overflow = TextOverflow.Ellipsis)
                             if (InTheatre.isCurMedia(episode.media) || inProgressState) {
@@ -371,13 +359,14 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                                 val dur = remember(episode, episode.media) { episode.media!!.getDuration()}
                                 val prog = if (dur > 0 && pos >= 0 && dur >= pos) 1.0f * pos / dur else 0f
                                 Row {
-                                    Text(DurationConverter.getDurationStringLong(pos), color = textColor, style = MaterialTheme.typography.caption)
+                                    Text(DurationConverter.getDurationStringLong(pos), color = textColor, style = MaterialTheme.typography.bodySmall)
                                     LinearProgressIndicator(progress = prog, modifier = Modifier.weight(1f).height(4.dp).align(Alignment.CenterVertically))
-                                    Text(DurationConverter.getDurationStringLong(dur), color = textColor, style = MaterialTheme.typography.caption)
+                                    Text(DurationConverter.getDurationStringLong(dur), color = textColor, style = MaterialTheme.typography.bodySmall)
                                 }
                             }
                         }
                         var actionButton by remember { mutableStateOf(if (actionButton_ == null) EpisodeActionButton.forItem(episodes[index]) else actionButton_(episodes[index])) }
+                        val actionRes by mutableIntStateOf(actionButton.getDrawable())
                         var showAltActionsDialog by remember { mutableStateOf(false) }
                         val dls = remember { DownloadServiceInterface.get() }
                         var dlPercent by remember { mutableIntStateOf(0) }
@@ -400,7 +389,7 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                                 actionButton.onClick(activity)
                             })
                         }, contentAlignment = Alignment.Center) {
-                            Icon(painter = painterResource(actionButton.getDrawable()), tint = textColor, contentDescription = null, modifier = Modifier.width(28.dp).height(32.dp))
+                            Icon(painter = painterResource(actionRes), tint = textColor, contentDescription = null, modifier = Modifier.width(28.dp).height(32.dp))
                             if (isDownloading() && dlPercent >= 0) CircularProgressIndicator(progress = 0.01f * dlPercent, strokeWidth = 4.dp, color = textColor)
                         }
                         if (showAltActionsDialog) actionButton.AltActionsDialog(activity, showAltActionsDialog, onDismiss = { showAltActionsDialog = false })
@@ -412,10 +401,8 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
             Row(modifier = Modifier.align(Alignment.TopEnd).width(150.dp).height(45.dp).background(Color.LightGray), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                 Icon(painter = painterResource(R.drawable.baseline_arrow_upward_24), tint = Color.Black, contentDescription = null, modifier = Modifier.width(35.dp).height(35.dp).padding(end = 10.dp)
                     .clickable(onClick = {
-//                        selectedIds.clear()
                         selected.clear()
                         for (i in 0..longPressIndex) {
-//                            selectedIds.add(episodes[i].id)
                             selected.add(episodes[i])
                         }
                         selectedSize = selected.size
@@ -423,10 +410,8 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                     }))
                 Icon(painter = painterResource(R.drawable.baseline_arrow_downward_24), tint = Color.Black, contentDescription = null, modifier = Modifier.width(35.dp).height(35.dp).padding(end = 10.dp)
                     .clickable(onClick = {
-//                        selectedIds.clear()
                         selected.clear()
                         for (i in longPressIndex..episodes.size-1) {
-//                            selectedIds.add(episodes[i].id)
                             selected.add(episodes[i])
                         }
                         selectedSize = selected.size
@@ -437,12 +422,10 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                     .clickable(onClick = {
                        if (selectedSize != episodes.size) {
                            for (e in episodes) {
-//                               selectedIds.add(e.id)
                                selected.add(e)
                            }
                            selectAllRes = R.drawable.ic_select_none
                        } else {
-//                           selectedIds.clear()
                            selected.clear()
                            selectAllRes = R.drawable.ic_select_all
                        }

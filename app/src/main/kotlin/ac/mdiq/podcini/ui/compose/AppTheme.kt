@@ -9,13 +9,13 @@ import android.util.TypedValue
 import androidx.annotation.AttrRes
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Shapes
-import androidx.compose.material.darkColors
-import androidx.compose.material.lightColors
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.material.Typography
+import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -26,12 +26,12 @@ import androidx.core.content.ContextCompat
 private val TAG = "AppTheme"
 
 val Typography = Typography(
-    h1 = TextStyle(
+    displayLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Bold,
         fontSize = 30.sp
     ),
-    body1 = TextStyle(
+    bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp
@@ -65,10 +65,10 @@ fun getSecondaryColor(context: Context): Color {
     return Color(getColorFromAttr(context, R.attr.colorSecondary))
 }
 
-val LightColors = lightColors(
+val LightColors = lightColorScheme(
     primary = Color(0xFF6200EE),
-    primaryVariant = Color(0xFF3700B3),
-    secondary = Color(0xFF03DAC6),
+    secondary = Color(0xFF3700B3),
+    tertiary = Color(0xFF03DAC6),
     background = Color(0xFFFFFFFF),
     surface = Color(0xFFFFFFFF),
     error = Color(0xFFB00020),
@@ -79,10 +79,10 @@ val LightColors = lightColors(
     onError = Color(0xFFFFFFFF)
 )
 
-val DarkColors = darkColors(
+val DarkColors = darkColorScheme(
     primary = Color(0xFFBB86FC),
-    primaryVariant = Color(0xFF3700B3),
-    secondary = Color(0xFF03DAC6),
+    secondary = Color(0xFF3700B3),
+    tertiary = Color(0xFF03DAC6),
     background = Color(0xFF121212),
     surface = Color(0xFF121212),
     error = Color(0xFFCF6679),
@@ -119,7 +119,7 @@ fun CustomTheme(context: Context, content: @Composable () -> Unit) {
     }
 
     MaterialTheme(
-        colors = colors,
+        colorScheme = colors,
         typography = Typography,
         shapes = Shapes,
         content = content

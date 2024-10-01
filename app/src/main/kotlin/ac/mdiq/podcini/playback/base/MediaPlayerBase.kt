@@ -10,6 +10,7 @@ import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.FeedPreferences
 import ac.mdiq.podcini.storage.model.MediaType
 import ac.mdiq.podcini.storage.model.Playable
+import ac.mdiq.podcini.util.showStackTrace
 import android.content.Context
 import android.media.AudioManager
 import android.net.Uri
@@ -18,6 +19,9 @@ import android.net.wifi.WifiManager.WifiLock
 import android.util.Log
 import android.util.Pair
 import android.view.SurfaceHolder
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import java.util.concurrent.TimeUnit
@@ -286,9 +290,9 @@ abstract class MediaPlayerBase protected constructor(protected val context: Cont
         private val TAG: String = MediaPlayerBase::class.simpleName ?: "Anonymous"
 
         @get:Synchronized
-        @Volatile
+//        @Volatile
         @JvmStatic
-        var status: PlayerStatus = PlayerStatus.STOPPED
+        var status by mutableStateOf(PlayerStatus.STOPPED)
 
         @JvmField
         val ELAPSED_TIME_FOR_SHORT_REWIND: Long = TimeUnit.MINUTES.toMillis(1)

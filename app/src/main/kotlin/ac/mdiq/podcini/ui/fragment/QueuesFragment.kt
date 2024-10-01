@@ -4,6 +4,7 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.CheckboxDoNotShowAgainBinding
 import ac.mdiq.podcini.databinding.QueueFragmentBinding
 import ac.mdiq.podcini.net.download.DownloadStatus
+import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.getCurrentPlaybackSpeed
 import ac.mdiq.podcini.playback.service.PlaybackService
@@ -31,6 +32,7 @@ import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.compose.EpisodeLazyColumn
 import ac.mdiq.podcini.ui.compose.InforBar
+import ac.mdiq.podcini.ui.compose.queueChanged
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
@@ -288,14 +290,11 @@ import kotlin.math.max
         if (showBin) return
         when (event.action) {
             FlowEvent.QueueEvent.Action.ADDED -> {
-                if (event.episodes.isNotEmpty() && !curQueue.contains(event.episodes[0])) {
-                    queueItems.addAll(event.episodes)
-                }
+                if (event.episodes.isNotEmpty() && !curQueue.contains(event.episodes[0])) queueItems.addAll(event.episodes)
             }
             FlowEvent.QueueEvent.Action.SET_QUEUE, FlowEvent.QueueEvent.Action.SORTED -> {
                 queueItems.clear()
                 queueItems.addAll(event.episodes)
-//                adapter?.updateItems(queueItems)
             }
             FlowEvent.QueueEvent.Action.REMOVED, FlowEvent.QueueEvent.Action.IRREVERSIBLE_REMOVED -> {
                 if (event.episodes.isNotEmpty()) {
@@ -321,6 +320,7 @@ import kotlin.math.max
             }
             FlowEvent.QueueEvent.Action.MOVED, FlowEvent.QueueEvent.Action.DELETED_MEDIA -> return
         }
+        queueChanged++
 //        adapter?.updateDragDropEnabled()
         refreshMenuItems()
 //        recyclerView.saveScrollPosition(TAG)
@@ -330,7 +330,7 @@ import kotlin.math.max
     private fun onPlayEvent(event: FlowEvent.PlayEvent) {
         val pos: Int = EpisodeUtil.indexOfItemWithId(queueItems, event.episode.id)
         Logd(TAG, "onPlayEvent action: ${event.action} pos: $pos ${event.episode.title}")
-        if (pos >= 0) queueItems[pos].isPlayingState.value = event.isPlaying()
+//        if (pos >= 0) queueItems[pos].isPlayingState.value = event.isPlaying()
     }
 
     private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
@@ -450,6 +450,7 @@ import kotlin.math.max
                 }
                 if (showBin) loadCurQueue(false)
             }
+            R.id.refresh_all -> FeedUpdateManager.runOnceOrAsk(requireContext())
             R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
             else -> return false
         }

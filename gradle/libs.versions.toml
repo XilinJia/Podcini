@@ -35,7 +35,7 @@ libraryBase = "2.1.0"
 lifecycleRuntimeKtx = "2.8.6"
 #material = "1.7.2"
 material3 = "1.3.0"
-material3Android = "1.3.0"
+#material3Android = "1.3.0"
 materialVersion = "1.12.0"
 media3Common = "1.4.1"
 media3Session = "1.4.1"
@@ -71,6 +71,8 @@ wearable = "2.9.0"
 webkit = "1.12.0"
 window = "1.3.0"
 workRuntime = "2.9.1"
+#uiViewbinding = "1.7.2"
+fragmentCompose = "1.8.3"
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
 androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "annotation" }
@@ -147,6 +149,8 @@ stream = { module = "com.annimon:stream", version.ref = "stream" }
 vistaguide = { module = "com.github.XilinJia.vistaguide:VistaGuide", version.ref = "vistaguide" }
 desugar_jdk_libs_nio = { module = "com.android.tools:desugar_jdk_libs_nio", version.ref = "desugar_jdk_libs_nio" }
 wearable = { module = "com.google.android.wearable:wearable", version.ref = "wearable" }
+#androidx-ui-viewbinding = { group = "androidx.compose.ui", name = "ui-viewbinding", version.ref = "uiViewbinding" }
+androidx-fragment-compose = { group = "androidx.fragment", name = "fragment-compose", version.ref = "fragmentCompose" }
 
 [plugins]
 org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

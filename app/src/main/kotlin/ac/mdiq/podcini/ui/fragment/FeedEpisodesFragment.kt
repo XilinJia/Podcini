@@ -4,31 +4,28 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.FeedItemListFragmentBinding
 import ac.mdiq.podcini.net.download.DownloadStatus
-import ac.mdiq.podcini.net.download.DownloadStatus.State.UNKNOWN
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
-import ac.mdiq.podcini.storage.database.LogsAndStats.getFeedDownloadLog
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.database.RealmDB.upsertBlk
-import ac.mdiq.podcini.storage.model.*
+import ac.mdiq.podcini.storage.model.Episode
+import ac.mdiq.podcini.storage.model.EpisodeFilter
+import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.fromCode
+import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
 import ac.mdiq.podcini.ui.actions.swipeactions.SwipeAction
 import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.compose.CustomTheme
-import ac.mdiq.podcini.ui.compose.EpisodeLazyColumn
-import ac.mdiq.podcini.ui.compose.FeedEpisodesHeader
-import ac.mdiq.podcini.ui.compose.InforBar
+import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.dialog.*
 import ac.mdiq.podcini.ui.utils.TransitionEffect
 import ac.mdiq.podcini.util.*
 import android.app.Activity
 import android.content.Context
-import android.content.res.Configuration
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.util.Log
@@ -36,14 +33,25 @@ import android.view.*
 import android.widget.Toast
 import androidx.annotation.OptIn
 import androidx.appcompat.widget.Toolbar
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
+import coil.compose.AsyncImage
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
@@ -150,7 +158,7 @@ import java.util.concurrent.Semaphore
         }
         binding.lazyColumn.setContent {
             CustomTheme(requireContext()) {
-                EpisodeLazyColumn(activity as MainActivity, episodes = episodes,
+                EpisodeLazyColumn(activity as MainActivity, episodes = episodes, refreshCB = {FeedUpdateManager.runOnceOrAsk(requireContext(), feed)},
                     leftSwipeCB = { if (leftActionState.value == null) swipeActions.showDialog() else leftActionState.value?.performAction(it, this, swipeActions.filter ?: EpisodeFilter())},
                     rightSwipeCB = { if (rightActionState.value == null) swipeActions.showDialog() else rightActionState.value?.performAction(it, this, swipeActions.filter ?: EpisodeFilter())}, )
             }
@@ -189,6 +197,60 @@ import java.util.concurrent.Semaphore
         Logd(TAG, "onStop() called")
         super.onStop()
         cancelFlowEvents()
+    }
+
+    @kotlin.OptIn(ExperimentalFoundationApi::class)
+    @Composable
+    fun FeedEpisodesHeader(activity: MainActivity, feed: Feed?, filterButColor: Color, filterClickCB: ()->Unit, filterLongClickCB: ()->Unit) {
+        val textColor = MaterialTheme.colorScheme.onSurface
+        ConstraintLayout(modifier = Modifier.fillMaxWidth().height(120.dp)) {
+            val (controlRow, image1, image2, imgvCover, taColumn) = createRefs()
+            Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp).background(colorResource(id = R.color.image_readability_tint))
+                .constrainAs(controlRow) {
+                    bottom.linkTo(parent.bottom)
+                    start.linkTo(parent.start)
+                }, verticalAlignment = Alignment.CenterVertically) {
+                Spacer(modifier = Modifier.weight(1f))
+                Image(painter = painterResource(R.drawable.ic_filter_white), colorFilter = ColorFilter.tint(filterButColor), contentDescription = "butFilter",
+                    modifier = Modifier.width(40.dp).height(40.dp).padding(3.dp).combinedClickable(onClick = filterClickCB, onLongClick = filterLongClickCB))
+                Spacer(modifier = Modifier.width(15.dp))
+                Image(painter = painterResource(R.drawable.ic_settings_white), contentDescription = "butShowSettings",
+                    Modifier.width(40.dp).height(40.dp).padding(3.dp).clickable(onClick = {
+                        if (feed != null) {
+                            val fragment = FeedSettingsFragment.newInstance(feed)
+                            activity.loadChildFragment(fragment, TransitionEffect.SLIDE)
+                        }
+                    }))
+                Spacer(modifier = Modifier.weight(1f))
+                Text(feed?.episodes?.size?.toString()?:"", textAlign = TextAlign.Center, color = Color.White, style = MaterialTheme.typography.bodyLarge)
+            }
+            Image(painter = painterResource(R.drawable.ic_rounded_corner_left), contentDescription = "left_corner",
+                Modifier.width(12.dp).height(12.dp).constrainAs(image1) {
+                    bottom.linkTo(parent.bottom)
+                    start.linkTo(parent.start)
+                })
+            Image(painter = painterResource(R.drawable.ic_rounded_corner_right), contentDescription = "right_corner",
+                Modifier.width(12.dp).height(12.dp).constrainAs(image2) {
+                    bottom.linkTo(parent.bottom)
+                    end.linkTo(parent.end)
+                })
+            AsyncImage(model = feed?.imageUrl?:"", contentDescription = "imgvCover",
+                Modifier.width(120.dp).height(120.dp).padding(start = 16.dp, end = 16.dp, bottom = 12.dp).constrainAs(imgvCover) {
+                    bottom.linkTo(parent.bottom)
+                    start.linkTo(parent.start)
+                }.clickable(onClick = {
+                    if (feed != null) {
+                        val fragment = FeedInfoFragment.newInstance(feed)
+                        activity.loadChildFragment(fragment, TransitionEffect.SLIDE)
+                    }
+                }))
+            Column(Modifier.constrainAs(taColumn) {
+                top.linkTo(imgvCover.top)
+                start.linkTo(imgvCover.end) }) {
+                Text(feed?.title?:"", color = textColor, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text(feed?.author?:"", color = textColor, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+        }
     }
 
     private val semaphore = Semaphore(0)
@@ -253,12 +315,12 @@ import java.util.concurrent.Semaphore
         if (feed!!.isLocalFeed) binding.toolbar.menu.findItem(R.id.share_feed).setVisible(false)
     }
 
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        val horizontalSpacing = resources.getDimension(R.dimen.additional_horizontal_spacing).toInt()
-//        binding.header.headerContainer.setPadding(horizontalSpacing, binding.header.headerContainer.paddingTop,
-//            horizontalSpacing, binding.header.headerContainer.paddingBottom)
-    }
+//    override fun onConfigurationChanged(newConfig: Configuration) {
+//        super.onConfigurationChanged(newConfig)
+//        val horizontalSpacing = resources.getDimension(R.dimen.additional_horizontal_spacing).toInt()
+////        binding.header.headerContainer.setPadding(horizontalSpacing, binding.header.headerContainer.paddingTop,
+////            horizontalSpacing, binding.header.headerContainer.paddingBottom)
+//    }
 
     @UnstableApi override fun onMenuItemClick(item: MenuItem): Boolean {
         if (feed == null) {
@@ -312,21 +374,24 @@ import java.util.concurrent.Semaphore
             val item = event.episodes[i++]
             if (item.feedId != feed!!.id) continue
             val pos: Int = ieMap[item.id] ?: -1
-            if (pos >= 0) episodes[pos].inQueueState.value = event.inQueue()
+            if (pos >= 0) {
+//                episodes[pos].inQueueState.value = event.inQueue()
+                queueChanged++
+            }
             break
         }
     }
 
     private fun onPlayEvent(event: FlowEvent.PlayEvent) {
-        Logd(TAG, "onPlayEvent ${event.episode.title}")
-        if (feed != null) {
-            val pos: Int = ieMap[event.episode.id] ?: -1
-            if (pos >= 0) {
-                if (!filterOutEpisode(event.episode)) episodes[pos].isPlayingState.value = event.isPlaying()
-//                if (filterOutEpisode(event.episode)) adapter.updateItems(episodes)
-//                else adapter.notifyItemChangedCompat(pos)
-            }
-        }
+//        Logd(TAG, "onPlayEvent ${event.episode.title}")
+//        if (feed != null) {
+//            val pos: Int = ieMap[event.episode.id] ?: -1
+//            if (pos >= 0) {
+////                if (!filterOutEpisode(event.episode)) episodes[pos].isPlayingState.value = event.isPlaying()
+////                if (filterOutEpisode(event.episode)) adapter.updateItems(episodes)
+////                else adapter.notifyItemChangedCompat(pos)
+//            }
+//        }
     }
 
     private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
@@ -441,52 +506,52 @@ import java.util.concurrent.Semaphore
         headerCreated = true
     }
 
-    private fun showErrorDetails() {
-        lifecycleScope.launch {
-            val downloadResult = withContext(Dispatchers.IO) {
-                val feedDownloadLog: List<DownloadResult> = getFeedDownloadLog(feedID)
-                if (feedDownloadLog.isEmpty() || feedDownloadLog[0].isSuccessful) null else feedDownloadLog[0]
-            }
-            withContext(Dispatchers.Main) {
-                if (downloadResult != null) DownloadLogDetailsDialog(requireContext(), downloadResult).show()
-                else DownloadLogFragment().show(childFragmentManager, null)
-            }
-        }.invokeOnCompletion { throwable ->
-            throwable?.printStackTrace()
-        }
-    }
+//    private fun showErrorDetails() {
+//        lifecycleScope.launch {
+//            val downloadResult = withContext(Dispatchers.IO) {
+//                val feedDownloadLog: List<DownloadResult> = getFeedDownloadLog(feedID)
+//                if (feedDownloadLog.isEmpty() || feedDownloadLog[0].isSuccessful) null else feedDownloadLog[0]
+//            }
+//            withContext(Dispatchers.Main) {
+//                if (downloadResult != null) DownloadLogDetailsDialog(requireContext(), downloadResult).show()
+//                else DownloadLogFragment().show(childFragmentManager, null)
+//            }
+//        }.invokeOnCompletion { throwable ->
+//            throwable?.printStackTrace()
+//        }
+//    }
 
-    @UnstableApi private fun showFeedInfo() {
-        if (feed != null) {
-            val fragment = FeedInfoFragment.newInstance(feed!!)
-            (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
-        }
-    }
+//    @UnstableApi private fun showFeedInfo() {
+//        if (feed != null) {
+//            val fragment = FeedInfoFragment.newInstance(feed!!)
+//            (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
+//        }
+//    }
 
     private var loadItemsRunning = false
     private fun waitForLoading() {
         while (loadItemsRunning) Thread.sleep(50)
     }
 
-    private fun filterOutEpisode(episode: Episode): Boolean {
-        if (enableFilter && !feed?.preferences?.filterString.isNullOrEmpty() && !feed!!.episodeFilter.matches(episode)) {
-            episodes.remove(episode)
-            ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
-            ueMap = episodes.mapIndexedNotNull { index, episode -> episode.media?.downloadUrl?.let { it to index } }.toMap()
-            return true
-        }
-        return false
-    }
+//    private fun filterOutEpisode(episode: Episode): Boolean {
+//        if (enableFilter && !feed?.preferences?.filterString.isNullOrEmpty() && !feed!!.episodeFilter.matches(episode)) {
+//            episodes.remove(episode)
+//            ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
+//            ueMap = episodes.mapIndexedNotNull { index, episode_ -> episode_.media?.downloadUrl?.let { it to index } }.toMap()
+//            return true
+//        }
+//        return false
+//    }
 
-    private fun redoFilter(list: List<Episode>? = null) {
-        if (enableFilter && !feed?.preferences?.filterString.isNullOrEmpty()) {
-            val episodes_ = list ?: episodes.toList()
-            episodes.clear()
-            episodes.addAll(episodes_.filter { feed!!.episodeFilter.matches(it) })
-            ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
-            ueMap = episodes.mapIndexedNotNull { index, episode -> episode.media?.downloadUrl?.let { it to index } }.toMap()
-        }
-    }
+//    private fun redoFilter(list: List<Episode>? = null) {
+//        if (enableFilter && !feed?.preferences?.filterString.isNullOrEmpty()) {
+//            val episodes_ = list ?: episodes.toList()
+//            episodes.clear()
+//            episodes.addAll(episodes_.filter { feed!!.episodeFilter.matches(it) })
+//            ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
+//            ueMap = episodes.mapIndexedNotNull { index, episode -> episode.media?.downloadUrl?.let { it to index } }.toMap()
+//        }
+//    }
 
     @UnstableApi
     private fun loadFeed() {

@@ -25,14 +25,12 @@ class FeedStatisticsFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         feedId = requireArguments().getLong(EXTRA_FEED_ID)
         _binding = FeedStatisticsBinding.inflate(inflater)
-
         if (!requireArguments().getBoolean(EXTRA_DETAILED)) {
             for (i in 0 until binding.root.childCount) {
                 val child = binding.root.getChildAt(i)
                 if ("detailed" == child.tag) child.visibility = View.GONE
             }
         }
-
         loadStatistics()
         return binding.root
     }
@@ -51,9 +49,7 @@ class FeedStatisticsFragment : Fragment() {
                     null
                 }
                 showStats(statisticsData)
-            } catch (error: Throwable) {
-                error.printStackTrace()
-            }
+            } catch (error: Throwable) { error.printStackTrace() }
         }
     }
 
@@ -71,8 +67,8 @@ class FeedStatisticsFragment : Fragment() {
     }
 
     companion object {
-        private const val EXTRA_FEED_ID = "ac.mdiq.podcini.extra.feedId"
-        private const val EXTRA_DETAILED = "ac.mdiq.podcini.extra.detailed"
+         const val EXTRA_FEED_ID = "ac.mdiq.podcini.extra.feedId"
+         const val EXTRA_DETAILED = "ac.mdiq.podcini.extra.detailed"
 
         fun newInstance(feedId: Long, detailed: Boolean): FeedStatisticsFragment {
             val fragment = FeedStatisticsFragment()

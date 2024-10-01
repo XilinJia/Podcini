@@ -10,6 +10,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.videoPlayMode
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
 import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
@@ -111,7 +112,7 @@ abstract class EpisodeActionButton internal constructor(@JvmField var item: Epis
                 null -> false
                 else -> DownloadServiceInterface.get()?.isDownloadingEpisode(media.downloadUrl!!)?:false
             }
-//            Logd("ItemActionButton", "forItem: ${episode.feedId} ${episode.feed?.isLocalFeed} ${media.downloaded} ${isCurrentlyPlaying(media)}  ${episode.title} ")
+            Logd("ItemActionButton", "forItem: ${episode.feedId} ${episode.feed?.isLocalFeed} ${media.downloaded} ${isCurrentlyPlaying(media)}  ${episode.title} ")
             return when {
                 isCurrentlyPlaying(media) -> PauseActionButton(episode)
                 episode.feed != null && episode.feed!!.isLocalFeed -> PlayLocalActionButton(episode)

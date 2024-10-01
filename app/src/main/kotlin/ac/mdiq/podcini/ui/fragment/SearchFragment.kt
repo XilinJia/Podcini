@@ -86,9 +86,7 @@ class SearchFragment : Fragment() {
 
         binding.lazyColumn.setContent {
             CustomTheme(requireContext()) {
-                EpisodeLazyColumn(activity as MainActivity, episodes = results,
-                    leftSwipeCB = {},
-                    rightSwipeCB = { })
+                EpisodeLazyColumn(activity as MainActivity, episodes = results)
             }
         }
 

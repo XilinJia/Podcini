@@ -4,6 +4,8 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.playback.base.InTheatre
+import ac.mdiq.podcini.playback.base.InTheatre.curQueue
+import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.status
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.Queues
@@ -36,6 +38,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -79,27 +82,40 @@ fun InforBar(text: MutableState<String>, leftAction: MutableState<SwipeAction?>,
     }
 }
 
+var queueChanged by mutableIntStateOf(0)
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun EpisodeSpeedDial(activity: MainActivity, selected: SnapshotStateList<Episode>, modifier: Modifier = Modifier) {
-    val TAG = "EpisodeSpeedDial ${selected.size}"
-    var isExpanded by remember { mutableStateOf(false) }
-    val options = listOf<@Composable () -> Unit>(
-        {
-            Row(modifier = Modifier.padding(horizontal = 16.dp)
+fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episode>, refreshCB: (()->Unit)? = null,
+                      leftSwipeCB: ((Episode) -> Unit)? = null, rightSwipeCB: ((Episode) -> Unit)? = null, actionButton_: ((Episode)->EpisodeActionButton)? = null) {
+    val TAG = "EpisodeLazyColumn"
+    var selectMode by remember { mutableStateOf(false) }
+    var selectedSize by remember { mutableStateOf(0) }
+    val selected = remember { mutableStateListOf<Episode>() }
+    val coroutineScope = rememberCoroutineScope()
+    val lazyListState = rememberLazyListState()
+    var longPressIndex by remember { mutableIntStateOf(-1) }
+
+    @Composable
+    fun EpisodeSpeedDial(activity: MainActivity, selected: SnapshotStateList<Episode>, modifier: Modifier = Modifier) {
+        val TAG = "EpisodeSpeedDial ${selected.size}"
+        var isExpanded by remember { mutableStateOf(false) }
+        val options = listOf<@Composable () -> Unit>(
+            { Row(modifier = Modifier.padding(horizontal = 16.dp)
                 .clickable {
                     isExpanded = false
+                    selectMode = false
                     Logd(TAG, "ic_delete: ${selected.size}")
                     LocalDeleteModal.deleteEpisodesWarnLocal(activity, selected)
                 }, verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_delete), "")
                 Text(stringResource(id = R.string.delete_episode_label))
-            }
-        },
-        {
-            Row(modifier = Modifier.padding(horizontal = 16.dp)
+            } },
+            { Row(modifier = Modifier.padding(horizontal = 16.dp)
                 .clickable {
                     isExpanded = false
+                    selectMode = false
                     Logd(TAG, "ic_download: ${selected.size}")
                     for (episode in selected) {
                         if (episode.media != null && episode.feed != null && !episode.feed!!.isLocalFeed) DownloadServiceInterface.get()
@@ -109,60 +125,55 @@ fun EpisodeSpeedDial(activity: MainActivity, selected: SnapshotStateList<Episode
             ) {
                 Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_download), "")
                 Text(stringResource(id = R.string.download_label))
-            }
-        },
-        {
-            Row(modifier = Modifier.padding(horizontal = 16.dp)
+            } },
+            { Row(modifier = Modifier.padding(horizontal = 16.dp)
                 .clickable {
                     isExpanded = false
+                    selectMode = false
                     Logd(TAG, "ic_mark_played: ${selected.size}")
                     setPlayState(Episode.PlayState.UNSPECIFIED.code, false, *selected.toTypedArray())
                 }, verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_mark_played), "")
                 Text(stringResource(id = R.string.toggle_played_label))
-            }
-        },
-        {
-            Row(modifier = Modifier.padding(horizontal = 16.dp)
+            } },
+            { Row(modifier = Modifier.padding(horizontal = 16.dp)
                 .clickable {
                     isExpanded = false
+                    selectMode = false
                     Logd(TAG, "ic_playlist_remove: ${selected.size}")
                     removeFromQueue(*selected.toTypedArray())
                 }, verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_playlist_remove), "")
                 Text(stringResource(id = R.string.remove_from_queue_label))
-            }
-        },
-        {
-            Row(modifier = Modifier.padding(horizontal = 16.dp)
+            } },
+            { Row(modifier = Modifier.padding(horizontal = 16.dp)
                 .clickable {
                     isExpanded = false
+                    selectMode = false
                     Logd(TAG, "ic_playlist_play: ${selected.size}")
                     Queues.addToQueue(true, *selected.toTypedArray())
                 }, verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_playlist_play), "")
                 Text(stringResource(id = R.string.add_to_queue_label))
-            }
-        },
-        {
-            Row(modifier = Modifier.padding(horizontal = 16.dp)
+            } },
+            { Row(modifier = Modifier.padding(horizontal = 16.dp)
                 .clickable {
                     isExpanded = false
+                    selectMode = false
                     Logd(TAG, "ic_playlist_play: ${selected.size}")
                     PutToQueueDialog(activity, selected).show()
                 }, verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_playlist_play), "")
                 Text(stringResource(id = R.string.put_in_queue_label))
-            }
-        },
-        {
-            Row(modifier = Modifier.padding(horizontal = 16.dp)
+            } },
+            { Row(modifier = Modifier.padding(horizontal = 16.dp)
                 .clickable {
                     isExpanded = false
+                    selectMode = false
                     Logd(TAG, "ic_star: ${selected.size}")
                     for (item in selected) {
                         Episodes.setFavorite(item, null)
@@ -171,33 +182,31 @@ fun EpisodeSpeedDial(activity: MainActivity, selected: SnapshotStateList<Episode
             ) {
                 Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_star), "")
                 Text(stringResource(id = R.string.toggle_favorite_label))
+            } },
+        )
+
+        val scrollState = rememberScrollState()
+        Column(modifier = modifier.verticalScroll(scrollState), verticalArrangement = Arrangement.Bottom) {
+            if (isExpanded) options.forEachIndexed { _, button ->
+                FloatingActionButton(modifier = Modifier.padding(start = 4.dp, bottom = 6.dp).height(40.dp),
+                    containerColor = Color.LightGray,
+                    onClick = {}) { button() }
             }
-        },
-    )
-    val scrollState = rememberScrollState()
-    Column(modifier = modifier.verticalScroll(scrollState), verticalArrangement = Arrangement.Bottom) {
-        if (isExpanded) options.forEachIndexed { _, button ->
-            FloatingActionButton(modifier = Modifier.padding(start = 4.dp, bottom = 6.dp).height(40.dp),
-                containerColor = Color.LightGray,
-                onClick = {}) { button() }
+            FloatingActionButton(containerColor = Color.Green,
+                onClick = { isExpanded = !isExpanded }) { Icon(Icons.Filled.Edit, "Edit") }
         }
-        FloatingActionButton(containerColor = Color.Green,
-            onClick = { isExpanded = !isExpanded }) { Icon(Icons.Filled.Edit, "Edit") }
     }
-}
 
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episode>, leftSwipeCB: (Episode) -> Unit, rightSwipeCB: (Episode) -> Unit, actionButton_: ((Episode)->EpisodeActionButton)? = null) {
-    val TAG = "EpisodeLazyColumn"
-    var selectMode by remember { mutableStateOf(false) }
-    var selectedSize by remember { mutableStateOf(0) }
-    val selected = remember { mutableStateListOf<Episode>() }
-    val coroutineScope = rememberCoroutineScope()
-    val lazyListState = rememberLazyListState()
-    var longPressIndex by remember { mutableIntStateOf(-1) }
+    var refreshing by remember { mutableStateOf(false)}
 
-    Box(modifier = Modifier.fillMaxWidth()) {
+    PullToRefreshBox(modifier = Modifier.fillMaxWidth(), isRefreshing = refreshing, indicator = {}, onRefresh = {
+//            coroutineScope.launch {
+        refreshing = true
+        refreshCB?.invoke()
+//        if (swipeRefresh) FeedUpdateManager.runOnceOrAsk(activity)
+        refreshing = false
+//            }
+    }) {
         LazyColumn(state = lazyListState,
             modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -212,17 +221,20 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                 if (episodeMonitor == null) {
                     episodeMonitor = CoroutineScope(Dispatchers.Default).launch {
                         val item_ = realm.query(Episode::class).query("id == ${episode.id}").first()
+                        Logd(TAG, "start monitoring episode: $index ${episode.title}")
                         val episodeFlow = item_.asFlow()
                         episodeFlow.collect { changes: SingleQueryChange<Episode> ->
                             when (changes) {
                                 is UpdatedObject -> {
-                                    Logd(TAG, "episodeMonitor UpdatedObject ${changes.obj.title} ${changes.changedFields.joinToString()}")
-                                    playedState = changes.obj.isPlayed()
-                                    farvoriteState = changes.obj.isFavorite
+                                    Logd(TAG, "episodeMonitor UpdatedObject $index ${changes.obj.title} ${changes.changedFields.joinToString()}")
+                                    if (episodes[index].id == changes.obj.id) {
+                                        playedState = changes.obj.isPlayed()
+                                        farvoriteState = changes.obj.isFavorite
 //                                    episodes[index] = changes.obj     // direct assignment doesn't update member like media??
-                                    changes.obj.copyStates(episodes[index])
-                                    episodes.removeAt(index)
-                                    episodes.add(index, changes.obj)
+                                        changes.obj.copyStates(episodes[index])
+                                        episodes.removeAt(index)
+                                        episodes.add(index, changes.obj)
+                                    }
                                 }
                                 else -> {}
                             }
@@ -232,17 +244,20 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                 if (mediaMonitor == null) {
                     mediaMonitor = CoroutineScope(Dispatchers.Default).launch {
                         val item_ = realm.query(Episode::class).query("id == ${episode.id}").first()
+                        Logd(TAG, "start monitoring media: $index ${episode.title}")
                         val episodeFlow = item_.asFlow(listOf("media.*"))
                         episodeFlow.collect { changes: SingleQueryChange<Episode> ->
                             when (changes) {
                                 is UpdatedObject -> {
-                                    Logd(TAG, "mediaMonitor UpdatedObject ${changes.obj.title} ${changes.changedFields.joinToString()}")
-                                    positionState = changes.obj.media?.position?:0
-                                    inProgressState = changes.obj.isInProgress
+                                    Logd(TAG, "mediaMonitor UpdatedObject $index ${changes.obj.title} ${changes.changedFields.joinToString()}")
+                                    if (episodes[index].id == changes.obj.id) {
+                                        positionState = changes.obj.media?.position ?: 0
+                                        inProgressState = changes.obj.isInProgress
 //                                    episodes[index] = changes.obj     // direct assignment doesn't update member like media??
-                                    changes.obj.copyStates(episodes[index])
-                                    episodes.removeAt(index)
-                                    episodes.add(index, changes.obj)
+                                        changes.obj.copyStates(episodes[index])
+                                        episodes.removeAt(index)
+                                        episodes.add(index, changes.obj)
+                                    }
                                 }
                                 else -> {}
                             }
@@ -251,11 +266,13 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                 }
                 DisposableEffect(Unit) {
                     onDispose {
+                        Logd(TAG, "cancelling monitoring $index")
                         episodeMonitor?.cancel()
                         mediaMonitor?.cancel()
                     }
                 }
                 if (episodes[index].stopMonitoring.value) {
+                    Logd(TAG, "cancel monitoring: ${episodes[index].title}")
                     episodeMonitor?.cancel()
                     mediaMonitor?.cancel()
                 }
@@ -273,8 +290,8 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                                 coroutineScope.launch {
                                     val velocity = velocityTracker.calculateVelocity().x
                                     if (velocity > 1000f || velocity < -1000f) {
-                                        if (velocity > 0) rightSwipeCB(episodes[index])
-                                        else leftSwipeCB(episodes[index])
+                                        if (velocity > 0) rightSwipeCB?.invoke(episodes[index])
+                                        else leftSwipeCB?.invoke(episodes[index])
                                     }
                                     offsetX.animateTo(
                                         targetValue = 0f, // Back to the initial position
@@ -343,30 +360,37 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                                 }
                                 Logd(TAG, "long clicked: ${episode.title}")
                             })) {
+                            var inQueueState by remember { mutableStateOf(false) }
+                            LaunchedEffect(key1 = queueChanged) {
+                                if (index>=episodes.size) return@LaunchedEffect
+                                inQueueState = curQueue.contains(episodes[index])
+                            }
+                            val dur = remember(episode, episode.media) { episode.media!!.getDuration()}
+                            val durText = remember { DurationConverter.getDurationStringLong(dur) }
                             Row {
                                 if (episode.media?.getMediaType() == MediaType.VIDEO)
                                     Icon(painter = painterResource(R.drawable.ic_videocam), tint = textColor, contentDescription = "isVideo", modifier = Modifier.width(14.dp).height(14.dp))
                                 if (farvoriteState)
                                     Icon(painter = painterResource(R.drawable.ic_star), tint = textColor, contentDescription = "isFavorite", modifier = Modifier.width(14.dp).height(14.dp))
-                                if (episode.inQueueState.value)
+                                if (inQueueState)
                                     Icon(painter = painterResource(R.drawable.ic_playlist_play), tint = textColor, contentDescription = "ivInPlaylist", modifier = Modifier.width(14.dp).height(14.dp))
-                                val dateSizeText = " · " + formatAbbrev(LocalContext.current, episode.getPubDate()) + " · " + if((episode.media?.size?:0) > 0) Formatter.formatShortFileSize(LocalContext.current, episode.media!!.size) else ""
+                                val curContext = LocalContext.current
+                                val dateSizeText = remember { " · " + formatAbbrev(curContext, episode.getPubDate()) + " · " + durText + " · " + if((episode.media?.size?:0) > 0) Formatter.formatShortFileSize(curContext, episode.media!!.size) else "" }
                                 Text(dateSizeText, color = textColor, style = MaterialTheme.typography.bodyMedium)
                             }
                             Text(episode.title?:"", color = textColor, maxLines = 2, overflow = TextOverflow.Ellipsis)
                             if (InTheatre.isCurMedia(episode.media) || inProgressState) {
                                 val pos = positionState
-                                val dur = remember(episode, episode.media) { episode.media!!.getDuration()}
                                 val prog = if (dur > 0 && pos >= 0 && dur >= pos) 1.0f * pos / dur else 0f
                                 Row {
                                     Text(DurationConverter.getDurationStringLong(pos), color = textColor, style = MaterialTheme.typography.bodySmall)
-                                    LinearProgressIndicator(progress = prog, modifier = Modifier.weight(1f).height(4.dp).align(Alignment.CenterVertically))
-                                    Text(DurationConverter.getDurationStringLong(dur), color = textColor, style = MaterialTheme.typography.bodySmall)
+                                    LinearProgressIndicator(progress = { prog }, modifier = Modifier.weight(1f).height(4.dp).align(Alignment.CenterVertically))
+                                    Text(durText, color = textColor, style = MaterialTheme.typography.bodySmall)
                                 }
                             }
                         }
                         var actionButton by remember { mutableStateOf(if (actionButton_ == null) EpisodeActionButton.forItem(episodes[index]) else actionButton_(episodes[index])) }
-                        val actionRes by mutableIntStateOf(actionButton.getDrawable())
+                        var actionRes by mutableIntStateOf(actionButton.getDrawable())
                         var showAltActionsDialog by remember { mutableStateOf(false) }
                         val dls = remember { DownloadServiceInterface.get() }
                         var dlPercent by remember { mutableIntStateOf(0) }
@@ -375,13 +399,17 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                         }
                         if (actionButton_ == null) {
                             LaunchedEffect(episodes[index].downloadState.value) {
+                                if (index>=episodes.size) return@LaunchedEffect
                                 if (isDownloading()) dlPercent = dls?.getProgress(episodes[index].media!!.downloadUrl!!) ?: 0
 //                                Logd(TAG, "downloadState: ${episodes[index].downloadState.value} ${episode.media?.downloaded} $dlPercent")
                                 actionButton = EpisodeActionButton.forItem(episodes[index])
+                                actionRes = actionButton.getDrawable()
                             }
-                            LaunchedEffect(episodes[index].isPlayingState.value) {
-                                Logd(TAG, "$index isPlayingState: ${episode.isPlayingState.value}")
+                            LaunchedEffect(key1 = status) {
+                                if (index>=episodes.size) return@LaunchedEffect
+//                                Logd(TAG, "$index isPlayingState: ${episodes[index].isPlayingState.value} ${episodes[index].title}")
                                 actionButton = EpisodeActionButton.forItem(episodes[index])
+                                actionRes = actionButton.getDrawable()
                             }
                         }
                         Box(modifier = Modifier.width(40.dp).height(40.dp).padding(end = 10.dp).align(Alignment.CenterVertically).pointerInput(Unit) {
@@ -389,8 +417,9 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                                 actionButton.onClick(activity)
                             })
                         }, contentAlignment = Alignment.Center) {
+//                            actionRes = actionButton.getDrawable()
                             Icon(painter = painterResource(actionRes), tint = textColor, contentDescription = null, modifier = Modifier.width(28.dp).height(32.dp))
-                            if (isDownloading() && dlPercent >= 0) CircularProgressIndicator(progress = 0.01f * dlPercent, strokeWidth = 4.dp, color = textColor)
+                            if (isDownloading() && dlPercent >= 0) CircularProgressIndicator(progress = { 0.01f * dlPercent}, strokeWidth = 4.dp, color = textColor, modifier = Modifier.width(30.dp).height(35.dp))
                         }
                         if (showAltActionsDialog) actionButton.AltActionsDialog(activity, showAltActionsDialog, onDismiss = { showAltActionsDialog = false })
                     }
@@ -411,7 +440,7 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                 Icon(painter = painterResource(R.drawable.baseline_arrow_downward_24), tint = Color.Black, contentDescription = null, modifier = Modifier.width(35.dp).height(35.dp).padding(end = 10.dp)
                     .clickable(onClick = {
                         selected.clear()
-                        for (i in longPressIndex..episodes.size-1) {
+                        for (i in longPressIndex..<episodes.size) {
                             selected.add(episodes[i])
                         }
                         selectedSize = selected.size

@@ -541,8 +541,6 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         while (i < size) {
             val item_ = event.episodes[i]
             if (item_.id == episode?.id) {
-//                episode = unmanaged(item_)
-//                episode = item_
                 prepareMenu()
                 break
             }

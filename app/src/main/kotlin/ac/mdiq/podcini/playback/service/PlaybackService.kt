@@ -57,6 +57,7 @@ import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
+import ac.mdiq.podcini.ui.compose.queueChanged
 import ac.mdiq.podcini.ui.fragment.AudioPlayerFragment.Companion.media3Controller
 import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.ui.widget.WidgetUpdater
@@ -1076,6 +1077,7 @@ class PlaybackService : MediaLibraryService() {
                 if (e.id == curEpisode?.id) {
                     Logd(TAG, "onQueueEvent: queue event removed ${e.title}")
                     mPlayer?.endPlayback(hasEnded = false, wasSkipped = true, shouldContinue = true, toStoppedState = true)
+                    queueChanged++
                     break
                 }
             }
@@ -1964,12 +1966,14 @@ class PlaybackService : MediaLibraryService() {
                     }
                 }
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
-                    val stat = if (isPlaying) PlayerStatus.PLAYING else PlayerStatus.PAUSED
+//                    val stat = if (isPlaying) PlayerStatus.PLAYING else PlayerStatus.PAUSED
+//                    TODO: test
+                    val stat = if (isPlaying) PlayerStatus.PLAYING else PlayerStatus.INDETERMINATE
                     setPlayerStatus(stat, curMedia)
                     Logd(TAG, "onIsPlayingChanged $isPlaying")
                 }
                 override fun onPlayerError(error: PlaybackException) {
-                    Logd(TAG, "onPlayerError ${error.message}")
+                    Log.d(TAG, "onPlayerError ${error.message}")
                     if (wasDownloadBlocked(error)) audioErrorListener?.accept(context.getString(R.string.download_error_blocked))
                     else {
                         var cause = error.cause

@@ -72,9 +72,9 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
 //    var episodeId: Long = 0
 //        private set
 
-    @Ignore
-    val isInProgress: Boolean
-        get() = (this.position > 0)
+//    @Ignore
+//    val isInProgress: Boolean
+//        get() = (this.position > 0)
 
     constructor() {}
 
@@ -326,29 +326,6 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
         if (persist && episode != null) upsertBlk(episode!!) {}
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (other == null) return false
-        if (other is RemoteMedia) return other == this
-        return super.equals(other)
-    }
-
-    override fun hashCode(): Int {
-        var result = super.hashCode()
-        result = 31 * result + duration
-        result = 31 * result + position
-        result = 31 * result + lastPlayedTime.hashCode()
-        result = 31 * result + playedDuration
-        result = 31 * result + size.hashCode()
-        result = 31 * result + (mimeType?.hashCode() ?: 0)
-        result = 31 * result + (episode?.hashCode() ?: 0)
-        result = 31 * result + (playbackCompletionDate?.hashCode() ?: 0)
-        result = 31 * result + startPosition
-        result = 31 * result + playedDurationWhenStarted
-        result = 31 * result + (hasEmbeddedPicture?.hashCode() ?: 0)
-//        result = 31 * result + episodeId.hashCode()
-        return result
-    }
-
     fun episodeOrFetch(): Episode? {
         return if (episode != null) episode else {
             var item = realm.query(Episode::class).query("id == $id").first().find()
@@ -361,6 +338,54 @@ class EpisodeMedia: EmbeddedRealmObject, Playable {
             }
             if (item == null || isManaged()) item else unmanaged(item)
         }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as EpisodeMedia
+
+        if (id != other.id) return false
+        if (fileUrl != other.fileUrl) return false
+        if (downloadUrl != other.downloadUrl) return false
+        if (downloaded != other.downloaded) return false
+        if (downloadTime != other.downloadTime) return false
+        if (duration != other.duration) return false
+        if (position != other.position) return false
+        if (lastPlayedTime != other.lastPlayedTime) return false
+        if (playedDuration != other.playedDuration) return false
+        if (size != other.size) return false
+        if (mimeType != other.mimeType) return false
+        if (playbackCompletionDate != other.playbackCompletionDate) return false
+        if (playbackCompletionTime != other.playbackCompletionTime) return false
+        if (startPosition != other.startPosition) return false
+        if (playedDurationWhenStarted != other.playedDurationWhenStarted) return false
+        if (hasEmbeddedPicture != other.hasEmbeddedPicture) return false
+//        if (isInProgress != other.isInProgress) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + (fileUrl?.hashCode() ?: 0)
+        result = 31 * result + (downloadUrl?.hashCode() ?: 0)
+        result = 31 * result + downloaded.hashCode()
+        result = 31 * result + downloadTime.hashCode()
+        result = 31 * result + duration
+        result = 31 * result + position
+        result = 31 * result + lastPlayedTime.hashCode()
+        result = 31 * result + playedDuration
+        result = 31 * result + size.hashCode()
+        result = 31 * result + (mimeType?.hashCode() ?: 0)
+        result = 31 * result + (playbackCompletionDate?.hashCode() ?: 0)
+        result = 31 * result + playbackCompletionTime.hashCode()
+        result = 31 * result + startPosition
+        result = 31 * result + playedDurationWhenStarted
+        result = 31 * result + (hasEmbeddedPicture?.hashCode() ?: 0)
+//        result = 31 * result + isInProgress.hashCode()
+        return result
     }
 
     companion object {

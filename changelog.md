@@ -1,3 +1,12 @@
+# 6.8.4 (Release candidate)
+
+* on episode lists, show duration on the top row
+* added option to refresh all subscriptions in menu of Queues view
+* most of FeedInfo fragment is in Jetpack Compose
+* selectable adapter etc are removed
+* more Compose enhancements and bug fixes
+* might be a release candidate
+
 # 6.8.3 (Preview release)
 
 * most of Subscriptions view are in Jetpack Compose, feed viewholder and adapters etc are removed

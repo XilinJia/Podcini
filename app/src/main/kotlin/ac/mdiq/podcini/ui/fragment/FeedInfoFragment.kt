@@ -12,21 +12,17 @@ import ac.mdiq.podcini.storage.database.Feeds.updateFeedDownloadURL
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.model.FeedFunding
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.dialog.RemoveFeedDialog
 import ac.mdiq.podcini.ui.statistics.FeedStatisticsFragment
+import ac.mdiq.podcini.ui.statistics.FeedStatisticsFragment.Companion.EXTRA_DETAILED
+import ac.mdiq.podcini.ui.statistics.FeedStatisticsFragment.Companion.EXTRA_FEED_ID
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
-import ac.mdiq.podcini.ui.utils.ToolbarIconTintManager
 import ac.mdiq.podcini.ui.utils.TransitionEffect
-import ac.mdiq.podcini.util.IntentUtils
-import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.ShareUtils
-import ac.mdiq.podcini.util.EventFlow
-import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.podcini.util.*
 import android.R.string
 import android.app.Activity
 import android.content.*
-import android.content.res.Configuration
-import android.graphics.LightingColorFilter
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -38,15 +34,27 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.Toolbar
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
+import androidx.fragment.compose.AndroidFragment
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
-import coil.load
-import com.google.android.material.appbar.AppBarLayout
-import com.google.android.material.appbar.CollapsingToolbarLayout
+import coil.compose.AsyncImage
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
@@ -57,9 +65,6 @@ import java.lang.ref.WeakReference
 import java.util.*
 import java.util.concurrent.ExecutionException
 
-/**
- * Displays information about a feed.
- */
 @UnstableApi
 class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var _binding: FeedinfoBinding? = null
@@ -68,23 +73,15 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private lateinit var feed: Feed
     private lateinit var toolbar: MaterialToolbar
 
+    private var txtvAuthor by mutableStateOf("")
+    var txtvUrl by mutableStateOf<String?>(null)
+
     private val addLocalFolderLauncher = registerForActivityResult<Uri?, Uri>(AddLocalFolder()) {
         uri: Uri? -> this.addLocalFolderResult(uri)
     }
 
-    private val copyUrlToClipboard = View.OnClickListener {
-        if (feed.downloadUrl != null) {
-            val url: String = feed.downloadUrl!!
-            val clipData: ClipData = ClipData.newPlainText(url, url)
-            val cm = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            cm.setPrimaryClip(clipData)
-            if (Build.VERSION.SDK_INT <= 32) (activity as MainActivity).showSnackbarAbovePlayer(R.string.copied_to_clipboard, Snackbar.LENGTH_SHORT)
-        }
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FeedinfoBinding.inflate(inflater)
-
         Logd(TAG, "fragment onCreateView")
         toolbar = binding.toolbar
         toolbar.title = ""
@@ -93,40 +90,35 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         toolbar.setOnMenuItemClickListener(this)
         refreshToolbarState()
 
-        val appBar: AppBarLayout = binding.appBar
-        val collapsingToolbar: CollapsingToolbarLayout = binding.collapsingToolbar
-        val iconTintManager: ToolbarIconTintManager = object : ToolbarIconTintManager(requireContext(), toolbar, collapsingToolbar) {
-            override fun doTint(themedContext: Context) {
-                toolbar.menu.findItem(R.id.visit_website_item).setIcon(AppCompatResources.getDrawable(themedContext, R.drawable.ic_web))
-                toolbar.menu.findItem(R.id.share_item).setIcon(AppCompatResources.getDrawable(themedContext, R.drawable.ic_share))
+//        val appBar: AppBarLayout = binding.appBar
+//        val collapsingToolbar: CollapsingToolbarLayout = binding.collapsingToolbar
+//        val iconTintManager: ToolbarIconTintManager = object : ToolbarIconTintManager(requireContext(), toolbar, collapsingToolbar) {
+//            override fun doTint(themedContext: Context) {
+//                toolbar.menu.findItem(R.id.visit_website_item).setIcon(AppCompatResources.getDrawable(themedContext, R.drawable.ic_web))
+//                toolbar.menu.findItem(R.id.share_item).setIcon(AppCompatResources.getDrawable(themedContext, R.drawable.ic_share))
+//            }
+//        }
+//        iconTintManager.updateTint()
+//        appBar.addOnOffsetChangedListener(iconTintManager)
+
+        txtvAuthor = feed.author ?: ""
+        txtvUrl = feed.downloadUrl
+
+        binding.header.setContent {
+            CustomTheme(requireContext()) {
+                HeaderUI()
             }
         }
-        iconTintManager.updateTint()
-        appBar.addOnOffsetChangedListener(iconTintManager)
+        binding.detailUI.setContent {
+            CustomTheme(requireContext()) {
+                DetailUI()
+            }
+        }
 
-//        imgvCover = binding.header.imgvCover
 //        imgvBackground = binding.imgvBackground
         // https://github.com/bumptech/glide/issues/529
-        binding.imgvBackground.colorFilter = LightingColorFilter(-0x7d7d7e, 0x000000)
+//        binding.imgvBackground.colorFilter = LightingColorFilter(-0x7d7d7e, 0x000000)
 
-        binding.header.episodes.text = feed.episodes.size.toString() + " episodes"
-        binding.header.episodes.setOnClickListener {
-            (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
-        }
-        binding.header.butShowSettings.setOnClickListener {
-            (activity as MainActivity).loadChildFragment(FeedSettingsFragment.newInstance(feed), TransitionEffect.SLIDE)
-        }
-
-        binding.btnvRelatedFeeds.setOnClickListener {
-            val fragment = SearchResultsFragment.newInstance(CombinedSearcher::class.java, "${binding.header.txtvAuthor.text} podcasts")
-            (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
-        }
-        binding.txtvUrl.setOnClickListener(copyUrlToClipboard)
-        parentFragmentManager.beginTransaction().replace(R.id.statisticsFragmentContainer,
-            FeedStatisticsFragment.newInstance(feed.id, false), "feed_statistics_fragment").commitAllowingStateLoss()
-        binding.btnvOpenStatistics.setOnClickListener {
-            (activity as MainActivity).loadChildFragment(StatisticsFragment(), TransitionEffect.SLIDE)
-        }
         showFeed()
         return binding.root
     }
@@ -143,65 +135,135 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         cancelFlowEvents()
     }
 
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        val horizontalSpacing = resources.getDimension(R.dimen.additional_horizontal_spacing).toInt()
-        binding.header.root.setPadding(horizontalSpacing, binding.header.root.paddingTop, horizontalSpacing, binding.header.root.paddingBottom)
-        binding.infoContainer.setPadding(horizontalSpacing, binding.infoContainer.paddingTop, horizontalSpacing, binding.infoContainer.paddingBottom)
+    @Composable
+    fun HeaderUI() {
+        val textColor = MaterialTheme.colorScheme.onSurface
+        ConstraintLayout(modifier = Modifier.fillMaxWidth().height(130.dp)) {
+            val (controlRow, image1, image2, imgvCover, taColumn) = createRefs()
+            Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp).background(colorResource(id = R.color.image_readability_tint))
+                .constrainAs(controlRow) {
+                    bottom.linkTo(parent.bottom)
+                    start.linkTo(parent.start)
+                }, verticalAlignment = Alignment.CenterVertically) {
+                Spacer(modifier = Modifier.weight(1f))
+                Button(onClick = { (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id)) }) {
+                    Text(feed.episodes.size.toString() + stringResource(R.string.episodes_label), color = textColor)
+                }
+                Spacer(modifier = Modifier.width(15.dp))
+                Image(painter = painterResource(R.drawable.ic_settings_white), contentDescription = "butShowSettings",
+                    Modifier.width(40.dp).height(40.dp).padding(3.dp).clickable(onClick = {
+                        (activity as MainActivity).loadChildFragment(FeedSettingsFragment.newInstance(feed), TransitionEffect.SLIDE)
+                    }))
+                Spacer(modifier = Modifier.weight(1f))
+            }
+            Image(painter = painterResource(R.drawable.ic_rounded_corner_left), contentDescription = "left_corner",
+                Modifier.width(12.dp).height(12.dp).constrainAs(image1) {
+                    bottom.linkTo(parent.bottom)
+                    start.linkTo(parent.start)
+                })
+            Image(painter = painterResource(R.drawable.ic_rounded_corner_right), contentDescription = "right_corner",
+                Modifier.width(12.dp).height(12.dp).constrainAs(image2) {
+                    bottom.linkTo(parent.bottom)
+                    end.linkTo(parent.end)
+                })
+            AsyncImage(model = feed.imageUrl?:"", contentDescription = "imgvCover",
+                Modifier.width(120.dp).height(120.dp).padding(start = 16.dp, end = 16.dp, bottom = 12.dp).constrainAs(imgvCover) {
+                    bottom.linkTo(parent.bottom)
+                    start.linkTo(parent.start)
+                }.clickable(onClick = {
+//                    if (feed != null) {
+//                        val fragment = FeedInfoFragment.newInstance(feed)
+//                        (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
+//                    }
+                }))
+            Column(Modifier.constrainAs(taColumn) {
+                top.linkTo(imgvCover.top)
+                start.linkTo(imgvCover.end) }) {
+                Text(feed.title ?:"", color = textColor, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text(txtvAuthor, color = textColor, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+        }
     }
+
+    @Composable
+    fun DetailUI() {
+        val scrollState = rememberScrollState()
+        Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
+            val textColor = MaterialTheme.colorScheme.onSurface
+            Text(feed.title ?:"", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 16.dp))
+            Text(feed.author ?:"", color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 4.dp))
+            Text(stringResource(R.string.description_label), color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
+            Text(HtmlToPlainText.getPlainText(feed.description?:""), color = textColor, style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(R.string.url_label), color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
+            Text(text = txtvUrl?:"", color = textColor, modifier = Modifier.clickable {
+                if (feed.downloadUrl != null) {
+                    val url: String = feed.downloadUrl!!
+                    val clipData: ClipData = ClipData.newPlainText(url, url)
+                    val cm = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    cm.setPrimaryClip(clipData)
+                    if (Build.VERSION.SDK_INT <= 32) (activity as MainActivity).showSnackbarAbovePlayer(R.string.copied_to_clipboard, Snackbar.LENGTH_SHORT)
+                }
+            })
+            if (feed.paymentLinks.isNotEmpty()) {
+                Text(stringResource(R.string.support_funding_label), color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
+                fun fundingText(): String {
+                    val fundingList: ArrayList<FeedFunding> = feed.paymentLinks
+                    // Filter for duplicates, but keep items in the order that they have in the feed.
+                    val i: MutableIterator<FeedFunding> = fundingList.iterator()
+                    while (i.hasNext()) {
+                        val funding: FeedFunding = i.next()
+                        for (other in fundingList) {
+                            if (other.url == funding.url) {
+                                if (other.content != null && funding.content != null && other.content!!.length > funding.content!!.length) {
+                                    i.remove()
+                                    break
+                                }
+                            }
+                        }
+                    }
+                    val str = StringBuilder()
+                    for (funding in fundingList) {
+                        str.append(if (funding.content == null || funding.content!!.isEmpty()) requireContext().resources.getString(
+                            R.string.support_podcast)
+                        else funding.content).append(" ").append(funding.url)
+                        str.append("\n")
+                    }
+                    return StringBuilder(StringUtils.trim(str.toString())).toString()
+                }
+                val fundText = remember { fundingText() }
+                Text(fundText, color = textColor)
+            }
+            Button({
+                val fragment = SearchResultsFragment.newInstance(CombinedSearcher::class.java, "$txtvAuthor podcasts")
+                (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
+            }) {
+                Text(stringResource(R.string.feeds_related_to_author), color = textColor)
+            }
+            Text(stringResource(R.string.statistics_label), color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
+            val arguments = Bundle()
+            arguments.putLong(EXTRA_FEED_ID, feed.id)
+            arguments.putBoolean(EXTRA_DETAILED, false)
+            AndroidFragment(clazz = FeedStatisticsFragment::class.java, arguments = arguments)
+            Button({
+                (activity as MainActivity).loadChildFragment(StatisticsFragment(), TransitionEffect.SLIDE)
+            }) {
+                Text(stringResource(R.string.statistics_view_all), color = textColor)
+            }
+        }
+    }
+
+//    override fun onConfigurationChanged(newConfig: Configuration) {
+//        super.onConfigurationChanged(newConfig)
+////        val horizontalSpacing = resources.getDimension(R.dimen.additional_horizontal_spacing).toInt()
+////        binding.header.root.setPadding(horizontalSpacing, binding.header.root.paddingTop, horizontalSpacing, binding.header.root.paddingBottom)
+////        binding.infoContainer.setPadding(horizontalSpacing, binding.infoContainer.paddingTop, horizontalSpacing, binding.infoContainer.paddingBottom)
+//    }
 
     private fun showFeed() {
         Logd(TAG, "Language: ${feed.language} Author: ${feed.author}")
         Logd(TAG, "URL: ${feed.downloadUrl}")
-
 //        TODO: need to generate blurred image for background
-        binding.header.imgvCover.load(feed.imageUrl) {
-            placeholder(R.color.light_gray)
-            error(R.mipmap.ic_launcher)
-        }
-        binding.header.txtvTitle.text = feed.title
-        binding.header.txtvTitle.setMaxLines(3)
 
-        binding.txtvDescription.text = HtmlToPlainText.getPlainText(feed.description?:"")
-
-        binding.feedTitle.text = feed.title
-        binding.feedAuthor.text = feed.author
-
-        if (!feed.author.isNullOrEmpty()) binding.header.txtvAuthor.text = feed.author
-
-        binding.txtvUrl.text = feed.downloadUrl
-        binding.txtvUrl.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_paperclip, 0)
-
-        if (feed.paymentLinks.isEmpty()) {
-            binding.lblSupport.visibility = View.GONE
-            binding.txtvFundingUrl.visibility = View.GONE
-        } else {
-            binding.lblSupport.visibility = View.VISIBLE
-            val fundingList: ArrayList<FeedFunding> = feed.paymentLinks
-
-            // Filter for duplicates, but keep items in the order that they have in the feed.
-            val i: MutableIterator<FeedFunding> = fundingList.iterator()
-            while (i.hasNext()) {
-                val funding: FeedFunding = i.next()
-                for (other in fundingList) {
-                    if (other.url == funding.url) {
-                        if (other.content != null && funding.content != null && other.content!!.length > funding.content!!.length) {
-                            i.remove()
-                            break
-                        }
-                    }
-                }
-            }
-
-            var str = StringBuilder()
-            for (funding in fundingList) {
-                str.append(if (funding.content == null || funding.content!!.isEmpty()) requireContext().resources.getString(R.string.support_podcast)
-                else funding.content).append(" ").append(funding.url)
-                str.append("\n")
-            }
-            str = StringBuilder(StringUtils.trim(str.toString()))
-            binding.txtvFundingUrl.text = str.toString()
-        }
         refreshToolbarState()
     }
 
@@ -245,8 +307,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 object : EditUrlSettingsDialog(activity as Activity, feed) {
                     override fun setUrl(url: String?) {
                         feed.downloadUrl = url
-                        binding.txtvUrl.text = feed.downloadUrl
-                        binding.txtvUrl.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_paperclip, 0)
+                        txtvUrl = feed.downloadUrl
                     }
                 }.show()
             }

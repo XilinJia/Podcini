@@ -43,4 +43,10 @@
         android:title="@string/clear_bin_label"
         custom:showAsAction="collapseActionView"
         android:icon="@drawable/ic_check"/>
+
+    <item
+        android:id="@+id/refresh_all"
+        android:title="@string/refresh_label"
+        custom:showAsAction="never" />
+
 </menu>

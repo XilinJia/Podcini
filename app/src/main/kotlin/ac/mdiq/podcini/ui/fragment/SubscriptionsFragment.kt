@@ -60,8 +60,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-//import androidx.compose.material3.pullrefresh.pullRefresh
-//import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -626,6 +624,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             { Row(modifier = Modifier.padding(horizontal = 16.dp)
                 .clickable {
                     isExpanded = false
+                    selectMode = false
                     Logd(TAG, "ic_delete: ${selected.size}")
                     RemoveFeedDialog.show(activity, selected)
                 }, verticalAlignment = Alignment.CenterVertically
@@ -636,6 +635,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             { Row(modifier = Modifier.padding(horizontal = 16.dp)
                 .clickable {
                     isExpanded = false
+                    selectMode = false
                     Logd(TAG, "ic_refresh: ${selected.size}")
                     val composeView = ComposeView(activity).apply {
                         setContent {
@@ -692,6 +692,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             { Row(modifier = Modifier.padding(horizontal = 16.dp)
                 .clickable {
                     isExpanded = false
+                    selectMode = false
                     Logd(TAG, "ic_download: ${selected.size}")
                     val preferenceSwitchDialog = PreferenceSwitchDialog(activity, activity.getString(R.string.auto_download_settings_label), activity.getString(R.string.auto_download_label))
                     preferenceSwitchDialog.setOnPreferenceChangedListener(@UnstableApi object: PreferenceSwitchDialog.OnPreferenceChangedListener {
@@ -708,6 +709,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             { Row(modifier = Modifier.padding(horizontal = 16.dp)
                 .clickable {
                     isExpanded = false
+                    selectMode = false
                     Logd(TAG, "ic_delete_auto: ${selected.size}")
                     autoDeleteEpisodesPrefHandler()
                 }, verticalAlignment = Alignment.CenterVertically
@@ -718,6 +720,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             { Row(modifier = Modifier.padding(horizontal = 16.dp)
                 .clickable {
                     isExpanded = false
+                    selectMode = false
                     Logd(TAG, "ic_playback_speed: ${selected.size}")
                     val vBinding = PlaybackSpeedFeedSettingDialogBinding.inflate(activity.layoutInflater)
                     vBinding.seekBar.setProgressChangedListener { speed: Float? ->
@@ -749,6 +752,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             { Row(modifier = Modifier.padding(horizontal = 16.dp)
                 .clickable {
                     isExpanded = false
+                    selectMode = false
                     Logd(TAG, "ic_tag: ${selected.size}")
                     TagSettingsDialog.newInstance(selected).show(activity.supportFragmentManager, Companion.TAG)
                 }, verticalAlignment = Alignment.CenterVertically
@@ -759,6 +763,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             { Row(modifier = Modifier.padding(horizontal = 16.dp)
                 .clickable {
                     isExpanded = false
+                    selectMode = false
                     Logd(TAG, "ic_playlist_play: ${selected.size}")
                     associatedQueuePrefHandler()
                 }, verticalAlignment = Alignment.CenterVertically
@@ -769,6 +774,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             { Row(modifier = Modifier.padding(horizontal = 16.dp)
                 .clickable {
                     isExpanded = false
+                    selectMode = false
                     Logd(TAG, "baseline_import_export_24: ${selected.size}")
                     val exportType = Export.OPML_SELECTED
                     val title = String.format(exportType.outputNameTemplate, SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date()))
@@ -811,7 +817,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         val selected = remember { mutableStateListOf<Feed>() }
         var longPressIndex by remember { mutableIntStateOf(-1) }
         var refreshing by remember { mutableStateOf(false)}
-        val coroutineScope = rememberCoroutineScope()
+//        val coroutineScope = rememberCoroutineScope()
         PullToRefreshBox(modifier = Modifier.fillMaxWidth(), isRefreshing = refreshing, indicator = {}, onRefresh = {
 //            coroutineScope.launch {
                 refreshing = true
@@ -825,66 +831,65 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     columns = GridCells.Fixed(3),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(start = 12.dp, top = 16.dp, end = 12.dp, bottom = 16.dp),
-                    content = {
-                        items(feedListFiltered.size) { index ->
-                            val feed by remember { mutableStateOf(feedListFiltered[index]) }
-                            var isSelected by remember { mutableStateOf(false) }
-                            LaunchedEffect(key1 = selectMode, key2 = selectedSize) {
-                                isSelected = selectMode && feed in selected
+                    contentPadding = PaddingValues(start = 12.dp, top = 16.dp, end = 12.dp, bottom = 16.dp)
+                )  {
+                    items(feedListFiltered.size) { index ->
+                        val feed by remember { mutableStateOf(feedListFiltered[index]) }
+                        var isSelected by remember { mutableStateOf(false) }
+                        LaunchedEffect(key1 = selectMode, key2 = selectedSize) {
+                            isSelected = selectMode && feed in selected
+                        }
+                        fun toggleSelected() {
+                            isSelected = !isSelected
+                            if (isSelected) selected.add(feed)
+                            else selected.remove(feed)
+                        }
+                        Column(Modifier.background(if (isSelected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.surface)) {
+                            val textColor = MaterialTheme.colorScheme.onSurface
+                            ConstraintLayout {
+                                val (coverImage, episodeCount, error) = createRefs()
+                                AsyncImage(model = feed.imageUrl, contentDescription = "coverImage",
+                                    placeholder = painterResource(R.mipmap.ic_launcher),
+                                    modifier = Modifier
+                                        .constrainAs(coverImage) {
+                                            top.linkTo(parent.top)
+                                            bottom.linkTo(parent.bottom)
+                                            start.linkTo(parent.start)
+                                        }.combinedClickable(onClick = {
+                                            Logd(TAG, "clicked: ${feed.title}")
+                                            if (selectMode) toggleSelected()
+                                            else (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
+                                        }, onLongClick = {
+                                            selectMode = !selectMode
+                                            isSelected = selectMode
+                                            if (selectMode) {
+                                                selected.add(feed)
+                                                longPressIndex = index
+                                            } else {
+                                                selectedSize = 0
+                                                longPressIndex = -1
+                                            }
+                                            Logd(TAG, "long clicked: ${feed.title}")
+                                        }))
+                                Text(NumberFormat.getInstance().format(feed.episodes.size.toLong()),
+                                    modifier = Modifier.constrainAs(episodeCount) {
+                                        end.linkTo(parent.end)
+                                        top.linkTo(coverImage.top)
+                                    })
+                                Icon(painter = painterResource(R.drawable.ic_error),
+                                    contentDescription = "error",
+                                    modifier = Modifier.constrainAs(error) {
+                                        end.linkTo(parent.end)
+                                        bottom.linkTo(coverImage.bottom)
+                                    })
                             }
-                            fun toggleSelected() {
-                                isSelected = !isSelected
-                                if (isSelected) selected.add(feed)
-                                else selected.remove(feed)
-                            }
-                            Column(Modifier.background(if (isSelected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.surface)) {
-                                val textColor = MaterialTheme.colorScheme.onSurface
-                                ConstraintLayout {
-                                    val (coverImage, episodeCount, error) = createRefs()
-                                    AsyncImage(model = feed.imageUrl, contentDescription = "coverImage",
-                                        placeholder = painterResource(R.mipmap.ic_launcher),
-                                        modifier = Modifier
-                                            .constrainAs(coverImage) {
-                                                top.linkTo(parent.top)
-                                                bottom.linkTo(parent.bottom)
-                                                start.linkTo(parent.start)
-                                            }.combinedClickable(onClick = {
-                                                Logd(TAG, "clicked: ${feed.title}")
-                                                if (selectMode) toggleSelected()
-                                                else (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
-                                            }, onLongClick = {
-                                                selectMode = !selectMode
-                                                isSelected = selectMode
-                                                if (selectMode) {
-                                                    selected.add(feed)
-                                                    longPressIndex = index
-                                                } else {
-                                                    selectedSize = 0
-                                                    longPressIndex = -1
-                                                }
-                                                Logd(TAG, "long clicked: ${feed.title}")
-                                            }))
-                                    Text(NumberFormat.getInstance().format(feed.episodes.size.toLong()),
-                                        modifier = Modifier.constrainAs(episodeCount) {
-                                            end.linkTo(parent.end)
-                                            top.linkTo(coverImage.top)
-                                        })
-                                    Icon(painter = painterResource(R.drawable.ic_error),
-                                        contentDescription = "error",
-                                        modifier = Modifier.constrainAs(error) {
-                                            end.linkTo(parent.end)
-                                            bottom.linkTo(coverImage.bottom)
-                                        })
-                                }
-                                Text(feed.title ?: "No title",
-                                    color = textColor,
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis)
-                            }
+                            Text(feed.title ?: "No title",
+                                color = textColor,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis)
                         }
                     }
-                )
+                }
             } else {
                 val lazyListState = rememberLazyListState()
                 LazyColumn(state = lazyListState,
@@ -900,8 +905,18 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             if (isSelected) selected.add(feed)
                             else selected.remove(feed)
                         }
-                        Row(Modifier.background(if (isSelected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.surface)
-                            .combinedClickable(onClick = {
+                        Row(Modifier.background(if (isSelected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.surface)) {
+                            AsyncImage(model = feed.imageUrl, contentDescription = "imgvCover",
+                                placeholder = painterResource(R.mipmap.ic_launcher),
+                                modifier = Modifier.width(80.dp).height(80.dp)
+                                    .clickable(onClick = {
+                                        Logd(TAG, "icon clicked!")
+                                        if (selectMode) toggleSelected()
+                                        else (activity as MainActivity).loadChildFragment(FeedInfoFragment.newInstance(feed))
+                                    })
+                            )
+                            val textColor = MaterialTheme.colorScheme.onSurface
+                            Column(Modifier.fillMaxWidth().padding(start = 10.dp).combinedClickable(onClick = {
                                 Logd(TAG, "clicked: ${feed.title}")
                                 if (selectMode) toggleSelected()
                                 else (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
@@ -917,15 +932,6 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                 }
                                 Logd(TAG, "long clicked: ${feed.title}")
                             })) {
-                            AsyncImage(model = feed.imageUrl, contentDescription = "imgvCover",
-                                placeholder = painterResource(R.mipmap.ic_launcher),
-                                modifier = Modifier.width(80.dp).height(80.dp)
-//                                    .clickable(onClick = {
-//                                        Logd(TAG, "icon clicked!")
-//                                    })
-                            )
-                            val textColor = MaterialTheme.colorScheme.onSurface
-                            Column(Modifier.fillMaxWidth().padding(start = 10.dp)) {
                                 Text(feed.title ?: "No title", color = textColor, maxLines = 1, overflow = TextOverflow.Ellipsis,
                                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
                                 Text(feed.author ?: "No author", color = textColor, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodyMedium)

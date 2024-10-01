@@ -110,7 +110,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var prevMedia: Playable? = null
     private var currentMedia: Playable? = null
 
-    private var isShowPlay: Boolean = false
+    private var isShowPlay: Boolean = true
 
     private var showTimeLeft = false
     private var titleText by mutableStateOf("")
@@ -201,17 +201,16 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         Column(modifier = Modifier.fillMaxWidth().height(133.dp)) {
             val textColor = MaterialTheme.colorScheme.onSurface
             Text(titleText, maxLines = 1, color = textColor, style = MaterialTheme.typography.bodyMedium)
-            var tempSliderValue by remember { mutableStateOf(sliderValue) }
-            Slider(value = tempSliderValue, valueRange = 0f..duration.toFloat(), modifier = Modifier.height(15.dp),
+            Slider(value = sliderValue, valueRange = 0f..duration.toFloat(), modifier = Modifier.height(15.dp),
                 onValueChange = {
                     Logd(TAG, "Slider onValueChange: $it")
-                    tempSliderValue = it
-            }, onValueChangeFinished = {
-                    Logd(TAG, "Slider onValueChangeFinished: $tempSliderValue")
-                    sliderValue = tempSliderValue
+                    sliderValue = it
+                }, onValueChangeFinished = {
+                    Logd(TAG, "Slider onValueChangeFinished: $sliderValue")
+//                    sliderValue = tempSliderValue
                     currentPosition = sliderValue.toInt()
                     if (playbackService?.isServiceReady() == true) seekTo(currentPosition)
-            })
+                })
             Row {
                 Text(DurationConverter.getDurationStringLong(currentPosition), color = textColor, style = MaterialTheme.typography.bodyMedium)
                 Spacer(Modifier.weight(1f))
@@ -271,8 +270,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     Text(NumberFormat.getInstance().format(UserPreferences.rewindSecs.toLong()), color = textColor, style = MaterialTheme.typography.bodyMedium)
                 }
                 Spacer(Modifier.weight(0.1f))
-                Icon(painter = painterResource(playButRes), tint = textColor,
-                    contentDescription = "play",
+                Icon(painter = painterResource(playButRes), tint = textColor, contentDescription = "play",
                     modifier = Modifier.width(64.dp).height(64.dp).combinedClickable(onClick = {
                         if (controller == null) return@combinedClickable
                         if (curMedia != null) {
@@ -404,8 +402,9 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     fun setIsShowPlay(showPlay: Boolean) {
-        if (this.isShowPlay != showPlay) {
-            this.isShowPlay = showPlay
+        Logd(TAG, "setIsShowPlay: ${isShowPlay} $showPlay")
+        if (isShowPlay != showPlay) {
+            isShowPlay = showPlay
             playButRes = when {
                 isVideoScreen -> if (showPlay) R.drawable.ic_play_video_white else R.drawable.ic_pause_video_white
                 showPlay -> R.drawable.ic_play_48dp
@@ -434,7 +433,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             (if (remainingTime > 0) "-" else "") + DurationConverter.getDurationStringLong(remainingTime)
         } else DurationConverter.getDurationStringLong(duration)
 
-        val progress: Float = (event.position.toFloat()) / event.duration
+//        val progress: Float = (event.position.toFloat()) / event.duration
         sliderValue = event.position.toFloat()
     }
     private fun onPlaybackServiceChanged(event: FlowEvent.PlaybackServiceEvent) {
@@ -778,7 +777,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private fun createHandler(): ServiceStatusHandler {
         return object : ServiceStatusHandler(requireActivity()) {
             override fun updatePlayButton(showPlay: Boolean) {
-                isShowPlay = showPlay
+//                isShowPlay = showPlay
                 setIsShowPlay(showPlay)
             }
             override fun loadMediaInfo() {
@@ -786,7 +785,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 if (!isCollapsed) updateInfo()
             }
             override fun onPlaybackEnd() {
-                isShowPlay = true
+//                isShowPlay = true
                 setIsShowPlay(true)
                 (activity as MainActivity).setPlayerVisible(false)
             }
@@ -864,16 +863,18 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             setItem(currentitem)
         }
         (activity as MainActivity).setPlayerVisible(true)
+        setIsShowPlay(event.action == FlowEvent.PlayEvent.Action.END)
     }
 
     private fun onPlaybackPositionEvent(event: FlowEvent.PlaybackPositionEvent) {
-//        Logd(TAG, "onPlayEvent ${event.episode.title}")
+//        Logd(TAG, "onPlaybackPositionEvent ${event.episode.title}")
         val media = event.media ?: return
         if (currentMedia?.getIdentifier() == null || media.getIdentifier() != currentMedia?.getIdentifier()) {
             currentMedia = media
             updateUi(currentMedia!!)
             setItem(curEpisode!!)
         }
+//        if (isShowPlay) setIsShowPlay(false)
         onPositionUpdate(event)
         if (!isCollapsed) {
             if (currentMedia?.getIdentifier() != event.media.getIdentifier()) return

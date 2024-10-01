@@ -1,8 +1,6 @@
 package ac.mdiq.podcini.storage.model
 
 import ac.mdiq.podcini.net.download.DownloadStatus
-import ac.mdiq.podcini.playback.base.InTheatre.curQueue
-import ac.mdiq.podcini.playback.base.InTheatre.isCurrentlyPlaying
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.vista.extractor.Vista
 import ac.mdiq.vista.extractor.stream.StreamInfo
@@ -95,7 +93,7 @@ class Episode : RealmObject {
 
     @Ignore
     val isInProgress: Boolean
-        get() = (media != null && media!!.isInProgress)
+        get() = (media != null && media!!.position > 0)
 
     @Ignore
     val isDownloaded: Boolean
@@ -138,12 +136,6 @@ class Episode : RealmObject {
         }
 
     @Ignore
-    val inQueueState = mutableStateOf(curQueue.contains(this))
-
-    @Ignore
-    val isPlayingState = mutableStateOf(isCurrentlyPlaying(media))
-
-    @Ignore
     val downloadState = mutableIntStateOf(if (media?.downloaded == true) DownloadStatus.State.COMPLETED.ordinal else DownloadStatus.State.UNKNOWN.ordinal)
 
     @Ignore
@@ -168,8 +160,8 @@ class Episode : RealmObject {
     }
 
     fun copyStates(other: Episode) {
-        inQueueState.value = other.inQueueState.value
-        isPlayingState.value = other.isPlayingState.value
+//        inQueueState.value = other.inQueueState.value
+//        isPlayingState.value = other.isPlayingState.value
         downloadState.value = other.downloadState.value
         stopMonitoring.value = other.stopMonitoring.value
     }
@@ -278,14 +270,74 @@ class Episode : RealmObject {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is Episode) return false
-        return id == other.id
+        if (javaClass != other?.javaClass) return false
+
+        other as Episode
+
+        if (id != other.id) return false
+        if (identifier != other.identifier) return false
+        if (title != other.title) return false
+        if (description != other.description) return false
+        if (transcript != other.transcript) return false
+        if (link != other.link) return false
+        if (pubDate != other.pubDate) return false
+        if (media != other.media) return false
+        if (feedId != other.feedId) return false
+        if (podcastIndexChapterUrl != other.podcastIndexChapterUrl) return false
+        if (playState != other.playState) return false
+        if (paymentLink != other.paymentLink) return false
+        if (imageUrl != other.imageUrl) return false
+        if (isAutoDownloadEnabled != other.isAutoDownloadEnabled) return false
+        if (tags != other.tags) return false
+        if (chapters != other.chapters) return false
+        if (isFavorite != other.isFavorite) return false
+        if (isInProgress != other.isInProgress) return false
+        if (isDownloaded != other.isDownloaded) return false
+//        if (inQueueState != other.inQueueState) return false
+//        if (isPlayingState != other.isPlayingState) return false
+        if (downloadState != other.downloadState) return false
+        if (stopMonitoring != other.stopMonitoring) return false
+
+        return true
     }
 
     override fun hashCode(): Int {
-        val result = (id xor (id ushr 32)).toInt()
+        var result = id.hashCode()
+        result = 31 * result + (identifier?.hashCode() ?: 0)
+        result = 31 * result + (title?.hashCode() ?: 0)
+        result = 31 * result + (description?.hashCode() ?: 0)
+        result = 31 * result + (transcript?.hashCode() ?: 0)
+        result = 31 * result + (link?.hashCode() ?: 0)
+        result = 31 * result + pubDate.hashCode()
+        result = 31 * result + (media?.hashCode() ?: 0)
+        result = 31 * result + (feedId?.hashCode() ?: 0)
+        result = 31 * result + (podcastIndexChapterUrl?.hashCode() ?: 0)
+        result = 31 * result + playState
+        result = 31 * result + (paymentLink?.hashCode() ?: 0)
+        result = 31 * result + (imageUrl?.hashCode() ?: 0)
+        result = 31 * result + isAutoDownloadEnabled.hashCode()
+        result = 31 * result + tags.hashCode()
+        result = 31 * result + chapters.hashCode()
+        result = 31 * result + isFavorite.hashCode()
+        result = 31 * result + isInProgress.hashCode()
+        result = 31 * result + isDownloaded.hashCode()
+//        result = 31 * result + inQueueState.hashCode()
+//        result = 31 * result + isPlayingState.hashCode()
+        result = 31 * result + downloadState.hashCode()
+        result = 31 * result + stopMonitoring.hashCode()
         return result
     }
+
+    //    override fun equals(other: Any?): Boolean {
+//        if (this === other) return true
+//        if (other !is Episode) return false
+//        return id == other.id
+//    }
+//
+//    override fun hashCode(): Int {
+//        val result = (id xor (id ushr 32)).toInt()
+//        return result
+//    }
 
     enum class PlayState(val code: Int) {
         UNSPECIFIED(-2),

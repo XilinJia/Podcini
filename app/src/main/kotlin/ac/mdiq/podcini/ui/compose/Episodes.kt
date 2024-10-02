@@ -210,7 +210,7 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
         LazyColumn(state = lazyListState,
             modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            itemsIndexed(episodes) { index, episode ->
+            itemsIndexed(episodes, key = {index, episode -> episode.id}) { index, episode ->
                 var positionState by remember { mutableStateOf(episode.media?.position?:0) }
                 var playedState by remember { mutableStateOf(episode.isPlayed()) }
                 var farvoriteState by remember { mutableStateOf(episode.isFavorite) }
@@ -227,7 +227,7 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                             when (changes) {
                                 is UpdatedObject -> {
                                     Logd(TAG, "episodeMonitor UpdatedObject $index ${changes.obj.title} ${changes.changedFields.joinToString()}")
-                                    if (episodes[index].id == changes.obj.id) {
+                                    if (index < episodes.size && episodes[index].id == changes.obj.id) {
                                         playedState = changes.obj.isPlayed()
                                         farvoriteState = changes.obj.isFavorite
 //                                    episodes[index] = changes.obj     // direct assignment doesn't update member like media??
@@ -250,7 +250,7 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                             when (changes) {
                                 is UpdatedObject -> {
                                     Logd(TAG, "mediaMonitor UpdatedObject $index ${changes.obj.title} ${changes.changedFields.joinToString()}")
-                                    if (episodes[index].id == changes.obj.id) {
+                                    if (index < episodes.size && episodes[index].id == changes.obj.id) {
                                         positionState = changes.obj.media?.position ?: 0
                                         inProgressState = changes.obj.isInProgress
 //                                    episodes[index] = changes.obj     // direct assignment doesn't update member like media??
@@ -365,8 +365,8 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                                 if (index>=episodes.size) return@LaunchedEffect
                                 inQueueState = curQueue.contains(episodes[index])
                             }
-                            val dur = remember(episode, episode.media) { episode.media!!.getDuration()}
-                            val durText = remember { DurationConverter.getDurationStringLong(dur) }
+                            val dur =  episode.media!!.getDuration()
+                            val durText = DurationConverter.getDurationStringLong(dur)
                             Row {
                                 if (episode.media?.getMediaType() == MediaType.VIDEO)
                                     Icon(painter = painterResource(R.drawable.ic_videocam), tint = textColor, contentDescription = "isVideo", modifier = Modifier.width(14.dp).height(14.dp))
@@ -375,7 +375,7 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                                 if (inQueueState)
                                     Icon(painter = painterResource(R.drawable.ic_playlist_play), tint = textColor, contentDescription = "ivInPlaylist", modifier = Modifier.width(14.dp).height(14.dp))
                                 val curContext = LocalContext.current
-                                val dateSizeText = remember { " · " + formatAbbrev(curContext, episode.getPubDate()) + " · " + durText + " · " + if((episode.media?.size?:0) > 0) Formatter.formatShortFileSize(curContext, episode.media!!.size) else "" }
+                                val dateSizeText =  " · " + formatAbbrev(curContext, episode.getPubDate()) + " · " + durText + " · " + if((episode.media?.size?:0) > 0) Formatter.formatShortFileSize(curContext, episode.media!!.size) else ""
                                 Text(dateSizeText, color = textColor, style = MaterialTheme.typography.bodyMedium)
                             }
                             Text(episode.title?:"", color = textColor, maxLines = 2, overflow = TextOverflow.Ellipsis)

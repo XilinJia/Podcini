@@ -73,6 +73,7 @@ import ac.mdiq.vista.extractor.stream.AudioStream
 import ac.mdiq.vista.extractor.stream.DeliveryMethod
 import ac.mdiq.vista.extractor.stream.VideoStream
 import android.annotation.SuppressLint
+import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.PendingIntent.FLAG_IMMUTABLE
@@ -102,6 +103,7 @@ import android.webkit.URLUtil
 import android.widget.Toast
 import androidx.annotation.VisibleForTesting
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE
 import androidx.core.util.Consumer
 import androidx.media3.common.*
 import androidx.media3.common.Player.*
@@ -891,12 +893,12 @@ class PlaybackService : MediaLibraryService() {
             else PendingIntent.getService(this, R.id.pending_intent_allow_stream_always, intentAlwaysAllow,
                 FLAG_UPDATE_CURRENT or FLAG_IMMUTABLE)
 
-        val builder = NotificationCompat.Builder(this, NotificationUtils.CHANNEL_ID.user_action.name)
+        val builder = Notification.Builder(this, NotificationUtils.CHANNEL_ID.user_action.name)
             .setSmallIcon(R.drawable.ic_notification_stream)
             .setContentTitle(getString(R.string.confirm_mobile_streaming_notification_title))
             .setContentText(getString(R.string.confirm_mobile_streaming_notification_message))
-            .setStyle(NotificationCompat.BigTextStyle().bigText(getString(R.string.confirm_mobile_streaming_notification_message)))
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setStyle(Notification.BigTextStyle().bigText(getString(R.string.confirm_mobile_streaming_notification_message)))
+//            .setPriority(Notification.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntentAllowThisTime)
             .addAction(R.drawable.ic_notification_stream, getString(R.string.confirm_mobile_streaming_button_once), pendingIntentAllowThisTime)
             .addAction(R.drawable.ic_notification_stream, getString(R.string.confirm_mobile_streaming_button_always), pendingIntentAlwaysAllow)
@@ -1633,12 +1635,12 @@ class PlaybackService : MediaLibraryService() {
         }
 
         override fun resume() {
+            Logd(TAG, "resume(): exoPlayer?.playbackState: ${exoPlayer?.playbackState}")
             if (status == PlayerStatus.PAUSED || status == PlayerStatus.PREPARED) {
                 Logd(TAG, "Resuming/Starting playback")
                 acquireWifiLockIfNecessary()
                 setPlaybackParams(getCurrentPlaybackSpeed(curMedia), isSkipSilence)
                 setVolume(1.0f, 1.0f)
-
                 if (curMedia != null && status == PlayerStatus.PREPARED && curMedia!!.getPosition() > 0) {
                     val newPosition = calculatePositionWithRewind(curMedia!!.getPosition(), curMedia!!.getLastPlayedTime())
                     seekTo(newPosition)

@@ -833,7 +833,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     contentPadding = PaddingValues(start = 12.dp, top = 16.dp, end = 12.dp, bottom = 16.dp)
                 )  {
-                    items(feedListFiltered.size) { index ->
+                    items(feedListFiltered.size, key = {index -> feedListFiltered[index].id}) { index ->
                         val feed by remember { mutableStateOf(feedListFiltered[index]) }
                         var isSelected by remember { mutableStateOf(false) }
                         LaunchedEffect(key1 = selectMode, key2 = selectedSize) {
@@ -895,7 +895,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 LazyColumn(state = lazyListState,
                     modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    itemsIndexed(feedListFiltered) { index, feed ->
+                    itemsIndexed(feedListFiltered, key = {index, feed -> feed.id}) { index, feed ->
                         var isSelected by remember { mutableStateOf(false) }
                         LaunchedEffect(key1 = selectMode, key2 = selectedSize) {
                             isSelected = selectMode && feed in selected

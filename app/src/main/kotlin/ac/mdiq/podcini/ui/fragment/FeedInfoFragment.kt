@@ -146,15 +146,15 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     start.linkTo(parent.start)
                 }, verticalAlignment = Alignment.CenterVertically) {
                 Spacer(modifier = Modifier.weight(1f))
-                Button(onClick = { (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id)) }) {
-                    Text(feed.episodes.size.toString() + stringResource(R.string.episodes_label), color = textColor)
-                }
-                Spacer(modifier = Modifier.width(15.dp))
                 Image(painter = painterResource(R.drawable.ic_settings_white), contentDescription = "butShowSettings",
                     Modifier.width(40.dp).height(40.dp).padding(3.dp).clickable(onClick = {
                         (activity as MainActivity).loadChildFragment(FeedSettingsFragment.newInstance(feed), TransitionEffect.SLIDE)
                     }))
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.weight(0.2f))
+                Button(onClick = { (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id)) }) {
+                    Text(feed.episodes.size.toString() + stringResource(R.string.episodes_label), color = textColor)
+                }
+                Spacer(modifier = Modifier.width(15.dp))
             }
             Image(painter = painterResource(R.drawable.ic_rounded_corner_left), contentDescription = "left_corner",
                 Modifier.width(12.dp).height(12.dp).constrainAs(image1) {

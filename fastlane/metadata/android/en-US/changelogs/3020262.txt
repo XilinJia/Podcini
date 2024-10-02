@@ -1,0 +1,17 @@
+ Version 6.8.5
+
+* migrated mostly the following view to Jetpack Compose:
+	* Queues, AudioPlayer, Subscriptions, FeedInfo, EpisodeInfo, FeedEpisodes, AllEpisodes, History, Search, and OnlineFeed
+* to counter this nasty issue that Google can't fix over 2 years: ForegroundServiceStartNotAllowedException
+	* for this and near future releases, target SDK is set to 30 (Android 12), though built with SDK 35 and tested on Android 14
+	* supposedly notification will not disappear and play will not stop through a playlist
+	* please voice any irregularities you may see
+* on episode lists, show duration on the top row
+* added toggle grid and list views in the menu of Subscriptions
+* added option to refresh all subscriptions in menu of Queues view
+* added telltale of subscription updating status "U" on infobar in Queues view
+* AudioPlayer got overhauled. with PlayUI and PlayerDetailed fragments Removed
+* Episodes viewholder, feed viewholder, and related adapters etc are removed
+* SwipeActions class stripped out of View related operations
+* migrated reliance on compose.material to compose.material3
+* tuned and corrected some Compose issues

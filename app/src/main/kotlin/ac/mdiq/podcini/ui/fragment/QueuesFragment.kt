@@ -98,6 +98,8 @@ import kotlin.math.max
     private lateinit var toolbar: MaterialToolbar
     private lateinit var swipeActions: SwipeActions
 
+    private var infoTextUpdate = ""
+    private var infoText = ""
     private var infoBarText = mutableStateOf("")
     private var leftActionState = mutableStateOf<SwipeAction?>(null)
     private var rightActionState = mutableStateOf<SwipeAction?>(null)
@@ -267,7 +269,10 @@ import kotlin.math.max
                 Logd(TAG, "Received sticky event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.EpisodeDownloadEvent -> onEpisodeDownloadEvent(event)
-//                    is FlowEvent.FeedUpdatingEvent -> swipeRefreshLayout.isRefreshing = event.isRunning
+                    is FlowEvent.FeedUpdatingEvent -> {
+                        infoTextUpdate = if (event.isRunning) "U" else ""
+                        infoBarText.value = "$infoText $infoTextUpdate"
+                    }
                     else -> {}
                 }
             }
@@ -604,7 +609,7 @@ import kotlin.math.max
     }
 
     private fun refreshInfoBar() {
-        var info = String.format(Locale.getDefault(), "%d%s", queueItems.size, getString(R.string.episodes_suffix))
+        infoText = String.format(Locale.getDefault(), "%d%s", queueItems.size, getString(R.string.episodes_suffix))
         if (queueItems.isNotEmpty()) {
             var timeLeft: Long = 0
             for (item in queueItems) {
@@ -616,11 +621,10 @@ import kotlin.math.max
                     timeLeft = (timeLeft + itemTimeLeft / playbackSpeed).toLong()
                 }
             }
-            info += " • "
-            info += DurationConverter.getDurationStringLocalized(requireActivity(), timeLeft)
+            infoText += " • "
+            infoText += DurationConverter.getDurationStringLocalized(requireActivity(), timeLeft)
         }
-        infoBarText.value = info
-//        toolbar.title = "${getString(R.string.queue_label)}: ${curQueue.name}"
+        infoBarText.value = "$infoText $infoTextUpdate"
     }
 
     private var loadItemsRunning = false

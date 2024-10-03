@@ -3,6 +3,7 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
+import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
@@ -174,9 +175,12 @@ import kotlin.math.min
     fun clearHistory() : Job {
         Logd(TAG, "clearHistory called")
         return runOnIOScope {
-            val mediaAll = realm.query(EpisodeMedia::class).find()
-            for (m in mediaAll) {
-                m.playbackCompletionDate = null
+            val episodes = realm.query(Episode::class).query("media.playbackCompletionTime > 0").find()
+            for (e in episodes) {
+                upsert(e) {
+                    it.media?.playbackCompletionDate = null
+                    it.media?.lastPlayedTime = 0
+                }
             }
             EventFlow.postEvent(FlowEvent.HistoryEvent())
         }
@@ -204,6 +208,7 @@ import kotlin.math.min
     companion object {
         val TAG = HistoryFragment::class.simpleName ?: "Anonymous"
 
+//        only used in tests
         fun getNumberOfCompleted(): Long {
             Logd(TAG, "getNumberOfCompleted called")
             return realm.query(EpisodeMedia::class).query("playbackCompletionTime > 0").count().find()
@@ -211,19 +216,19 @@ import kotlin.math.min
 
         fun getNumberOfPlayed(): Long {
             Logd(TAG, "getNumberOfPlayed called")
-            return realm.query(EpisodeMedia::class).query("lastPlayedTime > 0").count().find()
+            return realm.query(EpisodeMedia::class).query("lastPlayedTime > 0 || playbackCompletionTime > 0").count().find()
         }
 
         /**
          * Loads the playback history from the database. A FeedItem is in the playback history if playback of the correpsonding episode
-         * has been completed at least once.
+         * has been played ot completed at least once.
          * @param limit The maximum number of episodes to return.
          * @return The playback history. The FeedItems are sorted by their media's playbackCompletionDate in descending order.
          */
         fun getHistory(offset: Int, limit: Int, start: Long = 0L, end: Long = Date().time,
                        sortOrder: EpisodeSortOrder = EpisodeSortOrder.PLAYED_DATE_NEW_OLD): List<Episode> {
             Logd(TAG, "getHistory() called")
-            val medias = realm.query(EpisodeMedia::class).query("lastPlayedTime > $0 AND lastPlayedTime <= $1", start, end).find()
+            val medias = realm.query(EpisodeMedia::class).query("(playbackCompletionTime > 0) OR (lastPlayedTime > \$0 AND lastPlayedTime <= \$1)", start, end).find()
             var episodes: MutableList<Episode> = mutableListOf()
             for (m in medias) {
                 val item_ = m.episodeOrFetch()

@@ -232,14 +232,12 @@ object Episodes {
     }
 
     /**
-     * Adds a Episode object to the playback history. A Episode object is in the playback history if
-     * its playback completion date is set to a non-null value. This method will set the playback completion date to the
-     * current date regardless of the current value.
+     * This method will set the playback completion date to the current date regardless of the current value.
      * @param episode Episode that should be added to the playback history.
      * @param date PlaybackCompletionDate for `media`
      */
-    fun addToHistory(episode: Episode, date: Date? = Date()) : Job {
-        Logd(TAG, "addToHistory called played: ${episode.playState}")
+    fun setCompletionDate(episode: Episode, date: Date? = Date()) : Job {
+        Logd(TAG, "setCompletionDate called played: ${episode.playState}")
         return runOnIOScope {
             val episode_ = realm.query(Episode::class).query("id == $0", episode.id).first().find()
             if (episode_ != null) {

@@ -230,10 +230,11 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                                     if (index < episodes.size && episodes[index].id == changes.obj.id) {
                                         playedState = changes.obj.isPlayed()
                                         farvoriteState = changes.obj.isFavorite
-//                                    episodes[index] = changes.obj     // direct assignment doesn't update member like media??
+                                    episodes[index] = changes.obj     // direct assignment doesn't update member like media??
                                         changes.obj.copyStates(episodes[index])
-                                        episodes.removeAt(index)
-                                        episodes.add(index, changes.obj)
+//                                        remove action could possibly conflict with the one in mediaMonitor
+//                                        episodes.removeAt(index)
+//                                        episodes.add(index, changes.obj)
                                     }
                                 }
                                 else -> {}
@@ -355,6 +356,7 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                                     selected.add(episodes[index])
                                     longPressIndex = index
                                 } else {
+                                    selected.clear()
                                     selectedSize = 0
                                     longPressIndex = -1
                                 }
@@ -456,6 +458,7 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                            selectAllRes = R.drawable.ic_select_none
                        } else {
                            selected.clear()
+                           longPressIndex = -1
                            selectAllRes = R.drawable.ic_select_all
                        }
                         selectedSize = selected.size

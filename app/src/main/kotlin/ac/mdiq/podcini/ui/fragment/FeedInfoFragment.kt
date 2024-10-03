@@ -152,7 +152,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     }))
                 Spacer(modifier = Modifier.weight(0.2f))
                 Button(onClick = { (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id)) }) {
-                    Text(feed.episodes.size.toString() + stringResource(R.string.episodes_label), color = textColor)
+                    Text(feed.episodes.size.toString() + " " + stringResource(R.string.episodes_label), color = textColor)
                 }
                 Spacer(modifier = Modifier.width(15.dp))
             }

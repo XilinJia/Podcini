@@ -1,3 +1,15 @@
+# 6.8.6
+
+* Queues Bin view now has separate swipe actions indipendent from the Queues view
+* SearchResults and Discovery fragments are in Jetpack Compose
+* in online search result list, long pressing on a feed will pop up dialog to confirm direct subscription
+* fixed crash when clearing history
+* combined mixed ways of recognizing episodes in history: a) by last played time and b) by completion date
+* swipe to remove an item from history actually removes it
+* fixed a bug in episodes and subscriptions lists, where exiting select mode or deselecting all not resetting all selected episodes
+* OnlineFeedsAdapter etc are removed
+* various dependencies update
+
 # 6.8.5
 
 * migrated mostly the following view to Jetpack Compose:

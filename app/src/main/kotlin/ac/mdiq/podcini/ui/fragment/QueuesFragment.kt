@@ -86,9 +86,6 @@ import kotlinx.coroutines.runBlocking
 import java.util.*
 import kotlin.math.max
 
-/**
- * Shows all items in the queue.
- */
 @UnstableApi class QueuesFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private var _binding: QueueFragmentBinding? = null
@@ -97,12 +94,16 @@ import kotlin.math.max
     private lateinit var emptyViewHandler: EmptyViewHandler
     private lateinit var toolbar: MaterialToolbar
     private lateinit var swipeActions: SwipeActions
+    private lateinit var swipeActionsBin: SwipeActions
 
     private var infoTextUpdate = ""
     private var infoText = ""
     private var infoBarText = mutableStateOf("")
+
     private var leftActionState = mutableStateOf<SwipeAction?>(null)
     private var rightActionState = mutableStateOf<SwipeAction?>(null)
+    private var leftActionStateBin = mutableStateOf<SwipeAction?>(null)
+    private var rightActionStateBin = mutableStateOf<SwipeAction?>(null)
 
     private lateinit var spinnerLayout: View
     private lateinit var queueNames: Array<String>
@@ -114,10 +115,9 @@ import kotlin.math.max
     private var displayUpArrow = false
     private val queueItems = mutableStateListOf<Episode>()
 
-    private var showBin: Boolean = false
-    private var addToQueueActionItem: SpeedDialActionItem? = null
+    private var showBin by mutableStateOf(false)
 
-    private var dragDropEnabled: Boolean = !(isQueueKeepSorted || isQueueLocked)
+//    private var dragDropEnabled: Boolean = !(isQueueKeepSorted || isQueueLocked)
 
     private lateinit var browserFuture: ListenableFuture<MediaBrowser>
 
@@ -183,16 +183,38 @@ import kotlin.math.max
 
         swipeActions = SwipeActions(this, TAG)
         swipeActions.setFilter(EpisodeFilter(EpisodeFilter.States.queued.name))
-        binding.infobar.setContent {
-            CustomTheme(requireContext()) {
-                InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {swipeActions.showDialog()})
-            }
-        }
+        swipeActionsBin = SwipeActions(this, TAG)
+        swipeActionsBin.setFilter(EpisodeFilter(EpisodeFilter.States.queued.name))
+
         binding.lazyColumn.setContent {
             CustomTheme(requireContext()) {
-                EpisodeLazyColumn(activity as MainActivity, episodes = queueItems,
-                    leftSwipeCB = { if (leftActionState.value == null) swipeActions.showDialog() else leftActionState.value?.performAction(it, this, swipeActions.filter ?: EpisodeFilter())},
-                    rightSwipeCB = { if (rightActionState.value == null) swipeActions.showDialog() else rightActionState.value?.performAction(it, this, swipeActions.filter ?: EpisodeFilter())}, )
+                if (showBin) {
+                    Column {
+                        InforBar(infoBarText, leftAction = leftActionStateBin, rightAction = rightActionStateBin, actionConfig = { swipeActionsBin.showDialog() })
+                        val leftCB = { episode: Episode ->
+                            if (leftActionStateBin.value == null) swipeActionsBin.showDialog()
+                            else leftActionStateBin.value?.performAction(episode, this@QueuesFragment, swipeActionsBin.filter ?: EpisodeFilter())
+                        }
+                        val rightCB = { episode: Episode ->
+                            if (rightActionStateBin.value == null) swipeActionsBin.showDialog()
+                            else rightActionStateBin.value?.performAction(episode, this@QueuesFragment, swipeActionsBin.filter ?: EpisodeFilter())
+                        }
+                        EpisodeLazyColumn(activity as MainActivity, episodes = queueItems, leftSwipeCB = { leftCB(it) }, rightSwipeCB = { rightCB(it) })
+                    }
+                } else {
+                    Column {
+                        InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = { swipeActions.showDialog() })
+                        val leftCB = { episode: Episode ->
+                            if (leftActionState.value == null) swipeActions.showDialog()
+                            else leftActionState.value?.performAction(episode, this@QueuesFragment, swipeActions.filter ?: EpisodeFilter())
+                        }
+                        val rightCB = { episode: Episode ->
+                            if (rightActionState.value == null) swipeActions.showDialog()
+                            else rightActionState.value?.performAction(episode, this@QueuesFragment, swipeActions.filter ?: EpisodeFilter())
+                        }
+                        EpisodeLazyColumn(activity as MainActivity, episodes = queueItems, leftSwipeCB = { leftCB(it) }, rightSwipeCB = { rightCB(it) })
+                    }
+                }
             }
         }
 
@@ -372,8 +394,13 @@ import kotlin.math.max
     }
 
     private fun refreshSwipeTelltale() {
-        leftActionState.value = swipeActions.actions?.left
-        rightActionState.value = swipeActions.actions?.right
+        if (showBin) {
+            leftActionStateBin.value = swipeActionsBin.actions?.left
+            rightActionStateBin.value = swipeActionsBin.actions?.right
+        } else {
+            leftActionState.value = swipeActions.actions?.left
+            rightActionState.value = swipeActions.actions?.right
+        }
     }
 
     @SuppressLint("RestrictedApi")
@@ -631,7 +658,6 @@ import kotlin.math.max
     private fun loadCurQueue(restoreScrollPosition: Boolean) {
         if (!loadItemsRunning) {
             loadItemsRunning = true
-//            adapter?.updateItems(mutableListOf())
             Logd(TAG, "loadCurQueue() called ${curQueue.name}")
             while (curQueue.name.isEmpty()) runBlocking { delay(100) }
             if (queueItems.isNotEmpty()) emptyViewHandler.hide()

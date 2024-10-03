@@ -4,7 +4,7 @@ import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterfaceTestStub
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.storage.database.Episodes.addToHistory
+import ac.mdiq.podcini.storage.database.Episodes.setCompletionDate
 import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodes
 import ac.mdiq.podcini.storage.database.Episodes.deleteEpisodeMedia
 import ac.mdiq.podcini.storage.database.Episodes.getEpisode
@@ -514,7 +514,7 @@ class DbWriterTest {
         val item_ = media.episodeOrFetch()
         if (item_ != null) {
             runBlocking {
-                val job = addToHistory(item_)
+                val job = setCompletionDate(item_)
                 withTimeout(TIMEOUT * 1000) { job.join() }
             }
         }
@@ -531,7 +531,7 @@ class DbWriterTest {
         val item_ = media.episodeOrFetch()
         if (item_ != null) {
             runBlocking {
-                val job = addToHistory(item_)
+                val job = setCompletionDate(item_)
                 withTimeout(TIMEOUT*1000) { job.join() }
             }
         }

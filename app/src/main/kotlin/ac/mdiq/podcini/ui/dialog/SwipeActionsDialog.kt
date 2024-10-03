@@ -56,8 +56,9 @@ class SwipeActionsDialog(private val context: Context, private val tag: String) 
             }
             QueuesFragment.TAG -> {
                 forFragment = context.getString(R.string.queue_label)
-                keys = Stream.of(keys).filter { a: SwipeAction ->
-                    (!a.getId().equals(SwipeAction.ADD_TO_QUEUE) && !a.getId().equals(SwipeAction.REMOVE_FROM_HISTORY)) }.toList()
+//                keys = Stream.of(keys).filter { a: SwipeAction ->
+//                    (!a.getId().equals(SwipeAction.ADD_TO_QUEUE) && !a.getId().equals(SwipeAction.REMOVE_FROM_HISTORY)) }.toList()
+                keys = Stream.of(keys).filter { a: SwipeAction -> (!a.getId().equals(SwipeAction.REMOVE_FROM_HISTORY)) }.toList()
             }
             HistoryFragment.TAG -> {
                 forFragment = context.getString(R.string.playback_history_label)

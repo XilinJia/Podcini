@@ -2,7 +2,6 @@ package ac.mdiq.podcini.ui.actions.swipeactions
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
-import ac.mdiq.podcini.storage.database.Episodes.addToHistory
 import ac.mdiq.podcini.storage.database.Episodes.deleteMediaSync
 import ac.mdiq.podcini.storage.database.Episodes.setFavorite
 import ac.mdiq.podcini.storage.database.Episodes.setPlayState
@@ -12,6 +11,7 @@ import ac.mdiq.podcini.storage.database.Feeds.shouldAutoDeleteItem
 import ac.mdiq.podcini.storage.database.Queues.addToQueue
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueue
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueueSync
+import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.Episode
@@ -278,20 +278,30 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         @OptIn(UnstableApi::class)
         override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
             val playbackCompletionDate: Date? = item.media?.playbackCompletionDate
-            deleteFromHistory(item)
+            val lastPlayedDate = item.media?.lastPlayedTime
+            setHistoryDates(item)
 
             (fragment.requireActivity() as MainActivity)
                 .showSnackbarAbovePlayer(R.string.removed_history_label, Snackbar.LENGTH_LONG)
                 .setAction(fragment.getString(R.string.undo)) {
-                    if (playbackCompletionDate != null) addToHistory(item, playbackCompletionDate) }
+                    if (playbackCompletionDate != null) setHistoryDates(item, lastPlayedDate?:0, playbackCompletionDate) }
         }
 
         override fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {
             return true
         }
 
-        fun deleteFromHistory(episode: Episode) {
-            addToHistory(episode, Date(0))
+        fun setHistoryDates(episode: Episode, lastPlayed: Long = 0, completed: Date = Date(0)) {
+            runOnIOScope {
+                val episode_ = realm.query(Episode::class).query("id == $0", episode.id).first().find()
+                if (episode_ != null) {
+                    upsert(episode_) {
+                        it.media?.lastPlayedTime = lastPlayed
+                        it.media?.playbackCompletionDate = completed
+                    }
+                    EventFlow.postEvent(FlowEvent.HistoryEvent())
+                }
+            }
         }
     }
 

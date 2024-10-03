@@ -35,7 +35,7 @@ import ac.mdiq.podcini.preferences.UserPreferences.isSkipSilence
 import ac.mdiq.podcini.preferences.UserPreferences.prefLowQualityMedia
 import ac.mdiq.podcini.preferences.UserPreferences.rewindSecs
 import ac.mdiq.podcini.receiver.MediaButtonReceiver
-import ac.mdiq.podcini.storage.database.Episodes.addToHistory
+import ac.mdiq.podcini.storage.database.Episodes.setCompletionDate
 import ac.mdiq.podcini.storage.database.Episodes.deleteMediaSync
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodeByGuidOrUrl
 import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
@@ -58,7 +58,6 @@ import ac.mdiq.podcini.storage.utils.EpisodeUtil.hasAlmostEnded
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
 import ac.mdiq.podcini.ui.compose.queueChanged
-import ac.mdiq.podcini.ui.fragment.AudioPlayerFragment.Companion.media3Controller
 import ac.mdiq.podcini.ui.utils.NotificationUtils
 import ac.mdiq.podcini.ui.widget.WidgetUpdater
 import ac.mdiq.podcini.ui.widget.WidgetUpdater.WidgetState
@@ -103,7 +102,6 @@ import android.webkit.URLUtil
 import android.widget.Toast
 import androidx.annotation.VisibleForTesting
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE
 import androidx.core.util.Consumer
 import androidx.media3.common.*
 import androidx.media3.common.Player.*
@@ -404,7 +402,7 @@ class PlaybackService : MediaLibraryService() {
                             if (shouldDeleteRemoveFromQueue()) removeFromQueueSync(null, item!!)
                         }
                     }
-                    if (playable is EpisodeMedia && (ended || skipped || playingNext)) addToHistory(item!!)
+                    if (playable is EpisodeMedia && (ended || skipped || playingNext)) setCompletionDate(item!!)
                 }
             }
         }

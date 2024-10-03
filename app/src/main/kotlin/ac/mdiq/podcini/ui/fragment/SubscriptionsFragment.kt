@@ -904,6 +904,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             isSelected = !isSelected
                             if (isSelected) selected.add(feed)
                             else selected.remove(feed)
+                            Logd(TAG, "toggleSelected: selected: ${selected.size}")
                         }
                         Row(Modifier.background(if (isSelected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.surface)) {
                             AsyncImage(model = feed.imageUrl, contentDescription = "imgvCover",
@@ -927,6 +928,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                     selected.add(feed)
                                     longPressIndex = index
                                 } else {
+                                    selected.clear()
                                     selectedSize = 0
                                     longPressIndex = -1
                                 }
@@ -993,6 +995,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                     selectAllRes = R.drawable.ic_select_none
                                 } else {
                                     selected.clear()
+                                    longPressIndex = -1
                                     selectAllRes = R.drawable.ic_select_all
                                 }
                                 selectedSize = selected.size

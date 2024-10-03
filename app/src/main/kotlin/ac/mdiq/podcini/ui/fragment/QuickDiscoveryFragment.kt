@@ -2,16 +2,14 @@ package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.BuildConfig
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.FragmentSearchResultsBinding
-import ac.mdiq.podcini.databinding.QuickFeedDiscoveryBinding
-import ac.mdiq.podcini.databinding.QuickFeedDiscoveryItemBinding
-import ac.mdiq.podcini.databinding.SelectCountryDialogBinding
+import ac.mdiq.podcini.databinding.*
 import ac.mdiq.podcini.net.feed.discovery.ItunesTopListLoader
 import ac.mdiq.podcini.net.feed.discovery.ItunesTopListLoader.Companion.prefs
 import ac.mdiq.podcini.net.feed.discovery.PodcastSearchResult
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.adapter.OnlineFeedsAdapter
+import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.ui.compose.OnlineFeedItem
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
@@ -26,6 +24,23 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.annotation.OptIn
 import androidx.appcompat.widget.Toolbar
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
@@ -243,48 +258,31 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
         private var _binding: FragmentSearchResultsBinding? = null
         private val binding get() = _binding!!
 
-        //    private lateinit var prefs: SharedPreferences
-        private lateinit var gridView: GridView
-        private lateinit var progressBar: ProgressBar
-        private lateinit var txtvError: TextView
-        private lateinit var butRetry: Button
-        private lateinit var txtvEmpty: TextView
         private lateinit var toolbar: MaterialToolbar
 
-        /**
-         * Adapter responsible with the search results.
-         */
-        private var adapter: OnlineFeedsAdapter? = null
-
-        /**
-         * List of podcasts retreived from the search.
-         */
-        private var searchResults: List<PodcastSearchResult>? = null
-        private var topList: List<PodcastSearchResult>? = null
+        private var topList: List<PodcastSearchResult>? = listOf()
 
         private var countryCode: String? = "US"
         private var hidden = false
         private var needsConfirm = false
 
+        private var searchResults = mutableStateListOf<PodcastSearchResult>()
+        private var errorText by mutableStateOf("")
+        private var retryQerry by mutableStateOf("")
+        private var showProgress by mutableStateOf(true)
+        private var noResultText by mutableStateOf("")
+
         /**
          * Replace adapter data with provided search results from SearchTask.
-         *
          * @param result List of Podcast objects containing search results
          */
-        private fun updateData(result: List<PodcastSearchResult>?) {
-            this.searchResults = result
-            adapter?.clear()
-            if (!result.isNullOrEmpty()) {
-                gridView.visibility = View.VISIBLE
-                txtvEmpty.visibility = View.GONE
-                for (p in result) {
-                    adapter!!.add(p)
-                }
-                adapter?.notifyDataSetInvalidated()
-            } else {
-                gridView.visibility = View.GONE
-                txtvEmpty.visibility = View.VISIBLE
-            }
+        private fun updateData(result: List<PodcastSearchResult>) {
+            searchResults.clear()
+            if (result.isNotEmpty()) {
+                searchResults.addAll(result)
+                noResultText = ""
+            } else noResultText = getString(R.string.no_results_for_query, "")
+            showProgress = false
         }
 
         override fun onCreate(savedInstanceState: Bundle?) {
@@ -298,76 +296,86 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
         @OptIn(UnstableApi::class) override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             // Inflate the layout for this fragment
             _binding = FragmentSearchResultsBinding.inflate(inflater)
-//        val root = inflater.inflate(R.layout.fragment_itunes_search, container, false)
-
             Logd(TAG, "fragment onCreateView")
-            gridView = binding.gridView
-            adapter = OnlineFeedsAdapter(requireActivity(), ArrayList())
-            gridView.setAdapter(adapter)
+            binding.mainView.setContent {
+                CustomTheme(requireContext()) {
+                    MainView()
+                }
+            }
 
             toolbar = binding.toolbar
             toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
             toolbar.inflateMenu(R.menu.countries_menu)
             val discoverHideItem = toolbar.menu.findItem(R.id.discover_hide_item)
             discoverHideItem.setChecked(hidden)
-
             toolbar.setOnMenuItemClickListener(this)
-
-            //Show information about the podcast when the list item is clicked
-            gridView.onItemClickListener = AdapterView.OnItemClickListener { _: AdapterView<*>?, _: View?, position: Int, _: Long ->
-                val podcast = searchResults!![position]
-                if (podcast.feedUrl == null) return@OnItemClickListener
-
-                val fragment: Fragment = OnlineFeedFragment.newInstance(podcast.feedUrl)
-                (activity as MainActivity).loadChildFragment(fragment)
-            }
-
-            progressBar = binding.progressBar
-            txtvError = binding.txtvError
-            butRetry = binding.butRetry
-            txtvEmpty = binding.empty
 
             loadToplist(countryCode)
             return binding.root
         }
 
+        @Composable
+        fun MainView() {
+            val textColor = MaterialTheme.colorScheme.onSurface
+            ConstraintLayout(modifier = Modifier.fillMaxSize()) {
+                val (gridView, progressBar, empty, txtvError, butRetry, powered) = createRefs()
+                if (showProgress) CircularProgressIndicator(progress = {0.6f}, strokeWidth = 10.dp, modifier = Modifier.size(50.dp).constrainAs(progressBar) { centerTo(parent) })
+                val lazyListState = rememberLazyListState()
+                if (searchResults.isNotEmpty()) LazyColumn(state = lazyListState, modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp)
+                    .constrainAs(gridView) {
+                        top.linkTo(parent.top)
+                        bottom.linkTo(parent.bottom)
+                        start.linkTo(parent.start)
+                    },
+                    verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(searchResults.size) { index ->
+                        OnlineFeedItem(activity = activity as MainActivity, searchResults[index])
+                    }
+                }
+                if (searchResults.isEmpty()) Text(noResultText, color = textColor, modifier = Modifier.constrainAs(empty) { centerTo(parent) })
+                if (errorText.isNotEmpty()) Text(errorText, color = textColor, modifier = Modifier.constrainAs(txtvError) { centerTo(parent) })
+                if (retryQerry.isNotEmpty()) Button(modifier = Modifier.padding(16.dp).constrainAs(butRetry) { top.linkTo(txtvError.bottom)},
+                    onClick = {
+                        if (needsConfirm) {
+                            prefs!!.edit().putBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, false).apply()
+                            needsConfirm = false
+                        }
+                        loadToplist(countryCode)
+                    }, ) {
+                    Text(stringResource(id = R.string.retry_label), color = textColor)
+                }
+//                Text( getString(R.string.search_powered_by, searchProvider!!.name), color = Color.Black, style = MaterialTheme.typography.labelSmall, modifier = Modifier.background(
+//                    Color.LightGray)
+//                    .constrainAs(powered) {
+//                        bottom.linkTo(parent.bottom)
+//                        end.linkTo(parent.end)
+//                    })
+            }
+        }
+
         override fun onDestroy() {
             _binding = null
-            adapter = null
-            searchResults = null
+            searchResults.clear()
             topList = null
             super.onDestroy()
         }
 
         private fun loadToplist(country: String?) {
-            gridView.visibility = View.GONE
-            txtvError.visibility = View.GONE
-            butRetry.visibility = View.GONE
-            butRetry.setText(R.string.retry_label)
-            txtvEmpty.visibility = View.GONE
-            progressBar.visibility = View.VISIBLE
-
+            searchResults.clear()
+            errorText = ""
+            retryQerry = ""
+            noResultText = ""
+            showProgress = true
             if (hidden) {
-                gridView.visibility = View.GONE
-                txtvError.visibility = View.VISIBLE
-                txtvError.text = resources.getString(R.string.discover_is_hidden)
-                butRetry.visibility = View.GONE
-                txtvEmpty.visibility = View.GONE
-                progressBar.visibility = View.GONE
+                errorText = resources.getString(R.string.discover_is_hidden)
+                showProgress = false
                 return
             }
             if (BuildConfig.FLAVOR == "free" && needsConfirm) {
-                txtvError.visibility = View.VISIBLE
-                txtvError.text = ""
-                butRetry.visibility = View.VISIBLE
-                butRetry.setText(R.string.discover_confirm)
-                butRetry.setOnClickListener {
-                    prefs!!.edit().putBoolean(ItunesTopListLoader.PREF_KEY_NEEDS_CONFIRM, false).apply()
-                    needsConfirm = false
-                    loadToplist(country)
-                }
-                txtvEmpty.visibility = View.GONE
-                progressBar.visibility = View.GONE
+                errorText = ""
+                retryQerry = resources.getString(R.string.discover_confirm)
+                noResultText = ""
+                showProgress = false
                 return
             }
 
@@ -378,20 +386,17 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
                         loader.loadToplist(country?:"", NUM_OF_TOP_PODCASTS, getFeedList())
                     }
                     withContext(Dispatchers.Main) {
-                        progressBar.visibility = View.GONE
+                        showProgress = false
                         topList = podcasts
-                        updateData(topList)
+                        updateData(topList!!)
                     }
                 } catch (e: Throwable) {
                     Log.e(TAG, Log.getStackTraceString(e))
-                    progressBar.visibility = View.GONE
-                    txtvError.text = e.message
-                    txtvError.visibility = View.VISIBLE
-                    butRetry.setOnClickListener { loadToplist(country) }
-                    butRetry.visibility = View.VISIBLE
+                    searchResults.clear()
+                    errorText = e.message ?: "no error message"
+                    retryQerry = " retry"
                 }
             }
-
         }
 
         override fun onMenuItemClick(item: MenuItem): Boolean {
@@ -470,7 +475,6 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
         }
 
         companion object {
-            private val TAG: String = DiscoveryFragment::class.simpleName ?: "Anonymous"
             private const val NUM_OF_TOP_PODCASTS = 25
         }
     }

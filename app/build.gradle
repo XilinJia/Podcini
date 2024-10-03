@@ -31,8 +31,8 @@ android {
         testApplicationId "ac.mdiq.podcini.tests"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        versionCode 3020262
-        versionName "6.8.5"
+        versionCode 3020263
+        versionName "6.8.6"
 
         applicationId "ac.mdiq.podcini.R"
         def commit = ""
@@ -197,8 +197,7 @@ dependencies {
     implementation libs.androidx.annotation
     implementation libs.androidx.appcompat
     implementation libs.androidx.coordinatorlayout
-    //noinspection UseTomlInstead
-    implementation "androidx.fragment:fragment-ktx:1.8.3"
+    implementation libs.androidx.fragment.fragment.ktx
     implementation libs.androidx.gridlayout
     implementation libs.androidx.media3.exoplayer
     implementation libs.androidx.media3.ui

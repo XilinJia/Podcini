@@ -6,8 +6,10 @@ import ac.mdiq.podcini.net.feed.discovery.PodcastSearchResult
 import ac.mdiq.podcini.net.feed.discovery.PodcastSearcher
 import ac.mdiq.podcini.net.feed.discovery.PodcastSearcherRegistry
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.adapter.OnlineFeedsAdapter
+import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.ui.compose.OnlineFeedItem
 import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.MiscFormatter.formatNumber
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
@@ -16,11 +18,28 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import android.widget.*
 import androidx.appcompat.widget.SearchView
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
+import coil.compose.AsyncImage
 import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -31,11 +50,13 @@ class SearchResultsFragment : Fragment() {
     private var _binding: FragmentSearchResultsBinding? = null
     private val binding get() = _binding!!
 
-    private var adapter: OnlineFeedsAdapter? = null
     private var searchProvider: PodcastSearcher? = null
-    private lateinit var gridView: GridView
 
-    private var searchResults: MutableList<PodcastSearchResult> = mutableListOf()
+    private var searchResults = mutableStateListOf<PodcastSearchResult>()
+    private var errorText by mutableStateOf("")
+    private var retryQerry by mutableStateOf("")
+    private var showProgress by mutableStateOf(true)
+    private var noResultText by mutableStateOf("")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,40 +72,61 @@ class SearchResultsFragment : Fragment() {
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentSearchResultsBinding.inflate(inflater)
-
         Logd(TAG, "fragment onCreateView")
-        gridView = binding.gridView
-        adapter = OnlineFeedsAdapter(requireContext(), ArrayList())
-        gridView.setAdapter(adapter)
-
-        //Show information about the podcast when the list item is clicked
-        gridView.onItemClickListener = AdapterView.OnItemClickListener { _: AdapterView<*>?, _: View?, position: Int, _: Long ->
-            val podcast = searchResults[position]
-            if (podcast.feedUrl != null) {
-                val fragment = OnlineFeedFragment.newInstance(podcast.feedUrl)
-                fragment.feedSource = podcast.source
-                (activity as MainActivity).loadChildFragment(fragment)
+        binding.mainView.setContent {
+            CustomTheme(requireContext()) {
+                MainView()
             }
         }
-        if (searchProvider != null) binding.searchPoweredBy.text = getString(R.string.search_powered_by, searchProvider!!.name)
+
         setupToolbar(binding.toolbar)
 
-        gridView.setOnScrollListener(object : AbsListView.OnScrollListener {
-            override fun onScrollStateChanged(view: AbsListView, scrollState: Int) {
-                if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL) {
-                    val imm = activity!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                    imm.hideSoftInputFromWindow(view.windowToken, 0)
+//        gridView.setOnScrollListener(object : AbsListView.OnScrollListener {
+//            override fun onScrollStateChanged(view: AbsListView, scrollState: Int) {
+//                if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL) {
+//                    val imm = activity!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+//                    imm.hideSoftInputFromWindow(view.windowToken, 0)
+//                }
+//            }
+//            override fun onScroll(view: AbsListView, firstVisibleItem: Int, visibleItemCount: Int, totalItemCount: Int) {}
+//        })
+        return binding.root
+    }
+
+    @Composable
+    fun MainView() {
+        val textColor = MaterialTheme.colorScheme.onSurface
+        ConstraintLayout(modifier = Modifier.fillMaxSize()) {
+            val (gridView, progressBar, empty, txtvError, butRetry, powered) = createRefs()
+            if (showProgress) CircularProgressIndicator(progress = {0.6f}, strokeWidth = 10.dp, modifier = Modifier.size(50.dp).constrainAs(progressBar) { centerTo(parent) })
+            val lazyListState = rememberLazyListState()
+            if (searchResults.isNotEmpty()) LazyColumn(state = lazyListState, modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp)
+                    .constrainAs(gridView) {
+                        top.linkTo(parent.top)
+                        bottom.linkTo(parent.bottom)
+                        start.linkTo(parent.start)
+                    },
+                verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(searchResults.size) { index ->
+                    OnlineFeedItem(activity = activity as MainActivity, searchResults[index])
                 }
             }
-            override fun onScroll(view: AbsListView, firstVisibleItem: Int, visibleItemCount: Int, totalItemCount: Int) {}
-        })
-        return binding.root
+            if (searchResults.isEmpty()) Text(noResultText, color = textColor, modifier = Modifier.constrainAs(empty) { centerTo(parent) })
+            if (errorText.isNotEmpty()) Text(errorText, color = textColor, modifier = Modifier.constrainAs(txtvError) { centerTo(parent) })
+            if (retryQerry.isNotEmpty()) Button(modifier = Modifier.padding(16.dp).constrainAs(butRetry) { top.linkTo(txtvError.bottom)}, onClick = { search(retryQerry) }, ) {
+                Text(stringResource(id = R.string.retry_label), color = textColor)
+            }
+            Text( getString(R.string.search_powered_by, searchProvider!!.name), color = Color.Black, style = MaterialTheme.typography.labelSmall, modifier = Modifier.background(Color.LightGray)
+                .constrainAs(powered) {
+                bottom.linkTo(parent.bottom)
+                end.linkTo(parent.end)
+            })
+        }
     }
 
     override fun onDestroy() {
         _binding = null
-        searchResults = mutableListOf()
-        adapter = null
+        searchResults.clear()
         super.onDestroy()
     }
 
@@ -129,39 +171,27 @@ class SearchResultsFragment : Fragment() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val result = searchProvider?.search(query) ?: listOf()
-                searchResults = result.toMutableList()
+                searchResults.clear()
+                searchResults.addAll(result)
                 withContext(Dispatchers.Main) {
-                    binding.progressBar.visibility = View.GONE
-                    adapter?.clear()
-                    handleSearchResults()
-                    binding.empty.text = getString(R.string.no_results_for_query, query)
+                    showProgress = false
+                    noResultText = getString(R.string.no_results_for_query, query)
                 }
             } catch (e: Exception) { handleSearchError(e, query) }
         }
     }
 
-    private fun handleSearchResults() {
-        adapter?.addAll(searchResults)
-        adapter?.notifyDataSetInvalidated()
-        gridView.visibility = if (searchResults.isNotEmpty()) View.VISIBLE else View.GONE
-        binding.empty.visibility = if (searchResults.isEmpty()) View.VISIBLE else View.GONE
-    }
-
     private fun handleSearchError(e: Throwable, query: String) {
         Logd(TAG, "exception: ${e.message}")
-        binding.progressBar.visibility = View.GONE
-        binding.txtvError.text = e.toString()
-        binding.txtvError.visibility = View.VISIBLE
-        binding.butRetry.setOnClickListener { search(query) }
-        binding.butRetry.visibility = View.VISIBLE
+        showProgress = false
+        errorText = e.toString()
+        retryQerry = query
     }
 
     private fun showOnlyProgressBar() {
-        gridView.visibility = View.GONE
-        binding.txtvError.visibility = View.GONE
-        binding.butRetry.visibility = View.GONE
-        binding.empty.visibility = View.GONE
-        binding.progressBar.visibility = View.VISIBLE
+        errorText = ""
+        retryQerry = ""
+        showProgress = true
     }
 
     private fun showInputMethod(view: View) {

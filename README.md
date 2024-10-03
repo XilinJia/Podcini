@@ -122,6 +122,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 
 ### Online feed
 
+* Long-press on a feed in online feed list prompts to subscribe it straight out.
 * More info about feeds are shown in the online search view
 * Ability to open podcast from webpage address
 * Online feed info display is handled in similar ways as any local feed, and offers options to subscribe or view episodes

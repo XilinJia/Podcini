@@ -27,7 +27,7 @@ class Episode : RealmObject {
     var id: Long = 0L   // increments from Date().time * 100 at time of creation
 
     /**
-     * The id/guid that can be found in the rss/atom feed. Might not be set.
+     * The id/guid that can be found in the rss/atom feed. Might not be set, especially in youtube feeds
      */
     @Index
     var identifier: String? = null
@@ -137,6 +137,9 @@ class Episode : RealmObject {
 
     @Ignore
     val downloadState = mutableIntStateOf(if (media?.downloaded == true) DownloadStatus.State.COMPLETED.ordinal else DownloadStatus.State.UNKNOWN.ordinal)
+
+    @Ignore
+    val isRemote = mutableStateOf(false)
 
     @Ignore
     val stopMonitoring = mutableStateOf(false)

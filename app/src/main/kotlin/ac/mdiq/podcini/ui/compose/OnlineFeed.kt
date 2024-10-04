@@ -1,10 +1,11 @@
 package ac.mdiq.podcini.ui.compose
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.net.feed.DirectSubscribe
+import ac.mdiq.podcini.net.feed.FeedBuilder
 import ac.mdiq.podcini.net.feed.discovery.PodcastSearchResult
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.fragment.OnlineFeedFragment
+import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.MiscFormatter.formatNumber
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
@@ -48,9 +49,11 @@ fun OnlineFeedItem(activity: MainActivity, feed: PodcastSearchResult) {
                         Button(onClick = {
                             CoroutineScope(Dispatchers.IO).launch {
                                 if (feed.feedUrl != null) {
-                                val subscribe = DirectSubscribe(activity)
-                                subscribe.feedSource = feed.source
-                                subscribe.startFeedBuilding(feed.feedUrl)
+                                    val feedBuilder = FeedBuilder(activity) {
+                                        message, details -> Logd("OnineFeedItem", "Subscribe error: $message \n $details")
+                                    }
+                                    feedBuilder.feedSource = feed.source
+                                    feedBuilder.startFeedBuilding(feed.feedUrl, "", "") { feed, _ ->  feedBuilder.subscribe(feed)}
                                 }
                             }
                             onDismissRequest()

@@ -1,14 +1,12 @@
 package ac.mdiq.podcini.net.feed
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.net.download.DownloadError
 import ac.mdiq.podcini.net.download.service.DownloadRequestCreator.create
 import ac.mdiq.podcini.net.download.service.Downloader
 import ac.mdiq.podcini.net.download.service.HttpDownloader
 import ac.mdiq.podcini.net.feed.parser.FeedHandler
 import ac.mdiq.podcini.net.utils.UrlChecker.prepareUrl
 import ac.mdiq.podcini.storage.database.Episodes.episodeFromStreamInfoItem
-import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Feed
@@ -23,10 +21,8 @@ import ac.mdiq.vista.extractor.channel.tabs.ChannelTabInfo
 import ac.mdiq.vista.extractor.exceptions.ExtractionException
 import ac.mdiq.vista.extractor.playlist.PlaylistInfo
 import ac.mdiq.vista.extractor.stream.StreamInfoItem
-import android.app.Dialog
 import android.content.Context
 import android.util.Log
-import androidx.annotation.UiThread
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.types.RealmList
 import kotlinx.coroutines.CoroutineScope
@@ -39,31 +35,19 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 
-// TODO: Extracted from OnlineFeedFragment, will do some merging later
-class DirectSubscribe(val context: Context) {
+class FeedBuilder(val context: Context, val showError: (String?, String)->Unit) {
     private val TAG = "DirectSubscribe"
 
     var feedSource: String = ""
-
-    private var selectedDownloadUrl: String? = null
-    private var feeds: List<Feed>? = null
+    var selectedDownloadUrl: String? = null
     private var downloader: Downloader? = null
-    private var username: String? = null
-    private var password: String? = null
 
-    private var dialog: Dialog? = null
-
-    fun startFeedBuilding(url: String) {
+    fun startFeedBuilding(url: String, username: String?, password: String?, handleFeed: (Feed, Map<String, String>)->Unit) {
         if (feedSource == "VistaGuide" || url.contains("youtube.com")) {
             feedSource = "VistaGuide"
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    feeds = getFeedList()
-                    val service = try {
-                        Vista.getService("YouTube")
-                    } catch (e: ExtractionException) {
-                        throw ExtractionException("YouTube service not found")
-                    }
+                    val service = try { Vista.getService("YouTube") } catch (e: ExtractionException) { throw ExtractionException("YouTube service not found") }
                     selectedDownloadUrl = prepareUrl(url)
                     val feed_ = Feed(selectedDownloadUrl, null)
                     feed_.id = Feed.newId()
@@ -77,8 +61,7 @@ class DirectSubscribe(val context: Context) {
                         feed_.title = playlistInfo.name
                         feed_.description = playlistInfo.description?.content ?: ""
                         feed_.author = playlistInfo.uploaderName
-                        feed_.imageUrl =
-                            if (playlistInfo.thumbnails.isNotEmpty()) playlistInfo.thumbnails.first().url else null
+                        feed_.imageUrl = if (playlistInfo.thumbnails.isNotEmpty()) playlistInfo.thumbnails.first().url else null
                         var infoItems = playlistInfo.relatedItems
                         var nextPage = playlistInfo.nextPage
                         Logd(TAG, "infoItems: ${infoItems.size}")
@@ -99,18 +82,17 @@ class DirectSubscribe(val context: Context) {
                                 Logd(TAG, "more infoItems: ${infoItems.size}")
                             } catch (e: Throwable) {
                                 Logd(TAG, "PlaylistInfo.getMoreItems error: ${e.message}")
-                                withContext(Dispatchers.Main) { showErrorDialog(e.message, "") }
+                                withContext(Dispatchers.Main) { showError(e.message, "") }
                                 break
                             }
                         }
                         feed_.episodes = eList
-//                        withContext(Dispatchers.Main) { showFeedInformation(feed_, mapOf()) }
-                        subscribe(feed_)
+                        withContext(Dispatchers.Main) { handleFeed(feed_, mapOf()) }
                     } else {
                         val channelInfo = ChannelInfo.getInfo(service, url)
                         Logd(TAG, "startFeedBuilding result: $channelInfo ${channelInfo.tabs.size}")
                         if (channelInfo.tabs.isEmpty()) {
-                            withContext(Dispatchers.Main) { showErrorDialog("Channel is empty", "") }
+                            withContext(Dispatchers.Main) { showError("Channel is empty", "") }
                             return@launch
                         }
                         try {
@@ -119,8 +101,7 @@ class DirectSubscribe(val context: Context) {
                             feed_.title = channelInfo.name
                             feed_.description = channelInfo.description
                             feed_.author = channelInfo.parentChannelName
-                            feed_.imageUrl =
-                                if (channelInfo.avatars.isNotEmpty()) channelInfo.avatars.first().url else null
+                            feed_.imageUrl = if (channelInfo.avatars.isNotEmpty()) channelInfo.avatars.first().url else null
 
                             var infoItems = channelTabInfo.relatedItems
                             var nextPage = channelTabInfo.nextPage
@@ -142,21 +123,20 @@ class DirectSubscribe(val context: Context) {
                                     Logd(TAG, "more infoItems: ${infoItems.size}")
                                 } catch (e: Throwable) {
                                     Logd(TAG, "ChannelTabInfo.getMoreItems error: ${e.message}")
-                                    withContext(Dispatchers.Main) { showErrorDialog(e.message, "") }
+                                    withContext(Dispatchers.Main) { showError(e.message, "") }
                                     break
                                 }
                             }
                             feed_.episodes = eList
-//                            withContext(Dispatchers.Main) { showFeedInformation(feed_, mapOf()) }
-                            subscribe(feed_)
+                            withContext(Dispatchers.Main) { handleFeed(feed_, mapOf()) }
                         } catch (e: Throwable) {
                             Logd(TAG, "startFeedBuilding error1 ${e.message}")
-                            withContext(Dispatchers.Main) { showErrorDialog(e.message, "") }
+                            withContext(Dispatchers.Main) { showError(e.message, "") }
                         }
                     }
                 } catch (e: Throwable) {
                     Logd(TAG, "startFeedBuilding error ${e.message}")
-                    withContext(Dispatchers.Main) { showErrorDialog(e.message, "") }
+                    withContext(Dispatchers.Main) { showError(e.message, "") }
                 }
             }
             return
@@ -171,14 +151,13 @@ class DirectSubscribe(val context: Context) {
                 for (element in linkElements) {
                     val rssUrl = element.attr("href")
                     Logd(TAG, "RSS URL: $rssUrl")
-                    startFeedBuilding(rssUrl)
-                    return
+                    startFeedBuilding(rssUrl, username, password) {feed, map -> handleFeed(feed, map) }
                 }
             }
             "XML" -> {}
             else -> {
                 Log.e(TAG, "unknown url type $urlType")
-                showErrorDialog("unknown url type $urlType", "")
+                showError("unknown url type $urlType", "")
                 return
             }
         }
@@ -189,7 +168,6 @@ class DirectSubscribe(val context: Context) {
             .build()
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                feeds = getFeedList()
                 downloader = HttpDownloader(request)
                 downloader?.call()
                 val status = downloader?.result
@@ -198,69 +176,27 @@ class DirectSubscribe(val context: Context) {
                     status.isSuccessful -> {
                         try {
                             val result = doParseFeed(request.destination)
-//                            if (result != null) withContext(Dispatchers.Main) {
-//                                showFeedInformation(result.feed, result.alternateFeedUrls)
-//                            }
-                            if (result != null) subscribe(result.feed)
+                            if (result != null) withContext(Dispatchers.Main) { handleFeed(result.feed, result.alternateFeedUrls) }
                         } catch (e: Throwable) {
                             Logd(TAG, "Feed parser exception: " + Log.getStackTraceString(e))
-                            withContext(Dispatchers.Main) { showErrorDialog(e.message, "") }
+                            withContext(Dispatchers.Main) { showError(e.message, "") }
                         }
                     }
-                    else -> withContext(Dispatchers.Main) {
-                        when {
-                            status.reason == DownloadError.ERROR_UNAUTHORIZED -> {
-                                Logd(TAG, "status.reason: DownloadError.ERROR_UNAUTHORIZED")
-//                                if (!isRemoving && !isPaused) {
-//                                    if (username != null && password != null)
-//                                        Toast.makeText(context, R.string.download_error_unauthorized, Toast.LENGTH_LONG).show()
-//                                    if (downloader?.downloadRequest?.source != null) {
-//                                        dialog = FeedViewAuthenticationDialog(context, R.string.authentication_notification_title, downloader!!.downloadRequest.source!!).create()
-//                                        dialog?.show()
-//                                    }
-//                                }
-                            }
-                            else -> showErrorDialog(context.getString(from(status.reason)), status.reasonDetailed)
-                        }
-                    }
+                    else -> withContext(Dispatchers.Main) { showError(context.getString(from(status.reason)), status.reasonDetailed) }
                 }
             } catch (e: Throwable) {
                 Log.e(TAG, Log.getStackTraceString(e))
-                withContext(Dispatchers.Main) { showErrorDialog(e.message, "") }
+                withContext(Dispatchers.Main) { showError(e.message, "") }
             }
         }
     }
 
-    @UiThread
-    private fun showErrorDialog(errorMsg: String?, details: String) {
-        Logd(TAG, "error: ${errorMsg} \n details: $details")
-//        if (!isRemoving && !isPaused) {
-//            val builder = MaterialAlertDialogBuilder(context)
-//            builder.setTitle(R.string.error_label)
-//            if (errorMsg != null) {
-//                val total = """
-//                    $errorMsg
-//
-//                    $details
-//                    """.trimIndent()
-//                val errorMessage = SpannableString(total)
-//                errorMessage.setSpan(ForegroundColorSpan(-0x77777778), errorMsg.length, total.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-//                builder.setMessage(errorMessage)
-//            } else builder.setMessage(R.string.download_error_error_unknown)
-//
-//            builder.setPositiveButton(android.R.string.ok) { dialog: DialogInterface, _: Int -> dialog.cancel() }
-////            if (intent.getBooleanExtra(ARG_WAS_MANUAL_URL, false)) {
-////                builder.setNeutralButton(R.string.edit_url_menu) { _: DialogInterface?, _: Int -> editUrl() }
-////            }
-//            builder.setOnCancelListener {
-////                setResult(RESULT_ERROR)
-////                finish()
-//            }
-//            if (dialog != null && dialog!!.isShowing) dialog!!.dismiss()
-//            dialog = builder.show()
-//        }
-    }
-
+    /**
+     * Try to parse the feed.
+     * @return  The FeedHandlerResult if successful.
+     * Null if unsuccessful but we started another attempt.
+     * @throws Exception If unsuccessful but we do not know a resolution.
+     */
     @Throws(Exception::class)
     private fun doParseFeed(destination: String): FeedHandler.FeedHandlerResult? {
         val destinationFile = File(destination)
@@ -302,7 +238,7 @@ class DirectSubscribe(val context: Context) {
         var type: String? = null
         try { type = connection.contentType } catch (e: IOException) {
             Log.e(TAG, "Error connecting to URL", e)
-            showErrorDialog(e.message, "")
+            showError(e.message, "")
         } finally { connection.disconnect() }
         if (type == null) return null
         Logd(TAG, "connection type: $type")
@@ -313,7 +249,7 @@ class DirectSubscribe(val context: Context) {
         }
     }
 
-    private fun subscribe(feed: Feed) {
+    fun subscribe(feed: Feed) {
         feed.id = 0L
         for (item in feed.episodes) {
             item.id = 0L
@@ -326,13 +262,4 @@ class DirectSubscribe(val context: Context) {
         val fo = updateFeed(context, feed, false)
         Logd(TAG, "fo.id: ${fo?.id} feed.id: ${feed.id}")
     }
-
-//    private inner class FeedViewAuthenticationDialog(context: Context, titleRes: Int, private val feedUrl: String) :
-//        AuthenticationDialog(context, titleRes, true, username, password) {
-//        override fun onConfirmed(username: String, password: String) {
-//            this@TestSubscribe.username = username
-//            this@TestSubscribe.password = password
-//            startFeedBuilding(feedUrl)
-//        }
-//    }
 }

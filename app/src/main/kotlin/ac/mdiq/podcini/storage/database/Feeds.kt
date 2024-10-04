@@ -454,6 +454,39 @@ object Feeds {
         upsertBlk(feed) {}
     }
 
+    private fun getMiscSyndicate(): Feed {
+        var feedId: Long = 11
+        var feed = getFeed(feedId, true)
+        if (feed != null) return feed
+
+        feed = Feed()
+        feed.id = feedId
+        feed.title = "Misc Syndicate"
+        feed.type = Feed.FeedType.RSS.name
+        feed.downloadUrl = null
+        feed.fileUrl = File(feedfilePath, getFeedfileName(feed)).toString()
+        feed.preferences = FeedPreferences(feed.id, false, FeedPreferences.AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
+        feed.preferences!!.keepUpdated = false
+        feed.preferences!!.queueId = -2L
+//        feed.preferences!!.videoModePolicy = if (video) VideoMode.WINDOW_VIEW else VideoMode.AUDIO_ONLY
+        upsertBlk(feed) {}
+        return feed
+    }
+
+    fun addToMiscSyndicate(episode: Episode) {
+        val feed = getMiscSyndicate()
+        Logd(TAG, "addToMiscSyndicate: feed: ${feed.title}")
+        if (searchEpisodeByIdentifyingValue(feed.episodes, episode) != null) return
+        Logd(TAG, "addToMiscSyndicate adding new episode: ${episode.title}")
+        episode.feed = feed
+        episode.id = Feed.newId()
+        episode.feedId = feed.id
+        episode.media?.id = episode.id
+        upsertBlk(episode) {}
+        feed.episodes.add(episode)
+        upsertBlk(feed) {}
+    }
+
     /**
      * Compares the pubDate of two FeedItems for sorting in reverse order
      */

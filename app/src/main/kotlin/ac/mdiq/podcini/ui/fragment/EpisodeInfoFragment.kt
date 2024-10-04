@@ -861,8 +861,8 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
             fun newInstance(item: Episode): EpisodeHomeFragment {
                 val fragment = EpisodeHomeFragment()
-                Logd(TAG, "item.itemIdentifier ${item.identifier}")
-                if (item.identifier != episode?.identifier) episode = item
+                Logd(TAG, "item.identifyingValue ${item.identifyingValue}")
+                if (item.identifyingValue != episode?.identifyingValue) episode = item
                 return fragment
             }
         }

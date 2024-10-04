@@ -239,6 +239,7 @@
     <string name="play_label">Play</string>
     <string name="pause_label">Pause</string>
     <string name="stream_label">Stream</string>
+    <string name="reserve_episodes_label">Reserve episodes</string>
     <string name="delete_label">Delete</string>
     <string name="delete_failed">Unable to delete file. Rebooting the device could help.</string>
     <string name="delete_local_failed">Unable to delete file. Try re-connecting the local folder from the podcast info screen.</string>

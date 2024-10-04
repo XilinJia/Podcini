@@ -172,12 +172,10 @@ class FeedHandler {
                 state.tagstack.push(element)
             }
         }
-
         @Throws(SAXException::class)
         override fun characters(ch: CharArray, start: Int, length: Int) {
             if (state.tagstack.size >= 2 && state.contentBuf != null) state.contentBuf!!.appendRange(ch, start, start + length)
         }
-
         @Throws(SAXException::class)
         override fun endElement(uri: String, localName: String, qualifiedName: String) {
             val handler = getHandlingNamespace(uri, qualifiedName)
@@ -187,12 +185,10 @@ class FeedHandler {
             }
             state.contentBuf = null
         }
-
         @Throws(SAXException::class)
         override fun endPrefixMapping(prefix: String) {
             if (state.defaultNamespaces.size > 1 && prefix == DEFAULT_PREFIX) state.defaultNamespaces.pop()
         }
-
         @Throws(SAXException::class)
         override fun startPrefixMapping(prefix: String, uri: String) {
             // Find the right namespace
@@ -235,13 +231,11 @@ class FeedHandler {
                 }
             }
         }
-
         private fun getHandlingNamespace(uri: String, qualifiedName: String): Namespace? {
             var handler = state.namespaces[uri]
             if (handler == null && !state.defaultNamespaces.empty() && !qualifiedName.contains(":")) handler = state.defaultNamespaces.peek()
             return handler
         }
-
         @Throws(SAXException::class)
         override fun endDocument() {
             super.endDocument()
@@ -267,16 +261,13 @@ class FeedHandler {
                     else -> "Type $type not supported"
                 }
             }
-
         constructor(type: Type) : super() {
             this.type = type
         }
-
         constructor(type: Type, rootElement: String?) {
             this.type = type
             this.rootElement = rootElement
         }
-
         constructor(message: String?) {
             this.message = message
             type = Type.INVALID

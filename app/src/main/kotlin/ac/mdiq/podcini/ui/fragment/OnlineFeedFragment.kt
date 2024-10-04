@@ -1,42 +1,24 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.EditTextDialogBinding
 import ac.mdiq.podcini.databinding.OnlineFeedviewFragmentBinding
-import ac.mdiq.podcini.net.download.DownloadError
-import ac.mdiq.podcini.net.download.service.DownloadRequestCreator.create
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
-import ac.mdiq.podcini.net.download.service.Downloader
-import ac.mdiq.podcini.net.download.service.HttpDownloader
+import ac.mdiq.podcini.net.feed.FeedBuilder
 import ac.mdiq.podcini.net.feed.FeedUrlNotFoundException
 import ac.mdiq.podcini.net.feed.discovery.CombinedSearcher
 import ac.mdiq.podcini.net.feed.discovery.PodcastSearcherRegistry
-import ac.mdiq.podcini.net.feed.parser.FeedHandler
 import ac.mdiq.podcini.net.utils.HtmlToPlainText
-import ac.mdiq.podcini.net.utils.UrlChecker.prepareUrl
 import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
-import ac.mdiq.podcini.storage.database.Episodes.episodeFromStreamInfoItem
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
 import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.model.*
-import ac.mdiq.podcini.storage.utils.FilesUtils.feedfilePath
-import ac.mdiq.podcini.storage.utils.FilesUtils.getFeedfileName
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.dialog.AuthenticationDialog
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.error.DownloadErrorLabel.from
-import ac.mdiq.vista.extractor.InfoItem
-import ac.mdiq.vista.extractor.Vista
-import ac.mdiq.vista.extractor.channel.ChannelInfo
-import ac.mdiq.vista.extractor.channel.tabs.ChannelTabInfo
-import ac.mdiq.vista.extractor.exceptions.ExtractionException
-import ac.mdiq.vista.extractor.playlist.PlaylistInfo
-import ac.mdiq.vista.extractor.stream.StreamInfoItem
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
@@ -54,7 +36,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.Toast
 import androidx.annotation.OptIn
 import androidx.annotation.UiThread
 import androidx.collection.ArrayMap
@@ -64,16 +45,12 @@ import androidx.media3.common.util.UnstableApi
 import coil.load
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import io.realm.kotlin.ext.realmListOf
-import io.realm.kotlin.types.RealmList
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.io.File
 import java.io.IOException
-import java.net.HttpURLConnection
-import java.net.URL
 import kotlin.concurrent.Volatile
 
 /**
@@ -92,7 +69,8 @@ class OnlineFeedFragment : Fragment() {
     private var displayUpArrow = false
 
     var feedSource: String = ""
-    var feedUrl: String = ""
+    private var feedUrl: String = ""
+    private lateinit var feedBuilder: FeedBuilder
 
     private val feedId: Long
         get() {
@@ -106,7 +84,7 @@ class OnlineFeedFragment : Fragment() {
     @Volatile
     private var feeds: List<Feed>? = null
     private var selectedDownloadUrl: String? = null
-    private var downloader: Downloader? = null
+//    private var downloader: Downloader? = null
     private var username: String? = null
     private var password: String? = null
 
@@ -129,6 +107,9 @@ class OnlineFeedFragment : Fragment() {
 
         feedUrl = requireArguments().getString(ARG_FEEDURL) ?: ""
         Logd(TAG, "feedUrl: $feedUrl")
+
+        feedBuilder = FeedBuilder(requireContext()) { message, details -> showErrorDialog(message, details) }
+
         if (feedUrl.isEmpty()) {
             Log.e(TAG, "feedUrl is null.")
             showNoPodcastFoundError()
@@ -146,9 +127,6 @@ class OnlineFeedFragment : Fragment() {
         return binding.root
     }
 
-    /**
-     * Displays a progress indicator.
-     */
     private fun setLoadingLayout() {
         binding.progressBar.visibility = View.VISIBLE
         binding.feedDisplayContainer.visibility = View.GONE
@@ -164,7 +142,7 @@ class OnlineFeedFragment : Fragment() {
         super.onStop()
         isPaused = true
         cancelFlowEvents()
-        if (downloader != null && !downloader!!.isFinished) downloader!!.cancel()
+//        if (downloader != null && !downloader!!.isFinished) downloader!!.cancel()
         if (dialog != null && dialog!!.isShowing) dialog!!.dismiss()
     }
 
@@ -184,7 +162,12 @@ class OnlineFeedFragment : Fragment() {
     private fun lookupUrlAndBuild(url: String) {
         lifecycleScope.launch(Dispatchers.IO) {
             val urlString = PodcastSearcherRegistry.lookupUrl1(url)
-            try { startFeedBuilding(urlString)
+            try {
+                feeds = getFeedList()
+                feedBuilder.startFeedBuilding(urlString, username, password) { feed, map ->
+                    selectedDownloadUrl = feedBuilder.selectedDownloadUrl
+                    showFeedInformation(feed, map)
+                }
             } catch (e: FeedUrlNotFoundException) { tryToRetrieveFeedUrlBySearch(e)
             } catch (e: Throwable) {
                 Log.e(TAG, Log.getStackTraceString(e))
@@ -212,7 +195,11 @@ class OnlineFeedFragment : Fragment() {
             if (url != null) {
                 Logd(TAG, "Successfully retrieve feed url")
                 isFeedFoundBySearch = true
-                startFeedBuilding(url)
+                feeds = getFeedList()
+                feedBuilder.startFeedBuilding(url, username, password) { feed, map ->
+                    selectedDownloadUrl = feedBuilder.selectedDownloadUrl
+                    showFeedInformation(feed, map)
+                }
             } else {
                 showNoPodcastFoundError()
                 Logd(TAG, "Failed to retrieve feed url")
@@ -231,188 +218,6 @@ class OnlineFeedFragment : Fragment() {
 //        }
 //        return null
 //    }
-
-    private fun htmlOrXml(url: String): String? {
-        val connection = URL(url).openConnection() as HttpURLConnection
-        var type: String? = null
-        try { type = connection.contentType } catch (e: IOException) {
-            Log.e(TAG, "Error connecting to URL", e)
-            showErrorDialog(e.message, "")
-        } finally { connection.disconnect() }
-        if (type == null) return null
-        Logd(TAG, "connection type: $type")
-        return when {
-            type.contains("html", ignoreCase = true) -> "HTML"
-            type.contains("xml", ignoreCase = true) -> "XML"
-            else -> type
-        }
-    }
-
-    private fun startFeedBuilding(url: String) {
-        if (feedSource == "VistaGuide" || url.contains("youtube.com")) {
-            feedSource = "VistaGuide"
-            lifecycleScope.launch(Dispatchers.IO) {
-                try {
-                    feeds = getFeedList()
-                    val service = try { Vista.getService("YouTube") } catch (e: ExtractionException) { throw ExtractionException("YouTube service not found") }
-                    selectedDownloadUrl = prepareUrl(url)
-                    val feed_ = Feed(selectedDownloadUrl, null)
-                    feed_.id = Feed.newId()
-                    feed_.type = Feed.FeedType.YOUTUBE.name
-                    feed_.hasVideoMedia = true
-                    feed_.fileUrl = File(feedfilePath, getFeedfileName(feed_)).toString()
-                    val eList: RealmList<Episode> = realmListOf()
-
-                    if (url.startsWith("https://youtube.com/playlist?") || url.startsWith("https://music.youtube.com/playlist?")) {
-                        val playlistInfo = PlaylistInfo.getInfo(Vista.getService(0), url) ?: return@launch
-                        feed_.title = playlistInfo.name
-                        feed_.description = playlistInfo.description?.content ?: ""
-                        feed_.author = playlistInfo.uploaderName
-                        feed_.imageUrl = if (playlistInfo.thumbnails.isNotEmpty()) playlistInfo.thumbnails.first().url else null
-                        var infoItems = playlistInfo.relatedItems
-                        var nextPage = playlistInfo.nextPage
-                        Logd(TAG, "infoItems: ${infoItems.size}")
-                        while (infoItems.isNotEmpty()) {
-                            for (r in infoItems) {
-                                Logd(TAG, "startFeedBuilding relatedItem: $r")
-                                if (r.infoType != InfoItem.InfoType.STREAM) continue
-                                val e = episodeFromStreamInfoItem(r)
-                                e.feed = feed_
-                                e.feedId = feed_.id
-                                eList.add(e)
-                            }
-                            if (nextPage == null || eList.size > 500) break
-                            try {
-                                val page = PlaylistInfo.getMoreItems(service, url, nextPage) ?: break
-                                nextPage = page.nextPage
-                                infoItems = page.items
-                                Logd(TAG, "more infoItems: ${infoItems.size}")
-                            } catch (e: Throwable) {
-                                Logd(TAG, "PlaylistInfo.getMoreItems error: ${e.message}")
-                                withContext(Dispatchers.Main) { showErrorDialog(e.message, "") }
-                                break
-                            }
-                        }
-                        feed_.episodes = eList
-                        withContext(Dispatchers.Main) { showFeedInformation(feed_, mapOf()) }
-                    } else {
-                        val channelInfo = ChannelInfo.getInfo(service, url)
-                        Logd(TAG, "startFeedBuilding result: $channelInfo ${channelInfo.tabs.size}")
-                        if (channelInfo.tabs.isEmpty()) {
-                            withContext(Dispatchers.Main) { showErrorDialog("Channel is empty", "") }
-                            return@launch
-                        }
-                        try {
-                            val channelTabInfo = ChannelTabInfo.getInfo(service, channelInfo.tabs.first())
-                            Logd(TAG, "startFeedBuilding result1: $channelTabInfo ${channelTabInfo.relatedItems.size}")
-                            feed_.title = channelInfo.name
-                            feed_.description = channelInfo.description
-                            feed_.author = channelInfo.parentChannelName
-                            feed_.imageUrl = if (channelInfo.avatars.isNotEmpty()) channelInfo.avatars.first().url else null
-
-                            var infoItems = channelTabInfo.relatedItems
-                            var nextPage = channelTabInfo.nextPage
-                            Logd(TAG, "infoItems: ${infoItems.size}")
-                            while (infoItems.isNotEmpty()) {
-                                for (r in infoItems) {
-                                    Logd(TAG, "startFeedBuilding relatedItem: $r")
-                                    if (r.infoType != InfoItem.InfoType.STREAM) continue
-                                    val e = episodeFromStreamInfoItem(r as StreamInfoItem)
-                                    e.feed = feed_
-                                    e.feedId = feed_.id
-                                    eList.add(e)
-                                }
-                                if (nextPage == null || eList.size > 200) break
-                                try {
-                                    val page = ChannelTabInfo.getMoreItems(service, channelInfo.tabs.first(), nextPage)
-                                    nextPage = page.nextPage
-                                    infoItems = page.items
-                                    Logd(TAG, "more infoItems: ${infoItems.size}")
-                                } catch (e: Throwable) {
-                                    Logd(TAG, "ChannelTabInfo.getMoreItems error: ${e.message}")
-                                    withContext(Dispatchers.Main) { showErrorDialog(e.message, "") }
-                                    break
-                                }
-                            }
-                            feed_.episodes = eList
-                            withContext(Dispatchers.Main) { showFeedInformation(feed_, mapOf()) }
-                        } catch (e: Throwable) {
-                            Logd(TAG, "startFeedBuilding error1 ${e.message}")
-                            withContext(Dispatchers.Main) { showErrorDialog(e.message, "") }
-                        }
-                    }
-                } catch (e: Throwable) {
-                    Logd(TAG, "startFeedBuilding error ${e.message}")
-                    withContext(Dispatchers.Main) { showErrorDialog(e.message, "") }
-                }
-            }
-            return
-        }
-
-//        handle normal podcast source
-        when (val urlType = htmlOrXml(url)) {
-            "HTML" -> {
-                val doc = Jsoup.connect(url).get()
-                val linkElements = doc.select("link[type=application/rss+xml]")
-//                TODO: should show all as options
-                for (element in linkElements) {
-                    val rssUrl = element.attr("href")
-                    Logd(TAG, "RSS URL: $rssUrl")
-                    startFeedBuilding(rssUrl)
-                    return
-                }
-            }
-            "XML" -> {}
-            else -> {
-                Log.e(TAG, "unknown url type $urlType")
-                showErrorDialog("unknown url type $urlType", "")
-                return
-            }
-        }
-        selectedDownloadUrl = prepareUrl(url)
-        val request = create(Feed(selectedDownloadUrl, null))
-            .withAuthentication(username, password)
-            .withInitiatedByUser(true)
-            .build()
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                feeds = getFeedList()
-                downloader = HttpDownloader(request)
-                downloader?.call()
-                val status = downloader?.result
-                when {
-                    request.destination == null || status == null -> return@launch
-                    status.isSuccessful -> {
-                        try {
-                            val result = doParseFeed(request.destination)
-                            if (result != null) withContext(Dispatchers.Main) { showFeedInformation(result.feed, result.alternateFeedUrls) }
-                        } catch (e: Throwable) {
-                            Logd(TAG, "Feed parser exception: " + Log.getStackTraceString(e))
-                            withContext(Dispatchers.Main) { showErrorDialog(e.message, "") }
-                        }
-                    }
-                    else -> withContext(Dispatchers.Main) {
-                        when {
-                            status.reason == DownloadError.ERROR_UNAUTHORIZED -> {
-                                if (!isRemoving && !isPaused) {
-                                    if (username != null && password != null)
-                                        Toast.makeText(requireContext(), R.string.download_error_unauthorized, Toast.LENGTH_LONG).show()
-                                    if (downloader?.downloadRequest?.source != null) {
-                                        dialog = FeedViewAuthenticationDialog(requireContext(), R.string.authentication_notification_title, downloader!!.downloadRequest.source!!).create()
-                                        dialog?.show()
-                                    }
-                                }
-                            }
-                            else -> showErrorDialog(getString(from(status.reason)), status.reasonDetailed)
-                        }
-                    }
-                }
-            } catch (e: Throwable) {
-                Log.e(TAG, Log.getStackTraceString(e))
-                withContext(Dispatchers.Main) { showErrorDialog(e.message, "") }
-            }
-        }
-    }
 
     private var eventSink: Job?     = null
     private var eventStickySink: Job? = null
@@ -459,47 +264,6 @@ class OnlineFeedFragment : Fragment() {
     }
 
     /**
-     * Try to parse the feed.
-     * @return  The FeedHandlerResult if successful.
-     * Null if unsuccessful but we started another attempt.
-     * @throws Exception If unsuccessful but we do not know a resolution.
-     */
-    @Throws(Exception::class)
-    private fun doParseFeed(destination: String): FeedHandler.FeedHandlerResult? {
-        val destinationFile = File(destination)
-        return try {
-            val feed = Feed(selectedDownloadUrl, null)
-            feed.fileUrl = destination
-            FeedHandler().parseFeed(feed)
-        } catch (e: FeedHandler.UnsupportedFeedtypeException) {
-            Logd(TAG, "Unsupported feed type detected")
-            if ("html".equals(e.rootElement, ignoreCase = true)) {
-                if (selectedDownloadUrl != null) {
-//                    val doc = Jsoup.connect(selectedDownloadUrl).get()
-//                    val linkElements = doc.select("link[type=application/rss+xml]")
-//                    for (element in linkElements) {
-//                        val rssUrl = element.attr("href")
-//                        Log.d(TAG, "RSS URL: $rssUrl")
-//                        val rc = destinationFile.delete()
-//                        Log.d(TAG, "Deleted feed source file. Result: $rc")
-//                        startFeedDownload(rssUrl)
-//                        return null
-//                    }
-                    val dialogShown = showFeedDiscoveryDialog(destinationFile, selectedDownloadUrl!!)
-                    if (dialogShown) null // Should not display an error message
-                    else throw FeedHandler.UnsupportedFeedtypeException(getString(R.string.download_error_unsupported_type_html))
-                } else null
-            } else throw e
-        } catch (e: Exception) {
-            Log.e(TAG, Log.getStackTraceString(e))
-            throw e
-        } finally {
-            val rc = destinationFile.delete()
-            Logd(TAG, "Deleted feed source file. Result: $rc")
-        }
-    }
-
-    /**
      * Called when feed parsed successfully.
      * This method is executed on the GUI thread.
      */
@@ -531,19 +295,7 @@ class OnlineFeedFragment : Fragment() {
             else {
                 lifecycleScope.launch {
                     binding.progressBar.visibility = View.VISIBLE
-                    withContext(Dispatchers.IO) {
-                        feed.id = 0L
-                        for (item in feed.episodes) {
-                            item.id = 0L
-                            item.media?.id = 0L
-                            item.feedId = null
-                            item.feed = feed
-                            val media = item.media
-                            media?.episode = item
-                        }
-                        val fo = updateFeed(requireContext(), feed, false)
-                        Logd(TAG, "fo.id: ${fo?.id} feed.id: ${feed.id}")
-                    }
+                    withContext(Dispatchers.IO) { feedBuilder.subscribe(feed) }
                     withContext(Dispatchers.Main) {
                         binding.progressBar.visibility = View.GONE
                         didPressSubscribe = true
@@ -597,6 +349,7 @@ class OnlineFeedFragment : Fragment() {
         for (i in 0..<episodes.size) {
             episodes[i].id = id_++
             episodes[i].media?.id = episodes[i].id
+            episodes[i].isRemote.value = true
         }
         val fragment: Fragment = RemoteEpisodesFragment.newInstance(episodes)
         (activity as MainActivity).loadChildFragment(fragment)
@@ -681,65 +434,67 @@ class OnlineFeedFragment : Fragment() {
         }
     }
 
-    private fun editUrl() {
-        val builder = MaterialAlertDialogBuilder(requireContext())
-        builder.setTitle(R.string.edit_url_menu)
-        val dialogBinding = EditTextDialogBinding.inflate(layoutInflater)
-        if (downloader != null) dialogBinding.editText.setText(downloader!!.downloadRequest.source)
-
-        builder.setView(dialogBinding.root)
-        builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
-            setLoadingLayout()
-            lookupUrlAndBuild(dialogBinding.editText.text.toString())
-        }
-        builder.setNegativeButton(R.string.cancel_label) { dialog1: DialogInterface, _: Int -> dialog1.cancel() }
-        builder.setOnCancelListener {}
-        builder.show()
-    }
+//    private fun editUrl() {
+//        val builder = MaterialAlertDialogBuilder(requireContext())
+//        builder.setTitle(R.string.edit_url_menu)
+//        val dialogBinding = EditTextDialogBinding.inflate(layoutInflater)
+//        if (downloader != null) dialogBinding.editText.setText(downloader!!.downloadRequest.source)
+//
+//        builder.setView(dialogBinding.root)
+//        builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
+//            setLoadingLayout()
+//            lookupUrlAndBuild(dialogBinding.editText.text.toString())
+//        }
+//        builder.setNegativeButton(R.string.cancel_label) { dialog1: DialogInterface, _: Int -> dialog1.cancel() }
+//        builder.setOnCancelListener {}
+//        builder.show()
+//    }
 
     /**
      *
      * @return true if a FeedDiscoveryDialog is shown, false otherwise (e.g., due to no feed found).
      */
-    private fun showFeedDiscoveryDialog(feedFile: File, baseUrl: String): Boolean {
-        val fd = FeedDiscoverer()
-        val urlsMap: Map<String, String>
-        try {
-            urlsMap = fd.findLinks(feedFile, baseUrl)
-            if (urlsMap.isEmpty()) return false
-        } catch (e: IOException) {
-            e.printStackTrace()
-            return false
-        }
-
-        if (isRemoving || isPaused) return false
-        val titles: MutableList<String?> = ArrayList()
-        val urls: List<String> = ArrayList(urlsMap.keys)
-        for (url in urls) {
-            titles.add(urlsMap[url])
-        }
-        if (urls.size == 1) {
-            // Skip dialog and display the item directly
-            startFeedBuilding(urls[0])
-            return true
-        }
-        val adapter = ArrayAdapter(requireContext(), R.layout.ellipsize_start_listitem, R.id.txtvTitle, titles)
-        val onClickListener = DialogInterface.OnClickListener { dialog: DialogInterface, which: Int ->
-            val selectedUrl = urls[which]
-            dialog.dismiss()
-            startFeedBuilding(selectedUrl)
-        }
-        val ab = MaterialAlertDialogBuilder(requireContext())
-            .setTitle(R.string.feeds_label)
-            .setCancelable(true)
-            .setOnCancelListener { _: DialogInterface? ->/*                finish() */ }
-            .setAdapter(adapter, onClickListener)
-        requireActivity().runOnUiThread {
-            if (dialog != null && dialog!!.isShowing) dialog!!.dismiss()
-            dialog = ab.show()
-        }
-        return true
-    }
+//    private fun showFeedDiscoveryDialog(feedFile: File, baseUrl: String): Boolean {
+//        val fd = FeedDiscoverer()
+//        val urlsMap: Map<String, String>
+//        try {
+//            urlsMap = fd.findLinks(feedFile, baseUrl)
+//            if (urlsMap.isEmpty()) return false
+//        } catch (e: IOException) {
+//            e.printStackTrace()
+//            return false
+//        }
+//
+//        if (isRemoving || isPaused) return false
+//        val titles: MutableList<String?> = ArrayList()
+//        val urls: List<String> = ArrayList(urlsMap.keys)
+//        for (url in urls) {
+//            titles.add(urlsMap[url])
+//        }
+//        if (urls.size == 1) {
+//            // Skip dialog and display the item directly
+//            feeds = getFeedList()
+//            subscribe.startFeedBuilding(urls[0]) {feed, map -> showFeedInformation(feed, map) }
+//            return true
+//        }
+//        val adapter = ArrayAdapter(requireContext(), R.layout.ellipsize_start_listitem, R.id.txtvTitle, titles)
+//        val onClickListener = DialogInterface.OnClickListener { dialog: DialogInterface, which: Int ->
+//            val selectedUrl = urls[which]
+//            dialog.dismiss()
+//            feeds = getFeedList()
+//            subscribe.startFeedBuilding(selectedUrl) {feed, map -> showFeedInformation(feed, map) }
+//        }
+//        val ab = MaterialAlertDialogBuilder(requireContext())
+//            .setTitle(R.string.feeds_label)
+//            .setCancelable(true)
+//            .setOnCancelListener { _: DialogInterface? ->/*                finish() */ }
+//            .setAdapter(adapter, onClickListener)
+//        requireActivity().runOnUiThread {
+//            if (dialog != null && dialog!!.isShowing) dialog!!.dismiss()
+//            dialog = ab.show()
+//        }
+//        return true
+//    }
 
     private fun showNoPodcastFoundError() {
         requireActivity().runOnUiThread {
@@ -752,14 +507,15 @@ class OnlineFeedFragment : Fragment() {
         }
     }
 
-    private inner class FeedViewAuthenticationDialog(context: Context, titleRes: Int, private val feedUrl: String) :
-        AuthenticationDialog(context, titleRes, true, username, password) {
-        override fun onConfirmed(username: String, password: String) {
-            this@OnlineFeedFragment.username = username
-            this@OnlineFeedFragment.password = password
-            startFeedBuilding(feedUrl)
-        }
-    }
+//    private inner class FeedViewAuthenticationDialog(context: Context, titleRes: Int, private val feedUrl: String) :
+//        AuthenticationDialog(context, titleRes, true, username, password) {
+//        override fun onConfirmed(username: String, password: String) {
+//            this@OnlineFeedFragment.username = username
+//            this@OnlineFeedFragment.password = password
+//            feeds = getFeedList()
+//            subscribe.startFeedBuilding(feedUrl) {feed, map -> showFeedInformation(feed, map) }
+//        }
+//    }
 
     /**
      * Finds RSS/Atom URLs in a HTML document using the auto-discovery techniques described here:
@@ -814,9 +570,6 @@ class OnlineFeedFragment : Fragment() {
         }
     }
 
-    /**
-     * Shows all episodes (possibly filtered by user).
-     */
     @UnstableApi
     class RemoteEpisodesFragment : BaseEpisodesFragment() {
         private val episodeList: MutableList<Episode> = mutableListOf()

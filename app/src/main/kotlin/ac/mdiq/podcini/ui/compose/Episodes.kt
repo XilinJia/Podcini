@@ -8,6 +8,7 @@ import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.base.MediaPlayerBase.Companion.status
 import ac.mdiq.podcini.storage.database.Episodes
 import ac.mdiq.podcini.storage.database.Episodes.setPlayState
+import ac.mdiq.podcini.storage.database.Feeds.addToMiscSyndicate
 import ac.mdiq.podcini.storage.database.Queues
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueue
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -36,6 +37,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -100,7 +102,7 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
     fun EpisodeSpeedDial(activity: MainActivity, selected: SnapshotStateList<Episode>, modifier: Modifier = Modifier) {
         val TAG = "EpisodeSpeedDial ${selected.size}"
         var isExpanded by remember { mutableStateOf(false) }
-        val options = listOf<@Composable () -> Unit>(
+        val options = mutableListOf<@Composable () -> Unit>(
             { Row(modifier = Modifier.padding(horizontal = 16.dp)
                 .clickable {
                     isExpanded = false
@@ -184,6 +186,20 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                 Text(stringResource(id = R.string.toggle_favorite_label))
             } },
         )
+        if (selected.isNotEmpty() && selected[0].isRemote.value)
+            options.add({ Row(modifier = Modifier.padding(horizontal = 16.dp)
+                .clickable {
+                    isExpanded = false
+                    selectMode = false
+                    Logd(TAG, "reserve: ${selected.size}")
+                    CoroutineScope(Dispatchers.IO).launch {
+                        for (e in selected) { addToMiscSyndicate(e) }
+                    }
+                }, verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Filled.AddCircle, "")
+                Text(stringResource(id = R.string.reserve_episodes_label))
+            } })
 
         val scrollState = rememberScrollState()
         Column(modifier = modifier.verticalScroll(scrollState), verticalArrangement = Arrangement.Bottom) {
@@ -227,10 +243,11 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                             when (changes) {
                                 is UpdatedObject -> {
                                     Logd(TAG, "episodeMonitor UpdatedObject $index ${changes.obj.title} ${changes.changedFields.joinToString()}")
+                                    Logd(TAG, "episodeMonitor $index ${changes.obj.id} ${episodes[index].id} ${episode.id}")
                                     if (index < episodes.size && episodes[index].id == changes.obj.id) {
                                         playedState = changes.obj.isPlayed()
                                         farvoriteState = changes.obj.isFavorite
-                                    episodes[index] = changes.obj     // direct assignment doesn't update member like media??
+                                        episodes[index] = changes.obj     // direct assignment doesn't update member like media??
                                         changes.obj.copyStates(episodes[index])
 //                                        remove action could possibly conflict with the one in mediaMonitor
 //                                        episodes.removeAt(index)
@@ -314,7 +331,7 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                         else selected.remove(episodes[index])
                     }
                     val textColor = MaterialTheme.colorScheme.onSurface
-                    Row (Modifier.background(if (isSelected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.surface)) {
+                    Row (Modifier.background(if (isSelected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface)) {
                         if (false) {
                             val typedValue = TypedValue()
                             LocalContext.current.theme.resolveAttribute(R.attr.dragview_background, typedValue, true)
@@ -452,9 +469,11 @@ fun EpisodeLazyColumn(activity: MainActivity, episodes: SnapshotStateList<Episod
                 Icon(painter = painterResource(selectAllRes), tint = Color.Black, contentDescription = null, modifier = Modifier.width(35.dp).height(35.dp)
                     .clickable(onClick = {
                        if (selectedSize != episodes.size) {
-                           for (e in episodes) {
-                               selected.add(e)
-                           }
+                           selected.clear()
+                           selected.addAll(episodes)
+//                           for (e in episodes) {
+//                               selected.add(e)
+//                           }
                            selectAllRes = R.drawable.ic_select_none
                        } else {
                            selected.clear()

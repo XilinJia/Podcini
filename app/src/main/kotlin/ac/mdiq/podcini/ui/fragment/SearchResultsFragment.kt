@@ -78,7 +78,6 @@ class SearchResultsFragment : Fragment() {
                 MainView()
             }
         }
-
         setupToolbar(binding.toolbar)
 
 //        gridView.setOnScrollListener(object : AbsListView.OnScrollListener {

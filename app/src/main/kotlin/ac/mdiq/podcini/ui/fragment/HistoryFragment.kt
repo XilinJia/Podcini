@@ -175,7 +175,7 @@ import kotlin.math.min
     fun clearHistory() : Job {
         Logd(TAG, "clearHistory called")
         return runOnIOScope {
-            val episodes = realm.query(Episode::class).query("media.playbackCompletionTime > 0").find()
+            val episodes = realm.query(Episode::class).query("media.playbackCompletionTime > 0 || media.lastPlayedTime > 0").find()
             for (e in episodes) {
                 upsert(e) {
                     it.media?.playbackCompletionDate = null

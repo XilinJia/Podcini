@@ -844,7 +844,23 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             if (isSelected) selected.add(feed)
                             else selected.remove(feed)
                         }
-                        Column(Modifier.background(if (isSelected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.surface)) {
+                        Column(Modifier.background(if (isSelected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface)
+                            .combinedClickable(onClick = {
+                                Logd(TAG, "clicked: ${feed.title}")
+                                if (selectMode) toggleSelected()
+                                else (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
+                            }, onLongClick = {
+                                selectMode = !selectMode
+                                isSelected = selectMode
+                                if (selectMode) {
+                                    selected.add(feed)
+                                    longPressIndex = index
+                                } else {
+                                    selectedSize = 0
+                                    longPressIndex = -1
+                                }
+                                Logd(TAG, "long clicked: ${feed.title}")
+                            })) {
                             val textColor = MaterialTheme.colorScheme.onSurface
                             ConstraintLayout {
                                 val (coverImage, episodeCount, error) = createRefs()
@@ -855,28 +871,14 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                             top.linkTo(parent.top)
                                             bottom.linkTo(parent.bottom)
                                             start.linkTo(parent.start)
-                                        }.combinedClickable(onClick = {
-                                            Logd(TAG, "clicked: ${feed.title}")
-                                            if (selectMode) toggleSelected()
-                                            else (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
-                                        }, onLongClick = {
-                                            selectMode = !selectMode
-                                            isSelected = selectMode
-                                            if (selectMode) {
-                                                selected.add(feed)
-                                                longPressIndex = index
-                                            } else {
-                                                selectedSize = 0
-                                                longPressIndex = -1
-                                            }
-                                            Logd(TAG, "long clicked: ${feed.title}")
-                                        }))
+                                        })
                                 Text(NumberFormat.getInstance().format(feed.episodes.size.toLong()),
                                     modifier = Modifier.constrainAs(episodeCount) {
                                         end.linkTo(parent.end)
                                         top.linkTo(coverImage.top)
                                     })
-                                Icon(painter = painterResource(R.drawable.ic_error),
+//                                TODO: need to use state
+                                if (feed.lastUpdateFailed) Icon(painter = painterResource(R.drawable.ic_error), tint = Color.Red,
                                     contentDescription = "error",
                                     modifier = Modifier.constrainAs(error) {
                                         end.linkTo(parent.end)
@@ -906,7 +908,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             else selected.remove(feed)
                             Logd(TAG, "toggleSelected: selected: ${selected.size}")
                         }
-                        Row(Modifier.background(if (isSelected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.surface)) {
+                        Row(Modifier.background(if (isSelected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface)) {
                             AsyncImage(model = feed.imageUrl, contentDescription = "imgvCover",
                                 placeholder = painterResource(R.mipmap.ic_launcher),
                                 modifier = Modifier.width(80.dp).height(80.dp)
@@ -917,7 +919,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                     })
                             )
                             val textColor = MaterialTheme.colorScheme.onSurface
-                            Column(Modifier.fillMaxWidth().padding(start = 10.dp).combinedClickable(onClick = {
+                            Column(Modifier.weight(1f).padding(start = 10.dp).combinedClickable(onClick = {
                                 Logd(TAG, "clicked: ${feed.title}")
                                 if (selectMode) toggleSelected()
                                 else (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
@@ -948,7 +950,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                     Text(feedSortInfo, color = textColor, style = MaterialTheme.typography.bodyMedium)
                                 }
                             }
-                            Icon(painter = painterResource(R.drawable.ic_error), contentDescription = "error")
+                            //                                TODO: need to use state
+                            if (feed.lastUpdateFailed) Icon(painter = painterResource(R.drawable.ic_error), tint = Color.Red, contentDescription = "error")
                         }
                     }
                 }
@@ -989,9 +992,11 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         modifier = Modifier.width(35.dp).height(35.dp)
                             .clickable(onClick = {
                                 if (selectedSize != feedListFiltered.size) {
-                                    for (e in feedListFiltered) {
-                                        selected.add(e)
-                                    }
+                                    selected.clear()
+                                    selected.addAll(feedListFiltered)
+//                                    for (e in feedListFiltered) {
+//                                        selected.add(e)
+//                                    }
                                     selectAllRes = R.drawable.ic_select_none
                                 } else {
                                     selected.clear()

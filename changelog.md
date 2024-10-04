@@ -1,6 +1,18 @@
+# 6.8.7
+
+* clear history really clears it
+* fixed deselect all in episodes and podcasts lists
+* consolidated OnlineFeed and SearchResults classes to use the common FeedBuilder class
+* cleared the error icon on subscription grid
+* in Grid view of Subscriptions, click and long-click is received on the entire block of a podcast
+* in episodes list of an online feed (unsubscribed), multi-selection of episodes now allows to reserve them
+	* once reserved, the episodes are added to a synthetic podcast named "Misc Syndicate"
+* fixed PlayerDetailed view showing wrong information or even crashing
+* tuned Material3 colorscheme
+
 # 6.8.6
 
-* Queues Bin view now has separate swipe actions indipendent from the Queues view
+* Queues Bin view now has separate swipe actions independent from the Queues view
 * SearchResults and Discovery fragments are in Jetpack Compose
 * in online search result list, long pressing on a feed will pop up dialog to confirm direct subscription
 * fixed crash when clearing history

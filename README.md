@@ -127,6 +127,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * Ability to open podcast from webpage address
 * Online feed info display is handled in similar ways as any local feed, and offers options to subscribe or view episodes
 * Online feed episodes can be freely played (streamed) without a subscription
+* Online feed episodes can be selectively reserved into synthetic podcasts
 
 ### Youtube & Youtube Music
 

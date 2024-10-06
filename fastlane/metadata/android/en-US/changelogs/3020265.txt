@@ -1,6 +1,6 @@
  Version 6.9.0
 
- * re-worked Compose states handling for Episodes lists, might have issues related bugs
+ * re-worked Compose states handling for Episodes lists, likely fixed related issues
 * opening OnlineFeed of Youtube channel is made more responsive with more background processing on constructing episodes
 	* you can subscribe at any time
 	* if you open Episodes, you will see the episodes constructed at the moment

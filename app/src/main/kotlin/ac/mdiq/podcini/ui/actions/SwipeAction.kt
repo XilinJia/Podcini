@@ -1,4 +1,4 @@
-package ac.mdiq.podcini.ui.actions.swipeactions
+package ac.mdiq.podcini.ui.actions
 
 import android.content.Context
 import androidx.annotation.AttrRes

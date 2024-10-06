@@ -15,14 +15,11 @@ import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
-import ac.mdiq.podcini.ui.actions.actionbutton.DeleteActionButton
-import ac.mdiq.podcini.ui.actions.swipeactions.SwipeAction
-import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
+import ac.mdiq.podcini.ui.actions.DeleteActionButton
+import ac.mdiq.podcini.ui.actions.SwipeAction
+import ac.mdiq.podcini.ui.actions.SwipeActions
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.compose.CustomTheme
-import ac.mdiq.podcini.ui.compose.EpisodeLazyColumn
-import ac.mdiq.podcini.ui.compose.InforBar
-import ac.mdiq.podcini.ui.compose.queueChanged
+import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.dialog.EpisodeFilterDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.ui.dialog.SwitchQueueDialog
@@ -38,6 +35,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
+import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -61,7 +59,8 @@ import java.util.*
     private val binding get() = _binding!!
 
     private var runningDownloads: Set<String> = HashSet()
-    private val episodes = mutableStateListOf<Episode>()
+    private val episodes = mutableListOf<Episode>()
+    private val vms = mutableStateListOf<EpisodeVM>()
 
     private var infoBarText = mutableStateOf("")
     private var leftActionState = mutableStateOf<SwipeAction?>(null)
@@ -93,18 +92,21 @@ import java.util.*
 
         swipeActions = SwipeActions(this, TAG)
         swipeActions.setFilter(EpisodeFilter(EpisodeFilter.States.downloaded.name))
-        binding.infobar.setContent {
-            CustomTheme(requireContext()) {
-                InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {swipeActions.showDialog()})
-            }
-        }
-
         binding.lazyColumn.setContent {
             CustomTheme(requireContext()) {
-                EpisodeLazyColumn(activity as MainActivity, episodes = episodes,
-                    leftSwipeCB = { if (leftActionState.value == null) swipeActions.showDialog() else leftActionState.value?.performAction(it, this, swipeActions.filter ?: EpisodeFilter())},
-                    rightSwipeCB = { if (rightActionState.value == null) swipeActions.showDialog() else rightActionState.value?.performAction(it, this, swipeActions.filter ?: EpisodeFilter())},
-                    actionButton_ = { DeleteActionButton(it) } )
+                Column {
+                    InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {swipeActions.showDialog()})
+                    EpisodeLazyColumn(activity as MainActivity, vms = vms,
+                        leftSwipeCB = {
+                            if (leftActionState.value == null) swipeActions.showDialog() else leftActionState.value?.performAction(
+                                it, this@DownloadsFragment, swipeActions.filter ?: EpisodeFilter())
+                        },
+                        rightSwipeCB = {
+                            if (rightActionState.value == null) swipeActions.showDialog() else rightActionState.value?.performAction(
+                                it, this@DownloadsFragment, swipeActions.filter ?: EpisodeFilter())
+                        },
+                        actionButton_ = { DeleteActionButton(it) })
+                }
             }
         }
 //        recyclerView.setRecycledViewPool((activity as MainActivity).recycledViewPool)
@@ -143,11 +145,10 @@ import java.util.*
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
         _binding = null
-//        adapter.endSelectMode()
-//        adapter.clearData()
         toolbar.setOnMenuItemClickListener(null)
         toolbar.setOnLongClickListener(null)
         episodes.clear()
+        vms.clear()
         super.onDestroyView()
     }
 
@@ -295,8 +296,12 @@ import java.util.*
             val pos = EpisodeUtil.indexOfItemWithId(episodes, item.id)
             if (pos >= 0) {
                 episodes.removeAt(pos)
+                vms.removeAt(pos)
                 val media = item.media
-                if (media != null && media.downloaded) episodes.add(pos, item)
+                if (media != null && media.downloaded) {
+                    episodes.add(pos, item)
+                    vms.add(pos, EpisodeVM(item))
+                }
             }
         }
 //        have to do this as adapter.notifyItemRemoved(pos) when pos == 0 causes crash
@@ -313,8 +318,12 @@ import java.util.*
             val pos = EpisodeUtil.indexOfItemWithId(episodes, item.id)
             if (pos >= 0) {
                 episodes.removeAt(pos)
+                vms.removeAt(pos)
                 val media = item.media
-                if (media != null && media.downloaded) episodes.add(pos, item)
+                if (media != null && media.downloaded) {
+                    episodes.add(pos, item)
+                    vms.add(pos, EpisodeVM(item))
+                }
             }
         }
 //        have to do this as adapter.notifyItemRemoved(pos) when pos == 0 causes crash
@@ -330,6 +339,7 @@ import java.util.*
     private var loadItemsRunning = false
     private fun loadItems() {
         emptyView.hide()
+        Logd(TAG, "loadItems() called")
         if (!loadItemsRunning) {
             loadItemsRunning = true
             lifecycleScope.launch {
@@ -353,6 +363,10 @@ import java.util.*
                             episodes.addAll(currentDownloads)
                         }
                         episodes.retainAll { filter.matchesForQueues(it) }
+                        withContext(Dispatchers.Main) {
+                            vms.clear()
+                            for (e in episodes) vms.add(EpisodeVM(e))
+                        }
                     }
                     withContext(Dispatchers.Main) { refreshInfoBar() }
                 } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e))
@@ -364,13 +378,13 @@ import java.util.*
     private fun getEpisdesWithUrl(urls: List<String>): List<Episode> {
         Logd(TAG, "getEpisdesWithUrl() called ")
         if (urls.isEmpty()) return listOf()
-        val episodes: MutableList<Episode> = mutableListOf()
+        val episodes_: MutableList<Episode> = mutableListOf()
         for (url in urls) {
             val media = realm.query(EpisodeMedia::class).query("downloadUrl == $0", url).first().find() ?: continue
             val item_ = media.episodeOrFetch()
-            if (item_ != null) episodes.add(item_)
+            if (item_ != null) episodes_.add(item_)
         }
-        return realm.copyFromRealm(episodes)
+        return realm.copyFromRealm(episodes_)
     }
 
     private fun refreshInfoBar() {
@@ -380,7 +394,7 @@ import java.util.*
             for (item in episodes) sizeMB += item.media?.size ?: 0
             info += " • " + (sizeMB / 1000000) + " MB"
         }
-        Logd(TAG, "filter value: ${getFilter().values.size} ${getFilter().values.joinToString()}")
+        Logd(TAG, "refreshInfoBar filter value: ${getFilter().values.size} ${getFilter().values.joinToString()}")
         if (getFilter().values.size > 1) info += " - ${getString(R.string.filtered_label)}"
         infoBarText.value = info
     }

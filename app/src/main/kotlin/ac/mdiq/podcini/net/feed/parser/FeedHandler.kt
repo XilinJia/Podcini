@@ -25,7 +25,6 @@ class FeedHandler {
 //        val tg = TypeGetter()
         val type = getType(feed)
         val handler = SyndHandler(feed, type)
-
         if (feed.fileUrl != null) {
             val factory = SAXParserFactory.newInstance()
             factory.isNamespaceAware = true

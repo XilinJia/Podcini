@@ -17,8 +17,8 @@ import ac.mdiq.podcini.storage.model.EpisodeSortOrder
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.fromCode
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
-import ac.mdiq.podcini.ui.actions.swipeactions.SwipeAction
-import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
+import ac.mdiq.podcini.ui.actions.SwipeAction
+import ac.mdiq.podcini.ui.actions.SwipeActions
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.dialog.*
@@ -79,7 +79,10 @@ import java.util.concurrent.Semaphore
     private var headerCreated = false
     private var feedID: Long = 0
     private var feed by mutableStateOf<Feed?>(null)
-    private val episodes = mutableStateListOf<Episode>()
+
+    private val episodes = mutableListOf<Episode>()
+    private val vms = mutableStateListOf<EpisodeVM>()
+
     private var ieMap: Map<Long, Int> = mapOf()
     private var ueMap: Map<String, Int> = mapOf()
 
@@ -143,6 +146,8 @@ import java.util.concurrent.Semaphore
                 episodes.addAll(etmp)
                 ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
                 ueMap = episodes.mapIndexedNotNull { index, episode -> episode.media?.downloadUrl?.let { it to index } }.toMap()
+                vms.clear()
+                for (e in etmp) { vms.add(EpisodeVM(e)) }
                 loadItemsRunning = false
             }
         }
@@ -151,16 +156,22 @@ import java.util.concurrent.Semaphore
                 FeedEpisodesHeader(activity = (activity as MainActivity), feed = feed, filterButColor = filterButColor.value, filterClickCB = {filterClick()}, filterLongClickCB = {filterLongClick()})
             }
         }
-        binding.infobar.setContent {
-            CustomTheme(requireContext()) {
-                InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {swipeActions.showDialog()})
-            }
-        }
         binding.lazyColumn.setContent {
-            CustomTheme(requireContext()) {
-                EpisodeLazyColumn(activity as MainActivity, episodes = episodes, refreshCB = {FeedUpdateManager.runOnceOrAsk(requireContext(), feed)},
-                    leftSwipeCB = { if (leftActionState.value == null) swipeActions.showDialog() else leftActionState.value?.performAction(it, this, swipeActions.filter ?: EpisodeFilter())},
-                    rightSwipeCB = { if (rightActionState.value == null) swipeActions.showDialog() else rightActionState.value?.performAction(it, this, swipeActions.filter ?: EpisodeFilter())}, )
+            Column {
+                InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {swipeActions.showDialog()})
+                CustomTheme(requireContext()) {
+                    EpisodeLazyColumn(activity as MainActivity, vms = vms,
+                        refreshCB = { FeedUpdateManager.runOnceOrAsk(requireContext(), feed) },
+                        leftSwipeCB = {
+                            if (leftActionState.value == null) swipeActions.showDialog()
+                            else leftActionState.value?.performAction(it, this@FeedEpisodesFragment, swipeActions.filter ?: EpisodeFilter())
+                        },
+                        rightSwipeCB = {
+                            if (rightActionState.value == null) swipeActions.showDialog()
+                            else rightActionState.value?.performAction(it, this@FeedEpisodesFragment, swipeActions.filter ?: EpisodeFilter())
+                        },
+                    )
+                }
             }
         }
 
@@ -284,6 +295,7 @@ import java.util.concurrent.Semaphore
         ieMap = mapOf()
         ueMap = mapOf()
         episodes.clear()
+        vms.clear()
         tts?.stop()
         tts?.shutdown()
         ttsWorking = false
@@ -384,14 +396,12 @@ import java.util.concurrent.Semaphore
 
     private fun onPlayEvent(event: FlowEvent.PlayEvent) {
 //        Logd(TAG, "onPlayEvent ${event.episode.title}")
-//        if (feed != null) {
-//            val pos: Int = ieMap[event.episode.id] ?: -1
-//            if (pos >= 0) {
-////                if (!filterOutEpisode(event.episode)) episodes[pos].isPlayingState.value = event.isPlaying()
-////                if (filterOutEpisode(event.episode)) adapter.updateItems(episodes)
-////                else adapter.notifyItemChangedCompat(pos)
-//            }
-//        }
+        if (feed != null) {
+            val pos: Int = ieMap[event.episode.id] ?: -1
+            if (pos >= 0) {
+                if (!filterOutEpisode(event.episode)) vms[pos].isPlayingState = event.isPlaying()
+            }
+        }
     }
 
     private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
@@ -403,8 +413,8 @@ import java.util.concurrent.Semaphore
             val pos: Int = ueMap[url] ?: -1
             if (pos >= 0) {
                 Logd(TAG, "onEpisodeDownloadEvent $pos ${event.map[url]?.state} ${episodes[pos].media?.downloaded} ${episodes[pos].title}")
-                episodes[pos].downloadState.value = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
-//                adapter.notifyItemChangedCompat(pos)
+//                episodes[pos].downloadState.value = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
+                vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
             }
         }
     }
@@ -533,15 +543,15 @@ import java.util.concurrent.Semaphore
         while (loadItemsRunning) Thread.sleep(50)
     }
 
-//    private fun filterOutEpisode(episode: Episode): Boolean {
-//        if (enableFilter && !feed?.preferences?.filterString.isNullOrEmpty() && !feed!!.episodeFilter.matches(episode)) {
-//            episodes.remove(episode)
-//            ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
-//            ueMap = episodes.mapIndexedNotNull { index, episode_ -> episode_.media?.downloadUrl?.let { it to index } }.toMap()
-//            return true
-//        }
-//        return false
-//    }
+    private fun filterOutEpisode(episode: Episode): Boolean {
+        if (enableFilter && !feed?.preferences?.filterString.isNullOrEmpty() && !feed!!.episodeFilter.matches(episode)) {
+            episodes.remove(episode)
+            ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
+            ueMap = episodes.mapIndexedNotNull { index, episode_ -> episode_.media?.downloadUrl?.let { it to index } }.toMap()
+            return true
+        }
+        return false
+    }
 
 //    private fun redoFilter(list: List<Episode>? = null) {
 //        if (enableFilter && !feed?.preferences?.filterString.isNullOrEmpty()) {
@@ -574,6 +584,10 @@ import java.util.concurrent.Semaphore
                             episodes.addAll(etmp)
                             ieMap = episodes.withIndex().associate { (index, episode) -> episode.id to index }
                             ueMap = episodes.mapIndexedNotNull { index, episode -> episode.media?.downloadUrl?.let { it to index } }.toMap()
+                            withContext(Dispatchers.Main) {
+                                vms.clear()
+                                for (e in etmp) { vms.add(EpisodeVM(e)) }
+                            }
                             if (onInit) {
                                 var hasNonMediaItems = false
                                 for (item in episodes) {

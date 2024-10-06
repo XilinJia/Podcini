@@ -4,6 +4,9 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.FeedFunding.Companion.extractPaymentLinks
 import ac.mdiq.podcini.storage.model.EpisodeSortOrder.Companion.fromCode
 import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
@@ -140,6 +143,9 @@ class Feed : RealmObject {
 
     @Ignore
     var sortInfo: String = ""
+
+    @Ignore
+    var isBuilding by mutableStateOf(false)
 
     /**
      * This constructor is used for test purposes.

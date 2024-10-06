@@ -1,4 +1,4 @@
-package ac.mdiq.podcini.ui.actions.swipeactions
+package ac.mdiq.podcini.ui.actions
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
@@ -18,8 +18,7 @@ import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
-import ac.mdiq.podcini.ui.actions.actionbutton.DownloadActionButton
-import ac.mdiq.podcini.ui.actions.swipeactions.SwipeAction.Companion.NO_ACTION
+import ac.mdiq.podcini.ui.actions.SwipeAction.Companion.NO_ACTION
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.dialog.SwipeActionsDialog
 import ac.mdiq.podcini.ui.fragment.AllEpisodesFragment

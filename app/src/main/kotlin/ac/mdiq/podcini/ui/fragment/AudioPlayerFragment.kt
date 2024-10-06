@@ -32,7 +32,7 @@ import ac.mdiq.podcini.storage.utils.ChapterUtils
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.storage.utils.TimeSpeedConverter
-import ac.mdiq.podcini.ui.actions.handler.EpisodeMenuHandler
+import ac.mdiq.podcini.ui.actions.EpisodeMenuHandler
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
 import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
@@ -61,7 +61,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign

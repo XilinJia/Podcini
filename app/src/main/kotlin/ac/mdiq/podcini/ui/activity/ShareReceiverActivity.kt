@@ -1,13 +1,11 @@
 package ac.mdiq.podcini.ui.activity
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.storage.database.Episodes.episodeFromStreamInfo
-import ac.mdiq.podcini.storage.database.Feeds.addToYoutubeSyndicate
 import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.ui.compose.confirmAddYoutubeEpisode
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.vista.extractor.Vista
-import ac.mdiq.vista.extractor.playlist.PlaylistInfo
-import ac.mdiq.vista.extractor.stream.StreamInfo
+import ac.mdiq.vista.extractor.services.youtube.YoutubeParsingHelper.isYoutubeServiceURL
+import ac.mdiq.vista.extractor.services.youtube.YoutubeParsingHelper.isYoutubeURL
 import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
@@ -16,20 +14,11 @@ import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.annotation.OptIn
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.media3.common.util.UnstableApi
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import java.net.URL
 import java.net.URLDecoder
 
 class ShareReceiverActivity : AppCompatActivity() {
@@ -54,6 +43,7 @@ class ShareReceiverActivity : AppCompatActivity() {
             if (urlString != null) sharedUrl = URLDecoder.decode(urlString, "UTF-8")
         }
         Logd(TAG, "feedUrl: $sharedUrl")
+        val url = URL(sharedUrl)
         when {
 //            plain text
             sharedUrl!!.matches(Regex("^[^\\s<>/]+\$")) -> {
@@ -62,12 +52,13 @@ class ShareReceiverActivity : AppCompatActivity() {
                 finish()
             }
 //            Youtube media
-            sharedUrl!!.startsWith("https://youtube.com/watch?") || sharedUrl!!.startsWith("https://music.youtube.com/watch?") -> {
+//            sharedUrl!!.startsWith("https://youtube.com/watch?") || sharedUrl!!.startsWith("https://www.youtube.com/watch?") || sharedUrl!!.startsWith("https://music.youtube.com/watch?") -> {
+            (isYoutubeURL(url) && url.path.startsWith("/watch")) || isYoutubeServiceURL(url) -> {
                 Logd(TAG, "got youtube media")
                 setContent {
                     val showDialog = remember { mutableStateOf(true) }
                     CustomTheme(this@ShareReceiverActivity) {
-                        confirmAddEpisode(showDialog.value, onDismissRequest = {
+                        confirmAddYoutubeEpisode(listOf(sharedUrl!!), showDialog.value, onDismissRequest = {
                             showDialog.value = false
                             finish()
                         })
@@ -85,49 +76,44 @@ class ShareReceiverActivity : AppCompatActivity() {
         }
     }
 
-    @Composable
-    fun confirmAddEpisode(showDialog: Boolean, onDismissRequest: () -> Unit) {
-        if (showDialog) {
-            Dialog(onDismissRequest = { onDismissRequest() }) {
-                Card(
-                    modifier = Modifier
-                        .wrapContentSize(align = Alignment.Center)
-                        .padding(16.dp),
-                    shape = RoundedCornerShape(16.dp),
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        var audioOnly by remember { mutableStateOf(false) }
-                        Row(Modifier.fillMaxWidth()) {
-                            Checkbox(checked = audioOnly,
-                                onCheckedChange = {
-                                    audioOnly = it
-                                }
-                            )
-                            Text(
-                                text = stringResource(R.string.pref_video_mode_audio_only),
-                                style = MaterialTheme.typography.bodyLarge.merge(),
-                            )
-                        }
-                        Button(onClick = {
-                            CoroutineScope(Dispatchers.IO).launch {
-                                val info = StreamInfo.getInfo(Vista.getService(0), sharedUrl!!)
-                                Logd(TAG, "info: $info")
-                                val episode = episodeFromStreamInfo(info)
-                                Logd(TAG, "episode: $episode")
-                                addToYoutubeSyndicate(episode, !audioOnly)
-                            }
-                            onDismissRequest()
-                        }) {
-                            Text("Confirm")
-                        }
-                    }
-                }
-            }
-        }
-    }
+//    @Composable
+//    fun confirmAddEpisode(sharedUrl: String, showDialog: Boolean, onDismissRequest: () -> Unit) {
+//        var showToast by remember { mutableStateOf(false) }
+//        var toastMassege by remember { mutableStateOf("")}
+//        if (showToast) CustomToast(message = toastMassege, onDismiss = { showToast = false })
+//
+//        if (showDialog) {
+//            Dialog(onDismissRequest = { onDismissRequest() }) {
+//                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp)) {
+//                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.Center) {
+//                        var audioOnly by remember { mutableStateOf(false) }
+//                        Row(Modifier.fillMaxWidth()) {
+//                            Checkbox(checked = audioOnly, onCheckedChange = { audioOnly = it })
+//                            Text(text = stringResource(R.string.pref_video_mode_audio_only), style = MaterialTheme.typography.bodyLarge.merge())
+//                        }
+//                        Button(onClick = {
+//                            CoroutineScope(Dispatchers.IO).launch {
+//                                try {
+//                                    val info = StreamInfo.getInfo(Vista.getService(0), sharedUrl)
+//                                    Logd(TAG, "info: $info")
+//                                    val episode = episodeFromStreamInfo(info)
+//                                    Logd(TAG, "episode: $episode")
+//                                    addToYoutubeSyndicate(episode, !audioOnly)
+//                                } catch (e: Throwable) {
+//                                    toastMassege = "Receive share error: ${e.message}"
+//                                    Log.e(TAG, toastMassege)
+//                                    showToast = true
+//                                }
+//                            }
+//                            onDismissRequest()
+//                        }) {
+//                            Text("Confirm")
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     private fun showNoPodcastFoundError() {
         runOnUiThread {

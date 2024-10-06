@@ -436,6 +436,7 @@ object Feeds {
         feed.preferences!!.queueId = -2L
         feed.preferences!!.videoModePolicy = if (video) VideoMode.WINDOW_VIEW else VideoMode.AUDIO_ONLY
         upsertBlk(feed) {}
+        EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.ADDED))
         return feed
     }
 
@@ -452,6 +453,7 @@ object Feeds {
         upsertBlk(episode) {}
         feed.episodes.add(episode)
         upsertBlk(feed) {}
+        EventFlow.postStickyEvent(FlowEvent.FeedUpdatingEvent(false))
     }
 
     private fun getMiscSyndicate(): Feed {
@@ -470,6 +472,7 @@ object Feeds {
         feed.preferences!!.queueId = -2L
 //        feed.preferences!!.videoModePolicy = if (video) VideoMode.WINDOW_VIEW else VideoMode.AUDIO_ONLY
         upsertBlk(feed) {}
+        EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.ADDED))
         return feed
     }
 
@@ -485,6 +488,7 @@ object Feeds {
         upsertBlk(episode) {}
         feed.episodes.add(episode)
         upsertBlk(feed) {}
+        EventFlow.postStickyEvent(FlowEvent.FeedUpdatingEvent(false))
     }
 
     /**

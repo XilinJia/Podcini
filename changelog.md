@@ -1,3 +1,20 @@
+# 6.9.0
+
+* re-worked Compose states handling for Episodes lists, might have issues related bugs
+* opening OnlineFeed of Youtube channel is made more responsive with more background processing on constructing episodes
+	* you can subscribe at any time
+	* if you open Episodes, you will see the episodes constructed at the moment
+* episodes limit for Youtube channel, playlist and YTMusicplaylist is now at 1000
+* in OnlineFeed view, after subscribe, the FeedEpisode view does not open automatically, presenting options to open it or return to the SearchResults view
+* in online SearchResults, if an item is already subscribed, a check mark appears on the cover image, and when clicked, FeedEpisodes view is opened.
+* added FlowEvent posting when adding shared youtube media or reserved online episodes
+* receiving shared contents from Youtube now should support hostnames youtube.com, www.youtube.com, m.youtube.com, music.youtube.com, and youtu.be
+* when reserving episodes from a Youtube channel list, like receiving shared media from Youtube, you can choose for "audio only"
+	* the reserved episodes will be added into synthetic podcast of either "Youtube Syndicate" or "Youtube Syndicate Audio" rather than "Misc Syndicate" for other types of episodes
+* fixed independence of swipe actions in Queues Bin
+* OnlineFeed is in Jetpack Compose
+* in SharedReceiver activity, added error notice for shared Youtube media
+
 # 6.8.7
 
 * clear history really clears it
@@ -27,7 +44,7 @@
 * migrated mostly the following view to Jetpack Compose:
 	* Queues, AudioPlayer, Subscriptions, FeedInfo, EpisodeInfo, FeedEpisodes, AllEpisodes, History, Search, and OnlineFeed
 * to counter this nasty issue that Google can't fix over 2 years: ForegroundServiceStartNotAllowedException
-	* for this and near future releases, target SDK is set to 30 (Android 12), though built with SDK 35 and tested on Android 14
+	* for this and near future releases, target SDK is set to 30 (Android 11), though built with SDK 35 and tested on Android 14
 	* supposedly notification will not disappear and play will not stop through a playlist
 	* please voice any irregularities you may see
 * on episode lists, show duration on the top row

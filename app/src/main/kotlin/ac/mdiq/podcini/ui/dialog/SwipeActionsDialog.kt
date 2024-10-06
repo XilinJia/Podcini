@@ -14,11 +14,11 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.*
 import ac.mdiq.podcini.ui.fragment.*
-import ac.mdiq.podcini.ui.actions.swipeactions.SwipeAction
-import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
-import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions.Companion.getPrefsWithDefaults
-import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions.Companion.getSharedPrefs
-import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions.Companion.isSwipeActionEnabled
+import ac.mdiq.podcini.ui.actions.SwipeAction
+import ac.mdiq.podcini.ui.actions.SwipeActions
+import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.getPrefsWithDefaults
+import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.getSharedPrefs
+import ac.mdiq.podcini.ui.actions.SwipeActions.Companion.isSwipeActionEnabled
 import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi

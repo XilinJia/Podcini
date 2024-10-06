@@ -847,17 +847,21 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         Column(Modifier.background(if (isSelected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface)
                             .combinedClickable(onClick = {
                                 Logd(TAG, "clicked: ${feed.title}")
-                                if (selectMode) toggleSelected()
-                                else (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
+                                if (!feed.isBuilding) {
+                                    if (selectMode) toggleSelected()
+                                    else (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
+                                }
                             }, onLongClick = {
-                                selectMode = !selectMode
-                                isSelected = selectMode
-                                if (selectMode) {
-                                    selected.add(feed)
-                                    longPressIndex = index
-                                } else {
-                                    selectedSize = 0
-                                    longPressIndex = -1
+                                if (!feed.isBuilding) {
+                                    selectMode = !selectMode
+                                    isSelected = selectMode
+                                    if (selectMode) {
+                                        selected.add(feed)
+                                        longPressIndex = index
+                                    } else {
+                                        selectedSize = 0
+                                        longPressIndex = -1
+                                    }
                                 }
                                 Logd(TAG, "long clicked: ${feed.title}")
                             })) {
@@ -914,25 +918,31 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                 modifier = Modifier.width(80.dp).height(80.dp)
                                     .clickable(onClick = {
                                         Logd(TAG, "icon clicked!")
-                                        if (selectMode) toggleSelected()
-                                        else (activity as MainActivity).loadChildFragment(FeedInfoFragment.newInstance(feed))
+                                        if (!feed.isBuilding) {
+                                            if (selectMode) toggleSelected()
+                                            else (activity as MainActivity).loadChildFragment(FeedInfoFragment.newInstance(feed))
+                                        }
                                     })
                             )
                             val textColor = MaterialTheme.colorScheme.onSurface
                             Column(Modifier.weight(1f).padding(start = 10.dp).combinedClickable(onClick = {
                                 Logd(TAG, "clicked: ${feed.title}")
-                                if (selectMode) toggleSelected()
-                                else (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
+                                if (!feed.isBuilding) {
+                                    if (selectMode) toggleSelected()
+                                    else (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id))
+                                }
                             }, onLongClick = {
-                                selectMode = !selectMode
-                                isSelected = selectMode
-                                if (selectMode) {
-                                    selected.add(feed)
-                                    longPressIndex = index
-                                } else {
-                                    selected.clear()
-                                    selectedSize = 0
-                                    longPressIndex = -1
+                                if (!feed.isBuilding) {
+                                    selectMode = !selectMode
+                                    isSelected = selectMode
+                                    if (selectMode) {
+                                        selected.add(feed)
+                                        longPressIndex = index
+                                    } else {
+                                        selected.clear()
+                                        selectedSize = 0
+                                        longPressIndex = -1
+                                    }
                                 }
                                 Logd(TAG, "long clicked: ${feed.title}")
                             })) {
@@ -944,9 +954,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                         color = textColor, style = MaterialTheme.typography.bodyMedium)
                                     Spacer(modifier = Modifier.weight(1f))
                                     var feedSortInfo by remember { mutableStateOf(feed.sortInfo) }
-                                    LaunchedEffect(feedSorted) {
-                                        feedSortInfo = feed.sortInfo
-                                    }
+                                    LaunchedEffect(feedSorted) { feedSortInfo = feed.sortInfo }
                                     Text(feedSortInfo, color = textColor, style = MaterialTheme.typography.bodyMedium)
                                 }
                             }

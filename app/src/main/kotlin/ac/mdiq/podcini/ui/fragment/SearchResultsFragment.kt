@@ -5,11 +5,11 @@ import ac.mdiq.podcini.databinding.FragmentSearchResultsBinding
 import ac.mdiq.podcini.net.feed.discovery.PodcastSearchResult
 import ac.mdiq.podcini.net.feed.discovery.PodcastSearcher
 import ac.mdiq.podcini.net.feed.discovery.PodcastSearcherRegistry
+import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.compose.OnlineFeedItem
 import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.MiscFormatter.formatNumber
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
@@ -20,8 +20,10 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.SearchView
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
@@ -31,15 +33,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
-import coil.compose.AsyncImage
 import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -168,8 +167,18 @@ class SearchResultsFragment : Fragment() {
     private fun search(query: String) {
         showOnlyProgressBar()
         lifecycleScope.launch(Dispatchers.IO) {
+            val feeds = getFeedList()
+            fun feedId(r: PodcastSearchResult): Long {
+                for (f in feeds) {
+                    if (f.downloadUrl == r.feedUrl) return f.id
+                }
+                return 0L
+            }
             try {
                 val result = searchProvider?.search(query) ?: listOf()
+                for (r in result) {
+                    r.feedId = feedId(r)
+                }
                 searchResults.clear()
                 searchResults.addAll(result)
                 withContext(Dispatchers.Main) {

@@ -21,10 +21,10 @@
             app:navigationContentDescription="@string/toolbar_back_button_content_description"
             app:navigationIcon="?homeAsUpIndicator" />
 
-        <androidx.compose.ui.platform.ComposeView
-            android:id="@+id/infobar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+<!--        <androidx.compose.ui.platform.ComposeView-->
+<!--            android:id="@+id/infobar"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"/>-->
 
     </com.google.android.material.appbar.AppBarLayout>
 

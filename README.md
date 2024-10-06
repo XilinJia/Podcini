@@ -16,6 +16,7 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
 That means finally: [Nessun dorma](https://www.youtube.com/watch?v=cWc7vYjgnTs)
 #### For Podcini to show up on car's HUD with Android Auto, please read AnroidAuto.md for instructions.
 #### If you need to cast to an external speaker, you should install the "play" apk, not the "free" apk, that's about the difference between the two.
+#### Since version 6.8.5, Podcini.R is built to target SDK 30 (Android 11), though built with SDK 35 and tested on Android 14. This is to counter 2-year old Google issue ForegroundServiceStartNotAllowedException. For more see [this issue](https://github.com/XilinJia/Podcini/issues/88)
 #### If you are migrating from Podcini version 5, please read the migrationTo5.md file for migration instructions.
 
 This project was developed from a fork of [AntennaPod](<https://github.com/AntennaPod/AntennaPod>) as of Feb 5 2024.
@@ -138,6 +139,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * All the media from Youtube or Youtube Music can be played (only streamed) with video in fullscreen and in window modes or in audio only mode in the background
 * These media are played with the lowest video quality and highest audio quality
 * If a subscription is set for "audio only", then only audio stream is fetched at play time for every media in the subscription
+* accepted host names include: youtube.com, www.youtube.com, m.youtube.com, music.youtube.com, and youtu.be
 
 ### Instant (or Wifi) sync
 

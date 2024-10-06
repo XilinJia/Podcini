@@ -13,7 +13,7 @@ import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.utils.DownloadResultComparator
-import ac.mdiq.podcini.ui.actions.actionbutton.DownloadActionButton
+import ac.mdiq.podcini.ui.actions.DownloadActionButton
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.dialog.DownloadLogDetailsDialog
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler

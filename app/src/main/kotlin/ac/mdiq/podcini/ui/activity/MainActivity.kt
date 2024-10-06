@@ -23,7 +23,7 @@ import ac.mdiq.podcini.receiver.PlayerWidget
 import ac.mdiq.podcini.storage.database.Feeds.buildTags
 import ac.mdiq.podcini.storage.database.Feeds.monitorFeeds
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
-import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
+import ac.mdiq.podcini.ui.actions.SwipeActions
 import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
 import ac.mdiq.podcini.ui.dialog.RatingDialog
 import ac.mdiq.podcini.ui.fragment.*
@@ -65,7 +65,6 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController

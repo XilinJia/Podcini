@@ -10,18 +10,19 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
-import ac.mdiq.podcini.ui.actions.handler.MenuItemUtils
+import ac.mdiq.podcini.ui.actions.MenuItemUtils
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.compose.EpisodeLazyColumn
+import ac.mdiq.podcini.ui.compose.EpisodeVM
 import ac.mdiq.podcini.ui.dialog.CustomFeedNameDialog
 import ac.mdiq.podcini.ui.dialog.RemoveFeedDialog
 import ac.mdiq.podcini.ui.dialog.TagSettingsDialog
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.ui.view.SquareImageView
-import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.podcini.util.Logd
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
@@ -68,7 +69,8 @@ class SearchFragment : Fragment() {
     private lateinit var chip: Chip
     private lateinit var automaticSearchDebouncer: Handler
 
-    private val results = mutableStateListOf<Episode>()
+    private val results = mutableListOf<Episode>()
+    private val vms = mutableStateListOf<EpisodeVM>()
 
     private var lastQueryChange: Long = 0
     private var isOtherViewInFoucus = false
@@ -86,7 +88,7 @@ class SearchFragment : Fragment() {
 
         binding.lazyColumn.setContent {
             CustomTheme(requireContext()) {
-                EpisodeLazyColumn(activity as MainActivity, episodes = results)
+                EpisodeLazyColumn(activity as MainActivity, vms = vms)
             }
         }
 
@@ -137,6 +139,7 @@ class SearchFragment : Fragment() {
         Logd(TAG, "onDestroyView")
         _binding = null
         results.clear()
+        vms.clear()
         super.onDestroyView()
     }
 
@@ -229,7 +232,10 @@ class SearchFragment : Fragment() {
     private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
         for (url in event.urls) {
             val pos: Int = EpisodeUtil.indexOfItemWithDownloadUrl(results, url)
-            if (pos >= 0) results[pos].downloadState.value = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
+            if (pos >= 0) {
+//                results[pos].downloadState.value = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
+                vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
+            }
 
         }
     }
@@ -252,6 +258,8 @@ class SearchFragment : Fragment() {
                         val first_ = results_.first!!.toMutableList()
                         results.clear()
                         results.addAll(first_)
+                        vms.clear()
+                        for (e in first_) { vms.add(EpisodeVM(e)) }
                     }
                     if (requireArguments().getLong(ARG_FEED, 0) == 0L) {
                         if (results_.second != null) adapterFeeds.updateData(results_.second!!)

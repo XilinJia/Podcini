@@ -2,6 +2,9 @@ package ac.mdiq.podcini.net.feed.discovery
 
 import ac.mdiq.podcini.net.sync.gpoddernet.model.GpodnetPodcast
 import ac.mdiq.vista.extractor.channel.ChannelInfoItem
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.setValue
 import de.mfietz.fyydlin.SearchHit
 import org.json.JSONException
 import org.json.JSONObject
@@ -17,6 +20,9 @@ class PodcastSearchResult private constructor(
         val update: String?,
         val subscriberCount: Int,
         val source: String) {
+
+    // feedId will be positive if already subscribed
+    var feedId by mutableLongStateOf(0L)
 
     companion object {
         fun dummy(): PodcastSearchResult {

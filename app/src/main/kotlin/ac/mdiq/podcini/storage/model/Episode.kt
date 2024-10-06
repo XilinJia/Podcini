@@ -136,13 +136,7 @@ class Episode : RealmObject {
         }
 
     @Ignore
-    val downloadState = mutableIntStateOf(if (media?.downloaded == true) DownloadStatus.State.COMPLETED.ordinal else DownloadStatus.State.UNKNOWN.ordinal)
-
-    @Ignore
     val isRemote = mutableStateOf(false)
-
-    @Ignore
-    val stopMonitoring = mutableStateOf(false)
 
     constructor() {
         this.playState = PlayState.UNPLAYED.code
@@ -160,13 +154,6 @@ class Episode : RealmObject {
         this.playState = state
         if (feed != null) this.feedId = feed.id
         this.feed = feed
-    }
-
-    fun copyStates(other: Episode) {
-//        inQueueState.value = other.inQueueState.value
-//        isPlayingState.value = other.isPlayingState.value
-        downloadState.value = other.downloadState.value
-        stopMonitoring.value = other.stopMonitoring.value
     }
 
     fun updateFromOther(other: Episode) {
@@ -296,10 +283,6 @@ class Episode : RealmObject {
         if (isFavorite != other.isFavorite) return false
         if (isInProgress != other.isInProgress) return false
         if (isDownloaded != other.isDownloaded) return false
-//        if (inQueueState != other.inQueueState) return false
-//        if (isPlayingState != other.isPlayingState) return false
-        if (downloadState != other.downloadState) return false
-        if (stopMonitoring != other.stopMonitoring) return false
 
         return true
     }
@@ -324,23 +307,8 @@ class Episode : RealmObject {
         result = 31 * result + isFavorite.hashCode()
         result = 31 * result + isInProgress.hashCode()
         result = 31 * result + isDownloaded.hashCode()
-//        result = 31 * result + inQueueState.hashCode()
-//        result = 31 * result + isPlayingState.hashCode()
-        result = 31 * result + downloadState.hashCode()
-        result = 31 * result + stopMonitoring.hashCode()
         return result
     }
-
-    //    override fun equals(other: Any?): Boolean {
-//        if (this === other) return true
-//        if (other !is Episode) return false
-//        return id == other.id
-//    }
-//
-//    override fun hashCode(): Int {
-//        val result = (id xor (id ushr 32)).toInt()
-//        return result
-//    }
 
     enum class PlayState(val code: Int) {
         UNSPECIFIED(-2),

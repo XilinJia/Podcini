@@ -4,24 +4,26 @@ import ac.mdiq.podcini.R
 import ac.mdiq.podcini.net.feed.FeedBuilder
 import ac.mdiq.podcini.net.feed.discovery.PodcastSearchResult
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment
 import ac.mdiq.podcini.ui.fragment.OnlineFeedFragment
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.MiscFormatter.formatNumber
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.constraintlayout.compose.ConstraintLayout
 import coil.compose.AsyncImage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -35,16 +37,8 @@ fun OnlineFeedItem(activity: MainActivity, feed: PodcastSearchResult) {
     fun confirmSubscribe(feed: PodcastSearchResult, showDialog: Boolean, onDismissRequest: () -> Unit) {
         if (showDialog) {
             Dialog(onDismissRequest = { onDismissRequest() }) {
-                Card(
-                    modifier = Modifier
-                        .wrapContentSize(align = Alignment.Center)
-                        .padding(16.dp),
-                    shape = RoundedCornerShape(16.dp),
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.Center
-                    ) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp)) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.Center) {
                         Text("Subscribe: \"${feed.title}\" ?")
                         Button(onClick = {
                             CoroutineScope(Dispatchers.IO).launch {
@@ -73,15 +67,36 @@ fun OnlineFeedItem(activity: MainActivity, feed: PodcastSearchResult) {
     Column(Modifier.padding(start = 10.dp, end = 10.dp, top = 4.dp, bottom = 4.dp).combinedClickable(
         onClick = {
             if (feed.feedUrl != null) {
-                val fragment = OnlineFeedFragment.newInstance(feed.feedUrl)
-                fragment.feedSource = feed.source
-                activity.loadChildFragment(fragment)
+                if (feed.feedId > 0) {
+                    val fragment = FeedEpisodesFragment.newInstance(feed.feedId)
+                    activity.loadChildFragment(fragment)
+                } else {
+                    val fragment = OnlineFeedFragment.newInstance(feed.feedUrl)
+                    fragment.feedSource = feed.source
+                    activity.loadChildFragment(fragment)
+                }
             }
         }, onLongClick = { showSubscribeDialog.value = true })) {
         val textColor = MaterialTheme.colorScheme.onSurface
         Text(feed.title, color = textColor, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(bottom = 4.dp))
         Row {
-            AsyncImage(model = feed.imageUrl, contentDescription = "imgvCover", placeholder = painterResource(R.mipmap.ic_launcher), modifier = Modifier.width(65.dp).height(65.dp))
+            ConstraintLayout(modifier = Modifier.width(56.dp).height(56.dp)) {
+                val (imgvCover, checkMark) = createRefs()
+                AsyncImage(model = feed.imageUrl,
+                    contentDescription = "imgvCover",
+                    placeholder = painterResource(R.mipmap.ic_launcher),
+                    modifier = Modifier.width(65.dp).height(65.dp).constrainAs(imgvCover) {
+                        top.linkTo(parent.top)
+                        bottom.linkTo(parent.bottom)
+                        start.linkTo(parent.start)
+                    })
+                val alpha = if (feed.feedId > 0) 1.0f else 0f
+                if (feed.feedId > 0) Icon(painter = painterResource(R.drawable.ic_check), tint = textColor, contentDescription = "played_mark",
+                    modifier = Modifier.background(Color.Green).alpha(alpha).constrainAs(checkMark) {
+                        bottom.linkTo(parent.bottom)
+                        end.linkTo(parent.end)
+                    })
+            }
             Column(Modifier.padding(start = 10.dp)) {
                 var authorText by remember { mutableStateOf("") }
                 authorText = when {

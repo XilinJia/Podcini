@@ -3,16 +3,13 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.BaseEpisodesListFragmentBinding
 import ac.mdiq.podcini.net.download.DownloadStatus
-import ac.mdiq.podcini.net.download.DownloadStatus.State.UNKNOWN
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
-import ac.mdiq.podcini.ui.actions.swipeactions.SwipeAction
-import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
+import ac.mdiq.podcini.ui.actions.SwipeAction
+import ac.mdiq.podcini.ui.actions.SwipeActions
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.compose.CustomTheme
-import ac.mdiq.podcini.ui.compose.EpisodeLazyColumn
-import ac.mdiq.podcini.ui.compose.InforBar
+import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
@@ -21,6 +18,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import androidx.appcompat.widget.Toolbar
+import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.util.Pair
@@ -54,7 +52,8 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
     lateinit var toolbar: MaterialToolbar
     lateinit var swipeActions: SwipeActions
 
-    val episodes = mutableStateListOf<Episode>()
+    val episodes = mutableListOf<Episode>()
+    private val vms = mutableStateListOf<EpisodeVM>()
 
     @UnstableApi override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
@@ -79,17 +78,22 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
 
         swipeActions = SwipeActions(this, TAG)
         lifecycle.addObserver(swipeActions)
-        binding.infobar.setContent {
-            CustomTheme(requireContext()) {
-                InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {swipeActions.showDialog()})
-            }
-        }
         binding.lazyColumn.setContent {
             CustomTheme(requireContext()) {
-                EpisodeLazyColumn(activity as MainActivity, episodes = episodes,
-                    leftSwipeCB = { if (leftActionState.value == null) swipeActions.showDialog() else leftActionState.value?.performAction(it, this, swipeActions.filter ?: EpisodeFilter())},
-                    rightSwipeCB = { if (rightActionState.value == null) swipeActions.showDialog() else rightActionState.value?.performAction(it, this, swipeActions.filter ?: EpisodeFilter())},
+                Column {
+                    InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {swipeActions.showDialog()})
+                    EpisodeLazyColumn(
+                        activity as MainActivity, vms = vms,
+                        leftSwipeCB = {
+                            if (leftActionState.value == null) swipeActions.showDialog()
+                            else leftActionState.value?.performAction(it, this@BaseEpisodesFragment, swipeActions.filter ?: EpisodeFilter())
+                        },
+                        rightSwipeCB = {
+                            if (rightActionState.value == null) swipeActions.showDialog()
+                            else rightActionState.value?.performAction(it, this@BaseEpisodesFragment, swipeActions.filter ?: EpisodeFilter())
+                        },
                     )
+                }
             }
         }
 
@@ -143,6 +147,7 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
         Logd(TAG, "onDestroyView")
         _binding = null
         episodes.clear()
+        vms.clear()
         super.onDestroyView()
     }
 
@@ -160,8 +165,10 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
         for (url in event.urls) {
 //            if (!event.isCompleted(url)) continue
             val pos: Int = EpisodeUtil.indexOfItemWithDownloadUrl(episodes, url)
-            if (pos >= 0) episodes[pos].downloadState.value = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
-
+            if (pos >= 0) {
+//                episodes[pos].downloadState.value = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
+                vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
+            }
         }
     }
 
@@ -220,10 +227,12 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
                     val data = withContext(Dispatchers.IO) {
                         Pair(loadData().toMutableList(), loadTotalItemCount())
                     }
+                    val restoreScrollPosition = episodes.isEmpty()
+                    episodes.clear()
+                    episodes.addAll(data.first)
                     withContext(Dispatchers.Main) {
-                        val restoreScrollPosition = episodes.isEmpty()
-                        episodes.clear()
-                        episodes.addAll(data.first)
+                        vms.clear()
+                        for (e in data.first) { vms.add(EpisodeVM(e)) }
 //                        if (restoreScrollPosition) recyclerView.restoreScrollPosition(getPrefName())
                         updateToolbar()
                     }

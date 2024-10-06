@@ -20,8 +20,8 @@ import ac.mdiq.podcini.storage.model.EpisodeMedia
 import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
-import ac.mdiq.podcini.ui.actions.actionbutton.*
-import ac.mdiq.podcini.ui.actions.handler.EpisodeMenuHandler
+import ac.mdiq.podcini.ui.actions.*
+import ac.mdiq.podcini.ui.actions.EpisodeMenuHandler
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
@@ -61,7 +61,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView

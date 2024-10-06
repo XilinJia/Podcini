@@ -12,10 +12,9 @@ import ac.mdiq.podcini.preferences.UserPreferences.isEnableAutodownload
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.persistFeedPreferences
-import ac.mdiq.podcini.storage.database.Feeds.updateFeed
 import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.utils.ThemeUtils.getColorFromAttr
+import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
@@ -23,7 +22,6 @@ import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.SharedPreferences
-import android.graphics.LightingColorFilter
 import android.net.Uri
 import android.os.Bundle
 import android.text.Spannable
@@ -34,15 +32,24 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import androidx.annotation.OptIn
 import androidx.annotation.UiThread
 import androidx.collection.ArrayMap
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
-import coil.load
+import coil.compose.AsyncImage
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
@@ -72,6 +79,13 @@ class OnlineFeedFragment : Fragment() {
     private var feedUrl: String = ""
     private lateinit var feedBuilder: FeedBuilder
 
+    private var showFeedDisplay by mutableStateOf(false)
+    private var showProgress by mutableStateOf(true)
+    private var autoDownloadChecked by mutableStateOf(false)
+    private var enableSubscribe by mutableStateOf(true)
+    private var enableEpisodes by mutableStateOf(true)
+    private var subButTextRes by mutableIntStateOf(R.string.subscribing_label)
+
     private val feedId: Long
         get() {
             if (feeds == null) return 0
@@ -83,6 +97,7 @@ class OnlineFeedFragment : Fragment() {
 
     @Volatile
     private var feeds: List<Feed>? = null
+    private var feed by mutableStateOf<Feed?>(null)
     private var selectedDownloadUrl: String? = null
 //    private var downloader: Downloader? = null
     private var username: String? = null
@@ -97,25 +112,25 @@ class OnlineFeedFragment : Fragment() {
     @OptIn(UnstableApi::class) override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Logd(TAG, "fragment onCreateView")
         _binding = OnlineFeedviewFragmentBinding.inflate(layoutInflater)
-        binding.closeButton.visibility = View.INVISIBLE
-        binding.card.setOnClickListener(null)
-        binding.card.setCardBackgroundColor(getColorFromAttr(requireContext(), com.google.android.material.R.attr.colorSurface))
-
         displayUpArrow = parentFragmentManager.backStackEntryCount != 0
         if (savedInstanceState != null) displayUpArrow = savedInstanceState.getBoolean(KEY_UP_ARROW)
         (activity as MainActivity).setupToolbarToggle(binding.toolbar, displayUpArrow)
 
         feedUrl = requireArguments().getString(ARG_FEEDURL) ?: ""
         Logd(TAG, "feedUrl: $feedUrl")
-
         feedBuilder = FeedBuilder(requireContext()) { message, details -> showErrorDialog(message, details) }
 
+        binding.mainView.setContent {
+            CustomTheme(requireContext()) {
+                MainView()
+            }
+        }
         if (feedUrl.isEmpty()) {
             Log.e(TAG, "feedUrl is null.")
             showNoPodcastFoundError()
         } else {
             Logd(TAG, "Activity was started with url $feedUrl")
-            setLoadingLayout()
+            showProgress = true
             // Remove subscribeonandroid.com from feed URL in order to subscribe to the actual feed URL
             if (feedUrl.contains("subscribeonandroid.com")) feedUrl = feedUrl.replaceFirst("((www.)?(subscribeonandroid.com/))".toRegex(), "")
             if (savedInstanceState != null) {
@@ -125,11 +140,6 @@ class OnlineFeedFragment : Fragment() {
             lookupUrlAndBuild(feedUrl)
         }
         return binding.root
-    }
-
-    private fun setLoadingLayout() {
-        binding.progressBar.visibility = View.VISIBLE
-        binding.feedDisplayContainer.visibility = View.GONE
     }
 
     override fun onStart() {
@@ -164,9 +174,10 @@ class OnlineFeedFragment : Fragment() {
             val urlString = PodcastSearcherRegistry.lookupUrl1(url)
             try {
                 feeds = getFeedList()
-                feedBuilder.startFeedBuilding(urlString, username, password) { feed, map ->
+                feedBuilder.startFeedBuilding(urlString, username, password) { feed_, map ->
                     selectedDownloadUrl = feedBuilder.selectedDownloadUrl
-                    showFeedInformation(feed, map)
+                    feed = feed_
+                    showFeedInformation(feed_, map)
                 }
             } catch (e: FeedUrlNotFoundException) { tryToRetrieveFeedUrlBySearch(e)
             } catch (e: Throwable) {
@@ -196,9 +207,10 @@ class OnlineFeedFragment : Fragment() {
                 Logd(TAG, "Successfully retrieve feed url")
                 isFeedFoundBySearch = true
                 feeds = getFeedList()
-                feedBuilder.startFeedBuilding(url, username, password) { feed, map ->
+                feedBuilder.startFeedBuilding(url, username, password) { feed_, map ->
                     selectedDownloadUrl = feedBuilder.selectedDownloadUrl
-                    showFeedInformation(feed, map)
+                    feed = feed_
+                    showFeedInformation(feed_, map)
                 }
             } else {
                 showNoPodcastFoundError()
@@ -268,77 +280,140 @@ class OnlineFeedFragment : Fragment() {
      * This method is executed on the GUI thread.
      */
     @UnstableApi private fun showFeedInformation(feed: Feed, alternateFeedUrls: Map<String, String>) {
-        binding.progressBar.visibility = View.GONE
-        binding.feedDisplayContainer.visibility = View.VISIBLE
+        showProgress = false
+//        binding.feedDisplayContainer.visibility = View.VISIBLE
+        showFeedDisplay = true
         if (isFeedFoundBySearch) {
             val resId = R.string.no_feed_url_podcast_found_by_search
             Snackbar.make(binding.root, resId, Snackbar.LENGTH_LONG).show()
         }
-        binding.backgroundImage.colorFilter = LightingColorFilter(-0x7d7d7e, 0x000000)
-        binding.episodeLabel.setOnClickListener { showEpisodes(feed.episodes)}
-        if (!feed.imageUrl.isNullOrBlank()) {
-            binding.coverImage.load(feed.imageUrl) {
-                placeholder(R.color.light_gray)
-                error(R.mipmap.ic_launcher)
-            }
-        }
-        binding.titleLabel.text = feed.title
-        binding.authorLabel.text = feed.author
-        binding.txtvDescription.text = HtmlToPlainText.getPlainText(feed.description?:"")
-        binding.txtvTechInfo.text = "${feed.episodes.size} episodes\n" +
-                "${feed.mostRecentItem?.title ?: ""}\n\n" +
-                "${feed.language} ${feed.type ?: ""} ${feed.lastUpdate ?: ""}\n" +
-                "${feed.link}\n" +
-                "${feed.downloadUrl}"
-        binding.subscribeButton.setOnClickListener {
-            if (feedInFeedlist()) openFeed()
-            else {
-                lifecycleScope.launch {
-                    binding.progressBar.visibility = View.VISIBLE
-                    withContext(Dispatchers.IO) { feedBuilder.subscribe(feed) }
-                    withContext(Dispatchers.Main) {
-                        binding.progressBar.visibility = View.GONE
-                        didPressSubscribe = true
-                        handleUpdatedFeedStatus()
-                    }
-                }
-            }
-        }
-        if (feedSource != "VistaGuide" && isEnableAutodownload)
-            binding.autoDownloadCheckBox.isChecked = prefs!!.getBoolean(PREF_LAST_AUTO_DOWNLOAD, true)
 
-        if (alternateFeedUrls.isEmpty()) binding.alternateUrlsSpinner.visibility = View.GONE
-        else {
-            binding.alternateUrlsSpinner.visibility = View.VISIBLE
-            val alternateUrlsList: MutableList<String> = ArrayList()
-            val alternateUrlsTitleList: MutableList<String?> = ArrayList()
-            if (feed.downloadUrl != null) alternateUrlsList.add(feed.downloadUrl!!)
-            alternateUrlsTitleList.add(feed.title)
-            alternateUrlsList.addAll(alternateFeedUrls.keys)
-            for (url in alternateFeedUrls.keys) {
-                alternateUrlsTitleList.add(alternateFeedUrls[url])
-            }
-            val adapter: ArrayAdapter<String> = object : ArrayAdapter<String>(requireContext(),
-                R.layout.alternate_urls_item, alternateUrlsTitleList) {
-                override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
-                    // reusing the old view causes a visual bug on Android <= 10
-                    return super.getDropDownView(position, null, parent)
-                }
-            }
-            adapter.setDropDownViewResource(R.layout.alternate_urls_dropdown_item)
-            binding.alternateUrlsSpinner.adapter = adapter
-            binding.alternateUrlsSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
-                    selectedDownloadUrl = alternateUrlsList[position]
-                }
-                override fun onNothingSelected(parent: AdapterView<*>?) {}
-            }
-        }
+//        if (alternateFeedUrls.isEmpty()) binding.alternateUrlsSpinner.visibility = View.GONE
+//        else {
+//            binding.alternateUrlsSpinner.visibility = View.VISIBLE
+//            val alternateUrlsList: MutableList<String> = ArrayList()
+//            val alternateUrlsTitleList: MutableList<String?> = ArrayList()
+//            if (feed.downloadUrl != null) alternateUrlsList.add(feed.downloadUrl!!)
+//            alternateUrlsTitleList.add(feed.title)
+//            alternateUrlsList.addAll(alternateFeedUrls.keys)
+//            for (url in alternateFeedUrls.keys) {
+//                alternateUrlsTitleList.add(alternateFeedUrls[url])
+//            }
+//            val adapter: ArrayAdapter<String> = object : ArrayAdapter<String>(requireContext(),
+//                R.layout.alternate_urls_item, alternateUrlsTitleList) {
+//                override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
+//                    // reusing the old view causes a visual bug on Android <= 10
+//                    return super.getDropDownView(position, null, parent)
+//                }
+//            }
+//            adapter.setDropDownViewResource(R.layout.alternate_urls_dropdown_item)
+//            binding.alternateUrlsSpinner.adapter = adapter
+//            binding.alternateUrlsSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+//                override fun onItemSelected(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
+//                    selectedDownloadUrl = alternateUrlsList[position]
+//                }
+//                override fun onNothingSelected(parent: AdapterView<*>?) {}
+//            }
+//        }
         handleUpdatedFeedStatus()
     }
 
-    @UnstableApi private fun openFeed() {
-        (activity as MainActivity).loadFeedFragmentById(feedId, null)
+    @Composable
+    fun MainView() {
+        val textColor = MaterialTheme.colorScheme.onSurface
+        ConstraintLayout(modifier = Modifier.fillMaxSize()) {
+            val (progressBar, main) = createRefs()
+            if (showProgress) CircularProgressIndicator(progress = { 0.6f },
+                strokeWidth = 10.dp, modifier = Modifier.size(50.dp).constrainAs(progressBar) { centerTo(parent) })
+            else Column(modifier = Modifier.fillMaxSize().padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp)
+                .constrainAs(main) {
+                    top.linkTo(parent.top)
+                    bottom.linkTo(parent.bottom)
+                    start.linkTo(parent.start)
+                }) {
+                if (showFeedDisplay) ConstraintLayout(modifier = Modifier.fillMaxWidth().height(120.dp).background(MaterialTheme.colorScheme.surface)) {
+                    val (backgroundImage, coverImage, taColumn, buttons, closeButton) = createRefs()
+                    if (false) Image(painter = painterResource(R.drawable.ic_settings_white), contentDescription = "background",
+                        Modifier.fillMaxWidth().height(120.dp).constrainAs(backgroundImage) {
+                            top.linkTo(parent.top)
+                            bottom.linkTo(parent.bottom)
+                            start.linkTo(parent.start)
+                        })
+                    AsyncImage(model = feed?.imageUrl?:"", contentDescription = "coverImage",
+                        Modifier.width(100.dp).height(100.dp).padding(start = 10.dp, end = 16.dp, bottom = 10.dp).constrainAs(coverImage) {
+                            bottom.linkTo(parent.bottom)
+                            start.linkTo(parent.start)
+                        }.clickable(onClick = {}))
+                    Column(Modifier.constrainAs(taColumn) {
+                        top.linkTo(coverImage.top)
+                        start.linkTo(coverImage.end) }) {
+                        Text(feed?.title?:"No title", color = textColor, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                        Text(feed?.author?:"", color = textColor, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                    Row(Modifier.constrainAs(buttons) {
+                        start.linkTo(coverImage.end)
+                        top.linkTo(taColumn.bottom)
+                        end.linkTo(parent.end)
+                    }) {
+                        Spacer(modifier = Modifier.weight(0.2f))
+                        if (enableSubscribe) Button(onClick = {
+                            if (feedInFeedlist()) (activity as MainActivity).loadFeedFragmentById(feedId, null)
+                            else {
+                                enableSubscribe = false
+                                enableEpisodes = false
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    feedBuilder.subscribe(feed!!)
+                                    withContext(Dispatchers.Main) {
+                                        enableSubscribe = true
+                                        didPressSubscribe = true
+                                        handleUpdatedFeedStatus()
+                                    }
+                                }
+                            }
+                        }) {
+                            Text(stringResource(subButTextRes))
+                        }
+                        Spacer(modifier = Modifier.weight(0.1f))
+                        if (enableEpisodes && feed != null) Button(onClick = { showEpisodes(feed!!.episodes) }) {
+                            Text(stringResource(R.string.episodes_label))
+                        }
+                        Spacer(modifier = Modifier.weight(0.2f))
+                    }
+                    if (false) Icon(painter = painterResource(R.drawable.ic_close_white), contentDescription = null, modifier = Modifier
+                        .constrainAs(closeButton) {
+                            top.linkTo(parent.top)
+                            end.linkTo(parent.end)
+                        })
+                }
+                Column {
+//                    alternate_urls_spinner
+                    if (feedSource != "VistaGuide" && isEnableAutodownload) Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(checked = autoDownloadChecked, onCheckedChange = { autoDownloadChecked = it })
+                        Text(text = stringResource(R.string.auto_download_label),
+                            style = MaterialTheme.typography.bodyMedium.merge(), color = textColor,
+                            modifier = Modifier.padding(start = 16.dp)
+                        )
+                    }
+                }
+                val scrollState = rememberScrollState()
+                var numEpisodes by remember { mutableIntStateOf(feed?.episodes?.size?:0) }
+                LaunchedEffect(Unit) {
+                    while (true) {
+                        delay(1000)
+                        numEpisodes = feed?.episodes?.size?:0
+                    }
+                }
+                Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp).verticalScroll(scrollState)) {
+                    Text("$numEpisodes episodes", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 5.dp, bottom = 10.dp))
+                    Text(stringResource(R.string.description_label), color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))
+                    Text(HtmlToPlainText.getPlainText(feed?.description?:""), color = textColor, style = MaterialTheme.typography.bodyMedium)
+                    Text(feed?.mostRecentItem?.title ?: "", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))
+                    Text("${feed?.language?:""} ${feed?.type ?: ""} ${feed?.lastUpdate ?: ""}", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))
+                    Text(feed?.link?:"", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))
+                    Text(feed?.downloadUrl?:"", color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 5.dp, bottom = 4.dp))
+                }
+            }
+        }
     }
 
     @UnstableApi private fun showEpisodes(episodes: MutableList<Episode>) {
@@ -364,12 +439,12 @@ class OnlineFeedFragment : Fragment() {
 //                binding.subscribeButton.isEnabled = false
 //            }
             dli.isDownloadingEpisode(selectedDownloadUrl!!) -> {
-                binding.subscribeButton.isEnabled = false
-                binding.subscribeButton.setText(R.string.subscribing_label)
+                enableSubscribe = false
+                subButTextRes = R.string.subscribing_label
             }
             feedInFeedlist() -> {
-                binding.subscribeButton.isEnabled = true
-                binding.subscribeButton.setText(R.string.open)
+                enableSubscribe = true
+                subButTextRes = R.string.open
                 if (didPressSubscribe) {
                     didPressSubscribe = false
                     val feed1 = getFeed(feedId, true)?: return
@@ -379,7 +454,7 @@ class OnlineFeedFragment : Fragment() {
                         feed1.preferences!!.prefStreamOverDownload = true
                         feed1.preferences!!.autoDownload = false
                     } else if (isEnableAutodownload) {
-                        val autoDownload = binding.autoDownloadCheckBox.isChecked
+                        val autoDownload = autoDownloadChecked
                         feed1.preferences!!.autoDownload = autoDownload
                         val editor = prefs!!.edit()
                         editor.putBoolean(PREF_LAST_AUTO_DOWNLOAD, autoDownload)
@@ -390,13 +465,12 @@ class OnlineFeedFragment : Fragment() {
                         feed1.preferences!!.password = password
                     }
                     persistFeedPreferences(feed1)
-                    openFeed()
+//                    openFeed()
                 }
             }
             else -> {
-                binding.subscribeButton.isEnabled = true
-                binding.subscribeButton.setText(R.string.subscribe_label)
-                if (feedSource != "VistaGuide" && isEnableAutodownload) binding.autoDownloadCheckBox.visibility = View.VISIBLE
+                enableSubscribe = true
+                subButTextRes = R.string.subscribing_label
             }
         }
     }

@@ -26,13 +26,10 @@ import ac.mdiq.podcini.storage.model.PlayQueue
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.EpisodeUtil
 import ac.mdiq.podcini.storage.utils.EpisodesPermutors.getPermutor
-import ac.mdiq.podcini.ui.actions.swipeactions.SwipeAction
-import ac.mdiq.podcini.ui.actions.swipeactions.SwipeActions
+import ac.mdiq.podcini.ui.actions.SwipeAction
+import ac.mdiq.podcini.ui.actions.SwipeActions
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.compose.CustomTheme
-import ac.mdiq.podcini.ui.compose.EpisodeLazyColumn
-import ac.mdiq.podcini.ui.compose.InforBar
-import ac.mdiq.podcini.ui.compose.queueChanged
+import ac.mdiq.podcini.ui.compose.*
 import ac.mdiq.podcini.ui.dialog.ConfirmationDialog
 import ac.mdiq.podcini.ui.dialog.EpisodeSortDialog
 import ac.mdiq.podcini.ui.utils.EmptyViewHandler
@@ -77,7 +74,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
-import com.leinardi.android.speeddial.SpeedDialActionItem
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -113,7 +109,8 @@ import kotlin.math.max
     private lateinit var queues: List<PlayQueue>
 
     private var displayUpArrow = false
-    private val queueItems = mutableStateListOf<Episode>()
+    private val queueItems = mutableListOf<Episode>()
+    private val vms = mutableStateListOf<EpisodeVM>()
 
     private var showBin by mutableStateOf(false)
 
@@ -183,7 +180,7 @@ import kotlin.math.max
 
         swipeActions = SwipeActions(this, TAG)
         swipeActions.setFilter(EpisodeFilter(EpisodeFilter.States.queued.name))
-        swipeActionsBin = SwipeActions(this, TAG)
+        swipeActionsBin = SwipeActions(this, TAG+".Bin")
         swipeActionsBin.setFilter(EpisodeFilter(EpisodeFilter.States.queued.name))
 
         binding.lazyColumn.setContent {
@@ -199,7 +196,7 @@ import kotlin.math.max
                             if (rightActionStateBin.value == null) swipeActionsBin.showDialog()
                             else rightActionStateBin.value?.performAction(episode, this@QueuesFragment, swipeActionsBin.filter ?: EpisodeFilter())
                         }
-                        EpisodeLazyColumn(activity as MainActivity, episodes = queueItems, leftSwipeCB = { leftCB(it) }, rightSwipeCB = { rightCB(it) })
+                        EpisodeLazyColumn(activity as MainActivity, vms = vms, leftSwipeCB = { leftCB(it) }, rightSwipeCB = { rightCB(it) })
                     }
                 } else {
                     Column {
@@ -212,7 +209,7 @@ import kotlin.math.max
                             if (rightActionState.value == null) swipeActions.showDialog()
                             else rightActionState.value?.performAction(episode, this@QueuesFragment, swipeActions.filter ?: EpisodeFilter())
                         }
-                        EpisodeLazyColumn(activity as MainActivity, episodes = queueItems, leftSwipeCB = { leftCB(it) }, rightSwipeCB = { rightCB(it) })
+                        EpisodeLazyColumn(activity as MainActivity, vms = vms, leftSwipeCB = { leftCB(it) }, rightSwipeCB = { rightCB(it) })
                     }
                 }
             }
@@ -317,11 +314,16 @@ import kotlin.math.max
         if (showBin) return
         when (event.action) {
             FlowEvent.QueueEvent.Action.ADDED -> {
-                if (event.episodes.isNotEmpty() && !curQueue.contains(event.episodes[0])) queueItems.addAll(event.episodes)
+                if (event.episodes.isNotEmpty() && !curQueue.contains(event.episodes[0])) {
+                    queueItems.addAll(event.episodes)
+                    for (e in event.episodes) vms.add(EpisodeVM(e))
+                }
             }
             FlowEvent.QueueEvent.Action.SET_QUEUE, FlowEvent.QueueEvent.Action.SORTED -> {
                 queueItems.clear()
                 queueItems.addAll(event.episodes)
+                vms.clear()
+                for (e in event.episodes) vms.add(EpisodeVM(e))
             }
             FlowEvent.QueueEvent.Action.REMOVED, FlowEvent.QueueEvent.Action.IRREVERSIBLE_REMOVED -> {
                 if (event.episodes.isNotEmpty()) {
@@ -329,8 +331,10 @@ import kotlin.math.max
                         val pos: Int = EpisodeUtil.indexOfItemWithId(queueItems, e.id)
                         if (pos >= 0) {
                             Logd(TAG, "removing episode $pos ${queueItems[pos].title} $e")
-                            queueItems[pos].stopMonitoring.value = true
+//                            queueItems[pos].stopMonitoring.value = true
                             queueItems.removeAt(pos)
+                            vms[pos].stopMonitoring()
+                            vms.removeAt(pos)
                         } else {
                             Log.e(TAG, "Trying to remove item non-existent from queue ${e.id} ${e.title}")
                             continue
@@ -344,6 +348,7 @@ import kotlin.math.max
             }
             FlowEvent.QueueEvent.Action.CLEARED -> {
                 queueItems.clear()
+                vms.clear()
             }
             FlowEvent.QueueEvent.Action.MOVED, FlowEvent.QueueEvent.Action.DELETED_MEDIA -> return
         }
@@ -357,7 +362,7 @@ import kotlin.math.max
     private fun onPlayEvent(event: FlowEvent.PlayEvent) {
         val pos: Int = EpisodeUtil.indexOfItemWithId(queueItems, event.episode.id)
         Logd(TAG, "onPlayEvent action: ${event.action} pos: $pos ${event.episode.title}")
-//        if (pos >= 0) queueItems[pos].isPlayingState.value = event.isPlaying()
+        if (pos >= 0) vms[pos].isPlayingState = event.isPlaying()
     }
 
     private fun onEpisodeDownloadEvent(event: FlowEvent.EpisodeDownloadEvent) {
@@ -366,7 +371,10 @@ import kotlin.math.max
         for (url in event.urls) {
 //            if (!event.isCompleted(url)) continue
             val pos: Int = EpisodeUtil.indexOfItemWithDownloadUrl(queueItems.toList(), url)
-            if (pos >= 0) queueItems[pos].downloadState.value = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
+            if (pos >= 0) {
+//                queueItems[pos].downloadState.value = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
+                vms[pos].downloadState = event.map[url]?.state ?: DownloadStatus.State.UNKNOWN.ordinal
+            }
         }
     }
 
@@ -417,6 +425,7 @@ import kotlin.math.max
         Logd(TAG, "onDestroyView")
         _binding = null
         queueItems.clear()
+        vms.clear()
         toolbar.setOnMenuItemClickListener(null)
         toolbar.setOnLongClickListener(null)
         super.onDestroyView()
@@ -662,12 +671,14 @@ import kotlin.math.max
             while (curQueue.name.isEmpty()) runBlocking { delay(100) }
             if (queueItems.isNotEmpty()) emptyViewHandler.hide()
             queueItems.clear()
+            vms.clear()
             if (showBin) queueItems.addAll(realm.query(Episode::class, "id IN $0", curQueue.idsBinList)
                     .find().sortedByDescending { curQueue.idsBinList.indexOf(it.id) })
             else {
                 curQueue.episodes.clear()
                 queueItems.addAll(curQueue.episodes)
             }
+            for (e in queueItems) vms.add(EpisodeVM(e))
             Logd(TAG, "loadCurQueue() curQueue.episodes: ${curQueue.episodes.size}")
 
 //            if (restoreScrollPosition) recyclerView.restoreScrollPosition(TAG)

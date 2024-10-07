@@ -2,13 +2,16 @@ package ac.mdiq.podcini.preferences.fragments
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.preferences.UserPreferences.defaultPage
 import ac.mdiq.podcini.preferences.UserPreferences.fullNotificationButtons
+import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
 import ac.mdiq.podcini.preferences.UserPreferences.setShowRemainTimeSetting
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
-import ac.mdiq.podcini.ui.dialog.DrawerPreferencesDialog
 import ac.mdiq.podcini.ui.dialog.FeedSortDialog
+import ac.mdiq.podcini.ui.fragment.NavDrawerFragment.Companion.navMap
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.content.DialogInterface
 import android.os.Build
@@ -50,8 +53,39 @@ class UserInterfacePreferencesFragment : PreferenceFragmentCompat() {
             true
         }
 
+        fun drawerPreferencesDialog(context: Context, callback: Runnable?) {
+            val hiddenItems = hiddenDrawerItems.map { it.trim() }.toMutableSet()
+//        val navTitles = context.resources.getStringArray(R.array.nav_drawer_titles)
+            val navTitles = navMap.values.map { context.resources.getString(it.nameRes).trim() }.toTypedArray()
+            val checked = BooleanArray(navMap.size)
+            for (i in navMap.keys.indices) {
+                val tag = navMap.keys.toList()[i]
+                if (!hiddenItems.contains(tag)) checked[i] = true
+            }
+            val builder = MaterialAlertDialogBuilder(context)
+            builder.setTitle(R.string.drawer_preferences)
+            builder.setMultiChoiceItems(navTitles, checked) { _: DialogInterface?, which: Int, isChecked: Boolean ->
+                if (isChecked) hiddenItems.remove(navMap.keys.toList()[which])
+                else hiddenItems.add((navMap.keys.toList()[which]).trim())
+            }
+            builder.setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
+                hiddenDrawerItems = hiddenItems.toList()
+                if (hiddenItems.contains(defaultPage)) {
+                    for (tag in navMap.keys) {
+                        if (!hiddenItems.contains(tag)) {
+                            defaultPage = tag
+                            break
+                        }
+                    }
+                }
+                callback?.run()
+            }
+            builder.setNegativeButton(R.string.cancel_label, null)
+            builder.create().show()
+        }
+
         findPreference<Preference>(UserPreferences.Prefs.prefHiddenDrawerItems.name)?.setOnPreferenceClickListener {
-            DrawerPreferencesDialog.show(requireContext(), null)
+            drawerPreferencesDialog(requireContext(), null)
             true
         }
 

@@ -94,9 +94,6 @@ import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
-/**
- * Fragment for displaying feed subscriptions
- */
 class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private var _binding: FragmentSubscriptionsBinding? = null

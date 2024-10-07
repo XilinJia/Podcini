@@ -14,8 +14,10 @@ import ac.mdiq.podcini.storage.database.Feeds.addToYoutubeSyndicate
 import ac.mdiq.podcini.storage.database.Queues
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueue
 import ac.mdiq.podcini.storage.database.RealmDB.realm
+import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.MediaType
+import ac.mdiq.podcini.storage.model.ShareLog
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.ui.actions.EpisodeActionButton
@@ -116,7 +118,58 @@ class EpisodeVM(var episode: Episode) {
     fun stopMonitoring() {
         episodeMonitor?.cancel()
         mediaMonitor?.cancel()
+        episodeMonitor = null
+        mediaMonitor = null
         Logd("EpisodeVM", "cancel monitoring")
+    }
+
+    fun startMonitoring() {
+        if (episodeMonitor == null) {
+            episodeMonitor = CoroutineScope(Dispatchers.Default).launch {
+                val item_ = realm.query(Episode::class).query("id == ${episode.id}").first()
+                Logd("EpisodeVM", "start monitoring episode: ${episode.title}")
+                val episodeFlow = item_.asFlow()
+                episodeFlow.collect { changes: SingleQueryChange<Episode> ->
+                    when (changes) {
+                        is UpdatedObject -> {
+                            Logd("EpisodeVM", "episodeMonitor UpdatedObject ${changes.obj.title} ${changes.changedFields.joinToString()}")
+                            if (episode.id == changes.obj.id) {
+                                withContext(Dispatchers.Main) {
+                                    playedState = changes.obj.isPlayed()
+                                    farvoriteState = changes.obj.isFavorite
+                                    episode = changes.obj     // direct assignment doesn't update member like media??
+                                }
+                                Logd("EpisodeVM", "episodeMonitor $playedState $playedState ")
+                            } else Logd("EpisodeVM", "episodeMonitor index out bound")
+                        }
+                        else -> {}
+                    }
+                }
+            }
+        }
+        if (mediaMonitor == null) {
+            mediaMonitor = CoroutineScope(Dispatchers.Default).launch {
+                val item_ = realm.query(Episode::class).query("id == ${episode.id}").first()
+                Logd("EpisodeVM", "start monitoring media: ${episode.title}")
+                val episodeFlow = item_.asFlow(listOf("media.*"))
+                episodeFlow.collect { changes: SingleQueryChange<Episode> ->
+                    when (changes) {
+                        is UpdatedObject -> {
+                            Logd("EpisodeVM", "mediaMonitor UpdatedObject ${changes.obj.title} ${changes.changedFields.joinToString()}")
+                            if (episode.id == changes.obj.id) {
+                                withContext(Dispatchers.Main) {
+                                    positionState = changes.obj.media?.position ?: 0
+                                    inProgressState = changes.obj.isInProgress
+                                    Logd("EpisodeVM", "mediaMonitor $positionState $inProgressState ${episode.title}")
+                                    episode = changes.obj
+                                }
+                            } else Logd("EpisodeVM", "mediaMonitor index out bound")
+                        }
+                        else -> {}
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -274,57 +327,11 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: SnapshotStateList<EpisodeVM>,
         LazyColumn(state = lazyListState, modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)) {
             itemsIndexed(vms, key = {index, vm -> vm.episode.id}) { index, vm ->
-                if (vm.episodeMonitor == null) {
-                    vm.episodeMonitor = CoroutineScope(Dispatchers.Default).launch {
-                        val item_ = realm.query(Episode::class).query("id == ${vm.episode.id}").first()
-                        Logd(TAG, "start monitoring episode: $index ${vm.episode.title}")
-                        val episodeFlow = item_.asFlow()
-                        episodeFlow.collect { changes: SingleQueryChange<Episode> ->
-                            when (changes) {
-                                is UpdatedObject -> {
-                                    Logd(TAG, "episodeMonitor UpdatedObject $index ${changes.obj.title} ${changes.changedFields.joinToString()}")
-                                    if (index < vms.size && vms[index].episode.id == changes.obj.id) {
-                                        withContext(Dispatchers.Main) {
-                                            vms[index].playedState = changes.obj.isPlayed()
-                                            vms[index].farvoriteState = changes.obj.isFavorite
-                                            vms[index].episode = changes.obj     // direct assignment doesn't update member like media??
-                                        }
-                                        Logd(TAG, "episodeMonitor $index ${vms[index].playedState} ${vm.playedState} ")
-                                    } else Logd(TAG, "episodeMonitor index out bound: $index ${vms.size}")
-                                }
-                                else -> {}
-                            }
-                        }
-                    }
-                }
-                if (vm.mediaMonitor == null) {
-                    vm.mediaMonitor = CoroutineScope(Dispatchers.Default).launch {
-                        val item_ = realm.query(Episode::class).query("id == ${vm.episode.id}").first()
-                        Logd(TAG, "start monitoring media: $index ${vm.episode.title}")
-                        val episodeFlow = item_.asFlow(listOf("media.*"))
-                        episodeFlow.collect { changes: SingleQueryChange<Episode> ->
-                            when (changes) {
-                                is UpdatedObject -> {
-                                    Logd(TAG, "mediaMonitor UpdatedObject $index ${changes.obj.title} ${changes.changedFields.joinToString()}")
-                                    if (index < vms.size && vms[index].episode.id == changes.obj.id) {
-                                        withContext(Dispatchers.Main) {
-                                            vms[index].positionState = changes.obj.media?.position ?: 0
-                                            vms[index].inProgressState = changes.obj.isInProgress
-                                            Logd(TAG, "mediaMonitor $index ${vm.positionState} ${vm.inProgressState} ${vm.episode.title}")
-                                            vms[index].episode = changes.obj
-                                        }
-                                    } else Logd(TAG, "mediaMonitor index out bound: $index ${vms.size}")
-                                }
-                                else -> {}
-                            }
-                        }
-                    }
-                }
+                vm.startMonitoring()
                 DisposableEffect(Unit) {
                     onDispose {
                         Logd(TAG, "cancelling monitoring $index")
-                        vm.episodeMonitor?.cancel()
-                        vm.mediaMonitor?.cancel()
+                        vm.stopMonitoring()
                     }
                 }
                 LaunchedEffect(vm.actionButton) {
@@ -548,16 +555,19 @@ fun confirmAddYoutubeEpisode(sharedUrls: List<String>, showDialog: Boolean, onDi
                     }
                     Button(onClick = {
                         CoroutineScope(Dispatchers.IO).launch {
-                            try {
-                                for (url in sharedUrls) {
+                            for (url in sharedUrls) {
+                                val log = realm.query(ShareLog::class).query("url == $0", url).first().find()
+                                try {
                                     val info = StreamInfo.getInfo(Vista.getService(0), url)
                                     val episode = episodeFromStreamInfo(info)
                                     addToYoutubeSyndicate(episode, !audioOnly)
+                                    if (log != null) upsert(log) { it.status = 1 }
+                                } catch (e: Throwable) {
+                                    toastMassege = "Receive share error: ${e.message}"
+                                    Log.e(TAG, toastMassege)
+                                    if (log != null) upsert(log) { it.details = e.message?: "error" }
+                                    withContext(Dispatchers.Main) { showToast = true }
                                 }
-                            } catch (e: Throwable) {
-                                toastMassege = "Receive share error: ${e.message}"
-                                Log.e(TAG, toastMassege)
-                                showToast = true
                             }
                         }
                         onDismissRequest()

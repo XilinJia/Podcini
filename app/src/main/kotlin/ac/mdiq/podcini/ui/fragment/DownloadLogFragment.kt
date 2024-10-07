@@ -1,9 +1,7 @@
 package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
-import ac.mdiq.podcini.databinding.DownloadLogFragmentBinding
-import ac.mdiq.podcini.databinding.DownloadlogItemBinding
-import ac.mdiq.podcini.net.download.DownloadError
+import ac.mdiq.podcini.databinding.DownloadlogFragmentBinding
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -15,63 +13,69 @@ import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.utils.DownloadResultComparator
 import ac.mdiq.podcini.ui.actions.DownloadActionButton
 import ac.mdiq.podcini.ui.activity.MainActivity
-import ac.mdiq.podcini.ui.dialog.DownloadLogDetailsDialog
-import ac.mdiq.podcini.ui.utils.EmptyViewHandler
-import ac.mdiq.podcini.ui.utils.ThemeUtils
-import ac.mdiq.podcini.util.Logd
-import ac.mdiq.podcini.util.error.DownloadErrorLabel
+import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
-import android.app.Activity
+import ac.mdiq.podcini.util.Logd
+import ac.mdiq.podcini.util.error.DownloadErrorLabel.from
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
-import android.text.Layout
 import android.text.format.DateUtils
 import android.util.Log
 import android.view.*
-import android.widget.*
-import android.widget.AdapterView.OnItemClickListener
+import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.util.UnstableApi
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.mikepenz.iconics.view.IconicsTextView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-/**
- * Shows the download log
- */
-class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, Toolbar.OnMenuItemClickListener {
-    private var _binding: DownloadLogFragmentBinding? = null
+class DownloadLogFragment : BottomSheetDialogFragment(), Toolbar.OnMenuItemClickListener {
+    private var _binding: DownloadlogFragmentBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var adapter: DownloadLogAdapter
-
-    private var downloadLog: List<DownloadResult> = ArrayList()
+    private val downloadLog = mutableStateListOf<DownloadResult>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Logd(TAG, "fragment onCreateView")
-        _binding = DownloadLogFragmentBinding.inflate(inflater)
+        _binding = DownloadlogFragmentBinding.inflate(inflater)
         binding.toolbar.inflateMenu(R.menu.download_log)
         binding.toolbar.setOnMenuItemClickListener(this)
 
-        val emptyView = EmptyViewHandler(requireContext())
-        emptyView.setIcon(R.drawable.ic_download)
-        emptyView.setTitle(R.string.no_log_downloads_head_label)
-        emptyView.setMessage(R.string.no_log_downloads_label)
-        emptyView.attachToListView(binding.list)
-
-        adapter = DownloadLogAdapter(requireActivity())
-        binding.list.adapter = adapter
-        binding.list.onItemClickListener = this
-        binding.list.isNestedScrollingEnabled = true
+        binding.lazyColumn.setContent {
+            CustomTheme(requireContext()) {
+                MainView()
+            }
+        }
         loadDownloadLog()
-
         return binding.root
     }
 
@@ -88,13 +92,85 @@ class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, To
     override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
         _binding = null
-        downloadLog = listOf()
+        downloadLog.clear()
         super.onDestroyView()
     }
 
-    override fun onItemClick(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
-        val item = adapter.getItem(position)
-        if (item is DownloadResult) DownloadLogDetailsDialog(requireContext(), item).show()
+    @Composable
+    fun MainView() {
+        val lazyListState = rememberLazyListState()
+        val showDialog = remember { mutableStateOf(false) }
+        val dialogParam = remember { mutableStateOf(DownloadResult()) }
+        if (showDialog.value) {
+            DetailDialog(
+                status = dialogParam.value,
+                showDialog = showDialog.value,
+                onDismissRequest = { showDialog.value = false },
+            )
+        }
+        LazyColumn(state = lazyListState, modifier = Modifier.padding(start = 10.dp, end = 6.dp, top = 5.dp, bottom = 5.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            itemsIndexed(downloadLog) { position, status ->
+                val textColor = MaterialTheme.colorScheme.onSurface
+                Row (modifier = Modifier.clickable {
+                    showDialog.value = true
+                    dialogParam.value = status
+                }) {
+                    Column {
+                        Row {
+                            val icon = remember { if (status.isSuccessful) Icons.Filled.Info else Icons.Filled.Warning }
+                            val iconColor = remember { if (status.isSuccessful) Color.Green else Color.Yellow }
+                            Icon(icon, "Info", tint = iconColor, modifier = Modifier.padding(end = 2.dp))
+                            Text(status.title.ifEmpty { stringResource(R.string.download_log_title_unknown) }, color = textColor, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
+                        val statusText = remember {"" +
+                                when (status.feedfileType) {
+                                    Feed.FEEDFILETYPE_FEED ->  requireContext().getString(R.string.download_type_feed)
+                                    EpisodeMedia.FEEDFILETYPE_FEEDMEDIA -> requireContext().getString(R.string.download_type_media)
+                                    else -> "" } + " · " +
+                                DateUtils.getRelativeTimeSpanString(status.getCompletionDate().time, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS, 0)
+                        }
+                        Text(statusText, color = textColor)
+                        if (!status.isSuccessful) {
+                            Text(stringResource(from(status.reason)), color = Color.Red)
+                            Text(stringResource(R.string.download_error_tap_for_details), color = textColor)
+                        }
+                    }
+                    fun newerWasSuccessful(downloadStatusIndex: Int, feedTypeId: Int, id: Long): Boolean {
+                        for (i in 0 until downloadStatusIndex) {
+                            val status_: DownloadResult = downloadLog[i]
+                            if (status_.feedfileType == feedTypeId && status_.feedfileId == id && status_.isSuccessful) return true
+                        }
+                        return false
+                    }
+                    var showAction by remember { mutableStateOf(!status.isSuccessful && !newerWasSuccessful(position, status.feedfileType, status.feedfileId)) }
+                    if (showAction) {
+                        Icon(painter = painterResource(R.drawable.ic_refresh),
+                            tint = textColor,
+                            contentDescription = null,
+                            modifier = Modifier.width(28.dp).height(32.dp).clickable {
+                                when (status.feedfileType) {
+                                    Feed.FEEDFILETYPE_FEED -> {
+                                        showAction = false
+                                        val feed: Feed? = getFeed(status.feedfileId)
+                                        if (feed == null) {
+                                            Log.e(TAG, "Could not find feed for feed id: " + status.feedfileId)
+                                            return@clickable
+                                        }
+                                        FeedUpdateManager.runOnce(requireContext(), feed)
+                                    }
+                                    EpisodeMedia.FEEDFILETYPE_FEEDMEDIA -> {
+                                        showAction = false
+                                        val item_ = realm.query(Episode::class).query("id == $0", status.feedfileId).first().find()
+                                        if (item_ != null) DownloadActionButton(item_).onClick(requireContext())
+                                        (context as MainActivity).showSnackbarAbovePlayer(R.string.status_downloading_label, Toast.LENGTH_SHORT)
+                                    }
+                                }
+                            })
+                    }
+                }
+            }
+        }
     }
 
     private var eventSink: Job?     = null
@@ -120,42 +196,35 @@ class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, To
         menu.findItem(R.id.clear_logs_item).setVisible(downloadLog.isNotEmpty())
     }
 
-    @UnstableApi override fun onMenuItemClick(item: MenuItem): Boolean {
+    override fun onMenuItemClick(item: MenuItem): Boolean {
         when {
             super.onOptionsItemSelected(item) -> return true
-            item.itemId == R.id.clear_logs_item -> clearDownloadLog()
+            item.itemId == R.id.clear_logs_item -> {
+                runOnIOScope {
+                    realm.write {
+                        val dlog = query(DownloadResult::class).find()
+                        delete(dlog)
+                    }
+                    EventFlow.postEvent(FlowEvent.DownloadLogEvent())
+                }
+            }
             else -> return false
         }
         return true
-    }
-
-    private fun clearDownloadLog() : Job {
-        Logd(TAG, "clearDownloadLog called")
-        return runOnIOScope {
-            realm.write {
-                val dlog = query(DownloadResult::class).find()
-                delete(dlog)
-            }
-            EventFlow.postEvent(FlowEvent.DownloadLogEvent())
-        }
-    }
-
-    private fun getDownloadLog(): List<DownloadResult> {
-        Logd(TAG, "getDownloadLog() called")
-        val dlog = realm.query(DownloadResult::class).find().toMutableList()
-        dlog.sortWith(DownloadResultComparator())
-        return realm.copyFromRealm(dlog)
     }
 
     private fun loadDownloadLog() {
         lifecycleScope.launch {
             try {
                 val result = withContext(Dispatchers.IO) {
-                    getDownloadLog()
+                    Logd(TAG, "getDownloadLog() called")
+                    val dlog = realm.query(DownloadResult::class).find().toMutableList()
+                    dlog.sortWith(DownloadResultComparator())
+                    realm.copyFromRealm(dlog)
                 }
                 withContext(Dispatchers.Main) {
-                    downloadLog = result
-                    adapter.setDownloadLog(downloadLog)
+                    downloadLog.clear()
+                    downloadLog.addAll(result)
                 }
             } catch (e: Throwable) {
                 Log.e(TAG, Log.getStackTraceString(e))
@@ -163,141 +232,47 @@ class DownloadLogFragment : BottomSheetDialogFragment(), OnItemClickListener, To
         }
     }
 
-    private class DownloadLogAdapter(private val context: Activity) : BaseAdapter() {
-        private var downloadLog: List<DownloadResult> = listOf()
-
-        fun setDownloadLog(downloadLog: List<DownloadResult>) {
-            this.downloadLog = downloadLog
-            notifyDataSetChanged()
-        }
-
-        @UnstableApi override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-            val holder: DownloadLogItemViewHolder
-            if (convertView == null) {
-                holder = DownloadLogItemViewHolder(context, parent)
-                holder.itemView.tag = holder
-            } else holder = convertView.tag as DownloadLogItemViewHolder
-
-            val item = getItem(position)
-            if (item != null) bind(holder, item, position)
-            return holder.itemView
-        }
-
-        @UnstableApi private fun bind(holder: DownloadLogItemViewHolder, status: DownloadResult, position: Int) {
-            var statusText: String? = ""
+    @Composable
+    fun DetailDialog(status: DownloadResult, showDialog: Boolean, onDismissRequest: () -> Unit) {
+        if (showDialog) {
+            var url = "unknown"
             when (status.feedfileType) {
-                Feed.FEEDFILETYPE_FEED -> statusText += context.getString(R.string.download_type_feed)
-                EpisodeMedia.FEEDFILETYPE_FEEDMEDIA -> statusText += context.getString(R.string.download_type_media)
-            }
-            statusText += " · "
-            statusText += DateUtils.getRelativeTimeSpanString(status.getCompletionDate().time, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS, 0)
-            holder.status.text = statusText
-
-            if (status.title.isNotEmpty()) holder.title.text = status.title
-            else holder.title.setText(R.string.download_log_title_unknown)
-
-            if (status.isSuccessful) {
-                holder.icon.setTextColor(ThemeUtils.getColorFromAttr(context, R.attr.icon_green))
-                holder.icon.text = "{faw_check_circle}"
-                holder.icon.setContentDescription(context.getString(R.string.download_successful))
-                holder.secondaryActionButton.visibility = View.INVISIBLE
-                holder.reason.visibility = View.GONE
-                holder.tapForDetails.visibility = View.GONE
-            } else {
-                if (status.reason == DownloadError.ERROR_PARSER_EXCEPTION_DUPLICATE) {
-                    holder.icon.setTextColor(ThemeUtils.getColorFromAttr(context, R.attr.icon_yellow))
-                    holder.icon.text = "{faw_exclamation_circle}"
-                } else {
-                    holder.icon.setTextColor(ThemeUtils.getColorFromAttr(context, R.attr.icon_red))
-                    holder.icon.text = "{faw_times_circle}"
+                EpisodeMedia.FEEDFILETYPE_FEEDMEDIA -> {
+                    val media = realm.query(EpisodeMedia::class).query("id == $0", status.feedfileId).first().find()
+                    if (media != null) url = media.downloadUrl?:""
                 }
-                holder.icon.setContentDescription(context.getString(R.string.error_label))
-                holder.reason.setText(DownloadErrorLabel.from(status.reason))
-                holder.reason.visibility = View.VISIBLE
-                holder.tapForDetails.visibility = View.VISIBLE
+                Feed.FEEDFILETYPE_FEED -> {
+                    val feed = getFeed(status.feedfileId, false)
+                    if (feed != null) url = feed.downloadUrl?:""
+                }
+            }
+            var message = requireContext().getString(R.string.download_successful)
+            if (!status.isSuccessful) message = status.reasonDetailed
+            val messageFull = requireContext().getString(R.string.download_log_details_message, requireContext().getString(from(status.reason)), message, url)
 
-                if (newerWasSuccessful(position, status.feedfileType, status.feedfileId)) {
-                    holder.secondaryActionButton.visibility = View.INVISIBLE
-                    holder.secondaryActionButton.setOnClickListener(null)
-                    holder.secondaryActionButton.tag = null
-                } else {
-                    holder.secondaryActionIcon.setImageResource(R.drawable.ic_refresh)
-                    holder.secondaryActionButton.visibility = View.VISIBLE
-
-                    when (status.feedfileType) {
-                        Feed.FEEDFILETYPE_FEED -> {
-                            holder.secondaryActionButton.setOnClickListener(View.OnClickListener setOnClickListener@{
-                                holder.secondaryActionButton.visibility = View.INVISIBLE
-                                val feed: Feed? = getFeed(status.feedfileId)
-                                if (feed == null) {
-                                    Log.e(TAG, "Could not find feed for feed id: " + status.feedfileId)
-                                    return@setOnClickListener
-                                }
-                                FeedUpdateManager.runOnce(context, feed)
-                            })
-                        }
-                        EpisodeMedia.FEEDFILETYPE_FEEDMEDIA -> {
-                            holder.secondaryActionButton.setOnClickListener {
-                                holder.secondaryActionButton.visibility = View.INVISIBLE
-                                val item_ = realm.query(Episode::class).query("id == $0", status.feedfileId).first().find()
-                                if (item_ != null) DownloadActionButton(item_).onClick(context)
-                                (context as MainActivity).showSnackbarAbovePlayer(R.string.status_downloading_label, Toast.LENGTH_SHORT)
-                            }
+            Dialog(onDismissRequest = { onDismissRequest() }) {
+                Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(10.dp), shape = RoundedCornerShape(16.dp), ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        val textColor = MaterialTheme.colorScheme.onSurface
+                        Text(stringResource(R.string.download_error_details), color = textColor, modifier = Modifier.padding(bottom = 3.dp))
+                        Text(messageFull, color = textColor)
+                        Row(Modifier.padding(top = 10.dp)) {
+                            Spacer(Modifier.weight(0.5f))
+                            Text(stringResource(R.string.copy_to_clipboard), color = textColor,
+                                modifier = Modifier.clickable {
+                                    val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    val clip = ClipData.newPlainText(requireContext().getString(R.string.download_error_details), messageFull)
+                                    clipboard.setPrimaryClip(clip)
+                                    if (Build.VERSION.SDK_INT < 32)
+                                        EventFlow.postEvent(FlowEvent.MessageEvent(requireContext().getString(R.string.copied_to_clipboard)))
+                                })
+                            Spacer(Modifier.weight(0.3f))
+                            Text("OK", color = textColor, modifier = Modifier.clickable { onDismissRequest() })
+                            Spacer(Modifier.weight(0.2f))
                         }
                     }
                 }
             }
-        }
-
-        private fun newerWasSuccessful(downloadStatusIndex: Int, feedTypeId: Int, id: Long): Boolean {
-            for (i in 0 until downloadStatusIndex) {
-                val status: DownloadResult = downloadLog[i]
-                if (status.feedfileType == feedTypeId && status.feedfileId == id && status.isSuccessful) return true
-            }
-            return false
-        }
-
-        override fun getCount(): Int {
-            return downloadLog.size
-        }
-
-        override fun getItem(position: Int): DownloadResult? {
-            if (position in downloadLog.indices) return downloadLog[position]
-            return null
-        }
-
-        override fun getItemId(position: Int): Long {
-            return position.toLong()
-        }
-
-        private class DownloadLogItemViewHolder(context: Context, parent: ViewGroup?)
-            : RecyclerView.ViewHolder(LayoutInflater.from(context).inflate(R.layout.downloadlog_item, parent, false)) {
-
-            val binding = DownloadlogItemBinding.bind(itemView)
-            @JvmField
-            val secondaryActionButton: View = binding.secondaryActionLayout.secondaryAction
-            @JvmField
-            val secondaryActionIcon: ImageView = binding.secondaryActionLayout.secondaryActionIcon
-            //    val secondaryActionProgress: CircularProgressBar = binding.secondaryAction.secondaryActionProgress
-            @JvmField
-            val icon: IconicsTextView = binding.txtvIcon
-            @JvmField
-            val title: TextView = binding.txtvTitle
-            @JvmField
-            val status: TextView = binding.status
-            @JvmField
-            val reason: TextView = binding.txtvReason
-            @JvmField
-            val tapForDetails: TextView = binding.txtvTapForDetails
-
-            init {
-                title.hyphenationFrequency = Layout.HYPHENATION_FREQUENCY_FULL
-                itemView.tag = this
-            }
-        }
-
-        companion object {
-            private val TAG: String = DownloadLogAdapter::class.simpleName ?: "Anonymous"
         }
     }
 

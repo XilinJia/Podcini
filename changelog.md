@@ -1,3 +1,13 @@
+# 6.9.1
+
+* added logging for shared actions
+* added simple fragment for viewing shared logs and repairing failed share actions
+* likely fixed the abnormal behavior of currently playing in Queues
+* in NavDrawer, added three recently played podcast for easy access
+	* the play time of a podcast is recorded when an episode in the podcast starts playing with FeedEpisodes view of the podcast open
+* fixed color contract on info bar of FeedEpisodes
+* NavDrawer and DownloadLog are in Jetpack Compose
+
 # 6.9.0
 
 * re-worked Compose states handling for Episodes lists, likely fixed related issues

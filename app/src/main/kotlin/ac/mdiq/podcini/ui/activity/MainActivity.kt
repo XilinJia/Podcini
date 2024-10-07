@@ -221,7 +221,7 @@ class MainActivity : CastEnabledActivity() {
             if (UserPreferences.DEFAULT_PAGE_REMEMBER != defaultPage) loadFragment(defaultPage, null)
             else {
                 val lastFragment = NavDrawerFragment.getLastNavFragment()
-                if (ArrayUtils.contains(NavDrawerFragment.NAV_DRAWER_TAGS, lastFragment)) loadFragment(lastFragment, null)
+                if (NavDrawerFragment.navMap.keys.contains(lastFragment)) loadFragment(lastFragment, null)
                 else {
                     // it's not a number, this happens if we removed a label from the NAV_DRAWER_TAGS  give them a nice default...
                     try { loadFeedFragmentById(lastFragment.toInt().toLong(), null) }
@@ -419,10 +419,12 @@ class MainActivity : CastEnabledActivity() {
             QueuesFragment.TAG -> fragment = QueuesFragment()
             AllEpisodesFragment.TAG -> fragment = AllEpisodesFragment()
             DownloadsFragment.TAG -> fragment = DownloadsFragment()
+            SharedLogFragment.TAG -> fragment = SharedLogFragment()
             HistoryFragment.TAG -> fragment = HistoryFragment()
             OnlineSearchFragment.TAG -> fragment = OnlineSearchFragment()
             SubscriptionsFragment.TAG -> fragment = SubscriptionsFragment()
             StatisticsFragment.TAG -> fragment = StatisticsFragment()
+            FeedEpisodesFragment.TAG -> fragment = FeedEpisodesFragment()
             else -> {
                 // default to subscriptions screen
                 fragment = SubscriptionsFragment()

@@ -56,6 +56,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
 import org.apache.commons.lang3.StringUtils
+import java.util.*
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Semaphore
 
@@ -157,9 +158,9 @@ import java.util.concurrent.Semaphore
             }
         }
         binding.lazyColumn.setContent {
-            Column {
-                InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {swipeActions.showDialog()})
-                CustomTheme(requireContext()) {
+            CustomTheme(requireContext()) {
+                Column {
+                    InforBar(infoBarText, leftAction = leftActionState, rightAction = rightActionState, actionConfig = {swipeActions.showDialog()})
                     EpisodeLazyColumn(activity as MainActivity, vms = vms,
                         refreshCB = { FeedUpdateManager.runOnceOrAsk(requireContext(), feed) },
                         leftSwipeCB = {
@@ -400,6 +401,7 @@ import java.util.concurrent.Semaphore
             val pos: Int = ieMap[event.episode.id] ?: -1
             if (pos >= 0) {
                 if (!filterOutEpisode(event.episode)) vms[pos].isPlayingState = event.isPlaying()
+                if (event.isPlaying()) upsertBlk(feed!!) { it.lastPlayed = Date().time }
             }
         }
     }
@@ -685,7 +687,7 @@ import java.util.concurrent.Semaphore
     companion object {
         val TAG = FeedEpisodesFragment::class.simpleName ?: "Anonymous"
 
-        private const val ARGUMENT_FEED_ID = "argument.ac.mdiq.podcini.feed_id"
+        const val ARGUMENT_FEED_ID = "argument.ac.mdiq.podcini.feed_id"
         private const val KEY_UP_ARROW = "up_arrow"
 
         var tts: TextToSpeech? = null

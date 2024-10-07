@@ -2,23 +2,18 @@ package ac.mdiq.podcini.ui.fragment
 
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.NavListBinding
-import ac.mdiq.podcini.databinding.NavListitemBinding
-import ac.mdiq.podcini.databinding.NavSectionItemBinding
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
-import ac.mdiq.podcini.preferences.UserPreferences
-import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
-import ac.mdiq.podcini.preferences.UserPreferences.episodeCacheSize
 import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
-import ac.mdiq.podcini.storage.algorithms.AutoCleanups
 import ac.mdiq.podcini.storage.database.Episodes.getEpisodesCount
 import ac.mdiq.podcini.storage.database.Feeds.getFeedCount
-import ac.mdiq.podcini.storage.model.DatasetStats
+import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeFilter.Companion.unfiltered
+import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
-import ac.mdiq.podcini.ui.activity.starter.MainActivityStarter
-import ac.mdiq.podcini.ui.dialog.DrawerPreferencesDialog
+import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.ui.fragment.FeedEpisodesFragment.Companion.ARGUMENT_FEED_ID
 import ac.mdiq.podcini.ui.fragment.HistoryFragment.Companion.getNumberOfPlayed
 import ac.mdiq.podcini.ui.statistics.StatisticsFragment
 import ac.mdiq.podcini.ui.utils.ThemeUtils
@@ -26,7 +21,6 @@ import ac.mdiq.podcini.util.Logd
 import android.R.attr
 import android.app.Activity
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
@@ -35,31 +29,34 @@ import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.*
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TextView
-import androidx.annotation.DrawableRes
-import androidx.annotation.OptIn
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.annotation.VisibleForTesting
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.util.UnstableApi
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import coil.compose.AsyncImage
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.shape.MaterialShapeDrawable
 import com.google.android.material.shape.ShapeAppearanceModel
+import io.realm.kotlin.query.Sort
 import kotlinx.coroutines.*
-import org.apache.commons.lang3.ArrayUtils
-import org.apache.commons.lang3.StringUtils
-import java.text.NumberFormat
-import java.util.*
-import kotlin.math.abs
 import kotlin.math.max
 
 class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
@@ -67,13 +64,18 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
 
     private var _binding: NavListBinding? = null
     private val binding get() = _binding!!
-
-    private var datasetStats: DatasetStats? = null
-    private lateinit var navAdapter: NavListAdapter
+    private val feeds = mutableStateListOf<Feed>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         super.onCreateView(inflater, container, savedInstanceState)
         _binding = NavListBinding.inflate(inflater)
+        checkHiddenItems()
+        getRecentPodcasts()
+        binding.mainView.setContent {
+            CustomTheme(requireContext()) {
+                MainView()
+            }
+        }
 
         Logd(TAG, "fragment onCreateView")
         setupDrawerRoundBackground(binding.root)
@@ -90,19 +92,64 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
             (view.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin = bottomInset.toInt()
             insets
         }
-
-        val navList = binding.navRecycler
-        navAdapter = NavListAdapter()
-        navAdapter.setHasStableIds(true)
-        navList.adapter = navAdapter
-        navList.layoutManager = LinearLayoutManager(context)
-
-        binding.navSettings.setOnClickListener {
-            startActivity(Intent(activity, PreferenceActivity::class.java))
-        }
-
         prefs!!.registerOnSharedPreferenceChangeListener(this)
         return binding.root
+    }
+
+    private fun checkHiddenItems() {
+        val hiddenItems = hiddenDrawerItems.map { it.trim() }
+        for (nav in navMap.values) {
+            if (hiddenItems.contains(nav.tag)) nav.show = false
+            else nav.show = true
+        }
+    }
+
+    private fun getRecentPodcasts() {
+        var feeds_ = realm.query(Feed::class).sort("lastPlayed", sortOrder = Sort.DESCENDING).find().toMutableList()
+        if (feeds_.size > 3) feeds_ = feeds_.subList(0, 3)
+//        for (f in feeds_) Logd(TAG, "getRecentPodcasts ${f.title}")
+        feeds.clear()
+        feeds.addAll(feeds_)
+    }
+
+    @Composable
+    fun MainView() {
+        Column(modifier = Modifier.padding(start = 20.dp, end = 10.dp, top = 20.dp, bottom = 20.dp), verticalArrangement = Arrangement.spacedBy(15.dp)) {
+            val textColor = MaterialTheme.colorScheme.onSurface
+            for (nav in navMap.values) {
+                if (nav.show) Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable {
+                    (activity as MainActivity).loadFragment(nav.tag, null)
+                    (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
+                }) {
+                    Icon(painter = painterResource(nav.iconRes), tint = textColor, contentDescription = nav.tag, modifier = Modifier.padding(start = 10.dp))
+                    Text(stringResource(nav.nameRes), color = textColor, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(start = 20.dp))
+                    Spacer(Modifier.weight(1f))
+                    if (nav.count > 0) Text(nav.count.toString(), color = textColor, modifier = Modifier.padding(end = 10.dp))
+                }
+            }
+            HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp))
+            Column {
+                for (f in feeds) {
+                    Row(verticalAlignment = Alignment.Top, modifier = Modifier.padding(bottom = 5.dp).clickable {
+                        val args = Bundle()
+                        args.putLong(ARGUMENT_FEED_ID, f.id)
+                        (activity as MainActivity).loadFragment(FeedEpisodesFragment.TAG, args)
+                        (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
+                    }) {
+                        AsyncImage(model = f.imageUrl, contentDescription = "imgvCover", placeholder = painterResource(R.mipmap.ic_launcher), modifier = Modifier.width(40.dp).height(40.dp))
+                        Text(f.title?:"No title", color = textColor, style = MaterialTheme.typography.bodyMedium, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(start = 10.dp))
+                    }
+                }
+            }
+            Spacer(Modifier.weight(1f))
+            HorizontalDivider(modifier = Modifier.fillMaxWidth().height(1.dp))
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().clickable {
+                startActivity(Intent(activity, PreferenceActivity::class.java))
+            }) {
+                Icon(painter = painterResource(R.drawable.ic_settings), tint = textColor, contentDescription = "settings", modifier = Modifier.padding(start = 10.dp))
+                Text(stringResource(R.string.settings_label), color = textColor, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(start = 20.dp))
+            }
+        }
     }
 
     private fun setupDrawerRoundBackground(root: View) {
@@ -136,222 +183,17 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
     fun loadData() {
         lifecycleScope.launch {
             try {
-                val result = withContext(Dispatchers.IO) { getDatasetStats() }
-                withContext(Dispatchers.Main) {
-                    datasetStats = result
-                    navAdapter.notifyDataSetChanged()
+                withContext(Dispatchers.IO) {
+                    checkHiddenItems()
+                    getRecentPodcasts()
+                    getDatasetStats()
                 }
             } catch (e: Throwable) { Log.e(TAG, Log.getStackTraceString(e)) }
         }
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String?) {
-        if (PREF_LAST_FRAGMENT_TAG == key) navAdapter.notifyDataSetChanged() // Update selection
-    }
-
-    @OptIn(UnstableApi::class)
-    private inner class NavListAdapter: RecyclerView.Adapter<Holder>(), OnSharedPreferenceChangeListener {
-        private val fragmentTags: MutableList<String?> = ArrayList()
-        private val titles: Array<String> = requireContext().resources.getStringArray(R.array.nav_drawer_titles)
-        val subscriptionOffset: Int
-            get() = if (fragmentTags.size > 0) fragmentTags.size + 1 else 0
-
-        init {
-            loadItems()
-            appPrefs.registerOnSharedPreferenceChangeListener(this@NavListAdapter)
-        }
-        override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String?) {
-            if (UserPreferences.Prefs.prefHiddenDrawerItems.name == key) loadItems()
-        }
-        @OptIn(UnstableApi::class) private fun loadItems() {
-            val newTags: MutableList<String?> = ArrayList(listOf(*NAV_DRAWER_TAGS))
-            val hiddenFragments = hiddenDrawerItems
-            newTags.removeAll(hiddenFragments.map { it.trim() })
-            fragmentTags.clear()
-            fragmentTags.addAll(newTags)
-            notifyDataSetChanged()
-        }
-        fun getLabel(tag: String?): String {
-            val index = ArrayUtils.indexOf(NAV_DRAWER_TAGS, tag)
-            return titles[index]
-        }
-        @UnstableApi @DrawableRes
-        private fun getDrawable(tag: String?): Int {
-            return when (tag) {
-                QueuesFragment.TAG -> R.drawable.ic_playlist_play
-                AllEpisodesFragment.TAG -> R.drawable.ic_feed
-                DownloadsFragment.TAG -> R.drawable.ic_download
-                HistoryFragment.TAG -> R.drawable.ic_history
-                SubscriptionsFragment.TAG -> R.drawable.ic_subscriptions
-                StatisticsFragment.TAG -> R.drawable.ic_chart_box
-                OnlineSearchFragment.TAG -> R.drawable.ic_add
-                else -> 0
-            }
-        }
-        fun getFragmentTags(): List<String?> {
-            return fragmentTags
-        }
-        override fun getItemCount(): Int {
-            return subscriptionOffset
-        }
-        override fun getItemId(position: Int): Long {
-            val viewType = getItemViewType(position)
-            return when (viewType) {
-                VIEW_TYPE_NAV -> (-abs(fragmentTags[position].hashCode().toLong().toDouble()) - 1).toLong() // Folder IDs are >0
-                else -> 0
-            }
-        }
-        override fun getItemViewType(position: Int): Int {
-            return when {
-                0 <= position && position < fragmentTags.size -> VIEW_TYPE_NAV
-                position < subscriptionOffset -> VIEW_TYPE_SECTION_DIVIDER
-                else -> 0
-            }
-        }
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
-            val inflater = LayoutInflater.from(activity)
-            return when (viewType) {
-                VIEW_TYPE_NAV -> NavHolder(inflater.inflate(R.layout.nav_listitem, parent, false))
-                else -> DividerHolder(inflater.inflate(R.layout.nav_section_item, parent, false))
-            }
-        }
-        @UnstableApi override fun onBindViewHolder(holder: Holder, position: Int) {
-            val viewType = getItemViewType(position)
-
-            holder.itemView.setOnCreateContextMenuListener(null)
-            when (viewType) {
-                VIEW_TYPE_NAV -> bindNavView(getLabel(fragmentTags[position]), position, holder as NavHolder)
-                else -> bindSectionDivider(holder as DividerHolder)
-            }
-            if (viewType != VIEW_TYPE_SECTION_DIVIDER) {
-                holder.itemView.isSelected = isSelected(position)
-                holder.itemView.setOnClickListener { onItemClick(position) }
-                holder.itemView.setOnLongClickListener { onItemLongClick(position) }
-                holder.itemView.setOnTouchListener { _: View?, e: MotionEvent ->
-                    if (e.isFromSource(InputDevice.SOURCE_MOUSE) && e.buttonState == MotionEvent.BUTTON_SECONDARY) {
-                        onItemLongClick(position)
-                        return@setOnTouchListener false
-                    }
-                    false
-                }
-            }
-        }
-        fun isSelected(position: Int): Boolean {
-            val lastNavFragment = getLastNavFragment()
-            when {
-                position < navAdapter.subscriptionOffset -> return navAdapter.getFragmentTags()[position] == lastNavFragment
-                // last fragment was not a list, but a feed
-                StringUtils.isNumeric(lastNavFragment) -> {
-                    Logd(TAG, "not implemented: last fragment was a feed $lastNavFragment")
-                }
-            }
-            return false
-        }
-        @OptIn(UnstableApi::class)  fun onItemClick(position: Int) {
-            if (position < navAdapter.subscriptionOffset) {
-                val tag: String = navAdapter.getFragmentTags()[position] ?:""
-                (activity as MainActivity).loadFragment(tag, null)
-                (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
-            }
-        }
-        fun onItemLongClick(position: Int): Boolean {
-            if (position < navAdapter.getFragmentTags().size) {
-                DrawerPreferencesDialog.show(context!!) {
-                    navAdapter.notifyDataSetChanged()
-                    if (hiddenDrawerItems.contains(getLastNavFragment())) {
-                        MainActivityStarter(requireContext())
-                            .withFragmentLoaded(UserPreferences.defaultPage)
-                            .withDrawerOpen()
-                            .start()
-                    }
-                }
-                return true
-            } else return false
-        }
-        @UnstableApi private fun bindNavView(title: String, position: Int, holder: NavHolder) {
-            val context = activity ?: return
-            holder.title.text = title
-            // reset for re-use
-            holder.count.visibility = View.GONE
-            holder.count.setOnClickListener(null)
-            holder.count.isClickable = false
-
-            val tag = fragmentTags[position]
-            when (tag) {
-                SubscriptionsFragment.TAG -> {
-                    val sum = datasetStats?.numFeeds ?: 0
-                    if (sum > 0) {
-                        holder.count.text = NumberFormat.getInstance().format(sum.toLong())
-                        holder.count.visibility = View.VISIBLE
-                    }
-                }
-                QueuesFragment.TAG -> {
-                    val queueSize = datasetStats?.queueSize ?: 0
-                    if (queueSize > 0) {
-                        holder.count.text = NumberFormat.getInstance().format(queueSize.toLong())
-                        holder.count.visibility = View.VISIBLE
-                    }
-                }
-                AllEpisodesFragment.TAG -> {
-                    val numEpisodes = datasetStats?.numEpisodes ?: 0
-                    if (numEpisodes > 0) {
-                        holder.count.text = NumberFormat.getInstance().format(numEpisodes.toLong())
-                        holder.count.visibility = View.VISIBLE
-                    }
-                }
-                DownloadsFragment.TAG -> {
-                    val epCacheSize = episodeCacheSize
-                    // don't count episodes that can be reclaimed
-                    val spaceUsed = ((datasetStats?.numDownloaded ?: 0) - (datasetStats?.numReclaimables ?: 0))
-                    holder.count.text = NumberFormat.getInstance().format(spaceUsed.toLong())
-                    holder.count.visibility = View.VISIBLE
-                    if (epCacheSize in 1..spaceUsed) {
-                        holder.count.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_disc_alert, 0)
-                        holder.count.visibility = View.VISIBLE
-                        holder.count.setOnClickListener {
-                            MaterialAlertDialogBuilder(context)
-                                .setTitle(R.string.episode_cache_full_title)
-                                .setMessage(R.string.episode_cache_full_message)
-                                .setPositiveButton(android.R.string.ok, null)
-                                .setNeutralButton(R.string.open_autodownload_settings) { _: DialogInterface?, _: Int ->
-                                    val intent = Intent(context, PreferenceActivity::class.java)
-                                    intent.putExtra(PreferenceActivity.OPEN_AUTO_DOWNLOAD_SETTINGS, true)
-                                    context.startActivity(intent)
-                                }
-                                .show()
-                        }
-                    }
-                }
-                HistoryFragment.TAG -> {
-                    val historyCount = datasetStats?.historyCount ?: 0
-                    if (historyCount > 0) {
-                        holder.count.text = NumberFormat.getInstance().format(historyCount.toLong())
-                        holder.count.visibility = View.VISIBLE
-                    }
-                }
-
-            }
-//        Logd("NavListAdapter", "bindNavView getting drawable for: ${fragmentTags[position]}")
-            holder.image.setImageResource(getDrawable(fragmentTags[position]))
-        }
-        private fun bindSectionDivider(holder: DividerHolder) {
-            holder.itemView.isEnabled = false
-            holder.feedsFilteredMsg.visibility = View.GONE
-        }
-    }
-
-    open class Holder(itemView: View) : RecyclerView.ViewHolder(itemView)
-
-    class DividerHolder(itemView: View) : Holder(itemView) {
-        val binding = NavSectionItemBinding.bind(itemView)
-        val feedsFilteredMsg: LinearLayout = binding.navFeedsFilteredMessage
-    }
-
-    class NavHolder(itemView: View) : Holder(itemView) {
-        val binding = NavListitemBinding.bind(itemView)
-        val image: ImageView = binding.imgvCover
-        val title: TextView = binding.txtvTitle
-        val count: TextView = binding.txtvCount
+//        if (PREF_LAST_FRAGMENT_TAG == key) navAdapter.notifyDataSetChanged() // Update selection
     }
 
     companion object {
@@ -359,30 +201,30 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
 
         @VisibleForTesting
         const val PREF_LAST_FRAGMENT_TAG: String = "prefLastFragmentTag"
-        const val VIEW_TYPE_NAV: Int = 0
-        const val VIEW_TYPE_SECTION_DIVIDER: Int = 1
 
         @VisibleForTesting
         const val PREF_NAME: String = "NavDrawerPrefs"
         var prefs: SharedPreferences? = null
-
         var feedCount: Int = 0
 
         fun getSharedPrefs(context: Context) {
             if (prefs == null) prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         }
 
-        //        caution: an array in re/values/arrays.xml relates to this
-        @JvmField
-        @UnstableApi
-        val NAV_DRAWER_TAGS: Array<String> = arrayOf(
-            SubscriptionsFragment.TAG,
-            QueuesFragment.TAG,
-            AllEpisodesFragment.TAG,
-            DownloadsFragment.TAG,
-            HistoryFragment.TAG,
-            StatisticsFragment.TAG,
-            OnlineSearchFragment.TAG,
+        class NavItem(val tag: String, val iconRes: Int, val nameRes: Int) {
+            var count by mutableIntStateOf(0)
+            var show by mutableStateOf(true)
+        }
+
+        val navMap: LinkedHashMap<String, NavItem> = linkedMapOf(
+            SubscriptionsFragment.TAG to NavItem(SubscriptionsFragment.TAG, R.drawable.ic_subscriptions, R.string.subscriptions_label),
+            QueuesFragment.TAG to NavItem(QueuesFragment.TAG, R.drawable.ic_playlist_play, R.string.queue_label),
+            AllEpisodesFragment.TAG to NavItem(AllEpisodesFragment.TAG, R.drawable.ic_feed, R.string.episodes_label),
+            DownloadsFragment.TAG to NavItem(DownloadsFragment.TAG, R.drawable.ic_download, R.string.downloads_label),
+            HistoryFragment.TAG to NavItem(HistoryFragment.TAG, R.drawable.ic_history, R.string.playback_history_label),
+            SharedLogFragment.TAG to NavItem(SharedLogFragment.TAG, R.drawable.ic_share, R.string.shared_log_label),
+            StatisticsFragment.TAG to NavItem(StatisticsFragment.TAG, R.drawable.ic_chart_box, R.string.statistics_label),
+            OnlineSearchFragment.TAG to NavItem(OnlineSearchFragment.TAG, R.drawable.ic_add, R.string.add_feed_label)
         )
 
         fun saveLastNavFragment(tag: String?) {
@@ -402,7 +244,7 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
          * Returns data necessary for displaying the navigation drawer. This includes
          * the number of downloaded episodes, the number of episodes in the queue, the number of total episodes, and number of subscriptions
          */
-        fun getDatasetStats(): DatasetStats {
+        fun getDatasetStats() {
             Logd(TAG, "getNavDrawerData() called")
             val numDownloadedItems = getEpisodesCount(EpisodeFilter(EpisodeFilter.States.downloaded.name))
             val numItems = getEpisodesCount(unfiltered())
@@ -411,7 +253,12 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
             val queueSize = curQueue.episodeIds.size
             Logd(TAG, "getDatasetStats: queueSize: $queueSize")
             val historyCount = getNumberOfPlayed().toInt()
-            return DatasetStats(queueSize, numDownloadedItems, AutoCleanups.build().getReclaimableItems(), numItems, feedCount, historyCount)
+            navMap[QueuesFragment.TAG]?.count = queueSize
+            navMap[SubscriptionsFragment.TAG]?.count = feedCount
+            navMap[HistoryFragment.TAG]?.count = historyCount
+            navMap[DownloadsFragment.TAG]?.count = numDownloadedItems
+            navMap[AllEpisodesFragment.TAG]?.count = numItems
+            navMap[AllEpisodesFragment.TAG]?.count = numItems
         }
     }
 }

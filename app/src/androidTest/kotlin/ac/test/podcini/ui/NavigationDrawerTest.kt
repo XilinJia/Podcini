@@ -15,6 +15,7 @@ import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.ui.fragment.*
 import ac.mdiq.podcini.preferences.UserPreferences.hiddenDrawerItems
+import ac.mdiq.podcini.ui.fragment.NavDrawerFragment.Companion.navMap
 import de.test.podcini.EspressoTestUtils
 import de.test.podcini.NthMatcher
 import org.hamcrest.Matchers
@@ -174,7 +175,8 @@ class NavigationDrawerTest {
     fun testDrawerPreferencesHideAllElements() {
         hiddenDrawerItems = ArrayList()
         activityRule.launchActivity(Intent())
-        val titles = activityRule.activity.resources.getStringArray(R.array.nav_drawer_titles)
+//        val titles = activityRule.activity.resources.getStringArray(R.array.nav_drawer_titles)
+        val titles = navMap.keys.toTypedArray()
 
         openNavDrawer()
         Espresso.onView(NthMatcher.first(ViewMatchers.withText(R.string.queue_label))).perform(ViewActions.longClick())
@@ -192,7 +194,7 @@ class NavigationDrawerTest {
 
         val hidden = hiddenDrawerItems
         Assert.assertEquals(titles.size.toLong(), hidden!!.size.toLong())
-        for (tag in NavDrawerFragment.NAV_DRAWER_TAGS) {
+        for (tag in NavDrawerFragment.navMap.keys) {
             Assert.assertTrue(hidden.contains(tag))
         }
     }

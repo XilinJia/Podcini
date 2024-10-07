@@ -58,6 +58,8 @@ class Feed : RealmObject {
      */
     var lastUpdate: String? = null
 
+    // recorded when an episode starts playing when FeedEpisodes is open
+    var lastPlayed: Long = 0
     /**
      * Feed type, options are defined in [FeedType].
      */

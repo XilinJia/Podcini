@@ -1,10 +1,8 @@
 package ac.mdiq.podcini.storage.model
 
-import ac.mdiq.podcini.net.download.DownloadStatus
 import ac.mdiq.podcini.storage.database.Feeds.getFeed
 import ac.mdiq.vista.extractor.Vista
 import ac.mdiq.vista.extractor.stream.StreamInfo
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.ext.realmSetOf
@@ -86,6 +84,9 @@ class Episode : RealmObject {
     var chapters: RealmList<Chapter> = realmListOf()
 
     var isFavorite: Boolean = false
+
+    // 0 : neutral, -1 : dislike, 1 : like
+    var opinion: Int = 0
 
     @Ignore
     val isNew: Boolean

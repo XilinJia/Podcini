@@ -75,7 +75,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
   * any episodes can be easily added/moved to the active or any designated queues
   * any queue can be associated with any feed for customized playing experience
 * Every queue is circular: if the final item in queue finished, the first item in queue (if exists) will get played
-* Every queue has a bin containing past episodes removed from the queue
+* Every queue has a bin containing past episodes removed from the queue, useful for further review and handling
 * Feed associated queue can be set to None, in which case:
   * episodes in the feed are not automatically added to any queue, but are used as a natural queue for getting the next episode to play
   * the next episode is determined in such a way:
@@ -85,7 +85,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * Otherwise, episode played from a list other than the queue is now a one-off play, unless the episode is on the active queue, in which case, the next episode in the queue will be played
 
 
-### Podcast/Episode list
+### Podcast list and Episode list
 
 * A whole new interface of the Subscriptions page showing only the feeds with tags as filters, no longer having tags as folders in the page,
 * Subscriptions page by default has a list layout and can be opted for a grid layout
@@ -115,7 +115,9 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * FeedInfo view offers a link for direct search of feeds related to author
 * FeedInfo view has button showing number of episodes to open the FeedEpisodes view
 * FeedInfo view has feed setting in the header
-* in EpisodeInfo view, "mark played/unplayed", "add to/remove from queue", and "favoraite/unfovorite" are at the action bar
+* instead of isFavorite, there is a new rating system for every episode: Trash, Bad, Neutral, Good, Favorite
+* in EpisodeInfo view, "mark played/unplayed", "add to/remove from queue"
+* in EpisodeInfo view, one can enter personal comments/notes under "My opinion" for every episode
 * New episode home view with two display modes: webpage or reader
 * In episode, in addition to "description" there is a new "transcript" field to save text (if any) fetched from the episode's website
 * RSS feeds with no playable media can be subscribed and read/listened (via TTS)
@@ -166,6 +168,7 @@ While podcast subscriptions' OPML files (from AntennaPod or any other sources) c
 * Disabled `usesCleartextTraffic`, so that all content transmission is more private and secure
 * Settings/Preferences can now be exported and imported
 * Play history/progress can be separately exported/imported as Json files
+* there is logging for every content shared to Podcini, which can be reviewed and repaired if error
 * Downloaded media files can be exported/imported
 * Reconsile feature (accessed from Downloads view) is added to ensure downloaded media files are in sync with specs in DB
 * Podcasts can be selectively exported from Subscriptions view

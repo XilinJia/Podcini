@@ -1,0 +1,10 @@
+ Version 6.9.2
+
+* fixed getting 0 episodes with Youtube playlist etc
+* added new ratings for episodes: Trash, Bad, Neutral, Good, Favorite
+* previous Favorite is migrated to the new ratings
+* "Add to favorite" SwipeActions is changed to "Switch rating" SwipeActions, each swipe shifts the rating in circle
+* "Add to favorite" in multi-selection is changed to "Set rating"
+* in EpisodeInfo, added "My opinion" section under the Description text,
+	* by clicking on it you can add personal comments/notes on the episode, text entered is auto-saved every 10 seconds
+* adopted Material3's built-in color scheme

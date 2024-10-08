@@ -192,7 +192,6 @@
     <string name="new_episode_notification_group_text">Your subscriptions have new episodes.</string>
 
     <!-- Actions on feeds -->
-
     <string name="multi_select_operation_confirmation">Please confirm that you want to perform the action on all selected items.</string>
     <string name="multi_select_toggle_played_confirmation">Please confirm that you want to toggle played status of all selected items.</string>
     <string name="multi_select_mark_played_confirmation">Please confirm that you want to mark all selected items as played.</string>
@@ -251,8 +250,8 @@
     </plurals>
 
     <string name="javasript_label">JavaScript</string>
-
     <string name="no_action_label">No action</string>
+    <string name="my_opinion_label">My opinion</string>
 
     <string name="removed_inbox_label">Removed from inbox</string>
     <string name="mark_read_label">Mark as played</string>
@@ -287,7 +286,9 @@
     </plurals>
     <string name="show_video_label">Play video</string>
     <string name="add_to_favorite_label">Add to favorites</string>
+    <string name="switch_rating_label">Swtich rating</string>
     <string name="toggle_favorite_label">Toggle favorites</string>
+    <string name="set_rating_label">Set rating</string>
     <string name="remove_from_favorite_label">Remove from favorites</string>
     <string name="visit_website_label">Visit website</string>
     <string name="skip_episode_label">Skip episode</string>

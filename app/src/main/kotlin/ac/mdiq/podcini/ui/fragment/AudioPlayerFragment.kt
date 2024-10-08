@@ -899,7 +899,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         onPlaybackServiceChanged(event)
                     }
                     is FlowEvent.PlayEvent -> onPlayEvent(event)
-                    is FlowEvent.FavoritesEvent -> onFavoriteEvent(event)
+                    is FlowEvent.RatingEvent -> onFavoriteEvent(event)
                     is FlowEvent.PlayerErrorEvent -> MediaPlayerErrorDialog.show(activity as Activity, event)
 //                    is FlowEvent.SleepTimerUpdatedEvent ->  if (event.isCancelled || event.wasJustEnabled()) loadMediaInfo(false)
                     is FlowEvent.SleepTimerUpdatedEvent ->  if (event.isCancelled || event.wasJustEnabled()) setupOptionsMenu()
@@ -911,7 +911,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
     }
 
-    private fun onFavoriteEvent(event: FlowEvent.FavoritesEvent) {
+    private fun onFavoriteEvent(event: FlowEvent.RatingEvent) {
         if (curEpisode?.id == event.episode.id) EpisodeMenuHandler.onPrepareMenu(toolbar.menu, event.episode)
     }
 

@@ -21,7 +21,6 @@ import ac.mdiq.podcini.storage.model.Feed
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.ui.actions.*
-import ac.mdiq.podcini.ui.actions.EpisodeMenuHandler
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
@@ -46,24 +45,27 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.OptIn
 import androidx.appcompat.widget.Toolbar
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.app.ShareCompat
 import androidx.core.text.HtmlCompat
 import androidx.core.view.MenuProvider
@@ -78,11 +80,8 @@ import com.skydoves.balloon.ArrowOrientation
 import com.skydoves.balloon.ArrowOrientationRules
 import com.skydoves.balloon.Balloon
 import com.skydoves.balloon.BalloonAnimation
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import net.dankito.readability4j.extended.Readability4JExtended
 import okhttp3.Request.Builder
 import java.io.File
@@ -123,19 +122,16 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
         toolbar = binding.toolbar
         toolbar.title = ""
-        toolbar.inflateMenu(R.menu.feeditem_options)
+        toolbar.inflateMenu(R.menu.episode_info)
         toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
         toolbar.setOnMenuItemClickListener(this)
 
         binding.composeView.setContent{
             CustomTheme(requireContext()) {
-                InfoView()
+                MainView()
             }
         }
 
-//        binding.txtvPodcast.setOnClickListener { openPodcast() }
-//        binding.txtvTitle.setHyphenationFrequency(Layout.HYPHENATION_FREQUENCY_FULL)
-//        binding.txtvTitle.ellipsize = TextUtils.TruncateAt.END
 //        webvDescription = binding.webvDescription
 //        webvDescription.setTimecodeSelectedListener { time: Int? ->
 //            val cMedia = curMedia
@@ -144,40 +140,6 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 //        }
 //        registerForContextMenu(webvDescription)
 
-//        imgvCover = binding.imgvCover
-//        imgvCover.setOnClickListener { openPodcast() }
-//        butAction1 = binding.butAction1
-//        butAction2 = binding.butAction2
-
-//        binding.homeButton.setOnClickListener {
-//            if (!episode?.link.isNullOrEmpty()) {
-//                homeFragment = EpisodeHomeFragment.newInstance(episode!!)
-//                (activity as MainActivity).loadChildFragment(homeFragment!!)
-//            } else Toast.makeText(context, "Episode link is not valid ${episode?.link}", Toast.LENGTH_LONG).show()
-//        }
-
-//        butAction1.setOnClickListener(View.OnClickListener {
-//            when {
-//                actionButton1 is StreamActionButton && !UserPreferences.isStreamOverDownload
-//                        && UsageStatistics.hasSignificantBiasTo(UsageStatistics.ACTION_STREAM) -> {
-//                    showOnDemandConfigBalloon(true)
-//                    return@OnClickListener
-//                }
-//                actionButton1 == null -> return@OnClickListener  // Not loaded yet
-//                else -> actionButton1?.onClick(requireContext())
-//            }
-//        })
-//        butAction2.setOnClickListener(View.OnClickListener {
-//            when {
-//                actionButton2 is DownloadActionButton && UserPreferences.isStreamOverDownload
-//                        && UsageStatistics.hasSignificantBiasTo(UsageStatistics.ACTION_DOWNLOAD) -> {
-//                    showOnDemandConfigBalloon(false)
-//                    return@OnClickListener
-//                }
-//                actionButton2 == null -> return@OnClickListener  // Not loaded yet
-//                else -> actionButton2?.onClick(requireContext())
-//            }
-//        })
         shownotesCleaner = ShownotesCleaner(requireContext())
         onFragmentLoaded()
         load()
@@ -185,16 +147,55 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     @Composable
-    fun InfoView() {
+    fun MainView() {
+        val textColor = MaterialTheme.colorScheme.onSurface
+        var showEditComment by remember { mutableStateOf(false) }
+        @Composable
+        fun LargeTextEditingDialog(textState: TextFieldValue, onTextChange: (TextFieldValue) -> Unit, onDismissRequest: () -> Unit, onSave: (String) -> Unit) {
+            Dialog(onDismissRequest = { onDismissRequest() }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+                Surface(modifier = Modifier.fillMaxWidth().padding(16.dp), shape = MaterialTheme.shapes.medium) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(text = "Add comment", color = textColor, style = MaterialTheme.typography.titleLarge)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        BasicTextField(value = textState, onValueChange = { onTextChange(it) }, textStyle = TextStyle(fontSize = 16.sp, color = textColor),
+                            modifier = Modifier.fillMaxWidth().height(300.dp).padding(10.dp).border(1.dp, MaterialTheme.colorScheme.primary, MaterialTheme.shapes.small)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                            TextButton(onClick = { onDismissRequest() }) {
+                                Text("Cancel")
+                            }
+                            TextButton(onClick = {
+                                onSave(textState.text)
+                                onDismissRequest()
+                            }) {
+                                Text("Save")
+                            }
+                        }
+                    }
+                }
+                LaunchedEffect(Unit) {
+                    while (true) {
+                        delay(10000)
+                        onSave(textState.text)
+                    }
+                }
+            }
+        }
+        var commentTextState by remember { mutableStateOf(TextFieldValue(episode?.comment?:"")) }
+        if (showEditComment) LargeTextEditingDialog(textState = commentTextState, onTextChange = { commentTextState = it }, onDismissRequest = {showEditComment = false},
+            onSave = {
+                runOnIOScope { if (episode != null) episode = upsert(episode!!) { it.comment = commentTextState.text } }
+            })
+
         Column {
-            val textColor = MaterialTheme.colorScheme.onSurface
             Row(modifier = Modifier.padding(start = 16.dp, end = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                 val imgLoc = if (episode != null) ImageResourceUtils.getEpisodeListImageLocation(episode!!) else null
                 AsyncImage(model = imgLoc, contentDescription = "imgvCover", Modifier.width(56.dp).height(56.dp).clickable(onClick = { openPodcast() }))
                 Column(modifier = Modifier.padding(start = 10.dp)) {
                     Text(txtvPodcast, color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.clickable { openPodcast() })
                     Text(txtvTitle, color = textColor, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold), maxLines = 5, overflow = TextOverflow.Ellipsis)
-                    Text(txtvPublished + " · " + txtvDuration + " · " + txtvSize, color = textColor, style = MaterialTheme.typography.bodyMedium)
+                    Text("$txtvPublished · $txtvDuration · $txtvSize", color = textColor, style = MaterialTheme.typography.bodyMedium)
                 }
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -250,6 +251,10 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 }, update = {
                     it.loadDataWithBaseURL("https://127.0.0.1", webviewData, "text/html", "utf-8", "about:blank")
                 })
+                Text(stringResource(R.string.my_opinion_label) + if (commentTextState.text.isEmpty()) " (Add)" else "",
+                    color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(start = 15.dp, top = 10.dp, bottom = 5.dp).clickable { showEditComment = true })
+                Text(commentTextState.text, color = textColor, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 15.dp, bottom = 10.dp))
                 Text(itemLink, color = textColor, style = MaterialTheme.typography.bodySmall)
             }
         }
@@ -339,7 +344,6 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     @OptIn(UnstableApi::class) override fun onDestroyView() {
         Logd(TAG, "onDestroyView")
-//        binding.root.removeView(webvDescription)
         episode = null
 //        webvDescription.clearHistory()
 //        webvDescription.clearCache(true)
@@ -432,11 +436,11 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         val dls = DownloadServiceInterface.get()
         if (episode != null && episode!!.media != null && episode!!.media!!.downloadUrl != null) {
             val url = episode!!.media!!.downloadUrl!!
-            if (dls != null && dls.isDownloadingEpisode(url)) {
+//            if (dls != null && dls.isDownloadingEpisode(url)) {
 //                binding.circularProgressBar.visibility = View.VISIBLE
 //                binding.circularProgressBar.setPercentage(0.01f * max(1.0, dls.getProgress(url).toDouble()).toFloat(), episode)
 //                binding.circularProgressBar.setIndeterminate(dls.isEpisodeQueued(url))
-            }
+//            }
         }
 
         val media: EpisodeMedia? = episode?.media
@@ -470,15 +474,6 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 //                if (actionButton2 != null && media.getMediaType() == MediaType.FLASH) actionButton2!!.visibility = View.GONE
             }
         }
-
-        if (actionButton1 != null) {
-//            butAction1.setImageResource(actionButton1!!.getDrawable())
-//            butAction1.visibility = actionButton1!!.visibility
-        }
-        if (actionButton2 != null) {
-//            butAction2.setImageResource(actionButton2!!.getDrawable())
-//            butAction2.visibility = actionButton2!!.visibility
-        }
     }
 
 //    override fun onContextItemSelected(item: MenuItem): Boolean {
@@ -506,7 +501,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.QueueEvent -> onQueueEvent(event)
-                    is FlowEvent.FavoritesEvent -> onFavoriteEvent(event)
+                    is FlowEvent.RatingEvent -> onFavoriteEvent(event)
                     is FlowEvent.EpisodeEvent -> onEpisodeEvent(event)
                     is FlowEvent.PlayerSettingsEvent -> updateButtons()
                     is FlowEvent.EpisodePlayedEvent -> load()
@@ -525,10 +520,10 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
     }
 
-    private fun onFavoriteEvent(event: FlowEvent.FavoritesEvent) {
+    private fun onFavoriteEvent(event: FlowEvent.RatingEvent) {
         if (episode?.id == event.episode.id) {
             episode = unmanaged(episode!!)
-            episode!!.isFavorite = event.episode.isFavorite
+            episode!!.rating = if (event.episode.isFavorite) Episode.Rating.FAVORITE.code else Episode.Rating.NEUTRAL.code
 //            episode = event.episode
             prepareMenu()
         }

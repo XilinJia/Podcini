@@ -35,6 +35,7 @@ import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.text.format.Formatter
 import android.util.Log
+import android.util.Rational
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -941,7 +942,7 @@ class ImportExportPreferencesFragment : PreferenceFragmentCompat() {
                 it.media!!.setPosition(action.position * 1000)
                 it.media!!.playedDuration = action.playedDuration * 1000
                 it.media!!.setLastPlayedTime(action.timestamp!!.time)
-                it.isFavorite = action.isFavorite
+                it.rating = if (action.isFavorite) Episode.Rating.FAVORITE.code else Episode.Rating.NEUTRAL.code
                 it.playState = action.playState
                 if (hasAlmostEnded(it.media!!)) {
                     Logd(TAG, "Marking as played: $action")

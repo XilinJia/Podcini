@@ -251,8 +251,16 @@ object Episodes {
     fun setFavorite(episode: Episode, stat: Boolean?) : Job {
         Logd(TAG, "setFavorite called $stat")
         return runOnIOScope {
-            val result = upsert(episode) { it.isFavorite = stat ?: !it.isFavorite }
-            EventFlow.postEvent(FlowEvent.FavoritesEvent(result))
+            val result = upsert(episode) { it.rating = if (stat ?: !it.isFavorite) Episode.Rating.FAVORITE.code else Episode.Rating.NEUTRAL.code }
+            EventFlow.postEvent(FlowEvent.RatingEvent(result, result.rating))
+        }
+    }
+
+    fun setRating(episode: Episode, rating: Int) : Job {
+        Logd(TAG, "setRating called $rating")
+        return runOnIOScope {
+            val result = upsert(episode) { it.rating = rating }
+            EventFlow.postEvent(FlowEvent.RatingEvent(result, result.rating))
         }
     }
 

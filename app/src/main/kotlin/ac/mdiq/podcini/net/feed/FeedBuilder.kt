@@ -77,6 +77,7 @@ class FeedBuilder(val context: Context, val showError: (String?, String)->Unit) 
                                     e.feedId = feed_.id
                                     eList.add(e)
                                 }
+                                feed_.episodes.addAll(eList)
                                 if (nextPage == null || feed_.episodes.size > 1000) break
                                 try {
                                     val page = PlaylistInfo.getMoreItems(service, url, nextPage) ?: break
@@ -88,7 +89,6 @@ class FeedBuilder(val context: Context, val showError: (String?, String)->Unit) 
                                     withContext(Dispatchers.Main) { showError(e.message, "") }
                                     break
                                 }
-                                feed_.episodes.addAll(eList)
                             }
                             feed_.isBuilding = false
                         }
@@ -123,6 +123,7 @@ class FeedBuilder(val context: Context, val showError: (String?, String)->Unit) 
                                         e.feedId = feed_.id
                                         eList.add(e)
                                     }
+                                    feed_.episodes.addAll(eList)
                                     if (nextPage == null || feed_.episodes.size > 1000) break
                                     try {
                                         val page = ChannelTabInfo.getMoreItems(service, channelInfo.tabs.first(), nextPage)
@@ -134,7 +135,6 @@ class FeedBuilder(val context: Context, val showError: (String?, String)->Unit) 
                                         withContext(Dispatchers.Main) { showError(e.message, "") }
                                         break
                                     }
-                                    feed_.episodes.addAll(eList)
                                 }
                                 feed_.isBuilding = false
                             }

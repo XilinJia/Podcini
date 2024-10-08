@@ -3,9 +3,9 @@ package ac.mdiq.podcini.ui.actions
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.storage.database.Episodes.deleteMediaSync
-import ac.mdiq.podcini.storage.database.Episodes.setFavorite
 import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.Episodes.setPlayStateSync
+import ac.mdiq.podcini.storage.database.Episodes.setRating
 import ac.mdiq.podcini.storage.database.Episodes.shouldDeleteRemoveFromQueue
 import ac.mdiq.podcini.storage.database.Feeds.shouldAutoDeleteItem
 import ac.mdiq.podcini.storage.database.Queues.addToQueue
@@ -117,7 +117,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         @JvmField
         val swipeActions: List<SwipeAction> = listOf(
             NoActionSwipeAction(), AddToQueueSwipeAction(),
-            StartDownloadSwipeAction(), MarkFavoriteSwipeAction(),
+            StartDownloadSwipeAction(), ShiftRatingSwipeAction(),
             TogglePlaybackStateSwipeAction(), RemoveFromQueueSwipeAction(),
             DeleteSwipeAction(), RemoveFromHistorySwipeAction())
 
@@ -203,7 +203,7 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         }
     }
 
-    class MarkFavoriteSwipeAction : SwipeAction {
+    class ShiftRatingSwipeAction : SwipeAction {
         override fun getId(): String {
             return SwipeAction.MARK_FAV
         }
@@ -217,12 +217,12 @@ open class SwipeActions(private val fragment: Fragment, private val tag: String)
         }
 
         override fun getTitle(context: Context): String {
-            return context.getString(R.string.add_to_favorite_label)
+            return context.getString(R.string.switch_rating_label)
         }
 
         @OptIn(UnstableApi::class)
         override fun performAction(item: Episode, fragment: Fragment, filter: EpisodeFilter) {
-            setFavorite(item, !item.isFavorite)
+            setRating(item, item.shiftRating())
         }
 
         override fun willRemove(filter: EpisodeFilter, item: Episode): Boolean {

@@ -333,7 +333,7 @@ import kotlin.math.min
                 it.media!!.setPosition(action.position * 1000)
                 it.media!!.playedDuration = action.playedDuration * 1000
                 it.media!!.setLastPlayedTime(action.timestamp!!.time)
-                it.isFavorite = action.isFavorite
+                it.rating = if (action.isFavorite) Episode.Rating.FAVORITE.code else Episode.Rating.NEUTRAL.code
                 it.playState = action.playState
                 if (hasAlmostEnded(it.media!!)) {
                     Logd(TAG, "Marking as played")

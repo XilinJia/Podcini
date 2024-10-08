@@ -1,4 +1,4 @@
- Version 6.9.0
+ Version 6.9.1
 
 * added logging for shared actions
 * added simple fragment for viewing shared logs and repairing failed share actions

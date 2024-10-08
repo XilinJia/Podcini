@@ -5,11 +5,10 @@ import ac.mdiq.podcini.net.feed.LocalFeedUpdater.getImageUrl
 import ac.mdiq.podcini.net.feed.LocalFeedUpdater.tryUpdateFeed
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.net.download.serviceinterface.DownloadServiceInterfaceTestStub
+import ac.mdiq.podcini.net.feed.LocalFeedUpdater.FastDocumentFile.Companion.list
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.utils.FastDocumentFile
-import ac.mdiq.podcini.storage.utils.FastDocumentFile.Companion.list
 import ac.mdiq.podcini.util.config.ApplicationCallbacks
 import ac.mdiq.podcini.util.config.ClientConfig
 import android.app.Application
@@ -233,7 +232,7 @@ class LocalFeedUpdaterTest {
      * @param localFeedDir assets local feed folder with media files
      */
     private fun callUpdateFeed(localFeedDir: String) {
-        Mockito.mockStatic(FastDocumentFile::class.java).use { dfMock ->
+        Mockito.mockStatic(LocalFeedUpdater.FastDocumentFile::class.java).use { dfMock ->
             // mock external storage
             dfMock.`when`<Any> { list(ArgumentMatchers.any(), ArgumentMatchers.any()) }
                 .thenReturn(mockLocalFolder(localFeedDir))
@@ -283,16 +282,16 @@ class LocalFeedUpdaterTest {
         /**
          * Create a DocumentFile mock object.
          */
-        private fun mockDocumentFile(fileName: String, mimeType: String): FastDocumentFile {
-            return FastDocumentFile(fileName, mimeType, Uri.parse("file:///path/$fileName"), 0, 0)
+        private fun mockDocumentFile(fileName: String, mimeType: String): LocalFeedUpdater.FastDocumentFile {
+            return LocalFeedUpdater.FastDocumentFile(fileName, mimeType, Uri.parse("file:///path/$fileName"), 0, 0)
         }
 
-        private fun mockLocalFolder(folderName: String): List<FastDocumentFile> {
-            val files: MutableList<FastDocumentFile> = ArrayList()
+        private fun mockLocalFolder(folderName: String): List<LocalFeedUpdater.FastDocumentFile> {
+            val files: MutableList<LocalFeedUpdater.FastDocumentFile> = ArrayList()
             for (f in Objects.requireNonNull<Array<File>>(File(folderName).listFiles())) {
                 val extension = MimeTypeMap.getFileExtensionFromUrl(f.path)
                 val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
-                files.add(FastDocumentFile(f.name, mimeType!!,
+                files.add(LocalFeedUpdater.FastDocumentFile(f.name, mimeType!!,
                     Uri.parse(f.toURI().toString()), f.length(), f.lastModified()))
             }
             return files

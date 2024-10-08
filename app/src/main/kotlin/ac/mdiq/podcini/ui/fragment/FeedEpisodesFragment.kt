@@ -359,6 +359,13 @@ import java.util.concurrent.Semaphore
                 }.start()
             }
             R.id.sort_items -> SingleFeedSortDialog(feed).show(childFragmentManager, "SortDialog")
+//            R.id.filter_items -> {}
+//            R.id.settings -> {
+//                if (feed != null) {
+//                    val fragment = FeedSettingsFragment.newInstance(feed!!)
+//                    (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
+//                }
+//            }
             R.id.rename_feed -> CustomFeedNameDialog(activity as Activity, feed!!).show()
             R.id.remove_feed -> {
                 RemoveFeedDialog.show(requireContext(), feed!!) {

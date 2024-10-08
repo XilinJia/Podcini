@@ -245,4 +245,10 @@ object ChapterUtils {
         }
         return listOf()
     }
+
+    class ChapterStartTimeComparator : Comparator<Chapter> {
+        override fun compare(lhs: Chapter, rhs: Chapter): Int {
+            return lhs.start.compareTo(rhs.start)
+        }
+    }
 }

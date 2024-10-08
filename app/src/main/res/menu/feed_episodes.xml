@@ -11,10 +11,24 @@
     <item
         android:id="@+id/sort_items"
         android:icon="@drawable/arrows_sort"
-        android:menuCategory="container"
         android:title="@string/sort"
         custom:showAsAction="always">
     </item>
+
+<!--    <item-->
+<!--        android:id="@+id/filter_items"-->
+<!--        android:icon="@drawable/ic_filter"-->
+<!--        android:title="@string/filter"-->
+<!--        custom:showAsAction="always">-->
+<!--    </item>-->
+
+<!--    <item-->
+<!--        android:id="@+id/settings"-->
+<!--        android:icon="@drawable/ic_settings"-->
+<!--        android:title="@string/settings_label"-->
+<!--        custom:showAsAction="ifRoom">-->
+<!--    </item>-->
+
     <item
         android:id="@+id/refresh_feed"
         android:menuCategory="container"

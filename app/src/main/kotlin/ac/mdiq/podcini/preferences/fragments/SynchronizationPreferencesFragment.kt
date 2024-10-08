@@ -18,7 +18,6 @@ import ac.mdiq.podcini.net.sync.wifi.WifiSyncService.Companion.hostPort
 import ac.mdiq.podcini.net.sync.wifi.WifiSyncService.Companion.startInstantSync
 import ac.mdiq.podcini.storage.utils.FileNameGenerator.generateFileName
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
-import ac.mdiq.podcini.ui.dialog.AuthenticationDialog
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
@@ -31,6 +30,8 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
 import android.text.format.DateUtils
+import android.text.method.HideReturnsTransformationMethod
+import android.text.method.PasswordTransformationMethod
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -237,6 +238,46 @@ class SynchronizationPreferencesFragment : PreferenceFragmentCompat() {
         val status = String.format("%1\$s (%2\$s)", getString(if (successful) R.string.gpodnetsync_pref_report_successful else R.string.gpodnetsync_pref_report_failed),
             DateUtils.getRelativeDateTimeString(context, lastTime, DateUtils.MINUTE_IN_MILLIS, DateUtils.WEEK_IN_MILLIS, DateUtils.FORMAT_SHOW_TIME))
         (activity as PreferenceActivity).supportActionBar!!.subtitle = status
+    }
+
+    /**
+     * Displays a dialog with a username and password text field and an optional checkbox to save username and preferences.
+     */
+    abstract class AuthenticationDialog(context: Context, titleRes: Int, enableUsernameField: Boolean, usernameInitialValue: String?, passwordInitialValue: String?)
+        : MaterialAlertDialogBuilder(context) {
+
+        var passwordHidden: Boolean = true
+
+        init {
+            setTitle(titleRes)
+            val viewBinding = AuthenticationDialogBinding.inflate(LayoutInflater.from(context))
+            setView(viewBinding.root)
+
+            viewBinding.usernameEditText.isEnabled = enableUsernameField
+            if (usernameInitialValue != null) viewBinding.usernameEditText.setText(usernameInitialValue)
+            if (passwordInitialValue != null) viewBinding.passwordEditText.setText(passwordInitialValue)
+
+            viewBinding.showPasswordButton.setOnClickListener {
+                if (passwordHidden) {
+                    viewBinding.passwordEditText.transformationMethod = HideReturnsTransformationMethod.getInstance()
+                    viewBinding.showPasswordButton.alpha = 1.0f
+                } else {
+                    viewBinding.passwordEditText.transformationMethod = PasswordTransformationMethod.getInstance()
+                    viewBinding.showPasswordButton.alpha = 0.6f
+                }
+                passwordHidden = !passwordHidden
+            }
+
+            setOnCancelListener { onCancelled() }
+            setNegativeButton(R.string.cancel_label) { _: DialogInterface?, _: Int -> onCancelled() }
+            setPositiveButton(R.string.confirm_label) { _: DialogInterface?, _: Int ->
+                onConfirmed(viewBinding.usernameEditText.text.toString(), viewBinding.passwordEditText.text.toString())
+            }
+        }
+
+        protected open fun onCancelled() {}
+
+        protected abstract fun onConfirmed(username: String, password: String)
     }
 
     /**

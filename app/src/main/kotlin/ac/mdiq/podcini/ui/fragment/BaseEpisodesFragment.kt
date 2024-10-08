@@ -189,7 +189,7 @@ abstract class BaseEpisodesFragment : Fragment(), Toolbar.OnMenuItemClickListene
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.SwipeActionsChangedEvent -> refreshSwipeTelltale()
-                    is FlowEvent.FeedListEvent, is FlowEvent.EpisodePlayedEvent, is FlowEvent.PlayerSettingsEvent, is FlowEvent.FavoritesEvent -> loadItems()
+                    is FlowEvent.FeedListEvent, is FlowEvent.EpisodePlayedEvent, is FlowEvent.PlayerSettingsEvent, is FlowEvent.RatingEvent -> loadItems()
                     else -> {}
                 }
             }

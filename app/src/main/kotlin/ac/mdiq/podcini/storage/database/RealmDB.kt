@@ -9,7 +9,11 @@ import io.realm.kotlin.MutableRealm
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import io.realm.kotlin.UpdatePolicy
+import io.realm.kotlin.dynamic.DynamicMutableRealmObject
+import io.realm.kotlin.dynamic.DynamicRealmObject
+import io.realm.kotlin.dynamic.getValue
 import io.realm.kotlin.ext.isManaged
+import io.realm.kotlin.migration.AutomaticSchemaMigration
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.TypedRealmObject
 import kotlinx.coroutines.*
@@ -17,8 +21,6 @@ import kotlin.coroutines.ContinuationInterceptor
 
 object RealmDB {
     private val TAG: String = RealmDB::class.simpleName ?: "Anonymous"
-
-    private const val SCHEMA_VERSION_NUMBER = 24L
 
     private val ioScope = CoroutineScope(Dispatchers.IO)
 
@@ -38,7 +40,21 @@ object RealmDB {
                 ShareLog::class,
                 Chapter::class))
             .name("Podcini.realm")
-            .schemaVersion(SCHEMA_VERSION_NUMBER)
+            .schemaVersion(25)
+            .migration({ mContext ->
+                val oldRealm = mContext.oldRealm // old realm using the previous schema
+                val newRealm = mContext.newRealm // new realm using the new schema
+                if (oldRealm.schemaVersion() < 25) {
+                    mContext.enumerate(className = "Episode") { oldObject: DynamicRealmObject, newObject: DynamicMutableRealmObject? ->
+                        newObject?.run {
+                            set(
+                                "rating",
+                                if (oldObject.getValue<Boolean>(fieldName = "isFavorite")) 2L else 0L
+                            )
+                        }
+                    }
+                }
+            })
             .build()
         realm = Realm.open(config)
     }

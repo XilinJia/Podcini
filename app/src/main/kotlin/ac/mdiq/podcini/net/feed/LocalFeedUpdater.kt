@@ -1,31 +1,26 @@
 package ac.mdiq.podcini.net.feed
 
 import ac.mdiq.podcini.R
+import ac.mdiq.podcini.net.download.DownloadError
 import ac.mdiq.podcini.net.feed.parser.media.id3.ID3ReaderException
 import ac.mdiq.podcini.net.feed.parser.media.id3.Id3MetadataReader
 import ac.mdiq.podcini.net.feed.parser.media.vorbis.VorbisCommentMetadataReader
 import ac.mdiq.podcini.net.feed.parser.media.vorbis.VorbisCommentReaderException
-import ac.mdiq.podcini.net.download.DownloadError
 import ac.mdiq.podcini.net.feed.parser.utils.DateUtils
 import ac.mdiq.podcini.net.feed.parser.utils.MimeTypeUtils
 import ac.mdiq.podcini.storage.database.Feeds
 import ac.mdiq.podcini.storage.database.LogsAndStats
+import ac.mdiq.podcini.storage.model.*
 import ac.mdiq.podcini.storage.utils.MediaMetadataRetrieverCompat
-import ac.mdiq.podcini.storage.model.DownloadResult
-import ac.mdiq.podcini.storage.model.Feed
-import ac.mdiq.podcini.storage.model.Episode
-import ac.mdiq.podcini.storage.model.EpisodeMedia
-import ac.mdiq.podcini.storage.model.MediaType
-import ac.mdiq.podcini.storage.utils.FastDocumentFile
 import ac.mdiq.podcini.util.Logd
 import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.net.Uri
+import android.provider.DocumentsContract
 import androidx.annotation.VisibleForTesting
 import androidx.documentfile.provider.DocumentFile
 import androidx.media3.common.util.UnstableApi
 import org.apache.commons.io.input.CountingInputStream
-
 import java.io.BufferedInputStream
 import java.io.IOException
 import java.text.ParseException
@@ -226,5 +221,35 @@ object LocalFeedUpdater {
 
     fun interface UpdaterProgressListener {
         fun onLocalFileScanned(scanned: Int, totalFiles: Int)
+    }
+
+    /**
+     * Android's DocumentFile is slow because every single method call queries the ContentResolver.
+     * This queries the ContentResolver a single time with all the information.
+     */
+    class FastDocumentFile(val name: String, val type: String, val uri: Uri, val length: Long, val lastModified: Long) {
+        companion object {
+            @JvmStatic
+            fun list(context: Context, folderUri: Uri?): List<FastDocumentFile> {
+                val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(folderUri, DocumentsContract.getDocumentId(folderUri))
+                val cursor = context.contentResolver.query(childrenUri, arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+                    DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+                    DocumentsContract.Document.COLUMN_SIZE,
+                    DocumentsContract.Document.COLUMN_LAST_MODIFIED,
+                    DocumentsContract.Document.COLUMN_MIME_TYPE), null, null, null)
+                val list = ArrayList<FastDocumentFile>()
+                while (cursor!!.moveToNext()) {
+                    val id = cursor.getString(0)
+                    val uri = DocumentsContract.buildDocumentUriUsingTree(folderUri, id)
+                    val name = cursor.getString(1)
+                    val size = cursor.getLong(2)
+                    val lastModified = cursor.getLong(3)
+                    val mimeType = cursor.getString(4)
+                    list.add(FastDocumentFile(name, mimeType, uri, size, lastModified))
+                }
+                cursor.close()
+                return list
+            }
+        }
     }
 }

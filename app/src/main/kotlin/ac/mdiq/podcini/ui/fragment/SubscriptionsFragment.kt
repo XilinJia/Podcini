@@ -54,11 +54,12 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.outlined.AddCircle
+import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -802,7 +803,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     containerColor = Color.LightGray,
                     onClick = {}) { button() }
             }
-            FloatingActionButton(containerColor = Color.Green,
+            FloatingActionButton(containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.secondary,
                 onClick = { isExpanded = !isExpanded }) { Icon(Icons.Filled.Edit, "Edit") }
         }
     }
@@ -1014,11 +1016,13 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 }
                 EpisodeSpeedDial(activity as MainActivity, selected.toMutableStateList(), modifier = Modifier.align(Alignment.BottomStart).padding(bottom = 16.dp, start = 16.dp))
             }
-            FloatingActionButton(containerColor = Color.Green,
+            FloatingActionButton(shape = CircleShape,
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = 16.dp, end = 16.dp),
                 onClick = {
                     if (activity is MainActivity) (activity as MainActivity).loadChildFragment(OnlineSearchFragment())
-                }) { Icon(Icons.Filled.AddCircle, "Add") }
+                }) { Icon(Icons.Outlined.AddCircle, "Add", modifier = Modifier.size(60.dp)) }
         }
     }
 

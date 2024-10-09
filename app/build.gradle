@@ -174,7 +174,7 @@ dependencies {
     implementation libs.androidx.material3
 //    implementation libs.androidx.ui.viewbinding
     implementation libs.androidx.fragment.compose
-    implementation libs.androidx.material.icons.extended
+//    implementation libs.androidx.material.icons.extended
 
     /** Desugaring for using VistaGuide **/
     coreLibraryDesugaring libs.desugar.jdk.libs.nio

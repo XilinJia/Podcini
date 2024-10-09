@@ -9,7 +9,7 @@
     android:orientation="vertical">
 
     <androidx.compose.ui.platform.ComposeView
-        android:id="@+id/composeView1"
+        android:id="@+id/player1"
         android:layout_width="match_parent"
         android:layout_height="@dimen/external_player_height"
         android:elevation="8dp"
@@ -38,7 +38,7 @@
             android:layout_marginBottom="12dp"/>
 
         <androidx.compose.ui.platform.ComposeView
-            android:id="@+id/composeView2"
+            android:id="@+id/player2"
             android:layout_width="match_parent"
             android:layout_height="@dimen/external_player_height"/>
 

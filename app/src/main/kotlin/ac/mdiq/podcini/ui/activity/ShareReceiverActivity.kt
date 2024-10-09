@@ -9,6 +9,8 @@ import ac.mdiq.podcini.ui.compose.confirmAddYoutubeEpisode
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.vista.extractor.services.youtube.YoutubeParsingHelper.isYoutubeServiceURL
 import ac.mdiq.vista.extractor.services.youtube.YoutubeParsingHelper.isYoutubeURL
+import android.app.Service.START_STICKY
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
@@ -20,6 +22,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.media3.common.util.UnstableApi
+import androidx.work.WorkerParameters
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.net.URL
 import java.net.URLDecoder
@@ -49,42 +52,18 @@ class ShareReceiverActivity : AppCompatActivity() {
         Logd(TAG, "feedUrl: $sharedUrl")
         val log = ShareLog(sharedUrl!!)
         upsertBlk(log) {}
-        receiveShared(sharedUrl!!,this, true)
 
-//        val url = URL(sharedUrl)
-//        when {
-////            plain text
-//            sharedUrl!!.matches(Regex("^[^\\s<>/]+\$")) -> {
-//                log = upsertBlk(log) {it.type = "text" }
-//                val intent = MainActivity.showOnlineSearch(this, sharedUrl!!)
-//                startActivity(intent)
-//                finish()
-//            }
-////            Youtube media
-////            sharedUrl!!.startsWith("https://youtube.com/watch?") || sharedUrl!!.startsWith("https://www.youtube.com/watch?") || sharedUrl!!.startsWith("https://music.youtube.com/watch?") -> {
-//            (isYoutubeURL(url) && url.path.startsWith("/watch")) || isYoutubeServiceURL(url) -> {
-//                log = upsertBlk(log) {it.type = "youtube media" }
-//                Logd(TAG, "got youtube media")
-//                setContent {
-//                    val showDialog = remember { mutableStateOf(true) }
-//                    CustomTheme(this@ShareReceiverActivity) {
-//                        confirmAddYoutubeEpisode(listOf(sharedUrl!!), showDialog.value, onDismissRequest = {
-//                            showDialog.value = false
-//                            finish()
-//                        })
-//                    }
-//                }
-//            }
-////            podcast or Youtube channel, Youtube playlist, or other?
-//            else -> {
-//                log = upsertBlk(log) {it.type = "podcast" }
-//                Logd(TAG, "Activity was started with url $sharedUrl")
-//                val intent = MainActivity.showOnlineFeed(this, sharedUrl!!)
-////                intent.putExtra(MainActivity.Extras.started_from_share.name, getIntent().getBooleanExtra(MainActivity.Extras.started_from_share.name, false))
-//                startActivity(intent)
-//                finish()
-//            }
-//        }
+        receiveShared(sharedUrl!!,this, true) {
+            setContent {
+                val showDialog = remember { mutableStateOf(true) }
+                CustomTheme(this) {
+                    confirmAddYoutubeEpisode(listOf(sharedUrl!!), showDialog.value, onDismissRequest = {
+                        showDialog.value = false
+//                        finish()
+                    })
+                }
+            }
+        }
     }
 
     private fun showNoPodcastFoundError() {
@@ -105,13 +84,31 @@ class ShareReceiverActivity : AppCompatActivity() {
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
     }
 
+//    class UrlFetchWorker(appContext: Context, workerParams: WorkerParameters) : Worker(appContext, workerParams) {
+//        override fun doWork(): Result {
+//            val url = inputData.getString("shared_url") ?: return Result.failure()
+//
+//            // Fetch the content from URL using OkHttp or another HTTP client
+//            // Ensure you're on a background thread
+//
+//            return Result.success()
+//        }
+//    }
+
+//    // Schedule the worker
+//    val workRequest = OneTimeWorkRequestBuilder<UrlFetchWorker>()
+//        .setInputData(workDataOf("shared_url" to sharedUrl))
+//        .build()
+//
+//    WorkManager.getInstance(context).enqueue(workRequest)
+
     companion object {
         private val TAG: String = ShareReceiverActivity::class.simpleName ?: "Anonymous"
 
         const val ARG_FEEDURL: String = "arg.feedurl"
         private const val RESULT_ERROR = 2
 
-        fun receiveShared(sharedUrl: String, activity: AppCompatActivity, finish: Boolean) {
+        fun receiveShared(sharedUrl: String, activity: AppCompatActivity, finish: Boolean, mediaCB: ()->Unit) {
             val url = URL(sharedUrl)
             val log = realm.query(ShareLog::class).query("url == $0", sharedUrl).first().find()
             when {
@@ -126,15 +123,7 @@ class ShareReceiverActivity : AppCompatActivity() {
                 (isYoutubeURL(url) && url.path.startsWith("/watch")) || isYoutubeServiceURL(url) -> {
                     if (log != null)  upsertBlk(log) {it.type = "youtube media" }
                     Logd(TAG, "got youtube media")
-                    activity.setContent {
-                        val showDialog = remember { mutableStateOf(true) }
-                        CustomTheme(activity) {
-                            confirmAddYoutubeEpisode(listOf(sharedUrl), showDialog.value, onDismissRequest = {
-                                showDialog.value = false
-                                if (finish) activity.finish()
-                            })
-                        }
-                    }
+                    mediaCB()
                 }
 //            podcast or Youtube channel, Youtube playlist, or other?
                 else -> {

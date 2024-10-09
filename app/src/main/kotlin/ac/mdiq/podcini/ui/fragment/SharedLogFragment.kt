@@ -7,6 +7,7 @@ import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.model.ShareLog
 import ac.mdiq.podcini.ui.activity.ShareReceiverActivity.Companion.receiveShared
 import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.ui.compose.confirmAddYoutubeEpisode
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
@@ -43,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import io.realm.kotlin.query.Sort
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -82,12 +84,13 @@ class SharedLogFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         val showDialog = remember { mutableStateOf(false) }
         val dialogParam = remember { mutableStateOf(ShareLog()) }
         if (showDialog.value) {
-            DetailDialog(
-                status = dialogParam.value,
-                showDialog = showDialog.value,
-                onDismissRequest = { showDialog.value = false },
-            )
+            DetailDialog(status = dialogParam.value, showDialog = showDialog.value, onDismissRequest = { showDialog.value = false })
         }
+        var showYTMediaConfirmDialog by remember { mutableStateOf(false) }
+        var sharedUrl by remember { mutableStateOf("") }
+        if (showYTMediaConfirmDialog)
+            confirmAddYoutubeEpisode(listOf(sharedUrl), showYTMediaConfirmDialog, onDismissRequest = { showYTMediaConfirmDialog = false })
+
         LazyColumn(state = lazyListState, modifier = Modifier.padding(start = 10.dp, end = 6.dp, top = 5.dp, bottom = 5.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)) {
             itemsIndexed(logs) { position, log ->
@@ -96,7 +99,12 @@ class SharedLogFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     if (log.status == 1) {
                         showDialog.value = true
                         dialogParam.value = log
-                    } else receiveShared(log.url!!, activity as AppCompatActivity, false)
+                    } else {
+                        receiveShared(log.url!!, activity as AppCompatActivity, false) {
+                            sharedUrl = log.url!!
+                            showYTMediaConfirmDialog = true
+                        }
+                    }
                 }) {
                     Column {
                         Row {
@@ -104,6 +112,13 @@ class SharedLogFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             val iconColor = remember { if (log.status == 1) Color.Green else Color.Yellow }
                             Icon(icon, "Info", tint = iconColor, modifier = Modifier.padding(end = 2.dp))
                             Text(formatDateTimeFlex(Date(log.id)), color = textColor)
+                            Spacer(Modifier.weight(1f))
+                            var showAction by remember { mutableStateOf(log.status != 1) }
+                            if (true || showAction) {
+                                Icon(painter = painterResource(R.drawable.ic_delete), tint = textColor, contentDescription = null,
+                                    modifier = Modifier.width(25.dp).height(25.dp).clickable {
+                                    })
+                            }
                         }
                         Text(log.url?:"unknown", color = textColor)
                         val statusText = remember {"" }
@@ -112,15 +127,6 @@ class SharedLogFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             Text(log.details, color = Color.Red)
                             Text(stringResource(R.string.download_error_tap_for_details), color = textColor)
                         }
-                    }
-                    var showAction by remember { mutableStateOf(log.status != 1) }
-                    if (showAction) {
-                        Icon(painter = painterResource(R.drawable.ic_refresh),
-                            tint = textColor,
-                            contentDescription = null,
-                            modifier = Modifier.width(28.dp).height(32.dp).clickable {
-
-                            })
                     }
                 }
             }
@@ -154,7 +160,7 @@ class SharedLogFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             try {
                 val result = withContext(Dispatchers.IO) {
                     Logd(TAG, "getDownloadLog() called")
-                    val dlog = realm.query(ShareLog::class).find().toMutableList()
+                    val dlog = realm.query(ShareLog::class).sort("id", Sort.DESCENDING).find().toMutableList()
                     realm.copyFromRealm(dlog)
                 }
                 withContext(Dispatchers.Main) {

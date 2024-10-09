@@ -34,17 +34,17 @@
         android:title="@string/remove_from_queue_label">
     </item>
 
-    <item
-        android:id="@+id/add_to_favorites_item"
-        android:icon="@drawable/ic_star_border"
-        custom:showAsAction="always"
-        android:title="@string/add_to_favorite_label" />
+<!--    <item-->
+<!--        android:id="@+id/add_to_favorites_item"-->
+<!--        android:icon="@drawable/ic_star_border"-->
+<!--        custom:showAsAction="always"-->
+<!--        android:title="@string/add_to_favorite_label" />-->
 
-    <item
-        android:id="@+id/remove_from_favorites_item"
-        android:icon="@drawable/ic_star"
-        custom:showAsAction="always"
-        android:title="@string/remove_from_favorite_label" />
+<!--    <item-->
+<!--        android:id="@+id/remove_from_favorites_item"-->
+<!--        android:icon="@drawable/ic_star"-->
+<!--        custom:showAsAction="always"-->
+<!--        android:title="@string/remove_from_favorite_label" />-->
 
     <item
         android:id="@+id/reset_position"

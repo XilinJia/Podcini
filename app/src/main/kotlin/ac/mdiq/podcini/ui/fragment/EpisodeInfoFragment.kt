@@ -11,6 +11,7 @@ import ac.mdiq.podcini.playback.base.InTheatre
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.seekTo
 import ac.mdiq.podcini.preferences.UsageStatistics
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
@@ -22,6 +23,7 @@ import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.ui.actions.*
 import ac.mdiq.podcini.ui.activity.MainActivity
+import ac.mdiq.podcini.ui.compose.ChooseRatingDialog
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.utils.ThemeUtils
@@ -99,6 +101,15 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private var itemLoaded = false
     private var episode: Episode? = null    // managed
+
+    private var txtvPodcast by mutableStateOf("")
+    private var txtvTitle by mutableStateOf("")
+    private var txtvPublished by mutableStateOf("")
+    private var txtvSize by mutableStateOf("")
+    private var txtvDuration by mutableStateOf("")
+    private var itemLink by mutableStateOf("")
+    var hasMedia by mutableStateOf(true)
+    var rating by mutableStateOf(episode?.rating ?: 0)
 
     private var webviewData by mutableStateOf("")
 
@@ -188,6 +199,11 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 runOnIOScope { if (episode != null) episode = upsert(episode!!) { it.comment = commentTextState.text } }
             })
 
+        var showChooseRatingDialog by remember { mutableStateOf(false) }
+        if (showChooseRatingDialog) ChooseRatingDialog(listOf(episode!!)) {
+            showChooseRatingDialog = false
+        }
+
         Column {
             Row(modifier = Modifier.padding(start = 16.dp, end = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                 val imgLoc = if (episode != null) ImageResourceUtils.getEpisodeListImageLocation(episode!!) else null
@@ -199,7 +215,12 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 }
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.weight(0.4f))
+                var ratingIconRes = Episode.Rating.fromCode(rating).res
+                Icon(painter = painterResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating", modifier = Modifier.width(15.dp).height(15.dp).clickable(onClick = {
+                    showChooseRatingDialog = true
+                }))
+                Spacer(modifier = Modifier.weight(0.2f))
                 if (hasMedia) Icon(painter = painterResource(actionButton1?.getDrawable()?: R.drawable.ic_questionmark), tint = textColor, contentDescription = "butAction1",
                     modifier = Modifier.width(24.dp).height(24.dp).clickable(onClick = {
                         when {
@@ -235,7 +256,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     })
 //                        if (cond) CircularProgressIndicator(progress = 0.01f * dlPercent, strokeWidth = 4.dp, color = textColor)
                 }
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.weight(0.4f))
             }
             if (!hasMedia) Text("noMediaLabel", color = textColor, style = MaterialTheme.typography.bodyMedium)
             val scrollState = rememberScrollState()
@@ -367,12 +388,6 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         else EpisodeMenuHandler.onPrepareMenu(toolbar.menu, episode, R.id.open_podcast, R.id.mark_read_item, R.id.visit_website_item)
     }
 
-    private var txtvPodcast by mutableStateOf("")
-    private var txtvTitle by mutableStateOf("")
-    private var txtvPublished by mutableStateOf("")
-    private var txtvSize by mutableStateOf("")
-    private var txtvDuration by mutableStateOf("")
-    private var itemLink by mutableStateOf("")
     @UnstableApi
     private fun updateAppearance() {
         if (episode == null) {
@@ -429,7 +444,6 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         updateButtons()
     }
 
-    var hasMedia by mutableStateOf(true)
     @UnstableApi
     private fun updateButtons() {
 //        binding.circularProgressBar.visibility = View.GONE
@@ -501,7 +515,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 Logd(TAG, "Received event: ${event.TAG}")
                 when (event) {
                     is FlowEvent.QueueEvent -> onQueueEvent(event)
-                    is FlowEvent.RatingEvent -> onFavoriteEvent(event)
+                    is FlowEvent.RatingEvent -> onRatingEvent(event)
                     is FlowEvent.EpisodeEvent -> onEpisodeEvent(event)
                     is FlowEvent.PlayerSettingsEvent -> updateButtons()
                     is FlowEvent.EpisodePlayedEvent -> load()
@@ -520,10 +534,11 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
     }
 
-    private fun onFavoriteEvent(event: FlowEvent.RatingEvent) {
+    private fun onRatingEvent(event: FlowEvent.RatingEvent) {
         if (episode?.id == event.episode.id) {
             episode = unmanaged(episode!!)
-            episode!!.rating = if (event.episode.isFavorite) Episode.Rating.FAVORITE.code else Episode.Rating.NEUTRAL.code
+            episode!!.rating = event.rating
+            rating = episode!!.rating
 //            episode = event.episode
             prepareMenu()
         }
@@ -587,6 +602,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     }
                     withContext(Dispatchers.Main) {
 //                        binding.progbarLoading.visibility = View.GONE
+                        rating = episode!!.rating
                         onFragmentLoaded()
                         itemLoaded = true
                     }
@@ -597,7 +613,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
 
     fun setItem(item_: Episode) {
-        episode = item_
+        episode = realm.query(Episode::class).query("id == ${item_.id}").first().find()
     }
 
     /**

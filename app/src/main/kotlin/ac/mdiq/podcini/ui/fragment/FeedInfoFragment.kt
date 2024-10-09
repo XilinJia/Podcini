@@ -104,14 +104,17 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         txtvAuthor = feed.author ?: ""
         txtvUrl = feed.downloadUrl
 
-        binding.header.setContent {
-            CustomTheme(requireContext()) {
-                HeaderUI()
-            }
-        }
+//        binding.header.setContent {
+//            CustomTheme(requireContext()) {
+//                HeaderUI()
+//            }
+//        }
         binding.detailUI.setContent {
             CustomTheme(requireContext()) {
-                DetailUI()
+                Column {
+                    HeaderUI()
+                    DetailUI()
+                }
             }
         }
 

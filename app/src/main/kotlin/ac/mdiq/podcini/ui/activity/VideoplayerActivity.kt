@@ -255,12 +255,12 @@ class VideoplayerActivity : CastEnabledActivity() {
         val isItemHasDownloadLink = isEpisodeMedia && (media as EpisodeMedia?)?.downloadUrl != null
         menu.findItem(R.id.share_item).setVisible(hasWebsiteLink || isItemAndHasLink || isItemHasDownloadLink)
 
-        menu.findItem(R.id.add_to_favorites_item).setVisible(false)
-        menu.findItem(R.id.remove_from_favorites_item).setVisible(false)
-        if (isEpisodeMedia) {
-            menu.findItem(R.id.add_to_favorites_item).setVisible(!videoEpisodeFragment.isFavorite)
-            menu.findItem(R.id.remove_from_favorites_item).setVisible(videoEpisodeFragment.isFavorite)
-        }
+//        menu.findItem(R.id.add_to_favorites_item).setVisible(false)
+//        menu.findItem(R.id.remove_from_favorites_item).setVisible(false)
+//        if (isEpisodeMedia) {
+//            menu.findItem(R.id.add_to_favorites_item).setVisible(!videoEpisodeFragment.isFavorite)
+//            menu.findItem(R.id.remove_from_favorites_item).setVisible(videoEpisodeFragment.isFavorite)
+//        }
 
         menu.findItem(R.id.set_sleeptimer_item).setVisible(!isSleepTimerActive())
         menu.findItem(R.id.disable_sleeptimer_item).setVisible(isSleepTimerActive())
@@ -271,8 +271,8 @@ class VideoplayerActivity : CastEnabledActivity() {
         menu.findItem(R.id.player_show_chapters).setVisible(true)
 
         if (videoMode == VideoMode.WINDOW_VIEW) {
-            menu.findItem(R.id.add_to_favorites_item).setShowAsAction(SHOW_AS_ACTION_NEVER)
-            menu.findItem(R.id.remove_from_favorites_item).setShowAsAction(SHOW_AS_ACTION_NEVER)
+//            menu.findItem(R.id.add_to_favorites_item).setShowAsAction(SHOW_AS_ACTION_NEVER)
+//            menu.findItem(R.id.remove_from_favorites_item).setShowAsAction(SHOW_AS_ACTION_NEVER)
             menu.findItem(R.id.set_sleeptimer_item).setShowAsAction(SHOW_AS_ACTION_NEVER)
             menu.findItem(R.id.disable_sleeptimer_item).setShowAsAction(SHOW_AS_ACTION_NEVER)
             menu.findItem(R.id.player_switch_to_audio_only).setShowAsAction(SHOW_AS_ACTION_NEVER)
@@ -305,16 +305,16 @@ class VideoplayerActivity : CastEnabledActivity() {
                 val media = curMedia ?: return false
                 val feedItem = (media as? EpisodeMedia)?.episodeOrFetch()
                 when {
-                    item.itemId == R.id.add_to_favorites_item && feedItem != null -> {
-                        setFavorite(feedItem, true)
-                        videoEpisodeFragment.isFavorite = true
-                        invalidateOptionsMenu()
-                    }
-                    item.itemId == R.id.remove_from_favorites_item && feedItem != null -> {
-                        setFavorite(feedItem, false)
-                        videoEpisodeFragment.isFavorite = false
-                        invalidateOptionsMenu()
-                    }
+//                    item.itemId == R.id.add_to_favorites_item && feedItem != null -> {
+//                        setFavorite(feedItem, true)
+//                        videoEpisodeFragment.isFavorite = true
+//                        invalidateOptionsMenu()
+//                    }
+//                    item.itemId == R.id.remove_from_favorites_item && feedItem != null -> {
+//                        setFavorite(feedItem, false)
+//                        videoEpisodeFragment.isFavorite = false
+//                        invalidateOptionsMenu()
+//                    }
                     item.itemId == R.id.disable_sleeptimer_item || item.itemId == R.id.set_sleeptimer_item ->
                         SleepTimerDialog().show(supportFragmentManager, "SleepTimerDialog")
                     item.itemId == R.id.audio_controls -> {

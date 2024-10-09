@@ -529,9 +529,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                         Column {
                                             FeedAutoDeleteOptions.forEach { text ->
-                                                Row(
-                                                    Modifier.fillMaxWidth().padding(horizontal = 16.dp).selectable(
-                                                        selected = (text == selectedOption),
+                                                Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                                                    .selectable(selected = (text == selectedOption),
                                                         onClick = {
                                                             if (text != selectedOption) {
                                                                 val autoDeleteAction: AutoDeleteAction = AutoDeleteAction.fromTag(text)
@@ -545,11 +544,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                                     verticalAlignment = Alignment.CenterVertically
                                                 ) {
                                                     RadioButton(selected = (text == selectedOption), onClick = { })
-                                                    Text(
-                                                        text = text,
-                                                        style = MaterialTheme.typography.bodyLarge.merge(),
-                                                        modifier = Modifier.padding(start = 16.dp)
-                                                    )
+                                                    Text(text = text, style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 16.dp))
                                                 }
                                             }
                                         }
@@ -641,27 +636,15 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             CustomTheme(activity) {
                                 if (showDialog.value) {
                                     Dialog(onDismissRequest = { showDialog.value = false }) {
-                                        Card(
-                                            modifier = Modifier
-                                                .wrapContentSize(align = Alignment.Center)
-                                                .padding(16.dp),
-                                            shape = RoundedCornerShape(16.dp),
-                                        ) {
-                                            Column(
-                                                modifier = Modifier.padding(16.dp),
-                                                verticalArrangement = Arrangement.Center
-                                            ) {
+                                        Card(modifier = Modifier.wrapContentSize(align = Alignment.Center).padding(16.dp), shape = RoundedCornerShape(16.dp)) {
+                                            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.Center) {
                                                 Row(Modifier.fillMaxWidth()) {
                                                     Icon(ImageVector.vectorResource(id = R.drawable.ic_refresh), "")
                                                     Spacer(modifier = Modifier.width(20.dp))
-                                                    Text(
-                                                        text = stringResource(R.string.keep_updated),
-                                                        style = MaterialTheme.typography.titleLarge
-                                                    )
+                                                    Text(text = stringResource(R.string.keep_updated), style = MaterialTheme.typography.titleLarge)
                                                     Spacer(modifier = Modifier.weight(1f))
                                                     var checked by remember { mutableStateOf(false) }
-                                                    Switch(
-                                                        checked = checked,
+                                                    Switch(checked = checked,
                                                         onCheckedChange = {
                                                             checked = it
                                                             saveFeedPreferences { pref: FeedPreferences ->
@@ -670,10 +653,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                                         }
                                                     )
                                                 }
-                                                Text(
-                                                    text = stringResource(R.string.keep_updated_summary),
-                                                    style = MaterialTheme.typography.bodyMedium
-                                                )
+                                                Text(text = stringResource(R.string.keep_updated_summary), style = MaterialTheme.typography.bodyMedium)
                                             }
                                         }
                                     }
@@ -799,9 +779,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         val scrollState = rememberScrollState()
         Column(modifier = modifier.verticalScroll(scrollState), verticalArrangement = Arrangement.Bottom) {
             if (isExpanded) options.forEachIndexed { _, button ->
-                FloatingActionButton(modifier = Modifier.padding(start = 4.dp, bottom = 6.dp).height(40.dp),
-                    containerColor = Color.LightGray,
-                    onClick = {}) { button() }
+                FloatingActionButton(modifier = Modifier.padding(start = 4.dp, bottom = 6.dp).height(40.dp), containerColor = Color.LightGray, onClick = {}) { button() }
             }
             FloatingActionButton(containerColor = MaterialTheme.colorScheme.secondaryContainer,
                 contentColor = MaterialTheme.colorScheme.secondary,
@@ -826,10 +804,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }) {
             if (if (useGrid == null) useGridLayout else useGrid!!) {
                 val lazyGridState = rememberLazyGridState()
-                LazyVerticalGrid(state = lazyGridState,
-                    columns = GridCells.Fixed(3),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                LazyVerticalGrid(state = lazyGridState, columns = GridCells.Fixed(3),
+                    verticalArrangement = Arrangement.spacedBy(16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp),
                     contentPadding = PaddingValues(start = 12.dp, top = 16.dp, end = 12.dp, bottom = 16.dp)
                 )  {
                     items(feedListFiltered.size, key = {index -> feedListFiltered[index].id}) { index ->
@@ -867,8 +843,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             val textColor = MaterialTheme.colorScheme.onSurface
                             ConstraintLayout {
                                 val (coverImage, episodeCount, error) = createRefs()
-                                AsyncImage(model = feed.imageUrl, contentDescription = "coverImage",
-                                    placeholder = painterResource(R.mipmap.ic_launcher),
+                                AsyncImage(model = feed.imageUrl, contentDescription = "coverImage", placeholder = painterResource(R.mipmap.ic_launcher),
                                     modifier = Modifier
                                         .constrainAs(coverImage) {
                                             top.linkTo(parent.top)
@@ -881,24 +856,19 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                         top.linkTo(coverImage.top)
                                     })
 //                                TODO: need to use state
-                                if (feed.lastUpdateFailed) Icon(painter = painterResource(R.drawable.ic_error), tint = Color.Red,
-                                    contentDescription = "error",
+                                if (feed.lastUpdateFailed) Icon(painter = painterResource(R.drawable.ic_error), tint = Color.Red, contentDescription = "error",
                                     modifier = Modifier.constrainAs(error) {
                                         end.linkTo(parent.end)
                                         bottom.linkTo(coverImage.bottom)
                                     })
                             }
-                            Text(feed.title ?: "No title",
-                                color = textColor,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis)
+                            Text(feed.title ?: "No title", color = textColor, maxLines = 2, overflow = TextOverflow.Ellipsis)
                         }
                     }
                 }
             } else {
                 val lazyListState = rememberLazyListState()
-                LazyColumn(state = lazyListState,
-                    modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp),
+                LazyColumn(state = lazyListState, modifier = Modifier.padding(start = 10.dp, end = 10.dp, top = 10.dp, bottom = 10.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     itemsIndexed(feedListFiltered, key = {index, feed -> feed.id}) { index, feed ->
                         var isSelected by remember { mutableStateOf(false) }
@@ -912,8 +882,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             Logd(TAG, "toggleSelected: selected: ${selected.size}")
                         }
                         Row(Modifier.background(if (isSelected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface)) {
-                            AsyncImage(model = feed.imageUrl, contentDescription = "imgvCover",
-                                placeholder = painterResource(R.mipmap.ic_launcher),
+                            AsyncImage(model = feed.imageUrl, contentDescription = "imgvCover", placeholder = painterResource(R.mipmap.ic_launcher),
                                 modifier = Modifier.width(80.dp).height(80.dp)
                                     .clickable(onClick = {
                                         Logd(TAG, "icon clicked!")
@@ -964,13 +933,9 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 }
             }
             if (selectMode) {
-                Row(modifier = Modifier.align(Alignment.TopEnd).width(150.dp).height(45.dp)
-                    .background(Color.LightGray),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically) {
-                    Icon(painter = painterResource(R.drawable.baseline_arrow_upward_24),
-                        tint = Color.Black,
-                        contentDescription = null,
+                Row(modifier = Modifier.align(Alignment.TopEnd).width(150.dp).height(45.dp).background(Color.LightGray),
+                    horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                    Icon(painter = painterResource(R.drawable.baseline_arrow_upward_24), tint = Color.Black, contentDescription = null,
                         modifier = Modifier.width(35.dp).height(35.dp).padding(end = 10.dp)
                             .clickable(onClick = {
                                 selected.clear()
@@ -980,9 +945,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                 selectedSize = selected.size
                                 Logd(TAG, "selectedIds: ${selected.size}")
                             }))
-                    Icon(painter = painterResource(R.drawable.baseline_arrow_downward_24),
-                        tint = Color.Black,
-                        contentDescription = null,
+                    Icon(painter = painterResource(R.drawable.baseline_arrow_downward_24), tint = Color.Black, contentDescription = null,
                         modifier = Modifier.width(35.dp).height(35.dp).padding(end = 10.dp)
                             .clickable(onClick = {
                                 selected.clear()
@@ -993,9 +956,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                                 Logd(TAG, "selectedIds: ${selected.size}")
                             }))
                     var selectAllRes by remember { mutableIntStateOf(R.drawable.ic_select_all) }
-                    Icon(painter = painterResource(selectAllRes),
-                        tint = Color.Black,
-                        contentDescription = null,
+                    Icon(painter = painterResource(selectAllRes), tint = Color.Black, contentDescription = null,
                         modifier = Modifier.width(35.dp).height(35.dp)
                             .clickable(onClick = {
                                 if (selectedSize != feedListFiltered.size) {

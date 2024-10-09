@@ -75,8 +75,8 @@ object EpisodeMenuHandler {
             setItemTitle(menu, R.id.mark_unread_item, R.string.mark_unread_label_no_media)
         }
 
-        setItemVisibility(menu, R.id.add_to_favorites_item, !isFavorite)
-        setItemVisibility(menu, R.id.remove_from_favorites_item, isFavorite)
+//        setItemVisibility(menu, R.id.add_to_favorites_item, !isFavorite)
+//        setItemVisibility(menu, R.id.remove_from_favorites_item, isFavorite)
 
         CoroutineScope(Dispatchers.Main).launch {
             val fileDownloaded = withContext(Dispatchers.IO) { hasMedia && selectedItem.media?.fileExists() ?: false }
@@ -167,8 +167,8 @@ object EpisodeMenuHandler {
             }
             R.id.add_to_queue_item -> addToQueue(true, selectedItem)
             R.id.remove_from_queue_item -> removeFromQueue(selectedItem)
-            R.id.add_to_favorites_item -> setFavorite(selectedItem, true)
-            R.id.remove_from_favorites_item -> setFavorite(selectedItem, false)
+//            R.id.add_to_favorites_item -> setFavorite(selectedItem, true)
+//            R.id.remove_from_favorites_item -> setFavorite(selectedItem, false)
             R.id.reset_position -> {
                 selectedItem.media?.setPosition(0)
                 if (curState.curMediaId == (selectedItem.media?.id ?: "")) {

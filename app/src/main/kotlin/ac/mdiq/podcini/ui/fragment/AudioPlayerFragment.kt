@@ -36,6 +36,7 @@ import ac.mdiq.podcini.ui.actions.EpisodeMenuHandler
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
 import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
+import ac.mdiq.podcini.ui.compose.ChooseRatingDialog
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.dialog.MediaPlayerErrorDialog
 import ac.mdiq.podcini.ui.dialog.SkipPreferenceDialog
@@ -136,7 +137,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var episodeDate by mutableStateOf("")
     private var chapterControlVisible by mutableStateOf(false)
     private var hasNextChapter by mutableStateOf(true)
-    //    var imgLoc by mutableStateOf<String?>("")
+    var rating by mutableStateOf(currentItem?.rating ?: 0)
     private val currentChapter: Chapter?
         get() {
             if (currentMedia == null || currentMedia!!.getChapters().isEmpty() || displayedChapterIndex == -1) return null
@@ -160,7 +161,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         controller!!.init()
         onCollaped()
 
-        binding.composeView1.setContent {
+        binding.player1.setContent {
             CustomTheme(requireContext()) {
                 if (showPlayer1) PlayerUI()
                 else Spacer(modifier = Modifier.size(0.dp))
@@ -173,7 +174,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 //                else Spacer(modifier = Modifier.size(0.dp))
             }
         }
-        binding.composeView2.setContent {
+        binding.player2.setContent {
             CustomTheme(requireContext()) {
                 if (!showPlayer1) PlayerUI()
                 else Spacer(modifier = Modifier.size(0.dp))
@@ -334,6 +335,11 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
     fun DetailUI() {
+        var showChooseRatingDialog by remember { mutableStateOf(false) }
+        if (showChooseRatingDialog) ChooseRatingDialog(listOf(currentItem!!)) {
+            showChooseRatingDialog = false
+        }
+
         val scrollState = rememberScrollState()
         Column(modifier = Modifier.fillMaxWidth().verticalScroll(scrollState)) {
             val textColor = MaterialTheme.colorScheme.onSurface
@@ -354,7 +360,16 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         }
                     }
                 }, onLongClick = { copyText(currentMedia?.getFeedTitle()?:"") }))
-            Text(episodeDate, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 2.dp), color = textColor, style = MaterialTheme.typography.bodyMedium)
+            Row(modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 2.dp), ) {
+                Spacer(modifier = Modifier.weight(0.2f))
+                var ratingIconRes = Episode.Rating.fromCode(rating).res
+                Icon(painter = painterResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating", modifier = Modifier.width(15.dp).height(15.dp).clickable(onClick = {
+                    showChooseRatingDialog = true
+                }))
+                Spacer(modifier = Modifier.weight(0.4f))
+                Text(episodeDate, textAlign = TextAlign.Center, color = textColor, style = MaterialTheme.typography.bodyMedium)
+                Spacer(modifier = Modifier.weight(0.6f))
+            }
             Text(titleText, textAlign = TextAlign.Center, color = textColor, style = MaterialTheme.typography.titleLarge, modifier = Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 5.dp)
                 .combinedClickable(onClick = {}, onLongClick = { copyText(currentItem?.title?:"") }))
             fun restoreFromPreference(): Boolean {
@@ -899,7 +914,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         onPlaybackServiceChanged(event)
                     }
                     is FlowEvent.PlayEvent -> onPlayEvent(event)
-                    is FlowEvent.RatingEvent -> onFavoriteEvent(event)
+                    is FlowEvent.RatingEvent -> onRatingEvent(event)
                     is FlowEvent.PlayerErrorEvent -> MediaPlayerErrorDialog.show(activity as Activity, event)
 //                    is FlowEvent.SleepTimerUpdatedEvent ->  if (event.isCancelled || event.wasJustEnabled()) loadMediaInfo(false)
                     is FlowEvent.SleepTimerUpdatedEvent ->  if (event.isCancelled || event.wasJustEnabled()) setupOptionsMenu()
@@ -911,8 +926,11 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
     }
 
-    private fun onFavoriteEvent(event: FlowEvent.RatingEvent) {
-        if (curEpisode?.id == event.episode.id) EpisodeMenuHandler.onPrepareMenu(toolbar.menu, event.episode)
+    private fun onRatingEvent(event: FlowEvent.RatingEvent) {
+        if (curEpisode?.id == event.episode.id) {
+            rating = event.rating
+            EpisodeMenuHandler.onPrepareMenu(toolbar.menu, event.episode)
+        }
     }
 
     private fun setupOptionsMenu() {
@@ -982,7 +1000,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     fun fadePlayerToToolbar(slideOffset: Float) {
         val playerFadeProgress = (max(0.0, min(0.2, (slideOffset - 0.2f).toDouble())) / 0.2f).toFloat()
-        val player = binding.composeView1
+        val player = binding.player1
         player.alpha = 1 - playerFadeProgress
         player.visibility = if (playerFadeProgress > 0.99f) View.GONE else View.VISIBLE
         val toolbarFadeProgress = (max(0.0, min(0.2, (slideOffset - 0.6f).toDouble())) / 0.2f).toFloat()

@@ -12,21 +12,25 @@ import ac.mdiq.podcini.storage.database.Episodes.setPlayState
 import ac.mdiq.podcini.storage.database.Feeds.addToMiscSyndicate
 import ac.mdiq.podcini.storage.database.Feeds.addToYoutubeSyndicate
 import ac.mdiq.podcini.storage.database.Queues
+import ac.mdiq.podcini.storage.database.Queues.addToQueueSync
+import ac.mdiq.podcini.storage.database.Queues.removeFromAllQueuesQuiet
 import ac.mdiq.podcini.storage.database.Queues.removeFromQueue
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.upsert
 import ac.mdiq.podcini.storage.model.Episode
 import ac.mdiq.podcini.storage.model.MediaType
+import ac.mdiq.podcini.storage.model.PlayQueue
 import ac.mdiq.podcini.storage.model.ShareLog
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.ui.actions.EpisodeActionButton
-import ac.mdiq.podcini.ui.actions.EpisodeMultiSelectHandler.PutToQueueDialog
 import ac.mdiq.podcini.ui.actions.SwipeAction
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.fragment.EpisodeInfoFragment
 import ac.mdiq.podcini.ui.fragment.FeedInfoFragment
 import ac.mdiq.podcini.ui.utils.LocalDeleteModal
+import ac.mdiq.podcini.util.EventFlow
+import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.MiscFormatter.formatAbbrev
 import ac.mdiq.vista.extractor.Vista
@@ -173,6 +177,77 @@ class EpisodeVM(var episode: Episode) {
     }
 }
 
+@Composable
+fun ChooseRatingDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
+    Dialog(onDismissRequest = onDismissRequest) {
+        Surface(shape = RoundedCornerShape(16.dp)) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                for (rating in Episode.Rating.entries) {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp).clickable {
+                        for (item in selected) Episodes.setRating(item, rating.code)
+                        onDismissRequest()
+                    }) {
+                        Icon(imageVector = ImageVector.vectorResource(id = rating.res), "")
+                        Text(rating.name, Modifier.padding(start = 4.dp))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun PutToQueueDialog(selected: List<Episode>, onDismissRequest: () -> Unit) {
+    val queues = realm.query(PlayQueue::class).find()
+    Dialog(onDismissRequest = onDismissRequest) {
+        Surface(shape = RoundedCornerShape(16.dp)) {
+            val scrollState = rememberScrollState()
+            Column(modifier = Modifier.verticalScroll(scrollState).padding(16.dp), verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                var removeChecked by remember { mutableStateOf(false) }
+                var toQueue by remember { mutableStateOf(curQueue) }
+                for (q in queues) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        RadioButton(selected = toQueue == q, onClick = { toQueue = q })
+                        Text(q.name,)
+                    }
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(checked = removeChecked, onCheckedChange = { removeChecked = it })
+                    Text(text = stringResource(R.string.remove_from_other_queues), style = MaterialTheme.typography.bodyLarge.merge(), modifier = Modifier.padding(start = 10.dp))
+                }
+                Row {
+                    Spacer(Modifier.weight(1f))
+                    Button(onClick = {
+                        if (removeChecked) {
+                            val toRemove = mutableSetOf<Long>()
+                            val toRemoveCur = mutableListOf<Episode>()
+                            selected.forEach { e ->
+                                if (curQueue.contains(e)) toRemoveCur.add(e)
+                            }
+                            selected.forEach { e ->
+                                for (q in queues) {
+                                    if (q.contains(e)) {
+                                        toRemove.add(e.id)
+                                        break
+                                    }
+                                }
+                            }
+                            if (toRemove.isNotEmpty()) runBlocking { removeFromAllQueuesQuiet(toRemove.toList()) }
+                            if (toRemoveCur.isNotEmpty()) EventFlow.postEvent(FlowEvent.QueueEvent.removed(toRemoveCur))
+                        }
+                        selected.forEach { e ->
+                            runBlocking { addToQueueSync(false, e, toQueue) }
+                        }
+                        onDismissRequest()
+                    }) {
+                        Text("Confirm")
+                    }
+                }
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun EpisodeLazyColumn(activity: MainActivity, vms: SnapshotStateList<EpisodeVM>, refreshCB: (()->Unit)? = null,
@@ -192,26 +267,11 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: SnapshotStateList<EpisodeVM>,
         showConfirmYoutubeDialog.value = false
     })
 
-    @Composable
-    fun ChooseRatingDialog(onDismissRequest: () -> Unit) {
-        Dialog(onDismissRequest = onDismissRequest) {
-            Surface(shape = RoundedCornerShape(16.dp)) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    for (rating in Episode.Rating.entries) {
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp).clickable {
-                            for (item in selected) Episodes.setRating(item, rating.code)
-                            onDismissRequest()
-                        }) {
-                            Icon(imageVector = ImageVector.vectorResource(id = rating.res), "")
-                            Text(rating.name, Modifier.padding(start = 4.dp))
-                        }
-                    }
-                }
-            }
-        }
-    }
     var showChooseRatingDialog by remember { mutableStateOf(false) }
-    if (showChooseRatingDialog) ChooseRatingDialog { showChooseRatingDialog = false }
+    if (showChooseRatingDialog) ChooseRatingDialog(selected) { showChooseRatingDialog = false }
+
+    var showPutToQueueDialog by remember { mutableStateOf(false) }
+    if (showPutToQueueDialog) PutToQueueDialog(selected) { showPutToQueueDialog = false }
 
     @Composable
     fun EpisodeSpeedDial(modifier: Modifier = Modifier) {
@@ -270,7 +330,8 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: SnapshotStateList<EpisodeVM>,
                     isExpanded = false
                     selectMode = false
                     Logd(TAG, "ic_playlist_play: ${selected.size}")
-                    PutToQueueDialog(activity, selected).show()
+                    showPutToQueueDialog = true
+//                    PutToQueueDialog(activity, selected).show()
                 }, verticalAlignment = Alignment.CenterVertically) {
                 Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_playlist_play), "")
                 Text(stringResource(id = R.string.put_in_queue_label)) } },
@@ -325,7 +386,6 @@ fun EpisodeLazyColumn(activity: MainActivity, vms: SnapshotStateList<EpisodeVM>,
     }
 
     var refreshing by remember { mutableStateOf(false)}
-
     PullToRefreshBox(modifier = Modifier.fillMaxWidth(), isRefreshing = refreshing, indicator = {}, onRefresh = {
         refreshing = true
         refreshCB?.invoke()

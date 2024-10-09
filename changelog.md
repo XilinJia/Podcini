@@ -1,3 +1,11 @@
+# 6.9.3
+
+* fixed app quit issue when repairing a shared item
+* fixed custom queue spinner not showing up (issue introduced in 6.8.3 when migrating to Material3)
+* updated dialog popup mechanism in FeedSettings
+* updated UI to reflect the new rating system
+* a couple dialog converted to Compose and removed EpisodeMultiSelectHandler
+
 # 6.9.2
 
 * fixed getting 0 episodes with Youtube playlist etc

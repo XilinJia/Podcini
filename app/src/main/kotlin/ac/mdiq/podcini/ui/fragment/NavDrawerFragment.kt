@@ -10,6 +10,8 @@ import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.model.EpisodeFilter
 import ac.mdiq.podcini.storage.model.EpisodeFilter.Companion.unfiltered
 import ac.mdiq.podcini.storage.model.Feed
+import ac.mdiq.podcini.storage.model.PlayQueue
+import ac.mdiq.podcini.storage.model.ShareLog
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.PreferenceActivity
 import ac.mdiq.podcini.ui.compose.CustomTheme
@@ -136,7 +138,8 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
                         (activity as MainActivity).loadFragment(FeedEpisodesFragment.TAG, args)
                         (activity as MainActivity).bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
                     }) {
-                        AsyncImage(model = f.imageUrl, contentDescription = "imgvCover", placeholder = painterResource(R.mipmap.ic_launcher), modifier = Modifier.width(40.dp).height(40.dp))
+                        AsyncImage(model = f.imageUrl, contentDescription = "imgvCover", placeholder = painterResource(R.mipmap.ic_launcher), error = painterResource(R.mipmap.ic_launcher),
+                            modifier = Modifier.width(40.dp).height(40.dp))
                         Text(f.title?:"No title", color = textColor, style = MaterialTheme.typography.bodyMedium, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(start = 10.dp))
                     }
                 }
@@ -246,19 +249,14 @@ class NavDrawerFragment : Fragment(), OnSharedPreferenceChangeListener {
          */
         fun getDatasetStats() {
             Logd(TAG, "getNavDrawerData() called")
-            val numDownloadedItems = getEpisodesCount(EpisodeFilter(EpisodeFilter.States.downloaded.name))
             val numItems = getEpisodesCount(unfiltered())
             feedCount = getFeedCount()
-            while (curQueue.name.isEmpty()) runBlocking { delay(100) }
-            val queueSize = curQueue.episodeIds.size
-            Logd(TAG, "getDatasetStats: queueSize: $queueSize")
-            val historyCount = getNumberOfPlayed().toInt()
-            navMap[QueuesFragment.TAG]?.count = queueSize
+            navMap[QueuesFragment.TAG]?.count = realm.query(PlayQueue::class).find().sumOf { it.size()}
             navMap[SubscriptionsFragment.TAG]?.count = feedCount
-            navMap[HistoryFragment.TAG]?.count = historyCount
-            navMap[DownloadsFragment.TAG]?.count = numDownloadedItems
+            navMap[HistoryFragment.TAG]?.count = getNumberOfPlayed().toInt()
+            navMap[DownloadsFragment.TAG]?.count = getEpisodesCount(EpisodeFilter(EpisodeFilter.States.downloaded.name))
             navMap[AllEpisodesFragment.TAG]?.count = numItems
-            navMap[AllEpisodesFragment.TAG]?.count = numItems
+            navMap[SharedLogFragment.TAG]?.count = realm.query(ShareLog::class).count().find().toInt()
         }
     }
 }

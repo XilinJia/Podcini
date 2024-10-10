@@ -3,10 +3,12 @@ package ac.mdiq.podcini.ui.fragment
 import ac.mdiq.podcini.R
 import ac.mdiq.podcini.databinding.*
 import ac.mdiq.podcini.net.feed.FeedUpdateManager
+import ac.mdiq.podcini.playback.base.VideoMode
 import ac.mdiq.podcini.preferences.OpmlTransporter.OpmlWriter
 import ac.mdiq.podcini.preferences.UserPreferences
 import ac.mdiq.podcini.preferences.UserPreferences.appPrefs
 import ac.mdiq.podcini.preferences.fragments.ImportExportPreferencesFragment.*
+import ac.mdiq.podcini.storage.database.Feeds.createSynthetic
 import ac.mdiq.podcini.storage.database.Feeds.getFeedList
 import ac.mdiq.podcini.storage.database.Feeds.getTags
 import ac.mdiq.podcini.storage.database.RealmDB.realm
@@ -18,6 +20,7 @@ import ac.mdiq.podcini.storage.model.FeedPreferences.Companion.FeedAutoDeleteOpt
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.CustomTheme
 import ac.mdiq.podcini.ui.compose.Spinner
+import ac.mdiq.podcini.ui.dialog.CustomFeedNameDialog
 import ac.mdiq.podcini.ui.dialog.FeedSortDialog
 import ac.mdiq.podcini.ui.dialog.RemoveFeedDialog
 import ac.mdiq.podcini.ui.dialog.TagSettingsDialog
@@ -27,6 +30,7 @@ import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.MiscFormatter.formatAbbrev
+import android.app.Activity
 import android.app.Activity.RESULT_OK
 import android.app.Dialog
 import android.content.ActivityNotFoundException
@@ -311,6 +315,18 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             R.id.subscriptions_filter -> FeedFilterDialog.newInstance(FeedFilter(feedsFilter)).show(childFragmentManager, null)
             R.id.action_search -> (activity as MainActivity).loadChildFragment(SearchFragment.newInstance())
             R.id.subscriptions_sort -> FeedSortDialog().show(childFragmentManager, "FeedSortDialog")
+            R.id.new_synth -> {
+                val feed = createSynthetic(0, "")
+                feed.type = Feed.FeedType.RSS.name
+                CustomFeedNameDialog(activity as Activity, feed).show()
+            }
+            R.id.new_synth_yt -> {
+                val feed = createSynthetic(0, "")
+                feed.type = Feed.FeedType.YOUTUBE.name
+//                feed.hasVideoMedia = video
+//                feed.preferences!!.videoModePolicy = if (video) VideoMode.WINDOW_VIEW else VideoMode.AUDIO_ONLY
+                CustomFeedNameDialog(activity as Activity, feed).show()
+            }
             R.id.refresh_item -> FeedUpdateManager.runOnceOrAsk(requireContext())
             R.id.toggle_grid_list -> useGrid = if (useGrid == null) !useGridLayout else !useGrid!!
             else -> return false
@@ -843,7 +859,8 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             val textColor = MaterialTheme.colorScheme.onSurface
                             ConstraintLayout {
                                 val (coverImage, episodeCount, error) = createRefs()
-                                AsyncImage(model = feed.imageUrl, contentDescription = "coverImage", placeholder = painterResource(R.mipmap.ic_launcher),
+                                AsyncImage(model = feed.imageUrl, contentDescription = "coverImage",
+                                    placeholder = painterResource(R.mipmap.ic_launcher), error = painterResource(R.mipmap.ic_launcher),
                                     modifier = Modifier
                                         .constrainAs(coverImage) {
                                             top.linkTo(parent.top)
@@ -882,7 +899,7 @@ class SubscriptionsFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                             Logd(TAG, "toggleSelected: selected: ${selected.size}")
                         }
                         Row(Modifier.background(if (isSelected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface)) {
-                            AsyncImage(model = feed.imageUrl, contentDescription = "imgvCover", placeholder = painterResource(R.mipmap.ic_launcher),
+                            AsyncImage(model = feed.imageUrl, contentDescription = "imgvCover", placeholder = painterResource(R.mipmap.ic_launcher), error = painterResource(R.mipmap.ic_launcher),
                                 modifier = Modifier.width(80.dp).height(80.dp)
                                     .clickable(onClick = {
                                         Logd(TAG, "icon clicked!")

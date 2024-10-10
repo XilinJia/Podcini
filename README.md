@@ -12,6 +12,7 @@ An open source podcast instrument, attuned to Puccini ![Puccini](./images/Puccin
 [<img src="./images/external/amazon.png" alt="Amazon" height="40">](https://www.amazon.com/%E8%B4%BE%E8%A5%BF%E6%9E%97-Podcini-R/dp/B0D9WR8P13)
 [<img src="./images/external/getItOpenapk.png" alt="OpenAPK" height="50">](https://www.openapk.net/podcini/ac.mdiq.podcini/)
 
+#### Podcini.R 6.10 allows creating synthetic podcast and shelving any episdes to any synthetic podcasts
 #### Podcini.R version 6.5 as a major step forward brings YouTube contents in the app.  Channels can be searched, received from share, subscribed. Since 6.6, podcasts, playlists as well as single media from Youtube and YT Music can be shared to Podcini. For more see the Youtube section below or the changelogs
 That means finally: [Nessun dorma](https://www.youtube.com/watch?v=cWc7vYjgnTs)
 #### For Podcini to show up on car's HUD with Android Auto, please read AnroidAuto.md for instructions.
@@ -29,10 +30,11 @@ Compared to AntennaPod this project:
 4. Boasts new UI's including streamlined drawer, subscriptions view and player controller,
 5. Supports multiple, virtual and circular play queues associable to any podcast
 6. Auto-download is governed by policy and limit settings of individual feed
-7. Features synthetic podcasts while supporting channels, playlists, single media from YouTube and YT Music, as well as normal podcasts and plain RSS,
-8. Allows adding personal notes and 5-level rating on every episode
-9. Offers Readability and Text-to-Speech for RSS contents,s
-10. Features `instant sync` across devices without a server.
+7. Features synthetic podcasts and allows episodes to be shelved to any synthetic podcast
+8. Supports channels, playlists, single media from YouTube and YT Music, as well as normal podcasts and plain RSS,
+9. Allows adding personal notes and 5-level rating on every episode
+10. Offers Readability and Text-to-Speech for RSS contents,s
+11. Features `instant sync` across devices without a server.
 
 The project aims to profit from modern frameworks, improve efficiency and provide more useful and user-friendly features.
 

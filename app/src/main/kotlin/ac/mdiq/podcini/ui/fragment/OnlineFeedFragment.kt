@@ -84,7 +84,7 @@ class OnlineFeedFragment : Fragment() {
     private var autoDownloadChecked by mutableStateOf(false)
     private var enableSubscribe by mutableStateOf(true)
     private var enableEpisodes by mutableStateOf(true)
-    private var subButTextRes by mutableIntStateOf(R.string.subscribing_label)
+    private var subButTextRes by mutableIntStateOf(R.string.subscribe_label)
 
     private val feedId: Long
         get() {
@@ -339,8 +339,8 @@ class OnlineFeedFragment : Fragment() {
                             bottom.linkTo(parent.bottom)
                             start.linkTo(parent.start)
                         })
-                    AsyncImage(model = feed?.imageUrl?:"", contentDescription = "coverImage",
-                        Modifier.width(100.dp).height(100.dp).padding(start = 10.dp, end = 16.dp, bottom = 10.dp).constrainAs(coverImage) {
+                    AsyncImage(model = feed?.imageUrl?:"", contentDescription = "coverImage", error = painterResource(R.mipmap.ic_launcher),
+                        modifier = Modifier.width(100.dp).height(100.dp).padding(start = 10.dp, end = 16.dp, bottom = 10.dp).constrainAs(coverImage) {
                             bottom.linkTo(parent.bottom)
                             start.linkTo(parent.start)
                         }.clickable(onClick = {}))
@@ -440,7 +440,7 @@ class OnlineFeedFragment : Fragment() {
 //            }
             dli.isDownloadingEpisode(selectedDownloadUrl!!) -> {
                 enableSubscribe = false
-                subButTextRes = R.string.subscribing_label
+                subButTextRes = R.string.subscribe_label
             }
             feedInFeedlist() -> {
                 enableSubscribe = true
@@ -470,7 +470,7 @@ class OnlineFeedFragment : Fragment() {
             }
             else -> {
                 enableSubscribe = true
-                subButTextRes = R.string.subscribing_label
+                subButTextRes = R.string.subscribe_label
             }
         }
     }

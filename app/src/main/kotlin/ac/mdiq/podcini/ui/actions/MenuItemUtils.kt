@@ -13,7 +13,6 @@ object MenuItemUtils {
      * context menu was created from. This assigns the listener to every menu item,
      * so that the correct fragment is always called first and can consume the click.
      *
-     *
      * Note that Android still calls the onContextItemSelected methods of all fragments
      * when the passed listener returns false.
      */

@@ -342,7 +342,7 @@ class QuickDiscoveryFragment : Fragment(), AdapterView.OnItemClickListener {
                         }
                         loadToplist(countryCode)
                     }, ) {
-                    Text(stringResource(id = R.string.retry_label), color = textColor)
+                    Text(stringResource(id = R.string.retry_label))
                 }
 //                Text( getString(R.string.search_powered_by, searchProvider!!.name), color = Color.Black, style = MaterialTheme.typography.labelSmall, modifier = Modifier.background(
 //                    Color.LightGray)

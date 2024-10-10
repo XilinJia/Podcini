@@ -155,7 +155,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     }))
                 Spacer(modifier = Modifier.weight(0.2f))
                 Button(onClick = { (activity as MainActivity).loadChildFragment(FeedEpisodesFragment.newInstance(feed.id)) }) {
-                    Text(feed.episodes.size.toString() + " " + stringResource(R.string.episodes_label), color = textColor)
+                    Text(feed.episodes.size.toString() + " " + stringResource(R.string.episodes_label))
                 }
                 Spacer(modifier = Modifier.width(15.dp))
             }
@@ -169,8 +169,8 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     bottom.linkTo(parent.bottom)
                     end.linkTo(parent.end)
                 })
-            AsyncImage(model = feed.imageUrl?:"", contentDescription = "imgvCover",
-                Modifier.width(120.dp).height(120.dp).padding(start = 16.dp, end = 16.dp, bottom = 12.dp).constrainAs(imgvCover) {
+            AsyncImage(model = feed.imageUrl?:"", contentDescription = "imgvCover", error = painterResource(R.mipmap.ic_launcher),
+                modifier = Modifier.width(120.dp).height(120.dp).padding(start = 16.dp, end = 16.dp, bottom = 12.dp).constrainAs(imgvCover) {
                     bottom.linkTo(parent.bottom)
                     start.linkTo(parent.start)
                 }.clickable(onClick = {
@@ -240,7 +240,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 val fragment = SearchResultsFragment.newInstance(CombinedSearcher::class.java, "$txtvAuthor podcasts")
                 (activity as MainActivity).loadChildFragment(fragment, TransitionEffect.SLIDE)
             }) {
-                Text(stringResource(R.string.feeds_related_to_author), color = textColor)
+                Text(stringResource(R.string.feeds_related_to_author))
             }
             Text(stringResource(R.string.statistics_label), color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
             val arguments = Bundle()
@@ -250,7 +250,7 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             Button({
                 (activity as MainActivity).loadChildFragment(StatisticsFragment(), TransitionEffect.SLIDE)
             }) {
-                Text(stringResource(R.string.statistics_view_all), color = textColor)
+                Text(stringResource(R.string.statistics_view_all))
             }
         }
     }
@@ -266,7 +266,6 @@ class FeedInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         Logd(TAG, "Language: ${feed.language} Author: ${feed.author}")
         Logd(TAG, "URL: ${feed.downloadUrl}")
 //        TODO: need to generate blurred image for background
-
         refreshToolbarState()
     }
 

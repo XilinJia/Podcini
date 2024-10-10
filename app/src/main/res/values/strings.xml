@@ -120,6 +120,8 @@
     <string name="error_label">Error</string>
     <string name="error_msg_prefix">An error occurred:</string>
     <string name="refresh_label">Refresh</string>
+    <string name="new_synth_label">New synthetic feed</string>
+    <string name="new_synth_yt_label">New synthetic Youtube</string>
     <string name="toggle_grid_list">Toggle grid list</string>
     <string name="refreshing_label">Refreshing</string>
     <string name="reconcile_label">Reconcile</string>
@@ -157,6 +159,8 @@
 
     <string name="put_in_queue_label">Add to queue…</string>
     <string name="remove_from_other_queues">Remove from other queues</string>
+
+    <string name="remove_from_current_feed">Remove from current feed</string>
 
     <string name="feed_new_episodes_action_nothing">Nothing</string>
     <string name="episode_cleanup_never">Never</string>
@@ -274,6 +278,7 @@
         <item quantity="one">%d episode marked as unplayed.</item>
         <item quantity="other">%d episodes marked as unplayed.</item>
     </plurals>
+    <string name="shelve_label">Shelve to synthetic</string>
     <string name="add_to_queue_label">Add to active queue</string>
     <plurals name="added_to_queue_batch_label">
         <item quantity="one">%d episode added to queue.</item>

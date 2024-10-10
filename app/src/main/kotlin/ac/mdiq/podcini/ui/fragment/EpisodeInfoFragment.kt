@@ -5,12 +5,20 @@ import ac.mdiq.podcini.databinding.EpisodeHomeFragmentBinding
 import ac.mdiq.podcini.databinding.EpisodeInfoFragmentBinding
 import ac.mdiq.podcini.net.download.service.DownloadServiceInterface
 import ac.mdiq.podcini.net.download.service.PodciniHttpClient.getHttpClient
+import ac.mdiq.podcini.net.sync.SynchronizationSettings.isProviderConnected
+import ac.mdiq.podcini.net.sync.SynchronizationSettings.wifiSyncEnabledKey
+import ac.mdiq.podcini.net.sync.model.EpisodeAction
+import ac.mdiq.podcini.net.sync.queue.SynchronizationQueueSink
 import ac.mdiq.podcini.net.utils.NetworkUtils.fetchHtmlSource
 import ac.mdiq.podcini.net.utils.NetworkUtils.isEpisodeHeadDownloadAllowed
 import ac.mdiq.podcini.playback.base.InTheatre
+import ac.mdiq.podcini.playback.base.InTheatre.curQueue
 import ac.mdiq.podcini.playback.service.PlaybackService.Companion.seekTo
 import ac.mdiq.podcini.preferences.UsageStatistics
 import ac.mdiq.podcini.preferences.UserPreferences
+import ac.mdiq.podcini.storage.database.Episodes.setPlayState
+import ac.mdiq.podcini.storage.database.Queues.addToQueue
+import ac.mdiq.podcini.storage.database.Queues.removeFromQueue
 import ac.mdiq.podcini.storage.database.RealmDB.realm
 import ac.mdiq.podcini.storage.database.RealmDB.runOnIOScope
 import ac.mdiq.podcini.storage.database.RealmDB.unmanaged
@@ -25,11 +33,14 @@ import ac.mdiq.podcini.ui.actions.*
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.compose.ChooseRatingDialog
 import ac.mdiq.podcini.ui.compose.CustomTheme
+import ac.mdiq.podcini.ui.dialog.ShareDialog
+import ac.mdiq.podcini.ui.fragment.EpisodeInfoFragment.EpisodeHomeFragment.Companion
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.utils.ThemeUtils
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.EventFlow
 import ac.mdiq.podcini.util.FlowEvent
+import ac.mdiq.podcini.util.IntentUtils
 import ac.mdiq.podcini.util.Logd
 import ac.mdiq.podcini.util.MiscFormatter.formatAbbrev
 import android.content.Context
@@ -57,6 +68,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -110,16 +122,14 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private var itemLink by mutableStateOf("")
     var hasMedia by mutableStateOf(true)
     var rating by mutableStateOf(episode?.rating ?: 0)
+    var inQueue by mutableStateOf(if (episode != null) curQueue.contains(episode!!) else false)
+    var isPlayed by mutableStateOf(episode?.isPlayed() ?: false)
 
     private var webviewData by mutableStateOf("")
 
     private lateinit var shownotesCleaner: ShownotesCleaner
     private lateinit var toolbar: MaterialToolbar
 //    private lateinit var webvDescription: ShownotesWebView
-//    private lateinit var imgvCover: ImageView
-
-//    private lateinit var butAction1: ImageView
-//    private lateinit var butAction2: ImageView
 
     private var actionButton1 by mutableStateOf<EpisodeActionButton?>(null)
     private var actionButton2 by mutableStateOf<EpisodeActionButton?>(null)
@@ -207,17 +217,49 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         Column {
             Row(modifier = Modifier.padding(start = 16.dp, end = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                 val imgLoc = if (episode != null) ImageResourceUtils.getEpisodeListImageLocation(episode!!) else null
-                AsyncImage(model = imgLoc, contentDescription = "imgvCover", Modifier.width(56.dp).height(56.dp).clickable(onClick = { openPodcast() }))
+                AsyncImage(model = imgLoc, contentDescription = "imgvCover", error = painterResource(R.mipmap.ic_launcher), modifier = Modifier.width(56.dp).height(56.dp).clickable(onClick = { openPodcast() }))
                 Column(modifier = Modifier.padding(start = 10.dp)) {
                     Text(txtvPodcast, color = textColor, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.clickable { openPodcast() })
                     Text(txtvTitle, color = textColor, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold), maxLines = 5, overflow = TextOverflow.Ellipsis)
                     Text("$txtvPublished · $txtvDuration · $txtvSize", color = textColor, style = MaterialTheme.typography.bodyMedium)
                 }
             }
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(modifier = Modifier.padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                 Spacer(modifier = Modifier.weight(0.4f))
-                var ratingIconRes = Episode.Rating.fromCode(rating).res
-                Icon(painter = painterResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating", modifier = Modifier.width(15.dp).height(15.dp).clickable(onClick = {
+                val playedIconRes = if (isPlayed) R.drawable.ic_mark_unplayed else R.drawable.ic_mark_played
+                Icon(painter = painterResource(playedIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "isPlayed", modifier = Modifier.width(24.dp).height(24.dp)
+                    .clickable(onClick = {
+                        if (isPlayed) {
+                            setPlayState(Episode.PlayState.UNPLAYED.code, false, episode!!)
+                            if (isProviderConnected && episode?.feed?.isLocalFeed != true && episode?.media != null) {
+                                val actionNew: EpisodeAction = EpisodeAction.Builder(episode!!, EpisodeAction.NEW).currentTimestamp().build()
+                                SynchronizationQueueSink.enqueueEpisodeActionIfSyncActive(requireContext(), actionNew)
+                            }
+                        } else {
+                            setPlayState(Episode.PlayState.PLAYED.code, true, episode!!)
+                            if (episode?.feed?.isLocalFeed != true && (isProviderConnected || wifiSyncEnabledKey)) {
+                                val media: EpisodeMedia? = episode?.media
+                                // not all items have media, Gpodder only cares about those that do
+                                if (isProviderConnected && media != null) {
+                                    val actionPlay: EpisodeAction = EpisodeAction.Builder(episode!!, EpisodeAction.PLAY)
+                                        .currentTimestamp()
+                                        .started(media.getDuration() / 1000)
+                                        .position(media.getDuration() / 1000)
+                                        .total(media.getDuration() / 1000)
+                                        .build()
+                                    SynchronizationQueueSink.enqueueEpisodeActionIfSyncActive(requireContext(), actionPlay)
+                                }
+                            }
+                        }
+                }))
+                Spacer(modifier = Modifier.weight(0.2f))
+                val inQueueIconRes = if (!inQueue && episode?.media != null) R.drawable.ic_playlist_play else R.drawable.ic_playlist_remove
+                Icon(painter = painterResource(inQueueIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "inQueue", modifier = Modifier.width(24.dp).height(24.dp).clickable(onClick = {
+                    if (inQueue) removeFromQueue(episode!!) else addToQueue(true, episode!!)
+                }))
+                Spacer(modifier = Modifier.weight(0.2f))
+                val ratingIconRes = Episode.Rating.fromCode(rating).res
+                Icon(painter = painterResource(ratingIconRes), tint = MaterialTheme.colorScheme.tertiary, contentDescription = "rating", modifier = Modifier.width(24.dp).height(24.dp).clickable(onClick = {
                     showChooseRatingDialog = true
                 }))
                 Spacer(modifier = Modifier.weight(0.2f))
@@ -347,9 +389,22 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 }
                 return true
             }
+            R.id.visit_website_item -> {
+                val url = episode?.getLinkWithFallback()
+                if (url != null) IntentUtils.openInBrowser(requireContext(), url)
+                return true
+            }
+            R.id.share_item -> {
+                if (episode != null) {
+                    val shareDialog: ShareDialog = ShareDialog.newInstance(episode!!)
+                    shareDialog.show((requireActivity().supportFragmentManager), "ShareEpisodeDialog")
+                }
+                return true
+            }
             else -> {
-                if (episode == null) return false
-                return EpisodeMenuHandler.onMenuItemClicked(this, menuItem.itemId, episode!!)
+                return true
+//                if (episode == null) return false
+//                return EpisodeMenuHandler.onMenuItemClicked(this, menuItem.itemId, episode!!)
             }
         }
     }
@@ -382,11 +437,11 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         updateAppearance()
     }
 
-    private fun prepareMenu() {
-        if (episode!!.media != null) EpisodeMenuHandler.onPrepareMenu(toolbar.menu, episode, R.id.open_podcast)
-        // these are already available via button1 and button2
-        else EpisodeMenuHandler.onPrepareMenu(toolbar.menu, episode, R.id.open_podcast, R.id.mark_read_item, R.id.visit_website_item)
-    }
+//    private fun prepareMenu() {
+//        if (episode!!.media != null) EpisodeMenuHandler.onPrepareMenu(toolbar.menu, episode, R.id.open_podcast)
+//        // these are already available via button1 and button2
+//        else EpisodeMenuHandler.onPrepareMenu(toolbar.menu, episode, R.id.open_podcast, R.id.mark_read_item, R.id.visit_website_item)
+//    }
 
     @UnstableApi
     private fun updateAppearance() {
@@ -394,7 +449,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             Logd(TAG, "updateAppearance item is null")
             return
         }
-        prepareMenu()
+//        prepareMenu()
 
         if (episode!!.feed != null) txtvPodcast = episode!!.feed!!.title ?: ""
         txtvTitle = episode!!.title ?:""
@@ -540,7 +595,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             episode!!.rating = event.rating
             rating = episode!!.rating
 //            episode = event.episode
-            prepareMenu()
+//            prepareMenu()
         }
     }
 
@@ -550,7 +605,8 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         while (i < size) {
             val item_ = event.episodes[i]
             if (item_.id == episode?.id) {
-                prepareMenu()
+                inQueue = curQueue.contains(episode!!)
+//                prepareMenu()
                 break
             }
             i++
@@ -584,6 +640,7 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             lifecycleScope.launch {
                 try {
                     withContext(Dispatchers.IO) {
+                        if (episode != null) episode = realm.query(Episode::class).query("id == $0", episode!!.id).first().find()
                         if (episode != null) {
                             val duration = episode!!.media?.getDuration() ?: Int.MAX_VALUE
                             Logd(TAG, "description: ${episode?.description}")
@@ -603,6 +660,8 @@ class EpisodeInfoFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     withContext(Dispatchers.Main) {
 //                        binding.progbarLoading.visibility = View.GONE
                         rating = episode!!.rating
+                        inQueue = curQueue.contains(episode!!)
+                        isPlayed = episode!!.isPlayed()
                         onFragmentLoaded()
                         itemLoaded = true
                     }

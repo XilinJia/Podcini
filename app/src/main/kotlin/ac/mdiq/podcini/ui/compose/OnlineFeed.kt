@@ -82,9 +82,8 @@ fun OnlineFeedItem(activity: MainActivity, feed: PodcastSearchResult) {
         Row {
             ConstraintLayout(modifier = Modifier.width(56.dp).height(56.dp)) {
                 val (imgvCover, checkMark) = createRefs()
-                AsyncImage(model = feed.imageUrl,
-                    contentDescription = "imgvCover",
-                    placeholder = painterResource(R.mipmap.ic_launcher),
+                AsyncImage(model = feed.imageUrl, contentDescription = "imgvCover",
+                    placeholder = painterResource(R.mipmap.ic_launcher), error = painterResource(R.mipmap.ic_launcher),
                     modifier = Modifier.width(65.dp).height(65.dp).constrainAs(imgvCover) {
                         top.linkTo(parent.top)
                         bottom.linkTo(parent.bottom)

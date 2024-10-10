@@ -423,17 +423,11 @@ object Feeds {
         var feed = getFeed(feedId, true)
         if (feed != null) return feed
 
-        feed = Feed()
-        feed.id = feedId
-        if (music) feed.title = "YTMusic Syndicate" + if (video) "" else " Audio"
-        else feed.title = "Youtube Syndicate" + if (video) "" else " Audio"
+        val name = if (music) "YTMusic Syndicate" + if (video) "" else " Audio"
+        else "Youtube Syndicate" + if (video) "" else " Audio"
+        feed = createSynthetic(feedId, name)
         feed.type = Feed.FeedType.YOUTUBE.name
         feed.hasVideoMedia = video
-        feed.downloadUrl = null
-        feed.fileUrl = File(feedfilePath, getFeedfileName(feed)).toString()
-        feed.preferences = FeedPreferences(feed.id, false, FeedPreferences.AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
-        feed.preferences!!.keepUpdated = false
-        feed.preferences!!.queueId = -2L
         feed.preferences!!.videoModePolicy = if (video) VideoMode.WINDOW_VIEW else VideoMode.AUDIO_ONLY
         upsertBlk(feed) {}
         EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.ADDED))
@@ -456,21 +450,35 @@ object Feeds {
         EventFlow.postStickyEvent(FlowEvent.FeedUpdatingEvent(false))
     }
 
-    private fun getMiscSyndicate(): Feed {
-        var feedId: Long = 11
-        var feed = getFeed(feedId, true)
-        if (feed != null) return feed
-
-        feed = Feed()
-        feed.id = feedId
-        feed.title = "Misc Syndicate"
-        feed.type = Feed.FeedType.RSS.name
+    fun createSynthetic(feedId: Long, name: String): Feed {
+        val feed = Feed()
+        var feedId_ = feedId
+        if (feedId_ <= 0) {
+            var i = 100L
+            while (true) {
+                if (getFeed(i++) != null) continue
+                feedId_ = --i
+                break
+            }
+        }
+        feed.id = feedId_
+        feed.title = name
+        feed.author = "Yours Truly"
         feed.downloadUrl = null
         feed.fileUrl = File(feedfilePath, getFeedfileName(feed)).toString()
         feed.preferences = FeedPreferences(feed.id, false, FeedPreferences.AutoDeleteAction.GLOBAL, VolumeAdaptionSetting.OFF, "", "")
         feed.preferences!!.keepUpdated = false
         feed.preferences!!.queueId = -2L
-//        feed.preferences!!.videoModePolicy = if (video) VideoMode.WINDOW_VIEW else VideoMode.AUDIO_ONLY
+        return feed
+    }
+
+    private fun getMiscSyndicate(): Feed {
+        val feedId: Long = 11
+        var feed = getFeed(feedId, true)
+        if (feed != null) return feed
+
+        feed = createSynthetic(feedId, "Misc Syndicate")
+        feed.type = Feed.FeedType.RSS.name
         upsertBlk(feed) {}
         EventFlow.postEvent(FlowEvent.FeedListEvent(FlowEvent.FeedListEvent.Action.ADDED))
         return feed

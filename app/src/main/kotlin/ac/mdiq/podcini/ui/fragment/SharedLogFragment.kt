@@ -160,8 +160,8 @@ class SharedLogFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             try {
                 val result = withContext(Dispatchers.IO) {
                     Logd(TAG, "getDownloadLog() called")
-                    val dlog = realm.query(ShareLog::class).sort("id", Sort.DESCENDING).find().toMutableList()
-                    realm.copyFromRealm(dlog)
+                    realm.query(ShareLog::class).sort("id", Sort.DESCENDING).find().toMutableList()
+//                    realm.copyFromRealm(dlog)
                 }
                 withContext(Dispatchers.Main) {
                     logs.clear()

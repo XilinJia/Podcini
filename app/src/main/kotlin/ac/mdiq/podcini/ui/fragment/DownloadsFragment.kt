@@ -176,7 +176,7 @@ import java.util.*
             val items = realm.query(Episode::class).query("media.episode == nil").find()
             Logd(TAG, "number of episode with null backlink: ${items.size}")
             for (item in items) {
-                upsert(item) { it.media!!.episode = it }
+                if (item.media != null ) upsert(item) { it.media!!.episode = it }
             }
             nameEpisodeMap.clear()
             for (e in episodes) {

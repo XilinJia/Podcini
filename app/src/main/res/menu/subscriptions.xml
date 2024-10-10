@@ -24,6 +24,14 @@
         android:visible="false"
         custom:showAsAction="always" />
     <item
+        android:id="@+id/new_synth"
+        android:title="@string/new_synth_label"
+        custom:showAsAction="never" />
+    <item
+        android:id="@+id/new_synth_yt"
+        android:title="@string/new_synth_yt_label"
+        custom:showAsAction="never" />
+    <item
         android:id="@+id/refresh_item"
         android:title="@string/refresh_label"
         custom:showAsAction="never" />

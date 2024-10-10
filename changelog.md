@@ -1,3 +1,20 @@
+# 6.10.0
+
+* in Subscriptions, added menu items to create normal or Youtube synthetic feeds for better organization
+* added "Shelve to synthetic" in multi-selection menu to move/copy the selected to a synthetic feed
+	* episodes from normal podcasts can only be copied, while those from synthetic podcasts can be moved
+* clicking on the image in Player UI toggles expand and collapse of the player detailed view
+* when receiving shared single media from Youtube, wait for episode construction before dismissing the confirm dialog
+* fixed Reconcile crash when episode.media is null
+* in OnlineFeed, button "Subscribing" is changed to "Subscribe"
+* tunes color contrast on some Compose buttons
+* in EpisodeInfo, menu items "mark played" and "add to queue" are made as buttons and telltales
+* cleaned up menu items handling in EpisodeInfo and AudioPlayer, removed EpisodeMenuHandler
+* fixed a bug of episode properties possibly getting overwritten when changing episode play status
+* in NavDrawer, the count for Queues is from all queues (previously from curQueue only)
+* count of shared logs is shown on NavDrawer
+* set app icon as default when cover images are unavailable
+
 # 6.9.3
 
 * fixed app quit issue when repairing a shared item

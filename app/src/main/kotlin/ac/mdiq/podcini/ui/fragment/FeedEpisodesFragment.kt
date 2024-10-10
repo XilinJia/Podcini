@@ -246,8 +246,8 @@ import java.util.concurrent.Semaphore
                     bottom.linkTo(parent.bottom)
                     end.linkTo(parent.end)
                 })
-            AsyncImage(model = feed?.imageUrl?:"", contentDescription = "imgvCover",
-                Modifier.width(120.dp).height(120.dp).padding(start = 16.dp, end = 16.dp, bottom = 12.dp).constrainAs(imgvCover) {
+            AsyncImage(model = feed?.imageUrl?:"", contentDescription = "imgvCover", error = painterResource(R.mipmap.ic_launcher),
+                modifier = Modifier.width(120.dp).height(120.dp).padding(start = 16.dp, end = 16.dp, bottom = 12.dp).constrainAs(imgvCover) {
                     bottom.linkTo(parent.bottom)
                     start.linkTo(parent.start)
                 }.clickable(onClick = {

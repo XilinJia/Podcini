@@ -39,6 +39,7 @@ import androidx.annotation.OptIn
 import androidx.core.app.NotificationManagerCompat
 import androidx.documentfile.provider.DocumentFile
 import androidx.media3.common.util.UnstableApi
+import io.realm.kotlin.ext.isManaged
 import kotlinx.coroutines.Job
 import java.io.File
 import java.util.*
@@ -247,14 +248,14 @@ object Episodes {
         }
     }
 
-    @JvmStatic
-    fun setFavorite(episode: Episode, stat: Boolean?) : Job {
-        Logd(TAG, "setFavorite called $stat")
-        return runOnIOScope {
-            val result = upsert(episode) { it.rating = if (stat ?: !it.isFavorite) Episode.Rating.FAVORITE.code else Episode.Rating.NEUTRAL.code }
-            EventFlow.postEvent(FlowEvent.RatingEvent(result, result.rating))
-        }
-    }
+//    @JvmStatic
+//    fun setFavorite(episode: Episode, stat: Boolean?) : Job {
+//        Logd(TAG, "setFavorite called $stat")
+//        return runOnIOScope {
+//            val result = upsert(episode) { it.rating = if (stat ?: !it.isFavorite) Episode.Rating.FAVORITE.code else Episode.Rating.NEUTRAL.code }
+//            EventFlow.postEvent(FlowEvent.RatingEvent(result, result.rating))
+//        }
+//    }
 
     fun setRating(episode: Episode, rating: Int) : Job {
         Logd(TAG, "setRating called $rating")
@@ -283,7 +284,9 @@ object Episodes {
     @OptIn(UnstableApi::class)
     suspend fun setPlayStateSync(played: Int, resetMediaPosition: Boolean, episode: Episode) : Episode {
         Logd(TAG, "setPlayStateSync called played: $played resetMediaPosition: $resetMediaPosition ${episode.title}")
-        val result = upsert(episode) {
+        var episode_ = episode
+        if (!episode.isManaged()) episode_ = realm.query(Episode::class).query("id == $0", episode.id).first().find() ?: episode
+        val result = upsert(episode_) {
             if (played >= PlayState.NEW.code && played <= PlayState.BUILDING.code) it.playState = played
             else {
                 if (it.playState == PlayState.PLAYED.code) it.playState = PlayState.UNPLAYED.code

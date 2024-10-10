@@ -59,7 +59,7 @@ class ShareReceiverActivity : AppCompatActivity() {
                 CustomTheme(this) {
                     confirmAddYoutubeEpisode(listOf(sharedUrl!!), showDialog.value, onDismissRequest = {
                         showDialog.value = false
-//                        finish()
+                        finish()
                     })
                 }
             }

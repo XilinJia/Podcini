@@ -32,16 +32,14 @@ import ac.mdiq.podcini.storage.utils.ChapterUtils
 import ac.mdiq.podcini.storage.utils.DurationConverter
 import ac.mdiq.podcini.storage.utils.ImageResourceUtils
 import ac.mdiq.podcini.storage.utils.TimeSpeedConverter
-import ac.mdiq.podcini.ui.actions.EpisodeMenuHandler
+//import ac.mdiq.podcini.ui.actions.EpisodeMenuHandler
 import ac.mdiq.podcini.ui.activity.MainActivity
 import ac.mdiq.podcini.ui.activity.VideoplayerActivity.Companion.videoMode
 import ac.mdiq.podcini.ui.activity.starter.VideoPlayerActivityStarter
 import ac.mdiq.podcini.ui.compose.ChooseRatingDialog
 import ac.mdiq.podcini.ui.compose.CustomTheme
-import ac.mdiq.podcini.ui.dialog.MediaPlayerErrorDialog
-import ac.mdiq.podcini.ui.dialog.SkipPreferenceDialog
-import ac.mdiq.podcini.ui.dialog.SleepTimerDialog
-import ac.mdiq.podcini.ui.dialog.VariableSpeedDialog
+import ac.mdiq.podcini.ui.dialog.*
+import ac.mdiq.podcini.ui.fragment.EpisodeInfoFragment.EpisodeHomeFragment.Companion.episode
 import ac.mdiq.podcini.ui.utils.ShownotesCleaner
 import ac.mdiq.podcini.ui.view.ShownotesWebView
 import ac.mdiq.podcini.util.EventFlow
@@ -231,25 +229,26 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                     if (curMedia == null) return
                     if (playbackService == null) PlaybackServiceStarter(requireContext(), curMedia!!).start()
                 }
-                AsyncImage(model = imgLoc, contentDescription = "imgvCover", placeholder = painterResource(R.mipmap.ic_launcher),
+                AsyncImage(model = imgLoc, contentDescription = "imgvCover", placeholder = painterResource(R.mipmap.ic_launcher), error = painterResource(R.mipmap.ic_launcher),
                     modifier = Modifier.width(70.dp).height(70.dp).padding(start = 5.dp)
                         .clickable(onClick = {
-                            Logd(TAG, "icon clicked!")
-                            Logd(TAG, "playerUiFragment was clicked")
-                            val media = curMedia
-                            if (media != null) {
-                                val mediaType = media.getMediaType()
-                                if (mediaType == MediaType.AUDIO || videoPlayMode == VideoMode.AUDIO_ONLY.code || videoMode == VideoMode.AUDIO_ONLY
-                                        || (media is EpisodeMedia && media.episode?.feed?.preferences?.videoModePolicy == VideoMode.AUDIO_ONLY)) {
-                                    Logd(TAG, "popping as audio episode")
-                                    ensureService()
-                                    (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_EXPANDED)
-                                } else {
-                                    Logd(TAG, "popping video activity")
-                                    val intent = getPlayerActivityIntent(requireContext(), mediaType)
-                                    startActivity(intent)
+                            Logd(TAG, "playerUiFragment icon was clicked")
+                            if (isCollapsed) {
+                                val media = curMedia
+                                if (media != null) {
+                                    val mediaType = media.getMediaType()
+                                    if (mediaType == MediaType.AUDIO || videoPlayMode == VideoMode.AUDIO_ONLY.code || videoMode == VideoMode.AUDIO_ONLY
+                                            || (media is EpisodeMedia && media.episode?.feed?.preferences?.videoModePolicy == VideoMode.AUDIO_ONLY)) {
+                                        Logd(TAG, "popping as audio episode")
+                                        ensureService()
+                                        (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_EXPANDED)
+                                    } else {
+                                        Logd(TAG, "popping video activity")
+                                        val intent = getPlayerActivityIntent(requireContext(), mediaType)
+                                        startActivity(intent)
+                                    }
                                 }
-                            }
+                            } else (activity as MainActivity).bottomSheet.setState(BottomSheetBehavior.STATE_COLLAPSED)
                         }))
                 Spacer(Modifier.weight(0.1f))
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -414,7 +413,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         modifier = Modifier.width(36.dp).height(36.dp).padding(end = 10.dp).clickable(onClick = { seekToNextChapter() }))
                 }
             }
-            AsyncImage(model = imgLoc, contentDescription = "imgvCover", placeholder = painterResource(R.mipmap.ic_launcher),
+            AsyncImage(model = imgLoc, contentDescription = "imgvCover", placeholder = painterResource(R.mipmap.ic_launcher), error = painterResource(R.mipmap.ic_launcher),
                 modifier = Modifier.fillMaxWidth().padding(start = 32.dp, end = 32.dp, top = 10.dp).clickable(onClick = {
                 }))
         }
@@ -730,11 +729,9 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     private fun setChapterDividers() {
         if (currentMedia == null) return
-
         if (currentMedia!!.getChapters().isNotEmpty()) {
             val chapters: List<Chapter> = currentMedia!!.getChapters()
             val dividerPos = FloatArray(chapters.size)
-
             for (i in chapters.indices) {
                 dividerPos[i] = chapters[i].start / curDurationFB.toFloat()
             }
@@ -929,7 +926,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     private fun onRatingEvent(event: FlowEvent.RatingEvent) {
         if (curEpisode?.id == event.episode.id) {
             rating = event.rating
-            EpisodeMenuHandler.onPrepareMenu(toolbar.menu, event.episode)
+//            EpisodeMenuHandler.onPrepareMenu(toolbar.menu, event.episode)
         }
     }
 
@@ -939,7 +936,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         val isEpisodeMedia = currentMedia is EpisodeMedia
         toolbar.menu?.findItem(R.id.open_feed_item)?.setVisible(isEpisodeMedia)
         val item = if (isEpisodeMedia) (currentMedia as EpisodeMedia).episodeOrFetch() else null
-        EpisodeMenuHandler.onPrepareMenu(toolbar.menu, item)
+//        EpisodeMenuHandler.onPrepareMenu(toolbar.menu, item)
 
         val mediaType = curMedia?.getMediaType()
         val notAudioOnly = (curMedia as? EpisodeMedia)?.episode?.feed?.preferences?.videoModePolicy != VideoMode.AUDIO_ONLY
@@ -955,7 +952,7 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     override fun onMenuItemClick(menuItem: MenuItem): Boolean {
         val media: Playable = curMedia ?: return false
         val feedItem = if (media is EpisodeMedia) media.episodeOrFetch() else null
-        if (feedItem != null && EpisodeMenuHandler.onMenuItemClicked(this, menuItem.itemId, feedItem)) return true
+//        if (feedItem != null && EpisodeMenuHandler.onMenuItemClicked(this, menuItem.itemId, feedItem)) return true
 
         val itemId = menuItem.itemId
         when (itemId) {
@@ -986,6 +983,12 @@ class AudioPlayerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         .setChooserTitle(R.string.share_notes_label)
                         .createChooserIntent()
                     context.startActivity(intent)
+                }
+            }
+            R.id.share_item -> {
+                if (currentItem != null) {
+                    val shareDialog: ShareDialog = ShareDialog.newInstance(currentItem!!)
+                    shareDialog.show((requireActivity().supportFragmentManager), "ShareEpisodeDialog")
                 }
             }
             else -> return false
